@@ -1,0 +1,28 @@
+.TH hirs\-provisioner 1 "January 11, 2018"
+
+.SH NAME
+hirs\-provisioner \- provision the TPM
+.SH SYNOPSIS
+.B hirs\-provisioner
+[\-c] [\-h] [\-p]
+.SH DESCRIPTION
+Provision the TPM for use with the Host Integrity at Runtime and Startup
+(HIRS) framework.
+
+.B \-c, \-\-config, config
+.IP
+create /etc/hirs/hirs-site.config template if the file does not already exist.
+If it does exist, check that its contents are valid. The template must be
+filled out with the relevant fields.
+.P
+.B \-p, \-\-provision, provision
+.IP
+provision system with HIRS Attestation Credential Authority. See full HIRS
+documentation for an explanation of the provisioning process.
+.P
+.B \-h, \-\-help, help
+.IP
+print help output
+
+.SH SEE ALSO
+tpm_module(1)

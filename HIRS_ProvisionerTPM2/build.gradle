@@ -1,0 +1,24 @@
+task cleanup() {
+    delete 'build'
+}
+
+task prep(type: Exec) {
+    workingDir './'
+    commandLine 'mkdir', 'build'
+}
+
+task cmake(type: Exec) {
+	workingDir './build'
+	commandLine 'cmake', '../'
+}
+
+task make(type: Exec) {
+	workingDir './build'
+	commandLine 'make'
+}
+
+task fullBuild(type: GradleBuild) {
+	tasks = ['cleanup', 'prep', 'cmake', 'make']
+}
+
+build.dependsOn tasks.fullBuild

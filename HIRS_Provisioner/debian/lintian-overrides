@@ -1,0 +1,2 @@
+# Ignore lintian error about incorrectly formatted copyright file
+hirs-provisioner binary: copyright-should-refer-to-common-license-file-for-lgpl

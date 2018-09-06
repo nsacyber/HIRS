@@ -1,0 +1,81 @@
+#!/bin/bash
+
+# This script checks for signs of a TPM on the host, and then executes the appropriate
+# HIRS TPM ACA provisining process according to the version of TPM found.
+
+# check dmesg for TPM
+dmesg | grep -iq "1\.2 TPM"
+DMESG_1_2=$((1-$?))
+
+dmesg | grep -iq "2\.0 TPM"
+DMESG_2_0=$((1-$?))
+
+# check /sys/class/tpm for TPM
+DEV_1_2=0
+if [[ -f "/sys/class/tpm/tpm0/device/firmware_node/description" ]]; then
+	grep -q "TPM 1.2 Device" /sys/class/tpm/tpm0/device/firmware_node/description
+	DEV_1_2=$((1-$?))
+fi
+
+DEV_2_0=0
+if [[ -f "/sys/class/tpm/tpm0/device/description" ]]; then
+	grep -q "TPM 2.0 Device" /sys/class/tpm/tpm0/device/description
+	DEV_2_0=$((1-$?))
+fi
+
+# check to see whether emulators are present
+EMU_1_2=0
+if hash tpm_version 2> /dev/null ; then
+	tpm_version > /dev/null 2>&1
+	if [[ $? -eq 0 ]]; then
+		EMU_1_2=1
+	fi
+fi
+
+EMU_2_0=0
+if hash tpm2_nvlist 2> /dev/null ; then
+	tpm2_nvlist > /dev/null 2>&1
+	if [[ $? -eq 0 ]]; then
+		EMU_2_0=1
+	fi
+fi
+
+rpm -q HIRS_Provisioner_TPM_1_2 > /dev/null
+PROVISIONER_1_2_INSTALLED=$?
+rpm -q HIRS_Provisioner_TPM_2_0 > /dev/null
+PROVISIONER_2_0_INSTALLED=$?
+
+TPM_1_2_PRESENT=$(($DMESG_1_2 + $DEV_1_2 + $EMU_1_2))
+TPM_2_0_PRESENT=$(($DMESG_2_0 + $DEV_2_0 + $EMU_2_0))
+
+if [ "$TPM_1_2_PRESENT" -gt 0 ] ; then
+	echo "TPM 1.2 detected."
+	if [ $PROVISIONER_1_2_INSTALLED -eq 0 ]; then
+		hirs-provisioner -p
+		RC=$?
+	else
+		echo "The package 'HIRS_Provisioner_TPM_1_2' must be installed to provision a TPM 1.2."
+		exit 1
+	fi
+elif [ "$TPM_2_0_PRESENT" -gt 0 ] ; then
+	echo "TPM 2.0 detected."
+	if [ $PROVISIONER_2_0_INSTALLED -eq 0 ]; then
+		/usr/local/bin/hirs-provisioner-tpm2 provision
+		RC=$?
+	else
+		echo "The package 'HIRS_Provisioner_TPM_2_0' must be installed to provision a TPM 2.0."
+		exit 1
+	fi
+else
+	echo "No evidence of a TPM was found in dmesg, /sys/class/tpm, or via an installed emulator.  If this machine has a TPM, please ensure it is enabled in UEFI/BIOS, or that your emulator is installed and functioning with tpm-tools or tpm2-tools."
+	if [ $PROVISIONER_1_2_INSTALLED -eq 0 ]; then
+		echo "Running TPM 1.2 provisioner to support normal HIRS usage."
+		hirs-provisioner --provision
+		RC=$?
+	else
+		echo "TPM 1.2 provisioner is not installed; not running normal HIRS provisioning."
+		exit 1
+	fi
+fi
+
+exit $RC

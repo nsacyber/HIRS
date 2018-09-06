@@ -1,0 +1,7 @@
+# This directory is automatically populated during build from ./Docs
+# gitignore idea from http://stackoverflow.com/questions/115983/how-can-i-add-an-empty-directory-to-a-git-repository
+
+# Ignore everything in this directory
+*
+# Except this file
+!.gitignore

@@ -1,0 +1,41 @@
+< 200	TPM ERROR CODE
+> 12000	TSS ERROR CODE
+
+TPM_MODULE ERROR CODES
+-------------------------
+290	can't open log file
+300	invalid mode argument
+310	hex to bin invalid length
+311	hex to bin character validation error
+312	hex to bin character validation error
+320	new auth argument missing
+321	tpm auth argument missing
+322	srk auth argument missing
+323	ik auth argument missing
+324	sign auth argument missing
+325	bind auth argument missing
+326	stor auth argument missing
+327	enc auth argument missing
+328	key auth argument missing
+330	nonce argument missing
+340	uuid argument missing
+350	pcrs argument missing
+360	key type argument missing
+361	key type argument invalid
+370	key length argument missing
+380	key scheme argument missing
+381	signing scheme invalid
+382	binding scheme invalid
+390	nvram index missing
+391	nvram index invalid
+400	help argument set
+410	mode-specific argument missing
+411	mode-specific argument missing
+412	mode-specific argument missing
+420	uuid validation failure
+421	uuid validation failure
+422	uuid validation failure
+423	uuid validation failure
+424	uuid validation failure
+425	uuid validation failure
+430	mask validation failure

@@ -1,0 +1,13 @@
+Source: tpm-module
+Section: admin
+Priority: optional
+Maintainer: HIRS <HIRS@HIRS.HIRS>
+Build-Depends: debhelper (>= 9)
+Standards-Version: 3.9.5
+
+Package: tpm-module
+Architecture: amd64
+Depends: ${shlibs:Depends}, ${misc:Depends}, tpm-tools, libtspi1
+Description: HIRS TPM Module
+ Allows for interaction with TPMs.
+

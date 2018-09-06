@@ -1,0 +1,115 @@
+package hirs.data.service;
+
+import hirs.data.persist.Device;
+import hirs.data.persist.DeviceGroup;
+import hirs.data.persist.DeviceInfoReport;
+import hirs.data.persist.FirmwareInfo;
+import hirs.data.persist.HardwareInfo;
+import hirs.data.persist.NetworkInfo;
+import hirs.data.persist.OSInfo;
+import hirs.data.persist.TPMInfo;
+import hirs.persist.DeviceGroupManager;
+import hirs.persist.DeviceManager;
+
+import org.testng.annotations.Test;
+
+import java.net.InetAddress;
+import java.net.UnknownHostException;
+
+import static org.mockito.Matchers.any;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
+/**
+ * Unit tests for {@see DeviceRegisterImpl}.
+ */
+public class DeviceRegisterImplTest {
+
+    private static final String HOSTNAME = "test-host";
+    private static final byte[] MAC_ADDRESS = new byte[] {11, 22, 33, 44, 55, 66};
+
+    /**
+     * Registers a device that is not stored yet by report.
+     */
+    @Test
+    public void registerNonStoredDeviceByReport() {
+        final DeviceManager deviceManager = mock(DeviceManager.class);
+        final DeviceGroupManager deviceGroupManager = mock(DeviceGroupManager.class);
+        final InetAddress ipAddress = getTestIpAddress();
+        final NetworkInfo networkInfo = new NetworkInfo(HOSTNAME, ipAddress, MAC_ADDRESS);
+
+        final DeviceInfoReport report = new DeviceInfoReport(networkInfo, new OSInfo(),
+                new FirmwareInfo(), new HardwareInfo(), new TPMInfo());
+
+        final DeviceGroup group = new DeviceGroup("test");
+        when(deviceGroupManager.getDeviceGroup(DeviceGroup.DEFAULT_GROUP)).thenReturn(group);
+        DeviceRegisterImpl register = new DeviceRegisterImpl(deviceManager, deviceGroupManager);
+
+        register.saveOrUpdateDevice(report);
+
+        verify(deviceManager).saveDevice(any(Device.class));
+    }
+
+    /**
+     * Registers a device that is not stored yet by name.
+     */
+    @Test
+    public void registerNonStoredDeviceByName() {
+        final DeviceManager deviceManager = mock(DeviceManager.class);
+        final DeviceGroupManager deviceGroupManager = mock(DeviceGroupManager.class);
+        final DeviceGroup group = new DeviceGroup("test");
+
+        when(deviceGroupManager.getDeviceGroup(DeviceGroup.DEFAULT_GROUP)).thenReturn(group);
+        DeviceRegisterImpl register = new DeviceRegisterImpl(deviceManager, deviceGroupManager);
+
+        register.saveOrUpdateDevice(HOSTNAME);
+
+        verify(deviceManager).saveDevice(any(Device.class));
+    }
+
+    /**
+     * Registers an already-stored device by report.
+     */
+    @Test
+    public void registerExistingDeviceByReport() {
+        final DeviceManager deviceManager = mock(DeviceManager.class);
+        final DeviceGroupManager deviceGroupManager = mock(DeviceGroupManager.class);
+        final InetAddress ipAddress = getTestIpAddress();
+        final NetworkInfo networkInfo = new NetworkInfo(HOSTNAME, ipAddress, MAC_ADDRESS);
+        final DeviceInfoReport report = new DeviceInfoReport(networkInfo, new OSInfo(),
+                new FirmwareInfo(), new HardwareInfo(), new TPMInfo());
+        final Device device = new Device(HOSTNAME);
+
+        when(deviceManager.getDevice(HOSTNAME)).thenReturn(device);
+
+        DeviceRegisterImpl register = new DeviceRegisterImpl(deviceManager, deviceGroupManager);
+        register.saveOrUpdateDevice(report);
+
+        verify(deviceManager).updateDevice(any(Device.class));
+    }
+
+    /**
+     * Registers an already-stored device by name.
+     */
+    @Test
+    public void registerExistingDeviceByName() {
+        final DeviceManager deviceManager = mock(DeviceManager.class);
+        final DeviceGroupManager deviceGroupManager = mock(DeviceGroupManager.class);
+        final Device device = new Device(HOSTNAME);
+        when(deviceManager.getDevice(HOSTNAME)).thenReturn(device);
+
+        DeviceRegisterImpl register = new DeviceRegisterImpl(deviceManager, deviceGroupManager);
+        register.saveOrUpdateDevice(HOSTNAME);
+
+        verify(deviceManager).updateDevice(any(Device.class));
+    }
+
+    private static InetAddress getTestIpAddress() {
+        try {
+            return InetAddress.getByAddress(new byte[] {127, 0, 0, 1});
+        } catch (UnknownHostException e) {
+            return null;
+        }
+    }
+}

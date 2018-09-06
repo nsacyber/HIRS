@@ -1,0 +1,126 @@
+apply plugin: 'checkstyle'
+apply plugin: 'eclipse'
+apply plugin: 'findbugs'
+apply plugin: 'java'
+apply plugin: 'jacoco'
+apply plugin: 'pmd'
+
+ext.configDir = new File(projectDir, 'config')
+
+sourceCompatibility = 1.8
+
+sourceSets {
+    integrationTest {
+        java.srcDir file('src/integration/java')
+        compileClasspath = sourceSets.main.output + sourceSets.test.output +  configurations.testRuntime
+        runtimeClasspath = output + compileClasspath
+    }
+}
+
+task utilsTestJar(type: Jar) {
+    from sourceSets.test.output
+}
+
+dependencies {
+    compile libs.gson // required for plugin
+    compile libs.bouncy_castle
+    compile libs.commons_cli
+    compile libs.commons_codec
+    compile libs.commons_csv
+    compile libs.commons_exec
+    compile libs.commons_io
+    compile libs.commons_lang
+    compile libs.commons_http
+    compile libs.commons_valid
+    compile libs.hibernate
+    compile libs.hikari
+    compile libs.jackson
+    compile libs.jadira_usertype
+    compile libs.joda_time
+    compile libs.log4j2
+    compile libs.mariadb
+    compile libs.reflections
+    compile libs.guava
+    compile libs.spring_core
+    compile libs.spring_retry
+    compile (libs.xml_rpc_client) {
+        exclude group: 'junit'
+    }
+    compile 'org.jboss.logging:jboss-logging:3.2.0.Final'
+
+    // add spring plugin, but do not pull transitive dependencies (causes conflicts)
+    compile(libs.spring_plugin) {
+        exclude group: "org.springframework"
+    }
+
+    compileOnly libs.checkstyle
+    compileOnly libs.findbugs
+
+    runtime fileTree(dir: 'build/plugins', include: ['*.jar'])
+
+    testCompile libs.spring_test
+    testCompile libs.hsqldb
+    testCompile libs.jcommander
+    testCompile libs.mockito
+    testCompile libs.powermock
+    testCompile libs.testng
+    testCompile libs.checkstyle
+    testCompile libs.findbugs
+    testCompile libs.commons_lang
+}
+
+task importBaseline(type:JavaExec) {
+    description 'Imports Baselines into the database'
+    main = "hirs.persist.ImportCLI"
+    if (project.hasProperty("mainArgs") ) {
+        args mainArgs.split()
+    }
+    classpath = sourceSets.main.runtimeClasspath
+}
+
+task integrationTest(type: Test) {
+    testClassesDir = sourceSets.integrationTest.output.classesDir
+    classpath = sourceSets.integrationTest.runtimeClasspath
+}
+
+ext.checkstyleConfigDir = "$configDir/checkstyle"
+
+checkstyle {
+    toolVersion = '8.10.1'
+    configFile = checkstyleConfigFile
+    configProperties.put('basedir', checkstyleConfigDir)
+    ignoreFailures = false
+    showViolations = true
+}
+
+ext.findbugsConfigDir = "$configDir/findbugs"
+
+findbugs {
+    toolVersion = '3.0.0'
+    ignoreFailures = false
+    effort = 'max'
+    excludeFilter = new File(findbugsConfigDir, 'suppressions.xml')
+}
+
+jacocoTestReport {
+    reports {
+        xml.enabled true
+        csv.enabled true
+        html.enabled true
+        html.destination "${buildDir}/reports/jacoco/html"
+    }
+}
+
+publishing {
+    publications {
+        maven(MavenPublication) {
+            artifactId 'hirs-utils'
+            from components.java
+        }
+        testResources(MavenPublication) {
+            artifactId 'hirs-utils-test'
+            artifact utilsTestJar
+        }
+    }
+}
+

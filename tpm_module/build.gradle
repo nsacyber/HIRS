@@ -1,0 +1,10 @@
+task build(type:Exec) {
+    outputs.file 'tpm_module'
+    inputs.dir fileTree(dir: '.').include('main.cpp').include('*.hpp')
+    commandLine 'make'
+}
+
+task clean() {
+    delete 'tpm_module', 'main.d', 'main.o'
+}
+

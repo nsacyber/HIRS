@@ -1,0 +1,35 @@
+<FindBugsFilter>
+     <Match>
+       <Class name="hirs.AuthData$eAuthMode" />
+     </Match>
+     <Match>
+       <Class name="hirs.IMAReport" />
+     </Match>
+     <Match>
+       <Class name="hirs.IMAReport$IMARecord" />
+     </Match>
+     <Match>
+       <Class name="hirs.ReportInitRequest" />
+     </Match>
+     <Match>
+       <Class name="hirs.ReportInitResponse" />
+     </Match>
+     <Match>
+       <Class name="hirs.ReportInitResponse$initResult" />
+     </Match>
+     <Match>
+       <Class name="hirs.ReportSubmitRequest" />
+     </Match>
+     <Match>
+       <Class name="hirs.ReportSubmitResponse$reportResult" />
+     </Match>
+     <Match>
+       <Class name="hirs.IntegrityReport" />
+     </Match>
+     <Match>
+       <Class name="hirs.data.persist.ReportMapper" />
+     </Match>
+     <Match>
+       <Class name="hirs.utils.SpringContextProvider" />
+     </Match>
+</FindBugsFilter>

@@ -1,0 +1,8 @@
+rootProject.name = 'HIRS'
+include 'TPM_Utils',
+        'HIRS_Utils',
+        'HIRS_Provisioner',
+        'HIRS_ProvisionerTPM2',
+        'HIRS_Structs',
+        'HIRS_AttestationCA',
+        'HIRS_AttestationCAPortal'

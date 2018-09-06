@@ -1,0 +1,29 @@
+<?xml version="1.0"?>
+
+<!DOCTYPE suppressions PUBLIC
+    "-//Puppy Crawl//DTD Suppressions 1.1//EN"
+    "http://www.puppycrawl.com/dtds/suppressions_1_1.dtd">
+
+<suppressions>
+    <suppress checks="MagicNumber" files=".*[/\\]src[/\\]test[/\\]+" />
+    <suppress checks="." files="AuthData.java" />
+    <suppress checks="." files="DeviceInfoReport.java" />
+    <suppress checks="." files="HibernateDao.java" />
+    <suppress checks="." files="HibernateDevel.java" />
+    <suppress checks="." files="IntegrityReport.java" />
+    <suppress checks="." files="LoggingClass.java" />
+    <suppress checks="." files="LoggingAdapter.java" />
+    <suppress checks="." files="OS.java" />
+    <suppress checks="." files="Report.java" />
+    <suppress checks="." files="IntegrityReport.java" />
+    <suppress checks="." files="IMAReport.java" />
+    <suppress checks="." files="ReportMapper.java" />
+    <suppress checks="." files="ReportInitRequest.java" />
+    <suppress checks="." files="ReportInitResponse.java" />
+    <suppress checks="." files="ReportSubmitRequest.java" />
+    <suppress checks="." files="ReportSubmitResponse.java" />
+    <suppress checks="." files="TPM.java" />
+    <suppress checks="." files="XMLCleaner.java" />
+    <suppress checks="." files="SpringContextProvider.java" />
+    <suppress checks="FileLength" files="SupplyChainCredentialValidatorTest.java" />
+</suppressions>
