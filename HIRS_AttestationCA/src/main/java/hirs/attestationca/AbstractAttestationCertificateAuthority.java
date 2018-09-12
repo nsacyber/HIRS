@@ -233,9 +233,13 @@ public abstract class AbstractAttestationCertificateAuthority
                     this.certificateManager, ecBytesFromIdentityRequest
             );
             try {
-                ekPublicKey = assemblePublicKey(
-                    Certificate.getPublicKeyModulus(
-                            endorsementCredential.getX509Certificate()).toByteArray());
+                BigInteger publicKeyModulus = Certificate.getPublicKeyModulus(
+                        endorsementCredential.getX509Certificate());
+                if (publicKeyModulus != null) {
+                    ekPublicKey = assemblePublicKey(publicKeyModulus.toByteArray());
+                } else {
+                    throw new IllegalArgumentException("TPM 1.2 Provisioning requires RSA EKC");
+                }
             } catch (IOException e) {
                 LOG.error("Could not retrieve the public key modulus from the EK cert");
             }

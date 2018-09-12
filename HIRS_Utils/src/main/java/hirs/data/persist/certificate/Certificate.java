@@ -263,17 +263,20 @@ public abstract class Certificate extends ArchivableEntity {
             this.certificateBytes = Base64.decode(possiblePem);
         }
 
-        //Extract certificate data
+        // Extract certificate data
         switch (getCertificateType()) {
             case X509_CERTIFICATE:
-
                 X509Certificate x509Certificate = getX509Certificate();
                 this.serialNumber = x509Certificate.getSerialNumber();
                 this.issuer = x509Certificate.getIssuerX500Principal().getName();
                 this.subject = x509Certificate.getSubjectX500Principal().getName();
                 this.encodedPublicKey = x509Certificate.getPublicKey().getEncoded();
-                this.publicKeyModulusHexValue = getPublicKeyModulus(x509Certificate)
-                                                    .toString(HEX_BASE);
+                BigInteger publicKeyModulus = getPublicKeyModulus(x509Certificate);
+                if (publicKeyModulus != null) {
+                    this.publicKeyModulusHexValue = publicKeyModulus.toString(HEX_BASE);
+                } else {
+                    this.publicKeyModulusHexValue = null;
+                }
                 this.signature = x509Certificate.getSignature();
                 this.beginValidity = x509Certificate.getNotBefore();
                 this.endValidity = x509Certificate.getNotAfter();
@@ -286,13 +289,13 @@ public abstract class Certificate extends ArchivableEntity {
                 AttributeCertificate attCert = getAttributeCertificate();
                 AttributeCertificateInfo attCertInfo = attCert.getAcinfo();
 
-                //Set null values (Attribute certificates do not have this values)
+                // Set null values (Attribute certificates do not have this values)
                 this.subject = null;
                 this.subjectOrganization = null;
                 this.encodedPublicKey = null;
                 this.publicKeyModulusHexValue = null;
 
-                //Get attribute certificate information
+                // Get attribute certificate information
                 this.serialNumber = attCertInfo.getSerialNumber().getValue();
                 this.holderSerialNumber = attCertInfo
                                             .getHolder()
@@ -305,7 +308,7 @@ public abstract class Certificate extends ArchivableEntity {
                                         attCertInfo.getIssuer())[0].toString();
                 this.issuerOrganization = getOrganization(this.issuer);
 
-                //Parse notBefore and notAfter dates
+                // Parse notBefore and notAfter dates
                 this.beginValidity = recoverDate(attCertInfo
                                             .getAttrCertValidityPeriod()
                                             .getNotBeforeTime());
@@ -332,14 +335,14 @@ public abstract class Certificate extends ArchivableEntity {
 
         if (testSeq.toArray()[0] instanceof ASN1Integer) {
              if (testSeq.toArray().length >= MIN_ATTR_CERT_LENGTH) {
-                 //Attribute Certificate
+                 // Attribute Certificate
                  return CertificateType.ATTRIBUTE_CERTIFICATE;
              } else {
-                 //V1 X509Certificate
+                 // V1 X509Certificate
                  return CertificateType.X509_CERTIFICATE;
              }
         } else if (testSeq.toArray()[0] instanceof DERTaggedObject) {
-            //V2 or V3 X509Certificate
+            // V2 or V3 X509Certificate
             return CertificateType.X509_CERTIFICATE;
         }
 
@@ -355,16 +358,16 @@ public abstract class Certificate extends ArchivableEntity {
     protected static String getOrganization(final String distinguishedName) {
         String organization = null;
 
-        //Return null for empy strings
+        // Return null for empy strings
         if (distinguishedName.isEmpty()) {
             return null;
         }
 
-        //Parse string to X500Name
+        // Parse string to X500Name
         X500Name name = new X500Name(distinguishedName);
         if (name.getRDNs(RFC4519Style.o).length > 0) {
             RDN rdn = name.getRDNs(RFC4519Style.o)[0];
-            //For multivalue check the RDNs Attributes
+            // For multivalue check the RDNs Attributes
             if (rdn.isMultiValued()) {
                 for (AttributeTypeAndValue att: rdn.getTypesAndValues()) {
                     if (RFC4519Style.o.equals(att.getType())) {
@@ -400,7 +403,7 @@ public abstract class Certificate extends ArchivableEntity {
         boolean isIssuer = false;
         X509Certificate issuerX509 = issuer.getX509Certificate();
 
-        //Validate if it's the issuer
+        // Validate if it's the issuer
         switch (getCertificateType()) {
             case X509_CERTIFICATE:
                 X509Certificate certX509 = getX509Certificate();
@@ -628,10 +631,10 @@ public abstract class Certificate extends ArchivableEntity {
     }
 
     /**
-     * Retrieve an X509 certificate's public key modulus.
+     * Retrieve an RSA-based X509 certificate's public key modulus.
      *
      * @param certificate the certificate holding a public key
-     * @return a BigInteger representing its public key's modulus
+     * @return a BigInteger representing its public key's modulus or null if none found
      * @throws IOException if there is an issue decoding the encoded public key
      */
     public static BigInteger getPublicKeyModulus(final X509Certificate certificate)
@@ -642,10 +645,14 @@ public abstract class Certificate extends ArchivableEntity {
         } catch (CertificateEncodingException e) {
             throw new IOException("Could not encode certificate", e);
         }
-        return getPublicKeyModulus(
-                certificateHolder.getSubjectPublicKeyInfo().parsePublicKey().toASN1Primitive()
-        );
-
+        try {
+            return getPublicKeyModulus(
+                    certificateHolder.getSubjectPublicKeyInfo().parsePublicKey().toASN1Primitive()
+            );
+        } catch (IOException e) {
+            LOGGER.info("No RSA Key Detected in certificate");
+            return null;
+        }
     }
 
     /**
