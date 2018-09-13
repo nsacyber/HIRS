@@ -57,6 +57,7 @@ message IdentityClaim {
   required bytes ek_public_area = 3;
   optional bytes endorsement_credential = 4;
   repeated bytes platform_credential = 5;
+  optional string client_version = 6;
 }
 
 message IdentityClaimResponse {

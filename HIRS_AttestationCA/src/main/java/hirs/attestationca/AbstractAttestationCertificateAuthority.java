@@ -432,8 +432,7 @@ public abstract class AbstractAttestationCertificateAuthority
                 endorsementCredential);
 
         // Parse and save device info
-        ProvisionerTpm2.DeviceInfo dv = claim.getDv();
-        Device device = processDeviceInfo(dv);
+        Device device = processDeviceInfo(claim);
 
         // perform supply chain validation
         SupplyChainValidationSummary summary = supplyChainValidationService.validateSupplyChain(
@@ -538,10 +537,12 @@ public abstract class AbstractAttestationCertificateAuthority
 
     /**
      * Converts a protobuf DeviceInfo object to a HIRS Utils DeviceInfoReport object.
-     * @param dv the protobuf serialized device info to convert
-     * @return a HIRS Utils DeviceInfoReport representation of dv
+     * @param claim the protobuf serialized identity claim containing the device info
+     * @return a HIRS Utils DeviceInfoReport representation of device info
      */
-    private DeviceInfoReport parseDeviceInfo(final ProvisionerTpm2.DeviceInfo dv) {
+    private DeviceInfoReport parseDeviceInfo(final ProvisionerTpm2.IdentityClaim claim) {
+        ProvisionerTpm2.DeviceInfo dv = claim.getDv();
+
         // Get network info
         ProvisionerTpm2.NetworkInfo nwProto = dv.getNw();
 
@@ -594,7 +595,8 @@ public abstract class AbstractAttestationCertificateAuthority
         TPMInfo tpm = new TPMInfo();
 
         // Create final report
-        DeviceInfoReport dvReport = new DeviceInfoReport(nw, os, fw, hw, tpm);
+        DeviceInfoReport dvReport = new DeviceInfoReport(nw, os, fw, hw, tpm,
+                claim.getClientVersion());
 
         for (ProvisionerTpm2.ComponentInfo pbCompInfo : hwProto.getChassisInfoList()) {
             dvReport.getChassisInfo().add(new ChassisComponentInfo(
@@ -654,8 +656,8 @@ public abstract class AbstractAttestationCertificateAuthority
         return dvReport;
     }
 
-    private Device processDeviceInfo(final ProvisionerTpm2.DeviceInfo dv) {
-        DeviceInfoReport deviceInfoReport = parseDeviceInfo(dv);
+    private Device processDeviceInfo(final ProvisionerTpm2.IdentityClaim claim) {
+        DeviceInfoReport deviceInfoReport = parseDeviceInfo(claim);
 
         if (deviceInfoReport == null) {
             LOG.error("Failed to deserialize Device Info Report");
