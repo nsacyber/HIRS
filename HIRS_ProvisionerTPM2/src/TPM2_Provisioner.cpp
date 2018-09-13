@@ -20,6 +20,7 @@
 #include "HirsRuntimeException.h"
 #include "RestfulClientProvisioner.h"
 #include "Utils.h"
+#include "Version.h"
 
 
 using hirs::exception::HirsRuntimeException;
@@ -68,6 +69,7 @@ int provision() {
             = tpm2.createIdentityClaim(dv, akPublicArea, ekPublicArea,
                                        endorsementCredential,
                                        platformCredentials);
+    identityClaim.set_client_version(CLIENT_VERSION);
     RestfulClientProvisioner provisioner;
     string nonceBlob = provisioner.sendIdentityClaim(identityClaim);
     if (nonceBlob == "") {
@@ -102,7 +104,8 @@ int provision() {
 
 void printHelp() {
     stringstream helpMessage;
-    helpMessage << "TPM 2.0 Provisioner\n\n"
+    helpMessage << "TPM 2.0 Provisioner\n"
+                << "Version " << CLIENT_VERSION << "\n\n"
                 << "To run the provisioning process, "
                 << "enter hirs-provisioner-tpm2 provision\n";
     cout << helpMessage.str() << endl;

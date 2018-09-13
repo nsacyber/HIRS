@@ -88,6 +88,7 @@ HIRS_ProvisionerTPM2/CMakeCache.txt
 Makefile
 CMakeFiles/
 HIRS_ProvisionerTPM2/DartConfiguration.tcl
+HIRS_ProvisionerTPM2/include/Version.h
 HIRS_ProvisionerTPM2/lib/cpplint-download/
 HIRS_ProvisionerTPM2/lib/cpplint/
 HIRS_ProvisionerTPM2/lib/cpr-build/

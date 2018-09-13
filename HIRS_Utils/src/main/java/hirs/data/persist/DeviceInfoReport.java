@@ -137,12 +137,38 @@ public class DeviceInfoReport extends Report implements Serializable {
     public DeviceInfoReport(final NetworkInfo networkInfo, final OSInfo osInfo,
                             final FirmwareInfo firmwareInfo, final HardwareInfo hardwareInfo,
                             final TPMInfo tpmInfo) {
+        this(networkInfo, osInfo, firmwareInfo, hardwareInfo, tpmInfo, VersionHelper.getVersion());
+    }
+
+    /**
+     * Constructor used to create a <code>DeviceInfoReport</code>. The
+     * information cannot be changed after the <code>DeviceInfoReport</code> is
+     * created.
+     *
+     * @param networkInfo
+     *            NetworkInfo object, cannot be null
+     * @param osInfo
+     *            OSInfo object, cannot be null
+     * @param firmwareInfo
+     *            FirmwareInfo object, cannot be null
+     * @param hardwareInfo
+     *            HardwareInfo object, cannot be null
+     * @param tpmInfo
+     *            TPMInfo object, may be null if a TPM is not available on the
+     *            device
+     * @param clientApplicationVersion
+     *            string representing the version of the client that submitted this report,
+     *            cannot be null
+     */
+    public DeviceInfoReport(final NetworkInfo networkInfo, final OSInfo osInfo,
+                            final FirmwareInfo firmwareInfo, final HardwareInfo hardwareInfo,
+                            final TPMInfo tpmInfo, final String clientApplicationVersion) {
         setNetworkInfo(networkInfo);
         setOSInfo(osInfo);
         setFirmwareInfo(firmwareInfo);
         setHardwareInfo(hardwareInfo);
         setTPMInfo(tpmInfo);
-        clientApplicationVersion = VersionHelper.getVersion();
+        this.clientApplicationVersion = clientApplicationVersion;
     }
 
     /**

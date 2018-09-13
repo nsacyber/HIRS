@@ -34,6 +34,10 @@ elseif(${PACKAGE_RELEASE_RETURN_ERROR})
     message(FATAL "Failed to pull package release information from git, aborting.")
 endif()
 
+# Embed version and package release into header file
+configure_file ("${CMAKE_SOURCE_DIR}/include/Version.h.in"
+        "${CMAKE_SOURCE_DIR}/include/Version.h")
+
 # Set C++ Standard 11 based on version information
 if (${CMAKE_MAJOR_VERSION}.${CMAKE_MINOR_VERSION} GREATER 3.0)
     set(CMAKE_CXX_STANDARD 11)
