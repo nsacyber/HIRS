@@ -37,6 +37,8 @@ task generateProtoBuf(type:Exec) {
 }
 
 compileJava.dependsOn generateProtoBuf
+copyVersion.dependsOn compileJava
+war.dependsOn copyVersion
 
 ext.configDir = new File(projectDir, 'config')
 ext.checkstyleConfigDir = "$configDir/checkstyle"
@@ -49,6 +51,10 @@ checkstyle {
 }
 
 war {
+    from(buildDir) {
+        include 'VERSION'
+        into 'WEB-INF/classes'
+    }
     archiveName = 'HIRS_AttestationCA.war'
 }
 
