@@ -73,7 +73,7 @@ To see the results and interact with the ACA, go to the ACA Portal at `https://A
 
 * [Getting started with The ACA and Platform Credentials](https://github.com/nsacyber/HIRS/wiki/Gettingstarted)
 * [Installation notes](https://github.com/nsacyber/HIRS/wiki/installation_notes)
-* Project build instructions
+* [Project build instructions](https://github.com/nsacyber/HIRS/wiki/Hirs-build-guide)
 * [HIRS Attestation Certificate Authority FAQ](https://github.com/nsacyber/HIRS/wiki/FAQ)
 * [TPM Provisioner Debug](https://github.com/nsacyber/HIRS/wiki/provisioner_debug)
 * [ACA Debug](https://github.com/nsacyber/HIRS/wiki/aca_debug)
