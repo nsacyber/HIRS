@@ -411,7 +411,9 @@ string CommandTpm2::activateIdentity() {
         // Erase unnecessary zero padding due
         s.erase(2 + numBytesInCred, 134 - 2 - numBytesInCred);
         // Prepend header: MAGIC_NUMBER (0xBADCC0DE) + Version (0x00000001)
-        s.insert(s.begin(), {0xBA, 0xDC, 0xC0, 0xDE, 0x00, 0x00, 0x00, 0x01});
+        s.insert(s.begin(), {static_cast<char>(0xBA), static_cast<char>(0xDC),
+                             static_cast<char>(0xC0), static_cast<char>(0xDE),
+                             0x00, 0x00, 0x00, 0x01});
         writeBinaryFile(s, kDefaultIdentityClaimResponseFilename);
     }
 
