@@ -1,10 +1,10 @@
 #!/bin/bash
 set -e
 
-# Check packager OS is Centos
+# Check packager OS is Ubuntu
 OS_NAME=$(awk -F= '/^NAME/{print $2}' /etc/os-release)
-if [ "$OS_NAME" != "\"CentOS Linux\"" ]; then
-    echo "Error: RPMs must be built with CentOS"
+if [ "$OS_NAME" != "\"Ubuntu\"" ]; then
+    echo "Error: DEBs must be built with Ubuntu"
     exit 1
 fi
 
@@ -18,7 +18,7 @@ mkdir BUILD
 # Navigate to build directory
 cd BUILD
 
-# Build HIRS_ProvisionerTPM2 RPM
+# Build HIRS_ProvisionerTPM2 DEB
 cmake ../..
 
 # If the current directory is empty, there may be an existing CmakeCache.txt
@@ -32,9 +32,9 @@ fi
 make
 cpack
 
-# Move HIRS_ProvisionerTPM2 RPM
-rm -f ../../../package/rpm/RPMS/x86_64/HIRS_Provisioner_TPM_2_0*.rpm
-if [ ! -d "../../../package/rpm/RPMS/x86_64" ]; then
-    mkdir -p ../../../package/rpm/RPMS/x86_64
+# Move HIRS_ProvisionerTPM2 DEB
+rm -f ../../../package/deb/DEBS/HIRSProvisionerTPM2.0*.deb
+if [ ! -d "../../../package/deb/DEBS" ]; then
+    mkdir -p ../../../package/deb/DEBS
 fi
-mv *.rpm ../../../package/rpm/RPMS/x86_64
+mv *.deb ../../../package/deb/DEBS

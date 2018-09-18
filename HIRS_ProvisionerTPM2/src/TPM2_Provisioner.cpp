@@ -143,7 +143,7 @@ int main(int argc, char** argv) {
             if (provision()) {
                 cout << "----> Provisioning successful" << endl;
             }
-        } catch (HirsRuntimeException & hirsRuntimeException) {
+        } catch (HirsRuntimeException& hirsRuntimeException) {
             mainLogger.error(hirsRuntimeException.what());
             cout << "----> Fatal error during provisioning. See "
                  << "/var/log/hirs/provisioner/HIRS_ProvisionerTPM2.log for "

@@ -126,6 +126,6 @@ if [ -f RPMS/x86_64/HIRS_Provisioner_TPM_2_0*.rpm ]; then
     echo 'HIRS_ProvisionerTPM2 RPM successfully built'
     echo '************************************************************************************'
 else
-    echo 'Error: HIRS_ProvisionerTPM2 failed to package successfully'
+    echo 'Error: HIRS_ProvisionerTPM2 failed to package'
     exit 1
 fi

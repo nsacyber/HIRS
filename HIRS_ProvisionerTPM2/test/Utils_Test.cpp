@@ -13,11 +13,14 @@
 using hirs::file_utils::dirExists;
 using hirs::file_utils::fileExists;
 using hirs::string_utils::binaryToHex;
+using hirs::string_utils::contains;
 using hirs::string_utils::longToHex;
 using hirs::string_utils::isHexString;
 using hirs::string_utils::hexToBytes;
 using hirs::string_utils::hexToLong;
 using hirs::string_utils::trimNewLines;
+using hirs::string_utils::trimQuotes;
+using hirs::string_utils::trimChar;
 using hirs::string_utils::trimWhitespaceFromLeft;
 using hirs::string_utils::trimWhitespaceFromRight;
 using hirs::string_utils::trimWhitespaceFromBothEnds;
@@ -106,6 +109,30 @@ TEST_F(UtilsTest, BinToHex) {
               "6a93ad788e3dd86307616ab240e369a63f845435");
 }
 
+TEST_F(UtilsTest, Contains) {
+    string teststr = "The more you know";
+    string substr = "more you";
+    ASSERT_TRUE(contains(teststr, substr));
+}
+
+TEST_F(UtilsTest, ContainsSelf) {
+    string teststr = "The more you know";
+    string substr = "The more you know";
+    ASSERT_TRUE(contains(teststr, substr));
+}
+
+TEST_F(UtilsTest, DoesNotContain) {
+    string teststr = "The more you know";
+    string substr = "moor";
+    ASSERT_FALSE(contains(teststr, substr));
+}
+
+TEST_F(UtilsTest, DoesNotContainMoreThanSelf) {
+    string teststr = "The more you know";
+    string substr = "The more you know.";
+    ASSERT_FALSE(contains(teststr, substr));
+}
+
 TEST_F(UtilsTest, LongToHex) {
     const uint32_t testValue = 464367618;
     ASSERT_EQ(longToHex(testValue), "0x1badb002");
@@ -189,9 +216,21 @@ TEST_F(UtilsTest, HexToLongNotHex) {
     ASSERT_EQ(hexToLong(testStr), 0);
 }
 
-TEST_F(UtilsTest, RemoveNewline) {
+TEST_F(UtilsTest, TrimNewLines) {
     string test = "abc\ndef\nghi\n";
     ASSERT_EQ(trimNewLines(test),
+              "abcdefghi");
+}
+
+TEST_F(UtilsTest, TrimQuotes) {
+    string test = "abc\"def\"ghi\"";
+    ASSERT_EQ(trimQuotes(test),
+              "abcdefghi");
+}
+
+TEST_F(UtilsTest, TrimChar) {
+    string test = "abc@def@ghi@";
+    ASSERT_EQ(trimChar(test, '@'),
               "abcdefghi");
 }
 

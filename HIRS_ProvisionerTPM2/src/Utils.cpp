@@ -22,6 +22,7 @@ using std::ifstream;
 using std::ios;
 using std::ofstream;
 using std::out_of_range;
+using std::remove;
 using std::setfill;
 using std::setw;
 using std::string;
@@ -157,6 +158,10 @@ namespace string_utils {
         return output.str();
     }
 
+    bool contains(const string& str, const string& substring) {
+        return str.find(substring) != string::npos;
+    }
+
     string longToHex(const uint32_t& value) {
         stringstream output;
         output << "0x" << hex << value;
@@ -201,7 +206,15 @@ namespace string_utils {
     }
 
     string trimNewLines(string str) {
-        str.erase(std::remove(str.begin(), str.end(), '\n'), str.end());
+        return trimChar(str, '\n');
+    }
+
+    string trimQuotes(string str) {
+        return trimChar(str, '\"');
+    }
+
+    string trimChar(string str, char targetChar) {
+        str.erase(remove(str.begin(), str.end(), targetChar), str.end());
         return str;
     }
 
@@ -232,7 +245,16 @@ namespace tpm2_tools_utils {
 const unordered_map<string, Tpm2ToolsVersion>
         Tpm2ToolsVersionChecker::kVersionMap = {
         {"1.1.0", Tpm2ToolsVersion::VERSION_1_1_0 },
+        {"2.1.0", Tpm2ToolsVersion::VERSION_2_1_0 },
         {"3.0.1", Tpm2ToolsVersion::VERSION_3_0_1 }
+};
+
+const unordered_map<string, Tpm2ToolsVersion>
+        Tpm2ToolsVersionChecker::kMaxSupportedVersionMap = {
+        {"Ubuntu 17.10", Tpm2ToolsVersion::VERSION_1_1_0 },
+        {"Ubuntu 18.04", Tpm2ToolsVersion::VERSION_2_1_0 },
+        {"Ubuntu 18.10", Tpm2ToolsVersion::VERSION_2_1_0 },
+        {"CentOS Linux 7", Tpm2ToolsVersion::VERSION_3_0_1 }
 };
 
 Tpm2ToolsVersion Tpm2ToolsVersionChecker::findTpm2ToolsVersion() {
@@ -240,17 +262,55 @@ Tpm2ToolsVersion Tpm2ToolsVersionChecker::findTpm2ToolsVersion() {
     string version = Tpm2ToolsOutputParser::parseTpm2ToolsVersion(
             versionOutput);
 
-    try {
-        return kVersionMap.at(version);
-    }
-    catch (const out_of_range& oor) {
-        stringstream ss;
-        ss << "Unsupported Tpm2 Tools Version Detected: " << version;
-        throw HirsRuntimeException(ss.str(),
-                         "Tpm2ToolsVersionChecker::findTpm2ToolsVersion");
+    if (!version.empty()) {
+        try {
+            return kVersionMap.at(version);
+        }
+        catch (const out_of_range& oor) {
+            stringstream ss;
+            ss << "Unsupported Tpm2 Tools Version Detected: " << version;
+            throw HirsRuntimeException(ss.str(),
+                        "Tpm2ToolsVersionChecker::findTpm2ToolsVersion");
+        }
+    } else {
+        string currentDistribution = getDistribution();
+        try {
+            return kMaxSupportedVersionMap.at(currentDistribution);
+        } catch (const out_of_range& oor) {
+            stringstream ss;
+            ss << "Unsupported Distribution Detected: " << currentDistribution;
+            throw HirsRuntimeException(ss.str(),
+                        "Tpm2ToolsVersionChecker::findTpm2ToolsVersion");
+        }
     }
 }
 
+string Tpm2ToolsVersionChecker::getDistribution() {
+    stringstream completeDistro;
+    string distribution;
+    string distributionRelease;
+    ifstream releaseFile;
+    string line;
+    releaseFile.open("/etc/os-release");
+    if (releaseFile.is_open()) {
+        while (getline(releaseFile, line)) {
+            stringstream ss(line);
+            string item;
+            vector<string> tokens;
+            while (getline(ss, item, '=')) {
+                tokens.push_back(item);
+            }
+            if (!tokens.empty() && tokens.at(0) == "NAME") {
+                distribution = string_utils::trimQuotes(tokens.at(1));
+            } else if (!tokens.empty() && tokens.at(0) == "VERSION_ID") {
+                distributionRelease = string_utils::trimQuotes(tokens.at(1));
+            }
+        }
+        completeDistro << distribution << " " << distributionRelease;
+        releaseFile.close();
+    }
+    return completeDistro.str();
+}
 
 uint16_t Tpm2ToolsOutputParser::parseNvDataSize(const string &nvHandle,
                                                 const string &nvListOutput) {
