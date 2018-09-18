@@ -26,7 +26,7 @@ The ACA is a web based server which processes Attestation Identity Requests.
 Revision 14](https://www.trustedcomputinggroup.org/wp-content/uploads/Credential_Profile_EK_V2.0_R14_published.pdf)
   * Verifies the endorsement key used by the TPM was placed there by the original equipment manufacturer (OEM)
 * Platform Credential Certificate Chain Validation
-  * Process Platform Credentials per [TCG Platform Attribute Credential Profile Specification Version 1.0 Revision 16](https://www.trustedcomputinggroup.org/wp-content/uploads/Credential_Profile_EK_V2.0_R14_published.pdf)
+  * Process Platform Credentials per [TCG Platform Attribute Credential Profile Specification Version 1.0 Revision 16](https://trustedcomputinggroup.org/wp-content/uploads/TCG-Platform-Attribute-Credential-Profile-Version-1.0.pdf)
   * Verifies the provenance of the system's hardware components, such as the motherboard and chassis, by comparing measured component information against the manufacturers, models, and serial numbers listed in the Platform Credential
 * Attestation CA Dashboard
   * Displays all Validation Reports, Credentials, and Trust Chains
@@ -42,7 +42,9 @@ The HIRS Provisioner supports both types of TPMs, 1.2 and 2.0. TPM 1.2 support i
 
 ## Installation Instructions
 
-For detailed instructions, see [Installation notes](https://github.com/nsacyber/HIRS/wiki/installation_notes)
+For detailed instructions, see [Installation notes](https://github.com/nsacyber/HIRS/wiki/installation_notes).
+
+Packages used for installation (e.g. HIRS_Provisioner*el7.noarch.rpm) can be found on the [release page](https://github.com/nsacyber/HIRS/releases).
 
 ### Installing the ACA
 
