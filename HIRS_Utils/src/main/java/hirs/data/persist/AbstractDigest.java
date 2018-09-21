@@ -134,30 +134,11 @@ public abstract class AbstractDigest {
             return DigestComparisonResultType.UNKNOWN;
         }
 
-        // if either byte array is all zeroes or the digest of an empty buffer, then the comparison
-        // result is UNKNOWN because the associated file was not read properly by IMA
-        if (isUnknownHash(this) || isUnknownHash(otherDigest)) {
-            return DigestComparisonResultType.UNKNOWN;
-        }
-
         if (this.equals(otherDigest)) {
             return DigestComparisonResultType.MATCH;
         }
 
         return DigestComparisonResultType.MISMATCH;
-    }
-
-    /**
-     * This method determines whether the given hash should be treated as 'unknown'.
-     * Current unknown/invalid hashes are measurements that are recorded in the IMA log that are:
-     * - all zero
-     * - the SHA1 digest of an empty buffer (no data)
-     *
-     * @param digest the digest that should be evaluated
-     * @return true if the given digest should be treated as invalid, false otherwise
-     */
-    private static boolean isUnknownHash(final AbstractDigest digest) {
-        return digest.equals(Digest.SHA1_ALL_ZERO) || digest.equals(Digest.SHA1_EMPTY);
     }
 
     /**

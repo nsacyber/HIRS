@@ -29,7 +29,7 @@ public final class Digest extends AbstractDigest {
     /**
      * A SHA1 digest whose content is all zeros.
      */
-    protected static final Digest SHA1_ALL_ZERO = new Digest(
+    public static final Digest SHA1_ZERO = new Digest(
             DigestAlgorithm.SHA1,
             new byte[SHA1_DIGEST_LENGTH]
     );
@@ -40,11 +40,11 @@ public final class Digest extends AbstractDigest {
     /**
      * A SHA1 digest whose content is the hash of an empty buffer.
      */
-    protected static final Digest SHA1_EMPTY;
+    public static final Digest SHA1_OF_NO_DATA;
 
     static {
         try {
-            SHA1_EMPTY = new Digest(
+            SHA1_OF_NO_DATA = new Digest(
                     DigestAlgorithm.SHA1,
                     Hex.decodeHex(SHA1_EMPTY_HEX.toCharArray())
             );
