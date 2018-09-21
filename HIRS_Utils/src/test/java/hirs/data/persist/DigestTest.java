@@ -368,51 +368,51 @@ public class DigestTest {
     }
 
     /**
-     * Tests that comparing two Digests with zeroized hashes indicates an UNKNOWN
-     * comparison type.
+     * Tests that comparing two Digests with hashes with values of zero gives a MATCH
+     * comparison result.
      */
     @Test
     public final void testCompareToDigestWithBothZeroizedHash() {
-        final Digest d1 = new Digest(DigestAlgorithm.SHA1, getZeroizedTestDigest(20));
-        final Digest d2 = new Digest(DigestAlgorithm.SHA1, getZeroizedTestDigest(20));
-        Assert.assertEquals(d1.compare(d2), DigestComparisonResultType.UNKNOWN);
-        Assert.assertEquals(d2.compare(d1), DigestComparisonResultType.UNKNOWN);
+        final Digest d1 = new Digest(DigestAlgorithm.SHA1, getZeroValueDigest(20));
+        final Digest d2 = new Digest(DigestAlgorithm.SHA1, getZeroValueDigest(20));
+        Assert.assertEquals(d1.compare(d2), DigestComparisonResultType.MATCH);
+        Assert.assertEquals(d2.compare(d1), DigestComparisonResultType.MATCH);
     }
 
     /**
-     * Tests that comparing two Digests with one zeroized hashes indicates an UNKNOWN
-     * comparison type.
+     * Tests that comparing two Digests, one with a hash of value zero, gives a MISMATCH
+     * comparison result.
      */
     @Test
     public final void testCompareToDigestWithOneZeroizedHash() {
         final Digest d1 = new Digest(DigestAlgorithm.SHA1, getTestDigest(20));
-        final Digest d2 = new Digest(DigestAlgorithm.SHA1, getZeroizedTestDigest(20));
-        Assert.assertEquals(d1.compare(d2), DigestComparisonResultType.UNKNOWN);
-        Assert.assertEquals(d2.compare(d1), DigestComparisonResultType.UNKNOWN);
+        final Digest d2 = new Digest(DigestAlgorithm.SHA1, getZeroValueDigest(20));
+        Assert.assertEquals(d1.compare(d2), DigestComparisonResultType.MISMATCH);
+        Assert.assertEquals(d2.compare(d1), DigestComparisonResultType.MISMATCH);
     }
 
     /**
-     * Tests that comparing two Digests with a hash of an empty file indicates an UNKNOWN
-     * comparison type.
+     * Tests that comparing two Digests with a hash of no data gives a MATCH
+     * comparison result.
      */
     @Test
     public final void testCompareToDigestWithBothEmptyHash() {
         final Digest d1 = new Digest(DigestAlgorithm.SHA1, getEmptySHA1Digest());
         final Digest d2 = new Digest(DigestAlgorithm.SHA1, getEmptySHA1Digest());
-        Assert.assertEquals(d1.compare(d2), DigestComparisonResultType.UNKNOWN);
-        Assert.assertEquals(d2.compare(d1), DigestComparisonResultType.UNKNOWN);
+        Assert.assertEquals(d1.compare(d2), DigestComparisonResultType.MATCH);
+        Assert.assertEquals(d2.compare(d1), DigestComparisonResultType.MATCH);
     }
 
     /**
-     * Tests that comparing two Digests with one being a hash of an empty file indicates an UNKNOWN
-     * comparison type.
+     * Tests that comparing two Digests, one with a hash of no data, gives a MISMATCH
+     * comparison result.
      */
     @Test
     public final void testCompareToDigestWithOneEmptyHash() {
         final Digest d1 = new Digest(DigestAlgorithm.SHA1, getTestDigest(20));
         final Digest d2 = new Digest(DigestAlgorithm.SHA1, getEmptySHA1Digest());
-        Assert.assertEquals(d1.compare(d2), DigestComparisonResultType.UNKNOWN);
-        Assert.assertEquals(d2.compare(d1), DigestComparisonResultType.UNKNOWN);
+        Assert.assertEquals(d1.compare(d2), DigestComparisonResultType.MISMATCH);
+        Assert.assertEquals(d2.compare(d1), DigestComparisonResultType.MISMATCH);
     }
 
     /**
@@ -455,7 +455,7 @@ public class DigestTest {
         return ret;
     }
 
-    private static byte[] getZeroizedTestDigest(final int count) {
+    private static byte[] getZeroValueDigest(final int count) {
         return new byte[count];
     }
 
