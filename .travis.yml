@@ -1,0 +1,26 @@
+os:
+  - linux
+
+sudo: true
+
+language: java
+
+services:
+  - docker
+
+before_install:
+  - docker build -t hirs-centos7 .
+
+before_cache:
+  - rm -f  $HOME/.gradle/caches/modules-2/modules-2.lock
+  - rm -fr $HOME/.gradle/caches/*/plugin-resolution/
+cache:
+  directories:
+    - $HOME/.gradle/caches/
+    - $HOME/.gradle/wrapper/
+
+install: true
+
+script:
+  - docker run --rm hirs-centos7 /bin/bash -c "cd /root/HIRS; git checkout ${TRAVIS_BRANCH}; make -C tpm_module/"
+  - docker run --rm hirs-centos7 /bin/bash -c "cd /root/HIRS; git checkout ${TRAVIS_BRANCH}; ./gradlew build"

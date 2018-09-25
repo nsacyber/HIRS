@@ -16,6 +16,8 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Calendar;
 import java.util.List;
+import java.util.TimeZone;
+
 import org.bouncycastle.util.encoders.Base64;
 
 import static org.testng.Assert.fail;
@@ -187,11 +189,12 @@ public class PlatformCredentialTest {
 
         PlatformCredential credential = new PlatformCredential(certPath);
         Calendar calendar = Calendar.getInstance();
-        calendar.set(2017, 2, 23, 18, 34, 33);
+        calendar.setTimeZone(TimeZone.getTimeZone("UTC"));
+        calendar.set(2017, 2, 23, 22, 34, 33);
         calendar.set(Calendar.MILLISECOND, 0);
-        Assert.assertEquals(credential.getBeginValidity(), calendar.getTime());
-        calendar.set(2030, 11, 31, 18, 59, 59);
-        Assert.assertEquals(credential.getEndValidity(), calendar.getTime());
+        Assert.assertEquals(credential.getBeginValidity().getTime(), calendar.getTime().getTime());
+        calendar.set(2030, 11, 31, 23, 59, 59);
+        Assert.assertEquals(credential.getEndValidity().getTime(), calendar.getTime().getTime());
 
         Assert.assertNotNull(credential.getAttributeCertificate());
         byte[] sig = credential.getAttributeCertificate().getSignatureValue().getBytes();
@@ -235,11 +238,12 @@ public class PlatformCredentialTest {
 
         PlatformCredential credential = new PlatformCredential(certPath);
         Calendar calendar = Calendar.getInstance();
-        calendar.set(2017, 2, 23, 18, 34, 33);
+        calendar.setTimeZone(TimeZone.getTimeZone("UTC"));
+        calendar.set(2017, 2, 23, 22, 34, 33);
         calendar.set(Calendar.MILLISECOND, 0);
-        Assert.assertEquals(credential.getBeginValidity(), calendar.getTime());
-        calendar.set(2030, 11, 31, 18, 59, 59);
-        Assert.assertEquals(credential.getEndValidity(), calendar.getTime());
+        Assert.assertEquals(credential.getBeginValidity().getTime(), calendar.getTime().getTime());
+        calendar.set(2030, 11, 31, 23, 59, 59);
+        Assert.assertEquals(credential.getEndValidity().getTime(), calendar.getTime().getTime());
 
         Assert.assertNotNull(credential.getAttributeCertificate());
         byte[] sig = credential.getAttributeCertificate().getSignatureValue().getBytes();
@@ -283,11 +287,12 @@ public class PlatformCredentialTest {
         PlatformCredential credential = new PlatformCredential(certPath);
 
         Calendar calendar = Calendar.getInstance();
-        calendar.set(2017, 3, 21, 13, 5, 29);
+        calendar.setTimeZone(TimeZone.getTimeZone("UTC"));
+        calendar.set(2017, 3, 21, 17, 5, 29);
         calendar.set(Calendar.MILLISECOND, 0);
-        Assert.assertEquals(credential.getBeginValidity(), calendar.getTime());
-        calendar.set(2030, 11, 31, 18, 59, 59);
-        Assert.assertEquals(credential.getEndValidity(), calendar.getTime());
+        Assert.assertEquals(credential.getBeginValidity().getTime(), calendar.getTime().getTime());
+        calendar.set(2030, 11, 31, 23, 59, 59);
+        Assert.assertEquals(credential.getEndValidity().getTime(), calendar.getTime().getTime());
 
         Assert.assertNotNull(credential.getAttributeCertificate());
         byte[] sig = credential.getAttributeCertificate().getSignatureValue().getBytes();
@@ -327,11 +332,12 @@ public class PlatformCredentialTest {
         PlatformCredential credential = new PlatformCredential(certPath);
 
         Calendar calendar = Calendar.getInstance();
-        calendar.set(2017, 3, 21, 13, 5, 30);
+        calendar.setTimeZone(TimeZone.getTimeZone("UTC"));
+        calendar.set(2017, 3, 21, 17, 5, 30);
         calendar.set(Calendar.MILLISECOND, 0);
-        Assert.assertEquals(credential.getBeginValidity(), calendar.getTime());
-        calendar.set(2030, 11, 31, 18, 59, 59);
-        Assert.assertEquals(credential.getEndValidity(), calendar.getTime());
+        Assert.assertEquals(credential.getBeginValidity().getTime(), calendar.getTime().getTime());
+        calendar.set(2030, 11, 31, 23, 59, 59);
+        Assert.assertEquals(credential.getEndValidity().getTime(), calendar.getTime().getTime());
 
         Assert.assertNotNull(credential.getAttributeCertificate());
         byte[] sig = credential.getAttributeCertificate().getSignatureValue().getBytes();

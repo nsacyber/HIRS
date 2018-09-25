@@ -44,6 +44,12 @@ subprojects {
         mavenCentral()
     }
 
+    test {
+        testLogging {
+            exceptionFormat = 'full'
+        }
+    }
+
     tasks.withType(Test) {
         useTestNG() {
             includeGroups = project.ext.includeGroups.split()
