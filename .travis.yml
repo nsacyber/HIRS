@@ -5,11 +5,22 @@ sudo: true
 
 language: java
 
+env:
+  matrix:
+    - SUBPROJECT=HIRS_Utils
+    - SUBPROJECT=HIRS_Provisioner
+    - SUBPROJECT=HIRS_ProvisionerTPM2
+    - SUBPROJECT=HIRS_Structs
+    - SUBPROJECT=HIRS_AttestationCA
+    - SUBPROJECT=HIRS_AttestationCAPortal
+    - SUBPROJECT=TPM_Utils
+    - SUBPROJECT=tpm_module
+
 services:
   - docker
 
 before_install:
-  - docker build -t hirs-centos7 .
+  - docker pull hirs/hirs-ci:centos7
 
 before_cache:
   - rm -f  $HOME/.gradle/caches/modules-2/modules-2.lock
@@ -22,5 +33,4 @@ cache:
 install: true
 
 script:
-  - docker run --rm hirs-centos7 /bin/bash -c "cd /root/HIRS; git checkout ${TRAVIS_BRANCH}; make -C tpm_module/"
-  - docker run --rm hirs-centos7 /bin/bash -c "cd /root/HIRS; git checkout ${TRAVIS_BRANCH}; ./gradlew build"
+  - docker run --rm hirs/hirs-ci:centos7 /bin/bash -c "cd /root/HIRS; git checkout ${TRAVIS_BRANCH}; ./gradlew :$SUBPROJECT:build"

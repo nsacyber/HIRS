@@ -5,4 +5,5 @@ include 'TPM_Utils',
         'HIRS_ProvisionerTPM2',
         'HIRS_Structs',
         'HIRS_AttestationCA',
-        'HIRS_AttestationCAPortal'
+        'HIRS_AttestationCAPortal',
+        'tpm_module'
