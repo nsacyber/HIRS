@@ -1,10 +1,15 @@
-task build(type:Exec) {
+task make(type: Exec) {
     outputs.file 'tpm_module'
     inputs.dir fileTree(dir: '.').include('main.cpp').include('*.hpp')
     commandLine 'make'
 }
 
-task clean() {
+task cleanUp() {
     delete 'tpm_module', 'main.d', 'main.o'
 }
 
+task fullBuild(type: GradleBuild) {
+    tasks = ['cleanUp', 'make']
+}
+
+build.dependsOn tasks.fullBuild
