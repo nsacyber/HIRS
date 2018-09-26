@@ -1,4 +1,7 @@
 <h1><center>Host Integrity at Runtime and Start-up (HIRS) <BR\></center></h1>
+
+[![Build Status](https://travis-ci.org/nsacyber/HIRS.svg?branch=master)](https://travis-ci.org/nsacyber/HIRS)
+
 <h2>Attestation Certificate Authority (ACA) and TPM Provisioning with Trusted Computing-based Supply Chain Validation </h2>
 
 
