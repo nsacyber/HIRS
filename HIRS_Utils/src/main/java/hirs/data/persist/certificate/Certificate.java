@@ -196,6 +196,7 @@ public abstract class Certificate extends ArchivableEntity {
     public static final String HOLDER_SERIAL_NUMBER_FIELD = "holderSerialNumber";
     @Column(nullable = false, precision = MAX_NUMERIC_PRECISION, scale = 0)
     private final BigInteger holderSerialNumber;
+    private String holderIssuer;
 
     // we don't need to persist this, but we don't want to unpack this cert multiple times
     @Transient
@@ -220,6 +221,7 @@ public abstract class Certificate extends ArchivableEntity {
         this.certificateHash = 0;
         this.certAndTypeHash = 0;
         this.holderSerialNumber = BigInteger.ZERO;
+        this.holderIssuer = null;
     }
 
     /**
@@ -302,8 +304,10 @@ public abstract class Certificate extends ArchivableEntity {
                                             .getBaseCertificateID()
                                             .getSerial()
                                             .getValue();
+                this.holderIssuer = attCertInfo.getHolder()
+                        .getBaseCertificateID().getIssuer()
+                        .getNames()[0].getName().toString();
                 this.signature = attCert.getSignatureValue().getBytes();
-
                 this.issuer = getAttributeCertificateIssuerNames(
                                         attCertInfo.getIssuer())[0].toString();
                 this.issuerOrganization = getOrganization(this.issuer);
@@ -504,6 +508,14 @@ public abstract class Certificate extends ArchivableEntity {
      */
     public BigInteger getHolderSerialNumber() {
         return holderSerialNumber;
+    }
+
+    /**
+     * Getter for the Certificate's Holder Common Name information.
+     * @return this certificate's holder issuer as a string.
+     */
+    public String getHolderIssuer() {
+        return this.holderIssuer;
     }
 
     /**
