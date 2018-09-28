@@ -257,6 +257,17 @@ public final class CertificateStringMapBuilder {
                     Integer.toString(certificate.getMinorVersion()));
             data.put("revisionLevel",
                     Integer.toString(certificate.getRevisionLevel()));
+            data.put("holderSerialNumber", certificate.getHolderSerialNumber()
+                            .toString(Certificate.HEX_BASE)
+                            .replaceAll("(?<=..)(..)", ":$1"));
+            data.put("holderIssuer", certificate.getHolderIssuer());
+            EndorsementCredential ekCertificate = EndorsementCredential
+                    .select(certificateManager)
+                    .bySerialNumber(certificate.getHolderSerialNumber())
+                    .getCertificate();
+            if (ekCertificate != null) {
+                data.put("ekId", ekCertificate.getId().toString());
+            }
 
             //x509 credential version
             data.put("x509Version", certificate.getX509CredentialVersion());

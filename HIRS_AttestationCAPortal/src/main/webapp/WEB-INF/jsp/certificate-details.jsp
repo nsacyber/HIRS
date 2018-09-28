@@ -180,6 +180,28 @@
                         </div>
                     </c:if>
                     <div class="row">
+                        <div class="col-md-1 col-md-offset-1"><span class="colHeader">Holder</span></div>
+                        <div id="holder" class="col col-md-8">
+                            <c:if test="${not empty initialData.holderIssuer}">
+                                <div><span>${initialData.holderIssuer}</span></div>
+                            </c:if>
+                                <div id="certificateid">
+                                    <c:choose>
+                                        <c:when test="${not empty initialData.ekId}">
+                                            <span>
+                                                <a href="${portal}/certificate-details?id=${initialData.ekId}&type=endorsement">
+                                                    ${initialData.holderSerialNumber}
+                                                </a>
+                                            </span>
+                                        </c:when>
+                                        <c:otherwise>
+                                            <div><span>${initialData.holderSerialNumber}</span></div>
+                                        </c:otherwise>
+                                    </c:choose>
+                                </div>                                
+                        </div>
+                    </div>
+                    <div class="row">
                         <div class="col-md-1 col-md-offset-1"><span class="colHeader">Manufacturer</span></div>
                         <div id="manufacturer" class="col col-md-8">${initialData.manufacturer}</div>
                     </div>
