@@ -109,6 +109,7 @@
                                 var html = '';
                                 html += certificateDetailsLink('issued', full.id, true);
                                 html += certificateDownloadLink(full.id, pagePath);
+                                html += certificateDeleteLink(full.id, pagePath);
 
                                 return html;
                             }
