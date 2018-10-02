@@ -57,6 +57,15 @@ namespace string_utils {
     std::string binaryToHex(const std::string& bin);
 
     /**
+     * Checks if a string contains another string.
+     *
+     * @param str containing string
+     * @param substring string to search for
+     * @return true, if the string is found / false, otherwise
+     */
+    bool contains(const std::string& str, const std::string& substring);
+
+    /**
      * Converts an unsigned long (uint32) value to a hex string.
      *
      * @param value the unsigned long to convert
@@ -98,6 +107,23 @@ namespace string_utils {
      */
     std::string trimNewLines(std::string str);
 
+    /**
+     * Removes any double-quote characters in the input string and returns the
+     * pruned, input string.
+     * @param str string to remove double-quotes characters from.
+     * @return str with double-quote characters removed.
+     */
+    std::string trimQuotes(std::string str);
+
+    /**
+     * Removes any occurrences of the target character in the input string and
+     * returns the pruned, input string.
+     * @param str string to characters from.
+     * @param targetChar char to prune from the string
+     * @return str with the characters removed.
+     */
+    std::string trimChar(std::string str, char targetChar);
+
     std::string trimWhitespaceFromLeft(std::string str);
 
     std::string trimWhitespaceFromRight(std::string str);
@@ -112,6 +138,7 @@ namespace tpm2_tools_utils {
  */
 enum class Tpm2ToolsVersion {
     VERSION_1_1_0,
+    VERSION_2_1_0,
     VERSION_3_0_1
 };
 
@@ -122,6 +149,10 @@ enum class Tpm2ToolsVersion {
 class Tpm2ToolsVersionChecker {
  private:
     static const std::unordered_map<std::string, Tpm2ToolsVersion> kVersionMap;
+    static const std::unordered_map<std::string,
+                                    Tpm2ToolsVersion> kMaxSupportedVersionMap;
+
+    static std::string getDistribution();
 
  public:
     /**
