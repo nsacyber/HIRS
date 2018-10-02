@@ -38,6 +38,17 @@ endif()
 configure_file ("${CMAKE_SOURCE_DIR}/include/Version.h.in"
         "${CMAKE_SOURCE_DIR}/include/Version.h")
 
+# Attempt to Determine Build Environment
+if (UNIX AND NOT APPLE)
+    file(READ /etc/os-release OS_INFO)
+    string(REGEX MATCH "NAME=\"[A-Za-z ]+\"" DISTRIBUTION_NAME ${OS_INFO})
+    string(REGEX MATCH "VERSION_ID=\"[0-9. ]+\"" DISTRIBUTION_VERSION ${OS_INFO})
+    string(REPLACE "NAME=" "" DISTRIBUTION ${DISTRIBUTION_NAME})
+    string(REPLACE "VERSION_ID=" "" DISTRIBUTION_VERSION ${DISTRIBUTION_VERSION})
+    string(REPLACE "\"" "" DISTRIBUTION ${DISTRIBUTION})
+    string(REPLACE "\"" "" DISTRIBUTION_VERSION ${DISTRIBUTION_VERSION})
+endif()
+
 # Set C++ Standard 11 based on version information
 if (${CMAKE_MAJOR_VERSION}.${CMAKE_MINOR_VERSION} GREATER 3.0)
     set(CMAKE_CXX_STANDARD 11)
@@ -219,9 +230,9 @@ if(STATIC_ANALYSIS)
 endif(STATIC_ANALYSIS)
 
 # Set variables for CPack Package generation tool
-set(CPACK_GENERATOR "RPM")
 set(CPACK_PACKAGE_NAME HIRS_Provisioner_TPM_2_0)
 set(CPACK_PACKAGE_VENDOR "U.S. Government")
+set(CPACK_PACKAGE_CONTACT "U.S. Government")
 set(CPACK_PACKAGE_VERSION_MAJOR ${MAJOR_VERSION})
 set(CPACK_PACKAGE_VERSION_MINOR ${MINOR_VERSION})
 set(CPACK_PACKAGE_VERSION_PATCH ${PATCH_VERSION})
@@ -229,18 +240,33 @@ set(CPACK_PACKAGE_RELEASE ${PACKAGE_RELEASE_NUMBER})
 set(CPACK_PACKAGE_VERSION "${CPACK_PACKAGE_VERSION_MAJOR}.${CPACK_PACKAGE_VERSION_MINOR}.${CPACK_PACKAGE_VERSION_PATCH}")
 set(CPACK_PACKAGING_INSTALL_PREFIX ${CMAKE_INSTALL_PREFIX})
 
-# Set variables specific to CPack RPM package generator
-set(CPACK_RPM_PACKAGE_NAME "HIRS_Provisioner_TPM_2_0")
-set(CPACK_RPM_PACKAGE_RELEASE_DIST "el7")
-set(CPACK_RPM_PACKAGE_LICENSE "None")
-set(CPACK_RPM_PACKAGE_GROUP "System Environment/Base")
-set(CPACK_RPM_PACKAGE_REQUIRES "log4cplus >= 1.1.2, tpm2-tss >= 1.0, tpm2-tools >= 1.1.0, protobuf >= 2.4.1, re2 >= 20160401, lshw")
-set(CPACK_RPM_POST_INSTALL_SCRIPT_FILE ${CMAKE_SOURCE_DIR}/package/rpm-post-install.sh)
-set(CPACK_RPM_EXCLUDE_FROM_AUTO_FILELIST_ADDITION /usr/local /usr/local/bin /usr/local/include /usr/local/lib)
-
-# set package filenames
-set(CPACK_PACKAGE_FILE_NAME "${CPACK_PACKAGE_NAME}-${CPACK_PACKAGE_VERSION}-${CPACK_PACKAGE_RELEASE}.${CPACK_RPM_PACKAGE_RELEASE_DIST}.${CMAKE_SYSTEM_PROCESSOR}")
-set(CPACK_RPM_FILE_NAME "${CPACK_RPM_PACKAGE_NAME}-${CPACK_PACKAGE_VERSION}-${CPACK_PACKAGE_RELEASE}.${CPACK_RPM_PACKAGE_RELEASE_DIST}.${CMAKE_SYSTEM_PROCESSOR}")
+# Setup Development Distribution CPack
+if (${DISTRIBUTION} STREQUAL "Ubuntu")
+    # Set variables specific to CPack DEB package generator
+    set(CPACK_GENERATOR "DEB")
+    set(CPACK_DEBIAN_PACKAGE_NAME "HIRSProvisionerTPM2.0")
+    set(CPACK_DEBIAN_PACKAGE_SECTION "admin")
+    set(CPACK_DEBIAN_PACKAGE_DEPENDS "liblog4cplus-1.1-9(>=1.1.2), libsapi-utils(>=1.0), tpm2-tools(>=1.1), libprotobuf10(>=2.4.1), libcurlpp0(>=0.8), lshw")
+    if (${DISTRIBUTION_VERSION} STREQUAL "17.10")
+        set(CPACK_DEBIAN_PACKAGE_DEPENDS "${CPACK_DEBIAN_PACKAGE_DEPENDS}, libre2-3(>=20160401)")
+    elseif(${DISTRIBUTION_VERSION} STREQUAL "18.04" OR ${DISTRIBUTION_VERSION} STREQUAL "18.10")
+        set(CPACK_DEBIAN_PACKAGE_DEPENDS "${CPACK_DEBIAN_PACKAGE_DEPENDS}, libre2-4(>=20160401)")
+    endif()
+    set(CPACK_DEBIAN_PACKAGE_ARCHITECTURE amd64)
+    set(CPACK_DEBIAN_PACKAGE_CONTROL_EXTRA ${CMAKE_SOURCE_DIR}/package/postinst)
+    set(CPACK_PACKAGE_FILE_NAME "${CPACK_DEBIAN_PACKAGE_NAME}_${CPACK_PACKAGE_VERSION}-${CPACK_PACKAGE_RELEASE}_${CPACK_DEBIAN_PACKAGE_ARCHITECTURE}")
+elseif (${DISTRIBUTION} STREQUAL "CentOS Linux")
+    # Set variables specific to CPack RPM package generator
+    set(CPACK_GENERATOR "RPM")
+    set(CPACK_RPM_PACKAGE_NAME "HIRS_Provisioner_TPM_2_0")
+    set(CPACK_RPM_PACKAGE_RELEASE_DIST "el7")
+    set(CPACK_RPM_PACKAGE_LICENSE "Apache License, Version 2.0")
+    set(CPACK_RPM_PACKAGE_GROUP "System Environment/Base")
+    set(CPACK_RPM_PACKAGE_REQUIRES "log4cplus >= 1.1.2, tpm2-tss >= 1.0, tpm2-tools >= 1.1.0, protobuf >= 2.4.1, re2 >= 20160401, libcurl >= 7.0.0, lshw")
+    set(CPACK_RPM_POST_INSTALL_SCRIPT_FILE ${CMAKE_SOURCE_DIR}/package/rpm-post-install.sh)
+    set(CPACK_RPM_EXCLUDE_FROM_AUTO_FILELIST_ADDITION /usr/local /usr/local/bin /usr/local/include /usr/local/lib)
+    set(CPACK_PACKAGE_FILE_NAME "${CPACK_RPM_PACKAGE_NAME}-${CPACK_PACKAGE_VERSION}-${CPACK_PACKAGE_RELEASE}.${CPACK_RPM_PACKAGE_RELEASE_DIST}.${CMAKE_SYSTEM_PROCESSOR}")
+endif()
 
 # Set command to allow for running of CPack tool in build directory
 include(CPack)

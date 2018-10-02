@@ -23,6 +23,7 @@ using hirs::log::Logger;
 using hirs::pb::IdentityClaim;
 using hirs::tpm2::CommandTpm2;
 using hirs::string_utils::binaryToHex;
+using hirs::string_utils::contains;
 using hirs::string_utils::longToHex;
 using hirs::string_utils::hexToLong;
 using hirs::tpm2_tools_utils::Tpm2ToolsVersion;
@@ -133,20 +134,19 @@ void CommandTpm2::setAuthData() {
     stringstream argsStream;
 
     switch (version) {
-        case Tpm2ToolsVersion::VERSION_1_1_0: {
+        case Tpm2ToolsVersion::VERSION_1_1_0:
+        case Tpm2ToolsVersion::VERSION_2_1_0:
             argsStream << " -X -o " << kWellKnownSecret
                        << " -e " << kWellKnownSecret
                        << " -l " << kWellKnownSecret
                        << endl;
             break;
-        }
-        case Tpm2ToolsVersion::VERSION_3_0_1: {
+        case Tpm2ToolsVersion::VERSION_3_0_1:
             argsStream << " -o hex:" << kWellKnownSecret
                        << " -e hex:" << kWellKnownSecret
                        << " -l hex:" << kWellKnownSecret
                        << endl;
             break;
-        }
     }
 
     LOGGER.info("Attempting to set auth data.");
@@ -165,16 +165,14 @@ string CommandTpm2::getEndorsementCredentialDefault(
     LOGGER.info("Attempting to retrieve endorsement credential");
     string endorsementCredential;
     switch (keyType) {
-        case AsymmetricKeyType::RSA: {
+        case AsymmetricKeyType::RSA:
             endorsementCredential = getStoredCredential(
                     kDefaultRsaEkCredentialHandle);
             break;
-        }
-        case AsymmetricKeyType::ECC: {
+        case AsymmetricKeyType::ECC:
             endorsementCredential = getStoredCredential(
                     kDefaultEccEkCredentialHandle);
             break;
-        }
     }
     if (endorsementCredential == "") {
         LOGGER.info("Unable to retrieve endorsement credential");
@@ -265,14 +263,12 @@ void CommandTpm2::createEndorsementKey(const AsymmetricKeyType& keyType) {
     LOGGER.info("Attempting to create EK at: " + string(kDefaultEkHandle));
     stringstream argsStream;
     switch (keyType) {
-        case AsymmetricKeyType::RSA: {
+        case AsymmetricKeyType::RSA:
             argsStream << " -g " << kRsaAlgorithmId;
             break;
-        }
-        case AsymmetricKeyType::ECC: {
+        case AsymmetricKeyType::ECC:
             argsStream << " -g " << kEccAlgorithmId;
             break;
-        }
     }
     argsStream << " -H " << kDefaultEkHandle
                << " -f " << kDefaultEkPubFilename
@@ -497,8 +493,11 @@ string CommandTpm2::createNvWriteCommandArgs(const string& nvIndex,
                           << " -a " << kDefaultOwnerAuthHandle
                           << " ";
 
-    if (version == Tpm2ToolsVersion::VERSION_1_1_0) {
-        argumentsStringStream << "-f ";
+    switch (version) {
+        case Tpm2ToolsVersion::VERSION_1_1_0:
+        case Tpm2ToolsVersion::VERSION_2_1_0:
+            argumentsStringStream << "-f ";
+            break;
     }
 
     argumentsStringStream << writeFile
@@ -525,7 +524,17 @@ void CommandTpm2::getQuote(const string& akLocation,
  * @return the size of the data at nvIndex, or 0 if it's not found
  */
 uint16_t CommandTpm2::getNvIndexDataSize(const string& nvIndex) {
-    string listOutput = runTpm2CommandWithRetry(kTpm2ToolsNvListCommand, "");
+    string listOutput;
+    try {
+        listOutput = runTpm2CommandWithRetry(kTpm2ToolsNvListCommand, "");
+    } catch (HirsRuntimeException& ex) {
+        // Due to bug in tpm2-tools 2.1.0, check to see if error was success
+        if (contains(ex.what(), "NV indexes defined.")) {
+            listOutput = ex.what();
+        } else {
+            throw;
+        }
+    }
     return Tpm2ToolsOutputParser::parseNvDataSize(nvIndex, listOutput);
 }
 
@@ -564,15 +573,14 @@ string CommandTpm2::readNvIndex(const string& nvIndex,
                 kTpm2ToolsNvReadCommand, nvReadArguments);
 
         switch (version) {
-            case Tpm2ToolsVersion::VERSION_1_1_0: {
+            case Tpm2ToolsVersion::VERSION_1_1_0:
+            case Tpm2ToolsVersion::VERSION_2_1_0:
                 nvReadOutput << Tpm2ToolsOutputParser::parseNvReadOutput(
                         rawNvReadOutput);
                 break;
-            }
-            case Tpm2ToolsVersion::VERSION_3_0_1: {
+            case Tpm2ToolsVersion::VERSION_3_0_1:
                 nvReadOutput << rawNvReadOutput;
                 break;
-            }
         }
 
         if (i != nvReadIterations) {
@@ -608,6 +616,7 @@ void CommandTpm2::releaseNvIndex(const string& nvIndex) {
     stringstream argsStream;
     switch (version) {
         case Tpm2ToolsVersion::VERSION_1_1_0:
+        case Tpm2ToolsVersion::VERSION_2_1_0:
             argsStream << " -X -P " << kWellKnownSecret;
             break;
         case Tpm2ToolsVersion::VERSION_3_0_1:
@@ -718,13 +727,16 @@ string CommandTpm2::getPublicArea(const std::string& filename) {
                                    "CommandTpm2::getPublicArea");
     }
 
-    // TPM2 Tools version 1.1.0 affixes 2 bytes of zeroes to files
+    // TPM2 Tools versions 1.1.0 and 2.1.0 affix 2 bytes of zeroes to files
     // containing a public area, but the ACA does not know which version of
     // TPM2 Tools is running on the client machine. So we remove the extra
     // bytes here.
-    if (version == Tpm2ToolsVersion::VERSION_1_1_0) {
-        binaryEncodedPublicArea.erase(binaryEncodedPublicArea.end() - 2,
-                                      binaryEncodedPublicArea.end());
+    switch (version) {
+        case Tpm2ToolsVersion::VERSION_1_1_0:
+        case Tpm2ToolsVersion::VERSION_2_1_0:
+            binaryEncodedPublicArea.erase(binaryEncodedPublicArea.end() - 2,
+                                          binaryEncodedPublicArea.end());
+            break;
     }
 
     LOGGER.debug("Successfully read public data");

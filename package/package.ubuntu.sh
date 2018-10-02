@@ -68,7 +68,7 @@ fi
 
 mv $SCRIPT_DIR/deb/DEB_SOURCES/hirs-provisioner*.deb $SCRIPT_DIR/deb/DEBS/
 
-echo "HIRS deb building complete"
+echo "HIRS Provisioner deb building complete"
 
 # TPM Module
 cd $SCRIPT_DIR/../tpm_module
@@ -100,3 +100,13 @@ mkdir -p $SCRIPT_DIR/deb/DEBS/
 mv $SCRIPT_DIR/deb/DEB_SOURCES/tpm-module*.deb $SCRIPT_DIR/deb/DEBS/
 
 echo "TPM deb building complete"
+
+# HIRS Provisioner TPM 2.0
+cd $SCRIPT_DIR/deb
+$SCRIPT_DIR/../HIRS_ProvisionerTPM2/package/package.tpm2.ubuntu.sh
+if [ -f DEBS/HIRSProvisionerTPM2.0*.deb ]; then
+    echo 'HIRS Provisioner TPM 2.0 deb building complete'
+else
+    echo 'Failed to build HIRS Provisioner TPM 2.0 deb package'
+    exit 1
+fi
