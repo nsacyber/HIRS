@@ -16,6 +16,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
+import java.util.HashMap;
 import org.apache.logging.log4j.Level;
 import hirs.appraiser.Appraiser;
 import hirs.appraiser.SupplyChainAppraiser;
@@ -98,6 +99,7 @@ public class SupplyChainValidationServiceImpl implements SupplyChainValidationSe
         SupplyChainPolicy policy = (SupplyChainPolicy) policyManager.getDefaultPolicy(
                 supplyChainAppraiser);
         boolean acceptExpiredCerts = policy.isExpiredCertificateValidationEnabled();
+        HashMap<PlatformCredential, SupplyChainValidation> credentialMap = new HashMap<>();
 
         List<SupplyChainValidation> validations = new ArrayList<>();
 
@@ -128,10 +130,13 @@ public class SupplyChainValidationServiceImpl implements SupplyChainValidationSe
                 while (it.hasNext()) {
                     PlatformCredential pc = it.next();
                     KeyStore trustedCa = getCaChain(pc);
-                    validations.add(validatePlatformCredential(pc, trustedCa, acceptExpiredCerts));
+                    SupplyChainValidation platformScv = validatePlatformCredential(
+                            pc, trustedCa, acceptExpiredCerts);
+                    validations.add(platformScv);
                     if (null != pc) {
                         pc.setDevice(device);
                         this.certificateManager.update(pc);
+                        credentialMap.put(pc, platformScv);
                     }
                 }
             }
@@ -151,8 +156,26 @@ public class SupplyChainValidationServiceImpl implements SupplyChainValidationSe
                 Iterator<PlatformCredential> it = pcs.iterator();
                 while (it.hasNext()) {
                     PlatformCredential pc = it.next();
-                    validations.add(validatePlatformCredentialAttributes(pc, device.getDeviceInfo(),
-                            ec));
+                    SupplyChainValidation attributeScv = validatePlatformCredentialAttributes(
+                            pc, device.getDeviceInfo(), ec);
+
+                    SupplyChainValidation platformScv = credentialMap.get(pc);
+                    if (platformScv != null) {
+                        if (platformScv.getResult() == AppraisalStatus.Status.FAIL
+                                || platformScv.getResult() == AppraisalStatus.Status.ERROR) {
+                            if (attributeScv != null
+                                    && attributeScv.getResult() ==  AppraisalStatus.Status.PASS) {
+                                validations.add(buildValidationRecord(
+                                        SupplyChainValidation.ValidationType
+                                                .PLATFORM_CREDENTIAL_ATTRIBUTES,
+                                        AppraisalStatus.Status.FAIL,
+                                        platformScv.getMessage(), pc, Level.WARN));
+                            }
+                        } else {
+                            validations.add(attributeScv);
+                        }
+                    }
+
                     if (null != pc) {
                         pc.setDevice(device);
                         this.certificateManager.update(pc);
