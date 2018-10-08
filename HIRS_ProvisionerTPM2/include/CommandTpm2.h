@@ -8,7 +8,7 @@
 #include <ProvisionerTpm2.pb.h>
 #include <Utils.h>
 
-#include <sapi/tpm20.h>
+#include <Tss.h>
 
 #include <string>
 #include <vector>

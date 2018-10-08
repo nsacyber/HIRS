@@ -5,6 +5,7 @@
 
 #include <log4cplus/loggingmacros.h>
 #include <string>
+#include <mutex>
 #include <Properties.h>
 #include <Utils.h>
 

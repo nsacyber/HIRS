@@ -29,9 +29,9 @@ execute_process(COMMAND sh "package/package_release.sh"
 list(LENGTH VERSION_COMPONENTS VERSION_COMPONENTS_LENGTH)
 # Check if version information pulled successfully, error otherwise
 if(NOT ${VERSION_COMPONENTS_LENGTH} EQUAL 3)
-    message(FATAL "Failed to pull version information from VERSION file, aborting.")
+    message(FATAL_ERROR "Failed to pull version information from VERSION file, aborting.")
 elseif(${PACKAGE_RELEASE_RETURN_ERROR})
-    message(FATAL "Failed to pull package release information from git, aborting.")
+    message(FATAL_ERROR "Failed to pull package release information from git, aborting.")
 endif()
 
 # Embed version and package release into header file
@@ -90,11 +90,22 @@ find_library(RE_LIB NAMES re2)
 list(APPEND REQUIRED_LIBS ${RE_LIB})
 
 # Setup for TPM2_TSS_LIBRARIES
-find_library(TPM2_SAPI_LIB NAMES sapi)
-find_library(TPM2_TCTI_DEVICE_LIB NAMES tcti-device)
-find_library(TPM2_TCTI_SOCKET_LIB NAMES tcti-socket)
+find_library(TPM2_SAPI_LIB NAMES sapi tss2)
+find_library(TPM2_TCTI_DEVICE_LIB NAMES tcti-device tss2)
+find_library(TPM2_TCTI_SOCKET_LIB NAMES tcti-socket tss2)
 set(TPM2_TSS_LIBRARIES ${TPM2_SAPI_LIB} ${TPM2_TCTI_DEVICE_LIB} ${TPM2_TCTI_SOCKET_LIB})
 list(APPEND REQUIRED_LIBS ${TPM2_TSS_LIBRARIES})
+
+# Set variable to determine TSS SAPI import
+set(TSS_LIBRARY "<sapi/tpm20.h>")
+string(COMPARE EQUAL ${TPM2_SAPI_LIB} ${TPM2_TCTI_DEVICE_LIB} LEGACY_TSS2_LIB_PRESENT)
+if(LEGACY_TSS2_LIB_PRESENT)
+    set(TSS_LIBRARY "<tss2/tpm20.h>")
+endif()
+
+# Embed correct TSS import into header file
+configure_file ("${CMAKE_SOURCE_DIR}/include/Tss.h.in"
+        "${CMAKE_SOURCE_DIR}/include/Tss.h")
 
 # Download necessary 3rd party libraries
 # Setup for CPR
@@ -104,13 +115,13 @@ execute_process(COMMAND ${CMAKE_COMMAND} -G "${CMAKE_GENERATOR}" .
         RESULT_VARIABLE result
         WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/lib/cpr-download)
 if(result)
-    message(FATAL "CMake step for CPR failed: ${result}")
+    message(FATAL_ERROR "CMake step for CPR failed: ${result}")
 endif()
 execute_process(COMMAND ${CMAKE_COMMAND} --build .
         RESULT_VARIABLE result
         WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/lib/cpr-download )
 if(result)
-    message(FATAL "Build step for CPR failed: ${result}")
+    message(FATAL_ERROR "Build step for CPR failed: ${result}")
 endif()
 
 # Add cpr directly to our build and define the cpr target.
@@ -158,13 +169,13 @@ execute_process(COMMAND cp ../HIRS_Utils/src/main/resources/logging.properties .
         RESULT_VARIABLE result
         WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
 if(result)
-    message(FATAL "cp logging.properties from HIRS_Utils failed.")
+    message(FATAL_ERROR "cp logging.properties from HIRS_Utils failed.")
 endif()
 execute_process(COMMAND cp ../HIRS_Provisioner/scripts/install/tpm_aca_provision ./scripts/
         RESULT_VARIABLE result
         WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
 if(result)
-    message(FATAL "cp tpm_aca_provision from HIRS_Provisioner failed.")
+    message(FATAL_ERROR "cp tpm_aca_provision from HIRS_Provisioner failed.")
 endif()
 install(FILES config/logging.properties DESTINATION /etc/hirs/)
 
@@ -193,13 +204,13 @@ if(STYLE_CHECK)
             RESULT_VARIABLE result
             WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/lib/cpplint)
     if(result)
-        message(FATAL "CMake step for CppLint failed: ${result}")
+        message(FATAL_ERROR "CMake step for CppLint failed: ${result}")
     endif()
     execute_process(COMMAND ${CMAKE_COMMAND} --build .
             RESULT_VARIABLE result
             WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/lib/cpplint)
     if(result)
-        message(FATAL "Build step for CppLint failed: ${result}")
+        message(FATAL_ERROR "Build step for CppLint failed: ${result}")
     endif()
     configure_file(${CMAKE_BINARY_DIR}/lib/cpplint-download/cpplint/cpplint.py ${CMAKE_SOURCE_DIR}/lint/cpplint.py)
     add_custom_command(
@@ -246,11 +257,17 @@ if (${DISTRIBUTION} STREQUAL "Ubuntu")
     set(CPACK_GENERATOR "DEB")
     set(CPACK_DEBIAN_PACKAGE_NAME "HIRSProvisionerTPM2.0")
     set(CPACK_DEBIAN_PACKAGE_SECTION "admin")
-    set(CPACK_DEBIAN_PACKAGE_DEPENDS "liblog4cplus-1.1-9(>=1.1.2), libsapi-utils(>=1.0), tpm2-tools(>=1.1), libprotobuf10(>=2.4.1), libcurlpp0(>=0.8), lshw")
-    if (${DISTRIBUTION_VERSION} STREQUAL "17.10")
-        set(CPACK_DEBIAN_PACKAGE_DEPENDS "${CPACK_DEBIAN_PACKAGE_DEPENDS}, libre2-3(>=20160401)")
-    elseif(${DISTRIBUTION_VERSION} STREQUAL "18.04" OR ${DISTRIBUTION_VERSION} STREQUAL "18.10")
-        set(CPACK_DEBIAN_PACKAGE_DEPENDS "${CPACK_DEBIAN_PACKAGE_DEPENDS}, libre2-4(>=20160401)")
+    set(CPACK_DEBIAN_PACKAGE_DEPENDS "liblog4cplus-1.1-9(>=1.1.2), tpm2-tools(>=1.0), libcurlpp0(>=0.7), lshw")
+    # Set variables specific to Ubuntu release version
+    if (${DISTRIBUTION_VERSION} STREQUAL "16.04")
+        set(CPACK_DEBIAN_PACKAGE_DEPENDS "${CPACK_DEBIAN_PACKAGE_DEPENDS}, libre2-1v5(>=20160201), libtss2-utils(>=0.98), libprotobuf9v5(>=2.4.1)")
+    else()
+        set(CPACK_DEBIAN_PACKAGE_DEPENDS "${CPACK_DEBIAN_PACKAGE_DEPENDS}, libsapi-utils(>=1.0), libprotobuf10(>=2.4.1)")
+        if (${DISTRIBUTION_VERSION} STREQUAL "17.10")
+            set(CPACK_DEBIAN_PACKAGE_DEPENDS "${CPACK_DEBIAN_PACKAGE_DEPENDS}, libre2-3(>=20160201)")
+        elseif(${DISTRIBUTION_VERSION} STREQUAL "18.04" OR ${DISTRIBUTION_VERSION} STREQUAL "18.10")
+            set(CPACK_DEBIAN_PACKAGE_DEPENDS "${CPACK_DEBIAN_PACKAGE_DEPENDS}, libre2-4(>=20160201)")
+        endif()
     endif()
     set(CPACK_DEBIAN_PACKAGE_ARCHITECTURE amd64)
     set(CPACK_DEBIAN_PACKAGE_CONTROL_EXTRA ${CMAKE_SOURCE_DIR}/package/postinst)
