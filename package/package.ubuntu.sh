@@ -71,14 +71,16 @@ mv $SCRIPT_DIR/deb/DEB_SOURCES/hirs-provisioner*.deb $SCRIPT_DIR/deb/DEBS/
 echo "HIRS Provisioner deb building complete"
 
 # TPM Module
-cd $SCRIPT_DIR/../tpm_module
+cd $SCRIPT_DIR/..
+
+# Compile the TPM Module
+./gradlew :tpm_module:build
+cd tpm_module
+
 # Setup build directories
 mkdir -p $SCRIPT_DIR/deb/DEB_SOURCES/tpm-module/
 mkdir -p $SCRIPT_DIR/deb/DEB_SOURCES/tpm-module/debian
 mkdir -p $SCRIPT_DIR/deb/DEB_SOURCES/tpm-module/src
-
-# Compile the TPM Module
-../gradlew build
 
 # Copy build files
 cp tpm_module $SCRIPT_DIR/deb/DEB_SOURCES/tpm-module/src/
