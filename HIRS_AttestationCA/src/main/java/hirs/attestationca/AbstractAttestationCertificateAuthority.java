@@ -3,6 +3,9 @@ package hirs.attestationca;
 import com.google.protobuf.ByteString;
 
 import com.google.protobuf.InvalidProtocolBufferException;
+import hirs.attestationca.exceptions.CertificateProcessingException;
+import hirs.attestationca.exceptions.IdentityProcessingException;
+import hirs.attestationca.exceptions.UnexpectedServerException;
 import hirs.data.persist.AppraisalStatus;
 import hirs.data.persist.BIOSComponentInfo;
 import hirs.data.persist.BaseboardComponentInfo;
@@ -238,7 +241,8 @@ public abstract class AbstractAttestationCertificateAuthority
                 if (publicKeyModulus != null) {
                     ekPublicKey = assemblePublicKey(publicKeyModulus.toByteArray());
                 } else {
-                    throw new IllegalArgumentException("TPM 1.2 Provisioning requires RSA EKC");
+                    throw new IdentityProcessingException("TPM 1.2 Provisioning requires EK "
+                            + "Credentials to be created with RSA");
                 }
             } catch (IOException e) {
                 LOG.error("Could not retrieve the public key modulus from the EK cert");
@@ -277,7 +281,7 @@ public abstract class AbstractAttestationCertificateAuthority
 
         if (deviceInfoReport == null) {
             LOG.error("Failed to deserialize Device Info Report");
-            throw new IllegalArgumentException("Device Info Report failed to deserialize "
+            throw new IdentityProcessingException("Device Info Report failed to deserialize "
                     + "from Identity Request");
         }
 
@@ -382,7 +386,8 @@ public abstract class AbstractAttestationCertificateAuthority
         LOG.info("Got identity claim");
 
         if (ArrayUtils.isEmpty(identityClaim)) {
-            throw new IllegalArgumentException("identityClaim cannot be null or empty");
+            LOG.error("Identity claim empty throwing exception.");
+            throw new IdentityProcessingException("identityClaim cannot be null or empty");
         }
 
         // attempt to deserialize Protobuf IdentityClaim
@@ -466,7 +471,7 @@ public abstract class AbstractAttestationCertificateAuthority
         try {
             request = ProvisionerTpm2.CertificateRequest.parseFrom(certificateRequest);
         } catch (InvalidProtocolBufferException ipbe) {
-            throw new IdentityProcessingException(
+            throw new CertificateProcessingException(
                     "Could not deserialize certificate request", ipbe);
         }
 
@@ -512,7 +517,7 @@ public abstract class AbstractAttestationCertificateAuthority
         } else {
             LOG.error("Could not process credential request. Invalid nonce provided: "
                     + request.getNonce().toString());
-            throw new IdentityProcessingException("Invalid nonce given in request");
+            throw new CertificateProcessingException("Invalid nonce given in request");
         }
     }
 
@@ -524,7 +529,7 @@ public abstract class AbstractAttestationCertificateAuthority
     RSAPublicKey parsePublicKey(final byte[] publicArea) {
         int pubLen = publicArea.length;
         if (pubLen < RSA_MODULUS_LENGTH) {
-            throw new IdentityProcessingException(
+            throw new IllegalArgumentException(
                     "EK or AK public data segment is not long enough");
         }
         // public data ends with 256 byte modulus
@@ -661,7 +666,7 @@ public abstract class AbstractAttestationCertificateAuthority
 
         if (deviceInfoReport == null) {
             LOG.error("Failed to deserialize Device Info Report");
-            throw new IllegalArgumentException("Device Info Report failed to deserialize "
+            throw new IdentityProcessingException("Device Info Report failed to deserialize "
                     + "from Identity Claim");
         }
 
@@ -882,7 +887,7 @@ public abstract class AbstractAttestationCertificateAuthority
             KeyFactory keyFactory = KeyFactory.getInstance("RSA");
             return keyFactory.generatePublic(keySpec);
         } catch (NoSuchAlgorithmException | InvalidKeySpecException e) {
-            throw new IdentityProcessingException(
+            throw new UnexpectedServerException(
                     "Encountered unexpected error creating public key: " + e.getMessage(), e);
         }
     }
@@ -948,7 +953,7 @@ public abstract class AbstractAttestationCertificateAuthority
         } catch (NoSuchAlgorithmException | IllegalBlockSizeException | NoSuchPaddingException
                 | InvalidKeyException | BadPaddingException
                 | InvalidAlgorithmParameterException e) {
-            throw new IdentityProcessingException(
+            throw new CertificateProcessingException(
                     "Encountered error while generating ACA session key: " + e.getMessage(), e);
         }
     }
@@ -1004,7 +1009,7 @@ public abstract class AbstractAttestationCertificateAuthority
         } catch (BadPaddingException | IllegalBlockSizeException | NoSuchAlgorithmException
                 | InvalidKeyException | InvalidAlgorithmParameterException | NoSuchPaddingException
                 | CertificateEncodingException e) {
-            throw new IdentityProcessingException(
+            throw new CertificateProcessingException(
                     "Encountered error while generating Identity Response: " + e.getMessage(), e);
         }
     }
@@ -1066,7 +1071,7 @@ public abstract class AbstractAttestationCertificateAuthority
                 .setProvider("BC").getCertificate(holder);
             return certificate;
         } catch (IOException | OperatorCreationException | CertificateException e) {
-            throw new IdentityProcessingException("Encountered error while generating "
+            throw new CertificateProcessingException("Encountered error while generating "
                     + "identity credential: " + e.getMessage(), e);
         }
     }
@@ -1159,7 +1164,8 @@ public abstract class AbstractAttestationCertificateAuthority
                 | InvalidKeyException | InvalidAlgorithmParameterException
                 | NoSuchPaddingException e) {
             throw new IdentityProcessingException(
-                    "Encountered error while making credential: " + e.getMessage(), e);
+                    "Encountered error while making the identity claim challenge: "
+                            + e.getMessage(), e);
         }
     }
 
@@ -1418,7 +1424,7 @@ public abstract class AbstractAttestationCertificateAuthority
      * Helper method to extract a DER encoded ASN.1 certificate from an X509 certificate.
      *
      * @param certificate the X509 certificate to be converted to DER encoding
-     * @throws {@link IdentityProcessingException} if error occurs during encoding retrieval
+     * @throws {@link UnexpectedServerException} if error occurs during encoding retrieval
      * @return the byte array representing the DER encoded certificate
      */
     private byte[] getDerEncodedCertificate(final X509Certificate certificate) {
@@ -1426,7 +1432,7 @@ public abstract class AbstractAttestationCertificateAuthority
             return certificate.getEncoded();
         } catch (CertificateEncodingException e) {
             LOG.error("Error converting certificate to ASN.1 DER Encoding.", e);
-            throw new IdentityProcessingException(
+            throw new UnexpectedServerException(
                     "Encountered error while converting X509 Certificate: "
                             + e.getMessage(), e);
         }
@@ -1441,7 +1447,7 @@ public abstract class AbstractAttestationCertificateAuthority
      * @param endorsementCredential the endorsement credential used to generate the AC
      * @param platformCredentials the platform credentials used to generate the AC
      * @param device the device to which the attestation certificate is tied
-     * @throws {@link IdentityProcessingException} if error occurs in persisting the Attestation
+     * @throws {@link CertificateProcessingException} if error occurs in persisting the Attestation
      *                                             Certificate
      */
     private void saveAttestationCertificate(final byte[] derEncodedAttestationCertificate,
@@ -1456,7 +1462,7 @@ public abstract class AbstractAttestationCertificateAuthority
             certificateManager.save(attCert);
         } catch (Exception e) {
             LOG.error("Error saving generated Attestation Certificate to database.", e);
-            throw new IdentityProcessingException(
+            throw new CertificateProcessingException(
                     "Encountered error while storing Attestation Certificate: "
                             + e.getMessage(), e);
         }

@@ -34,6 +34,25 @@ using hirs::exception::HirsRuntimeException;
 
 namespace hirs {
 
+namespace json_utils {
+
+string JSONFieldParser::parseJsonStringField(const std::string &jsonObject,
+                                            const std::string &jsonFieldName) {
+    stringstream regexPatternStream;
+    regexPatternStream << "(?i)\\\""
+                       << jsonFieldName
+                       << "\\\"\\s*:\\s*\\\"(.*)\\\"";
+
+    string value;
+    if (RE2::PartialMatch(jsonObject, regexPatternStream.str(), &value)) {
+        return value;
+    } else {
+        return "";
+    }
+}
+
+}  // namespace json_utils
+
 namespace file_utils {
 
     /**

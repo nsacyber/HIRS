@@ -324,7 +324,7 @@ public class SupplyChainValidationServiceImpl implements SupplyChainValidationSe
      *
      * @param credential the credential whose CA chain should be retrieved
      * @return A keystore ontaining all relevant CA credentials to the given certificate's
-     * organization
+     * organization or null if the keystore can't be assembled
      */
     public KeyStore getCaChain(final Certificate credential) {
         KeyStore caKeyStore = null;

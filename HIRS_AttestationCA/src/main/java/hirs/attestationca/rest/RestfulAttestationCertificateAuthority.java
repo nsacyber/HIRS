@@ -1,18 +1,14 @@
 package hirs.attestationca.rest;
 
-import hirs.attestationca.IdentityProcessingException;
 import hirs.persist.DBManager;
 import hirs.persist.TPM2ProvisionerState;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
-import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
-import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.security.PrivateKey;
@@ -72,8 +68,7 @@ public class RestfulAttestationCertificateAuthority
     @Override
     @ResponseBody
     @RequestMapping(value = "/identity-request/process", method = RequestMethod.POST,
-            consumes = MediaType.APPLICATION_OCTET_STREAM_VALUE,
-            produces = MediaType.APPLICATION_OCTET_STREAM_VALUE)
+            consumes = MediaType.APPLICATION_OCTET_STREAM_VALUE)
     public byte[] processIdentityRequest(@RequestBody final byte[] request) {
         return super.processIdentityRequest(request);
     }
@@ -87,8 +82,7 @@ public class RestfulAttestationCertificateAuthority
     @ResponseBody
     @RequestMapping(value = "/identity-claim-tpm2/process",
             method = RequestMethod.POST,
-            consumes = MediaType.APPLICATION_OCTET_STREAM_VALUE,
-            produces = MediaType.APPLICATION_OCTET_STREAM_VALUE)
+            consumes = MediaType.APPLICATION_OCTET_STREAM_VALUE)
     public byte[] processIdentityClaimTpm2(@RequestBody final byte[] request) {
         return super.processIdentityClaimTpm2(request);
     }
@@ -103,8 +97,7 @@ public class RestfulAttestationCertificateAuthority
     @ResponseBody
     @RequestMapping(value = "/request-certificate-tpm2",
             method = RequestMethod.POST,
-            consumes = MediaType.APPLICATION_OCTET_STREAM_VALUE,
-            produces = MediaType.APPLICATION_OCTET_STREAM_VALUE)
+            consumes = MediaType.APPLICATION_OCTET_STREAM_VALUE)
     public byte[] processCertificateRequest(@RequestBody final byte[] request) {
         return super.processCertificateRequest(request);
     }
@@ -118,28 +111,9 @@ public class RestfulAttestationCertificateAuthority
      */
     @Override
     @ResponseBody
-    @RequestMapping(value = "/public-key", method = RequestMethod.GET,
-            produces = MediaType.APPLICATION_OCTET_STREAM_VALUE)
+    @RequestMapping(value = "/public-key", method = RequestMethod.GET)
     public byte[] getPublicKey() {
         return super.getPublicKey();
-    }
-
-    /**
-     * Handle processing of exceptions for ACA REST API.
-     * @param e exception thrown during invocation of ACA REST API
-     * @return exception thrown during invocation of ACA REST API
-     */
-    @ExceptionHandler
-    @ResponseBody
-    @ResponseStatus(code = HttpStatus.INTERNAL_SERVER_ERROR)
-    public Exception handleException(final Exception e) {
-        if (e instanceof IdentityProcessingException) {
-            LOG.error("Processing exception while provisioning", e.getMessage(), e);
-        } else {
-            LOG.error(String.format("Encountered unexpected error while processing identity "
-                    + "claim: %s", e.getMessage()), e);
-        }
-        return e;
     }
 
 }

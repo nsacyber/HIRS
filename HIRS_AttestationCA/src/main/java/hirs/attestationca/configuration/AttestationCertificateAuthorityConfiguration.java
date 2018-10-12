@@ -54,8 +54,8 @@ import hirs.utils.LogConfigurationUtil;
         @PropertySource(value = "file:/etc/hirs/aca/aca.properties",
                 ignoreResourceNotFound = true)
 })
-@ComponentScan({ "hirs.attestationca", "hirs.attestationca.service", "hirs.validation",
-        "hirs.data.service" })
+@ComponentScan({ "hirs.attestationca", "hirs.attestationca.service", "hirs.attestationca.rest",
+        "hirs.validation", "hirs.data.service" })
 @Import(HibernateConfiguration.class)
 @EnableWebMvc
 public class AttestationCertificateAuthorityConfiguration extends WebMvcConfigurerAdapter {

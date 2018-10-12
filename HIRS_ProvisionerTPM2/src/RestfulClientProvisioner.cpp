@@ -19,6 +19,7 @@ using hirs::pb::IdentityClaimResponse;
 using hirs::pb::CertificateRequest;
 using hirs::pb::CertificateResponse;
 using hirs::properties::Properties;
+using hirs::json_utils::JSONFieldParser;
 using hirs::string_utils::binaryToHex;
 using std::string;
 using std::stringstream;
@@ -31,6 +32,8 @@ const char * const RestfulClientProvisioner::PROP_ACA_FQDN
         = "ATTESTATION_CA_FQDN";
 const char * const RestfulClientProvisioner::PROP_ACA_PORT
         = "ATTESTATION_CA_PORT";
+const char * const RestfulClientProvisioner::ACA_ERROR_FIELDNAME
+        = "error";
 
 RestfulClientProvisioner::RestfulClientProvisioner() {
     Properties props(PROP_FILE_LOC);
@@ -66,7 +69,9 @@ string RestfulClientProvisioner::sendIdentityClaim(
                                 + "process"},
                        cpr::Body{identityClaimByteString},
                        cpr::Header{{"Content-Type",
-                                           "application/octet-stream"}},
+                                           "application/octet-stream"},
+                                   {"Accept",
+                               "application/octet-stream, application/json"}},
                        cpr::VerifySsl{false});
 
     // Check ACA response, should be 200 if successful
@@ -91,8 +96,11 @@ string RestfulClientProvisioner::sendIdentityClaim(
 
     } else {
         stringstream errormsg;
-        errormsg << "Couldn't communicate with ACA server. "
-                 << "Received response code: " << to_string(r.status_code);
+        errormsg << "Error communicating with ACA server. "
+                 << "Received response code: " << to_string(r.status_code)
+                 << "\n\nError message fom ACA was: "
+                 << JSONFieldParser::parseJsonStringField(r.text,
+                                                          ACA_ERROR_FIELDNAME);
         throw HirsRuntimeException(errormsg.str(),
                                 "RestfulClientProvisioner::sendIdentityClaim");
     }
@@ -110,7 +118,9 @@ string RestfulClientProvisioner::sendAttestationCertificateRequest(
                                 + "/request-certificate-tpm2"},
                        cpr::Body{certificateRequestByteString},
                        cpr::Header{{"Content-Type",
-                                           "application/octet-stream"}},
+                                           "application/octet-stream"},
+                                   {"Accept",
+                               "application/octet-stream, application/json"}},
                        cpr::VerifySsl{false});
 
     // Check ACA response, should be 200 if successful
@@ -131,9 +141,11 @@ string RestfulClientProvisioner::sendAttestationCertificateRequest(
 
     } else {
         stringstream errormsg;
-        errormsg << "Couldn't communicate with ACA server. "
+        errormsg << "Error communicating with ACA server. "
                  << "Received response code: " << to_string(r.status_code)
-                 << "\n\nWith message body: " << r.text;
+                 << "\n\nError message from ACA was: "
+                 << JSONFieldParser::parseJsonStringField(r.text,
+                                                          ACA_ERROR_FIELDNAME);
         throw HirsRuntimeException(errormsg.str(),
                 "RestfulClientProvisioner::sendAttestationCertificateRequest");
     }
