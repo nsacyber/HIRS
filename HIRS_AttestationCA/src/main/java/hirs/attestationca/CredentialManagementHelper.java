@@ -47,8 +47,14 @@ public final class CredentialManagementHelper {
 
         LOG.info("Parsing Endorsement Credential of length " + endorsementBytes.length);
 
-        EndorsementCredential endorsementCredential =
-                EndorsementCredential.parseWithPossibleHeader(endorsementBytes);
+        EndorsementCredential endorsementCredential;
+        try {
+            endorsementCredential = EndorsementCredential
+                    .parseWithPossibleHeader(endorsementBytes);
+        } catch (IllegalArgumentException iae) {
+            LOG.error(iae.getMessage());
+            throw iae;
+        }
         int certificateHash = endorsementCredential.getCertificateHash();
         EndorsementCredential existingCredential =
                 EndorsementCredential.select(certificateManager).includeArchived()

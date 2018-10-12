@@ -373,6 +373,8 @@ public class EndorsementCredential extends DeviceAssociatedCertificate {
                     revision.getValue());
             LOGGER.debug("Found TPM Spec:" + tpmSpecification.toString());
         } else if (addToMapping && key.equals(TPM_SECURITY_ASSERTIONS)) {
+            // TODO(apldev3): Update this block to properly parse TPM Security Assertions
+            // per the document "TCG EK Credential Profile For TPM Family 2.0; Level 0" (pg. 19)
             ASN1Integer ver = (ASN1Integer) seq.getObjectAt(ASN1_VER_INDEX);
             ASN1Boolean fieldUpgradeable = (ASN1Boolean) seq.getObjectAt(ASN1_UPGRADEABLE_INDEX);
             tpmSecurityAssertions = new TPMSecurityAssertions(ver.getValue(),
