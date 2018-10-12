@@ -12,6 +12,7 @@
 
 using hirs::file_utils::dirExists;
 using hirs::file_utils::fileExists;
+using hirs::json_utils::JSONFieldParser;
 using hirs::string_utils::binaryToHex;
 using hirs::string_utils::contains;
 using hirs::string_utils::longToHex;
@@ -57,6 +58,57 @@ class UtilsTest : public :: testing::Test {
 };
 
 const char UtilsTest::kFileName[] = "bitsAndBytes";
+
+TEST_F(UtilsTest, ParseJsonFieldSuccess) {
+    stringstream jsonObject;
+        jsonObject << R"({"error":"identityClaim cannot be null or empty"})";
+
+    string errorMessage = JSONFieldParser::parseJsonStringField(
+            jsonObject.str(), "error");
+    string expectedOutput = "identityClaim cannot be null or empty";
+    ASSERT_EQ(expectedOutput, errorMessage);
+}
+
+TEST_F(UtilsTest, ParseJsonFieldSuccessCaseInsensitive) {
+    stringstream jsonObject;
+    jsonObject << R"({"ERROR":"identityClaim cannot be null or empty"})";
+
+    string errorMessage = JSONFieldParser::parseJsonStringField(
+            jsonObject.str(), "error");
+    string expectedOutput = "identityClaim cannot be null or empty";
+    ASSERT_EQ(expectedOutput, errorMessage);
+}
+
+TEST_F(UtilsTest, ParseJsonFieldSuccessWhiteSpaces) {
+    stringstream jsonObject;
+    jsonObject << R"({"error"  :  "identityClaim cannot be null or empty"})";
+
+    string errorMessage = JSONFieldParser::parseJsonStringField(
+            jsonObject.str(), "error");
+    string expectedOutput = "identityClaim cannot be null or empty";
+    ASSERT_EQ(expectedOutput, errorMessage);
+}
+
+TEST_F(UtilsTest, ParseJsonFieldSuccessMultiJsonFields) {
+    stringstream jsonObject;
+    jsonObject << R"({"error"  :  "identityClaim cannot be null or empty",)"
+                 << "\n" << R"("endpoint":"url.com"})";
+
+    string errorMessage = JSONFieldParser::parseJsonStringField(
+            jsonObject.str(), "error");
+    string expectedOutput = "identityClaim cannot be null or empty";
+    ASSERT_EQ(expectedOutput, errorMessage);
+}
+
+TEST_F(UtilsTest, ParseJsonFieldInvalidJson) {
+    stringstream jsonObject;
+    jsonObject << R"({error:"identityClaim cannot be null or empty"})";
+
+    string errorMessage = JSONFieldParser::parseJsonStringField(
+            jsonObject.str(), "error");
+    string expectedOutput = "";
+    ASSERT_EQ(expectedOutput, errorMessage);
+}
 
 TEST_F(UtilsTest, DirectoryExists) {
     mkdir(kFileName, 0755);

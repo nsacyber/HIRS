@@ -1,16 +1,16 @@
-package hirs.attestationca;
+package hirs.attestationca.exceptions;
 
 /**
- * Generic exception thrown while a {@link AttestationCertificateAuthority} is processing a newly
- * submitted Identity.
+ * Generic exception thrown when a {@link hirs.attestationca.AttestationCertificateAuthority}
+ * encounters an unexpected condition that can't be handled.
  */
-public class IdentityProcessingException extends RuntimeException {
+public class UnexpectedServerException extends RuntimeException {
     /**
      * Constructs a generic instance of this exception using the specified reason.
      *
      * @param reason for the exception
      */
-    public IdentityProcessingException(final String reason) {
+    public UnexpectedServerException(final String reason) {
         super(reason);
     }
 
@@ -21,7 +21,7 @@ public class IdentityProcessingException extends RuntimeException {
      * @param reason        for this exception
      * @param rootException causing this exception
      */
-    public IdentityProcessingException(final String reason, final Throwable rootException) {
+    public UnexpectedServerException(final String reason, final Throwable rootException) {
         super(reason, rootException);
     }
 }

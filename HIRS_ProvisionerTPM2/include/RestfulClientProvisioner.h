@@ -20,6 +20,7 @@ class RestfulClientProvisioner {
     static const char * const PROP_FILE_LOC;
     static const char * const PROP_ACA_FQDN;
     static const char * const PROP_ACA_PORT;
+    static const char * const ACA_ERROR_FIELDNAME;
 
 
     /**

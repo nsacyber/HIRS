@@ -47,6 +47,27 @@ namespace file_utils {
                    int readSize);
 }  // namespace file_utils
 
+namespace json_utils {
+
+/**
+* Utility class that provides functions to parse information from ACA
+* output.
+*/
+class JSONFieldParser {
+ public:
+    /**
+     * Parses the target field of the provided JSON object as a string.
+     *
+     * @param jsonObject the JSON-formatted object
+     * @param jsonFieldName the name of the field to parse from the JSON object
+     * @return the value of the target field in the JSON object
+     */
+    static std::string parseJsonStringField(const std::string& jsonObject,
+                                            const std::string& jsonFieldName);
+};
+
+}  // namespace json_utils
+
 namespace string_utils {
     /**
      * Converts a binary string to a hex string.
@@ -165,7 +186,7 @@ class Tpm2ToolsVersionChecker {
 };
 
 
-    /**
+/**
  * Utility class that provides functions to parse information from tpm2_tools
  * output.
  */
