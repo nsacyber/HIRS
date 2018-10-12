@@ -9,6 +9,3 @@ RUN yum install -y cppcheck log4cplus-devel re2-devel
 
 # Set Environment Variables
 ENV JAVA_HOME /usr/lib/jvm/java
-
-# Download HIRS Project
-RUN git clone https://github.com/nsacyber/HIRS.git /root/HIRS
