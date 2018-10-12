@@ -33,4 +33,4 @@ cache:
 install: true
 
 script:
-  - docker run --rm hirs/hirs-ci:centos7 /bin/bash -c "cd /root/HIRS; git checkout ${TRAVIS_BRANCH}; ./gradlew :$SUBPROJECT:build"
+  - docker run --rm hirs/hirs-ci:centos7 /bin/bash -c "git clone https://github.com/nsacyber/HIRS.git /root/HIRS; cd /root/HIRS; git checkout ${TRAVIS_BRANCH}; ./gradlew :$SUBPROJECT:build"
