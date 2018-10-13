@@ -366,6 +366,7 @@ public class EndorsementCredential extends DeviceAssociatedCertificate {
             // The next two are special sequences that have already been matched with an OID.
         } else if (addToMapping && key.equals(TPM_SPECIFICATION)
                 && seq.size() == ASN1_SEQ_KNOWN_SIZE) {
+            // Parse TPM Specification
             DERUTF8String family = (DERUTF8String) seq.getObjectAt(ASN1_FAMILY_INDEX);
             ASN1Integer level = (ASN1Integer) seq.getObjectAt(ASN1_LEVEL_INDEX);
             ASN1Integer revision = (ASN1Integer) seq.getObjectAt(ASN1_REV_INDEX);
@@ -373,40 +374,68 @@ public class EndorsementCredential extends DeviceAssociatedCertificate {
                     revision.getValue());
             LOGGER.debug("Found TPM Spec:" + tpmSpecification.toString());
         } else if (addToMapping && key.equals(TPM_SECURITY_ASSERTIONS)) {
-            // TODO(apldev3): Update this block to properly parse TPM Security Assertions
-            // per the document "TCG EK Credential Profile For TPM Family 2.0; Level 0" (pg. 19)
-            ASN1Integer ver = (ASN1Integer) seq.getObjectAt(ASN1_VER_INDEX);
-            ASN1Boolean fieldUpgradeable = (ASN1Boolean) seq.getObjectAt(ASN1_UPGRADEABLE_INDEX);
+            // Parse TPM Security Assertions
+            int seqPosition = 0;
+
+            ASN1Integer ver;
+            // Parse Security Assertions Version
+            if (seq.getObjectAt(seqPosition) instanceof ASN1Integer) {
+                ver = (ASN1Integer) seq.getObjectAt(seqPosition);
+                seqPosition++;
+            } else {
+                // Default value of 1 if field not found
+                ver = new ASN1Integer(BigInteger.ONE);
+            }
+
+            ASN1Boolean fieldUpgradeable;
+            // Parse Security Assertions Field Upgradeable
+            if (seq.getObjectAt(seqPosition) instanceof ASN1Boolean) {
+                fieldUpgradeable = (ASN1Boolean) seq.getObjectAt(seqPosition);
+                seqPosition++;
+            } else {
+                // Default value of false if field not found
+                fieldUpgradeable = ASN1Boolean.getInstance(false);
+            }
+
             tpmSecurityAssertions = new TPMSecurityAssertions(ver.getValue(),
                     fieldUpgradeable.isTrue());
+
             LOGGER.debug("Found TPM Assertions: " + tpmSecurityAssertions.toString());
-            //iterate through remaining fields to set optional attributes
-            for (int i = 2; i < seq.size(); i++) {
-                DERTaggedObject obj = (DERTaggedObject) seq.getObjectAt(i);
-                int tag = obj.getTagNo();
-                if (tag == EK_TYPE_TAG) {
-                    int ekGenTypeVal = ((ASN1Enumerated) obj.getObject()).getValue().intValue();
-                    if (ekGenTypeVal >= EK_TYPE_VAL_MIN && ekGenTypeVal <= EK_TYPE_VAL_MAX) {
-                        TPMSecurityAssertions.EkGenerationType ekGenType
-                                = TPMSecurityAssertions.EkGenerationType.values()[ekGenTypeVal];
-                        tpmSecurityAssertions.setEkGenType(ekGenType);
-                    }
-                } else if (tag == EK_LOC_TAG) {
-                    int ekGenLocVal = ((ASN1Enumerated) obj.getObject()).getValue().intValue();
-                    if (ekGenLocVal >= EK_LOC_VAL_MIN && ekGenLocVal <= EK_LOC_VAL_MAX) {
-                        TPMSecurityAssertions.EkGenerationLocation ekGenLocation
+            // Iterate through remaining fields to set optional attributes
+            for (int i = seqPosition; i < seq.size(); i++) {
+                if (seq.getObjectAt(i) instanceof DERTaggedObject) {
+                    DERTaggedObject obj = (DERTaggedObject) seq.getObjectAt(i);
+                    int tag = obj.getTagNo();
+                    if (tag == EK_TYPE_TAG) {
+                        int ekGenTypeVal = ((ASN1Enumerated) obj.getObject()).getValue().intValue();
+                        if (ekGenTypeVal >= EK_TYPE_VAL_MIN && ekGenTypeVal <= EK_TYPE_VAL_MAX) {
+                            TPMSecurityAssertions.EkGenerationType ekGenType
+                                    = TPMSecurityAssertions.EkGenerationType.values()[ekGenTypeVal];
+                            tpmSecurityAssertions.setEkGenType(ekGenType);
+                        }
+                    } else if (tag == EK_LOC_TAG) {
+                        int ekGenLocVal = ((ASN1Enumerated) obj.getObject()).getValue().intValue();
+                        if (ekGenLocVal >= EK_LOC_VAL_MIN && ekGenLocVal <= EK_LOC_VAL_MAX) {
+                            TPMSecurityAssertions.EkGenerationLocation ekGenLocation
                                 = TPMSecurityAssertions.EkGenerationLocation.values()[ekGenLocVal];
-                        tpmSecurityAssertions.setEkGenLoc(ekGenLocation);
+                            tpmSecurityAssertions.setEkGenLoc(ekGenLocation);
+                        }
+                    } else if (tag == EK_CERT_LOC_TAG) {
+                        int ekCertGenLocVal = ((ASN1Enumerated) obj.getObject())
+                                .getValue().intValue();
+                        if (ekCertGenLocVal >= EK_LOC_VAL_MIN
+                                && ekCertGenLocVal <= EK_LOC_VAL_MAX) {
+                            TPMSecurityAssertions.EkGenerationLocation ekCertGenLoc
+                                    = TPMSecurityAssertions.EkGenerationLocation.
+                                    values()[ekCertGenLocVal];
+                            tpmSecurityAssertions.setEkCertGenLoc(ekCertGenLoc);
+                        }
                     }
-                } else if (tag == EK_CERT_LOC_TAG) {
-                    int ekCertGenLocVal = ((ASN1Enumerated) obj.getObject()).getValue().intValue();
-                    if (ekCertGenLocVal >= EK_LOC_VAL_MIN && ekCertGenLocVal <= EK_LOC_VAL_MAX) {
-                        TPMSecurityAssertions.EkGenerationLocation ekCertGenLoc
-                                = TPMSecurityAssertions.EkGenerationLocation.
-                                values()[ekCertGenLocVal];
-                        tpmSecurityAssertions.setEkCertGenLoc(ekCertGenLoc);
-                    }
+                    // ccInfo, fipsLevel, iso9000Certified, and iso9000Uri still to be implemented
                 }
+                // Will need additional else if case in the future for instanceof ASN1Boolean when
+                // supporting TPMSecurityAssertions iso9000Certified field, which could be either
+                // DERTaggedObject or ASN1Boolean
             }
         } else {
             //parse the elements of the sequence individually

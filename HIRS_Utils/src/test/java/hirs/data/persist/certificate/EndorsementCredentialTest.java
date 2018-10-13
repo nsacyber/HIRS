@@ -190,16 +190,21 @@ public class EndorsementCredentialTest {
      *
      * @throws IOException if there is a problem reading the cert file at the given path
      */
-    @Test(enabled = false)
-    // TODO(apldev3): Reenable test when update to security assertions is made in
-    // EndorsementCredential
+    @Test
     public void testTpmSecurityAssertionsParsing() throws IOException {
         Path fPath = Paths.get(CertificateTest.class
                 .getResource(EK_CERT_WITH_SECURITY_ASSERTIONS).getPath());
         EndorsementCredential ec = new EndorsementCredential(fPath);
 
-        // TODO(apldev3): Make assertions about TPMSecurityAssertions fields
-        System.out.println(ec);
+        TPMSecurityAssertions securityAssertions = ec.getTpmSecurityAssertions();
+        Assert.assertEquals(securityAssertions.getVersion(), BigInteger.ONE);
+        Assert.assertTrue(securityAssertions.isFieldUpgradeable());
+        Assert.assertEquals(securityAssertions.getEkGenType(),
+                TPMSecurityAssertions.EkGenerationType.INJECTED);
+        Assert.assertEquals(securityAssertions.getEkGenLoc(),
+                TPMSecurityAssertions.EkGenerationLocation.TPM_MANUFACTURER);
+        Assert.assertEquals(securityAssertions.getEkCertGenLoc(),
+                TPMSecurityAssertions.EkGenerationLocation.TPM_MANUFACTURER);
     }
 
 }
