@@ -137,7 +137,7 @@ Prefix          : /usr/share/tomcat6
 %endif
 
 %if 0%{?build7}
-Requires        : mariadb-server, openssl, tomcat, java-1.8.0, rpmdevtools, coreutils, initscripts, chkconfig, sed, grep, firewalld
+Requires        : mariadb-server, openssl, tomcat, java-1.8.0, rpmdevtools, coreutils, initscripts, chkconfig, sed, grep, firewalld, policycoreutils
 Prefix          : /usr/share/tomcat
 %endif
 
@@ -163,6 +163,13 @@ cp -f /opt/hirs/scripts/common/aca/* /opt/hirs/scripts/common/
 if [ "$1" = "1" ]; then
     # open necessary ports
     sh /opt/hirs/scripts/common/firewall_configure_tomcat.sh
+
+    # Allow Tomcat to use port 3306 to communicate with MySQL
+    %if 0%{?build7}
+    if [ selinuxenabled ]; then
+        semodule -i /opt/hirs/extras/aca/tomcat-mysql-hirs.pp
+    fi
+    %endif
 
     # create trust stores, configure tomcat and db
     sh /opt/hirs/scripts/common/ssl_configure.sh server
@@ -222,6 +229,7 @@ fi
 %attr(774, root, tomcat) /opt/hirs/scripts/common/aca
 %attr(774, root, tomcat) /opt/hirs/scripts/aca
 %attr(774, root, tomcat) /opt/hirs/extras/aca/tomcat-mysql-hirs.pp
+%attr(774, root, tomcat) /opt/hirs/extras/aca/tomcat-mysql-hirs.te
 
 ####################
 # Build and install
