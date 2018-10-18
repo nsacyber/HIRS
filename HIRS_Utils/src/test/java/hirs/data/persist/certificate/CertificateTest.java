@@ -7,6 +7,7 @@ import org.testng.annotations.Test;
 
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.math.BigInteger;
 import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -86,6 +87,9 @@ public class CertificateTest {
 
     private static final String RDN_COMMA_SEPARATED_ORGANIZATION = "STMicroelectronics NV";
     private static final String RDN_MULTIVALUE_ORGANIZATION = "Nuvoton Technology Corporation";
+
+    private static final String EK_CERT_WITH_PADDED_BYTES =
+            "/certificates/ek_cert_with_padded_bytes.cer";
 
 
     /**
@@ -266,6 +270,75 @@ public class CertificateTest {
         Assert.assertEquals(platformCert.getSignature(), attrCertHolder.getSignature());
         Assert.assertEquals(platformCert.getBeginValidity(), attrCertHolder.getNotBefore());
         Assert.assertEquals(platformCert.getEndValidity(), attrCertHolder.getNotAfter());
+    }
+
+    /**
+     * Tests that Certificate correctly trims out additional padding from a given certificate.
+     *
+     * @throws IOException if there is a problem reading the cert file at the given path
+     * @throws URISyntaxException if there is a problem constructing the file's URI
+     */
+    @Test
+    public void testCertificateTrim() throws IOException, URISyntaxException {
+        byte[] rawFileBytes = Files.readAllBytes(Paths.get(CertificateTest.class
+                .getResource(EK_CERT_WITH_PADDED_BYTES).toURI()));
+        byte[] expectedCertBytes = Arrays.copyOfRange(rawFileBytes, 0, 908);
+        Certificate ekCert = getTestCertificate(EndorsementCredential.class,
+                EK_CERT_WITH_PADDED_BYTES);
+        Assert.assertEquals(ekCert.getSerialNumber(), new BigInteger("16842032579184247954"));
+        Assert.assertEquals(ekCert.getIssuer(),
+                "CN=Nuvoton TPM Root CA 2010+O=Nuvoton Technology Corporation+C=TW");
+        Assert.assertEquals(ekCert.getSubject(), "");
+        Assert.assertEquals(ekCert.getRawBytes(), expectedCertBytes);
+    }
+
+    /**
+     * Tests that Certificate correctly throws IllegalArgumentException when no length field is
+     * found in the provided byte array.
+     *
+     * @throws IOException if there is a problem reading the cert file at the given path
+     * @throws URISyntaxException if there is a problem constructing the file's URI
+     */
+    @Test(expectedExceptions = IllegalArgumentException.class,
+         expectedExceptionsMessageRegExp = ".* No certificate length field could be found\\.")
+    public void testCertificateTrimThrowsWhenNoLengthFieldFound() throws IOException,
+            URISyntaxException {
+        byte[] rawFileBytes = Files.readAllBytes(Paths.get(CertificateTest.class
+                .getResource(EK_CERT_WITH_PADDED_BYTES).toURI()));
+        new EndorsementCredential(Arrays.copyOfRange(rawFileBytes, 0, 2));
+    }
+
+    /**
+     * Tests that Certificate correctly throws IllegalArgumentException when the byte array only
+     * contains a header for an ASN.1 Sequence.
+     *
+     * @throws IOException if there is a problem reading the cert file at the given path
+     * @throws URISyntaxException if there is a problem constructing the file's URI
+     */
+    @Test(expectedExceptions = IllegalArgumentException.class,
+         expectedExceptionsMessageRegExp = ".* Certificate is nothing more than ASN.1 Sequence\\.")
+    public void testCertificateTrimThrowsWhenOnlyASN1Sequence() throws IOException,
+            URISyntaxException {
+        byte[] rawFileBytes = Files.readAllBytes(Paths.get(CertificateTest.class
+                .getResource(EK_CERT_WITH_PADDED_BYTES).toURI()));
+        new EndorsementCredential(Arrays.copyOfRange(rawFileBytes, 0, 4));
+    }
+
+    /**
+     * Tests that Certificate correctly throws IllegalArgumentException when the provided
+     * Certificate has a length that extends beyond the byte array as a whole.
+     *
+     * @throws IOException if there is a problem reading the cert file at the given path
+     * @throws URISyntaxException if there is a problem constructing the file's URI
+     */
+    @Test(expectedExceptions = IllegalArgumentException.class,
+            expectedExceptionsMessageRegExp = ".* Value of certificate length field extends beyond"
+                    + " length of provided certificate\\.")
+    public void testCertificateTrimThrowsWhenLengthIsTooLarge() throws IOException,
+            URISyntaxException {
+        byte[] rawFileBytes = Files.readAllBytes(Paths.get(CertificateTest.class
+                .getResource(EK_CERT_WITH_PADDED_BYTES).toURI()));
+        new EndorsementCredential(Arrays.copyOfRange(rawFileBytes, 0, 42));
     }
 
     /**

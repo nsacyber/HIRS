@@ -33,6 +33,7 @@ import javax.persistence.Transient;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.math.BigInteger;
+import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -65,6 +66,7 @@ public abstract class Certificate extends ArchivableEntity {
     private static final String PEM_FOOTER = "-----END CERTIFICATE-----";
     private static final String PEM_ATTRIBUTE_HEADER = "-----BEGIN ATTRIBUTE CERTIFICATE-----";
     private static final String PEM_ATTRIBUTE_FOOTER = "-----END ATTRIBUTE CERTIFICATE-----";
+    private static final String MALFORMED_CERT_MESSAGE = "Malformed certificate detected.";
     private static final int MAX_CERT_LENGTH_BYTES = 2048;
     private static final int MAX_NUMERIC_PRECISION = 49; // Can store up to 160 bit values
     private static final int MAX_PUB_KEY_MODULUS_HEX_LENGTH = 1024;
@@ -265,6 +267,8 @@ public abstract class Certificate extends ArchivableEntity {
             this.certificateBytes = Base64.decode(possiblePem);
         }
 
+        this.certificateBytes = trimCertificate(this.certificateBytes);
+
         // Extract certificate data
         switch (getCertificateType()) {
             case X509_CERTIFICATE:
@@ -326,6 +330,53 @@ public abstract class Certificate extends ArchivableEntity {
 
         this.certificateHash = Arrays.hashCode(this.certificateBytes);
         this.certAndTypeHash = Objects.hash(certificateHash, getClass().getSimpleName());
+    }
+
+    @SuppressWarnings("magicnumber")
+    private byte[] trimCertificate(final byte[] certificateBytes) {
+        int certificateStart = 0;
+        int certificateLength = 0;
+        ByteBuffer certificateByteBuffer = ByteBuffer.wrap(certificateBytes);
+
+        StringBuilder malformedCertStringBuilder = new StringBuilder(MALFORMED_CERT_MESSAGE);
+        while (certificateByteBuffer.hasRemaining()) {
+            // Check if there isn't an ASN.1 structure in the provided bytes
+            if (certificateByteBuffer.remaining() <= 2) {
+                throw new IllegalArgumentException(malformedCertStringBuilder
+                        .append(" No certificate length field could be found.").toString());
+            }
+
+            // Look for first ASN.1 Sequence marked by the two bytes (0x30) and (0x82)
+            // The check advances our position in the ByteBuffer by one byte
+            int currentPosition = certificateByteBuffer.position();
+            if (certificateByteBuffer.get() == (byte) 0x30
+                    && certificateByteBuffer.get(currentPosition + 1) == (byte) 0x82) {
+                // Check if we have anything more in the buffer than an ASN.1 Sequence header
+                if (certificateByteBuffer.remaining() <= 3) {
+                    throw new IllegalArgumentException(malformedCertStringBuilder
+                            .append(" Certificate is nothing more than ASN.1 Sequence.")
+                            .toString());
+                }
+                // Mark the start of the first ASN.1 Sequence / Certificate Body
+                certificateStart = currentPosition;
+
+                // Parse the length as the 2-bytes following the start of the ASN.1 Sequence
+                certificateLength = Short.toUnsignedInt(
+                        certificateByteBuffer.getShort(currentPosition + 2));
+                // Add the 4 bytes that comprise the start of the ASN.1 Sequence and the length
+                certificateLength += 4;
+                break;
+            }
+        }
+
+        if (certificateStart + certificateLength > certificateBytes.length) {
+            throw new IllegalArgumentException(malformedCertStringBuilder
+                    .append(" Value of certificate length field extends beyond length")
+                    .append(" of provided certificate.").toString());
+        }
+        // Return bytes representing the main certificate body
+        return Arrays.copyOfRange(certificateBytes, certificateStart,
+                certificateStart + certificateLength);
     }
 
     /**
