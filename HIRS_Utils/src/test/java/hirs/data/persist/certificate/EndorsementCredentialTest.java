@@ -21,6 +21,8 @@ public class EndorsementCredentialTest {
             = "/certificates/nuc-1/tpmcert.pem";
     private static final String TEST_ENDORSEMENT_CREDENTIAL_NUC2
             = "/certificates/nuc-2/tpmcert.pem";
+    private static final String EK_CERT_WITH_SECURITY_ASSERTIONS =
+            "/certificates/ek_cert_with_security_assertions.cer";
 
     /**
      * Tests the successful parsing of an EC using a test cert from STM.
@@ -180,6 +182,24 @@ public class EndorsementCredentialTest {
 
         Assert.assertNotEquals(ec1, ec2);
         Assert.assertNotEquals(ec2, ec3);
+    }
+
+    /**
+     * Tests that EndorsementCredential correctly parses out TPM Security Assertions from a
+     * provided TPM EK Certificate.
+     *
+     * @throws IOException if there is a problem reading the cert file at the given path
+     */
+    @Test(enabled = false)
+    // TODO(apldev3): Reenable test when update to security assertions is made in
+    // EndorsementCredential
+    public void testTpmSecurityAssertionsParsing() throws IOException {
+        Path fPath = Paths.get(CertificateTest.class
+                .getResource(EK_CERT_WITH_SECURITY_ASSERTIONS).getPath());
+        EndorsementCredential ec = new EndorsementCredential(fPath);
+
+        // TODO(apldev3): Make assertions about TPMSecurityAssertions fields
+        System.out.println(ec);
     }
 
 }
