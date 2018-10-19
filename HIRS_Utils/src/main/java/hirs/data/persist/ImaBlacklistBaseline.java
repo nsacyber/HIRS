@@ -3,7 +3,6 @@ package hirs.data.persist;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.common.base.Preconditions;
 import hirs.ima.matching.BatchImaMatchStatus;
-import hirs.ima.matching.IMAMatchStatus;
 import hirs.ima.matching.ImaBlacklistRecordMatcher;
 import hirs.persist.ImaBaselineRecordManager;
 
@@ -11,11 +10,9 @@ import javax.persistence.CascadeType;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
 import javax.persistence.OneToMany;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.LinkedHashSet;
-import java.util.List;
 import java.util.Set;
 
 /**
@@ -53,22 +50,10 @@ public class ImaBlacklistBaseline extends ImaBaseline<ImaBlacklistRecord> {
             final Collection<IMAMeasurementRecord> records,
             final ImaBaselineRecordManager recordManager,
             final IMAPolicy imaPolicy) {
-        if (records == null) {
-            throw new IllegalArgumentException("Records cannot be null");
-        }
-
-        if (imaPolicy == null) {
-            throw new IllegalArgumentException("IMA policy cannot be null");
-        }
-
-        ImaBlacklistRecordMatcher recordMatcher =
-                new ImaBlacklistRecordMatcher(imaBlacklistRecords, imaPolicy, this);
-        List<IMAMatchStatus<ImaBlacklistRecord>> matchStatuses = new ArrayList<>();
-        for (IMAMeasurementRecord record : records) {
-            matchStatuses.add(recordMatcher.contains(record));
-        }
-
-        return new BatchImaMatchStatus<>(matchStatuses);
+        Preconditions.checkArgument(records != null, "Records cannot be null");
+        Preconditions.checkArgument(imaPolicy != null, "IMA policy cannot be null");
+        return new ImaBlacklistRecordMatcher(imaBlacklistRecords, imaPolicy, this)
+                .batchMatch(records);
     }
 
     /**

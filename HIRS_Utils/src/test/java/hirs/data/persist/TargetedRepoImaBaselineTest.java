@@ -8,6 +8,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import hirs.ima.matching.BatchImaMatchStatus;
 import hirs.ima.matching.IMAMatchStatus;
 import hirs.persist.BaselineManager;
 import hirs.persist.DBBaselineManager;
@@ -352,6 +353,123 @@ public class TargetedRepoImaBaselineTest extends SpringPersistenceTest {
                                 measurementRecord, ReportMatchStatus.MATCH, baselineRecord, baseline
                         )
                 )
+        );
+    }
+
+    /**
+     * Test that ensures a TargetedRepoImaBaseline can correctly determine if
+     * it contains any matching baseline records solely based upon a given measurement
+     * record's hash.
+     *
+     * @throws UnsupportedEncodingException
+     *             if an error is encountered while getting the test digest
+     */
+    @Test
+    public final void containsHashes() throws UnsupportedEncodingException {
+        TargetedRepoImaBaseline testBaseline = new TargetedRepoImaBaseline(BASELINE_NAME);
+        Repository testRepo = new TestRepository("Test Repository", 0);
+        DBRepositoryManager repoManager = new DBRepositoryManager(sessionFactory);
+        testRepo = repoManager.saveRepository(testRepo);
+        RepoPackage testRepoPackage =
+                new RPMRepoPackage(NAME, VERSION1, RELEASE1, ARCHITECTURE, testRepo);
+        Set<IMABaselineRecord> imaRecords = new HashSet<>();
+        imaRecords.add(SimpleImaBaselineTest.createTestIMARecord(FILEPATH1));
+        testRepoPackage.setAllMeasurements(imaRecords, RepoPackageTest.getTestDigest());
+        repoManager.saveRepoPackage(testRepoPackage);
+        Set<RepoPackage> originalPackages = new HashSet<>();
+        originalPackages.add(testRepoPackage);
+        testBaseline.setRepoPackages(originalPackages);
+
+        DBBaselineManager baselineManager = new DBBaselineManager(sessionFactory);
+        TargetedRepoImaBaseline savedBaseline =
+                (TargetedRepoImaBaseline) baselineManager.save(testBaseline);
+
+        IMABaselineRecord baselineRecord = SimpleImaBaselineTest.createTestIMARecord(FILEPATH1);
+        IMAMeasurementRecord measurementRecord = new IMAMeasurementRecord(
+                baselineRecord.getPath(),
+                baselineRecord.getHash()
+        );
+
+        Assert.assertEquals(
+                savedBaseline.containsHashes(
+                        Collections.singletonList(measurementRecord),
+                        new DbImaBaselineRecordManager(sessionFactory),
+                        SimpleImaBaselineTest.getTestImaPolicy(false)
+
+                ).getIMAMatchStatuses(measurementRecord),
+                Collections.singleton(
+                        new IMAMatchStatus<>(
+                                measurementRecord, ReportMatchStatus.MATCH, baselineRecord, baseline
+                        )
+                )
+        );
+
+        measurementRecord = new IMAMeasurementRecord(
+                "/some/other/file",
+                baselineRecord.getHash()
+        );
+        Assert.assertEquals(
+                savedBaseline.containsHashes(
+                        Collections.singletonList(measurementRecord),
+                        new DbImaBaselineRecordManager(sessionFactory),
+                        SimpleImaBaselineTest.getTestImaPolicy(false)
+
+                ).getIMAMatchStatuses(measurementRecord),
+                Collections.singleton(
+                        new IMAMatchStatus<>(
+                                measurementRecord, ReportMatchStatus.MATCH, baselineRecord, baseline
+                        )
+                )
+        );
+    }
+
+    /**
+     * Test that ensures a TargetedRepoImaBaseline can correctly determine that
+     * it does not contain any matching baseline records solely based upon a given measurement
+     * record's hash.
+     *
+     * @throws UnsupportedEncodingException
+     *             if an error is encountered while getting the test digest
+     */
+    @Test
+    public final void containsHashesWithNoMatches() throws UnsupportedEncodingException {
+        TargetedRepoImaBaseline testBaseline = new TargetedRepoImaBaseline(BASELINE_NAME);
+        Repository testRepo = new TestRepository("Test Repository", 0);
+        DBRepositoryManager repoManager = new DBRepositoryManager(sessionFactory);
+        testRepo = repoManager.saveRepository(testRepo);
+        RepoPackage testRepoPackage =
+                new RPMRepoPackage(NAME, VERSION1, RELEASE1, ARCHITECTURE, testRepo);
+        Set<IMABaselineRecord> imaRecords = new HashSet<>();
+        imaRecords.add(SimpleImaBaselineTest.createTestIMARecord(FILEPATH1));
+        testRepoPackage.setAllMeasurements(imaRecords, RepoPackageTest.getTestDigest());
+        repoManager.saveRepoPackage(testRepoPackage);
+        Set<RepoPackage> originalPackages = new HashSet<>();
+        originalPackages.add(testRepoPackage);
+        testBaseline.setRepoPackages(originalPackages);
+
+        DBBaselineManager baselineManager = new DBBaselineManager(sessionFactory);
+        TargetedRepoImaBaseline savedBaseline =
+                (TargetedRepoImaBaseline) baselineManager.save(testBaseline);
+
+        IMABaselineRecord baselineRecord = SimpleImaBaselineTest.createTestIMARecord(FILEPATH1);
+
+        IMAMeasurementRecord measurementRecord = new IMAMeasurementRecord(
+                baselineRecord.getPath(),
+                SimpleImaBaselineTest.getDigest("0d5f3c2f7f3003d2e4baddc46ed4763a4954f648")
+        );
+
+        Assert.assertEquals(
+                savedBaseline.containsHashes(
+                        Collections.singletonList(measurementRecord),
+                        new DbImaBaselineRecordManager(sessionFactory),
+                        SimpleImaBaselineTest.getTestImaPolicy(false)
+
+                ),
+                new BatchImaMatchStatus<>(Collections.singleton(new IMAMatchStatus<>(
+                        measurementRecord,
+                        ReportMatchStatus.UNKNOWN,
+                        baseline
+                )))
         );
     }
 

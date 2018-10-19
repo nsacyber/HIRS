@@ -7,17 +7,15 @@ package hirs.data.persist;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
+import com.google.common.base.Preconditions;
 import hirs.ima.matching.BatchImaMatchStatus;
-import hirs.ima.matching.IMAMatchStatus;
 import hirs.ima.matching.ImaIgnoreSetRecordMatcher;
 import hirs.persist.ImaBaselineRecordManager;
 import hirs.utils.RegexFilePathMatcher;
 
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 
 import javax.persistence.Access;
@@ -157,21 +155,10 @@ public class ImaIgnoreSetBaseline extends ImaBaseline<ImaIgnoreSetRecord> {
             final ImaBaselineRecordManager recordManager,
             final IMAPolicy imaPolicy
     ) {
-        if (records == null) {
-            throw new IllegalArgumentException("Records cannot be null");
-        }
-
-        if (imaPolicy == null) {
-            throw new IllegalArgumentException("IMA policy cannot be null");
-        }
-
-        ImaIgnoreSetRecordMatcher recordMatcher =
-                new ImaIgnoreSetRecordMatcher(imaIgnoreSetRecords, imaPolicy, this);
-        List<IMAMatchStatus<ImaIgnoreSetRecord>> matchStatuses = new ArrayList<>();
-        for (IMAMeasurementRecord record : records) {
-            matchStatuses.add(recordMatcher.contains(record));
-        }
-        return new BatchImaMatchStatus<>(matchStatuses);
+        Preconditions.checkArgument(records != null, "Records cannot be null");
+        Preconditions.checkArgument(imaPolicy != null, "IMA policy cannot be null");
+        return new ImaIgnoreSetRecordMatcher(imaIgnoreSetRecords, imaPolicy, this)
+                .batchMatch(records);
     }
 
     /**
