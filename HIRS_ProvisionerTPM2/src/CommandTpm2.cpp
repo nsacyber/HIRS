@@ -141,7 +141,7 @@ void CommandTpm2::setAuthData() {
                        << " -l " << kWellKnownSecret
                        << endl;
             break;
-        case Tpm2ToolsVersion::VERSION_3_0_1:
+        case Tpm2ToolsVersion::VERSION_3:
             argsStream << " -o hex:" << kWellKnownSecret
                        << " -e hex:" << kWellKnownSecret
                        << " -l hex:" << kWellKnownSecret
@@ -387,11 +387,11 @@ string CommandTpm2::activateIdentity() {
                 "CommandTpm2::activateIdentity");
     }
 
-    // TPM2 Tools version 3.0.1 prepends 4 bytes of a MAGIC NUMBER and
+    // TPM2 Tools major version 3.X.X prepends 4 bytes of a MAGIC NUMBER and
     // 4 bytes of a version number to the file containing the cert and secret,
     // but the ACA does not, nor does the ACA know which version of TPM2 Tools
     // is running on the client machine. So we add the bytes here.
-    if (version == Tpm2ToolsVersion::VERSION_3_0_1) {
+    if (version == Tpm2ToolsVersion::VERSION_3) {
         string s = fileToString(kDefaultIdentityClaimResponseFilename);
         union {
             UINT16 value;
@@ -578,7 +578,7 @@ string CommandTpm2::readNvIndex(const string& nvIndex,
                 nvReadOutput << Tpm2ToolsOutputParser::parseNvReadOutput(
                         rawNvReadOutput);
                 break;
-            case Tpm2ToolsVersion::VERSION_3_0_1:
+            case Tpm2ToolsVersion::VERSION_3:
                 nvReadOutput << rawNvReadOutput;
                 break;
         }
@@ -619,7 +619,7 @@ void CommandTpm2::releaseNvIndex(const string& nvIndex) {
         case Tpm2ToolsVersion::VERSION_2_1_0:
             argsStream << " -X -P " << kWellKnownSecret;
             break;
-        case Tpm2ToolsVersion::VERSION_3_0_1:
+        case Tpm2ToolsVersion::VERSION_3:
             argsStream << " -P hex:" << kWellKnownSecret;
             break;
     }

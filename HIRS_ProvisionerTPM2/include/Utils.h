@@ -160,7 +160,7 @@ namespace tpm2_tools_utils {
 enum class Tpm2ToolsVersion {
     VERSION_1_1_0,
     VERSION_2_1_0,
-    VERSION_3_0_1
+    VERSION_3
 };
 
 /**
@@ -237,6 +237,15 @@ class Tpm2ToolsOutputParser {
      * @return a tpm2_tools version if found, or an empty string, otherwise
      */
     static std::string parseTpm2ToolsVersion(const std::string& toolOutput);
+
+    /**
+     * Parses the provided tpm2-tool version for the major version.
+     *
+     * @param toolVersion the output from a call to parseTpm2ToolsVersion
+     * @return tpm2_tools major version if found, or an empty string, otherwise
+     */
+    static std::string parseTpm2ToolsMajorVersion(
+            const std::string& toolVersion);
 };
 
 }  // namespace tpm2_tools_utils
