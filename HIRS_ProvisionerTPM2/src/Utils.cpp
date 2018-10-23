@@ -265,7 +265,7 @@ const unordered_map<string, Tpm2ToolsVersion>
         Tpm2ToolsVersionChecker::kVersionMap = {
         {"1.1.0", Tpm2ToolsVersion::VERSION_1_1_0 },
         {"2.1.0", Tpm2ToolsVersion::VERSION_2_1_0 },
-        {"3.0.1", Tpm2ToolsVersion::VERSION_3_0_1 }
+        {"3", Tpm2ToolsVersion::VERSION_3 }
 };
 
 const unordered_map<string, Tpm2ToolsVersion>
@@ -273,27 +273,42 @@ const unordered_map<string, Tpm2ToolsVersion>
         {"Ubuntu 17.10", Tpm2ToolsVersion::VERSION_1_1_0 },
         {"Ubuntu 18.04", Tpm2ToolsVersion::VERSION_2_1_0 },
         {"Ubuntu 18.10", Tpm2ToolsVersion::VERSION_2_1_0 },
-        {"CentOS Linux 7", Tpm2ToolsVersion::VERSION_3_0_1 }
+        {"CentOS Linux 7", Tpm2ToolsVersion::VERSION_3 }
 };
 
 Tpm2ToolsVersion Tpm2ToolsVersionChecker::findTpm2ToolsVersion() {
-    string versionOutput = RUN_PROCESS_OR_THROW("tpm2_rc_decode", "-v");
+    string versionOutput = RUN_PROCESS_OR_THROW("tpm2_nvlist", "-v");
     string version = Tpm2ToolsOutputParser::parseTpm2ToolsVersion(
             versionOutput);
+    string majorVersion = Tpm2ToolsOutputParser::parseTpm2ToolsMajorVersion(
+            version);
 
     if (!version.empty()) {
         try {
-            return kVersionMap.at(version);
+            // Look to see if tpm2-tools major version is supported
+            return kVersionMap.at(majorVersion);
         }
         catch (const out_of_range& oor) {
-            stringstream ss;
-            ss << "Unsupported Tpm2 Tools Version Detected: " << version;
-            throw HirsRuntimeException(ss.str(),
-                        "Tpm2ToolsVersionChecker::findTpm2ToolsVersion");
+            // If major version not supported, then look for specific version
+            try {
+                return kVersionMap.at(version);
+            }
+            catch (const out_of_range& oor) {
+                // If no version found, version is unsupported, throw exception
+                stringstream ss;
+                ss << "Unsupported Tpm2 Tools Version Detected: " << version;
+                throw HirsRuntimeException(ss.str(),
+                      "Tpm2ToolsVersionChecker::findTpm2ToolsVersion");
+            }
         }
     } else {
+        // If version check returns empty, instead of throwing exception,
+        // then tpm2-tools is installed but version lookup is faulty.
+        // Get current runtime environment distribution.
         string currentDistribution = getDistribution();
         try {
+            // Look to see if current distribution has a supported version
+            // and use that as best guess at version number
             return kMaxSupportedVersionMap.at(currentDistribution);
         } catch (const out_of_range& oor) {
             stringstream ss;
@@ -391,6 +406,20 @@ string Tpm2ToolsOutputParser::parseTpm2ToolsVersion(const string& toolOutput) {
     string version;
     if (RE2::PartialMatch(toolOutput, regexPatternStream.str(), &version)) {
         return version;
+    } else {
+        return "";
+    }
+}
+
+string Tpm2ToolsOutputParser::parseTpm2ToolsMajorVersion(
+        const string& toolVersion) {
+    stringstream regexPatternStream;
+    regexPatternStream << "^([0-9]+)\\.[0-9]+\\.[0-9]+$";
+
+    string majorVersion;
+    if (RE2::PartialMatch(toolVersion, regexPatternStream.str(),
+            &majorVersion)) {
+        return majorVersion;
     } else {
         return "";
     }
