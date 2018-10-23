@@ -588,6 +588,46 @@ TEST_F(UtilsTest, ParseTpm2ToolsVersionFailNonSemanticVersion) {
     ASSERT_EQ(expectedOutput, version);
 }
 
+TEST_F(UtilsTest, ParseTpm2ToolsMajorVersionSuccess) {
+    stringstream versionOutput;
+    versionOutput << "3.0.1";
+
+    string expectedOutput = "3";
+    string majorVersion = Tpm2ToolsOutputParser::parseTpm2ToolsMajorVersion(
+            versionOutput.str());
+    ASSERT_EQ(expectedOutput, majorVersion);
+}
+
+TEST_F(UtilsTest, ParseTpm2ToolsMajorVersionSuccessMultiNumeralVersion) {
+    stringstream versionOutput;
+    versionOutput << "10.29.970";
+
+    string expectedOutput = "10";
+    string majorVersion = Tpm2ToolsOutputParser::parseTpm2ToolsMajorVersion(
+            versionOutput.str());
+    ASSERT_EQ(expectedOutput, majorVersion);
+}
+
+TEST_F(UtilsTest, ParseTpm2ToolsMajorVersionFailNonSemanticVersion) {
+    stringstream versionOutput;
+    versionOutput << "3.0";
+
+    string expectedOutput = "";
+    string majorVersion = Tpm2ToolsOutputParser::parseTpm2ToolsMajorVersion(
+            versionOutput.str());
+    ASSERT_EQ(expectedOutput, majorVersion);
+}
+
+TEST_F(UtilsTest, ParseTpm2ToolsMajorVersionFailLongNonSemanticVersion) {
+    stringstream versionOutput;
+    versionOutput << "3.0.1.27";
+
+    string expectedOutput = "";
+    string majorVersion = Tpm2ToolsOutputParser::parseTpm2ToolsMajorVersion(
+            versionOutput.str());
+    ASSERT_EQ(expectedOutput, majorVersion);
+}
+
 }  // namespace
 
 int main(int argc, char **argv) {
