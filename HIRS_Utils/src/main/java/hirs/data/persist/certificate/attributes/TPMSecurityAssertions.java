@@ -12,7 +12,7 @@ import java.math.BigInteger;
  *
  * Future iterations of this code may want to reference
  * www.trustedcomputinggroup.org/wp-content/uploads/Credential_Profile_EK_V2.0_R14_published.pdf
- * for specifications for TPM 2.0.
+ * for specifications for TPM 2.0 (pg. 19).
  */
 @Embeddable
 public class TPMSecurityAssertions {
