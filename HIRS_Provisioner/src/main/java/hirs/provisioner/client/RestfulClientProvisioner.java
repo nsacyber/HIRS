@@ -135,14 +135,14 @@ public class RestfulClientProvisioner implements ClientProvisioner {
         LOG.debug(String.format("created TPM identity request using UUID %s", uuid));
 
         // attest the request with the ACA and obtain it's response
-        LOG.info("Sending Attestation Identity Credential Request");
+        System.out.println("----> Sending Attestation Identity Credential Request");
         IdentityResponseEnvelope response = attestIdentityRequest(identityRequest);
         if (null == response) {
             LOG.error("Provisioning failed.  Please refer to the Attestation CA for details.");
             return false;
         }
 
-        LOG.info("Attestation Identity Provisioning succeeded");
+        System.out.println("----> Attestation Identity Provisioning succeeded");
 
         // activate the identity with the TPM
         byte[] credential = activateCredential(response, uuid);
@@ -238,7 +238,7 @@ public class RestfulClientProvisioner implements ClientProvisioner {
         byte[] endorsementCredential = new byte[] {1};
         try {
             endorsementCredential = tpm.getEndorsementCredential();
-            LOG.info("Got endorsement credential from TPM");
+            System.out.println("----> Got endorsement credential from TPM");
             LOG.debug("Endorsement credential size: " + endorsementCredential.length);
         } catch (Exception e) {
             LOG.warn("Failed to get endorsement credential from TPM");
@@ -296,7 +296,7 @@ public class RestfulClientProvisioner implements ClientProvisioner {
         DeviceInfoReportRequest request = new DeviceInfoReportRequest();
         DeviceInfoReport report = null;
         try {
-            LOG.info("Collecting device information");
+            System.out.println("----> Collecting device information");
             DeviceInfoCollector deviceInfoCollector = new DeviceInfoCollector(null, false,
                     CommandLineArguments.getHostName());
             report = (DeviceInfoReport) deviceInfoCollector.collect(request);
