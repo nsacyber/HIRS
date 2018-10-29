@@ -1,7 +1,6 @@
 package hirs.attestationca;
 
 import com.google.protobuf.ByteString;
-import hirs.attestationca.exceptions.IdentityProcessingException;
 import hirs.utils.HexUtils;
 import org.apache.commons.codec.binary.Hex;
 import org.apache.commons.lang3.ArrayUtils;
@@ -159,9 +158,9 @@ public class AbstractAttestationCertificateAuthorityTest {
 
     /**
      * Tests {@link AbstractAttestationCertificateAuthority#processIdentityClaimTpm2(byte[])}
-     * where the byte array is null. Expects an identity processing exception to be thrown.
+     * where the byte array is null. Expects an illegal argument exception to be thrown.
      */
-    @Test(expectedExceptions = IdentityProcessingException.class)
+    @Test(expectedExceptions = IllegalArgumentException.class)
     public void testProcessIdentityClaimTpm2NullRequest() {
         aca.processIdentityClaimTpm2(null);
     }
