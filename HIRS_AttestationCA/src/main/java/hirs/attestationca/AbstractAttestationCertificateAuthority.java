@@ -206,7 +206,8 @@ public abstract class AbstractAttestationCertificateAuthority
     @Override
     public byte[] processIdentityRequest(final byte[] identityRequest) {
         if (ArrayUtils.isEmpty(identityRequest)) {
-            throw new IllegalArgumentException("identityRequest cannot be null or empty");
+            throw new IllegalArgumentException("The IdentityRequest sent by the client"
+                    + " cannot be null or empty.");
         }
 
         LOG.debug("received request to process identity request");
@@ -383,21 +384,25 @@ public abstract class AbstractAttestationCertificateAuthority
      */
     public byte[] processIdentityClaimTpm2(final byte[] identityClaim) {
 
-        LOG.info("Got identity claim");
+        LOG.debug("Got identity claim");
 
         if (ArrayUtils.isEmpty(identityClaim)) {
             LOG.error("Identity claim empty throwing exception.");
-            throw new IdentityProcessingException("identityClaim cannot be null or empty");
+            throw new IllegalArgumentException("The IdentityClaim sent by the client"
+                    + " cannot be null or empty.");
         }
 
         // attempt to deserialize Protobuf IdentityClaim
         ProvisionerTpm2.IdentityClaim claim = parseIdentityClaim(identityClaim);
 
-        AppraisalStatus.Status validationResult = doSupplyChainValidation(claim);
+        // parse the EK Public key from the IdentityClaim once for use in supply chain validation
+        // and later tpm20MakeCredential function
+        RSAPublicKey ekPub = parsePublicKey(claim.getEkPublicArea().toByteArray());
+
+        AppraisalStatus.Status validationResult = doSupplyChainValidation(claim, ekPub);
 
         if (validationResult == AppraisalStatus.Status.PASS) {
 
-            RSAPublicKey ekPub = parsePublicKey(claim.getEkPublicArea().toByteArray());
             RSAPublicKey akPub = parsePublicKey(claim.getAkPublicArea().toByteArray());
             byte[] nonce = generateRandomBytes(NONCE_LENGTH);
             ByteString blobStr = tpm20MakeCredential(ekPub, akPub, nonce);
@@ -425,12 +430,13 @@ public abstract class AbstractAttestationCertificateAuthority
      * Performs supply chain validation.
      *
      * @param claim the identity claim
+     * @param ekPub the public endorsement key
      * @return the {@link AppraisalStatus} of the supply chain validation
      */
     private AppraisalStatus.Status doSupplyChainValidation(
-            final ProvisionerTpm2.IdentityClaim claim) {
+            final ProvisionerTpm2.IdentityClaim claim, final PublicKey ekPub) {
         // attempt to find an endorsement credential to validate
-        EndorsementCredential endorsementCredential = parseEcFromIdentityClaim(claim);
+        EndorsementCredential endorsementCredential = parseEcFromIdentityClaim(claim, ekPub);
 
         // attempt to find platform credentials to validate
         Set<PlatformCredential> platformCredentials = parsePcsFromIdentityClaim(claim,
@@ -463,7 +469,8 @@ public abstract class AbstractAttestationCertificateAuthority
         LOG.info("Got certificate request");
 
         if (ArrayUtils.isEmpty(certificateRequest)) {
-            throw new IllegalArgumentException("certificateRequest cannot be null or empty");
+            throw new IllegalArgumentException("The CertificateRequest sent by the client"
+                    + " cannot be null or empty.");
         }
 
         // attempt to deserialize Protobuf CertificateRequest
@@ -472,7 +479,7 @@ public abstract class AbstractAttestationCertificateAuthority
             request = ProvisionerTpm2.CertificateRequest.parseFrom(certificateRequest);
         } catch (InvalidProtocolBufferException ipbe) {
             throw new CertificateProcessingException(
-                    "Could not deserialize certificate request", ipbe);
+                    "Could not deserialize Protobuf Certificate Request object.", ipbe);
         }
 
         // attempt to retrieve provisioner state based on nonce in request
@@ -482,13 +489,16 @@ public abstract class AbstractAttestationCertificateAuthority
             byte[] identityClaim = tpm2ProvisionerState.getIdentityClaim();
             ProvisionerTpm2.IdentityClaim claim = parseIdentityClaim(identityClaim);
 
+            // Get endorsement public key
+            RSAPublicKey ekPub = parsePublicKey(claim.getEkPublicArea().toByteArray());
+
             // Get attestation public key
             RSAPublicKey akPub = parsePublicKey(claim.getAkPublicArea().toByteArray());
 
-            // Get Endorsement Credential if it exists
-            EndorsementCredential endorsementCredential = parseEcFromIdentityClaim(claim);
+            // Get Endorsement Credential if it exists or was uploaded
+            EndorsementCredential endorsementCredential = parseEcFromIdentityClaim(claim, ekPub);
 
-            // Get Platform Credentials if they exist
+            // Get Platform Credentials if they exist or were uploaded
             Set<PlatformCredential> platformCredentials = parsePcsFromIdentityClaim(claim,
                     endorsementCredential);
 
@@ -517,7 +527,7 @@ public abstract class AbstractAttestationCertificateAuthority
         } else {
             LOG.error("Could not process credential request. Invalid nonce provided: "
                     + request.getNonce().toString());
-            throw new CertificateProcessingException("Invalid nonce given in request");
+            throw new CertificateProcessingException("Invalid nonce given in request by client.");
         }
     }
 
@@ -1366,27 +1376,36 @@ public abstract class AbstractAttestationCertificateAuthority
             return ProvisionerTpm2.IdentityClaim.parseFrom(identityClaim);
         } catch (InvalidProtocolBufferException ipbe) {
             throw new IdentityProcessingException(
-                    "Could not deserialize identity claim", ipbe);
+                    "Could not deserialize Protobuf Identity Claim object.", ipbe);
         }
     }
 
     /**
      * Helper method to parse an Endorsement Credential from a Protobuf generated
-     * IdentityClaim. Persists the Endorsement Credential if it does not already exist.
+     * IdentityClaim. Will also check if the Endorsement Credential was already uploaded.
+     * Persists the Endorsement Credential if it does not already exist.
      *
      * @param identityClaim a Protobuf generated Identity Claim object
+     * @param ekPub the endorsement public key from the Identity Claim object
      * @return the Endorsement Credential, if one exists, null otherwise
      */
     private EndorsementCredential parseEcFromIdentityClaim(
-            final ProvisionerTpm2.IdentityClaim identityClaim) {
+            final ProvisionerTpm2.IdentityClaim identityClaim,
+            final PublicKey ekPub) {
+        EndorsementCredential endorsementCredential = null;
         if (identityClaim.hasEndorsementCredential()) {
-            return CredentialManagementHelper.storeEndorsementCredential(
+            endorsementCredential = CredentialManagementHelper.storeEndorsementCredential(
                     this.certificateManager,
                     identityClaim.getEndorsementCredential().toByteArray());
+        } else if (ekPub != null) {
+            LOG.warn("Endorsement Cred was not in the identity claim from the client."
+                    + " Checking for uploads.");
+            endorsementCredential = getEndorsementCredential(ekPub);
         } else {
-            LOG.warn("No endorsement credential received in identity claim.");
+            LOG.warn("No endorsement credential was received in identity claim and no EK Public"
+                    + " Key was provided to check for uploaded certificates.");
         }
-        return null;
+        return endorsementCredential;
     }
 
     /**
@@ -1433,7 +1452,7 @@ public abstract class AbstractAttestationCertificateAuthority
         } catch (CertificateEncodingException e) {
             LOG.error("Error converting certificate to ASN.1 DER Encoding.", e);
             throw new UnexpectedServerException(
-                    "Encountered error while converting X509 Certificate: "
+                    "Encountered error while converting X509 Certificate to ASN.1 DER Encoding: "
                             + e.getMessage(), e);
         }
     }
