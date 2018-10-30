@@ -1,6 +1,6 @@
 package hirs.provisioner.client;
 
-import hirs.client.collector.DeviceInfoCollectorHelper;
+import hirs.client.collector.DeviceInfoCollector;
 import hirs.data.persist.DeviceInfoReport;
 import hirs.data.persist.FirmwareInfo;
 import hirs.data.persist.HardwareInfo;
@@ -56,7 +56,7 @@ import static org.testng.Assert.assertTrue;
 /**
  * Test suite for the {@link RestfulClientProvisioner}.
  */
-@PrepareForTest(DeviceInfoCollectorHelper.class)
+@PrepareForTest(DeviceInfoCollector.class)
 public class RestfulClientProvisionerTest extends PowerMockTestCase {
 
     /**
@@ -158,11 +158,11 @@ public class RestfulClientProvisionerTest extends PowerMockTestCase {
      * Tests {@link RestfulClientProvisioner#createIdentityRequest(AsymmetricPublicKey,
      * String, DeviceInfoReport)}.
      * @throws Exception          if there is a problem encountered when mocking
-     *                            DeviceInfoCollectorHelper
+     *                            DeviceInfoCollector
      */
     @Test
     public void createIdentityCredential() throws Exception {
-        PowerMockito.spy(DeviceInfoCollectorHelper.class);
+        PowerMockito.spy(DeviceInfoCollector.class);
         final InetAddress ipAddress = getTestIpAddress();
         final byte[] macAddress = new byte[] {11, 22, 33, 44, 55, 66};
 
@@ -188,10 +188,10 @@ public class RestfulClientProvisionerTest extends PowerMockTestCase {
         when(mockTpm.getEndorsementCredential()).thenReturn(ek);
 
 
-        PowerMockito.doReturn("AB12345").when(DeviceInfoCollectorHelper.class,
+        PowerMockito.doReturn("AB12345").when(DeviceInfoCollector.class,
                 "collectDmiDecodeValue", OSName.LINUX, "system-serial-number");
 
-        PowerMockito.doReturn("AB12346").when(DeviceInfoCollectorHelper.class,
+        PowerMockito.doReturn("AB12346").when(DeviceInfoCollector.class,
                 "collectDmiDecodeValue", OSName.LINUX, "chassis-serial-number");
 
         // perform test
@@ -228,11 +228,11 @@ public class RestfulClientProvisionerTest extends PowerMockTestCase {
      * Tests {@link RestfulClientProvisioner#createIdentityRequest(AsymmetricPublicKey,
      * String, DeviceInfoReport)}.
      * @throws Exception          if there is a problem encountered when mocking
-     *                            DeviceInfoCollectorHelper
+     *                            DeviceInfoCollector
      */
     @Test
     public void createIdentityCredentialEkNotFound() throws Exception {
-        PowerMockito.spy(DeviceInfoCollectorHelper.class);
+        PowerMockito.spy(DeviceInfoCollector.class);
         final InetAddress ipAddress = getTestIpAddress();
         final byte[] macAddress = new byte[] {11, 22, 33, 44, 55, 66};
 
@@ -258,10 +258,10 @@ public class RestfulClientProvisionerTest extends PowerMockTestCase {
                 new CommandResult("EK not found", -1)));
 
 
-        PowerMockito.doReturn("AB12345").when(DeviceInfoCollectorHelper.class,
+        PowerMockito.doReturn("AB12345").when(DeviceInfoCollector.class,
                 "collectDmiDecodeValue", OSName.LINUX, "system-serial-number");
 
-        PowerMockito.doReturn("AB12346").when(DeviceInfoCollectorHelper.class,
+        PowerMockito.doReturn("AB12346").when(DeviceInfoCollector.class,
                 "collectDmiDecodeValue", OSName.LINUX, "chassis-serial-number");
 
         // perform test

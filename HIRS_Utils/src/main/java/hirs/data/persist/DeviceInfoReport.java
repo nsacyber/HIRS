@@ -2,12 +2,10 @@ package hirs.data.persist;
 
 import static org.apache.logging.log4j.LogManager.getLogger;
 
-import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Embedded;
 import javax.persistence.Entity;
-import javax.persistence.JoinColumn;
-import javax.persistence.OneToMany;
+import javax.persistence.Transient;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlElement;
@@ -16,13 +14,8 @@ import javax.xml.bind.annotation.XmlSeeAlso;
 
 import hirs.utils.VersionHelper;
 import org.apache.logging.log4j.Logger;
-import org.hibernate.annotations.LazyCollection;
-import org.hibernate.annotations.LazyCollectionOption;
 
 import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
 
 /**
  * A <code>DeficeInfoReport</code> is a <code>Report</code> used to transfer the
@@ -67,48 +60,8 @@ public class DeviceInfoReport extends Report implements Serializable {
     private String clientApplicationVersion;
 
     @XmlElement
-    @OneToMany(cascade = CascadeType.ALL)
-    @JoinColumn(name = "deviceInfoReport_id")
-    @LazyCollection(LazyCollectionOption.FALSE)
-    private List<ChassisComponentInfo> chassisInfo = new ArrayList<>();
-
-    @XmlElement
-    @OneToMany(cascade = CascadeType.ALL)
-    @JoinColumn(name = "deviceInfoReport_id")
-    @LazyCollection(LazyCollectionOption.FALSE)
-    private List<BaseboardComponentInfo> baseboardInfo = new ArrayList<>();
-
-    @XmlElement
-    @OneToMany(cascade = CascadeType.ALL)
-    @JoinColumn(name = "deviceInfoReport_id")
-    @LazyCollection(LazyCollectionOption.FALSE)
-    private List<ProcessorComponentInfo> processorInfo = new ArrayList<>();
-
-    @XmlElement
-    @OneToMany(cascade = CascadeType.ALL)
-    @JoinColumn(name = "deviceInfoReport_id")
-    @LazyCollection(LazyCollectionOption.FALSE)
-    private List<BIOSComponentInfo> biosInfo = new ArrayList<>();
-
-    @XmlElement
-    @OneToMany(cascade = CascadeType.ALL)
-    @JoinColumn(name = "deviceInfoReport_id")
-    @LazyCollection(LazyCollectionOption.FALSE)
-    private List<NICComponentInfo> nicInfo = new ArrayList<>();
-
-    @XmlElement
-    @OneToMany(cascade = CascadeType.ALL)
-    @JoinColumn(name = "deviceInfoReport_id")
-    @LazyCollection(LazyCollectionOption.FALSE)
-    private List<HardDriveComponentInfo> hardDriveInfo = new ArrayList<>();
-
-    @XmlElement
-    @OneToMany(cascade = CascadeType.ALL)
-    @JoinColumn(name = "deviceInfoReport_id")
-    @LazyCollection(LazyCollectionOption.FALSE)
-    private List<MemoryComponentInfo> memoryInfo = new ArrayList<>();
-
-
+    @Transient
+    private String paccorOutputString;
 
     /**
      * Default constructor necessary for marshalling/unmarshalling.
@@ -259,62 +212,6 @@ public class DeviceInfoReport extends Report implements Serializable {
     }
 
     /**
-     * Get list of ChassisComponentInfo obects, each representing a chassis.
-     * @return list of ChassisComponentInfo obects, each representing a chassis
-     */
-    public List<ChassisComponentInfo> getChassisInfo() {
-        return chassisInfo;
-    }
-
-    /**
-     * Get list of BaseboardComponentInfo obects, each representing a baseboard.
-     * @return list of BaseboardComponentInfo obects, each representing a baseboard
-     */
-    public List<BaseboardComponentInfo> getBaseboardInfo() {
-        return baseboardInfo;
-    }
-
-    /**
-     * Get list of ProcessorComponentInfo obects, each representing a processor.
-     * @return list of ProcessorComponentInfo obects, each representing a processor
-     */
-    public List<ProcessorComponentInfo> getProcessorInfo() {
-        return processorInfo;
-    }
-
-    /**
-     * Get list of BIOSComponentInfo obects, each representing a BIOS.
-     * @return list of BIOSComponentInfo obects, each representing a BIOS
-     */
-    public List<BIOSComponentInfo> getBiosInfo() {
-        return biosInfo;
-    }
-
-    /**
-     * Get list of NICComponentInfo obects, each representing a NIC.
-     * @return list of NICComponentInfo obects, each representing a NIC
-     */
-    public List<NICComponentInfo> getNicInfo() {
-        return nicInfo;
-    }
-
-    /**
-     * Get list of HardDriveComponentInfo obects, each representing a hard drive.
-     * @return list of HardDriveComponentInfo obects, each representing a hard drive
-     */
-    public List<HardDriveComponentInfo> getHardDriveInfo() {
-        return hardDriveInfo;
-    }
-
-    /**
-     * Get list of MemoryComponentInfo obects, each representing a memory DIMM.
-     * @return list of MemoryComponentInfo obects, each representing a memory DIMM
-     */
-    public List<MemoryComponentInfo> getMemoryInfo() {
-        return memoryInfo;
-    }
-
-    /**
      * Gets the client application version.
      * @return the client application version
      */
@@ -391,31 +288,19 @@ public class DeviceInfoReport extends Report implements Serializable {
         this.tpmInfo = tpmInfo;
     }
 
-    public void setChassisInfo(List<ChassisComponentInfo> chassisInfo) {
-        this.chassisInfo = Collections.unmodifiableList(chassisInfo);
+    /**
+     * Get the string returned from PACCOR's allcomponents.sh script.
+     * @return the string returned from PACCOR's allcomponents.sh script
+     */
+    public String getPaccorOutputString() {
+        return paccorOutputString;
     }
 
-    public void setBaseboardInfo(List<BaseboardComponentInfo> baseboardInfo) {
-        this.baseboardInfo = Collections.unmodifiableList(baseboardInfo);
-    }
-
-    public void setProcessorInfo(List<ProcessorComponentInfo> processorInfo) {
-        this.processorInfo = Collections.unmodifiableList(processorInfo);
-    }
-
-    public void setBiosInfo(List<BIOSComponentInfo> biosInfo) {
-        this.biosInfo = Collections.unmodifiableList(biosInfo);
-    }
-
-    public void setNicInfo(List<NICComponentInfo> nicInfo) {
-        this.nicInfo = Collections.unmodifiableList(nicInfo);
-    }
-
-    public void setHardDriveInfo(List<HardDriveComponentInfo> hardDriveInfo) {
-        this.hardDriveInfo = Collections.unmodifiableList(hardDriveInfo);
-    }
-
-    public void setMemoryInfo(List<MemoryComponentInfo> memoryInfo) {
-        this.memoryInfo = Collections.unmodifiableList(memoryInfo);
+    /**
+     * Set the string returned from PACCOR's allcomponents.sh script.
+     * @param paccorOutputString the string returned from PACCOR's allcomponents.sh script
+     */
+    public void setPaccorOutputString(String paccorOutputString) {
+        this.paccorOutputString = paccorOutputString;
     }
 }

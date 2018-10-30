@@ -11,6 +11,8 @@ import hirs.data.persist.OSInfo;
 import hirs.data.persist.OSName;
 import hirs.data.persist.Report;
 import hirs.data.persist.TPMInfo;
+import hirs.utils.exec.ExecBuilder;
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -66,6 +68,9 @@ public class DeviceInfoCollector extends AbstractCollector {
 
     private static final Logger LOGGER = LogManager.getLogger(DeviceInfoCollector.class);
 
+    private static final String OPT_PACCOR_SCRIPTS_ALLCOMPONENTS_SH
+            = "/opt/paccor/scripts/allcomponents.sh";
+
     private X509Certificate clientCredential;
 
     private final String credentialFilePath;
@@ -98,6 +103,66 @@ public class DeviceInfoCollector extends AbstractCollector {
         this.tpmCollectionEnabled = false;
         this.hostname = "";
         LOGGER.warn("default constructor called! Should only be done in test");
+    }
+
+    private static String callPaccor() throws CollectorException {
+        String[] command = {OPT_PACCOR_SCRIPTS_ALLCOMPONENTS_SH};
+
+        ProcessBuilder processBuilder = new ProcessBuilder(command);
+
+        String errorAsString;
+        try {
+            // issue the command
+            Process process = processBuilder.start();
+
+            // block and wait for the process to be complete
+            int returnCode = process.waitFor();
+
+            try (InputStream processInputStream = process.getInputStream();
+                 InputStream processErrorStream = process.getErrorStream()) {
+
+                if (returnCode == 0) {
+                    return IOUtils.toString(processInputStream);
+                }
+
+                errorAsString = IOUtils.toString(processErrorStream);
+            }
+        } catch (IOException | InterruptedException e) {
+            errorAsString = e.getMessage();
+            LOGGER.error(e.toString());
+        }
+
+        String errorMessage = "Failed to collect component info: " + errorAsString;
+        LOGGER.error(errorMessage);
+        throw new CollectorException(errorMessage);
+    }
+
+    /**
+     * Retrieves dmidecode for the device. Only supports Linux.
+     *
+     * @param osName name of OS (Linux, Windows, etc.)
+     * @param command dmidecode string keyword command
+     * @return String of the result
+     * @throws CollectorException if there is a problem encountered while performing collection
+     */
+    public static String collectDmiDecodeValue(final OSName osName, final String command)
+            throws CollectorException {
+        ExecBuilder execBuilder = null;
+        try {
+            switch (osName) {
+                case LINUX:
+                    execBuilder = new ExecBuilder("dmidecode").args("-s", command);
+                    break;
+                default:
+                    throw new CollectorException(String.format(
+                            "Unsupported operating system detected: %s.", osName));
+            }
+
+            return execBuilder.exec().getStdOutResult().trim();
+        } catch (IOException e) {
+            String msg = String.format("Could not call dmidecode using command: %s", execBuilder);
+            throw new CollectorException(msg, e);
+        }
     }
 
     /**
@@ -140,7 +205,8 @@ public class DeviceInfoCollector extends AbstractCollector {
                 tpmInfo
         );
 
-        DeviceInfoCollectorHelper.collectAndStoreComponentInfo(report);
+        report.setPaccorOutputString(callPaccor());
+
         return report;
     }
 
@@ -366,19 +432,19 @@ public class DeviceInfoCollector extends AbstractCollector {
         switch (osName) {
             case LINUX:
                 biosVendor = StringUtils.defaultIfEmpty(
-                        DeviceInfoCollectorHelper.collectDmiDecodeValue(
+                        collectDmiDecodeValue(
                                 OSName.LINUX, "bios-vendor"
                         ),
                         NOT_SPECIFIED
                 );
                 biosVersion = StringUtils.defaultIfEmpty(
-                        DeviceInfoCollectorHelper.collectDmiDecodeValue(
+                        collectDmiDecodeValue(
                                 OSName.LINUX, "bios-version"
                         ),
                         NOT_SPECIFIED
                 );
                 biosReleaseDate = StringUtils.defaultIfEmpty(
-                        DeviceInfoCollectorHelper.collectDmiDecodeValue(
+                        collectDmiDecodeValue(
                                 OSName.LINUX, "bios-release-date"
                         ),
                         NOT_SPECIFIED
@@ -402,42 +468,42 @@ public class DeviceInfoCollector extends AbstractCollector {
         switch (osName) {
             case LINUX:
                 manufacturer = StringUtils.defaultIfEmpty(
-                        DeviceInfoCollectorHelper.collectDmiDecodeValue(
+                        collectDmiDecodeValue(
                                 OSName.LINUX, "system-manufacturer"
                         ),
                         NOT_SPECIFIED
                 );
 
                 productName = StringUtils.defaultIfEmpty(
-                        DeviceInfoCollectorHelper.collectDmiDecodeValue(
+                        collectDmiDecodeValue(
                                 OSName.LINUX, "system-product-name"
                         ),
                         NOT_SPECIFIED
                 );
 
                 version = StringUtils.defaultIfEmpty(
-                        DeviceInfoCollectorHelper.collectDmiDecodeValue(
+                        collectDmiDecodeValue(
                             OSName.LINUX, "system-version"
                         ),
                         NOT_SPECIFIED
                 );
 
                 serialNumber = StringUtils.defaultIfEmpty(
-                        DeviceInfoCollectorHelper.collectDmiDecodeValue(
+                        collectDmiDecodeValue(
                                 OSName.LINUX, "system-serial-number"
                         ),
                         NOT_SPECIFIED
                 );
 
                 chassisSerialNumber = StringUtils.defaultIfEmpty(
-                        DeviceInfoCollectorHelper.collectDmiDecodeValue(
+                        collectDmiDecodeValue(
                                 OSName.LINUX, "chassis-serial-number"
                         ),
                         NOT_SPECIFIED
                 );
 
                 baseboardSerialNumber = StringUtils.defaultIfEmpty(
-                        DeviceInfoCollectorHelper.collectDmiDecodeValue(
+                        collectDmiDecodeValue(
                                 OSName.LINUX, "baseboard-serial-number"
                         ),
                         NOT_SPECIFIED
