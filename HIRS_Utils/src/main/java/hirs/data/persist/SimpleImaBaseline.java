@@ -1,9 +1,10 @@
 package hirs.data.persist;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.google.common.base.Preconditions;
 import hirs.ima.matching.BatchImaMatchStatus;
-import hirs.ima.matching.IMAMatchStatus;
-import hirs.ima.matching.ImaAcceptableRecordMatcher;
+import hirs.ima.matching.ImaAcceptableHashRecordMatcher;
+import hirs.ima.matching.ImaAcceptablePathAndHashRecordMatcher;
 import hirs.persist.ImaBaselineRecordManager;
 import org.apache.logging.log4j.Logger;
 
@@ -15,12 +16,10 @@ import javax.persistence.Entity;
 import javax.persistence.FetchType;
 import javax.persistence.OneToMany;
 import java.net.URL;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
-import java.util.List;
 import java.util.Set;
 
 import static org.apache.logging.log4j.LogManager.getLogger;
@@ -175,21 +174,24 @@ public class SimpleImaBaseline extends ImaAcceptableRecordBaseline {
             final Collection<IMAMeasurementRecord> records,
             final ImaBaselineRecordManager recordManager,
             final IMAPolicy imaPolicy) {
-        if (records == null) {
-            throw new IllegalArgumentException("Records cannot be null");
-        }
+        Preconditions.checkArgument(records != null, "Records cannot be null");
+        Preconditions.checkArgument(imaPolicy != null, "IMA policy cannot be null");
 
-        if (imaPolicy == null) {
-            throw new IllegalArgumentException("IMA policy cannot be null");
-        }
+        return new ImaAcceptablePathAndHashRecordMatcher(imaRecords, imaPolicy, this)
+                .batchMatch(records);
+    }
 
-        ImaAcceptableRecordMatcher recordMatcher =
-                new ImaAcceptableRecordMatcher(imaRecords, imaPolicy, this);
-        List<IMAMatchStatus<IMABaselineRecord>> matchStatuses = new ArrayList<>();
-        for (IMAMeasurementRecord record : records) {
-            matchStatuses.add(recordMatcher.contains(record));
-        }
-        return new BatchImaMatchStatus<>(matchStatuses);
+
+    @Override
+    public BatchImaMatchStatus<IMABaselineRecord> containsHashes(
+            final Collection<IMAMeasurementRecord> records,
+            final ImaBaselineRecordManager recordManager,
+            final IMAPolicy imaPolicy) {
+        Preconditions.checkArgument(records != null, "Records cannot be null");
+        Preconditions.checkArgument(imaPolicy != null, "IMA policy cannot be null");
+
+        return new ImaAcceptableHashRecordMatcher(imaRecords, imaPolicy, this)
+                .batchMatch(records);
     }
 
     @Override

@@ -307,4 +307,11 @@ public class BatchImaMatchStatus<T extends AbstractImaBaselineRecord> {
     public int hashCode() {
         return Objects.hash(matchStatuses);
     }
+
+    @Override
+    public String toString() {
+        return "BatchImaMatchStatus{"
+                + "matchStatuses=" + matchStatuses
+                + '}';
+    }
 }

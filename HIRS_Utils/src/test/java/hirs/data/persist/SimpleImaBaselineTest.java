@@ -1,5 +1,6 @@
 package hirs.data.persist;
 
+import hirs.ima.matching.BatchImaMatchStatus;
 import hirs.ima.matching.IMAMatchStatus;
 import hirs.persist.BaselineManager;
 import hirs.persist.DBBaselineManager;
@@ -221,6 +222,15 @@ public class SimpleImaBaselineTest extends SpringPersistenceTest {
         return baseline.contains(
                 Collections.singletonList(record), recordManager, imaPolicy
         ).getIMAMatchStatuses(record).iterator().next();
+    }
+
+    private BatchImaMatchStatus<IMABaselineRecord> baselineContainsHashes(
+            final SimpleImaBaseline baseline,
+            final IMAMeasurementRecord record,
+            final IMAPolicy imaPolicy) {
+        return baseline.containsHashes(
+                Collections.singletonList(record), recordManager, imaPolicy
+        );
     }
 
     /**
@@ -599,6 +609,91 @@ public class SimpleImaBaselineTest extends SpringPersistenceTest {
                         new IMAMatchStatus<>(otherRecord, ReportMatchStatus.UNKNOWN, baseline));
             }
         }
+    }
+
+    /**
+     * Simple test that ensures a SimpleImaBaseline can determine whether it contains
+     * baseline records that match measurement records based solely on their hashes.
+     */
+    @Test
+    public final void containsHashes() {
+        final SimpleImaBaseline baseline = new SimpleImaBaseline("TestBaseline");
+        final String baselineGradleFilename = "/usr/bin/gradle";
+        final String measuredGradleFilename = "/usr/bin/gradle_by_another_name";
+        final Digest gradleHash = getDigest("33333c2f7f3003d2e4baddc46ed4763a49543333");
+
+        final IMABaselineRecord baseRecSameNameMatchingHash = new IMABaselineRecord(
+                measuredGradleFilename, gradleHash
+        );
+
+        final IMABaselineRecord baseRecDifferentNameMatchingHash = new IMABaselineRecord(
+                baselineGradleFilename, gradleHash
+        );
+
+        baseline.addToBaseline(baseRecSameNameMatchingHash);
+        baseline.addToBaseline(baseRecDifferentNameMatchingHash);
+
+        baseline.addToBaseline(new IMABaselineRecord(
+                baselineGradleFilename,
+                getDigest("00000c2f7f3003d2e4baddc46ed4763a49543333")
+        ));
+        baseline.addToBaseline(new IMABaselineRecord(
+                measuredGradleFilename,
+                getDigest("00000c2f7f3003d2e4baddc46ed4763a49543333")
+        ));
+
+
+        IMAMeasurementRecord measurementRecord = new IMAMeasurementRecord(
+                measuredGradleFilename, gradleHash
+        );
+
+        Set<IMABaselineRecord> matchingRecords = new HashSet<>(Arrays.asList(
+                baseRecSameNameMatchingHash,
+                baseRecDifferentNameMatchingHash
+        ));
+
+        Assert.assertEquals(
+                baselineContainsHashes(baseline, measurementRecord, getTestImaPolicy(false)),
+                new BatchImaMatchStatus<>(
+                        Collections.singleton(new IMAMatchStatus<>(
+                                measurementRecord,
+                                ReportMatchStatus.MATCH,
+                                matchingRecords,
+                                baseline
+                        ))
+                )
+        );
+    }
+
+    /**
+     * Simple test that ensures a SimpleImaBaseline can determine whether it contains
+     * baseline records that match measurement records based solely on their hashes.
+     */
+    @Test
+    public final void containsHashesWithNoMatches() {
+        final SimpleImaBaseline baseline = new SimpleImaBaseline("TestBaseline");
+        final String baselineGradleFilename = "/usr/bin/gradle";
+        final String measuredGradleFilename = "/usr/bin/gradle_by_another_name";
+        final Digest gradleHash = getDigest("33333c2f7f3003d2e4baddc46ed4763a49543333");
+
+        baseline.addToBaseline(new IMABaselineRecord(
+                baselineGradleFilename,
+                getDigest("00000c2f7f3003d2e4baddc46ed4763a49543333")
+        ));
+
+        IMAMeasurementRecord record = new IMAMeasurementRecord(
+                measuredGradleFilename, gradleHash
+        );
+
+        Assert.assertEquals(baselineContainsHashes(baseline, record, getTestImaPolicy(false)),
+                new BatchImaMatchStatus<>(
+                        Collections.singleton(new IMAMatchStatus<>(
+                                record,
+                                ReportMatchStatus.UNKNOWN,
+                                baseline
+                        ))
+                )
+        );
     }
 
     /**

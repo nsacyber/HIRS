@@ -457,9 +457,11 @@ public class IMAPolicy extends Policy implements HasBaselines {
         Multimap<String, String> equivalentPaths = HashMultimap.create();
 
         // define equivalences
-        equivalentPaths.put("/bin/", "/usr/bin/");
-        equivalentPaths.put("/lib/", "/usr/lib/");
-        equivalentPaths.put("/lib64/", "/usr/lib64/");
+        equivalentPaths.put("/bin/",     "/usr/bin/");
+        equivalentPaths.put("/lib/",     "/usr/lib/");
+        equivalentPaths.put("/lib64/",   "/usr/lib64/");
+        equivalentPaths.put("/usr/bin/", "/usr/sbin/");
+        equivalentPaths.put("/sbin/",    "/usr/sbin/");
 
         // populate inverse relationships
         Multimap<String, String> bidirectionalEquivalences = HashMultimap.create();

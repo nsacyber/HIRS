@@ -1,18 +1,20 @@
 package hirs.data.persist;
 
+import com.google.common.base.Preconditions;
 import hirs.ima.matching.BatchImaMatchStatus;
 import hirs.ima.matching.IMAMatchStatus;
-import hirs.ima.matching.ImaAcceptableRecordMatcher;
+import hirs.ima.matching.ImaAcceptableHashRecordMatcher;
+import hirs.ima.matching.ImaAcceptablePathAndHashRecordMatcher;
 import hirs.ima.matching.ImaRecordMatcher;
 import hirs.persist.ImaBaselineRecordManager;
 import hirs.utils.Callback;
 import org.hibernate.Criteria;
 
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
-import java.util.List;
+import java.util.Objects;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * This class defines the basis of operation for a baseline that supports querying
@@ -50,13 +52,8 @@ public abstract class QueryableRecordImaBaseline extends ImaAcceptableRecordBase
             final Collection<IMAMeasurementRecord> records,
             final ImaBaselineRecordManager recordManager,
             final IMAPolicy imaPolicy) {
-        if (records == null) {
-            throw new IllegalArgumentException("Records cannot be null");
-        }
-
-        if (recordManager == null) {
-            throw new IllegalArgumentException("ImaBaselineRecordManager cannot be null");
-        }
+        Preconditions.checkArgument(records != null, "records cannot be null");
+        Preconditions.checkArgument(recordManager != null, "record manager cannot be null");
 
         final Collection<String> pathsToFind = new HashSet<>();
         for (IMAMeasurementRecord record : records) {
@@ -79,14 +76,45 @@ public abstract class QueryableRecordImaBaseline extends ImaAcceptableRecordBase
                     }
         });
 
-        ImaAcceptableRecordMatcher recordMatcher =
-                new ImaAcceptableRecordMatcher(retrievedRecords, imaPolicy, this);
-        List<IMAMatchStatus<IMABaselineRecord>> matchStatuses = new ArrayList<>();
-        for (IMAMeasurementRecord record : records) {
-            matchStatuses.add(recordMatcher.contains(record));
-        }
+        return new ImaAcceptablePathAndHashRecordMatcher(retrievedRecords, imaPolicy, this)
+                .batchMatch(records);
+    }
 
-        return new BatchImaMatchStatus<>(matchStatuses);
+    /**
+     * Check membership of the given {@link IMAMeasurementRecord}s in this baseline.
+     *
+     * @param records the records to attempt to match
+     * @param recordManager the {@link ImaBaselineRecordManager} to query
+     * @param imaPolicy the IMA policy to use while determining if a baseline contains the records
+     *
+     * @return a collection of {@link IMAMatchStatus}es reflecting the results
+     */
+    @Override
+    public final BatchImaMatchStatus<IMABaselineRecord> containsHashes(
+            final Collection<IMAMeasurementRecord> records,
+            final ImaBaselineRecordManager recordManager,
+            final IMAPolicy imaPolicy) {
+        Preconditions.checkArgument(records != null, "records cannot be null");
+        Preconditions.checkArgument(recordManager != null, "record manager cannot be null");
+
+        final Set<Digest> hashesToFind = records.stream()
+                .filter(Objects::nonNull)
+                .map(IMAMeasurementRecord::getHash)
+                .collect(Collectors.toSet());
+
+        Collection<IMABaselineRecord> retrievedRecords = recordManager.iterateOverBaselineRecords(
+                this, new Callback<IMABaselineRecord, IMABaselineRecord>() {
+                    @Override
+                    public IMABaselineRecord call(final IMABaselineRecord baselineRecord) {
+                        if (hashesToFind.contains(baselineRecord.getHash())) {
+                            return baselineRecord;
+                        }
+                        return null;
+                    }
+                });
+
+        return new ImaAcceptableHashRecordMatcher(retrievedRecords, imaPolicy, this)
+                .batchMatch(records);
     }
 
     @Override

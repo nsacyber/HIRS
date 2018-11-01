@@ -75,7 +75,7 @@ public abstract class ImaBaseline<T extends AbstractImaBaselineRecord> extends B
      * @param imaPolicy
      *            the IMA policy to use while determining if a baseline contains the given records
      *
-     * @return search status for the measurement record
+     * @return batch match status for the measurement records
      */
     public abstract BatchImaMatchStatus<T> contains(
             Collection<IMAMeasurementRecord> records,

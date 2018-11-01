@@ -1,5 +1,6 @@
 package hirs.ima.matching;
 
+import com.google.common.base.Preconditions;
 import hirs.data.persist.DigestComparisonResultType;
 import hirs.data.persist.IMABaselineRecord;
 import hirs.data.persist.IMAMeasurementRecord;
@@ -16,20 +17,21 @@ import static org.apache.logging.log4j.LogManager.getLogger;
 
 /**
  * This class extends the base matching functionality of {@link ImaRecordMatcher} to
- * compare {@link IMAMeasurementRecord}s against a collection of {@link IMABaselineRecord}s.
+ * compare {@link IMAMeasurementRecord}s against a collection of {@link IMABaselineRecord}s
+ * based on both their paths and hashes.
  */
-public class ImaAcceptableRecordMatcher extends ImaRecordMatcher<IMABaselineRecord> {
-    private static final Logger LOGGER = getLogger(ImaAcceptableRecordMatcher.class);
+public class ImaAcceptablePathAndHashRecordMatcher extends ImaRecordMatcher<IMABaselineRecord> {
+    private static final Logger LOGGER = getLogger(ImaAcceptablePathAndHashRecordMatcher.class);
 
     /**
-     * Construct a new ImaAcceptableRecordMatcher.
+     * Construct a new ImaAcceptablePathAndHashRecordMatcher.
      *
      * @param records     the baseline records to use for matching
      * @param imaPolicy   the IMA policy to reference during matching; its partial path and path
      *                    equivalence settings influence matching behavior
      * @param imaBaseline the IMA baseline these records were sourced from; this is only used to
      */
-    public ImaAcceptableRecordMatcher(
+    public ImaAcceptablePathAndHashRecordMatcher(
             final Collection<IMABaselineRecord> records,
             final IMAPolicy imaPolicy,
             final ImaBaseline imaBaseline) {
@@ -46,9 +48,7 @@ public class ImaAcceptableRecordMatcher extends ImaRecordMatcher<IMABaselineReco
      */
     @Override
     public IMAMatchStatus<IMABaselineRecord> contains(final IMAMeasurementRecord record) {
-        if (record == null) {
-            throw new IllegalArgumentException("Cannot match on null record.");
-        }
+        Preconditions.checkArgument(record != null, "Cannot match on null record.");
 
         final Set<IMABaselineRecord> matchRecords = new HashSet<>();
         final Set<IMABaselineRecord> mismatchRecords = new HashSet<>();
