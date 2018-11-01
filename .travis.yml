@@ -6,21 +6,17 @@ sudo: true
 language: java
 
 env:
-  matrix:
-    - SUBPROJECT=HIRS_Utils
-    - SUBPROJECT=HIRS_Provisioner
-    - SUBPROJECT=HIRS_ProvisionerTPM2
-    - SUBPROJECT=HIRS_Structs
-    - SUBPROJECT=HIRS_AttestationCA
-    - SUBPROJECT=HIRS_AttestationCAPortal
-    - SUBPROJECT=TPM_Utils
-    - SUBPROJECT=tpm_module
+  - SUBPROJECT=HIRS_Utils
+  - SUBPROJECT=HIRS_Provisioner
+  - SUBPROJECT=HIRS_ProvisionerTPM2
+  - SUBPROJECT=HIRS_Structs
+  - SUBPROJECT=HIRS_AttestationCA
+  - SUBPROJECT=HIRS_AttestationCAPortal
+  - SUBPROJECT=TPM_Utils
+  - SUBPROJECT=tpm_module
 
 services:
   - docker
-
-before_install:
-  - docker pull hirs/hirs-ci:centos7
 
 before_cache:
   - rm -f  $HOME/.gradle/caches/modules-2/modules-2.lock
@@ -34,3 +30,13 @@ install: true
 
 script:
   - docker run --rm hirs/hirs-ci:centos7 /bin/bash -c "git clone https://github.com/nsacyber/HIRS.git /root/HIRS; cd /root/HIRS; git checkout ${TRAVIS_BRANCH}; ./gradlew :$SUBPROJECT:build"
+
+jobs:
+  include:
+    - stage: package
+      script: docker run --rm hirs/hirs-ci:centos7 /bin/bash -c "git clone https://github.com/nsacyber/HIRS.git /root/HIRS; cd /root/HIRS; git checkout ${TRAVIS_BRANCH}; ./package/package.centos.sh"
+      env: null
+      name: "Package Centos"
+    - script: docker run --rm hirs/hirs-ci:ubuntu18 /bin/bash -c "git clone https://github.com/nsacyber/HIRS.git /root/HIRS; cd /root/HIRS; git checkout ${TRAVIS_BRANCH}; ./package/package.ubuntu.sh"
+      env: null
+      name: "Package Ubuntu"
