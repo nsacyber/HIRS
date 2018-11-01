@@ -9,8 +9,10 @@ import hirs.data.persist.IMAPolicy;
 import hirs.data.persist.AbstractImaBaselineRecord;
 import hirs.data.persist.ImaBaseline;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 /**
@@ -66,6 +68,22 @@ public abstract class ImaRecordMatcher<T extends AbstractImaBaselineRecord> {
      *         the given baseline records
      */
     public abstract IMAMatchStatus<T> contains(IMAMeasurementRecord record);
+
+    /**
+     * Given a collection of measurement records, populate and return a BatchImaMatchStatus
+     * instance containing the match results according to this ImaRecordMatcher's matching
+     * behavior and the given IMA policy, baseline, and baseline records.
+     *
+     * @param records the measurement records to match to baseline records
+     * @return a BatchImaMatchStatus containing the match status of all the given records
+     */
+    public BatchImaMatchStatus<T> batchMatch(final Collection<IMAMeasurementRecord> records) {
+        List<IMAMatchStatus<T>> matchStatuses = new ArrayList<>();
+        for (IMAMeasurementRecord record : records) {
+            matchStatuses.add(contains(record));
+        }
+        return new BatchImaMatchStatus<>(matchStatuses);
+    }
 
     /**
      * Gets all IMA baseline records that are related to the given IMA measurement record

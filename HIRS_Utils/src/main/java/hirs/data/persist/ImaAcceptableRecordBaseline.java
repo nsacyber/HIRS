@@ -1,6 +1,7 @@
 package hirs.data.persist;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import hirs.ima.matching.BatchImaMatchStatus;
 import hirs.persist.ImaBaselineRecordManager;
 
 import javax.persistence.Entity;
@@ -14,6 +15,7 @@ import java.util.Set;
  */
 @Entity
 public abstract class ImaAcceptableRecordBaseline extends ImaBaseline<IMABaselineRecord> {
+
     /**
      * Creates a new ImaAcceptableRecordBaseline with the given name.
      *
@@ -28,6 +30,34 @@ public abstract class ImaAcceptableRecordBaseline extends ImaBaseline<IMABaselin
      */
     protected ImaAcceptableRecordBaseline() {
     }
+
+    /**
+     * Similar to contains, but only considers the hash value and does not consider
+     * the path as relevant to matching at all.
+     *
+     * Each type of baseline specifies its own
+     * 'contains' algorithm for deciding whether the given measurements are
+     * considered as matches, mismatches, or unknowns to the baseline.  The 'contains' method
+     * of ImaAcceptableRecordBaselines that is normally used to judge measurement records
+     * against baseline records considers both paths and hashes; this method offers an
+     * additional mechanism for finding matching baseline records solely based
+     * on matching hash values.
+     *
+     * @param records
+     *            measurement records to find in this baseline
+     * @param recordManager
+     *            an ImaBaselineRecordManager that can be used to retrieve persisted records
+     * @param imaPolicy
+     *            the IMA policy to use while determining if a baseline contains the given records
+     *
+     * @return batch match status for the measurement records, according only to hashes
+     */
+    @JsonIgnore
+    public abstract BatchImaMatchStatus<IMABaselineRecord> containsHashes(
+            Collection<IMAMeasurementRecord> records,
+            ImaBaselineRecordManager recordManager,
+            IMAPolicy imaPolicy
+    );
 
     /**
      * Returns an unmodifiable set of IMA baseline records found in the IMA
