@@ -9,6 +9,7 @@ import org.bouncycastle.asn1.ASN1Boolean;
 import org.bouncycastle.asn1.ASN1ObjectIdentifier;
 import org.bouncycastle.asn1.ASN1Sequence;
 import org.bouncycastle.asn1.ASN1TaggedObject;
+import org.bouncycastle.asn1.DEROctetString;
 import org.bouncycastle.asn1.DERUTF8String;
 
 /**
@@ -36,10 +37,12 @@ public class ComponentIdentifier {
 
     private static final int COMPONENT_SERIAL = 0;
     private static final int COMPONENT_REVISION = 1;
+    private static final int COMPONENT_IDENTIFIER = 1;
     private static final int COMPONENT_MANUFACTURER_ID = 2;
     private static final int FIELD_REPLACEABLE = 3;
     private static final int COMPONENT_ADDRESS = 4;
 
+    private String componentClass;
     private DERUTF8String componentManufacturer;
     private DERUTF8String componentModel;
     private DERUTF8String componentSerial;
@@ -52,6 +55,7 @@ public class ComponentIdentifier {
      * Default constructor.
      */
     public ComponentIdentifier() {
+        componentClass = null;
         componentManufacturer = null;
         componentModel = null;
         componentSerial = null;
@@ -99,9 +103,22 @@ public class ComponentIdentifier {
             throw new IllegalArgumentException("Component identifier do not have required values.");
         }
 
+        ASN1Sequence componentIdSeq;
+        int tag = 0;
+
+        if (sequence.getObjectAt(tag) instanceof ASN1Sequence) {
+            componentIdSeq = ASN1Sequence.getInstance(sequence.getObjectAt(tag++));
+            componentClass = DEROctetString.getInstance(componentIdSeq
+                    .getObjectAt(COMPONENT_IDENTIFIER))
+                    .toString();
+        } else if (sequence.getObjectAt(tag) instanceof DEROctetString) {
+            componentClass = sequence.getObjectAt(tag).toString();
+            tag++;
+        }
+
         //Mandatory values
-        componentManufacturer = DERUTF8String.getInstance(sequence.getObjectAt(0));
-        componentModel = DERUTF8String.getInstance(sequence.getObjectAt(1));
+        componentManufacturer = DERUTF8String.getInstance(sequence.getObjectAt(tag++));
+        componentModel = DERUTF8String.getInstance(sequence.getObjectAt(tag++));
 
         //Optional values (default to null or empty)
         componentSerial = null;
@@ -111,7 +128,7 @@ public class ComponentIdentifier {
         componentAddress = new ArrayList<>();
 
         //Continue reading the sequence if it does contain more than 2 values
-        for (int i = 2; i < sequence.size(); i++) {
+        for (int i = tag; i < sequence.size(); i++) {
             ASN1TaggedObject taggedObj = ASN1TaggedObject.getInstance(sequence.getObjectAt(i));
             switch (taggedObj.getTagNo()) {
                 case COMPONENT_SERIAL:
@@ -135,6 +152,20 @@ public class ComponentIdentifier {
                             + "invalid tagged object.");
             }
         }
+    }
+
+    /**
+     * @return the componentClass
+     */
+    public String getComponentClass() {
+        return componentClass;
+    }
+
+    /**
+     * @param componentClass the componentClass to set
+     */
+    public void setComponentClass(final String componentClass) {
+        this.componentClass = componentClass;
     }
 
     /**
