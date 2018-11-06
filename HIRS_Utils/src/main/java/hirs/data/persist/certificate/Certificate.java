@@ -621,7 +621,8 @@ public abstract class Certificate extends ArchivableEntity {
      * @return List Authority info access list
      */
     private String getAuthorityInfoAccess() {
-        List<String> address = new ArrayList<>();
+        StringBuilder sb = new StringBuilder();
+
         try {
             byte[] authAccess = getX509Certificate().getExtensionValue(
                     Extension.authorityInfoAccess.getId());
@@ -632,22 +633,16 @@ public abstract class Certificate extends ArchivableEntity {
                 for (AccessDescription desc : infoAccess.getAccessDescriptions()) {
                     if (desc.getAccessLocation().getTagNo() == GeneralName
                             .uniformResourceIdentifier) {
-                        address.add(((DERIA5String) desc
+                        sb.append(String.format("%s%n", ((DERIA5String) desc
                                 .getAccessLocation()
                                 .getName())
-                                .getString());
+                                .getString()));
                     }
                 }
             }
         } catch (IOException ioEx) {
             LOGGER.error(ioEx);
             return "";
-        }
-
-        StringBuilder sb = new StringBuilder();
-
-        for (String s : address) {
-            sb.append(String.format("%s%n", s));
         }
 
         return sb.toString();

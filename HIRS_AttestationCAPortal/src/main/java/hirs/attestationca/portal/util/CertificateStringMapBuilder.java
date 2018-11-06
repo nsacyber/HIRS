@@ -70,7 +70,8 @@ public final class CertificateStringMapBuilder {
             if (certificate.getPublicKeyModulusHexValue() != null) {
                 data.put("publicKeyValue", certificate.getPublicKeyModulusHexValue());
                 data.put("publicKeySize", Integer.toString(certificate
-                        .getPublicKeyModulusHexValue().length()));
+                        .getPublicKeyModulusHexValue().length()
+                        * Certificate.MIN_ATTR_CERT_LENGTH));
             }
 
             if (certificate.getKeyUsage() != null) {
