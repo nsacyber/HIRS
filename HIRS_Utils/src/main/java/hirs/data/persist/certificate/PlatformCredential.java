@@ -7,7 +7,6 @@ import hirs.data.persist.certificate.attributes.URIReference;
 import hirs.persist.CertificateManager;
 import hirs.persist.CertificateSelector;
 import java.io.IOException;
-import java.math.BigInteger;
 import java.nio.file.Path;
 import java.util.Collections;
 import java.util.HashMap;
@@ -73,6 +72,7 @@ public class PlatformCredential extends DeviceAssociatedCertificate {
     private static final String TCG_CREDENTIAL_SPECIFICATION = "2.23.133.2.23";
     private static final String PLATFORM_CONFIGURATION_URI = "2.23.133.5.1.3";
     private static final String PLATFORM_CONFIGURATION = "2.23.133.5.1.7.1";
+    private static final String PLATFORM_CONFIGURATION_V2 = "2.23.133.5.1.7.2";
 
     // number of extra bytes potentially present in a cert header.
     private static final int PC_CERT_HEADER_BYTE_COUNT = 8;
@@ -557,10 +557,19 @@ public class PlatformCredential extends DeviceAssociatedCertificate {
     /**
      * Get the x509 Platform Certificate version.
      * @return a big integer representing the certificate version.
-     * @throws IOException when reading the certificate.
      */
-    public BigInteger getX509CredentialVersion() throws IOException {
-        return getAttributeCertificate().getAcinfo().getVersion().getValue();
+    @Override
+    public int getX509CredentialVersion() {
+        try {
+            return getAttributeCertificate()
+                    .getAcinfo()
+                    .getVersion()
+                    .getValue().intValue();
+        } catch (IOException ex) {
+            LOGGER.warn("X509 Credential Version not found.");
+            LOGGER.error(ex);
+            return Integer.MAX_VALUE;
+        }
     }
 
     /**
@@ -604,6 +613,7 @@ public class PlatformCredential extends DeviceAssociatedCertificate {
                             new URIReference(attributeSequence));
                     break;
                 case PLATFORM_CONFIGURATION:
+                case PLATFORM_CONFIGURATION_V2:
                     attributes.put("platformConfiguration",
                             new PlatformConfiguration(attributeSequence));
                     break;

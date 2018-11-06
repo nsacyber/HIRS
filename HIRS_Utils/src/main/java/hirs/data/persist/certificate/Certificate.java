@@ -26,6 +26,14 @@ import org.bouncycastle.util.encoders.Base64;
 import org.bouncycastle.asn1.ASN1GeneralizedTime;
 import org.bouncycastle.asn1.ASN1Object;
 import org.bouncycastle.asn1.DERTaggedObject;
+import org.bouncycastle.asn1.ASN1InputStream;
+import org.bouncycastle.asn1.DERIA5String;
+import org.bouncycastle.asn1.DEROctetString;
+import org.bouncycastle.asn1.DLSequence;
+import org.bouncycastle.asn1.x509.AccessDescription;
+import org.bouncycastle.asn1.x509.AuthorityInformationAccess;
+import org.bouncycastle.asn1.x509.Extension;
+import org.bouncycastle.x509.extension.X509ExtensionUtil;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -46,6 +54,7 @@ import java.security.SignatureException;
 import java.security.cert.CertificateEncodingException;
 import java.security.cert.CertificateException;
 import java.security.cert.CertificateFactory;
+import java.security.cert.CertificateParsingException;
 import java.security.cert.X509Certificate;
 import java.text.ParseException;
 import java.util.ArrayList;
@@ -70,6 +79,31 @@ public abstract class Certificate extends ArchivableEntity {
     private static final int MAX_CERT_LENGTH_BYTES = 2048;
     private static final int MAX_NUMERIC_PRECISION = 49; // Can store up to 160 bit values
     private static final int MAX_PUB_KEY_MODULUS_HEX_LENGTH = 1024;
+    private static final int KEY_USAGE_BIT0 = 0;
+    private static final int KEY_USAGE_BIT1 = 1;
+    private static final int KEY_USAGE_BIT2 = 2;
+    private static final int KEY_USAGE_BIT3 = 3;
+    private static final int KEY_USAGE_BIT4 = 4;
+    private static final int KEY_USAGE_BIT5 = 5;
+    private static final int KEY_USAGE_BIT6 = 6;
+    private static final int KEY_USAGE_BIT7 = 7;
+    private static final int KEY_USAGE_BIT8 = 8;
+    private static final String KEY_USAGE_DS = "DIGITAL SIGNATURE";
+    private static final String KEY_USAGE_NR = "NON-REPUDIATION";
+    private static final String KEY_USAGE_KE = "KEY ENCIPHERMENT";
+    private static final String KEY_USAGE_DE = "DATA ENCIPHERMENT";
+    private static final String KEY_USAGE_KA = "KEY AGREEMENT";
+    private static final String KEY_USAGE_KC = "KEY CERT SIGN";
+    private static final String KEY_USAGE_CS = "CRL SIGN";
+    private static final String KEY_USAGE_EO = "ENCIPHER ONLY";
+    private static final String KEY_USAGE_DO = "DECIPHER ONLY";
+    private static final String ECDSA_OID = "1.2.840.10045.4.3.2";
+    private static final String RSA256_OID = "1.2.840.113549.1.1.11";
+    private static final String RSA384_OID = "1.2.840.113549.1.1.12";
+    private static final String RSA512_OID = "1.2.840.113549.1.1.13";
+    private static final String RSA224_OID = "1.2.840.113549.1.1.14";
+    private static final String RSA256_STRING = "SHA256WithRSA";
+    private static final String ECDSA_STRING = "SHA256WithECDSA";
 
     private static final Logger LOGGER = LogManager.getLogger(Certificate.class);
 
@@ -196,13 +230,28 @@ public abstract class Certificate extends ArchivableEntity {
      * Holds the name of the 'holderSerialNumber' field.
      */
     public static final String HOLDER_SERIAL_NUMBER_FIELD = "holderSerialNumber";
+
     @Column(nullable = false, precision = MAX_NUMERIC_PRECISION, scale = 0)
     private final BigInteger holderSerialNumber;
     private String holderIssuer;
 
+    @SuppressWarnings("PMD.AvoidUsingHardCodedIP") // this is not an IP address; PMD thinks it is
+    private static final String AUTHORITY_KEY_IDENTIFIER = "2.5.29.35";
+    private static final String AUTHORITY_INFO_ACCESS = "1.3.6.1.5.5.7.1.1";
+    @SuppressWarnings("PMD.AvoidUsingHardCodedIP") // this is not an IP address; PMD thinks it is
+    private static final String POLICY_CONTRAINTS = "2.5.29.36";
+
     // we don't need to persist this, but we don't want to unpack this cert multiple times
     @Transient
     private X509Certificate parsedX509Cert = null;
+
+    private String signatureAlgorithm;
+    private String publicKeyAlgorithm;
+    private String keyUsage;
+    private String extendedKeyUsage;
+    private byte[] policyConstraints;
+    private String authorityKeyIdentifier;
+    private String authorityInfoAccess;
 
 
     /**
@@ -224,6 +273,13 @@ public abstract class Certificate extends ArchivableEntity {
         this.certAndTypeHash = 0;
         this.holderSerialNumber = BigInteger.ZERO;
         this.holderIssuer = null;
+        this.publicKeyAlgorithm = null;
+        this.signatureAlgorithm = null;
+        this.keyUsage = null;
+        this.extendedKeyUsage = null;
+        this.policyConstraints = null;
+        this.authorityKeyIdentifier = null;
+        this.authorityInfoAccess = null;
     }
 
     /**
@@ -283,12 +339,31 @@ public abstract class Certificate extends ArchivableEntity {
                 } else {
                     this.publicKeyModulusHexValue = null;
                 }
+                this.publicKeyAlgorithm = x509Certificate.getPublicKey().getAlgorithm();
+                this.signatureAlgorithm = x509Certificate.getSigAlgName();
                 this.signature = x509Certificate.getSignature();
                 this.beginValidity = x509Certificate.getNotBefore();
                 this.endValidity = x509Certificate.getNotAfter();
                 this.holderSerialNumber = BigInteger.ZERO;
                 this.issuerOrganization = getOrganization(this.issuer);
                 this.subjectOrganization = getOrganization(this.subject);
+                this.policyConstraints = x509Certificate
+                        .getExtensionValue(POLICY_CONTRAINTS);
+                this.authorityKeyIdentifier = getAuthorityKeyIdentifier();
+                this.authorityInfoAccess = getAuthorityInfoAccess();
+
+                this.keyUsage = parseKeyUsage(x509Certificate.getKeyUsage());
+                try {
+                    if (x509Certificate.getExtendedKeyUsage() != null) {
+                        StringBuilder sb = new StringBuilder();
+                        for (String s : x509Certificate.getExtendedKeyUsage()) {
+                            sb.append(String.format("%s%n", s));
+                        }
+                        this.extendedKeyUsage = sb.toString();
+                    }
+                } catch (CertificateParsingException ex) {
+                    // do nothing
+                }
                 break;
 
             case ATTRIBUTE_CERTIFICATE:
@@ -300,6 +375,17 @@ public abstract class Certificate extends ArchivableEntity {
                 this.subjectOrganization = null;
                 this.encodedPublicKey = null;
                 this.publicKeyModulusHexValue = null;
+
+                switch (attCert.getSignatureAlgorithm().getAlgorithm().getId()) {
+                    case RSA256_OID:
+                        this.signatureAlgorithm = RSA256_STRING;
+                        break;
+                    case ECDSA_OID:
+                        this.signatureAlgorithm = ECDSA_STRING;
+                        break;
+                    default:
+                        break;
+                }
 
                 // Get attribute certificate information
                 this.serialNumber = attCertInfo.getSerialNumber().getValue();
@@ -441,6 +527,170 @@ public abstract class Certificate extends ArchivableEntity {
         return possiblePEM.contains(PEM_HEADER) || possiblePEM.contains(PEM_ATTRIBUTE_HEADER);
     }
 
+    private String parseKeyUsage(final boolean[] bools) {
+        StringBuilder sb = new StringBuilder();
+
+        if (bools != null) {
+            for (int i = 0; i < bools.length; i++) {
+                if (bools[i]) {
+                    sb.append(getKeyUsageString(i));
+                }
+            }
+        }
+
+        return sb.toString();
+    }
+
+    /**
+     * Return the string associated with the boolean slot.
+     * @param bit associated with the location in the array.
+     * @return string value of the bit set.
+     */
+    private String getKeyUsageString(final int bit) {
+        String tempStr = "";
+
+        switch (bit) {
+            case KEY_USAGE_BIT0:
+                tempStr = String.format("%s%n", KEY_USAGE_DS);
+                break;
+            case KEY_USAGE_BIT1:
+                tempStr = String.format("%s%n", KEY_USAGE_NR);
+                break;
+            case KEY_USAGE_BIT2:
+                tempStr = String.format("%s%n", KEY_USAGE_KE);
+                break;
+            case KEY_USAGE_BIT3:
+                tempStr = String.format("%s%n", KEY_USAGE_DE);
+                break;
+            case KEY_USAGE_BIT4:
+                tempStr = String.format("%s%n", KEY_USAGE_KA);
+                break;
+            case KEY_USAGE_BIT5:
+                tempStr = String.format("%s%n", KEY_USAGE_KC);
+                break;
+            case KEY_USAGE_BIT6:
+                tempStr = String.format("%s%n", KEY_USAGE_CS);
+                break;
+            case KEY_USAGE_BIT7:
+                tempStr = String.format("%s%n", KEY_USAGE_EO);
+                break;
+            case KEY_USAGE_BIT8:
+                tempStr = String.format("%s%n", KEY_USAGE_DO);
+                break;
+            default:
+                break;
+        }
+
+        return tempStr;
+    }
+
+    /**
+     * Gets the contents of requested OID.
+     *
+     * @param oid Object Identifier
+     * @return ASN1Primitive Content related to the requested OID
+     * @throws java.io.IOException
+     */
+    private ASN1Primitive getExtensionValue(final String oid) throws IOException {
+        byte[] extensionValue = getX509Certificate().getExtensionValue(oid);
+        ASN1Primitive asn1Primitive = null;
+        ASN1InputStream asn1InputStream = null;
+
+        if (extensionValue != null) {
+            try {
+                asn1InputStream = new ASN1InputStream(extensionValue);
+                DEROctetString oct = (DEROctetString) asn1InputStream.readObject();
+                asn1InputStream.close();
+                asn1InputStream = new ASN1InputStream(oct.getOctets());
+                asn1Primitive = asn1InputStream.readObject();
+            } catch (IOException ioEx) {
+                LOGGER.error(ioEx);
+            } finally {
+                if (asn1InputStream != null) {
+                    asn1InputStream.close();
+                }
+            }
+        }
+
+        return asn1Primitive;
+    }
+
+    /**
+     * Getter for the AuthorityInfoAccess extension value on list format.
+     *
+     * @return List Authority info access list
+     */
+    private String getAuthorityInfoAccess() {
+        List<String> address = new ArrayList<>();
+        try {
+            byte[] authAccess = getX509Certificate().getExtensionValue(
+                    Extension.authorityInfoAccess.getId());
+            if (authAccess != null && authAccess.length > 0) {
+                AuthorityInformationAccess infoAccess = AuthorityInformationAccess
+                        .getInstance(X509ExtensionUtil
+                        .fromExtensionValue(authAccess));
+                for (AccessDescription desc : infoAccess.getAccessDescriptions()) {
+                    if (desc.getAccessLocation().getTagNo() == GeneralName
+                            .uniformResourceIdentifier) {
+                        address.add(((DERIA5String) desc
+                                .getAccessLocation()
+                                .getName())
+                                .getString());
+                    }
+                }
+            }
+        } catch (IOException ioEx) {
+            LOGGER.error(ioEx);
+            return "";
+        }
+
+        StringBuilder sb = new StringBuilder();
+
+        for (String s : address) {
+            sb.append(String.format("%s%n", s));
+        }
+
+        return sb.toString();
+    }
+
+
+    /**
+     * Getter for the AuthorityKeyIdentier associated with the certificate.
+     *
+     * @return the authority key identifier
+     * @throws java.io.IOException
+     */
+    private String getAuthorityKeyIdentifier() throws IOException {
+        DLSequence sequence = (DLSequence) getExtensionValue(Extension
+                .authorityKeyIdentifier.getId());
+        if (sequence == null || sequence.size() == 0) {
+            return "";
+        }
+
+        DERTaggedObject taggedObject = (DERTaggedObject) sequence.getObjectAt(0);
+
+        String tempStr = taggedObject.getObject().toString();
+        if (tempStr.startsWith("#")) {
+            return tempStr.replaceFirst("#", "");
+        }
+
+        return tempStr;
+    }
+
+    /**
+     * Get the x509 Platform Certificate version.
+     * @return a big integer representing the certificate version.
+     */
+    public int getX509CredentialVersion() {
+        try {
+            return getX509Certificate().getVersion() - 1;
+        } catch (IOException ex) {
+            LOGGER.warn("X509 Credential Version not found.");
+            LOGGER.error(ex);
+            return Integer.MAX_VALUE;
+        }
+    }
+
     /**
      * Checks if another certificate is the issuer for this certificate.
      *
@@ -548,6 +798,66 @@ public abstract class Certificate extends ArchivableEntity {
     }
 
     /**
+     * Getter for the Authority Info Access List.
+     * @return return a list of Info Access
+     */
+    public String getAuthInfoAccess() {
+        return authorityInfoAccess;
+    }
+
+    /**
+     * Getter for the authorityKeyIdentifier.
+     * @return the ID String
+     */
+    public String getAuthKeyId() {
+        return authorityKeyIdentifier;
+    }
+
+    /**
+     * Getter for the policy statement.
+     * @return cloned bit representation of constraints
+     */
+    public byte[] getPolicyConstraints() {
+        if (policyConstraints != null) {
+            return policyConstraints.clone();
+        }
+
+        return new byte[0];
+    }
+
+    /**
+     * Getter for the keyUsage info.
+     * @return key usages
+     */
+    public String getKeyUsage() {
+        return keyUsage;
+    }
+
+    /**
+     * Getter for the extended key info.
+     * @return extended key usages
+     */
+    public String getExtendedKeyUsage() {
+        return extendedKeyUsage;
+    }
+
+    /**
+     * Getter for the algorithm.
+     * @return algorithm for the signature
+     */
+    public String getSignatureAlgorithm() {
+        return signatureAlgorithm;
+    }
+
+    /**
+     * Getter for the public key algorithm.
+     * @return  public key algorithm
+     */
+    public String getPublicKeyAlgorithm() {
+        return publicKeyAlgorithm;
+    }
+
+    /**
      * @return this certificate's serial number
      */
     public BigInteger getSerialNumber() {
@@ -592,6 +902,14 @@ public abstract class Certificate extends ArchivableEntity {
         } else {
             return encodedPublicKey.clone();
         }
+    }
+
+    /**
+     * Getter for the hex value as a string.
+     * @return a string for the public key
+     */
+    public String getPublicKeyModulusHexValue() {
+        return publicKeyModulusHexValue;
     }
 
     /**

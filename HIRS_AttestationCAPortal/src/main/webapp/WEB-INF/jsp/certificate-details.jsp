@@ -51,16 +51,21 @@
                 <div class="col-md-1 col-md-offset-1"><span class="colHeader">Issuer</span></div>
                 <div id="issuer" class="col col-md-8">
                     <!-- Display the issuer, and provide a link to the issuer details if provided -->
-                    <c:choose>
-                        <c:when test="${not empty initialData.issuerID}">
-                            <a href="${portal}/certificate-details?id=${initialData.issuerID}&type=certificateauthority">
-                                ${initialData.issuer}
-                            </a>
-                        </c:when>
-                        <c:otherwise>
-                            ${initialData.issuer}
-                          </c:otherwise>
-                    </c:choose>
+                    <div>Distinguished Name:&nbsp;<span>
+                            <c:choose>
+                                <c:when test="${not empty initialData.issuerID}">
+                                    <a href="${portal}/certificate-details?id=${initialData.issuerID}&type=certificateauthority">
+                                        ${initialData.issuer}
+                                    </a>
+                                </c:when>
+                                <c:otherwise>
+                                    ${initialData.issuer}
+                                </c:otherwise>
+                            </c:choose>
+                        </span>
+                    </div>
+                    <div>Authority Key Identifier:&nbsp;<span id="authorityKeyIdentifier"></span></div>
+                    <div>Authority Info Access:&nbsp;<span><a href="${initialData.authInfoAccess}">${initialData.authInfoAccess}</a></span></div>
                     <c:if test="${param.type!='issued'}">
                         <span class="chainIcon">
                             <!-- Icon with link for missing certificate for the chain -->
@@ -100,21 +105,91 @@
                 </div>
             </div>
             <div class="row">
-                <div class="col-md-1 col-md-offset-1"><span class="colHeader">Signature</span></div>
-                <div id="signature" class="col col-md-8"></div>
-            </div>
+                <div class="col-md-1 col-md-offset-1"><span class="colHeader">Signature</span></div><div id="signatureSection" class="col col-md-8">
+                    <div class="panel-body">
+                        <div class="panel panel-default">
+                            <div class="panel-heading">
+                                <a role="button" data-toggle="collapse" class="collapsed" href="#signatureComponentcollapse"
+                                   aria-expanded="true" data-placement="top" aria-controls="signatureComponentcollapse">
+                                    Signature
+                                </a>
+                            </div>
+                            <div id="signatureComponentcollapse" class="panel-body collaspse in" role="tabpanel" aria-labelledby="headingOne" aria-expanded="true">
+                                <div id="signature" class="fieldValue"></div>                                                                  
+                            </div>
+                        </div>
+                        <div class="panel panel-default">
+                            <div class="panel-heading">
+                                <a role="button" data-toggle="collapse" class="collapsed" href="#signatureSizecollapse"
+                                   aria-expanded="true" data-placement="top" aria-controls="signatureSizecollapse">
+                                    Algorithm & Size
+                                </a>                                                                      
+                            </div>
+                            <div id="signatureSizecollapse" class="panel-body collaspse in" role="tabpanel" aria-labelledby="headingOne" aria-expanded="true">
+                                <div>
+                                    <span class="fieldValue">
+                                        ${initialData.signatureAlgorithm} / ${initialData.signatureSize} bits
+                                    </span>
+                                </div>                                                               
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>    
             <c:if test="${not empty initialData.encodedPublicKey}">
                 <div class="row">
                     <div class="col-md-1 col-md-offset-1"><span class="colHeader">Public Key</span></div>
-                    <div id="encodedPublicKey" class="col col-md-8"></div>
+                    <div id="publicKeySection" class="col col-md-8">
+                    <div class="panel-body">
+                        <div class="panel panel-default">
+                            <div class="panel-heading">
+                                <a role="button" data-toggle="collapse" class="collapsed" href="#publicKeycollapse"
+                                   aria-expanded="true" data-placement="top" aria-controls="publicKeycollapse">
+                                    Public Key
+                                </a>                                                                    
+                            </div>
+                            <div id="publicKeycollapse" class="panel-body collaspse in" role="tabpanel" aria-expanded="true">
+                                <div id="encodedPublicKey" class="fieldValue"></div>      
+                                <!--<div id="publicKeyValue" class="fieldValue"></div>-->
+                            </div>
+                        </div>
+                        <div class="panel panel-default">
+                            <div class="panel-heading">
+                                <a role="button" data-toggle="collapse" class="collapsed" href="#publicKeySizecollapse"
+                                   aria-expanded="true" data-placement="top" aria-controls="publicKeycollapse">
+                                    Algorithm & Size
+                                </a>                                                                      
+                            </div>
+                            <div id="publicKeySizecollapse" class="panel-body collaspse in" role="tabpanel" aria-expanded="true">
+                                <div>
+                                    <span class="fieldValue">
+                                        ${initialData.publicKeyAlgorithm} / ${initialData.publicKeySize} bits
+                                    </span>
+                                </div>                                                               
+                            </div>
+                        </div>
+                    </div>
+                    </div>
                 </div>
             </c:if>
+            <div class="row">
+                <div class="col-md-1 col-md-offset-1"><span class="colHeader">X509 Credential Version</span></div>
+                <div id="credentialVersion" class="col col-md-8 vertical">${initialData.x509Version} (v${initialData.x509Version + 1})</div>
+            </div>
             <!-- Add the different fields based on the certificate type -->
             <c:choose>
                 <c:when test="${param.type=='certificateauthority'}">
                     <div class="row">
                         <div class="col-md-1 col-md-offset-1"><span class="colHeader">Subject Key Identifier</span></div>
                         <div id="subjectKeyIdentifier" class="col col-md-8"></div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-1 col-md-offset-1"><span class="colHeader">Key Usage</span></div>
+                        <div id="keyUsage" class="col col-md-8 vertical">${initialData.keyUsage}</div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-1 col-md-offset-1"><span class="colHeader">Extended Key Usage</span></div>
+                        <div id="extendedKeyUsage" class="col col-md-8 vertical">${initialData.extendedKeyUsage}</div>
                     </div>
                 </c:when>
                 <c:when test="${param.type=='endorsement'}">
@@ -142,6 +217,14 @@
                         <div class="col-md-1 col-md-offset-1"><span class="colHeader">Revocation Locator</span></div>
                         <div id="revocationLocator" class="col col-md-8">${initialData.revocationLocator}</div>
                     </div>
+                    <div class="row">
+                        <div class="col-md-1 col-md-offset-1"><span class="colHeader">Key Usage</span></div>
+                        <div id="keyUsage" class="col col-md-8 vertical">${initialData.keyUsage}</div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-1 col-md-offset-1"><span class="colHeader">Extended Key Usage</span></div>
+                        <div id="extendedKeyUsage" class="col col-md-8 vertical">${initialData.extendedKeyUsage}</div>
+                    </div>
                     <!-- Need to test this -->
                     <div class="row">
                         <div class="col-md-1 col-md-offset-1"><span class="colHeader">TPM Specification</span></div>
@@ -163,10 +246,6 @@
                     </div>
                 </c:when>
                 <c:when test="${param.type=='platform'}">
-                    <div class="row">
-                        <div class="col-md-1 col-md-offset-1"><span class="colHeader">X509 Credential Version</span></div>
-                        <div id="credentialVersion" class="col col-md-8 vertical">${initialData.x509Version} (v${initialData.x509Version + 1})</div>
-                    </div>
                     <div class="row">
                         <div class="col-md-1 col-md-offset-1"><span class="colHeader">Credential Type</span></div>
                         <div id="credentialType" class="col col-md-8">${initialData.credentialType}</div>
@@ -585,6 +664,7 @@
                 var type = "${param.type}";
                 var signature = ${initialData.signature};
                 var serialNumber = '${initialData.serialNumber}';
+                var authorityKeyIdentifier = '${initialData.authKeyId}';
 
                 //Format validity time
                 $("#validity span").each(function(){
@@ -596,6 +676,11 @@
 
                 //Convert byte array to string
                 $("#serialNumber").html(parseSerialNumber(serialNumber));
+                
+                // authority key ID
+                <c:if test="${not empty initialData.authKeyId}">
+                    $("#authorityKeyIdentifier").html(parseSerialNumber(authorityKeyIdentifier));
+                </c:if>
 
                 <c:if test="${not empty initialData.encodedPublicKey}">
                     //Change publick key byte to hex
