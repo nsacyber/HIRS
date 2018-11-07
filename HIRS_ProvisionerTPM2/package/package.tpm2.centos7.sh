@@ -12,8 +12,15 @@ fi
 cd $( dirname "${BASH_SOURCE[0]}" )
 
 # Ensure clean build environment
-rm -rf BUILD
-mkdir BUILD
+shopt -s extglob
+# Delete everything but downloaded dependencies
+rm -rf BUILD/!(lib)
+shopt -u extglob
+
+# Make BUILD directory if it doesn't already exist
+if [ ! -d "BUILD" ]; then
+    mkdir BUILD
+fi
 
 # Navigate to build directory
 cd BUILD
