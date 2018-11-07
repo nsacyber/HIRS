@@ -36,11 +36,11 @@ Summary         : Host Integrity at Runtime and Startup (HIRS) Provisioner
 Group           : System Environment/Base
 
 %if 0%{?build6}
-Requires        : tpm_module, java-1.8.0, wget, util-linux, chkconfig, sed, initscripts, coreutils, dmidecode, lshw, bash%{?RPM_EXTRA_CLIENT_DEPENDENCIES}
+Requires        : tpm_module, java-1.8.0, wget, util-linux, chkconfig, sed, initscripts, coreutils, dmidecode, paccor, bash%{?RPM_EXTRA_CLIENT_DEPENDENCIES}
 %endif
 
 %if 0%{?build7}
-Requires        : tpm_module, java-1.8.0, wget, util-linux, chkconfig, sed, systemd, coreutils, dmidecode, lshw, bash%{?RPM_EXTRA_CLIENT_DEPENDENCIES}
+Requires        : tpm_module, java-1.8.0, wget, util-linux, chkconfig, sed, systemd, coreutils, dmidecode, paccor, bash%{?RPM_EXTRA_CLIENT_DEPENDENCIES}
 %endif
 
 %description -n %{provisioner_package_name}

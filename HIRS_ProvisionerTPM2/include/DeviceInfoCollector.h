@@ -21,28 +21,6 @@ class DeviceInfoCollector {
 
     static const hirs::log::Logger LOGGER;
 
-    static void addBaseboardInfoIfAvailable(hirs::pb::HardwareInfo* hwInfo);
-
-    static void addBiosInfoIfAvailable(hirs::pb::HardwareInfo* hwInfo);
-
-    static void addChassisInfoIfAvailable(hirs::pb::HardwareInfo* hwInfo);
-
-    static void addHardDriveInfoIfAvailable(hirs::pb::HardwareInfo* hwInfo);
-
-    static void addMemoryInfoIfAvailable(hirs::pb::HardwareInfo* hwInfo);
-
-    static void addNicInfoIfAvailable(hirs::pb::HardwareInfo* hwInfo);
-
-    static void addProcessorInfoIfAvailable(hirs::pb::HardwareInfo* hwInfo);
-
-    static int getLshwDeviceCount(std::string className,
-                                  std::string deviceType = "");
-
-    static std::string getLshwDeviceField(int deviceNumber,
-                                          std::string fieldName,
-                                          std::string className,
-                                          std::string deviceType);
-
     static std::vector<std::pair<std::string, std::string>> getNetworks();
 
     static hirs::pb::FirmwareInfo collectFirmwareInfo();

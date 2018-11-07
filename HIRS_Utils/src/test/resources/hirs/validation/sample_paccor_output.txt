@@ -1,0 +1,27 @@
+{
+    
+    "PLATFORM": {
+        "PLATFORMMANUFACTURERSTR": "innotek GmbH","PLATFORMMODEL": "VirtualBox","PLATFORMVERSION": "1.2","PLATFORMSERIAL": "0"
+    },
+    "COMPONENTS": [
+        {
+            "MANUFACTURER": "Intel","MODEL": "Core i7","SERIAL": "Not Specified","REVISION": "Intel(R) Core(TM) i7-4790 CPU @ 3.60GHz"
+        },
+        {
+            "MANUFACTURER": "Intel Corporation","MODEL": "Ethernet Connection I217-V", "FIELDREPLACEABLE": "false","SERIAL": "23:94:17:ba:86:5e", "REVISION": "00"
+        },
+        {
+            "MANUFACTURER": "Intel Corporation","MODEL": "82580 Gigabit Network Connection", "FIELDREPLACEABLE": "false", "SERIAL": "90:e2:ba:31:83:10", "REVISION": ""
+        }
+    ],
+    "PROPERTIES": [
+        {
+            "NAME": "uname -r",
+            "VALUE": "3.10.0-862.11.6.el7.x86_64"
+        },
+        {
+            "NAME": "cat /etc/centos-release",
+            "VALUE": "CentOS Linux release 7.5.1804 (Core) "
+        }
+    ]
+}

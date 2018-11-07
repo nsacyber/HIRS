@@ -51,17 +51,19 @@ public class DeviceRegisterImpl implements DeviceRegister {
 
     private Device registerDeviceToManager(final String deviceName, final DeviceInfoReport report) {
         Device savedDevice = deviceManager.getDevice(deviceName);
-        if (savedDevice == null) {
-            LOGGER.debug("device not found, saving new device");
-            Device newDevice = new Device(deviceName, report);
-            DeviceGroup group = deviceGroupManager.getDeviceGroup(DeviceGroup.DEFAULT_GROUP);
-            newDevice.setDeviceGroup(group);
-            deviceManager.saveDevice(newDevice);
-        } else {
+
+        if (savedDevice != null) {
             LOGGER.debug("device found, updating device");
             savedDevice.setDeviceInfo(report);
             deviceManager.updateDevice(savedDevice);
+            return savedDevice;
         }
-        return deviceManager.getDevice(deviceName);
+
+        LOGGER.debug("device not found, saving new device");
+        Device newDevice = new Device(deviceName, report);
+        DeviceGroup group = deviceGroupManager.getDeviceGroup(DeviceGroup.DEFAULT_GROUP);
+        newDevice.setDeviceGroup(group);
+        deviceManager.saveDevice(newDevice);
+        return newDevice;
     }
 }

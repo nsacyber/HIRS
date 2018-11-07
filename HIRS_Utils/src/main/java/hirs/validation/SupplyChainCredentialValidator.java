@@ -1,5 +1,8 @@
 package hirs.validation;
 
+import com.fasterxml.jackson.core.JsonFactory;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import hirs.data.persist.AppraisalStatus;
 import hirs.data.persist.ComponentInfo;
 import hirs.data.persist.DeviceInfoReport;
@@ -92,6 +95,42 @@ public final class SupplyChainCredentialValidator implements CredentialValidator
      * Default constructor, should only be instantiated for testing.
      */
     public SupplyChainCredentialValidator() {
+
+    }
+
+    /**
+     * Parses the output from PACCOR's allcomponents.sh script into ComponentInfo objects.
+     * @param paccorOutput the output from PACCOR's allcomoponents.sh
+     * @return a list of ComponentInfo objects built from paccorOutput
+     * @throws IOException if something goes wrong parsing the JSON
+     */
+    public static List<ComponentInfo> getComponentInfoFromPaccorOutput(final String paccorOutput)
+            throws IOException {
+        List<ComponentInfo> componentInfoList = new ArrayList<>();
+
+        if (StringUtils.isNotEmpty(paccorOutput)) {
+            ObjectMapper objectMapper = new ObjectMapper(new JsonFactory());
+            JsonNode rootNode = objectMapper.readTree(paccorOutput);
+            Iterator<JsonNode> jsonComponentNodes
+                    = rootNode.findValue("COMPONENTS").elements();
+            while (jsonComponentNodes.hasNext()) {
+                JsonNode next = jsonComponentNodes.next();
+                componentInfoList.add(new ComponentInfo(
+                        getJSONNodeValueAsText(next, "MANUFACTURER"),
+                        getJSONNodeValueAsText(next, "MODEL"),
+                        getJSONNodeValueAsText(next, "SERIAL"),
+                        getJSONNodeValueAsText(next, "REVISION")));
+            }
+        }
+
+        return componentInfoList;
+    }
+
+    private static String getJSONNodeValueAsText(final JsonNode node, final String fieldName) {
+        if (node.hasNonNull(fieldName)) {
+            return node.findValue(fieldName).asText();
+        }
+        return null;
 
     }
 
@@ -408,17 +447,18 @@ public final class SupplyChainCredentialValidator implements CredentialValidator
                         && identifier.getComponentModel() != null)
                 .collect(Collectors.toList());
 
-        List<ComponentInfo> allDeviceInfoComponents = new ArrayList<>();
-        allDeviceInfoComponents.addAll(deviceInfoReport.getChassisInfo());
-        allDeviceInfoComponents.addAll(deviceInfoReport.getBaseboardInfo());
-        allDeviceInfoComponents.addAll(deviceInfoReport.getBiosInfo());
-        allDeviceInfoComponents.addAll(deviceInfoReport.getHardDriveInfo());
-        allDeviceInfoComponents.addAll(deviceInfoReport.getNicInfo());
-        allDeviceInfoComponents.addAll(deviceInfoReport.getMemoryInfo());
-        allDeviceInfoComponents.addAll(deviceInfoReport.getProcessorInfo());
-
-        fieldValidation &= validateV2p0PlatformCredentialComponentsExpectingExactMatch(
-                validPcComponents, allDeviceInfoComponents);
+        String paccorOutputString = deviceInfoReport.getPaccorOutputString();
+        try {
+            List<ComponentInfo> componentInfoList
+                    = getComponentInfoFromPaccorOutput(paccorOutputString);
+            fieldValidation &= validateV2p0PlatformCredentialComponentsExpectingExactMatch(
+                    validPcComponents, componentInfoList);
+        } catch (IOException e) {
+            final String baseErrorMessage = "Error parsing JSON output from PACCOR: ";
+            LOGGER.error(baseErrorMessage + e.toString());
+            LOGGER.error("PACCOR output string:\n" + paccorOutputString);
+            return new AppraisalStatus(ERROR, baseErrorMessage + e.getMessage());
+        }
 
         if (!fieldValidation) {
             resultMessage.append("There are unmatched components\n");
