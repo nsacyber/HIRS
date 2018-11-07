@@ -107,7 +107,6 @@ public final class DBPolicyManagerTest extends SpringPersistenceTest {
      */
     @Test
     public void testSave() throws PolicyManagerException {
-        LOGGER.debug("testSave test started");
         final TestPolicy policy = new TestPolicy(POLICY_NAME);
         final PolicyManager mgr = new DBPolicyManager(sessionFactory);
         final TestPolicy p2 = (TestPolicy) mgr.savePolicy(policy);
@@ -125,7 +124,6 @@ public final class DBPolicyManagerTest extends SpringPersistenceTest {
      */
     @Test(expectedExceptions = PolicyManagerException.class)
     public void testSaveTwice() throws PolicyManagerException {
-        LOGGER.debug("testSaveTwice test started");
         final TestPolicy policy = new TestPolicy(POLICY_NAME);
         final PolicyManager mgr = new DBPolicyManager(sessionFactory);
         final TestPolicy p2 = (TestPolicy) mgr.savePolicy(policy);
@@ -143,7 +141,6 @@ public final class DBPolicyManagerTest extends SpringPersistenceTest {
      */
     @Test(expectedExceptions = PolicyManagerException.class)
     public void testSaveSameName() throws PolicyManagerException {
-        LOGGER.debug("testSaveSameName test started");
         final TestPolicy policy = new TestPolicy(POLICY_NAME);
         final TestPolicy policy2 = new TestPolicy(POLICY_NAME);
         final PolicyManager mgr = new DBPolicyManager(sessionFactory);
@@ -162,7 +159,6 @@ public final class DBPolicyManagerTest extends SpringPersistenceTest {
      */
     @Test(expectedExceptions = NullPointerException.class)
     public void testSaveNullPolicy() throws PolicyManagerException {
-        LOGGER.debug("testSaveNullPolicy test started");
         final PolicyManager mgr = new DBPolicyManager(sessionFactory);
         mgr.savePolicy(null);
         Assert.fail("save did not fail");
@@ -177,7 +173,6 @@ public final class DBPolicyManagerTest extends SpringPersistenceTest {
      */
     @Test
     public void testUpdate() throws PolicyManagerException {
-        LOGGER.debug("testUpdate test started");
         final String updatedName = "Updated Policy";
         final PolicyManager mgr = new DBPolicyManager(sessionFactory);
         final Policy policy = createPolicy(mgr);
@@ -197,7 +192,6 @@ public final class DBPolicyManagerTest extends SpringPersistenceTest {
      */
     @Test
     public void testUpdateSameName() throws PolicyManagerException {
-        LOGGER.debug("testUpdateSameName test started");
         final String name1 = "Test Policy 1";
         final String name2 = "Test Policy 2";
         final PolicyManager mgr = new DBPolicyManager(sessionFactory);
@@ -224,7 +218,6 @@ public final class DBPolicyManagerTest extends SpringPersistenceTest {
      */
     @Test(expectedExceptions = NullPointerException.class)
     public void testUpdateNullPolicy() throws PolicyManagerException {
-        LOGGER.debug("testUpdateNullPolicy test started");
         final PolicyManager mgr = new DBPolicyManager(sessionFactory);
         mgr.updatePolicy(null);
         Assert.fail("save did not fail");
@@ -239,7 +232,6 @@ public final class DBPolicyManagerTest extends SpringPersistenceTest {
      */
     @Test
     public void testGet() throws PolicyManagerException {
-        LOGGER.debug("testGet test started");
         final PolicyManager mgr = new DBPolicyManager(sessionFactory);
         Assert.assertNull(mgr.getPolicy(POLICY_NAME));
         final Policy policy = createPolicy(mgr);
@@ -258,7 +250,6 @@ public final class DBPolicyManagerTest extends SpringPersistenceTest {
      */
     @Test
     public void testGetUnknown() throws PolicyManagerException {
-        LOGGER.debug("testGetUnknown test started");
         final PolicyManager mgr = new DBPolicyManager(sessionFactory);
         Assert.assertNull(mgr.getPolicy("Some Unknown Policy"));
     }
@@ -272,7 +263,6 @@ public final class DBPolicyManagerTest extends SpringPersistenceTest {
      */
     @Test
     public void testGetNull() throws PolicyManagerException {
-        LOGGER.debug("testGetUnknown test started");
         final PolicyManager mgr = new DBPolicyManager(sessionFactory);
         Assert.assertNull(mgr.getPolicy(null));
     }
@@ -286,7 +276,6 @@ public final class DBPolicyManagerTest extends SpringPersistenceTest {
      */
     @Test
     public void testGetPolicyList() throws PolicyManagerException {
-        LOGGER.debug("testGetPolicyList test started");
         final PolicyManager mgr = new DBPolicyManager(sessionFactory);
         final String[] names = {"Policy1", "Policy2", "Policy3"};
         final Policy[] expectedPolicies = new Policy[names.length];
@@ -309,7 +298,6 @@ public final class DBPolicyManagerTest extends SpringPersistenceTest {
      */
     @Test
     public void testGetPolicyListNullClass() throws PolicyManagerException {
-        LOGGER.debug("testGetPolicyList test started");
         final PolicyManager mgr = new DBPolicyManager(sessionFactory);
         final String[] names = {"Policy1", "Policy2", "Policy3"};
         final Policy[] expectedPolicies = new Policy[names.length];
@@ -333,7 +321,6 @@ public final class DBPolicyManagerTest extends SpringPersistenceTest {
     @Test
     public void testGetPolicyListDifferentClass()
             throws PolicyManagerException {
-        LOGGER.debug("testGetPolicyListDifferentClass test started");
         final PolicyManager mgr = new DBPolicyManager(sessionFactory);
         final String[] names = {"Policy1", "Policy2", "Policy3"};
         final Policy[] expectedPolicies = new Policy[names.length];
@@ -359,7 +346,6 @@ public final class DBPolicyManagerTest extends SpringPersistenceTest {
     @Test
     public void testGetPolicyListDifferentClassNoReturn()
             throws PolicyManagerException {
-        LOGGER.debug("testGetPolicyListDifferentClassNoReturn test started");
         final PolicyManager mgr = new DBPolicyManager(sessionFactory);
         final String[] names = {"Policy1", "Policy2", "Policy3"};
         for (int i = 0; i < names.length; ++i) {
@@ -377,7 +363,6 @@ public final class DBPolicyManagerTest extends SpringPersistenceTest {
      */
     @Test
     public void testArchive() throws PolicyManagerException {
-        LOGGER.debug("testArchive test started");
         final PolicyManager mgr = new DBPolicyManager(sessionFactory);
         Assert.assertNull(mgr.getPolicy(POLICY_NAME));
         createPolicy(mgr);
@@ -396,7 +381,6 @@ public final class DBPolicyManagerTest extends SpringPersistenceTest {
      */
     @Test
     public void testArchiveUnknown() throws PolicyManagerException {
-        LOGGER.debug("testArchiveUnknown test started");
         final String name = "Some unknown policy";
         final PolicyManager mgr = new DBPolicyManager(sessionFactory);
         boolean archived = mgr.archive(name);
@@ -413,7 +397,6 @@ public final class DBPolicyManagerTest extends SpringPersistenceTest {
      */
     @Test
     public void testArchiveNull() throws PolicyManagerException {
-        LOGGER.debug("testArchiveNull test started");
         final String name = null;
         final PolicyManager mgr = new DBPolicyManager(sessionFactory);
         boolean archived = mgr.archive(name);
@@ -428,12 +411,11 @@ public final class DBPolicyManagerTest extends SpringPersistenceTest {
      */
     @Test
     public void testSetAndGetPolicy() throws Exception {
-        LOGGER.debug("testSetAndGetDefaultPolicy test started");
         TestPolicy policy = new TestPolicy(POLICY_NAME);
         final PolicyManager mgr = new DBPolicyManager(sessionFactory);
         policy = (TestPolicy) mgr.savePolicy(policy);
         DeviceGroup deviceGroup =
-                createDeviceGroup("Test Device Group", "Test Device");
+                createDeviceGroupWithDevice("Test Device Group", "Test Device");
         mgr.setPolicy(appraiser, deviceGroup, policy);
         final Policy retrievedPolicy = mgr.getPolicy(appraiser, deviceGroup);
         Assert.assertEquals(retrievedPolicy, policy);
@@ -448,16 +430,15 @@ public final class DBPolicyManagerTest extends SpringPersistenceTest {
      */
     @Test
     public void testSetAndGetPolicyUsingDevice() throws Exception {
-        LOGGER.debug("testSetAndGetDefaultPolicy test started");
         TestPolicy policy = new TestPolicy(POLICY_NAME);
         final PolicyManager mgr = new DBPolicyManager(sessionFactory);
         policy = (TestPolicy) mgr.savePolicy(policy);
         DeviceGroup deviceGroup =
-                createDeviceGroup("Test Device Group", "Test Device");
+                createDeviceGroupWithDevice("Test Device Group", "Test Device");
         mgr.setPolicy(appraiser, deviceGroup, policy);
-        final Policy retrievedPolicy =
-                mgr.getPolicy(appraiser, deviceGroup.getDevices().iterator()
-                        .next());
+        final Policy retrievedPolicy = mgr.getPolicy(
+                appraiser, deviceGroup.getDevices().iterator().next()
+        );
         Assert.assertEquals(retrievedPolicy, policy);
     }
 
@@ -469,12 +450,11 @@ public final class DBPolicyManagerTest extends SpringPersistenceTest {
      */
     @Test
     public void testSetPolicyRemove() throws Exception {
-        LOGGER.debug("testSetPolicyRemove test started");
         TestPolicy policy = new TestPolicy(POLICY_NAME);
         final PolicyManager mgr = new DBPolicyManager(sessionFactory);
         policy = (TestPolicy) mgr.savePolicy(policy);
         DeviceGroup deviceGroup =
-                createDeviceGroup("Test Device Group", "Test Device");
+                createDeviceGroupWithDevice("Test Device Group", "Test Device");
         mgr.setPolicy(appraiser, deviceGroup, policy);
         Policy retrievedPolicy = mgr.getPolicy(appraiser, deviceGroup);
         Assert.assertEquals(retrievedPolicy, policy);
@@ -493,11 +473,10 @@ public final class DBPolicyManagerTest extends SpringPersistenceTest {
      */
     @Test(expectedExceptions = NullPointerException.class)
     public void testSetPolicyNullAppraiser() throws Exception {
-        LOGGER.debug("testSetPolicyNullAppraiser test started");
         TestPolicy policy = new TestPolicy(POLICY_NAME);
         final PolicyManager mgr = new DBPolicyManager(sessionFactory);
         DeviceGroup deviceGroup =
-                createDeviceGroup("Test Device Group", "Test Device");
+                createDeviceGroupWithDevice("Test Device Group", "Test Device");
         policy = (TestPolicy) mgr.savePolicy(policy);
         mgr.setPolicy(null, deviceGroup, policy);
     }
@@ -510,12 +489,11 @@ public final class DBPolicyManagerTest extends SpringPersistenceTest {
      */
     @Test
     public void testSetPolicyTwice() throws Exception {
-        LOGGER.debug("testSetDefaultPolicy test started");
         TestPolicy policy = new TestPolicy(POLICY_NAME);
         final PolicyManager mgr = new DBPolicyManager(sessionFactory);
         policy = (TestPolicy) mgr.savePolicy(policy);
         DeviceGroup deviceGroup =
-                createDeviceGroup("Test Device Group", "Test Device");
+                createDeviceGroupWithDevice("Test Device Group", "Test Device");
         mgr.setPolicy(appraiser, deviceGroup, policy);
         Policy retrievedPolicy = mgr.getPolicy(appraiser, deviceGroup);
         Assert.assertEquals(retrievedPolicy, policy);
@@ -537,7 +515,6 @@ public final class DBPolicyManagerTest extends SpringPersistenceTest {
      */
     @Test
     public void testSetDifferentPolicesOnDeviceGroups() throws Exception {
-        LOGGER.debug("testSetDefaultPolicy test started");
         TestPolicy policy = new TestPolicy(POLICY_NAME);
         final String policyName2 = "Test Policy 2";
         TestPolicy policy2 = new TestPolicy(policyName2);
@@ -545,9 +522,9 @@ public final class DBPolicyManagerTest extends SpringPersistenceTest {
         policy = (TestPolicy) mgr.savePolicy(policy);
         policy2 = (TestPolicy) mgr.savePolicy(policy2);
         DeviceGroup deviceGroup =
-                createDeviceGroup("Test Device Group", "Test Device");
+                createDeviceGroupWithDevice("Test Device Group", "Test Device");
         DeviceGroup deviceGroup2 =
-                createDeviceGroup("Test Device Group 2", "Test Device 2");
+                createDeviceGroupWithDevice("Test Device Group 2", "Test Device 2");
         mgr.setPolicy(appraiser, deviceGroup, policy);
         mgr.setPolicy(appraiser, deviceGroup2, policy2);
         Policy retrievedPolicy = mgr.getPolicy(appraiser, deviceGroup);
@@ -564,35 +541,55 @@ public final class DBPolicyManagerTest extends SpringPersistenceTest {
     }
 
     /**
-     * Tests that if the policy for a device group is not set, the default
-     * policy is returned.
+     * Tests that if the policy for a device group is not set, then null
+     * is returned.
      *
      * @throws Exception
      *             if error occurs while creating test Device
      */
     @Test
-    public void testGetPolicyReturnsDefaultPolicyWhenDeviceGroupPolicyNotSet()
-            throws Exception {
-        LOGGER.debug("testSetDefaultPolicy test started");
-        TestPolicy policy = new TestPolicy(POLICY_NAME);
-        final String defaultPolicyName2 = "Test Default Policy";
-        TestPolicy defaultPolicy = new TestPolicy(defaultPolicyName2);
-        final PolicyManager mgr = new DBPolicyManager(sessionFactory);
-        policy = (TestPolicy) mgr.savePolicy(policy);
-        defaultPolicy = (TestPolicy) mgr.savePolicy(defaultPolicy);
-        Device deviceWithDefaults = new Device("Device1");
-        createDeviceGroup(DeviceGroup.DEFAULT_GROUP,
-                "This is the default group");
-        DeviceGroup deviceGroup =
-                createDeviceGroup("Test Device Group", "Test Device");
-        mgr.setDefaultPolicy(appraiser, defaultPolicy);
-        mgr.setPolicy(appraiser, deviceGroup, policy);
-        Policy retrievedPolicy = mgr.getPolicy(appraiser, deviceGroup);
-        Policy retrievedPolicy2 = mgr.getPolicy(appraiser,
-                deviceWithDefaults);
-        Assert.assertEquals(retrievedPolicy, policy);
-        Assert.assertEquals(retrievedPolicy2, defaultPolicy);
-        Assert.assertNotEquals(retrievedPolicy2, retrievedPolicy);
+    public void testGetPolicyReturnsNullWhenDeviceGroupPolicyNotSet() throws Exception {
+        final PolicyManager policyMgr = new DBPolicyManager(sessionFactory);
+
+        // save Test Policy
+        TestPolicy testPolicy = new TestPolicy(POLICY_NAME);
+        testPolicy = (TestPolicy) policyMgr.savePolicy(testPolicy);
+
+        // save Test Default Policy
+        TestPolicy testDefaultPolicy = new TestPolicy("Test Default Policy");
+        testDefaultPolicy = (TestPolicy) policyMgr.savePolicy(testDefaultPolicy);
+
+        // create device and put it in Default Group
+        Device deviceInDefaultGroup = new Device("DeviceInDefaultGroup");
+        DeviceGroup defaultGroup = createDeviceGroupWithDevice(
+                DeviceGroup.DEFAULT_GROUP, deviceInDefaultGroup.getName()
+        );
+
+        // create device and put it in Test Device Group
+        Device deviceInTestGroup = new Device("DeviceInTestGroup");
+        DeviceGroup testDeviceGroup = createDeviceGroupWithDevice(
+                "Test Device Group", deviceInTestGroup.getName()
+        );
+
+        // set default policy for TestAppraiser to Test Default Policy
+        policyMgr.setDefaultPolicy(appraiser, testDefaultPolicy);
+
+        // set policy for TestAppraiser & Test Device Group to Test Policy
+        policyMgr.setPolicy(appraiser, testDeviceGroup, testPolicy);
+
+        Assert.assertEquals(policyMgr.getPolicy(appraiser, defaultGroup), testDefaultPolicy);
+        Assert.assertEquals(policyMgr.getPolicy(appraiser, testDeviceGroup), testPolicy);
+
+        Assert.assertEquals(
+                policyMgr.getPolicy(appraiser, deviceInDefaultGroup),
+                testDefaultPolicy
+        );
+        Assert.assertEquals(policyMgr.getPolicy(appraiser, deviceInTestGroup), testPolicy);
+
+        // remove policy for Test Group and make sure the policy for the device in the group is null
+        policyMgr.setPolicy(appraiser, testDeviceGroup, null);
+        Assert.assertNull(policyMgr.getPolicy(appraiser, testDeviceGroup));
+        Assert.assertNull(policyMgr.getPolicy(appraiser, deviceInTestGroup));
     }
 
     /**
@@ -603,10 +600,9 @@ public final class DBPolicyManagerTest extends SpringPersistenceTest {
      */
     @Test
     public void testGetPolicyNullAppraiser() throws Exception {
-        LOGGER.debug("testGetPolicyNullAppraiser test started");
         final PolicyManager mgr = new DBPolicyManager(sessionFactory);
         DeviceGroup deviceGroup =
-                createDeviceGroup("Test Device Group", "Test Device");
+                createDeviceGroupWithDevice("Test Device Group", "Test Device");
         final Policy policy = mgr.getPolicy(null, deviceGroup);
         Assert.assertNull(policy);
     }
@@ -619,10 +615,9 @@ public final class DBPolicyManagerTest extends SpringPersistenceTest {
      */
     @Test
     public void testGetPolicyNoneSet() throws Exception {
-        LOGGER.debug("testGetDefaultPolicyNoneSet test started");
         final PolicyManager mgr = new DBPolicyManager(sessionFactory);
         DeviceGroup deviceGroup =
-                createDeviceGroup("Test Device Group", "Test Device");
+                createDeviceGroupWithDevice("Test Device Group", "Test Device");
         final Policy policy = mgr.getPolicy(appraiser, deviceGroup);
         Assert.assertNull(policy);
     }
@@ -635,11 +630,10 @@ public final class DBPolicyManagerTest extends SpringPersistenceTest {
      */
     @Test
     public void testSetAndGetDefaultPolicy() throws Exception {
-        LOGGER.debug("testSetAndGetDefaultPolicy test started");
         TestPolicy policy = new TestPolicy(POLICY_NAME);
         final PolicyManager mgr = new DBPolicyManager(sessionFactory);
         policy = (TestPolicy) mgr.savePolicy(policy);
-        createDeviceGroup(DeviceGroup.DEFAULT_GROUP, "Test Device");
+        createDeviceGroupWithDevice(DeviceGroup.DEFAULT_GROUP, "Test Device");
         mgr.setDefaultPolicy(appraiser, policy);
         final Policy defaultPolicy = mgr.getDefaultPolicy(appraiser);
         Assert.assertEquals(defaultPolicy, policy);
@@ -653,11 +647,10 @@ public final class DBPolicyManagerTest extends SpringPersistenceTest {
      */
     @Test
     public void testSetDefaultPolicyRemove() throws Exception {
-        LOGGER.debug("testSetDefaultPolicyRemove test started");
         TestPolicy policy = new TestPolicy(POLICY_NAME);
         final PolicyManager mgr = new DBPolicyManager(sessionFactory);
         policy = (TestPolicy) mgr.savePolicy(policy);
-        createDeviceGroup(DeviceGroup.DEFAULT_GROUP, "Test Device");
+        createDeviceGroupWithDevice(DeviceGroup.DEFAULT_GROUP, "Test Device");
         mgr.setDefaultPolicy(appraiser, policy);
         Policy defaultPolicy = mgr.getDefaultPolicy(appraiser);
         Assert.assertEquals(defaultPolicy, policy);
@@ -673,7 +666,6 @@ public final class DBPolicyManagerTest extends SpringPersistenceTest {
      */
     @Test(expectedExceptions = NullPointerException.class)
     public void testSetDefaultPolicyNullAppraiser() {
-        LOGGER.debug("testSetDefaultPolicyNullAppraiser test started");
         TestPolicy policy = new TestPolicy(POLICY_NAME);
         final PolicyManager mgr = new DBPolicyManager(sessionFactory);
         policy = (TestPolicy) mgr.savePolicy(policy);
@@ -688,11 +680,10 @@ public final class DBPolicyManagerTest extends SpringPersistenceTest {
      */
     @Test
     public void testSetDefaultPolicyTwice() throws Exception {
-        LOGGER.debug("testSetDefaultPolicy test started");
         TestPolicy policy = new TestPolicy(POLICY_NAME);
         final PolicyManager mgr = new DBPolicyManager(sessionFactory);
         policy = (TestPolicy) mgr.savePolicy(policy);
-        createDeviceGroup(DeviceGroup.DEFAULT_GROUP, "Test Device");
+        createDeviceGroupWithDevice(DeviceGroup.DEFAULT_GROUP, "Test Device");
         mgr.setDefaultPolicy(appraiser, policy);
         Policy defaultPolicy = mgr.getDefaultPolicy(appraiser);
         Assert.assertEquals(defaultPolicy, policy);
@@ -709,7 +700,6 @@ public final class DBPolicyManagerTest extends SpringPersistenceTest {
      */
     @Test
     public void testGetDefaultPolicyNullAppraiser() {
-        LOGGER.debug("testGetDefaultPolicyNullAppraiser test started");
         final PolicyManager mgr = new DBPolicyManager(sessionFactory);
         final Policy policy = mgr.getDefaultPolicy(null);
         Assert.assertNull(policy);
@@ -720,7 +710,6 @@ public final class DBPolicyManagerTest extends SpringPersistenceTest {
      */
     @Test
     public void testGetDefaultPolicyNoneSet() {
-        LOGGER.debug("testGetDefaultPolicyNoneSet test started");
         final PolicyManager mgr = new DBPolicyManager(sessionFactory);
         final Policy policy = mgr.getDefaultPolicy(appraiser);
         Assert.assertNull(policy);
@@ -738,9 +727,9 @@ public final class DBPolicyManagerTest extends SpringPersistenceTest {
         final Policy policy2 = new TestPolicy("Policy2");
         final Policy policy3 = new TestPolicy("Policy3");
         final Policy policy4 = new TestPolicy("Policy4");
-        final DeviceGroup deviceGroup1 = createDeviceGroup("Group1", "Device1");
-        final DeviceGroup deviceGroup2 = createDeviceGroup("Group2", "Device2");
-        final DeviceGroup deviceGroup3 = createDeviceGroup("Group3", "Device3");
+        final DeviceGroup deviceGroup1 = createDeviceGroupWithDevice("Group1", "Device1");
+        final DeviceGroup deviceGroup2 = createDeviceGroupWithDevice("Group2", "Device2");
+        final DeviceGroup deviceGroup3 = createDeviceGroupWithDevice("Group3", "Device3");
 
         policyManager.savePolicy(policy1);
         policyManager.savePolicy(policy2);
@@ -785,8 +774,9 @@ public final class DBPolicyManagerTest extends SpringPersistenceTest {
         return mgr.savePolicy(policy);
     }
 
-    private DeviceGroup createDeviceGroup(final String deviceGroupName,
-            final String deviceName) throws Exception {
+    private DeviceGroup createDeviceGroupWithDevice(
+            final String deviceGroupName, final String deviceName
+    ) throws Exception {
         DeviceGroupManager deviceGroupManager = new DBDeviceGroupManager(sessionFactory);
         DeviceManager deviceManager = new DBDeviceManager(sessionFactory);
         Device device = DeviceTest.getTestDevice(deviceName);
@@ -795,7 +785,6 @@ public final class DBPolicyManagerTest extends SpringPersistenceTest {
         deviceGroup.addDevice(device);
         device.setDeviceGroup(deviceGroup);
         deviceManager.saveDevice(device);
-
         deviceGroupManager.updateDeviceGroup(deviceGroup);
         return deviceGroup;
     }

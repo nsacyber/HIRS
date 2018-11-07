@@ -1,5 +1,6 @@
 package hirs.persist;
 
+import com.google.common.base.Preconditions;
 import hirs.appraiser.Appraiser;
 import hirs.data.persist.Baseline;
 import hirs.data.persist.Device;
@@ -297,9 +298,7 @@ public class DBPolicyManager extends DBManager<Policy> implements PolicyManager 
      * the <code>IntegrityReport</code> without worrying about figuring out
      * which device group it belongs to - this method does the work of finding
      * the device group. If the policy has not been set for that particular
-     * device group and appraiser pair, then this method will attempt to find
-     * the default policy. If neither the specific policy for the device or the
-     * default policy can be found, then null is returned.
+     * device group and appraiser pair, then this method will return null.
      *
      * @param appraiser
      *            appraiser
@@ -309,12 +308,11 @@ public class DBPolicyManager extends DBManager<Policy> implements PolicyManager 
      *         there is none
      */
     @Override
-    public final Policy getPolicy(final Appraiser appraiser,
+    public final Policy getPolicy(
+            final Appraiser appraiser,
             final Device device) {
-        if (appraiser == null) {
-            LOGGER.error("cannot get policy for null appraiser");
-            return null;
-        }
+        Preconditions.checkArgument(appraiser != null, "Appraiser must not be null");
+        Preconditions.checkArgument(device != null, "Device must not be null");
 
         Policy ret = null;
         final SessionFactory factory = getFactory();
@@ -337,7 +335,7 @@ public class DBPolicyManager extends DBManager<Policy> implements PolicyManager 
             final PolicyMapper mapper = (PolicyMapper) cr.uniqueResult();
             if (mapper == null) {
                 LOGGER.debug("no policy mapper found for appraiser {} and "
-                    + "device group {}", appraiser, deviceGroup);
+                        + "device group {}", appraiser, deviceGroup);
             } else {
                 ret = mapper.getPolicy();
             }
@@ -350,13 +348,6 @@ public class DBPolicyManager extends DBManager<Policy> implements PolicyManager 
                 tx.rollback();
             }
             throw new DBManagerException(msg, e);
-        }
-
-        if (ret == null) {
-            LOGGER.debug("unable to find policy for appraiser '{}' for device "
-                    + "'{}', attempting to use default policy instead",
-                    appraiser.getName(), device.getName());
-            ret = getDefaultPolicy(appraiser);
         }
 
         return ret;
@@ -441,21 +432,15 @@ public class DBPolicyManager extends DBManager<Policy> implements PolicyManager 
     @Override
     public final void setPolicy(final Appraiser appraiser,
             final DeviceGroup deviceGroup, final Policy policy) {
-        LOGGER.debug("set policy");
-        if (appraiser == null) {
-            LOGGER.error("cannot set policy on null appraiser");
-            throw new NullPointerException("appraiser");
-        }
-        if (deviceGroup == null) {
-            LOGGER.error("cannot set policy on null device group");
-            throw new NullPointerException("deviceGroup");
-        }
+        Preconditions.checkNotNull(appraiser, "Cannot set policy on null appraiser");
+        Preconditions.checkNotNull(deviceGroup, "Cannot set policy on null device group");
+
         final SessionFactory factory = getFactory();
         Transaction tx = null;
         Session session = factory.getCurrentSession();
         try {
             tx = session.beginTransaction();
-            LOGGER.debug("finding existing policy mapper from db where "
+            LOGGER.debug("Finding existing policy mapper from db where "
                     + "appraiser = {} and device group = {}", appraiser,
                     deviceGroup);
             final Criteria cr = session.createCriteria(PolicyMapper.class)
@@ -463,12 +448,12 @@ public class DBPolicyManager extends DBManager<Policy> implements PolicyManager 
                     .add(Restrictions.eq("deviceGroup", deviceGroup));
             final PolicyMapper mapper = (PolicyMapper) cr.uniqueResult();
             if (policy == null) {
-                LOGGER.debug("policy is null so removing policy");
+                LOGGER.info("Policy is null, so removing policy from device group {}");
                 if (mapper != null) {
                     session.delete(mapper);
                 }
             } else {
-                LOGGER.info("setting policy {} on appraiser {} on device "
+                LOGGER.info("Setting policy {} on appraiser {} on device "
                     + "group {}", policy, appraiser, deviceGroup);
                 if (mapper == null) {
                     session.save(new PolicyMapper(appraiser, policy,
@@ -480,10 +465,10 @@ public class DBPolicyManager extends DBManager<Policy> implements PolicyManager 
             }
             session.getTransaction().commit();
         } catch (Exception e) {
-            final String msg = "unable to set policy";
+            final String msg = "Unable to set policy";
             LOGGER.error(msg, e);
             if (tx != null) {
-                LOGGER.debug("rolling back transaction");
+                LOGGER.debug("Rolling back transaction");
                 tx.rollback();
             }
             throw new PolicyManagerException(msg, e);
