@@ -13,5 +13,5 @@ Please look up their respective names in the CentOS repositories.
 | protobuf   | 2.5.0        | 2.4.1 (estimated) | CentOS 7 base         | https://github.com/google/protobuf          |
 | re2        | 20160401     | 20160201          | CentOS 7 epel-release | https://github.com/google/re2               |
 | tpm2-tss   | 1.2.0        | 1.0.0             | CentOS 7 base         | https://github.com/intel/tpm2-tss           |
-| lshw       | B.02.18-12   | B.02.18-12        | CentOS 7 base         | https://github.com/lyonel/lshw              |
 | tpm2-tools | 1.1.0        | 1.1.0             | CentOS 7 base         | https://github.com/tpm2-software/tpm2-tools |
+| paccor     | 1.0.6        | none              |                       | https://github.com/nsacyber/paccor          |

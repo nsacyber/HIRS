@@ -1,29 +1,41 @@
 package hirs.attestationca;
 
 import com.google.protobuf.ByteString;
-
 import com.google.protobuf.InvalidProtocolBufferException;
+import hirs.attestationca.configuration.provisionerTpm2.ProvisionerTpm2;
 import hirs.attestationca.exceptions.CertificateProcessingException;
 import hirs.attestationca.exceptions.IdentityProcessingException;
 import hirs.attestationca.exceptions.UnexpectedServerException;
+import hirs.attestationca.service.SupplyChainValidationService;
 import hirs.data.persist.AppraisalStatus;
-import hirs.data.persist.BIOSComponentInfo;
-import hirs.data.persist.BaseboardComponentInfo;
-import hirs.data.persist.ChassisComponentInfo;
 import hirs.data.persist.Device;
 import hirs.data.persist.DeviceInfoReport;
 import hirs.data.persist.FirmwareInfo;
-import hirs.data.persist.HardDriveComponentInfo;
 import hirs.data.persist.HardwareInfo;
-import hirs.data.persist.MemoryComponentInfo;
-import hirs.data.persist.NICComponentInfo;
 import hirs.data.persist.NetworkInfo;
 import hirs.data.persist.OSInfo;
-import hirs.data.persist.ProcessorComponentInfo;
 import hirs.data.persist.SupplyChainValidationSummary;
 import hirs.data.persist.TPMInfo;
+import hirs.data.persist.certificate.Certificate;
+import hirs.data.persist.certificate.EndorsementCredential;
+import hirs.data.persist.certificate.IssuedAttestationCertificate;
+import hirs.data.persist.certificate.PlatformCredential;
+import hirs.data.service.DeviceRegister;
+import hirs.persist.CertificateManager;
 import hirs.persist.DBManager;
+import hirs.persist.DeviceManager;
 import hirs.persist.TPM2ProvisionerState;
+import hirs.structs.converters.SimpleStructBuilder;
+import hirs.structs.converters.StructConverter;
+import hirs.structs.elements.aca.IdentityRequestEnvelope;
+import hirs.structs.elements.aca.IdentityResponseEnvelope;
+import hirs.structs.elements.aca.SymmetricAttestation;
+import hirs.structs.elements.tpm.EncryptionScheme;
+import hirs.structs.elements.tpm.IdentityProof;
+import hirs.structs.elements.tpm.IdentityRequest;
+import hirs.structs.elements.tpm.SymmetricKey;
+import hirs.structs.elements.tpm.SymmetricKeyParams;
+import hirs.utils.HexUtils;
 import org.apache.commons.codec.binary.Hex;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.logging.log4j.LogManager;
@@ -72,28 +84,6 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.Set;
-
-import hirs.attestationca.configuration.provisionerTpm2.ProvisionerTpm2;
-import hirs.attestationca.service.SupplyChainValidationService;
-import hirs.data.persist.certificate.Certificate;
-import hirs.data.persist.certificate.EndorsementCredential;
-import hirs.data.persist.certificate.IssuedAttestationCertificate;
-import hirs.data.persist.certificate.PlatformCredential;
-import hirs.data.service.DeviceRegister;
-import hirs.persist.CertificateManager;
-import hirs.persist.DeviceManager;
-import hirs.structs.converters.SimpleStructBuilder;
-import hirs.structs.converters.StructConverter;
-import hirs.structs.elements.aca.IdentityRequestEnvelope;
-import hirs.structs.elements.aca.IdentityResponseEnvelope;
-import hirs.structs.elements.aca.SymmetricAttestation;
-import hirs.structs.elements.tpm.EncryptionScheme;
-import hirs.structs.elements.tpm.IdentityProof;
-import hirs.structs.elements.tpm.IdentityRequest;
-import hirs.structs.elements.tpm.SymmetricKey;
-import hirs.structs.elements.tpm.SymmetricKeyParams;
-
-import hirs.utils.HexUtils;
 
 /**
  * Provides base implementation of common tasks of an ACA that are required for attestation of an
@@ -612,61 +602,7 @@ public abstract class AbstractAttestationCertificateAuthority
         // Create final report
         DeviceInfoReport dvReport = new DeviceInfoReport(nw, os, fw, hw, tpm,
                 claim.getClientVersion());
-
-        for (ProvisionerTpm2.ComponentInfo pbCompInfo : hwProto.getChassisInfoList()) {
-            dvReport.getChassisInfo().add(new ChassisComponentInfo(
-                    pbCompInfo.getManufacturer(),
-                    pbCompInfo.getModel(),
-                    pbCompInfo.getSerialNumber(),
-                    pbCompInfo.getRevision()));
-        }
-
-        for (ProvisionerTpm2.ComponentInfo pbCompInfo : hwProto.getBaseboardInfoList()) {
-            dvReport.getBaseboardInfo().add(new BaseboardComponentInfo(
-                    pbCompInfo.getManufacturer(),
-                    pbCompInfo.getModel(),
-                    pbCompInfo.getSerialNumber(),
-                    pbCompInfo.getRevision()));
-        }
-
-        for (ProvisionerTpm2.ComponentInfo pbCompInfo : hwProto.getProcessorInfoList()) {
-            dvReport.getProcessorInfo().add(new ProcessorComponentInfo(
-                    pbCompInfo.getManufacturer(),
-                    pbCompInfo.getModel(),
-                    pbCompInfo.getSerialNumber(),
-                    pbCompInfo.getRevision()));
-        }
-
-        for (ProvisionerTpm2.ComponentInfo pbCompInfo : hwProto.getBiosOrUefiInfoList()) {
-            dvReport.getBiosInfo().add(new BIOSComponentInfo(
-                    pbCompInfo.getManufacturer(),
-                    pbCompInfo.getModel(),
-                    pbCompInfo.getRevision()));
-        }
-
-        for (ProvisionerTpm2.ComponentInfo pbCompInfo : hwProto.getNicInfoList()) {
-            dvReport.getNicInfo().add(new NICComponentInfo(
-                    pbCompInfo.getManufacturer(),
-                    pbCompInfo.getModel(),
-                    pbCompInfo.getSerialNumber(),
-                    pbCompInfo.getRevision()));
-        }
-
-        for (ProvisionerTpm2.ComponentInfo pbCompInfo : hwProto.getHardDriveInfoList()) {
-            dvReport.getHardDriveInfo().add(new HardDriveComponentInfo(
-                    pbCompInfo.getManufacturer(),
-                    pbCompInfo.getModel(),
-                    pbCompInfo.getSerialNumber(),
-                    pbCompInfo.getRevision()));
-        }
-
-        for (ProvisionerTpm2.ComponentInfo pbCompInfo : hwProto.getMemoryInfoList()) {
-            dvReport.getMemoryInfo().add(new MemoryComponentInfo(
-                    pbCompInfo.getManufacturer(),
-                    pbCompInfo.getModel(),
-                    pbCompInfo.getSerialNumber(),
-                    pbCompInfo.getRevision()));
-        }
+        dvReport.setPaccorOutputString(claim.getPaccorOutput());
 
         return dvReport;
     }

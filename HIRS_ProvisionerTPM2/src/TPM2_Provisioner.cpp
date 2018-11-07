@@ -12,6 +12,7 @@
 #include <sstream>
 #include <string>
 #include <vector>
+#include <Process.h>
 
 #include "log4cplus/configurator.h"
 
@@ -70,6 +71,9 @@ int provision() {
                                        endorsementCredential,
                                        platformCredentials);
     identityClaim.set_client_version(CLIENT_VERSION);
+    string paccorOutputString =
+            RUN_PROCESS_OR_THROW("/opt/paccor/scripts/allcomponents.sh", "");
+    identityClaim.set_paccoroutput(paccorOutputString);
     RestfulClientProvisioner provisioner;
     string nonceBlob = provisioner.sendIdentityClaim(identityClaim);
     if (nonceBlob == "") {
