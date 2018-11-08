@@ -199,7 +199,7 @@
                                 <div id="keyUsage" class="col col-md-8 vertical">${initialData.keyUsage}</div>
                             </c:when>
                             <c:otherwise>
-                                <div id="keyUsage" class="col col-md-8 vertical">NOT SPECIFIED</div>
+                                <div id="keyUsage" class="col col-md-8 vertical">Not Specified</div>
                             </c:otherwise>
                         </c:choose>
                     </div>
@@ -237,7 +237,7 @@
                                 <div id="keyUsage" class="col col-md-8 vertical">${initialData.keyUsage}</div>
                             </c:when>
                             <c:otherwise>
-                                <div id="keyUsage" class="col col-md-8 vertical">NOT SPECIFIED</div>
+                                <div id="keyUsage" class="col col-md-8 vertical">Not Specified</div>
                             </c:otherwise>
                         </c:choose>
                     </div>
@@ -303,6 +303,7 @@
                                 <div>EK Certificate:&nbsp;<span>${initialData.holderIssuer}</span></div>
                             </c:if>
                                 <div id="certificateid">
+                                    <div>EK Identifier:&nbsp;
                                     <c:choose>
                                         <c:when test="${not empty initialData.ekId}">
                                             <span>
@@ -312,9 +313,10 @@
                                             </span>
                                         </c:when>
                                         <c:otherwise>
-                                            <div><span>${initialData.holderSerialNumber}</span></div>
+                                            <span>${initialData.holderSerialNumber}</span>
                                         </c:otherwise>
                                     </c:choose>
+                                    </div>
                                 </div>                                
                         </div>
                     </div>
@@ -718,7 +720,7 @@
                         $("#authorityKeyIdentifier").html(parseSerialNumber(authorityKeyIdentifier));
                     </c:when>
                     <c:otherwise>
-                        $("#authorityKeyIdentifier").html("NOT SPECIFIED");
+                        $("#authorityKeyIdentifier").html("Not Specified");
                     </c:otherwise>
                 </c:choose>
 
