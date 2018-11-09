@@ -220,7 +220,7 @@ public class PlatformCredentialTest {
         Assert.assertEquals(credential.getMajorVersion(), 1);
         Assert.assertEquals(credential.getMinorVersion(), 2);
         Assert.assertEquals(credential.getRevisionLevel(), 1);
-        Assert.assertEquals(credential.getPlatformClass(), "1");
+        Assert.assertEquals(credential.getPlatformClass(), null);
     }
 
     /**
@@ -269,7 +269,7 @@ public class PlatformCredentialTest {
         Assert.assertEquals(credential.getMajorVersion(), 1);
         Assert.assertEquals(credential.getMinorVersion(), 2);
         Assert.assertEquals(credential.getRevisionLevel(), 1);
-        Assert.assertEquals(credential.getPlatformClass(), "1");
+        Assert.assertEquals(credential.getPlatformClass(), null);
     }
 
     /**

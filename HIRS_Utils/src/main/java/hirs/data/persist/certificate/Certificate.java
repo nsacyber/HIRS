@@ -352,7 +352,7 @@ public abstract class Certificate extends ArchivableEntity {
                 this.authorityKeyIdentifier = getAuthorityKeyIdentifier();
                 this.authorityInfoAccess = getAuthorityInfoAccess();
                 this.keyUsage = parseKeyUsage(x509Certificate.getKeyUsage());
-                
+
                 try {
                     if (x509Certificate.getExtendedKeyUsage() != null) {
                         StringBuilder sb = new StringBuilder();
