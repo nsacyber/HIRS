@@ -199,7 +199,11 @@
                                 <div id="keyUsage" class="col col-md-8 vertical">${initialData.keyUsage}</div>
                             </c:when>
                             <c:otherwise>
+<<<<<<< HEAD
                                 <div id="keyUsage" class="col col-md-8 vertical">Not Specified</div>
+=======
+                                <div id="keyUsage" class="col col-md-8 vertical">NOT SPECIFIED</div>
+>>>>>>> b349a3baa765b041db8b6ce7091e4772bc078384
                             </c:otherwise>
                         </c:choose>
                     </div>
@@ -237,7 +241,11 @@
                                 <div id="keyUsage" class="col col-md-8 vertical">${initialData.keyUsage}</div>
                             </c:when>
                             <c:otherwise>
+<<<<<<< HEAD
                                 <div id="keyUsage" class="col col-md-8 vertical">Not Specified</div>
+=======
+                                <div id="keyUsage" class="col col-md-8 vertical">NOT SPECIFIED</div>
+>>>>>>> b349a3baa765b041db8b6ce7091e4772bc078384
                             </c:otherwise>
                         </c:choose>
                     </div>
@@ -720,7 +728,11 @@
                         $("#authorityKeyIdentifier").html(parseSerialNumber(authorityKeyIdentifier));
                     </c:when>
                     <c:otherwise>
+<<<<<<< HEAD
                         $("#authorityKeyIdentifier").html("Not Specified");
+=======
+                        $("#authorityKeyIdentifier").html("NOT SPECIFIED");
+>>>>>>> b349a3baa765b041db8b6ce7091e4772bc078384
                     </c:otherwise>
                 </c:choose>
 

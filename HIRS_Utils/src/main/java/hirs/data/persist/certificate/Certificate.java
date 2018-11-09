@@ -351,8 +351,13 @@ public abstract class Certificate extends ArchivableEntity {
                         .getExtensionValue(POLICY_CONTRAINTS);
                 this.authorityKeyIdentifier = getAuthorityKeyIdentifier();
                 this.authorityInfoAccess = getAuthorityInfoAccess();
+<<<<<<< HEAD
                 this.keyUsage = parseKeyUsage(x509Certificate.getKeyUsage());
 
+=======
+
+                this.keyUsage = parseKeyUsage(x509Certificate.getKeyUsage());
+>>>>>>> b349a3baa765b041db8b6ce7091e4772bc078384
                 try {
                     if (x509Certificate.getExtendedKeyUsage() != null) {
                         StringBuilder sb = new StringBuilder();
@@ -627,9 +632,16 @@ public abstract class Certificate extends ArchivableEntity {
             byte[] authAccess = getX509Certificate().getExtensionValue(
                     Extension.authorityInfoAccess.getId());
             if (authAccess != null && authAccess.length > 0) {
+<<<<<<< HEAD
                 AuthorityInformationAccess authInfoAccess = AuthorityInformationAccess
                         .getInstance(X509ExtensionUtil.fromExtensionValue(authAccess));
                 for (AccessDescription desc : authInfoAccess.getAccessDescriptions()) {
+=======
+                AuthorityInformationAccess infoAccess = AuthorityInformationAccess
+                        .getInstance(X509ExtensionUtil
+                        .fromExtensionValue(authAccess));
+                for (AccessDescription desc : infoAccess.getAccessDescriptions()) {
+>>>>>>> b349a3baa765b041db8b6ce7091e4772bc078384
                     if (desc.getAccessLocation().getTagNo() == GeneralName
                             .uniformResourceIdentifier) {
                         sb.append(String.format("%s%n", ((DERIA5String) desc
@@ -641,6 +653,10 @@ public abstract class Certificate extends ArchivableEntity {
             }
         } catch (IOException ioEx) {
             LOGGER.error(ioEx);
+<<<<<<< HEAD
+=======
+            return "";
+>>>>>>> b349a3baa765b041db8b6ce7091e4772bc078384
         }
 
         return sb.toString();
@@ -671,9 +687,14 @@ public abstract class Certificate extends ArchivableEntity {
     }
 
     /**
+<<<<<<< HEAD
      * Getter for the x509 Platform Certificate version.
      * @return a big integer representing the certificate version. If there
      * is an error, return the max value to visible show error.
+=======
+     * Get the x509 Platform Certificate version.
+     * @return a big integer representing the certificate version.
+>>>>>>> b349a3baa765b041db8b6ce7091e4772bc078384
      */
     public int getX509CredentialVersion() {
         try {
