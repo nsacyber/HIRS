@@ -234,7 +234,7 @@ if(STATIC_ANALYSIS)
             --library=posix.cfg
             --error-exitcode=1
             --verbose
-            -i src/ProvisionerTpm2.pb.cc
+            --suppress=readdirCalled
             -I include/
             src/
     )

@@ -11,6 +11,7 @@ add_library(TPM2_PROVISIONER_LIBRARY
         Process.cpp
         Properties.cpp
         RestfulClientProvisioner.cpp
+        Tpm2ToolsUtils.cpp
         Utils.cpp
 
         # Header Files
@@ -21,6 +22,7 @@ add_library(TPM2_PROVISIONER_LIBRARY
         ${CMAKE_SOURCE_DIR}/include/Process.h
         ${CMAKE_SOURCE_DIR}/include/Properties.h
         ${CMAKE_SOURCE_DIR}/include/RestfulClientProvisioner.h
+        ${CMAKE_SOURCE_DIR}/include/Tpm2ToolsUtils.h
         ${CMAKE_SOURCE_DIR}/include/Tss.h
         ${CMAKE_SOURCE_DIR}/include/Utils.h
         ${CMAKE_SOURCE_DIR}/include/Version.h

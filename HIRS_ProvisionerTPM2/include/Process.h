@@ -20,6 +20,10 @@ class Process {
  private:
     static const hirs::log::Logger LOGGER;
 
+    static const char* const kProcessDirectory;
+    static const char* const kStatFilename;
+    static const char* const kCmdlineFilename;
+
     std::string executable;
 
     std::string arguments;
@@ -40,6 +44,9 @@ class Process {
                            std::string sourceFileName,
                            int sourceLineNumber,
                            const std::string& arguments = "");
+
+    static bool isRunning(const std::string& executable,
+                          bool checkCmdline = false);
 };
 
 }  // namespace utils
