@@ -274,4 +274,26 @@ public class DBDeviceManager extends DBManager<Device> implements
         return devices;
     }
 
+    /**
+     * Deletes the <code>Device</code> from the database. This removes all
+     * of the database entries that stored information with regards to the
+     * <code>Device</code> with a foreign key relationship.
+     *
+     * @param name of the device to be deleted
+     * @return true if successfully found and deleted, false if otherwise
+     * @throws DeviceGroupManagerException
+     *             if unable to find the device group or delete it from the
+     *             database
+     */
+    @Override
+    public final boolean deleteDevice(final String name)
+            throws DeviceManagerException {
+        LOGGER.debug("deleting device: {}", name);
+        try {
+            return super.delete(name);
+        } catch (DBManagerException e) {
+            throw new DeviceManagerException(e);
+        }
+    }
+
 }

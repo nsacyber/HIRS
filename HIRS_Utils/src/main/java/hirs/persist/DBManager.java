@@ -115,7 +115,7 @@ public class DBManager<T> extends AbstractDbManager<T> {
      * @throws DBManagerException if an error is encountered while performing the query or creating
      * the result objects
      */
-    protected final List<T> getWithCriteria(final Collection<Criterion> criteriaCollection)
+    public final List<T> getWithCriteria(final Collection<Criterion> criteriaCollection)
             throws DBManagerException {
         return retryTemplate.execute(
             new RetryCallback<List<T>, DBManagerException>() {
