@@ -45,6 +45,9 @@ public class Alert extends ArchivableEntity {
     @Column(name = "device_name")
     private String deviceName;
 
+    @Column(name = "display_title", nullable = true)
+    private String displayTitle;
+
     @Column(name = "details")
     private String details;
 
@@ -348,6 +351,24 @@ public class Alert extends ArchivableEntity {
      */
     public final void setDeviceName(final String deviceName) {
         this.deviceName = deviceName;
+    }
+
+    /**
+     * Get the display title associated with this Alert.
+     *
+     * @return the display title if one has been set, and null otherwise
+     */
+    public String getDisplayTitle() {
+        return displayTitle;
+    }
+
+    /**
+     * Set the display title for this alert.
+     *
+     * @param displayTitle the desired display title (may be null)
+     */
+    public void setDisplayTitle(final String displayTitle) {
+        this.displayTitle = displayTitle;
     }
 
     /**

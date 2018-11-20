@@ -19,6 +19,7 @@ public final class AlertTest {
     private static final String TEST_DEVICE_NAME = "MyTestDevice";
     private static final String RESOLVE_DESCRIPTION = "Record was added to baseline";
     private static final String TEST_BASELINE_NAME = "Alert Test Baseline";
+    private static final String TEST_DISPLAY_TITLE = "Display Title";
 
      /**
      * Tests that default values are applied by the public Alert constructor.
@@ -29,6 +30,7 @@ public final class AlertTest {
         Assert.assertEquals(alert.getSeverity(), Alert.Severity.UNSPECIFIED);
         Assert.assertEquals(alert.getType(), Alert.AlertType.UNSPECIFIED);
         Assert.assertEquals(alert.getSource(), Alert.Source.UNSPECIFIED);
+        Assert.assertNull(alert.getDisplayTitle());
     }
 
     /**
@@ -48,6 +50,16 @@ public final class AlertTest {
     public void testDetails() {
         Alert alert = new Alert(TEST_DETAILS);
         Assert.assertEquals(alert.getDetails(), TEST_DETAILS);
+    }
+
+    /**
+     * Test that the details can be set and retrieved.
+     */
+    @Test
+    public void testDisplayTitle() {
+        Alert alert = new Alert(TEST_DETAILS);
+        alert.setDisplayTitle(TEST_DISPLAY_TITLE);
+        Assert.assertEquals(alert.getDisplayTitle(), TEST_DISPLAY_TITLE);
     }
 
     /**
