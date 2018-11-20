@@ -7,6 +7,7 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.util.Collections;
 import java.util.Set;
+import java.util.UUID;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
 import javax.persistence.JoinColumn;
@@ -39,6 +40,18 @@ public class IssuedAttestationCertificate extends DeviceAssociatedCertificate {
          */
         public Selector(final CertificateManager certificateManager) {
             super(certificateManager, IssuedAttestationCertificate.class);
+        }
+
+        /**
+         * Specify a device id that certificates must have to be considered
+         * as matching.
+         *
+         * @param device the device id to query
+         * @return this instance (for chaining further calls)
+         */
+        public Selector byDeviceId(final UUID device) {
+            setFieldValue(DEVICE_ID_FIELD, device);
+            return this;
         }
     }
 
