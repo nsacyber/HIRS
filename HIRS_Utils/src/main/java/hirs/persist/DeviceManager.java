@@ -118,4 +118,15 @@ public interface DeviceManager extends OrderedListQuerier<Device> {
      */
     List<Device> getDefaultDevices() throws DeviceManagerException;
 
+    /**
+     * Delete the <code>Device</code> identified by <code>name</code>. If
+     * the deletion is successful, true is returned. Otherwise, false is
+     * returned.
+     *
+     * @param name of the <code>Device</code> to delete
+     * @return boolean indicating outcome of the deletion
+     * @throws DeviceManagerException if unable to delete the device group
+     */
+    boolean deleteDevice(String name) throws DeviceManagerException;
+
 }

@@ -1,6 +1,12 @@
 package hirs.data.persist;
 
 import com.google.common.base.Preconditions;
+import hirs.persist.CrudManager;
+import org.apache.commons.lang.ArrayUtils;
+import org.apache.commons.lang.StringUtils;
+import org.hibernate.criterion.Conjunction;
+import org.hibernate.criterion.Criterion;
+import org.hibernate.criterion.Restrictions;
 
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
@@ -11,10 +17,14 @@ import javax.persistence.FetchType;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
+import java.util.UUID;
 
 /**
  * A container class to group multiple related {@link SupplyChainValidation} instances
@@ -25,6 +35,8 @@ public class SupplyChainValidationSummary extends ArchivableEntity {
     @ManyToOne
     @JoinColumn(name = "device_id")
     private final Device device;
+
+    private static final String DEVICE_ID_FIELD = "device.id";
 
     @Column
     @Enumerated(EnumType.STRING)
@@ -41,6 +53,113 @@ public class SupplyChainValidationSummary extends ArchivableEntity {
         this.device = null;
         overallValidationResult = AppraisalStatus.Status.FAIL;
         validations = Collections.emptySet();
+    }
+
+    /**
+     * This class enables the retrieval of SupplyChainValidationSummaries by their attributes.
+     */
+    public static class Selector {
+        private final CrudManager<SupplyChainValidationSummary>
+                supplyChainValidationSummaryCrudManager;
+
+        private final Map<String, Object> fieldValueSelections;
+
+        /**
+         * Construct a new Selector that will use the given {@link CrudManager} to
+         * retrieve SupplyChainValidationSummaries.
+         *
+         * @param supplyChainValidationSummaryCrudManager the summary manager to be used to retrieve
+         *                                                supply chain validation summaries
+         */
+        public Selector(
+                final CrudManager<SupplyChainValidationSummary>
+                        supplyChainValidationSummaryCrudManager) {
+            Preconditions.checkArgument(
+                    supplyChainValidationSummaryCrudManager != null,
+                    "supply chain validation summary manager cannot be null"
+            );
+
+            this.supplyChainValidationSummaryCrudManager = supplyChainValidationSummaryCrudManager;
+            this.fieldValueSelections = new HashMap<>();
+        }
+
+
+        /**
+         * Construct the criterion that can be used to query for supply chain validation summaries
+         * matching the configuration of this Selector.
+         *
+         * @return a Criterion that can be used to query for supply chain validation summaries
+         * matching the configuration of this instance
+         */
+        public Criterion getCriterion() {
+            Conjunction conj = new Conjunction();
+
+            for (Map.Entry<String, Object> fieldValueEntry : fieldValueSelections.entrySet()) {
+                conj.add(Restrictions.eq(fieldValueEntry.getKey(), fieldValueEntry.getValue()));
+            }
+
+            return conj;
+        }
+
+        /**
+         * Set a field name and value to match.
+         *
+         * @param name the field name to query
+         * @param value the value to query
+         */
+        protected void setFieldValue(final String name, final Object value) {
+            Object valueToAssign = value;
+
+            Preconditions.checkArgument(
+                    value != null,
+                    "field value cannot be null."
+            );
+
+            if (value instanceof String) {
+                Preconditions.checkArgument(
+                        StringUtils.isNotEmpty((String) value),
+                        "field value cannot be empty."
+                );
+            }
+
+            if (value instanceof byte[]) {
+                byte[] valueBytes = (byte[]) value;
+
+                Preconditions.checkArgument(
+                        ArrayUtils.isNotEmpty(valueBytes),
+                        "field value cannot be empty."
+                );
+
+                valueToAssign = Arrays.copyOf(valueBytes, valueBytes.length);
+            }
+
+            fieldValueSelections.put(name, valueToAssign);
+        }
+
+
+        /**
+         * Specify a device id that supply chain validation summaries must have to be considered
+         * as matching.
+         *
+         * @param device the device id to query
+         * @return this instance (for chaining further calls)
+         */
+        public Selector byDeviceId(final UUID device) {
+            setFieldValue(DEVICE_ID_FIELD, device);
+            return this;
+        }
+    }
+
+    /**
+     * Get a Selector for use in retrieving SupplyChainValidationSummary.
+     *
+     * @param certMan the CrudManager to be used to retrieve persisted supply chain validation
+     *                summaries
+     * @return a SupplyChainValidationSummary.Selector instance to use for retrieving certificates
+     */
+    public static SupplyChainValidationSummary.Selector select(
+            final CrudManager<SupplyChainValidationSummary> certMan) {
+        return new SupplyChainValidationSummary.Selector(certMan);
     }
 
     /**

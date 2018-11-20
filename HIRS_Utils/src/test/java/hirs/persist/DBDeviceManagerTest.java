@@ -150,6 +150,35 @@ public final class DBDeviceManagerTest extends SpringPersistenceTest {
     }
 
     /**
+     * Tests that when a <code>Device</code> is deleted, the
+     * <code>Device</code> is removed from the DB.
+     *
+     * @throws Exception if error occurs while creating test device
+     */
+    @Test
+    public void testDeleteDevice() throws Exception {
+        LOGGER.debug("testDeleteDevice");
+        Assert.assertEquals(DBUtility.getCount(sessionFactory, Device.class), 0);
+
+        final Device device = new Device(deviceName);
+        final DeviceManager mgr = new DBDeviceManager(sessionFactory);
+        final DeviceGroup group = createGroup(DeviceGroup.DEFAULT_GROUP);
+        device.setDeviceGroup(group);
+        final Device savedDevice = mgr.saveDevice(device);
+
+        Assert.assertEquals(DBUtility.getCount(sessionFactory, Device.class), 1);
+        Assert.assertTrue(DBUtility.isInDatabase(sessionFactory, Device.class, deviceName));
+
+        final UUID deviceID = savedDevice.getId();
+        Assert.assertNotNull(deviceID);
+        boolean deleteSuccessful = mgr.deleteDevice(deviceName);
+        Assert.assertTrue(deleteSuccessful);
+        Assert.assertFalse(
+                DBUtility.isInDatabase(sessionFactory, DeviceGroup.class, deviceName)
+        );
+    }
+
+    /**
      * Tests that the <code>DBDeviceManager</code> can update a
      * <code>Device</code>.
      *

@@ -1,12 +1,17 @@
 package hirs.persist;
 
+import hirs.data.persist.Device;
+import hirs.data.persist.DeviceGroup;
 import hirs.data.persist.SpringPersistenceTest;
 import hirs.data.persist.certificate.Certificate;
 import hirs.data.persist.certificate.CertificateAuthorityCredential;
+import hirs.data.persist.certificate.CertificateTest;
 import hirs.data.persist.certificate.ConformanceCredential;
+import hirs.data.persist.certificate.DeviceAssociatedCertificate;
 import hirs.data.persist.certificate.EndorsementCredential;
 import hirs.data.persist.certificate.IssuedAttestationCertificate;
 import hirs.data.persist.certificate.PlatformCredential;
+import hirs.data.persist.certificate.PlatformCredentialTest;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -17,8 +22,6 @@ import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
-import hirs.data.persist.certificate.CertificateTest;
-import hirs.data.persist.certificate.PlatformCredentialTest;
 
 import java.io.IOException;
 import java.math.BigInteger;
@@ -33,6 +36,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
+
+import static hirs.data.persist.certificate.CertificateTest.ISSUED_CLIENT_CERT;
 
 /**
  * This class tests the storage, retrieval, and deletion of {@link Certificate}s.
@@ -75,7 +80,7 @@ public class DBCertificateManagerTest extends SpringPersistenceTest {
      */
     @BeforeMethod
     public void setupTestObjects() throws IOException {
-        // create indivdual test certificates
+        // create individual test certificates
         rootCert = CertificateTest.getTestCertificate(CertificateTest.FAKE_ROOT_CA_FILE);
         intelIntermediateCert = CertificateTest.getTestCertificate(
                 CertificateTest.FAKE_INTEL_INT_CA_FILE
@@ -90,6 +95,9 @@ public class DBCertificateManagerTest extends SpringPersistenceTest {
         anotherSelfSignedCert = CertificateTest.getTestCertificate(
                 CertificateTest.ANOTHER_SELF_SIGNED_FILE
         );
+
+        hirsClientCert = CertificateTest.getTestCertificate(IssuedAttestationCertificate.class,
+                ISSUED_CLIENT_CERT);
 
         stmEkCert = CertificateTest.getTestCertificate(EndorsementCredential.class,
                 CertificateTest.STM_NUC1_EC);
@@ -137,7 +145,7 @@ public class DBCertificateManagerTest extends SpringPersistenceTest {
         IssuedAttestationCertificate issuedCert =
                 (IssuedAttestationCertificate)
                         CertificateTest.getTestCertificate(IssuedAttestationCertificate.class,
-                CertificateTest.ISSUED_CLIENT_CERT, endorsementCredential, platformCredentials);
+                ISSUED_CLIENT_CERT, endorsementCredential, platformCredentials);
 
         testCertificates.put(IssuedAttestationCertificate.class, issuedCert);
     }
@@ -379,6 +387,34 @@ public class DBCertificateManagerTest extends SpringPersistenceTest {
                 new HashSet<>(Arrays.asList(
                         savedStmRootCert, gsTpmRootCaCert))
         );
+    }
+
+    /**
+     * Tests that a Certificate can be retrieved by its deviceId.
+     * @throws IOException if there is a problem creating the certificate
+     * @throws CertificateException if there is a problem deserializing the original X509Certificate
+     */
+    @Test
+    public void testGetByDeviceId() throws IOException, CertificateException {
+        CertificateManager certMan = new DBCertificateManager(sessionFactory);
+        DeviceManager deviceManager = new DBDeviceManager(sessionFactory);
+        DeviceGroupManager deviceGroupManager = new DBDeviceGroupManager(sessionFactory);
+
+        Device device = new Device("test_device");
+        DeviceGroup dg = new DeviceGroup("Default");
+        DeviceGroup savedDg = deviceGroupManager.saveDeviceGroup(dg);
+        device.setDeviceGroup(savedDg);
+        Device savedDevice = deviceManager.saveDevice(device);
+        ((DeviceAssociatedCertificate) hirsClientCert).setDevice(savedDevice);
+        Certificate savedCert = certMan.save(hirsClientCert);
+
+        Set<IssuedAttestationCertificate> retrievedCerts =
+                IssuedAttestationCertificate.select(certMan).byDeviceId(savedDevice.getId()).
+                        getCertificates();
+        Assert.assertEquals(retrievedCerts.size(), 1);
+        for (IssuedAttestationCertificate cert: retrievedCerts) {
+            Assert.assertEquals(savedCert.getId(), cert.getId());
+        }
     }
 
     /**

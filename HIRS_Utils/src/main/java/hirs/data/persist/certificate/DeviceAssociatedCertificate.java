@@ -22,6 +22,12 @@ public abstract class DeviceAssociatedCertificate extends Certificate {
     private Device device;
 
     /**
+     * Holds the name of the entity 'DEVICE_ID' field.
+     */
+    protected static final String DEVICE_ID_FIELD = "device.id";
+
+
+    /**
      * Default Constructor.
      */
     DeviceAssociatedCertificate() {
