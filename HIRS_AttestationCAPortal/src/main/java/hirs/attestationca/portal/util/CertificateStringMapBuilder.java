@@ -15,6 +15,7 @@ import hirs.data.persist.certificate.IssuedAttestationCertificate;
 import hirs.data.persist.certificate.PlatformCredential;
 import hirs.data.persist.certificate.attributes.PlatformConfiguration;
 import hirs.persist.CertificateManager;
+import java.math.BigInteger;
 
 /**
  * Utility class for mapping certificate information in to string maps. These are used to display
@@ -44,6 +45,11 @@ public final class CertificateStringMapBuilder {
             data.put("issuer", certificate.getIssuer());
             //Serial number in hex value
             data.put("serialNumber", Long.toHexString(certificate.getSerialNumber().longValue()));
+            if (certificate.getAuthoritySerialNumber() != null
+                    && certificate.getAuthoritySerialNumber() != BigInteger.ZERO) {
+                data.put("authSerialNumber", Long.toHexString(certificate
+                        .getAuthoritySerialNumber().longValue()));
+            }
             data.put("beginValidity", certificate.getBeginValidity().toString());
             data.put("endValidity", certificate.getEndValidity().toString());
             data.put("signature", Arrays.toString(certificate.getSignature()));
@@ -58,8 +64,8 @@ public final class CertificateStringMapBuilder {
                 data.put("isSelfSigned", "false");
             }
 
-            data.put("authInfoAccess", certificate.getAuthInfoAccess());
             data.put("authKeyId", certificate.getAuthKeyId());
+            data.put("authInfoAccess", certificate.getAuthInfoAccess());
             data.put("signatureAlgorithm", certificate.getSignatureAlgorithm());
             if (certificate.getEncodedPublicKey() != null) {
                 data.put("encodedPublicKey",
@@ -68,9 +74,10 @@ public final class CertificateStringMapBuilder {
             }
 
             if (certificate.getPublicKeyModulusHexValue() != null) {
-                data.put("publicKeyValue", certificate.getPublicKeyModulusHexValue());
+                data.put("publicKeyValue", Arrays.toString(certificate
+                        .getPublicKeyModulusHexValue()));
                 data.put("publicKeySize", Integer.toString(certificate
-                        .getPublicKeyModulusHexValue().length()
+                        .getPublicKeyModulusHexValue().length
                         * Certificate.MIN_ATTR_CERT_LENGTH));
             }
 
@@ -91,7 +98,7 @@ public final class CertificateStringMapBuilder {
                     data.put("missingChainIssuer", missingCert.getIssuer());
                 }
                 //Find all certificates that could be the issuer certificate based on subject name
-                for (Certificate issuerCert:CertificateAuthorityCredential
+                for (Certificate issuerCert : CertificateAuthorityCredential
                         .select(certificateManager)
                         .bySubject(certificate.getIssuer())
                         .getCertificates()) {

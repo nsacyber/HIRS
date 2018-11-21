@@ -30,6 +30,7 @@ import org.bouncycastle.asn1.ASN1InputStream;
 import org.bouncycastle.asn1.DERIA5String;
 import org.bouncycastle.asn1.DEROctetString;
 import org.bouncycastle.asn1.DLSequence;
+import org.bouncycastle.asn1.x509.AuthorityKeyIdentifier;
 import org.bouncycastle.asn1.x509.AccessDescription;
 import org.bouncycastle.asn1.x509.AuthorityInformationAccess;
 import org.bouncycastle.asn1.x509.Extension;
@@ -78,7 +79,6 @@ public abstract class Certificate extends ArchivableEntity {
     private static final String MALFORMED_CERT_MESSAGE = "Malformed certificate detected.";
     private static final int MAX_CERT_LENGTH_BYTES = 2048;
     private static final int MAX_NUMERIC_PRECISION = 49; // Can store up to 160 bit values
-    private static final int MAX_PUB_KEY_MODULUS_HEX_LENGTH = 1024;
     private static final int KEY_USAGE_BIT0 = 0;
     private static final int KEY_USAGE_BIT1 = 1;
     private static final int KEY_USAGE_BIT2 = 2;
@@ -193,8 +193,8 @@ public abstract class Certificate extends ArchivableEntity {
 
     // We're currently seeing 2048-bit keys, which is 512 hex digits.
     // Using a max length of 1024 for future-proofing.
-    @Column(length = MAX_PUB_KEY_MODULUS_HEX_LENGTH, nullable = true)
-    private final String publicKeyModulusHexValue;
+    @Column(length = MAX_CERT_LENGTH_BYTES, nullable = true)
+    private final byte[] publicKeyModulusHexValue;
 
     @Column(length = MAX_CERT_LENGTH_BYTES, nullable = false)
     private final byte[] signature;
@@ -234,10 +234,9 @@ public abstract class Certificate extends ArchivableEntity {
     @Column(nullable = false, precision = MAX_NUMERIC_PRECISION, scale = 0)
     private final BigInteger holderSerialNumber;
     private String holderIssuer;
+    @Column(nullable = true, precision = MAX_NUMERIC_PRECISION, scale = 0)
+    private final BigInteger authoritySerialNumber;
 
-    @SuppressWarnings("PMD.AvoidUsingHardCodedIP") // this is not an IP address; PMD thinks it is
-    private static final String AUTHORITY_KEY_IDENTIFIER = "2.5.29.35";
-    private static final String AUTHORITY_INFO_ACCESS = "1.3.6.1.5.5.7.1.1";
     @SuppressWarnings("PMD.AvoidUsingHardCodedIP") // this is not an IP address; PMD thinks it is
     private static final String POLICY_CONTRAINTS = "2.5.29.36";
 
@@ -280,6 +279,7 @@ public abstract class Certificate extends ArchivableEntity {
         this.policyConstraints = null;
         this.authorityKeyIdentifier = null;
         this.authorityInfoAccess = null;
+        this.authoritySerialNumber = BigInteger.ZERO;
     }
 
     /**
@@ -323,6 +323,7 @@ public abstract class Certificate extends ArchivableEntity {
             this.certificateBytes = Base64.decode(possiblePem);
         }
 
+        AuthorityKeyIdentifier authKeyIdentifier;
         this.certificateBytes = trimCertificate(this.certificateBytes);
 
         // Extract certificate data
@@ -335,7 +336,7 @@ public abstract class Certificate extends ArchivableEntity {
                 this.encodedPublicKey = x509Certificate.getPublicKey().getEncoded();
                 BigInteger publicKeyModulus = getPublicKeyModulus(x509Certificate);
                 if (publicKeyModulus != null) {
-                    this.publicKeyModulusHexValue = publicKeyModulus.toString(HEX_BASE);
+                    this.publicKeyModulusHexValue = publicKeyModulus.toByteArray();
                 } else {
                     this.publicKeyModulusHexValue = null;
                 }
@@ -349,7 +350,10 @@ public abstract class Certificate extends ArchivableEntity {
                 this.subjectOrganization = getOrganization(this.subject);
                 this.policyConstraints = x509Certificate
                         .getExtensionValue(POLICY_CONTRAINTS);
-                this.authorityKeyIdentifier = getAuthorityKeyIdentifier();
+                authKeyIdentifier = AuthorityKeyIdentifier
+                        .getInstance((DLSequence) getExtensionValue(
+                                Extension.authorityKeyIdentifier.getId()));
+
                 this.authorityInfoAccess = getAuthorityInfoAccess();
                 this.keyUsage = parseKeyUsage(x509Certificate.getKeyUsage());
 
@@ -375,6 +379,9 @@ public abstract class Certificate extends ArchivableEntity {
                 this.subjectOrganization = null;
                 this.encodedPublicKey = null;
                 this.publicKeyModulusHexValue = null;
+
+                authKeyIdentifier = AuthorityKeyIdentifier
+                        .fromExtensions(attCertInfo.getExtensions());
 
                 switch (attCert.getSignatureAlgorithm().getAlgorithm().getId()) {
                     case RSA256_OID:
@@ -414,6 +421,12 @@ public abstract class Certificate extends ArchivableEntity {
                 throw new IllegalArgumentException("Cannot recognize certificate type.");
         }
 
+        if (authKeyIdentifier != null) {
+            this.authorityKeyIdentifier = authKeyIdentifierToString(authKeyIdentifier);
+            this.authoritySerialNumber = authKeyIdentifier.getAuthorityCertSerialNumber();
+        } else {
+            this.authoritySerialNumber = BigInteger.ZERO;
+        }
         this.certificateHash = Arrays.hashCode(this.certificateBytes);
         this.certAndTypeHash = Objects.hash(certificateHash, getClass().getSimpleName());
     }
@@ -585,6 +598,31 @@ public abstract class Certificate extends ArchivableEntity {
     }
 
     /**
+     * Getter for the authorityKeyIdentifier.
+     * @return the ID's byte representation
+     */
+    @SuppressWarnings("checkstyle:magicnumber")
+    private String authKeyIdentifierToString(final AuthorityKeyIdentifier aki) {
+        String retValue = "";
+        if (aki != null) {
+            byte[] keyArray = aki.getKeyIdentifier();
+            if (keyArray != null) {
+                char[] hexValues = "0123456789abcdef".toCharArray();
+                char[] hexChars = new char[keyArray.length * 2];
+                for (int i = 0; i < keyArray.length; i++) {
+                    int v = keyArray[i] & 0xFF;
+                    hexChars[i * 2] = hexValues[v >>> 4];
+                    hexChars[i * 2 + 1] = hexValues[v & 0x0F];
+                }
+
+                retValue = new String(hexChars);
+            }
+        }
+
+        return retValue;
+    }
+
+    /**
      * Gets the contents of requested OID.
      *
      * @param oid Object Identifier
@@ -644,30 +682,6 @@ public abstract class Certificate extends ArchivableEntity {
         }
 
         return sb.toString();
-    }
-
-
-    /**
-     * Getter for the AuthorityKeyIdentier associated with the certificate.
-     *
-     * @return the authority key identifier
-     * @throws java.io.IOException
-     */
-    private String getAuthorityKeyIdentifier() throws IOException {
-        DLSequence sequence = (DLSequence) getExtensionValue(Extension
-                .authorityKeyIdentifier.getId());
-        if (sequence == null || sequence.size() == 0) {
-            return "";
-        }
-
-        DERTaggedObject taggedObject = (DERTaggedObject) sequence.getObjectAt(0);
-
-        String tempStr = taggedObject.getObject().toString();
-        if (tempStr.startsWith("#")) {
-            return tempStr.replaceFirst("#", "");
-        }
-
-        return tempStr;
     }
 
     /**
@@ -859,6 +873,16 @@ public abstract class Certificate extends ArchivableEntity {
     }
 
     /**
+     * @return this Authority's Key ID serial number.
+     */
+    public BigInteger getAuthoritySerialNumber() {
+        if (this.authoritySerialNumber == null) {
+            return BigInteger.ZERO;
+        }
+        return authoritySerialNumber;
+    }
+
+    /**
      * @return this certificate's holder serial number
      */
     public BigInteger getHolderSerialNumber() {
@@ -899,11 +923,15 @@ public abstract class Certificate extends ArchivableEntity {
     }
 
     /**
-     * Getter for the hex value as a string.
-     * @return a string for the public key
+     * Getter for the hex value.
+     * @return a byte array for the public key
      */
-    public String getPublicKeyModulusHexValue() {
-        return publicKeyModulusHexValue;
+    public byte[] getPublicKeyModulusHexValue() {
+        if (publicKeyModulusHexValue != null) {
+            return publicKeyModulusHexValue.clone();
+        }
+
+        return new byte[0];
     }
 
     /**
