@@ -3,8 +3,11 @@
  */
 #include <Process.h>
 #include <Logger.h>
+#include <HirsRuntimeException.h>
+#include <Utils.h>
 
 #include <arpa/inet.h>
+#include <dirent.h>
 
 #include <cstdio>
 #include <cerrno>
@@ -14,17 +17,26 @@
 #include <iostream>
 #include <string>
 #include <utility>
-#include <HirsRuntimeException.h>
 
 using hirs::exception::HirsRuntimeException;
 using hirs::log::Logger;
 using hirs::utils::Process;
+using hirs::file_utils::dirExists;
+using hirs::file_utils::fileExists;
+using hirs::file_utils::fileToString;
+using hirs::file_utils::trimFilenameFromPath;
+using hirs::string_utils::trimChar;
 using std::cerr;
 using std::endl;
+using std::ostream;
 using std::stringstream;
 using std::string;
+using std::to_string;
 
 const Logger Process::LOGGER = Logger::getDefaultLogger();
+
+const char* const Process::kPgrepCommand = "pgrep";
+const int Process::kMaxStatFileProcessNameLength = 15;
 
 /**
  * Constructor.
@@ -76,7 +88,7 @@ int Process::run() {
  * @param osForErrorLogging ostream to collect error message on failure
  * @return the return value of the Linux process (between 0-255)
  */
-int Process::run(std::ostream& osForErrorLogging) {
+int Process::run(ostream& osForErrorLogging) {
     int processReturnValue = run();
     if (processReturnValue != 0) {
         osForErrorLogging << "Call to " << executable
@@ -111,7 +123,7 @@ string Process::getOutputString() const {
  * executable (defaults to empty string)
  */
 string Process::run(const string& executable,
-                    std::string sourceFileName,
+                    string sourceFileName,
                     int sourceLineNumber,
                     const string& arguments) {
     stringstream errorStream;
@@ -121,7 +133,7 @@ string Process::run(const string& executable,
                     << "Process Output: "
                     << p.getOutputString();
         throw HirsRuntimeException(errorStream.str(),
-                    sourceFileName + ": " + std::to_string(sourceLineNumber));
+                    sourceFileName + ": " + to_string(sourceLineNumber));
     }
 
     // Remove trailing newline if one exists
@@ -130,4 +142,38 @@ string Process::run(const string& executable,
         str.erase(str.length() - 1);
     }
     return str;
+}
+
+/**
+ * Static function to check if a specified process is currently running in the
+ * local environment.
+ *
+ * @param executable the executable to check is running
+ * @return true, if executable is found to be running / false, otherwise
+ */
+bool Process::isRunning(const string& executable) {
+    // Check if executable includes path and trim to just process name if so
+    string processName = trimFilenameFromPath(executable);
+    // Log warning about including path to executable
+    if (processName.length() < executable.length()) {
+        stringstream warnStream;
+        warnStream << "Including the path to an executable isn't recommended "
+                   << "as this has no bearing on whether it's determined to "
+                   << "be running in the local environment.";
+        LOGGER.warn(warnStream.str());
+    }
+
+    // Sanitize any attempts to hijack the process
+    processName = trimChar(processName, ';');
+
+    // If the process name is longer than 15 characters log a warning
+    if (processName.length() > kMaxStatFileProcessNameLength) {
+        stringstream warnStream;
+        warnStream << "A process name with length greater than "
+                   << to_string(kMaxStatFileProcessNameLength)
+                   << " may result in a false negative depending on the"
+                   << " current runtime environment.";
+        LOGGER.warn(warnStream.str());
+    }
+    return Process(kPgrepCommand, "-c " + processName).run() == 0;
 }
