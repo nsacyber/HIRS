@@ -45,6 +45,7 @@ macro(register_test TEST_TARGET_NAME)
 endmacro()
 
 register_test(Process)
-register_test(RestfulClientProvisioner)
 register_test(Properties)
+register_test(RestfulClientProvisioner)
+register_test(Tpm2ToolsUtils)
 register_test(Utils)

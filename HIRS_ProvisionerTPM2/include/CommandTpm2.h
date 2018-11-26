@@ -6,7 +6,7 @@
 
 #include <Logger.h>
 #include <ProvisionerTpm2.pb.h>
-#include <Utils.h>
+#include <Tpm2ToolsUtils.h>
 
 #include <Tss.h>
 

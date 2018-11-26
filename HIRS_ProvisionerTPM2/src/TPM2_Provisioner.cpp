@@ -30,6 +30,7 @@ using hirs::log::Logger;
 using hirs::tpm2::AsymmetricKeyType;
 using hirs::tpm2::CommandTpm2;
 using hirs::tpm2_tools_utils::Tpm2ToolsVersion;
+using hirs::utils::Process;
 using std::cout;
 using std::cerr;
 using std::endl;
@@ -138,8 +139,21 @@ int main(int argc, char** argv) {
     if (argument == "provision") {
         // Ensure we're running as root
         if (getuid() != 0) {
-            cerr << ("Program must be run as root. Exiting");
-            mainLogger.error("Program must be run as root. Exiting");
+            string error = "Program must be run as root. Exiting";
+            cerr << (error);
+            mainLogger.error(error);
+            return 1;
+        }
+        // Ensure either tpm2-abrmd or the old resourcemgr is running
+        if (!Process::isRunning("tpm2-abrmd")
+            && !Process::isRunning("resourcemgr")) {
+            stringstream errorStream;
+            errorStream << R"(Neither "tpm2-abmrd" nor the older )"
+                        << R"("resourcemgr" daemon is currently running. )"
+                        << "\nPlease ensure either is running before "
+                        << "attempting provisioning.\n";
+            cerr << (errorStream.str());
+            mainLogger.error(errorStream.str());
             return 1;
         }
         cout << "--> Provisioning" << endl;

@@ -234,7 +234,7 @@ if(STATIC_ANALYSIS)
             --library=posix.cfg
             --error-exitcode=1
             --verbose
-            -i src/ProvisionerTpm2.pb.cc
+            --suppress=readdirCalled
             -I include/
             src/
     )
@@ -257,7 +257,7 @@ if (${DISTRIBUTION} STREQUAL "Ubuntu")
     set(CPACK_GENERATOR "DEB")
     set(CPACK_DEBIAN_PACKAGE_NAME "HIRSProvisionerTPM2.0")
     set(CPACK_DEBIAN_PACKAGE_SECTION "admin")
-    set(CPACK_DEBIAN_PACKAGE_DEPENDS "liblog4cplus-1.1-9(>=1.1.2), libcurlpp0(>=0.7), paccor")
+    set(CPACK_DEBIAN_PACKAGE_DEPENDS "liblog4cplus-1.1-9(>=1.1.2), libcurlpp0(>=0.7), paccor, procps(>=3.3.0)")
     # Set variables specific to Ubuntu release version
     if (${DISTRIBUTION_VERSION} STREQUAL "16.04")
         set(CPACK_DEBIAN_PACKAGE_DEPENDS "${CPACK_DEBIAN_PACKAGE_DEPENDS}, libre2-1v5(>=20160201), libprotobuf9v5(>=2.4.1)")
@@ -279,7 +279,7 @@ elseif (${DISTRIBUTION} STREQUAL "CentOS Linux")
     set(CPACK_RPM_PACKAGE_RELEASE_DIST "el7")
     set(CPACK_RPM_PACKAGE_LICENSE "Apache License, Version 2.0")
     set(CPACK_RPM_PACKAGE_GROUP "System Environment/Base")
-    set(CPACK_RPM_PACKAGE_REQUIRES "log4cplus >= 1.1.2, tpm2-tss >= 1.0, tpm2-tools >= 1.1.0, protobuf >= 2.4.1, re2 >= 20160401, libcurl >= 7.0.0, paccor")
+    set(CPACK_RPM_PACKAGE_REQUIRES "log4cplus >= 1.1.2, tpm2-tss >= 1.0, tpm2-tools >= 1.1.0, protobuf >= 2.4.1, re2 >= 20160401, libcurl >= 7.0.0, paccor, procps-ng >= 3.3.0")
     set(CPACK_RPM_POST_INSTALL_SCRIPT_FILE ${CMAKE_SOURCE_DIR}/package/rpm-post-install.sh)
     set(CPACK_RPM_EXCLUDE_FROM_AUTO_FILELIST_ADDITION /usr/local /usr/local/bin /usr/local/include /usr/local/lib)
     set(CPACK_PACKAGE_FILE_NAME "${CPACK_RPM_PACKAGE_NAME}-${CPACK_PACKAGE_VERSION}-${CPACK_PACKAGE_RELEASE}.${CPACK_RPM_PACKAGE_RELEASE_DIST}.${CMAKE_SYSTEM_PROCESSOR}")
