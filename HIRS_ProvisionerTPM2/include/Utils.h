@@ -41,6 +41,8 @@ namespace file_utils {
                    const std::string& outFilename,
                    int startPos,
                    int readSize);
+
+    std::string trimFilenameFromPath(const std::string& path);
 }  // namespace file_utils
 
 namespace json_utils {

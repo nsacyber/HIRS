@@ -24,6 +24,8 @@ using hirs::utils::Process;
 using hirs::file_utils::dirExists;
 using hirs::file_utils::fileExists;
 using hirs::file_utils::fileToString;
+using hirs::file_utils::trimFilenameFromPath;
+using hirs::string_utils::trimChar;
 using std::cerr;
 using std::endl;
 using std::ostream;
@@ -33,9 +35,8 @@ using std::to_string;
 
 const Logger Process::LOGGER = Logger::getDefaultLogger();
 
-const char* const Process::kProcessDirectory = "/proc";
-const char* const Process::kStatFilename = "stat";
-const char* const Process::kCmdlineFilename = "cmdline";
+const char* const Process::kPgrepCommand = "pgrep";
+const int Process::kMaxStatFileProcessNameLength = 15;
 
 /**
  * Constructor.
@@ -148,62 +149,31 @@ string Process::run(const string& executable,
  * local environment.
  *
  * @param executable the executable to check is running
- * @param checkCmdline a flag to check the complete cmdline commands
- *  rather than just search for the process name, default false
  * @return true, if executable is found to be running / false, otherwise
  */
-bool Process::isRunning(const string& executable, bool checkCmdline) {
-    // If the executable is the empty string, return false
-    if (executable.empty()) {
-        return false;
+bool Process::isRunning(const string& executable) {
+    // Check if executable includes path and trim to just process name if so
+    string processName = trimFilenameFromPath(executable);
+    // Log warning about including path to executable
+    if (processName.length() < executable.length()) {
+        stringstream warnStream;
+        warnStream << "Including the path to an executable isn't recommended "
+                   << "as this has no bearing on whether it's determined to "
+                   << "be running in the local environment.";
+        LOGGER.warn(warnStream.str());
     }
 
-    DIR* processDir;
-    if (!dirExists(kProcessDirectory)) {
-        stringstream errorStream;
-        errorStream << "The " << kProcessDirectory
-                    << " directory could not be found. "
-                    << "Please ensure this is running "
-                    << "on a supported Unix environment.";
-        throw HirsRuntimeException(errorStream.str(), "Process::isRunning");
-    } else {
-        processDir = opendir(kProcessDirectory);
-    }
+    // Sanitize any attempts to hijack the process
+    processName = trimChar(processName, ';');
 
-    struct dirent* entry;
-    char* endptr;
-    while ((entry = readdir(processDir)) != nullptr) {
-        // Attempt to parse current directory entry into a PID
-        int64_t pid = strtol(entry->d_name, &endptr, 10);
-        // Current entry can be skipped since it wasn't purely numeric
-        if (*endptr != '\0') {
-            continue;
-        }
-
-        // Check current process for desired executable
-        stringstream filename;
-        filename << kProcessDirectory << "/"
-                 << to_string(pid) << "/";
-        if (checkCmdline) {
-            filename << kCmdlineFilename;
-        } else {
-            filename << kStatFilename;
-        }
-        string cmd;
-        try {
-            cmd = fileToString(filename.str());
-        } catch (HirsRuntimeException& hirsRuntimeException) {
-            // Process terminated between parsing the PID
-            // and reading its stat file. Can skip as a result.
-            continue;
-        }
-        // Desired executable was found, so it's running, return true
-        if (cmd.find(executable) != string::npos) {
-            closedir(processDir);
-            return true;
-        }
+    // If the process name is longer than 15 characters log a warning
+    if (processName.length() > kMaxStatFileProcessNameLength) {
+        stringstream warnStream;
+        warnStream << "A process name with length greater than "
+                   << to_string(kMaxStatFileProcessNameLength)
+                   << " may result in a false negative depending on the"
+                   << " current runtime environment.";
+        LOGGER.warn(warnStream.str());
     }
-    // The target executable is not a running process, return false
-    closedir(processDir);
-    return false;
+    return Process(kPgrepCommand, "-c " + processName).run() == 0;
 }

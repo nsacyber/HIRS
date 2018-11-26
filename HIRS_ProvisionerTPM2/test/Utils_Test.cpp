@@ -12,6 +12,7 @@
 
 using hirs::file_utils::dirExists;
 using hirs::file_utils::fileExists;
+using hirs::file_utils::trimFilenameFromPath;
 using hirs::json_utils::JSONFieldParser;
 using hirs::string_utils::binaryToHex;
 using hirs::string_utils::contains;
@@ -152,6 +153,26 @@ TEST_F(UtilsTest, SplitFile) {
     hirs::file_utils::splitFile("testfile", "testfilep3", 10, 1);
     s = hirs::file_utils::fileToString("testfilep3");
     ASSERT_EQ(s, "d");
+}
+
+TEST_F(UtilsTest, TrimFilenameFromAbsolutePathSuccess) {
+    string test = "/usr/bin/echo";
+    ASSERT_EQ("echo", trimFilenameFromPath(test));
+}
+
+TEST_F(UtilsTest, TrimFilenameFromRelativePathSuccess) {
+    string test = "usr/bin/echo";
+    ASSERT_EQ("echo", trimFilenameFromPath(test));
+}
+
+TEST_F(UtilsTest, TrimFilenameFromPathSuccessWhenJustFilename) {
+    string test = "echo";
+    ASSERT_EQ("echo", trimFilenameFromPath(test));
+}
+
+TEST_F(UtilsTest, TrimEmptyFilenameFromPathSuccess) {
+    string test = "/usr/bin/";
+    ASSERT_EQ("", trimFilenameFromPath(test));
 }
 
 TEST_F(UtilsTest, BinToHex) {

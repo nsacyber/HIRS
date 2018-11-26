@@ -14,4 +14,5 @@ Please look up their respective names in the CentOS repositories.
 | re2        | 20160401     | 20160201          | CentOS 7 epel-release | https://github.com/google/re2               |
 | tpm2-tss   | 1.2.0        | 1.0.0             | CentOS 7 base         | https://github.com/intel/tpm2-tss           |
 | tpm2-tools | 1.1.0        | 1.1.0             | CentOS 7 base         | https://github.com/tpm2-software/tpm2-tools |
-| paccor     | 1.0.6        | none              |                       | https://github.com/nsacyber/paccor          |
+| paccor     | 1.0.6        | none              | N/A                   | https://github.com/nsacyber/paccor          |
+| procps-ng  | 3.3.10       | 3.3.0             | CentOS 7 base         | https://gitlab.com/procps-ng/procps         |

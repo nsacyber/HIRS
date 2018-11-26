@@ -156,6 +156,21 @@ namespace file_utils {
 
         delete[] fileBlock;
     }
+
+    /**
+     * Returns the filename from the end of a filesystem path
+     * @param path the filesystem path
+     * @return the filename from the path
+     */
+    string trimFilenameFromPath(const string& path) {
+        auto lastPathSeparatorIndex = path.find_last_of('/');
+        // Return path if it wasn't actually a path
+        if (lastPathSeparatorIndex == string::npos) {
+            return path;
+        }
+
+        return path.substr(lastPathSeparatorIndex + 1);
+    }
 }  // namespace file_utils
 
 namespace string_utils {

@@ -93,20 +93,20 @@ TEST_F(ProcessTest, ProcessIsRunningSuccessful) {
     ASSERT_TRUE(Process::isRunning("Process"));
 }
 
-TEST_F(ProcessTest, ProcessIsRunningSuccessfulCmdline) {
-    ASSERT_TRUE(Process::isRunning("Process", true));
+TEST_F(ProcessTest, ProcessIsRunningSuccessfulPathBased) {
+    ASSERT_TRUE(Process::isRunning("/opt/Process"));
 }
 
 TEST_F(ProcessTest, ProcessIsRunningFalse) {
     ASSERT_FALSE(Process::isRunning("foobar"));
 }
 
-TEST_F(ProcessTest, ProcessIsRunningFalseCmdline) {
-    ASSERT_FALSE(Process::isRunning("foobar", true));
-}
-
 TEST_F(ProcessTest, ProcessIsRunningEmptyStringReturnsFalse) {
     ASSERT_FALSE(Process::isRunning(""));
+}
+
+TEST_F(ProcessTest, ProcessIsRunningPreventCommandHijack) {
+    ASSERT_FALSE(Process::isRunning("foobar; echo blarg"));
 }
 
 }  // namespace
