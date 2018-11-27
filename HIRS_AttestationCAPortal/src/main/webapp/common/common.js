@@ -7,6 +7,16 @@ function byteToHexString(arr){
     return (str.substring(0, str.length - 2)).toUpperCase();
 }
 
+//Parse hex string for display
+function parseHexString(hexString) {
+    var str = hexString.toUpperCase();
+    //Do not parse if there is 2 characters
+    if(str.length === 2) {
+        return str;
+    }
+    return str.match(/.{2}/g).join(': ');
+}
+
 //Parse the HEX string value to display as byte hex string
 function parseSerialNumber(hexString){
     var str = hexString.toUpperCase();

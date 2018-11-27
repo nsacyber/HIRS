@@ -79,6 +79,7 @@ public abstract class Certificate extends ArchivableEntity {
     private static final String MALFORMED_CERT_MESSAGE = "Malformed certificate detected.";
     private static final int MAX_CERT_LENGTH_BYTES = 2048;
     private static final int MAX_NUMERIC_PRECISION = 49; // Can store up to 160 bit values
+    private static final int MAX_PUB_KEY_MODULUS_HEX_LENGTH = 1024;
     private static final int KEY_USAGE_BIT0 = 0;
     private static final int KEY_USAGE_BIT1 = 1;
     private static final int KEY_USAGE_BIT2 = 2;
@@ -193,8 +194,8 @@ public abstract class Certificate extends ArchivableEntity {
 
     // We're currently seeing 2048-bit keys, which is 512 hex digits.
     // Using a max length of 1024 for future-proofing.
-    @Column(length = MAX_CERT_LENGTH_BYTES, nullable = true)
-    private final byte[] publicKeyModulusHexValue;
+    @Column(length = MAX_PUB_KEY_MODULUS_HEX_LENGTH, nullable = true)
+    private final String publicKeyModulusHexValue;
 
     @Column(length = MAX_CERT_LENGTH_BYTES, nullable = false)
     private final byte[] signature;
@@ -336,7 +337,7 @@ public abstract class Certificate extends ArchivableEntity {
                 this.encodedPublicKey = x509Certificate.getPublicKey().getEncoded();
                 BigInteger publicKeyModulus = getPublicKeyModulus(x509Certificate);
                 if (publicKeyModulus != null) {
-                    this.publicKeyModulusHexValue = publicKeyModulus.toByteArray();
+                    this.publicKeyModulusHexValue = publicKeyModulus.toString(HEX_BASE);
                 } else {
                     this.publicKeyModulusHexValue = null;
                 }
@@ -924,14 +925,10 @@ public abstract class Certificate extends ArchivableEntity {
 
     /**
      * Getter for the hex value.
-     * @return a byte array for the public key
+     * @return a string for the public key
      */
-    public byte[] getPublicKeyModulusHexValue() {
-        if (publicKeyModulusHexValue != null) {
-            return publicKeyModulusHexValue.clone();
-        }
-
-        return new byte[0];
+    public String getPublicKeyModulusHexValue() {
+        return publicKeyModulusHexValue;
     }
 
     /**

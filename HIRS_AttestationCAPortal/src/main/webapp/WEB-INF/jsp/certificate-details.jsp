@@ -759,8 +759,8 @@
                 </c:if>
             <c:choose>
                 <c:when test="${not empty initialData.publicKeyValue}">
-                var publicKey = ${initialData.publicKeyValue};
-                $("#encodedPublicKey").html(byteToHexString(publicKey));
+                var publicKey = '${initialData.publicKeyValue}';
+                $("#encodedPublicKey").html(parseHexString(publicKey));
                 </c:when>
                 <c:otherwise>
                     <c:if test="${not empty initialData.encodedPublicKey}">
