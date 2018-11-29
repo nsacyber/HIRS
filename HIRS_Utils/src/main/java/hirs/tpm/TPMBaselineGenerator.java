@@ -44,6 +44,7 @@ public class TPMBaselineGenerator {
             = LogManager.getLogger(TPMBaselineGenerator.class);
 
     private static final String KERNEL_UPDATE_BASELINE_NAME = "Kernel Update %s %s";
+    private static final String VALID_REGEX = "[0-9a-zA-Z./()_,\" -]+";
 
 
     /**
@@ -595,19 +596,14 @@ public class TPMBaselineGenerator {
         HashMap<TPMBaselineFields, String> fieldMap = new HashMap<>();
 
         try {
-            while (reader.ready()) {
-                if (StringUtils.isBlank(dataRow)) {
-                    dataRow = reader.readLine();
-                    continue;
-                }
-
+            while (dataRow != null && dataRow.matches(VALID_REGEX)) {
                 String[] dataArray = dataRow.split(",", 2); // looking for two values per row
                 if (dataArray.length != 2) { // could be 1, if there were no commas
                     final String msg = String.format(
                             "invalid number of fields: %d", dataArray.length);
                     LOGGER.error(msg);
                     throw new TPMBaselineGeneratorException(msg);
-                } else if (!dataArray[1].matches("[0-9a-zA-Z./()_,\" -]+")) {
+                } else if (!dataArray[1].matches(VALID_REGEX)) {
                     final String msg = String.format("One record contained invalid data"
                             + "while parsing a CSV file for TPM Baseline '%s'.", baselineName);
                     LOGGER.error(msg);
@@ -641,6 +637,10 @@ public class TPMBaselineGenerator {
                 TPMBaselineFields.toOSInfo(fieldMap, baseline.getOSInfo()));
             baseline.setTPMInfo(
                 TPMBaselineFields.toTPMInfo(fieldMap, baseline.getTPMInfo()));
+
+            if (baseline.isEmpty()) {
+                throw new TPMBaselineGeneratorException("TPM baseline is empty!");
+            }
         //Checks that PCR values are actual
         } catch (NumberFormatException nfe) {
             String recordInfo = "";

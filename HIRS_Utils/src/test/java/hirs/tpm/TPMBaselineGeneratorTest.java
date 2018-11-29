@@ -88,6 +88,7 @@ public class TPMBaselineGeneratorTest {
      *             if error encountered when retrieving measurement entries from
      *             input stream
      */
+    @Test
     public final void generateBaselineFromCSVFileNullBaselineName()
             throws IOException, ParseException, TPMBaselineGeneratorException {
         Exception expectedEx = null;
@@ -131,6 +132,7 @@ public class TPMBaselineGeneratorTest {
      * @throws ParseException
      *             if error encountered parsing data
      */
+    @Test
     public final void generateBaselineFromCSVFileContainsNoRecords()
             throws IOException, ParseException {
         Exception expectedEx = null;
@@ -187,6 +189,7 @@ public class TPMBaselineGeneratorTest {
      * @throws ParseException
      *             if error encountered parsing data
      */
+    @Test
     public final void generateBaselineFromCSVFileContainsInvalidRecords()
             throws IOException, ParseException {
         Exception expectedEx = null;

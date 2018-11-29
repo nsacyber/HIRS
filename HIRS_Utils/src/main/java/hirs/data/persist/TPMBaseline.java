@@ -23,6 +23,7 @@ import java.util.Set;
 public abstract class TPMBaseline extends Baseline {
 
     private static final Logger LOGGER = LogManager.getLogger(TPMBaseline.class);
+    private static final String NOT_SPECIFIED = "Not Specified";
 
     @ElementCollection(fetch = FetchType.EAGER)
     @CollectionTable(name = "TPMBaselineRecords",
@@ -272,5 +273,35 @@ public abstract class TPMBaseline extends Baseline {
         }
 
         return pcrRecords.remove(record);
+    }
+
+    /**
+     * Checks the properties of FirmwareInfo, HardwareInfo, OSInfo, and TPMInfo and the contents of
+     * pcrRecords to determine if this instance of TPMBaseline is empty or not.
+     *
+     * @return true if baseline has no data
+     */
+    public boolean isEmpty() {
+        LOGGER.debug("Check for empty baseline");
+        return (firmwareInfo.getBiosReleaseDate().equals(NOT_SPECIFIED)
+                && firmwareInfo.getBiosVendor().equals(NOT_SPECIFIED)
+                && firmwareInfo.getBiosVersion().equals(NOT_SPECIFIED)
+                && hardwareInfo.getBaseboardSerialNumber().equals(NOT_SPECIFIED)
+                && hardwareInfo.getChassisSerialNumber().equals(NOT_SPECIFIED)
+                && hardwareInfo.getManufacturer().equals(NOT_SPECIFIED)
+                && hardwareInfo.getProductName().equals(NOT_SPECIFIED)
+                && hardwareInfo.getSystemSerialNumber().equals(NOT_SPECIFIED)
+                && hardwareInfo.getVersion().equals(NOT_SPECIFIED)
+                && osInfo.getDistribution().equals(NOT_SPECIFIED)
+                && osInfo.getDistributionRelease().equals(NOT_SPECIFIED)
+                && osInfo.getOSArch().equals(NOT_SPECIFIED)
+                && osInfo.getOSName().equals(NOT_SPECIFIED)
+                && osInfo.getOSVersion().equals(NOT_SPECIFIED)
+                && tpmInfo.getTPMMake().equals(NOT_SPECIFIED)
+                && tpmInfo.getTPMVersionMajor() == 0
+                && tpmInfo.getTPMVersionMinor() == 0
+                && tpmInfo.getTPMVersionRevMajor() == 0
+                && tpmInfo.getTPMVersionRevMinor() == 0
+                && pcrRecords.isEmpty());
     }
 }
