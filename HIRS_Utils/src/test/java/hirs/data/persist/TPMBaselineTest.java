@@ -623,6 +623,24 @@ public class TPMBaselineTest extends SpringPersistenceTest {
         Assert.assertEquals(baseline.getTPMInfo(), tpmInfo);
     }
 
+    /**
+     * Verify that a baseline with valid data returns false from isEmpty().
+     */
+    @Test
+    public final void testIsEmptyFalse() {
+        final TpmWhiteListBaseline baseline = getDefaultWhiteListBaseline();
+        Assert.assertFalse(baseline.isEmpty());
+    }
+
+    /**
+     * Verify that a baseline with no data returns true from isEmpty().
+     */
+    @Test
+    public final void testIsEmptyTrue() {
+        final TpmWhiteListBaseline baseline = new TpmWhiteListBaseline();
+        Assert.assertTrue(baseline.isEmpty());
+    }
+
     private TpmWhiteListBaseline getDefaultWhiteListBaseline() {
         final int pcr0 = 0;
         TpmWhiteListBaseline baseline = new TpmWhiteListBaseline("TestTpmWhiteListBaseline");
