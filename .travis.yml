@@ -29,14 +29,14 @@ cache:
 install: true
 
 script:
-  - docker run --rm hirs/hirs-ci:centos7 /bin/bash -c "git clone https://github.com/nsacyber/HIRS.git /root/HIRS; cd /root/HIRS; git checkout ${TRAVIS_BRANCH}; ./gradlew :$SUBPROJECT:build"
+  - docker run --rm -v $(pwd):/HIRS hirs/hirs-ci:centos7 /bin/bash -c "cd /HIRS; ./gradlew :$SUBPROJECT:build"
 
 jobs:
   include:
     - stage: package
-      script: docker run --rm hirs/hirs-ci:centos7 /bin/bash -c "git clone https://github.com/nsacyber/HIRS.git /root/HIRS; cd /root/HIRS; git checkout ${TRAVIS_BRANCH}; ./package/package.centos.sh"
+      script: docker run --rm -v $(pwd):/HIRS hirs/hirs-ci:centos7 /bin/bash -c "cd /HIRS; ./package/package.centos.sh"
       env: null
       name: "Package Centos"
-    - script: docker run --rm hirs/hirs-ci:ubuntu18 /bin/bash -c "git clone https://github.com/nsacyber/HIRS.git /root/HIRS; cd /root/HIRS; git checkout ${TRAVIS_BRANCH}; ./package/package.ubuntu.sh"
+    - script: docker run --rm -v $(pwd):/HIRS hirs/hirs-ci:ubuntu18 /bin/bash -c "cd /HIRS; ./package/package.ubuntu.sh"
       env: null
       name: "Package Ubuntu"
