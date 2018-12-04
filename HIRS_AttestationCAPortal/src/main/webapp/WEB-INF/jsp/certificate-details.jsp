@@ -209,6 +209,12 @@
                             </div>
                         </c:when>
                     </c:choose>
+                    <c:if test="${initialData.crlPoints}">
+                        <div class="row">
+                            <div class="col-md-1 col-md-offset-1"><span class="colHeader">Revocation Locator</span></div>
+                            <div id="revocationLocator" class="col col-md-8"><a href="${initialData.crlPoints}">${initialData.crlPoints}</div>
+                        </div>
+                    </c:if>
                     <div class="row">
                         <div class="col-md-1 col-md-offset-1"><span class="colHeader">Key Usage</span></div>                        
                         <c:choose>
@@ -252,10 +258,10 @@
                             </c:choose>
                         </div>
                     </div>
-                    <c:if test="${initialData.revocationLocator}">
+                    <c:if test="${initialData.crlPoints}">
                         <div class="row">
                             <div class="col-md-1 col-md-offset-1"><span class="colHeader">Revocation Locator</span></div>
-                            <div id="revocationLocator" class="col col-md-8">${initialData.revocationLocator}</div>
+                            <div id="revocationLocator" class="col col-md-8"><a href="${initialData.crlPoints}">${initialData.crlPoints}</div>
                         </div>
                     </c:if>
                     <div class="row">

@@ -74,7 +74,10 @@ public class PlatformCredential extends DeviceAssociatedCertificate {
     private static final String PLATFORM_CONFIGURATION = "2.23.133.5.1.7.1";
     private static final String PLATFORM_CONFIGURATION_V2 = "2.23.133.5.1.7.2";
 
-    //TCG Platform Specification values
+    /**
+     * TCG Platform Specification values
+     * At this time these are placeholder values.
+     */
     private static final Map<String, String> TCG_PLATFORM_MAP = new HashMap<String, String>() {{
         put("#00000000", "Client");
         put("#00000001", "Server");
@@ -401,11 +404,7 @@ public class PlatformCredential extends DeviceAssociatedCertificate {
      * @return the platform specification platform class
      */
     public String getPlatformClass() {
-        if (platformClass != null && !platformClass.isEmpty()) {
-            return TCG_PLATFORM_MAP.get(platformClass);
-        } else {
-            return platformClass;
-        }
+        return TCG_PLATFORM_MAP.get(platformClass);
     }
 
     /**

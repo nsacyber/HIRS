@@ -45,8 +45,7 @@ public final class CertificateStringMapBuilder {
             data.put("issuer", certificate.getIssuer());
             //Serial number in hex value
             data.put("serialNumber", Long.toHexString(certificate.getSerialNumber().longValue()));
-            if (certificate.getAuthoritySerialNumber() != null
-                    && certificate.getAuthoritySerialNumber() != BigInteger.ZERO) {
+            if (certificate.getAuthoritySerialNumber() != BigInteger.ZERO) {
                 data.put("authSerialNumber", Long.toHexString(certificate
                         .getAuthoritySerialNumber().longValue()));
             }
@@ -65,7 +64,10 @@ public final class CertificateStringMapBuilder {
             }
 
             data.put("authKeyId", certificate.getAuthKeyId());
-            data.put("authInfoAccess", certificate.getAuthInfoAccess());
+            if (certificate.getAuthInfoAccess() != null) {
+                data.put("authInfoAccess", certificate.getAuthInfoAccess());
+            }
+            data.put("crlPoints", certificate.getCrlPoints());
             data.put("signatureAlgorithm", certificate.getSignatureAlgorithm());
             if (certificate.getEncodedPublicKey() != null) {
                 data.put("encodedPublicKey",
@@ -236,7 +238,7 @@ public final class CertificateStringMapBuilder {
             data.put("model", certificate.getModel());
             data.put("version", certificate.getVersion());
             data.put("policyReference", certificate.getPolicyReference());
-            data.put("revocationLocator", certificate.getRevocationLocator());
+            data.put("crlPoints", certificate.getCrlPoints());
             data.put("credentialType", certificate.getCredentialType());
             //x509 credential version
             data.put("x509Version", Integer.toString(certificate

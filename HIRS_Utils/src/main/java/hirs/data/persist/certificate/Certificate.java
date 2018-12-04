@@ -3,6 +3,7 @@ package hirs.data.persist.certificate;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.common.base.Preconditions;
 import hirs.data.persist.ArchivableEntity;
+import hirs.utils.HexUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.bouncycastle.asn1.ASN1BitString;
@@ -63,6 +64,9 @@ import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 import java.util.Objects;
+import org.bouncycastle.asn1.x509.CRLDistPoint;
+import org.bouncycastle.asn1.x509.DistributionPoint;
+import org.bouncycastle.asn1.x509.DistributionPointName;
 
 
 /**
@@ -252,6 +256,7 @@ public abstract class Certificate extends ArchivableEntity {
     private byte[] policyConstraints;
     private String authorityKeyIdentifier;
     private String authorityInfoAccess;
+    private String crlPoints;
 
 
     /**
@@ -281,6 +286,7 @@ public abstract class Certificate extends ArchivableEntity {
         this.authorityKeyIdentifier = null;
         this.authorityInfoAccess = null;
         this.authoritySerialNumber = BigInteger.ZERO;
+        this.crlPoints = null;
     }
 
     /**
@@ -357,6 +363,7 @@ public abstract class Certificate extends ArchivableEntity {
 
                 this.authorityInfoAccess = getAuthorityInfoAccess();
                 this.keyUsage = parseKeyUsage(x509Certificate.getKeyUsage());
+                this.crlPoints = getCRLDistributionPoint();
 
                 try {
                     if (x509Certificate.getExtendedKeyUsage() != null) {
@@ -602,21 +609,12 @@ public abstract class Certificate extends ArchivableEntity {
      * Getter for the authorityKeyIdentifier.
      * @return the ID's byte representation
      */
-    @SuppressWarnings("checkstyle:magicnumber")
     private String authKeyIdentifierToString(final AuthorityKeyIdentifier aki) {
         String retValue = "";
         if (aki != null) {
             byte[] keyArray = aki.getKeyIdentifier();
             if (keyArray != null) {
-                char[] hexValues = "0123456789abcdef".toCharArray();
-                char[] hexChars = new char[keyArray.length * 2];
-                for (int i = 0; i < keyArray.length; i++) {
-                    int v = keyArray[i] & 0xFF;
-                    hexChars[i * 2] = hexValues[v >>> 4];
-                    hexChars[i * 2 + 1] = hexValues[v & 0x0F];
-                }
-
-                retValue = new String(hexChars);
+                retValue = HexUtils.byteArrayToHexString(keyArray);
             }
         }
 
@@ -680,6 +678,45 @@ public abstract class Certificate extends ArchivableEntity {
             }
         } catch (IOException ioEx) {
             LOGGER.error(ioEx);
+        }
+
+        return sb.toString();
+    }
+
+    /**
+     *
+     * @return A list of ulrs that inform the location of the certificate revocation lists
+     * @throws java.io.IOException
+     */
+    private String getCRLDistributionPoint() throws IOException {
+        List<String> crlUrls = new ArrayList<>();
+        ASN1Primitive primitive = getExtensionValue(Extension.cRLDistributionPoints.getId());
+        StringBuilder sb = new StringBuilder();
+
+        if (primitive != null) {
+            CRLDistPoint crlDistPoint = CRLDistPoint.getInstance(primitive);
+            DistributionPoint[] distributionPoints = crlDistPoint.getDistributionPoints();
+
+            for (DistributionPoint distributionPoint : distributionPoints) {
+                DistributionPointName dpn = distributionPoint.getDistributionPoint();
+                // Look for URIs in fullName
+                if (dpn != null && dpn.getType() == DistributionPointName.FULL_NAME) {
+                    GeneralName[] genNames = GeneralNames.getInstance(dpn.getName())
+                            .getNames();
+                    for (GeneralName genName : genNames) {
+                        if (genName.getTagNo() == GeneralName.uniformResourceIdentifier) {
+                            String url = DERIA5String.getInstance(genName.getName())
+                                    .getString();
+                            crlUrls.add(url);
+                        }
+                    }
+
+                }
+            }
+        }
+
+        for (String s : crlUrls) {
+            sb.append(String.format("%s%n", s));
         }
 
         return sb.toString();
@@ -823,6 +860,14 @@ public abstract class Certificate extends ArchivableEntity {
     }
 
     /**
+     * Getter for the CRL Distribution Points.
+     * @return CRLs
+     */
+    public String getCrlPoints() {
+        return crlPoints;
+    }
+
+    /**
      * Getter for the policy statement.
      * @return cloned bit representation of constraints
      */
@@ -831,7 +876,7 @@ public abstract class Certificate extends ArchivableEntity {
             return policyConstraints.clone();
         }
 
-        return new byte[0];
+        return null;
     }
 
     /**
@@ -877,10 +922,10 @@ public abstract class Certificate extends ArchivableEntity {
      * @return this Authority's Key ID serial number.
      */
     public BigInteger getAuthoritySerialNumber() {
-        if (this.authoritySerialNumber == null) {
-            return BigInteger.ZERO;
+        if (this.authoritySerialNumber != null) {
+            return authoritySerialNumber;
         }
-        return authoritySerialNumber;
+        return BigInteger.ZERO;
     }
 
     /**

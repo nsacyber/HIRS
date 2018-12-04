@@ -112,8 +112,7 @@ public class ComponentIdentifier {
                     .getObjectAt(COMPONENT_IDENTIFIER))
                     .toString();
         } else if (sequence.getObjectAt(tag) instanceof DEROctetString) {
-            componentClass = sequence.getObjectAt(tag).toString();
-            tag++;
+            componentClass = sequence.getObjectAt(tag++).toString();
         }
 
         //Mandatory values
