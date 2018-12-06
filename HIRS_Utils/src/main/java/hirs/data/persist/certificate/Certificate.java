@@ -243,7 +243,7 @@ public abstract class Certificate extends ArchivableEntity {
     private final BigInteger authoritySerialNumber;
 
     @SuppressWarnings("PMD.AvoidUsingHardCodedIP") // this is not an IP address; PMD thinks it is
-    private static final String POLICY_CONTRAINTS = "2.5.29.36";
+    private static final String POLICY_CONSTRAINTS = "2.5.29.36";
 
     // we don't need to persist this, but we don't want to unpack this cert multiple times
     @Transient
@@ -356,7 +356,7 @@ public abstract class Certificate extends ArchivableEntity {
                 this.issuerOrganization = getOrganization(this.issuer);
                 this.subjectOrganization = getOrganization(this.subject);
                 this.policyConstraints = x509Certificate
-                        .getExtensionValue(POLICY_CONTRAINTS);
+                        .getExtensionValue(POLICY_CONSTRAINTS);
                 authKeyIdentifier = AuthorityKeyIdentifier
                         .getInstance((DLSequence) getExtensionValue(
                                 Extension.authorityKeyIdentifier.getId()));
@@ -435,6 +435,7 @@ public abstract class Certificate extends ArchivableEntity {
         } else {
             this.authoritySerialNumber = BigInteger.ZERO;
         }
+
         this.certificateHash = Arrays.hashCode(this.certificateBytes);
         this.certAndTypeHash = Objects.hash(certificateHash, getClass().getSimpleName());
     }
@@ -684,8 +685,10 @@ public abstract class Certificate extends ArchivableEntity {
     }
 
     /**
+     * Getter for the CRL Distribution that is reference by the Revocation Locator
+     * on the portal.
      *
-     * @return A list of ulrs that inform the location of the certificate revocation lists
+     * @return A list of URLs that inform the location of the certificate revocation lists
      * @throws java.io.IOException
      */
     private String getCRLDistributionPoint() throws IOException {
@@ -912,6 +915,8 @@ public abstract class Certificate extends ArchivableEntity {
     }
 
     /**
+     * Getter the Certificate's Serial Number.
+     *
      * @return this certificate's serial number
      */
     public BigInteger getSerialNumber() {
@@ -919,16 +924,21 @@ public abstract class Certificate extends ArchivableEntity {
     }
 
     /**
+     * Getter for the Authority's Serial Number.
+     *
      * @return this Authority's Key ID serial number.
      */
     public BigInteger getAuthoritySerialNumber() {
-        if (this.authoritySerialNumber != null) {
+        if (authoritySerialNumber != null) {
             return authoritySerialNumber;
         }
+
         return BigInteger.ZERO;
     }
 
     /**
+     * Getter for the Holder's Serial Number.
+     *
      * @return this certificate's holder serial number
      */
     public BigInteger getHolderSerialNumber() {
