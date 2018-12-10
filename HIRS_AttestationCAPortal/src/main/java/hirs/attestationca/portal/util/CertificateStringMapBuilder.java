@@ -15,7 +15,6 @@ import hirs.data.persist.certificate.IssuedAttestationCertificate;
 import hirs.data.persist.certificate.PlatformCredential;
 import hirs.data.persist.certificate.attributes.PlatformConfiguration;
 import hirs.persist.CertificateManager;
-import java.math.BigInteger;
 
 /**
  * Utility class for mapping certificate information in to string maps. These are used to display
@@ -45,7 +44,7 @@ public final class CertificateStringMapBuilder {
             data.put("issuer", certificate.getIssuer());
             //Serial number in hex value
             data.put("serialNumber", Long.toHexString(certificate.getSerialNumber().longValue()));
-            if (certificate.getAuthoritySerialNumber() != BigInteger.ZERO) {
+            if (certificate.getAuthoritySerialNumber() != null) {
                 data.put("authSerialNumber", Long.toHexString(certificate
                         .getAuthoritySerialNumber().longValue()));
             }

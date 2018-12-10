@@ -240,7 +240,7 @@ public abstract class Certificate extends ArchivableEntity {
     private final BigInteger holderSerialNumber;
     private String holderIssuer;
     @Column(nullable = true, precision = MAX_NUMERIC_PRECISION, scale = 0)
-    private final BigInteger authoritySerialNumber;
+    private BigInteger authoritySerialNumber;
 
     @SuppressWarnings("PMD.AvoidUsingHardCodedIP") // this is not an IP address; PMD thinks it is
     private static final String POLICY_CONSTRAINTS = "2.5.29.36";
@@ -432,8 +432,6 @@ public abstract class Certificate extends ArchivableEntity {
         if (authKeyIdentifier != null) {
             this.authorityKeyIdentifier = authKeyIdentifierToString(authKeyIdentifier);
             this.authoritySerialNumber = authKeyIdentifier.getAuthorityCertSerialNumber();
-        } else {
-            this.authoritySerialNumber = BigInteger.ZERO;
         }
 
         this.certificateHash = Arrays.hashCode(this.certificateBytes);
@@ -929,11 +927,7 @@ public abstract class Certificate extends ArchivableEntity {
      * @return this Authority's Key ID serial number.
      */
     public BigInteger getAuthoritySerialNumber() {
-        if (authoritySerialNumber != null) {
-            return authoritySerialNumber;
-        }
-
-        return BigInteger.ZERO;
+        return authoritySerialNumber;
     }
 
     /**
