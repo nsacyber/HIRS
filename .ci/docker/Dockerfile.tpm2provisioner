@@ -1,0 +1,14 @@
+FROM hirs/hirs-ci:centos7
+
+MAINTAINER apl.dev3@jhuapl.edu
+
+# Install packages for installing HIRS TPM2 Provisioner
+RUN yum -y update && yum clean all
+# TODO: Remove vim-common if/when Paccor updates (Also update Paccor version below)
+RUN yum install -y tpm2-tools libcurl procps-ng vim-common wget dbus && yum clean all
+
+# Install PACCOR for Device Info Gathering
+RUN mkdir paccor && pushd paccor && wget https://github.com/nsacyber/paccor/releases/download/v1.0.6r3/paccor-1.0.6-3.noarch.rpm && yum -y install paccor-*.rpm && popd
+
+# Install Software TPM for Provisioning
+RUN mkdir ibmtpm && pushd ibmtpm && wget https://downloads.sourceforge.net/project/ibmswtpm2/ibmtpm974.tar.gz && tar -zxvf ibmtpm974.tar.gz && cd src && make -j5 && popd
