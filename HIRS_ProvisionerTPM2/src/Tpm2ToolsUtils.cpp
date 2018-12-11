@@ -45,7 +45,9 @@ const unordered_map<string, Tpm2ToolsVersion>
 };
 
 Tpm2ToolsVersion Tpm2ToolsVersionChecker::findTpm2ToolsVersion() {
-    string versionOutput = RUN_PROCESS_OR_THROW("tpm2_nvlist", "-v");
+    string versionOutput = hirs::utils::Process::run("tpm2_nvlist", "-v",
+                                                     "Tpm2ToolsUtils.cpp",
+                                                     __LINE__);
     string version = Tpm2ToolsOutputParser::parseTpm2ToolsVersion(
             versionOutput);
     string majorVersion = Tpm2ToolsOutputParser::parseTpm2ToolsMajorVersion(

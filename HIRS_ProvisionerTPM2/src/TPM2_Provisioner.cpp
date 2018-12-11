@@ -73,7 +73,9 @@ int provision() {
                                        platformCredentials);
     identityClaim.set_client_version(CLIENT_VERSION);
     string paccorOutputString =
-            RUN_PROCESS_OR_THROW("/opt/paccor/scripts/allcomponents.sh", "");
+            hirs::utils::Process::run(
+                    "/opt/paccor/scripts/allcomponents.sh", "",
+                    "TPM2_Provisioner.cpp", __LINE__);
     identityClaim.set_paccoroutput(paccorOutputString);
     RestfulClientProvisioner provisioner;
     string nonceBlob = provisioner.sendIdentityClaim(identityClaim);

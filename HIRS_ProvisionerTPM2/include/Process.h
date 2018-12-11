@@ -40,18 +40,14 @@ class Process {
     std::string getOutputString() const;
 
     static std::string run(const std::string& executable,
-                           std::string sourceFileName,
-                           int sourceLineNumber,
-                           const std::string& arguments = "");
+                           const std::string& arguments,
+                           const std::string& sourceFileName,
+                           int sourceLineNumber);
 
     static bool isRunning(const std::string& executable);
 };
 
 }  // namespace utils
 }  // namespace hirs
-
-
-#define RUN_PROCESS_OR_THROW(executable, arguments)\
-    hirs::utils::Process::run(executable, __FILE__, __LINE__, arguments)
 
 #endif  // HIRS_PROVISIONERTPM2_INCLUDE_PROCESS_H_

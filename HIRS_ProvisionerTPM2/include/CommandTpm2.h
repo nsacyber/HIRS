@@ -87,7 +87,8 @@ class CommandTpm2 {
     std::string getPublicArea(const std::string& filename);
 
     std::string runTpm2CommandWithRetry(const std::string& command,
-                                        const std::string& args);
+                                            const std::string& args,
+                                            int sourceCodeLineNumber);
 
  public:
     static const char* const kDefaultIdentityClaimResponseFilename;
