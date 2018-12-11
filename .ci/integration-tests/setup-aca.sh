@@ -6,5 +6,5 @@ set -e
 # Otherwise we'll run into conflicts when different Docker containers try to package at the same time
 cd /HIRS
 ./package/package.centos.sh
-yum localinstall -y package/rpm/RPMS/noarch/HIRS_AttestationCA*.el7.noarch.rpm
+yum install -y package/rpm/RPMS/noarch/HIRS_AttestationCA*.el7.noarch.rpm
 tail -f /dev/null
