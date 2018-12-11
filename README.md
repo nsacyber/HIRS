@@ -51,7 +51,7 @@ Packages used for installation (e.g. HIRS_Provisioner*el7.noarch.rpm) can be fou
 
 ### Installing the ACA
 
-Simply run the command `yum localinstall HIRS_AttestationCA*el6.noarch.rpm` or `yum localinstall HIRS_AttestationCA*el7.noarch.rpm` based on your OS.
+Simply run the command `yum install HIRS_AttestationCA*el6.noarch.rpm` or `yum install HIRS_AttestationCA*el7.noarch.rpm` based on your OS.
 
 ### Installing the Provisioner
 
@@ -59,12 +59,12 @@ After enabling your TPM in BIOS/UEFI, determine if your machine has a TPM 1.2 or
 `dmesg | grep -i tpm_tis`.
 
 To install a TPM 1.2 Provisioner, run:<br>
-`yum localinstall tpm_module*.rpm`<br>
-`yum localinstall HIRS_Provisioner*el6.noarch.rpm` or `yum localinstall HIRS_Provisioner*el7.noarch.rpm` based on OS<br>
+`yum install tpm_module*.rpm`<br>
+`yum install HIRS_Provisioner*el6.noarch.rpm` or `yum install HIRS_Provisioner*el7.noarch.rpm` based on OS<br>
 `hirs-provisioner -c`
 
 To install a TPM 2.0 Provisioner, run:<br>
-`yum localinstall hirs-provisioner-tpm2*.rpm`
+`yum install hirs-provisioner-tpm2*.rpm`
 
 To configure the provisioner, edit the hirs-site.config file in `/etc/hirs/hirs-site.config`. Edit the file to specify the ACA's fully qualified domain name and port.
 
