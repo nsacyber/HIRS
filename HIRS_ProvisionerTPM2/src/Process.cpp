@@ -116,16 +116,16 @@ string Process::getOutputString() const {
  * and source file line number for use in the exception message.
  *
  * @param executable the executable to be run
+ * @param arguments the arguments including options to be passed to the
  * @param sourceFileName source file from which this method was called
  * @param sourceLineNumber line number of source file from which this method
  *                         was called
- * @param arguments the arguments including options to be passed to the
  * executable (defaults to empty string)
  */
 string Process::run(const string& executable,
-                    string sourceFileName,
-                    int sourceLineNumber,
-                    const string& arguments) {
+                    const string& arguments,
+                    const string& sourceFileName,
+                    int sourceLineNumber) {
     stringstream errorStream;
     Process p(executable, arguments);
     if (p.run(errorStream) != 0) {
