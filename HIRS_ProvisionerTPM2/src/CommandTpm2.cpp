@@ -150,7 +150,8 @@ void CommandTpm2::setAuthData() {
     }
 
     LOGGER.info("Attempting to set auth data.");
-    runTpm2CommandWithRetry(kTpm2ToolsTakeOwnershipCommand, argsStream.str());
+    runTpm2CommandWithRetry(kTpm2ToolsTakeOwnershipCommand, argsStream.str(),
+                            __LINE__);
     LOGGER.info("Auth data set successfully.");
 }
 
@@ -274,7 +275,8 @@ void CommandTpm2::createEndorsementKey(const AsymmetricKeyType& keyType) {
                << " -f " << kDefaultEkPubFilename
                << endl;
 
-    runTpm2CommandWithRetry(kTpm2ToolsGetPubEkCommand, argsStream.str());
+    runTpm2CommandWithRetry(kTpm2ToolsGetPubEkCommand, argsStream.str(),
+                            __LINE__);
     LOGGER.info("Endorsement Key successfully created.");
 }
 
@@ -318,7 +320,8 @@ void CommandTpm2::createAttestationKey() {
 
     LOGGER.info("Running getpubak with arguments: "
                 + argsStream.str());
-    runTpm2CommandWithRetry(kTpm2ToolsGetPubAkCommand, argsStream.str());
+    runTpm2CommandWithRetry(kTpm2ToolsGetPubAkCommand, argsStream.str(),
+                            __LINE__);
     LOGGER.info("AK created successfully");
 }
 
@@ -420,7 +423,8 @@ string CommandTpm2::activateIdentity() {
                << " -o " << kDefaultActivatedIdentityFilename
                << endl;
 
-    runTpm2CommandWithRetry(kTpm2ToolsActivateCredential, argsStream.str());
+    runTpm2CommandWithRetry(kTpm2ToolsActivateCredential, argsStream.str(),
+                            __LINE__);
 
     try {
         binaryEncodedNonce = fileToString(kDefaultActivatedIdentityFilename);
@@ -459,7 +463,8 @@ void CommandTpm2::storeAKCertificate(
                            << " -s " << akCertificateByteStringSize
                            << endl;
 
-    runTpm2CommandWithRetry(kTpm2ToolsNvDefineCommand, argsStream.str());
+    runTpm2CommandWithRetry(kTpm2ToolsNvDefineCommand, argsStream.str(),
+                            __LINE__);
 
     try {
         LOGGER.debug(string("Beginning to write to NV Index: ")
@@ -470,7 +475,8 @@ void CommandTpm2::storeAKCertificate(
                 = createNvWriteCommandArgs(kAKCertificateHandle,
                                            kDefaultAkCertFilename);
 
-        runTpm2CommandWithRetry(kTpm2ToolsNvWriteCommand, nvWriteArguments);
+        runTpm2CommandWithRetry(kTpm2ToolsNvWriteCommand, nvWriteArguments,
+                                __LINE__);
     } catch (HirsRuntimeException& ex) {
         LOGGER.warn(string("Attempt to write AK Certificate to TPM failed.")
                     + string(" The following output was given:\n")
@@ -526,7 +532,8 @@ void CommandTpm2::getQuote(const string& akLocation,
 uint16_t CommandTpm2::getNvIndexDataSize(const string& nvIndex) {
     string listOutput;
     try {
-        listOutput = runTpm2CommandWithRetry(kTpm2ToolsNvListCommand, "");
+        listOutput = runTpm2CommandWithRetry(kTpm2ToolsNvListCommand, "",
+                                             __LINE__);
     } catch (HirsRuntimeException& ex) {
         // Due to bug in tpm2-tools 2.1.0, check to see if error was success
         if (contains(ex.what(), "NV indexes defined.")) {
@@ -570,7 +577,7 @@ string CommandTpm2::readNvIndex(const string& nvIndex,
         LOGGER.info("Command args: " + nvReadArguments);
 
         string rawNvReadOutput = runTpm2CommandWithRetry(
-                kTpm2ToolsNvReadCommand, nvReadArguments);
+                kTpm2ToolsNvReadCommand, nvReadArguments, __LINE__);
 
         switch (version) {
             case Tpm2ToolsVersion::VERSION_1_1_0:
@@ -626,7 +633,8 @@ void CommandTpm2::releaseNvIndex(const string& nvIndex) {
     argsStream << " -a " << kDefaultOwnerAuthHandle
                << " -x " << nvIndex;
 
-    runTpm2CommandWithRetry(kTpm2ToolsNvReleaseCommand, argsStream.str());
+    runTpm2CommandWithRetry(kTpm2ToolsNvReleaseCommand, argsStream.str(),
+                            __LINE__);
     LOGGER.info("NV Index released successfully");
 }
 
@@ -661,7 +669,8 @@ string CommandTpm2::createNvReadCommandArgs(const string& nvIndex,
  */
 bool CommandTpm2::hasPersistentObject(const string& handle) {
     string listOutput
-            = runTpm2CommandWithRetry(kTpm2ToolsListPersistentCommand, "");
+            = runTpm2CommandWithRetry(kTpm2ToolsListPersistentCommand, "",
+                                      __LINE__);
     return Tpm2ToolsOutputParser::parsePersistentObjectExists(handle,
                                                               listOutput);
 }
@@ -683,7 +692,8 @@ void CommandTpm2::flushPersistentObject(const string& handle) {
 
     LOGGER.info("Running evictcontrol with arguments: "
                 + argsStream.str());
-    runTpm2CommandWithRetry(kTpm2ToolsEvictControlCommand, argsStream.str());
+    runTpm2CommandWithRetry(kTpm2ToolsEvictControlCommand, argsStream.str(),
+                            __LINE__);
     LOGGER.info("Object flushed successfully");
 }
 
@@ -712,7 +722,8 @@ void CommandTpm2::createPublicAreaFile(const string& keyHandle,
                           << endl;
 
     runTpm2CommandWithRetry(kTpm2ToolsReadPublicCommand,
-                            argumentsStringStream.str());
+                            argumentsStringStream.str(),
+                            __LINE__);
     LOGGER.info("Public area file successfully created.");
 }
 
@@ -745,11 +756,13 @@ string CommandTpm2::getPublicArea(const std::string& filename) {
 }
 
 string CommandTpm2::runTpm2CommandWithRetry(const string& command,
-                                            const string& args) {
+                                            const string& args,
+                                            int sourceCodeLineNumber) {
     string tpmErrorCode;
     for (int i = 0;; ++i) {
         try {
-            return RUN_PROCESS_OR_THROW(command, args);
+            return hirs::utils::Process::run(command, args, "CommandTpm2.cpp",
+                                             sourceCodeLineNumber);
         } catch (HirsRuntimeException& ex) {
             tpmErrorCode = Tpm2ToolsOutputParser::parseTpmErrorCode(ex.what());
 
