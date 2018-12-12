@@ -181,7 +181,7 @@
                                 <div id="publicKeySizecollapse" class="panel-body collapse" role="tabpanel" aria-expanded="false">
                                     <div>
                                         <span class="fieldValue">
-                                            ${initialData.publicKeyAlgorithm}
+                                            ${initialData.publicKeyAlgorithm} / ${initialData.publicKeySize}
                                         </span>
                                     </div>                                                               
                                 </div>

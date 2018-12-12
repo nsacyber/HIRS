@@ -73,7 +73,7 @@ public final class CertificateStringMapBuilder {
 
             if (certificate.getPublicKeyModulusHexValue() != null) {
                 data.put("publicKeyValue", certificate.getPublicKeyModulusHexValue());
-                data.put("publicKeySize", null);
+                data.put("publicKeySize", String.valueOf(certificate.getPublicKeySize()));
             }
 
             if (certificate.getKeyUsage() != null) {

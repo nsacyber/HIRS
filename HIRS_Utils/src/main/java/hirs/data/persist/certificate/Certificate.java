@@ -257,6 +257,7 @@ public abstract class Certificate extends ArchivableEntity {
     private String authorityKeyIdentifier;
     private String authorityInfoAccess;
     private String crlPoints;
+    private int publicKeySize;
 
 
     /**
@@ -287,6 +288,7 @@ public abstract class Certificate extends ArchivableEntity {
         this.authorityInfoAccess = null;
         this.authoritySerialNumber = BigInteger.ZERO;
         this.crlPoints = null;
+        this.publicKeySize = 0;
     }
 
     /**
@@ -342,8 +344,10 @@ public abstract class Certificate extends ArchivableEntity {
                 this.subject = x509Certificate.getSubjectX500Principal().getName();
                 this.encodedPublicKey = x509Certificate.getPublicKey().getEncoded();
                 BigInteger publicKeyModulus = getPublicKeyModulus(x509Certificate);
+
                 if (publicKeyModulus != null) {
                     this.publicKeyModulusHexValue = publicKeyModulus.toString(HEX_BASE);
+                    this.publicKeySize = publicKeyModulus.bitLength();
                 } else {
                     this.publicKeyModulusHexValue = null;
                 }
@@ -387,6 +391,7 @@ public abstract class Certificate extends ArchivableEntity {
                 this.subjectOrganization = null;
                 this.encodedPublicKey = null;
                 this.publicKeyModulusHexValue = null;
+                this.publicKeySize = 0;
 
                 authKeyIdentifier = AuthorityKeyIdentifier
                         .fromExtensions(attCertInfo.getExtensions());
@@ -959,6 +964,14 @@ public abstract class Certificate extends ArchivableEntity {
      */
     public String getSubject() {
         return subject;
+    }
+
+    /**
+     * Getter for the Public Key Size.
+     * @return bit count.
+     */
+    public int getPublicKeySize() {
+        return publicKeySize;
     }
 
     /**
