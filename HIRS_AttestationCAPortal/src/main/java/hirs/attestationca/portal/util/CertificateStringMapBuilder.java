@@ -4,6 +4,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import java.io.IOException;
+import java.math.BigInteger;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Set;
@@ -44,9 +45,15 @@ public final class CertificateStringMapBuilder {
             data.put("issuer", certificate.getIssuer());
             //Serial number in hex value
             data.put("serialNumber", Long.toHexString(certificate.getSerialNumber().longValue()));
+            if (!certificate.getAuthoritySerialNumber().equals(BigInteger.ZERO)) {
+                data.put("authSerialNumber", Long.toHexString(certificate
+                        .getAuthoritySerialNumber().longValue()));
+            }
             data.put("beginValidity", certificate.getBeginValidity().toString());
             data.put("endValidity", certificate.getEndValidity().toString());
             data.put("signature", Arrays.toString(certificate.getSignature()));
+            data.put("signatureSize", Integer.toString(certificate.getSignature().length
+                    * Certificate.MIN_ATTR_CERT_LENGTH));
 
             if (certificate.getSubject() != null) {
                 data.put("subject", certificate.getSubject());
@@ -56,9 +63,27 @@ public final class CertificateStringMapBuilder {
                 data.put("isSelfSigned", "false");
             }
 
+            data.put("authKeyId", certificate.getAuthKeyId());
+            data.put("crlPoints", certificate.getCrlPoints());
+            data.put("signatureAlgorithm", certificate.getSignatureAlgorithm());
             if (certificate.getEncodedPublicKey() != null) {
                 data.put("encodedPublicKey",
                         Arrays.toString(certificate.getEncodedPublicKey()));
+                data.put("publicKeyAlgorithm", certificate.getPublicKeyAlgorithm());
+            }
+
+            if (certificate.getPublicKeyModulusHexValue() != null) {
+                data.put("publicKeyValue", certificate.getPublicKeyModulusHexValue());
+                data.put("publicKeySize", String.valueOf(certificate.getPublicKeySize()));
+            }
+
+            if (certificate.getKeyUsage() != null) {
+                data.put("keyUsage", certificate.getKeyUsage());
+            }
+
+            if (certificate.getExtendedKeyUsage() != null
+                    && !certificate.getExtendedKeyUsage().isEmpty()) {
+                data.put("extendedKeyUsage", certificate.getExtendedKeyUsage());
             }
 
             //Get issuer ID if not self signed
@@ -69,7 +94,7 @@ public final class CertificateStringMapBuilder {
                     data.put("missingChainIssuer", missingCert.getIssuer());
                 }
                 //Find all certificates that could be the issuer certificate based on subject name
-                for (Certificate issuerCert:CertificateAuthorityCredential
+                for (Certificate issuerCert : CertificateAuthorityCredential
                         .select(certificateManager)
                         .bySubject(certificate.getIssuer())
                         .getCertificates()) {
@@ -179,6 +204,11 @@ public final class CertificateStringMapBuilder {
             data.putAll(getGeneralCertificateInfo(certificate, certificateManager));
             data.put("subjectKeyIdentifier",
                     Arrays.toString(certificate.getSubjectKeyIdentifier()));
+            //x509 credential version
+            data.put("x509Version", Integer.toString(certificate
+                    .getX509CredentialVersion()));
+            data.put("authInfoAccess", certificate.getAuthInfoAccess());
+            data.put("credentialType", certificate.getCredentialType());
         } else {
             LOGGER.error(notFoundMessage);
         }
@@ -202,12 +232,16 @@ public final class CertificateStringMapBuilder {
         if (certificate != null) {
             data.putAll(getGeneralCertificateInfo(certificate, certificateManager));
             // Set extra fields
-            data.put("credentialType", certificate.getCredentialType());
             data.put("manufacturer", certificate.getManufacturer());
             data.put("model", certificate.getModel());
             data.put("version", certificate.getVersion());
             data.put("policyReference", certificate.getPolicyReference());
-            data.put("revocationLocator", certificate.getRevocationLocator());
+            data.put("crlPoints", certificate.getCrlPoints());
+            data.put("authInfoAccess", certificate.getAuthInfoAccess());
+            data.put("credentialType", certificate.getCredentialType());
+            //x509 credential version
+            data.put("x509Version", Integer.toString(certificate
+                    .getX509CredentialVersion()));
             // Add hashmap with TPM information if available
             if (certificate.getTpmSpecification() != null) {
                 data.putAll(

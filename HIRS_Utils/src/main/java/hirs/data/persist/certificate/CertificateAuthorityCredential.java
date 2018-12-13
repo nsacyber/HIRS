@@ -26,6 +26,13 @@ public class CertificateAuthorityCredential extends Certificate {
     @Column
     private final byte[] subjectKeyIdentifier;
 
+    /*
+     * this field is part of the TCG CA specification, but has not yet been found in
+     * manufacturer-provided CAs, and is therefore not currently parsed
+     */
+    @Column
+    private String credentialType = "TCPA Trusted Platform Module Endorsement";
+
     /**
      * This class enables the retrieval of CertificateAuthorityCredentials by their attributes.
      */
@@ -99,6 +106,15 @@ public class CertificateAuthorityCredential extends Certificate {
         subjectKeyIdentifier = null;
     }
 
+
+    /**
+     * Get the credential type label.
+     * @return the credential type label.
+     */
+    public String getCredentialType() {
+        return credentialType;
+    }
+
     /**
      * @return this certificate's subject key identifier.
      */
@@ -110,6 +126,7 @@ public class CertificateAuthorityCredential extends Certificate {
     }
 
     @Override
+    @SuppressWarnings("checkstyle:avoidinlineconditionals")
     public boolean equals(final Object o) {
         if (this == o) {
             return true;
@@ -123,13 +140,19 @@ public class CertificateAuthorityCredential extends Certificate {
 
         CertificateAuthorityCredential that = (CertificateAuthorityCredential) o;
 
+        if (this.credentialType != null ? !credentialType.equals(that.credentialType)
+                : that.credentialType != null) {
+            return false;
+        }
+
         return Arrays.equals(subjectKeyIdentifier, that.subjectKeyIdentifier);
     }
 
     @Override
-    @SuppressWarnings("checkstyle:magicnumber")
+    @SuppressWarnings({"checkstyle:magicnumber", "checkstyle:avoidinlineconditionals"})
     public int hashCode() {
         int result = super.hashCode();
+        result = 31 * result + (credentialType != null ? credentialType.hashCode() : 0);
         result = 31 * result + Arrays.hashCode(subjectKeyIdentifier);
         return result;
     }
