@@ -4,6 +4,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import java.io.IOException;
+import java.math.BigInteger;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Set;
@@ -44,7 +45,7 @@ public final class CertificateStringMapBuilder {
             data.put("issuer", certificate.getIssuer());
             //Serial number in hex value
             data.put("serialNumber", Long.toHexString(certificate.getSerialNumber().longValue()));
-            if (certificate.getAuthoritySerialNumber() != null) {
+            if (!certificate.getAuthoritySerialNumber().equals(BigInteger.ZERO)) {
                 data.put("authSerialNumber", Long.toHexString(certificate
                         .getAuthoritySerialNumber().longValue()));
             }

@@ -240,7 +240,7 @@ public abstract class Certificate extends ArchivableEntity {
     private final BigInteger holderSerialNumber;
     private String holderIssuer;
     @Column(nullable = true, precision = MAX_NUMERIC_PRECISION, scale = 0)
-    private BigInteger authoritySerialNumber;
+    private final BigInteger authoritySerialNumber;
 
     @SuppressWarnings("PMD.AvoidUsingHardCodedIP") // this is not an IP address; PMD thinks it is
     private static final String POLICY_CONSTRAINTS = "2.5.29.36";
@@ -434,9 +434,16 @@ public abstract class Certificate extends ArchivableEntity {
                 throw new IllegalArgumentException("Cannot recognize certificate type.");
         }
 
+        BigInteger authSerialNumber = null;
         if (authKeyIdentifier != null) {
             this.authorityKeyIdentifier = authKeyIdentifierToString(authKeyIdentifier);
-            this.authoritySerialNumber = authKeyIdentifier.getAuthorityCertSerialNumber();
+            authSerialNumber = authKeyIdentifier.getAuthorityCertSerialNumber();
+        }
+
+        if (authSerialNumber != null) {
+            this.authoritySerialNumber = authSerialNumber;
+        } else {
+            this.authoritySerialNumber = BigInteger.ZERO;
         }
 
         this.certificateHash = Arrays.hashCode(this.certificateBytes);
