@@ -3,11 +3,17 @@ package hirs.data.persist.certificate.attributes;
 import com.eclipsesource.json.Json;
 import com.eclipsesource.json.JsonObject;
 import com.eclipsesource.json.JsonObject.Member;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.FileSystems;
+import java.nio.file.Files;
+import java.nio.file.Path;
 
 /**
  * <p>
@@ -27,7 +33,9 @@ import java.io.InputStreamReader;
  */
 public class ComponentClass {
 
-    private static final String JSON_FILE = "/home/cyrus/Documents/ComponentClass.json";
+    private static final Logger LOGGER = LoggerFactory.getLogger(ComponentClass.class);
+    private static final Path JSON_PATH = FileSystems.getDefault()
+            .getPath("/etc", "hirs", "component-class.json");
     private static final String OTHER_STRING = "Other";
     private static final String UNKNOWN_STRING = "Unknown";
     private static final String NONE_STRING = "None";
@@ -48,13 +56,34 @@ public class ComponentClass {
     private int componentIdentifier;
 
     /**
+     * Class Constructor that takes a int representation of the component
+     * value.
+     *
+     * @param componentIdentifier component value
+     */
+    public ComponentClass(final int componentIdentifier) {
+        this(JSON_PATH, componentIdentifier);
+    }
+
+    /**
      * Class Constructor that takes a String representation of the component
      * value.
      *
      * @param componentIdentifier component value
      */
     public ComponentClass(final String componentIdentifier) {
-        this(getComponentIntValue(componentIdentifier));
+        this(JSON_PATH, componentIdentifier);
+    }
+
+    /**
+     * Class Constructor that takes a String representation of the component
+     * value.
+     *
+     * @param componentClassPath file path for the json
+     * @param componentIdentifier component value
+     */
+    public ComponentClass(final Path componentClassPath, final String componentIdentifier) {
+        this(componentClassPath, getComponentIntValue(componentIdentifier));
     }
 
     /**
@@ -63,9 +92,10 @@ public class ComponentClass {
      * then matches the value against defined values in the associated JSON
      * file.
      *
+     * @param componentClassPath file path for the json
      * @param componentIdentifier component value
      */
-    public ComponentClass(final int componentIdentifier) {
+    public ComponentClass(final Path componentClassPath, final int componentIdentifier) {
         this.category = UNKNOWN_STRING;
         this.component = NONE_STRING;
         this.componentIdentifier = componentIdentifier;
@@ -83,7 +113,7 @@ public class ComponentClass {
                 // Number Format Exception
                 break;
             default:
-                getCategory(getJsonObject());
+                getCategory(getJsonObject(componentClassPath));
                 break;
         }
     }
@@ -112,17 +142,22 @@ public class ComponentClass {
      *
      * @return a JSON Object
      */
-    private JsonObject getJsonObject() {
+    private JsonObject getJsonObject(final Path componentClassPath) {
         // find the file and load it
-        JsonObject components;
+        JsonObject components = null;
 
-        try {
-            InputStream inputStream = new FileInputStream(JSON_FILE);
-            JsonObject object = Json.parse(new InputStreamReader(inputStream, "UTF-8")).asObject();
-            components = object.get("Components").asObject();
-        } catch (IOException ex) {
-            // add log file thing here indication issue with JSON File
-            components = null;
+        if (Files.notExists(componentClassPath)) {
+            LOGGER.info(String.format("No file found at %s.", componentClassPath.toString()));
+        } else {
+            try {
+                InputStream inputStream = new FileInputStream(componentClassPath.toString());
+                JsonObject object = Json.parse(new InputStreamReader(inputStream,
+                        StandardCharsets.UTF_8)).asObject();
+                components = object.get("Components").asObject();
+            } catch (IOException ex) {
+                // add log file thing here indication issue with JSON File
+                components = null;
+            }
         }
 
         return components;
