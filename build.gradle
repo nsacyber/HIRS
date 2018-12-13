@@ -130,6 +130,7 @@ subprojects {
       log_bridge:    'org.apache.logging.log4j:log4j-jcl:2.8.1',
       mockito:       'org.mockito:mockito-all:1.10.19',
       mariadb:       'org.mariadb.jdbc:mariadb-java-client:2.2.1',
+      minimal_json:  'com.eclipsesource.minimal-json:minimal-json:0.9.5',
       pmd:           'net.sourceforge.pmd:pmd:5.1.1',
       powermock:   [ 'org.powermock:powermock-core:1.6.3',
                      'org.powermock:powermock-api-mockito:1.6.3',

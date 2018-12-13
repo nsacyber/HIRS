@@ -17,6 +17,8 @@ import org.bouncycastle.asn1.DERUTF8String;
  * Attribute.
  * <pre>
  * ComponentIdentifier ::= SEQUENCE {
+ *      componentClass
+ *           SEQUENCE(SIZE(1..CONFIGMAX)),
  *      componentManufacturer UTF8String (SIZE (1..STRMAX)),
  *      componentModel UTF8String (SIZE (1..STRMAX)),
  *      componentSerial[0] IMPLICIT UTF8String (SIZE (1..STRMAX)) OPTIONAL,
