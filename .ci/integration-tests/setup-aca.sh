@@ -2,9 +2,10 @@
 
 set -e
 
-# TODO: Make packaging of project modular (i.e. can package ACA without also packaging other projects)
-# Otherwise we'll run into conflicts when different Docker containers try to package at the same time
+# Prevent rebuild of packages if they already exist
 cd /HIRS
-./package/package.centos.sh
+if [ ! -d package/rpm/RPMS ]; then
+    ./package/package.centos.sh
+fi
 yum install -y package/rpm/RPMS/noarch/HIRS_AttestationCA*.el7.noarch.rpm
 tail -f /dev/null
