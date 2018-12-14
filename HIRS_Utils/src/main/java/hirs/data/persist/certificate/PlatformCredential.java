@@ -13,6 +13,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Transient;
@@ -148,6 +149,18 @@ public class PlatformCredential extends DeviceAssociatedCertificate {
          */
         public Selector byChassisSerialNumber(final String chassisSerialNumber) {
             setFieldValue(CHASSIS_SERIAL_NUMBER_FIELD, chassisSerialNumber);
+            return this;
+        }
+
+        /**
+         * Specify a device id that certificates must have to be considered
+         * as matching.
+         *
+         * @param device the device id to query
+         * @return this instance (for chaining further calls)
+         */
+        public Selector byDeviceId(final UUID device) {
+            setFieldValue(DEVICE_ID_FIELD, device);
             return this;
         }
     }
