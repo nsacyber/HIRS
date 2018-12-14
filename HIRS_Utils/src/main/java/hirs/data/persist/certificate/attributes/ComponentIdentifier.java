@@ -110,9 +110,10 @@ public class ComponentIdentifier {
 
         if (sequence.getObjectAt(tag) instanceof ASN1Sequence) {
             componentIdSeq = ASN1Sequence.getInstance(sequence.getObjectAt(tag++));
-            componentClass = DEROctetString.getInstance(componentIdSeq
-                    .getObjectAt(COMPONENT_IDENTIFIER))
-                    .toString();
+            ComponentClass cc = new ComponentClass(DEROctetString.getInstance(
+                    componentIdSeq.getObjectAt(COMPONENT_IDENTIFIER))
+                    .toString());
+            componentClass = cc.toString();
         } else if (sequence.getObjectAt(tag) instanceof DEROctetString) {
             componentClass = sequence.getObjectAt(tag++).toString();
         }

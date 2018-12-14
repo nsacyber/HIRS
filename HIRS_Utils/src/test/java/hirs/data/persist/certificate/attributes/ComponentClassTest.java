@@ -212,6 +212,21 @@ public class ComponentClassTest {
      * @throws URISyntaxException if there is a problem constructing the URI
      */
     @Test
+    public void testGetComponentNonStandardQuery2() throws URISyntaxException {
+        String componentIdentifier = "#00040002";
+        ComponentClass instance = new ComponentClass(Paths.get(this.getClass()
+                .getResource(JSON_FILE).toURI()), componentIdentifier);
+        String resultCategory = instance.getCategory();
+        String resultComponent = instance.getComponent();
+        Assert.assertEquals("SAS Bridgeboard", resultComponent);
+        Assert.assertEquals("Modules", resultCategory);
+    }
+
+    /**
+     * Test of getComponent method, of class ComponentClass.
+     * @throws URISyntaxException if there is a problem constructing the URI
+     */
+    @Test
     public void testGetComponentNonExistentValue() throws URISyntaxException {
         String componentIdentifier = "0x00040014";
         ComponentClass instance = new ComponentClass(Paths.get(this.getClass()
