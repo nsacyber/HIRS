@@ -160,7 +160,7 @@ public class DBCertificateManagerTest extends SpringPersistenceTest {
         Session session = sessionFactory.getCurrentSession();
         session.beginTransaction();
         final Class<?>[] clazzes =
-                {Certificate.class};
+                {Certificate.class, Device.class, DeviceGroup.class};
         for (Class<?> clazz : clazzes) {
             final List<?> objects = session.createCriteria(clazz).list();
             for (Object o : objects) {
@@ -169,6 +169,7 @@ public class DBCertificateManagerTest extends SpringPersistenceTest {
             }
             LOGGER.debug("all {} removed", clazz);
         }
+
         session.getTransaction().commit();
     }
 
@@ -390,12 +391,12 @@ public class DBCertificateManagerTest extends SpringPersistenceTest {
     }
 
     /**
-     * Tests that a Certificate can be retrieved by its deviceId.
+     * Tests that a IssuedAttestationCertificate can be retrieved by its deviceId.
      * @throws IOException if there is a problem creating the certificate
      * @throws CertificateException if there is a problem deserializing the original X509Certificate
      */
     @Test
-    public void testGetByDeviceId() throws IOException, CertificateException {
+    public void testGetIssuedAttestationByDeviceId() throws IOException, CertificateException {
         CertificateManager certMan = new DBCertificateManager(sessionFactory);
         DeviceManager deviceManager = new DBDeviceManager(sessionFactory);
         DeviceGroupManager deviceGroupManager = new DBDeviceGroupManager(sessionFactory);
@@ -416,6 +417,70 @@ public class DBCertificateManagerTest extends SpringPersistenceTest {
             Assert.assertEquals(savedCert.getId(), cert.getId());
         }
     }
+
+    /**
+     * Tests that an Endorsement Credential can be retrieved by its deviceId.
+     * @throws IOException if there is a problem creating the certificate
+     * @throws CertificateException if there is a problem deserializing the original X509Certificate
+     */
+    @Test
+    public void testGetEndorsementByDeviceId() throws IOException, CertificateException {
+        CertificateManager certMan = new DBCertificateManager(sessionFactory);
+        DeviceManager deviceManager = new DBDeviceManager(sessionFactory);
+        DeviceGroupManager deviceGroupManager = new DBDeviceGroupManager(sessionFactory);
+
+        Device device = new Device("test_device");
+        DeviceGroup dg = new DeviceGroup("Default");
+        DeviceGroup savedDg = deviceGroupManager.saveDeviceGroup(dg);
+        device.setDeviceGroup(savedDg);
+        Device savedDevice = deviceManager.saveDevice(device);
+
+        EndorsementCredential endorsementCredential =
+                (EndorsementCredential) CertificateTest.getTestCertificate(
+                        EndorsementCredential.class, CertificateTest.TEST_EC);
+        endorsementCredential.setDevice(savedDevice);
+        Certificate savedCert = certMan.save(endorsementCredential);
+
+        Set<EndorsementCredential> retrievedCerts =
+                EndorsementCredential.select(certMan).byDeviceId(savedDevice.getId()).
+                        getCertificates();
+        Assert.assertEquals(retrievedCerts.size(), 1);
+        for (EndorsementCredential cert: retrievedCerts) {
+            Assert.assertEquals(savedCert.getId(), cert.getId());
+        }
+    }
+
+    /**
+     * Tests that an Endorsement Credential can be retrieved by its deviceId.
+     * @throws IOException if there is a problem creating the certificate
+     * @throws CertificateException if there is a problem deserializing the original X509Certificate
+     */
+    @Test
+    public void testGetPlatformByDeviceId() throws IOException, CertificateException {
+        CertificateManager certMan = new DBCertificateManager(sessionFactory);
+        DeviceManager deviceManager = new DBDeviceManager(sessionFactory);
+        DeviceGroupManager deviceGroupManager = new DBDeviceGroupManager(sessionFactory);
+
+        Device device = new Device("test_device");
+        DeviceGroup dg = new DeviceGroup("Default");
+        DeviceGroup savedDg = deviceGroupManager.saveDeviceGroup(dg);
+        device.setDeviceGroup(savedDg);
+        Device savedDevice = deviceManager.saveDevice(device);
+
+        PlatformCredential platformCert = (PlatformCredential) CertificateTest.getTestCertificate(
+                PlatformCredential.class, PlatformCredentialTest.TEST_PLATFORM_CERT_2);
+        platformCert.setDevice(savedDevice);
+        Certificate savedCert = certMan.save(platformCert);
+
+        Set<PlatformCredential> retrievedCerts =
+                PlatformCredential.select(certMan).byDeviceId(savedDevice.getId()).
+                        getCertificates();
+        Assert.assertEquals(retrievedCerts.size(), 1);
+        for (PlatformCredential cert: retrievedCerts) {
+            Assert.assertEquals(savedCert.getId(), cert.getId());
+        }
+    }
+
 
     /**
      * Tests that a single Certificate can be retrieved amongst many stored Certificates according
