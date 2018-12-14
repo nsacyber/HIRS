@@ -52,6 +52,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.UUID;
 
 /**
  *
@@ -144,6 +145,18 @@ public class EndorsementCredential extends DeviceAssociatedCertificate {
          */
         public Selector byVersion(final String version) {
             setFieldValue(VERSION_FIELD, version);
+            return this;
+        }
+
+        /**
+         * Specify a device id that certificates must have to be considered
+         * as matching.
+         *
+         * @param device the device id to query
+         * @return this instance (for chaining further calls)
+         */
+        public Selector byDeviceId(final UUID device) {
+            setFieldValue(DEVICE_ID_FIELD, device);
             return this;
         }
     }
