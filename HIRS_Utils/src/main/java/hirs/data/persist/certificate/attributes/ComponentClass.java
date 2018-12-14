@@ -35,7 +35,7 @@ public class ComponentClass {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ComponentClass.class);
     private static final Path JSON_PATH = FileSystems.getDefault()
-            .getPath("/etc", "hirs", "component-class.json");
+            .getPath("/opt", "hirs", "default-properties", "component-class.json");
     private static final String OTHER_STRING = "Other";
     private static final String UNKNOWN_STRING = "Unknown";
     private static final String NONE_STRING = "None";

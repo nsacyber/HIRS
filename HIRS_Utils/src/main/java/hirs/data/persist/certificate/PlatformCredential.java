@@ -630,7 +630,7 @@ public class PlatformCredential extends DeviceAssociatedCertificate {
                 case TCG_CREDENTIAL_SPECIFICATION:
                     break;
                 default:
-                    //No class deffined for this attribute
+                    //No class defined for this attribute
                     LOGGER.warn("No class defined for attribute with OID: "
                             + attr.getAttrType().getId());
                     break;
