@@ -251,4 +251,19 @@ public class ComponentClassTest {
         Assert.assertEquals("None", resultComponent);
         Assert.assertEquals("Modules", resultCategory);
     }
+
+    /**
+     * Test of getComponent method, of class ComponentClass.
+     * @throws URISyntaxException if there is a problem constructing the URI
+     */
+    @Test
+    public void testGetComponentNonExistentCategory() throws URISyntaxException {
+        String componentIdentifier = "0x0015FF14";
+        ComponentClass instance = new ComponentClass(Paths.get(this.getClass()
+                .getResource(JSON_FILE).toURI()), componentIdentifier);
+        String resultCategory = instance.getCategory();
+        String resultComponent = instance.getComponent();
+        Assert.assertEquals("None", resultComponent);
+        Assert.assertEquals("Unknown", resultCategory);
+    }
 }
