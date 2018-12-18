@@ -19,17 +19,17 @@ import java.nio.file.Path;
  * <p>
  * This class parses the associated component identifier located in Platform
  * Certificates and maps them to the corresponding string representation found
- * in the associated JSON file.  If the value can not be found, either because
+ * in the associated JSON file. If the value can not be found, either because
  * the provided value is malformed or doesn't exist in the mapping, then values
- * returned will not match what is expected.  This class will return Unknown as
- * a category and None as the component which is not a valid mapping.  This is
+ * returned will not match what is expected. This class will return Unknown as a
+ * category and None as the component which is not a valid mapping. This is
  * because None is a category and Unknown is a component identifier.
  * </p>
  * <pre>
  *   componentClass ::= SEQUENCE {
  *       OCTET STRING (SIZE (1..CONFIGMAX)) }
  *   where CONFIGMAX is 32
- *  </pre>
+ * </pre>
  */
 public class ComponentClass {
 
@@ -56,8 +56,7 @@ public class ComponentClass {
     private int componentIdentifier;
 
     /**
-     * Class Constructor that takes a int representation of the component
-     * value.
+     * Class Constructor that takes a int representation of the component value.
      *
      * @param componentIdentifier component value
      */
@@ -88,9 +87,8 @@ public class ComponentClass {
 
     /**
      * Main Class Constructor that takes in an integer representation of the
-     * component value.  Sets main class variables to default values and
-     * then matches the value against defined values in the associated JSON
-     * file.
+     * component value. Sets main class variables to default values and then
+     * matches the value against defined values in the associated JSON file.
      *
      * @param componentClassPath file path for the json
      * @param componentIdentifier component value
@@ -134,6 +132,16 @@ public class ComponentClass {
      */
     public final String getComponent() {
         return component;
+    }
+
+    /**
+     * This is the main way this class will be referenced and how it
+     * will be displayed on the portal.
+     * @return String combination of category and component.
+     */
+    @Override
+    public String toString() {
+        return String.format("%s - %s", category, component);
     }
 
     /**
@@ -200,7 +208,7 @@ public class ComponentClass {
      * in the JSON file.
      *
      * @param componentID the ID associated with the category
-     * @param components  JSON Object for the categories components
+     * @param components JSON Object for the categories components
      */
     private void getComponent(final int componentID, final JsonObject components) {
         int typeID, testID;
@@ -219,21 +227,28 @@ public class ComponentClass {
     }
 
     /**
-     * This method converts the string representation of the component ID
-     * into an integer.  Or throws and error if the format is in error.
+     * This method converts the string representation of the component ID into
+     * an integer. Or throws and error if the format is in error.
      *
      * @param component string representation of the component ID
      * @return the int representation of the component
      */
     private static int getComponentIntValue(final String component) {
-        int componentIdentifier = -1;
+        int componentIdentifier = ERROR;
 
         if (component != null) {
             try {
                 if (component.contains("x")) {
                     componentIdentifier = Integer.decode(component);
                 } else {
-                    componentIdentifier = Integer.valueOf(component, Short.SIZE);
+                    if (component.contains("#")) {
+                        componentIdentifier = Integer.valueOf(
+                                component.replace("#", ""),
+                                Short.SIZE);
+                    } else {
+                        componentIdentifier = Integer.valueOf(
+                                component, Short.SIZE);
+                    }
                 }
             } catch (NumberFormatException nfEx) {
                 //invalid entry
