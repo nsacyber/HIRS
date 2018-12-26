@@ -41,6 +41,6 @@ jobs:
       env: null
       name: "Package Ubuntu"
     - stage: integration-tests
-      script: docker-compose -f .ci/docker/docker-compose.yml up
+      script: .ci/integration-tests/./run-integration-tests.sh
       env: null
       name: "Integration Tests"
