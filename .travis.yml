@@ -40,3 +40,7 @@ jobs:
     - script: docker run --rm -v $(pwd):/HIRS hirs/hirs-ci:ubuntu18 /bin/bash -c "cd /HIRS; ./package/package.ubuntu.sh"
       env: null
       name: "Package Ubuntu"
+    - stage: integration-tests
+      script: docker-compose -f .ci/docker/docker-compose.yml up
+      env: null
+      name: "Integration Tests"

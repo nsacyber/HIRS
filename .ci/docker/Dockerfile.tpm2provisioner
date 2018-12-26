@@ -4,7 +4,7 @@ MAINTAINER apl.dev3@jhuapl.edu
 
 # Install packages for installing HIRS TPM2 Provisioner
 RUN yum -y update && yum clean all
-# TODO: Remove vim-common if/when Paccor updates (Also update Paccor version below)
+# TODO(apldev3): Remove vim-common if/when Paccor updates (Also update Paccor version below)
 RUN yum install -y tpm2-tools libcurl procps-ng vim-common wget dbus && yum clean all
 
 # Install PACCOR for Device Info Gathering

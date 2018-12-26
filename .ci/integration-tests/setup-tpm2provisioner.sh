@@ -1,6 +1,13 @@
+#!/bin/bash
+
 # Script to setup the TPM2 Provisioner Docker Image for Integration Tests
 
 set -e
+
+# Wait for ACA to boot
+until [ "`curl --silent --connect-timeout 1 -I -k https://localhost:8443/HIRS_AttestationCAPortal | grep '302 Found'`" != "" ]; do
+    :
+done
 
 pushd /HIRS
 if [ ! -d package/rpm/RPMS ]; then
@@ -60,10 +67,13 @@ echo "Load ek cert into nvram"
 tpm2_nvwrite -x 0x1c00002 -a 0x40000001 $ek_cert_der
 
 # Store the platform certificate in the TPM's NVRAM
+echo "Load platform cert into nvram"
 tpm2_nvdefine -x 0x1c90000 -a 0x40000001 -t 0x2000A -s $(cat $PC_DIR/$platform_cert | wc -c)
 tpm2_nvwrite -x 0x1c90000 -a 0x40000001 $PC_DIR/$platform_cert
 
 # Set Logging to INFO Level
 sed -i "s/WARN/INFO/" /etc/hirs/TPM2_Provisioner/log4cplus_config.ini
+
+echo "TPM2 Provisioner Loaded!"
 
 tail -f /dev/null
