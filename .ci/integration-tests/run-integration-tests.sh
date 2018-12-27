@@ -5,7 +5,7 @@
 set -e
 
 # Start Integration Testing Docker Environment
-#docker-compose -f .ci/docker/docker-compose.yml up -d
+docker-compose -f .ci/docker/docker-compose.yml up -d
 
 # Check to see if Environment Stand-Up is Complete
 # TODO: Refine to handle multiple container IDs
