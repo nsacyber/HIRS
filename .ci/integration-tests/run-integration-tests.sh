@@ -16,6 +16,8 @@ while : ; do
         container_id=${BASH_REMATCH[1]}
         break
     fi
+    echo "Containers not found. Waiting 5 seconds."
+    sleep 5
 done
 
 tpm2_provisioner_started_regex='TPM2 Provisioner Loaded!'
@@ -24,6 +26,8 @@ while : ; do
     if [[ $docker_logs =~ $tpm2_provisioner_started_regex ]]; then
         break
     fi
+    echo "Containers not completely booted. Waiting 10 seconds."
+    sleep 10
 done
 
 echo "Environment Stand-Up Complete!"
