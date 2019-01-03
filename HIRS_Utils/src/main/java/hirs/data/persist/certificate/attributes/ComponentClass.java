@@ -234,19 +234,19 @@ public class ComponentClass {
      * @return the int representation of the component
      */
     private static int getComponentIntValue(final String component) {
-        int componentIdentifier = ERROR;
+        int componetValue = ERROR;
 
         if (component != null) {
             try {
                 if (component.contains("x")) {
-                    componentIdentifier = Integer.decode(component);
+                    componetValue = Integer.decode(component);
                 } else {
                     if (component.contains("#")) {
-                        componentIdentifier = Integer.valueOf(
+                        componetValue = Integer.valueOf(
                                 component.replace("#", ""),
                                 Short.SIZE);
                     } else {
-                        componentIdentifier = Integer.valueOf(
+                        componetValue = Integer.valueOf(
                                 component, Short.SIZE);
                     }
                 }
@@ -255,6 +255,6 @@ public class ComponentClass {
             }
         }
 
-        return componentIdentifier;
+        return componetValue;
     }
 }

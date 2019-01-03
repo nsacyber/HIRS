@@ -297,7 +297,9 @@ public class ComponentIdentifier {
     public String toString() {
         StringBuilder sb = new StringBuilder();
         sb.append("ComponentIdentifier{");
-        sb.append("componentManufacturer=").append(componentManufacturer.getString());
+        sb.append("componentClass=").append(componentClass);
+        sb.append(", componentManufacturer=")
+                .append(componentManufacturer.getString());
         sb.append(", componentModel=").append(componentModel.getString());
         //Optional not null values
         sb.append(", componentSerial=");
