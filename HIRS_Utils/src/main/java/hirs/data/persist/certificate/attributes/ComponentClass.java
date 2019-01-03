@@ -42,6 +42,8 @@ public class ComponentClass {
 
     // Used to test bytes associated with just the component
     private static final int COMPONENT_MASK = 0x0000FFFF;
+    // Used to test bytes associated with just the category
+    private static final int CATEGORY_MASK = 0xFFFF0000;
 
     // Used to indicate that the component string value provided is erroneous
     private static final int ERROR = -1;
@@ -184,7 +186,7 @@ public class ComponentClass {
             for (String name : categories.names()) {
                 componentID = Integer.decode(categories.get(name).asObject().get("ID").asString());
                 // check for the correct flag
-                if ((componentIdentifier & componentID) == componentID) {
+                if ((componentIdentifier & CATEGORY_MASK) == componentID) {
                     JsonObject subObjects = categories.get(name).asObject().get("Types").asObject();
                     category = name;
 
