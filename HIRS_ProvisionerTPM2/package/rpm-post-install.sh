@@ -1,9 +1,16 @@
+set -e
+
+if ! [ $(id -u) = 0 ]; then
+   echo "Please run this script as root."
+   exit 1
+fi
+
 HIRS_SITE_CONFIG="/etc/hirs/hirs-site.config"
 
-sudo mkdir -p /var/log/hirs/provisioner
-sudo ln /usr/local/lib/libcurl.so /usr/lib64/libcurl.so
-sudo ln -s -f /usr/local/bin/hirs-provisioner-tpm2 /usr/sbin/hirs-provisioner-tpm2
-sudo ln -s -f /usr/local/bin/tpm_aca_provision /usr/sbin/tpm_aca_provision
+mkdir -p /var/log/hirs/provisioner
+ln /usr/local/lib/libcurl.so /usr/lib64/libcurl.so
+ln -s -f /usr/local/bin/hirs-provisioner-tpm2 /usr/sbin/hirs-provisioner-tpm2
+ln -s -f /usr/local/bin/tpm_aca_provision /usr/sbin/tpm_aca_provision
 
 if [ ! -f $HIRS_SITE_CONFIG ]; then
     # Create template site config if it does not exist
