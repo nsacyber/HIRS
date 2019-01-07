@@ -491,22 +491,32 @@ public final class SupplyChainCredentialValidator implements CredentialValidator
         // 2. a list of components listed in the device info for the same manufacturer
         // Then eliminate matches from both lists. Finally, decide if the validation passes based
         // on the leftovers in the lists and the policy in place.
-
         final List<ComponentIdentifier> pcComponents = new ArrayList<>();
-        untrimmedPcComponents.forEach(component -> pcComponents.add(
+        for (ComponentIdentifier component : untrimmedPcComponents) {
+            DERUTF8String componentSerial = null;
+            DERUTF8String componentRevision = null;
+            if (component.getComponentSerial() != null) {
+                componentSerial = new DERUTF8String(
+                        component.getComponentSerial().getString().trim());
+            }
+            if (component.getComponentRevision() != null) {
+                componentRevision = new DERUTF8String(
+                        component.getComponentRevision().getString().trim());
+            }
+            pcComponents.add(
                 new ComponentIdentifier(
                         new DERUTF8String(component.getComponentManufacturer().getString().trim()),
                         new DERUTF8String(component.getComponentModel().getString().trim()),
-                        new DERUTF8String(component.getComponentSerial().getString().trim()),
-                        new DERUTF8String(component.getComponentRevision().getString().trim()),
+                        componentSerial,
+                        componentRevision,
                         component.getComponentManufacturerId(),
                         component.getFieldReplaceable(),
                         component.getComponentAddress()
-                )));
+                ));
+        }
 
         LOGGER.info("Validating the following Platform Cert components...");
         pcComponents.forEach(component -> LOGGER.info(component.toString()));
-
         LOGGER.info("...against the the following DeviceInfoReport components:");
         allDeviceInfoComponents.forEach(component -> LOGGER.info(component.toString()));
 
@@ -608,7 +618,6 @@ public final class SupplyChainCredentialValidator implements CredentialValidator
                     }
                 }
             }
-
             pcUnmatchedComponents.addAll(pcComponentsFromManufacturer);
         }
 
