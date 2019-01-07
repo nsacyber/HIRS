@@ -1,5 +1,12 @@
 #!/usr/bin/env bash
 
+# Check if we're in a Docker container
+if [ -f /.dockerenv ]; then
+    DOCKER_CONTAINER=true
+else
+    DOCKER_CONTAINER=false
+fi
+
 # variables for the CA certificates
 CA_PATH=/etc/hirs/certificates
 CA_KEYSTORE=${CA_PATH}/TrustStore.jks
@@ -50,7 +57,7 @@ sed -i "s/aca\.keyStore\.password\s*=/aca.keyStore.password=password/" /etc/hirs
 # copy the trust store to the ACA
 cp ${CA_KEYSTORE} /etc/hirs/aca/client-files/
 
-# start up the tomcat6 service
+# start up the tomcat service
 
 # Guess where Tomcat is installed and what it's called:
 if [ -d /usr/share/tomcat6 ] ; then
@@ -63,4 +70,17 @@ else
 fi
 
 # restart tomcat after updating the trust store.
-/sbin/service ${TOMCAT_SERVICE} restart;
+if [ $DOCKER_CONTAINER = true ]; then
+    # If in Docker container, avoid services that invoke the D-Bus
+    if [[ $(ss -t -l -n | grep -q LISTEN.*:::8009) -eq 0 ]]; then
+        echo "Tomcat is running, so we restart it."
+        /usr/libexec/tomcat/server stop
+        (/usr/libexec/tomcat/server start) &
+        # Wait for Tomcat to boot completely
+        until [ "`curl --silent --connect-timeout 1 -I http://localhost:8080 | grep 'Coyote'`" != "" ]; do
+            :
+        done
+    fi
+else
+    /sbin/service ${TOMCAT_SERVICE} restart;
+fi

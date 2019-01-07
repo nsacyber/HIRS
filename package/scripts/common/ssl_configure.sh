@@ -14,6 +14,13 @@ P12_DATA=${CERTIFICATES}/private/p12.data
 
 echo 'Checking SSL configuration for HIRS'
 
+# Check if we're in a Docker container
+if [ -f /.dockerenv ]; then
+    DOCKER_CONTAINER=true
+else
+    DOCKER_CONTAINER=false
+fi
+
 #################
 # Key Generation
 #################
@@ -115,7 +122,15 @@ if [[ $1 = "server" ]]; then
         chkconfig ${TOMCAT_SERVICE} on
 
         # Configure the server.xml file such that it uses our key store and trust store
-        service ${TOMCAT_SERVICE} stop
+        if [ $DOCKER_CONTAINER = true ]; then
+            # If in Docker container, avoid services that invoke the D-Bus
+            if [[ $(pgrep -c -f /usr/share/tomcat) -ne 0 ]]; then
+                echo "Tomcat is running, so we stop it."
+                /usr/libexec/tomcat/server stop
+            fi
+        else
+            service ${TOMCAT_SERVICE} stop
+        fi
 
         # Configure Tomcat SSL properly.  The method for doing this changes from 6.0.38 onward.
         rpmdev-vercmp 6.0.38 $TOMCAT_VERSION
@@ -143,7 +158,16 @@ EOF
         # (3) set tomcat user as owner of tomcat installation
         chgrp -R tomcat ${CATALINA_HOME}
 
-        service ${TOMCAT_SERVICE} start
+        if [ $DOCKER_CONTAINER = true ]; then
+            # If in Docker container, avoid services that invoke the D-Bus
+            (/usr/libexec/tomcat/server start) &
+            # Wait for Tomcat to boot completely
+            until [ "`curl --silent --connect-timeout 1 -I http://localhost:8080 | grep 'Coyote'`" != "" ]; do
+                :
+            done
+        else
+            service ${TOMCAT_SERVICE} start
+        fi
     fi
 fi
 
@@ -207,7 +231,19 @@ if [[ $1 = "server" ]]; then
 
         sed -i "/\[mysqld\]/r $MYSQL_ADDITIONS_FILE" /etc/my.cnf
 
-        SQL_SERVICE=`/opt/hirs/scripts/common/get_db_service.sh`
-        service $SQL_SERVICE restart
+        if [ $DOCKER_CONTAINER  = true ]; then
+            # If in Docker container, avoid services that invoke the D-Bus
+            if [[ $(pgrep -c -u mysql mysqld) -ne 0 ]]; then
+                echo "MariaDB is running, so we'll need to restart it."
+                mysqladmin shutdown
+                /usr/libexec/mariadb-prepare-db-dir
+                nohup /usr/bin/mysqld_safe --basedir=/usr &>/dev/null &
+                MYSQLD_PID=$(pgrep -u mysql mysqld)
+                /usr/libexec/mariadb-wait-ready $MYSQLD_PID
+            fi
+        else
+            SQL_SERVICE=`/opt/hirs/scripts/common/get_db_service.sh`
+            service $SQL_SERVICE restart
+        fi
     fi
 fi
