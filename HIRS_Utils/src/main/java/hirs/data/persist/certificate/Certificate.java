@@ -340,8 +340,8 @@ public abstract class Certificate extends ArchivableEntity {
             case X509_CERTIFICATE:
                 X509Certificate x509Certificate = getX509Certificate();
                 this.serialNumber = x509Certificate.getSerialNumber();
-                this.issuer = x509Certificate.getIssuerX500Principal().getName();
-                this.subject = x509Certificate.getSubjectX500Principal().getName();
+                this.issuer = new GeneralNames(x509Certificate.getIssuerX500Principal().getName());
+                this.subject = new GeneralNames(x509Certificate.getSubjectX500Principal().getName());
                 this.encodedPublicKey = x509Certificate.getPublicKey().getEncoded();
                 BigInteger publicKeyModulus = getPublicKeyModulus(x509Certificate);
 

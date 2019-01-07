@@ -140,7 +140,7 @@ public final class CertificateStringMapBuilder {
                                      .getCertificates();
         }
 
-        for (Certificate issuerCert: issuerCertificates) {
+        for (Certificate issuerCert : issuerCertificates) {
             try {
                 // Find the certificate that actually signed this cert
                 if (certificate.isIssuer(issuerCert)) {
