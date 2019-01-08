@@ -12,7 +12,6 @@ echo "ACA is up!"
 function InstallProvisioner { 
 	echo "===========Installing Provisioner Packages...==========="
 	
-	# TODO: See note about modular packaging in ACA script
 	pushd /HIRS
 	if [ ! -d package/rpm/RPMS ]; then
     	./package/package.centos.sh
@@ -141,5 +140,3 @@ UpdateHirsSiteConfigFile
 
 echo ""
 echo "===========HIRS ACA Provisioner Setup Complete!==========="
-
-#tail -f /dev/null

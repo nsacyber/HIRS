@@ -6,7 +6,6 @@ set -e
 
 # Start System Testing Docker Environment
 cd .ci/docker
-#cd ../docker
 
 docker-compose up -d
 

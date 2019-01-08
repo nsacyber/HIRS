@@ -1,4 +1,5 @@
 #!/bin/bash
+
 SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
 TEST_LOG=$SCRIPT_DIR/test_logs/system_test_$CLIENT_OS.log
