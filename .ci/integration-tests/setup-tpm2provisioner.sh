@@ -1,3 +1,5 @@
+#!/bin/bash
+
 # Script to setup the TPM2 Provisioner Docker Image for Integration Tests
 set -e
 
@@ -88,7 +90,6 @@ function InitTpmEmulator {
 	size=$(cat $PC_DIR/$platform_cert | wc -c)
 	echo "Define NVRAM location for PC cert of size $size."
 	tpm2_nvdefine -x 0x1c90000 -a 0x40000001 -t 0x2000A -s $size
-	#tpm2_nvdefine -x 0x1c90000 -a 0x40000001 -t 0x2000A -s $(cat $PC_DIR/$platform_cert | wc -c)
 	
 	echo "Loading PC cert into NVRAM."
 	tpm2_nvwrite -x 0x1c90000 -a 0x40000001 $PC_DIR/$platform_cert
