@@ -1,5 +1,12 @@
 # compiled python for systems tests
 *.pyc
+*.pydevproject
+
+# vi swap files
+*.swp
+
+# system test logs
+.ci/system-tests/test_logs
 
 # NetBeans specific #
 private/

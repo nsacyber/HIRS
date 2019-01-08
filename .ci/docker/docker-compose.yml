@@ -1,17 +1,46 @@
 version: "3.1"
+
 services:
-  aca:
-    image: hirs/hirs-ci:aca
-    ports:
-      - "8443:8443"
-    volumes:
-      - ../../:/HIRS
-    command: /HIRS/.ci/integration-tests/setup-aca.sh
-  tpm2provisioner:
-    image: hirs/hirs-ci:tpm2provisioner
-    depends_on:
-      - "aca"
-    volumes:
-      - ../../:/HIRS
-    network_mode: "host"
-    command: /HIRS/.ci/integration-tests/setup-tpm2provisioner.sh
+   aca:
+      image: hirs/hirs-ci:aca
+      container_name: hirs-aca
+      volumes:
+         - ../../:/HIRS
+      ports:
+         - "${HIRS_ACA_PORTAL_PORT}:${HIRS_ACA_PORTAL_CONTAINER_PORT}"
+      entrypoint: /bin/bash -c 
+      command: [HIRS/.ci/integration-tests/setup-aca.sh]
+      networks:
+         hirs_aca_systems_test:
+            ipv4_address: ${HIRS_ACA_PORTAL_IP}
+
+   aca-provisioner-tpm2:
+      image: hirs/hirs-ci:tpm2provisioner
+      container_name: hirs-aca-provisioner-tpm2
+      depends_on:
+         - aca 
+      volumes:
+         - ../../:/HIRS
+      entrypoint: /bin/bash -c 
+      command: [HIRS/.ci/integration-tests/setup-tpm2provisioner.sh;
+                HIRS/.ci/system-tests/systems-test-centos7-tpm2.sh]
+      networks:
+         hirs_aca_systems_test:
+            ipv4_address: ${HIRS_ACA_PROVISIONER_IP} 
+      environment:
+         - HIRS_ACA_PROVISIONER_IP=${HIRS_ACA_PROVISIONER_IP}
+         - TPM_ENABLED=${TPM_ENABLED}
+         - IMA_ENABLED=${IMA_ENABLED}
+         - HIRS_ACA_PORTAL_IP=${HIRS_ACA_PORTAL_IP}
+         - HIRS_ACA_PORTAL_PORT=${HIRS_ACA_PORTAL_PORT}
+         - HIRS_BROKER_PORT=${HIRS_BROKER_PORT}
+         - HIRS_ACA_PORTAL_CONTAINER_PORT=${HIRS_ACA_PORTAL_CONTAINER_PORT}
+         - HIRS_SUBNET=${HIRS_SUBNET}
+
+networks:
+   hirs_aca_systems_test:
+      driver: bridge 
+      ipam:
+         driver: default
+         config:
+           - subnet: ${HIRS_SUBNET} 

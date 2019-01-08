@@ -1,3 +1,6 @@
+# NOTE: if you are editing this, try using the yamllint tool to check your work.
+# yamllint disable rule:line-length
+---
 os:
   - linux
 
@@ -40,7 +43,7 @@ jobs:
     - script: docker run --rm -v $(pwd):/HIRS hirs/hirs-ci:ubuntu18 /bin/bash -c "cd /HIRS; ./package/package.ubuntu.sh"
       env: null
       name: "Package Ubuntu"
-    - stage: integration-tests
-      script: .ci/integration-tests/./run-integration-tests.sh
+    - stage: system-tests
+      script: .ci/system-tests/./run-system-tests.sh
       env: null
-      name: "Integration Tests"
+      name: "System Tests"
