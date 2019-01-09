@@ -11,10 +11,10 @@ services:
       entrypoint: /bin/bash -c 
       command: [HIRS/.ci/integration-tests/setup-aca.sh]
       networks:
-         hirs_aca_systems_test:
+         hirs_aca_system_tests:
             ipv4_address: ${HIRS_ACA_PORTAL_IP}
 
-   aca-provisioner-tpm2:
+   tpm2provisioner:
       image: hirs/hirs-ci:tpm2provisioner
       container_name: hirs-aca-provisioner-tpm2
       depends_on:
@@ -25,7 +25,7 @@ services:
       command: [HIRS/.ci/integration-tests/setup-tpm2provisioner.sh;
                 HIRS/.ci/system-tests/systems-test-centos7-tpm2.sh]
       networks:
-         hirs_aca_systems_test:
+         hirs_aca_system_tests:
             ipv4_address: ${HIRS_ACA_PROVISIONER_IP} 
       environment:
          - HIRS_ACA_PROVISIONER_IP=${HIRS_ACA_PROVISIONER_IP}
@@ -38,7 +38,7 @@ services:
          - HIRS_SUBNET=${HIRS_SUBNET}
 
 networks:
-   hirs_aca_systems_test:
+   hirs_aca_system_tests:
       driver: bridge 
       ipam:
          driver: default
