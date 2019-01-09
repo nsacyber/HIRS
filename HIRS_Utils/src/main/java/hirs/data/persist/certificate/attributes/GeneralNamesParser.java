@@ -1,10 +1,12 @@
 package hirs.data.persist.certificate.attributes;
 
+import java.util.Collections;
+import java.util.List;
 import java.util.Objects;
 import java.util.regex.Pattern;
 import java.util.regex.Matcher;
 
-public class GeneralNames {
+public class GeneralNamesParser {
 
     private static final String SEPARATOR_PATTERN_STRING = "(?:^|,)((?:[^\",]|\"[^\"]*\")*)";
     private static final Pattern SEPARATOR_PATTERN = Pattern.compile(SEPARATOR_PATTERN_STRING);
@@ -19,12 +21,12 @@ public class GeneralNames {
     private String state;
     private String locality;
     private String organization;
-    private String organizationUnit;
+    private List<String> organizationUnit;
     private String evaluationString;
 
-    public GeneralNames(final String commonName, final String country,
+    public GeneralNamesParser(final String commonName, final String country,
                         final String state, final String locality,
-                        final String organization, final String organizationUnit) {
+                        final String organization, final List<String> organizationUnit) {
         this.commonName = commonName;
         this.country = country;
         this.state = state;
@@ -33,7 +35,7 @@ public class GeneralNames {
         this.organizationUnit = organizationUnit;
     }
 
-    public GeneralNames(final String generalNamesString) throws IllegalArgumentException {
+    public GeneralNamesParser(final String generalNamesString) throws IllegalArgumentException {
         if (generalNamesString == null) {
             throw new IllegalArgumentException("");
         }
@@ -64,10 +66,20 @@ public class GeneralNames {
                     organization = elements[ELEMENT_INDEX];
                     break;
                 case "OU":
-                    organizationUnit = elements[ELEMENT_INDEX];
+                    organizationUnit.add(elements[ELEMENT_INDEX]);
                     break;
             }
         }
+    }
+
+    private boolean compareOrganizationUnit(final GeneralNamesParser gnpObj) {
+        boolean result = true;
+
+        for (String ou : this.organizationUnit) {
+            result &= gnpObj.organizationUnit.contains(ou);
+        }
+
+        return result;
     }
 
     public String getCommonName() {
@@ -90,9 +102,7 @@ public class GeneralNames {
         return organization;
     }
 
-    public String getOrganizationUnit() {
-        return organizationUnit;
-    }
+    public List<String> getOrganizationUnit() { return Collections.unmodifiableList(organizationUnit); }
 
     @Override
     public boolean equals(Object obj) {
@@ -105,7 +115,7 @@ public class GeneralNames {
         if (getClass() != obj.getClass()) {
             return false;
         }
-        final GeneralNames other = (GeneralNames) obj;
+        final GeneralNamesParser other = (GeneralNamesParser) obj;
         if (!Objects.equals(this.commonName, other.commonName)) {
             return false;
         }
@@ -121,10 +131,8 @@ public class GeneralNames {
         if (!Objects.equals(this.organization, other.organization)) {
             return false;
         }
-        if (!Objects.equals(this.organizationUnit, other.organizationUnit)) {
-            return false;
-        }
-        return true;
+
+        return compareOrganizationUnit(other);
     }
 
     @Override
