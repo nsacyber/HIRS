@@ -29,7 +29,7 @@ allprojects {
     }
 
     group = 'hirs'
-    version = new File('./VERSION').text.trim() + "-SNAPSHOT"
+    version = new File('./VERSION').text.trim()
 }
 
 subprojects {
