@@ -1,0 +1,17 @@
+FROM hirs/hirs-ci:centos7
+
+MAINTAINER apl.dev3@jhuapl.edu
+
+# Install packages for installing HIRS TPM Provisioner
+RUN yum -y update && yum clean all
+# TODO: Remove vim-common if/when Paccor updates (Also update Paccor version below)
+RUN yum install -y java-1.8.0-openjdk wget util-linux chkconfig sed systemd gmp-devel coreutils dmidecode bash && yum clean all
+
+# Install tpm_module for Communicating with TPM
+RUN mkdir tpm_module && pushd tpm_module && wget https://github.com/nsacyber/HIRS/releases/download/v1.0.2/tpm_module-1.0.2-1541093721.d1bdf9.x86_64.rpm && yum -y install tpm_module-*.rpm && popd
+
+# Install PACCOR for Device Info Gathering
+RUN mkdir paccor && pushd paccor && wget https://github.com/nsacyber/paccor/releases/download/v1.0.6r3/paccor-1.0.6-3.noarch.rpm && yum -y install paccor-*.rpm && popd
+
+# Download Software TPM for Later Building (Note: This requires kernel modules to be loaded on the Docker)
+RUN mkdir tpm_emulator && pushd tpm_emulator && wget https://github.com/PeterHuewe/tpm-emulator/archive/v0.7.5.tar.gz && tar -zxvf v0.7.5.tar.gz && popd
