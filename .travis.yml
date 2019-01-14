@@ -9,14 +9,14 @@ sudo: true
 language: java
 
 env:
-  - SUBPROJECT=HIRS_Utils
-  - SUBPROJECT=HIRS_Provisioner
-  - SUBPROJECT=HIRS_ProvisionerTPM2
-  - SUBPROJECT=HIRS_Structs
-  - SUBPROJECT=HIRS_AttestationCA
-  - SUBPROJECT=HIRS_AttestationCAPortal
+#  - SUBPROJECT=HIRS_Utils
+#  - SUBPROJECT=HIRS_Provisioner
+#  - SUBPROJECT=HIRS_ProvisionerTPM2
+#  - SUBPROJECT=HIRS_Structs
+#  - SUBPROJECT=HIRS_AttestationCA
+#  - SUBPROJECT=HIRS_AttestationCAPortal
   - SUBPROJECT=TPM_Utils
-  - SUBPROJECT=tpm_module
+#  - SUBPROJECT=tpm_module
 
 services:
   - docker
