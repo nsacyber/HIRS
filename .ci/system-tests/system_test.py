@@ -1,7 +1,7 @@
 # system_test.py - implements a group of tests that run appraisals on a client and server
 
-# TODO: test_01-test_11 will need to be implemented when the flamethrower 
-# project is imported to the new GitHub repo. The test code is commented out for now.
+# TODO: test_01-test_11 will need to be implemented when the additional HIRS 
+# projects are imported to the new GitHub repo. The test code is commented out for now.
 
 import binascii
 from ConfigParser import SafeConfigParser
