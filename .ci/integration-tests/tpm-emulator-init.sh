@@ -43,3 +43,8 @@ popd
 echo "Enabling TPM 1.2 Emulator"
 sudo modprobe tpmd_dev
 sudo /usr/local/bin/tpmd
+
+sudo chmod 666 /dev/tpm
+
+#echo "Starting TrouSerS Daemon"
+#sudo tcsd
