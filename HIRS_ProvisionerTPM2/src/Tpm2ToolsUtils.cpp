@@ -63,7 +63,7 @@ Tpm2ToolsVersion Tpm2ToolsVersionChecker::findTpm2ToolsVersion() {
             try {
                 return kVersionMap.at(version);
             }
-            catch (const out_of_range& oor) {
+            catch (const out_of_range& outOfRange) {
                 // If no version found, version is unsupported, throw exception
                 stringstream ss;
                 ss << "Unsupported Tpm2 Tools Version Detected: " << version;

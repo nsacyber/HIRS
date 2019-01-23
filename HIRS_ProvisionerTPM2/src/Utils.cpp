@@ -86,7 +86,6 @@ namespace file_utils {
         stringstream ss;
         ifstream t(filename);
         if (!t.good()) {
-            stringstream ss;
             ss << "Unable to open file: " << filename;
             throw HirsRuntimeException(ss.str(),
                                        "Utils.cpp::file_utils::fileToString");
