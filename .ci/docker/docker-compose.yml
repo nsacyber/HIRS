@@ -8,7 +8,7 @@ services:
          - ../../:/HIRS
       ports:
          - "${HIRS_ACA_PORTAL_PORT}:${HIRS_ACA_PORTAL_CONTAINER_PORT}"
-      entrypoint: /bin/bash -c 
+      entrypoint: /bin/bash -c
       command: [HIRS/.ci/integration-tests/setup-aca.sh]
       networks:
          hirs_aca_system_tests:
@@ -18,15 +18,37 @@ services:
       image: hirs/hirs-ci:tpm2provisioner
       container_name: hirs-aca-provisioner-tpm2
       depends_on:
-         - aca 
+         - aca
       volumes:
          - ../../:/HIRS
-      entrypoint: /bin/bash -c 
+      entrypoint: /bin/bash -c
       command: [HIRS/.ci/integration-tests/setup-tpm2provisioner.sh;
                 HIRS/.ci/system-tests/systems-test-centos7-tpm2.sh]
       networks:
          hirs_aca_system_tests:
-            ipv4_address: ${HIRS_ACA_PROVISIONER_IP} 
+            ipv4_address: ${HIRS_ACA_PROVISIONER_TPM2_IP}
+      environment:
+         - HIRS_ACA_PROVISIONER_TPM2_IP=${HIRS_ACA_PROVISIONER_TPM2_IP}
+         - TPM_ENABLED=${TPM_ENABLED}
+         - IMA_ENABLED=${IMA_ENABLED}
+         - HIRS_ACA_PORTAL_IP=${HIRS_ACA_PORTAL_IP}
+         - HIRS_ACA_PORTAL_PORT=${HIRS_ACA_PORTAL_PORT}
+         - HIRS_BROKER_PORT=${HIRS_BROKER_PORT}
+         - HIRS_ACA_PORTAL_CONTAINER_PORT=${HIRS_ACA_PORTAL_CONTAINER_PORT}
+         - HIRS_SUBNET=${HIRS_SUBNET}
+
+   tpmprovisioner:
+      image: hirs/hirs-ci:tpmprovisioner
+      container_name: hirs-aca-provisioner
+      depends_on:
+         - aca
+      volumes:
+         - ../../:/HIRS
+      entrypoint: /bin/bash -c
+      command: [HIRS/.ci/integration-tests/setup-tpmprovisioner.sh;]
+      networks:
+         hirs_aca_system_tests:
+            ipv4_address: ${HIRS_ACA_PROVISIONER_IP}
       environment:
          - HIRS_ACA_PROVISIONER_IP=${HIRS_ACA_PROVISIONER_IP}
          - TPM_ENABLED=${TPM_ENABLED}
@@ -39,8 +61,8 @@ services:
 
 networks:
    hirs_aca_system_tests:
-      driver: bridge 
+      driver: bridge
       ipam:
          driver: default
          config:
-           - subnet: ${HIRS_SUBNET} 
+           - subnet: ${HIRS_SUBNET}

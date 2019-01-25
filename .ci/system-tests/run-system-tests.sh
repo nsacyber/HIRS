@@ -13,20 +13,25 @@ cd .ci/docker
 
 docker-compose up -d
 
+tpm_container_id="$(docker ps -aqf "name=hirs-aca-provisioner")"
+echo "TPM Container ID: $tpm_container_id"
 tpm2_container_id="$(docker ps -aqf "name=hirs-aca-provisioner-tpm2")"
 echo "TPM2 Container ID: $tpm2_container_id"
 
+tpm_container_status="$(docker inspect $tpm_container_id --format='{{.State.Status}}')"
+echo "TPM Container Status: $tpm_container_status"
 tpm2_container_status="$(docker inspect $tpm2_container_id --format='{{.State.Status}}')"
 echo "TPM2 Container Status: $tpm2_container_status"
 
-while [ $tpm2_container_status == "running" ] 
+while [[ $tpm_container_status == "running" || $tpm2_container_status == "running" ]]
 do
-  sleep 10 
+  sleep 10
 
   # Add status message, so Travis will not time out. 
   # It may timeout if it hasn't received output for more than 10 minutes.
   echo "Still running tests, please wait..."
-  
+
+  tpm_container_status="$(docker inspect $tpm_container_id --format='{{.State.Status}}')"
   tpm2_container_status="$(docker inspect $tpm2_container_id --format='{{.State.Status}}')"
 done
 
@@ -35,6 +40,10 @@ tpm2_container_exit_code="$(docker inspect $tpm2_container_id --format='{{.State
 echo "TPM2 Container Exit Code: $tpm2_container_exit_code"
 
 # Display TPM2 container log
+echo ""
+echo "===========hirs-aca-provisioner System Tests Log:==========="
+docker logs $tpm_container_id
+
 echo ""
 echo "===========hirs-aca-provisioner-tpm2 System Tests Log:==========="
 docker logs $tpm2_container_id
