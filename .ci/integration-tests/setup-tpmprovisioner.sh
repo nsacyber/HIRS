@@ -4,10 +4,28 @@
 
 set -e
 
-ls -la /dev
+# Set variables for server
+export TPM_PATH=/tpm_emulator/tpm_storage
+export TPM_PORT=6543
+
+# Set variables for client utils
+export TPM_SERVER_NAME=localhost
+export TPM_SERVER_PORT=6543
+
+# Set variable for TrouSerS
+export TCSD_TCP_DEVICE_PORT=6543
+
+mkdir -p $TPM_PATH
+
+pushd /tpm_emulator
+
+./tpm/tpm_server&
+./libtpm/utils/tpmbios
+
+popd
 
 echo "Starting TrouSerS Daemon"
-tcsd -f
+tcsd -e
 
 echo "Testing TPM Connectivity"
 tpm_selftest
