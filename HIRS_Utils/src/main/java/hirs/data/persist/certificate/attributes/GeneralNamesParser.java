@@ -1,8 +1,6 @@
 package hirs.data.persist.certificate.attributes;
 
-import java.util.Collections;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 import java.util.regex.Pattern;
 import java.util.regex.Matcher;
 
@@ -66,7 +64,7 @@ public class GeneralNamesParser {
                     organization = elements[ELEMENT_INDEX];
                     break;
                 case "OU":
-                    organizationUnit.add(elements[ELEMENT_INDEX]);
+                    organizationUnit = Arrays.asList(elements[ELEMENT_INDEX]);
                     break;
             }
         }
