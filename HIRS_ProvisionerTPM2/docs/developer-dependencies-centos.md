@@ -13,6 +13,7 @@ If no available repository for the development environment contains the dependen
 | doxygen           | 1.8.13       | 1.8.0 (estimated)  | CentOS 7 base         | https://github.com/doxygen/doxygen     |
 | graphviz          | 2.30.1       | 2.28.0 (estimated) | CentOS 7 base         | https://gitlab.com/graphviz/graphviz   |
 | gcc-c++           | 4.8.5        | 4.8.5              | CentOS 7 base         | https://gcc.gnu.org/                   |
+| libcurl-devel     | 7.29.0       | 7.0.0 (estimated)  | CentOS 7 base         | https://github.com/curl/curl           |
 | libssh2-devel     | 1.4.3        | 1.4.3 (estimated)  | CentOS 7 base         | https://github.com/libssh2/libssh2     |
 | log4cplus-devel   | 1.1.3        | 1.1.2              | CentOS 7 epel-release | https://github.com/log4cplus/log4cplus |
 | openssl-devel     | 1.0.2k       | 1.0.2g (estimated) | CentOS 7 base         | https://github.com/openssl/openssl     |

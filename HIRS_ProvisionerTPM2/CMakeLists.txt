@@ -110,7 +110,8 @@ configure_file ("${CMAKE_SOURCE_DIR}/include/Tss.h.in"
 # Download necessary 3rd party libraries
 # Setup for CPR
 configure_file(lib/CPR.CMakeLists.txt.in ${CMAKE_BINARY_DIR}/lib/cpr-download/CMakeLists.txt)
-set(BUILD_CPR_TESTS OFF CACHE BOOL "" FORCE)
+set(ENV{USE_SYSTEM_CURL} ON)
+set(ENV{BUILD_CPR_TESTS} OFF)
 execute_process(COMMAND ${CMAKE_COMMAND} -G "${CMAKE_GENERATOR}" .
         RESULT_VARIABLE result
         WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/lib/cpr-download)
@@ -257,7 +258,7 @@ if (${DISTRIBUTION} STREQUAL "Ubuntu")
     set(CPACK_GENERATOR "DEB")
     set(CPACK_DEBIAN_PACKAGE_NAME "HIRSProvisionerTPM2.0")
     set(CPACK_DEBIAN_PACKAGE_SECTION "admin")
-    set(CPACK_DEBIAN_PACKAGE_DEPENDS "liblog4cplus-1.1-9(>=1.1.2), libcurlpp0(>=0.7), paccor, procps(>=3.3.0)")
+    set(CPACK_DEBIAN_PACKAGE_DEPENDS "liblog4cplus-1.1-9(>=1.1.2), libcurl4-openssl-dev(>=7.0.0), paccor, procps(>=3.3.0)")
     # Set variables specific to Ubuntu release version
     if (${DISTRIBUTION_VERSION} STREQUAL "16.04")
         set(CPACK_DEBIAN_PACKAGE_DEPENDS "${CPACK_DEBIAN_PACKAGE_DEPENDS}, libre2-1v5(>=20160201), libprotobuf9v5(>=2.4.1)")
