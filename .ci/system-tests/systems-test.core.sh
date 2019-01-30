@@ -20,7 +20,7 @@ SYSTEM_TEST_EXIT_CODE=$PIPESTATUS
 # Check result
 if [[ $SYSTEM_TEST_EXIT_CODE == 0 ]]
 then
-	echo "SUCCESS: System tests passed"
+    echo "SUCCESS: System tests passed"
     exit 0
 fi
 
