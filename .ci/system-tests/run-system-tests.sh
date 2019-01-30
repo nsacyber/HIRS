@@ -24,7 +24,7 @@ do
   sleep 10 
 
   # Add status message, so Travis will not time out. 
-  # It may timeout if it has'nt received output for more than 10 minutes.
+  # It may timeout if it hasn't received output for more than 10 minutes.
   echo "Still running tests, please wait..."
   
   tpm2_container_status="$(docker inspect $tpm2_container_id --format='{{.State.Status}}')"
