@@ -615,8 +615,7 @@ class SystemTest(unittest.TestCase):
 		logging.info("*****************beginning of provisioner + device info report test *****************")
 		logging.info("getting devices from ACA portal")
  		aca_portal_devices = AcaPortal.get_devices()
-		#self.assertEqual(aca_portal_devices['recordsTotal'], 1) 
-		self.assertEqual(aca_portal_devices['recordsTotal'], 11)
+		self.assertEqual(aca_portal_devices['recordsTotal'], 1) 
 	 
 	@unittest.skipIf(not is_tpm2(TPM_VERSION), "Skipping this test due to TPM Version " + TPM_VERSION)	
 	def test_15_supply_chain_validation_summary_stored_after_second_provisioning(self):
@@ -639,8 +638,7 @@ class SystemTest(unittest.TestCase):
 		print("Second provisioner run output: {0}".format(provisioner_out))
 		supply_chain_validation_summaries = AcaPortal.get_supply_chain_validation_summaries()
 		# verify this is one SCVS record indicating PASS
-		#self.assertEqual(supply_chain_validation_summaries['recordsTotal'], 2)
-		self.assertEqual(supply_chain_validation_summaries['recordsTotal'], 22)
+		self.assertEqual(supply_chain_validation_summaries['recordsTotal'], 2)
 		self.assertEqual(supply_chain_validation_summaries['data'][0]['overallValidationResult'], "PASS")
 		self.assertEqual(supply_chain_validation_summaries['data'][1]['overallValidationResult'], "PASS")
 		# verify device has been updated with supply chain appraisal result
