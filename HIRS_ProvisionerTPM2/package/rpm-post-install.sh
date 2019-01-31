@@ -8,7 +8,6 @@ fi
 HIRS_SITE_CONFIG="/etc/hirs/hirs-site.config"
 
 mkdir -p /var/log/hirs/provisioner
-ln /usr/local/lib/libcurl.so /usr/lib64/libcurl.so
 ln -s -f /usr/local/bin/hirs-provisioner-tpm2 /usr/sbin/hirs-provisioner-tpm2
 ln -s -f /usr/local/bin/tpm_aca_provision /usr/sbin/tpm_aca_provision
 
