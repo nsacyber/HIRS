@@ -4,7 +4,7 @@ MAINTAINER apl.dev3@jhuapl.edu
 
 # Install packages for building HIRS
 RUN apt-get update -y && apt-get upgrade -y && apt-get clean -y
-RUN apt-get -y install openjdk-8-jdk protobuf-compiler build-essential devscripts lintian debhelper cmake make git g++ doxygen graphviz cppcheck liblog4cplus-dev libssl-dev libprotobuf-dev libre2-dev libsapi-dev trousers libtspi-dev
+RUN apt-get -y install openjdk-8-jdk protobuf-compiler build-essential devscripts lintian debhelper cmake make git g++ doxygen graphviz cppcheck liblog4cplus-dev libssl-dev libprotobuf-dev libre2-dev libsapi-dev trousers libtspi-dev libcurl4-openssl-dev
 
 # Set Environment Variables
 ENV JAVA_HOME /usr/lib/jvm/java-8-openjdk-amd64
