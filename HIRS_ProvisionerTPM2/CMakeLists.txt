@@ -258,7 +258,7 @@ if (${DISTRIBUTION} STREQUAL "Ubuntu")
     set(CPACK_GENERATOR "DEB")
     set(CPACK_DEBIAN_PACKAGE_NAME "HIRSProvisionerTPM2.0")
     set(CPACK_DEBIAN_PACKAGE_SECTION "admin")
-    set(CPACK_DEBIAN_PACKAGE_DEPENDS "liblog4cplus-1.1-9(>=1.1.2), libcurl4-openssl-dev(>=7.0.0), paccor, procps(>=3.3.0)")
+    set(CPACK_DEBIAN_PACKAGE_DEPENDS "liblog4cplus-1.1-9(>=1.1.2), libcurl3(>=7.0.0), paccor, procps(>=3.3.0)")
     # Set variables specific to Ubuntu release version
     if (${DISTRIBUTION_VERSION} STREQUAL "16.04")
         set(CPACK_DEBIAN_PACKAGE_DEPENDS "${CPACK_DEBIAN_PACKAGE_DEPENDS}, libre2-1v5(>=20160201), libprotobuf9v5(>=2.4.1)")
