@@ -8,7 +8,8 @@ Please look up their respective names in the CentOS repositories.
 **NOTE**: Please consult [the developer dependency list](./developer-dependencies-centos.md) and make sure both the regular lib and the devel libs are installed.
 
 | Dependency | Version used | Minimum required  | Repository required   | Project repository                          |
-| ---------- | ------------ | ----------------- | --------------------- | ------------------------------------------- |
+| -----------| ------------ | ----------------- | --------------------- | ------------------------------------------- |
+| libcurl    | 7.29.0       | 7.0.0 (estimated) | CentOS 7 base         | https://github.com/curl/curl                |
 | log4cplus  | 1.1.2        | 1.1.2             | CentOS 7 epel-release | https://github.com/log4cplus/log4cplus      |
 | protobuf   | 2.5.0        | 2.4.1 (estimated) | CentOS 7 base         | https://github.com/google/protobuf          |
 | re2        | 20160401     | 20160201          | CentOS 7 epel-release | https://github.com/google/re2               |
