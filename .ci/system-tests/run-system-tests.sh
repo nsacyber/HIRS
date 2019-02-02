@@ -35,11 +35,12 @@ do
   tpm2_container_status="$(docker inspect $tpm2_container_id --format='{{.State.Status}}')"
 done
 
-# Store TPM2 container exit code
+# Store container exit codes
+tpm_container_exit_code="$(docker inspect $tpm_container_id --format='{{.State.ExitCode}}')"
 tpm2_container_exit_code="$(docker inspect $tpm2_container_id --format='{{.State.ExitCode}}')"
 echo "TPM2 Container Exit Code: $tpm2_container_exit_code"
 
-# Display TPM2 container log
+# Display container logs
 echo ""
 echo "===========hirs-aca-provisioner System Tests Log:==========="
 docker logs $tpm_container_id
@@ -54,8 +55,8 @@ echo ""
 # Clean up services and network
 docker-compose down
 
-# Return TPM2 container exit code
-if [[ $tpm2_container_exit_code == 0 ]]
+# Return container exit codes
+if [[ $tpm_container_exit_code == 0 && $tpm2_container_exit_code == 0 ]]
 then
     echo "SUCCESS: System tests passed"
     exit 0
