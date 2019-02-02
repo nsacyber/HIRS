@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Script to run the System Tests for HIRS
+# Script to run the System Tests for HIRS TPM 1.2 Provisioner
 
 set -e
 
@@ -15,15 +15,11 @@ docker-compose up -d
 
 tpm_container_id="$(docker ps -aqf "name=hirs-aca-provisioner")"
 echo "TPM Container ID: $tpm_container_id"
-tpm2_container_id="$(docker ps -aqf "name=hirs-aca-provisioner-tpm2")"
-echo "TPM2 Container ID: $tpm2_container_id"
 
 tpm_container_status="$(docker inspect $tpm_container_id --format='{{.State.Status}}')"
 echo "TPM Container Status: $tpm_container_status"
-tpm2_container_status="$(docker inspect $tpm2_container_id --format='{{.State.Status}}')"
-echo "TPM2 Container Status: $tpm2_container_status"
 
-while [[ $tpm_container_status == "running" || $tpm2_container_status == "running" ]]
+while [[ $tpm_container_status == "running" ]]
 do
   sleep 10
 
@@ -32,13 +28,11 @@ do
   echo "Still running tests, please wait..."
 
   tpm_container_status="$(docker inspect $tpm_container_id --format='{{.State.Status}}')"
-  tpm2_container_status="$(docker inspect $tpm2_container_id --format='{{.State.Status}}')"
 done
 
 # Store container exit codes
 tpm_container_exit_code="$(docker inspect $tpm_container_id --format='{{.State.ExitCode}}')"
-tpm2_container_exit_code="$(docker inspect $tpm2_container_id --format='{{.State.ExitCode}}')"
-echo "TPM2 Container Exit Code: $tpm2_container_exit_code"
+echo "TPM Container Exit Code: $tpm_container_exit_code"
 
 # Display container logs
 echo ""
@@ -46,19 +40,15 @@ echo "===========hirs-aca-provisioner System Tests Log:==========="
 docker logs $tpm_container_id
 
 echo ""
-echo "===========hirs-aca-provisioner-tpm2 System Tests Log:==========="
-docker logs $tpm2_container_id
-
-echo ""
-echo "End of System Tests, cleaning up..."
+echo "End of TPM 1.2 System Tests, cleaning up..."
 echo ""
 # Clean up services and network
 docker-compose down
 
 # Return container exit codes
-if [[ $tpm_container_exit_code == 0 && $tpm2_container_exit_code == 0 ]]
+if [[ $tpm_container_exit_code == 0 ]]
 then
-    echo "SUCCESS: System tests passed"
+    echo "SUCCESS: TPM 1.2 System tests passed"
     exit 0
 fi
 
