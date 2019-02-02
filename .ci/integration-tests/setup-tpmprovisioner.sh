@@ -42,12 +42,12 @@ function InitTpmEmulator {
   pushd /tpm_emulator
 
   # Activate Software TPM
-  ./tpm/tpm_server&
+  ./tpm/tpm_server > tpm.log 2>&1 &
   ./libtpm/utils/tpmbios
 
   # Restart Software TPM after Activation
   pkill tpm_server
-  ./tpm/tpm_server&
+  ./tpm/tpm_server > tpm.log 2>&1 &
   ./libtpm/utils/tpmbios
 
   # Create EK on Software TPM
