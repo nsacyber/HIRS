@@ -10,9 +10,12 @@ services:
          - "${HIRS_ACA_PORTAL_PORT}:${HIRS_ACA_PORTAL_CONTAINER_PORT}"
       entrypoint: /bin/bash -c
       command: [HIRS/.ci/integration-tests/setup-aca.sh]
+      hostname: ${HIRS_ACA_HOSTNAME}
       networks:
          hirs_aca_system_tests:
             ipv4_address: ${HIRS_ACA_PORTAL_IP}
+            aliases:
+              - ${HIRS_ACA_HOSTNAME}
 
    tpm2provisioner:
       image: hirs/hirs-ci:tpm2provisioner
@@ -46,6 +49,10 @@ services:
          - ../../:/HIRS
       entrypoint: /bin/bash -c
       command: [HIRS/.ci/integration-tests/setup-tpmprovisioner.sh;]
+      devices:
+        - "/dev/mem:/dev/mem"
+      cap_add:
+        - sys_rawio
       networks:
          hirs_aca_system_tests:
             ipv4_address: ${HIRS_ACA_PROVISIONER_IP}
@@ -57,6 +64,7 @@ services:
          - HIRS_ACA_PORTAL_PORT=${HIRS_ACA_PORTAL_PORT}
          - HIRS_BROKER_PORT=${HIRS_BROKER_PORT}
          - HIRS_ACA_PORTAL_CONTAINER_PORT=${HIRS_ACA_PORTAL_CONTAINER_PORT}
+         - HIRS_ACA_HOSTNAME=${HIRS_ACA_HOSTNAME}
          - HIRS_SUBNET=${HIRS_SUBNET}
 
 networks:

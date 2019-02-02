@@ -84,7 +84,7 @@ TPM_ENABLED=${TPM_ENABLED}
 IMA_ENABLED=${IMA_ENABLED}
 
 # Site-specific configuration
-ATTESTATION_CA_FQDN=${HIRS_ACA_PORTAL_IP}
+ATTESTATION_CA_FQDN=${HIRS_ACA_HOSTNAME}
 ATTESTATION_CA_PORT=${HIRS_ACA_PORTAL_PORT}
 BROKER_FQDN=${HIRS_ACA_PORTAL_IP}
 BROKER_PORT=${HIRS_BROKER_PORT}
@@ -108,5 +108,3 @@ UpdateHirsSiteConfigFile
 
 echo ""
 echo "===========HIRS ACA Provisioner Setup Complete!==========="
-
-# hirs-provisioner -p
