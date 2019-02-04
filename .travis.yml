@@ -36,18 +36,15 @@ script:
 
 jobs:
   include:
-    - stage: package
-      script: docker run --rm -v $(pwd):/HIRS hirs/hirs-ci:centos7 /bin/bash -c "cd /HIRS; ./package/package.centos.sh"
-      env: null
-      name: "Package Centos"
-    - script: docker run --rm -v $(pwd):/HIRS hirs/hirs-ci:ubuntu18 /bin/bash -c "cd /HIRS; ./package/package.ubuntu.sh"
+    - stage: Packaging and System Tests
+      script: docker run --rm -v $(pwd):/HIRS hirs/hirs-ci:ubuntu18 /bin/bash -c "cd /HIRS; ./package/package.ubuntu.sh"
       env: null
       name: "Package Ubuntu"
-    - stage: system-tests
+    - stage: Packaging and System Tests
       script: .ci/system-tests/./run-system-tests.sh
       env: null
       name: "System Tests"
-    - stage: system-tests
+    - stage: Packaging and System Tests
       script: .ci/system-tests/./run-system-tests-tpm2.sh
       env: null
       name: "System Tests TPM2"
