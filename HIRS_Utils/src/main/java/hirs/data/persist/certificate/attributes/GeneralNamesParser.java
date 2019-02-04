@@ -1,14 +1,16 @@
 package hirs.data.persist.certificate.attributes;
 
-import java.util.Arrays;
 import java.util.Collections;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Objects;
 import java.util.regex.Pattern;
-import java.util.regex.Matcher;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.bouncycastle.asn1.x500.RDN;
 import org.bouncycastle.asn1.x500.X500Name;
+import org.bouncycastle.asn1.x500.style.RFC4519Style;
 
 /**
  * The General Names parser, pulls apart the string associated with the
@@ -24,16 +26,14 @@ public class GeneralNamesParser {
     private static final String EQUALS_SIGN = "=";
     private static final String SEPARATOR_COMMA = ",";
     private static final String SEPARATOR_PLUS = "+";
-    private static final int KEY_INDEX = 0;
-    private static final int ELEMENT_INDEX = 1;
 
     private String commonName;
     private String country;
     private String state;
     private String locality;
-    private String organization;
+    private List<String> organization;
     private List<String> organizationUnit;
-    private String evaluationString;
+    private String originalString;
 
     /**
      * Basic constructor that sets class variables based on what is provided.
@@ -47,7 +47,7 @@ public class GeneralNamesParser {
      */
     public GeneralNamesParser(final String commonName, final String country,
             final String state, final String locality,
-            final String organization, final List<String> organizationUnit) {
+            final List<String> organization, final List<String> organizationUnit) {
         this.commonName = commonName;
         this.country = country;
         this.state = state;
@@ -56,59 +56,92 @@ public class GeneralNamesParser {
         this.organizationUnit = organizationUnit;
     }
 
-    public GeneralNamesParser(final X500Name generalName) {
-        
-    }
-
     /**
      * Central constructor that sets the class variables based on the string
      * provided.
      *
-     * @param generalNamesString a string to parse that should contain the
+     * @param generalName a string to parse that should contain the
      * different elements associated with a DN
      * @throws IllegalArgumentException if the parameter is null
      */
-    public GeneralNamesParser(final String generalNamesString) throws IllegalArgumentException {
-        if (generalNamesString == null) {
+    public GeneralNamesParser(final String generalName) throws IllegalArgumentException {
+        if (generalName == null) {
             throw new IllegalArgumentException("Provided DN string is null.");
         }
-        evaluationString = generalNamesString;
 
-        if (generalNamesString.contains(SEPARATOR_PLUS)) {
-            evaluationString = generalNamesString.replace(SEPARATOR_PLUS, SEPARATOR_COMMA);
+        originalString = generalName;
+
+        if (originalString.isEmpty()) {
+            return;
         }
 
-        Matcher matcher = SEPARATOR_PATTERN.matcher(evaluationString);
+        if (generalName.contains(SEPARATOR_PLUS)) {
+            originalString = generalName.replace(SEPARATOR_PLUS, SEPARATOR_COMMA);
+        }
 
-        while (matcher.find()) {
-            String[] elements = matcher.group(ELEMENT_INDEX).split(EQUALS_SIGN);
-            switch (elements[KEY_INDEX]) {
-                case "CN":
-                    commonName = elements[ELEMENT_INDEX];
-                    break;
-                case "C":
-                    country = elements[ELEMENT_INDEX];
-                    break;
-                case "L":
-                    locality = elements[ELEMENT_INDEX];
-                    break;
-                case "ST":
-                    state = elements[ELEMENT_INDEX];
-                    break;
-                case "O":
-                    organization = elements[ELEMENT_INDEX];
-                    break;
-                case "OU":
-                    organizationUnit = Arrays.asList(elements[ELEMENT_INDEX]);
-                    break;
-                default:
-                    if (elements.length > 1) {
-                        LOGGER.info(String.format("%s -> %s was not captured.",
-                                elements[KEY_INDEX], elements[ELEMENT_INDEX]));
-                    }
-                    break;
+        X500Name name = new X500Name(originalString);
+        RDN[] rdns = name.getRDNs();
+        organization = new LinkedList<>();
+        organizationUnit = new LinkedList<>();
+
+        for (RDN rdn : rdns) {
+            if (rdn.getFirst().getType().equals(RFC4519Style.o)) {
+                organization.add(rdn.getFirst().getValue().toString());
+            } else if (rdn.getFirst().getType().equals(RFC4519Style.ou)) {
+                organizationUnit.add(rdn.getFirst().getValue().toString());
+            } else if (rdn.getFirst().getType().equals(RFC4519Style.cn)) {
+                commonName = rdn.getFirst().getValue().toString();
+            } else if (rdn.getFirst().getType().equals(RFC4519Style.c)) {
+                country = rdn.getFirst().getValue().toString();
+            } else if (rdn.getFirst().getType().equals(RFC4519Style.l)) {
+                locality = rdn.getFirst().getValue().toString();
+            } else if (rdn.getFirst().getType().equals(RFC4519Style.st)) {
+                state = rdn.getFirst().getValue().toString();
             }
         }
+
+//        Matcher matcher;
+//
+//        if (generalNamesString.contains(SEPARATOR_PLUS)) {
+//            matcher = SEPARATOR_PATTERN.matcher(generalNamesString.replace(
+//                    SEPARATOR_PLUS, SEPARATOR_COMMA));
+//        } else {
+//            matcher = SEPARATOR_PATTERN.matcher(generalNamesString);
+//        }
+//
+//        while (matcher.find()) {
+//            String[] elements = matcher.group(ELEMENT_INDEX).split(EQUALS_SIGN);
+//            switch (elements[KEY_INDEX]) {
+//                case "CN":
+//                    commonName = elements[ELEMENT_INDEX];
+//                    break;
+//                case "C":
+//                    country = elements[ELEMENT_INDEX];
+//                    break;
+//                case "L":
+//                    locality = elements[ELEMENT_INDEX];
+//                    break;
+//                case "ST":
+//                    state = elements[ELEMENT_INDEX];
+//                    break;
+//                case "O":
+//                    organization = elements[ELEMENT_INDEX];
+//                    break;
+//                case "OU":
+//                    if (organizationUnit != null) {
+//                        organizationUnit.add(elements[ELEMENT_INDEX]);
+//                    } else {
+//                        organizationUnit = Arrays.asList(elements[ELEMENT_INDEX]);
+//                    }
+//                    break;
+//                default:
+//                    if (elements.length > 1) {
+//                        LOGGER.info(String.format("Type %s -> %s was not captured.",
+//                                elements[KEY_INDEX], elements[ELEMENT_INDEX]));
+//                    }
+//                    break;
+//            }
+//        }
     }
 
     /**
@@ -152,8 +185,8 @@ public class GeneralNamesParser {
      *
      * @return string for the organization
      */
-    public String getOrganization() {
-        return organization;
+    public List<String> getOrganization() {
+        return Collections.unmodifiableList(organization);
     }
 
     /**
@@ -206,10 +239,17 @@ public class GeneralNamesParser {
                 organization, organizationUnit);
     }
 
+    /**
+     * This will only return what was originally given.  Since the purpose
+     * of this class is to compare and not display.
+     * @return original string.
+     */
     @Override
     public String toString() {
         return String.format("CN=%s, C=%s, ST=%s, L=%s, O=%s, OU=%s",
                 commonName, country, state, locality,
-                organization, organizationUnit);
+                StringUtils.join(organization, ","),
+                StringUtils.join(organizationUnit, ","));
+//        return originalString;
     }
 }

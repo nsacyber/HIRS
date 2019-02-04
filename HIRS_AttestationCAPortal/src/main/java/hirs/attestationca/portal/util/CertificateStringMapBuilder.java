@@ -15,6 +15,7 @@ import hirs.data.persist.certificate.EndorsementCredential;
 import hirs.data.persist.certificate.IssuedAttestationCertificate;
 import hirs.data.persist.certificate.PlatformCredential;
 import hirs.data.persist.certificate.attributes.PlatformConfiguration;
+import hirs.data.persist.certificate.attributes.GeneralNamesParser;
 import hirs.persist.CertificateManager;
 
 /**
@@ -126,6 +127,8 @@ public final class CertificateStringMapBuilder {
             final CertificateManager certificateManager) {
 
         Set<CertificateAuthorityCredential> issuerCertificates;
+        GeneralNamesParser issuerGnp;
+        GeneralNamesParser subjectGnp;
         //Check if there is a subject organization
         if (certificate.getIssuerOrganization() == null
                 || certificate.getIssuerOrganization().isEmpty()) {
@@ -140,12 +143,18 @@ public final class CertificateStringMapBuilder {
                                      .getCertificates();
         }
 
+        LOGGER.error(String.format("TDM - > found %d certificates for %s",
+                issuerCertificates.size(), certificate.getIssuer()));
         for (Certificate issuerCert : issuerCertificates) {
             try {
                 // Find the certificate that actually signed this cert
                 if (certificate.isIssuer(issuerCert)) {
+                    issuerGnp = new GeneralNamesParser(issuerCert.getIssuer());
+                    subjectGnp = new GeneralNamesParser(issuerCert.getSubject());
                     //Check if it's root certificate
-                    if (issuerCert.getIssuer().equals(issuerCert.getSubject())) {
+                    LOGGER.error(String.format("TDM -> Issuer: %s / Subject: %s",
+                            issuerGnp, subjectGnp));
+                    if (issuerGnp.equals(subjectGnp)) {
                         return null;
                     }
                     return containsAllChain(issuerCert, certificateManager);
