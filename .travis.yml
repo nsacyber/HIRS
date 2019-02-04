@@ -47,3 +47,7 @@ jobs:
       script: .ci/system-tests/./run-system-tests.sh
       env: null
       name: "System Tests"
+    - stage: system-tests
+      script: .ci/system-tests/./run-system-tests-tpm2.sh
+      env: null
+      name: "System Tests TPM2"

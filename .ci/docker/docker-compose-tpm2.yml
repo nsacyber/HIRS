@@ -17,24 +17,21 @@ services:
             aliases:
               - ${HIRS_ACA_HOSTNAME}
 
-   tpmprovisioner:
-      image: hirs/hirs-ci:tpmprovisioner
-      container_name: hirs-aca-provisioner
+   tpm2provisioner:
+      image: hirs/hirs-ci:tpm2provisioner
+      container_name: hirs-aca-provisioner-tpm2
       depends_on:
          - aca
       volumes:
          - ../../:/HIRS
       entrypoint: /bin/bash -c
-      command: [HIRS/.ci/integration-tests/setup-tpmprovisioner.sh;]
-      devices:
-        - "/dev/mem:/dev/mem"
-      cap_add:
-        - sys_rawio
+      command: [HIRS/.ci/integration-tests/setup-tpm2provisioner.sh;
+                HIRS/.ci/system-tests/systems-test-centos7-tpm2.sh]
       networks:
          hirs_aca_system_tests:
-            ipv4_address: ${HIRS_ACA_PROVISIONER_IP}
+            ipv4_address: ${HIRS_ACA_PROVISIONER_TPM2_IP}
       environment:
-         - HIRS_ACA_PROVISIONER_IP=${HIRS_ACA_PROVISIONER_IP}
+         - HIRS_ACA_PROVISIONER_TPM2_IP=${HIRS_ACA_PROVISIONER_TPM2_IP}
          - TPM_ENABLED=${TPM_ENABLED}
          - IMA_ENABLED=${IMA_ENABLED}
          - HIRS_ACA_PORTAL_IP=${HIRS_ACA_PORTAL_IP}
