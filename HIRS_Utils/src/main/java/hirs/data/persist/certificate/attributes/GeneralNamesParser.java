@@ -4,10 +4,6 @@ import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Objects;
-import java.util.regex.Pattern;
-import org.apache.commons.lang3.StringUtils;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.bouncycastle.asn1.x500.RDN;
 import org.bouncycastle.asn1.x500.X500Name;
 import org.bouncycastle.asn1.x500.style.RFC4519Style;
@@ -18,12 +14,6 @@ import org.bouncycastle.asn1.x500.style.RFC4519Style;
  */
 public class GeneralNamesParser {
 
-    private static final Logger LOGGER = LogManager.getLogger(
-            GeneralNamesParser.class);
-
-    private static final String SEPARATOR_PATTERN_STRING = "(?:^|,)((?:[^\",]|\"[^\"]*\")*)";
-    private static final Pattern SEPARATOR_PATTERN = Pattern.compile(SEPARATOR_PATTERN_STRING);
-    private static final String EQUALS_SIGN = "=";
     private static final String SEPARATOR_COMMA = ",";
     private static final String SEPARATOR_PLUS = "+";
 
@@ -42,8 +32,8 @@ public class GeneralNamesParser {
      * @param country country of origin
      * @param state state of origin
      * @param locality associated area
-     * @param organization overall org
-     * @param organizationUnit the specific org units
+     * @param organization overall organization
+     * @param organizationUnit the specific organization units
      */
     public GeneralNamesParser(final String commonName, final String country,
             final String state, final String locality,
@@ -70,7 +60,6 @@ public class GeneralNamesParser {
         }
 
         originalString = generalName;
-
         if (originalString.isEmpty()) {
             return;
         }
@@ -99,49 +88,6 @@ public class GeneralNamesParser {
                 state = rdn.getFirst().getValue().toString();
             }
         }
-
-//        Matcher matcher;
-//
-//        if (generalNamesString.contains(SEPARATOR_PLUS)) {
-//            matcher = SEPARATOR_PATTERN.matcher(generalNamesString.replace(
-//                    SEPARATOR_PLUS, SEPARATOR_COMMA));
-//        } else {
-//            matcher = SEPARATOR_PATTERN.matcher(generalNamesString);
-//        }
-//
-//        while (matcher.find()) {
-//            String[] elements = matcher.group(ELEMENT_INDEX).split(EQUALS_SIGN);
-//            switch (elements[KEY_INDEX]) {
-//                case "CN":
-//                    commonName = elements[ELEMENT_INDEX];
-//                    break;
-//                case "C":
-//                    country = elements[ELEMENT_INDEX];
-//                    break;
-//                case "L":
-//                    locality = elements[ELEMENT_INDEX];
-//                    break;
-//                case "ST":
-//                    state = elements[ELEMENT_INDEX];
-//                    break;
-//                case "O":
-//                    organization = elements[ELEMENT_INDEX];
-//                    break;
-//                case "OU":
-//                    if (organizationUnit != null) {
-//                        organizationUnit.add(elements[ELEMENT_INDEX]);
-//                    } else {
-//                        organizationUnit = Arrays.asList(elements[ELEMENT_INDEX]);
-//                    }
-//                    break;
-//                default:
-//                    if (elements.length > 1) {
-//                        LOGGER.info(String.format("Type %s -> %s was not captured.",
-//                                elements[KEY_INDEX], elements[ELEMENT_INDEX]));
-//                    }
-//                    break;
-//            }
-//        }
     }
 
     /**
@@ -190,10 +136,10 @@ public class GeneralNamesParser {
     }
 
     /**
-     * Getter for the list of Org Units. A DN can potentially have multiple
-     * units.
+     * Getter for the list of Organization Units. A DN can potentially
+     * have multiple units.
      *
-     * @return list of org units
+     * @return list of organization units
      */
     public List<String> getOrganizationUnit() {
         return Collections.unmodifiableList(organizationUnit);
@@ -246,10 +192,6 @@ public class GeneralNamesParser {
      */
     @Override
     public String toString() {
-        return String.format("CN=%s, C=%s, ST=%s, L=%s, O=%s, OU=%s",
-                commonName, country, state, locality,
-                StringUtils.join(organization, ","),
-                StringUtils.join(organizationUnit, ","));
-//        return originalString;
+        return originalString;
     }
 }

@@ -143,8 +143,6 @@ public final class CertificateStringMapBuilder {
                                      .getCertificates();
         }
 
-        LOGGER.error(String.format("TDM - > found %d certificates for %s",
-                issuerCertificates.size(), certificate.getIssuer()));
         for (Certificate issuerCert : issuerCertificates) {
             try {
                 // Find the certificate that actually signed this cert
@@ -152,8 +150,6 @@ public final class CertificateStringMapBuilder {
                     issuerGnp = new GeneralNamesParser(issuerCert.getIssuer());
                     subjectGnp = new GeneralNamesParser(issuerCert.getSubject());
                     //Check if it's root certificate
-                    LOGGER.error(String.format("TDM -> Issuer: %s / Subject: %s",
-                            issuerGnp, subjectGnp));
                     if (issuerGnp.equals(subjectGnp)) {
                         return null;
                     }
