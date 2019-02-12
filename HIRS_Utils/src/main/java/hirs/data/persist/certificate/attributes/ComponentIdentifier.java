@@ -43,6 +43,9 @@ public class ComponentIdentifier {
     private static final int COMPONENT_MANUFACTURER_ID = 2;
     private static final int FIELD_REPLACEABLE = 3;
     private static final int COMPONENT_ADDRESS = 4;
+    private static final int COMPONENT_UNK = 5;
+    private static final int COMPONENT_URI = 6;
+    private static final int COMPONENT_BYTE = 7;
 
     private String componentClass;
     private DERUTF8String componentManufacturer;
@@ -148,6 +151,10 @@ public class ComponentIdentifier {
                 case COMPONENT_ADDRESS:
                     ASN1Sequence addressesSequence = ASN1Sequence.getInstance(taggedObj, false);
                     componentAddress = retriveComponentAddress(addressesSequence);
+                    break;
+                case COMPONENT_UNK:
+                case COMPONENT_URI:
+                case COMPONENT_BYTE:
                     break;
                 default:
                     throw new IllegalArgumentException("Component identifier contains "

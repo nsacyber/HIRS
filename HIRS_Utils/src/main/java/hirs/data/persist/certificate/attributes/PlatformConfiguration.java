@@ -21,8 +21,11 @@ import org.bouncycastle.asn1.ASN1TaggedObject;
 public class PlatformConfiguration {
 
     private static final int COMPONENT_IDENTIFIER = 0;
-    private static final int PLATFORM_PROPERTIES = 1;
-    private static final int PLATFORM_PROPERTIES_URI = 2;
+    //private static final int PLATFORM_PROPERTIES = 1;
+    private static final int PLATFORM_PROPERTIES = 2;
+    private static final int PLATFORM_PROPERTIES_URI = 1;
+    private static final int PLATFORM_PROPERTIES_URI2 = 3;
+
 
     private List<ComponentIdentifier> componentIdentifier;
     private List<PlatformProperty> platformProperties;

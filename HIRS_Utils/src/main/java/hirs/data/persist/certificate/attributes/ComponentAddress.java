@@ -25,7 +25,6 @@ public class ComponentAddress {
     private static final String WLAN_MAC = "2.23.133.17.2";
     private static final String BLUETOOTH_MAC = "2.23.133.17.3";
 
-
     private ASN1ObjectIdentifier addressType;
     private DERUTF8String addressValue;
 

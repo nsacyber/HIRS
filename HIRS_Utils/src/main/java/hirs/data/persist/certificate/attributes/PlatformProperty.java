@@ -1,6 +1,5 @@
 package hirs.data.persist.certificate.attributes;
 
-import static hirs.data.persist.certificate.attributes.ComponentAddress.IDENTIFIER_NUMBER;
 import org.bouncycastle.asn1.ASN1Sequence;
 import org.bouncycastle.asn1.DERUTF8String;
 
@@ -15,6 +14,12 @@ import org.bouncycastle.asn1.DERUTF8String;
 * </pre>
  */
 public class PlatformProperty {
+
+    /**
+     * Number of identifiers that a component address must have.
+     */
+    public static final int IDENTIFIER_NUMBER = 3;
+
     private DERUTF8String propertyName;
     private DERUTF8String propertyValue;
 

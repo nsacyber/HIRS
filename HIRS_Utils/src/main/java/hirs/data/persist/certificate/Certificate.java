@@ -365,7 +365,8 @@ public abstract class Certificate extends ArchivableEntity {
                         .getInstance((DLSequence) getExtensionValue(
                                 Extension.authorityKeyIdentifier.getId()));
 
-                this.authorityInfoAccess = getAuthorityInfoAccess();
+                this.authorityInfoAccess = getAuthorityInfoAccess(x509Certificate
+                        .getExtensionValue(Extension.authorityInfoAccess.getId()));
                 this.keyUsage = parseKeyUsage(x509Certificate.getKeyUsage());
                 this.crlPoints = getCRLDistributionPoint();
 
@@ -395,6 +396,10 @@ public abstract class Certificate extends ArchivableEntity {
 
                 authKeyIdentifier = AuthorityKeyIdentifier
                         .fromExtensions(attCertInfo.getExtensions());
+
+                this.authorityInfoAccess = getAuthorityInfoAccess(
+                        AuthorityInformationAccess.fromExtensions(
+                                attCertInfo.getExtensions()));
 
                 switch (attCert.getSignatureAlgorithm().getAlgorithm().getId()) {
                     case RSA256_OID:
@@ -661,27 +666,40 @@ public abstract class Certificate extends ArchivableEntity {
      *
      * @return List Authority info access list
      */
-    private String getAuthorityInfoAccess() {
+    private String getAuthorityInfoAccess(final byte[] authInfoAccess) {
         StringBuilder sb = new StringBuilder();
 
         try {
-            byte[] authAccess = getX509Certificate().getExtensionValue(
-                    Extension.authorityInfoAccess.getId());
-            if (authAccess != null && authAccess.length > 0) {
-                AuthorityInformationAccess authInfoAccess = AuthorityInformationAccess
-                        .getInstance(X509ExtensionUtil.fromExtensionValue(authAccess));
-                for (AccessDescription desc : authInfoAccess.getAccessDescriptions()) {
-                    if (desc.getAccessLocation().getTagNo() == GeneralName
-                            .uniformResourceIdentifier) {
-                        sb.append(String.format("%s%n", ((DERIA5String) desc
-                                .getAccessLocation()
-                                .getName())
-                                .getString()));
-                    }
-                }
+            if (authInfoAccess != null && authInfoAccess.length > 0) {
+                sb.append(getAuthorityInfoAccess(AuthorityInformationAccess
+                        .getInstance(X509ExtensionUtil.fromExtensionValue(authInfoAccess))));
+
             }
         } catch (IOException ioEx) {
             LOGGER.error(ioEx);
+        }
+
+        return sb.toString();
+    }
+
+    /**
+     * Getter for the AuthorityInfoAccess extension value on list format.
+     *
+     * @return List Authority info access list
+     */
+    private String getAuthorityInfoAccess(final AuthorityInformationAccess authInfoAccess) {
+        StringBuilder sb = new StringBuilder();
+
+        if (authInfoAccess != null) {
+            for (AccessDescription desc : authInfoAccess.getAccessDescriptions()) {
+                if (desc.getAccessLocation().getTagNo() == GeneralName
+                        .uniformResourceIdentifier) {
+                    sb.append(String.format("%s%n", ((DERIA5String) desc
+                            .getAccessLocation()
+                            .getName())
+                            .getString()));
+                }
+            }
         }
 
         return sb.toString();
