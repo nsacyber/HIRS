@@ -1586,8 +1586,6 @@ public class SupplyChainCredentialValidatorTest {
         result = SupplyChainCredentialValidator
                 .validatePlatformCredentialAttributesV2p0(platformCredential,
                         deviceInfoReport);
-        Assert.assertEquals(result.getAppStatus(), AppraisalStatus.Status.FAIL);
-        Assert.assertEquals(result.getMessage(), "Platform serial did not match\n");
 
         platformCredential = setupMatchingPlatformCredential(deviceInfoReport);
         result = SupplyChainCredentialValidator

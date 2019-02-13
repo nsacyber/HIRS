@@ -142,6 +142,7 @@ public final class SupplyChainCredentialValidator implements CredentialValidator
      * @param acceptExpired whether or not to accept expired certificates as valid.
      * @return The result of the validation.
      */
+    @Override
     public AppraisalStatus validatePlatformCredential(final PlatformCredential pc,
                                                      final KeyStore trustStore,
                                                      final boolean acceptExpired) {
@@ -210,6 +211,7 @@ public final class SupplyChainCredentialValidator implements CredentialValidator
      *          identity request as the platform credential.
      * @return The result of the validation.
      */
+    @Override
     public AppraisalStatus validatePlatformCredentialAttributes(
             final PlatformCredential platformCredential,
             final DeviceInfoReport deviceInfoReport,
@@ -397,12 +399,12 @@ public final class SupplyChainCredentialValidator implements CredentialValidator
         // check PlatformSerial against both system-serial-number and baseboard-serial-number
         fieldValidation = (
                 (
-                requiredPlatformCredentialFieldIsNonEmptyAndMatches(
+                notRequiredPlatformCredentialFieldMatchesNotNullAndMatches(
                     "PlatformSerial",
                     platformCredential.getPlatformSerial(),
                     hardwareInfo.getSystemSerialNumber())
                 ) || (
-                requiredPlatformCredentialFieldIsNonEmptyAndMatches(
+                notRequiredPlatformCredentialFieldMatchesNotNullAndMatches(
                         "PlatformSerial",
                         platformCredential.getPlatformSerial(),
                         hardwareInfo.getBaseboardSerialNumber())
@@ -493,8 +495,8 @@ public final class SupplyChainCredentialValidator implements CredentialValidator
         // on the leftovers in the lists and the policy in place.
         final List<ComponentIdentifier> pcComponents = new ArrayList<>();
         for (ComponentIdentifier component : untrimmedPcComponents) {
-            DERUTF8String componentSerial = null;
-            DERUTF8String componentRevision = null;
+            DERUTF8String componentSerial = new DERUTF8String("");
+            DERUTF8String componentRevision = new DERUTF8String("");
             if (component.getComponentSerial() != null) {
                 componentSerial = new DERUTF8String(
                         component.getComponentSerial().getString().trim());
@@ -605,15 +607,15 @@ public final class SupplyChainCredentialValidator implements CredentialValidator
 
             // The remaining components from the manufacturer have only the 2 required fields so
             // just match them.
-            Iterator<ComponentIdentifier> pcComponentIter = pcComponentsFromManufacturer.iterator();
-            while (pcComponentIter.hasNext()) {
-                ComponentIdentifier pcComponent =  pcComponentIter.next();
+            List<ComponentIdentifier> templist = new ArrayList<>(pcComponentsFromManufacturer);
+            for (ComponentIdentifier ci : templist) {
+                ComponentIdentifier pcComponent = ci;
                 Iterator<ComponentInfo> diComponentIter
                         = deviceInfoComponentsFromManufacturer.iterator();
                 while (diComponentIter.hasNext()) {
                     ComponentInfo potentialMatch = diComponentIter.next();
                     if (isMatch(pcComponent, potentialMatch)) {
-                        pcComponentIter.remove();
+                        pcComponentsFromManufacturer.remove(ci);
                         diComponentIter.remove();
                     }
                 }
@@ -636,13 +638,12 @@ public final class SupplyChainCredentialValidator implements CredentialValidator
         return true;
     }
 
-
-/**
- * Returns true if fieldValue is null or empty.
- * @param description description of the value
- * @param fieldValue value of the field
- * @return true if fieldValue is null or empty; false otherwise
- */
+    /**
+     * Returns true if fieldValue is null or empty.
+     * @param description description of the value
+     * @param fieldValue value of the field
+     * @return true if fieldValue is null or empty; false otherwise
+     */
     private static boolean hasEmptyValueForRequiredField(final String description,
                                                   final String fieldValue) {
         if (StringUtils.isEmpty(fieldValue)) {
@@ -669,6 +670,15 @@ public final class SupplyChainCredentialValidator implements CredentialValidator
         return false;
     }
 
+    /**
+     * Validates the information supplied for the Platform Credential.  This
+     * method checks if the field is required and therefore if the value is
+     * present then verifies that the values match.
+     * @param platformCredentialFieldName name of field to be compared
+     * @param platformCredentialFieldValue first value to compare
+     * @param otherValue second value to compare
+     * @return true if values match
+     */
     private static boolean requiredPlatformCredentialFieldIsNonEmptyAndMatches(
             final String platformCredentialFieldName,
             final String platformCredentialFieldValue,
@@ -678,6 +688,26 @@ public final class SupplyChainCredentialValidator implements CredentialValidator
             return false;
         }
 
+        return platformCredentialFieldMatches(platformCredentialFieldName,
+                platformCredentialFieldValue, otherValue);
+    }
+
+    private static boolean notRequiredPlatformCredentialFieldMatchesNotNullAndMatches(
+            final String platformCredentialFieldName,
+            final String platformCredentialFieldValue,
+            final String otherValue) {
+        if (platformCredentialFieldValue == null) {
+            return true;
+        }
+
+        return platformCredentialFieldMatches(platformCredentialFieldName,
+                platformCredentialFieldValue, otherValue);
+    }
+
+    private static boolean platformCredentialFieldMatches(
+            final String platformCredentialFieldName,
+            final String platformCredentialFieldValue,
+            final String otherValue) {
         String trimmedFieldValue = platformCredentialFieldValue.trim();
         String trimmedOtherValue = otherValue.trim();
 
@@ -692,6 +722,7 @@ public final class SupplyChainCredentialValidator implements CredentialValidator
                 + "a related field in the DeviceInfoReport (%s)",
                 platformCredentialFieldName, trimmedFieldValue)
         );
+
         return true;
     }
 
@@ -812,6 +843,7 @@ public final class SupplyChainCredentialValidator implements CredentialValidator
      *                      as valid.
      * @return the result of the validation.
      */
+    @Override
     public AppraisalStatus validateEndorsementCredential(final EndorsementCredential ec,
                                                        final KeyStore trustStore,
                                                        final boolean acceptExpired) {
