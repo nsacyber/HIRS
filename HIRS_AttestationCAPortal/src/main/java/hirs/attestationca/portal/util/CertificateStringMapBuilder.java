@@ -15,8 +15,8 @@ import hirs.data.persist.certificate.EndorsementCredential;
 import hirs.data.persist.certificate.IssuedAttestationCertificate;
 import hirs.data.persist.certificate.PlatformCredential;
 import hirs.data.persist.certificate.attributes.PlatformConfiguration;
-import hirs.data.persist.certificate.attributes.GeneralNamesParser;
 import hirs.persist.CertificateManager;
+import hirs.utils.Functional;
 
 /**
  * Utility class for mapping certificate information in to string maps. These are used to display
@@ -127,8 +127,6 @@ public final class CertificateStringMapBuilder {
             final CertificateManager certificateManager) {
 
         Set<CertificateAuthorityCredential> issuerCertificates;
-        GeneralNamesParser issuerGnp;
-        GeneralNamesParser subjectGnp;
         //Check if there is a subject organization
         if (certificate.getIssuerOrganization() == null
                 || certificate.getIssuerOrganization().isEmpty()) {
@@ -147,10 +145,9 @@ public final class CertificateStringMapBuilder {
             try {
                 // Find the certificate that actually signed this cert
                 if (certificate.isIssuer(issuerCert)) {
-                    issuerGnp = new GeneralNamesParser(issuerCert.getIssuer());
-                    subjectGnp = new GeneralNamesParser(issuerCert.getSubject());
                     //Check if it's root certificate
-                    if (issuerGnp.equals(subjectGnp)) {
+                    if (Functional.x500NameCompare(issuerCert.getIssuer(),
+                            issuerCert.getSubject())) {
                         return null;
                     }
                     return containsAllChain(issuerCert, certificateManager);
