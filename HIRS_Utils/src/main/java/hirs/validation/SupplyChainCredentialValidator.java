@@ -399,12 +399,12 @@ public final class SupplyChainCredentialValidator implements CredentialValidator
         // check PlatformSerial against both system-serial-number and baseboard-serial-number
         fieldValidation = (
                 (
-                notRequiredPlatformCredentialFieldMatchesNotNullAndMatches(
+                optionalPlatformCredentialFieldNullOrMatches(
                     "PlatformSerial",
                     platformCredential.getPlatformSerial(),
                     hardwareInfo.getSystemSerialNumber())
                 ) || (
-                notRequiredPlatformCredentialFieldMatchesNotNullAndMatches(
+                optionalPlatformCredentialFieldNullOrMatches(
                         "PlatformSerial",
                         platformCredential.getPlatformSerial(),
                         hardwareInfo.getBaseboardSerialNumber())
@@ -692,7 +692,16 @@ public final class SupplyChainCredentialValidator implements CredentialValidator
                 platformCredentialFieldValue, otherValue);
     }
 
-    private static boolean notRequiredPlatformCredentialFieldMatchesNotNullAndMatches(
+    /**
+     * Validates the information supplied for the Platform Credential.  This
+     * method checks if the value is present then verifies that the values match.
+     * If not present, then returns true.
+     * @param platformCredentialFieldName name of field to be compared
+     * @param platformCredentialFieldValue first value to compare
+     * @param otherValue second value to compare
+     * @return true if values match or null
+     */
+    private static boolean optionalPlatformCredentialFieldNullOrMatches(
             final String platformCredentialFieldName,
             final String platformCredentialFieldValue,
             final String otherValue) {

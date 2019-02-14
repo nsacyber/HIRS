@@ -1586,7 +1586,7 @@ public class SupplyChainCredentialValidatorTest {
         result = SupplyChainCredentialValidator
                 .validatePlatformCredentialAttributesV2p0(platformCredential,
                         deviceInfoReport);
-
+        Assert.assertEquals(result.getAppStatus(), AppraisalStatus.Status.PASS);
         platformCredential = setupMatchingPlatformCredential(deviceInfoReport);
         result = SupplyChainCredentialValidator
                 .validatePlatformCredentialAttributesV2p0(platformCredential,
