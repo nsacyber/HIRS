@@ -36,6 +36,12 @@ public class CertificateTest {
             "/certificates/fakeIntelIntermediateCA.cer";
 
     /**
+     * Location of a test (fake) Intel intermediate CA certificate.
+     */
+    public static final String INTEL_INT_CA_FILE =
+            "/validation/platform_credentials/intel_chain/root/intermediate2.cer";
+
+    /**
      * Location of a test (fake) SGI intermediate CA certificate.
      */
     public static final String FAKE_SGI_INT_CA_FILE = "/certificates/fakeSGIIntermediateCA.cer";
@@ -227,14 +233,29 @@ public class CertificateTest {
         X509Certificate certificate = readX509Certificate(FAKE_ROOT_CA_FILE);
 
         Assert.assertEquals(rootCert.getSerialNumber(), certificate.getSerialNumber());
-        Assert.assertEquals(rootCert.getIssuer(), certificate.getIssuerX500Principal().getName());
-        Assert.assertEquals(rootCert.getSubject(), certificate.getSubjectX500Principal().getName());
-        Assert.assertEquals(
-                rootCert.getEncodedPublicKey(), certificate.getPublicKey().getEncoded()
-        );
+        Assert.assertEquals(rootCert.getIssuer(),
+                certificate.getIssuerX500Principal().getName());
+        Assert.assertEquals(rootCert.getSubject(),
+                certificate.getSubjectX500Principal().getName());
+        Assert.assertEquals(rootCert.getEncodedPublicKey(),
+                certificate.getPublicKey().getEncoded());
         Assert.assertEquals(rootCert.getSignature(), certificate.getSignature());
         Assert.assertEquals(rootCert.getBeginValidity(), certificate.getNotBefore());
         Assert.assertEquals(rootCert.getEndValidity(), certificate.getNotAfter());
+    }
+
+    /**
+     * Tests that Certificate correctly parses out non standard fields from an X509 Certificate.
+     *
+     * @throws IOException if there is a problem reading the cert file at the given path
+     */
+    public void testX509CertificateParsingExtended() throws IOException {
+        Certificate rootCert = getTestCertificate(INTEL_INT_CA_FILE);
+        Assert.assertEquals(rootCert.getAuthInfoAccess(),
+                "https://trustedservices.intel.com/"
+                        + "content/TSC/certs/TSC_SS_RootCA_Certificate.cer");
+        Assert.assertEquals(rootCert.getAuthKeyId(),
+                "b5:6f:72:cd:fd:66:ce:83:9e:1f:db:40:49:8f:07:29:1f:5b:99:b7");
     }
 
     /**
@@ -270,6 +291,25 @@ public class CertificateTest {
         Assert.assertEquals(platformCert.getSignature(), attrCertHolder.getSignature());
         Assert.assertEquals(platformCert.getBeginValidity(), attrCertHolder.getNotBefore());
         Assert.assertEquals(platformCert.getEndValidity(), attrCertHolder.getNotAfter());
+    }
+
+    /**
+     * Tests that Certificate correctly parses out non-standard fields from an X509 attribute
+     * certificate.
+     *
+     * @throws IOException if there is a problem reading the cert file at the given path
+     * @throws URISyntaxException if there is a problem constructing the file's URI
+     */
+    public void testX509AttributeCertificateParsingExtended()
+            throws IOException, URISyntaxException {
+        Certificate platformCert = getTestCertificate(
+                PlatformCredential.class, PlatformCredentialTest.TEST_PLATFORM_CERT_6);
+
+        Assert.assertEquals(platformCert.getAuthInfoAccess(),
+                "https://trustedservices.intel.com/"
+                        + "content/TSC/certs/TSC_IssuingCAIKGF_TEST.cer");
+        Assert.assertEquals(platformCert.getAuthKeyId(),
+                "3c:06:b9:fb:63:a5:3c:a5:7c:6b:87:43:33:39:f1:dc:a8:07:fb:a4");
     }
 
     /**
