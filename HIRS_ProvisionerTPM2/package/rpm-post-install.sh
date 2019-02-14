@@ -8,8 +8,10 @@ fi
 HIRS_SITE_CONFIG="/etc/hirs/hirs-site.config"
 
 mkdir -p /var/log/hirs/provisioner
+mkdir -p /etc/hirs/provisioner/certs
 ln -s -f /usr/local/bin/hirs-provisioner-tpm2 /usr/sbin/hirs-provisioner-tpm2
 ln -s -f /usr/local/bin/tpm_aca_provision /usr/sbin/tpm_aca_provision
+ln -s -f /usr/local/bin/tpm_version /usr/sbin/tpm_version
 
 if [ ! -f $HIRS_SITE_CONFIG ]; then
     # Create template site config if it does not exist
@@ -36,3 +38,4 @@ DEFAULT_SITE_CONFIG_FILE
     echo "$HIRS_SITE_CONFIG not found - a template has been created"
     echo "Set your site configuration manually in $HIRS_SITE_CONFIG, then run 'hirs-provisioner-tpm2 provision' to provision this system"
 fi
+ln -s -f /etc/hirs/provisioner/hirs-provisioner.sh /usr/sbin/hirs-provisioner

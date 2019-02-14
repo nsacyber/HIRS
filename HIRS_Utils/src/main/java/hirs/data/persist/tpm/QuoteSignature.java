@@ -52,10 +52,14 @@ import java.util.Arrays;
         name = "QuoteSignature",
         namespace = "http://www.trustedcomputinggroup.org/XML/SCHEMA/"
                 + "Integrity_Report_v1_0#",
-        propOrder = {"signatureValue" })
+        propOrder = {"rawQuote", "signatureValue" })
 @Embeddable
 public class QuoteSignature {
     private static final int SIGNATURE_LENGTH = 10000;
+
+    @XmlElement(name = "RawQuote", required = false)
+    @Column(length = SIGNATURE_LENGTH)
+    private final byte[] rawQuote;
 
     @XmlElement(name = "SignatureValue", required = true)
     @Column(length = SIGNATURE_LENGTH)
@@ -65,6 +69,7 @@ public class QuoteSignature {
      * Default constructor necessary for marshalling/unmarshalling xml.
      */
     protected QuoteSignature() {
+        this.rawQuote = new byte[0];
         this.signatureValue = new byte[0];
     }
 
@@ -76,6 +81,23 @@ public class QuoteSignature {
      *            SignatureValue that contains the Quote2 signature, may be null
      */
     public QuoteSignature(final byte[] signatureValue) {
+        this(signatureValue, null);
+    }
+    /**
+     * Constructor used to create a QuoteSignature. The signature value may be
+     * null.
+     *
+     * @param signatureValue
+     *            SignatureValue that contains the Quote2 signature, may be null
+     * @param rawQuote
+     *            Value that was signed, may be null
+     */
+    public QuoteSignature(final byte[] signatureValue, final byte[] rawQuote) {
+        if (rawQuote == null) {
+            this.rawQuote = null;
+        } else {
+            this.rawQuote = rawQuote.clone();
+        }
         if (signatureValue == null) {
             this.signatureValue = null;
         } else {
@@ -90,11 +112,24 @@ public class QuoteSignature {
      *
      */
     public final byte[] getSignatureValue() {
-        if (signatureValue == null) {
-            return null;
-        } else {
+        if (signatureValue != null) {
             return signatureValue.clone();
         }
+
+        return null;
+    }
+
+    /**
+     * Gets the value of the rawQuote property.
+     *
+     * @return possible object is a byte array containing the raw quote value, may return null
+     *
+     */
+    public byte[] getRawQuote() {
+        if (rawQuote != null) {
+            return rawQuote.clone();
+        }
+        return null;
     }
 
     @Override
