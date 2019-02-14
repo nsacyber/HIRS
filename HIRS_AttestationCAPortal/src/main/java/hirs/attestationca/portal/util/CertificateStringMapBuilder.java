@@ -16,7 +16,7 @@ import hirs.data.persist.certificate.IssuedAttestationCertificate;
 import hirs.data.persist.certificate.PlatformCredential;
 import hirs.data.persist.certificate.attributes.PlatformConfiguration;
 import hirs.persist.CertificateManager;
-import hirs.utils.Functional;
+import hirs.utils.BouncyCastleUtils;
 
 /**
  * Utility class for mapping certificate information in to string maps. These are used to display
@@ -146,7 +146,7 @@ public final class CertificateStringMapBuilder {
                 // Find the certificate that actually signed this cert
                 if (certificate.isIssuer(issuerCert)) {
                     //Check if it's root certificate
-                    if (Functional.x500NameCompare(issuerCert.getIssuer(),
+                    if (BouncyCastleUtils.x500NameCompare(issuerCert.getIssuer(),
                             issuerCert.getSubject())) {
                         return null;
                     }
