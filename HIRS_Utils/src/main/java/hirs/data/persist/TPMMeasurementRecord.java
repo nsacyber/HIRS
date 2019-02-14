@@ -61,9 +61,6 @@ public final class TPMMeasurementRecord extends ExaminableRecord {
             LOGGER.error("null hash value");
             throw new NullPointerException("hash");
         }
-        if (hash.getAlgorithm() != DigestAlgorithm.SHA1) {
-            throw new IllegalArgumentException("hash algorithm is not SHA-1");
-        }
 
         this.pcrId = pcrId;
         this.hash = hash;
