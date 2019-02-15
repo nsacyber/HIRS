@@ -249,13 +249,14 @@ public class CertificateTest {
      *
      * @throws IOException if there is a problem reading the cert file at the given path
      */
+    @Test
     public void testX509CertificateParsingExtended() throws IOException {
         Certificate rootCert = getTestCertificate(INTEL_INT_CA_FILE);
         Assert.assertEquals(rootCert.getAuthInfoAccess(),
                 "https://trustedservices.intel.com/"
-                        + "content/TSC/certs/TSC_SS_RootCA_Certificate.cer");
+                        + "content/TSC/certs/TSC_SS_RootCA_Certificate.cer\n");
         Assert.assertEquals(rootCert.getAuthKeyId(),
-                "b5:6f:72:cd:fd:66:ce:83:9e:1f:db:40:49:8f:07:29:1f:5b:99:b7");
+                "b56f72cdfd66ce839e1fdb40498f07291f5b99b7");
     }
 
     /**
@@ -300,6 +301,7 @@ public class CertificateTest {
      * @throws IOException if there is a problem reading the cert file at the given path
      * @throws URISyntaxException if there is a problem constructing the file's URI
      */
+    @Test
     public void testX509AttributeCertificateParsingExtended()
             throws IOException, URISyntaxException {
         Certificate platformCert = getTestCertificate(
@@ -307,9 +309,9 @@ public class CertificateTest {
 
         Assert.assertEquals(platformCert.getAuthInfoAccess(),
                 "https://trustedservices.intel.com/"
-                        + "content/TSC/certs/TSC_IssuingCAIKGF_TEST.cer");
+                        + "content/TSC/certs/TSC_IssuingCAIKGF_TEST.cer\n");
         Assert.assertEquals(platformCert.getAuthKeyId(),
-                "3c:06:b9:fb:63:a5:3c:a5:7c:6b:87:43:33:39:f1:dc:a8:07:fb:a4");
+                "3c06b9fb63a53ca57c6b87433339f1dca807fba4");
     }
 
     /**
