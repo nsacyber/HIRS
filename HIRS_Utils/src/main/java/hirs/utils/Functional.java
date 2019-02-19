@@ -8,6 +8,7 @@ import java.util.List;
  * Simple utility class to house some functional methods.
  */
 public final class Functional {
+
     /**
      * Prevents construction of an instance of this class.
      */
