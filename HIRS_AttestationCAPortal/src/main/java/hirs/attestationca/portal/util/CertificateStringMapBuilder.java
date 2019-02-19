@@ -49,6 +49,7 @@ public final class CertificateStringMapBuilder {
                 data.put("authSerialNumber", Long.toHexString(certificate
                         .getAuthoritySerialNumber().longValue()));
             }
+            data.put("authInfoAccess", certificate.getAuthInfoAccess());
             data.put("beginValidity", certificate.getBeginValidity().toString());
             data.put("endValidity", certificate.getEndValidity().toString());
             data.put("signature", Arrays.toString(certificate.getSignature()));
@@ -207,7 +208,6 @@ public final class CertificateStringMapBuilder {
             //x509 credential version
             data.put("x509Version", Integer.toString(certificate
                     .getX509CredentialVersion()));
-            data.put("authInfoAccess", certificate.getAuthInfoAccess());
             data.put("credentialType", certificate.getCredentialType());
         } else {
             LOGGER.error(notFoundMessage);
@@ -237,7 +237,6 @@ public final class CertificateStringMapBuilder {
             data.put("version", certificate.getVersion());
             data.put("policyReference", certificate.getPolicyReference());
             data.put("crlPoints", certificate.getCrlPoints());
-            data.put("authInfoAccess", certificate.getAuthInfoAccess());
             data.put("credentialType", certificate.getCredentialType());
             //x509 credential version
             data.put("x509Version", Integer.toString(certificate
