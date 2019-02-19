@@ -237,7 +237,7 @@
                 </c:when>
                 <c:when test="${param.type=='endorsement'}">
                     <div class="row">
-                        <div class="col-md-1 col-md-offset-1"><span class="colHeader">TPM</span></div>
+                        <div class="col-md-1 col-md-offset-1"><span class="colHeader">System Information</span></div>
                         <div id="subjectAltName" class="col col-md-8">
                             <div id="manufacturer">Manufacturer:&nbsp;<span>${initialData.manufacturer}</span></div>
                             <div id="model">Model:&nbsp;<span>${initialData.model}</span></div>
@@ -355,7 +355,7 @@
                         </div>
                     </div>
                     <div class="row">
-                        <div class="col-md-1 col-md-offset-1"><span class="colHeader">TPM</span></div>
+                        <div class="col-md-1 col-md-offset-1"><span class="colHeader">System Information</span></div>
                         <div id="subjectAltName" class="col col-md-8">
                             <div id="manufacturer">Manufacturer:&nbsp;<span>${initialData.manufacturer}</span></div>
                             <div id="model">Model:&nbsp;<span>${initialData.model}</span></div>
