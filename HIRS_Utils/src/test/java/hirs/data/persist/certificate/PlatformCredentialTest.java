@@ -57,6 +57,12 @@ public class PlatformCredentialTest {
             "/validation/platform_credentials/Intel_pc5.pem";
 
     /**
+     * Location of another, slightly different platform attribute cert.
+     */
+    static final String TEST_PLATFORM_CERT_6 =
+            "/validation/platform_credentials/Intel_nuc1.cer";
+
+    /**
      * Platform Certificate 2.0 with all the expected data.
      */
     static final String TEST_PLATFORM_CERT2_1 =
