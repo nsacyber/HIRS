@@ -55,6 +55,7 @@ import java.util.stream.Collectors;
 import static hirs.data.persist.AppraisalStatus.Status.ERROR;
 import static hirs.data.persist.AppraisalStatus.Status.FAIL;
 import static hirs.data.persist.AppraisalStatus.Status.PASS;
+import org.apache.logging.log4j.util.Strings;
 
 
 /**
@@ -448,11 +449,13 @@ public final class SupplyChainCredentialValidator implements CredentialValidator
                 .collect(Collectors.toList());
 
         String paccorOutputString = deviceInfoReport.getPaccorOutputString();
+        String unmatchedComponents;
         try {
             List<ComponentInfo> componentInfoList
                     = getComponentInfoFromPaccorOutput(paccorOutputString);
-            fieldValidation &= validateV2p0PlatformCredentialComponentsExpectingExactMatch(
+            unmatchedComponents = validateV2p0PlatformCredentialComponentsExpectingExactMatch(
                     validPcComponents, componentInfoList);
+            fieldValidation &= unmatchedComponents.isEmpty();
         } catch (IOException e) {
             final String baseErrorMessage = "Error parsing JSON output from PACCOR: ";
             LOGGER.error(baseErrorMessage + e.toString());
@@ -461,7 +464,8 @@ public final class SupplyChainCredentialValidator implements CredentialValidator
         }
 
         if (!fieldValidation) {
-            resultMessage.append("There are unmatched components\n");
+            resultMessage.append("There are unmatched components:\n");
+            resultMessage.append(unmatchedComponents);
         }
 
         passesValidation &= fieldValidation;
@@ -483,7 +487,7 @@ public final class SupplyChainCredentialValidator implements CredentialValidator
      * @param allDeviceInfoComponents the device info report components
      * @return true if validation passes
      */
-    private static boolean validateV2p0PlatformCredentialComponentsExpectingExactMatch(
+    private static String validateV2p0PlatformCredentialComponentsExpectingExactMatch(
             final List<ComponentIdentifier> untrimmedPcComponents,
             final List<ComponentInfo> allDeviceInfoComponents) {
         // For each manufacturer listed in the platform credential, create two lists:
@@ -557,8 +561,7 @@ public final class SupplyChainCredentialValidator implements CredentialValidator
                         = deviceInfoComponentsFromManufacturer.stream()
                         .filter(componentInfo
                                 -> StringUtils.isNotEmpty(componentInfo.getComponentSerial()))
-                        .filter(componentInfo
-                                -> componentInfo.getComponentSerial()
+                        .filter(componentInfo -> componentInfo.getComponentSerial()
                                 .equals(pcComponent.getComponentSerial().getString()))
                         .findFirst();
 
@@ -587,10 +590,8 @@ public final class SupplyChainCredentialValidator implements CredentialValidator
                     : pcComponentsFromManufacturerWithRevision) {
                 Optional<ComponentInfo> first
                         = deviceInfoComponentsFromManufacturer.stream()
-                        .filter(info
-                                -> StringUtils.isNotEmpty(info.getComponentRevision()))
-                        .filter(info
-                                -> info.getComponentRevision()
+                        .filter(info -> StringUtils.isNotEmpty(info.getComponentRevision()))
+                        .filter(info -> info.getComponentRevision()
                                 .equals(pcComponent.getComponentRevision().getString()))
                         .findFirst();
 
@@ -622,18 +623,21 @@ public final class SupplyChainCredentialValidator implements CredentialValidator
         }
 
         if (!pcUnmatchedComponents.isEmpty()) {
-            LOGGER.error(String.format(
-                    "Platform Credential contained %d unmatched components:",
+            StringBuilder sb = new StringBuilder();
+            LOGGER.error(String.format("Platform Credential contained %d unmatched components:",
                     pcUnmatchedComponents.size()));
 
             int umatchedComponentCounter = 1;
             for (ComponentIdentifier unmatchedComponent : pcUnmatchedComponents) {
                 LOGGER.error("Unmatched component " + umatchedComponentCounter++ + ": "
                         + unmatchedComponent);
+                sb.append(String.format("Manufacturer=%s, Model=%s%n",
+                        unmatchedComponent.getComponentManufacturer(),
+                        unmatchedComponent.getComponentModel()));
             }
-            return false;
+            return sb.toString();
         }
-        return true;
+        return Strings.EMPTY;
     }
 
 
