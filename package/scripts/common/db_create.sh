@@ -23,13 +23,17 @@ else
     service $SQL_SERVICE start
 fi
 
+if [[ -f /etc/redhat-release ]] ; then
 CENTOS_VER=`/opt/hirs/scripts/common/get_centos_major_version.sh`
+elif [[ -f /etc/os-release ]] ; then
+AMAZON_VER=`/opt/hirs/scripts/common/get_amazon_linux_major_version.sh`
+fi
 if [ $CENTOS_VER -eq "6" ] ; then
     DB_CREATE_SCRIPT=/opt/hirs/scripts/common/db_create.sql.el6
-elif [ $CENTOS_VER -eq "7" ] ; then
+elif [ $CENTOS_VER -eq "7" ] || [ $AMAZON_VER -eq "2" ] ; then
     DB_CREATE_SCRIPT=/opt/hirs/scripts/common/db_create.sql.el7
 else
-    echo "Unsupported CentOS version: ${CENTOS_VER}"
+    echo "Unsupported Linux detected"
     exit 1
 fi
 
