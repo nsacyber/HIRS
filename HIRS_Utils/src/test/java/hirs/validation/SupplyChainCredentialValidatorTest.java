@@ -1504,7 +1504,7 @@ public class SupplyChainCredentialValidatorTest {
      * @throws IOException if unable to set up DeviceInfoReport from resource file
      */
     @Test
-    public final void testvalidatePlatformCredentialAttributesV2p0NoComponentsPass()
+    public final void testValidatePlatformCredentialAttributesV2p0NoComponentsPass()
             throws IOException {
         DeviceInfoReport deviceInfoReport = setupDeviceInfoReport();
         PlatformCredential platformCredential = setupMatchingPlatformCredential(deviceInfoReport);
@@ -1522,21 +1522,12 @@ public class SupplyChainCredentialValidatorTest {
      * @throws IOException if unable to set up DeviceInfoReport from resource file
      */
     @Test
-    public final void testvalidatePlatformCredentialAttributesV2p0WithComponentsPass()
+    public final void testValidatePlatformCredentialAttributesV2p0WithComponentsPass()
             throws IOException {
         DeviceInfoReport deviceInfoReport = setupDeviceInfoReportWithComponents();
         PlatformCredential platformCredential = setupMatchingPlatformCredential(deviceInfoReport);
 
         AppraisalStatus appraisalStatus = SupplyChainCredentialValidator
-                .validatePlatformCredentialAttributesV2p0(platformCredential, deviceInfoReport);
-        Assert.assertEquals(appraisalStatus.getAppStatus(), AppraisalStatus.Status.PASS);
-        Assert.assertEquals(appraisalStatus.getMessage(),
-                SupplyChainCredentialValidator.PLATFORM_ATTRIBUTES_VALID);
-
-        deviceInfoReport = setupDeviceInfoReportWithNotSpecifiedComponents();
-        platformCredential = setupMatchingPlatformCredential(deviceInfoReport);
-
-        appraisalStatus = SupplyChainCredentialValidator
                 .validatePlatformCredentialAttributesV2p0(platformCredential, deviceInfoReport);
         Assert.assertEquals(appraisalStatus.getAppStatus(), AppraisalStatus.Status.PASS);
         Assert.assertEquals(appraisalStatus.getMessage(),
@@ -1569,6 +1560,7 @@ public class SupplyChainCredentialValidatorTest {
      * when there are components present, and when the PlatformSerial field holds the system's
      * serial number instead of the baseboard serial number.
      * @throws IOException if unable to set up DeviceInfoReport from resource file
+     * @throws java.net.URISyntaxException
      */
     @Test
     public final void testValPCAttributesV2p0WithComponentsPassPlatformSerialWithSystemSerial2()
@@ -1580,9 +1572,7 @@ public class SupplyChainCredentialValidatorTest {
 
         AppraisalStatus appraisalStatus = SupplyChainCredentialValidator
                 .validatePlatformCredentialAttributesV2p0(platformCredential, deviceInfoReport);
-//        Assert.assertEquals(appraisalStatus.getAppStatus(), AppraisalStatus.Status.PASS);
-        Assert.assertEquals(appraisalStatus.getMessage(),
-                SupplyChainCredentialValidator.PLATFORM_ATTRIBUTES_VALID);
+        Assert.assertEquals(appraisalStatus.getAppStatus(), AppraisalStatus.Status.FAIL);
     }
 
     /**
