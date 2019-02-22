@@ -487,7 +487,7 @@ public class SupplyChainCredentialValidatorTest {
                 + "Platform model did not match\n"
                 + "Platform version did not match\n"
                 + "Platform serial did not match\n"
-                + "There are unmatched components\n";
+                + "There are unmatched components:\n";
 
         AppraisalStatus result =
                 supplyChainCredentialValidator.validatePlatformCredentialAttributes(
@@ -1108,7 +1108,8 @@ public class SupplyChainCredentialValidatorTest {
                 + "Platform model did not match\n"
                 + "Platform version did not match\n"
                 + "Platform serial did not match\n"
-                + "There are unmatched components\n";
+                + "There are unmatched components:\n"
+                + "Manufacturer=Intel, Model=platform2018\n";
 
         AppraisalStatus result =
                 supplyChainCredentialValidator.validatePlatformCredentialAttributes(
@@ -1235,7 +1236,7 @@ public class SupplyChainCredentialValidatorTest {
                 + "Platform model did not match\n"
                 + "Platform version did not match\n"
                 + "Platform serial did not match\n"
-                + "There are unmatched components\n";
+                + "There are unmatched components:\n";
 
         AppraisalStatus result =
                 supplyChainCredentialValidator.validatePlatformCredentialAttributes(
@@ -1720,7 +1721,8 @@ public class SupplyChainCredentialValidatorTest {
                         deviceInfoReport);
         Assert.assertEquals(result.getAppStatus(), AppraisalStatus.Status.FAIL);
         Assert.assertEquals(result.getMessage(), "Component manufacturer is empty\n"
-                + "There are unmatched components\n");
+                + "There are unmatched components:\n"
+                + "Manufacturer=, Model=Core i7\n");
 
         platformCredential = setupMatchingPlatformCredential(deviceInfoReport);
         result = SupplyChainCredentialValidator
@@ -1775,7 +1777,8 @@ public class SupplyChainCredentialValidatorTest {
                 .validatePlatformCredentialAttributesV2p0(platformCredential,
                         deviceInfoReport);
         Assert.assertEquals(result.getAppStatus(), AppraisalStatus.Status.FAIL);
-        Assert.assertEquals(result.getMessage(), "There are unmatched components\n");
+        Assert.assertEquals(result.getMessage(), "There are unmatched components:\n"
+                + "Manufacturer=ACME, Model=TNT\n");
     }
 
     /**
@@ -1837,7 +1840,8 @@ public class SupplyChainCredentialValidatorTest {
                         deviceInfoReport);
         Assert.assertEquals(result.getAppStatus(), AppraisalStatus.Status.FAIL);
         Assert.assertEquals(result.getMessage(), "Component manufacturer is empty\n"
-                + "There are unmatched components\n");
+                + "There are unmatched components:\n"
+                + "Manufacturer=, Model=Core i7\n");
 
         platformCredential = setupMatchingPlatformCredential(deviceInfoReport);
         result = SupplyChainCredentialValidator
