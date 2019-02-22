@@ -41,6 +41,10 @@ jobs:
       env: null
       name: "Package Ubuntu"
     - stage: Packaging and System Tests
+      script: docker run --rm -v $(pwd):/HIRS hirs/hirs-ci:amazonlinux2 /bin/bash -c "cd /HIRS; ./package/package.centos.sh"
+      env: null
+      name: "Package Amazon Linux"
+    - stage: Packaging and System Tests
       script: .ci/system-tests/./run-system-tests.sh
       env: null
       name: "System Tests"
