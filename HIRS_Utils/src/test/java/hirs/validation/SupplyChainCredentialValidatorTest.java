@@ -93,6 +93,10 @@ import static org.powermock.api.mockito.PowerMockito.when;
 public class SupplyChainCredentialValidatorTest {
 
     private static final String SAMPLE_PACCOR_OUTPUT_TXT = "sample_paccor_output.txt";
+    private static final String SAMPLE_PACCOR_OUTPUT_NOT_SPECIFIED_TXT
+            = "sample_paccor_output_not_specified_values.txt";
+    private static final String SAMPLE_TEST_PACCOR_CERT
+            = "/validation/platform_credentials_2/paccor_platform_cert.crt";
 
     private static final String SAMPLE_PACCOR_OUTPUT_WITH_EXTRA_COMPONENT_TXT
             = "sample_paccor_output_with_extra_component.txt";
@@ -1382,6 +1386,11 @@ public class SupplyChainCredentialValidatorTest {
         return setupDeviceInfoReportWithComponents(SAMPLE_PACCOR_OUTPUT_TXT);
     }
 
+    private static DeviceInfoReport setupDeviceInfoReportWithNotSpecifiedComponents()
+            throws IOException {
+        return setupDeviceInfoReportWithComponents(SAMPLE_PACCOR_OUTPUT_NOT_SPECIFIED_TXT);
+    }
+
     private static DeviceInfoReport setupDeviceInfoReportWithComponents(
             final String paccorOutputResource) throws IOException {
         DeviceInfoReport deviceInfoReport = setupDeviceInfoReport();
@@ -1464,11 +1473,19 @@ public class SupplyChainCredentialValidatorTest {
                         deviceInfoReport.getPaccorOutputString());
         List<ComponentIdentifier> componentIdentifierList = new ArrayList<>();
         for (ComponentInfo deviceInfoComponent : deviceInfoComponents) {
+            DERUTF8String serial = null;
+            DERUTF8String revision = null;
+            if (deviceInfoComponent.getComponentSerial() != null) {
+                serial = new DERUTF8String(deviceInfoComponent.getComponentSerial());
+            }
+            if (deviceInfoComponent.getComponentRevision() != null) {
+                revision = new DERUTF8String(deviceInfoComponent.getComponentRevision());
+            }
             componentIdentifierList.add(new ComponentIdentifier(
                 new DERUTF8String(deviceInfoComponent.getComponentManufacturer()),
                 new DERUTF8String(deviceInfoComponent.getComponentModel()),
-                new DERUTF8String(deviceInfoComponent.getComponentSerial()),
-                new DERUTF8String(deviceInfoComponent.getComponentRevision()),
+                    serial,
+                    revision,
                     null,
                     ASN1Boolean.TRUE,
                     Collections.emptyList()
@@ -1487,7 +1504,7 @@ public class SupplyChainCredentialValidatorTest {
      * @throws IOException if unable to set up DeviceInfoReport from resource file
      */
     @Test
-    public final void testvalidatePlatformCredentialAttributesV2p0NoComponentsPass()
+    public final void testValidatePlatformCredentialAttributesV2p0NoComponentsPass()
             throws IOException {
         DeviceInfoReport deviceInfoReport = setupDeviceInfoReport();
         PlatformCredential platformCredential = setupMatchingPlatformCredential(deviceInfoReport);
@@ -1505,7 +1522,7 @@ public class SupplyChainCredentialValidatorTest {
      * @throws IOException if unable to set up DeviceInfoReport from resource file
      */
     @Test
-    public final void testvalidatePlatformCredentialAttributesV2p0WithComponentsPass()
+    public final void testValidatePlatformCredentialAttributesV2p0WithComponentsPass()
             throws IOException {
         DeviceInfoReport deviceInfoReport = setupDeviceInfoReportWithComponents();
         PlatformCredential platformCredential = setupMatchingPlatformCredential(deviceInfoReport);
@@ -1536,6 +1553,26 @@ public class SupplyChainCredentialValidatorTest {
         Assert.assertEquals(appraisalStatus.getAppStatus(), AppraisalStatus.Status.PASS);
         Assert.assertEquals(appraisalStatus.getMessage(),
                 SupplyChainCredentialValidator.PLATFORM_ATTRIBUTES_VALID);
+    }
+
+    /**
+     * Tests that TPM 2.0 Platform Credentials validate correctly against the device info report
+     * when there are components present, and when the PlatformSerial field holds the system's
+     * serial number instead of the baseboard serial number.
+     * @throws IOException if unable to set up DeviceInfoReport from resource file
+     * @throws URISyntaxException failed to read certificate
+     */
+    @Test
+    public final void testValPCAttributesV2p0WithComponentsPassPlatformSerialWithSystemSerial2()
+            throws IOException, URISyntaxException {
+        DeviceInfoReport deviceInfoReport = setupDeviceInfoReportWithNotSpecifiedComponents();
+        PlatformCredential platformCredential = new PlatformCredential(
+                Files.readAllBytes(Paths.get(CertificateTest.class.
+                getResource((SAMPLE_TEST_PACCOR_CERT)).toURI())));
+
+        AppraisalStatus appraisalStatus = SupplyChainCredentialValidator
+                .validatePlatformCredentialAttributesV2p0(platformCredential, deviceInfoReport);
+        Assert.assertEquals(appraisalStatus.getAppStatus(), AppraisalStatus.Status.FAIL);
     }
 
     /**
@@ -1586,9 +1623,7 @@ public class SupplyChainCredentialValidatorTest {
         result = SupplyChainCredentialValidator
                 .validatePlatformCredentialAttributesV2p0(platformCredential,
                         deviceInfoReport);
-        Assert.assertEquals(result.getAppStatus(), AppraisalStatus.Status.FAIL);
-        Assert.assertEquals(result.getMessage(), "Platform serial did not match\n");
-
+        Assert.assertEquals(result.getAppStatus(), AppraisalStatus.Status.PASS);
         platformCredential = setupMatchingPlatformCredential(deviceInfoReport);
         result = SupplyChainCredentialValidator
                 .validatePlatformCredentialAttributesV2p0(platformCredential,
