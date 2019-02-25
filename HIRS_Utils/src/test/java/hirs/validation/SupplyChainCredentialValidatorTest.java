@@ -1560,7 +1560,7 @@ public class SupplyChainCredentialValidatorTest {
      * when there are components present, and when the PlatformSerial field holds the system's
      * serial number instead of the baseboard serial number.
      * @throws IOException if unable to set up DeviceInfoReport from resource file
-     * @throws java.net.URISyntaxException
+     * @throws URISyntaxException failed to read certificate
      */
     @Test
     public final void testValPCAttributesV2p0WithComponentsPassPlatformSerialWithSystemSerial2()
