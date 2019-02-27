@@ -12,6 +12,22 @@
 
     <jsp:body>
         <ul>
+            <%-- Endorsement validation --%>
+            <div class="aca-input-box">
+                <form:form method="POST" modelAttribute="initialData" action="policy/update-ec-validation">
+                    <li>Endorsement Credential Validation: ${initialData.enableEcValidation ? 'Enabled' : 'Disabled'}
+                        <my:editor id="ecPolicyEditor" label="Edit Settings ">
+                            <div class="radio">
+                                <label><input id="ecTop" type="radio" name="ecValidate" ${initialData.enableEcValidation ? 'checked' : ''}  value="checked"/> Endorsement Credentials will be validated</label>
+                            </div>
+                            <div class="radio">
+                                <label><input id="ecBot" type="radio" name="ecValidate" ${initialData.enableEcValidation ? '' : 'checked'} value="unchecked"/> Endorsement Credentials will not be validated</label>
+                            </div>
+                        </my:editor>
+                    </li>
+                </form:form>
+            </div>
+            
             <%-- Platform validation --%>
             <div class="aca-input-box">
                 <form:form method="POST" modelAttribute="initialData" action="policy/update-pc-validation">
@@ -38,22 +54,6 @@
                             </div>
                             <div class="radio">
                                 <label><input id="pcAttrBot" type="radio" name="pcAttributeValidate" ${initialData.enablePcCertificateAttributeValidation ? '' : 'checked'}  value="unchecked"/> Platform Credential Attributes will not be validated</label>
-                            </div>
-                        </my:editor>
-                    </li>
-                </form:form>
-            </div>
-
-            <%-- Endorsement validation --%>
-            <div class="aca-input-box">
-                <form:form method="POST" modelAttribute="initialData" action="policy/update-ec-validation">
-                    <li>Endorsement Credential Validation: ${initialData.enableEcValidation ? 'Enabled' : 'Disabled'}
-                        <my:editor id="ecPolicyEditor" label="Edit Settings ">
-                            <div class="radio">
-                                <label><input id="ecTop" type="radio" name="ecValidate" ${initialData.enableEcValidation ? 'checked' : ''}  value="checked"/> Endorsement Credentials will be validated</label>
-                            </div>
-                            <div class="radio">
-                                <label><input id="ecBot" type="radio" name="ecValidate" ${initialData.enableEcValidation ? '' : 'checked'} value="unchecked"/> Endorsement Credentials will not be validated</label>
                             </div>
                         </my:editor>
                     </li>
