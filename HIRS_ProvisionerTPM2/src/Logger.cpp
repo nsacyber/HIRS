@@ -17,7 +17,7 @@ using hirs::log::Logger;
 using hirs::properties::Properties;
 
 const char* const Logger::kDefaultProvisionerLoggerName = "tpm2_provisioner";
-const char* const Logger::PROP_FILE_LOC = "/etc/hirs/logging.properties";
+const char* const Logger::kPropFileLocation = "/etc/hirs/logging.properties";
 
 static std::once_flag configureRootLoggerOnce;
 
@@ -36,8 +36,8 @@ Logger::Logger(const string loggerName)
 void Logger::setThresholdFromLoggingProperties(log4cplus::Logger logger) {
     // if logging.properties exists, attempt to set the
     // appropriate level for the given logger
-    if (fileExists(PROP_FILE_LOC)) {
-        Properties props(PROP_FILE_LOC);
+    if (fileExists(kPropFileLocation)) {
+        Properties props(kPropFileLocation);
 
         string loggerName = logger.getName();
         string logLevelKey = loggerName + ".level";
@@ -45,19 +45,7 @@ void Logger::setThresholdFromLoggingProperties(log4cplus::Logger logger) {
             string level = props.get(logLevelKey);
             int l4cpLevel = log4cplus::getLogLevelManager().fromString(level);
             if (l4cpLevel != log4cplus::NOT_SET_LOG_LEVEL) {
-                LOG4CPLUS_INFO(
-                        logger,
-                        LOG4CPLUS_TEXT(
-                                "Configuring logger " + loggerName
-                                + " with level " + level));
                 logger.setLogLevel(l4cpLevel);
-            } else {
-                LOG4CPLUS_INFO(
-                        logger,
-                        LOG4CPLUS_TEXT(
-                            "Unable to configure logger " + loggerName
-                            + " with level " + level
-                            + "; no such level found."));
             }
         }
     }
