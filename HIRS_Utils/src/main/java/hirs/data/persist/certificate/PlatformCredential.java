@@ -2,6 +2,8 @@ package hirs.data.persist.certificate;
 
 import hirs.data.persist.certificate.attributes.ComponentIdentifier;
 import hirs.data.persist.certificate.attributes.PlatformConfiguration;
+import hirs.data.persist.certificate.attributes.PlatformConfigurationV1;
+import hirs.data.persist.certificate.attributes.PlatformConfigurationV2;
 import hirs.data.persist.certificate.attributes.TBBSecurityAssertion;
 import hirs.data.persist.certificate.attributes.URIReference;
 import hirs.persist.CertificateManager;
@@ -622,9 +624,12 @@ public class PlatformCredential extends DeviceAssociatedCertificate {
                             new URIReference(attributeSequence));
                     break;
                 case PLATFORM_CONFIGURATION:
+                    attributes.put("platformConfiguration",
+                            new PlatformConfigurationV1(attributeSequence));
+                    break;
                 case PLATFORM_CONFIGURATION_V2:
                     attributes.put("platformConfiguration",
-                            new PlatformConfiguration(attributeSequence));
+                            new PlatformConfigurationV2(attributeSequence));
                     break;
                 case TCG_PLATFORM_SPECIFICATION:
                 case TCG_CREDENTIAL_SPECIFICATION:

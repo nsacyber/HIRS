@@ -9,8 +9,7 @@ import org.bouncycastle.asn1.DERUTF8String;
  * <pre>
  * componentAddress ::= SEQUENCE {
  *      addressType AddressType,
- *      addressValue
- *      UTF8String (SIZE (1..STRMAX)) }
+ *      addressValue UTF8String (SIZE (1..STRMAX)) }
  * where STRMAX is 256
  * </pre>
  */

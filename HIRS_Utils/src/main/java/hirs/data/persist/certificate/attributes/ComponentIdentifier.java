@@ -37,15 +37,16 @@ public class ComponentIdentifier {
      */
     public static final int CONFIGMAX = 32;
 
+    private static final int COMPONENT_IDENTIFIER = 1;
+    // optional sequence objects
     private static final int COMPONENT_SERIAL = 0;
     private static final int COMPONENT_REVISION = 1;
-    private static final int COMPONENT_IDENTIFIER = 1;
     private static final int COMPONENT_MANUFACTURER_ID = 2;
     private static final int FIELD_REPLACEABLE = 3;
     private static final int COMPONENT_ADDRESS = 4;
-    private static final int COMPONENT_UNK = 5;
-    private static final int COMPONENT_URI = 6;
-    private static final int COMPONENT_BYTE = 7;
+    private static final int COMPONENT_PLATFORM_CERT = 5;
+    private static final int COMPONENT_PLATFORM_CERT_URI = 6;
+    private static final int ATTRIBUTE_STATUS = 7;
 
     private String componentClass;
     private DERUTF8String componentManufacturer;
@@ -152,9 +153,11 @@ public class ComponentIdentifier {
                     ASN1Sequence addressesSequence = ASN1Sequence.getInstance(taggedObj, false);
                     componentAddress = retriveComponentAddress(addressesSequence);
                     break;
-                case COMPONENT_UNK:
-                case COMPONENT_URI:
-                case COMPONENT_BYTE:
+                case COMPONENT_PLATFORM_CERT:
+                    break;
+                case COMPONENT_PLATFORM_CERT_URI:
+                    break;
+                case ATTRIBUTE_STATUS:
                     break;
                 default:
                     throw new IllegalArgumentException("Component identifier contains "

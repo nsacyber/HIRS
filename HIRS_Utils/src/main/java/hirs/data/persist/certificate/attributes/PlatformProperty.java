@@ -15,10 +15,7 @@ import org.bouncycastle.asn1.DERUTF8String;
  */
 public class PlatformProperty {
 
-    /**
-     * Number of identifiers that a component address must have.
-     */
-    public static final int IDENTIFIER_NUMBER = 3;
+    private static final int IDENTIFIER_NUMBER = 2;
 
     private DERUTF8String propertyName;
     private DERUTF8String propertyValue;
@@ -57,7 +54,6 @@ public class PlatformProperty {
         }
         this.propertyName = DERUTF8String.getInstance(sequence.getObjectAt(0));
         this.propertyValue = DERUTF8String.getInstance(sequence.getObjectAt(1));
-
     }
 
     /**

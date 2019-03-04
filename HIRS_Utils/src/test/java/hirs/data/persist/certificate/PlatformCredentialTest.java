@@ -62,6 +62,9 @@ public class PlatformCredentialTest {
     static final String TEST_PLATFORM_CERT2_1 =
             "/validation/platform_credentials_2/basic_plat_cert.pem";
 
+    static final String TEST_PLATFORM_CERT2_SPEC2 =
+            "/validation/platform_credentials_2/large_attribute_spec2.txt";
+
     /**
      * Platform Certificate 2.0 with all the expected data.
      */
@@ -651,6 +654,49 @@ public class PlatformCredentialTest {
         Assert.assertTrue(tbbSec.getIso9000Uri().getString()
                         .equals("https://www.intel.com/isocertification.pdf"));
 
+    }
+
+    /**
+     * Tests Platform Configuration Values. View platform Properties
+     *
+     * @throws IOException if an IO error occurs during processing
+     * @throws URISyntaxException if there is a problem constructing the cert's URI
+     */
+    @Test
+    public final void testPlatformConfiguarion5() throws IOException, URISyntaxException {
+
+        URL resource = this.getClass().getResource(TEST_PLATFORM_CERT2_SPEC2);
+        Path certPath = Paths.get(resource.toURI());
+
+        PlatformCredential platformCert = new PlatformCredential(certPath);
+        PlatformConfiguration platformConfig = platformCert.getPlatformConfiguration();
+
+        //Check component identifier
+        List<ComponentIdentifier> allComponents = platformConfig.getComponentIdentifier();
+        Assert.assertFalse(allComponents.isEmpty());
+
+        List<PlatformProperty> platformProperties = platformConfig.getPlatformProperties();
+        if (platformProperties.isEmpty()) {
+            Assert.fail("Platform Properties is empty.");
+        }
+        Assert.assertEquals(platformProperties.size(), 3);
+
+        PlatformProperty property;
+
+        //Check property #1
+        property = (PlatformProperty) platformProperties.get(0);
+        Assert.assertTrue(property.getPropertyName().getString().equals("AMT"));
+        Assert.assertTrue(property.getPropertyValue().getString().equals("true"));
+
+        //Check property #2
+        property = (PlatformProperty) platformProperties.get(1);
+        Assert.assertTrue(property.getPropertyName().getString().equals("vPro Enabled"));
+        Assert.assertTrue(property.getPropertyValue().getString().equals("true"));
+
+        //Check property #3
+        property = (PlatformProperty) platformProperties.get(2);
+        Assert.assertTrue(property.getPropertyName().getString().equals("DropShip Enabled"));
+        Assert.assertTrue(property.getPropertyValue().getString().equals("false"));
     }
 
     /**

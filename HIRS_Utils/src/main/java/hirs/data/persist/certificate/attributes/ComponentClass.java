@@ -27,8 +27,8 @@ import java.nio.file.Path;
  * </p>
  * <pre>
  *   componentClass ::= SEQUENCE {
- *       OCTET STRING (SIZE (1..CONFIGMAX)) }
- *   where CONFIGMAX is 32
+ *       componentClassRegistry ComponentClassRegistry,
+ *       componentClassValue OCTET STRING SIZE(4) ) }
  * </pre>
  */
 public class ComponentClass {
