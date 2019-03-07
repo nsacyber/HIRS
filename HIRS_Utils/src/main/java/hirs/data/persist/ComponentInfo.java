@@ -194,9 +194,13 @@ public class ComponentInfo implements Serializable {
         this.componentModel = componentModel.trim();
         if (componentSerial != null) {
             this.componentSerial = componentSerial.trim();
+        } else {
+            this.componentSerial = DeviceInfoReport.NOT_SPECIFIED;
         }
         if (componentRevision != null) {
             this.componentRevision = componentRevision.trim();
+        } else {
+            this.componentRevision = DeviceInfoReport.NOT_SPECIFIED;
         }
     }
 
@@ -216,9 +220,8 @@ public class ComponentInfo implements Serializable {
                                      final String componentModel,
                                      final String componentSerial,
                                      final String componentRevision) {
-        return !(
-                StringUtils.isEmpty(componentManufacturer)  || StringUtils.isEmpty(componentModel)
-        );
+        return !(StringUtils.isEmpty(componentManufacturer)
+                || StringUtils.isEmpty(componentModel));
     }
 
     @Override

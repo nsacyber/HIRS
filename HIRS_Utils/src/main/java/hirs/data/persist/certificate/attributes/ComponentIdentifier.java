@@ -1,5 +1,6 @@
 package hirs.data.persist.certificate.attributes;
 
+import hirs.data.persist.DeviceInfoReport;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -55,11 +56,11 @@ public class ComponentIdentifier {
      * Default constructor.
      */
     public ComponentIdentifier() {
-        componentClass = null;
-        componentManufacturer = null;
-        componentModel = null;
-        componentSerial = null;
-        componentRevision = null;
+        componentClass = DeviceInfoReport.NOT_SPECIFIED;
+        componentManufacturer = new DERUTF8String(DeviceInfoReport.NOT_SPECIFIED);
+        componentModel = new DERUTF8String(DeviceInfoReport.NOT_SPECIFIED);
+        componentSerial = new DERUTF8String(DeviceInfoReport.NOT_SPECIFIED);
+        componentRevision = new DERUTF8String(DeviceInfoReport.NOT_SPECIFIED);
         componentManufacturerId = null;
         fieldReplaceable = null;
         componentAddress = new ArrayList<>();
@@ -120,8 +121,8 @@ public class ComponentIdentifier {
         componentModel = DERUTF8String.getInstance(sequence.getObjectAt(tag++));
 
         //Optional values (default to null or empty)
-        componentSerial = null;
-        componentRevision = null;
+        componentSerial = new DERUTF8String(DeviceInfoReport.NOT_SPECIFIED);
+        componentRevision = new DERUTF8String(DeviceInfoReport.NOT_SPECIFIED);
         componentManufacturerId = null;
         fieldReplaceable = null;
         componentAddress = new ArrayList<>();
