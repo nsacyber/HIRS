@@ -140,11 +140,11 @@ list(APPEND REQUIRED_LIBS ${PROTOBUF_LIBRARY})
 # Define the TPM 2.0 Provisioner Library
 add_subdirectory(src)
 
-# Set Project Header/Source files
-set(EXECUTABLE_SOURCE_FILES src/TPM2_Provisioner.cpp)
-
 # Create project executable
-add_executable(${PROJECT_NAME} ${EXECUTABLE_SOURCE_FILES} ${PROJECT_CONFIG_FILES})
+add_executable(${PROJECT_NAME} src/TPM2_Provisioner.cpp ${PROJECT_CONFIG_FILES})
+
+# In TPM 2.0 land, there is currently not a way to fetch the TPM version info
+add_executable(tpm_version src/tpm_version.cpp)
 
 # Link necessary libraries
 target_link_libraries(${PROJECT_NAME} TPM2_PROVISIONER_LIBRARY)
@@ -159,13 +159,25 @@ if(CMAKE_THREAD_LIBS_INIT)
 endif()
 
 # Set commands for installation of project on target system (i.e. "make install")
-install(TARGETS ${PROJECT_NAME}
+install(TARGETS ${PROJECT_NAME} tpm_version
         DESTINATION "bin")
 install(FILES config/log4cplus_config.ini DESTINATION /etc/hirs/TPM2_Provisioner)
 install(FILES scripts/tpm_aca_provision DESTINATION /usr/local/bin PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ GROUP_EXECUTE WORLD_READ WORLD_EXECUTE)
 install(DIRECTORY DESTINATION ${/var/log/hirs/provisioner}
         DIRECTORY_PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ
                               GROUP_EXECUTE WORLD_READ WORLD_EXECUTE)
+
+install(DIRECTORY DESTINATION ${/etc/hirs/provisioner}
+        DIRECTORY_PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ
+                              GROUP_EXECUTE WORLD_READ WORLD_EXECUTE)
+install(FILES ../HIRS_Provisioner/src/main/resources/defaults.properties DESTINATION /etc/hirs/provisioner RENAME provisioner.properties)
+install(FILES ../HIRS_Provisioner/hirs-provisioner-config.sh DESTINATION /etc/hirs/provisioner
+        PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ
+                    GROUP_EXECUTE WORLD_READ WORLD_EXECUTE)
+install(FILES ../HIRS_Provisioner/scripts/install/hirs-provisioner.sh DESTINATION /etc/hirs/provisioner
+        PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ
+                    GROUP_EXECUTE WORLD_READ WORLD_EXECUTE)
+
 execute_process(COMMAND cp ../HIRS_Utils/src/main/resources/logging.properties ./config/
         RESULT_VARIABLE result
         WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
