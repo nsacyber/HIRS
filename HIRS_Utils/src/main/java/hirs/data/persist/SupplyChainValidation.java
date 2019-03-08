@@ -48,7 +48,7 @@ public class SupplyChainValidation extends ArchivableEntity {
             joinColumns = { @JoinColumn(name = "validation_id", nullable = false) })
     private final List<Certificate> certificatesUsed;
 
-    @Column
+    @Column(columnDefinition = "VARCHAR(700)")
     private final String message;
 
     /**

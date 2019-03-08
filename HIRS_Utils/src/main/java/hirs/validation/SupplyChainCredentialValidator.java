@@ -499,8 +499,8 @@ public final class SupplyChainCredentialValidator implements CredentialValidator
         // on the leftovers in the lists and the policy in place.
         final List<ComponentIdentifier> pcComponents = new ArrayList<>();
         for (ComponentIdentifier component : untrimmedPcComponents) {
-            DERUTF8String componentSerial = new DERUTF8String("");
-            DERUTF8String componentRevision = new DERUTF8String("");
+            DERUTF8String componentSerial = new DERUTF8String(DeviceInfoReport.NOT_SPECIFIED);
+            DERUTF8String componentRevision = new DERUTF8String(DeviceInfoReport.NOT_SPECIFIED);
             if (component.getComponentSerial() != null) {
                 componentSerial = new DERUTF8String(
                         component.getComponentSerial().getString().trim());
