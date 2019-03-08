@@ -9,6 +9,7 @@ CERTS_DIR="/etc/hirs/provisioner/certs/"
 HIRS_SITE_CONFIG="/etc/hirs/hirs-site.config"
 HIRS_PROVISIONER_CONFIG="/etc/hirs/provisioner/hirs-provisioner-config.sh"
 HIRS_PROVISIONER_SCRIPT="/usr/share/hirs/provisioner/bin/HIRS_Provisioner"
+HIRS_PROVISIONER_2_0_SCRIPT="/usr/local/bin/hirs-provisioner-tpm2"
 HIRS_PROVISIONER_PROPERTIES="/etc/hirs/provisioner/provisioner.properties"
 
 if [ "$EUID" != "0" ]; then
@@ -105,10 +106,16 @@ function CheckProvisionPrereqsAndDoProvisioning {
 
 function Provision {
     # Provisioner will only retain one {uuid}.cer credential; remove any existing *.cer files.
-    echo "----> Removing old provisioner scripts, if any"
-    rm -f $CERTS_DIR/*.cer
+    echo "----> Removing old attestation credentials, if any"
+    rm -f $CERTS_DIR/*.cer /etc/hirs/ak.cer
     echo "----> Provisioning TPM"
-    $HIRS_PROVISIONER_SCRIPT $CLIENT_HOSTNAME || { echo "----> Failed to provision TPM"; exit 1; }
+
+    if [ -f $HIRS_PROVISIONER_2_0_SCRIPT ]
+    then
+        $HIRS_PROVISIONER_2_0_SCRIPT provision || { echo "----> Failed to provision TPM 2.0"; exit 1; }
+    else
+        $HIRS_PROVISIONER_SCRIPT $CLIENT_HOSTNAME || { echo "----> Failed to provision TPM"; exit 1; }
+    fi
 }
 
 

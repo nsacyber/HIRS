@@ -1,5 +1,7 @@
 package hirs.data.persist.tpm;
 
+import hirs.data.persist.Digest;
+import hirs.data.persist.DigestAlgorithm;
 import hirs.data.persist.TPMMeasurementRecord;
 
 import javax.persistence.AttributeOverride;
@@ -21,6 +23,8 @@ import java.nio.ByteBuffer;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Arrays;
+import java.util.Iterator;
+import java.util.List;
 
 /**
  * Java class for PcrInfoShort complex type, which was modified from code
@@ -200,16 +204,31 @@ public class PcrInfoShort {
     }
 
     /**
-     * Calculates the digest of the PCR values the same way a TPM computes the digest contained in
-     * the quote. Useful for TPM appraisal and for ensuring the digest of the collected PCR values
-     * match the digest in the quote.
+     * Calculates the SHA-1 or SHA-256 digest of the PCR values the same way a TPM computes the
+     * digest contained in the quote. Useful for TPM appraisal and for ensuring the digest of the
+     * collected PCR values match the digest in the quote.
      *
      * @return byte array containing the digest
      * @throws NoSuchAlgorithmException
-     *             if MessageDigest doesn't recognize "SHA-1"
+     *             if MessageDigest doesn't recognize "SHA-1" or "SHA-256"
      */
     public final byte[] getCalculatedDigest() throws NoSuchAlgorithmException {
-        MessageDigest messageDigest = MessageDigest.getInstance("SHA-1");
+        if (this.isTpm1()) {
+            return getCalculatedDigestTpmV1p2(MessageDigest.getInstance("SHA-1"));
+        } else {
+            return getCalculatedDigestTpmV2p0(MessageDigest.getInstance("SHA-256"));
+        }
+    }
+
+    /**
+     * Calculates the SHA-1 digest of the PCR values the same way a TPM computes the digest
+     * contained in the quote. Useful for TPM appraisal and for ensuring the digest of the
+     * collected PCR values match the digest in the quote.
+     *
+     * @param messageDigest message digest algorithm to use
+     * @return byte array containing the digest
+     */
+    private byte[] getCalculatedDigestTpmV1p2(final MessageDigest messageDigest) {
         byte[] computedDigest;
 
         final int sizeOfInt = 4;
@@ -236,6 +255,32 @@ public class PcrInfoShort {
     }
 
     /**
+     * Calculates the digest of the PCR values the same way a TPM computes the digest contained in
+     * the quote. Useful for TPM appraisal and for ensuring the digest of the collected PCR values
+     * match the digest in the quote.
+     *
+     * @param messageDigest message digest algorithm to use
+     * @return byte array containing the digest
+     */
+    private byte[] getCalculatedDigestTpmV2p0(final MessageDigest messageDigest) {
+        int sizeOfByteBuffer = pcrComposite.getValueSize();
+        ByteBuffer byteBuffer = ByteBuffer.allocate(sizeOfByteBuffer);
+        LOGGER.debug("Size of the buffer allocated to hash: {}", sizeOfByteBuffer);
+        Iterator iter = pcrComposite.getPcrValueList().iterator();
+
+        while (iter.hasNext()) {
+            TPMMeasurementRecord record = (TPMMeasurementRecord) iter.next();
+            byteBuffer.put(record.getHash().getDigest());
+        }
+
+        LOGGER.debug("PCR composite buffer to be hashed: {}",
+                Hex.encodeHexString(byteBuffer.array()));
+        byte[] computedDigest = messageDigest.digest(byteBuffer.array());
+        LOGGER.debug("Calculated digest: {}", Hex.encodeHexString(computedDigest));
+        return computedDigest;
+    }
+
+    /**
      * Returns the value of PcrInfoShort flattened into a byte array. The array contains the value
      * of PCR selection, the locality at release, and the composite hash.
      *
@@ -249,5 +294,23 @@ public class PcrInfoShort {
         byteBuffer.put(compositeHash);
 
         return byteBuffer.array();
+    }
+
+    /**
+     * Determines whether the TPM used to generate this pcr info is version 1.2 or not.
+     *
+     * @return whether the TPM used to generate this pcr info is version 1.2 or not
+     */
+    public boolean isTpm1() {
+        // need to get an individual PCR and measure length to determine SHA1 v SHA 256
+        List<TPMMeasurementRecord> pcrs = this.getPcrComposite().getPcrValueList();
+        if (pcrs.size() == 0) {
+            // it's the case of an empty pcrmask, so it doesn't matter
+            return false;
+        }
+
+        Digest hash = pcrs.get(0).getHash();
+        // check if the hash algorithm is SHA 1, if so it's TPM 1.2, if not it's TPM 2.0
+        return hash.getAlgorithm() == DigestAlgorithm.SHA1;
     }
 }
