@@ -70,8 +70,8 @@ public class PlatformCredential extends DeviceAssociatedCertificate {
 
     //OID for Certificate Attributes
     private static final String TCG_PLATFORM_SPECIFICATION = "2.23.133.2.17";
-    private static final String TPM_SECURITU_ASSERTION = "2.23.133.2.18";
-    private static final String TBB_SECURITU_ASSERTION = "2.23.133.2.19";
+    private static final String TPM_SECURITY_ASSERTION = "2.23.133.2.18";
+    private static final String TBB_SECURITY_ASSERTION = "2.23.133.2.19";
     private static final String TCG_CREDENTIAL_SPECIFICATION = "2.23.133.2.23";
     private static final String PLATFORM_CONFIGURATION_URI = "2.23.133.5.1.3";
     private static final String PLATFORM_CONFIGURATION = "2.23.133.5.1.7.1";
@@ -628,7 +628,7 @@ public class PlatformCredential extends DeviceAssociatedCertificate {
                         = ASN1Sequence.getInstance(attr.getAttrValues().getObjectAt(0));
             //Parse sequence based on the attribute OID
             switch (attr.getAttrType().getId()) {
-                case TBB_SECURITU_ASSERTION:
+                case TBB_SECURITY_ASSERTION:
                     attributes.put("tbbSecurityAssertion",
                             new TBBSecurityAssertion(attributeSequence));
                     break;

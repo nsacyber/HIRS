@@ -6,15 +6,8 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 /**
- * Basic class that handle Platform Configuration for the Platform Certificate
- * Attribute.
- * <pre>
- * PlatformConfiguration ::= SEQUENCE {
- *      componentIdentifier [0] IMPLICIT SEQUENCE(SIZE(1..CONFIGMAX)) OF
- *           ComponentIdentifier OPTIONAL,
- *      platformProperties [1] IMPLICIT SEQUENCE(SIZE(1..CONFIGMAX)) OF Properties OPTIONAL,
- *      platformPropertiesUri [2] IMPLICIT URIReference OPTIONAL }
- * </pre>
+ * Abstract class that provides base info for Platform Configuration of
+ * the Platform Certificate Attribute.
  */
 public abstract class PlatformConfiguration {
 
@@ -79,7 +72,7 @@ public abstract class PlatformConfiguration {
 
     /**
      * Add function for the component identifier array.
-     * @param componentIdentifier
+     * @param componentIdentifier object to add
      * @return status of the add, if successful or not
      */
     protected boolean add(final ComponentIdentifier componentIdentifier) {
@@ -120,7 +113,7 @@ public abstract class PlatformConfiguration {
 
     /**
      * Add function for the platform property array.
-     * @param platformProperty
+     * @param platformProperty property object to add
      * @return status of the add, if successful or not
      */
     protected boolean add(final PlatformProperty platformProperty) {
