@@ -41,7 +41,6 @@ public class ComponentIdentifier {
     // optional sequence objects
     private static final int COMPONENT_SERIAL = 0;
     private static final int COMPONENT_REVISION = 1;
-    private static final int COMPONENT_IDENTIFIER = 1;
     private static final int COMPONENT_MANUFACTURER_ID = 2;
     private static final int FIELD_REPLACEABLE = 3;
     private static final int COMPONENT_ADDRESS = 4;
