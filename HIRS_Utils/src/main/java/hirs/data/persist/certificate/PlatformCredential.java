@@ -2,8 +2,6 @@ package hirs.data.persist.certificate;
 
 import hirs.data.persist.certificate.attributes.ComponentIdentifier;
 import hirs.data.persist.certificate.attributes.PlatformConfiguration;
-import hirs.data.persist.certificate.attributes.PlatformConfigurationV1;
-import hirs.data.persist.certificate.attributes.PlatformConfigurationV2;
 import hirs.data.persist.certificate.attributes.TBBSecurityAssertion;
 import hirs.data.persist.certificate.attributes.URIReference;
 import hirs.persist.CertificateManager;
@@ -14,6 +12,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Transient;
@@ -69,8 +68,8 @@ public class PlatformCredential extends DeviceAssociatedCertificate {
 
     //OID for Certificate Attributes
     private static final String TCG_PLATFORM_SPECIFICATION = "2.23.133.2.17";
-    private static final String TPM_SECURITU_ASSERTION = "2.23.133.2.18";
-    private static final String TBB_SECURITU_ASSERTION = "2.23.133.2.19";
+    private static final String TPM_SECURITY_ASSERTION = "2.23.133.2.18";
+    private static final String TBB_SECURITY_ASSERTION = "2.23.133.2.19";
     private static final String TCG_CREDENTIAL_SPECIFICATION = "2.23.133.2.23";
     private static final String PLATFORM_CONFIGURATION_URI = "2.23.133.5.1.3";
     private static final String PLATFORM_CONFIGURATION = "2.23.133.5.1.7.1";
@@ -159,6 +158,18 @@ public class PlatformCredential extends DeviceAssociatedCertificate {
          */
         public Selector byChassisSerialNumber(final String chassisSerialNumber) {
             setFieldValue(CHASSIS_SERIAL_NUMBER_FIELD, chassisSerialNumber);
+            return this;
+        }
+
+        /**
+         * Specify a device id that certificates must have to be considered
+         * as matching.
+         *
+         * @param device the device id to query
+         * @return this instance (for chaining further calls)
+         */
+        public Selector byDeviceId(final UUID device) {
+            setFieldValue(DEVICE_ID_FIELD, device);
             return this;
         }
     }
@@ -615,7 +626,7 @@ public class PlatformCredential extends DeviceAssociatedCertificate {
                         = ASN1Sequence.getInstance(attr.getAttrValues().getObjectAt(0));
             //Parse sequence based on the attribute OID
             switch (attr.getAttrType().getId()) {
-                case TBB_SECURITU_ASSERTION:
+                case TBB_SECURITY_ASSERTION:
                     attributes.put("tbbSecurityAssertion",
                             new TBBSecurityAssertion(attributeSequence));
                     break;
@@ -624,12 +635,9 @@ public class PlatformCredential extends DeviceAssociatedCertificate {
                             new URIReference(attributeSequence));
                     break;
                 case PLATFORM_CONFIGURATION:
-                    attributes.put("platformConfiguration",
-                            new PlatformConfigurationV1(attributeSequence));
-                    break;
                 case PLATFORM_CONFIGURATION_V2:
                     attributes.put("platformConfiguration",
-                            new PlatformConfigurationV2(attributeSequence));
+                            new PlatformConfiguration(attributeSequence));
                     break;
                 case TCG_PLATFORM_SPECIFICATION:
                 case TCG_CREDENTIAL_SPECIFICATION:
