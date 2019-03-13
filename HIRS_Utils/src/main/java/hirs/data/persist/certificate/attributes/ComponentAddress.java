@@ -9,8 +9,7 @@ import org.bouncycastle.asn1.DERUTF8String;
  * <pre>
  * componentAddress ::= SEQUENCE {
  *      addressType AddressType,
- *      addressValue
- *      UTF8String (SIZE (1..STRMAX)) }
+ *      addressValue UTF8String (SIZE (1..STRMAX)) }
  * where STRMAX is 256
  * </pre>
  */
@@ -24,7 +23,6 @@ public class ComponentAddress {
     private static final String ETHERNET_MAC = "2.23.133.17.1";
     private static final String WLAN_MAC = "2.23.133.17.2";
     private static final String BLUETOOTH_MAC = "2.23.133.17.3";
-
 
     private ASN1ObjectIdentifier addressType;
     private DERUTF8String addressValue;
