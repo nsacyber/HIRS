@@ -18,7 +18,7 @@ import org.bouncycastle.asn1.ASN1TaggedObject;
  *      platformPropertiesUri [2] IMPLICIT URIReference OPTIONAL }
  * </pre>
  */
-public abstract class PlatformConfiguration {
+public class PlatformConfiguration {
 
     private static final int COMPONENT_IDENTIFIER = 0;
     private static final int PLATFORM_PROPERTIES = 1;
