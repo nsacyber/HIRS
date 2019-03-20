@@ -161,9 +161,9 @@ public class ComponentClass {
         } else {
             try {
                 InputStream inputStream = new FileInputStream(componentClassPath.toString());
-                JsonObject object = Json.parse(new InputStreamReader(inputStream,
+                JsonObject componentFile = Json.parse(new InputStreamReader(inputStream,
                         StandardCharsets.UTF_8)).asObject();
-                components = object.get("Components").asObject();
+                components = componentFile.get("Components").asObject();
             } catch (IOException ex) {
                 // add log file thing here indication issue with JSON File
                 components = null;
@@ -187,7 +187,7 @@ public class ComponentClass {
                 componentID = Integer.decode(categories.get(name).asObject().get("ID").asString());
                 // check for the correct flag
                 if ((componentIdentifier & CATEGORY_MASK) == componentID) {
-                    JsonObject subObjects = categories.get(name).asObject().get("Types").asObject();
+                    JsonObject componentTypes = categories.get(name).asObject().get("Types").asObject();
                     category = name;
 
                     switch (componentIdentifier & COMPONENT_MASK) {
@@ -198,7 +198,7 @@ public class ComponentClass {
                             component = UNKNOWN_STRING;
                             break;
                         default:
-                            getComponent(componentID, subObjects);
+                            getComponent(componentID, componentTypes);
                     }
                 }
             }
