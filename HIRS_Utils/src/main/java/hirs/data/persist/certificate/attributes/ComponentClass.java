@@ -187,7 +187,8 @@ public class ComponentClass {
                 componentID = Integer.decode(categories.get(name).asObject().get("ID").asString());
                 // check for the correct flag
                 if ((componentIdentifier & CATEGORY_MASK) == componentID) {
-                    JsonObject componentTypes = categories.get(name).asObject().get("Types").asObject();
+                    JsonObject componentTypes = categories.get(name)
+                            .asObject().get("Types").asObject();
                     category = name;
 
                     switch (componentIdentifier & COMPONENT_MASK) {
