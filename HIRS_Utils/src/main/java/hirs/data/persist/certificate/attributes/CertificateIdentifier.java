@@ -1,6 +1,7 @@
 
 package hirs.data.persist.certificate.attributes;
 
+import hirs.data.persist.DeviceInfoReport;
 import java.math.BigInteger;
 import org.bouncycastle.asn1.ASN1Encodable;
 import org.bouncycastle.asn1.ASN1Sequence;
@@ -21,6 +22,7 @@ import org.bouncycastle.asn1.x509.GeneralName;
  *       serial        CertificateSerialNumber }
  */
 public class CertificateIdentifier {
+    
     private static final int IDENTIFIER_NUMBER = 2;
 
     private String hashAlgorithm;
@@ -28,7 +30,15 @@ public class CertificateIdentifier {
     private GeneralName issuerDN;
     private BigInteger certificateSerialNumber;
 
+    public CertificateIdentifier() {
+        hashAlgorithm = DeviceInfoReport.NOT_SPECIFIED;
+        hashSigValue = DeviceInfoReport.NOT_SPECIFIED;
+        issuerDN = null;
+        certificateSerialNumber = BigInteger.ZERO;
+    }
+
     public CertificateIdentifier(final ASN1Sequence sequence) {
+        this();
         //Check if it have a valid number of identifers
         if (sequence.size() < IDENTIFIER_NUMBER) {
             throw new IllegalArgumentException("Component identifier do not have required values.");
@@ -36,7 +46,8 @@ public class CertificateIdentifier {
 
         ASN1Encodable attributeId = sequence.getObjectAt(0);
         ASN1Encodable genCertId = sequence.getObjectAt(1);
-        ASN1TaggedObject tagged = ASN1TaggedObject.getInstance(sequence.getObjectAt(0));
+        ASN1TaggedObject attribute = ASN1TaggedObject.getInstance(sequence.getObjectAt(0));
+        ASN1TaggedObject genericCert = ASN1TaggedObject.getInstance(sequence.getObjectAt(1));
     }
 
     public String getHashAlgorithm() {
