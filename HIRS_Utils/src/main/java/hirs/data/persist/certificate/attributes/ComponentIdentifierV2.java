@@ -19,8 +19,6 @@ import org.bouncycastle.asn1.DERUTF8String;
  * Attribute.
  * <pre>
  * ComponentIdentifier ::= SEQUENCE {
- *      componentClass
- *          SEQUENCE(SIZE(1..CONFIGMAX)),
  *      componentManufacturer UTF8String (SIZE (1..STRMAX)),
  *      componentModel UTF8String (SIZE (1..STRMAX)),
  *      componentSerial[0] IMPLICIT UTF8String (SIZE (1..STRMAX)) OPTIONAL,
@@ -35,34 +33,16 @@ import org.bouncycastle.asn1.DERUTF8String;
  * where STRMAX is 256, CONFIGMAX is 32
  * </pre>
  */
-public class ComponentIdentifier {
+public class ComponentIdentifierV2 extends ComponentIdentifier {
 
-    /**
-     * Maximum number of configurations.
-     */
-    public static final int CONFIGMAX = 32;
+    private static final String COMPONENT_CLASS = "2.23.133.18.3.1";
+    private static final int MANDATORY_ELEMENTS = 3;
 
-    private static final int COMPONENT_IDENTIFIER = 1;
-    protected static final int MANDATORY_ELEMENTS = 2;
-    // optional sequence objects
-    private static final int COMPONENT_SERIAL = 0;
-    private static final int COMPONENT_REVISION = 1;
-    private static final int COMPONENT_IDENTIFIER = 1;
-    private static final int COMPONENT_MANUFACTURER_ID = 2;
-    private static final int FIELD_REPLACEABLE = 3;
-    private static final int COMPONENT_ADDRESS = 4;
     private static final int COMPONENT_PLATFORM_CERT = 5;
     private static final int COMPONENT_PLATFORM_URI = 6;
     private static final int ATTRIBUTE_STATUS = 7;
 
     private String componentClass;
-    private DERUTF8String componentManufacturer;
-    private DERUTF8String componentModel;
-    private DERUTF8String componentSerial;
-    private DERUTF8String componentRevision;
-    private ASN1ObjectIdentifier componentManufacturerId;
-    private ASN1Boolean fieldReplaceable;
-    private List<ComponentAddress> componentAddress;
     private CertificateIdentifier certificateIdentifier;
     private URIReference componentPlatformUri;
     private AttributeStatus attributeStatus;
@@ -91,7 +71,11 @@ public class ComponentIdentifier {
         /**
          * Attribute Status for REMOVED.
          */
-        REMOVED("removed");
+        REMOVED("removed"),
+        /**
+         * Attribute Status for NOT_SPECIFIED.
+         */
+        NOT_SPECIFIED(DeviceInfoReport.NOT_SPECIFIED);
 
         private final String value;
 
@@ -115,22 +99,18 @@ public class ComponentIdentifier {
     /**
      * Default constructor.
      */
-    public ComponentIdentifier() {
-        componentManufacturer = new DERUTF8String(DeviceInfoReport.NOT_SPECIFIED);
-        componentModel = new DERUTF8String(DeviceInfoReport.NOT_SPECIFIED);
-        componentSerial = new DERUTF8String(DeviceInfoReport.NOT_SPECIFIED);
-        componentRevision = new DERUTF8String(DeviceInfoReport.NOT_SPECIFIED);
-        componentManufacturerId = null;
-        fieldReplaceable = null;
-        componentAddress = new ArrayList<>();
+    public ComponentIdentifierV2() {
+        super();
+        componentClass = DeviceInfoReport.NOT_SPECIFIED;
         certificateIdentifier = null;
         componentPlatformUri = null;
-        attributeStatus = null;
+        attributeStatus = AttributeStatus.NOT_SPECIFIED;
     }
 
     /**
      * Constructor given the components values.
      *
+     * @param componentClass represent the component type
      * @param componentManufacturer represents the component manufacturer
      * @param componentModel represents the component model
      * @param componentSerial  represents the component serial number
@@ -142,7 +122,8 @@ public class ComponentIdentifier {
      * @param componentPlatformUri object containing the URI Reference
      * @param attributeStatus object containing enumerated status
      */
-    public ComponentIdentifier(final DERUTF8String componentManufacturer,
+    public ComponentIdentifierV2(final String componentClass,
+            final DERUTF8String componentManufacturer,
             final DERUTF8String componentModel,
             final DERUTF8String componentSerial,
             final DERUTF8String componentRevision,
@@ -152,13 +133,11 @@ public class ComponentIdentifier {
             final CertificateIdentifier certificateIdentifier,
             final URIReference componentPlatformUri,
             final AttributeStatus attributeStatus) {
-        this.componentManufacturer = componentManufacturer;
-        this.componentModel = componentModel;
-        this.componentSerial = componentSerial;
-        this.componentRevision = componentRevision;
-        this.componentManufacturerId = componentManufacturerId;
-        this.fieldReplaceable = fieldReplaceable;
-        this.componentAddress = componentAddress;
+        super(componentManufacturer, componentModel, componentSerial,
+                componentRevision, componentManufacturerId, fieldReplaceable,
+                componentAddress);
+
+        this.componentClass = componentClass;
         this.certificateIdentifier = certificateIdentifier;
         this.componentPlatformUri = componentPlatformUri;
         this.attributeStatus = attributeStatus;
@@ -169,37 +148,45 @@ public class ComponentIdentifier {
      * @param sequence containing the the component identifier
      * @throws IllegalArgumentException if there was an error on the parsing
      */
-    public ComponentIdentifier(final ASN1Sequence sequence) throws IllegalArgumentException {
+    public ComponentIdentifierV2(final ASN1Sequence sequence) throws IllegalArgumentException {
         // set all optional values to default in case they aren't set.
-        this();
+        super();
         //Check if it have a valid number of identifers
         if (sequence.size() < MANDATORY_ELEMENTS) {
             throw new IllegalArgumentException("Component identifier do not have required values.");
         }
 
+        int tag = 0;
+
+        // TDM this will error, need changes from ComponentClass Issue
+        ASN1Sequence componentIdSeq = ASN1Sequence.getInstance(sequence.getObjectAt(tag++));
+        componentClass = DEROctetString.getInstance(componentIdSeq
+                .getObjectAt(tag))
+                .toString();
+
         //Mandatory values
-        componentManufacturer = DERUTF8String.getInstance(sequence.getObjectAt(0));
-        componentModel = DERUTF8String.getInstance(sequence.getObjectAt(1));
+        this.setComponentManufacturer(DERUTF8String.getInstance(sequence.getObjectAt(tag++)));
+        this.setComponentModel(DERUTF8String.getInstance(sequence.getObjectAt(tag++)));
 
         //Continue reading the sequence if it does contain more than 2 values
-        for (int i = 2; i < sequence.size(); i++) {
+        for (int i = tag; i < sequence.size(); i++) {
             ASN1TaggedObject taggedObj = ASN1TaggedObject.getInstance(sequence.getObjectAt(i));
             switch (taggedObj.getTagNo()) {
                 case COMPONENT_SERIAL:
-                    componentSerial = DERUTF8String.getInstance(taggedObj, false);
+                    this.setComponentSerial(DERUTF8String.getInstance(taggedObj, false));
                     break;
                 case COMPONENT_REVISION:
-                    componentRevision = DERUTF8String.getInstance(taggedObj, false);
+                    this.setComponentRevision(DERUTF8String.getInstance(taggedObj, false));
                     break;
                 case COMPONENT_MANUFACTURER_ID:
-                    componentManufacturerId = ASN1ObjectIdentifier.getInstance(taggedObj, false);
+                    this.setComponentManufacturerId(ASN1ObjectIdentifier.getInstance(taggedObj, false));
                     break;
                 case FIELD_REPLACEABLE:
-                    fieldReplaceable = ASN1Boolean.getInstance(taggedObj, false);
+                    this.setFieldReplaceable(ASN1Boolean.getInstance(taggedObj, false));
                     break;
                 case COMPONENT_ADDRESS:
                     ASN1Sequence addressesSequence = ASN1Sequence.getInstance(taggedObj, false);
-                    componentAddress = retriveComponentAddress(addressesSequence);
+                    this.setComponentAddress(retriveComponentAddress(addressesSequence));
                     break;
                 case COMPONENT_PLATFORM_CERT:
                     ASN1Sequence ciSequence = ASN1Sequence.getInstance(taggedObj, false);
@@ -222,117 +209,22 @@ public class ComponentIdentifier {
     }
 
     /**
-     * @return the componentClass
+     * @return string for the type of component.
      */
     public String getComponentClass() {
         return componentClass;
     }
 
     /**
-     * @param componentClass the componentClass to set
+     * @param componentClass the type of component to set
      */
     public void setComponentClass(final String componentClass) {
         this.componentClass = componentClass;
     }
 
     /**
-     * @return the componentManufacturer
+     * @return string for the certificate identifier
      */
-    public DERUTF8String getComponentManufacturer() {
-        return componentManufacturer;
-    }
-
-    /**
-     * @param componentManufacturer the componentManufacturer to set
-     */
-    public void setComponentManufacturer(final DERUTF8String componentManufacturer) {
-        this.componentManufacturer = componentManufacturer;
-    }
-
-    /**
-     * @return the componentModel
-     */
-    public DERUTF8String getComponentModel() {
-        return componentModel;
-    }
-
-    /**
-     * @param componentModel the componentModel to set
-     */
-    public void setComponentModel(final DERUTF8String componentModel) {
-        this.componentModel = componentModel;
-    }
-
-    /**
-     * @return the componentSerial
-     */
-    public DERUTF8String getComponentSerial() {
-        return componentSerial;
-    }
-
-    /**
-     * @param componentSerial the componentSerial to set
-     */
-    public void setComponentSerial(final DERUTF8String componentSerial) {
-        this.componentSerial = componentSerial;
-    }
-
-    /**
-     * @return the componentRevision
-     */
-    public DERUTF8String getComponentRevision() {
-        return componentRevision;
-    }
-
-    /**
-     * @param componentRevision the componentRevision to set
-     */
-    public void setComponentRevision(final DERUTF8String componentRevision) {
-        this.componentRevision = componentRevision;
-    }
-
-    /**
-     * @return the componentManufacturerId
-     */
-    public ASN1ObjectIdentifier getComponentManufacturerId() {
-        return componentManufacturerId;
-    }
-
-    /**
-     * @param componentManufacturerId the componentManufacturerId to set
-     */
-    public void setComponentManufacturerId(final ASN1ObjectIdentifier componentManufacturerId) {
-        this.componentManufacturerId = componentManufacturerId;
-    }
-
-    /**
-     * @return the fieldReplaceable
-     */
-    public ASN1Boolean getFieldReplaceable() {
-        return fieldReplaceable;
-    }
-
-    /**
-     * @param fieldReplaceable the fieldReplaceable to set
-     */
-    public void setFieldReplaceable(final ASN1Boolean fieldReplaceable) {
-        this.fieldReplaceable = fieldReplaceable;
-    }
-
-    /**
-     * @return the componentAddress
-     */
-    public final List<ComponentAddress> getComponentAddress() {
-        return Collections.unmodifiableList(componentAddress);
-    }
-
-    /**
-     * @param componentAddress the componentAddress to set
-     */
-    public void setComponentAddress(final List<ComponentAddress> componentAddress) {
-        this.componentAddress = componentAddress;
-    }
-
     public CertificateIdentifier getCertificateIdentifier() {
         return certificateIdentifier;
     }
@@ -369,20 +261,18 @@ public class ComponentIdentifier {
         this.attributeStatus = attributeStatus;
     }
 
-    public boolean isModified() {
-        if (getAttributeStatus() == AttributeStatus.MODIFIED) {
-            return true;
-        }
-
-        return false;
+    /**
+     * @return true if the component has been modified.
+     */
+    public final boolean isModified() {
+        return getAttributeStatus() == AttributeStatus.MODIFIED;
     }
 
-    public boolean isRemoved() {
-        if (getAttributeStatus() == AttributeStatus.REMOVED) {
-            return true;
-        }
-
-        return false;
+    /**
+     * @return true if the component has been removed.
+     */
+    public final boolean isRemoved() {
+        return getAttributeStatus() != AttributeStatus.REMOVED;
     }
 
     /**
@@ -414,28 +304,30 @@ public class ComponentIdentifier {
     public String toString() {
         StringBuilder sb = new StringBuilder();
         sb.append("ComponentIdentifier{");
-        sb.append("componentManufacturer=").append(componentManufacturer.getString());
-        sb.append(", componentModel=").append(componentModel.getString());
+        sb.append("componentClass=").append(componentClass);
+        sb.append("componentManufacturer=").append(getComponentManufacturer()
+                .getString());
+        sb.append(", componentModel=").append(getComponentModel().getString());
         //Optional not null values
         sb.append(", componentSerial=");
-        if (componentSerial != null) {
-            sb.append(componentSerial.getString());
+        if (getComponentSerial() != null) {
+            sb.append(getComponentSerial().getString());
         }
         sb.append(", componentRevision=");
-        if (componentRevision != null) {
-            sb.append(componentRevision.getString());
+        if (getComponentRevision() != null) {
+            sb.append(getComponentRevision().getString());
         }
         sb.append(", componentManufacturerId=");
-        if (componentManufacturerId != null) {
-            sb.append(componentManufacturerId.getId());
+        if (getComponentManufacturerId() != null) {
+            sb.append(getComponentManufacturerId().getId());
         }
         sb.append(", fieldReplaceable=");
-        if (fieldReplaceable != null) {
-            sb.append(fieldReplaceable.toString());
+        if (getFieldReplaceable() != null) {
+            sb.append(getFieldReplaceable().toString());
         }
         sb.append(", componentAddress=");
-        if (componentAddress.size() > 0) {
-            sb.append(componentAddress
+        if (getComponentAddress().size() > 0) {
+            sb.append(getComponentAddress()
                         .stream()
                         .map(Object::toString)
                         .collect(Collectors.joining(",")));
