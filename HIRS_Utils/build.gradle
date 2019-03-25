@@ -43,6 +43,7 @@ dependencies {
     compile libs.guava
     compile libs.spring_core
     compile libs.spring_retry
+    compile libs.minimal_json
     compile (libs.xml_rpc_client) {
         exclude group: 'junit'
     }

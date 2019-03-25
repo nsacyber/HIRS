@@ -226,6 +226,7 @@ fi
 %attr(664, root, tomcat) /opt/hirs/default-properties/attestationca/logging.properties
 %attr(664, root, tomcat) /opt/hirs/default-properties/attestationca/banner.properties
 %attr(664, root, tomcat) /opt/hirs/default-properties/attestationca/persistence.properties
+%attr(664, root, tomcat) /opt/hirs/default-properties/component-class.json
 %attr(774, root, tomcat) /opt/hirs/scripts/common/aca
 %attr(774, root, tomcat) /opt/hirs/scripts/aca
 %attr(774, root, tomcat) /opt/hirs/extras/aca/tomcat-mysql-hirs.pp
@@ -294,6 +295,7 @@ mkdir -p %{buildroot}/opt/hirs/default-properties/attestationca
 cp HIRS_Utils/src/main/resources/persistence.properties %{buildroot}/opt/hirs/default-properties/attestationca/
 cp HIRS_Utils/src/main/resources/logging.properties %{buildroot}/opt/hirs/default-properties/attestationca/
 cp HIRS_Utils/src/main/resources/banner.properties %{buildroot}/opt/hirs/default-properties/attestationca/
+cp HIRS_Utils/src/main/resources/component-class.json %{buildroot}/opt/hirs/default-properties/
 
 # install extras
 mkdir -p %{buildroot}/opt/hirs/extras

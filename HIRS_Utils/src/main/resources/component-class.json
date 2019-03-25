@@ -1,0 +1,291 @@
+{
+  "Components": {
+    "Processors": {
+      "ID": "0x00010000",
+      "Types": {
+        "0x00000002": "CPU",
+        "0x00000003": "Math Processor",
+        "0x00000004": "DSP Processor",
+        "0x00000005": "Video Processor",
+        "0x00000006": "GPU"
+      }
+    },
+    "Containers": {
+      "ID": "0x00020000",
+      "Types": {
+        "0x00000002": "Chassis",
+        "0x00000003": "Backplane",
+        "0x00000004": "Server Blade",
+        "0x00000005": "Stack (Rack)",
+        "0x00000006": "Stack (Rack)",
+        "0x00000007": "Stack (Rack)",
+        "0x00000008": "Stack (Rack)",
+        "0x00000009": "Stack (Rack)",
+        "0x0000000A": "Stack (Rack)",
+        "0x0000000B": "Stack (Rack)",
+        "0x0000000C": "Stack (Rack)",
+        "0x0000000D": "Stack (Rack)"
+      }
+    },
+    "IC Boards": {
+      "ID": "0x00030000",
+      "Types": {
+        "0x00000002": "Daughter Board",
+        "0x00000003": "Motherboard",
+        "0x00000004": "Riser Card"
+      }
+    },
+    "Modules": {
+      "ID": "0x00040000",
+      "Types": {
+        "0x00000002": "SAS Bridgeboard",
+        "0x00000003": "Processor Module",
+        "0x00000004": "I/O Module",
+        "0x00000005": "Memory Module",
+        "0x00000006": "Power Module",
+        "0x00000007": "Processor/Memory Module",
+        "0x00000008": "Processor/IO Module"
+      }
+    },
+    "Controllers": {
+      "ID": "0x00050000",
+      "Types": {
+        "0x00000002": "Video Controller",
+        "0x00000003": "SCSI Controller",
+        "0x00000004": "Ethernet Controller",
+        "0x00000005": "Token Ring Controller",
+        "0x00000006": "Audio/Sound Controller",
+        "0x00000007": "PATA Controller",
+        "0x00000008": "SATA Controller",
+        "0x00000009": "SAS Controller",
+        "0x0000000A": "LED Display Controller",
+        "0x0000000B": "RAID Controller",
+        "0x0000000C": "Remote Access Controller",
+        "0x0000000D": "USB Controller"
+      }
+    },
+    "Memory": {
+      "ID": "0x00060000",
+      "Types": {
+        "0x0000000": "",
+        "0x00000001": "DRAM Memory",
+        "0x00000002": "EDRAM Memory",
+        "0x00000003": "VRAM Memory",
+        "0x00000004": "SRAM Memory",
+        "0x00000005": "RAM Memory",
+        "0x00000006": "ROM Memory",
+        "0x00000007": "FLASH Memory",
+        "0x00000008": "EEPROM Memory",
+        "0x00000009": "FEPROM Memory",
+        "0x0000000A": "EPROM Memory",
+        "0x0000000B": "CDRAM Memory",
+        "0x0000000C": "3DRAM Memory",
+        "0x0000000D": "SDRAM Memory",
+        "0x0000000E": "SGRAM Memory",
+        "0x0000000F": "RDRAM Memory",
+        "0x00000010": "DDR Memory",
+        "0x00000011": "DDR2 Memory",
+        "0x00000012": "DDR3 Memory",
+        "0x00000013": "DDR4 Memory",
+        "0x00000014": "LPDDR Memory",
+        "0x00000015": "LPDDR2 Memory",
+        "0x00000016": "LPDDR3 Memory",
+        "0x00000017": "LPDDR4 Memory",
+        "0x00000018": "NVRAM Memory"
+      }
+    },
+    "Storage": {
+      "ID": "0x00070000",
+      "Types": {
+        "0x00000002": "Storage Drive",
+        "0x00000003": "SSD Drive",
+        "0x00000004": "M.2 Drive",
+        "0x00000005": "HDD Drive"
+      }
+    },
+    "Media Drives": {
+      "ID": "0x00080000",
+      "Types": {
+        "0x00000002": "Floppy Drive",
+        "0x00000003": "Tape Drive",
+        "0x00000004": "PCIe Drive",
+        "0x00000005": "CD Drive",
+        "0x00000006": "DVD Drive",
+        "0x00000007": "Blu-Ray Drive"
+      }
+    },
+    "Network Adapters": {
+      "ID": "0x00090000",
+      "Types": {
+        "0x00000002": "Ethernet Adapter",
+        "0x00000003": "WiFi Adapter",
+        "0x00000004": "Bluetooh Adapter",
+        "0x00000005": "Cellular Adapter",
+        "0x00000006": "Zigbee Adapter",
+        "0x00000007": "3G Cellular Adapter",
+        "0x00000008": "4G Cellular Adapter",
+        "0x00000009": "5G Cellular Adapter",
+        "0x0000000A": "Network Switch",
+        "0x0000000B": "Network Router"
+      }
+    },
+    "Energy Object": {
+      "ID": "0x000A0000",
+      "Types": {
+        "0x00000002": "Power Supply",
+        "0x00000003": "Battery",
+        "0x00000004": "Coin Battery",
+        "0x00000005": "Capacitor Battery"
+      }
+    },
+    "Sensors": {
+      "ID": "0x000B0000",
+      "Types": {
+        "0x00000002": "Optical Sensor",
+        "0x00000003": "Temperature Sensor",
+        "0x00000004": "Proximity Sensor",
+        "0x00000005": "IR Sensor",
+        "0x00000006": "Chemical Sensor",
+        "0x00000007": "Motion Detection Sensor",
+        "0x00000008": "Level Sensor",
+        "0x00000009": "Gyroscopic Sensor",
+        "0x0000000A": "Humidity Sensor",
+        "0x0000000B": "Accelerometer Sensor"
+      }
+    },
+    "Display Devices": {
+      "ID": "0x000C0000",
+      "Types": {
+        "0x00000001": "LCD Display Panel",
+        "0x00000002": "LED Display Panel",
+        "0x00000003": "OLED Display Panel",
+        "0x00000004": "CRT Display Panel"
+      }
+    },
+    "Cooling": {
+      "ID": "0x000D0000",
+      "Types": {
+        "0x00000002": "Thermal Assembly",
+        "0x00000003": "Fan",
+        "0x00000004": "Chassis Fan",
+        "0x00000005": "Socket Fan",
+        "0x00000006": "Heatsink",
+        "0x00000007": "Liquid Cooling"
+      }
+    },
+    "Input Devices": {
+      "ID": "0x000E0000",
+      "Types": {
+        "0x00000002": "Mouse",
+        "0x00000003": "Track Ball",
+        "0x00000004": "Track Point",
+        "0x00000005": "Glide Point",
+        "0x00000006": "Touch Pad",
+        "0x00000007": "Touch Screen",
+        "0x00000008": "Camera",
+        "0x00000009": "Fingerpoint Reader",
+        "0x0000000A": "Keyboard",
+        "0x0000000B": "Smartcard Reader",
+        "0x0000000C": "Biometric Reader",
+        "0x0000000D": "Joystick",
+        "0x0000000E": "Gaming Controller",
+        "0x0000000F": "IR Camera",
+        "0x00000010": "Facial Recognition Camera",
+        "0x00000011": "Scanner"
+      }
+    },
+    "Slots": {
+      "ID": "0x000F0000",
+      "Types": {
+        "0x00000002": "Socket",
+        "0x00000003": "ISA Slot",
+        "0x00000004": "PCI Slot",
+        "0x00000005": "AGP Slot",
+        "0x00000006": "PCI-X Slot",
+        "0x00000007": "M.2 Slot",
+        "0x00000008": "MXM Slot",
+        "0x00000009": "PCI Express Slot",
+        "0x0000000A": "PCI Express Mini",
+        "0x0000000B": "PC-98 Slot",
+        "0x0000000C": "Memory Slot"
+      }
+    },
+    "Ports": {
+      "ID": "0x00100000",
+      "Types": {
+        "0x00000002": "Parallel Port",
+        "0x00000003": "Serial Port",
+        "0x00000004": "SCSI Port",
+        "0x00000005": "MIDI Port",
+        "0x00000006": "USB Port",
+        "0x00000007": "Firewire Port",
+        "0x00000008": "PCMCIA Port",
+        "0x00000009": "ATA Port",
+        "0x0000000A": "SATA Port",
+        "0x0000000B": "SAS Port",
+        "0x0000000C": "Optical Port",
+        "0x0000000D": "DisplayPort",
+        "0x0000000E": "Mini DisplayPort",
+        "0x0000000F": "HDMI Port",
+        "0x00000010": "Mini HDMI Port",
+        "0x00000011": "Micro HDMI Port",
+        "0x00000012": "Thunderbolt Port",
+        "0x00000013": "VGA Port",
+        "0x00000014": "Mini VGA Port",
+        "0x00000015": "DVI Port",
+        "0x00000016": "DVI-I Port",
+        "0x00000017": "DVI-D Port",
+        "0x00000018": "DVI-A Port",
+        "0x00000019": "Mini DVI Port",
+        "0x0000001A": "Micro DVI Port",
+        "0x0000001B": "Ethernet Port",
+        "0x0000001C": "ADB Port",
+        "0x0000001D": "Mac Serial Port",
+        "0x0000001E": "PS/2 Port",
+        "0x0000001F": "Surround Sound Port",
+        "0x00000020": "Stereo Port",
+        "0x00000021": "Dolby 5.1 Port",
+        "0x00000022": "Dolby 7.1 Port",
+        "0x00000023": "Dolby 7.2 Port",
+        "0x00000024": "Line In Port",
+        "0x00000025": "Microphone Port",
+        "0x00000026": "Speaker Port",
+        "0x00000027": "Digital Audio Port",
+        "0x00000028": "TOSLINK Port"
+      }
+    },
+    "Discrete Component": {
+      "ID": "0x00110000",
+      "Types": {
+        "0x00000002": "Capacitor",
+        "0x00000003": "Resistor",
+        "0x00000004": "Inductor",
+        "0x00000005": "Diode",
+        "0x00000006": "Crystal Oscilator",
+        "0x00000007": "Logic Gate",
+        "0x00000008": "Ferrite Beads",
+        "0x00000009": "Transistor",
+        "0x0000000A": "Fuse",
+        "0x0000000B": "Voltage Regulator",
+        "0x0000000C": "DC/DC Converter",
+        "0x0000000D": "Switching Regulator",
+        "0x0000000E": "Power Switch"
+      }
+    },
+    "Cabling": {
+      "ID": "0x00120000",
+      "Types": {
+        "0x00000002": "AC Adapter",
+        "0x00000003": "Power Cord",
+        "0x00000004": "Serial ATA Cable",
+        "0x00000005": "Serial ATA Power Cable",
+        "0x00000006": "Drive Cable",
+        "0x00000007": "Power Supply Cable",
+        "0x00000008": "IDE Cable",
+        "0x00000009": "Molex Cable",
+        "0x0000000A": "Ribbon Cable",
+        "0x0000000B": "PCI Express"
+      }
+    }
+  }
+}
