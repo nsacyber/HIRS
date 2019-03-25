@@ -2,6 +2,8 @@ package hirs.data.persist.certificate;
 
 import hirs.data.persist.certificate.attributes.ComponentIdentifier;
 import hirs.data.persist.certificate.attributes.PlatformConfiguration;
+import hirs.data.persist.certificate.attributes.PlatformConfigurationV1;
+import hirs.data.persist.certificate.attributes.PlatformConfigurationV2;
 import hirs.data.persist.certificate.attributes.TBBSecurityAssertion;
 import hirs.data.persist.certificate.attributes.URIReference;
 import hirs.persist.CertificateManager;
@@ -68,8 +70,8 @@ public class PlatformCredential extends DeviceAssociatedCertificate {
 
     //OID for Certificate Attributes
     private static final String TCG_PLATFORM_SPECIFICATION = "2.23.133.2.17";
-    private static final String TPM_SECURITU_ASSERTION = "2.23.133.2.18";
-    private static final String TBB_SECURITU_ASSERTION = "2.23.133.2.19";
+    private static final String TPM_SECURITY_ASSERTION = "2.23.133.2.18";
+    private static final String TBB_SECURITY_ASSERTION = "2.23.133.2.19";
     private static final String TCG_CREDENTIAL_SPECIFICATION = "2.23.133.2.23";
     private static final String PLATFORM_CONFIGURATION_URI = "2.23.133.5.1.3";
     private static final String PLATFORM_CONFIGURATION = "2.23.133.5.1.7.1";
@@ -626,7 +628,7 @@ public class PlatformCredential extends DeviceAssociatedCertificate {
                         = ASN1Sequence.getInstance(attr.getAttrValues().getObjectAt(0));
             //Parse sequence based on the attribute OID
             switch (attr.getAttrType().getId()) {
-                case TBB_SECURITU_ASSERTION:
+                case TBB_SECURITY_ASSERTION:
                     attributes.put("tbbSecurityAssertion",
                             new TBBSecurityAssertion(attributeSequence));
                     break;
@@ -635,15 +637,18 @@ public class PlatformCredential extends DeviceAssociatedCertificate {
                             new URIReference(attributeSequence));
                     break;
                 case PLATFORM_CONFIGURATION:
+                    attributes.put("platformConfiguration",
+                            new PlatformConfigurationV1(attributeSequence));
+                    break;
                 case PLATFORM_CONFIGURATION_V2:
                     attributes.put("platformConfiguration",
-                            new PlatformConfiguration(attributeSequence));
+                            new PlatformConfigurationV2(attributeSequence));
                     break;
                 case TCG_PLATFORM_SPECIFICATION:
                 case TCG_CREDENTIAL_SPECIFICATION:
                     break;
                 default:
-                    //No class deffined for this attribute
+                    //No class defined for this attribute
                     LOGGER.warn("No class defined for attribute with OID: "
                             + attr.getAttrType().getId());
                     break;

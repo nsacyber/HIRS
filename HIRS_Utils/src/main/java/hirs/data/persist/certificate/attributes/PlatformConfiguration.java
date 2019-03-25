@@ -4,27 +4,15 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
-import org.bouncycastle.asn1.ASN1Sequence;
-import org.bouncycastle.asn1.ASN1TaggedObject;
 
 /**
- * Basic class that handle Platform Configuration for the Platform Certificate
- * Attribute.
- * <pre>
- * PlatformConfiguration ::= SEQUENCE {
- *      componentIdentifier [0] IMPLICIT SEQUENCE(SIZE(1..CONFIGMAX)) OF
- *           ComponentIdentifier OPTIONAL,
- *      platformProperties [1] IMPLICIT SEQUENCE(SIZE(1..CONFIGMAX)) OF Properties OPTIONAL,
- *      platformPropertiesUri [2] IMPLICIT URIReference OPTIONAL }
- * </pre>
+ * Abstract class that provides base info for Platform Configuration of
+ * the Platform Certificate Attribute.
  */
-public class PlatformConfiguration {
-
-    private static final int COMPONENT_IDENTIFIER = 0;
-    private static final int PLATFORM_PROPERTIES = 1;
-    private static final int PLATFORM_PROPERTIES_URI = 2;
+public abstract class PlatformConfiguration {
 
     private List<ComponentIdentifier> componentIdentifier;
+    private URIReference componentIdentifierUri;
     private List<PlatformProperty> platformProperties;
     private URIReference platformPropertiesUri;
 
@@ -33,6 +21,7 @@ public class PlatformConfiguration {
      */
     public PlatformConfiguration() {
         this.componentIdentifier = new ArrayList<>();
+        this.componentIdentifierUri = null;
         this.platformProperties = new ArrayList<>();
         this.platformPropertiesUri = null;
     }
@@ -55,63 +44,43 @@ public class PlatformConfiguration {
     }
 
     /**
-     * Constructor given the SEQUENCE that contains Platform Configuration.
-     * @param sequence containing the the Platform Configuration.
-     * @throws IllegalArgumentException if there was an error on the parsing
+     * Constructor given the Platform Configuration values for V2 configuration.
+     *
+     * @param componentIdentifier list containing all the components inside the
+     *          Platform Configuration.
+     * @param componentIdentifierUri object containing the URI Reference
+     * @param platformProperties list containing all the properties inside the
+     *          Platform Configuration.
+     * @param platformPropertiesUri object containing the URI Reference
      */
-    public PlatformConfiguration(final ASN1Sequence sequence) throws IllegalArgumentException {
-
-        //Default values
-        this.componentIdentifier = new ArrayList<>();
-        this.platformProperties = new ArrayList<>();
-        this.platformPropertiesUri = null;
-
-        for (int i = 0; i < sequence.size(); i++) {
-            ASN1TaggedObject taggedSequence
-                        = ASN1TaggedObject.getInstance(sequence.getObjectAt(i));
-            //Set information based on the set tagged
-            switch (taggedSequence.getTagNo()) {
-                case COMPONENT_IDENTIFIER:
-                    //Get componentIdentifier
-                    ASN1Sequence componentConfiguration
-                            = ASN1Sequence.getInstance(taggedSequence, false);
-
-                    //Get and set all the component values
-                    for (int j = 0; j < componentConfiguration.size(); j++) {
-                        //DERSequence with the components
-                        ASN1Sequence component
-                                = ASN1Sequence.getInstance(componentConfiguration.getObjectAt(j));
-                        this.componentIdentifier.add(new ComponentIdentifier(component));
-                    }
-                    break;
-                case PLATFORM_PROPERTIES:
-                    //Get platformProperties
-                    ASN1Sequence properties = ASN1Sequence.getInstance(taggedSequence, false);
-
-                    //Get and set all the properties values
-                    for (int j = 0; j < properties.size(); j++) {
-                        //DERSequence with the components
-                        ASN1Sequence property = ASN1Sequence.getInstance(properties.getObjectAt(j));
-                        this.platformProperties.add(new PlatformProperty(property));
-                    }
-                    break;
-                case PLATFORM_PROPERTIES_URI:
-                    //Get platformPropertiesURI
-                    ASN1Sequence propertiesUri = ASN1Sequence.getInstance(taggedSequence, false);
-                    //Save properties URI
-                    this.platformPropertiesUri = new URIReference(propertiesUri);
-                    break;
-                default:
-                    break;
-            }
-        }
+    public PlatformConfiguration(final List<ComponentIdentifier> componentIdentifier,
+                        final URIReference componentIdentifierUri,
+                        final List<PlatformProperty> platformProperties,
+                        final URIReference platformPropertiesUri) {
+        this.componentIdentifier = componentIdentifier;
+        this.componentIdentifierUri = componentIdentifierUri;
+        this.platformProperties = platformProperties;
+        this.platformPropertiesUri = platformPropertiesUri;
     }
 
-       /**
+    /**
      * @return the componentIdentifier
      */
     public List<ComponentIdentifier> getComponentIdentifier() {
         return Collections.unmodifiableList(componentIdentifier);
+    }
+
+    /**
+     * Add function for the component identifier array.
+     * @param componentIdentifier object to add
+     * @return status of the add, if successful or not
+     */
+    protected boolean add(final ComponentIdentifier componentIdentifier) {
+        if (this.componentIdentifier != null) {
+            return this.componentIdentifier.add(componentIdentifier);
+        }
+
+        return false;
     }
 
     /**
@@ -122,10 +91,37 @@ public class PlatformConfiguration {
     }
 
     /**
+     * @return the componentIdentifierUri
+     */
+    public URIReference getComponentIdentifierUri() {
+        return componentIdentifierUri;
+    }
+
+    /**
+     * @param componentIdentifierUri the componentIdentifierUri to set
+     */
+    public void setComponentIdentifierUri(final URIReference componentIdentifierUri) {
+        this.componentIdentifierUri = componentIdentifierUri;
+    }
+
+    /**
      * @return the platformProperties
      */
     public List<PlatformProperty> getPlatformProperties() {
         return Collections.unmodifiableList(platformProperties);
+    }
+
+    /**
+     * Add function for the platform property array.
+     * @param platformProperty property object to add
+     * @return status of the add, if successful or not
+     */
+    protected boolean add(final PlatformProperty platformProperty) {
+        if (this.platformProperties != null) {
+            return this.platformProperties.add(platformProperty);
+        }
+
+        return false;
     }
 
     /**
