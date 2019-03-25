@@ -17,6 +17,8 @@ import org.bouncycastle.asn1.DERUTF8String;
  * Attribute.
  * <pre>
  * ComponentIdentifier ::= SEQUENCE {
+ *      componentClass
+ *          SEQUENCE(SIZE(1..CONFIGMAX)),
  *      componentManufacturer UTF8String (SIZE (1..STRMAX)),
  *      componentModel UTF8String (SIZE (1..STRMAX)),
  *      componentSerial[0] IMPLICIT UTF8String (SIZE (1..STRMAX)) OPTIONAL,
@@ -35,9 +37,10 @@ public class ComponentIdentifier {
      */
     public static final int CONFIGMAX = 32;
 
+    private static final int COMPONENT_IDENTIFIER = 1;
+    // optional sequence objects
     private static final int COMPONENT_SERIAL = 0;
     private static final int COMPONENT_REVISION = 1;
-    private static final int COMPONENT_IDENTIFIER = 1;
     private static final int COMPONENT_MANUFACTURER_ID = 2;
     private static final int FIELD_REPLACEABLE = 3;
     private static final int COMPONENT_ADDRESS = 4;
@@ -295,6 +298,9 @@ public class ComponentIdentifier {
         StringBuilder sb = new StringBuilder();
         sb.append("ComponentIdentifier{");
         sb.append("componentManufacturer=").append(componentManufacturer.getString());
+        sb.append("componentClass=").append(componentClass);
+        sb.append(", componentManufacturer=")
+                .append(componentManufacturer.getString());
         sb.append(", componentModel=").append(componentModel.getString());
         //Optional not null values
         sb.append(", componentSerial=");
