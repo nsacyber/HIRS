@@ -606,22 +606,19 @@
                                                             <div class="panel panel-default">
                                                                 <div class="panel-heading">
                                                                     <c:choose>
-                                                                       <c:when test="${not empty fn:trim(component.getComponentClass())}">
+                                                                       <c:when test="${component.isVersion2()=='TRUE'}">
                                                                            <span data-toggle="tooltip" data-placement="top" title="Component Class">${component.getComponentClass()}</span>
                                                                        </c:when>
                                                                        <c:otherwise>
-                                                                           <span data-toggle="tooltip" data-placement="top" title="Manufacturer">${component.getComponentManufacturer()}</span>&nbsp;-&nbsp;
-                                                                           <span data-toggle="tooltip" data-placement="top" title="Model">${component.getComponentModel()}</span>
+                                                                           <span data-toggle="tooltip" data-placement="top" title="Component Class">Platform Components</span>
                                                                        </c:otherwise>
                                                                     </c:choose>
                                                                 </div>
                                                                 <div class="panel-body">
-                                                                    <c:if test="${not empty fn:trim(component.getComponentClass())}">
-                                                                        <span class="fieldHeader">Manufacturer:</span>
-                                                                        <span class="fieldValue">${component.getComponentManufacturer()}</span><br/>
-                                                                        <span class="fieldHeader">Model</span>
-                                                                        <span class="fieldValue">${component.getComponentModel()}</span><br/>
-                                                                    </c:if>
+                                                                    <span class="fieldHeader">Manufacturer:</span>
+                                                                    <span class="fieldValue">${component.getComponentManufacturer()}</span><br/>
+                                                                    <span class="fieldHeader">Model</span>
+                                                                    <span class="fieldValue">${component.getComponentModel()}</span><br/>                                                                    
                                                                     <c:if test="${not empty fn:trim(component.getComponentSerial())}">
                                                                         <span class="fieldHeader">Serial Number:</span>
                                                                         <span class="fieldValue">${component.getComponentSerial()}</span><br/>

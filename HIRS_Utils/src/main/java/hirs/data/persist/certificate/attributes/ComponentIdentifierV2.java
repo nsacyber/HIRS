@@ -276,6 +276,14 @@ public class ComponentIdentifierV2 extends ComponentIdentifier {
     }
 
     /**
+     * @return indicates the type of platform certificate.
+     */
+    @Override
+    public boolean isVersion2() {
+        return true;
+    }
+
+    /**
      * Get all the component addresses inside the sequence.
      *
      * @param sequence that contains the component addresses.
@@ -305,7 +313,7 @@ public class ComponentIdentifierV2 extends ComponentIdentifier {
         StringBuilder sb = new StringBuilder();
         sb.append("ComponentIdentifier{");
         sb.append("componentClass=").append(componentClass);
-        sb.append("componentManufacturer=").append(getComponentManufacturer()
+        sb.append(", componentManufacturer=").append(getComponentManufacturer()
                 .getString());
         sb.append(", componentModel=").append(getComponentModel().getString());
         //Optional not null values
