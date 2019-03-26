@@ -1,6 +1,10 @@
-package hirs.data.persist.certificate.attributes;
+package hirs.data.persist.certificate.attributes.V2;
 
 import hirs.data.persist.DeviceInfoReport;
+import hirs.data.persist.certificate.attributes.CertificateIdentifier;
+import hirs.data.persist.certificate.attributes.ComponentAddress;
+import hirs.data.persist.certificate.attributes.ComponentIdentifier;
+import hirs.data.persist.certificate.attributes.URIReference;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
