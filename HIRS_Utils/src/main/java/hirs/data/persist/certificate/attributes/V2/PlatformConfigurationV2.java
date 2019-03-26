@@ -1,5 +1,9 @@
-package hirs.data.persist.certificate.attributes;
+package hirs.data.persist.certificate.attributes.V2;
 
+import hirs.data.persist.certificate.attributes.ComponentIdentifier;
+import hirs.data.persist.certificate.attributes.PlatformConfiguration;
+import hirs.data.persist.certificate.attributes.PlatformProperty;
+import hirs.data.persist.certificate.attributes.URIReference;
 import java.util.ArrayList;
 import org.bouncycastle.asn1.ASN1Sequence;
 import org.bouncycastle.asn1.ASN1TaggedObject;

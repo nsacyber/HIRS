@@ -3,7 +3,7 @@ package hirs.data.persist.certificate;
 import hirs.data.persist.certificate.attributes.ComponentIdentifier;
 import hirs.data.persist.certificate.attributes.PlatformConfiguration;
 import hirs.data.persist.certificate.attributes.PlatformConfigurationV1;
-import hirs.data.persist.certificate.attributes.PlatformConfigurationV2;
+import hirs.data.persist.certificate.attributes.V2.PlatformConfigurationV2;
 import hirs.data.persist.certificate.attributes.TBBSecurityAssertion;
 import hirs.data.persist.certificate.attributes.URIReference;
 import hirs.persist.CertificateManager;

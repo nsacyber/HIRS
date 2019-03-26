@@ -1,6 +1,8 @@
-package hirs.data.persist.certificate.attributes;
+package hirs.data.persist.certificate.attributes.V2;
 
-import hirs.data.persist.certificate.attributes.ComponentIdentifierV2.AttributeStatus;
+import hirs.data.persist.certificate.attributes.PlatformProperty;
+import hirs.data.persist.certificate.attributes.V2.ComponentIdentifierV2;
+import hirs.data.persist.certificate.attributes.V2.ComponentIdentifierV2.AttributeStatus;
 import org.bouncycastle.asn1.ASN1Enumerated;
 import org.bouncycastle.asn1.ASN1Sequence;
 import org.bouncycastle.asn1.DERUTF8String;
