@@ -7,11 +7,9 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import org.bouncycastle.asn1.ASN1Boolean;
-import org.bouncycastle.asn1.ASN1Enumerated;
 import org.bouncycastle.asn1.ASN1ObjectIdentifier;
 import org.bouncycastle.asn1.ASN1Sequence;
 import org.bouncycastle.asn1.ASN1TaggedObject;
-import org.bouncycastle.asn1.DEROctetString;
 import org.bouncycastle.asn1.DERUTF8String;
 
 /**
@@ -28,10 +26,7 @@ import org.bouncycastle.asn1.DERUTF8String;
  *      componentManufacturerId [2] IMPLICIT PrivateEnterpriseNumber OPTIONAL,
  *      fieldReplaceable [3] IMPLICIT BOOLEAN OPTIONAL,
  *      componentAddress [4] IMPLICIT
- *          SEQUENCE(SIZE(1..CONFIGMAX)) OF ComponentAddress OPTIONAL
- *      componentPlatformCert [5] IMPLICIT CertificateIdentifier OPTIONAL,
- *      componentPlatformCertUri [6] IMPLICIT URIReference OPTIONAL,
- *      status [7] IMPLICIT AttributeStatus OPTIONAL }
+ *          SEQUENCE(SIZE(1..CONFIGMAX)) OF ComponentAddress OPTIONAL}
  * where STRMAX is 256, CONFIGMAX is 32
  * </pre>
  */
@@ -42,20 +37,14 @@ public class ComponentIdentifier {
      */
     public static final int CONFIGMAX = 32;
 
-    private static final int COMPONENT_IDENTIFIER = 1;
-    protected static final int MANDATORY_ELEMENTS = 2;
+    private static final int MANDATORY_ELEMENTS = 2;
     // optional sequence objects
-    private static final int COMPONENT_SERIAL = 0;
-    private static final int COMPONENT_REVISION = 1;
-    private static final int COMPONENT_IDENTIFIER = 1;
-    private static final int COMPONENT_MANUFACTURER_ID = 2;
-    private static final int FIELD_REPLACEABLE = 3;
-    private static final int COMPONENT_ADDRESS = 4;
-    private static final int COMPONENT_PLATFORM_CERT = 5;
-    private static final int COMPONENT_PLATFORM_URI = 6;
-    private static final int ATTRIBUTE_STATUS = 7;
+    protected static final int COMPONENT_SERIAL = 0;
+    protected static final int COMPONENT_REVISION = 1;
+    protected static final int COMPONENT_MANUFACTURER_ID = 2;
+    protected static final int FIELD_REPLACEABLE = 3;
+    protected static final int COMPONENT_ADDRESS = 4;
 
-    private String componentClass;
     private DERUTF8String componentManufacturer;
     private DERUTF8String componentModel;
     private DERUTF8String componentSerial;
@@ -63,54 +52,6 @@ public class ComponentIdentifier {
     private ASN1ObjectIdentifier componentManufacturerId;
     private ASN1Boolean fieldReplaceable;
     private List<ComponentAddress> componentAddress;
-    private CertificateIdentifier certificateIdentifier;
-    private URIReference componentPlatformUri;
-    private AttributeStatus attributeStatus;
-
-    /**
-     * A type to handle the security Level used in the FIPS Level.
-     * Ordering of enum types is intentional and their ordinal values correspond to enum
-     * values in the TCG spec.
-     *
-     * <pre>
-     * AttributeStatus ::= ENUMERATED {
-     *      added (0),
-     *      modified (1),
-     *      removed (2)}
-     * </pre>
-     */
-    public enum AttributeStatus {
-        /**
-         * Attribute Status for ADDED.
-         */
-        ADDED("added"),
-        /**
-         * Attribute Status for MODIFIED.
-         */
-        MODIFIED("modified"),
-        /**
-         * Attribute Status for REMOVED.
-         */
-        REMOVED("removed");
-
-        private final String value;
-
-        /**
-         * Basic constructor.
-         * @param value string containing the value.
-         */
-        AttributeStatus(final String value) {
-            this.value = value;
-        }
-
-        /**
-         * Getter for the string of attribute status value.         *
-         * @return the string containing the value.
-         */
-        public String getValue() {
-            return this.value;
-        }
-    }
 
     /**
      * Default constructor.
@@ -123,9 +64,6 @@ public class ComponentIdentifier {
         componentManufacturerId = null;
         fieldReplaceable = null;
         componentAddress = new ArrayList<>();
-        certificateIdentifier = null;
-        componentPlatformUri = null;
-        attributeStatus = null;
     }
 
     /**
@@ -138,9 +76,6 @@ public class ComponentIdentifier {
      * @param componentManufacturerId represents the component manufacturer ID
      * @param fieldReplaceable represents if the component is replaceable
      * @param componentAddress represents a list of addresses
-     * @param certificateIdentifier object representing certificate Id
-     * @param componentPlatformUri object containing the URI Reference
-     * @param attributeStatus object containing enumerated status
      */
     public ComponentIdentifier(final DERUTF8String componentManufacturer,
             final DERUTF8String componentModel,
@@ -148,10 +83,7 @@ public class ComponentIdentifier {
             final DERUTF8String componentRevision,
             final ASN1ObjectIdentifier componentManufacturerId,
             final ASN1Boolean fieldReplaceable,
-            final List<ComponentAddress> componentAddress,
-            final CertificateIdentifier certificateIdentifier,
-            final URIReference componentPlatformUri,
-            final AttributeStatus attributeStatus) {
+            final List<ComponentAddress> componentAddress) {
         this.componentManufacturer = componentManufacturer;
         this.componentModel = componentModel;
         this.componentSerial = componentSerial;
@@ -159,9 +91,6 @@ public class ComponentIdentifier {
         this.componentManufacturerId = componentManufacturerId;
         this.fieldReplaceable = fieldReplaceable;
         this.componentAddress = componentAddress;
-        this.certificateIdentifier = certificateIdentifier;
-        this.componentPlatformUri = componentPlatformUri;
-        this.attributeStatus = attributeStatus;
     }
 
     /**
@@ -201,38 +130,11 @@ public class ComponentIdentifier {
                     ASN1Sequence addressesSequence = ASN1Sequence.getInstance(taggedObj, false);
                     componentAddress = retriveComponentAddress(addressesSequence);
                     break;
-                case COMPONENT_PLATFORM_CERT:
-                    ASN1Sequence ciSequence = ASN1Sequence.getInstance(taggedObj, false);
-                    certificateIdentifier = new CertificateIdentifier(ciSequence);
-                    break;
-                case COMPONENT_PLATFORM_URI:
-                    ASN1Sequence uriSequence = ASN1Sequence.getInstance(taggedObj, false);
-                    this.componentPlatformUri = new URIReference(uriSequence);
-                    break;
-                case ATTRIBUTE_STATUS:
-                    ASN1Enumerated enumerated = ASN1Enumerated.getInstance(taggedObj, false);
-                    this.attributeStatus = AttributeStatus.values()[
-                            enumerated.getValue().intValue()];
-                    break;
                 default:
                     throw new IllegalArgumentException("Component identifier contains "
                             + "invalid tagged object.");
             }
         }
-    }
-
-    /**
-     * @return the componentClass
-     */
-    public String getComponentClass() {
-        return componentClass;
-    }
-
-    /**
-     * @param componentClass the componentClass to set
-     */
-    public void setComponentClass(final String componentClass) {
-        this.componentClass = componentClass;
     }
 
     /**
@@ -333,55 +235,10 @@ public class ComponentIdentifier {
         this.componentAddress = componentAddress;
     }
 
-    public CertificateIdentifier getCertificateIdentifier() {
-        return certificateIdentifier;
-    }
-
-    public void setCertificateIdentifier(final CertificateIdentifier certificateIdentifier) {
-        this.certificateIdentifier = certificateIdentifier;
-    }
-
     /**
-     * @return the componentPlatformUri.
+     * @return indicates the type of platform certificate
      */
-    public URIReference getComponentPlatformUri() {
-        return componentPlatformUri;
-    }
-
-    /**
-     * @param componentPlatformUri the componentPlatformUri to set.
-     */
-    public void setComponentPlatformUri(final URIReference componentPlatformUri) {
-        this.componentPlatformUri = componentPlatformUri;
-    }
-
-    /**
-     * @return the attribute enumerated status.
-     */
-    public AttributeStatus getAttributeStatus() {
-        return attributeStatus;
-    }
-
-    /**
-     * @param attributeStatus the attributeState to set.
-     */
-    public void setAttributeStatus(final AttributeStatus attributeStatus) {
-        this.attributeStatus = attributeStatus;
-    }
-
-    public boolean isModified() {
-        if (getAttributeStatus() == AttributeStatus.MODIFIED) {
-            return true;
-        }
-
-        return false;
-    }
-
-    public boolean isRemoved() {
-        if (getAttributeStatus() == AttributeStatus.REMOVED) {
-            return true;
-        }
-
+    public boolean isVersion2() {
         return false;
     }
 
@@ -441,17 +298,6 @@ public class ComponentIdentifier {
                         .collect(Collectors.joining(",")));
         }
         sb.append(", certificateIdentifier=");
-        if (certificateIdentifier != null) {
-            sb.append(certificateIdentifier.toString());
-        }
-        sb.append(", componentPlatformUri=");
-        if (componentPlatformUri != null) {
-            sb.append(componentPlatformUri.toString());
-        }
-        sb.append(", status=");
-        if (attributeStatus != null) {
-            sb.append(attributeStatus.getValue());
-        }
         sb.append("}");
 
         return sb.toString();
