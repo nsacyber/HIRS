@@ -39,10 +39,25 @@ public class ComponentIdentifier {
 
     private static final int MANDATORY_ELEMENTS = 2;
     // optional sequence objects
+    /**
+     * Static variable indicated array position for the serial number.
+     */
     protected static final int COMPONENT_SERIAL = 0;
+    /**
+     * Static variable indicated array position for the revision info.
+     */
     protected static final int COMPONENT_REVISION = 1;
+    /**
+     * Static variable indicated array position for the manufacturer id.
+     */
     protected static final int COMPONENT_MANUFACTURER_ID = 2;
+    /**
+     * Static variable indicated array position for the field replaceable value.
+     */
     protected static final int FIELD_REPLACEABLE = 3;
+    /**
+     * Static variable indicated array position for the component address.
+     */
     protected static final int COMPONENT_ADDRESS = 4;
 
     private DERUTF8String componentManufacturer;

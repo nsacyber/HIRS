@@ -1,14 +1,14 @@
-
 package hirs.data.persist.certificate.attributes;
 
 import hirs.data.persist.DeviceInfoReport;
 import java.math.BigInteger;
-import org.bouncycastle.asn1.ASN1Encodable;
 import org.bouncycastle.asn1.ASN1Sequence;
-import org.bouncycastle.asn1.ASN1TaggedObject;
 import org.bouncycastle.asn1.x509.GeneralName;
 
 /**
+ * Basic class that handles a the attribute associate with a Certificate
+ * Identifier for the component.
+ * <pre>
  * CertificateIdentifier::= SEQUENCE {
  *       attributeCertIdentifier [0] IMPLICIT AttributeCertificateIdentifier OPTIONAL
  *       genericCertIdentifier   [1] IMPLICIT IssuerSerial OPTIONAL }
@@ -20,9 +20,10 @@ import org.bouncycastle.asn1.x509.GeneralName;
  * IssuerSerial ::= SEQUENCE {
  *       issuer        GeneralNames,
  *       serial        CertificateSerialNumber }
+ * </pre>
  */
 public class CertificateIdentifier {
-    
+
     private static final int IDENTIFIER_NUMBER = 2;
 
     private String hashAlgorithm;
@@ -30,6 +31,9 @@ public class CertificateIdentifier {
     private GeneralName issuerDN;
     private BigInteger certificateSerialNumber;
 
+    /**
+     * Default constructor.
+     */
     public CertificateIdentifier() {
         hashAlgorithm = DeviceInfoReport.NOT_SPECIFIED;
         hashSigValue = DeviceInfoReport.NOT_SPECIFIED;
@@ -37,6 +41,10 @@ public class CertificateIdentifier {
         certificateSerialNumber = BigInteger.ZERO;
     }
 
+    /**
+     * Primary constructor for the parsing of the sequence.
+     * @param sequence containing the name and value of the Certificate Identifier
+     */
     public CertificateIdentifier(final ASN1Sequence sequence) {
         this();
         //Check if it have a valid number of identifers
@@ -44,24 +52,34 @@ public class CertificateIdentifier {
             throw new IllegalArgumentException("Component identifier do not have required values.");
         }
 
-        ASN1Encodable attributeId = sequence.getObjectAt(0);
-        ASN1Encodable genCertId = sequence.getObjectAt(1);
-        ASN1TaggedObject attribute = ASN1TaggedObject.getInstance(sequence.getObjectAt(0));
-        ASN1TaggedObject genericCert = ASN1TaggedObject.getInstance(sequence.getObjectAt(1));
+        // placeholder for future reference.
+        issuerDN = GeneralName.getInstance(sequence);
     }
 
+    /**
+     * @return the algorithm type
+     */
     public String getHashAlgorithm() {
         return hashAlgorithm;
     }
 
+    /**
+     * @return the string representation of hash signature
+     */
     public String getHashSigValue() {
         return hashSigValue;
     }
 
+    /**
+     * @return the distinguished name for the issuer serial
+     */
     public GeneralName getIssuerDN() {
         return issuerDN;
     }
 
+    /**
+     * @return The serial number of the certificate.
+     */
     public BigInteger getCertificateSerialNumber() {
         return certificateSerialNumber;
     }
