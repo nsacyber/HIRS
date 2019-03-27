@@ -18,6 +18,12 @@ import org.springframework.orm.hibernate4.LocalSessionFactoryBean;
 @Configuration
 @Import({ HibernateConfiguration.class })
 public class PersistenceConfiguration {
+
+    /**
+     * The bean name to retrieve the default/general implementation of {@link DeviceStateManager}.
+     */
+    public static final String DEVICE_STATE_MANAGER_BEAN_NAME = "general_db_man_bean";
+
     @Autowired
     private LocalSessionFactoryBean sessionFactory;
 
@@ -140,7 +146,7 @@ public class PersistenceConfiguration {
      *
      * @return {@link DeviceStateManager}
      */
-    @Bean(name = "general_db_man_bean")
+    @Bean(name = DEVICE_STATE_MANAGER_BEAN_NAME)
     public DeviceStateManager generalDeviceStateManager() {
         DBDeviceStateManager manager = new DBDeviceStateManager(sessionFactory.getObject());
         setDbManagerRetrySettings(manager);
