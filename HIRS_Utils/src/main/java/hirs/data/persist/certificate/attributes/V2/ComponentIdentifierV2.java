@@ -1,13 +1,10 @@
 package hirs.data.persist.certificate.attributes.V2;
 
-import hirs.data.persist.DeviceInfoReport;
 import hirs.data.persist.certificate.attributes.CertificateIdentifier;
 import hirs.data.persist.certificate.attributes.ComponentAddress;
 import hirs.data.persist.certificate.attributes.ComponentClass;
 import hirs.data.persist.certificate.attributes.ComponentIdentifier;
 import hirs.data.persist.certificate.attributes.URIReference;
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 import org.apache.logging.log4j.LogManager;
@@ -50,7 +47,7 @@ public class ComponentIdentifierV2 extends ComponentIdentifier {
     private static final int COMPONENT_PLATFORM_URI = 6;
     private static final int ATTRIBUTE_STATUS = 7;
 
-    private ComponentClass componentClass;
+    private String componentClass;
     private CertificateIdentifier certificateIdentifier;
     private URIReference componentPlatformUri;
     private AttributeStatus attributeStatus;
@@ -83,7 +80,7 @@ public class ComponentIdentifierV2 extends ComponentIdentifier {
         /**
          * Attribute Status for NOT_SPECIFIED.
          */
-        NOT_SPECIFIED(DeviceInfoReport.NOT_SPECIFIED);
+        NOT_SPECIFIED(EMPTY_COMPONENT);
 
         private final String value;
 
@@ -96,7 +93,7 @@ public class ComponentIdentifierV2 extends ComponentIdentifier {
         }
 
         /**
-         * Getter for the string of attribute status value.         *
+         * Getter for the string of attribute status value.
          * @return the string containing the value.
          */
         public String getValue() {
@@ -109,7 +106,7 @@ public class ComponentIdentifierV2 extends ComponentIdentifier {
      */
     public ComponentIdentifierV2() {
         super();
-        componentClass = new ComponentClass();
+        componentClass = EMPTY_COMPONENT;
         certificateIdentifier = null;
         componentPlatformUri = null;
         attributeStatus = AttributeStatus.NOT_SPECIFIED;
@@ -131,7 +128,7 @@ public class ComponentIdentifierV2 extends ComponentIdentifier {
      * @param attributeStatus object containing enumerated status
      */
     @SuppressWarnings("checkstyle:parameternumber")
-    public ComponentIdentifierV2(final ComponentClass componentClass,
+    public ComponentIdentifierV2(final String componentClass,
             final DERUTF8String componentManufacturer,
             final DERUTF8String componentModel,
             final DERUTF8String componentSerial,
@@ -161,21 +158,15 @@ public class ComponentIdentifierV2 extends ComponentIdentifier {
             throws IllegalArgumentException {
         // set all optional values to default in case they aren't set.
         super();
-        //Check if it have a valid number of identifers
+        //Check if it have a valid number of identifiers
         if (sequence.size() < MANDATORY_ELEMENTS) {
             throw new IllegalArgumentException("Component identifier do not have required values.");
         }
 
         int tag = 0;
-
-        LOGGER.warn("We are trying to do this now.....");
         ASN1Sequence componentIdSeq = ASN1Sequence.getInstance(sequence.getObjectAt(tag++));
-        LOGGER.warn("We did one thing so far.....");
-        String cClass = DEROctetString.getInstance(componentIdSeq.getObjectAt(tag))
-                .toString();
-        LOGGER.warn("We got a string.....");
-        LOGGER.warn(cClass);
-        componentClass = new ComponentClass(cClass);
+        componentClass = new ComponentClass(DEROctetString.getInstance(componentIdSeq
+                .getObjectAt(tag)).toString()).toString();
 
         //Mandatory values
         this.setComponentManufacturer(DERUTF8String.getInstance(sequence.getObjectAt(tag++)));
@@ -200,7 +191,7 @@ public class ComponentIdentifierV2 extends ComponentIdentifier {
                     break;
                 case COMPONENT_ADDRESS:
                     ASN1Sequence addressesSequence = ASN1Sequence.getInstance(taggedObj, false);
-                    this.setComponentAddress(retriveComponentAddress(addressesSequence));
+                    this.setComponentAddress(retrieveComponentAddress(addressesSequence));
                     break;
                 case COMPONENT_PLATFORM_CERT:
                     ASN1Sequence ciSequence = ASN1Sequence.getInstance(taggedObj, false);
@@ -225,14 +216,14 @@ public class ComponentIdentifierV2 extends ComponentIdentifier {
     /**
      * @return string for the type of component.
      */
-    public ComponentClass getComponentClass() {
+    public String getComponentClass() {
         return componentClass;
     }
 
     /**
      * @param componentClass the type of component to set
      */
-    public void setComponentClass(final ComponentClass componentClass) {
+    public void setComponentClass(final String componentClass) {
         this.componentClass = componentClass;
     }
 
@@ -298,31 +289,6 @@ public class ComponentIdentifierV2 extends ComponentIdentifier {
     @Override
     public boolean isVersion2() {
         return true;
-    }
-
-    /**
-     * Get all the component addresses inside the sequence.
-     *
-     * @param sequence that contains the component addresses.
-     * @return list of component addresses inside the sequence
-     * @throws IllegalArgumentException if there was an error on the parsing
-     */
-    public static List<ComponentAddress> retriveComponentAddress(final ASN1Sequence sequence)
-            throws IllegalArgumentException {
-        List<ComponentAddress> addresses;
-        addresses = new ArrayList<>();
-
-        if (sequence.size() > CONFIGMAX) {
-            throw new IllegalArgumentException("Component identifier contains invalid number "
-                    + "of component addresses.");
-        }
-        //Get the components
-        for (int i = 0; i < sequence.size(); i++) {
-            ASN1Sequence address = ASN1Sequence.getInstance(sequence.getObjectAt(i));
-            addresses.add(new ComponentAddress(address));
-        }
-
-        return Collections.unmodifiableList(addresses);
     }
 
     @Override

@@ -1,6 +1,5 @@
 package hirs.data.persist.certificate.attributes;
 
-import hirs.data.persist.DeviceInfoReport;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -32,6 +31,10 @@ import org.bouncycastle.asn1.DERUTF8String;
  */
 public class ComponentIdentifier {
 
+    /**
+     * Variable for components that aren't set.
+     */
+    public static final String EMPTY_COMPONENT = " --- ";
     /**
      * Maximum number of configurations.
      */
@@ -72,10 +75,10 @@ public class ComponentIdentifier {
      * Default constructor.
      */
     public ComponentIdentifier() {
-        componentManufacturer = new DERUTF8String(DeviceInfoReport.NOT_SPECIFIED);
-        componentModel = new DERUTF8String(DeviceInfoReport.NOT_SPECIFIED);
-        componentSerial = new DERUTF8String(DeviceInfoReport.NOT_SPECIFIED);
-        componentRevision = new DERUTF8String(DeviceInfoReport.NOT_SPECIFIED);
+        componentManufacturer = new DERUTF8String(EMPTY_COMPONENT);
+        componentModel = new DERUTF8String(EMPTY_COMPONENT);
+        componentSerial = new DERUTF8String(EMPTY_COMPONENT);
+        componentRevision = new DERUTF8String(EMPTY_COMPONENT);
         componentManufacturerId = null;
         fieldReplaceable = null;
         componentAddress = new ArrayList<>();
@@ -116,7 +119,7 @@ public class ComponentIdentifier {
     public ComponentIdentifier(final ASN1Sequence sequence) throws IllegalArgumentException {
         // set all optional values to default in case they aren't set.
         this();
-        //Check if it have a valid number of identifers
+        //Check if it have a valid number of identifiers
         if (sequence.size() < MANDATORY_ELEMENTS) {
             throw new IllegalArgumentException("Component identifier do not have required values.");
         }
@@ -143,7 +146,7 @@ public class ComponentIdentifier {
                     break;
                 case COMPONENT_ADDRESS:
                     ASN1Sequence addressesSequence = ASN1Sequence.getInstance(taggedObj, false);
-                    componentAddress = retriveComponentAddress(addressesSequence);
+                    componentAddress = retrieveComponentAddress(addressesSequence);
                     break;
                 default:
                     throw new IllegalArgumentException("Component identifier contains "
@@ -264,7 +267,7 @@ public class ComponentIdentifier {
      * @return list of component addresses inside the sequence
      * @throws IllegalArgumentException if there was an error on the parsing
      */
-    public static List<ComponentAddress> retriveComponentAddress(final ASN1Sequence sequence)
+    public static List<ComponentAddress> retrieveComponentAddress(final ASN1Sequence sequence)
             throws IllegalArgumentException {
         List<ComponentAddress> addresses;
         addresses = new ArrayList<>();

@@ -1,6 +1,5 @@
 package hirs.data.persist.certificate.attributes.V2;
 
-import hirs.data.persist.certificate.attributes.ComponentIdentifier;
 import hirs.data.persist.certificate.attributes.PlatformConfiguration;
 import hirs.data.persist.certificate.attributes.PlatformProperty;
 import hirs.data.persist.certificate.attributes.URIReference;
@@ -55,7 +54,7 @@ public class PlatformConfigurationV2 extends PlatformConfiguration {
                         //DERSequence with the components
                         ASN1Sequence component
                                 = ASN1Sequence.getInstance(componentConfiguration.getObjectAt(j));
-                        add(new ComponentIdentifier(component));
+                        add(new ComponentIdentifierV2(component));
                     }
                     break;
                 case COMPONENT_IDENTIFIER_URI:
