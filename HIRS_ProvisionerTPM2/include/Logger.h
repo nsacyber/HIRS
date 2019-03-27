@@ -18,7 +18,7 @@ namespace log {
 class Logger {
  private:
     static const char* const kDefaultProvisionerLoggerName;
-    static const char* const PROP_FILE_LOC;
+    static const char* const kPropFileLocation;
 
     const log4cplus::Logger kLogger;
 
