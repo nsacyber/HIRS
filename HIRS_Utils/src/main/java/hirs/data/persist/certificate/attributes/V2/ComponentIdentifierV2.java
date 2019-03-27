@@ -3,12 +3,15 @@ package hirs.data.persist.certificate.attributes.V2;
 import hirs.data.persist.DeviceInfoReport;
 import hirs.data.persist.certificate.attributes.CertificateIdentifier;
 import hirs.data.persist.certificate.attributes.ComponentAddress;
+import hirs.data.persist.certificate.attributes.ComponentClass;
 import hirs.data.persist.certificate.attributes.ComponentIdentifier;
 import hirs.data.persist.certificate.attributes.URIReference;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import org.bouncycastle.asn1.ASN1Boolean;
 import org.bouncycastle.asn1.ASN1Enumerated;
@@ -38,6 +41,7 @@ import org.bouncycastle.asn1.DERUTF8String;
  * </pre>
  */
 public class ComponentIdentifierV2 extends ComponentIdentifier {
+    private static final Logger LOGGER = LogManager.getLogger(ComponentIdentifierV2.class);
 
     private static final String COMPONENT_CLASS = "2.23.133.18.3.1";
     private static final int MANDATORY_ELEMENTS = 3;
@@ -46,7 +50,7 @@ public class ComponentIdentifierV2 extends ComponentIdentifier {
     private static final int COMPONENT_PLATFORM_URI = 6;
     private static final int ATTRIBUTE_STATUS = 7;
 
-    private String componentClass;
+    private ComponentClass componentClass;
     private CertificateIdentifier certificateIdentifier;
     private URIReference componentPlatformUri;
     private AttributeStatus attributeStatus;
@@ -105,7 +109,7 @@ public class ComponentIdentifierV2 extends ComponentIdentifier {
      */
     public ComponentIdentifierV2() {
         super();
-        componentClass = DeviceInfoReport.NOT_SPECIFIED;
+        componentClass = new ComponentClass();
         certificateIdentifier = null;
         componentPlatformUri = null;
         attributeStatus = AttributeStatus.NOT_SPECIFIED;
@@ -126,7 +130,8 @@ public class ComponentIdentifierV2 extends ComponentIdentifier {
      * @param componentPlatformUri object containing the URI Reference
      * @param attributeStatus object containing enumerated status
      */
-    public ComponentIdentifierV2(final String componentClass,
+    @SuppressWarnings("checkstyle:parameternumber")
+    public ComponentIdentifierV2(final ComponentClass componentClass,
             final DERUTF8String componentManufacturer,
             final DERUTF8String componentModel,
             final DERUTF8String componentSerial,
@@ -152,7 +157,8 @@ public class ComponentIdentifierV2 extends ComponentIdentifier {
      * @param sequence containing the the component identifier
      * @throws IllegalArgumentException if there was an error on the parsing
      */
-    public ComponentIdentifierV2(final ASN1Sequence sequence) throws IllegalArgumentException {
+    public ComponentIdentifierV2(final ASN1Sequence sequence)
+            throws IllegalArgumentException {
         // set all optional values to default in case they aren't set.
         super();
         //Check if it have a valid number of identifers
@@ -162,11 +168,14 @@ public class ComponentIdentifierV2 extends ComponentIdentifier {
 
         int tag = 0;
 
-        // TDM this will error, need changes from ComponentClass Issue
+        LOGGER.warn("We are trying to do this now.....");
         ASN1Sequence componentIdSeq = ASN1Sequence.getInstance(sequence.getObjectAt(tag++));
-        componentClass = DEROctetString.getInstance(componentIdSeq
-                .getObjectAt(tag))
+        LOGGER.warn("We did one thing so far.....");
+        String cClass = DEROctetString.getInstance(componentIdSeq.getObjectAt(tag))
                 .toString();
+        LOGGER.warn("We got a string.....");
+        LOGGER.warn(cClass);
+        componentClass = new ComponentClass(cClass);
 
         //Mandatory values
         this.setComponentManufacturer(DERUTF8String.getInstance(sequence.getObjectAt(tag++)));
@@ -183,7 +192,8 @@ public class ComponentIdentifierV2 extends ComponentIdentifier {
                     this.setComponentRevision(DERUTF8String.getInstance(taggedObj, false));
                     break;
                 case COMPONENT_MANUFACTURER_ID:
-                    this.setComponentManufacturerId(ASN1ObjectIdentifier.getInstance(taggedObj, false));
+                    this.setComponentManufacturerId(ASN1ObjectIdentifier
+                            .getInstance(taggedObj, false));
                     break;
                 case FIELD_REPLACEABLE:
                     this.setFieldReplaceable(ASN1Boolean.getInstance(taggedObj, false));
@@ -215,14 +225,14 @@ public class ComponentIdentifierV2 extends ComponentIdentifier {
     /**
      * @return string for the type of component.
      */
-    public String getComponentClass() {
+    public ComponentClass getComponentClass() {
         return componentClass;
     }
 
     /**
      * @param componentClass the type of component to set
      */
-    public void setComponentClass(final String componentClass) {
+    public void setComponentClass(final ComponentClass componentClass) {
         this.componentClass = componentClass;
     }
 
@@ -233,6 +243,9 @@ public class ComponentIdentifierV2 extends ComponentIdentifier {
         return certificateIdentifier;
     }
 
+    /**
+     * @param certificateIdentifier the certificate id to set
+     */
     public void setCertificateIdentifier(final CertificateIdentifier certificateIdentifier) {
         this.certificateIdentifier = certificateIdentifier;
     }

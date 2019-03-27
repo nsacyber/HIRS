@@ -617,7 +617,7 @@
                                                                 <div class="panel-body">
                                                                     <span class="fieldHeader">Manufacturer:</span>
                                                                     <span class="fieldValue">${component.getComponentManufacturer()}</span><br/>
-                                                                    <span class="fieldHeader">Model</span>
+                                                                    <span class="fieldHeader">Model:</span>
                                                                     <span class="fieldValue">${component.getComponentModel()}</span><br/>                                                                    
                                                                     <c:if test="${not empty fn:trim(component.getComponentSerial())}">
                                                                         <span class="fieldHeader">Serial Number:</span>

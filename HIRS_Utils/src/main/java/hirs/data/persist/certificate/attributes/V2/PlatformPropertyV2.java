@@ -1,7 +1,6 @@
 package hirs.data.persist.certificate.attributes.V2;
 
 import hirs.data.persist.certificate.attributes.PlatformProperty;
-import hirs.data.persist.certificate.attributes.V2.ComponentIdentifierV2;
 import hirs.data.persist.certificate.attributes.V2.ComponentIdentifierV2.AttributeStatus;
 import org.bouncycastle.asn1.ASN1Enumerated;
 import org.bouncycastle.asn1.ASN1Sequence;
@@ -9,7 +8,7 @@ import org.bouncycastle.asn1.DERUTF8String;
 
 /**
  *
- * Basic class that handle a single property for the platform configuration.
+ * Basic class that handles a single property for the platform configuration.
  * <pre>
  * Properties ::= SEQUENCE {
  *      propertyName UTF8String (SIZE (1..STRMAX)),
@@ -21,7 +20,7 @@ import org.bouncycastle.asn1.DERUTF8String;
 public class PlatformPropertyV2 extends PlatformProperty {
 
     /**
-     * Number of identifiers for version 2
+     * Number of identifiers for version 2.
      */
     private static final int IDENTIFIER_NUMBER = 3;
 

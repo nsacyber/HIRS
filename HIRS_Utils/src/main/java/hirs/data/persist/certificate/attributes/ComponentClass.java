@@ -58,6 +58,13 @@ public class ComponentClass {
     private int componentIdentifier;
 
     /**
+     * Default class constructor.
+     */
+    public ComponentClass() {
+        this(JSON_PATH, UNKNOWN);
+    }
+
+    /**
      * Class Constructor that takes a int representation of the component value.
      *
      * @param componentIdentifier component value
