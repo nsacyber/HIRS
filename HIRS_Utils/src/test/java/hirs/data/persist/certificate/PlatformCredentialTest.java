@@ -60,7 +60,7 @@ public class PlatformCredentialTest {
      * Location of another, slightly different platform attribute cert.
      */
     static final String TEST_PLATFORM_CERT_6 =
-            "/validation/platform_credentials/Intel_nuc1.cer";
+            "/validation/platform_credentials/TPM_INTC_Platform_Cert_RSA.txt";
 
     /**
      * Platform Certificate 2.0 with all the expected data.
@@ -142,7 +142,7 @@ public class PlatformCredentialTest {
                     + "D1098B0EB8C7E750D16FC99DADB0B32DF27B74F7BA1560DA56C3635"
                     + "47E84124E560B71D40B729326FC5";
 
-    private static final String EXPECTED_CERT_SIGANTURE_FOR_CERT2_1 =
+    private static final String EXPECTED_CERT_SIGNATURE_FOR_CERT2_1 =
             "MIIDZTCCAk2gAwIBAgIBATANBgkqhkiG9w0BAQUFADBUMQswCQYDVQQGEwJVUzEUMBI"
             + "GA1UECgwLRXhhbXBsZS5vcmcxDTALBgNVBAsMBHRlc3QxIDAeBgNVBAMMF1BsYXRmb"
             + "3JtIENlcnRpZmljYXRlIENBMB4XDTE4MDQwNDE2NDUyMloXDTI4MDQwMzE2NDUyMlow"
@@ -389,7 +389,7 @@ public class PlatformCredentialTest {
         PlatformCredential platformCert = new PlatformCredential(certPath);
 
         Certificate issuer = new CertificateAuthorityCredential(
-                                    Base64.decode(EXPECTED_CERT_SIGANTURE_FOR_CERT2_1));
+                                    Base64.decode(EXPECTED_CERT_SIGNATURE_FOR_CERT2_1));
 
         //Check if issuer certificate issued the platform credential
         Assert.assertTrue(platformCert.isIssuer(issuer));
@@ -402,7 +402,7 @@ public class PlatformCredentialTest {
      * @throws URISyntaxException if there is a problem constructing the cert's URI
      */
     @Test
-    public final void testPlatformConfiguarion() throws IOException, URISyntaxException {
+    public final void testPlatformConfiguration() throws IOException, URISyntaxException {
 
         URL resource = this.getClass().getResource(TEST_PLATFORM_CERT2_1);
         Path certPath = Paths.get(resource.toURI());
@@ -490,7 +490,7 @@ public class PlatformCredentialTest {
      * @throws URISyntaxException if there is a problem constructing the cert's URI
      */
     @Test
-    public final void testPlatformConfiguarion2() throws IOException, URISyntaxException {
+    public final void testPlatformConfiguration2() throws IOException, URISyntaxException {
 
         URL resource = this.getClass().getResource(TEST_PLATFORM_CERT2_2);
         Path certPath = Paths.get(resource.toURI());
@@ -528,7 +528,7 @@ public class PlatformCredentialTest {
      * @throws URISyntaxException if there is a problem constructing the cert's URI
      */
     @Test
-    public final void testPlatformConfiguarion3() throws IOException, URISyntaxException {
+    public final void testPlatformConfiguration3() throws IOException, URISyntaxException {
 
         URL resource = this.getClass().getResource(TEST_PLATFORM_CERT2_3);
         Path certPath = Paths.get(resource.toURI());
@@ -559,7 +559,9 @@ public class PlatformCredentialTest {
         Assert.assertTrue(component.getComponentModel()
                                         .getString()
                                         .equals("BIOS"));
-        Assert.assertNull(component.getComponentSerial());
+        Assert.assertTrue(component.getComponentSerial()
+                                        .getString()
+                                        .equals(" --- "));
         Assert.assertTrue(component.getComponentRevision()
                                         .getString()
                                         .equals("DNKBLi5v.86A.0019.2017.0804.1146"));
@@ -599,7 +601,7 @@ public class PlatformCredentialTest {
      * @throws URISyntaxException if there is a problem constructing the cert's URI
      */
     @Test
-    public final void testPlatformConfiguarion4() throws IOException, URISyntaxException {
+    public final void testPlatformConfiguration4() throws IOException, URISyntaxException {
 
         URL resource = this.getClass().getResource(TEST_PLATFORM_CERT2_4);
         Path certPath = Paths.get(resource.toURI());
@@ -672,7 +674,7 @@ public class PlatformCredentialTest {
      * @throws URISyntaxException if there is a problem constructing the cert's URI
      */
     @Test
-    public final void testPlatformConfiguarion5() throws IOException, URISyntaxException {
+    public final void testPlatformConfiguration5() throws IOException, URISyntaxException {
 
         URL resource = this.getClass().getResource(TEST_PLATFORM_CERT2_SPEC2);
         Path certPath = Paths.get(resource.toURI());
@@ -683,6 +685,8 @@ public class PlatformCredentialTest {
         //Check component identifier
         List<ComponentIdentifier> allComponents = platformConfig.getComponentIdentifier();
         Assert.assertFalse(allComponents.isEmpty());
+        ComponentIdentifier component = allComponents.get(5);
+        Assert.assertTrue(component.isVersion2());
 
         List<PlatformProperty> platformProperties = platformConfig.getPlatformProperties();
         if (platformProperties.isEmpty()) {

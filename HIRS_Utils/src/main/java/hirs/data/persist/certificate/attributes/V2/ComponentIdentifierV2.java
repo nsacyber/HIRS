@@ -7,8 +7,6 @@ import hirs.data.persist.certificate.attributes.ComponentIdentifier;
 import hirs.data.persist.certificate.attributes.URIReference;
 import java.util.List;
 import java.util.stream.Collectors;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 
 import org.bouncycastle.asn1.ASN1Boolean;
 import org.bouncycastle.asn1.ASN1Enumerated;
@@ -38,75 +36,24 @@ import org.bouncycastle.asn1.DERUTF8String;
  * </pre>
  */
 public class ComponentIdentifierV2 extends ComponentIdentifier {
-    private static final Logger LOGGER = LogManager.getLogger(ComponentIdentifierV2.class);
 
-    private static final String COMPONENT_CLASS = "2.23.133.18.3.1";
     private static final int MANDATORY_ELEMENTS = 3;
-
+    // Additional optional identifiers for version 2
     private static final int COMPONENT_PLATFORM_CERT = 5;
     private static final int COMPONENT_PLATFORM_URI = 6;
     private static final int ATTRIBUTE_STATUS = 7;
 
-    private String componentClass;
+    private ComponentClass componentClass;
     private CertificateIdentifier certificateIdentifier;
     private URIReference componentPlatformUri;
     private AttributeStatus attributeStatus;
-
-    /**
-     * A type to handle the security Level used in the FIPS Level.
-     * Ordering of enum types is intentional and their ordinal values correspond to enum
-     * values in the TCG spec.
-     *
-     * <pre>
-     * AttributeStatus ::= ENUMERATED {
-     *      added (0),
-     *      modified (1),
-     *      removed (2)}
-     * </pre>
-     */
-    public enum AttributeStatus {
-        /**
-         * Attribute Status for ADDED.
-         */
-        ADDED("added"),
-        /**
-         * Attribute Status for MODIFIED.
-         */
-        MODIFIED("modified"),
-        /**
-         * Attribute Status for REMOVED.
-         */
-        REMOVED("removed"),
-        /**
-         * Attribute Status for NOT_SPECIFIED.
-         */
-        NOT_SPECIFIED(EMPTY_COMPONENT);
-
-        private final String value;
-
-        /**
-         * Basic constructor.
-         * @param value string containing the value.
-         */
-        AttributeStatus(final String value) {
-            this.value = value;
-        }
-
-        /**
-         * Getter for the string of attribute status value.
-         * @return the string containing the value.
-         */
-        public String getValue() {
-            return this.value;
-        }
-    }
 
     /**
      * Default constructor.
      */
     public ComponentIdentifierV2() {
         super();
-        componentClass = EMPTY_COMPONENT;
+        componentClass = new ComponentClass();
         certificateIdentifier = null;
         componentPlatformUri = null;
         attributeStatus = AttributeStatus.NOT_SPECIFIED;
@@ -128,7 +75,7 @@ public class ComponentIdentifierV2 extends ComponentIdentifier {
      * @param attributeStatus object containing enumerated status
      */
     @SuppressWarnings("checkstyle:parameternumber")
-    public ComponentIdentifierV2(final String componentClass,
+    public ComponentIdentifierV2(final ComponentClass componentClass,
             final DERUTF8String componentManufacturer,
             final DERUTF8String componentModel,
             final DERUTF8String componentSerial,
@@ -166,7 +113,7 @@ public class ComponentIdentifierV2 extends ComponentIdentifier {
         int tag = 0;
         ASN1Sequence componentIdSeq = ASN1Sequence.getInstance(sequence.getObjectAt(tag++));
         componentClass = new ComponentClass(DEROctetString.getInstance(componentIdSeq
-                .getObjectAt(tag)).toString()).toString();
+                .getObjectAt(tag)).toString());
 
         //Mandatory values
         this.setComponentManufacturer(DERUTF8String.getInstance(sequence.getObjectAt(tag++)));
@@ -216,14 +163,14 @@ public class ComponentIdentifierV2 extends ComponentIdentifier {
     /**
      * @return string for the type of component.
      */
-    public String getComponentClass() {
+    public ComponentClass getComponentClass() {
         return componentClass;
     }
 
     /**
      * @param componentClass the type of component to set
      */
-    public void setComponentClass(final String componentClass) {
+    public void setComponentClass(final ComponentClass componentClass) {
         this.componentClass = componentClass;
     }
 
