@@ -1,7 +1,6 @@
 package hirs.data.persist.certificate.attributes.V2;
 
 import hirs.data.persist.certificate.attributes.PlatformProperty;
-import hirs.data.persist.certificate.attributes.V2.ComponentIdentifierV2.AttributeStatus;
 import org.bouncycastle.asn1.ASN1Enumerated;
 import org.bouncycastle.asn1.ASN1Sequence;
 import org.bouncycastle.asn1.DERUTF8String;
@@ -22,7 +21,7 @@ public class PlatformPropertyV2 extends PlatformProperty {
     /**
      * Number of identifiers for version 2.
      */
-    private static final int IDENTIFIER_NUMBER = 3;
+    private static final int IDENTIFIER_NUMBER = 2;
 
     private AttributeStatus attributeStatus;
 
@@ -56,7 +55,7 @@ public class PlatformPropertyV2 extends PlatformProperty {
      */
     public PlatformPropertyV2(final ASN1Sequence sequence) throws IllegalArgumentException {
          //Check if the sequence contains the three values required
-        if (sequence.size() != IDENTIFIER_NUMBER) {
+        if (sequence.size() < IDENTIFIER_NUMBER) {
             throw new IllegalArgumentException("Platform properties does not contain all "
                     + "the required fields.");
         }
@@ -64,10 +63,11 @@ public class PlatformPropertyV2 extends PlatformProperty {
         setPropertyName(DERUTF8String.getInstance(sequence.getObjectAt(0)));
         setPropertyValue(DERUTF8String.getInstance(sequence.getObjectAt(1)));
 
-        ASN1Enumerated enumerated = ASN1Enumerated.getInstance(sequence.getObjectAt(2));
-        this.attributeStatus = ComponentIdentifierV2.AttributeStatus.values()[
-                            enumerated.getValue().intValue()];
-
+        // optional value which is a placeholder for now
+        if (sequence.size() > IDENTIFIER_NUMBER) {
+            ASN1Enumerated enumerated = ASN1Enumerated.getInstance(sequence.getObjectAt(2));
+            this.attributeStatus = AttributeStatus.values()[enumerated.getValue().intValue()];
+        }
     }
 
     /**

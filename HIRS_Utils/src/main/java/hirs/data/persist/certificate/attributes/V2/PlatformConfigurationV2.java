@@ -71,7 +71,7 @@ public class PlatformConfigurationV2 extends PlatformConfiguration {
                     for (int j = 0; j < properties.size(); j++) {
                         //DERSequence with the components
                         ASN1Sequence property = ASN1Sequence.getInstance(properties.getObjectAt(j));
-                        add(new PlatformProperty(property));
+                        add(new PlatformPropertyV2(property));
                     }
                     break;
                 case PLATFORM_PROPERTIES_URI:

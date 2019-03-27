@@ -311,7 +311,7 @@ public class CertificateTest {
                 "https://trustedservices.intel.com/"
                         + "content/TSC/certs/TSC_IssuingCAIKGF_TEST.cer\n");
         Assert.assertEquals(platformCert.getAuthKeyId(),
-                "3c06b9fb63a53ca57c6b87433339f1dca807fba4");
+                "a5ecc6c07da02c6af8764d4e5c16483610a0b040");
     }
 
     /**
