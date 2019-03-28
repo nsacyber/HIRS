@@ -46,7 +46,7 @@ public class DeviceHealthManagerImplTest {
     private AlertManager alertManager;
 
     @Mock
-    @Qualifier("general_db_man_bean")
+    @Qualifier(PersistenceConfiguration.DEVICE_STATE_MANAGER_BEAN_NAME)
     private DeviceStateManager deviceStateManager;
 
     @Mock
