@@ -219,13 +219,17 @@ if [[ $1 = "server" ]]; then
         chmod -R 770 $MYSQL_CERT_DIR
 
         # update MySQL/MariaDB SSL and index configuration
-        CENTOS_VER=`/opt/hirs/scripts/common/get_centos_major_version.sh`
+	if [[ -f /etc/redhat-release ]] ; then
+	CENTOS_VER=`/opt/hirs/scripts/common/get_centos_major_version.sh`
+	elif [[ -f /etc/os-release ]] ; then
+	AMAZON_VER=`/opt/hirs/scripts/common/get_amazon_linux_major_version.sh`
+	fi
         if [ $CENTOS_VER -eq "6" ] ; then
             MYSQL_ADDITIONS_FILE=/opt/hirs/scripts/common/my.cnf.el6
-        elif [ $CENTOS_VER -eq "7" ] ; then
+	elif [ $CENTOS_VER -eq "7" ] || [ $AMAZON_VER -eq "2" ] ; then
             MYSQL_ADDITIONS_FILE=/opt/hirs/scripts/common/my.cnf.el7
         else
-            echo "Unsupported CentOS version: ${CENTOS_VER}"
+	    echo "Unsupported Linux detected"
             exit 1
         fi
 

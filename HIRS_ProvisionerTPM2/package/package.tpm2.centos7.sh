@@ -3,8 +3,8 @@ set -e
 
 # Check packager OS is Centos
 OS_NAME=$(awk -F= '/^NAME/{print $2}' /etc/os-release)
-if [ "$OS_NAME" != "\"CentOS Linux\"" ]; then
-    echo "Error: RPMs must be built with CentOS"
+if [ "$OS_NAME" != "\"CentOS Linux\"" ] && [ "$OS_NAME" != "\"Amazon Linux\"" ] ; then
+    echo "Error: RPMs must be built with CentOS or Amazon Linux"
     exit 1
 fi
 

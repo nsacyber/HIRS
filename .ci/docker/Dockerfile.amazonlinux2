@@ -1,0 +1,17 @@
+FROM amazonlinux:2
+
+MAINTAINER apl.dev3@jhuapl.edu
+
+# Install packages for building HIRS
+RUN yum -y update && yum clean all
+RUN yum groupinstall -y "Development Tools"
+RUN yum install -y wget java-1.8.0-openjdk-devel protobuf-compiler rpm-build cmake make git gcc-c++ doxygen graphviz python libssh2-devel openssl protobuf-devel tpm2-tss-devel trousers-devel libcurl-devel
+
+# Install EPEL
+WORKDIR /tmp
+RUN wget -O epel.rpm -nv https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm
+RUN yum install -y ./epel.rpm
+RUN yum install -y cppcheck log4cplus-devel re2-devel
+
+# Set Environment Variables
+ENV JAVA_HOME /usr/lib/jvm/java
