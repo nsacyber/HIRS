@@ -11,7 +11,6 @@ import org.bouncycastle.asn1.ASN1Encodable;
 import org.bouncycastle.asn1.ASN1Integer;
 import org.bouncycastle.asn1.ASN1Primitive;
 import org.bouncycastle.asn1.ASN1Sequence;
-import org.bouncycastle.asn1.DERBitString;
 import org.bouncycastle.asn1.x500.X500Name;
 import org.bouncycastle.asn1.x500.style.RFC4519Style;
 import org.bouncycastle.asn1.x500.AttributeTypeAndValue;
@@ -83,8 +82,6 @@ public abstract class Certificate extends ArchivableEntity {
     private static final String PEM_ATTRIBUTE_HEADER = "-----BEGIN ATTRIBUTE CERTIFICATE-----";
     private static final String PEM_ATTRIBUTE_FOOTER = "-----END ATTRIBUTE CERTIFICATE-----";
     private static final String MALFORMED_CERT_MESSAGE = "Malformed certificate detected.";
-    private static final String NO_CERTIFICATE_SIGNATURE_MESSAGE =
-            "No signature was found on the provided certificate.";
     private static final int MAX_CERT_LENGTH_BYTES = 2048;
     private static final int MAX_NUMERIC_PRECISION = 49; // Can store up to 160 bit values
     private static final int MAX_PUB_KEY_MODULUS_HEX_LENGTH = 1024;
@@ -313,6 +310,7 @@ public abstract class Certificate extends ArchivableEntity {
      * @param certificateBytes the contents of a certificate file
      * @throws IOException if there is a problem extracting information from the certificate
      */
+    @SuppressWarnings("methodlength")
     public Certificate(final byte[] certificateBytes) throws IOException {
         Preconditions.checkArgument(
                 certificateBytes != null,
@@ -357,14 +355,7 @@ public abstract class Certificate extends ArchivableEntity {
                 }
                 this.publicKeyAlgorithm = x509Certificate.getPublicKey().getAlgorithm();
                 this.signatureAlgorithm = x509Certificate.getSigAlgName();
-
-                byte[] signature = x509Certificate.getSignature();
-                if (signature != null) {
-                    this.signature = signature;
-                } else {
-                    throw new IllegalArgumentException(NO_CERTIFICATE_SIGNATURE_MESSAGE);
-                }
-
+                this.signature = x509Certificate.getSignature();
                 this.beginValidity = x509Certificate.getNotBefore();
                 this.endValidity = x509Certificate.getNotAfter();
                 this.holderSerialNumber = BigInteger.ZERO;
@@ -398,8 +389,8 @@ public abstract class Certificate extends ArchivableEntity {
                 AttributeCertificate attCert = getAttributeCertificate();
                 AttributeCertificateInfo attCertInfo = attCert.getAcinfo();
                 if (attCertInfo == null) {
-                    throw new IllegalArgumentException("Required attribute certificate info" +
-                            " field not found in provided attribute certificate.");
+                    throw new IllegalArgumentException("Required attribute certificate info"
+                            + " field not found in provided attribute certificate.");
                 }
 
                 // Set null values (Attribute certificates do not have this values)
@@ -409,6 +400,7 @@ public abstract class Certificate extends ArchivableEntity {
                 this.publicKeyModulusHexValue = null;
                 this.publicKeySize = 0;
 
+                authKeyIdentifier = null;
                 Extensions attCertInfoExtensions = attCertInfo.getExtensions();
                 if (attCertInfoExtensions != null) {
                     authKeyIdentifier = AuthorityKeyIdentifier
@@ -416,8 +408,6 @@ public abstract class Certificate extends ArchivableEntity {
                     this.authorityInfoAccess = getAuthorityInfoAccess(
                             AuthorityInformationAccess.fromExtensions(
                                     attCertInfoExtensions));
-                } else {
-                    authKeyIdentifier = null;
                 }
 
                 switch (attCert.getSignatureAlgorithm().getAlgorithm().getId()) {
@@ -441,12 +431,7 @@ public abstract class Certificate extends ArchivableEntity {
                 this.holderIssuer = attCertInfo.getHolder()
                         .getBaseCertificateID().getIssuer()
                         .getNames()[0].getName().toString();
-                DERBitString sigValue = attCert.getSignatureValue();
-                if (sigValue != null) {
-                    this.signature = sigValue.getBytes();
-                } else {
-                    throw new IllegalArgumentException(NO_CERTIFICATE_SIGNATURE_MESSAGE);
-                }
+                this.signature = attCert.getSignatureValue().getBytes();
                 this.issuer = getAttributeCertificateIssuerNames(
                                         attCertInfo.getIssuer())[0].toString();
                 this.issuerOrganization = getOrganization(this.issuer);
