@@ -359,14 +359,7 @@
                             <div id="manufacturer">Manufacturer:&nbsp;<span>${initialData.manufacturer}</span></div>
                             <div id="model">Model:&nbsp;<span>${initialData.model}</span></div>
                             <div id="version">Version:&nbsp;<span>${initialData.version}</span></div>
-                            <c:choose>
-                                <c:when test="${fn:contains(initialData.credentialType, 'TCG')}">
-                                    <div id="serial">Serial Number:&nbsp;<span>${initialData.platformSerial}</span></div>
-                                </c:when>
-                                <c:otherwise>
-                                    <div id="serial">Serial Number:&nbsp;<span>${initialData.chassisSerialNumber}</span></div>
-                                </c:otherwise>
-                            </c:choose>
+                            <div id="serial">Serial Number:&nbsp;<span>${initialData.platformSerial}</span></div>
                         </div>                        
                     </div>
                     <div class="row">
