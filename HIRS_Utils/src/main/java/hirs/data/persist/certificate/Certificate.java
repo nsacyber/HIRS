@@ -11,6 +11,7 @@ import org.bouncycastle.asn1.ASN1Encodable;
 import org.bouncycastle.asn1.ASN1Integer;
 import org.bouncycastle.asn1.ASN1Primitive;
 import org.bouncycastle.asn1.ASN1Sequence;
+import org.bouncycastle.asn1.DERBitString;
 import org.bouncycastle.asn1.x500.X500Name;
 import org.bouncycastle.asn1.x500.style.RFC4519Style;
 import org.bouncycastle.asn1.x500.AttributeTypeAndValue;
@@ -18,6 +19,7 @@ import org.bouncycastle.asn1.x500.RDN;
 import org.bouncycastle.asn1.x509.AttributeCertificate;
 import org.bouncycastle.asn1.x509.AttributeCertificateInfo;
 import org.bouncycastle.asn1.x509.AttCertIssuer;
+import org.bouncycastle.asn1.x509.Extensions;
 import org.bouncycastle.asn1.x509.V2Form;
 import org.bouncycastle.asn1.x509.GeneralNames;
 import org.bouncycastle.cert.X509AttributeCertificateHolder;
@@ -81,6 +83,8 @@ public abstract class Certificate extends ArchivableEntity {
     private static final String PEM_ATTRIBUTE_HEADER = "-----BEGIN ATTRIBUTE CERTIFICATE-----";
     private static final String PEM_ATTRIBUTE_FOOTER = "-----END ATTRIBUTE CERTIFICATE-----";
     private static final String MALFORMED_CERT_MESSAGE = "Malformed certificate detected.";
+    private static final String NO_CERTIFICATE_SIGNATURE_MESSAGE =
+            "No signature was found on the provided certificate.";
     private static final int MAX_CERT_LENGTH_BYTES = 2048;
     private static final int MAX_NUMERIC_PRECISION = 49; // Can store up to 160 bit values
     private static final int MAX_PUB_KEY_MODULUS_HEX_LENGTH = 1024;
@@ -353,7 +357,14 @@ public abstract class Certificate extends ArchivableEntity {
                 }
                 this.publicKeyAlgorithm = x509Certificate.getPublicKey().getAlgorithm();
                 this.signatureAlgorithm = x509Certificate.getSigAlgName();
-                this.signature = x509Certificate.getSignature();
+
+                byte[] signature = x509Certificate.getSignature();
+                if (signature != null) {
+                    this.signature = signature;
+                } else {
+                    throw new IllegalArgumentException(NO_CERTIFICATE_SIGNATURE_MESSAGE);
+                }
+
                 this.beginValidity = x509Certificate.getNotBefore();
                 this.endValidity = x509Certificate.getNotAfter();
                 this.holderSerialNumber = BigInteger.ZERO;
@@ -386,6 +397,10 @@ public abstract class Certificate extends ArchivableEntity {
             case ATTRIBUTE_CERTIFICATE:
                 AttributeCertificate attCert = getAttributeCertificate();
                 AttributeCertificateInfo attCertInfo = attCert.getAcinfo();
+                if (attCertInfo == null) {
+                    throw new IllegalArgumentException("Required attribute certificate info" +
+                            " field not found in provided attribute certificate.");
+                }
 
                 // Set null values (Attribute certificates do not have this values)
                 this.subject = null;
@@ -394,11 +409,16 @@ public abstract class Certificate extends ArchivableEntity {
                 this.publicKeyModulusHexValue = null;
                 this.publicKeySize = 0;
 
-                authKeyIdentifier = AuthorityKeyIdentifier
-                        .fromExtensions(attCertInfo.getExtensions());
-                this.authorityInfoAccess = getAuthorityInfoAccess(
-                        AuthorityInformationAccess.fromExtensions(
-                                attCertInfo.getExtensions()));
+                Extensions attCertInfoExtensions = attCertInfo.getExtensions();
+                if (attCertInfoExtensions != null) {
+                    authKeyIdentifier = AuthorityKeyIdentifier
+                            .fromExtensions(attCertInfoExtensions);
+                    this.authorityInfoAccess = getAuthorityInfoAccess(
+                            AuthorityInformationAccess.fromExtensions(
+                                    attCertInfoExtensions));
+                } else {
+                    authKeyIdentifier = null;
+                }
 
                 switch (attCert.getSignatureAlgorithm().getAlgorithm().getId()) {
                     case RSA256_OID:
@@ -421,7 +441,12 @@ public abstract class Certificate extends ArchivableEntity {
                 this.holderIssuer = attCertInfo.getHolder()
                         .getBaseCertificateID().getIssuer()
                         .getNames()[0].getName().toString();
-                this.signature = attCert.getSignatureValue().getBytes();
+                DERBitString sigValue = attCert.getSignatureValue();
+                if (sigValue != null) {
+                    this.signature = sigValue.getBytes();
+                } else {
+                    throw new IllegalArgumentException(NO_CERTIFICATE_SIGNATURE_MESSAGE);
+                }
                 this.issuer = getAttributeCertificateIssuerNames(
                                         attCertInfo.getIssuer())[0].toString();
                 this.issuerOrganization = getOrganization(this.issuer);
@@ -535,7 +560,7 @@ public abstract class Certificate extends ArchivableEntity {
     protected static String getOrganization(final String distinguishedName) {
         String organization = null;
 
-        // Return null for empy strings
+        // Return null for empty strings
         if (distinguishedName.isEmpty()) {
             return null;
         }
