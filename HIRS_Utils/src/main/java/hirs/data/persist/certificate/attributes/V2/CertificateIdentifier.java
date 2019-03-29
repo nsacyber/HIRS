@@ -1,8 +1,9 @@
-package hirs.data.persist.certificate.attributes;
+package hirs.data.persist.certificate.attributes.V2;
 
 import hirs.data.persist.DeviceInfoReport;
 import java.math.BigInteger;
 import org.bouncycastle.asn1.ASN1Sequence;
+import org.bouncycastle.asn1.DERUTF8String;
 import org.bouncycastle.asn1.x509.GeneralName;
 
 /**
@@ -27,7 +28,7 @@ public class CertificateIdentifier {
     private static final int IDENTIFIER_NUMBER = 2;
 
     private String hashAlgorithm;
-    private String hashSigValue;
+    private DERUTF8String hashSigValue;
     private GeneralName issuerDN;
     private BigInteger certificateSerialNumber;
 
@@ -36,12 +37,8 @@ public class CertificateIdentifier {
      */
     public CertificateIdentifier() {
         hashAlgorithm = DeviceInfoReport.NOT_SPECIFIED;
-        hashSigValue = DeviceInfoReport.NOT_SPECIFIED;
-        /**
-         * issuerDN is commented out to avoid findbugs error.
-         * TODO: implement sequence parse to set issuerDN.
-         */
-        // issuerDN = null;
+        hashSigValue = new DERUTF8String(DeviceInfoReport.NOT_SPECIFIED);
+        issuerDN = null;
         certificateSerialNumber = BigInteger.ZERO;
     }
 
@@ -56,9 +53,14 @@ public class CertificateIdentifier {
             throw new IllegalArgumentException("Component identifier do not have required values.");
         }
 
-        /**
-         * Placeholder for future reference.
-         */
+        // attributecertificateidentifier
+        ASN1Sequence attrCertSeq = ASN1Sequence.getInstance(sequence.getObjectAt(0));
+        hashAlgorithm = attrCertSeq.getObjectAt(0).toString();
+        hashSigValue = DERUTF8String.getInstance(attrCertSeq.getObjectAt(1));
+
+        // issuerserial
+        ASN1Sequence issuerSerialSeq = ASN1Sequence.getInstance(sequence.getObjectAt(1));
+        issuerDN = GeneralName.getInstance(issuerSerialSeq.getObjectAt(0));
     }
 
     /**
@@ -71,7 +73,7 @@ public class CertificateIdentifier {
     /**
      * @return the string representation of hash signature
      */
-    public String getHashSigValue() {
+    public DERUTF8String getHashSigValue() {
         return hashSigValue;
     }
 
@@ -97,10 +99,9 @@ public class CertificateIdentifier {
     public String toString() {
         StringBuilder sb = new StringBuilder();
 
-        sb.append("hashAlgorithm=");
-        sb.append(hashAlgorithm);
-        sb.append(", hashSigValue");
-        sb.append(hashSigValue);
+        sb.append("CertificateIdentifier{");
+        sb.append("hashAlgorithm=").append(hashAlgorithm);
+        sb.append(", hashSigValue").append(hashSigValue.toString());
         sb.append(", issuerDN=");
         if (issuerDN != null) {
             sb.append(issuerDN.toString());
@@ -110,8 +111,7 @@ public class CertificateIdentifier {
             sb.append(certificateSerialNumber.toString());
         }
 
+        sb.append("}");
         return sb.toString();
     }
-
-
 }
