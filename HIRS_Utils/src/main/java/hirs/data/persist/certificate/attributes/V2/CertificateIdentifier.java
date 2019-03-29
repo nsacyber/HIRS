@@ -37,7 +37,11 @@ public class CertificateIdentifier {
     public CertificateIdentifier() {
         hashAlgorithm = DeviceInfoReport.NOT_SPECIFIED;
         hashSigValue = DeviceInfoReport.NOT_SPECIFIED;
-        issuerDN = null;
+        /**
+         * issuerDN is commented out to avoid findbugs error.
+         * TODO: implement sequence parse to set issuerDN.
+         */
+        // issuerDN = null;
         certificateSerialNumber = BigInteger.ZERO;
     }
 
