@@ -52,8 +52,9 @@ public class CertificateIdentifier {
             throw new IllegalArgumentException("Component identifier do not have required values.");
         }
 
-        // placeholder for future reference.
-        issuerDN = GeneralName.getInstance(sequence);
+        /**
+         * Placeholder for future reference.
+         */
     }
 
     /**

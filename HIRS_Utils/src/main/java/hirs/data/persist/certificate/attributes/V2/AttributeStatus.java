@@ -1,6 +1,5 @@
 package hirs.data.persist.certificate.attributes.V2;
 
-
 import hirs.data.persist.certificate.attributes.ComponentIdentifier;
 
 /**
