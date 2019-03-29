@@ -89,8 +89,8 @@ public class ComponentIdentifierV2 extends ComponentIdentifier {
         super(componentManufacturer, componentModel, componentSerial,
                 componentRevision, componentManufacturerId, fieldReplaceable,
                 componentAddress);
-
         this.componentClass = componentClass;
+        // additional optional component identifiers
         this.certificateIdentifier = certificateIdentifier;
         this.componentPlatformUri = componentPlatformUri;
         this.attributeStatus = attributeStatus;
@@ -103,9 +103,8 @@ public class ComponentIdentifierV2 extends ComponentIdentifier {
      */
     public ComponentIdentifierV2(final ASN1Sequence sequence)
             throws IllegalArgumentException {
-        // set all optional values to default in case they aren't set.
         super();
-        //Check if it have a valid number of identifiers
+        // Check if it have a valid number of identifiers
         if (sequence.size() < MANDATORY_ELEMENTS) {
             throw new IllegalArgumentException("Component identifier do not have required values.");
         }
@@ -115,11 +114,11 @@ public class ComponentIdentifierV2 extends ComponentIdentifier {
         componentClass = new ComponentClass(DEROctetString.getInstance(componentIdSeq
                 .getObjectAt(tag)).toString());
 
-        //Mandatory values
+        // Mandatory values
         this.setComponentManufacturer(DERUTF8String.getInstance(sequence.getObjectAt(tag++)));
         this.setComponentModel(DERUTF8String.getInstance(sequence.getObjectAt(tag++)));
 
-        //Continue reading the sequence if it does contain more than 2 values
+        // Continue reading the sequence if it does contain more than 2 values
         for (int i = tag; i < sequence.size(); i++) {
             ASN1TaggedObject taggedObj = ASN1TaggedObject.getInstance(sequence.getObjectAt(i));
             switch (taggedObj.getTagNo()) {
@@ -241,12 +240,12 @@ public class ComponentIdentifierV2 extends ComponentIdentifier {
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
-        sb.append("ComponentIdentifier{");
+        sb.append("ComponentIdentifierV2{");
         sb.append("componentClass=").append(componentClass);
         sb.append(", componentManufacturer=").append(getComponentManufacturer()
                 .getString());
         sb.append(", componentModel=").append(getComponentModel().getString());
-        //Optional not null values
+        // Optional not null values
         sb.append(", componentSerial=");
         if (getComponentSerial() != null) {
             sb.append(getComponentSerial().getString());

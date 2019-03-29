@@ -19,7 +19,7 @@ public class PlatformProperty {
     /**
      * Number of identifiers for version 1.
      */
-    private static final int IDENTIFIER_NUMBER = 2;
+    protected static final int IDENTIFIER_NUMBER = 2;
 
     private DERUTF8String propertyName;
     private DERUTF8String propertyValue;
@@ -51,8 +51,8 @@ public class PlatformProperty {
      * @throws IllegalArgumentException if there was an error on the parsing
      */
     public PlatformProperty(final ASN1Sequence sequence) throws IllegalArgumentException {
-         //Check if the sequence contains the two values required
-        if (sequence.size() < IDENTIFIER_NUMBER) {
+        // Check if the sequence contains the two values required
+        if (sequence.size() != IDENTIFIER_NUMBER) {
             throw new IllegalArgumentException("Platform properties does not contain all "
                     + "the required fields.");
         }

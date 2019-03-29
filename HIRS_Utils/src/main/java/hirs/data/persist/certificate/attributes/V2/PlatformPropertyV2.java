@@ -18,11 +18,6 @@ import org.bouncycastle.asn1.DERUTF8String;
  */
 public class PlatformPropertyV2 extends PlatformProperty {
 
-    /**
-     * Number of identifiers for version 2.
-     */
-    private static final int IDENTIFIER_NUMBER = 2;
-
     private AttributeStatus attributeStatus;
 
     /**
@@ -54,7 +49,7 @@ public class PlatformPropertyV2 extends PlatformProperty {
      * @throws IllegalArgumentException if there was an error on the parsing
      */
     public PlatformPropertyV2(final ASN1Sequence sequence) throws IllegalArgumentException {
-         //Check if the sequence contains the three values required
+        // Check if the sequence contains the two values required
         if (sequence.size() < IDENTIFIER_NUMBER) {
             throw new IllegalArgumentException("Platform properties does not contain all "
                     + "the required fields.");
@@ -102,10 +97,15 @@ public class PlatformPropertyV2 extends PlatformProperty {
 
     @Override
     public String toString() {
-        return "PlatformProperty{"
-                + "propertyName=" + getPropertyName().getString()
-                + ", propertyValue=" + getPropertyValue().getString()
-                + ", attributeStatus=" + attributeStatus.toString()
-                + "}";
+        StringBuilder sb = new StringBuilder();
+        sb.append("PlatformPropertyV2{");
+        sb.append("PropertyName=").append(getPropertyName().getString());
+        sb.append(", propertyValue=").append(getPropertyValue().getString());
+        if (attributeStatus != null) {
+            sb.append(", attributeStatus=").append(attributeStatus.toString());
+        }
+        sb.append("}");
+
+        return sb.toString();
     }
 }
