@@ -1,5 +1,6 @@
 package hirs.data.persist.certificate;
 
+import com.google.common.base.Preconditions;
 import hirs.data.persist.certificate.attributes.ComponentIdentifier;
 import hirs.data.persist.certificate.attributes.PlatformConfiguration;
 import hirs.data.persist.certificate.attributes.PlatformConfigurationV1;
@@ -55,20 +56,20 @@ public class PlatformCredential extends DeviceAssociatedCertificate {
     private static final String POLICY_QUALIFIER_CPSURI = "1.3.6.1.5.5.7.2.1";
     private static final String POLICY_QUALIFIER_USER_NOTICE = "1.3.6.1.5.5.7.2.2";
 
-    //OID for TCG Attributes
+    // OID for TCG Attributes
     private static final String PLATFORM_MANUFACTURER = "2.23.133.2.4";
     private static final String PLATFORM_MODEL = "2.23.133.2.5";
     private static final String PLATFORM_VERSION = "2.23.133.2.6";
     private static final String PLATFORM_SERIAL = "2.23.133.2.23";
     private static final String PLATFORM_BASEBOARD_CHASSIS_COMBINED = "2.23.133.5.1.6";
 
-    //OID for TCG Platform Class Common Attributes
+    // OID for TCG Platform Class Common Attributes
     private static final String PLATFORM_MANUFACTURER_2_0 = "2.23.133.5.1.1";
     private static final String PLATFORM_MODEL_2_0 = "2.23.133.5.1.4";
     private static final String PLATFORM_VERSION_2_0 = "2.23.133.5.1.5";
     private static final String PLATFORM_SERIAL_2_0 = "2.23.133.5.1.6";
 
-    //OID for Certificate Attributes
+    // OID for Certificate Attributes
     private static final String TCG_PLATFORM_SPECIFICATION = "2.23.133.2.17";
     private static final String TPM_SECURITY_ASSERTION = "2.23.133.2.18";
     private static final String TBB_SECURITY_ASSERTION = "2.23.133.2.19";
@@ -283,7 +284,7 @@ public class PlatformCredential extends DeviceAssociatedCertificate {
             AttributeCertificate attCert = getAttributeCertificate();
             AttributeCertificateInfo acinfo = getAttributeCertificate().getAcinfo();
 
-            //Check if the algorith identifier is the same
+            // Check if the algorith identifier is the same
             if (!isAlgIdEqual(acinfo.getSignature(), attCert.getSignatureAlgorithm())) {
                 throw new IOException("signature invalid - algorithm identifier mismatch");
             }
@@ -291,7 +292,7 @@ public class PlatformCredential extends DeviceAssociatedCertificate {
             ContentVerifier verifier;
 
             try {
-                //Set ContentVerifier with the signature that will verify
+                // Set ContentVerifier with the signature that will verify
                 verifier = verifierProvider.get((acinfo.getSignature()));
 
             } catch (Exception e) {
@@ -445,7 +446,7 @@ public class PlatformCredential extends DeviceAssociatedCertificate {
         Map<String, String> policyQualifier = getPolicyQualifier(certificate);
         credentialType = policyQualifier.get("userNotice");
 
-        //Parse data based on certificate type (1.2 vs 2.0)
+        // Parse data based on certificate type (1.2 vs 2.0)
         switch (credentialType) {
             case CERTIFICATE_TYPE_1_2:
                 parseAttributeCert(certificate);
@@ -457,7 +458,7 @@ public class PlatformCredential extends DeviceAssociatedCertificate {
                 throw new IOException("Invalid Attribute Credential Type: " + credentialType);
         }
 
-        //Get TCG Platform Specification Information
+        // Get TCG Platform Specification Information
         for (ASN1Encodable enc: certificate.getAttributes().toArray()) {
             Attribute attr = Attribute.getInstance(enc);
             if (TCG_PLATFORM_SPECIFICATION.equals(attr.getAttrType().toString())) {
@@ -485,7 +486,7 @@ public class PlatformCredential extends DeviceAssociatedCertificate {
     private void parseAttributeCert(final AttributeCertificateInfo certificate) {
         Extension subjectAlternativeNameExtension
                 = certificate.getExtensions().getExtension(Extension.subjectAlternativeName);
-        //It contains a Subject Alternative Name Extension
+        // It contains a Subject Alternative Name Extension
         if (subjectAlternativeNameExtension != null) {
             GeneralNames gnames =  GeneralNames.getInstance(
                                         subjectAlternativeNameExtension.getParsedValue());
@@ -539,7 +540,7 @@ public class PlatformCredential extends DeviceAssociatedCertificate {
         Extension subjectAlternativeNameExtension
                 = certificate.getExtensions().getExtension(Extension.subjectAlternativeName);
 
-        //It contains a Subject Alternative Name Extension
+        // It contains a Subject Alternative Name Extension
         if (subjectAlternativeNameExtension != null) {
             GeneralNames gnames = GeneralNames.getInstance(
                                     subjectAlternativeNameExtension.getParsedValue());
@@ -570,7 +571,7 @@ public class PlatformCredential extends DeviceAssociatedCertificate {
                 }
             }
         }
-        //Get all the attributes map to check for validity
+        // Get all the attributes map to check for validity
         try {
             getAllAttributes();
         } catch (IllegalArgumentException ex) {
@@ -621,12 +622,12 @@ public class PlatformCredential extends DeviceAssociatedCertificate {
             throws IllegalArgumentException, IOException {
         Map<String, Object> attributes = new HashMap<>();
         ASN1Sequence attributeSequence;
-        //Check all attributes for Platform Configuration
+        // Check all attributes for Platform Configuration
         for (ASN1Encodable enc: getAttributeCertificate().getAcinfo().getAttributes().toArray()) {
             Attribute attr = Attribute.getInstance(enc);
             attributeSequence
                         = ASN1Sequence.getInstance(attr.getAttrValues().getObjectAt(0));
-            //Parse sequence based on the attribute OID
+            // Parse sequence based on the attribute OID
             switch (attr.getAttrType().getId()) {
                 case TBB_SECURITY_ASSERTION:
                     attributes.put("tbbSecurityAssertion",
@@ -648,7 +649,7 @@ public class PlatformCredential extends DeviceAssociatedCertificate {
                 case TCG_CREDENTIAL_SPECIFICATION:
                     break;
                 default:
-                    //No class defined for this attribute
+                    // No class defined for this attribute
                     LOGGER.warn("No class defined for attribute with OID: "
                             + attr.getAttrType().getId());
                     break;
@@ -821,6 +822,9 @@ public class PlatformCredential extends DeviceAssociatedCertificate {
      */
     public static Map<String, String> getPolicyQualifier(
                 final AttributeCertificateInfo certificate) {
+        Preconditions.checkArgument(certificate.getExtensions() != null,
+                "Platform certificate should have extensions.");
+
         CertificatePolicies certPolicies
                 = CertificatePolicies.fromExtensions(certificate.getExtensions());
         Map<String, String> policyQualifiers = new HashMap<>();
@@ -828,11 +832,11 @@ public class PlatformCredential extends DeviceAssociatedCertificate {
         String cpsURI = "";
 
         if (certPolicies != null) {
-            //Must contain at least one Policy
+            // Must contain at least one Policy
             for (PolicyInformation policy : certPolicies.getPolicyInformation()) {
                 for (ASN1Encodable pQualifierInfo: policy.getPolicyQualifiers().toArray()) {
                     PolicyQualifierInfo info = PolicyQualifierInfo.getInstance(pQualifierInfo);
-                    //Substract the data based on the OID
+                    // Subtract the data based on the OID
                     switch (info.getPolicyQualifierId().getId()) {
                         case POLICY_QUALIFIER_CPSURI:
                             cpsURI = DERIA5String.getInstance(info.getQualifier()).getString();
@@ -848,7 +852,7 @@ public class PlatformCredential extends DeviceAssociatedCertificate {
             }
         }
 
-        //Add to map
+        // Add to map
         policyQualifiers.put("userNotice", userNoticeQualifier);
         policyQualifiers.put("cpsURI", cpsURI);
 

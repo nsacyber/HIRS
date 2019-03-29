@@ -18,6 +18,7 @@ import org.bouncycastle.asn1.x500.RDN;
 import org.bouncycastle.asn1.x509.AttributeCertificate;
 import org.bouncycastle.asn1.x509.AttributeCertificateInfo;
 import org.bouncycastle.asn1.x509.AttCertIssuer;
+import org.bouncycastle.asn1.x509.Extensions;
 import org.bouncycastle.asn1.x509.V2Form;
 import org.bouncycastle.asn1.x509.GeneralNames;
 import org.bouncycastle.cert.X509AttributeCertificateHolder;
@@ -309,6 +310,7 @@ public abstract class Certificate extends ArchivableEntity {
      * @param certificateBytes the contents of a certificate file
      * @throws IOException if there is a problem extracting information from the certificate
      */
+    @SuppressWarnings("methodlength")
     public Certificate(final byte[] certificateBytes) throws IOException {
         Preconditions.checkArgument(
                 certificateBytes != null,
@@ -386,6 +388,10 @@ public abstract class Certificate extends ArchivableEntity {
             case ATTRIBUTE_CERTIFICATE:
                 AttributeCertificate attCert = getAttributeCertificate();
                 AttributeCertificateInfo attCertInfo = attCert.getAcinfo();
+                if (attCertInfo == null) {
+                    throw new IllegalArgumentException("Required attribute certificate info"
+                            + " field not found in provided attribute certificate.");
+                }
 
                 // Set null values (Attribute certificates do not have this values)
                 this.subject = null;
@@ -394,11 +400,15 @@ public abstract class Certificate extends ArchivableEntity {
                 this.publicKeyModulusHexValue = null;
                 this.publicKeySize = 0;
 
-                authKeyIdentifier = AuthorityKeyIdentifier
-                        .fromExtensions(attCertInfo.getExtensions());
-                this.authorityInfoAccess = getAuthorityInfoAccess(
-                        AuthorityInformationAccess.fromExtensions(
-                                attCertInfo.getExtensions()));
+                authKeyIdentifier = null;
+                Extensions attCertInfoExtensions = attCertInfo.getExtensions();
+                if (attCertInfoExtensions != null) {
+                    authKeyIdentifier = AuthorityKeyIdentifier
+                            .fromExtensions(attCertInfoExtensions);
+                    this.authorityInfoAccess = getAuthorityInfoAccess(
+                            AuthorityInformationAccess.fromExtensions(
+                                    attCertInfoExtensions));
+                }
 
                 switch (attCert.getSignatureAlgorithm().getAlgorithm().getId()) {
                     case RSA256_OID:
@@ -535,7 +545,7 @@ public abstract class Certificate extends ArchivableEntity {
     protected static String getOrganization(final String distinguishedName) {
         String organization = null;
 
-        // Return null for empy strings
+        // Return null for empty strings
         if (distinguishedName.isEmpty()) {
             return null;
         }
