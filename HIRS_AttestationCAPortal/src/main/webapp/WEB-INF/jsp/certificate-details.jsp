@@ -242,7 +242,6 @@
                             <div id="manufacturer">Manufacturer:&nbsp;<span>${initialData.manufacturer}</span></div>
                             <div id="model">Model:&nbsp;<span>${initialData.model}</span></div>
                             <div id="version">Version:&nbsp;<span>${initialData.version}</span></div>
-                            <div id="serial">Serial NR:&nbsp;<span><!-- optional --></span></div>
                         </div>  
                     </div>
                     <div class="row">
@@ -355,32 +354,14 @@
                         </div>
                     </div>
                     <div class="row">
-                        <div class="col-md-1 col-md-offset-1"><span class="colHeader">System Information</span></div>
+                        <div class="col-md-1 col-md-offset-1"><span class="colHeader">System Platform Information</span></div>
                         <div id="subjectAltName" class="col col-md-8">
                             <div id="manufacturer">Manufacturer:&nbsp;<span>${initialData.manufacturer}</span></div>
                             <div id="model">Model:&nbsp;<span>${initialData.model}</span></div>
                             <div id="version">Version:&nbsp;<span>${initialData.version}</span></div>
-                            <div id="serial">Serial NR:&nbsp;<span><!-- optional --></span></div>
+                            <div id="serial">Serial Number:&nbsp;<span>${initialData.platformSerial}</span></div>
                         </div>                        
-                    </div>                    
-                    <c:choose>
-                        <c:when test="${fn:contains(initialData.credentialType, 'TCG')}">
-                            <div class="row">
-                                <div class="col-md-1 col-md-offset-1"><span class="colHeader">System Serial Number</span></div>
-                                <div id="platformSerial" class="col col-md-8 vertical">${initialData.platformSerial}</div>
-                            </div>
-                        </c:when>
-                        <c:otherwise>
-                            <div class="row">
-                                <div class="col-md-1 col-md-offset-1"><span class="colHeader">Platform Serial Number</span></div>
-                                <div id="platformSerial" class="col col-md-8 vertical">${initialData.platformSerial}</div>
-                            </div>
-                            <div class="row">
-                                <div class="col-md-1 col-md-offset-1"><span class="colHeader">Chassis Serial Number</span></div>
-                                <div id="chassisSerialNumber" class="col col-md-8 vertical">${initialData.chassisSerialNumber}</div>
-                            </div>
-                        </c:otherwise>
-                    </c:choose>
+                    </div>
                     <div class="row">
                         <div class="col-md-1 col-md-offset-1"><span class="colHeader">TCG Credential Specification Version</span></div>
                         <div id="majorVersion" class="col col-md-8 vertical">${initialData.majorVersion}.${initialData.minorVersion}.${initialData.revisionLevel}</div>
