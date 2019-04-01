@@ -59,7 +59,8 @@ public class PlatformPropertyV2 extends PlatformProperty {
         setPropertyValue(DERUTF8String.getInstance(sequence.getObjectAt(1)));
 
         // optional value which is a placeholder for now
-        if (sequence.size() > IDENTIFIER_NUMBER) {
+        if (sequence.size() > IDENTIFIER_NUMBER
+                && sequence.getObjectAt(2) instanceof ASN1Enumerated) {
             ASN1Enumerated enumerated = ASN1Enumerated.getInstance(sequence.getObjectAt(2));
             this.attributeStatus = AttributeStatus.values()[enumerated.getValue().intValue()];
         }
