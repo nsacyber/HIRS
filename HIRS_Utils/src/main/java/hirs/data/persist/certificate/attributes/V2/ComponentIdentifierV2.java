@@ -225,7 +225,7 @@ public class ComponentIdentifierV2 extends ComponentIdentifier {
      * @return true if the component has been removed.
      */
     public final boolean isRemoved() {
-        return getAttributeStatus() != AttributeStatus.REMOVED;
+        return getAttributeStatus() == AttributeStatus.REMOVED;
     }
 
     /**
