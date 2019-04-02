@@ -2,7 +2,9 @@ package hirs.data.persist.certificate.attributes.V2;
 
 import hirs.data.persist.DeviceInfoReport;
 import java.math.BigInteger;
+import org.bouncycastle.asn1.ASN1Integer;
 import org.bouncycastle.asn1.ASN1Sequence;
+import org.bouncycastle.asn1.ASN1TaggedObject;
 import org.bouncycastle.asn1.DERUTF8String;
 import org.bouncycastle.asn1.x509.GeneralName;
 
@@ -25,7 +27,9 @@ import org.bouncycastle.asn1.x509.GeneralName;
  */
 public class CertificateIdentifier {
 
-    private static final int IDENTIFIER_NUMBER = 2;
+    private static final int SEQUENCE_NUMBER = 2;
+    private static final int ATTRIBUTE_ID_INDEX = 0;
+    private static final int GENERIC_ID_INDEX = 1;
 
     private String hashAlgorithm;
     private DERUTF8String hashSigValue;
@@ -48,19 +52,47 @@ public class CertificateIdentifier {
      */
     public CertificateIdentifier(final ASN1Sequence sequence) {
         this();
+
+        ASN1TaggedObject taggedSequence;
+        for (int i = 0; i < sequence.size(); i++) {
+            taggedSequence = ASN1TaggedObject.getInstance(sequence.getObjectAt(i));
+
+            switch (taggedSequence.getTagNo()) {
+                case ATTRIBUTE_ID_INDEX:
+                    // attributecertificateidentifier
+                    parseAttributeCertId(ASN1Sequence.getInstance(taggedSequence));
+                    break;
+                case GENERIC_ID_INDEX:
+                    // issuerserial
+                    parseGenericCertId(ASN1Sequence.getInstance(taggedSequence));
+                    break;
+                default:
+                    break;
+            }
+        }
+    }
+
+    private void parseAttributeCertId(final ASN1Sequence attrCertSeq) {
         //Check if it have a valid number of identifers
-        if (sequence.size() < IDENTIFIER_NUMBER) {
-            throw new IllegalArgumentException("Component identifier do not have required values.");
+        if (attrCertSeq.size() != SEQUENCE_NUMBER) {
+            throw new IllegalArgumentException("CertificateIdentifer"
+                    + ".AttributeCertificateIdentifer does not have required values.");
         }
 
-        // attributecertificateidentifier
-        ASN1Sequence attrCertSeq = ASN1Sequence.getInstance(sequence.getObjectAt(0));
         hashAlgorithm = attrCertSeq.getObjectAt(0).toString();
         hashSigValue = DERUTF8String.getInstance(attrCertSeq.getObjectAt(1));
+    }
 
-        // issuerserial
-        ASN1Sequence issuerSerialSeq = ASN1Sequence.getInstance(sequence.getObjectAt(1));
+    private void parseGenericCertId(final ASN1Sequence issuerSerialSeq) {
+        //Check if it have a valid number of identifers
+        if (issuerSerialSeq.size() != SEQUENCE_NUMBER) {
+            throw new IllegalArgumentException("CertificateIdentifier"
+                    + ".GenericCertificateIdentifer does not have required values.");
+        }
+
         issuerDN = GeneralName.getInstance(issuerSerialSeq.getObjectAt(0));
+        certificateSerialNumber = ASN1Integer.getInstance(issuerSerialSeq
+                .getObjectAt(1)).getValue();
     }
 
     /**
