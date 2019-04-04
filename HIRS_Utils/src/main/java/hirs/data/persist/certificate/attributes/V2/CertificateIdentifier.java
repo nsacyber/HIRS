@@ -2,10 +2,11 @@ package hirs.data.persist.certificate.attributes.V2;
 
 import hirs.data.persist.DeviceInfoReport;
 import java.math.BigInteger;
+
 import org.bouncycastle.asn1.ASN1Integer;
 import org.bouncycastle.asn1.ASN1Sequence;
 import org.bouncycastle.asn1.ASN1TaggedObject;
-import org.bouncycastle.asn1.DERUTF8String;
+import org.bouncycastle.asn1.DERSequence;
 import org.bouncycastle.asn1.x509.GeneralName;
 
 /**
@@ -32,7 +33,7 @@ public class CertificateIdentifier {
     private static final int GENERIC_ID_INDEX = 1;
 
     private String hashAlgorithm;
-    private DERUTF8String hashSigValue;
+    private String hashSigValue;
     private GeneralName issuerDN;
     private BigInteger certificateSerialNumber;
 
@@ -41,7 +42,7 @@ public class CertificateIdentifier {
      */
     public CertificateIdentifier() {
         hashAlgorithm = DeviceInfoReport.NOT_SPECIFIED;
-        hashSigValue = new DERUTF8String(DeviceInfoReport.NOT_SPECIFIED);
+        hashSigValue = null;
         issuerDN = null;
         certificateSerialNumber = BigInteger.ZERO;
     }
@@ -53,18 +54,18 @@ public class CertificateIdentifier {
     public CertificateIdentifier(final ASN1Sequence sequence) {
         this();
 
-        ASN1TaggedObject taggedSequence;
+        ASN1TaggedObject taggedObj;
         for (int i = 0; i < sequence.size(); i++) {
-            taggedSequence = ASN1TaggedObject.getInstance(sequence.getObjectAt(i));
+            taggedObj = ASN1TaggedObject.getInstance(sequence.getObjectAt(i));
 
-            switch (taggedSequence.getTagNo()) {
+            switch (taggedObj.getTagNo()) {
                 case ATTRIBUTE_ID_INDEX:
                     // attributecertificateidentifier
-                    parseAttributeCertId(ASN1Sequence.getInstance(taggedSequence));
+                    parseAttributeCertId(ASN1Sequence.getInstance(taggedObj, false));
                     break;
                 case GENERIC_ID_INDEX:
                     // issuerserial
-                    parseGenericCertId(ASN1Sequence.getInstance(taggedSequence));
+                    parseGenericCertId(ASN1Sequence.getInstance(taggedObj, false));
                     break;
                 default:
                     break;
@@ -73,24 +74,27 @@ public class CertificateIdentifier {
     }
 
     private void parseAttributeCertId(final ASN1Sequence attrCertSeq) {
-        //Check if it have a valid number of identifers
+        //Check if it have a valid number of identifiers
         if (attrCertSeq.size() != SEQUENCE_NUMBER) {
-            throw new IllegalArgumentException("CertificateIdentifer"
-                    + ".AttributeCertificateIdentifer does not have required values.");
+            throw new IllegalArgumentException("CertificateIdentifier"
+                    + ".AttributeCertificateIdentifier does not have required values.");
         }
 
         hashAlgorithm = attrCertSeq.getObjectAt(0).toString();
-        hashSigValue = DERUTF8String.getInstance(attrCertSeq.getObjectAt(1));
+        hashSigValue = attrCertSeq.getObjectAt(1).toString();
     }
 
     private void parseGenericCertId(final ASN1Sequence issuerSerialSeq) {
-        //Check if it have a valid number of identifers
+        //Check if it have a valid number of identifiers
         if (issuerSerialSeq.size() != SEQUENCE_NUMBER) {
             throw new IllegalArgumentException("CertificateIdentifier"
-                    + ".GenericCertificateIdentifer does not have required values.");
+                    + ".GenericCertificateIdentifier does not have required values.");
         }
 
-        issuerDN = GeneralName.getInstance(issuerSerialSeq.getObjectAt(0));
+        ASN1Sequence derSequence = DERSequence.getInstance(issuerSerialSeq.getObjectAt(0));
+        ASN1TaggedObject taggedObj = ASN1TaggedObject.getInstance(derSequence.getObjectAt(0));
+
+        issuerDN = GeneralName.getInstance(taggedObj);
         certificateSerialNumber = ASN1Integer.getInstance(issuerSerialSeq
                 .getObjectAt(1)).getValue();
     }
@@ -105,7 +109,7 @@ public class CertificateIdentifier {
     /**
      * @return the string representation of hash signature
      */
-    public DERUTF8String getHashSigValue() {
+    public String getHashSigValue() {
         return hashSigValue;
     }
 
@@ -133,7 +137,7 @@ public class CertificateIdentifier {
 
         sb.append("CertificateIdentifier{");
         sb.append("hashAlgorithm=").append(hashAlgorithm);
-        sb.append(", hashSigValue").append(hashSigValue.toString());
+        sb.append(", hashSigValue").append(hashSigValue);
         sb.append(", issuerDN=");
         if (issuerDN != null) {
             sb.append(issuerDN.toString());
