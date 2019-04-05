@@ -45,7 +45,14 @@ echo ""
 # Clean up services and network
 docker-compose down
 
-# Return container exit codes
+# Clean up dangling containers
+echo "Cleaning up dangling containers..."
+echo ""
+docker ps -a
+echo ""
+docker container prune --force
+echo ""
+
 if [[ $tpm2_container_exit_code == 0 ]]
 then
     echo "SUCCESS: TPM 2.0 System tests passed"
