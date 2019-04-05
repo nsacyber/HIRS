@@ -53,6 +53,7 @@ echo ""
 docker container prune --force
 echo ""
 
+# Return container exit code
 if [[ $tpm2_container_exit_code == 0 ]]
 then
     echo "SUCCESS: TPM 2.0 System tests passed"
