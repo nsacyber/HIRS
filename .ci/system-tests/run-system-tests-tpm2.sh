@@ -30,11 +30,11 @@ do
   tpm2_container_status="$(docker inspect $tpm2_container_id --format='{{.State.Status}}')"
 done
 
-# Store container exit codes
+# Store container exit code
 tpm2_container_exit_code="$(docker inspect $tpm2_container_id --format='{{.State.ExitCode}}')"
 echo "TPM2 Container Exit Code: $tpm2_container_exit_code"
 
-# Display container logs
+# Display container log
 echo ""
 echo "===========hirs-aca-provisioner-tpm2 System Tests Log:==========="
 docker logs $tpm2_container_id
