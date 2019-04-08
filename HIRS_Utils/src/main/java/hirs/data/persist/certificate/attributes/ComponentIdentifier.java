@@ -9,7 +9,6 @@ import org.bouncycastle.asn1.ASN1Boolean;
 import org.bouncycastle.asn1.ASN1ObjectIdentifier;
 import org.bouncycastle.asn1.ASN1Sequence;
 import org.bouncycastle.asn1.ASN1TaggedObject;
-import org.bouncycastle.asn1.DEROctetString;
 import org.bouncycastle.asn1.DERUTF8String;
 
 /**
@@ -17,8 +16,6 @@ import org.bouncycastle.asn1.DERUTF8String;
  * Attribute.
  * <pre>
  * ComponentIdentifier ::= SEQUENCE {
- *      componentClass
- *          SEQUENCE(SIZE(1..CONFIGMAX)),
  *      componentManufacturer UTF8String (SIZE (1..STRMAX)),
  *      componentModel UTF8String (SIZE (1..STRMAX)),
  *      componentSerial[0] IMPLICIT UTF8String (SIZE (1..STRMAX)) OPTIONAL,
@@ -26,26 +23,44 @@ import org.bouncycastle.asn1.DERUTF8String;
  *      componentManufacturerId [2] IMPLICIT PrivateEnterpriseNumber OPTIONAL,
  *      fieldReplaceable [3] IMPLICIT BOOLEAN OPTIONAL,
  *      componentAddress [4] IMPLICIT
- *          SEQUENCE(SIZE(1..CONFIGMAX)) OF ComponentAddress OPTIONAL }
+ *          SEQUENCE(SIZE(1..CONFIGMAX)) OF ComponentAddress OPTIONAL}
  * where STRMAX is 256, CONFIGMAX is 32
  * </pre>
  */
 public class ComponentIdentifier {
 
     /**
+     * Variable for components that aren't set.
+     */
+    public static final String EMPTY_COMPONENT = " --- ";
+    /**
      * Maximum number of configurations.
      */
     public static final int CONFIGMAX = 32;
 
-    private static final int COMPONENT_IDENTIFIER = 1;
+    private static final int MANDATORY_ELEMENTS = 2;
     // optional sequence objects
-    private static final int COMPONENT_SERIAL = 0;
-    private static final int COMPONENT_REVISION = 1;
-    private static final int COMPONENT_MANUFACTURER_ID = 2;
-    private static final int FIELD_REPLACEABLE = 3;
-    private static final int COMPONENT_ADDRESS = 4;
+    /**
+     * Static variable indicated array position for the serial number.
+     */
+    protected static final int COMPONENT_SERIAL = 0;
+    /**
+     * Static variable indicated array position for the revision info.
+     */
+    protected static final int COMPONENT_REVISION = 1;
+    /**
+     * Static variable indicated array position for the manufacturer id.
+     */
+    protected static final int COMPONENT_MANUFACTURER_ID = 2;
+    /**
+     * Static variable indicated array position for the field replaceable value.
+     */
+    protected static final int FIELD_REPLACEABLE = 3;
+    /**
+     * Static variable indicated array position for the component address.
+     */
+    protected static final int COMPONENT_ADDRESS = 4;
 
-    private String componentClass;
     private DERUTF8String componentManufacturer;
     private DERUTF8String componentModel;
     private DERUTF8String componentSerial;
@@ -58,11 +73,10 @@ public class ComponentIdentifier {
      * Default constructor.
      */
     public ComponentIdentifier() {
-        componentClass = null;
-        componentManufacturer = null;
-        componentModel = null;
-        componentSerial = null;
-        componentRevision = null;
+        componentManufacturer = new DERUTF8String(EMPTY_COMPONENT);
+        componentModel = new DERUTF8String(EMPTY_COMPONENT);
+        componentSerial = new DERUTF8String(EMPTY_COMPONENT);
+        componentRevision = new DERUTF8String(EMPTY_COMPONENT);
         componentManufacturerId = null;
         fieldReplaceable = null;
         componentAddress = new ArrayList<>();
@@ -101,36 +115,19 @@ public class ComponentIdentifier {
      * @throws IllegalArgumentException if there was an error on the parsing
      */
     public ComponentIdentifier(final ASN1Sequence sequence) throws IllegalArgumentException {
-        //Check if it have a valid number of identifers
-        if (sequence.size() < ComponentAddress.IDENTIFIER_NUMBER) {
+        // set all optional values to default in case they aren't set.
+        this();
+        //Check if it have a valid number of identifiers
+        if (sequence.size() < MANDATORY_ELEMENTS) {
             throw new IllegalArgumentException("Component identifier do not have required values.");
         }
 
-        ASN1Sequence componentIdSeq;
-        int tag = 0;
-
-        if (sequence.getObjectAt(tag) instanceof ASN1Sequence) {
-            componentIdSeq = ASN1Sequence.getInstance(sequence.getObjectAt(tag++));
-            componentClass = DEROctetString.getInstance(componentIdSeq
-                    .getObjectAt(COMPONENT_IDENTIFIER))
-                    .toString();
-        } else if (sequence.getObjectAt(tag) instanceof DEROctetString) {
-            componentClass = sequence.getObjectAt(tag++).toString();
-        }
-
         //Mandatory values
-        componentManufacturer = DERUTF8String.getInstance(sequence.getObjectAt(tag++));
-        componentModel = DERUTF8String.getInstance(sequence.getObjectAt(tag++));
-
-        //Optional values (default to null or empty)
-        componentSerial = null;
-        componentRevision = null;
-        componentManufacturerId = null;
-        fieldReplaceable = null;
-        componentAddress = new ArrayList<>();
+        componentManufacturer = DERUTF8String.getInstance(sequence.getObjectAt(0));
+        componentModel = DERUTF8String.getInstance(sequence.getObjectAt(1));
 
         //Continue reading the sequence if it does contain more than 2 values
-        for (int i = tag; i < sequence.size(); i++) {
+        for (int i = 2; i < sequence.size(); i++) {
             ASN1TaggedObject taggedObj = ASN1TaggedObject.getInstance(sequence.getObjectAt(i));
             switch (taggedObj.getTagNo()) {
                 case COMPONENT_SERIAL:
@@ -147,27 +144,13 @@ public class ComponentIdentifier {
                     break;
                 case COMPONENT_ADDRESS:
                     ASN1Sequence addressesSequence = ASN1Sequence.getInstance(taggedObj, false);
-                    componentAddress = retriveComponentAddress(addressesSequence);
+                    componentAddress = retrieveComponentAddress(addressesSequence);
                     break;
                 default:
                     throw new IllegalArgumentException("Component identifier contains "
                             + "invalid tagged object.");
             }
         }
-    }
-
-    /**
-     * @return the componentClass
-     */
-    public String getComponentClass() {
-        return componentClass;
-    }
-
-    /**
-     * @param componentClass the componentClass to set
-     */
-    public void setComponentClass(final String componentClass) {
-        this.componentClass = componentClass;
     }
 
     /**
@@ -269,13 +252,20 @@ public class ComponentIdentifier {
     }
 
     /**
+     * @return indicates the type of platform certificate
+     */
+    public boolean isVersion2() {
+        return false;
+    }
+
+    /**
      * Get all the component addresses inside the sequence.
      *
      * @param sequence that contains the component addresses.
      * @return list of component addresses inside the sequence
      * @throws IllegalArgumentException if there was an error on the parsing
      */
-    public static List<ComponentAddress> retriveComponentAddress(final ASN1Sequence sequence)
+    public static List<ComponentAddress> retrieveComponentAddress(final ASN1Sequence sequence)
             throws IllegalArgumentException {
         List<ComponentAddress> addresses;
         addresses = new ArrayList<>();
@@ -298,9 +288,6 @@ public class ComponentIdentifier {
         StringBuilder sb = new StringBuilder();
         sb.append("ComponentIdentifier{");
         sb.append("componentManufacturer=").append(componentManufacturer.getString());
-        sb.append("componentClass=").append(componentClass);
-        sb.append(", componentManufacturer=")
-                .append(componentManufacturer.getString());
         sb.append(", componentModel=").append(componentModel.getString());
         //Optional not null values
         sb.append(", componentSerial=");
@@ -326,6 +313,7 @@ public class ComponentIdentifier {
                         .map(Object::toString)
                         .collect(Collectors.joining(",")));
         }
+        sb.append(", certificateIdentifier=");
         sb.append("}");
 
         return sb.toString();

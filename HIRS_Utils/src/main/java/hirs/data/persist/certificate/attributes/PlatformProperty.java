@@ -1,20 +1,26 @@
 package hirs.data.persist.certificate.attributes;
 
-import static hirs.data.persist.certificate.attributes.ComponentAddress.IDENTIFIER_NUMBER;
+import hirs.data.persist.DeviceInfoReport;
 import org.bouncycastle.asn1.ASN1Sequence;
 import org.bouncycastle.asn1.DERUTF8String;
 
 /**
  *
- * Basic class that handle a single property for the platform configuration.
+ * Basic class that handles a single property for the platform configuration.
  * <pre>
  * Properties ::= SEQUENCE {
  *      propertyName UTF8String (SIZE (1..STRMAX)),
- *      propertyValue UTF8String (SIZE (1..STRMAX))
- * }
-* </pre>
+ *      propertyValue UTF8String (SIZE (1..STRMAX) }
+ *
+ * </pre>
  */
 public class PlatformProperty {
+
+    /**
+     * Number of identifiers for version 1.
+     */
+    protected static final int IDENTIFIER_NUMBER = 2;
+
     private DERUTF8String propertyName;
     private DERUTF8String propertyValue;
 
@@ -22,8 +28,8 @@ public class PlatformProperty {
      * Default constructor.
      */
     public PlatformProperty() {
-        this.propertyName = null;
-        this.propertyValue = null;
+        this.propertyName = new DERUTF8String(DeviceInfoReport.NOT_SPECIFIED);
+        this.propertyValue = new DERUTF8String(DeviceInfoReport.NOT_SPECIFIED);
     }
 
     /**
@@ -45,14 +51,14 @@ public class PlatformProperty {
      * @throws IllegalArgumentException if there was an error on the parsing
      */
     public PlatformProperty(final ASN1Sequence sequence) throws IllegalArgumentException {
-         //Check if the sequence contains the two values required
+        // Check if the sequence contains the two values required
         if (sequence.size() != IDENTIFIER_NUMBER) {
             throw new IllegalArgumentException("Platform properties does not contain all "
                     + "the required fields.");
         }
+
         this.propertyName = DERUTF8String.getInstance(sequence.getObjectAt(0));
         this.propertyValue = DERUTF8String.getInstance(sequence.getObjectAt(1));
-
     }
 
     /**

@@ -1,5 +1,7 @@
-package hirs.data.persist.certificate.attributes;
+package hirs.data.persist.certificate.attributes.V2;
 
+import hirs.data.persist.certificate.attributes.PlatformConfiguration;
+import hirs.data.persist.certificate.attributes.URIReference;
 import java.util.ArrayList;
 import org.bouncycastle.asn1.ASN1Sequence;
 import org.bouncycastle.asn1.ASN1TaggedObject;
@@ -51,7 +53,7 @@ public class PlatformConfigurationV2 extends PlatformConfiguration {
                         //DERSequence with the components
                         ASN1Sequence component
                                 = ASN1Sequence.getInstance(componentConfiguration.getObjectAt(j));
-                        add(new ComponentIdentifier(component));
+                        add(new ComponentIdentifierV2(component));
                     }
                     break;
                 case COMPONENT_IDENTIFIER_URI:
@@ -68,7 +70,7 @@ public class PlatformConfigurationV2 extends PlatformConfiguration {
                     for (int j = 0; j < properties.size(); j++) {
                         //DERSequence with the components
                         ASN1Sequence property = ASN1Sequence.getInstance(properties.getObjectAt(j));
-                        add(new PlatformProperty(property));
+                        add(new PlatformPropertyV2(property));
                     }
                     break;
                 case PLATFORM_PROPERTIES_URI:
