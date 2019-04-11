@@ -280,6 +280,7 @@ public final class CertificateStringMapBuilder {
         if (certificate != null) {
             data.putAll(getGeneralCertificateInfo(certificate, certificateManager));
             data.put("credentialType", certificate.getCredentialType());
+            data.put("platformType", certificate.getPlatformType());
             data.put("manufacturer", certificate.getManufacturer());
             data.put("model", certificate.getModel());
             data.put("version", certificate.getVersion());
@@ -296,12 +297,25 @@ public final class CertificateStringMapBuilder {
                             .toString(Certificate.HEX_BASE)
                             .replaceAll("(?<=..)(..)", ":$1"));
             data.put("holderIssuer", certificate.getHolderIssuer());
-            EndorsementCredential ekCertificate = EndorsementCredential
-                    .select(certificateManager)
-                    .bySerialNumber(certificate.getHolderSerialNumber())
-                    .getCertificate();
-            if (ekCertificate != null) {
-                data.put("ekId", ekCertificate.getId().toString());
+            if (certificate.isBase()) {
+                EndorsementCredential ekCertificate = EndorsementCredential
+                        .select(certificateManager)
+                        .bySerialNumber(certificate.getHolderSerialNumber())
+                        .getCertificate();
+                if (ekCertificate != null) {
+                    data.put("holderId", ekCertificate.getId().toString());
+                }
+            } else {
+                if (certificate.getPlatformType() != null
+                        && certificate.getPlatformType().equals("Delta")) {
+                    PlatformCredential holderCertificate = PlatformCredential
+                            .select(certificateManager)
+                            .bySerialNumber(certificate.getHolderSerialNumber())
+                            .getCertificate();
+                    if (holderCertificate != null) {
+                        data.put("holderId", holderCertificate.getId().toString());
+                    }
+                }
             }
 
             //x509 credential version
@@ -314,6 +328,9 @@ public final class CertificateStringMapBuilder {
             if (platformConfiguration != null) {
                 //Component Identifier
                 data.put("componentsIdentifier", platformConfiguration.getComponentIdentifier());
+                //Component Identifier URI
+                data.put("componentsIdentifierURI", platformConfiguration
+                        .getComponentIdentifierUri());
                 //Platform Properties
                 data.put("platformProperties", platformConfiguration.getPlatformProperties());
                 //Platform Properties URI

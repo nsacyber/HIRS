@@ -3,7 +3,6 @@ package hirs.data.persist.certificate.attributes;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.stream.Collectors;
 
 /**
  * Abstract class that provides base info for Platform Configuration of
@@ -143,33 +142,6 @@ public abstract class PlatformConfiguration {
      */
     public void setPlatformPropertiesUri(final URIReference platformPropertiesUri) {
         this.platformPropertiesUri = platformPropertiesUri;
-    }
-
-    @Override
-    public String toString() {
-        StringBuilder sb = new StringBuilder();
-        sb.append("PlatformConfiguration{");
-        sb.append("componentIdentifier=");
-        if (componentIdentifier.size() > 0) {
-            sb.append(componentIdentifier
-                        .stream()
-                        .map(Object::toString)
-                        .collect(Collectors.joining(",")));
-        }
-        sb.append(", platformProperties=");
-        if (platformProperties.size() > 0) {
-            sb.append(platformProperties
-                        .stream()
-                        .map(Object::toString)
-                        .collect(Collectors.joining(",")));
-        }
-        sb.append(", platformPropertiesUri=");
-        if (platformPropertiesUri != null) {
-            sb.append(platformPropertiesUri.toString());
-        }
-        sb.append("}");
-
-        return sb.toString();
     }
 
 }

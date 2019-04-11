@@ -25,7 +25,7 @@ public enum Page {
     /**
      * Page to display and manage platform credentials.
      */
-    PLATFORM_CREDENTIALS("Platform Credentials", "ic_important_devices",
+    PLATFORM_CREDENTIALS("Platform Certificates", "ic_important_devices",
         null, "certificate-request/"),
     /**
      * Page to display issued certificates.

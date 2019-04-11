@@ -64,7 +64,14 @@
                             }
                         },
                         {data: 'issuer'},
-                        {data: 'credentialType'},
+                        {
+                            data: 'credentialType',
+                            render: function (data, type, full, meta) {
+                                if (full.platformType !== '') {
+                                    return full.platformType;
+                                }
+                            }
+                        },
                         {data: 'manufacturer'},
                         {data: 'model'},
                         {data: 'version'},

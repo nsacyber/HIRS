@@ -321,6 +321,12 @@
                     </div>
                 </c:when>
                 <c:when test="${param.type=='platform'}">
+                    <c:if test="${not empty initialData.platformType}">
+                        <div class="row">
+                            <div class="col-md-1 col-md-offset-1"><span class="colHeader">Platform Type</span></div>
+                            <div id="platformType" class="col col-md-8">${initialData.platformType}</div>
+                        </div>
+                    </c:if>
                     <c:if test="${not empty initialData.CPSuri}">
                         <div class="row">
                             <div class="col-md-1 col-md-offset-1"><span class="colHeader">Certification Practice Statement URI</span></div>
@@ -333,16 +339,25 @@
                         <div class="col-md-1 col-md-offset-1"><span class="colHeader">Holder</span></div>
                         <div id="holder" class="col col-md-8">
                             <c:if test="${not empty initialData.holderIssuer}">
-                                <div>EK Certificate:&nbsp;<span>${initialData.holderIssuer}</span></div>
+                                <div>Holder Certificate:&nbsp;<span>${initialData.holderIssuer}</span></div>
                             </c:if>
                             <div id="certificateid">
-                                <div>EK Identifier:&nbsp;
+                                <div>Holder Identifier:&nbsp;
                                     <c:choose>
-                                        <c:when test="${not empty initialData.ekId}">
+                                        <c:when test="${not empty initialData.holderId}">
                                             <span>
-                                                <a href="${portal}/certificate-details?id=${initialData.ekId}&type=endorsement">
-                                                    ${initialData.holderSerialNumber}
-                                                </a>
+                                                <c:choose>
+                                                    <c:when test="${(not empty initialData.platformType) and (initialData.platformType=='Delta')}">
+                                                        <a href="${portal}/certificate-details?id=${initialData.holderId}&type=platform">
+                                                            ${initialData.holderSerialNumber}
+                                                        </a>
+                                                    </c:when>
+                                                    <c:otherwise>
+                                                        <a href="${portal}/certificate-details?id=${initialData.holderId}&type=endorsement">
+                                                            ${initialData.holderSerialNumber}
+                                                        </a>
+                                                    </c:otherwise>
+                                                </c:choose>                                                
                                             </span>
                                         </c:when>
                                         <c:otherwise>
@@ -629,6 +644,29 @@
                                         </div>
                                     </div>
                                 </c:if>
+                                <%--<c:if test="${not empty initialData.componentsIdentifierURI}">--%>
+                                    <!-- Components Identifier URI -->
+                                    <div class="panel panel-default">
+                                        <div class="panel-heading" role="tab" id="headingTwo">
+                                            <h4 class="panel-title">
+                                                <a role="button" data-toggle="collapse" data-parent="#componentIdentifierURI" class="collapsed"
+                                                   href="#componentIdentifierURIcollapse" aria-expanded="false" aria-controls="componentIdentifierURIcollapse">
+                                                    Components Identifier URI
+                                                </a>
+                                            </h4>
+                                        </div>
+                                        <div id="componentIdentifierURIIcollapse" class="panel-collapse collapse" role="tabpanel" aria-labelledby="headingThree">
+                                            <div class="panel-body">
+                                                <div id="componentIdentifierURI" class="row">
+                                                    <span class="fieldHeader">URI:</span>
+                                                    <a href="${initialData.componentsIdentifierUri.getUniformResourceIdentifier()}">
+                                                        ${initialData.componentsIdentifierUri.getUniformResourceIdentifier()}
+                                                    </a>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                <%--</c:if>--%>
                                 <c:if test="${not empty initialData.platformProperties}">
                                     <!-- Platform Properties -->
                                     <div class="panel panel-default">

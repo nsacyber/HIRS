@@ -23,7 +23,9 @@ import javax.persistence.Transient;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.util.Strings;
 import org.bouncycastle.asn1.ASN1Encodable;
+import org.bouncycastle.asn1.ASN1ObjectIdentifier;
 import org.bouncycastle.asn1.ASN1Sequence;
 import org.bouncycastle.asn1.DERIA5String;
 import org.bouncycastle.asn1.DERNull;
@@ -77,6 +79,9 @@ public class PlatformCredential extends DeviceAssociatedCertificate {
     private static final String PLATFORM_CONFIGURATION_URI = "2.23.133.5.1.3";
     private static final String PLATFORM_CONFIGURATION = "2.23.133.5.1.7.1";
     private static final String PLATFORM_CONFIGURATION_V2 = "2.23.133.5.1.7.2";
+    private static final String PLATFORM_CREDENTIAL_TYPE = "2.23.133.2.25";
+    private static final String PLATFORM_BASE_CERT = "2.23.133.8.2";
+    private static final String PLATFORM_DELTA_CERT = "2.23.133.8.5";
 
     /**
      * TCG Platform Specification values
@@ -145,6 +150,16 @@ public class PlatformCredential extends DeviceAssociatedCertificate {
         }
 
         /**
+         * Specify a serial number that certificates must have to be considered as matching.
+         * @param serialNumber the serial number to query, not empty or null
+         * @return this instance (for chaining further calls)
+         */
+        public Selector bySerialNumber(final String serialNumber) {
+            setFieldValue(SERIAL_NUMBER_FIELD, serialNumber);
+            return this;
+        }
+
+        /**
          * Specify a board serial number that certificates must have to be considered as matching.
          * @param boardSerialNumber the board serial number to query, not empty or null
          * @return this instance (for chaining further calls)
@@ -180,6 +195,9 @@ public class PlatformCredential extends DeviceAssociatedCertificate {
     @Column
     private String credentialType = null;
 
+    @Column
+    private boolean platformBase = false;
+
     private static final String MANUFACTURER_FIELD = "manufacturer";
     @Column
     private String manufacturer = null;
@@ -214,6 +232,8 @@ public class PlatformCredential extends DeviceAssociatedCertificate {
 
     @Transient
     private EndorsementCredential endorsementCredential = null;
+
+    private String platformChainType = Strings.EMPTY;
 
     /**
      * Get a Selector for use in retrieving PlatformCredentials.
@@ -343,6 +363,24 @@ public class PlatformCredential extends DeviceAssociatedCertificate {
     }
 
     /**
+     * Get the type of platform certificate.
+     *
+     * @return the TCG platform type { base | delta }
+     */
+    public boolean isBase() {
+        return platformBase;
+    }
+
+    /**
+     * Getter for the string representation of the platform type.
+     *
+     * @return Delta or Base
+     */
+    public String getPlatformType() {
+        return platformChainType;
+    }
+
+    /**
      * Get the Platform Manufacturer.
      *
      * @return the manufacturer
@@ -459,9 +497,9 @@ public class PlatformCredential extends DeviceAssociatedCertificate {
         }
 
         // Get TCG Platform Specification Information
-        for (ASN1Encodable enc: certificate.getAttributes().toArray()) {
+        for (ASN1Encodable enc : certificate.getAttributes().toArray()) {
             Attribute attr = Attribute.getInstance(enc);
-            if (TCG_PLATFORM_SPECIFICATION.equals(attr.getAttrType().toString())) {
+            if (attr.getAttrType().toString().equals(TCG_PLATFORM_SPECIFICATION)) {
                 ASN1Sequence tcgPlatformSpecification
                         = ASN1Sequence.getInstance(attr.getAttrValues().getObjectAt(0));
                 ASN1Sequence tcgSpecificationVersion
@@ -475,6 +513,19 @@ public class PlatformCredential extends DeviceAssociatedCertificate {
                                         tcgSpecificationVersion.getObjectAt(2).toString());
 
                 this.platformClass = tcgPlatformSpecification.getObjectAt(1).toString();
+            } else if (attr.getAttrType().toString().equals(PLATFORM_CREDENTIAL_TYPE)) {
+                ASN1Sequence tcgPlatformType = ASN1Sequence.getInstance(
+                        attr.getAttrValues().getObjectAt(0));
+                ASN1ObjectIdentifier platformOid = ASN1ObjectIdentifier.getInstance(
+                        tcgPlatformType.getObjectAt(0));
+
+                if (platformOid.getId().equals(PLATFORM_BASE_CERT)) {
+                    this.platformBase = true;
+                    this.platformChainType = "Base";
+                } else if (platformOid.getId().equals(PLATFORM_DELTA_CERT)) {
+                    this.platformBase = false;
+                    this.platformChainType = "Delta";
+                }
             }
         }
     }
@@ -679,6 +730,7 @@ public class PlatformCredential extends DeviceAssociatedCertificate {
     public PlatformConfiguration getPlatformConfiguration()
             throws IllegalArgumentException, IOException {
 
+        LOGGER.warn(String.format("Taruan -> %s", getAttribute("platformConfiguration")));
         if (getAttribute("platformConfiguration") != null
                 && getAttribute("platformConfiguration") instanceof PlatformConfiguration) {
             return (PlatformConfiguration) getAttribute("platformConfiguration");

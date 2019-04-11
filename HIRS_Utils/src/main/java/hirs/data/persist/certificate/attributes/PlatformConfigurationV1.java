@@ -1,6 +1,7 @@
 package hirs.data.persist.certificate.attributes;
 
 import java.util.ArrayList;
+import java.util.stream.Collectors;
 import org.bouncycastle.asn1.ASN1Sequence;
 import org.bouncycastle.asn1.ASN1TaggedObject;
 
@@ -72,5 +73,32 @@ public class PlatformConfigurationV1 extends PlatformConfiguration {
                     break;
             }
         }
+    }
+
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder();
+        sb.append("PlatformConfiguration{");
+        sb.append("componentIdentifier=");
+        if (getComponentIdentifier().size() > 0) {
+            sb.append(getComponentIdentifier()
+                        .stream()
+                        .map(Object::toString)
+                        .collect(Collectors.joining(",")));
+        }
+        sb.append(", platformProperties=");
+        if (getPlatformProperties().size() > 0) {
+            sb.append(getPlatformProperties()
+                        .stream()
+                        .map(Object::toString)
+                        .collect(Collectors.joining(",")));
+        }
+        sb.append(", platformPropertiesUri=");
+        if (getPlatformPropertiesUri() != null) {
+            sb.append(getPlatformPropertiesUri().toString());
+        }
+        sb.append("}");
+
+        return sb.toString();
     }
 }
