@@ -93,6 +93,7 @@ public class SupplyChainValidationServiceImplTest extends SpringPersistenceTest 
     // mocked
     private SupplyChainPolicy policy;
     private PlatformCredential pc;
+//    private PlatformCredential delta;
     private EndorsementCredential ec;
     private HashSet<PlatformCredential> pcs;
     private Device device;
@@ -134,8 +135,13 @@ public class SupplyChainValidationServiceImplTest extends SpringPersistenceTest 
         pcs = new HashSet<PlatformCredential>();
         pcs.add(pc);
 
+        /*
+         * Mock delta platform credential here
+         */
+
         Set<Certificate> resultPcs = new HashSet<>();
         resultPcs.add(pc);
+        //resultPcs.add(delta);
 
         // mock credential retrieval
         when(certificateManager.get(any(EndorsementCredential.Selector.class)))
@@ -176,6 +182,11 @@ public class SupplyChainValidationServiceImplTest extends SpringPersistenceTest 
         doReturn(new AppraisalStatus(PASS, "")).when(supplyChainCredentialValidator)
                 .validatePlatformCredentialAttributes(eq(pc), any(DeviceInfoReport.class),
                         any(EndorsementCredential.class));
+/*
+        doReturn(new AppraisalStatus(PASS, "")).when(supplyChainCredentialValidator)
+                .validateDeltaPlatformCredentialAttributes(eq(delta), any(DeviceInfoReport.class),
+                        any(PlatformCredential.class));
+*/
 
         Assert.assertEquals(service.validateSupplyChain(ec, pcs,
                 device).getOverallValidationResult(), PASS);

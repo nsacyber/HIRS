@@ -35,6 +35,19 @@ public interface CredentialValidator {
     AppraisalStatus validatePlatformCredentialAttributes(PlatformCredential pc,
                                                          DeviceInfoReport deviceInfoReport,
                                                          EndorsementCredential ec);
+
+    /**
+     * Checks if the delta credential's attributes are valid.
+     * @param delta the delta credential to verify
+     * @param deviceInfoReport The device info report containing
+     *                         serial number of the platform to be validated.
+     * @param base the base credential from the same identity request
+     *                              as the delta credential.
+     * @return the result of the validation.
+     */
+    AppraisalStatus validateDeltaPlatformCredentialAttributes(PlatformCredential delta,
+                                                              DeviceInfoReport deviceInfoReport,
+                                                              PlatformCredential base);
     /**
      * Checks if the endorsement credential is valid.
      *

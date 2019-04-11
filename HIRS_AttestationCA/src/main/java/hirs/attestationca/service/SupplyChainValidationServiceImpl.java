@@ -100,6 +100,7 @@ public class SupplyChainValidationServiceImpl implements SupplyChainValidationSe
                 supplyChainAppraiser);
         boolean acceptExpiredCerts = policy.isExpiredCertificateValidationEnabled();
         HashMap<PlatformCredential, SupplyChainValidation> credentialMap = new HashMap<>();
+        PlatformCredential baseCredential = null;
 
         List<SupplyChainValidation> validations = new ArrayList<>();
 
@@ -137,6 +138,14 @@ public class SupplyChainValidationServiceImpl implements SupplyChainValidationSe
                         pc.setDevice(device);
                         this.certificateManager.update(pc);
                         credentialMap.put(pc, platformScv);
+                        /*
+                         * This method will be added to PlatformCredential to return whether a given
+                         * object is a base or a delta credential.
+                         */
+/*                        if (pc.isBase()) {
+                            baseCredential = pc;
+                        }
+*/
                     }
                 }
             }
@@ -156,8 +165,14 @@ public class SupplyChainValidationServiceImpl implements SupplyChainValidationSe
                 Iterator<PlatformCredential> it = pcs.iterator();
                 while (it.hasNext()) {
                     PlatformCredential pc = it.next();
-                    SupplyChainValidation attributeScv = validatePlatformCredentialAttributes(
+                    SupplyChainValidation attributeScv = null;
+                    if (pc == baseCredential || baseCredential == null) {
+                        attributeScv = validatePlatformCredentialAttributes(
                             pc, device.getDeviceInfo(), ec);
+                    } else {
+                        attributeScv = validateDeltaPlatformCredentialAttributes(
+                            pc, device.getDeviceInfo(), baseCredential);
+                    }
 
                     SupplyChainValidation platformScv = credentialMap.get(pc);
                     if (platformScv != null) {
@@ -285,6 +300,41 @@ public class SupplyChainValidationServiceImpl implements SupplyChainValidationSe
             default:
                 return buildValidationRecord(validationType, AppraisalStatus.Status.ERROR,
                         result.getMessage(), pc, Level.ERROR);
+        }
+    }
+
+    private SupplyChainValidation validateDeltaPlatformCredentialAttributes(
+            final PlatformCredential delta,
+            final DeviceInfoReport deviceInfoReport,
+            final PlatformCredential base) {
+    /*
+     * Do we need a new ValidationType for deltas?
+     */
+        final SupplyChainValidation.ValidationType validationType =
+                SupplyChainValidation.ValidationType.DELTA_PLATFORM_CREDENTIAL_ATTRIBUTES;
+
+        if (delta == null) {
+            LOGGER.error("No delta credential to validate");
+            return buildValidationRecord(validationType,
+                    AppraisalStatus.Status.FAIL, "Platform credential is missing",
+                    null, Level.ERROR);
+        }
+        LOGGER.info("Validating platform credential attributes");
+        AppraisalStatus result = supplyChainCredentialValidator.
+                validateDeltaPlatformCredentialAttributes(delta, deviceInfoReport, base);
+        switch (result.getAppStatus()) {
+            case PASS:
+                return buildValidationRecord(validationType, AppraisalStatus.Status.PASS,
+                        result.getMessage(), delta, Level.INFO);
+            case FAIL:
+                return buildValidationRecord(validationType, AppraisalStatus.Status.FAIL,
+                        result.getMessage(), delta, Level.WARN);
+            case ERROR:
+                return buildValidationRecord(validationType, AppraisalStatus.Status.ERROR,
+                        result.getMessage(), delta, Level.ERROR);
+            default:
+                return buildValidationRecord(validationType, AppraisalStatus.Status.ERROR,
+                        result.getMessage(), delta, Level.ERROR);
         }
     }
 
