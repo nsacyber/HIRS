@@ -730,7 +730,6 @@ public class PlatformCredential extends DeviceAssociatedCertificate {
     public PlatformConfiguration getPlatformConfiguration()
             throws IllegalArgumentException, IOException {
 
-        LOGGER.warn(String.format("Taruan -> %s", getAttribute("platformConfiguration")));
         if (getAttribute("platformConfiguration") != null
                 && getAttribute("platformConfiguration") instanceof PlatformConfiguration) {
             return (PlatformConfiguration) getAttribute("platformConfiguration");

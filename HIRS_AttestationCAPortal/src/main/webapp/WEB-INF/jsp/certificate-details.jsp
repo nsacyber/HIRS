@@ -327,6 +327,22 @@
                             <div id="platformType" class="col col-md-8">${initialData.platformType}</div>
                         </div>
                     </c:if>
+                    <div class="row">
+                        <div class="col-md-1 col-md-offset-1"><span class="colHeader">Platform Chain</span></div>
+                        <div id="platformType" class="col col-md-8">
+                            <c:choose>
+                            <c:when test="${not empty initialData.prevCertId}">
+                                <a href="${portal}/certificate-details?id=${initialData.prevCertId}&type=platform">
+                            </c:when>
+                            <c:otherwise>
+                                <a href="">
+                            </c:otherwise>
+                            </c:choose>
+                                <button>Previous</button>
+                            </a>
+                            <span>${initialData.numInChain}</span>
+                        </div>
+                    </div>
                     <c:if test="${not empty initialData.CPSuri}">
                         <div class="row">
                             <div class="col-md-1 col-md-offset-1"><span class="colHeader">Certification Practice Statement URI</span></div>
@@ -614,7 +630,7 @@
                                                                     <span class="fieldHeader">Manufacturer:</span>
                                                                     <span class="fieldValue">${component.getComponentManufacturer()}</span><br/>
                                                                     <span class="fieldHeader">Model:</span>
-                                                                    <span class="fieldValue">${component.getComponentModel()}</span><br/>                                                                    
+                                                                    <span class="fieldValue">${component.getComponentModel()}</span><br/>
                                                                     <c:if test="${not empty fn:trim(component.getComponentSerial())}">
                                                                         <span class="fieldHeader">Serial Number:</span>
                                                                         <span class="fieldValue">${component.getComponentSerial()}</span><br/>
@@ -635,6 +651,22 @@
                                                                             <span class="label label-danger">Irreplaceable</span><br/>
                                                                         </c:otherwise>
                                                                     </c:choose>
+                                                                        <c:if test="${component.isVersion2()}">
+                                                                            <c:if test="${not empty component.getCertificateIdentifier()}">
+                                                                                <span class="fieldHeader">Platform Certificate Issuer:</span>
+                                                                                <span class="fieldValue">${component.getCertificateIdentifier().getIssuerDN()}</span><br />
+                                                                                <span class="fieldHeader">Platform Certificate Serial Number:</span>
+                                                                                <span class="fieldValue">${component.getCertificateIdentifier().getCertificateSerialNumber()}</span><br />
+                                                                                <span class="fieldHeader">Platform Certificate URI:</span>  
+                                                                            </c:if>
+                                                                            <span class="fieldValue">
+                                                                                <a href="${component.getComponentPlatformUri().getUniformResourceIdentifier()}">
+                                                                                    ${component.getComponentPlatformUri().getUniformResourceIdentifier()}
+                                                                                </a>
+                                                                            </span><br />
+                                                                            <span class="fieldHeader">Status:</span>
+                                                                            <span class="fieldValue">${component.getAttributeStatus()}</span><br/>
+                                                                        </c:if>
                                                                 </div>
                                                             </div>
                                                         </div>
@@ -644,33 +676,41 @@
                                         </div>
                                     </div>
                                 </c:if>
-                                <%--<c:if test="${not empty initialData.componentsIdentifierURI}">--%>
+                                <c:if test="${not empty initialData.componentsIdentifierURI}">
                                     <!-- Components Identifier URI -->
                                     <div class="panel panel-default">
                                         <div class="panel-heading" role="tab" id="headingTwo">
                                             <h4 class="panel-title">
-                                                <a role="button" data-toggle="collapse" data-parent="#componentIdentifierURI" class="collapsed"
+                                                <a role="button" data-toggle="collapse" data-parent="#platformConfiguration" class="collapsed"
                                                    href="#componentIdentifierURIcollapse" aria-expanded="false" aria-controls="componentIdentifierURIcollapse">
                                                     Components Identifier URI
                                                 </a>
                                             </h4>
                                         </div>
-                                        <div id="componentIdentifierURIIcollapse" class="panel-collapse collapse" role="tabpanel" aria-labelledby="headingThree">
+                                        <div id="componentIdentifierURIcollapse" class="panel-collapse collapse" role="tabpanel" aria-labelledby="headingTwo">
                                             <div class="panel-body">
                                                 <div id="componentIdentifierURI" class="row">
                                                     <span class="fieldHeader">URI:</span>
-                                                    <a href="${initialData.componentsIdentifierUri.getUniformResourceIdentifier()}">
-                                                        ${initialData.componentsIdentifierUri.getUniformResourceIdentifier()}
+                                                    <a href="${initialData.componentsIdentifierURI.getUniformResourceIdentifier()}">
+                                                        ${initialData.componentsIdentifierURI.getUniformResourceIdentifier()}
                                                     </a>
+                                                    <c:if test="${not empty initialData.componentsIdentifierURI.getHashAlgorithm()}">
+                                                        <span class="fieldHeader">Hash Algorithm:</span>
+                                                        <span>${initialData.componentsIdentifierURI.getHashAlgorithm()}</span>
+                                                    </c:if>
+                                                    <c:if test="${not empty initialData.componentsIdentifierURI.getHashValue()}">
+                                                        <span class="fieldHeader">Hash Value:</span>
+                                                        <span>${initialData.componentsIdentifierURI.getHashValue()}</span>
+                                                    </c:if>
                                                 </div>
                                             </div>
                                         </div>
                                     </div>
-                                <%--</c:if>--%>
+                                </c:if>
                                 <c:if test="${not empty initialData.platformProperties}">
                                     <!-- Platform Properties -->
                                     <div class="panel panel-default">
-                                        <div class="panel-heading" role="tab" id="headingTwo">
+                                        <div class="panel-heading" role="tab" id="headingThree">
                                             <h4 class="panel-title">
                                                 <a role="button" data-toggle="collapse" data-parent="#platformConfiguration" class="collapsed"
                                                    href="#platformPropertiescollapse" aria-expanded="false" aria-controls="platformPropertiescollapse">
@@ -678,7 +718,7 @@
                                                 </a>
                                             </h4>
                                         </div>
-                                        <div id="platformPropertiescollapse" class="panel-collapse collapse" role="tabpanel" aria-labelledby="headingTwo">
+                                        <div id="platformPropertiescollapse" class="panel-collapse collapse" role="tabpanel" aria-labelledby="headingThree">
                                             <div class="panel-body">
                                                 <div id="platformProperties" class="row">
                                                     <c:forEach items="${initialData.platformProperties}" var="property">
@@ -701,7 +741,7 @@
                                 <c:if test="${not empty initialData.platformPropertiesURI}">
                                     <!-- Platform Properties URI -->
                                     <div class="panel panel-default">
-                                        <div class="panel-heading" role="tab" id="headingThree">
+                                        <div class="panel-heading" role="tab" id="headingFour">
                                             <h4 class="panel-title">
                                                 <a role="button" data-toggle="collapse" data-parent="#platformConfiguration" class="collapsed"
                                                    href="#platformPropertiesURIcollapse" aria-expanded="false" aria-controls="platformPropertiesURIcollapse">
@@ -709,7 +749,7 @@
                                                 </a>
                                             </h4>
                                         </div>
-                                        <div id="platformPropertiesURIcollapse" class="panel-collapse collapse" role="tabpanel" aria-labelledby="headingThree">
+                                        <div id="platformPropertiesURIcollapse" class="panel-collapse collapse" role="tabpanel" aria-labelledby="headingFour">
                                             <div class="panel-body">
                                                 <div id="platformPropertiesURI" class="row">
                                                     <span class="fieldHeader">URI:</span>

@@ -741,11 +741,13 @@ public class PlatformCredentialTest {
         PlatformConfiguration platformConfig = platformCert.getPlatformConfiguration();
 
         Assert.assertTrue(platformConfig instanceof PlatformConfigurationV2);
-        Assert.assertEquals(platformConfig.getPlatformPropertiesUri().getUniformResourceIdentifier().toString(),
+        Assert.assertEquals(platformConfig.getPlatformPropertiesUri()
+                .getUniformResourceIdentifier().toString(),
                 "https://www.intel.com/platformproperties.xml");
         Assert.assertNotNull(platformConfig.getComponentIdentifierUri());
 
-        Assert.assertEquals(platformConfig.getComponentIdentifierUri().getUniformResourceIdentifier().toString(),
+        Assert.assertEquals(platformConfig.getComponentIdentifierUri()
+                .getUniformResourceIdentifier().toString(),
                 "https://www.intel.com/platformidentifiers.xml");
 
     }

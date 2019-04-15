@@ -8,15 +8,19 @@ import java.math.BigInteger;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Set;
+import java.util.List;
+import java.util.Comparator;
+import java.util.stream.Collectors;
 import java.util.UUID;
 import hirs.data.persist.certificate.Certificate;
 import hirs.data.persist.certificate.CertificateAuthorityCredential;
 import hirs.data.persist.certificate.EndorsementCredential;
-import hirs.data.persist.certificate.IssuedAttestationCertificate;
 import hirs.data.persist.certificate.PlatformCredential;
+import hirs.data.persist.certificate.IssuedAttestationCertificate;
 import hirs.data.persist.certificate.attributes.PlatformConfiguration;
 import hirs.persist.CertificateManager;
 import hirs.utils.BouncyCastleUtils;
+import java.util.Collections;
 
 /**
  * Utility class for mapping certificate information in to string maps. These are used to display
@@ -318,6 +322,15 @@ public final class CertificateStringMapBuilder {
                 }
             }
 
+            PlatformCredential prevCertificate = PlatformCredential
+                    .select(certificateManager)
+                    .byHolderSerialNumber(certificate.getSerialNumber())
+                    .getCertificate();
+
+            if (prevCertificate != null) {
+                data.put("prevCertId", prevCertificate.getId().toString());
+            }
+
             //x509 credential version
             data.put("x509Version", certificate.getX509CredentialVersion());
             //CPSuri
@@ -338,6 +351,37 @@ public final class CertificateStringMapBuilder {
             }
             //TBB Security Assertion
             data.put("tbbSecurityAssertion", certificate.getTBBSecurityAssertion());
+
+            // link certificate chain
+            List<PlatformCredential> chainCertificates = PlatformCredential
+                    .select(certificateManager)
+                    .byBoardSerialNumber(certificate.getPlatformSerial())
+                    .getCertificates().stream().collect(Collectors.toList());
+
+            data.put("numInChain", chainCertificates.size());
+            Collections.sort(chainCertificates, new Comparator<PlatformCredential>() {
+                @Override
+                public int compare(final PlatformCredential obj1,
+                        final PlatformCredential obj2) {
+                    return obj1.getBeginValidity().compareTo(obj2.getBeginValidity());
+                }
+            });
+
+            boolean certFound = false;
+            PlatformCredential subCert = null;
+            for (PlatformCredential pc : chainCertificates) {
+                if (certFound) {
+                    data.put("nextCertId", pc.getId().toString());
+                    if (subCert != null) {
+                        data.put("prevCertId", subCert.getId().toString());
+                    }
+                } else {
+                    subCert = pc;
+                    if (pc.getId().equals(certificate.getId())) {
+                        certFound = true;
+                    }
+                }
+            }
         } else {
             String notFoundMessage = "Unable to find Platform Credential "
                     + "with ID: " + uuid;
@@ -373,7 +417,7 @@ public final class CertificateStringMapBuilder {
         return map;
     }
 
-        /**
+    /**
      * Returns the Issued Attestation Certificate information.
      *
      * @param uuid ID for the certificate.

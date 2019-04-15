@@ -30,13 +30,13 @@
                     <h4>Upload, view and manage CA certificates that complete trust chains for hardware credentials.</h4>
                     <h3>
                         <a href="${certificateRequest}/platform-credentials">
-                            <img src="${icons}/ic_important_devices_black_24dp.png" /> Platform Credentials
+                            <img src="${icons}/ic_important_devices_black_24dp.png" /> Platform Certificates
                         </a>
                     </h3>
                     <h4>Upload, view and manage platform credentials.</h4>
                     <h3>
                         <a href="${certificateRequest}/endorsement-key-credentials">
-                            <img src="${icons}/ic_vpn_key_black_24dp.png" /> Endorsement Credentials
+                            <img src="${icons}/ic_vpn_key_black_24dp.png" /> Endorsement Certificates
                         </a>
                     </h3> 
                     <h4>Upload, view and manage endorsement credentials.</h4>
