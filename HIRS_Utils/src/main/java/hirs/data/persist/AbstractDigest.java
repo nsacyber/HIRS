@@ -64,39 +64,8 @@ public abstract class AbstractDigest {
             throw new IllegalArgumentException(msg);
         }
 
-        switch (algorithm) {
-            case MD2:
-                if (digest.length != MD2_DIGEST_LENGTH) {
-                    throw new AbstractDigest.IllegalDigestLength(algorithm, digest);
-                }
-                break;
-            case MD5:
-                if (digest.length != MD5_DIGEST_LENGTH) {
-                    throw new AbstractDigest.IllegalDigestLength(algorithm, digest);
-                }
-                break;
-            case SHA1:
-                if (digest.length != SHA1_DIGEST_LENGTH) {
-                    throw new AbstractDigest.IllegalDigestLength(algorithm, digest);
-                }
-                break;
-            case SHA256:
-                if (digest.length != SHA256_DIGEST_LENGTH) {
-                    throw new AbstractDigest.IllegalDigestLength(algorithm, digest);
-                }
-                break;
-            case SHA384:
-                if (digest.length != SHA384_DIGEST_LENGTH) {
-                    throw new AbstractDigest.IllegalDigestLength(algorithm, digest);
-                }
-                break;
-            case SHA512:
-                if (digest.length != SHA512_DIGEST_LENGTH) {
-                    throw new AbstractDigest.IllegalDigestLength(algorithm, digest);
-                }
-                break;
-            default:
-                throw new IllegalArgumentException("Digest length does not match algorithm type");
+        if (digest.length != algorithm.getLengthInBytes()) {
+            throw new AbstractDigest.IllegalDigestLength(algorithm, digest);
         }
     }
 
