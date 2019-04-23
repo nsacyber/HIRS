@@ -367,21 +367,7 @@ public final class CertificateStringMapBuilder {
                 }
             });
 
-            boolean certFound = false;
-            PlatformCredential subCert = null;
-            for (PlatformCredential pc : chainCertificates) {
-                if (certFound) {
-                    data.put("nextCertId", pc.getId().toString());
-                    if (subCert != null) {
-                        data.put("prevCertId", subCert.getId().toString());
-                    }
-                } else {
-                    subCert = pc;
-                    if (pc.getId().equals(certificate.getId())) {
-                        certFound = true;
-                    }
-                }
-            }
+            data.put("chainCredentials", chainCertificates);
         } else {
             String notFoundMessage = "Unable to find Platform Credential "
                     + "with ID: " + uuid;

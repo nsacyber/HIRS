@@ -1,14 +1,11 @@
-<%@page contentType="text/html" pageEncoding="UTF-8"%>
-
-<%-- JSP TAGS --%>
+<%@ page contentType="text/html"%>
+<%@ page pageEncoding="UTF-8"%><%-- JSP TAGS--%>
 <%@taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core"%>
 <%@taglib prefix="spring" uri="http://www.springframework.org/tags"%>
 <%@taglib prefix="form" uri="http://www.springframework.org/tags/form"%>
 <%@taglib prefix="fn" uri = "http://java.sun.com/jsp/jstl/functions" %>
 <%@taglib prefix="my" tagdir="/WEB-INF/tags"%>
-<%@taglib prefix="fn" uri = "http://java.sun.com/jsp/jstl/functions"%>
-
-<%-- CONTENT --%>
+<%@taglib prefix="fn" uri = "http://java.sun.com/jsp/jstl/functions"%><%-- CONTENT--%>
 <my:page>
     <jsp:attribute name="style">
         <link type="text/css" rel="stylesheet" href="${common}/certificate_details.css"/>
@@ -330,17 +327,11 @@
                     <div class="row">
                         <div class="col-md-1 col-md-offset-1"><span class="colHeader">Platform Chain</span></div>
                         <div id="platformType" class="col col-md-8">
-                            <c:choose>
-                            <c:when test="${not empty initialData.prevCertId}">
-                                <a href="${portal}/certificate-details?id=${initialData.prevCertId}&type=platform">
-                            </c:when>
-                            <c:otherwise>
-                                <a href="">
-                            </c:otherwise>
-                            </c:choose>
-                                <button>Previous</button>
-                            </a>
-                            <span>${initialData.numInChain}</span>
+                            <span>
+                                <c:forEach items="${initialData.chainCredentials}" var="credential" varStatus="loop">
+                                    <a href="${portal}/certificate-details?id=${credential.getId()}&type=platform">${loop.index}</a>&nbsp;
+                                </c:forEach>
+                            </span>
                         </div>
                     </div>
                     <c:if test="${not empty initialData.CPSuri}">
