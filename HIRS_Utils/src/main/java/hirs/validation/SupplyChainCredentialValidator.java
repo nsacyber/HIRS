@@ -633,9 +633,11 @@ public final class SupplyChainCredentialValidator implements CredentialValidator
             for (ComponentIdentifier unmatchedComponent : pcUnmatchedComponents) {
                 LOGGER.error("Unmatched component " + umatchedComponentCounter++ + ": "
                         + unmatchedComponent);
-                sb.append(String.format("Manufacturer=%s, Model=%s%n",
+                sb.append(String.format("Manufacturer=%s, Model=%s, Serial=%s, Revision=%s%n",
                         unmatchedComponent.getComponentManufacturer(),
-                        unmatchedComponent.getComponentModel()));
+                        unmatchedComponent.getComponentModel(),
+                        unmatchedComponent.getComponentSerial(),
+                        unmatchedComponent.getComponentRevision()));
             }
             return sb.toString();
         }

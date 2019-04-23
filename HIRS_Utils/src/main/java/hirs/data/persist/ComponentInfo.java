@@ -15,6 +15,8 @@ import javax.xml.bind.annotation.XmlElement;
 import java.io.Serializable;
 import java.util.Objects;
 
+import hirs.data.persist.certificate.attributes.ComponentIdentifier;
+
 /**
  * ComponentInfo is a class to hold Hardware component information
  * such as manufacturer, model, serial number and version.
@@ -194,9 +196,13 @@ public class ComponentInfo implements Serializable {
         this.componentModel = componentModel.trim();
         if (componentSerial != null) {
             this.componentSerial = componentSerial.trim();
+        } else {
+            this.componentSerial = ComponentIdentifier.EMPTY_COMPONENT;
         }
         if (componentRevision != null) {
             this.componentRevision = componentRevision.trim();
+        } else {
+            this.componentRevision = ComponentIdentifier.EMPTY_COMPONENT;
         }
     }
 

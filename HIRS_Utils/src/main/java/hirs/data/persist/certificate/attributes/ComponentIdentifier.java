@@ -32,7 +32,7 @@ public class ComponentIdentifier {
     /**
      * Variable for components that aren't set.
      */
-    public static final String EMPTY_COMPONENT = " --- ";
+    public static final String EMPTY_COMPONENT = "[Empty]";
     /**
      * Maximum number of configurations.
      */
