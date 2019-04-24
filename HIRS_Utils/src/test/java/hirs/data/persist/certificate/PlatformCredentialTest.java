@@ -561,7 +561,7 @@ public class PlatformCredentialTest {
                                         .equals("BIOS"));
         Assert.assertTrue(component.getComponentSerial()
                                         .getString()
-                                        .equals(" --- "));
+                                        .equals("[Empty]"));
         Assert.assertTrue(component.getComponentRevision()
                                         .getString()
                                         .equals("DNKBLi5v.86A.0019.2017.0804.1146"));

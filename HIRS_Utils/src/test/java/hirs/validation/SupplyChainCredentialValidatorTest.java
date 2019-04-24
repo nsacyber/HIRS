@@ -1113,7 +1113,8 @@ public class SupplyChainCredentialValidatorTest {
                 + "Platform version did not match\n"
                 + "Platform serial did not match\n"
                 + "There are unmatched components:\n"
-                + "Manufacturer=Intel, Model=platform2018\n";
+                + "Manufacturer=Intel, Model=platform2018,"
+                + " Serial=BQKP52840678, Revision=1.0\n";
 
         AppraisalStatus result =
                 supplyChainCredentialValidator.validatePlatformCredentialAttributes(
@@ -1757,7 +1758,8 @@ public class SupplyChainCredentialValidatorTest {
         Assert.assertEquals(result.getAppStatus(), AppraisalStatus.Status.FAIL);
         Assert.assertEquals(result.getMessage(), "Component manufacturer is empty\n"
                 + "There are unmatched components:\n"
-                + "Manufacturer=, Model=Core i7\n");
+                + "Manufacturer=, Model=Core i7, Serial=Not Specified,"
+                + " Revision=Intel(R) Core(TM) i7-4790 CPU @ 3.60GHz\n");
 
         platformCredential = setupMatchingPlatformCredential(deviceInfoReport);
         result = SupplyChainCredentialValidator
@@ -1813,7 +1815,7 @@ public class SupplyChainCredentialValidatorTest {
                         deviceInfoReport);
         Assert.assertEquals(result.getAppStatus(), AppraisalStatus.Status.FAIL);
         Assert.assertEquals(result.getMessage(), "There are unmatched components:\n"
-                + "Manufacturer=ACME, Model=TNT\n");
+                + "Manufacturer=ACME, Model=TNT, Serial=2, Revision=1.1\n");
     }
 
     /**
@@ -1876,7 +1878,8 @@ public class SupplyChainCredentialValidatorTest {
         Assert.assertEquals(result.getAppStatus(), AppraisalStatus.Status.FAIL);
         Assert.assertEquals(result.getMessage(), "Component manufacturer is empty\n"
                 + "There are unmatched components:\n"
-                + "Manufacturer=, Model=Core i7\n");
+                + "Manufacturer=, Model=Core i7, Serial=Not Specified,"
+                + " Revision=Intel(R) Core(TM) i7-4790 CPU @ 3.60GHz\n");
 
         platformCredential = setupMatchingPlatformCredential(deviceInfoReport);
         result = SupplyChainCredentialValidator

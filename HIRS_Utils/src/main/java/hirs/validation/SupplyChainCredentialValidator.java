@@ -513,8 +513,7 @@ public final class SupplyChainCredentialValidator implements CredentialValidator
                 new ComponentIdentifier(
                         new DERUTF8String(component.getComponentManufacturer().getString().trim()),
                         new DERUTF8String(component.getComponentModel().getString().trim()),
-                        componentSerial,
-                        componentRevision,
+                        componentSerial, componentRevision,
                         component.getComponentManufacturerId(),
                         component.getFieldReplaceable(),
                         component.getComponentAddress()
@@ -557,8 +556,7 @@ public final class SupplyChainCredentialValidator implements CredentialValidator
             // Now match up the components from the device info that are from the same
             // manufacturer and have a serial number. As matches are found, remove them from
             // both lists.
-            for (ComponentIdentifier pcComponent
-                    : pcComponentsFromManufacturerWithSerialNumber) {
+            for (ComponentIdentifier pcComponent : pcComponentsFromManufacturerWithSerialNumber) {
                 Optional<ComponentInfo> first
                         = deviceInfoComponentsFromManufacturer.stream()
                         .filter(componentInfo
@@ -588,8 +586,7 @@ public final class SupplyChainCredentialValidator implements CredentialValidator
             // Now match up the components from the device info that are from the same
             // manufacturer and specify a value for the revision field. As matches are found,
             // remove them from both lists.
-            for (ComponentIdentifier pcComponent
-                    : pcComponentsFromManufacturerWithRevision) {
+            for (ComponentIdentifier pcComponent : pcComponentsFromManufacturerWithRevision) {
                 Optional<ComponentInfo> first
                         = deviceInfoComponentsFromManufacturer.stream()
                         .filter(info -> StringUtils.isNotEmpty(info.getComponentRevision()))
