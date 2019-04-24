@@ -54,6 +54,9 @@ public final class CertificateStringMapBuilder {
                 data.put("authSerialNumber", Long.toHexString(certificate
                         .getAuthoritySerialNumber().longValue()));
             }
+            if (certificate.getId() != null) {
+                data.put("certificateId", certificate.getId().toString());
+            }
             data.put("authInfoAccess", certificate.getAuthInfoAccess());
             data.put("beginValidity", certificate.getBeginValidity().toString());
             data.put("endValidity", certificate.getEndValidity().toString());

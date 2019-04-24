@@ -323,17 +323,24 @@
                             <div class="col-md-1 col-md-offset-1"><span class="colHeader">Platform Type</span></div>
                             <div id="platformType" class="col col-md-8">${initialData.platformType}</div>
                         </div>
+                        <div class="row">
+                            <div class="col-md-1 col-md-offset-1"><span class="colHeader">Platform Chain</span></div>
+                            <div id="platformType" class="col col-md-8">
+                                <span>
+                                    <c:forEach items="${initialData.chainCredentials}" var="credential" varStatus="loop">
+                                        <c:choose>
+                                            <c:when test="${initialData.certificateId==credential.getId().toString()}">
+                                                ${loop.index}&nbsp;
+                                            </c:when>
+                                            <c:otherwise>
+                                                <a href="${portal}/certificate-details?id=${credential.getId()}&type=platform">${loop.index}</a>&nbsp;                                            
+                                            </c:otherwise>
+                                        </c:choose>
+                                    </c:forEach>
+                                </span>
+                            </div>
+                        </div>                        
                     </c:if>
-                    <div class="row">
-                        <div class="col-md-1 col-md-offset-1"><span class="colHeader">Platform Chain</span></div>
-                        <div id="platformType" class="col col-md-8">
-                            <span>
-                                <c:forEach items="${initialData.chainCredentials}" var="credential" varStatus="loop">
-                                    <a href="${portal}/certificate-details?id=${credential.getId()}&type=platform">${loop.index}</a>&nbsp;
-                                </c:forEach>
-                            </span>
-                        </div>
-                    </div>
                     <c:if test="${not empty initialData.CPSuri}">
                         <div class="row">
                             <div class="col-md-1 col-md-offset-1"><span class="colHeader">Certification Practice Statement URI</span></div>
