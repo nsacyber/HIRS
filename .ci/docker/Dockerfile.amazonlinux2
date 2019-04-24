@@ -5,7 +5,7 @@ MAINTAINER apl.dev3@jhuapl.edu
 # Install packages for building HIRS
 RUN yum -y update && yum clean all
 RUN yum groupinstall -y "Development Tools"
-RUN yum install -y wget java-1.8.0-openjdk-devel protobuf-compiler rpm-build cmake make git gcc-c++ doxygen graphviz python libssh2-devel openssl protobuf-devel tpm2-tss-devel trousers-devel libcurl-devel
+RUN yum install -y wget java-1.8.0-openjdk-devel protobuf-compiler rpm-build cmake make git gcc-c++ doxygen graphviz python libssh2-devel openssl protobuf-devel tpm2-tss-devel tpm2-abrmd-devel trousers-devel libcurl-devel
 
 # Install EPEL
 WORKDIR /tmp
