@@ -93,7 +93,9 @@ list(APPEND REQUIRED_LIBS ${RE_LIB})
 find_library(TPM2_SAPI_LIB NAMES sapi tss2)
 find_library(TPM2_TCTI_DEVICE_LIB NAMES tcti-device tss2)
 find_library(TPM2_TCTI_SOCKET_LIB NAMES tcti-socket tss2)
-set(TPM2_TSS_LIBRARIES ${TPM2_SAPI_LIB} ${TPM2_TCTI_DEVICE_LIB} ${TPM2_TCTI_SOCKET_LIB})
+find_library(TPM2_TCTI_TABRMD_LIB NAMES tcti-tabrmd tss2)
+set(TPM2_TSS_LIBRARIES ${TPM2_SAPI_LIB} ${TPM2_TCTI_DEVICE_LIB}
+        ${TPM2_TCTI_SOCKET_LIB} ${TPM2_TCTI_TABRMD_LIB})
 list(APPEND REQUIRED_LIBS ${TPM2_TSS_LIBRARIES})
 
 # Set variable to determine TSS SAPI import
@@ -145,6 +147,7 @@ add_executable(${PROJECT_NAME} src/TPM2_Provisioner.cpp ${PROJECT_CONFIG_FILES})
 
 # In TPM 2.0 land, there is currently not a way to fetch the TPM version info
 add_executable(tpm_version src/tpm_version.cpp)
+target_link_libraries(tpm_version ${TPM2_SAPI_LIB} ${TPM2_TCTI_TABRMD_LIB})
 
 # Link necessary libraries
 target_link_libraries(${PROJECT_NAME} TPM2_PROVISIONER_LIBRARY)
