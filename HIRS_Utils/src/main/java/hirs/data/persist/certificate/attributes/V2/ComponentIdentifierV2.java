@@ -55,7 +55,7 @@ public class ComponentIdentifierV2 extends ComponentIdentifier {
         componentClass = new ComponentClass();
         certificateIdentifier = null;
         componentPlatformUri = null;
-        attributeStatus = AttributeStatus.NOT_SPECIFIED;
+        attributeStatus = AttributeStatus.EMPTY_STATUS;
     }
 
     /**

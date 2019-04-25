@@ -25,7 +25,7 @@ public class PlatformPropertyV2 extends PlatformProperty {
      */
     public PlatformPropertyV2() {
         super();
-        this.attributeStatus = AttributeStatus.NOT_SPECIFIED;
+        this.attributeStatus = AttributeStatus.EMPTY_STATUS;
     }
 
     /**
