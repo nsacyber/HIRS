@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
-import org.apache.logging.log4j.util.Strings;
+import org.apache.commons.lang3.StringUtils;
 
 import org.bouncycastle.asn1.ASN1Boolean;
 import org.bouncycastle.asn1.ASN1ObjectIdentifier;
@@ -80,8 +80,8 @@ public class ComponentIdentifier {
     public ComponentIdentifier() {
         componentManufacturer = new DERUTF8String(NOT_SPECFIED_COMPONENT);
         componentModel = new DERUTF8String(NOT_SPECFIED_COMPONENT);
-        componentSerial = new DERUTF8String(Strings.EMPTY);
-        componentRevision = new DERUTF8String(Strings.EMPTY);
+        componentSerial = new DERUTF8String(StringUtils.EMPTY);
+        componentRevision = new DERUTF8String(StringUtils.EMPTY);
         componentManufacturerId = null;
         fieldReplaceable = null;
         componentAddress = new ArrayList<>();

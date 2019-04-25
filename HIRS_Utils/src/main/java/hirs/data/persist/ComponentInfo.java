@@ -15,7 +15,6 @@ import javax.xml.bind.annotation.XmlElement;
 import java.io.Serializable;
 import java.util.Objects;
 
-import org.apache.logging.log4j.util.Strings;
 
 /**
  * ComponentInfo is a class to hold Hardware component information
@@ -197,12 +196,12 @@ public class ComponentInfo implements Serializable {
         if (componentSerial != null) {
             this.componentSerial = componentSerial.trim();
         } else {
-            this.componentSerial = Strings.EMPTY;
+            this.componentSerial = StringUtils.EMPTY;
         }
         if (componentRevision != null) {
             this.componentRevision = componentRevision.trim();
         } else {
-            this.componentRevision = Strings.EMPTY;
+            this.componentRevision = StringUtils.EMPTY;
         }
     }
 

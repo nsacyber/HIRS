@@ -1,6 +1,7 @@
 package hirs.data.persist.certificate.attributes.V2;
 
-import org.apache.logging.log4j.util.Strings;
+import org.apache.commons.lang3.StringUtils;
+
 
 /**
  * A type to handle the security Level used in the FIPS Level.
@@ -30,7 +31,7 @@ public enum AttributeStatus {
     /**
      * Attribute Status for EMPTY.
      */
-    EMPTY_STATUS(Strings.EMPTY);
+    EMPTY_STATUS(StringUtils.EMPTY);
 
     private final String value;
 
