@@ -125,7 +125,8 @@ namespace properties {
          * Retrieve the value associated with the given key.  If no such key exists in these properties,
          * this method will return the given default value.
          *
-         * @param key
+         * @param key the name of the property being searched for
+         * @param defaultValue the default value to return if none is found
          * @return the key's associated value, or the given default if no value is set
          */
         string Properties::get(const string& key, const string& defaultValue) {
