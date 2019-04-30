@@ -355,22 +355,24 @@ public final class CertificateStringMapBuilder {
             //TBB Security Assertion
             data.put("tbbSecurityAssertion", certificate.getTBBSecurityAssertion());
 
-            // link certificate chain
-            List<PlatformCredential> chainCertificates = PlatformCredential
-                    .select(certificateManager)
-                    .byBoardSerialNumber(certificate.getPlatformSerial())
-                    .getCertificates().stream().collect(Collectors.toList());
+            if (certificate.getPlatformSerial() != null) {
+                // link certificate chain
+                List<PlatformCredential> chainCertificates = PlatformCredential
+                        .select(certificateManager)
+                        .byBoardSerialNumber(certificate.getPlatformSerial())
+                        .getCertificates().stream().collect(Collectors.toList());
 
-            data.put("numInChain", chainCertificates.size());
-            Collections.sort(chainCertificates, new Comparator<PlatformCredential>() {
-                @Override
-                public int compare(final PlatformCredential obj1,
-                        final PlatformCredential obj2) {
-                    return obj1.getBeginValidity().compareTo(obj2.getBeginValidity());
-                }
-            });
+                data.put("numInChain", chainCertificates.size());
+                Collections.sort(chainCertificates, new Comparator<PlatformCredential>() {
+                    @Override
+                    public int compare(final PlatformCredential obj1,
+                            final PlatformCredential obj2) {
+                        return obj1.getBeginValidity().compareTo(obj2.getBeginValidity());
+                    }
+                });
 
-            data.put("chainCredentials", chainCertificates);
+                data.put("chainCredentials", chainCertificates);
+            }
         } else {
             String notFoundMessage = "Unable to find Platform Credential "
                     + "with ID: " + uuid;

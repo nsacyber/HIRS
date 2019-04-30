@@ -286,7 +286,7 @@ public abstract class CertificateSelector<T extends Certificate> {
 
         Preconditions.checkArgument(
                 value != null,
-                "field value cannot be null."
+                String.format("field value (%s) cannot be null.", name)
         );
 
         if (value instanceof String) {
@@ -301,7 +301,7 @@ public abstract class CertificateSelector<T extends Certificate> {
 
             Preconditions.checkArgument(
                     ArrayUtils.isNotEmpty(valueBytes),
-                    "field value cannot be empty."
+                    String.format("field value (%s) cannot be empty.", name)
             );
 
             valueToAssign = Arrays.copyOf(valueBytes, valueBytes.length);
