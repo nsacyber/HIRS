@@ -251,6 +251,27 @@ public final class SupplyChainCredentialValidator implements CredentialValidator
         return validatePlatformCredentialAttributesV1p2(platformCredential, deviceInfoReport);
     }
 
+    /**
+     * Checks if the delta credential's attributes are valid.
+     * @param deltaPlatformCredential the delta credential to verify
+     * @param deviceInfoReport The device info report containing
+     *                         serial number of the platform to be validated.
+     * @param basePlatformCredential the base credential from the same identity request
+     *                              as the delta credential.
+     * @return the result of the validation.
+     */
+    @Override
+    public AppraisalStatus validateDeltaPlatformCredentialAttributes(
+            final PlatformCredential deltaPlatformCredential,
+            final DeviceInfoReport deviceInfoReport,
+            final PlatformCredential basePlatformCredential) {
+
+        /*
+         * Code here to check the holder and attribute status fields
+         */
+        return validatePlatformCredentialAttributesV2p0(deltaPlatformCredential, deviceInfoReport);
+    }
+
     private static AppraisalStatus validatePlatformCredentialAttributesV1p2(
             final PlatformCredential platformCredential,
             final DeviceInfoReport deviceInfoReport) {

@@ -27,14 +27,19 @@ public class SupplyChainValidation extends ArchivableEntity {
         ENDORSEMENT_CREDENTIAL,
 
         /**
-         * Validation of a platform credential.
+         * Validation of a platform credential and also delta platform credentials from spec 1.1.
          */
         PLATFORM_CREDENTIAL,
 
         /**
          * Validation of a platform credential's attributes.
          */
-        PLATFORM_CREDENTIAL_ATTRIBUTES
+        PLATFORM_CREDENTIAL_ATTRIBUTES,
+
+        /**
+         * Validation of a delta platform credential's attributes.
+         */
+        DELTA_PLATFORM_CREDENTIAL_ATTRIBUTES
     }
 
     @Column
