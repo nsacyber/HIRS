@@ -381,6 +381,14 @@ public class SupplyChainValidationServiceImplTest extends SpringPersistenceTest 
                 device).getOverallValidationResult(), FAIL);
     }
 
+    @Test
+    public final void testNoMultiBasePcValidation() {
+        when(policy.isEcValidationEnabled()).thenReturn(false);
+        when(policy.isPcValidationEnabled()).thenReturn(true);
+        when(policy.isPcAttributeValidationEnabled()).thenReturn(false);
+
+    }
+
     /**
      * Puts an EC, STM CA, and GS CA in the DB, attempts to retrieve the CAs from the EC.
      * @throws URISyntaxException failed to parse certificate file location.

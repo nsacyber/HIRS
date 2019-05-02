@@ -10,13 +10,18 @@ import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Import;
 import org.springframework.stereotype.Service;
+
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
-import java.util.HashMap;
+import java.util.stream.Collectors;
+
 import org.apache.logging.log4j.Level;
 import hirs.appraiser.Appraiser;
 import hirs.appraiser.SupplyChainAppraiser;
@@ -101,8 +106,8 @@ public class SupplyChainValidationServiceImpl implements SupplyChainValidationSe
         boolean acceptExpiredCerts = policy.isExpiredCertificateValidationEnabled();
         HashMap<PlatformCredential, SupplyChainValidation> credentialMap = new HashMap<>();
         PlatformCredential baseCredential = null;
-
-        List<SupplyChainValidation> validations = new ArrayList<>();
+        List<SupplyChainValidation> validations = new LinkedList<>();
+        Map<String, Boolean> multiBaseCheckMap = new HashMap<>();
 
         // validate all supply chain pieces. Potentially, a policy setting could be made
         // to dictate stopping after the first validation failure.
@@ -133,8 +138,29 @@ public class SupplyChainValidationServiceImpl implements SupplyChainValidationSe
                     KeyStore trustedCa = getCaChain(pc);
                     SupplyChainValidation platformScv = validatePlatformCredential(
                             pc, trustedCa, acceptExpiredCerts);
+                    // check if this cert has been verified for multiple base associated
+                    // with the serial number
+                    boolean checked = multiBaseCheckMap.containsKey(pc.getPlatformSerial());
+                    if (!checked) {
+                        // if not checked, update the map
+                        boolean result = checkForMultipleBaseCredentials(pc.getPlatformSerial());
+                        multiBaseCheckMap.put(pc.getPlatformSerial(), result);
+                        // if it is, then update the SupplyChainValidation message and result
+                        if (result) {
+                            String message = "Multiple Base certificates found in chain.";
+                            if (!platformScv.getResult().equals(AppraisalStatus.Status.PASS)) {
+                                message = String.format("%s,%n%s",
+                                        platformScv.getMessage(), message);
+                            }
+                            platformScv = buildValidationRecord(
+                                    SupplyChainValidation.ValidationType.PLATFORM_CREDENTIAL,
+                                    AppraisalStatus.Status.FAIL,
+                                    message, pc, Level.ERROR);
+                        }
+                    }
+
                     validations.add(platformScv);
-                    if (null != pc) {
+                    if (pc != null) {
                         pc.setDevice(device);
                         this.certificateManager.update(pc);
                         credentialMap.put(pc, platformScv);
@@ -148,6 +174,9 @@ public class SupplyChainValidationServiceImpl implements SupplyChainValidationSe
 */
                     }
                 }
+
+                // iterate through base credentials found
+
             }
         }
 
@@ -165,7 +194,7 @@ public class SupplyChainValidationServiceImpl implements SupplyChainValidationSe
                 Iterator<PlatformCredential> it = pcs.iterator();
                 while (it.hasNext()) {
                     PlatformCredential pc = it.next();
-                    SupplyChainValidation attributeScv = null;
+                    SupplyChainValidation attributeScv;
                     if (pc == baseCredential || baseCredential == null) {
                         attributeScv = validatePlatformCredentialAttributes(
                             pc, device.getDeviceInfo(), ec);
@@ -354,7 +383,7 @@ public class SupplyChainValidationServiceImpl implements SupplyChainValidationSe
             final Certificate certificate, final Level logLevel) {
 
         List<Certificate> certificateList = new ArrayList<>();
-        if (null != certificate) {
+        if (certificate != null) {
             certificateList.add(certificate);
         }
 
@@ -442,5 +471,27 @@ public class SupplyChainValidationServiceImpl implements SupplyChainValidationSe
         }
 
         return keyStore;
+    }
+
+    private boolean checkForMultipleBaseCredentials(final String platformSerialNumber) {
+        boolean multiple = false;
+        PlatformCredential baseCredential = null;
+
+        if (platformSerialNumber != null) {
+            List<PlatformCredential> chainCertificates = PlatformCredential
+                    .select(certificateManager)
+                    .byBoardSerialNumber(platformSerialNumber)
+                    .getCertificates().stream().collect(Collectors.toList());
+
+            for (PlatformCredential pc : chainCertificates) {
+                if (baseCredential != null && pc.isBase()) {
+                    multiple = true;
+                } else if (pc.isBase()) {
+                    baseCredential = pc;
+                }
+            }
+        }
+
+        return multiple;
     }
 }
