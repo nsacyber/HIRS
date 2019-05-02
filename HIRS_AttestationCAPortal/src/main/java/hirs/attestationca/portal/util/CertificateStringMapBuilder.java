@@ -371,10 +371,10 @@ public final class CertificateStringMapBuilder {
                     }
                 });
 
-                data.put("chainCredentials", chainCertificates);
+                data.put("chainCertificates", chainCertificates);
             }
         } else {
-            String notFoundMessage = "Unable to find Platform Credential "
+            String notFoundMessage = "Unable to find Platform Certificate "
                     + "with ID: " + uuid;
             LOGGER.error(notFoundMessage);
         }
