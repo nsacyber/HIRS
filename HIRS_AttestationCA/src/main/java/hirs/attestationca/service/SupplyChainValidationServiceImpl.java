@@ -54,11 +54,11 @@ import hirs.validation.CredentialValidator;
 @Import(PersistenceConfiguration.class)
 public class SupplyChainValidationServiceImpl implements SupplyChainValidationService {
 
-    private PolicyManager policyManager;
-    private AppraiserManager appraiserManager;
-    private CertificateManager certificateManager;
-    private CredentialValidator supplyChainCredentialValidator;
-    private CrudManager<SupplyChainValidationSummary> supplyChainValidatorSummaryManager;
+    private final PolicyManager policyManager;
+    private final AppraiserManager appraiserManager;
+    private final CertificateManager certificateManager;
+    private final CredentialValidator supplyChainCredentialValidator;
+    private final CrudManager<SupplyChainValidationSummary> supplyChainValidatorSummaryManager;
 
     private static final Logger LOGGER =
             LogManager.getLogger(SupplyChainValidationServiceImpl.class);
@@ -138,27 +138,31 @@ public class SupplyChainValidationServiceImpl implements SupplyChainValidationSe
                     KeyStore trustedCa = getCaChain(pc);
                     SupplyChainValidation platformScv = validatePlatformCredential(
                             pc, trustedCa, acceptExpiredCerts);
+
                     // check if this cert has been verified for multiple base associated
                     // with the serial number
-                    boolean checked = multiBaseCheckMap.containsKey(pc.getPlatformSerial());
-                    if (!checked) {
-                        // if not checked, update the map
-                        boolean result = checkForMultipleBaseCredentials(pc.getPlatformSerial());
-                        multiBaseCheckMap.put(pc.getPlatformSerial(), result);
-                        // if it is, then update the SupplyChainValidation message and result
-                        if (result) {
-                            String message = "Multiple Base certificates found in chain.";
-                            if (!platformScv.getResult().equals(AppraisalStatus.Status.PASS)) {
-                                message = String.format("%s,%n%s",
-                                        platformScv.getMessage(), message);
+                    if (pc != null) {
+                        boolean checked = multiBaseCheckMap.containsKey(pc.getPlatformSerial());
+                        if (!checked) {
+                            // if not checked, update the map
+                            boolean result = checkForMultipleBaseCredentials(
+                                    pc.getPlatformSerial());
+                            multiBaseCheckMap.put(pc.getPlatformSerial(), result);
+                            // if it is, then update the SupplyChainValidation message and result
+                            if (result) {
+                                String message = "Multiple Base certificates found in chain.";
+                                if (!platformScv.getResult()
+                                        .equals(AppraisalStatus.Status.PASS)) {
+                                    message = String.format("%s,%n%s",
+                                            platformScv.getMessage(), message);
+                                }
+                                platformScv = buildValidationRecord(
+                                        SupplyChainValidation.ValidationType.PLATFORM_CREDENTIAL,
+                                        AppraisalStatus.Status.FAIL,
+                                        message, pc, Level.ERROR);
                             }
-                            platformScv = buildValidationRecord(
-                                    SupplyChainValidation.ValidationType.PLATFORM_CREDENTIAL,
-                                    AppraisalStatus.Status.FAIL,
-                                    message, pc, Level.ERROR);
                         }
                     }
-
                     validations.add(platformScv);
                     if (pc != null) {
                         pc.setDevice(device);
@@ -220,7 +224,7 @@ public class SupplyChainValidationServiceImpl implements SupplyChainValidationSe
                         }
                     }
 
-                    if (null != pc) {
+                    if (pc != null) {
                         pc.setDevice(device);
                         this.certificateManager.update(pc);
                     }
@@ -402,7 +406,7 @@ public class SupplyChainValidationServiceImpl implements SupplyChainValidationSe
      * Returns the certificate authority credentials in a KeyStore.
      *
      * @param credential the credential whose CA chain should be retrieved
-     * @return A keystore ontaining all relevant CA credentials to the given certificate's
+     * @return A keystore containing all relevant CA credentials to the given certificate's
      * organization or null if the keystore can't be assembled
      */
     public KeyStore getCaChain(final Certificate credential) {

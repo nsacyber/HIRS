@@ -1,11 +1,11 @@
 <%@ page contentType="text/html"%>
-<%@ page pageEncoding="UTF-8"%>*/<%-- JSP TAGS
+<%@ page pageEncoding="UTF-8"%><%-- JSP TAGS--%>
 <%@taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core"%>
 <%@taglib prefix="spring" uri="http://www.springframework.org/tags"%>
 <%@taglib prefix="form" uri="http://www.springframework.org/tags/form"%>
 <%@taglib prefix="fn" uri = "http://java.sun.com/jsp/jstl/functions" %>
 <%@taglib prefix="my" tagdir="/WEB-INF/tags"%>
-<%@taglib prefix="fn" uri = "http://java.sun.com/jsp/jstl/functions"%>--%>/**comment** CONTENT
+<%@taglib prefix="fn" uri = "http://java.sun.com/jsp/jstl/functions"%>--%><%--CONTENT--%>
 <my:page>
     <jsp:attribute name="style">
         <link type="text/css" rel="stylesheet" href="${common}/certificate_details.css"/>
@@ -99,9 +99,7 @@
             <c:if test="${not empty initialData.subject}">
                 <div class="row">
                     <div class="col-md-1 col-md-offset-1"><span class="colHeader">Subject</span></div>
-                    <div id="subject"
-<%!
-class="col col-md-8">${initialData.subject}</div>
+                    <div id="subject" class="col col-md-8">${initialData.subject}</div>
                 </div>
             </c:if>
             <div class="row">
