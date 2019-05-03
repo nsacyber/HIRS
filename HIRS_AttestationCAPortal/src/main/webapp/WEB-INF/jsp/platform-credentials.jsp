@@ -12,7 +12,7 @@
     <jsp:attribute name="script">
         <script type="text/javascript" src="${lib}/jquery.spring-friendly/jquery.spring-friendly.js"></script>
     </jsp:attribute>
-    <jsp:attribute name="pageHeaderTitle">Platform Credentials</jsp:attribute>
+    <jsp:attribute name="pageHeaderTitle">Platform Certificates</jsp:attribute>
 
     <jsp:body>
         <!-- text and icon resource variables -->
@@ -64,7 +64,16 @@
                             }
                         },
                         {data: 'issuer'},
-                        {data: 'credentialType'},
+                        {
+                            data: 'credentialType',
+                            render: function (data, type, full, meta) {
+                                if (full.platformType !== '') {
+                                    return full.platformType;
+                                } else {
+                                    return full.credentialType;
+                                }
+                            }
+                        },
                         {data: 'manufacturer'},
                         {data: 'model'},
                         {data: 'version'},

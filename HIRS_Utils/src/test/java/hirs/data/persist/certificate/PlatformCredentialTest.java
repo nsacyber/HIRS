@@ -5,6 +5,7 @@ import hirs.data.persist.certificate.attributes.PlatformConfiguration;
 import hirs.data.persist.certificate.attributes.PlatformProperty;
 import hirs.data.persist.certificate.attributes.TBBSecurityAssertion;
 import hirs.data.persist.certificate.attributes.URIReference;
+import hirs.data.persist.certificate.attributes.V2.PlatformConfigurationV2;
 import org.apache.commons.codec.binary.Hex;
 import org.testng.Assert;
 import org.testng.annotations.Test;
@@ -85,6 +86,18 @@ public class PlatformCredentialTest {
      */
     static final String TEST_PLATFORM_CERT2_3 =
             "/validation/platform_credentials_2/medium_plat_cert.pem";
+
+    /**
+     * words.
+     */
+    static final String TEST_BASE_PLATFORM_CERT_1 =
+            "/validation/platform_credentials/plat_base_cert1.pem";
+
+    /**
+     * words.
+     */
+    static final String TEST_DELTA_PLATFORM_CERT_1 =
+            "/validation/platform_credentials/plat_delta_cert1.pem";
 
     /**
      * Platform Certificate 2.0 with all the expected data.
@@ -710,6 +723,33 @@ public class PlatformCredentialTest {
         property = (PlatformProperty) platformProperties.get(2);
         Assert.assertTrue(property.getPropertyName().getString().equals("DropShip Enabled"));
         Assert.assertTrue(property.getPropertyValue().getString().equals("false"));
+    }
+
+    /**
+     * Tests Platform Configuration Values. View platform Properties
+     *
+     * @throws IOException if an IO error occurs during processing
+     * @throws URISyntaxException if there is a problem constructing the cert's URI
+     */
+    @Test
+    public final void testPlatformConfiguration6() throws IOException, URISyntaxException {
+
+        URL resource = this.getClass().getResource(TEST_BASE_PLATFORM_CERT_1);
+        Path certPath = Paths.get(resource.toURI());
+
+        PlatformCredential platformCert = new PlatformCredential(certPath);
+        PlatformConfiguration platformConfig = platformCert.getPlatformConfiguration();
+
+        Assert.assertTrue(platformConfig instanceof PlatformConfigurationV2);
+        Assert.assertEquals(platformConfig.getPlatformPropertiesUri()
+                .getUniformResourceIdentifier().toString(),
+                "https://www.intel.com/platformproperties.xml");
+        Assert.assertNotNull(platformConfig.getComponentIdentifierUri());
+
+        Assert.assertEquals(platformConfig.getComponentIdentifierUri()
+                .getUniformResourceIdentifier().toString(),
+                "https://www.intel.com/platformidentifiers.xml");
+
     }
 
     /**

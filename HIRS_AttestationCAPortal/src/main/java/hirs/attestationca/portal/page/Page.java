@@ -20,12 +20,12 @@ public enum Page {
     /**
      * Page to display and manage endorsement key credentials.
      */
-    ENDORSEMENT_KEY_CREDENTIALS("Endorsement Key Credentials", "ic_vpn_key",
+    ENDORSEMENT_KEY_CREDENTIALS("Endorsement Key Certificates", "ic_vpn_key",
         "first", "certificate-request/"),
     /**
      * Page to display and manage platform credentials.
      */
-    PLATFORM_CREDENTIALS("Platform Credentials", "ic_important_devices",
+    PLATFORM_CREDENTIALS("Platform Certificates", "ic_important_devices",
         null, "certificate-request/"),
     /**
      * Page to display issued certificates.

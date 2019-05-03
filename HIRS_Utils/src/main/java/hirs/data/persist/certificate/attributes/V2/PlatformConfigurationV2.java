@@ -3,6 +3,7 @@ package hirs.data.persist.certificate.attributes.V2;
 import hirs.data.persist.certificate.attributes.PlatformConfiguration;
 import hirs.data.persist.certificate.attributes.URIReference;
 import java.util.ArrayList;
+import java.util.stream.Collectors;
 import org.bouncycastle.asn1.ASN1Sequence;
 import org.bouncycastle.asn1.ASN1TaggedObject;
 
@@ -57,9 +58,9 @@ public class PlatformConfigurationV2 extends PlatformConfiguration {
                     }
                     break;
                 case COMPONENT_IDENTIFIER_URI:
-                    //Get platformPropertiesURI
+                    //Get componentIdentifierURI
                     ASN1Sequence componentUri = ASN1Sequence.getInstance(taggedSequence, false);
-                    //Save properties URI
+                    //Save Component Identifier URI
                     setComponentIdentifierUri(new URIReference(componentUri));
                     break;
                 case PLATFORM_PROPERTIES:
@@ -83,5 +84,36 @@ public class PlatformConfigurationV2 extends PlatformConfiguration {
                     break;
             }
         }
+    }
+
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder();
+        sb.append("PlatformConfiguration{");
+        sb.append("componentIdentifier=");
+        if (getComponentIdentifier().size() > 0) {
+            sb.append(getComponentIdentifier()
+                        .stream()
+                        .map(Object::toString)
+                        .collect(Collectors.joining(",")));
+        }
+        sb.append(", componentIdentifierUri=");
+        if (getComponentIdentifierUri() != null) {
+            sb.append(getComponentIdentifierUri().toString());
+        }
+        sb.append(", platformProperties=");
+        if (getPlatformProperties().size() > 0) {
+            sb.append(getPlatformProperties()
+                        .stream()
+                        .map(Object::toString)
+                        .collect(Collectors.joining(",")));
+        }
+        sb.append(", platformPropertiesUri=");
+        if (getPlatformPropertiesUri() != null) {
+            sb.append(getPlatformPropertiesUri().toString());
+        }
+        sb.append("}");
+
+        return sb.toString();
     }
 }

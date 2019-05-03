@@ -8,15 +8,19 @@ import java.math.BigInteger;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Set;
+import java.util.List;
+import java.util.Comparator;
+import java.util.stream.Collectors;
 import java.util.UUID;
 import hirs.data.persist.certificate.Certificate;
 import hirs.data.persist.certificate.CertificateAuthorityCredential;
 import hirs.data.persist.certificate.EndorsementCredential;
-import hirs.data.persist.certificate.IssuedAttestationCertificate;
 import hirs.data.persist.certificate.PlatformCredential;
+import hirs.data.persist.certificate.IssuedAttestationCertificate;
 import hirs.data.persist.certificate.attributes.PlatformConfiguration;
 import hirs.persist.CertificateManager;
 import hirs.utils.BouncyCastleUtils;
+import java.util.Collections;
 
 /**
  * Utility class for mapping certificate information in to string maps. These are used to display
@@ -49,6 +53,9 @@ public final class CertificateStringMapBuilder {
             if (!certificate.getAuthoritySerialNumber().equals(BigInteger.ZERO)) {
                 data.put("authSerialNumber", Long.toHexString(certificate
                         .getAuthoritySerialNumber().longValue()));
+            }
+            if (certificate.getId() != null) {
+                data.put("certificateId", certificate.getId().toString());
             }
             data.put("authInfoAccess", certificate.getAuthInfoAccess());
             data.put("beginValidity", certificate.getBeginValidity().toString());
@@ -280,6 +287,7 @@ public final class CertificateStringMapBuilder {
         if (certificate != null) {
             data.putAll(getGeneralCertificateInfo(certificate, certificateManager));
             data.put("credentialType", certificate.getCredentialType());
+            data.put("platformType", certificate.getPlatformType());
             data.put("manufacturer", certificate.getManufacturer());
             data.put("model", certificate.getModel());
             data.put("version", certificate.getVersion());
@@ -296,12 +304,34 @@ public final class CertificateStringMapBuilder {
                             .toString(Certificate.HEX_BASE)
                             .replaceAll("(?<=..)(..)", ":$1"));
             data.put("holderIssuer", certificate.getHolderIssuer());
-            EndorsementCredential ekCertificate = EndorsementCredential
+            if (certificate.isBase()) {
+                EndorsementCredential ekCertificate = EndorsementCredential
+                        .select(certificateManager)
+                        .bySerialNumber(certificate.getHolderSerialNumber())
+                        .getCertificate();
+                if (ekCertificate != null) {
+                    data.put("holderId", ekCertificate.getId().toString());
+                }
+            } else {
+                if (certificate.getPlatformType() != null
+                        && certificate.getPlatformType().equals("Delta")) {
+                    PlatformCredential holderCertificate = PlatformCredential
+                            .select(certificateManager)
+                            .bySerialNumber(certificate.getHolderSerialNumber())
+                            .getCertificate();
+                    if (holderCertificate != null) {
+                        data.put("holderId", holderCertificate.getId().toString());
+                    }
+                }
+            }
+
+            PlatformCredential prevCertificate = PlatformCredential
                     .select(certificateManager)
-                    .bySerialNumber(certificate.getHolderSerialNumber())
+                    .byHolderSerialNumber(certificate.getSerialNumber())
                     .getCertificate();
-            if (ekCertificate != null) {
-                data.put("ekId", ekCertificate.getId().toString());
+
+            if (prevCertificate != null) {
+                data.put("prevCertId", prevCertificate.getId().toString());
             }
 
             //x509 credential version
@@ -314,6 +344,9 @@ public final class CertificateStringMapBuilder {
             if (platformConfiguration != null) {
                 //Component Identifier
                 data.put("componentsIdentifier", platformConfiguration.getComponentIdentifier());
+                //Component Identifier URI
+                data.put("componentsIdentifierURI", platformConfiguration
+                        .getComponentIdentifierUri());
                 //Platform Properties
                 data.put("platformProperties", platformConfiguration.getPlatformProperties());
                 //Platform Properties URI
@@ -321,8 +354,27 @@ public final class CertificateStringMapBuilder {
             }
             //TBB Security Assertion
             data.put("tbbSecurityAssertion", certificate.getTBBSecurityAssertion());
+
+            if (certificate.getPlatformSerial() != null) {
+                // link certificate chain
+                List<PlatformCredential> chainCertificates = PlatformCredential
+                        .select(certificateManager)
+                        .byBoardSerialNumber(certificate.getPlatformSerial())
+                        .getCertificates().stream().collect(Collectors.toList());
+
+                data.put("numInChain", chainCertificates.size());
+                Collections.sort(chainCertificates, new Comparator<PlatformCredential>() {
+                    @Override
+                    public int compare(final PlatformCredential obj1,
+                            final PlatformCredential obj2) {
+                        return obj1.getBeginValidity().compareTo(obj2.getBeginValidity());
+                    }
+                });
+
+                data.put("chainCertificates", chainCertificates);
+            }
         } else {
-            String notFoundMessage = "Unable to find Platform Credential "
+            String notFoundMessage = "Unable to find Platform Certificate "
                     + "with ID: " + uuid;
             LOGGER.error(notFoundMessage);
         }
@@ -356,7 +408,7 @@ public final class CertificateStringMapBuilder {
         return map;
     }
 
-        /**
+    /**
      * Returns the Issued Attestation Certificate information.
      *
      * @param uuid ID for the certificate.
