@@ -381,6 +381,9 @@ public class SupplyChainValidationServiceImplTest extends SpringPersistenceTest 
                 device).getOverallValidationResult(), FAIL);
     }
 
+    /**
+     * All is fine, no double base certificates can be found.
+     */
     @Test
     public final void testNoMultiBasePcValidation() {
         when(policy.isEcValidationEnabled()).thenReturn(false);
