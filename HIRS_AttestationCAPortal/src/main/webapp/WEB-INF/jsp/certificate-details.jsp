@@ -5,7 +5,7 @@
 <%@taglib prefix="form" uri="http://www.springframework.org/tags/form"%>
 <%@taglib prefix="fn" uri = "http://java.sun.com/jsp/jstl/functions" %>
 <%@taglib prefix="my" tagdir="/WEB-INF/tags"%>
-<%@taglib prefix="fn" uri = "http://java.sun.com/jsp/jstl/functions"%>--%><%--CONTENT--%>
+<%@taglib prefix="fn" uri = "http://java.sun.com/jsp/jstl/functions"%><%--CONTENT--%>
 <my:page>
     <jsp:attribute name="style">
         <link type="text/css" rel="stylesheet" href="${common}/certificate_details.css"/>
