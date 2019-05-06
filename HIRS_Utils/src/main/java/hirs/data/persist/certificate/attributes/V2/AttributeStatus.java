@@ -1,6 +1,7 @@
 package hirs.data.persist.certificate.attributes.V2;
 
-import hirs.data.persist.certificate.attributes.ComponentIdentifier;
+import org.apache.commons.lang3.StringUtils;
+
 
 /**
  * A type to handle the security Level used in the FIPS Level.
@@ -28,9 +29,9 @@ public enum AttributeStatus {
      */
     REMOVED("removed"),
     /**
-     * Attribute Status for NOT_SPECIFIED.
+     * Attribute Status for EMPTY.
      */
-    NOT_SPECIFIED(ComponentIdentifier.EMPTY_COMPONENT);
+    EMPTY_STATUS(StringUtils.EMPTY);
 
     private final String value;
 
