@@ -54,11 +54,11 @@ import hirs.validation.CredentialValidator;
 @Import(PersistenceConfiguration.class)
 public class SupplyChainValidationServiceImpl implements SupplyChainValidationService {
 
-    private final PolicyManager policyManager;
-    private final AppraiserManager appraiserManager;
-    private final CertificateManager certificateManager;
-    private final CredentialValidator supplyChainCredentialValidator;
-    private final CrudManager<SupplyChainValidationSummary> supplyChainValidatorSummaryManager;
+    private PolicyManager policyManager;
+    private AppraiserManager appraiserManager;
+    private CertificateManager certificateManager;
+    private CredentialValidator supplyChainCredentialValidator;
+    private CrudManager<SupplyChainValidationSummary> supplyChainValidatorSummaryManager;
 
     private static final Logger LOGGER =
             LogManager.getLogger(SupplyChainValidationServiceImpl.class);
@@ -168,14 +168,9 @@ public class SupplyChainValidationServiceImpl implements SupplyChainValidationSe
                         pc.setDevice(device);
                         this.certificateManager.update(pc);
                         credentialMap.put(pc, platformScv);
-                        /*
-                         * This method will be added to PlatformCredential to return whether a given
-                         * object is a base or a delta credential.
-                         */
-/*                        if (pc.isBase()) {
+                        if (pc.isBase()) {
                             baseCredential = pc;
                         }
-*/
                     }
                 }
 
@@ -199,7 +194,7 @@ public class SupplyChainValidationServiceImpl implements SupplyChainValidationSe
                 while (it.hasNext()) {
                     PlatformCredential pc = it.next();
                     SupplyChainValidation attributeScv;
-                    if (pc == baseCredential || baseCredential == null) {
+                    if (baseCredential == null || pc == baseCredential) {
                         attributeScv = validatePlatformCredentialAttributes(
                             pc, device.getDeviceInfo(), ec);
                     } else {
@@ -340,19 +335,16 @@ public class SupplyChainValidationServiceImpl implements SupplyChainValidationSe
             final PlatformCredential delta,
             final DeviceInfoReport deviceInfoReport,
             final PlatformCredential base) {
-    /*
-     * Do we need a new ValidationType for deltas?
-     */
         final SupplyChainValidation.ValidationType validationType =
                 SupplyChainValidation.ValidationType.DELTA_PLATFORM_CREDENTIAL_ATTRIBUTES;
 
         if (delta == null) {
-            LOGGER.error("No delta credential to validate");
+            LOGGER.error("No delta certificate to validate");
             return buildValidationRecord(validationType,
-                    AppraisalStatus.Status.FAIL, "Platform credential is missing",
+                    AppraisalStatus.Status.FAIL, "Delta platform certificate is missing",
                     null, Level.ERROR);
         }
-        LOGGER.info("Validating platform credential attributes");
+        LOGGER.info("Validating delta platform certificate attributes");
         AppraisalStatus result = supplyChainCredentialValidator.
                 validateDeltaPlatformCredentialAttributes(delta, deviceInfoReport, base);
         switch (result.getAppStatus()) {
