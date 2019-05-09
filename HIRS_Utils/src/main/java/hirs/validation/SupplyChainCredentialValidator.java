@@ -265,10 +265,32 @@ public final class SupplyChainCredentialValidator implements CredentialValidator
             final PlatformCredential deltaPlatformCredential,
             final DeviceInfoReport deviceInfoReport,
             final PlatformCredential basePlatformCredential) {
+        final String baseErrorMessage = "Can't validate delta platform certificate attributes without ";
+        String message;
+        if (deltaPlatformCredential == null) {
+            message = baseErrorMessage + "a delta platform certificate";
+            LOGGER.error(message);
+            return new AppraisalStatus(FAIL, message);
+        }
+        if (deviceInfoReport == null) {
+            message = baseErrorMessage + "a device info report";
+            LOGGER.error(message);
+            return new AppraisalStatus(FAIL, message);
+        }
+        if (basePlatformCredential == null) {
+            message = baseErrorMessage + "an endorsement credential";
+            LOGGER.error(message);
+            return new AppraisalStatus(FAIL, message);
+        }
 
-        /*
-         * Code here to check the holder and attribute status fields
-         */
+        if (!basePlatformCredential.getSerialNumber()
+                .equals(deltaPlatformCredential.getHolderSerialNumber())) {
+            message = "Delta platform certificate holder serial number does not match "
+                    + "the base certificate's serial number";
+            LOGGER.error(message);
+            return new AppraisalStatus(FAIL, message);
+        }
+        
         return validatePlatformCredentialAttributesV2p0(deltaPlatformCredential, deviceInfoReport);
     }
 

@@ -93,7 +93,7 @@ public class SupplyChainValidationServiceImplTest extends SpringPersistenceTest 
     // mocked
     private SupplyChainPolicy policy;
     private PlatformCredential pc;
-//    private PlatformCredential delta;
+    private PlatformCredential delta;
     private EndorsementCredential ec;
     private HashSet<PlatformCredential> pcs;
     private Device device;
@@ -135,9 +135,15 @@ public class SupplyChainValidationServiceImplTest extends SpringPersistenceTest 
         pcs = new HashSet<PlatformCredential>();
         pcs.add(pc);
 
-        /*
-         * Mock delta platform credential here
-         */
+        //Mock delta platform credential
+        X509Certificate deltaCert = mock(X509Certificate.class);
+        delta = mock(PlatformCredential.class);
+        when(delta.getId()).thenReturn(UUID.randomUUID());
+        when(delta.getX509Certificate()).thenReturn(deltaCert);
+        //when(delta.getSerialNumber()).thenReturn(BigInteger.ONE);
+        when(delta.getIssuerOrganization()).thenReturn("STMicroelectronics NV");
+        when(delta.getSubjectOrganization()).thenReturn("STMicroelectronics NV");
+        //pcs.add(delta);
 
         Set<Certificate> resultPcs = new HashSet<>();
         resultPcs.add(pc);

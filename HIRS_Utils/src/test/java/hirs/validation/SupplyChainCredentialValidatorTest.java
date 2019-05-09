@@ -1988,6 +1988,26 @@ public class SupplyChainCredentialValidatorTest {
         Assert.assertEquals(result.getMessage(),
                 SupplyChainCredentialValidator.PLATFORM_ATTRIBUTES_VALID);
     }
+    
+    /**
+     * Tests that SupplyChainCredentialValidator passes with a base and delta certificate where
+     * the base serial number and delta holder serial number match.
+     */
+    @Test
+    public final void testValidateDeltaPlatformCredentialAttributes() 
+    		throws IOException, URISyntaxException {
+    	DeviceInfoReport deviceInfoReport = setupDeviceInfoReportWithComponents();
+    	PlatformCredential delta = setupMatchingPlatformCredential(deviceInfoReport);
+        byte[] certBytes = Files.readAllBytes(Paths.get(CertificateTest.class.
+                getResource(INTEL_PLATFORM_CERT).toURI()));
+    	PlatformCredential base = new PlatformCredential(certBytes);
+    	
+    	when(delta.getHolderSerialNumber()).thenReturn(base.getSerialNumber());
+    	AppraisalStatus result = supplyChainCredentialValidator
+    			.validateDeltaPlatformCredentialAttributes(delta, deviceInfoReport, base);
+    	Assert.assertEquals(result.getAppStatus(), AppraisalStatus.Status.PASS);
+    	Assert.assertEquals(result.getMessage(), SupplyChainCredentialValidator.PLATFORM_ATTRIBUTES_VALID);
+    }
 
     /**
      * Creates a new RSA 1024-bit KeyPair using a Bouncy Castle Provider.
