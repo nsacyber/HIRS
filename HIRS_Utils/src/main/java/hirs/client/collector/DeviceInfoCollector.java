@@ -293,10 +293,15 @@ public class DeviceInfoCollector extends AbstractCollector {
                         && tokens[VERSION_INDEX].equals("Version")) {
                     String[] versionTokens = tokens[VERSION_TOKEN_INDEX].split("\\.");
                     if (versionTokens.length == VERSION_TOKEN_LENGTH) {
-                        tpmVersionMajor = Short.parseShort(versionTokens[TPM_MAJOR_INDEX]);
-                        tpmVersionMinor = Short.parseShort(versionTokens[TPM_MINOR_INDEX]);
-                        tpmVersionRevMajor = Short.parseShort(versionTokens[TPM_REV_MAJOR_INDEX]);
-                        tpmVersionRevMinor = Short.parseShort(versionTokens[TPM_REV_MINOR_INDEX]);
+                        // Trim version tokens to avoid C-style strings w/ null characters
+                        tpmVersionMajor = Short.parseShort(
+                                versionTokens[TPM_MAJOR_INDEX].trim());
+                        tpmVersionMinor = Short.parseShort(
+                                versionTokens[TPM_MINOR_INDEX].trim());
+                        tpmVersionRevMajor = Short.parseShort(
+                                versionTokens[TPM_REV_MAJOR_INDEX].trim());
+                        tpmVersionRevMinor = Short.parseShort(
+                                versionTokens[TPM_REV_MINOR_INDEX].trim());
                         LOGGER.debug("Found TPM version {}.{}.{}.{}",
                                 tpmVersionMajor, tpmVersionMinor,
                                 tpmVersionRevMajor, tpmVersionRevMinor);
