@@ -1,7 +1,5 @@
 FROM hirs/hirs-ci:centos7
 
-MAINTAINER apl.dev3@jhuapl.edu
-
 # Install packages for installing HIRS TPM2 Provisioner
 RUN yum -y update && yum clean all
 # TODO: Remove vim-common if/when Paccor updates (Also update Paccor version below)

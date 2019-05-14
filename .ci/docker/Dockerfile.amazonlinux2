@@ -1,7 +1,5 @@
 FROM amazonlinux:2
 
-MAINTAINER apl.dev3@jhuapl.edu
-
 # Install packages for building HIRS
 RUN yum -y update && yum clean all
 RUN yum groupinstall -y "Development Tools"
