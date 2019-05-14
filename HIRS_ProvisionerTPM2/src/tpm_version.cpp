@@ -114,6 +114,9 @@ class SapiContext {
 string reversedStringValue(UINT32 value) {
     string stringValue(sizeof value, 0);
     std::memcpy(&stringValue[0], &value, stringValue.size());  // copy bytes in
+    // get rid of all contained null values
+    stringValue.erase(std::remove(stringValue.begin(), stringValue.end(), '\0'),
+       stringValue.end());
     std::reverse(stringValue.begin(), stringValue.end());  // reverse the bytes
     return stringValue;
 }
