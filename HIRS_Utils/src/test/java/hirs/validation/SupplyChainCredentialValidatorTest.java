@@ -93,6 +93,7 @@ import static org.powermock.api.mockito.PowerMockito.when;
 public class SupplyChainCredentialValidatorTest {
 
     private static final String SAMPLE_PACCOR_OUTPUT_TXT = "sample_paccor_output.txt";
+    private static final String SAMPLE_PACCOR_OUTPUT_2_TXT = "sample_paccor_output_2.txt";
     private static final String SAMPLE_PACCOR_OUTPUT_NOT_SPECIFIED_TXT
             = "sample_paccor_output_not_specified_values.txt";
     private static final String SAMPLE_TEST_PACCOR_CERT
@@ -173,6 +174,12 @@ public class SupplyChainCredentialValidatorTest {
 
     private static final String NEW_NUC1 =
             "/validation/platform_credentials/Intel_pc3.cer";
+    private static final String GEN_BASE_CERT =
+            "/validation/platform_credentials_2/platform_base_cert_3.pem";
+    private static final String GEN_DELTA1_CERT =
+            "/validation/platform_credentials_2/platform_delta_cert_3_1.pem";
+    private static final String GEN_DELTA2_CERT =
+            "/validation/platform_credentials_2/platform_delta_cert_3_2.pem";
 
     /**
      * Sets up a KeyStore for testing.
@@ -1991,25 +1998,41 @@ public class SupplyChainCredentialValidatorTest {
         Assert.assertEquals(result.getMessage(),
                 SupplyChainCredentialValidator.PLATFORM_ATTRIBUTES_VALID);
     }
-    
+
     /**
      * Tests that SupplyChainCredentialValidator passes with a base and delta certificate where
      * the base serial number and delta holder serial number match.
+     * @throws java.io.IOException Reading file for the certificates
+     * @throws java.net.URISyntaxException when loading certificates bytes
      */
     @Test
-    public final void testValidateDeltaPlatformCredentialAttributes() 
+    public final void testValidateDeltaPlatformCredentialAttributes()
     		throws IOException, URISyntaxException {
-    	DeviceInfoReport deviceInfoReport = setupDeviceInfoReportWithComponents();
-    	PlatformCredential delta = setupMatchingPlatformCredential(deviceInfoReport);
+    	DeviceInfoReport deviceInfoReport = setupDeviceInfoReportWithComponents(
+                SAMPLE_PACCOR_OUTPUT_2_TXT);
+
         byte[] certBytes = Files.readAllBytes(Paths.get(CertificateTest.class.
-                getResource(INTEL_PLATFORM_CERT).toURI()));
+                getResource(GEN_BASE_CERT).toURI()));
     	PlatformCredential base = new PlatformCredential(certBytes);
-    	
-    	when(delta.getHolderSerialNumber()).thenReturn(base.getSerialNumber());
+        certBytes = Files.readAllBytes(Paths.get(CertificateTest.class.
+                getResource(GEN_DELTA1_CERT).toURI()));
+        PlatformCredential delta1 = new PlatformCredential(certBytes);
+        certBytes = Files.readAllBytes(Paths.get(CertificateTest.class.
+                getResource(GEN_DELTA2_CERT).toURI()));
+        PlatformCredential delta2 = new PlatformCredential(certBytes);
+        List<PlatformCredential> chainCredentials = new ArrayList<>(0);
+        chainCredentials.add(base);
+        chainCredentials.add(delta1);
+        chainCredentials.add(delta2);
+
+
+//    	when(delta.getHolderSerialNumber()).thenReturn(sharedSerialNumber);
     	AppraisalStatus result = supplyChainCredentialValidator
-    			.validateDeltaPlatformCredentialAttributes(delta, deviceInfoReport, base);
-    	Assert.assertEquals(result.getAppStatus(), AppraisalStatus.Status.PASS);
-    	Assert.assertEquals(result.getMessage(), SupplyChainCredentialValidator.PLATFORM_ATTRIBUTES_VALID);
+    			.validateDeltaPlatformCredentialAttributes(delta2,
+                                deviceInfoReport, base, chainCredentials);
+//    	Assert.assertEquals(result.getAppStatus(), AppraisalStatus.Status.PASS);
+//    	Assert.assertEquals(result.getMessage(),
+//                SupplyChainCredentialValidator.PLATFORM_ATTRIBUTES_VALID);
     }
 
     /**

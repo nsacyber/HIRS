@@ -20,6 +20,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.Comparator;
 import java.util.stream.Collectors;
 
 import org.apache.logging.log4j.Level;
@@ -173,9 +174,6 @@ public class SupplyChainValidationServiceImpl implements SupplyChainValidationSe
                         }
                     }
                 }
-
-                // iterate through base credentials found
-
             }
         }
 
@@ -198,8 +196,21 @@ public class SupplyChainValidationServiceImpl implements SupplyChainValidationSe
                         attributeScv = validatePlatformCredentialAttributes(
                             pc, device.getDeviceInfo(), ec);
                     } else {
+                        List<PlatformCredential> chainCertificates = PlatformCredential
+                        .select(certificateManager)
+                        .byBoardSerialNumber(pc.getPlatformSerial())
+                        .getCertificates().stream().collect(Collectors.toList());
+                        Collections.sort(chainCertificates,
+                                new Comparator<PlatformCredential>() {
+                            @Override
+                            public int compare(final PlatformCredential obj1,
+                                    final PlatformCredential obj2) {
+                                return obj1.getBeginValidity()
+                                        .compareTo(obj2.getBeginValidity());
+                            }
+                        });
                         attributeScv = validateDeltaPlatformCredentialAttributes(
-                            pc, device.getDeviceInfo(), baseCredential);
+                            pc, device.getDeviceInfo(), baseCredential, chainCertificates);
                     }
 
                     SupplyChainValidation platformScv = credentialMap.get(pc);
@@ -334,7 +345,8 @@ public class SupplyChainValidationServiceImpl implements SupplyChainValidationSe
     private SupplyChainValidation validateDeltaPlatformCredentialAttributes(
             final PlatformCredential delta,
             final DeviceInfoReport deviceInfoReport,
-            final PlatformCredential base) {
+            final PlatformCredential base,
+            final List<PlatformCredential> chainCertificates) {
         final SupplyChainValidation.ValidationType validationType =
                 SupplyChainValidation.ValidationType.DELTA_PLATFORM_CREDENTIAL_ATTRIBUTES;
 
@@ -346,7 +358,8 @@ public class SupplyChainValidationServiceImpl implements SupplyChainValidationSe
         }
         LOGGER.info("Validating delta platform certificate attributes");
         AppraisalStatus result = supplyChainCredentialValidator.
-                validateDeltaPlatformCredentialAttributes(delta, deviceInfoReport, base);
+                validateDeltaPlatformCredentialAttributes(delta, deviceInfoReport,
+                        base, chainCertificates);
         switch (result.getAppStatus()) {
             case PASS:
                 return buildValidationRecord(validationType, AppraisalStatus.Status.PASS,
