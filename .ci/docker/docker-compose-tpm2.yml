@@ -27,11 +27,13 @@ services:
       entrypoint: /bin/bash -c
       command: [HIRS/.ci/integration-tests/setup-tpm2provisioner.sh;
                 HIRS/.ci/system-tests/systems-test-centos7-tpm2.sh]
+      devices:
+         - "/dev/mem:/dev/mem"
+      cap_add:
+         - sys_rawio
       networks:
          hirs_aca_system_tests:
             ipv4_address: ${HIRS_ACA_PROVISIONER_TPM2_IP}
-      environment:
-         - HIRS_ACA_PROVISIONER_TPM2_IP=${HIRS_ACA_PROVISIONER_TPM2_IP}
          - TPM_ENABLED=${TPM_ENABLED}
          - IMA_ENABLED=${IMA_ENABLED}
          - HIRS_ACA_PORTAL_IP=${HIRS_ACA_PORTAL_IP}
