@@ -10,7 +10,6 @@ import hirs.data.persist.HardwareInfo;
 import hirs.data.persist.certificate.EndorsementCredential;
 import hirs.data.persist.certificate.PlatformCredential;
 import hirs.data.persist.certificate.attributes.ComponentIdentifier;
-import hirs.data.persist.certificate.attributes.V2.ComponentIdentifierV2;
 import org.apache.commons.codec.Charsets;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -41,8 +40,6 @@ import java.security.cert.CertificateException;
 import java.security.cert.CertificateExpiredException;
 import java.security.cert.CertificateNotYetValidException;
 import java.security.cert.X509Certificate;
-import java.util.Collections;
-import java.util.LinkedList;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.Enumeration;
@@ -58,6 +55,9 @@ import java.util.stream.Collectors;
 import static hirs.data.persist.AppraisalStatus.Status.ERROR;
 import static hirs.data.persist.AppraisalStatus.Status.FAIL;
 import static hirs.data.persist.AppraisalStatus.Status.PASS;
+import hirs.data.persist.certificate.attributes.V2.ComponentIdentifierV2;
+import java.util.Collections;
+import java.util.LinkedList;
 import org.apache.logging.log4j.util.Strings;
 
 
@@ -456,9 +456,10 @@ public final class SupplyChainCredentialValidator implements CredentialValidator
             final DeviceInfoReport deviceInfoReport) {
         boolean passesValidation = true;
         StringBuilder resultMessage = new StringBuilder();
-        HardwareInfo hardwareInfo = deviceInfoReport.getHardwareInfo();
-        boolean fieldValidation;
 
+        HardwareInfo hardwareInfo = deviceInfoReport.getHardwareInfo();
+
+        boolean fieldValidation;
         fieldValidation = requiredPlatformCredentialFieldIsNonEmptyAndMatches(
                 "PlatformManufacturerStr",
                 platformCredential.getManufacturer(),
@@ -762,7 +763,8 @@ public final class SupplyChainCredentialValidator implements CredentialValidator
             // Now match up the components from the device info that are from the same
             // manufacturer and have a serial number. As matches are found, remove them from
             // both lists.
-            for (ComponentIdentifier pcComponent : pcComponentsFromManufacturerWithSerialNumber) {
+            for (ComponentIdentifier pcComponent
+                    : pcComponentsFromManufacturerWithSerialNumber) {
                 Optional<ComponentInfo> first
                         = deviceInfoComponentsFromManufacturer.stream()
                         .filter(componentInfo
@@ -792,7 +794,8 @@ public final class SupplyChainCredentialValidator implements CredentialValidator
             // Now match up the components from the device info that are from the same
             // manufacturer and specify a value for the revision field. As matches are found,
             // remove them from both lists.
-            for (ComponentIdentifier pcComponent : pcComponentsFromManufacturerWithRevision) {
+            for (ComponentIdentifier pcComponent
+                    : pcComponentsFromManufacturerWithRevision) {
                 Optional<ComponentInfo> first
                         = deviceInfoComponentsFromManufacturer.stream()
                         .filter(info -> StringUtils.isNotEmpty(info.getComponentRevision()))

@@ -95,7 +95,6 @@ import static org.powermock.api.mockito.PowerMockito.when;
 public class SupplyChainCredentialValidatorTest {
 
     private static final String SAMPLE_PACCOR_OUTPUT_TXT = "sample_paccor_output.txt";
-    private static final String SAMPLE_PACCOR_OUTPUT_2_TXT = "sample_paccor_output_2.txt";
     private static final String SAMPLE_PACCOR_OUTPUT_NOT_SPECIFIED_TXT
             = "sample_paccor_output_not_specified_values.txt";
     private static final String SAMPLE_TEST_PACCOR_CERT
@@ -176,12 +175,6 @@ public class SupplyChainCredentialValidatorTest {
 
     private static final String NEW_NUC1 =
             "/validation/platform_credentials/Intel_pc3.cer";
-    private static final String GEN_BASE_CERT =
-            "/validation/platform_credentials_2/platform_base_cert_3.pem";
-    private static final String GEN_DELTA1_CERT =
-            "/validation/platform_credentials_2/platform_delta_cert_3_1.pem";
-    private static final String GEN_DELTA2_CERT =
-            "/validation/platform_credentials_2/platform_delta_cert_3_2.pem";
 
     /**
      * Sets up a KeyStore for testing.
@@ -2019,32 +2012,32 @@ public class SupplyChainCredentialValidatorTest {
 
         ComponentIdentifier compId1 = new ComponentIdentifier(new DERUTF8String("Intel"),
                 new DERUTF8String("Core i7"), new DERUTF8String("Not Specified"),
-                new DERUTF8String("Intel(R) Core(TM) i7-4790 CPU @ 3.60GHz"),null,
+                new DERUTF8String("Intel(R) Core(TM) i7-4790 CPU @ 3.60GHz"), null,
                 ASN1Boolean.TRUE, new ArrayList<>(0));
         ComponentIdentifier compId2 = new ComponentIdentifier(
                 new DERUTF8String("Intel Corporation"),
                 new DERUTF8String("Ethernet Connection I217-V"),
-                new DERUTF8String("23:94:17:ba:86:5e"), new DERUTF8String("00"),null,
+                new DERUTF8String("23:94:17:ba:86:5e"), new DERUTF8String("00"), null,
                 ASN1Boolean.FALSE, new ArrayList<>(0));
         ComponentIdentifier compId3 = new ComponentIdentifier(
                 new DERUTF8String("Intel Corporation"),
                 new DERUTF8String("82580 Gigabit Network Connection"),
-                new DERUTF8String("90:e2:ba:31:83:10"), new DERUTF8String(""),null,
+                new DERUTF8String("90:e2:ba:31:83:10"), new DERUTF8String(""), null,
                 ASN1Boolean.FALSE, new ArrayList<>(0));
 
-        ComponentIdentifierV2 compV2_1 = mock(ComponentIdentifierV2.class);
-        ComponentIdentifierV2 compV2_2 = mock(ComponentIdentifierV2.class);
-        compV2_2.setComponentAddress(compId2.getComponentAddress());
-        compV2_2.setComponentManufacturer(compId2.getComponentManufacturer());
-        compV2_2.setComponentModel(compId2.getComponentModel());
-        compV2_2.setComponentSerial(compId2.getComponentSerial());
-        compV2_2.setComponentRevision(compId2.getComponentRevision());
-        compV2_2.setFieldReplaceable(compId2.getFieldReplaceable());
-        compV2_2.setComponentManufacturerId(compId2.getComponentManufacturerId());
-        compV2_1.setAttributeStatus(AttributeStatus.ADDED);
-        compV2_2.setAttributeStatus(AttributeStatus.REMOVED);
-        when(compV2_1.isVersion2()).thenReturn(true);
-        when(compV2_2.isVersion2()).thenReturn(true);
+        ComponentIdentifierV2 compV21 = mock(ComponentIdentifierV2.class);
+        ComponentIdentifierV2 compV22 = mock(ComponentIdentifierV2.class);
+        compV22.setComponentAddress(compId2.getComponentAddress());
+        compV22.setComponentManufacturer(compId2.getComponentManufacturer());
+        compV22.setComponentModel(compId2.getComponentModel());
+        compV22.setComponentSerial(compId2.getComponentSerial());
+        compV22.setComponentRevision(compId2.getComponentRevision());
+        compV22.setFieldReplaceable(compId2.getFieldReplaceable());
+        compV22.setComponentManufacturerId(compId2.getComponentManufacturerId());
+        compV21.setAttributeStatus(AttributeStatus.ADDED);
+        compV22.setAttributeStatus(AttributeStatus.REMOVED);
+        when(compV21.isVersion2()).thenReturn(true);
+        when(compV22.isVersion2()).thenReturn(true);
 
         List<ComponentIdentifier> compList = new ArrayList<>(3);
         compList.add(compId1);

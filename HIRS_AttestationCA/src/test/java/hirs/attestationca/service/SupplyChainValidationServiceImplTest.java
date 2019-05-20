@@ -188,11 +188,6 @@ public class SupplyChainValidationServiceImplTest extends SpringPersistenceTest 
         doReturn(new AppraisalStatus(PASS, "")).when(supplyChainCredentialValidator)
                 .validatePlatformCredentialAttributes(eq(pc), any(DeviceInfoReport.class),
                         any(EndorsementCredential.class));
-/*
-        doReturn(new AppraisalStatus(PASS, "")).when(supplyChainCredentialValidator)
-                .validateDeltaPlatformCredentialAttributes(eq(delta), any(DeviceInfoReport.class),
-                        any(PlatformCredential.class));
-*/
 
         Assert.assertEquals(service.validateSupplyChain(ec, pcs,
                 device).getOverallValidationResult(), PASS);
