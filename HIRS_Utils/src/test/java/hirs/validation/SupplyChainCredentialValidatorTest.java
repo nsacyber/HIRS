@@ -16,6 +16,8 @@ import hirs.data.persist.certificate.CertificateTest;
 import hirs.data.persist.certificate.EndorsementCredential;
 import hirs.data.persist.certificate.PlatformCredential;
 import hirs.data.persist.certificate.attributes.ComponentIdentifier;
+import hirs.data.persist.certificate.attributes.V2.AttributeStatus;
+import hirs.data.persist.certificate.attributes.V2.ComponentIdentifierV2;
 import org.apache.commons.io.IOUtils;
 import org.bouncycastle.asn1.ASN1Boolean;
 import org.bouncycastle.asn1.DERUTF8String;
@@ -2007,32 +2009,78 @@ public class SupplyChainCredentialValidatorTest {
      */
     @Test
     public final void testValidateDeltaPlatformCredentialAttributes()
-    		throws IOException, URISyntaxException {
-    	DeviceInfoReport deviceInfoReport = setupDeviceInfoReportWithComponents(
-                SAMPLE_PACCOR_OUTPUT_2_TXT);
+            throws IOException, URISyntaxException {
+        DeviceInfoReport deviceInfoReport = setupDeviceInfoReportWithComponents(
+                SAMPLE_PACCOR_OUTPUT_TXT);
 
-        byte[] certBytes = Files.readAllBytes(Paths.get(CertificateTest.class.
-                getResource(GEN_BASE_CERT).toURI()));
-    	PlatformCredential base = new PlatformCredential(certBytes);
-        certBytes = Files.readAllBytes(Paths.get(CertificateTest.class.
-                getResource(GEN_DELTA1_CERT).toURI()));
-        PlatformCredential delta1 = new PlatformCredential(certBytes);
-        certBytes = Files.readAllBytes(Paths.get(CertificateTest.class.
-                getResource(GEN_DELTA2_CERT).toURI()));
-        PlatformCredential delta2 = new PlatformCredential(certBytes);
+        PlatformCredential base = mock(PlatformCredential.class);
+        PlatformCredential delta1 = mock(PlatformCredential.class);
+        PlatformCredential delta2 = mock(PlatformCredential.class);
+
+        ComponentIdentifier compId1 = new ComponentIdentifier(new DERUTF8String("Intel"),
+                new DERUTF8String("Core i7"), new DERUTF8String("Not Specified"),
+                new DERUTF8String("Intel(R) Core(TM) i7-4790 CPU @ 3.60GHz"),null,
+                ASN1Boolean.TRUE, new ArrayList<>(0));
+        ComponentIdentifier compId2 = new ComponentIdentifier(
+                new DERUTF8String("Intel Corporation"),
+                new DERUTF8String("Ethernet Connection I217-V"),
+                new DERUTF8String("23:94:17:ba:86:5e"), new DERUTF8String("00"),null,
+                ASN1Boolean.FALSE, new ArrayList<>(0));
+        ComponentIdentifier compId3 = new ComponentIdentifier(
+                new DERUTF8String("Intel Corporation"),
+                new DERUTF8String("82580 Gigabit Network Connection"),
+                new DERUTF8String("90:e2:ba:31:83:10"), new DERUTF8String(""),null,
+                ASN1Boolean.FALSE, new ArrayList<>(0));
+
+        ComponentIdentifierV2 compV2_1 = mock(ComponentIdentifierV2.class);
+        ComponentIdentifierV2 compV2_2 = mock(ComponentIdentifierV2.class);
+        compV2_2.setComponentAddress(compId2.getComponentAddress());
+        compV2_2.setComponentManufacturer(compId2.getComponentManufacturer());
+        compV2_2.setComponentModel(compId2.getComponentModel());
+        compV2_2.setComponentSerial(compId2.getComponentSerial());
+        compV2_2.setComponentRevision(compId2.getComponentRevision());
+        compV2_2.setFieldReplaceable(compId2.getFieldReplaceable());
+        compV2_2.setComponentManufacturerId(compId2.getComponentManufacturerId());
+        compV2_1.setAttributeStatus(AttributeStatus.ADDED);
+        compV2_2.setAttributeStatus(AttributeStatus.REMOVED);
+        when(compV2_1.isVersion2()).thenReturn(true);
+        when(compV2_2.isVersion2()).thenReturn(true);
+
+        List<ComponentIdentifier> compList = new ArrayList<>(3);
+        compList.add(compId1);
+        compList.add(compId2);
+        compList.add(compId3);
+
+        when(base.isBase()).thenReturn(true);
+        when(delta1.isBase()).thenReturn(false);
+        when(delta2.isBase()).thenReturn(false);
+        when(base.getManufacturer()).thenReturn("innotek GmbH");
+        when(base.getModel()).thenReturn("VirtualBox");
+        when(base.getVersion()).thenReturn("1.2");
+        when(base.getPlatformSerial()).thenReturn("0");
+        when(delta1.getPlatformSerial()).thenReturn("0");
+        when(delta2.getPlatformSerial()).thenReturn("0");
+        when(base.getPlatformType()).thenReturn("base");
+        when(delta1.getPlatformType()).thenReturn("delta1");
+        when(delta2.getPlatformType()).thenReturn("delta2");
+        when(base.getSerialNumber()).thenReturn(BigInteger.ZERO);
+        when(delta1.getSerialNumber()).thenReturn(BigInteger.ONE);
+        when(delta2.getSerialNumber()).thenReturn(BigInteger.TEN);
+        when(delta1.getHolderSerialNumber()).thenReturn(BigInteger.ZERO);
+        when(delta2.getHolderSerialNumber()).thenReturn(BigInteger.ONE);
+        when(base.getComponentIdentifiers()).thenReturn(compList);
+
         List<PlatformCredential> chainCredentials = new ArrayList<>(0);
         chainCredentials.add(base);
         chainCredentials.add(delta1);
         chainCredentials.add(delta2);
 
-
-//    	when(delta.getHolderSerialNumber()).thenReturn(sharedSerialNumber);
-    	AppraisalStatus result = supplyChainCredentialValidator
-    			.validateDeltaPlatformCredentialAttributes(delta2,
-                                deviceInfoReport, base, chainCredentials);
-//    	Assert.assertEquals(result.getAppStatus(), AppraisalStatus.Status.PASS);
-//    	Assert.assertEquals(result.getMessage(),
-//                SupplyChainCredentialValidator.PLATFORM_ATTRIBUTES_VALID);
+        AppraisalStatus result = supplyChainCredentialValidator
+                .validateDeltaPlatformCredentialAttributes(delta2,
+                        deviceInfoReport, base, chainCredentials);
+        Assert.assertEquals(result.getAppStatus(), AppraisalStatus.Status.PASS);
+        Assert.assertEquals(result.getMessage(),
+                SupplyChainCredentialValidator.PLATFORM_ATTRIBUTES_VALID);
     }
 
     /**
