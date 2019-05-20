@@ -75,6 +75,10 @@ if [ $DOCKER_CONTAINER = true ]; then
     if [[ $(ss -t -l -n | grep -q LISTEN.*:::8009) -eq 0 ]]; then
         echo "Tomcat is running, so we restart it."
         /usr/libexec/tomcat/server stop
+        # Wait for Tomcat to stop completely and prevent port bind collisions
+        while [ -z $(tail -n 1 /var/log/tomcat/catalina.$(date +"%Y-%m-%d").log | grep "Destroying ProtocolHandler \[\"http-bio-8443\"\]") ]; do
+            :
+        done
         (/usr/libexec/tomcat/server start) &
         # Wait for Tomcat to boot completely
         until [ "`curl --silent --connect-timeout 1 -I http://localhost:8080 | grep 'Coyote'`" != "" ]; do
