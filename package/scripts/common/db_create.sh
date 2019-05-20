@@ -24,9 +24,9 @@ else
 fi
 
 if [[ -f /etc/redhat-release ]] ; then
-CENTOS_VER=`/opt/hirs/scripts/common/get_centos_major_version.sh`
+    CENTOS_VER=`/opt/hirs/scripts/common/get_centos_major_version.sh`
 elif [[ -f /etc/os-release ]] ; then
-AMAZON_VER=`/opt/hirs/scripts/common/get_amazon_linux_major_version.sh`
+    AMAZON_VER=`/opt/hirs/scripts/common/get_amazon_linux_major_version.sh`
 fi
 if [ $CENTOS_VER -eq "6" ] ; then
     DB_CREATE_SCRIPT=/opt/hirs/scripts/common/db_create.sql.el6
