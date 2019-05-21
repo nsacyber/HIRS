@@ -731,7 +731,6 @@ public final class SupplyChainCredentialValidator implements CredentialValidator
         pcComponents.forEach(component -> LOGGER.info(component.toString()));
         LOGGER.info("...against the the following DeviceInfoReport components:");
         allDeviceInfoComponents.forEach(component -> LOGGER.info(component.toString()));
-
         Set<DERUTF8String> manufacturerSet = new HashSet<>();
         pcComponents.forEach(component -> manufacturerSet.add(
                 component.getComponentManufacturer()));

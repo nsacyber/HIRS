@@ -190,7 +190,7 @@ public class SupplyChainValidationServiceImpl implements SupplyChainValidationSe
                 while (it.hasNext()) {
                     PlatformCredential pc = it.next();
                     SupplyChainValidation attributeScv;
-                    if (baseCredential == null || pc == baseCredential) {
+                    if (baseCredential == null || pc == baseCredential && !pc.isDeltaChain()) {
                         attributeScv = validatePlatformCredentialAttributes(
                             pc, device.getDeviceInfo(), ec);
                     } else {
@@ -207,6 +207,7 @@ public class SupplyChainValidationServiceImpl implements SupplyChainValidationSe
                                         .compareTo(obj2.getBeginValidity());
                             }
                         });
+
                         attributeScv = validateDeltaPlatformCredentialAttributes(
                             pc, device.getDeviceInfo(), baseCredential, chainCertificates);
                     }
@@ -346,7 +347,7 @@ public class SupplyChainValidationServiceImpl implements SupplyChainValidationSe
             final PlatformCredential base,
             final List<PlatformCredential> chainCertificates) {
         final SupplyChainValidation.ValidationType validationType =
-                SupplyChainValidation.ValidationType.DELTA_PLATFORM_CREDENTIAL_ATTRIBUTES;
+                SupplyChainValidation.ValidationType.PLATFORM_CREDENTIAL_ATTRIBUTES;
 
         if (delta == null) {
             LOGGER.error("No delta certificate to validate");

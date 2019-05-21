@@ -34,12 +34,7 @@ public class SupplyChainValidation extends ArchivableEntity {
         /**
          * Validation of a platform credential's attributes.
          */
-        PLATFORM_CREDENTIAL_ATTRIBUTES,
-
-        /**
-         * Validation of a delta platform credential's attributes.
-         */
-        DELTA_PLATFORM_CREDENTIAL_ATTRIBUTES
+        PLATFORM_CREDENTIAL_ATTRIBUTES
     }
 
     @Column
