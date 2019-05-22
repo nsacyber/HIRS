@@ -49,8 +49,8 @@ HIRS_ATTESTATION_CA_PORTAL_URL = "https://" + \
 	"/HIRS_AttestationCAPortal/"
 TEST_LOG_FILE = os.environ.get('TEST_LOG')
 LOG_LEVEL = os.environ.get('LOG_LEVEL')
-CA_CERT_LOCATION = "/HIRS/.ci/integration-tests/certs/ca.crt"
-EK_CA_CERT_LOCATION = "/HIRS/.ci/integration-tests/certs/ek_cert.der"
+CA_CERT_LOCATION = "/HIRS/.ci/setup/certs/ca.crt"
+EK_CA_CERT_LOCATION = "/HIRS/.ci/setup/certs/ek_cert.der"
 USB_STORAGE_FILE_HASH = "e164c378ceb45a62642730be5eb3169a6bfc2d6d"
 USB_STORAGE_FILE_HASH_2 = "e164c378ceb45a62642730be5eb3169a6bfc1234"
 FORMAT = "%(asctime)-15s %(message)s"

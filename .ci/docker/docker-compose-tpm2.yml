@@ -9,7 +9,7 @@ services:
       ports:
          - "${HIRS_ACA_PORTAL_PORT}:${HIRS_ACA_PORTAL_CONTAINER_PORT}"
       entrypoint: /bin/bash -c
-      command: [HIRS/.ci/integration-tests/setup-aca.sh]
+      command: [HIRS/.ci/setup/setup-aca.sh]
       hostname: ${HIRS_ACA_HOSTNAME}
       networks:
          hirs_aca_system_tests:
@@ -25,7 +25,7 @@ services:
       volumes:
          - ../../:/HIRS
       entrypoint: /bin/bash -c
-      command: [HIRS/.ci/integration-tests/setup-tpm2provisioner.sh;
+      command: [HIRS/.ci/setup/setup-tpm2provisioner.sh;
                 HIRS/.ci/system-tests/systems-test-centos7-tpm2.sh]
       networks:
          hirs_aca_system_tests:
