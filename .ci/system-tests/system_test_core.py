@@ -307,8 +307,8 @@ class AttestationCAPortal:
                      expected_status_codes=[404, 200], params={'ecValidate': "checked",})
         self.request("post", "portal/policy/update-pc-validation",
                      expected_status_codes=[404, 200], params={'pcValidate': 'checked'})
-        #self.request("post", "portal/policy/update-pc-attribute-validation",
-        #            expected_status_codes=[404, 200], params={'pcAttributeValidate': 'checked'})
+        self.request("post", "portal/policy/update-pc-attribute-validation",
+                    expected_status_codes=[404, 200], params={'pcAttributeValidate': 'checked'})
 
     def enable_ec_validation(self):
         self.request("post", "portal/policy/update-ec-validation",

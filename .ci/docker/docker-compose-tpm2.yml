@@ -1,3 +1,6 @@
+---
+# Run YAML Lint to verify this file prior to check-in.
+
 version: "3.1"
 
 services:
@@ -15,7 +18,7 @@ services:
          hirs_aca_system_tests:
             ipv4_address: ${HIRS_ACA_PORTAL_IP}
             aliases:
-              - ${HIRS_ACA_HOSTNAME}
+               - ${HIRS_ACA_HOSTNAME}
 
    tpm2provisioner:
       image: hirs/hirs-ci:tpm2provisioner
@@ -27,6 +30,10 @@ services:
       entrypoint: /bin/bash -c
       command: [HIRS/.ci/setup/setup-tpm2provisioner.sh;
                 HIRS/.ci/system-tests/systems-test-centos7-tpm2.sh]
+      devices:
+         - "/dev/mem:/dev/mem"
+      cap_add:
+         - sys_rawio
       networks:
          hirs_aca_system_tests:
             ipv4_address: ${HIRS_ACA_PROVISIONER_TPM2_IP}
@@ -47,4 +54,4 @@ networks:
       ipam:
          driver: default
          config:
-           - subnet: ${HIRS_SUBNET}
+            - subnet: ${HIRS_SUBNET}
