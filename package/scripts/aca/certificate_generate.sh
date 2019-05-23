@@ -76,7 +76,7 @@ if [ $DOCKER_CONTAINER = true ]; then
         echo "Tomcat is running, so we restart it."
         /usr/libexec/tomcat/server stop
         # Wait for Tomcat to stop completely and prevent port bind collisions
-        while [ -z $(tail -n 1 /var/log/tomcat/catalina.$(date +"%Y-%m-%d").log | grep "Destroying ProtocolHandler \[\"http-bio-8443\"\]") ]; do
+        while [ -z "$(tail -n 1 /var/log/tomcat/catalina.$(date +"%Y-%m-%d").log | grep "Destroying ProtocolHandler \[\"http-bio-8443\"\]")" ]; do
             :
         done
         (/usr/libexec/tomcat/server start) &
