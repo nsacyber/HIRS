@@ -46,7 +46,6 @@ import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.ObjectFactory;
 import org.testng.annotations.Test;
-import org.w3c.dom.Attr;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -2107,8 +2106,8 @@ public class SupplyChainCredentialValidatorTest {
     }
 
     /**
-     * Tests that SupplyChainCredentialValidator fails when a component needs to be replaced but hasn't
-     * been by a delta certificate.
+     * Tests that SupplyChainCredentialValidator fails when a component needs to
+     * be replaced but hasn't been by a delta certificate.
      * @throws java.io.IOException Reading file for the certificates
      * @throws java.net.URISyntaxException when loading certificates bytes
      */
@@ -2195,10 +2194,10 @@ public class SupplyChainCredentialValidatorTest {
                         deviceInfoReport, base, chainCredentials);
         Assert.assertEquals(result.getAppStatus(), AppraisalStatus.Status.FAIL);
         Assert.assertEquals(result.getMessage(),
-                "There are unmatched components:\n" +
-                        "Manufacturer=Intel Corporation, Model=82580 " +
-                        "Gigabit Network Connection-faulty, " +
-                        "Serial=90:e2:ba:31:83:10, Revision=\n");
+                "There are unmatched components:\n"
+                        + "Manufacturer=Intel Corporation, Model=82580 "
+                        + "Gigabit Network Connection-faulty, "
+                        + "Serial=90:e2:ba:31:83:10, Revision=\n");
     }
 
     /**
