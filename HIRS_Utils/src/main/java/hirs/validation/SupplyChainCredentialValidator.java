@@ -344,8 +344,8 @@ public final class SupplyChainCredentialValidator implements CredentialValidator
             }
         }
 
-        return validateDeltaAttributesChainV2p0(deltaPlatformCredential,
-                deviceInfoReport, leafChain, origPcComponents);
+        return validateDeltaAttributesChainV2p0(deviceInfoReport,
+                leafChain, origPcComponents);
     }
 
     private static AppraisalStatus validatePlatformCredentialAttributesV1p2(
@@ -580,7 +580,6 @@ public final class SupplyChainCredentialValidator implements CredentialValidator
      * pick out the changes that lead to the delta cert and make sure the changes
      * are valid.
      *
-     * @param deltaCredential The delta cert that is being validated.
      * @param deviceInfoReport The paccor profile of device being validated against.
      * @param leafChain The specific chain associated with delta cert being
      * validated.
@@ -589,7 +588,6 @@ public final class SupplyChainCredentialValidator implements CredentialValidator
      * @return Appraisal Status of delta being validated.
      */
     static AppraisalStatus validateDeltaAttributesChainV2p0(
-            final PlatformCredential deltaCredential,
             final DeviceInfoReport deviceInfoReport,
             final List<PlatformCredential> leafChain,
             final List<ComponentIdentifier> origPcComponents) {

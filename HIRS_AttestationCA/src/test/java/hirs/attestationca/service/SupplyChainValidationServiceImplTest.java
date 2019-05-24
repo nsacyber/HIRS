@@ -383,17 +383,6 @@ public class SupplyChainValidationServiceImplTest extends SpringPersistenceTest 
     }
 
     /**
-     * All is fine, no double base certificates can be found.
-     */
-    @Test
-    public final void testNoMultiBasePcValidation() {
-        when(policy.isEcValidationEnabled()).thenReturn(false);
-        when(policy.isPcValidationEnabled()).thenReturn(true);
-        when(policy.isPcAttributeValidationEnabled()).thenReturn(false);
-
-    }
-
-    /**
      * Puts an EC, STM CA, and GS CA in the DB, attempts to retrieve the CAs from the EC.
      * @throws URISyntaxException failed to parse certificate file location.
      * @throws IOException couldn't create certificates from file.
