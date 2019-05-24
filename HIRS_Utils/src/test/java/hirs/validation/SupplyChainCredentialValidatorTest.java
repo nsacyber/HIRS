@@ -2107,8 +2107,8 @@ public class SupplyChainCredentialValidatorTest {
     }
 
     /**
-     * Tests that SupplyChainCredentialValidator passes with a base and delta certificate where
-     * the base serial number and delta holder serial number match.
+     * Tests that SupplyChainCredentialValidator fails when a component needs to be replaced but hasn't
+     * been by a delta certificate.
      * @throws java.io.IOException Reading file for the certificates
      * @throws java.net.URISyntaxException when loading certificates bytes
      */
