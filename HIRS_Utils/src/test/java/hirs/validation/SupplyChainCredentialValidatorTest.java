@@ -2101,9 +2101,104 @@ public class SupplyChainCredentialValidatorTest {
         AppraisalStatus result = supplyChainCredentialValidator
                 .validateDeltaPlatformCredentialAttributes(delta2,
                         deviceInfoReport, base, chainCredentials);
-//        Assert.assertEquals(result.getAppStatus(), AppraisalStatus.Status.PASS);
+        Assert.assertEquals(result.getAppStatus(), AppraisalStatus.Status.PASS);
         Assert.assertEquals(result.getMessage(),
                 SupplyChainCredentialValidator.PLATFORM_ATTRIBUTES_VALID);
+    }
+
+    /**
+     * Tests that SupplyChainCredentialValidator passes with a base and delta certificate where
+     * the base serial number and delta holder serial number match.
+     * @throws java.io.IOException Reading file for the certificates
+     * @throws java.net.URISyntaxException when loading certificates bytes
+     */
+    @Test
+    public final void testValidateChainFailure()
+            throws IOException, URISyntaxException {
+        DeviceInfoReport deviceInfoReport = setupDeviceInfoReportWithComponents(
+                SAMPLE_PACCOR_OUTPUT_TXT);
+
+        PlatformCredential base = mock(PlatformCredential.class);
+        PlatformCredential delta1 = mock(PlatformCredential.class);
+
+        ComponentIdentifier compId1 = new ComponentIdentifier(new DERUTF8String("Intel"),
+                new DERUTF8String("Core i7"), new DERUTF8String("Not Specified"),
+                new DERUTF8String("Intel(R) Core(TM) i7-4790 CPU @ 3.60GHz"), null,
+                ASN1Boolean.TRUE, new ArrayList<>(0));
+        ComponentIdentifier compId2 = new ComponentIdentifier(
+                new DERUTF8String("Intel Corporation"),
+                new DERUTF8String("Ethernet Connection I217-V-faulty"),
+                new DERUTF8String("23:94:17:ba:86:5e"), new DERUTF8String("00"), null,
+                ASN1Boolean.FALSE, new ArrayList<>(0));
+        ComponentIdentifier compId3 = new ComponentIdentifier(
+                new DERUTF8String("Intel Corporation"),
+                new DERUTF8String("82580 Gigabit Network Connection-faulty"),
+                new DERUTF8String("90:e2:ba:31:83:10"), new DERUTF8String(""), null,
+                ASN1Boolean.FALSE, new ArrayList<>(0));
+        ComponentIdentifierV2 deltaCompId2 = new ComponentIdentifierV2(
+                new ComponentClass(),
+                new DERUTF8String("Intel Corporation"),
+                new DERUTF8String("Ethernet Connection I217-V"),
+                new DERUTF8String("23:94:17:ba:86:5e"), new DERUTF8String("00"), null,
+                ASN1Boolean.FALSE, new ArrayList<>(0), null, null,
+                AttributeStatus.ADDED);
+
+        ComponentIdentifierV2 ciV21Faulty = new ComponentIdentifierV2();
+        ComponentIdentifierV2 ciV22Faulty = new ComponentIdentifierV2();
+        ciV21Faulty.setComponentManufacturer(compId2.getComponentManufacturer());
+        ciV21Faulty.setComponentModel(compId2.getComponentModel());
+        ciV21Faulty.setComponentSerial(compId2.getComponentSerial());
+        ciV21Faulty.setComponentRevision(compId2.getComponentRevision());
+        ciV21Faulty.setComponentManufacturerId(compId2.getComponentManufacturerId());
+        ciV21Faulty.setFieldReplaceable(compId2.getFieldReplaceable());
+        ciV21Faulty.setComponentAddress(compId2.getComponentAddress());
+        ciV21Faulty.setAttributeStatus(AttributeStatus.REMOVED);
+        ciV22Faulty.setComponentManufacturer(compId3.getComponentManufacturer());
+        ciV22Faulty.setComponentModel(compId3.getComponentModel());
+        ciV22Faulty.setComponentSerial(compId3.getComponentSerial());
+        ciV22Faulty.setComponentRevision(compId3.getComponentRevision());
+        ciV22Faulty.setComponentManufacturerId(compId3.getComponentManufacturerId());
+        ciV22Faulty.setFieldReplaceable(compId3.getFieldReplaceable());
+        ciV22Faulty.setComponentAddress(compId3.getComponentAddress());
+        ciV22Faulty.setAttributeStatus(AttributeStatus.REMOVED);
+
+        List<ComponentIdentifier> compList = new ArrayList<>(3);
+        compList.add(compId1);
+        compList.add(compId2);
+        compList.add(compId3);
+
+        List<ComponentIdentifier> delta1List = new ArrayList<>(2);
+        delta1List.add(ciV21Faulty);
+        delta1List.add(deltaCompId2);
+
+        when(base.isBase()).thenReturn(true);
+        when(delta1.isBase()).thenReturn(false);
+        when(base.getManufacturer()).thenReturn("innotek GmbH");
+        when(base.getModel()).thenReturn("VirtualBox");
+        when(base.getVersion()).thenReturn("1.2");
+        when(base.getPlatformSerial()).thenReturn("0");
+        when(delta1.getPlatformSerial()).thenReturn("0");
+        when(base.getPlatformType()).thenReturn("base");
+        when(delta1.getPlatformType()).thenReturn("delta");
+        when(base.getSerialNumber()).thenReturn(BigInteger.ZERO);
+        when(delta1.getSerialNumber()).thenReturn(BigInteger.ONE);
+        when(delta1.getHolderSerialNumber()).thenReturn(BigInteger.ZERO);
+        when(base.getComponentIdentifiers()).thenReturn(compList);
+        when(delta1.getComponentIdentifiers()).thenReturn(delta1List);
+
+        List<PlatformCredential> chainCredentials = new ArrayList<>(0);
+        chainCredentials.add(base);
+        chainCredentials.add(delta1);
+
+        AppraisalStatus result = supplyChainCredentialValidator
+                .validateDeltaPlatformCredentialAttributes(delta1,
+                        deviceInfoReport, base, chainCredentials);
+        Assert.assertEquals(result.getAppStatus(), AppraisalStatus.Status.FAIL);
+        Assert.assertEquals(result.getMessage(),
+                "There are unmatched components:\n" +
+                        "Manufacturer=Intel Corporation, Model=82580 " +
+                        "Gigabit Network Connection-faulty, " +
+                        "Serial=90:e2:ba:31:83:10, Revision=\n");
     }
 
     /**
