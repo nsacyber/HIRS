@@ -370,7 +370,7 @@ public class CertificateRequestPageController extends PageController<NoPageParam
         Map<String, Object> model = new HashMap<>();
         PageMessages messages = new PageMessages();
 
-        for (MultipartFile file :files) {
+        for (MultipartFile file : files) {
             //Parse certificate
             Certificate certificate = parseCertificate(certificateType, file, messages);
 
@@ -542,6 +542,10 @@ public class CertificateRequestPageController extends PageController<NoPageParam
             final String serialNumber,
             final CertificateManager certificateManager) {
 
+        if (serialNumber == null) {
+            return null;
+        }
+
         switch (certificateType) {
             case PLATFORMCREDENTIAL:
                 return PlatformCredential
@@ -659,16 +663,18 @@ public class CertificateRequestPageController extends PageController<NoPageParam
                             platformCertificate.getPlatformSerial(),
                             certificateManager);
 
-                    for (PlatformCredential pc : sharedCertificates) {
-                        if (pc.isBase()) {
-                            final String failMessage = "Storing certificate failed: "
-                                    + "platform credential "
-                                    + "chain (" + pc.getPlatformSerial()
-                                    + ") base already exists in this chain ("
-                                    + fileName + ")";
-                            messages.addError(failMessage);
-                            LOGGER.error(failMessage);
-                            return;
+                    if (sharedCertificates != null) {
+                        for (PlatformCredential pc : sharedCertificates) {
+                            if (pc.isBase()) {
+                                final String failMessage = "Storing certificate failed: "
+                                        + "platform credential "
+                                        + "chain (" + pc.getPlatformSerial()
+                                        + ") base already exists in this chain ("
+                                        + fileName + ")";
+                                messages.addError(failMessage);
+                                LOGGER.error(failMessage);
+                                return;
+                            }
                         }
                     }
                 }
