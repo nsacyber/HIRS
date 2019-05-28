@@ -38,6 +38,8 @@ import hirs.persist.CriteriaModifier;
 import hirs.persist.CrudManager;
 import hirs.persist.DBManagerException;
 import hirs.persist.OrderedListQuerier;
+import java.util.List;
+import java.util.stream.Collectors;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -528,6 +530,30 @@ public class CertificateRequestPageController extends PageController<NoPageParam
     }
 
     /**
+     * Gets the certificate by the platform serial number.
+     *
+     * @param certificateType String containing the certificate type
+     * @param serialNumber the platform serial number
+     * @param certificateManager the certificate manager to query
+     * @return the certificate or null if none is found
+     */
+    private List<PlatformCredential> getCertificateByBoardSN(
+            final String certificateType,
+            final String serialNumber,
+            final CertificateManager certificateManager) {
+
+        switch (certificateType) {
+            case PLATFORMCREDENTIAL:
+                return PlatformCredential
+                        .select(certificateManager)
+                        .byBoardSerialNumber(serialNumber)
+                        .getCertificates().stream().collect(Collectors.toList());
+            default:
+                return null;
+        }
+    }
+
+    /**
      * Parses an uploaded file into a certificate and populates the given model
      * with error messages if parsing fails.
      *
@@ -626,6 +652,27 @@ public class CertificateRequestPageController extends PageController<NoPageParam
         try {
             // save the new certificate if no match is found
             if (existingCertificate == null) {
+                if (certificateType.equals(PLATFORMCREDENTIAL)) {
+                    PlatformCredential platformCertificate = (PlatformCredential) certificate;
+                    List<PlatformCredential> sharedCertificates = getCertificateByBoardSN(
+                            certificateType,
+                            platformCertificate.getPlatformSerial(),
+                            certificateManager);
+
+                    for (PlatformCredential pc : sharedCertificates) {
+                        if (pc.isBase()) {
+                            final String failMessage = "Storing certificate failed: "
+                                    + "platform credential "
+                                    + "chain (" + pc.getPlatformSerial()
+                                    + ") base already exists in this chain ("
+                                    + fileName + ")";
+                            messages.addError(failMessage);
+                            LOGGER.error(failMessage);
+                            return;
+                        }
+                    }
+                }
+
                 certificateManager.save(certificate);
 
                 final String successMsg = "New certificate successfully uploaded ("
