@@ -253,12 +253,29 @@ public class CertificateRequestPageController extends PageController<NoPageParam
         try {
             UUID uuid = UUID.fromString(id);
             Certificate certificate = getCertificateById(certificateType, uuid, certificateManager);
-            if (null == certificate) {
+            if (certificate == null) {
                 // Use the term "record" here to avoid user confusion b/t cert and cred
                 String notFoundMessage = "Unable to locate record with ID: " + uuid;
                 messages.addError(notFoundMessage);
                 LOGGER.warn(notFoundMessage);
             } else {
+                if (certificateType.equals(PLATFORMCREDENTIAL)) {
+                    PlatformCredential platformCertificate = (PlatformCredential) certificate;
+                    List<PlatformCredential> sharedCertificates = getCertificateByBoardSN(
+                            certificateType,
+                            platformCertificate.getPlatformSerial(),
+                            certificateManager);
+
+                    if (sharedCertificates != null) {
+                        for (PlatformCredential pc : sharedCertificates) {
+                            if (!pc.isBase()) {
+                                pc.archive();
+                                certificateManager.update(pc);
+                            }
+                        }
+                    }
+                }
+
                 certificate.archive();
                 certificateManager.update(certificate);
 
