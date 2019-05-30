@@ -635,7 +635,7 @@ public final class SupplyChainCredentialValidator implements CredentialValidator
                         } else {
                             chainCiMapping.remove(ci.getComponentSerial().toString());
                         }
-                    } else {
+                    } else if (ciV2.isAdded()) {
                         // ADDED
                         if (chainCiMapping.containsKey(ciSerial)) {
                             // error, shouldn't exist
