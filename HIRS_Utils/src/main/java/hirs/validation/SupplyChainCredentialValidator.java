@@ -285,7 +285,7 @@ public final class SupplyChainCredentialValidator implements CredentialValidator
             return new AppraisalStatus(FAIL, message);
         }
         if (basePlatformCredential == null) {
-            message = baseErrorMessage + "an endorsement credential";
+            message = baseErrorMessage + "an base platform credential";
             LOGGER.error(message);
             return new AppraisalStatus(FAIL, message);
         }
