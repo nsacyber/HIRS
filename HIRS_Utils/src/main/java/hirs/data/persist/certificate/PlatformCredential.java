@@ -234,6 +234,7 @@ public class PlatformCredential extends DeviceAssociatedCertificate {
     private EndorsementCredential endorsementCredential = null;
 
     private String platformChainType = Strings.EMPTY;
+    private boolean isDeltaChain = false;
 
     /**
      * Get a Selector for use in retrieving PlatformCredentials.
@@ -369,6 +370,15 @@ public class PlatformCredential extends DeviceAssociatedCertificate {
      */
     public boolean isBase() {
         return platformBase;
+    }
+
+    /**
+     * Flag that indicates this PC has or can have a chain of delta
+     * certificates.
+     * @return status of the chain
+     */
+    public boolean isDeltaChain() {
+        return isDeltaChain;
     }
 
     /**
@@ -522,9 +532,11 @@ public class PlatformCredential extends DeviceAssociatedCertificate {
                 if (platformOid.getId().equals(PLATFORM_BASE_CERT)) {
                     this.platformBase = true;
                     this.platformChainType = "Base";
+                    this.isDeltaChain = true;
                 } else if (platformOid.getId().equals(PLATFORM_DELTA_CERT)) {
                     this.platformBase = false;
                     this.platformChainType = "Delta";
+                    this.isDeltaChain = true;
                 }
             }
         }

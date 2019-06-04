@@ -16,6 +16,10 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
+import java.util.Comparator;
+import java.util.LinkedList;
+import java.util.Map;
+import java.util.stream.Collectors;
 import java.util.HashMap;
 import org.apache.logging.log4j.Level;
 import hirs.appraiser.Appraiser;
@@ -101,8 +105,8 @@ public class SupplyChainValidationServiceImpl implements SupplyChainValidationSe
         boolean acceptExpiredCerts = policy.isExpiredCertificateValidationEnabled();
         HashMap<PlatformCredential, SupplyChainValidation> credentialMap = new HashMap<>();
         PlatformCredential baseCredential = null;
-
-        List<SupplyChainValidation> validations = new ArrayList<>();
+        List<SupplyChainValidation> validations = new LinkedList<>();
+        Map<String, Boolean> multiBaseCheckMap = new HashMap<>();
 
         // validate all supply chain pieces. Potentially, a policy setting could be made
         // to dictate stopping after the first validation failure.
@@ -133,19 +137,39 @@ public class SupplyChainValidationServiceImpl implements SupplyChainValidationSe
                     KeyStore trustedCa = getCaChain(pc);
                     SupplyChainValidation platformScv = validatePlatformCredential(
                             pc, trustedCa, acceptExpiredCerts);
+
+                    // check if this cert has been verified for multiple base associated
+                    // with the serial number
+                    if (pc != null) {
+                        boolean checked = multiBaseCheckMap.containsKey(pc.getPlatformSerial());
+                        if (!checked) {
+                            // if not checked, update the map
+                            boolean result = checkForMultipleBaseCredentials(
+                                    pc.getPlatformSerial());
+                            multiBaseCheckMap.put(pc.getPlatformSerial(), result);
+                            // if it is, then update the SupplyChainValidation message and result
+                            if (result) {
+                                String message = "Multiple Base certificates found in chain.";
+                                if (!platformScv.getResult()
+                                        .equals(AppraisalStatus.Status.PASS)) {
+                                    message = String.format("%s,%n%s",
+                                            platformScv.getMessage(), message);
+                                }
+                                platformScv = buildValidationRecord(
+                                        SupplyChainValidation.ValidationType.PLATFORM_CREDENTIAL,
+                                        AppraisalStatus.Status.FAIL,
+                                        message, pc, Level.ERROR);
+                            }
+                        }
+                    }
                     validations.add(platformScv);
-                    if (null != pc) {
+                    if (pc != null) {
                         pc.setDevice(device);
                         this.certificateManager.update(pc);
                         credentialMap.put(pc, platformScv);
-                        /*
-                         * This method will be added to PlatformCredential to return whether a given
-                         * object is a base or a delta credential.
-                         */
-/*                        if (pc.isBase()) {
+                        if (pc.isBase()) {
                             baseCredential = pc;
                         }
-*/
                     }
                 }
             }
@@ -165,13 +189,27 @@ public class SupplyChainValidationServiceImpl implements SupplyChainValidationSe
                 Iterator<PlatformCredential> it = pcs.iterator();
                 while (it.hasNext()) {
                     PlatformCredential pc = it.next();
-                    SupplyChainValidation attributeScv = null;
-                    if (pc == baseCredential || baseCredential == null) {
+                    SupplyChainValidation attributeScv;
+                    if (baseCredential == null || pc == baseCredential && !pc.isDeltaChain()) {
                         attributeScv = validatePlatformCredentialAttributes(
                             pc, device.getDeviceInfo(), ec);
                     } else {
+                        List<PlatformCredential> chainCertificates = PlatformCredential
+                        .select(certificateManager)
+                        .byBoardSerialNumber(pc.getPlatformSerial())
+                        .getCertificates().stream().collect(Collectors.toList());
+                        Collections.sort(chainCertificates,
+                                new Comparator<PlatformCredential>() {
+                            @Override
+                            public int compare(final PlatformCredential obj1,
+                                    final PlatformCredential obj2) {
+                                return obj1.getBeginValidity()
+                                        .compareTo(obj2.getBeginValidity());
+                            }
+                        });
+
                         attributeScv = validateDeltaPlatformCredentialAttributes(
-                            pc, device.getDeviceInfo(), baseCredential);
+                            pc, device.getDeviceInfo(), baseCredential, chainCertificates);
                     }
 
                     SupplyChainValidation platformScv = credentialMap.get(pc);
@@ -191,7 +229,7 @@ public class SupplyChainValidationServiceImpl implements SupplyChainValidationSe
                         }
                     }
 
-                    if (null != pc) {
+                    if (pc != null) {
                         pc.setDevice(device);
                         this.certificateManager.update(pc);
                     }
@@ -306,22 +344,21 @@ public class SupplyChainValidationServiceImpl implements SupplyChainValidationSe
     private SupplyChainValidation validateDeltaPlatformCredentialAttributes(
             final PlatformCredential delta,
             final DeviceInfoReport deviceInfoReport,
-            final PlatformCredential base) {
-    /*
-     * Do we need a new ValidationType for deltas?
-     */
+            final PlatformCredential base,
+            final List<PlatformCredential> chainCertificates) {
         final SupplyChainValidation.ValidationType validationType =
-                SupplyChainValidation.ValidationType.DELTA_PLATFORM_CREDENTIAL_ATTRIBUTES;
+                SupplyChainValidation.ValidationType.PLATFORM_CREDENTIAL_ATTRIBUTES;
 
         if (delta == null) {
-            LOGGER.error("No delta credential to validate");
+            LOGGER.error("No delta certificate to validate");
             return buildValidationRecord(validationType,
-                    AppraisalStatus.Status.FAIL, "Platform credential is missing",
+                    AppraisalStatus.Status.FAIL, "Delta platform certificate is missing",
                     null, Level.ERROR);
         }
-        LOGGER.info("Validating platform credential attributes");
+        LOGGER.info("Validating delta platform certificate attributes");
         AppraisalStatus result = supplyChainCredentialValidator.
-                validateDeltaPlatformCredentialAttributes(delta, deviceInfoReport, base);
+                validateDeltaPlatformCredentialAttributes(delta, deviceInfoReport,
+                        base, chainCertificates);
         switch (result.getAppStatus()) {
             case PASS:
                 return buildValidationRecord(validationType, AppraisalStatus.Status.PASS,
@@ -354,7 +391,7 @@ public class SupplyChainValidationServiceImpl implements SupplyChainValidationSe
             final Certificate certificate, final Level logLevel) {
 
         List<Certificate> certificateList = new ArrayList<>();
-        if (null != certificate) {
+        if (certificate != null) {
             certificateList.add(certificate);
         }
 
@@ -373,7 +410,7 @@ public class SupplyChainValidationServiceImpl implements SupplyChainValidationSe
      * Returns the certificate authority credentials in a KeyStore.
      *
      * @param credential the credential whose CA chain should be retrieved
-     * @return A keystore ontaining all relevant CA credentials to the given certificate's
+     * @return A keystore containing all relevant CA credentials to the given certificate's
      * organization or null if the keystore can't be assembled
      */
     public KeyStore getCaChain(final Certificate credential) {
@@ -442,5 +479,27 @@ public class SupplyChainValidationServiceImpl implements SupplyChainValidationSe
         }
 
         return keyStore;
+    }
+
+    private boolean checkForMultipleBaseCredentials(final String platformSerialNumber) {
+        boolean multiple = false;
+        PlatformCredential baseCredential = null;
+
+        if (platformSerialNumber != null) {
+            List<PlatformCredential> chainCertificates = PlatformCredential
+                    .select(certificateManager)
+                    .byBoardSerialNumber(platformSerialNumber)
+                    .getCertificates().stream().collect(Collectors.toList());
+
+            for (PlatformCredential pc : chainCertificates) {
+                if (baseCredential != null && pc.isBase()) {
+                    multiple = true;
+                } else if (pc.isBase()) {
+                    baseCredential = pc;
+                }
+            }
+        }
+
+        return multiple;
     }
 }

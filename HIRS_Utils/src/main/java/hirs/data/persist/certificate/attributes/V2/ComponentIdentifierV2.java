@@ -217,6 +217,13 @@ public class ComponentIdentifierV2 extends ComponentIdentifier {
     /**
      * @return true if the component has been modified.
      */
+    public final boolean isAdded() {
+        return getAttributeStatus() == AttributeStatus.ADDED;
+    }
+
+    /**
+     * @return true if the component has been modified.
+     */
     public final boolean isModified() {
         return getAttributeStatus() == AttributeStatus.MODIFIED;
     }

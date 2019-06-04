@@ -55,6 +55,9 @@ import java.util.stream.Collectors;
 import static hirs.data.persist.AppraisalStatus.Status.ERROR;
 import static hirs.data.persist.AppraisalStatus.Status.FAIL;
 import static hirs.data.persist.AppraisalStatus.Status.PASS;
+import hirs.data.persist.certificate.attributes.V2.ComponentIdentifierV2;
+import java.util.Collections;
+import java.util.LinkedList;
 import org.apache.logging.log4j.util.Strings;
 
 
@@ -258,26 +261,99 @@ public final class SupplyChainCredentialValidator implements CredentialValidator
      *                         serial number of the platform to be validated.
      * @param basePlatformCredential the base credential from the same identity request
      *                              as the delta credential.
+     * @param chainCertificates base and delta certificates associated with the
+     *                          delta being validated.
      * @return the result of the validation.
      */
     @Override
     public AppraisalStatus validateDeltaPlatformCredentialAttributes(
             final PlatformCredential deltaPlatformCredential,
             final DeviceInfoReport deviceInfoReport,
-            final PlatformCredential basePlatformCredential) {
+            final PlatformCredential basePlatformCredential,
+            final List<PlatformCredential> chainCertificates) {
+        final String baseErrorMessage = "Can't validate delta platform"
+                + "certificate attributes without ";
+        String message;
+        if (deltaPlatformCredential == null) {
+            message = baseErrorMessage + "a delta platform certificate";
+            LOGGER.error(message);
+            return new AppraisalStatus(FAIL, message);
+        }
+        if (deviceInfoReport == null) {
+            message = baseErrorMessage + "a device info report";
+            LOGGER.error(message);
+            return new AppraisalStatus(FAIL, message);
+        }
+        if (basePlatformCredential == null) {
+            message = baseErrorMessage + "a base platform credential";
+            LOGGER.error(message);
+            return new AppraisalStatus(FAIL, message);
+        }
 
-        /*
-         * Code here to check the holder and attribute status fields
-         */
-        return validatePlatformCredentialAttributesV2p0(deltaPlatformCredential, deviceInfoReport);
+        if (!basePlatformCredential.getPlatformSerial()
+                .equals(deltaPlatformCredential.getPlatformSerial())) {
+            message = String.format("Delta platform certificate "
+                    + "platform serial number (%s) does not match "
+                    + "the base certificate's platform serial number (%s)",
+                    deltaPlatformCredential.getPlatformSerial(),
+                    basePlatformCredential.getPlatformSerial());
+            LOGGER.error(message);
+            return new AppraisalStatus(FAIL, message);
+        }
+
+        // parse out the provided delta and its specific chain.
+        Collections.reverse(chainCertificates);
+        List<PlatformCredential> leafChain = new LinkedList<>();
+        PlatformCredential dc;
+        List<ComponentIdentifier> origPcComponents = new LinkedList<>();
+
+        for (PlatformCredential pc : chainCertificates) {
+            if (pc.isBase()) {
+                if (basePlatformCredential.getSerialNumber()
+                        .equals(pc.getSerialNumber())) {
+                    // get original component list
+                    origPcComponents.addAll(pc.getComponentIdentifiers());
+                }
+            } else {
+                dc = pc;
+                leafChain.add(dc);
+            }
+        }
+
+        // map the deltas to their holder serial numbers
+        Map<String, PlatformCredential> leafMap = new HashMap<>();
+        leafChain.stream().forEach((delta) -> {
+            leafMap.put(delta.getHolderSerialNumber().toString(), delta);
+        });
+
+        leafChain.clear();
+        String serialNumber = basePlatformCredential.getSerialNumber().toString();
+        PlatformCredential tempCred;
+
+        // Start with the base serial number, find the delta pointing to it
+        // and put that first in the list
+        for (int i = 0; i < leafMap.size(); i++) {
+            tempCred = leafMap.get(serialNumber);
+            // this should never be null
+            if (tempCred != null) {
+                leafChain.add(i, tempCred);
+                serialNumber = tempCred.getSerialNumber().toString();
+            } else {
+                return new AppraisalStatus(ERROR, String.format("Delta platform search "
+                        + "for mapping returned null for %s", serialNumber));
+            }
+        }
+
+        return validateDeltaAttributesChainV2p0(deviceInfoReport,
+                leafChain, origPcComponents);
     }
 
     private static AppraisalStatus validatePlatformCredentialAttributesV1p2(
             final PlatformCredential platformCredential,
             final DeviceInfoReport deviceInfoReport) {
 
-        // check the device's board serial number, and compare against this platform credential's
-        // board serial number.
+        // check the device's board serial number, and compare against this
+        // platform credential's board serial number.
         // Retrieve the various device serial numbers.
         String credentialBoardSerialNumber = platformCredential.getPlatformSerial();
         String credentialChassisSerialNumber = platformCredential.getChassisSerialNumber();
@@ -379,8 +455,7 @@ public final class SupplyChainCredentialValidator implements CredentialValidator
             final PlatformCredential platformCredential,
             final DeviceInfoReport deviceInfoReport) {
         boolean passesValidation = true;
-
-        StringBuffer resultMessage = new StringBuffer();
+        StringBuilder resultMessage = new StringBuilder();
 
         HardwareInfo hardwareInfo = deviceInfoReport.getHardwareInfo();
 
@@ -501,6 +576,115 @@ public final class SupplyChainCredentialValidator implements CredentialValidator
     }
 
     /**
+     * The main purpose of this method, the in process of validation, is to
+     * pick out the changes that lead to the delta cert and make sure the changes
+     * are valid.
+     *
+     * @param deviceInfoReport The paccor profile of device being validated against.
+     * @param leafChain The specific chain associated with delta cert being
+     * validated.
+     * @param origPcComponents The component identifier list associated with the
+     * base cert for this specific chain
+     * @return Appraisal Status of delta being validated.
+     */
+    static AppraisalStatus validateDeltaAttributesChainV2p0(
+            final DeviceInfoReport deviceInfoReport,
+            final List<PlatformCredential> leafChain,
+            final List<ComponentIdentifier> origPcComponents) {
+        boolean fieldValidation = true;
+        StringBuilder resultMessage = new StringBuilder();
+        List<ComponentIdentifier> validOrigPcComponents = origPcComponents.stream()
+                .filter(identifier -> identifier.getComponentManufacturer() != null
+                        && identifier.getComponentModel() != null)
+                .collect(Collectors.toList());
+
+        // map the components throughout the chain
+        Map<String, ComponentIdentifier> chainCiMapping = new HashMap<>();
+        List<ComponentIdentifier> deltaBuildList = new LinkedList<>(validOrigPcComponents);
+        deltaBuildList.stream().forEach((ci) -> {
+            chainCiMapping.put(ci.getComponentSerial().toString(), ci);
+        });
+
+        String ciSerial;
+        // go through the leaf and check the changes against the valid components
+        // forget modifying validOrigPcComponents
+        for (PlatformCredential delta : leafChain) {
+            for (ComponentIdentifier ci : delta.getComponentIdentifiers()) {
+                if (ci.isVersion2()) {
+                    ciSerial = ci.getComponentSerial().toString();
+                    ComponentIdentifierV2 ciV2 = (ComponentIdentifierV2) ci;
+
+                    if (ciV2.isModified())  {
+                        // this won't match
+                        // check it is there
+                        if (!chainCiMapping.containsKey(ciSerial)) {
+                            fieldValidation = false;
+                            resultMessage.append(String.format(
+                                    "%s attempted MODIFIED with no prior instance.%n",
+                                    ciSerial));
+                        } else {
+                            chainCiMapping.put(ci.getComponentSerial().toString(), ci);
+                        }
+                    } else if (ciV2.isRemoved()) {
+                        if (!chainCiMapping.containsKey(ciSerial)) {
+                            // error thrown, can't remove if it doesn't exist
+                            fieldValidation = false;
+                            resultMessage.append(String.format(
+                                    "%s attempted REMOVED with no prior instance.%n",
+                                    ciSerial));
+                        } else {
+                            chainCiMapping.remove(ci.getComponentSerial().toString());
+                        }
+                    } else if (ciV2.isAdded()) {
+                        // ADDED
+                        if (chainCiMapping.containsKey(ciSerial)) {
+                            // error, shouldn't exist
+                            fieldValidation = false;
+                            resultMessage.append(String.format(
+                                    "%s was ADDED, the serial already exists.%n",
+                                    ciSerial));
+                        } else {
+                            // have to add incase later it is removed
+                            chainCiMapping.put(ciSerial, ci);
+                        }
+                    }
+                }
+            }
+        }
+
+        if (!fieldValidation) {
+            resultMessage.append("There are errors with Delta "
+                    + "Component Statuses components:\n");
+
+            return new AppraisalStatus(FAIL, resultMessage.toString());
+        }
+
+        String paccorOutputString = deviceInfoReport.getPaccorOutputString();
+        String unmatchedComponents;
+        try {
+            List<ComponentInfo> componentInfoList
+                    = getComponentInfoFromPaccorOutput(paccorOutputString);
+            unmatchedComponents = validateV2p0PlatformCredentialComponentsExpectingExactMatch(
+                    new LinkedList<>(chainCiMapping.values()), componentInfoList);
+            fieldValidation &= unmatchedComponents.isEmpty();
+        } catch (IOException e) {
+            final String baseErrorMessage = "Error parsing JSON output from PACCOR: ";
+            LOGGER.error(baseErrorMessage + e.toString());
+            LOGGER.error("PACCOR output string:\n" + paccorOutputString);
+            return new AppraisalStatus(ERROR, baseErrorMessage + e.getMessage());
+        }
+
+        if (!fieldValidation) {
+            resultMessage.append("There are unmatched components:\n");
+            resultMessage.append(unmatchedComponents);
+
+            return new AppraisalStatus(FAIL, resultMessage.toString());
+        }
+
+        return new AppraisalStatus(PASS, PLATFORM_ATTRIBUTES_VALID);
+    }
+
+    /**
      * Compares the component information from the device info report against those of the
      * platform credential. All components in the platform credential should exactly match one
      * component in the device info report.  The device info report is allowed to have extra
@@ -545,7 +729,6 @@ public final class SupplyChainCredentialValidator implements CredentialValidator
         pcComponents.forEach(component -> LOGGER.info(component.toString()));
         LOGGER.info("...against the the following DeviceInfoReport components:");
         allDeviceInfoComponents.forEach(component -> LOGGER.info(component.toString()));
-
         Set<DERUTF8String> manufacturerSet = new HashSet<>();
         pcComponents.forEach(component -> manufacturerSet.add(
                 component.getComponentManufacturer()));
@@ -577,7 +760,8 @@ public final class SupplyChainCredentialValidator implements CredentialValidator
             // Now match up the components from the device info that are from the same
             // manufacturer and have a serial number. As matches are found, remove them from
             // both lists.
-            for (ComponentIdentifier pcComponent : pcComponentsFromManufacturerWithSerialNumber) {
+            for (ComponentIdentifier pcComponent
+                    : pcComponentsFromManufacturerWithSerialNumber) {
                 Optional<ComponentInfo> first
                         = deviceInfoComponentsFromManufacturer.stream()
                         .filter(componentInfo
@@ -607,7 +791,8 @@ public final class SupplyChainCredentialValidator implements CredentialValidator
             // Now match up the components from the device info that are from the same
             // manufacturer and specify a value for the revision field. As matches are found,
             // remove them from both lists.
-            for (ComponentIdentifier pcComponent : pcComponentsFromManufacturerWithRevision) {
+            for (ComponentIdentifier pcComponent
+                    : pcComponentsFromManufacturerWithRevision) {
                 Optional<ComponentInfo> first
                         = deviceInfoComponentsFromManufacturer.stream()
                         .filter(info -> StringUtils.isNotEmpty(info.getComponentRevision()))
