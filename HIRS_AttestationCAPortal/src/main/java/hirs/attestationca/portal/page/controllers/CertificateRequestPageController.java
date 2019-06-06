@@ -261,16 +261,19 @@ public class CertificateRequestPageController extends PageController<NoPageParam
             } else {
                 if (certificateType.equals(PLATFORMCREDENTIAL)) {
                     PlatformCredential platformCertificate = (PlatformCredential) certificate;
-                    List<PlatformCredential> sharedCertificates = getCertificateByBoardSN(
-                            certificateType,
-                            platformCertificate.getPlatformSerial(),
-                            certificateManager);
+                    if (platformCertificate.isBase()) {
+                        // only do this if the base is being deleted.
+                        List<PlatformCredential> sharedCertificates = getCertificateByBoardSN(
+                                certificateType,
+                                platformCertificate.getPlatformSerial(),
+                                certificateManager);
 
-                    if (sharedCertificates != null) {
-                        for (PlatformCredential pc : sharedCertificates) {
-                            if (!pc.isBase()) {
-                                pc.archive();
-                                certificateManager.update(pc);
+                        if (sharedCertificates != null) {
+                            for (PlatformCredential pc : sharedCertificates) {
+                                if (!pc.isBase()) {
+                                    pc.archive();
+                                    certificateManager.update(pc);
+                                }
                             }
                         }
                     }
