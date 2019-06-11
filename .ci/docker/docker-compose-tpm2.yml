@@ -21,8 +21,7 @@ services:
                - ${HIRS_ACA_HOSTNAME}
 
    tpm2provisioner:
-      image: busaboy1340/hirs-testing:tpm2provisioner
-      #image: hirs/hirs-ci:tpm2provisioner
+      image: hirs/hirs-ci:tpm2provisioner
       container_name: hirs-aca-provisioner-tpm2
       depends_on:
          - aca
