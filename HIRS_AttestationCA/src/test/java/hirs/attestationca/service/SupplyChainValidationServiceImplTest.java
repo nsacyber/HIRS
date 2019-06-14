@@ -130,6 +130,7 @@ public class SupplyChainValidationServiceImplTest extends SpringPersistenceTest 
         when(pc.getId()).thenReturn(UUID.randomUUID());
         when(pc.getX509Certificate()).thenReturn(cert);
         when(pc.getSerialNumber()).thenReturn(BigInteger.ONE);
+        when(pc.getPlatformSerial()).thenReturn(String.valueOf(Integer.MIN_VALUE));
         when(pc.getIssuerOrganization()).thenReturn("STMicroelectronics NV");
         when(ec.getSubjectOrganization()).thenReturn("STMicroelectronics NV");
         pcs = new HashSet<PlatformCredential>();

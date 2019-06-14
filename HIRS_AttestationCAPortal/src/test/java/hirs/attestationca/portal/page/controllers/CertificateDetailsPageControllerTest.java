@@ -56,8 +56,8 @@ public class CertificateDetailsPageControllerTest extends PageControllerTest {
 
     private CertificateAuthorityCredential caCertificate;
     private CertificateAuthorityCredential caRootCertificate;
-    private PlatformCredential platofrmCredential;
-    private PlatformCredential platofrmCredential2;
+    private PlatformCredential platformCredential;
+    private PlatformCredential platformCredential2;
     private EndorsementCredential endorsementCredential;
     private IssuedAttestationCertificate issuedCredential;
 
@@ -130,26 +130,26 @@ public class CertificateDetailsPageControllerTest extends PageControllerTest {
         certificateManager.save(caRootCertificate);
 
         //Upload and save Platform Cert
-        platofrmCredential = (PlatformCredential)
+        platformCredential = (PlatformCredential)
                     getTestCertificate(
                             PlatformCredential.class,
                             TEST_PLATFORM_CREDENTIAL,
                             null,
                             null);
-        certificateManager.save(platofrmCredential);
+        certificateManager.save(platformCredential);
 
-        pcCertSet.add(platofrmCredential);
+        pcCertSet.add(platformCredential);
 
         //Upload and save Platform Cert 2.0
-        platofrmCredential2 = (PlatformCredential)
+        platformCredential2 = (PlatformCredential)
                     getTestCertificate(
                             PlatformCredential.class,
                             TEST_PLATFORM_CREDENTIAL_2,
                             null,
                             null);
-        certificateManager.save(platofrmCredential2);
+        certificateManager.save(platformCredential2);
 
-        pcCertSet.add(platofrmCredential);
+        pcCertSet.add(platformCredential);
 
         //Upload and save Issued Attestation Cert
         issuedCredential = (IssuedAttestationCertificate)
@@ -254,20 +254,20 @@ public class CertificateDetailsPageControllerTest extends PageControllerTest {
 
         MvcResult result = getMockMvc()
                 .perform(MockMvcRequestBuilders.get("/" + getPage().getViewName())
-                .param("id", platofrmCredential.getId().toString())
+                .param("id", platformCredential.getId().toString())
                 .param("type", "platform"))
                 .andExpect(status().isOk())
                 .andExpect(model().attributeExists(PolicyPageController.INITIAL_DATA))
                 .andReturn();
 
-        // Obtain initalData HashMap
-        Map<String, String> initalData = (Map<String, String>) result
+        // Obtain initialData HashMap
+        Map<String, String> initialData = (Map<String, String>) result
                                     .getModelAndView()
                                     .getModel()
                                     .get(PolicyPageController.INITIAL_DATA);
-        Assert.assertEquals(initalData.get("issuer"), platofrmCredential.getIssuer());
-        Assert.assertEquals(initalData.get("credentialType"),
-                            ((PlatformCredential) platofrmCredential).getCredentialType());
+        Assert.assertEquals(initialData.get("issuer"), platformCredential.getIssuer());
+        Assert.assertEquals(initialData.get("credentialType"),
+                            ((PlatformCredential) platformCredential).getCredentialType());
 
     }
 
@@ -283,28 +283,28 @@ public class CertificateDetailsPageControllerTest extends PageControllerTest {
 
         MvcResult result = getMockMvc()
                 .perform(MockMvcRequestBuilders.get("/" + getPage().getViewName())
-                .param("id", platofrmCredential2.getId().toString())
+                .param("id", platformCredential2.getId().toString())
                 .param("type", "platform"))
                 .andExpect(status().isOk())
                 .andExpect(model().attributeExists(PolicyPageController.INITIAL_DATA))
                 .andReturn();
 
-        // Obtain initalData HashMap
-        Map<String, Object> initalData = (Map<String, Object>) result
+        // Obtain initialData HashMap
+        Map<String, Object> initialData = (Map<String, Object>) result
                                     .getModelAndView()
                                     .getModel()
                                     .get(PolicyPageController.INITIAL_DATA);
-        Assert.assertEquals(initalData.get("issuer"), platofrmCredential2.getIssuer());
-        Assert.assertEquals(initalData.get("credentialType"),
-                            ((PlatformCredential) platofrmCredential2).getCredentialType());
+        Assert.assertEquals(initialData.get("issuer"), platformCredential2.getIssuer());
+        Assert.assertEquals(initialData.get("credentialType"),
+                            ((PlatformCredential) platformCredential2).getCredentialType());
         // Check component identifier
-        Assert.assertNotNull(initalData.get("componentsIdentifier"));
-        List<?> obj = (List<?>) initalData.get("componentsIdentifier");
+        Assert.assertNotNull(initialData.get("componentsIdentifier"));
+        List<?> obj = (List<?>) initialData.get("componentsIdentifier");
         Assert.assertEquals(obj.size(), 7);
 
         // Check platform properties
-        Assert.assertNotNull(initalData.get("platformProperties"));
-        obj = (List<?>) initalData.get("platformProperties");
+        Assert.assertNotNull(initialData.get("platformProperties"));
+        obj = (List<?>) initialData.get("platformProperties");
         Assert.assertEquals(obj.size(), 2);
 
     }
