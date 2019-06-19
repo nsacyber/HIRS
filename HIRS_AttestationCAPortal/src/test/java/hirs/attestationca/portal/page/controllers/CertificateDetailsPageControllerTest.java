@@ -93,7 +93,7 @@ public class CertificateDetailsPageControllerTest extends PageControllerTest {
 
         Set<PlatformCredential> pcCertSet = new HashSet<>();
 
-        //Create new device grup
+        //Create new device group
         DeviceGroup group = new DeviceGroup("default");
         group = deviceGroupManager.saveDeviceGroup(group);
 
@@ -233,12 +233,12 @@ public class CertificateDetailsPageControllerTest extends PageControllerTest {
                 .andExpect(model().attributeExists(PolicyPageController.INITIAL_DATA))
                 .andReturn();
 
-        // Obtain initalData HashMap
-        Map<String, String> initalData = (Map<String, String>) result
+        // Obtain initialData HashMap
+        Map<String, String> initialData = (Map<String, String>) result
                                     .getModelAndView()
                                     .getModel()
                                     .get(PolicyPageController.INITIAL_DATA);
-        Assert.assertEquals(initalData.get("issuer"), caCertificate.getIssuer());
+        Assert.assertEquals(initialData.get("issuer"), caCertificate.getIssuer());
 
     }
 
@@ -327,13 +327,13 @@ public class CertificateDetailsPageControllerTest extends PageControllerTest {
                 .andExpect(model().attributeExists(PolicyPageController.INITIAL_DATA))
                 .andReturn();
 
-        // Obtain initalData HashMap
-        Map<String, String> initalData = (Map<String, String>) result
+        // Obtain initialData HashMap
+        Map<String, String> initialData = (Map<String, String>) result
                                     .getModelAndView()
                                     .getModel()
                                     .get(PolicyPageController.INITIAL_DATA);
-        Assert.assertEquals(initalData.get("issuer"), endorsementCredential.getIssuer());
-        Assert.assertEquals(initalData.get("manufacturer"),
+        Assert.assertEquals(initialData.get("issuer"), endorsementCredential.getIssuer());
+        Assert.assertEquals(initialData.get("manufacturer"),
                             ((EndorsementCredential) endorsementCredential).getManufacturer());
     }
 
@@ -355,14 +355,14 @@ public class CertificateDetailsPageControllerTest extends PageControllerTest {
 
                             .andReturn();
 
-        // Obtain initalData HashMap
-        Map<String, String> initalData = (Map<String, String>) result
+        // Obtain initialData HashMap
+        Map<String, String> initialData = (Map<String, String>) result
                             .getModelAndView()
                             .getModel()
                             .get(PolicyPageController.INITIAL_DATA);
 
-        Assert.assertEquals(initalData.get("issuer"), caCertificate.getIssuer());
-        Assert.assertEquals(initalData.get("issuerID"),
+        Assert.assertEquals(initialData.get("issuer"), caCertificate.getIssuer());
+        Assert.assertEquals(initialData.get("issuerID"),
                 caRootCertificate.getId().toString());
     }
 
@@ -384,13 +384,13 @@ public class CertificateDetailsPageControllerTest extends PageControllerTest {
                 .andExpect(model().attributeExists(PolicyPageController.INITIAL_DATA))
                 .andReturn();
 
-        // Obtain initalData HashMap
-        Map<String, String> initalData = (Map<String, String>) result
+        // Obtain initialData HashMap
+        Map<String, String> initialData = (Map<String, String>) result
                                     .getModelAndView()
                                     .getModel()
                                     .get(PolicyPageController.INITIAL_DATA);
-        Assert.assertEquals(initalData.get("issuer"), issuedCredential.getIssuer());
-        Assert.assertEquals(initalData.get("endorsementID"),
+        Assert.assertEquals(initialData.get("issuer"), issuedCredential.getIssuer());
+        Assert.assertEquals(initialData.get("endorsementID"),
                             issuedCredential.getEndorsementCredential().getId().toString());
 
 
