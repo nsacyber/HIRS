@@ -318,33 +318,12 @@ public final class SupplyChainCredentialValidator implements CredentialValidator
             }
         }
 
-        LOGGER.warn(String.format("TDM - first %d is the amount of deltas", leafChain.size()));
         // map the deltas to their holder serial numbers
         Map<String, PlatformCredential> leafMap = new HashMap<>();
         leafChain.stream().forEach((delta) -> {
             leafMap.put(delta.getHolderSerialNumber().toString(), delta);
         });
 
-//        leafChain.clear();
-//        String serialNumber = basePlatformCredential.getSerialNumber().toString();
-//        PlatformCredential tempCred;
-
-//        // Start with the base serial number, find the delta pointing to it
-//        // and put that first in the list
-//        for (int i = 0; i < leafMap.size(); i++) {
-//            tempCred = leafMap.get(serialNumber);
-//            // this should never be null
-//            if (tempCred != null) {
-//                leafChain.add(i, tempCred);
-//                serialNumber = tempCred.getSerialNumber().toString();
-//            } else {
-//                return new AppraisalStatus(ERROR, String.format("Delta platform search "
-//                        + "for mapping returned null for %s", serialNumber));
-//            }
-//        }
-
-        LOGGER.warn(String.format("TDM - %d is the amount of certs", chainCertificates.size()));
-        LOGGER.warn(String.format("TDM - second %d is the amount of deltas", leafChain.size()));
         return validateDeltaAttributesChainV2p0(deviceInfoReport,
                 leafChain, origPcComponents);
     }
@@ -614,8 +593,6 @@ public final class SupplyChainCredentialValidator implements CredentialValidator
                 if (ci.isVersion2()) {
                     ciSerial = ci.getComponentSerial().toString();
                     ComponentIdentifierV2 ciV2 = (ComponentIdentifierV2) ci;
-                    LOGGER.warn(String.format("TDM - CI info: %s is %s",
-                            ciSerial, ciV2.getAttributeStatus().toString()));
                     if (ciV2.isModified())  {
                         // this won't match
                         // check it is there
