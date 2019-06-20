@@ -241,7 +241,7 @@ public class PlatformCredentialTest {
         Assert.assertEquals(credential.getCredentialType(), "TCPA Trusted Platform Endorsement");
 
         // the platform certificate in this test does not contain the following information
-        Assert.assertEquals(credential.getPlatformSerial(), "");
+        Assert.assertEquals(credential.getPlatformSerial(), null);
         Assert.assertEquals(credential.getMajorVersion(), 1);
         Assert.assertEquals(credential.getMinorVersion(), 2);
         Assert.assertEquals(credential.getRevisionLevel(), 1);
@@ -290,7 +290,7 @@ public class PlatformCredentialTest {
         Assert.assertEquals(credential.getCredentialType(), "TCPA Trusted Platform Endorsement");
 
         // the platform certificate in this test does not contain the following information
-        Assert.assertEquals(credential.getPlatformSerial(), "");
+        Assert.assertEquals(credential.getPlatformSerial(), null);
         Assert.assertEquals(credential.getMajorVersion(), 1);
         Assert.assertEquals(credential.getMinorVersion(), 2);
         Assert.assertEquals(credential.getRevisionLevel(), 1);

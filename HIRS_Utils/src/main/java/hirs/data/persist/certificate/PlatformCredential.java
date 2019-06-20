@@ -212,7 +212,7 @@ public class PlatformCredential extends DeviceAssociatedCertificate {
 
     private static final String PLATFORM_SERIAL_FIELD = "platformSerial";
     @Column
-    private String platformSerial = Strings.EMPTY;
+    private String platformSerial = null;
 
     private static final String CHASSIS_SERIAL_NUMBER_FIELD = "chassisSerialNumber";
     @Column
