@@ -247,15 +247,12 @@ public class SupplyChainValidationServiceImpl implements SupplyChainValidationSe
             final SupplyChainValidation platformScv,
             final List<SupplyChainValidation> deltaValidations,
             final boolean acceptExpiredCerts) {
-        Map<String, Boolean> multiBaseCheckMap = new HashMap<>();
-        boolean checked = multiBaseCheckMap.containsKey(pc.getPlatformSerial());
         SupplyChainValidation subPlatformScv = platformScv;
 
-        if (!checked) {
+        if (pc != null) {
             // if not checked, update the map
             boolean result = checkForMultipleBaseCredentials(
                     pc.getPlatformSerial());
-            multiBaseCheckMap.put(pc.getPlatformSerial(), result);
             // if it is, then update the SupplyChainValidation message and result
             if (result) {
                 String message = "Multiple Base certificates found in chain.";
@@ -269,7 +266,6 @@ public class SupplyChainValidationServiceImpl implements SupplyChainValidationSe
             }
         }
 
-        System.out.println(pc.getPlatformSerial());
         // Grab all certs associated with this platform chain
         List<PlatformCredential> chainCertificates = PlatformCredential
                 .select(certificateManager)
@@ -289,10 +285,6 @@ public class SupplyChainValidationServiceImpl implements SupplyChainValidationSe
         }
 
         return subPlatformScv;
-    }
-
-    private void validatePcAttributes(final PlatformCredential pc) {
-
     }
 
     private SupplyChainValidation validateEndorsementCredential(final EndorsementCredential ec,
