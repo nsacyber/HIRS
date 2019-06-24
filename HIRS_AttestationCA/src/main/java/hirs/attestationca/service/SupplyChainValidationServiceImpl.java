@@ -18,7 +18,6 @@ import java.util.List;
 import java.util.Set;
 import java.util.Comparator;
 import java.util.LinkedList;
-import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.HashMap;
 import org.apache.logging.log4j.Level;
@@ -106,7 +105,7 @@ public class SupplyChainValidationServiceImpl implements SupplyChainValidationSe
         HashMap<PlatformCredential, SupplyChainValidation> credentialMap = new HashMap<>();
         PlatformCredential baseCredential = null;
         List<SupplyChainValidation> validations = new LinkedList<>();
-        Map<String, Boolean> multiBaseCheckMap = new HashMap<>();
+        List<SupplyChainValidation> deltaValidations = new LinkedList<>();
 
         // validate all supply chain pieces. Potentially, a policy setting could be made
         // to dictate stopping after the first validation failure.
@@ -141,28 +140,13 @@ public class SupplyChainValidationServiceImpl implements SupplyChainValidationSe
                     // check if this cert has been verified for multiple base associated
                     // with the serial number
                     if (pc != null) {
-                        boolean checked = multiBaseCheckMap.containsKey(pc.getPlatformSerial());
-                        if (!checked) {
-                            // if not checked, update the map
-                            boolean result = checkForMultipleBaseCredentials(
-                                    pc.getPlatformSerial());
-                            multiBaseCheckMap.put(pc.getPlatformSerial(), result);
-                            // if it is, then update the SupplyChainValidation message and result
-                            if (result) {
-                                String message = "Multiple Base certificates found in chain.";
-                                if (!platformScv.getResult()
-                                        .equals(AppraisalStatus.Status.PASS)) {
-                                    message = String.format("%s,%n%s",
-                                            platformScv.getMessage(), message);
-                                }
-                                platformScv = buildValidationRecord(
-                                        SupplyChainValidation.ValidationType.PLATFORM_CREDENTIAL,
-                                        AppraisalStatus.Status.FAIL,
-                                        message, pc, Level.ERROR);
-                            }
-                        }
+                        platformScv = validatePcPolicy(pc, platformScv,
+                                deltaValidations, acceptExpiredCerts);
                     }
                     validations.add(platformScv);
+                    if (!deltaValidations.isEmpty()) {
+                        validations.addAll(deltaValidations);
+                    }
                     if (pc != null) {
                         pc.setDevice(device);
                         this.certificateManager.update(pc);
@@ -246,6 +230,60 @@ public class SupplyChainValidationServiceImpl implements SupplyChainValidationSe
             LOGGER.error("Failed to save Supply chain summary", ex);
         }
         return summary;
+    }
+
+    /**
+     * This method is a sub set of the validate supply chain method and focuses on the specific
+     * multibase validation check for a delta chain.  This method also includes the check
+     * for delta certificate CA validation as well.
+     *
+     * @param pc The platform credential getting checked
+     * @param platformScv The validation record
+     * @return The validation record
+     */
+    private SupplyChainValidation validatePcPolicy(
+            final PlatformCredential pc,
+            final SupplyChainValidation platformScv,
+            final List<SupplyChainValidation> deltaValidations,
+            final boolean acceptExpiredCerts) {
+        SupplyChainValidation subPlatformScv = platformScv;
+
+        if (pc != null) {
+            // if not checked, update the map
+            boolean result = checkForMultipleBaseCredentials(
+                    pc.getPlatformSerial());
+            // if it is, then update the SupplyChainValidation message and result
+            if (result) {
+                String message = "Multiple Base certificates found in chain.";
+                if (!platformScv.getResult().equals(AppraisalStatus.Status.PASS)) {
+                    message = String.format("%s,%n%s", platformScv.getMessage(), message);
+                }
+                subPlatformScv = buildValidationRecord(
+                        SupplyChainValidation.ValidationType.PLATFORM_CREDENTIAL,
+                        AppraisalStatus.Status.FAIL,
+                        message, pc, Level.ERROR);
+            }
+        }
+
+        // Grab all certs associated with this platform chain
+        List<PlatformCredential> chainCertificates = PlatformCredential
+                .select(certificateManager)
+                .byBoardSerialNumber(pc.getPlatformSerial())
+                .getCertificates().stream().collect(Collectors.toList());
+
+        SupplyChainValidation deltaScv;
+        KeyStore trustedCa;
+        // verify that the deltas trust chain is valid.
+        for (PlatformCredential delta : chainCertificates) {
+            if (delta != null && !delta.isBase()) {
+                trustedCa = getCaChain(delta);
+                deltaScv = validatePlatformCredential(
+                        delta, trustedCa, acceptExpiredCerts);
+                deltaValidations.add(deltaScv);
+            }
+        }
+
+        return subPlatformScv;
     }
 
     private SupplyChainValidation validateEndorsementCredential(final EndorsementCredential ec,

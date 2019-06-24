@@ -305,7 +305,7 @@ public class PlatformCredential extends DeviceAssociatedCertificate {
             AttributeCertificate attCert = getAttributeCertificate();
             AttributeCertificateInfo acinfo = getAttributeCertificate().getAcinfo();
 
-            // Check if the algorith identifier is the same
+            // Check if the algorithm identifier is the same
             if (!isAlgIdEqual(acinfo.getSignature(), attCert.getSignatureAlgorithm())) {
                 throw new IOException("signature invalid - algorithm identifier mismatch");
             }
