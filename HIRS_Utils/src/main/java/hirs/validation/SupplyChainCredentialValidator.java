@@ -304,7 +304,6 @@ public final class SupplyChainCredentialValidator implements CredentialValidator
         // parse out the provided delta and its specific chain.
         Collections.reverse(chainCertificates);
         List<PlatformCredential> leafChain = new LinkedList<>();
-        PlatformCredential dc;
         List<ComponentIdentifier> origPcComponents = new LinkedList<>();
 
         for (PlatformCredential pc : chainCertificates) {
@@ -315,8 +314,7 @@ public final class SupplyChainCredentialValidator implements CredentialValidator
                     origPcComponents.addAll(pc.getComponentIdentifiers());
                 }
             } else {
-                dc = pc;
-                leafChain.add(dc);
+                leafChain.add(pc);
             }
         }
 
@@ -325,24 +323,6 @@ public final class SupplyChainCredentialValidator implements CredentialValidator
         leafChain.stream().forEach((delta) -> {
             leafMap.put(delta.getHolderSerialNumber().toString(), delta);
         });
-
-        leafChain.clear();
-        String serialNumber = basePlatformCredential.getSerialNumber().toString();
-        PlatformCredential tempCred;
-
-        // Start with the base serial number, find the delta pointing to it
-        // and put that first in the list
-        for (int i = 0; i < leafMap.size(); i++) {
-            tempCred = leafMap.get(serialNumber);
-            // this should never be null
-            if (tempCred != null) {
-                leafChain.add(i, tempCred);
-                serialNumber = tempCred.getSerialNumber().toString();
-            } else {
-                return new AppraisalStatus(ERROR, String.format("Delta platform search "
-                        + "for mapping returned null for %s", serialNumber));
-            }
-        }
 
         return validateDeltaAttributesChainV2p0(deviceInfoReport,
                 leafChain, origPcComponents);
@@ -613,7 +593,6 @@ public final class SupplyChainCredentialValidator implements CredentialValidator
                 if (ci.isVersion2()) {
                     ciSerial = ci.getComponentSerial().toString();
                     ComponentIdentifierV2 ciV2 = (ComponentIdentifierV2) ci;
-
                     if (ciV2.isModified())  {
                         // this won't match
                         // check it is there
