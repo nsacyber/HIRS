@@ -4,11 +4,11 @@
 set -e
 
 # Wait for ACA to boot
-echo "Waiting for ACA to spin up..."
-until [ "`curl --silent --connect-timeout 1 -I -k https://${HIRS_ACA_PORTAL_IP}:${HIRS_ACA_PORTAL_PORT}/HIRS_AttestationCAPortal | grep '302 Found'`" != "" ]; do
+#echo "Waiting for ACA to spin up..."
+#until [ "`curl --silent --connect-timeout 1 -I -k https://${HIRS_ACA_PORTAL_IP}:${HIRS_ACA_PORTAL_PORT}/HIRS_AttestationCAPortal | grep '302 Found'`" != "" ]; do
   :
-done
-echo "ACA is up!"
+#done
+#echo "ACA is up!"
 
 # Function to install TPM2 Provisioner packages.
 function InstallProvisioner {
@@ -54,6 +54,7 @@ function InitTpm2Emulator {
 	# EK and PC Certificate
 	ek_cert_der="/HIRS/.ci/setup/certs/ek_cert.der"
 	platform_cert="platformAttributeCertificate.der"
+	bad_platform_cert="badPlatformCertificate.der"
 
 	echo "Creating Platform Cert for Container."
 	PC_DIR=/var/hirs/pc_generation
@@ -64,6 +65,18 @@ function InitTpm2Emulator {
 	/opt/paccor/bin/observer -c $PC_DIR/componentsFile -p $PC_DIR/optionsFile -e $ek_cert_der -f $PC_DIR/observerFile
 	/opt/paccor/bin/signer -o $PC_DIR/observerFile -x $PC_DIR/extensionsFile -b 20180101 -a 20280101 -N $RANDOM -k /HIRS/.ci/setup/certs/ca.key -P /HIRS/.ci/setup/certs/ca.crt -f $PC_DIR/$platform_cert
 
+	# Create bad base platform certificate
+   echo "Creating bad Base Platform Cert..."
+   rm -f $PC_DIR/optionsFile
+   rm -f $PC_DIR/extentionsFile
+   rm -f $PC_DIR/observerFile
+
+	/opt/paccor/scripts/allcomponents.sh > $PC_DIR/badComponentsFile
+	/opt/paccor/scripts/referenceoptions.sh > $PC_DIR/optionsFile
+	/opt/paccor/scripts/otherextensions.sh > $PC_DIR/extensionsFile
+	/opt/paccor/bin/observer -c $PC_DIR/badComponentsFile -p $PC_DIR/optionsFile -e $ek_cert_der -f $PC_DIR/observerFile
+	/opt/paccor/bin/signer -o $PC_DIR/observerFile -x $PC_DIR/extensionsFile -b 20180101 -a 20280101 -N $RANDOM -k /HIRS/.ci/setup/certs/ca.key -P /HIRS/.ci/setup/certs/ca.crt -f $PC_DIR/$bad_platform_cert
+    
 	if tpm2_nvlist | grep -q 0x1c00002; then
 	  echo "Released NVRAM for EK."
 	  tpm2_nvrelease -x 0x1c00002 -a 0x40000001
@@ -137,7 +150,10 @@ InstallProvisioner
 InitTpm2Emulator
 
 # Update the hirs-site.config file
-UpdateHirsSiteConfigFile
+#UpdateHirsSiteConfigFile
+cp -f /HIRS/hirs-site.config /etc/hirs 
 
 echo ""
 echo "===========HIRS ACA TPM2 Provisioner Setup Complete!==========="
+
+tail -f /dev/null
