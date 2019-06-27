@@ -123,7 +123,8 @@ public final class CredentialManagementHelper {
                                 // found a base in the database associated with
                                 // parsed certificate
                                 LOG.error(String.format("Base certificate stored"
-                                                + " in database with same platform serial number. (%s)",
+                                                + " in database with same platform"
+                                                + "serial number. (%s)",
                                         platformCredential.getPlatformSerial()));
                                 return null;
                             }
