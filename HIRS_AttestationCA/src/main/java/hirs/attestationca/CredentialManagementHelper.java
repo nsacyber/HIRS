@@ -111,20 +111,22 @@ public final class CredentialManagementHelper {
                     PlatformCredential.select(certificateManager)
                 .byHashCode(platformCredential.getCertificateHash()).getCertificate();
             if (existingCredential == null) {
-                List<PlatformCredential> certificates = PlatformCredential
-                        .select(certificateManager)
-                        .byBoardSerialNumber(platformCredential.getPlatformSerial())
-                        .getCertificates().stream().collect(Collectors.toList());
-                if (!certificates.isEmpty()) {
-                    // found associated certificates
-                    for (PlatformCredential pc : certificates) {
-                        if (pc.isBase()) {
-                            // found a base in the database associated with
-                            // parsed certificate
-                            LOG.error(String.format("Base certificate stored"
-                                    + " in database with same platform serial number. (%s)",
-                                    platformCredential.getPlatformSerial()));
-                            return null;
+                if (platformCredential.getPlatformSerial() != null) {
+                    List<PlatformCredential> certificates = PlatformCredential
+                            .select(certificateManager)
+                            .byBoardSerialNumber(platformCredential.getPlatformSerial())
+                            .getCertificates().stream().collect(Collectors.toList());
+                    if (!certificates.isEmpty()) {
+                        // found associated certificates
+                        for (PlatformCredential pc : certificates) {
+                            if (pc.isBase()) {
+                                // found a base in the database associated with
+                                // parsed certificate
+                                LOG.error(String.format("Base certificate stored"
+                                                + " in database with same platform serial number. (%s)",
+                                        platformCredential.getPlatformSerial()));
+                                return null;
+                            }
                         }
                     }
                 }
