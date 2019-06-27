@@ -28,8 +28,11 @@ services:
       volumes:
          - ../../:/HIRS
       entrypoint: /bin/bash -c
+#      command: [HIRS/.ci/setup/setup-tpm2provisioner.sh;
+#                HIRS/.ci/system-tests/systems-test-centos7-tpm2.sh]
       command: [HIRS/.ci/setup/setup-tpm2provisioner.sh;
-                HIRS/.ci/system-tests/systems-test-centos7-tpm2.sh]
+                HIRS/.ci/system-tests/systems-test-centos7-tpm2.sh;
+                HIRS/.ci/setup/setup-tpm2provisioner-bad-base.sh;]
       devices:
          - "/dev/mem:/dev/mem"
       cap_add:
