@@ -4,11 +4,11 @@
 set -e
 
 # Wait for ACA to boot
-#echo "Waiting for ACA to spin up..."
-#until [ "`curl --silent --connect-timeout 1 -I -k https://${HIRS_ACA_PORTAL_IP}:${HIRS_ACA_PORTAL_PORT}/HIRS_AttestationCAPortal | grep '302 Found'`" != "" ]; do
-#  :
-#done
-#echo "ACA is up!"
+echo "Waiting for ACA to spin up..."
+until [ "`curl --silent --connect-timeout 1 -I -k https://${HIRS_ACA_PORTAL_IP}:${HIRS_ACA_PORTAL_PORT}/HIRS_AttestationCAPortal | grep '302 Found'`" != "" ]; do
+  :
+done
+echo "ACA is up!"
 
 # Function to install TPM2 Provisioner packages.
 function InstallProvisioner {
