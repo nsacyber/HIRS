@@ -103,6 +103,7 @@ HIRS_ATTESTATION_CA_PORTAL_URL = "https://" + \
 
 CA_CERT_LOCATION = HOME_DIR + ".ci/setup/certs/ca.crt"
 EK_CA_CERT_LOCATION = HOME_DIR + ".ci/setup/certs/ek_cert.der"
+BAD_BASE_PC_CERT_LOCATION = "/var/hirs/pc_generation/badPlatformCertificate.der"
 
 TEST_LOG_FILE= HOME_DIR + ".ci/system-tests/test_logs/system_test_" + CLIENT_OS + ".log"
 LOG_LEVEL="logging.INFO"

@@ -37,10 +37,6 @@ if suffix != None:
     suffix = "-" + suffix
 else:
     suffix = ""
-#TODO Remove when finished testing
-# HOME_DIR = "/home/tdlambe/workspace/git/issue-132-dev-2/"
-# CA_CERT_LOCATION = HOME_DIR + ".ci/setup/certs/ca.crt"
-# EK_CA_CERT_LOCATION = HOME_DIR + ".ci/setup/certs/ek_cert.der"
 
 COLLECTOR_LIST = os.environ.get('ENABLED_COLLECTORS').split(',')
 CLIENT = os.environ.get('CLIENT_HOSTNAME')
@@ -53,8 +49,14 @@ HIRS_ATTESTATION_CA_PORTAL_URL = "https://" + \
 	"/HIRS_AttestationCAPortal/"
 TEST_LOG_FILE = os.environ.get('TEST_LOG')
 LOG_LEVEL = os.environ.get('LOG_LEVEL')
+#TODO Remove when finished testing
+# HOME_DIR = "/home/tdlambe/workspace/git/issue-132-dev-2/"
+# CA_CERT_LOCATION = HOME_DIR + ".ci/setup/certs/ca.crt"
+# EK_CA_CERT_LOCATION = HOME_DIR + ".ci/setup/certs/ek_cert.der"
+
 CA_CERT_LOCATION = "/HIRS/.ci/setup/certs/ca.crt"
 EK_CA_CERT_LOCATION = "/HIRS/.ci/setup/certs/ek_cert.der"
+BAD_BASE_PC_CERT_LOCATION = "/var/hirs/pc_generation/badPlatformCertificate.der"
 USB_STORAGE_FILE_HASH = "e164c378ceb45a62642730be5eb3169a6bfc2d6d"
 USB_STORAGE_FILE_HASH_2 = "e164c378ceb45a62642730be5eb3169a6bfc1234"
 FORMAT = "%(asctime)-15s %(message)s"
@@ -693,21 +695,21 @@ class SystemTest(unittest.TestCase):
 		"""Test Delta Certificates B1 - Provisioning with Bad Platform Cert Base """
 		logging.info("*****************test_19_B1 - beginning of delta certificate test *****************")
 		logging.info("Provisioning with Bad Platform Cert Base")
-		if is_tpm2(TPM_VERSION):
-			logging.info("Using TPM 2.0")
-			logging.info("Uploading CA cert: " + CA_CERT_LOCATION)
-			AcaPortal.upload_ca_cert(CA_CERT_LOCATION)
-			AcaPortal.enable_supply_chain_validations()
-			provisioner_out = run_hirs_provisioner_tpm2(CLIENT)
+# 		if is_tpm2(TPM_VERSION):
+# 			logging.info("Using TPM 2.0")
+# 			logging.info("Uploading CA cert: " + CA_CERT_LOCATION)
+# 			AcaPortal.upload_ca_cert(CA_CERT_LOCATION)
+# 			AcaPortal.enable_supply_chain_validations()
+# 			provisioner_out = run_hirs_provisioner_tpm2(CLIENT)
+#
+# 		print("Second provisioner run output: {0}".format(provisioner_out))
+#
+# 		# Provisioning should fail since the PC contains FAULTY components.
+# 		self.assertIn("Provisioning failed", format(provisioner_out))
 
-		print("Second provisioner run output: {0}".format(provisioner_out))
-
-		# Provisioning should fail since the PC contains FAULTY components.
-		self.assertIn("Provisioning failed", format(provisioner_out))
-
-# 		cert_list = AcaPortal.get_pk_certs()
-# 		self.assertEqual(cert_list['recordsTotal'], 1)
-# 		self.assertEqual(cert_list['data'][0]['credentialType'], "TCG Trusted Platform Endorsement")
+		cert_list = AcaPortal.get_pk_certs()
+		self.assertEqual(cert_list['recordsTotal'], 1)
+		self.assertEqual(cert_list['data'][0]['credentialType'], "TCG Trusted Platform Endorsement")
 # 		# Delete current platform certificate
 # 		AcaPortal.delete_pc_cert()
 # 		# Upload bad platform certificate

@@ -344,6 +344,15 @@ class AttestationCAPortal:
         self.requestV2("delete", "portal/certificate-request/platform-credentials/1",
                        expected_status_codes=[404, 200])
 
+#         self.requestV2("delete", "portal/certificate-request/platform-credentials/516e9884-9a50-4b12-826d-9320859a03e1",
+#                        expected_status_codes=[404, 200])
+
+#         self.requestV2("delete", "portal/certificate-request/platform-credentials/delete",
+#                        expected_status_codes=[404, 200])
+
+#         self.requestV2("post", "portal/certificate-request/platform-credentials/delete",
+#                        expected_status_codes=[404, 200])
+
 #         self.requestV2("https://rd8ul-31673ab.dod.mil:8443/HIRS_AttestationCAPortal/"
 #                        , "delete", "portal/certificate-request/platform-credentials/1",
 #                        expected_status_codes=[404, 200])
