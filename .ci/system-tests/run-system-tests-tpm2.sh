@@ -10,7 +10,6 @@ echo ""
 
 # Start System Testing Docker Environment
 cd .ci/docker
-#cd ../docker
 
 docker-compose -f docker-compose-tpm2.yml up -d
 

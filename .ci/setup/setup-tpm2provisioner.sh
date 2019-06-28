@@ -54,7 +54,6 @@ function InitTpm2Emulator {
 	# EK and PC Certificate
 	ek_cert_der="/HIRS/.ci/setup/certs/ek_cert.der"
 	platform_cert="platformAttributeCertificate.der"
-	bad_platform_cert="badPlatformCertificate.der"
 
 	echo "Creating Platform Cert for Container."
 	PC_DIR=/var/hirs/pc_generation
@@ -139,8 +138,9 @@ InitTpm2Emulator
 
 # Update the hirs-site.config file
 UpdateHirsSiteConfigFile
-#cp -f /HIRS/hirs-site.config /etc/hirs
 
+echo ""
+echo "TPM2 Emulator NV RAM list"
 tpm2_nvlist
 
 echo ""
