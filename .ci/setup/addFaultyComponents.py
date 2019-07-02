@@ -20,5 +20,5 @@ try:
 	with open("/var/hirs/pc_generation/badComponentsFile", 'w') as outfile:
 		json.dump(data, outfile)
 
-except ValueError:
-    print("Error processing JSON")
+except Exception:
+    print("=== ERROR generating badComponentsFile ===")
