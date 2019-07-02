@@ -6,18 +6,17 @@ import json
 print("Adding Faulty components...")
 
 try:
+	nicComponent = '00090002'
+
 	with open("/var/hirs/pc_generation/componentsFile", "r") as f:
 		data = json.load(f)
-		#print(data)
-		components = data["COMPONENTS"]
+		print(data)
+		components = data['COMPONENTS']
 		for component in components:
-			#print(component)
-			for key, value in component.items():
-				if key == "MODEL":
-					print (key, value)
-					if "ethernet" in value.lower():
-						component["MODEL"] = value + "-FAULTY"
-	#print(data)
+			if component['COMPONENTCLASS']['COMPONENTCLASSVALUE'] == nicComponent:
+				print("Creating FAULTY component for: " + component['MODEL'])
+				component['MODEL'] += "-FAULTY"
+				print("New JSON value: " + component['MODEL'])
 	with open("/var/hirs/pc_generation/badComponentsFile", 'w') as outfile:
 		json.dump(data, outfile)
 
