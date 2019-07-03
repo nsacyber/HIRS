@@ -49,10 +49,6 @@ HIRS_ATTESTATION_CA_PORTAL_URL = "https://" + \
 	"/HIRS_AttestationCAPortal/"
 TEST_LOG_FILE = os.environ.get('TEST_LOG')
 LOG_LEVEL = os.environ.get('LOG_LEVEL')
-#TODO Remove when finished testing
-# HOME_DIR = "/home/tdlambe/workspace/git/issue-132-dev-2/"
-# CA_CERT_LOCATION = HOME_DIR + ".ci/setup/certs/ca.crt"
-# EK_CA_CERT_LOCATION = HOME_DIR + ".ci/setup/certs/ek_cert.der"
 
 CA_CERT_LOCATION = "/HIRS/.ci/setup/certs/ca.crt"
 EK_CA_CERT_LOCATION = "/HIRS/.ci/setup/certs/ek_cert.der"
@@ -79,7 +75,6 @@ class SystemTest(unittest.TestCase):
 
 	def setUp(self):
 		"""Set the systems tests state up for testing"""
-#         Portal.set_group_appraisal_wait_setting()
         AcaPortal.disable_supply_chain_validations()
 
 	def tearDown(self):
@@ -766,7 +761,6 @@ class SystemTest(unittest.TestCase):
 
 		# Provisioning should fail since the PC contains FAULTY components.
 		self.assertIn("Provisioning failed", format(provisioner_out))
-
 
 	@collectors(['BASE_DELTA'], COLLECTOR_LIST)
 	@unittest.skipIf(not is_tpm2(TPM_VERSION), "Skipping this test due to TPM Version " + TPM_VERSION)
