@@ -40,9 +40,9 @@ HOME_DIR = "/home/tdlambe/workspace/git/issue-132-dev-2/"
 # COLLECTOR_LIST = os.environ.get('ENABLED_COLLECTORS').split(',')
 #COLLECTOR_LIST = None
 # COLLECTOR_LIST = ["IMA"]
-COLLECTOR_LIST = ["TPM", "BASE_DELTA"]
+#COLLECTOR_LIST = ["TPM", "BASE_DELTA"]
 #COLLECTOR_LIST = ["IMA", "TPM"]
-#COLLECTOR_LIST = ["DELTA_CERTS"]
+COLLECTOR_LIST = ["BASE_DELTA"]
 
 # CLIENT = os.environ.get('CLIENT_HOSTNAME')
 # CLIENT_OS = os.environ.get('CLIENT_OS')
@@ -65,8 +65,8 @@ HIRS_ACA_PROVISIONER_IP="172.19.0.3"
 HIRS_ACA_PROVISIONER_TPM2_IP="172.19.0.4"
 TPM_ENABLED=True
 IMA_ENABLED=False
-#HIRS_ACA_PORTAL_IP="172.17.0.2"
-HIRS_ACA_PORTAL_IP="rd8ul-31673ab.dod.mil"
+HIRS_ACA_PORTAL_IP="172.17.0.2"
+#HIRS_ACA_PORTAL_IP="rd8ul-31673ab.dod.mil"
 HIRS_ACA_PORTAL_PORT="8443"
 HIRS_BROKER_PORT="61616"
 HIRS_ACA_PORTAL_CONTAINER_PORT="80"
@@ -304,6 +304,7 @@ class SystemTest(unittest.TestCase):
         logging.info("*****************test_12 - beginning of attestation ca portal online test *****************")
         AcaPortal.check_is_online()
 
+#     @collectors(['TPM'], COLLECTOR_LIST)
 #     @unittest.skipIf(not is_tpm2(TPM_VERSION), "Skipping this test due to TPM Version " + TPM_VERSION)
 #     def test_13_tpm2_initial_provision(self):
 #         """Test that running the tpm2 hirs provisioner works"""
@@ -378,97 +379,91 @@ class SystemTest(unittest.TestCase):
 #         self.assertEqual(trust_chain_list['recordsTotal'], 1)
 
 #     @unittest.skipIf(not is_tpm2(TPM_VERSION), "Skipping this test due to TPM Version " + TPM_VERSION)
-#     def test_19_A0_delta_certificate(self):
+#     def test_19_A0_base_delta(self):
 #         """Test Delta Certificates A0 - Provisioning with Good Base Platform Cert Base (via ACA upload)"""
 #         logging.info("*****************test_19_A0 - beginning of delta certificate test *****************")
 #         logging.info("Provisioning with Good Base Platform Cert Base (via ACA upload)")
 #
 #     @unittest.skipIf(not is_tpm2(TPM_VERSION), "Skipping this test due to TPM Version " + TPM_VERSION)
-#     def test_19_A1_delta_certificate(self):
+#     def test_19_A1_base_delta(self):
 #         """Test Delta Certificates A1 - Provisioning with Good Base Platform Cert Base (via Platform Cert on TPM)"""
 #         logging.info("*****************test_19_A1 - beginning of delta certificate test *****************")
 #         logging.info("Provisioning with Good Base Platform Cert Base (via Platform Cert on TPM)")
 #
 #     @unittest.skipIf(not is_tpm2(TPM_VERSION), "Skipping this test due to TPM Version " + TPM_VERSION)
-#     def test_19_A2_delta_certificate(self):
+#     def test_19_A2_base_delta(self):
 #         """Test Delta Certificates A2 - Provisioning with Good Base Platform Cert Base and 1 Delta Cert"""
 #         logging.info("*****************test_19_A2 - beginning of delta certificate test *****************")
 #         logging.info("Provisioning with Good Base Platform Cert Base and 1 Delta Cert")
 #
 #     @unittest.skipIf(not is_tpm2(TPM_VERSION), "Skipping this test due to TPM Version " + TPM_VERSION)
-#     def test_19_A3_delta_certificate(self):
+#     def test_19_A3_base_delta(self):
 #         """Test Delta Certificates A3 - Provisioning with Good Base Platform Cert Base and 2 Delta Certs"""
 #         logging.info("*****************test_19_A3 - beginning of delta certificate test *****************")
 #         logging.info("Provisioning with Good Base Platform Cert Base and 2 Delta Certs")
 #
 #     @unittest.skipIf(not is_tpm2(TPM_VERSION), "Skipping this test due to TPM Version " + TPM_VERSION)
-#     def test_19_A4_delta_certificate(self):
+#     def test_19_A4_base_delta(self):
 #         """Test Delta Certificates A4 - Provisioning with Good Base Platform Cert and 1 Bad Delta Cert"""
 #         logging.info("*****************test_19_A4 - beginning of delta certificate test *****************")
 #         logging.info("Provisioning with Good Base Platform Cert and 1 Bad Delta Cert")
 #
 #     @unittest.skipIf(not is_tpm2(TPM_VERSION), "Skipping this test due to TPM Version " + TPM_VERSION)
-#     def test_19_A5_delta_certificate(self):
+#     def test_19_A5_base_delta(self):
 #         """Test Delta Certificates A5 - Provisioning with Good Base Platform, 2 Good Delta Certs and 1 Bad Delta Cert"""
 #         logging.info("*****************test_19_A5 - beginning of delta certificate test *****************")
 #         logging.info("Provisioning with Good Base Platform, 2 Good Delta Certs and 1 Bad Delta Cert")
 #
 #     @unittest.skipIf(not is_tpm2(TPM_VERSION), "Skipping this test due to TPM Version " + TPM_VERSION)
-#     def test_19_A6_delta_certificate(self):
+#     def test_19_A6_base_delta(self):
 #         """Test Delta Certificates A6 - Provisioning with Good Base Platform, 2 Good Delta Certs and
 #             1 Bad Delta Cert with non present component"""
 #         logging.info("*****************test_19_A6 - beginning of delta certificate test *****************")
 #         logging.info("Provisioning with Good Base Platform, 2 Good Delta Certs and 1 Bad Delta Cert with non present component")
 #
 #     @unittest.skipIf(not is_tpm2(TPM_VERSION), "Skipping this test due to TPM Version " + TPM_VERSION)
-#     def test_19_A7_delta_certificate(self):
+#     def test_19_A7_base_delta(self):
 #         """Test Delta Certificates A7 - Provisioning with Good Base Platform, 2 Good Delta Certs with 1 Delta cert
 #             replacing component from previous, using the Delta as a base certificate"""
 #         logging.info("*****************test_19_A7 - beginning of delta certificate test *****************")
 #         logging.info("Provisioning with Good Base Platform, 2 Good Delta Certs with 1 Delta cert replacing component from previous, using the Delta as a base certificate")
 #
 #     @unittest.skipIf(not is_tpm2(TPM_VERSION), "Skipping this test due to TPM Version " + TPM_VERSION)
-#     def test_19_A8_delta_certificate(self):
+#     def test_19_A8_base_delta(self):
 #         """Test Delta Certificates A8 - Attempt to upload Base cert with holder already having a Base Platform Cert associated with it"""
 #         logging.info("*****************test_19_A8 - beginning of delta certificate test *****************")
 #         logging.info("Provisioning with Good Base Platform, 2 Good Delta Certs with 1 Delta cert replacing component from previous, using the Delta as a base certificate")
 
     @collectors(['BASE_DELTA'], COLLECTOR_LIST)
     @unittest.skipIf(not is_tpm2(TPM_VERSION), "Skipping this test due to TPM Version " + TPM_VERSION)
-    def test_19_B1_delta_certificate(self):
+    def test_19_B1_base_delta(self):
         """Test Delta Certificates B1 - Provisioning with Bad Platform Cert Base (ACA upload)"""
         logging.info("*****************test_19_B1 - beginning of delta certificate test *****************")
         logging.info("Provisioning with Bad Platform Cert Base")
-#         if is_tpm2(TPM_VERSION):
-#             logging.info("Using TPM 2.0")
-#             logging.info("Uploading CA cert: " + CA_CERT_LOCATION)
-#             AcaPortal.upload_ca_cert(CA_CERT_LOCATION)
-#             AcaPortal.enable_supply_chain_validations()
-#             provisioner_out = run_hirs_provisioner_tpm2(CLIENT)
-#
-#         print("Second provisioner run output: {0}".format(provisioner_out))
-#
-#         # Provisioning should fail since the PC contains FAULTY components.
-#         self.assertIn("Provisioning failed", format(provisioner_out))
+        logging.info("Check if ACA is online...")
+        AcaPortal.check_is_online()
+        if is_tpm2(TPM_VERSION):
+            logging.info("Using TPM 2.0")
+            logging.info("Uploading CA cert: " + CA_CERT_LOCATION)
+            AcaPortal.upload_ca_cert(CA_CERT_LOCATION)
+            AcaPortal.enable_supply_chain_validations()
+            provisioner_out = run_hirs_provisioner_tpm2(CLIENT)
 
-        cert_list = AcaPortal.get_pk_certs()
-        self.assertEqual(cert_list['recordsTotal'], 1)
-        self.assertEqual(cert_list['data'][0]['credentialType'], "TCG Trusted Platform Endorsement")
-        # Delete current platform certificate
-        AcaPortal.delete_pc_cert()
-        # Upload bad platform certificate
-        # Run provisioner
+        print("Bad Base Certificate provisioner run output: {0}".format(provisioner_out))
+
+        # Provisioning should fail since the PC contains FAULTY components.
+        self.assertIn("Provisioning failed", format(provisioner_out))
 
     @collectors(['BASE_DELTA'], COLLECTOR_LIST)
     @unittest.skipIf(not is_tpm2(TPM_VERSION), "Skipping this test due to TPM Version " + TPM_VERSION)
-    def test_19_B2_delta_certificate(self):
+    def test_19_B2_base_delta(self):
         """Test Delta Certificates B2 - Provisioning with Bad Platform Cert Base and 1 Good delta with 1 bad component unresolved"""
         logging.info("*****************test_19_B2 - beginning of delta certificate test *****************")
         logging.info("Provisioning with Bad Platform Cert Base and 1 Good delta with 1 bad component unresolved")
 
     @collectors(['BASE_DELTA'], COLLECTOR_LIST)
     @unittest.skipIf(not is_tpm2(TPM_VERSION), "Skipping this test due to TPM Version " + TPM_VERSION)
-    def test_19_B3_delta_certificate(self):
+    def test_19_B3_base_delta(self):
         """Test Delta Certificates B3 - Provisioning with Bad Platform Cert Base and 2 Good delta with all component resolved"""
         logging.info("*****************test_19_B3 - beginning of delta certificate test *****************")
         logging.info("Provisioning with Bad Platform Cert Base and 2 Good delta with all component resolved")

@@ -9,6 +9,7 @@ try:
 	nicComponent = '00090002'
 
 	with open("/var/hirs/pc_generation/componentsFile", "r") as f:
+
 		data = json.load(f)
 		print(data)
 		components = data['COMPONENTS']
@@ -17,6 +18,7 @@ try:
 				print("Creating FAULTY component for: " + component['MODEL'])
 				component['MODEL'] += "-FAULTY"
 				print("New JSON value: " + component['MODEL'])
+
 	with open("/var/hirs/pc_generation/badComponentsFile", 'w') as outfile:
 		json.dump(data, outfile)
 

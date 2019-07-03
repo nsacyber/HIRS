@@ -282,9 +282,6 @@ class AttestationCAPortal:
     def request(self, method, path, params={}, data={}, files={}, expected_status_codes=[200], operation=None, verify=False):
         return web_request(self.server_url, method, path, params, data, files, expected_status_codes, operation, verify)
 
-    def requestV2(self, method, path, params={}, data={}, files={}, expected_status_codes=[200], operation=None, verify=False):
-        return web_requestV2(self.server_url, method, path, params, data, files, expected_status_codes, operation, verify)
-
     def check_is_online(self):
         return self.request("get", "portal/certificate-request/platform-credentials/list").json()
 
@@ -337,46 +334,9 @@ class AttestationCAPortal:
         file = {'file': open(ca_cert_file, 'rb')}
         self.request("post", "portal/certificate-request/trust-chain/upload", files=file, operation="upload CA cert")
 
-    def delete_pc_cert(self):
-        """Delete platform cert from ACA portal."""
-        #return self.request("get", "portal/certificate-request/platform-credentials/list").json()
-
-        self.requestV2("delete", "portal/certificate-request/platform-credentials/1",
-                       expected_status_codes=[404, 200])
-
-#         self.requestV2("delete", "portal/certificate-request/platform-credentials/516e9884-9a50-4b12-826d-9320859a03e1",
-#                        expected_status_codes=[404, 200])
-
-#         self.requestV2("delete", "portal/certificate-request/platform-credentials/delete",
-#                        expected_status_codes=[404, 200])
-
-#         self.requestV2("post", "portal/certificate-request/platform-credentials/delete",
-#                        expected_status_codes=[404, 200])
-
-#         self.requestV2("https://rd8ul-31673ab.dod.mil:8443/HIRS_AttestationCAPortal/"
-#                        , "delete", "portal/certificate-request/platform-credentials/1",
-#                        expected_status_codes=[404, 200])
-
-#https://rd8ul-31673ab.dod.mil:8443/HIRS_AttestationCAPortal/portal/certificate-request/platform-credentials
-
 def web_request(server_url, method, path, params={}, data={}, files={}, expected_status_codes=[200], operation=None, verify=False):
     url = server_url + path
     if method not in ['get', 'post']:
-        raise ValueError("Method " + method + " not valid.")
-    request_response = getattr(requests, method)(url, params=params, data=data, files=files, verify=verify)
-
-    request_msg = method + " " + url
-    if operation == None:
-        operation = request_msg
-    else:
-        operation += " (" + request_msg + ")"
-
-    check_request_response(expected_status_codes, request_response, operation)
-    return request_response
-
-def web_requestV2(server_url, method, path, params={}, data={}, files={}, expected_status_codes=[200], operation=None, verify=False):
-    url = server_url + path
-    if method not in ['get', 'post', 'delete']:
         raise ValueError("Method " + method + " not valid.")
     request_response = getattr(requests, method)(url, params=params, data=data, files=files, verify=verify)
 
