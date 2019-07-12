@@ -29,8 +29,6 @@ import javax.xml.bind.annotation.XmlTransient;
 @JsonSerialize(using = AppraisalResultSerializer.class)
 public class AppraisalResult extends AbstractEntity {
 
-    private static final int RESULT_MESSAGE_LENGTH = 1000000;
-
     /**
      * Corresponding <code>Appraiser</code>. Can be NULL.
      */

@@ -25,6 +25,7 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
+import org.apache.logging.log4j.util.Strings;
 
 /**
  * A container class to group multiple related {@link SupplyChainValidation} instances
@@ -42,6 +43,9 @@ public class SupplyChainValidationSummary extends ArchivableEntity {
     @Enumerated(EnumType.STRING)
     private final AppraisalStatus.Status overallValidationResult;
 
+    @Column(length = RESULT_MESSAGE_LENGTH)
+    private final String message;
+
     @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER,
             targetEntity = SupplyChainValidation.class, orphanRemoval = true)
     private final Set<SupplyChainValidation> validations;
@@ -53,6 +57,7 @@ public class SupplyChainValidationSummary extends ArchivableEntity {
         this.device = null;
         overallValidationResult = AppraisalStatus.Status.FAIL;
         validations = Collections.emptySet();
+        this.message = Strings.EMPTY;
     }
 
     /**
@@ -183,9 +188,10 @@ public class SupplyChainValidationSummary extends ArchivableEntity {
 
 
         this.device = device;
-        this.overallValidationResult = calculateValidationResult(validations);
+        AppraisalStatus status = calculateValidationResult(validations);
+        this.overallValidationResult = status.getAppStatus();
         this.validations = new HashSet<>(validations);
-
+        this.message = status.getMessage();
     }
 
     /**
@@ -205,6 +211,13 @@ public class SupplyChainValidationSummary extends ArchivableEntity {
     }
 
     /**
+     * @return the fail message if there is a failure.
+     */
+    public String getMessage() {
+        return message;
+    }
+
+    /**
      * @return the validations that this summary contains
      */
     public Set<SupplyChainValidation> getValidations() {
@@ -217,17 +230,20 @@ public class SupplyChainValidationSummary extends ArchivableEntity {
      * @param validations the validations to evaluate
      * @return the overall appraisal result
      */
-    private AppraisalStatus.Status calculateValidationResult(
+    private AppraisalStatus calculateValidationResult(
             final Collection<SupplyChainValidation> validations) {
         boolean hasAnyFailures = false;
+        StringBuilder failureMsg = new StringBuilder();
 
         for (SupplyChainValidation validation : validations) {
             switch (validation.getResult()) {
                 // if any error, then process overall as error immediately.
                 case ERROR:
-                    return AppraisalStatus.Status.ERROR;
+                    return new AppraisalStatus(AppraisalStatus.Status.ERROR,
+                            validation.getMessage());
                 case FAIL:
                     hasAnyFailures = true;
+                    failureMsg.append(validation.getMessage());
                     break;
                 default:
                     break;
@@ -236,8 +252,10 @@ public class SupplyChainValidationSummary extends ArchivableEntity {
         }
         // if failures, but no error, indicate failure result.
         if (hasAnyFailures) {
-            return AppraisalStatus.Status.FAIL;
+            return new AppraisalStatus(AppraisalStatus.Status.FAIL,
+                            failureMsg.toString());
         }
-        return AppraisalStatus.Status.PASS;
+        return new AppraisalStatus(AppraisalStatus.Status.PASS,
+                            Strings.EMPTY);
     }
 }
