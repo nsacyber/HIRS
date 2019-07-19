@@ -32,7 +32,7 @@ cache:
 install: true
 
 script:
-  - docker run --rm -v $(pwd):/HIRS hirs/hirs-ci:centos7 /bin/bash -c "cd /HIRS; ./gradlew :$SUBPROJECT:build"
+  - docker run --rm -v $(pwd):/HIRS hirs/hirs-ci:centos7 /bin/bash -c "cd /HIRS; ./gradlew :$SUBPROJECT:build -x test"
 
 jobs:
   include:
@@ -40,11 +40,6 @@ jobs:
       script: docker run --rm -v $(pwd):/HIRS hirs/hirs-ci:ubuntu18 /bin/bash -c "cd /HIRS; ./package/package.ubuntu.sh"
       env: null
       name: "Package Ubuntu"
-#     TODO: Explore reason behind Building/Packaging Failing on Amazon Linux
-#    - stage: Packaging and System Tests
-#      script: docker run --rm -v $(pwd):/HIRS hirs/hirs-ci:amazonlinux2 /bin/bash -c "cd /HIRS; ./package/package.centos.sh"
-#      env: null
-#      name: "Package Amazon Linux"
     - stage: Packaging and System Tests
       script: .ci/system-tests/./run-system-tests.sh
       env: null
@@ -53,3 +48,7 @@ jobs:
       script: .ci/system-tests/./run-system-tests-tpm2.sh
       env: null
       name: "System Tests TPM2"
+    - stage: Packaging and System Tests
+      script: .ci/system-tests/./run-system-tests-tpm2-base-delta.sh
+      env: null
+      name: "System Tests TPM2 Base/Delta"
