@@ -7,6 +7,9 @@ import hirs.data.persist.certificate.PlatformCredential;
 import hirs.persist.CertificateManager;
 import hirs.persist.DBManagerException;
 
+import java.util.List;
+import java.util.stream.Collectors;
+
 
 /**
  * Utility class which includes credential management functions used by the ACA.
@@ -30,11 +33,11 @@ public final class CredentialManagementHelper {
             final CertificateManager certificateManager,
             final byte[] endorsementBytes) throws IllegalArgumentException {
 
-        if (null == certificateManager) {
+        if (certificateManager == null) {
             throw new IllegalArgumentException("null certificate manager");
         }
 
-        if (null == endorsementBytes) {
+        if (endorsementBytes == null) {
             throw new IllegalArgumentException("null endorsement credential bytes");
         }
 
@@ -59,7 +62,7 @@ public final class CredentialManagementHelper {
         EndorsementCredential existingCredential =
                 EndorsementCredential.select(certificateManager).includeArchived()
                         .byHashCode(certificateHash).getCertificate();
-        if (null == existingCredential) {
+        if (existingCredential == null) {
             LOG.info("No Endorsement Credential found with hash: " + certificateHash);
             return (EndorsementCredential) certificateManager.save(endorsementCredential);
         } else if (existingCredential.isArchived()) {
@@ -83,11 +86,11 @@ public final class CredentialManagementHelper {
             final CertificateManager certificateManager,
             final byte[] platformBytes) {
 
-        if (null == certificateManager) {
+        if (certificateManager == null) {
             throw new IllegalArgumentException("null certificate manager");
         }
 
-        if (null == platformBytes) {
+        if (platformBytes == null) {
             throw new IllegalArgumentException("null platform credential bytes");
         }
 
@@ -101,13 +104,33 @@ public final class CredentialManagementHelper {
         try {
             PlatformCredential platformCredential =
                     PlatformCredential.parseWithPossibleHeader(platformBytes);
-            if (null == platformCredential) {
+            if (platformCredential == null) {
                 return null;
             }
             PlatformCredential existingCredential =
                     PlatformCredential.select(certificateManager)
                 .byHashCode(platformCredential.getCertificateHash()).getCertificate();
-            if (null == existingCredential) {
+            if (existingCredential == null) {
+                if (platformCredential.getPlatformSerial() != null) {
+                    List<PlatformCredential> certificates = PlatformCredential
+                            .select(certificateManager)
+                            .byBoardSerialNumber(platformCredential.getPlatformSerial())
+                            .getCertificates().stream().collect(Collectors.toList());
+                    if (!certificates.isEmpty()) {
+                        // found associated certificates
+                        for (PlatformCredential pc : certificates) {
+                            if (pc.isBase()) {
+                                // found a base in the database associated with
+                                // parsed certificate
+                                LOG.error(String.format("Base certificate stored"
+                                                + " in database with same platform"
+                                                + "serial number. (%s)",
+                                        platformCredential.getPlatformSerial()));
+                                return null;
+                            }
+                        }
+                    }
+                }
                 return (PlatformCredential) certificateManager.save(platformCredential);
             } else if (existingCredential.isArchived()) {
                 // if the PC is stored in the DB and it's archived, unarchive.

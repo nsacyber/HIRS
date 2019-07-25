@@ -367,7 +367,7 @@ public abstract class AbstractAttestationCertificateAuthority
     /**
      * Basic implementation of the ACA processIdentityClaimTpm2 method. Parses the claim,
      * stores the device info, performs supply chain validation, generates a nonce,
-     * and wraps that nonce with the makecredential process before returning it to the client.
+     * and wraps that nonce with the make credential process before returning it to the client.
      *
      * @param identityClaim the request to process, cannot be null
      * @return an identity claim response for the specified request containing a wrapped blob
