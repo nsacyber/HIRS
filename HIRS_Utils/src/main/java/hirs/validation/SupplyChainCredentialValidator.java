@@ -555,6 +555,7 @@ public final class SupplyChainCredentialValidator implements CredentialValidator
             final List<ComponentIdentifier> origPcComponents) {
         boolean fieldValidation = true;
         StringBuilder resultMessage = new StringBuilder();
+        StringBuilder deltaMessage = new StringBuilder();
         List<ComponentIdentifier> validOrigPcComponents = origPcComponents.stream()
                 .filter(identifier -> identifier.getComponentManufacturer() != null
                         && identifier.getComponentModel() != null)
@@ -591,7 +592,11 @@ public final class SupplyChainCredentialValidator implements CredentialValidator
                         // check it is there
                         if (!chainCiMapping.containsKey(ciSerial)) {
                             fieldValidation = false;
+<<<<<<< HEAD
                             failureMsg.append(String.format(
+=======
+                            deltaMessage.append(String.format(
+>>>>>>> master
                                     "%s attempted MODIFIED with no prior instance.%n",
                                     ciSerial));
                             scv = deltaEntry.getValue();
@@ -610,7 +615,11 @@ public final class SupplyChainCredentialValidator implements CredentialValidator
                         if (!chainCiMapping.containsKey(ciSerial)) {
                             // error thrown, can't remove if it doesn't exist
                             fieldValidation = false;
+<<<<<<< HEAD
                             failureMsg.append(String.format(
+=======
+                            deltaMessage.append(String.format(
+>>>>>>> master
                                     "%s attempted REMOVED with no prior instance.%n",
                                     ciSerial));
                             scv = deltaEntry.getValue();
@@ -630,7 +639,11 @@ public final class SupplyChainCredentialValidator implements CredentialValidator
                         if (chainCiMapping.containsKey(ciSerial)) {
                             // error, shouldn't exist
                             fieldValidation = false;
+<<<<<<< HEAD
                             failureMsg.append(String.format(
+=======
+                            deltaMessage.append(String.format(
+>>>>>>> master
                                     "%s was ADDED, the serial already exists.%n",
                                     ciSerial));
                             scv = deltaEntry.getValue();
@@ -643,7 +656,7 @@ public final class SupplyChainCredentialValidator implements CredentialValidator
                                     certificateList,
                                     failureMsg.toString()));
                         } else {
-                            // have to add incase later it is removed
+                            // have to add in case later it is removed
                             chainCiMapping.put(ciSerial, ci);
                         }
                     }
@@ -654,6 +667,11 @@ public final class SupplyChainCredentialValidator implements CredentialValidator
         }
 
         if (!fieldValidation) {
+<<<<<<< HEAD
+=======
+            resultMessage.append("There are errors with Delta Component Statuses components:\n");
+            resultMessage.append(deltaMessage.toString());
+>>>>>>> master
             return new AppraisalStatus(FAIL, resultMessage.toString());
         }
 

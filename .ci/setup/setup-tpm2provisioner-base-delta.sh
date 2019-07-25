@@ -22,9 +22,9 @@ function InstallProvisioner {
 	popd
 }
 
-# Function to initialize the TPM2 Emulator
+# Function to initialize the TPM2 Emulator with a bad base certificate
 function InitTpm2Emulator {
-	echo "===========Initializing TPM2 Emulator...==========="
+	echo "===========Initializing TPM2 Emulator with bad base certificate...==========="
 
 	mkdir -p /var/run/dbus
 	if [ -e /var/run/dbus/pid ]; then
@@ -53,16 +53,26 @@ function InitTpm2Emulator {
 
 	# EK and PC Certificate
 	ek_cert_der="/HIRS/.ci/setup/certs/ek_cert.der"
-	platform_cert="platformAttributeCertificate.der"
+	platform_cert="badPlatformCertificate.der"
 
-	echo "Creating Platform Cert for Container."
-	PC_DIR=/var/hirs/pc_generation
-	mkdir -p $PC_DIR
+    echo "Creating Bad Base Platform Cert..."
+    PC_DIR=/var/hirs/pc_generation
+    mkdir -p $PC_DIR
 	/opt/paccor/scripts/allcomponents.sh > $PC_DIR/componentsFile
+	echo
+    echo "PACCOR generated components file:"
+    cat $PC_DIR/componentsFile
+
+    #Add bad components and create badComponentsFile used below
+    python /HIRS/.ci/setup/addFaultyComponents.py
 	/opt/paccor/scripts/referenceoptions.sh > $PC_DIR/optionsFile
 	/opt/paccor/scripts/otherextensions.sh > $PC_DIR/extensionsFile
-	/opt/paccor/bin/observer -c $PC_DIR/componentsFile -p $PC_DIR/optionsFile -e $ek_cert_der -f $PC_DIR/observerFile
+	/opt/paccor/bin/observer -c $PC_DIR/badComponentsFile -p $PC_DIR/optionsFile -e $ek_cert_der -f $PC_DIR/observerFile
 	/opt/paccor/bin/signer -o $PC_DIR/observerFile -x $PC_DIR/extensionsFile -b 20180101 -a 20280101 -N $RANDOM -k /HIRS/.ci/setup/certs/ca.key -P /HIRS/.ci/setup/certs/ca.crt -f $PC_DIR/$platform_cert
+
+    echo
+    echo "Generated bad components file:"
+    cat $PC_DIR/badComponentsFile
 
 	if tpm2_nvlist | grep -q 0x1c00002; then
 	  echo "Released NVRAM for EK."
