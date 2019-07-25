@@ -139,7 +139,6 @@ public final class SupplyChainCredentialValidator implements CredentialValidator
             return node.findValue(fieldName).asText();
         }
         return null;
-
     }
 
     /**
@@ -166,7 +165,6 @@ public final class SupplyChainCredentialValidator implements CredentialValidator
                 message = baseErrorMessage + "a trust store\n";
                 LOGGER.error(message);
                 return new AppraisalStatus(FAIL, message);
-
             }
         } catch (KeyStoreException e) {
             message = baseErrorMessage + "an intitialized trust store";
@@ -1431,8 +1429,9 @@ public final class SupplyChainCredentialValidator implements CredentialValidator
     }
 
     /**
-     * vavusit.
-     * @return aidfaf
+     * Getter for the collection of delta certificates that have failed and the
+     * associated message.
+     * @return unmodifiable list of failed certificates
      */
     public Map<PlatformCredential, StringBuilder> getDeltaFailures() {
         return Collections.unmodifiableMap(DELTA_FAILURES);

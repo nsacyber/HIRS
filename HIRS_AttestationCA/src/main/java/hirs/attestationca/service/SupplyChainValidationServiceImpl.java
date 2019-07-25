@@ -94,7 +94,6 @@ public class SupplyChainValidationServiceImpl implements SupplyChainValidationSe
      * @return A summary of the validation results.
      */
     @Override
-    @SuppressWarnings("methodlength")
     public SupplyChainValidationSummary validateSupplyChain(final EndorsementCredential ec,
         final Set<PlatformCredential> pcs,
         final Device device) {
@@ -169,12 +168,11 @@ public class SupplyChainValidationServiceImpl implements SupplyChainValidationSe
                     if (baseCredential == null || pc == baseCredential && !pc.isDeltaChain()) {
                         attributeScv = validatePlatformCredentialAttributes(
                             pc, device.getDeviceInfo(), ec);
+                        validations.add(attributeScv);
                     } else {
-
-                        attributeScv = validateDeltaPlatformCredentialAttributes(
+                        validateDeltaPlatformCredentialAttributes(
                             pc, device.getDeviceInfo(), baseCredential, deltaMapping);
                     }
-
 
                     if (pc != null) {
                         pc.setDevice(device);
@@ -184,10 +182,9 @@ public class SupplyChainValidationServiceImpl implements SupplyChainValidationSe
             }
         }
 
-
-                    if (!deltaMapping.isEmpty()) {
-                        validations.addAll(deltaMapping.values());
-                    }
+        if (!deltaMapping.isEmpty()) {
+            validations.addAll(deltaMapping.values());
+        }
 
         // Generate validation summary, save it, and return it.
         SupplyChainValidationSummary summary =

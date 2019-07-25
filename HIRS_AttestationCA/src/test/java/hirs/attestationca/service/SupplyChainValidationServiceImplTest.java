@@ -259,7 +259,6 @@ public class SupplyChainValidationServiceImplTest extends SpringPersistenceTest 
         when(policy.isPcAttributeValidationEnabled()).thenReturn(true);
         when(policy.isExpiredCertificateValidationEnabled()).thenReturn(true);
 
-        pcs.add(delta);
         doReturn(new AppraisalStatus(PASS, "")).when(supplyChainCredentialValidator).
                 validateEndorsementCredential(eq(ec), any(KeyStore.class), eq(true));
         doReturn(new AppraisalStatus(PASS, "")).when(supplyChainCredentialValidator).
@@ -271,7 +270,6 @@ public class SupplyChainValidationServiceImplTest extends SpringPersistenceTest 
         Assert.assertEquals(service.validateSupplyChain(ec, pcs,
                 device).getOverallValidationResult(), FAIL);
         verify(supplyChainValidationSummaryDBManager).save(any(SupplyChainValidationSummary.class));
-        pcs.remove(delta);
     }
 
     /**

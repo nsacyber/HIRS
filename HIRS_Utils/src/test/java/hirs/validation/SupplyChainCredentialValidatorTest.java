@@ -1161,7 +1161,8 @@ public class SupplyChainCredentialValidatorTest {
      */
     @Test
     public final void verifyPlatformCredentialNullCredentialPath() {
-        String expectedMessage = "Can't validate platform credential without a platform credential";
+        String expectedMessage = "Can't validate platform credential without "
+                + "a platform credential\n";
 
         AppraisalStatus result = supplyChainCredentialValidator.validatePlatformCredential(
                 null, keyStore, true);
@@ -1185,7 +1186,7 @@ public class SupplyChainCredentialValidatorTest {
         PlatformCredential pc = new PlatformCredential(certBytes);
 
         String expectedMessage = "Can't validate platform credential without a "
-                + "trust store";
+                + "trust store\n";
 
         AppraisalStatus result = supplyChainCredentialValidator.validatePlatformCredential(pc, null,
                 true);
