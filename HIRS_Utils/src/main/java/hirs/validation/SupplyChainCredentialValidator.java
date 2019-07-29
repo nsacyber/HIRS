@@ -555,7 +555,6 @@ public final class SupplyChainCredentialValidator implements CredentialValidator
             final List<ComponentIdentifier> origPcComponents) {
         boolean fieldValidation = true;
         StringBuilder resultMessage = new StringBuilder();
-        StringBuilder deltaMessage = new StringBuilder();
         List<ComponentIdentifier> validOrigPcComponents = origPcComponents.stream()
                 .filter(identifier -> identifier.getComponentManufacturer() != null
                         && identifier.getComponentModel() != null)
