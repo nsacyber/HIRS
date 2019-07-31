@@ -104,11 +104,15 @@ public class SupplyChainValidationServiceImpl implements SupplyChainValidationSe
         boolean acceptExpiredCerts = policy.isExpiredCertificateValidationEnabled();
         PlatformCredential baseCredential = null;
         List<SupplyChainValidation> validations = new LinkedList<>();
+        Map<SupplyChainValidation.ValidationType,
+                SupplyChainValidation> validationTypeMap = new HashMap<>();
         Map<PlatformCredential, SupplyChainValidation> deltaMapping = new HashMap<>();
 
         // Validate the Endorsement Credential
         if (policy.isEcValidationEnabled()) {
-            validations.add(validateEndorsementCredential(ec, acceptExpiredCerts));
+            validationTypeMap.put(SupplyChainValidation.ValidationType.ENDORSEMENT_CREDENTIAL,
+                    validateEndorsementCredential(ec, acceptExpiredCerts));
+//            validations.add(validateEndorsementCredential(ec, acceptExpiredCerts));
             // store the device with the credential
             if (null != ec) {
                 ec.setDevice(device);
@@ -121,7 +125,9 @@ public class SupplyChainValidationServiceImpl implements SupplyChainValidationSe
             // Ensure there are platform credentials to validate
             if (pcs == null || pcs.isEmpty()) {
                 LOGGER.error("There were no Platform Credentials to validate.");
-                validations.add(buildValidationRecord(
+                validationTypeMap.put(SupplyChainValidation
+                                .ValidationType.PLATFORM_CREDENTIAL,
+                        buildValidationRecord(
                         SupplyChainValidation.ValidationType.PLATFORM_CREDENTIAL,
                         AppraisalStatus.Status.FAIL,
                         "Platform credential(s) missing", null, Level.ERROR));
@@ -139,7 +145,10 @@ public class SupplyChainValidationServiceImpl implements SupplyChainValidationSe
                         platformScv = validatePcPolicy(pc, platformScv,
                                 deltaMapping, acceptExpiredCerts);
 
-                        validations.add(platformScv);
+                        validationTypeMap.put(SupplyChainValidation
+                                .ValidationType.PLATFORM_CREDENTIAL,
+                                platformScv);
+//                        validations.add(platformScv);
                         pc.setDevice(device);
                         this.certificateManager.update(pc);
                         if (pc.isBase()) {
@@ -155,21 +164,29 @@ public class SupplyChainValidationServiceImpl implements SupplyChainValidationSe
             // Ensure there are platform credentials to validate
             if (pcs == null || pcs.isEmpty()) {
                 LOGGER.error("There were no Platform Credentials to validate attributes.");
-                validations.add(buildValidationRecord(
+                validationTypeMap.put(SupplyChainValidation
+                                .ValidationType.PLATFORM_CREDENTIAL,
+                        buildValidationRecord(
                         SupplyChainValidation.ValidationType.PLATFORM_CREDENTIAL,
                         AppraisalStatus.Status.FAIL,
-                        "Platform credential(s) missing. Cannot validate attributes",
+                        "Platform credential(s) missing.\nPlatform credential(s) missing."
+                                + " Cannot validate attributes",
                         null, Level.ERROR));
             } else {
                 Iterator<PlatformCredential> it = pcs.iterator();
                 while (it.hasNext()) {
                     PlatformCredential pc = it.next();
                     SupplyChainValidation attributeScv;
-                    if (baseCredential == null || pc == baseCredential && !pc.isDeltaChain()) {
+                    if (baseCredential == null || pc == baseCredential) {
                         attributeScv = validatePlatformCredentialAttributes(
                             pc, device.getDeviceInfo(), ec);
-                        validations.add(attributeScv);
-                    } else {
+                        validationTypeMap.put(SupplyChainValidation
+                                .ValidationType.PLATFORM_CREDENTIAL,
+                                attributeScv);
+//                        validations.add(attributeScv);
+                    }
+
+                    if (pc != null && pc.isDeltaChain()) {
                         validateDeltaPlatformCredentialAttributes(
                             pc, device.getDeviceInfo(), baseCredential, deltaMapping);
                     }
@@ -180,6 +197,10 @@ public class SupplyChainValidationServiceImpl implements SupplyChainValidationSe
                     }
                 }
             }
+        }
+
+        if (!validationTypeMap.isEmpty()) {
+            validations.addAll(validationTypeMap.values());
         }
 
         if (!deltaMapping.isEmpty()) {
@@ -316,7 +337,7 @@ public class SupplyChainValidationServiceImpl implements SupplyChainValidationSe
            final DeviceInfoReport deviceInfoReport,
            final EndorsementCredential ec) {
         final SupplyChainValidation.ValidationType validationType
-                = SupplyChainValidation.ValidationType.PLATFORM_CREDENTIAL_ATTRIBUTES;
+                = SupplyChainValidation.ValidationType.PLATFORM_CREDENTIAL;
 
         if (pc == null) {
             LOGGER.error("No platform credential to validate");
