@@ -334,6 +334,10 @@ class AttestationCAPortal:
         file = {'file': open(ca_cert_file, 'rb')}
         self.request("post", "portal/certificate-request/trust-chain/upload", files=file, operation="upload CA cert")
 
+    def upload_pk_cert(self, pk_cert_file):
+        file = {'file': open(pk_cert_file, 'rb')}
+        self.request("post", "portal/certificate-request/platform-credentials/upload", files=file, operation="upload PK cert")
+
 def web_request(server_url, method, path, params={}, data={}, files={}, expected_status_codes=[200], operation=None, verify=False):
     url = server_url + path
     if method not in ['get', 'post']:

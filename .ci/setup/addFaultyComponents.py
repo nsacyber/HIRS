@@ -1,6 +1,5 @@
 # Add faulty components to the PACCOR generated JSON componentsFile.
 # This will be used to create a bad platform certificate.
-# Will not need this once PACCOR supports generation of faulty components.
 
 import json
 
@@ -21,8 +20,8 @@ try:
 				component['MODEL'] += "-FAULTY"
 				print("New JSON value: " + component['MODEL'])
 
-	with open(pc_dir + "badComponentsFile", 'w') as outfile:
+	with open(pc_dir + "PBaseCertB.json", 'w') as outfile:
 		json.dump(data, outfile)
 
-except Exception:
-    print("=== ERROR generating badComponentsFile ===")
+except Exception as ex:
+    print "=== ERROR generating PBaseCertB.json ===: error({0})".format(ex.message)
