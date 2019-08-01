@@ -64,23 +64,30 @@ function InitTpm2Emulator {
     echo "PACCOR generated components file:"
     cat $PC_DIR/componentsFile
 
-    # Add bad components and create PBaseCertB.json used below
+    # Add bad base components and create PBaseCertB.json used below
     python /HIRS/.ci/setup/addFaultyComponents.py
     echo
     echo "Generated bad components file:"
     cat $PC_DIR/PBaseCertB.json
 
-	# Generate the platform base certificate
+	# Generate the bad base certificate
 	/opt/paccor/scripts/referenceoptions.sh > $PC_DIR/optionsFile
 	/opt/paccor/scripts/otherextensions.sh > $PC_DIR/extensionsFile
 	/opt/paccor/bin/observer -c $PC_DIR/PBaseCertB.json -p $PC_DIR/optionsFile -e $ek_cert_der -f $PC_DIR/observerFile
 	/opt/paccor/bin/signer -c $PC_DIR/PBaseCertB.json -o $PC_DIR/observerFile -x $PC_DIR/extensionsFile -b 20180101 -a 20280101 -N $RANDOM -k /HIRS/.ci/setup/certs/ca.key -P /HIRS/.ci/setup/certs/ca.crt -f $PC_DIR/$platform_cert
 
-    # Generate the delta certificate
+    # Create good delta component and create SIDeltaCertB1.componentlist.json
     python /HIRS/.ci/setup/createDeltaCertComponents.py
-#	/opt/paccor/bin/observer -c $PC_DIR/SIDeltaCertB1.componentlist.json -p $PC_DIR/optionsFile -e $PC_DIR/$platform_cert -f $PC_DIR/observerFile
-#	/opt/paccor/bin/signer -c $PC_DIR/SIDeltaCertB1.componentlist.json -o $PC_DIR/observerFile -x $PC_DIR/extensionsFile -b 20180101 -a 20280101 -N $RANDOM -k /HIRS/.ci/setup/certs/ca.key -P /HIRS/.ci/setup/certs/ca.crt -e $PC_DIR/$platform_cert -f $PC_DIR/$delta_cert
+    echo
+    echo "Generated good delta components file:"
+    cat $PC_DIR/SIDeltaCertB1.componentlist.json
 
+    # Generate the good delta certificate
+    rm -f $PC_DIR/observerFile
+	/opt/paccor/bin/observer -c $PC_DIR/SIDeltaCertB1.componentlist.json -p $PC_DIR/optionsFile -e $PC_DIR/$platform_cert -f $PC_DIR/observerFile
+	/opt/paccor/bin/signer -c $PC_DIR/SIDeltaCertB1.componentlist.json -o $PC_DIR/observerFile -x $PC_DIR/extensionsFile -b 20180101 -a 20280101 -N $RANDOM -k /HIRS/.ci/setup/certs/ca.key -P /HIRS/.ci/setup/certs/ca.crt -e $PC_DIR/$platform_cert -f $PC_DIR/$delta_cert
+
+	# Clear nvram for EK
 	if tpm2_nvlist | grep -q 0x1c00002; then
 	  echo "Released NVRAM for EK."
 	  tpm2_nvrelease -x 0x1c00002 -a 0x40000001
@@ -98,6 +105,7 @@ function InitTpm2Emulator {
 	echo "Loading EK cert $ek_cert_der into NVRAM."
 	tpm2_nvwrite -x 0x1c00002 -a 0x40000001 $ek_cert_der
 
+	# Clear nvram for PC
 	if tpm2_nvlist | grep -q 0x1c90000; then
 	  echo "Released NVRAM for PC."
 	  tpm2_nvrelease -x 0x1c90000 -a 0x40000001
@@ -162,3 +170,4 @@ tpm2_nvlist
 
 echo ""
 echo "===========HIRS ACA TPM2 Provisioner Setup Complete!==========="
+

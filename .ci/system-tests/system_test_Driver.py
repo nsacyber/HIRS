@@ -43,8 +43,8 @@ HOME_DIR = "/HIRS/"
 #COLLECTOR_LIST = ["IMA"]
 #COLLECTOR_LIST = ["TPM"]
 #COLLECTOR_LIST = ["IMA", "TPM"]
-COLLECTOR_LIST = ["BASE_DELTA_GOOD"]
-#COLLECTOR_LIST = ["BASE_DELTA_BAD"]
+#COLLECTOR_LIST = ["BASE_DELTA_GOOD"]
+COLLECTOR_LIST = ["BASE_DELTA_BAD"]
 
 FORMAT = "%(asctime)-15s %(message)s"
 provisioner_out = None
@@ -76,7 +76,8 @@ HIRS_ATTESTATION_CA_PORTAL_URL = "https://" + \
 
 CA_CERT_LOCATION = HOME_DIR + ".ci/setup/certs/ca.crt"
 EK_CA_CERT_LOCATION = HOME_DIR + ".ci/setup/certs/ek_cert.der"
-#SIDeltaCertB1_LOCATION = "/var/hirs/pc_generation/SIDeltaCertB1.der"
+SIDeltaCertB1_LOCATION = "/var/hirs/pc_generation/SIDeltaCertB1.der"
+
 
 TEST_LOG_FILE= HOME_DIR + ".ci/system-tests/test_logs/system_test_" + CLIENT_OS + ".log"
 LOG_LEVEL="logging.INFO"
@@ -457,7 +458,7 @@ class SystemTest(unittest.TestCase):
         AcaPortal.enable_supply_chain_validations()
         provisioner_out = run_hirs_provisioner_tpm2(CLIENT)
 
-        print("test_19_B2_base_delta run output: {0}".format(provisioner_out))
+        print("Bad Base/Good Delta Certificate run output: {0}".format(provisioner_out))
 
         # Verify device has been updated with supply chain appraisal of PASS
         devices = AcaPortal.get_devices()

@@ -23,7 +23,7 @@ try:
 
 		# Initialize structures to work with.
 		componentDict = {}
-		componentDict["PLATFOM"] = data['PLATFORM']
+		componentDict["PLATFORM"] = data['PLATFORM']
 		componentDict['COMPONENTS'] = []
 		componentDict["PROPERTIES"] = data['PROPERTIES']
 		updatedComponetList = []
