@@ -12,6 +12,7 @@ import org.springframework.context.annotation.Import;
 import org.springframework.stereotype.Service;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -252,6 +253,15 @@ public class SupplyChainValidationServiceImpl implements SupplyChainValidationSe
                     .select(certificateManager)
                     .byBoardSerialNumber(pc.getPlatformSerial())
                     .getCertificates().stream().collect(Collectors.toList());
+            Collections.sort(chainCertificates,
+                    new Comparator<PlatformCredential>() {
+                @Override
+                public int compare(final PlatformCredential obj1,
+                                   final PlatformCredential obj2) {
+                    return obj1.getBeginValidity()
+                            .compareTo(obj2.getBeginValidity());
+                }
+            });
 
             SupplyChainValidation deltaScv;
             KeyStore trustedCa;
