@@ -112,7 +112,6 @@ public class SupplyChainValidationServiceImpl implements SupplyChainValidationSe
         if (policy.isEcValidationEnabled()) {
             validationTypeMap.put(SupplyChainValidation.ValidationType.ENDORSEMENT_CREDENTIAL,
                     validateEndorsementCredential(ec, acceptExpiredCerts));
-//            validations.add(validateEndorsementCredential(ec, acceptExpiredCerts));
             // store the device with the credential
             if (null != ec) {
                 ec.setDevice(device);
@@ -148,7 +147,6 @@ public class SupplyChainValidationServiceImpl implements SupplyChainValidationSe
                         validationTypeMap.put(SupplyChainValidation
                                 .ValidationType.PLATFORM_CREDENTIAL,
                                 platformScv);
-//                        validations.add(platformScv);
                         pc.setDevice(device);
                         this.certificateManager.update(pc);
                         if (pc.isBase()) {
@@ -183,7 +181,6 @@ public class SupplyChainValidationServiceImpl implements SupplyChainValidationSe
                         validationTypeMap.put(SupplyChainValidation
                                 .ValidationType.PLATFORM_CREDENTIAL,
                                 attributeScv);
-//                        validations.add(attributeScv);
                     }
 
                     if (pc != null && pc.isDeltaChain()) {
