@@ -15,6 +15,13 @@ import org.hibernate.annotations.Type;
  */
 @MappedSuperclass
 public abstract class AbstractEntity {
+
+    /**
+     * static value for the length of a status message for objects that
+     * can have extremely long values, potentially.
+     */
+    protected static final int RESULT_MESSAGE_LENGTH = 1000000;
+
     @Id
     @Column(name = "id")
     @GeneratedValue(generator = "uuid2")

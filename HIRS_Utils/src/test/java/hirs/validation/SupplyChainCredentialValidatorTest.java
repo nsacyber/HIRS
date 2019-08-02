@@ -9,6 +9,7 @@ import hirs.data.persist.HardwareInfo;
 import hirs.data.persist.NICComponentInfo;
 import hirs.data.persist.NetworkInfo;
 import hirs.data.persist.OSInfo;
+import hirs.data.persist.SupplyChainValidation;
 import hirs.data.persist.TPMInfo;
 import hirs.data.persist.certificate.Certificate;
 import hirs.data.persist.certificate.CertificateAuthorityCredential;
@@ -79,8 +80,10 @@ import java.security.spec.X509EncodedKeySpec;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import static org.powermock.api.mockito.PowerMockito.mock;
@@ -1158,7 +1161,8 @@ public class SupplyChainCredentialValidatorTest {
      */
     @Test
     public final void verifyPlatformCredentialNullCredentialPath() {
-        String expectedMessage = "Can't validate platform credential without a platform credential";
+        String expectedMessage = "Can't validate platform credential without "
+                + "a platform credential\n";
 
         AppraisalStatus result = supplyChainCredentialValidator.validatePlatformCredential(
                 null, keyStore, true);
@@ -1182,7 +1186,7 @@ public class SupplyChainCredentialValidatorTest {
         PlatformCredential pc = new PlatformCredential(certBytes);
 
         String expectedMessage = "Can't validate platform credential without a "
-                + "trust store";
+                + "trust store\n";
 
         AppraisalStatus result = supplyChainCredentialValidator.validatePlatformCredential(pc, null,
                 true);
@@ -2092,10 +2096,22 @@ public class SupplyChainCredentialValidatorTest {
         when(delta1.getComponentIdentifiers()).thenReturn(delta1List);
         when(delta2.getComponentIdentifiers()).thenReturn(delta2List);
 
-        List<PlatformCredential> chainCredentials = new ArrayList<>(0);
-        chainCredentials.add(base);
-        chainCredentials.add(delta1);
-        chainCredentials.add(delta2);
+        Map<PlatformCredential, SupplyChainValidation> chainCredentials = new HashMap<>(0);
+        List<Certificate> certsUsed = new ArrayList<>();
+        certsUsed.add(base);
+        chainCredentials.put(base, new SupplyChainValidation(
+                SupplyChainValidation.ValidationType.PLATFORM_CREDENTIAL,
+                AppraisalStatus.Status.PASS, certsUsed, ""));
+        certsUsed.clear();
+        certsUsed.add(delta1);
+        chainCredentials.put(delta1, new SupplyChainValidation(
+                SupplyChainValidation.ValidationType.PLATFORM_CREDENTIAL,
+                AppraisalStatus.Status.PASS, certsUsed, ""));
+        certsUsed.clear();
+        certsUsed.add(delta2);
+        chainCredentials.put(delta2, new SupplyChainValidation(
+                SupplyChainValidation.ValidationType.PLATFORM_CREDENTIAL,
+                AppraisalStatus.Status.PASS, certsUsed, ""));
 
         AppraisalStatus result = supplyChainCredentialValidator
                 .validateDeltaPlatformCredentialAttributes(delta2,
@@ -2185,9 +2201,17 @@ public class SupplyChainCredentialValidatorTest {
         when(base.getComponentIdentifiers()).thenReturn(compList);
         when(delta1.getComponentIdentifiers()).thenReturn(delta1List);
 
-        List<PlatformCredential> chainCredentials = new ArrayList<>(0);
-        chainCredentials.add(base);
-        chainCredentials.add(delta1);
+        Map<PlatformCredential, SupplyChainValidation> chainCredentials = new HashMap<>(0);
+        List<Certificate> certsUsed = new ArrayList<>();
+        certsUsed.add(base);
+        chainCredentials.put(base, new SupplyChainValidation(
+                SupplyChainValidation.ValidationType.PLATFORM_CREDENTIAL,
+                AppraisalStatus.Status.PASS, certsUsed, ""));
+        certsUsed.clear();
+        certsUsed.add(delta1);
+        chainCredentials.put(delta1, new SupplyChainValidation(
+                SupplyChainValidation.ValidationType.PLATFORM_CREDENTIAL,
+                AppraisalStatus.Status.PASS, certsUsed, ""));
 
         AppraisalStatus result = supplyChainCredentialValidator
                 .validateDeltaPlatformCredentialAttributes(delta1,

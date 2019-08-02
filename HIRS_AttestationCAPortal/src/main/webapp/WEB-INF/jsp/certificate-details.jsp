@@ -616,12 +616,12 @@
                                                             <div class="panel panel-default">
                                                                 <div class="panel-heading">
                                                                     <c:choose>
-                                                                       <c:when test="${component.isVersion2()=='TRUE'}">
-                                                                           <span data-toggle="tooltip" data-placement="top" title="Component Class">${component.getComponentClass()}</span>
-                                                                       </c:when>
-                                                                       <c:otherwise>
-                                                                           <span data-toggle="tooltip" data-placement="top" title="Component Class">Platform Components</span>
-                                                                       </c:otherwise>
+                                                                        <c:when test="${component.isVersion2()=='TRUE'}">
+                                                                            <span data-toggle="tooltip" data-placement="top" title="Component Class">${component.getComponentClass()}</span>
+                                                                        </c:when>
+                                                                        <c:otherwise>
+                                                                            <span data-toggle="tooltip" data-placement="top" title="Component Class">Platform Components</span>
+                                                                        </c:otherwise>
                                                                     </c:choose>
                                                                 </div>
                                                                 <div class="panel-body">
@@ -649,22 +649,22 @@
                                                                             <span class="label label-danger">Irreplaceable</span><br/>
                                                                         </c:otherwise>
                                                                     </c:choose>
-                                                                        <c:if test="${component.isVersion2()}">
-                                                                            <c:if test="${not empty component.getCertificateIdentifier()}">
-                                                                                <span class="fieldHeader">Platform Certificate Issuer:</span>
-                                                                                <span class="fieldValue">${component.getCertificateIdentifier().getIssuerDN()}</span><br />
-                                                                                <span class="fieldHeader">Platform Certificate Serial Number:</span>
-                                                                                <span class="fieldValue">${component.getCertificateIdentifier().getCertificateSerialNumber()}</span><br />
-                                                                                <span class="fieldHeader">Platform Certificate URI:</span>  
-                                                                            </c:if>
-                                                                            <span class="fieldValue">
-                                                                                <a href="${component.getComponentPlatformUri().getUniformResourceIdentifier()}">
-                                                                                    ${component.getComponentPlatformUri().getUniformResourceIdentifier()}
-                                                                                </a>
-                                                                            </span><br />
-                                                                            <span class="fieldHeader">Status:</span>
-                                                                            <span class="fieldValue">${component.getAttributeStatus()}</span><br/>
+                                                                    <c:if test="${component.isVersion2()}">
+                                                                        <c:if test="${not empty component.getCertificateIdentifier()}">
+                                                                            <span class="fieldHeader">Platform Certificate Issuer:</span>
+                                                                            <span class="fieldValue">${component.getCertificateIdentifier().getIssuerDN()}</span><br />
+                                                                            <span class="fieldHeader">Platform Certificate Serial Number:</span>
+                                                                            <span class="fieldValue">${component.getCertificateIdentifier().getCertificateSerialNumber()}</span><br />
+                                                                            <span class="fieldHeader">Platform Certificate URI:</span>  
                                                                         </c:if>
+                                                                        <span class="fieldValue">
+                                                                            <a href="${component.getComponentPlatformUri().getUniformResourceIdentifier()}">
+                                                                                ${component.getComponentPlatformUri().getUniformResourceIdentifier()}
+                                                                            </a>
+                                                                        </span><br />
+                                                                        <span class="fieldHeader">Status:</span>
+                                                                        <span class="fieldValue">${component.getAttributeStatus()}</span><br/>
+                                                                    </c:if>
                                                                 </div>
                                                             </div>
                                                         </div>
@@ -825,11 +825,11 @@
                 $("#authorityKeyIdentifier").html("Not Specified");
                 </c:otherwise>
             </c:choose>
-                
-                <c:if test="${not empty initialData.authSerialNumber}">
-                    //Convert string to serial String
-                    $("#authSerialNumber").html(parseSerialNumber(authoritySerialNumber));
-                </c:if>
+
+            <c:if test="${not empty initialData.authSerialNumber}">
+                //Convert string to serial String
+                $("#authSerialNumber").html(parseSerialNumber(authoritySerialNumber));
+            </c:if>
             <c:choose>
                 <c:when test="${not empty initialData.publicKeyValue}">
                 var publicKey = '${initialData.publicKeyValue}';

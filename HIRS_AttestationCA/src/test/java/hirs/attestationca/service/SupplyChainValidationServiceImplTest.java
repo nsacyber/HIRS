@@ -144,7 +144,6 @@ public class SupplyChainValidationServiceImplTest extends SpringPersistenceTest 
         //when(delta.getSerialNumber()).thenReturn(BigInteger.ONE);
         when(delta.getIssuerOrganization()).thenReturn("STMicroelectronics NV");
         when(delta.getSubjectOrganization()).thenReturn("STMicroelectronics NV");
-        //pcs.add(delta);
 
         Set<Certificate> resultPcs = new HashSet<>();
         resultPcs.add(pc);
@@ -242,7 +241,7 @@ public class SupplyChainValidationServiceImplTest extends SpringPersistenceTest 
                 validateEndorsementCredential(eq(ec), any(KeyStore.class), eq(true));
         doReturn(new AppraisalStatus(FAIL, "")).when(supplyChainCredentialValidator).
                 validatePlatformCredential(eq(pc), any(KeyStore.class), eq(true));
-        doReturn(new AppraisalStatus(PASS, "")).when(supplyChainCredentialValidator)
+        doReturn(new AppraisalStatus(FAIL, "")).when(supplyChainCredentialValidator)
                 .validatePlatformCredentialAttributes(eq(pc), any(DeviceInfoReport.class),
                         any(EndorsementCredential.class));
         Assert.assertEquals(service.validateSupplyChain(ec, pcs,
