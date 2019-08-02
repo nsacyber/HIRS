@@ -1,17 +1,17 @@
 #!/bin/bash
 
-# Script to run the System Tests for HIRS TPM 2.0 Provisioner
+# Script to run the System Tests Base/Delta for HIRS TPM 2.0 Provisioner
 
 set -e
 
 echo ""
-echo "System Tests Starting..."
+echo "System Tests Base/Delta TPM 2.0 Starting..."
 echo ""
 
 # Start System Testing Docker Environment
 cd .ci/docker
 
-docker-compose -f docker-compose-tpm2-base-delta.yml up -d
+docker-compose -f docker-compose-tpm2-base-delta-bad.yml up -d
 
 tpm2_container_id="$(docker ps -aqf "name=hirs-aca-provisioner-tpm2")"
 echo "TPM2 Container ID: $tpm2_container_id"
@@ -40,7 +40,7 @@ echo "===========hirs-aca-provisioner-tpm2 System Tests Log:==========="
 docker logs $tpm2_container_id
 
 echo ""
-echo "End of TPM 2.0 System Tests, cleaning up..."
+echo "End of Base/Delta TPM 2.0 System Tests, cleaning up..."
 echo ""
 # Clean up services and network
 docker-compose down
@@ -56,9 +56,9 @@ echo ""
 # Return container exit code
 if [[ $tpm2_container_exit_code == 0 ]]
 then
-    echo "SUCCESS: TPM 2.0 System tests passed"
+    echo "SUCCESS: Base/Delta TPM 2.0 System Tests passed"
     exit 0
 fi
 
-echo "ERROR: System tests failed"
+echo "ERROR: Base/Delta TPM 2.0 System Tests failed"
 exit 1
