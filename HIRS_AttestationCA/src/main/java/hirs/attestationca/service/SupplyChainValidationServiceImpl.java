@@ -197,11 +197,17 @@ public class SupplyChainValidationServiceImpl implements SupplyChainValidationSe
             }
         }
 
-        if (!validationTypeMap.isEmpty()) {
+        if (!validationTypeMap.isEmpty() && deltaMapping.isEmpty()) {
             validations.addAll(validationTypeMap.values());
         }
 
         if (!deltaMapping.isEmpty()) {
+            // Redo validations of base certificate
+            KeyStore trustedCa = getCaChain(baseCredential);
+            SupplyChainValidation platformScv = validatePlatformCredential(
+                    baseCredential, trustedCa, acceptExpiredCerts);
+
+            validations.add(platformScv);
             validations.addAll(deltaMapping.values());
         }
 
