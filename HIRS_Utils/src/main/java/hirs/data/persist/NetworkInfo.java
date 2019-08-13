@@ -22,22 +22,24 @@ public class NetworkInfo implements Serializable {
     private static final Logger LOGGER = LogManager
             .getLogger(NetworkInfo.class);
 
+    private static final int LONG_STRING_LENGTH = 255;
+    private static final int SHORT_STRING_LENGTH = 32;
     private static final int NUM_MAC_ADDRESS_BYTES = 6;
 
     @XmlElement
-    @Column(length = 255, nullable = true)
+    @Column(length = LONG_STRING_LENGTH, nullable = true)
     @SuppressWarnings("checkstyle:magicnumber")
     private String hostname;
 
     @XmlElement
     @XmlJavaTypeAdapter(value = InetAddressXmlAdapter.class)
     @SuppressWarnings("checkstyle:magicnumber")
-    @Column(length = 32, nullable = true)
+    @Column(length = SHORT_STRING_LENGTH, nullable = true)
     @Type(type = "hirs.data.persist.type.InetAddressType")
     private InetAddress ipAddress;
 
     @XmlElement
-    @Column(length = 6, nullable = true)
+    @Column(length = NUM_MAC_ADDRESS_BYTES, nullable = true)
     @SuppressWarnings("checkstyle:magicnumber")
     private byte[] macAddress;
 

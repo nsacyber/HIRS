@@ -2,11 +2,12 @@ package hirs.validation;
 
 import hirs.data.persist.AppraisalStatus;
 import hirs.data.persist.DeviceInfoReport;
+import hirs.data.persist.SupplyChainValidation;
 import hirs.data.persist.certificate.EndorsementCredential;
 import hirs.data.persist.certificate.PlatformCredential;
 
 import java.security.KeyStore;
-import java.util.List;
+import java.util.Map;
 
 /**
  * A class used to support supply chain validation by performing the actual
@@ -44,14 +45,15 @@ public interface CredentialValidator {
      *                         serial number of the platform to be validated.
      * @param base the base credential from the same identity request
      *                              as the delta credential.
-     * @param chainCertificates base and delta certificates associated with the
-     *                          delta being validated.
+     * @param deltaMapping delta certificates associated with the
+     *                          delta supply validation.
      * @return the result of the validation.
      */
     AppraisalStatus validateDeltaPlatformCredentialAttributes(PlatformCredential delta,
                                                         DeviceInfoReport deviceInfoReport,
                                                         PlatformCredential base,
-                                                        List<PlatformCredential> chainCertificates);
+                                                        Map<PlatformCredential,
+                                                        SupplyChainValidation> deltaMapping);
     /**
      * Checks if the endorsement credential is valid.
      *

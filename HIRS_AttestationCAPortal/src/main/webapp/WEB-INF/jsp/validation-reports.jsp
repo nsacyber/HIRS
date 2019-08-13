@@ -32,12 +32,12 @@
                         <th rowspan="2">Result</th>
                         <th rowspan="2">Timestamp</th>
                         <th rowspan="2">Device</th>
-                        <th colspan="3">Credential Validations</th>
+                        <th colspan="2">Credential Validations</th>
                     </tr>
                     <tr>
-                        <th>Endorsement</th>
-                        <th>Platform</th>
-                        <th>Platform Attributes</th>
+                        <th style="text-align:center">Endorsement</th>
+                        <th style="text-align:center">Platform</th>
+                        <th></th>
                     </tr>
                 </thead>
             </table>
@@ -55,16 +55,17 @@
 
                                 // create status icon
                                 var result = full.overallValidationResult;
+                                var ovallMessage = full.message;
                                 if (result) {
                                     switch (result) {
                                         case "PASS":
                                             html += '<img src="${passIcon}" title="${passText}"/>';
                                             break;
                                         case "FAIL":
-                                            html += '<img src="${failIcon}" title="${failText}"/>';
+                                            html += '<img src="${failIcon}" title="' + ovallMessage + '"/>';
                                             break;
                                         case "ERROR":
-                                            html += '<img src="${errorIcon}" title="${errorText}"/>';
+                                            html += '<img src="${errorIcon}" title="' + ovallMessage + '"/>';
                                             break;
                                         default:
                                             html += unknownStatus;
@@ -161,7 +162,7 @@
 
                                html += '<a href="${portal}/certificate-details?id='
                                    + curValidation.certificatesUsed[0].id
-                                   + '&type=' + certType + '">'
+                                   + '&type=' + certType + '">';
                            }
 
                            switch (curResult) {

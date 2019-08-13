@@ -55,6 +55,8 @@ import java.util.stream.Collectors;
 import static hirs.data.persist.AppraisalStatus.Status.ERROR;
 import static hirs.data.persist.AppraisalStatus.Status.FAIL;
 import static hirs.data.persist.AppraisalStatus.Status.PASS;
+import hirs.data.persist.SupplyChainValidation;
+import hirs.data.persist.certificate.Certificate;
 import hirs.data.persist.certificate.attributes.V2.ComponentIdentifierV2;
 import java.util.Collections;
 import java.util.LinkedList;
@@ -86,6 +88,8 @@ public final class SupplyChainCredentialValidator implements CredentialValidator
      */
     public static final String PLATFORM_ATTRIBUTES_VALID =
             "Platform credential attributes validated";
+
+    private static final Map<PlatformCredential, StringBuilder> DELTA_FAILURES = new HashMap<>();
 
     /*
      * Ensure that BouncyCastle is configured as a javax.security.Security provider, as this
@@ -135,7 +139,6 @@ public final class SupplyChainCredentialValidator implements CredentialValidator
             return node.findValue(fieldName).asText();
         }
         return null;
-
     }
 
     /**
@@ -153,16 +156,15 @@ public final class SupplyChainCredentialValidator implements CredentialValidator
         final String baseErrorMessage = "Can't validate platform credential without ";
         String message;
         if (pc == null) {
-            message = baseErrorMessage + "a platform credential";
+            message = baseErrorMessage + "a platform credential\n";
             LOGGER.error(message);
             return new AppraisalStatus(FAIL, message);
         }
         try {
             if (trustStore == null || trustStore.size() == 0) {
-                message = baseErrorMessage + "a trust store";
+                message = baseErrorMessage + "a trust store\n";
                 LOGGER.error(message);
                 return new AppraisalStatus(FAIL, message);
-
             }
         } catch (KeyStoreException e) {
             message = baseErrorMessage + "an intitialized trust store";
@@ -261,8 +263,8 @@ public final class SupplyChainCredentialValidator implements CredentialValidator
      *                         serial number of the platform to be validated.
      * @param basePlatformCredential the base credential from the same identity request
      *                              as the delta credential.
-     * @param chainCertificates base and delta certificates associated with the
-     *                          delta being validated.
+     * @param deltaMapping delta certificates associated with the
+     *                          delta supply validation.
      * @return the result of the validation.
      */
     @Override
@@ -270,7 +272,7 @@ public final class SupplyChainCredentialValidator implements CredentialValidator
             final PlatformCredential deltaPlatformCredential,
             final DeviceInfoReport deviceInfoReport,
             final PlatformCredential basePlatformCredential,
-            final List<PlatformCredential> chainCertificates) {
+            final Map<PlatformCredential, SupplyChainValidation> deltaMapping) {
         final String baseErrorMessage = "Can't validate delta platform"
                 + "certificate attributes without ";
         String message;
@@ -302,30 +304,11 @@ public final class SupplyChainCredentialValidator implements CredentialValidator
         }
 
         // parse out the provided delta and its specific chain.
-        Collections.reverse(chainCertificates);
-        List<PlatformCredential> leafChain = new LinkedList<>();
-        List<ComponentIdentifier> origPcComponents = new LinkedList<>();
-
-        for (PlatformCredential pc : chainCertificates) {
-            if (pc.isBase()) {
-                if (basePlatformCredential.getSerialNumber()
-                        .equals(pc.getSerialNumber())) {
-                    // get original component list
-                    origPcComponents.addAll(pc.getComponentIdentifiers());
-                }
-            } else {
-                leafChain.add(pc);
-            }
-        }
-
-        // map the deltas to their holder serial numbers
-        Map<String, PlatformCredential> leafMap = new HashMap<>();
-        leafChain.stream().forEach((delta) -> {
-            leafMap.put(delta.getHolderSerialNumber().toString(), delta);
-        });
+        List<ComponentIdentifier> origPcComponents
+                = new LinkedList<>(basePlatformCredential.getComponentIdentifiers());
 
         return validateDeltaAttributesChainV2p0(deviceInfoReport,
-                leafChain, origPcComponents);
+                deltaMapping, origPcComponents);
     }
 
     private static AppraisalStatus validatePlatformCredentialAttributesV1p2(
@@ -561,19 +544,17 @@ public final class SupplyChainCredentialValidator implements CredentialValidator
      * are valid.
      *
      * @param deviceInfoReport The paccor profile of device being validated against.
-     * @param leafChain The specific chain associated with delta cert being
-     * validated.
+     * @param deltaMapping map of delta certificates to their validated status
      * @param origPcComponents The component identifier list associated with the
      * base cert for this specific chain
      * @return Appraisal Status of delta being validated.
      */
     static AppraisalStatus validateDeltaAttributesChainV2p0(
             final DeviceInfoReport deviceInfoReport,
-            final List<PlatformCredential> leafChain,
+            final Map<PlatformCredential, SupplyChainValidation> deltaMapping,
             final List<ComponentIdentifier> origPcComponents) {
         boolean fieldValidation = true;
         StringBuilder resultMessage = new StringBuilder();
-        StringBuilder deltaMessage = new StringBuilder();
         List<ComponentIdentifier> validOrigPcComponents = origPcComponents.stream()
                 .filter(identifier -> identifier.getComponentManufacturer() != null
                         && identifier.getComponentModel() != null)
@@ -587,9 +568,20 @@ public final class SupplyChainCredentialValidator implements CredentialValidator
         });
 
         String ciSerial;
+        List<Certificate> certificateList = null;
+        PlatformCredential delta = null;
+        SupplyChainValidation scv = null;
+        resultMessage.append("There are errors with Delta "
+                    + "Component Statuses components:\n");
         // go through the leaf and check the changes against the valid components
         // forget modifying validOrigPcComponents
-        for (PlatformCredential delta : leafChain) {
+        for (Map.Entry<PlatformCredential, SupplyChainValidation> deltaEntry
+                : deltaMapping.entrySet()) {
+            StringBuilder failureMsg = new StringBuilder();
+            delta = deltaEntry.getKey();
+            certificateList = new ArrayList<>();
+            certificateList.add(delta);
+
             for (ComponentIdentifier ci : delta.getComponentIdentifiers()) {
                 if (ci.isVersion2()) {
                     ciSerial = ci.getComponentSerial().toString();
@@ -599,9 +591,18 @@ public final class SupplyChainCredentialValidator implements CredentialValidator
                         // check it is there
                         if (!chainCiMapping.containsKey(ciSerial)) {
                             fieldValidation = false;
-                            deltaMessage.append(String.format(
+                            failureMsg.append(String.format(
                                     "%s attempted MODIFIED with no prior instance.%n",
                                     ciSerial));
+                            scv = deltaEntry.getValue();
+                            if (scv.getResult() != AppraisalStatus.Status.PASS) {
+                                failureMsg.append(scv.getMessage());
+                            }
+                            deltaMapping.put(delta, new SupplyChainValidation(
+                                    SupplyChainValidation.ValidationType.PLATFORM_CREDENTIAL,
+                                    AppraisalStatus.Status.FAIL,
+                                    certificateList,
+                                    failureMsg.toString()));
                         } else {
                             chainCiMapping.put(ci.getComponentSerial().toString(), ci);
                         }
@@ -609,9 +610,18 @@ public final class SupplyChainCredentialValidator implements CredentialValidator
                         if (!chainCiMapping.containsKey(ciSerial)) {
                             // error thrown, can't remove if it doesn't exist
                             fieldValidation = false;
-                            deltaMessage.append(String.format(
+                            failureMsg.append(String.format(
                                     "%s attempted REMOVED with no prior instance.%n",
                                     ciSerial));
+                            scv = deltaEntry.getValue();
+                            if (scv.getResult() != AppraisalStatus.Status.PASS) {
+                                failureMsg.append(scv.getMessage());
+                            }
+                            deltaMapping.put(delta, new SupplyChainValidation(
+                                    SupplyChainValidation.ValidationType.PLATFORM_CREDENTIAL,
+                                    AppraisalStatus.Status.FAIL,
+                                    certificateList,
+                                    failureMsg.toString()));
                         } else {
                             chainCiMapping.remove(ci.getComponentSerial().toString());
                         }
@@ -620,9 +630,18 @@ public final class SupplyChainCredentialValidator implements CredentialValidator
                         if (chainCiMapping.containsKey(ciSerial)) {
                             // error, shouldn't exist
                             fieldValidation = false;
-                            deltaMessage.append(String.format(
+                            failureMsg.append(String.format(
                                     "%s was ADDED, the serial already exists.%n",
                                     ciSerial));
+                            scv = deltaEntry.getValue();
+                            if (scv.getResult() != AppraisalStatus.Status.PASS) {
+                                failureMsg.append(scv.getMessage());
+                            }
+                            deltaMapping.put(delta, new SupplyChainValidation(
+                                    SupplyChainValidation.ValidationType.PLATFORM_CREDENTIAL,
+                                    AppraisalStatus.Status.FAIL,
+                                    certificateList,
+                                    failureMsg.toString()));
                         } else {
                             // have to add in case later it is removed
                             chainCiMapping.put(ciSerial, ci);
@@ -630,11 +649,11 @@ public final class SupplyChainCredentialValidator implements CredentialValidator
                     }
                 }
             }
+
+            resultMessage.append(failureMsg.toString());
         }
 
         if (!fieldValidation) {
-            resultMessage.append("There are errors with Delta Component Statuses components:\n");
-            resultMessage.append(deltaMessage.toString());
             return new AppraisalStatus(FAIL, resultMessage.toString());
         }
 
@@ -654,6 +673,7 @@ public final class SupplyChainCredentialValidator implements CredentialValidator
         }
 
         if (!fieldValidation) {
+            resultMessage = new StringBuilder();
             resultMessage.append("There are unmatched components:\n");
             resultMessage.append(unmatchedComponents);
 
@@ -1406,5 +1426,14 @@ public final class SupplyChainCredentialValidator implements CredentialValidator
             LOGGER.error("Exception occurred while checking if cert is self-signed", e);
             return false;
         }
+    }
+
+    /**
+     * Getter for the collection of delta certificates that have failed and the
+     * associated message.
+     * @return unmodifiable list of failed certificates
+     */
+    public Map<PlatformCredential, StringBuilder> getDeltaFailures() {
+        return Collections.unmodifiableMap(DELTA_FAILURES);
     }
 }
