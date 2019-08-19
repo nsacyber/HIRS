@@ -109,7 +109,7 @@ public class SupplyChainValidationServiceImpl implements SupplyChainValidationSe
 
         // Validate the Endorsement Credential
         if (policy.isEcValidationEnabled()) {
-            validations.add(alidateEndorsementCredential(ec, acceptExpiredCerts));
+            validations.add(validateEndorsementCredential(ec, acceptExpiredCerts));
             // store the device with the credential
             if (null != ec) {
                 ec.setDevice(device);
