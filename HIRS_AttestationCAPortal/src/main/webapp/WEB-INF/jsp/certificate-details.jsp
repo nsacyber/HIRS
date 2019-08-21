@@ -804,6 +804,7 @@
                 var serialNumber = '${initialData.serialNumber}';
                 var authorityKeyIdentifier = '${initialData.authKeyId}';
                 var authoritySerialNumber = '${initialData.authSerialNumber}';
+                var failure = '${param.failure}';
 
                 //Format validity time
                 $("#validity span").each(function () {
@@ -851,6 +852,21 @@
                     $("#subjectKeyIdentifier").html(byteToHexString(subjectKeyIdentifier));
                 }
             </c:if>
+            
+            if (failure.includes("Serial")) {
+                var occurance = 0;
+                var serials = [];
+                do {                    
+                    var serialIndex = failure.indexOf("Serial", occurance);
+                    var equalsIndex = failure.indexOf("=", serialIndex);
+                    var commaIndex = failure.indexOf(",", equalsIndex);
+                    var serial = failure.substring(equalsIndex + 1, commaIndex);
+                    serials.push(serial);
+                    occurance = commaIndex;
+                } 
+                while (occurance > 0);
+                
+            }
 
                 //Initiliaze tooltips
                 $('[data-toggle="tooltip"]').tooltip();
