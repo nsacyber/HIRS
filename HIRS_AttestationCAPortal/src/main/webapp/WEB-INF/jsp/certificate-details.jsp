@@ -796,9 +796,6 @@
                     </div>
                 </c:when>
             </c:choose>
-                        <div>
-                            ${initialData.testable}
-                        </div>
         </div>
         <script>
             $(document).ready(function () {

@@ -230,6 +230,9 @@ public class PlatformCredential extends DeviceAssociatedCertificate {
     @Column
     private String platformClass = null;
 
+    @Column
+    private String componentFailures = Strings.EMPTY;
+
     @Transient
     private EndorsementCredential endorsementCredential = null;
 
@@ -673,6 +676,22 @@ public class PlatformCredential extends DeviceAssociatedCertificate {
         }
 
         return null;
+    }
+
+    /**
+     * Getter for the component failures.
+     * @return string of failures.
+     */
+    public String getComponentFailures() {
+        return componentFailures;
+    }
+
+    /**
+     * Setter for the component failure instance.
+     * @param componentFailures
+     */
+    public void setComponentFailures(final String componentFailures) {
+        this.componentFailures = componentFailures;
     }
 
     /**
