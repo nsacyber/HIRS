@@ -1,6 +1,8 @@
 package hirs.persist;
 
+import hirs.data.persist.SupplyChainValidationSummary;
 import hirs.data.persist.certificate.Certificate;
+import org.apache.logging.log4j.util.Strings;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.hibernate.SessionFactory;
@@ -17,6 +19,8 @@ public class DBCertificateManager extends DBManager<Certificate>
         implements CertificateManager {
 
     private static final Logger LOGGER = LogManager.getLogger(DBCertificateManager.class);
+
+    private SupplyChainValidationSummary summaryManager;
 
     /**
      * Creates a new {@link DBCertificateManager} that uses the default
@@ -67,5 +71,26 @@ public class DBCertificateManager extends DBManager<Certificate>
      */
     public boolean deleteCertificate(final Certificate certificate) {
         return delete(certificate);
+    }
+
+    /**
+     * Setter for a Supply Chain Validation Summary.
+     * @param scvSummary the value to be stored.
+     */
+    public void setSummary(final SupplyChainValidationSummary scvSummary) {
+        LOGGER.error("TDM - Woot, we made the shot.");
+        this.summaryManager = scvSummary;
+    }
+
+    /**
+     * The Getter for the message associated with the summary.
+     * @return a string for the message.
+     */
+    public String getSummaryMessage() {
+        if (this.summaryManager != null) {
+            return this.summaryManager.getMessage();
+        } else {
+            return Strings.EMPTY;
+        }
     }
 }

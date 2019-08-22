@@ -19,6 +19,7 @@ import hirs.data.persist.certificate.PlatformCredential;
 import hirs.data.persist.certificate.IssuedAttestationCertificate;
 import hirs.data.persist.certificate.attributes.PlatformConfiguration;
 import hirs.persist.CertificateManager;
+import hirs.persist.DBCertificateManager;
 import hirs.utils.BouncyCastleUtils;
 import java.util.Collections;
 
@@ -339,6 +340,12 @@ public final class CertificateStringMapBuilder {
             //CPSuri
             data.put("CPSuri", certificate.getCPSuri());
 
+            LOGGER.error(String.format("TDM - %s", certificateManager.getClass().getName()));
+            if (certificateManager instanceof DBCertificateManager) {
+                LOGGER.error("TDM - we hit the pocket.");
+                DBCertificateManager testable = (DBCertificateManager) certificateManager;
+                data.put("testable", testable.getSummaryMessage());
+            }
             //Get platform Configuration values and set map with it
             PlatformConfiguration platformConfiguration = certificate.getPlatformConfiguration();
             if (platformConfiguration != null) {

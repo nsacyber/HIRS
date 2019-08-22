@@ -162,7 +162,7 @@
 
                                html += '<a href="${portal}/certificate-details?id='
                                    + curValidation.certificatesUsed[0].id
-                                   + '&type=' + certType + '&fail=' + curMessage + '">';
+                                   + '&type=' + certType + '">';
                            }
 
                            switch (curResult) {

@@ -32,6 +32,7 @@ import hirs.data.persist.certificate.Certificate;
 import hirs.data.persist.certificate.CertificateAuthorityCredential;
 import hirs.data.persist.certificate.EndorsementCredential;
 import hirs.data.persist.certificate.PlatformCredential;
+import hirs.persist.DBCertificateManager;
 import hirs.persist.AppraiserManager;
 import hirs.persist.CertificateManager;
 import hirs.persist.CertificateSelector;
@@ -210,6 +211,11 @@ public class SupplyChainValidationServiceImpl implements SupplyChainValidationSe
                 new SupplyChainValidationSummary(device, validations);
         try {
             supplyChainValidatorSummaryManager.save(summary);
+
+            if (certificateManager instanceof DBCertificateManager) {
+                DBCertificateManager testable = (DBCertificateManager) certificateManager;
+                testable.setSummary(summary);
+            }
         } catch (DBManagerException ex) {
             LOGGER.error("Failed to save Supply chain summary", ex);
         }
