@@ -37,7 +37,6 @@
                     <tr>
                         <th style="text-align:center">Endorsement</th>
                         <th style="text-align:center">Platform</th>
-                        <th></th>
                     </tr>
                 </thead>
             </table>
@@ -109,14 +108,6 @@
                             orderable: false,
                             render: function (data, type, full, meta) {
                                 return getValidationDisplayHtml(full, "PLATFORM_CREDENTIAL")
-                            }
-                        },
-                        {
-                            data: 'id',
-                            searchable: false,
-                            orderable: false,
-                            render: function (data, type, full, meta) {
-                                return getValidationDisplayHtml(full, "PLATFORM_CREDENTIAL_ATTRIBUTES")
                             }
                         },
                     ];
