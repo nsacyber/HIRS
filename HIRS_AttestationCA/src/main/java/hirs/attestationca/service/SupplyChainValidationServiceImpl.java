@@ -106,6 +106,7 @@ public class SupplyChainValidationServiceImpl implements SupplyChainValidationSe
         PlatformCredential baseCredential = null;
         List<SupplyChainValidation> validations = new LinkedList<>();
         Map<PlatformCredential, SupplyChainValidation> deltaMapping = new HashMap<>();
+        SupplyChainValidation platformScv = null;
 
         // Validate the Endorsement Credential
         if (policy.isEcValidationEnabled()) {
@@ -131,7 +132,7 @@ public class SupplyChainValidationServiceImpl implements SupplyChainValidationSe
                 while (it.hasNext()) {
                     PlatformCredential pc = it.next();
                     KeyStore trustedCa = getCaChain(pc);
-                    SupplyChainValidation platformScv = validatePlatformCredential(
+                    platformScv = validatePlatformCredential(
                             pc, trustedCa, acceptExpiredCerts);
 
                     // check if this cert has been verified for multiple base
@@ -173,17 +174,12 @@ public class SupplyChainValidationServiceImpl implements SupplyChainValidationSe
                         if (pc.isDeltaChain()) {
                         // this check validates the delta changes and recompares
                         // the modified list to the original.
-                            SupplyChainValidation subPlatformScv
-                                    = validateDeltaPlatformCredentialAttributes(
+                            validations.add(validateDeltaPlatformCredentialAttributes(
                                             pc, device.getDeviceInfo(),
-                                            baseCredential, deltaMapping);
-
-                            validations.add(subPlatformScv);
+                                            baseCredential, deltaMapping));
                         } else {
-                            SupplyChainValidation attributeScv =
-                                    validatePlatformCredentialAttributes(
-                                    pc, device.getDeviceInfo(), ec);
-                            validations.add(attributeScv);
+                            validations.add(validatePlatformCredentialAttributes(
+                                    pc, device.getDeviceInfo(), ec));
                         }
 
                         pc.setDevice(device);
@@ -196,6 +192,10 @@ public class SupplyChainValidationServiceImpl implements SupplyChainValidationSe
         // Generate validation summary, save it, and return it.
         SupplyChainValidationSummary summary =
                 new SupplyChainValidationSummary(device, validations);
+        if (baseCredential != null) {
+            baseCredential.setComponentFailures(summary.getMessage());
+            this.certificateManager.update(baseCredential);
+        }
         try {
             supplyChainValidatorSummaryManager.save(summary);
         } catch (DBManagerException ex) {
@@ -368,7 +368,7 @@ public class SupplyChainValidationServiceImpl implements SupplyChainValidationSe
             final PlatformCredential base,
             final Map<PlatformCredential, SupplyChainValidation> deltaMapping) {
         final SupplyChainValidation.ValidationType validationType =
-                SupplyChainValidation.ValidationType.PLATFORM_CREDENTIAL_ATTRIBUTES;
+                SupplyChainValidation.ValidationType.PLATFORM_CREDENTIAL;
 
         if (delta == null) {
             LOGGER.error("No delta certificate to validate");

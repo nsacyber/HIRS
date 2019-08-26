@@ -339,7 +339,13 @@ public final class CertificateStringMapBuilder {
             //CPSuri
             data.put("CPSuri", certificate.getCPSuri());
             //component failure
-            data.put("failures", certificate.getComponentFailures());
+            StringBuilder savedFailures = new StringBuilder();
+            for (String s : certificate.getComponentFailures().split(",")) {
+                if (s.contains("Serial")) {
+                    savedFailures.append(s.split("=")[1]);
+                }
+            }
+            data.put("failures", savedFailures.toString());
 
             //Get platform Configuration values and set map with it
             PlatformConfiguration platformConfiguration = certificate.getPlatformConfiguration();

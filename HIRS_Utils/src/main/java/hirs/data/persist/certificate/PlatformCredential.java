@@ -688,7 +688,7 @@ public class PlatformCredential extends DeviceAssociatedCertificate {
 
     /**
      * Setter for the component failure instance.
-     * @param componentFailures
+     * @param componentFailures a string of failures.
      */
     public void setComponentFailures(final String componentFailures) {
         this.componentFailures = componentFailures;
