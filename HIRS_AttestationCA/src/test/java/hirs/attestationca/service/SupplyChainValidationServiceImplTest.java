@@ -301,7 +301,7 @@ public class SupplyChainValidationServiceImplTest extends SpringPersistenceTest 
     @Test
     public final void testNoPcValidation() {
         when(policy.isEcValidationEnabled()).thenReturn(true);
-        when(policy.isPcValidationEnabled()).thenReturn(false);
+        when(policy.isPcValidationEnabled()).thenReturn(true);
         when(policy.isPcAttributeValidationEnabled()).thenReturn(true);
         when(policy.isExpiredCertificateValidationEnabled()).thenReturn(true);
 
@@ -314,7 +314,7 @@ public class SupplyChainValidationServiceImplTest extends SpringPersistenceTest 
                         any(EndorsementCredential.class));
 
         Assert.assertEquals(service.validateSupplyChain(ec, pcs,
-                device).getOverallValidationResult(), PASS);
+                device).getOverallValidationResult(), FAIL);
         verify(supplyChainValidationSummaryDBManager).save(any(SupplyChainValidationSummary.class));
     }
 

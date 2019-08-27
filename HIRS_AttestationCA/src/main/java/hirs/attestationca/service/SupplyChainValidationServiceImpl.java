@@ -169,17 +169,43 @@ public class SupplyChainValidationServiceImpl implements SupplyChainValidationSe
                 Iterator<PlatformCredential> it = pcs.iterator();
                 while (it.hasNext()) {
                     PlatformCredential pc = it.next();
+                    SupplyChainValidation attributeScv;
 
                     if (pc != null) {
                         if (pc.isDeltaChain()) {
                         // this check validates the delta changes and recompares
                         // the modified list to the original.
-                            validations.add(validateDeltaPlatformCredentialAttributes(
+                            attributeScv = validateDeltaPlatformCredentialAttributes(
                                             pc, device.getDeviceInfo(),
-                                            baseCredential, deltaMapping));
+                                            baseCredential, deltaMapping);
                         } else {
-                            validations.add(validatePlatformCredentialAttributes(
-                                    pc, device.getDeviceInfo(), ec));
+                            attributeScv = validatePlatformCredentialAttributes(
+                                    pc, device.getDeviceInfo(), ec);
+                        }
+
+                        if (platformScv != null) {
+                            // have to make sure the attribute validation isn't ignored and
+                            // doesn't override general validation status
+                            if (platformScv.getResult() == AppraisalStatus.Status.PASS
+                                    && attributeScv.getResult() != AppraisalStatus.Status.PASS) {
+                                // if the platform trust store validated but the attribute didn't
+                                // replace
+                                validations.remove(platformScv);
+                                validations.add(attributeScv);
+                            } else if ((platformScv.getResult() == AppraisalStatus.Status.PASS
+                                    && attributeScv.getResult() == AppraisalStatus.Status.PASS)
+                                    || (platformScv.getResult() != AppraisalStatus.Status.PASS
+                                    && attributeScv.getResult() != AppraisalStatus.Status.PASS)) {
+                                // if both trust store and attributes validated or failed
+                                // combine messages
+                                validations.remove(platformScv);
+                                validations.add(new SupplyChainValidation(
+                                        platformScv.getValidationType(),
+                                        platformScv.getResult(),
+                                        platformScv.getCertificatesUsed(),
+                                        String.format("%s%n%s", platformScv.getMessage(),
+                                                attributeScv.getMessage())));
+                            }
                         }
 
                         pc.setDevice(device);
