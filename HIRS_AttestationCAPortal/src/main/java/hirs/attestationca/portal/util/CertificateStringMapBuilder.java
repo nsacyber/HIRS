@@ -30,6 +30,7 @@ public final class CertificateStringMapBuilder {
 
     private static final Logger LOGGER =
             LogManager.getLogger(CertificateStringMapBuilder.class);
+    private static final int SERIAL_INDEX = 1;
 
     private CertificateStringMapBuilder() {
 
@@ -342,7 +343,7 @@ public final class CertificateStringMapBuilder {
             StringBuilder savedFailures = new StringBuilder();
             for (String s : certificate.getComponentFailures().split(",")) {
                 if (s.contains("Serial")) {
-                    savedFailures.append(s.split("=")[1]);
+                    savedFailures.append(s.split("=")[SERIAL_INDEX]);
                 }
             }
             data.put("failures", savedFailures.toString());

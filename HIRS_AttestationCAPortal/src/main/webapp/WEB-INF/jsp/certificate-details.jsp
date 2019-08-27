@@ -615,7 +615,7 @@
                                                             <div class="panel panel-default">
                                                                 <c:choose>
                                                                     <c:when test="${fn:contains(initialData.failures, component.getComponentSerial()) && not empty fn:trim(component.getComponentSerial())}">
-                                                                        <div class="panel-heading" style="background-color: orangered">
+                                                                        <div class="panel-heading" style="background-color: red; color: white">
                                                                     </c:when>
                                                                     <c:otherwise>
                                                                         <div class="panel-heading">
