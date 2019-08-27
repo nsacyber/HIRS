@@ -106,6 +106,7 @@ public class SupplyChainValidationServiceImpl implements SupplyChainValidationSe
         PlatformCredential baseCredential = null;
         List<SupplyChainValidation> validations = new LinkedList<>();
         Map<PlatformCredential, SupplyChainValidation> deltaMapping = new HashMap<>();
+        SupplyChainValidation platformScv = null;
 
         // Validate the Endorsement Credential
         if (policy.isEcValidationEnabled()) {
@@ -131,7 +132,7 @@ public class SupplyChainValidationServiceImpl implements SupplyChainValidationSe
                 while (it.hasNext()) {
                     PlatformCredential pc = it.next();
                     KeyStore trustedCa = getCaChain(pc);
-                    SupplyChainValidation platformScv = validatePlatformCredential(
+                    platformScv = validatePlatformCredential(
                             pc, trustedCa, acceptExpiredCerts);
 
                     // check if this cert has been verified for multiple base
@@ -168,22 +169,40 @@ public class SupplyChainValidationServiceImpl implements SupplyChainValidationSe
                 Iterator<PlatformCredential> it = pcs.iterator();
                 while (it.hasNext()) {
                     PlatformCredential pc = it.next();
+                    SupplyChainValidation attributeScv;
 
                     if (pc != null) {
                         if (pc.isDeltaChain()) {
                         // this check validates the delta changes and recompares
                         // the modified list to the original.
-                            SupplyChainValidation subPlatformScv
-                                    = validateDeltaPlatformCredentialAttributes(
+                            attributeScv = validateDeltaPlatformCredentialAttributes(
                                             pc, device.getDeviceInfo(),
                                             baseCredential, deltaMapping);
-
-                            validations.add(subPlatformScv);
                         } else {
-                            SupplyChainValidation attributeScv =
-                                    validatePlatformCredentialAttributes(
+                            attributeScv = validatePlatformCredentialAttributes(
                                     pc, device.getDeviceInfo(), ec);
+                        }
+
+                        // have to make sure the attribute validation isn't ignored and
+                        // doesn't override general validation status
+                        if (platformScv.getResult() == AppraisalStatus.Status.PASS
+                                && attributeScv.getResult() != AppraisalStatus.Status.PASS) {
+                            // if the platform trust store validated but the attribute didn't
+                            // replace
+                            validations.remove(platformScv);
                             validations.add(attributeScv);
+                        } else if ((platformScv.getResult() == AppraisalStatus.Status.PASS
+                                && attributeScv.getResult() == AppraisalStatus.Status.PASS)
+                                || (platformScv.getResult() != AppraisalStatus.Status.PASS
+                                && attributeScv.getResult() != AppraisalStatus.Status.PASS)) {
+                            // if both trust store and attributes validated or failed
+                            // combine messages
+                            validations.remove(platformScv);
+                            validations.add(new SupplyChainValidation(
+                                    platformScv.getValidationType(),
+                                    platformScv.getResult(), platformScv.getCertificatesUsed(),
+                                    String.format("%s%n%s", platformScv.getMessage(),
+                                            attributeScv.getMessage())));
                         }
 
                         pc.setDevice(device);
@@ -368,7 +387,7 @@ public class SupplyChainValidationServiceImpl implements SupplyChainValidationSe
             final PlatformCredential base,
             final Map<PlatformCredential, SupplyChainValidation> deltaMapping) {
         final SupplyChainValidation.ValidationType validationType =
-                SupplyChainValidation.ValidationType.PLATFORM_CREDENTIAL_ATTRIBUTES;
+                SupplyChainValidation.ValidationType.PLATFORM_CREDENTIAL;
 
         if (delta == null) {
             LOGGER.error("No delta certificate to validate");
