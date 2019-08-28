@@ -706,11 +706,12 @@ public class CertificateRequestPageController extends PageController<NoPageParam
                                 .getCertificate();
 
                         if (holderPC == null)  {
-                            final String failMessage = "Storing certificate failed: delta credential"
+                            final String failMessage = "Storing certificate failed: "
+                                    + "delta credential"
                                     + " must have an existing holder stored.  "
                                     + "Credential serial "
                                     + platformCertificate.getHolderSerialNumber()
-                                    + " doesn't exist." ;
+                                    + " doesn't exist.";
                             messages.addError(failMessage);
                             LOGGER.error(failMessage);
                             return;
