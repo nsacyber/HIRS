@@ -698,7 +698,25 @@ public class CertificateRequestPageController extends PageController<NoPageParam
                                 }
                             }
                         }
-                    }
+                    } /**else {
+                        // this is a delta, check if the holder exists.
+                       PlatformCredential holderPC = PlatformCredential
+                                .select(certificateManager)
+                                .bySerialNumber(platformCertificate.getHolderSerialNumber())
+                                .getCertificate();
+
+                        if (holderPC == null)  {
+                            final String failMessage = "Storing certificate failed: "
+                                    + "delta credential"
+                                    + " must have an existing holder stored.  "
+                                    + "Credential serial "
+                                    + platformCertificate.getHolderSerialNumber()
+                                    + " doesn't exist.";
+                            messages.addError(failMessage);
+                            LOGGER.error(failMessage);
+                            return;
+                        }
+                    }**/
                 }
 
                 certificateManager.save(certificate);
