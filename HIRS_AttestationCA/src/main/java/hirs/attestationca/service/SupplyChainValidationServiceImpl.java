@@ -183,26 +183,29 @@ public class SupplyChainValidationServiceImpl implements SupplyChainValidationSe
                                     pc, device.getDeviceInfo(), ec);
                         }
 
-                        // have to make sure the attribute validation isn't ignored and
-                        // doesn't override general validation status
-                        if (platformScv.getResult() == AppraisalStatus.Status.PASS
-                                && attributeScv.getResult() != AppraisalStatus.Status.PASS) {
-                            // if the platform trust store validated but the attribute didn't
-                            // replace
-                            validations.remove(platformScv);
-                            validations.add(attributeScv);
-                        } else if ((platformScv.getResult() == AppraisalStatus.Status.PASS
-                                && attributeScv.getResult() == AppraisalStatus.Status.PASS)
-                                || (platformScv.getResult() != AppraisalStatus.Status.PASS
-                                && attributeScv.getResult() != AppraisalStatus.Status.PASS)) {
-                            // if both trust store and attributes validated or failed
-                            // combine messages
-                            validations.remove(platformScv);
-                            validations.add(new SupplyChainValidation(
-                                    platformScv.getValidationType(),
-                                    platformScv.getResult(), platformScv.getCertificatesUsed(),
-                                    String.format("%s%n%s", platformScv.getMessage(),
-                                            attributeScv.getMessage())));
+                        if (platformScv != null) {
+                            // have to make sure the attribute validation isn't ignored and
+                            // doesn't override general validation status
+                            if (platformScv.getResult() == AppraisalStatus.Status.PASS
+                                    && attributeScv.getResult() != AppraisalStatus.Status.PASS) {
+                                // if the platform trust store validated but the attribute didn't
+                                // replace
+                                validations.remove(platformScv);
+                                validations.add(attributeScv);
+                            } else if ((platformScv.getResult() == AppraisalStatus.Status.PASS
+                                    && attributeScv.getResult() == AppraisalStatus.Status.PASS)
+                                    || (platformScv.getResult() != AppraisalStatus.Status.PASS
+                                    && attributeScv.getResult() != AppraisalStatus.Status.PASS)) {
+                                // if both trust store and attributes validated or failed
+                                // combine messages
+                                validations.remove(platformScv);
+                                validations.add(new SupplyChainValidation(
+                                        platformScv.getValidationType(),
+                                        platformScv.getResult(),
+                                        platformScv.getCertificatesUsed(),
+                                        String.format("%s%n%s", platformScv.getMessage(),
+                                                attributeScv.getMessage())));
+                            }
                         }
 
                         pc.setDevice(device);
@@ -215,6 +218,10 @@ public class SupplyChainValidationServiceImpl implements SupplyChainValidationSe
         // Generate validation summary, save it, and return it.
         SupplyChainValidationSummary summary =
                 new SupplyChainValidationSummary(device, validations);
+        if (baseCredential != null) {
+            baseCredential.setComponentFailures(summary.getMessage());
+            this.certificateManager.update(baseCredential);
+        }
         try {
             supplyChainValidatorSummaryManager.save(summary);
         } catch (DBManagerException ex) {

@@ -30,6 +30,7 @@ public final class CertificateStringMapBuilder {
 
     private static final Logger LOGGER =
             LogManager.getLogger(CertificateStringMapBuilder.class);
+    private static final int SERIAL_INDEX = 1;
 
     private CertificateStringMapBuilder() {
 
@@ -338,6 +339,14 @@ public final class CertificateStringMapBuilder {
             data.put("x509Version", certificate.getX509CredentialVersion());
             //CPSuri
             data.put("CPSuri", certificate.getCPSuri());
+            //component failure
+            StringBuilder savedFailures = new StringBuilder();
+            for (String s : certificate.getComponentFailures().split(",")) {
+                if (s.contains("Serial")) {
+                    savedFailures.append(s.split("=")[SERIAL_INDEX]);
+                }
+            }
+            data.put("failures", savedFailures.toString());
 
             //Get platform Configuration values and set map with it
             PlatformConfiguration platformConfiguration = certificate.getPlatformConfiguration();

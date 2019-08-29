@@ -4,8 +4,7 @@
 <%@taglib prefix="spring" uri="http://www.springframework.org/tags"%>
 <%@taglib prefix="form" uri="http://www.springframework.org/tags/form"%>
 <%@taglib prefix="fn" uri = "http://java.sun.com/jsp/jstl/functions" %>
-<%@taglib prefix="my" tagdir="/WEB-INF/tags"%>
-<%@taglib prefix="fn" uri = "http://java.sun.com/jsp/jstl/functions"%><%--CONTENT--%>
+<%@taglib prefix="my" tagdir="/WEB-INF/tags"%><%--CONTENT--%>
 <my:page>
     <jsp:attribute name="style">
         <link type="text/css" rel="stylesheet" href="${common}/certificate_details.css"/>
@@ -614,7 +613,14 @@
                                                     <c:forEach items="${initialData.componentsIdentifier}" var="component">
                                                         <div class="component col col-md-4">
                                                             <div class="panel panel-default">
-                                                                <div class="panel-heading">
+                                                                <c:choose>
+                                                                    <c:when test="${fn:contains(initialData.failures, component.getComponentSerial()) && not empty fn:trim(component.getComponentSerial())}">
+                                                                        <div class="panel-heading" style="background-color: red; color: white">
+                                                                    </c:when>
+                                                                    <c:otherwise>
+                                                                        <div class="panel-heading">
+                                                                    </c:otherwise>
+                                                                </c:choose>
                                                                     <c:choose>
                                                                         <c:when test="${component.isVersion2()=='TRUE'}">
                                                                             <span data-toggle="tooltip" data-placement="top" title="Component Class">${component.getComponentClass()}</span>
@@ -850,7 +856,7 @@
                     var subjectKeyIdentifier = ${initialData.subjectKeyIdentifier};
                     $("#subjectKeyIdentifier").html(byteToHexString(subjectKeyIdentifier));
                 }
-            </c:if>
+            </c:if>            
 
                 //Initiliaze tooltips
                 $('[data-toggle="tooltip"]').tooltip();
