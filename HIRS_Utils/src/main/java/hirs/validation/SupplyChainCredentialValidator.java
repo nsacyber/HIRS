@@ -579,10 +579,7 @@ public final class SupplyChainCredentialValidator implements CredentialValidator
                 if (obj2 == null) {
                     return 0;
                 }
-                if (obj1.getBeginValidity() == null) {
-                    return 0;
-                }
-                if (obj2.getBeginValidity() == null) {
+                if (obj1.getBeginValidity() == null || obj2.getBeginValidity() == null) {
                     return 0;
                 }
                 return obj1.getBeginValidity().compareTo(obj2.getBeginValidity());
