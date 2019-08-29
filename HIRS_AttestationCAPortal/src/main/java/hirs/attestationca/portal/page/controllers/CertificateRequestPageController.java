@@ -698,9 +698,9 @@ public class CertificateRequestPageController extends PageController<NoPageParam
                                 }
                             }
                         }
-                    } else {
+                    } /**else {
                         // this is a delta, check if the holder exists.
-                        PlatformCredential holderPC = PlatformCredential
+                       PlatformCredential holderPC = PlatformCredential
                                 .select(certificateManager)
                                 .bySerialNumber(platformCertificate.getHolderSerialNumber())
                                 .getCertificate();
@@ -716,7 +716,7 @@ public class CertificateRequestPageController extends PageController<NoPageParam
                             LOGGER.error(failMessage);
                             return;
                         }
-                    }
+                    }**/
                 }
 
                 certificateManager.save(certificate);
