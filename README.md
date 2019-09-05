@@ -4,8 +4,9 @@
 
 <h2>Attestation Certificate Authority (ACA) and TPM Provisioning with Trusted Computing-based Supply Chain Validation </h2>
 
+The Host Integrity at Runtime and Start-up Attestation Certificate Authority is a Proof of Concept - Prototype intended to spur interest and adoption of the Trusted Platform Module (TPM). It's intended for testing and development purposes only and is not intended for production. The ACA's functionality supports the provisioning of both the TPM 1.2 and TPM 2.0 with an Attestation Identity Credential (AIC). The ACA can be configured to enforce the Validation of Endorsement and Platform Credentials to illustrate a supply chain capability. 
 
-The Host Integrity at Runtime and Start-up Attestation Certificate Authority is a Proof of Concept - Prototype intended to spur interest and adoption of the Trusted Platform Module (TPM). It's intended for testing and development purposes only and is not intended for production. The ACA's functionality supports the provisioning of both the TPM 1.2 and TPM 2.0 with an Attestation Identity Credential (AIC). The ACA can be configured to enforce the Validation of Endorsement and Platform Credentials to illustrate a supply chain capability. It also includes several tools for generating test patterns (Platform Credentials) and generating SWID tags.
+Version 1.1 adds support for the [Platform Certificate v1.1 Specification](https://trustedcomputinggroup.org/wp-content/uploads/IWG_Platform_Certificate_Profile_v1p1_r15_pubrev.pdf). This allows entities that are part of the supply chain (System integrators and Value Added Resellers) the ability to create Delta Platform Certificate to compliment the Base Platform Certificate created by the Platform Manufacturer. See the [Article on Base and Delta Platform Certificates](https://github.com/nsacyber/HIRS/wiki/Base-and-Delta-Platform-Certificate) for details.
 
 The ACA provides a “provisioner” application to be installed on all devices which will be requesting Attestation Credentials.
 The ACA is a web based server which processes Attestation Identity Requests.
