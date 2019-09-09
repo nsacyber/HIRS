@@ -4,7 +4,7 @@
 
 <h2>Attestation Certificate Authority (ACA) and TPM Provisioning with Trusted Computing-based Supply Chain Validation </h2>
 
-The Host Integrity at Runtime and Start-up Attestation Certificate Authority is a Proof of Concept - Prototype intended to spur interest and adoption of the Trusted Platform Module (TPM). It's intended for testing and development purposes only and is not intended for production. The ACA's functionality supports the provisioning of both the TPM 1.2 and TPM 2.0 with an Attestation Identity Credential (AIC). The ACA can be configured to enforce the Validation of Endorsement and Platform Credentials to illustrate a supply chain capability. 
+The Host Integrity at Runtime and Start-up Attestation Certificate Authority is a Proof of Concept - Prototype intended to spur interest and adoption of the [Trusted Platform Module (TPM)](https://trustedcomputinggroup.org/work-groups/trusted-platform-module/). It's intended for testing and development purposes only and is not intended for production. The ACA's functionality supports the provisioning of both the TPM 1.2 and [TPM 2.0](https://trustedcomputinggroup.org/wp-content/uploads/2019_TCG_TPM2_BriefOverview_DR02web.pdf) with an [Attestation Identity Credential (AIC)](https://www.trustedcomputinggroup.org/wp-content/uploads/IWG-Credential_Profiles_V1_R1_14.pdf). The ACA can be configured to enforce the Validation of Endorsement and Platform Credentials to illustrate a supply chain validation capability. 
 
 Version 1.1 adds support for the [Platform Certificate v1.1 Specification](https://trustedcomputinggroup.org/wp-content/uploads/IWG_Platform_Certificate_Profile_v1p1_r15_pubrev.pdf). This allows entities that are part of the supply chain (System integrators and Value Added Resellers) the ability to create Delta Platform Certificate to compliment the Base Platform Certificate created by the Platform Manufacturer. See the [Article on Base and Delta Platform Certificates](https://github.com/nsacyber/HIRS/wiki/Base-and-Delta-Platform-Certificates) for details.
 
@@ -30,7 +30,7 @@ The ACA is a web based server which processes Attestation Identity Requests.
 Revision 14](https://www.trustedcomputinggroup.org/wp-content/uploads/Credential_Profile_EK_V2.0_R14_published.pdf)
   * Verifies the endorsement key used by the TPM was placed there by the original equipment manufacturer (OEM)
 * Platform Credential Certificate Chain Validation
-  * Process Platform Credentials per [TCG Platform Attribute Credential Profile Specification Version 1.0 Revision 16](https://trustedcomputinggroup.org/wp-content/uploads/TCG-Platform-Attribute-Credential-Profile-Version-1.0.pdf)
+  * Process Platform Credentials per [TCG Platform Attribute Credential Profile Specification Version 1.1 Revision 15](https://trustedcomputinggroup.org/wp-content/uploads/IWG_Platform_Certificate_Profile_v1p1_r15_pubrev.pdf)
   * Verifies the provenance of the system's hardware components, such as the motherboard and chassis, by comparing measured component information against the manufacturers, models, and serial numbers listed in the Platform Credential
 * Attestation CA Dashboard
   * Displays all Validation Reports, Credentials, and Trust Chains
@@ -77,6 +77,7 @@ To see the results and interact with the ACA, go to the ACA Portal at `https://A
 
 ## Quick Links:
 
+* [TPM 2.0: A brief introduction](https://trustedcomputinggroup.org/wp-content/uploads/2019_TCG_TPM2_BriefOverview_DR02web.pdf)
 * [Getting started with The ACA and Platform Credentials](https://github.com/nsacyber/HIRS/wiki/Gettingstarted)
 * [HIRS ACA and TPM provisioner Users Guide](https://github.com/nsacyber/HIRS/blob/master/HIRS_AttestationCAPortal/src/main/webapp/docs/HIRS_ACA_UsersGuide_1.0.3.pdf)
 * [Installation notes](https://github.com/nsacyber/HIRS/wiki/installation_notes)
