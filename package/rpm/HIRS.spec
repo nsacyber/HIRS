@@ -180,6 +180,9 @@ fi
 
 # modify mysql schema accordingly on upgrade
 if [ $1 -gt 1 ]; then
+    #update version number on portal banner
+    echo %{?DISPLAY_VERSION} | tee '%{prefix}/webapps/HIRS_AttestationCAPortal/WEB-INF/classes/VERSION'
+
     echo "Upgrading hirs_db schema!"
     if [ %{version} == "1.0.4" ]; then
 	if (mysql -u root hirs_db < /opt/hirs/scripts/common/upgrade_schema_1.0.4.sql); then
@@ -236,10 +239,6 @@ if [ $1 == 0 ]; then
         rm -rf /usr/share/hirs
         rm -rf /var/log/hirs
     fi
-fi
-
-if [ $1 == 2 ]; then
-    echo %{?DISPLAY_VERSION} | tee '%{prefix}/webapps/HIRS_AttestationCAPortal/WEB-INF/classes/VERSION'
 fi
 
 %files -n HIRS_AttestationCA
