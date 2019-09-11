@@ -5,7 +5,7 @@
 set -e
 
 echo ""
-echo "System Tests Starting..."
+echo "System Tests TPM 2.0 Starting..."
 echo ""
 
 # Start System Testing Docker Environment
@@ -40,7 +40,7 @@ echo "===========hirs-aca-provisioner-tpm2 System Tests Log:==========="
 docker logs $tpm2_container_id
 
 echo ""
-echo "End of TPM 2.0 System Tests, cleaning up..."
+echo "End of System Tests TPM 2.0, cleaning up..."
 echo ""
 # Clean up services and network
 docker-compose down
@@ -56,9 +56,9 @@ echo ""
 # Return container exit code
 if [[ $tpm2_container_exit_code == 0 ]]
 then
-    echo "SUCCESS: TPM 2.0 System tests passed"
+    echo "SUCCESS: System Tests TPM 2.0 passed"
     exit 0
 fi
 
-echo "ERROR: System tests failed"
+echo "ERROR: System Tests TPM 2.0 failed"
 exit 1

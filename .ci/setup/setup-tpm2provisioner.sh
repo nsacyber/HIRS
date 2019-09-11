@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Script to setup the TPM2 Provisioner Docker Image for Integration Tests
+# Script to setup the TPM 2.0 Provisioner Docker Image for System Tests
 set -e
 
 # Wait for ACA to boot
@@ -45,24 +45,33 @@ function InitTpm2Emulator {
 	/ibmtpm/src/./tpm_server &
 	echo "TPM Emulator started"
 
+	# Give tpm_server time to start and register on the DBus
+	sleep 5
+
 	tpm2-abrmd -t socket &
 	echo "TPM2-Abrmd started"
 
 	# Give ABRMD time to start and register on the DBus
 	sleep 5
 
-	# EK and PC Certificate
-	ek_cert_der="/HIRS/.ci/setup/certs/ek_cert.der"
+	# Certificates
+	ek_cert="/HIRS/.ci/setup/certs/ek_cert.der"
+	ca_key="/HIRS/.ci/setup/certs/ca.key"
+	ca_cert="/HIRS/.ci/setup/certs/ca.crt"
 	platform_cert="platformAttributeCertificate.der"
 
-	echo "Creating Platform Cert for Container."
+	# PACCOR directory
 	PC_DIR=/var/hirs/pc_generation
 	mkdir -p $PC_DIR
+
+	echo "Running PACCOR to generate local components..."
 	/opt/paccor/scripts/allcomponents.sh > $PC_DIR/componentsFile
 	/opt/paccor/scripts/referenceoptions.sh > $PC_DIR/optionsFile
 	/opt/paccor/scripts/otherextensions.sh > $PC_DIR/extensionsFile
-	/opt/paccor/bin/observer -c $PC_DIR/componentsFile -p $PC_DIR/optionsFile -e $ek_cert_der -f $PC_DIR/observerFile
-	/opt/paccor/bin/signer -o $PC_DIR/observerFile -x $PC_DIR/extensionsFile -b 20180101 -a 20280101 -N $RANDOM -k /HIRS/.ci/setup/certs/ca.key -P /HIRS/.ci/setup/certs/ca.crt -f $PC_DIR/$platform_cert
+
+	echo "Generating $platform_cert..."
+	/opt/paccor/bin/observer -c $PC_DIR/componentsFile -p $PC_DIR/optionsFile -e $ek_cert -f $PC_DIR/observerFile
+	/opt/paccor/bin/signer -o $PC_DIR/observerFile -x $PC_DIR/extensionsFile -b 20180101 -a 20280201 -N $RANDOM -k $ca_key -P $ca_cert -f $PC_DIR/$platform_cert
 
 	if tpm2_nvlist | grep -q 0x1c00002; then
 	  echo "Released NVRAM for EK."
@@ -73,13 +82,13 @@ function InitTpm2Emulator {
 	# authorize [0x40000001 = ownerAuth handle], -s size [defaults to 2048], -t
 	# specifies attribute value in publicInfo struct
 	# [0x2000A = ownerread|ownerwrite|policywrite])
-	size=$(cat $ek_cert_der | wc -c)
+	size=$(cat $ek_cert | wc -c)
 	echo "Define NVRAM location for EK cert of size $size."
 	tpm2_nvdefine -x 0x1c00002 -a 0x40000001 -t 0x2000A -s $size
 
 	# Load key into TPM nvram
-	echo "Loading EK cert $ek_cert_der into NVRAM."
-	tpm2_nvwrite -x 0x1c00002 -a 0x40000001 $ek_cert_der
+	echo "Loading EK cert $ek_cert into NVRAM."
+	tpm2_nvwrite -x 0x1c00002 -a 0x40000001 $ek_cert
 
 	if tpm2_nvlist | grep -q 0x1c90000; then
 	  echo "Released NVRAM for PC."

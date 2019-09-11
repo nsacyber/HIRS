@@ -52,7 +52,17 @@ LOG_LEVEL = os.environ.get('LOG_LEVEL')
 
 CA_CERT_LOCATION = "/HIRS/.ci/setup/certs/ca.crt"
 EK_CA_CERT_LOCATION = "/HIRS/.ci/setup/certs/ek_cert.der"
+PBaseCertA_LOCATION = "/var/hirs/pc_generation/PBaseCertA.der"
+PBaseCertB_LOCATION = "/var/hirs/pc_generation/PBaseCertB.der"
+SIDeltaCertA1_LOCATION = "/var/hirs/pc_generation/SIDeltaCertA1.der"
+SIDeltaCertA2_LOCATION = "/var/hirs/pc_generation/SIDeltaCertA2.der"
+SIDeltaCertA2_resolved_LOCATION = "/var/hirs/pc_generation/SIDeltaCertA2_resolved.der"
+SIDeltaCertA3_LOCATION = "/var/hirs/pc_generation/SIDeltaCertA3.der"
+VARDeltaCertA1_LOCATION = "/var/hirs/pc_generation/VARDeltaCertA1.der"
+VARDeltaCertA2_LOCATION = "/var/hirs/pc_generation/VARDeltaCertA2.der"
+VARDeltaCertA2_resolved_LOCATION = "/var/hirs/pc_generation/VARDeltaCertA2_resolved.der"
 SIDeltaCertB1_LOCATION = "/var/hirs/pc_generation/SIDeltaCertB1.der"
+VARDeltaCertB1_LOCATION = "/var/hirs/pc_generation/VARDeltaCertB1.der"
 
 USB_STORAGE_FILE_HASH = "e164c378ceb45a62642730be5eb3169a6bfc2d6d"
 USB_STORAGE_FILE_HASH_2 = "e164c378ceb45a62642730be5eb3169a6bfc1234"
@@ -688,60 +698,221 @@ class SystemTest(unittest.TestCase):
 	@collectors(['BASE_DELTA_GOOD'], COLLECTOR_LIST)
 	@unittest.skipIf(not is_tpm2(TPM_VERSION), "Skipping this test due to TPM Version " + TPM_VERSION)
 	def test_19_A1_base_delta(self):
-		"""Test Base/Delta Certificates A1 - Provisioning with Good Base Platform Cert Base (via Platform Cert on TPM)"""
+		"""Test Delta Certificates A1 - Provisioning with Good Base Platform Cert (via Platform Cert on TPM Emulator)"""
 		logging.info("*****************test_19_A1 - beginning of delta certificate test *****************")
-		logging.info("Provisioning with Good Base Platform Cert Base (via Platform Cert on TPM)")
+		logging.info("Provisioning with Good Base Platform Cert (via Platform Cert on TPM Emulator)")
+
+		logging.info("Check if ACA is online...")
+		AcaPortal.check_is_online()
+
+		logging.info("Uploading CA cert: " + CA_CERT_LOCATION)
+		AcaPortal.upload_ca_cert(CA_CERT_LOCATION)
+		AcaPortal.enable_supply_chain_validations()
+		provisioner_out = run_hirs_provisioner_tpm2(CLIENT)
+
+		print("test_19_A1_base_delta run output: {0}".format(provisioner_out))
+
+		# Verify device supply chain appraisal result is PASS
+		devices = AcaPortal.get_devices()
+		self.assertEqual(devices['data'][0]['device']['supplyChainStatus'], "PASS")
 
 	@collectors(['BASE_DELTA_GOOD'], COLLECTOR_LIST)
 	@unittest.skipIf(not is_tpm2(TPM_VERSION), "Skipping this test due to TPM Version " + TPM_VERSION)
 	def test_19_A2_base_delta(self):
-		"""Test Base/Delta Certificates A2 - Provisioning with Good Base Platform Cert Base and 1 Delta Cert"""
+		"""Test Delta Certificates A2 - Attempt to upload Base cert with holder already having a Base Platform Cert associated with it"""
 		logging.info("*****************test_19_A2 - beginning of delta certificate test *****************")
-		logging.info("Provisioning with Good Base Platform Cert Base and 1 Delta Cert")
+		logging.info("Attempt to upload PBaseCertB, with PBaseCertA already loaded in the ACA.")
+
+		print("test_19_A2_base_delta. PBaseCertA has already been loaded. Attempting to upload second Platform Cert: %s" % (PBaseCertB_LOCATION))
+
+		# Confirm there is one Platform Base Cert already loaded
+		cert_list = AcaPortal.get_pk_certs()
+		self.assertEqual(cert_list['recordsTotal'], 1)
+		print("Number of Platform certs: %d" % (cert_list['recordsTotal']))
+		self.assertEqual(cert_list['data'][0]['credentialType'], "TCG Trusted Platform Endorsement")
+		self.assertEqual(cert_list['data'][0]['platformType'], "Base")
+
+		# Try uploading a second Platform Base Cert
+		print("Attempting to upload a second Platform Base Cert...")
+		AcaPortal.upload_pk_cert(PBaseCertB_LOCATION)
+
+		# Confirm Platform Base Cert has not been loaded
+		cert_list = AcaPortal.get_pk_certs()
+		self.assertEqual(cert_list['recordsTotal'], 1)
+		print("Number of Platform certs: %d" % (cert_list['recordsTotal']))
+		self.assertEqual(cert_list['data'][0]['credentialType'], "TCG Trusted Platform Endorsement")
+		self.assertEqual(cert_list['data'][0]['platformType'], "Base")
+
+		if (cert_list['recordsTotal'] == 1):
+			print ("SUCCESS.")
+		else:
+			print ("FAILED.")
 
 	@collectors(['BASE_DELTA_GOOD'], COLLECTOR_LIST)
 	@unittest.skipIf(not is_tpm2(TPM_VERSION), "Skipping this test due to TPM Version " + TPM_VERSION)
 	def test_19_A3_base_delta(self):
-		"""Test Base/Delta Certificates A3 - Provisioning with Good Base Platform Cert Base and 2 Delta Certs"""
+		"""Test Delta Certificates A3 - Provisioning with Good Base Platform Cert Base and 1 Delta Cert"""
 		logging.info("*****************test_19_A3 - beginning of delta certificate test *****************")
-		logging.info("Provisioning with Good Base Platform Cert Base and 2 Delta Certs")
+		logging.info("Provisioning with Good Base Platform Cert Base and 1 Delta Cert")
+
+		# Verify device supply chain appraisal result is PASS
+		devices = AcaPortal.get_devices()
+		self.assertEqual(devices['data'][0]['device']['supplyChainStatus'], "PASS")
+
+		# Upload the SIDeltaCertA1 and provision
+		AcaPortal.upload_pk_cert(SIDeltaCertA1_LOCATION)
+		AcaPortal.enable_supply_chain_validations()
+		provisioner_out = run_hirs_provisioner_tpm2(CLIENT)
+
+		print("test_19_A3_base_delta run output: {0}".format(provisioner_out))
+		supply_chain_validation_summaries = AcaPortal.get_supply_chain_validation_summaries()
+
+		# Verify this is one SCVS record indicating PASS
+		self.assertEqual(supply_chain_validation_summaries['recordsTotal'], 2)
+		self.assertEqual(supply_chain_validation_summaries['data'][0]['overallValidationResult'], "PASS")
+		self.assertEqual(supply_chain_validation_summaries['data'][1]['overallValidationResult'], "PASS")
+
+		# Verify device has been updated with supply chain appraisal result
+		devices = AcaPortal.get_devices()
+		self.assertEqual(devices['data'][0]['device']['supplyChainStatus'], "PASS")
 
 	@collectors(['BASE_DELTA_GOOD'], COLLECTOR_LIST)
 	@unittest.skipIf(not is_tpm2(TPM_VERSION), "Skipping this test due to TPM Version " + TPM_VERSION)
 	def test_19_A4_base_delta(self):
-		"""Test Base/Delta Certificates A4 - Provisioning with Good Base Platform Cert and 1 Bad Delta Cert"""
+		"""Test Delta Certificates A4 - Provisioning with Good Base Platform Cert Base and 2 Delta Certs"""
 		logging.info("*****************test_19_A4 - beginning of delta certificate test *****************")
-		logging.info("Provisioning with Good Base Platform Cert and 1 Bad Delta Cert")
+		logging.info("Provisioning with Good Base Platform Cert Base and 2 Delta Certs")
+
+		# Verify device supply chain appraisal result is PASS
+		devices = AcaPortal.get_devices()
+		self.assertEqual(devices['data'][0]['device']['supplyChainStatus'], "PASS")
+
+		# Upload the VARDeltaCertA1 and provision
+		AcaPortal.upload_pk_cert(VARDeltaCertA1_LOCATION)
+		AcaPortal.enable_supply_chain_validations()
+		provisioner_out = run_hirs_provisioner_tpm2(CLIENT)
+
+		print("test_19_A4_base_delta run output: {0}".format(provisioner_out))
+		supply_chain_validation_summaries = AcaPortal.get_supply_chain_validation_summaries()
+
+		# Verify this is one SCVS record indicating PASS
+		self.assertEqual(supply_chain_validation_summaries['recordsTotal'], 3)
+		self.assertEqual(supply_chain_validation_summaries['data'][0]['overallValidationResult'], "PASS")
+		self.assertEqual(supply_chain_validation_summaries['data'][1]['overallValidationResult'], "PASS")
+		self.assertEqual(supply_chain_validation_summaries['data'][2]['overallValidationResult'], "PASS")
+
+		# Verify device has been updated with supply chain appraisal result
+		devices = AcaPortal.get_devices()
+		self.assertEqual(devices['data'][0]['device']['supplyChainStatus'], "PASS")
 
 	@collectors(['BASE_DELTA_GOOD'], COLLECTOR_LIST)
 	@unittest.skipIf(not is_tpm2(TPM_VERSION), "Skipping this test due to TPM Version " + TPM_VERSION)
 	def test_19_A5_base_delta(self):
-		"""Test Base/Delta Certificates A5 - Provisioning with Good Base Platform, 2 Good Delta Certs and 1 Bad Delta Cert"""
+		"""Test Delta Certificates A5 - Provisioning with Good Base Platform Cert and 1 Bad Delta Cert"""
 		logging.info("*****************test_19_A5 - beginning of delta certificate test *****************")
-		logging.info("Provisioning with Good Base Platform, 2 Good Delta Certs and 1 Bad Delta Cert")
+		logging.info("Provisioning with Good Base Platform Cert and 1 Bad Delta Cert")
+
+		# TODO: Determine if we need this test
+
+#		 # Verify device supply chain appraisal result is PASS
+#		 devices = AcaPortal.get_devices()
+#		 self.assertEqual(devices['data'][0]['device']['supplyChainStatus'], "PASS")
+#
+#		 # Upload the VARDelta cert and provision
+#		 AcaPortal.upload_pk_cert(SIDeltaCertA2_LOCATION)
+#		 AcaPortal.enable_supply_chain_validations()
+#		 provisioner_out = run_hirs_provisioner_tpm2(CLIENT)
+#
+#		 print("test_19_A4_base_delta SHOULD FAIL provisioning!!")
+#		 print("test_19_A4_base_delta run output: {0}".format(provisioner_out))
+#
+#		 # Provisioning should fail since the Delta contains a bad component.
+#		 self.assertIn("Provisioning failed", format(provisioner_out))
 
 	@collectors(['BASE_DELTA_GOOD'], COLLECTOR_LIST)
 	@unittest.skipIf(not is_tpm2(TPM_VERSION), "Skipping this test due to TPM Version " + TPM_VERSION)
 	def test_19_A6_base_delta(self):
-		"""Test Base/Delta Certificates A6 - Provisioning with Good Base Platform, 2 Good Delta Certs and
-			1 Bad Delta Cert with non present component"""
+		"""Test Delta Certificates A6 - Provisioning with Good Base Platform, 2 Good Delta Certs and 1 Bad Delta Cert"""
 		logging.info("*****************test_19_A6 - beginning of delta certificate test *****************")
-		logging.info("Provisioning with Good Base Platform, 2 Good Delta Certs and 1 Bad Delta Cert with non present component")
+		logging.info("Provisioning with Good Base Platform, 2 Good Delta Certs and 1 Bad Delta Cert")
+
+		# Verify device supply chain appraisal result is PASS
+		devices = AcaPortal.get_devices()
+		self.assertEqual(devices['data'][0]['device']['supplyChainStatus'], "PASS")
+
+		# Upload the SIDeltaCertA2 and provision
+		AcaPortal.upload_pk_cert(SIDeltaCertA2_LOCATION)
+		AcaPortal.enable_supply_chain_validations()
+		provisioner_out = run_hirs_provisioner_tpm2(CLIENT)
+
+		print("test_19_A6_base_delta SHOULD FAIL provisioning using: %s" % (SIDeltaCertA2_LOCATION))
+		print("test_19_A6_base_delta run output: {0}".format(provisioner_out))
+
+		# Provisioning should fail since the Delta contains a bad component.
+		self.assertIn("Provisioning failed", format(provisioner_out))
+
+		# Upload the SIDeltaCertA2_resolved and provision
+		AcaPortal.upload_pk_cert(SIDeltaCertA2_resolved_LOCATION)
+		AcaPortal.enable_supply_chain_validations()
+		provisioner_out = run_hirs_provisioner_tpm2(CLIENT)
+
+		print("test_19_A6_base_delta SHOULD PASS provisioning using: %s" % (SIDeltaCertA2_resolved_LOCATION))
+		print("test_19_A6_base_delta run output: {0}".format(provisioner_out))
+
+		 # Verify device has been updated with supply chain appraisal result
+		devices = AcaPortal.get_devices()
+		self.assertEqual(devices['data'][0]['device']['supplyChainStatus'], "PASS")
 
 	@collectors(['BASE_DELTA_GOOD'], COLLECTOR_LIST)
 	@unittest.skipIf(not is_tpm2(TPM_VERSION), "Skipping this test due to TPM Version " + TPM_VERSION)
 	def test_19_A7_base_delta(self):
-		"""Test Base/Delta Certificates A7 - Provisioning with Good Base Platform, 2 Good Delta Certs with 1 Delta cert
-			replacing component from previous, using the Delta as a base certificate"""
+		"""Test Delta Certificates A7 - Provisioning with Good Base Platform, 2 Good Delta Certs and
+			1 Bad Delta Cert with non present component"""
 		logging.info("*****************test_19_A7 - beginning of delta certificate test *****************")
-		logging.info("Provisioning with Good Base Platform, 2 Good Delta Certs with 1 Delta cert replacing component from previous, using the Delta as a base certificate")
+		logging.info("Provisioning with Good Base Platform, 2 Good Delta Certs and 1 Bad Delta Cert with non present component")
+
+		# Upload the VARDeltaCertA2 and provision
+		AcaPortal.upload_pk_cert(VARDeltaCertA2_LOCATION)
+		AcaPortal.enable_supply_chain_validations()
+		provisioner_out = run_hirs_provisioner_tpm2(CLIENT)
+
+		print("test_19_A7_base_delta SHOULD FAIL provisioning using: %s" % (VARDeltaCertA2_LOCATION))
+		print("test_19_A7_base_delta run output: {0}".format(provisioner_out))
+
+		# Provisioning should fail since the Delta contains a component thats not in the Base
+		self.assertIn("Provisioning failed", format(provisioner_out))
+
+		# Upload the VARDeltaCertA2_resolved and provision
+		AcaPortal.upload_pk_cert(VARDeltaCertA2_resolved_LOCATION)
+		AcaPortal.enable_supply_chain_validations()
+		provisioner_out = run_hirs_provisioner_tpm2(CLIENT)
+
+		print("test_19_A7_base_delta SHOULD PASS provisioning using: %s" % (VARDeltaCertA2_resolved_LOCATION))
+		print("test_19_A7_base_delta run output: {0}".format(provisioner_out))
+
+		 # Verify device has been updated with supply chain appraisal result
+		devices = AcaPortal.get_devices()
+		self.assertEqual(devices['data'][0]['device']['supplyChainStatus'], "PASS")
 
 	@collectors(['BASE_DELTA_GOOD'], COLLECTOR_LIST)
 	@unittest.skipIf(not is_tpm2(TPM_VERSION), "Skipping this test due to TPM Version " + TPM_VERSION)
 	def test_19_A8_base_delta(self):
-		"""Test Base/Delta Certificates A8 - Attempt to upload Base cert with holder already having a Base Platform Cert associated with it"""
+		"""Test Delta Certificates A8 - Provisioning with Good Base Platform, 2 Good Delta Certs with 1 Delta cert
+			replacing component from previous, using the Delta as a base certificate"""
 		logging.info("*****************test_19_A8 - beginning of delta certificate test *****************")
 		logging.info("Provisioning with Good Base Platform, 2 Good Delta Certs with 1 Delta cert replacing component from previous, using the Delta as a base certificate")
+
+		# Upload the SIDeltaCertA3 and provision
+		AcaPortal.upload_pk_cert(SIDeltaCertA3_LOCATION)
+		AcaPortal.enable_supply_chain_validations()
+		provisioner_out = run_hirs_provisioner_tpm2(CLIENT)
+
+		print("test_19_A8_base_delta run output: {0}".format(provisioner_out))
+		supply_chain_validation_summaries = AcaPortal.get_supply_chain_validation_summaries()
+
+		# Verify device has been updated with supply chain appraisal result
+		devices = AcaPortal.get_devices()
+		self.assertEqual(devices['data'][0]['device']['supplyChainStatus'], "PASS")
 
 	@collectors(['BASE_DELTA_BAD'], COLLECTOR_LIST)
 	@unittest.skipIf(not is_tpm2(TPM_VERSION), "Skipping this test due to TPM Version " + TPM_VERSION)
@@ -749,16 +920,17 @@ class SystemTest(unittest.TestCase):
 		"""Test Base/Delta Certificates B1 - Provisioning with Bad Platform Cert Base """
 		logging.info("*****************test_19_B1 - beginning of delta certificate test *****************")
 		logging.info("Provisioning with Bad Platform Cert Base")
+
 		logging.info("Check if ACA is online...")
 		AcaPortal.check_is_online()
-		if is_tpm2(TPM_VERSION):
-			logging.info("Using TPM 2.0")
-			logging.info("Uploading CA cert: " + CA_CERT_LOCATION)
-			AcaPortal.upload_ca_cert(CA_CERT_LOCATION)
-			AcaPortal.enable_supply_chain_validations()
-			provisioner_out = run_hirs_provisioner_tpm2(CLIENT)
 
-		print("Bad Base Certificate provisioner run output: {0}".format(provisioner_out))
+		logging.info("Uploading CA cert: " + CA_CERT_LOCATION)
+		AcaPortal.upload_ca_cert(CA_CERT_LOCATION)
+		AcaPortal.enable_supply_chain_validations()
+		provisioner_out = run_hirs_provisioner_tpm2(CLIENT)
+
+		print("test_19_B1_base_delta SHOULD FAIL provisioning using: %s" % (PBaseCertB_LOCATION))
+		print("test_19_B1_base_delta run output: {0}".format(provisioner_out))
 
 		# Provisioning should fail since the PC contains FAULTY components.
 		self.assertIn("Provisioning failed", format(provisioner_out))
@@ -766,24 +938,24 @@ class SystemTest(unittest.TestCase):
 	@collectors(['BASE_DELTA_BAD'], COLLECTOR_LIST)
 	@unittest.skipIf(not is_tpm2(TPM_VERSION), "Skipping this test due to TPM Version " + TPM_VERSION)
 	def test_19_B2_base_delta(self):
-		"""Test Base/Delta Certificates B2 - Provisioning with Bad Platform Cert Base and 1 Good delta with 1 bad component resolved"""
+		"""Test Base/Delta Certificates B2 - Provisioning with Bad Platform Cert Base and 1 Good delta with 1 bad component unresolved"""
 		logging.info("*****************test_19_B2 - beginning of delta certificate test *****************")
-		logging.info("Provisioning with Bad Platform Cert Base and 1 Good delta with 1 bad component resolved")
+		logging.info("Provisioning with Bad Platform Cert Base and 1 Good delta with 1 bad component unresolved")
 
 		# Verify device supply chain appraisal result is FAIL
-		#devices = AcaPortal.get_devices()
-		#self.assertEqual(devices['data'][0]['device']['supplyChainStatus'], "FAIL")
+		devices = AcaPortal.get_devices()
+		self.assertEqual(devices['data'][0]['device']['supplyChainStatus'], "FAIL")
 
-		# Upload the delta platform cert and provision
-		#AcaPortal.upload_pk_cert(SIDeltaCertB1_LOCATION)
-		#AcaPortal.enable_supply_chain_validations()
-		#provisioner_out = run_hirs_provisioner_tpm2(CLIENT)
+		# Upload the SIDeltaCertB1 and provision
+		AcaPortal.upload_pk_cert(SIDeltaCertB1_LOCATION)
+		AcaPortal.enable_supply_chain_validations()
+		provisioner_out = run_hirs_provisioner_tpm2(CLIENT)
 
-		#print("Bad Base/Good Delta Certificate run output: {0}".format(provisioner_out))
+		print("test_19_B2_base_delta SHOULD FAIL provisioning using: %s" % (SIDeltaCertB1_LOCATION))
+		print("test_19_B2_base_delta run output: {0}".format(provisioner_out))
 
-		# Verify device has been updated with supply chain appraisal of PASS
-		#devices = AcaPortal.get_devices()
-		#self.assertEqual(devices['data'][0]['device']['supplyChainStatus'], "PASS")
+		# Provisioning should fail since the delta contains FAULTY component.
+		self.assertIn("Provisioning failed", format(provisioner_out))
 
 	@collectors(['BASE_DELTA_BAD'], COLLECTOR_LIST)
 	@unittest.skipIf(not is_tpm2(TPM_VERSION), "Skipping this test due to TPM Version " + TPM_VERSION)
@@ -791,6 +963,21 @@ class SystemTest(unittest.TestCase):
 		"""Test Base/Delta Certificates B3 - Provisioning with Bad Platform Cert Base and 2 Good delta with all component resolved"""
 		logging.info("*****************test_19_B3 - beginning of delta certificate test *****************")
 		logging.info("Provisioning with Bad Platform Cert Base and 2 Good delta with all component resolved")
+
+		# Verify device supply chain appraisal result is FAIL
+		devices = AcaPortal.get_devices()
+		self.assertEqual(devices['data'][0]['device']['supplyChainStatus'], "FAIL")
+
+		# Upload the VARDeltaCertB1 and provision
+		AcaPortal.upload_pk_cert(VARDeltaCertB1_LOCATION)
+		AcaPortal.enable_supply_chain_validations()
+		provisioner_out = run_hirs_provisioner_tpm2(CLIENT)
+
+		print("test_19_B3_base_delta run output: {0}".format(provisioner_out))
+
+		# Verify device has been updated with supply chain appraisal of PASS
+		devices = AcaPortal.get_devices()
+		self.assertEqual(devices['data'][0]['device']['supplyChainStatus'], "PASS")
 
 def make_simple_ima_baseline():
     timestamp = get_current_timestamp()

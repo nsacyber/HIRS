@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Script to setup the TPM2 Provisioner Docker Image for Integration Tests
+# Script to setup the TPM 2.0 Provisioner Docker Image for System Tests Base/Delta(Bad)
 set -e
 
 # Wait for ACA to boot
@@ -45,49 +45,66 @@ function InitTpm2Emulator {
 	/ibmtpm/src/./tpm_server &
 	echo "TPM Emulator started"
 
+	# Give tpm_server time to start and register on the DBus
+	sleep 5
+
 	tpm2-abrmd -t socket &
 	echo "TPM2-Abrmd started"
 
 	# Give ABRMD time to start and register on the DBus
 	sleep 5
 
-	# EK and PC Certificate
-	ek_cert_der="/HIRS/.ci/setup/certs/ek_cert.der"
+	# Certificates
+	ek_cert="/HIRS/.ci/setup/certs/ek_cert.der"
+	ca_key="/HIRS/.ci/setup/certs/ca.key"
+	ca_cert="/HIRS/.ci/setup/certs/ca.crt"
 	platform_cert="PBaseCertB.der"
-	delta_cert="SIDeltaCertB1.der"
+	si_delta_cert_B1="SIDeltaCertB1.der"
+	var_delta_cert_B1="VARDeltaCertB1.der"
 
-    echo "Creating Bad Base Platform Cert $platform_cert..."
-    PC_DIR=/var/hirs/pc_generation
-    mkdir -p $PC_DIR
+	# PACCOR directory
+	PC_DIR=/var/hirs/pc_generation
+ 	mkdir -p $PC_DIR
+
+    echo "Running PACCOR to generate local components..."
 	/opt/paccor/scripts/allcomponents.sh > $PC_DIR/componentsFile
 	echo
-    echo "PACCOR generated components file:"
-    cat $PC_DIR/componentsFile
 
-    # Add bad base components and create PBaseCertB.json used below
-    python /HIRS/.ci/setup/addFaultyComponents.py
+    # Add faulty component JSON files needed to generate the certificates
+    python /HIRS/.ci/setup/addFaultyComponentsForPBaseCertB.py
     echo
-    echo "Generated bad components file:"
-    cat $PC_DIR/PBaseCertB.json
+
+    # Generate certificates in the order they'll be used in the system tests.
+	# And stager the begin dates properly (the -b option for the /opt/paccor/bin/signer)
 
 	# Generate the bad base certificate
+	echo "Generating certificates..."
+	echo "Generating $platform_cert..."
 	/opt/paccor/scripts/referenceoptions.sh > $PC_DIR/optionsFile
 	/opt/paccor/scripts/otherextensions.sh > $PC_DIR/extensionsFile
-	/opt/paccor/bin/observer -c $PC_DIR/PBaseCertB.json -p $PC_DIR/optionsFile -e $ek_cert_der -f $PC_DIR/observerFile
-	/opt/paccor/bin/signer -c $PC_DIR/PBaseCertB.json -o $PC_DIR/observerFile -x $PC_DIR/extensionsFile -b 20180101 -a 20280101 -N $RANDOM -k /HIRS/.ci/setup/certs/ca.key -P /HIRS/.ci/setup/certs/ca.crt -f $PC_DIR/$platform_cert
+	/opt/paccor/bin/observer -c $PC_DIR/PBaseCertB.componentlist.json -p $PC_DIR/optionsFile -e $ek_cert -f $PC_DIR/observerFile
+	/opt/paccor/bin/signer -c $PC_DIR/PBaseCertB.componentlist.json -o $PC_DIR/observerFile -x $PC_DIR/extensionsFile -b 20180101 -a 20280101 -N $RANDOM -k $ca_key -P $ca_cert -f $PC_DIR/$platform_cert
+	echo "Done"
 
     # Create good delta component and create SIDeltaCertB1.componentlist.json
-    python /HIRS/.ci/setup/createDeltaCertComponents.py
+    python /HIRS/.ci/setup/createDeltaComponentsForPBaseCertB.py
     echo
-    echo "Generated good delta components file:"
-    cat $PC_DIR/SIDeltaCertB1.componentlist.json
 
-    # Generate the good delta certificate
+    # Generate the SIDeltaCertB1certificate
+    echo "Generating $si_delta_cert_B1..."
     rm -f $PC_DIR/observerFile
 	/opt/paccor/bin/observer -c $PC_DIR/SIDeltaCertB1.componentlist.json -p $PC_DIR/optionsFile -e $PC_DIR/$platform_cert -f $PC_DIR/observerFile
-	/opt/paccor/bin/signer -c $PC_DIR/SIDeltaCertB1.componentlist.json -o $PC_DIR/observerFile -x $PC_DIR/extensionsFile -b 20180101 -a 20280101 -N $RANDOM -k /HIRS/.ci/setup/certs/ca.key -P /HIRS/.ci/setup/certs/ca.crt -e $PC_DIR/$platform_cert -f $PC_DIR/$delta_cert
+	/opt/paccor/bin/signer -c $PC_DIR/SIDeltaCertB1.componentlist.json -o $PC_DIR/observerFile -x $PC_DIR/extensionsFile -b 20180201 -a 20280101 -N $RANDOM -k $ca_key -P $ca_cert -e $PC_DIR/$platform_cert -f $PC_DIR/$si_delta_cert_B1
+	echo "Done"
 
-	# Clear nvram for EK
+	# Generate the VARDeltaCertB1 certificate
+    echo "Generating $var_delta_cert_B1..."
+    rm -f $PC_DIR/observerFile
+	/opt/paccor/bin/observer -c $PC_DIR/VARDeltaCertB1.componentlist.json -p $PC_DIR/optionsFile -e $PC_DIR/$platform_cert -f $PC_DIR/observerFile
+	/opt/paccor/bin/signer -c $PC_DIR/VARDeltaCertB1.componentlist.json -o $PC_DIR/observerFile -x $PC_DIR/extensionsFile -b 20180301 -a 20280101 -N $RANDOM -k $ca_key -P $ca_cert -e $PC_DIR/$platform_cert -f $PC_DIR/$var_delta_cert_B1
+	echo "Done"
+
+	# Release EK nvram
 	if tpm2_nvlist | grep -q 0x1c00002; then
 	  echo "Released NVRAM for EK."
 	  tpm2_nvrelease -x 0x1c00002 -a 0x40000001
@@ -97,15 +114,15 @@ function InitTpm2Emulator {
 	# authorize [0x40000001 = ownerAuth handle], -s size [defaults to 2048], -t
 	# specifies attribute value in publicInfo struct
 	# [0x2000A = ownerread|ownerwrite|policywrite])
-	size=$(cat $ek_cert_der | wc -c)
+	size=$(cat $ek_cert | wc -c)
 	echo "Define NVRAM location for EK cert of size $size."
 	tpm2_nvdefine -x 0x1c00002 -a 0x40000001 -t 0x2000A -s $size
 
 	# Load key into TPM nvram
-	echo "Loading EK cert $ek_cert_der into NVRAM."
-	tpm2_nvwrite -x 0x1c00002 -a 0x40000001 $ek_cert_der
+	echo "Loading EK cert $ek_cert into NVRAM."
+	tpm2_nvwrite -x 0x1c00002 -a 0x40000001 $ek_cert
 
-	# Clear nvram for PC
+	# Release PC nvram
 	if tpm2_nvlist | grep -q 0x1c90000; then
 	  echo "Released NVRAM for PC."
 	  tpm2_nvrelease -x 0x1c90000 -a 0x40000001
@@ -170,4 +187,3 @@ tpm2_nvlist
 
 echo ""
 echo "===========HIRS ACA TPM2 Provisioner Setup Complete!==========="
-
