@@ -238,7 +238,7 @@ if [ $1 == 0 ]; then
     fi
 fi
 
-if [ $1 == 2]; then
+if [ $1 == 2 ]; then
     echo %{?DISPLAY_VERSION} | tee '%{prefix}/webapps/HIRS_AttestationCAPortal/WEB-INF/classes/VERSION'
 fi
 
