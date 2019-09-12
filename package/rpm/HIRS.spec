@@ -160,7 +160,7 @@ mkdir -p /opt/hirs/scripts/common/
 cp -f /opt/hirs/scripts/common/aca/* /opt/hirs/scripts/common/
 
 # run these only on a fresh install of the package
-if [ "$1" = "1" ]; then
+if [ $1 == 1 ]; then
     # open necessary ports
     sh /opt/hirs/scripts/common/firewall_configure_tomcat.sh
 
@@ -178,11 +178,34 @@ if [ "$1" = "1" ]; then
     sh /opt/hirs/scripts/common/db_create.sh
 fi
 
+# modify mysql schema accordingly on upgrade
+if [ $1 -gt 1 ]; then
+    #update version number on portal banner
+    echo %{?DISPLAY_VERSION} | tee '%{prefix}/webapps/HIRS_AttestationCAPortal/WEB-INF/classes/VERSION'
+
+    echo "Upgrading hirs_db schema!"
+    if [ %{version} == "1.0.4" ]; then
+	if (mysql -u root hirs_db < /opt/hirs/scripts/common/upgrade_schema_1.0.4.sql); then
+		echo "Upgrade to version 1.0.4"
+	else
+		echo "Error upgrading HIRS database schema to 1.0.4!"
+		exit 1;
+	fi
+    elif [ %{version} == "1.1.0" ]; then
+	if (mysql -u root hirs_db < /opt/hirs/scripts/common/upgrade_schema_1.0.4.sql && mysql -u root hirs_db < /opt/hirs/scripts/common/upgrade_schema_1.1.0.sql); then
+		echo "Upgrade to version 1.1.0"
+	else
+		echo "Error upgrading HIRS database schema to 1.1.0!"
+		exit 1;
+	fi
+    fi
+fi
+
 sh /opt/hirs/scripts/aca/certificate_generate.sh
 
 %preun -n HIRS_AttestationCA
 # don't run these during an upgrade
-if [ "$1" = "0" ]; then
+if [ $1 == 0 ]; then
     # if the Server isn't installed, deconfigure Tomcat and MySQL SSL and drop the database
     if [[ -z `rpm -qa HIRS_Server` ]]; then
         echo 'Restoring Tomcat and MySQL configuration'
@@ -195,7 +218,7 @@ fi
 
 %postun -n HIRS_AttestationCA
 # don't run these during an upgrade
-if [ "$1" = "0" ]; then
+if [ $1 == 0 ]; then
     # Removes WARS from the Tomcat installation as well as ACA configuration files and certificates
     # (/etc/hirs/aca), and ACA installation (/opt/hirs/attestation-ca). Do not run during an upgrade
     rm -f %{prefix}/webapps/HIRS_AttestationCA*.war
