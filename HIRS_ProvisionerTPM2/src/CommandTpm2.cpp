@@ -58,6 +58,7 @@ const char* const CommandTpm2::kTpm2ToolsActivateCredential
     = "tpm2_activatecredential";
 const char* const CommandTpm2::kTpm2ToolsEvictControlCommand
     = "tpm2_evictcontrol";
+const char* const CommandTpm2::kTpm2ToolsGetQuoteCommand = "tpm2_quote";
 
 /**
  * The value for the TPM_RC_RETRY was obtained from Table 16 (pgs. 37-41) of
@@ -320,7 +321,7 @@ void CommandTpm2::createAttestationKey() {
 
     LOGGER.info("Running getpubak with arguments: "
                 + argsStream.str());
-    runTpm2CommandWithRetry(kTpm2ToolsGetPubAkCommand, argsStream.str(),
+    runTpm2CommandWithlRetry(kTpm2ToolsGetPubAkCommand, argsStream.str(),
                             __LINE__);
     LOGGER.info("AK created successfully");
 }
@@ -519,6 +520,11 @@ string CommandTpm2::createNvWriteCommandArgs(const string& nvIndex,
  */
 void CommandTpm2::getQuote(const string& akLocation,
     TPML_PCR_SELECTION* pcrSelection) {
+    stringstream argStream;
+    argStream << " -Q"
+              << " -c" <<
+              << " -l" <<
+              << endl;
 }
 
 /**
