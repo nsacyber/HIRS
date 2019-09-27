@@ -321,7 +321,7 @@ void CommandTpm2::createAttestationKey() {
 
     LOGGER.info("Running getpubak with arguments: "
                 + argsStream.str());
-    runTpm2CommandWithlRetry(kTpm2ToolsGetPubAkCommand, argsStream.str(),
+    runTpm2CommandWithRetry(kTpm2ToolsGetPubAkCommand, argsStream.str(),
                             __LINE__);
     LOGGER.info("AK created successfully");
 }
@@ -521,10 +521,10 @@ string CommandTpm2::createNvWriteCommandArgs(const string& nvIndex,
 void CommandTpm2::getQuote(const string& akLocation,
     TPML_PCR_SELECTION* pcrSelection) {
     stringstream argStream;
-    argStream << " -Q"
+    /**argStream << " -Q"
               << " -c" <<
               << " -l" <<
-              << endl;
+              << endl;*/
 }
 
 /**

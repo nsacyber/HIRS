@@ -58,6 +58,7 @@ class CommandTpm2 {
     static const char* const kDefaultAkNameFilename;
     static const char* const kDefaultAkPubFilename;
     static const char* const kDefaultEkPubFilename;
+    static const char* const kTpm2ToolsGetQuoteCommand;
 
     const hirs::tpm2_tools_utils::Tpm2ToolsVersion version;
 
