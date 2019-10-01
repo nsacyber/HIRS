@@ -18,7 +18,7 @@ try:
 	maxComponentsToFind = 2
 	numComponentsFound = 0
 	delComponent1AtIndex = 0
-	delComponent2AtINdex = 0
+	delComponent2AtIndex = 0
 	badComponent = '00030003'
 	pcDir = '/var/hirs/pc_generation/'
 	paccorComponentsFile = 'componentsFile'
