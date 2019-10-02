@@ -117,6 +117,9 @@ const char* const CommandTpm2::kDefaultIdentityClaimResponseFilename
         = "identityClaimResponse";
 const char* const CommandTpm2::kDefaultActivatedIdentityFilename
         = "activatedIdentity.secret";
+const char* const CommandTpm2::kTpm2DefaultQuoteFilename = "/tmp/quote.bin";
+const char* const CommandTpm2::kTpm2DefaultSigFilename = "/tmp/sig.bin";
+const char* const CommandTpm2::kTpm2DefaultSigAlgorithm = "sha256";
 
 /**
  * Constructor to create an interface to TPM 2.0 devices.
@@ -518,13 +521,19 @@ string CommandTpm2::createNvWriteCommandArgs(const string& nvIndex,
  * @param akLocation location of an activated AK pair
  * @param pcrSelection selection of pcrs to sign
  */
-void CommandTpm2::getQuote(const string& akLocation,
-    TPML_PCR_SELECTION* pcrSelection) {
+string CommandTpm2::getQuote(TPML_PCR_SELECTION* pcr_selection,
+                    const string& nonce) {
     stringstream argStream;
-    /**argStream << " -Q"
-              << " -c" <<
-              << " -l" <<
-              << endl;*/
+    argStream << kTpm2ToolsGetQuoteCommand
+              << " -k" << kDefaultAkHandle
+              << " -g" << kTpm2DefaultSigAlgorithm
+              << " -m" << kTpm2DefaultQuoteFilename
+              << " -s" << kTpm2DefaultSigFilename
+              << " -L" << pcr_selection // needs to be a string
+              << " -q" << nonce // this needs to be a hex string
+              << endl;
+
+    return argStream.str();
 }
 
 /**
