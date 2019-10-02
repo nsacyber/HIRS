@@ -133,7 +133,8 @@ class CommandTpm2 {
 
     void storeAKCertificate(const std::string& akCertificateByteString);
 
-    void getQuote(TPML_PCR_SELECTION* pcr_selection,const std::string& nonce);
+    std::string getQuote(TPML_PCR_SELECTION* pcr_selection,
+            const std::string& nonce);
 };
 
 }  // namespace tpm2
