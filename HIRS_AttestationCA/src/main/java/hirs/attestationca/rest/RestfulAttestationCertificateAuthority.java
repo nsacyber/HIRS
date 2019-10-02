@@ -67,7 +67,8 @@ public class RestfulAttestationCertificateAuthority
      */
     @Override
     @ResponseBody
-    @RequestMapping(value = "/identity-request/process", method = RequestMethod.POST,
+    @RequestMapping(value = "/identity-request/process",
+            method = RequestMethod.POST,
             consumes = MediaType.APPLICATION_OCTET_STREAM_VALUE)
     public byte[] processIdentityRequest(@RequestBody final byte[] request) {
         return super.processIdentityRequest(request);
@@ -85,6 +86,20 @@ public class RestfulAttestationCertificateAuthority
             consumes = MediaType.APPLICATION_OCTET_STREAM_VALUE)
     public byte[] processIdentityClaimTpm2(@RequestBody final byte[] request) {
         return super.processIdentityClaimTpm2(request);
+    }
+
+    /**
+     * Endpoint for processing TPM quote from the TPM provisioning.
+     * @param request The request object from the provisioner.
+     * @return The response to the provisioner.
+     */
+    @Override
+    @ResponseBody
+    @RequestMapping(value = "/tpm_quote/process",
+            method = RequestMethod.POST,
+            consumes = MediaType.APPLICATION_OCTET_STREAM_VALUE)
+    public byte[] processTpmQuote(@RequestBody final byte[] request) {
+        return super.processTpmQuote(request);
     }
 
     /**

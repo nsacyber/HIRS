@@ -372,6 +372,7 @@ public abstract class AbstractAttestationCertificateAuthority
      * @param identityClaim the request to process, cannot be null
      * @return an identity claim response for the specified request containing a wrapped blob
      */
+    @Override
     public byte[] processIdentityClaimTpm2(final byte[] identityClaim) {
 
         LOG.debug("Got identity claim");
@@ -414,6 +415,22 @@ public abstract class AbstractAttestationCertificateAuthority
                     + validationResult);
             return new byte[]{};
         }
+    }
+
+    /**
+     * yea to process stuff.
+     * @param tpmQuote java stuff.
+     * @return the return.
+     */
+    public byte[] processTpmQuote(final byte[] tpmQuote) {
+        LOG.debug("Got TPM Quote");
+
+        if (ArrayUtils.isEmpty(tpmQuote)) {
+            LOG.error("TPM Quote empty throwing exception.");
+            throw new IllegalArgumentException("");
+        }
+
+        return new byte[]{};
     }
 
     /**
@@ -474,6 +491,13 @@ public abstract class AbstractAttestationCertificateAuthority
 
         // attempt to retrieve provisioner state based on nonce in request
         TPM2ProvisionerState tpm2ProvisionerState = getTpm2ProvisionerState(request);
+        if (request.getQuote() != null) {
+            LOG.error(request.getQuote());
+        } else if (request.getQuote() == null) {
+            LOG.error("Required TPM Quote was not sent by the host.");
+        } else if (request.getQuote().isEmpty()) {
+            LOG.error("The required TPM Quote wss sent but is empty.");
+        }
         if (tpm2ProvisionerState != null) {
             // Reparse Identity Claim to gather necessary components
             byte[] identityClaim = tpm2ProvisionerState.getIdentityClaim();
@@ -619,6 +643,14 @@ public abstract class AbstractAttestationCertificateAuthority
         LOG.info("Processing Device Info Report");
         // store device and device info report.
         return this.deviceRegister.saveOrUpdateDevice(deviceInfoReport);
+    }
+
+    private void processRimInfo(final ProvisionerTpm2.IdentityClaim claim) {
+        //RimInfoReport rimInfoReport = parseRimInfo(claim);
+
+        LOG.info("Processing RIM Info Report");
+        // store rim and rim info report.
+//        return this.deviceRegister.saveOrUpdateRim(rimInfoReport);
     }
 
     /**
