@@ -524,6 +524,7 @@ string CommandTpm2::createNvWriteCommandArgs(const string& nvIndex,
  */
 string CommandTpm2::getQuote(const string& pcr_selection,
                     const string& nonce) {
+    string quote;
     stringstream argsStream;
     argsStream << " -k " << kDefaultAkHandle
               << " -g " << kTpm2DefaultSigAlgorithm
@@ -539,21 +540,14 @@ string CommandTpm2::getQuote(const string& pcr_selection,
                             __LINE__);
     LOGGER.info("TPM Quote successful");
 
-    return fileToString(kTpm2DefaultQuoteFilename);
-    /**ifstream quoteFile (kTpm2DefaultQuoteFilename, std::ifstream::binary);
-    bytes * buffer = new bytes [0];
-    if (quoteFile) {
-        quoteFile.seekg (0, quoteFile.end);
-        int length = quoteFile.tellg();
-        quoteFile.seekg (0, quoteFile.beg);
+    try {
+        quote = fileToString(kTpm2DefaultQuoteFilename);
+    } catch (HirsRuntimeException& ex) {
+        throw HirsRuntimeException("Unable to open TPM Quote bin file",
+                                       "CommandTpm2::getQuote");
+     }
 
-        buffer = new bytes [length];
-        quoteFile.read (bufer.length);
-
-        quoteFile.close();
-    }
-
-    return &buffer;**/
+    return quote;
 }
 
 /**
