@@ -521,16 +521,16 @@ string CommandTpm2::createNvWriteCommandArgs(const string& nvIndex,
  * @param akLocation location of an activated AK pair
  * @param pcrSelection selection of pcrs to sign
  */
-string CommandTpm2::getQuote(TPML_PCR_SELECTION* pcr_selection,
+string CommandTpm2::getQuote(const string& pcr_selection,
                     const string& nonce) {
     stringstream argsStream;
     argsStream << kTpm2ToolsGetQuoteCommand
-              << " -k" << kDefaultAkHandle
-              << " -g" << kTpm2DefaultSigAlgorithm
-              << " -m" << kTpm2DefaultQuoteFilename
-              << " -s" << kTpm2DefaultSigFilename
-              << " -L" << "0,1,2,3,4,5,6,7"  // needs to be a string
-              << " -q" << nonce  // this needs to be a hex string
+              << " -k " << kDefaultAkHandle
+              << " -g " << kTpm2DefaultSigAlgorithm
+              << " -m " << kTpm2DefaultQuoteFilename
+              << " -s " << kTpm2DefaultSigFilename
+              << " -L " << "0,1,2,3,4,5,6,7"  // needs to be a string
+              << " -q " << nonce  // this needs to be a hex string
               << endl;
 
     LOGGER.info("Running tpm2_quote with arguments: "
