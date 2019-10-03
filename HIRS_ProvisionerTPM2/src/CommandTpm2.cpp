@@ -522,7 +522,7 @@ string CommandTpm2::createNvWriteCommandArgs(const string& nvIndex,
  * @param akLocation location of an activated AK pair
  * @param pcrSelection selection of pcrs to sign
  */
-bytes CommandTpm2::getQuote(const string& pcr_selection,
+string CommandTpm2::getQuote(const string& pcr_selection,
                     const string& nonce) {
     stringstream argsStream;
     argsStream << " -k " << kDefaultAkHandle
@@ -539,7 +539,8 @@ bytes CommandTpm2::getQuote(const string& pcr_selection,
                             __LINE__);
     LOGGER.info("TPM Quote successful");
 
-    ifstream quoteFile (kTpm2DefaultQuoteFilename, std::ifstream::binary);
+    return fileToString(kTpm2DefaultQuoteFilename);
+    /**ifstream quoteFile (kTpm2DefaultQuoteFilename, std::ifstream::binary);
     bytes * buffer = new bytes [0];
     if (quoteFile) {
         quoteFile.seekg (0, quoteFile.end);
@@ -552,7 +553,7 @@ bytes CommandTpm2::getQuote(const string& pcr_selection,
         quoteFile.close();
     }
 
-    return &buffer;
+    return &buffer;**/
 }
 
 /**
