@@ -68,7 +68,7 @@ message IdentityClaimResponse {
 
 message CertificateRequest {
   required bytes nonce = 1;
-  required string quote = 2;
+  required bytes quote = 2;
 }
 
 message CertificateResponse {
