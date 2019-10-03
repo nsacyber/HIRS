@@ -491,12 +491,10 @@ public abstract class AbstractAttestationCertificateAuthority
 
         // attempt to retrieve provisioner state based on nonce in request
         TPM2ProvisionerState tpm2ProvisionerState = getTpm2ProvisionerState(request);
-        if (request.getQuote() != null) {
-            LOG.error(request.getQuote());
-        } else if (request.getQuote() == null) {
-            LOG.error("Required TPM Quote was not sent by the host.");
-        } else if (request.getQuote().isEmpty()) {
+        if (request.getQuote().isEmpty()) {
             LOG.error("The required TPM Quote wss sent but is empty.");
+        } else if (request.getQuote() != null) {
+            LOG.error(request.getQuote());
         }
         if (tpm2ProvisionerState != null) {
             // Reparse Identity Claim to gather necessary components
