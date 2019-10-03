@@ -524,12 +524,11 @@ string CommandTpm2::createNvWriteCommandArgs(const string& nvIndex,
 string CommandTpm2::getQuote(const string& pcr_selection,
                     const string& nonce) {
     stringstream argsStream;
-    argsStream << kTpm2ToolsGetQuoteCommand
-              << " -k " << kDefaultAkHandle
+    argsStream << " -k " << kDefaultAkHandle
               << " -g " << kTpm2DefaultSigAlgorithm
               << " -m " << kTpm2DefaultQuoteFilename
               << " -s " << kTpm2DefaultSigFilename
-              << " -L " << "0,1,2,3,4,5,6,7"  // needs to be a string
+              << " -l " << pcr_selection  // needs to be a string
               << " -q " << nonce  // this needs to be a hex string
               << endl;
 
@@ -538,7 +537,8 @@ string CommandTpm2::getQuote(const string& pcr_selection,
     runTpm2CommandWithRetry(kTpm2ToolsGetQuoteCommand, argsStream.str(),
                             __LINE__);
     LOGGER.info("TPM Quote successful");
-    return argsStream.str();
+
+    return fileToString(kTpm2DefaultQuoteFilename);
 }
 
 /**
