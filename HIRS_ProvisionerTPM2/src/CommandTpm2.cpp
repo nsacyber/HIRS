@@ -538,7 +538,7 @@ string CommandTpm2::getQuote(TPML_PCR_SELECTION* pcr_selection,
     runTpm2CommandWithRetry(kTpm2ToolsGetQuoteCommand, argsStream.str(),
                             __LINE__);
     LOGGER.info("TPM Quote successful");
-    return argStream.str();
+    return argsStream.str();
 }
 
 /**

@@ -133,7 +133,7 @@ class CommandTpm2 {
 
     void storeAKCertificate(const std::string& akCertificateByteString);
 
-    std::string getQuote(TPML_PCR_SELECTION* pcr_selection,
+    std::string getQuote(const std::string& pcr_selection,
             const std::string& nonce);
 };
 

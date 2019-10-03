@@ -101,7 +101,7 @@ int provision() {
          << "certificate request" << endl;
     hirs::pb::CertificateRequest certificateRequest;
     certificateRequest.set_nonce(decryptedNonce);
-    certificateRequest.set_quote(CommandTpm2::getQuote(decryptedNonce));
+    certificateRequest.set_quote(CommandTpm2::getQuote("nothing", decryptedNonce));
     const string& akCertificateByteString
             = provisioner.sendAttestationCertificateRequest(certificateRequest);
 
