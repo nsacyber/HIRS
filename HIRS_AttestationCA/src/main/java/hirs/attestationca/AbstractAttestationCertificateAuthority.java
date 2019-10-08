@@ -472,6 +472,7 @@ public abstract class AbstractAttestationCertificateAuthority
      *                           claim handshake
      * @return a certificateResponse containing the signed certificate
      */
+    @Override
     public byte[] processCertificateRequest(final byte[] certificateRequest) {
         LOG.info("Got certificate request");
 
@@ -494,7 +495,7 @@ public abstract class AbstractAttestationCertificateAuthority
         if (request.getQuote().isEmpty()) {
             LOG.error("The required TPM Quote wss sent but is empty.");
         } else if (request.getQuote() != null) {
-            LOG.error(request.getQuote());
+            LOG.error(request.getQuote().toStringUtf8());
         }
         if (tpm2ProvisionerState != null) {
             // Reparse Identity Claim to gather necessary components
