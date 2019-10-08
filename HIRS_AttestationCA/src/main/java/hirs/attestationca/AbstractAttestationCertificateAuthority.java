@@ -497,6 +497,11 @@ public abstract class AbstractAttestationCertificateAuthority
         } else if (request.getQuote() != null) {
             LOG.error(request.getQuote().toStringUtf8());
         }
+        if (request.getPcrslist().isEmpty()) {
+            LOG.error("The required TPM PCRS List was sent but is empty.");
+        } else if (request.getPcrslist() != null) {
+            LOG.error(request.getPcrslist().toStringUtf8());
+        }
         if (tpm2ProvisionerState != null) {
             // Reparse Identity Claim to gather necessary components
             byte[] identityClaim = tpm2ProvisionerState.getIdentityClaim();
