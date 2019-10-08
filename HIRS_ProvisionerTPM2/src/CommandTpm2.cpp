@@ -14,6 +14,8 @@
 #include <thread>
 #include <utility>
 #include <vector>
+#include <iostream>
+#include <iomanip>
 
 using hirs::exception::HirsRuntimeException;
 using hirs::file_utils::fileToString;
@@ -60,6 +62,7 @@ const char* const CommandTpm2::kTpm2ToolsActivateCredential
 const char* const CommandTpm2::kTpm2ToolsEvictControlCommand
     = "tpm2_evictcontrol";
 const char* const CommandTpm2::kTpm2ToolsGetQuoteCommand = "tpm2_quote";
+const char* const CommandTpm2::kTpm2ToolsPcrListCommand = "tpm2_pcrlist";
 
 /**
  * The value for the TPM_RC_RETRY was obtained from Table 16 (pgs. 37-41) of
@@ -526,28 +529,47 @@ string CommandTpm2::getQuote(const string& pcr_selection,
                     const string& nonce) {
     string quote;
     stringstream argsStream;
+    int result = 0;
+    for (size_t count = 0; count < nonce.length(); ++count) {
+        result *=2;
+        result += nonce[count] == '1'? 1 : 0;
+    }
+
+    stringstream ss;
+    ss << std::hex << std::setw(8) << std::setfill('0') << result;
+    string hexNonce(ss.str());
+
     argsStream << " -k " << kDefaultAkHandle
               << " -g " << kTpm2DefaultSigAlgorithm
-              << " -m " << kTpm2DefaultQuoteFilename
-              << " -s " << kTpm2DefaultSigFilename
-              << " -l " << pcr_selection  // needs to be a string
-              << " -q " << nonce  // this needs to be a hex string
+              << " -l " << pcr_selection
+              << " -q " << hexNonce  // this needs to be a hex string
               << endl;
 
-    LOGGER.info("Running tpm2_quote with arguments: "
-                + argsStream.str());
-    runTpm2CommandWithRetry(kTpm2ToolsGetQuoteCommand, argsStream.str(),
+    LOGGER.info("Running tpm2_quote with arguments: " + argsStream.str());
+    quote = runTpm2CommandWithRetry(kTpm2ToolsGetQuoteCommand, argsStream.str(),
                             __LINE__);
     LOGGER.info("TPM Quote successful");
 
-    try {
-        quote = fileToString(kTpm2DefaultQuoteFilename);
-    } catch (HirsRuntimeException& ex) {
-        throw HirsRuntimeException("Unable to open TPM Quote bin file",
-                                       "CommandTpm2::getQuote");
-     }
-
     return quote;
+}
+
+/**
+ * Method to get the full list of pcrs from the TPM.
+ *
+ */
+string CommandTpm2::getPcrsList() {
+    string pcrslist;
+    stringstream argsStream;
+
+    argsStream << " -g " << kTpm2DefaultSigAlgorithm
+              << endl;
+
+    LOGGER.info("Running tpm2_pcrlist with arguments: " + argsStream.str());
+    pcrslist = runTpm2CommandWithRetry(kTpm2ToolsPcrListCommand, argsStream.str(),
+                            __LINE__);
+    LOGGER.info("TPM PCRS List successful");
+
+    return pcrslist;
 }
 
 /**
