@@ -546,7 +546,8 @@ string CommandTpm2::getQuote(const string& pcr_selection,
               << endl;
 
     LOGGER.info("Running tpm2_quote with arguments: " + argsStream.str());
-    quote = runTpm2CommandWithRetry(kTpm2ToolsGetQuoteCommand, argsStream.str(),
+    quote = runTpm2CommandWithRetry(kTpm2ToolsGetQuoteCommand,
+                            argsStream.str(),
                             __LINE__);
     LOGGER.info("TPM Quote successful");
 
@@ -565,7 +566,8 @@ string CommandTpm2::getPcrsList() {
               << endl;
 
     LOGGER.info("Running tpm2_pcrlist with arguments: " + argsStream.str());
-    pcrslist = runTpm2CommandWithRetry(kTpm2ToolsPcrListCommand, argsStream.str(),
+    pcrslist = runTpm2CommandWithRetry(kTpm2ToolsPcrListCommand,
+                            argsStream.str(),
                             __LINE__);
     LOGGER.info("TPM PCRS List successful");
 

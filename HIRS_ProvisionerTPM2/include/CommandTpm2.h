@@ -62,6 +62,7 @@ class CommandTpm2 {
     static const char* const kTpm2DefaultQuoteFilename;
     static const char* const kTpm2DefaultSigFilename;
     static const char* const kTpm2DefaultSigAlgorithm;
+    static const char* const kTpm2ToolsPcrListCommand;
 
     const hirs::tpm2_tools_utils::Tpm2ToolsVersion version;
 
