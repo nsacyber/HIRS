@@ -120,6 +120,7 @@ public abstract class AbstractAttestationCertificateAuthority
     private static final String AK_NAME_PREFIX = "000b";
     private static final String AK_NAME_HASH_PREFIX =
             "0001000b00050072000000100014000b0800000000000100";
+    private static final String TPM_SIGNATURE_ALG = "sha256";
 
     private static final int MAC_BYTES = 6;
 
@@ -154,6 +155,9 @@ public abstract class AbstractAttestationCertificateAuthority
     private final DeviceRegister deviceRegister;
     private final DeviceManager deviceManager;
     private final DBManager<TPM2ProvisionerState> tpm2ProvisionerStateDBManager;
+    private String[] pcrsList;
+    private String tpmQuoteHash;
+    private String tpmSignatureHash;
 
     /**
      * Constructor.
@@ -494,13 +498,9 @@ public abstract class AbstractAttestationCertificateAuthority
         TPM2ProvisionerState tpm2ProvisionerState = getTpm2ProvisionerState(request);
         if (request.getQuote().isEmpty()) {
             LOG.error("The required TPM Quote wss sent but is empty.");
-        } else if (request.getQuote() != null) {
-            LOG.error(request.getQuote().toStringUtf8());
         }
         if (request.getPcrslist().isEmpty()) {
             LOG.error("The required TPM PCRS List was sent but is empty.");
-        } else if (request.getPcrslist() != null) {
-            LOG.error(request.getPcrslist().toStringUtf8());
         }
         if (tpm2ProvisionerState != null) {
             // Reparse Identity Claim to gather necessary components
@@ -519,6 +519,10 @@ public abstract class AbstractAttestationCertificateAuthority
             // Get Platform Credentials if they exist or were uploaded
             Set<PlatformCredential> platformCredentials = parsePcsFromIdentityClaim(claim,
                     endorsementCredential);
+
+            // Parse through the Provisioner supplied TPM Quote and pcr values
+            parseTPMQuote(request.getQuote().toStringUtf8());
+            parsePCRValues(request.getPcrslist().toStringUtf8());
 
             // Get device name and device
             String deviceName = claim.getDv().getNw().getHostname();
@@ -547,6 +551,44 @@ public abstract class AbstractAttestationCertificateAuthority
                     + request.getNonce().toString());
             throw new CertificateProcessingException("Invalid nonce given in request by client.");
         }
+    }
+
+    /**
+     * This method takes the provided TPM Quote and splits it between the PCR
+     * quote and the signature hash.
+     * @param tpmQuote contains hash values for the quote and the signature
+     */
+    private void parseTPMQuote(final String tpmQuote) {
+        if (tpmQuote != null) {
+            String[] lines = tpmQuote.split(":");
+            if (lines[1].contains("signature")) {
+                this.tpmQuoteHash = lines[1].replace("signature", "").trim();
+            } else {
+                this.tpmQuoteHash = lines[1].trim();
+            }
+            this.tpmSignatureHash = lines[2].trim();
+        }
+    }
+
+    /**
+     * This method splits all hashed pcr values into an array.
+     * @param pcrValues contains the full list of 24 pcr values
+     */
+    private void parsePCRValues(final String pcrValues) {
+        String[] pcrs = null;
+
+        if (pcrValues != null) {
+            int counter = 0;
+            String[] lines = pcrValues.split("\\r?\\n");
+            pcrs = new String[lines.length - 1];
+            for (String line : lines) {
+                if (!line.contains(TPM_SIGNATURE_ALG)) {
+                    pcrs[counter++] = line.split(":")[1].trim();
+                }
+            }
+        }
+
+        this.pcrsList = pcrs;
     }
 
     /**
@@ -647,14 +689,6 @@ public abstract class AbstractAttestationCertificateAuthority
         LOG.info("Processing Device Info Report");
         // store device and device info report.
         return this.deviceRegister.saveOrUpdateDevice(deviceInfoReport);
-    }
-
-    private void processRimInfo(final ProvisionerTpm2.IdentityClaim claim) {
-        //RimInfoReport rimInfoReport = parseRimInfo(claim);
-
-        LOG.info("Processing RIM Info Report");
-        // store rim and rim info report.
-//        return this.deviceRegister.saveOrUpdateRim(rimInfoReport);
     }
 
     /**
