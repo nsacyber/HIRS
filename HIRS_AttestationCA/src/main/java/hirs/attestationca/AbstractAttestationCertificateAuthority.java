@@ -496,12 +496,6 @@ public abstract class AbstractAttestationCertificateAuthority
 
         // attempt to retrieve provisioner state based on nonce in request
         TPM2ProvisionerState tpm2ProvisionerState = getTpm2ProvisionerState(request);
-        if (request.getQuote().isEmpty()) {
-            LOG.error("The required TPM Quote wss sent but is empty.");
-        }
-        if (request.getPcrslist().isEmpty()) {
-            LOG.error("The required TPM PCRS List was sent but is empty.");
-        }
         if (tpm2ProvisionerState != null) {
             // Reparse Identity Claim to gather necessary components
             byte[] identityClaim = tpm2ProvisionerState.getIdentityClaim();
@@ -521,8 +515,13 @@ public abstract class AbstractAttestationCertificateAuthority
                     endorsementCredential);
 
             // Parse through the Provisioner supplied TPM Quote and pcr values
-            parseTPMQuote(request.getQuote().toStringUtf8());
-            parsePCRValues(request.getPcrslist().toStringUtf8());
+            // these fields are optional
+            if (request.getQuote() != null && !request.getQuote().isEmpty()) {
+                parseTPMQuote(request.getQuote().toStringUtf8());
+            }
+            if (request.getPcrslist() != null && !request.getPcrslist().isEmpty()) {
+                parsePCRValues(request.getPcrslist().toStringUtf8());
+            }
 
             // Get device name and device
             String deviceName = claim.getDv().getNw().getHostname();
