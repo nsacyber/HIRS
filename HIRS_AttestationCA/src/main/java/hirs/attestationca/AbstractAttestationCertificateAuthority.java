@@ -422,22 +422,6 @@ public abstract class AbstractAttestationCertificateAuthority
     }
 
     /**
-     * yea to process stuff.
-     * @param tpmQuote java stuff.
-     * @return the return.
-     */
-    public byte[] processTpmQuote(final byte[] tpmQuote) {
-        LOG.debug("Got TPM Quote");
-
-        if (ArrayUtils.isEmpty(tpmQuote)) {
-            LOG.error("TPM Quote empty throwing exception.");
-            throw new IllegalArgumentException("");
-        }
-
-        return new byte[]{};
-    }
-
-    /**
      * Performs supply chain validation.
      *
      * @param claim the identity claim

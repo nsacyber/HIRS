@@ -89,20 +89,6 @@ public class RestfulAttestationCertificateAuthority
     }
 
     /**
-     * Endpoint for processing TPM quote from the TPM provisioning.
-     * @param request The request object from the provisioner.
-     * @return The response to the provisioner.
-     */
-    @Override
-    @ResponseBody
-    @RequestMapping(value = "/tpm_quote/process",
-            method = RequestMethod.POST,
-            consumes = MediaType.APPLICATION_OCTET_STREAM_VALUE)
-    public byte[] processTpmQuote(@RequestBody final byte[] request) {
-        return super.processTpmQuote(request);
-    }
-
-    /**
      * Endpoint for processing certificate requests for TPM 2.0 provisioning.
      *
      * @param request The credential request from the client provisioner.
