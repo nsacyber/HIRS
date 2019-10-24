@@ -67,6 +67,7 @@ public class CertificateRequestPageController extends PageController<NoPageParam
     private static final String PLATFORMCREDENTIAL = "platform-credentials";
     private static final String ENDORSEMENTCREDENTIAL = "endorsement-key-credentials";
     private static final String ISSUEDCERTIFICATES = "issued-certificates";
+    private static final String REFERENCEMANIFESTS = "reference-manifests";
 
     /**
      * Model attribute name used by initPage for the aca cert info.
@@ -138,6 +139,9 @@ public class CertificateRequestPageController extends PageController<NoPageParam
                 break;
             case ISSUEDCERTIFICATES:
                 mav = getBaseModelAndView(Page.ISSUED_CERTIFICATES);
+                break;
+            case REFERENCEMANIFESTS:
+                mav = getBaseModelAndView(Page.REFERENCE_MANIFESTS);
                 break;
             case TRUSTCHAIN:
                  mav = getBaseModelAndView(Page.TRUST_CHAIN);
@@ -425,6 +429,8 @@ public class CertificateRequestPageController extends PageController<NoPageParam
                 return Page.ENDORSEMENT_KEY_CREDENTIALS;
             case ISSUEDCERTIFICATES:
                 return Page.ISSUED_CERTIFICATES;
+            case REFERENCEMANIFESTS:
+                return Page.REFERENCE_MANIFESTS;
             case TRUSTCHAIN:
             default:
                  return Page.TRUST_CHAIN;
@@ -447,6 +453,8 @@ public class CertificateRequestPageController extends PageController<NoPageParam
                 return IssuedAttestationCertificate.class;
             case TRUSTCHAIN:
                 return CertificateAuthorityCredential.class;
+            case REFERENCEMANIFESTS:
+                return null;
             default:
                 throw new IllegalArgumentException(
                         String.format("Unknown certificate type: %s", certificateType));
@@ -506,6 +514,7 @@ public class CertificateRequestPageController extends PageController<NoPageParam
                         .select(certificateManager)
                         .byEntityId(uuid)
                         .getCertificate();
+            case REFERENCEMANIFESTS:
             default:
                 return null;
         }
@@ -616,6 +625,7 @@ public class CertificateRequestPageController extends PageController<NoPageParam
                     return new EndorsementCredential(fileBytes);
                 case TRUSTCHAIN:
                     return new CertificateAuthorityCredential(fileBytes);
+                case REFERENCEMANIFESTS:
                 default:
                     final String failMessage = "Failed to parse uploaded file ("
                             + fileName + "). Invalid certificate type: "
