@@ -67,7 +67,8 @@ public class RestfulAttestationCertificateAuthority
      */
     @Override
     @ResponseBody
-    @RequestMapping(value = "/identity-request/process", method = RequestMethod.POST,
+    @RequestMapping(value = "/identity-request/process",
+            method = RequestMethod.POST,
             consumes = MediaType.APPLICATION_OCTET_STREAM_VALUE)
     public byte[] processIdentityRequest(@RequestBody final byte[] request) {
         return super.processIdentityRequest(request);
