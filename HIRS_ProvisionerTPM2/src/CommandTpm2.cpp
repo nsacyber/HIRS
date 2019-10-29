@@ -14,6 +14,8 @@
 #include <thread>
 #include <utility>
 #include <vector>
+#include <iostream>
+#include <iomanip>
 
 using hirs::exception::HirsRuntimeException;
 using hirs::file_utils::fileToString;
@@ -34,6 +36,7 @@ using std::cout;
 using std::endl;
 using std::string;
 using std::stringstream;
+using std::ifstream;
 using std::this_thread::sleep_for;
 using std::to_string;
 using std::vector;
@@ -58,6 +61,8 @@ const char* const CommandTpm2::kTpm2ToolsActivateCredential
     = "tpm2_activatecredential";
 const char* const CommandTpm2::kTpm2ToolsEvictControlCommand
     = "tpm2_evictcontrol";
+const char* const CommandTpm2::kTpm2ToolsGetQuoteCommand = "tpm2_quote";
+const char* const CommandTpm2::kTpm2ToolsPcrListCommand = "tpm2_pcrlist";
 
 /**
  * The value for the TPM_RC_RETRY was obtained from Table 16 (pgs. 37-41) of
@@ -116,6 +121,9 @@ const char* const CommandTpm2::kDefaultIdentityClaimResponseFilename
         = "identityClaimResponse";
 const char* const CommandTpm2::kDefaultActivatedIdentityFilename
         = "activatedIdentity.secret";
+const char* const CommandTpm2::kTpm2DefaultQuoteFilename = "/tmp/quote.bin";
+const char* const CommandTpm2::kTpm2DefaultSigFilename = "/tmp/sig.bin";
+const char* const CommandTpm2::kTpm2DefaultSigAlgorithm = "sha256";
 
 /**
  * Constructor to create an interface to TPM 2.0 devices.
@@ -517,8 +525,53 @@ string CommandTpm2::createNvWriteCommandArgs(const string& nvIndex,
  * @param akLocation location of an activated AK pair
  * @param pcrSelection selection of pcrs to sign
  */
-void CommandTpm2::getQuote(const string& akLocation,
-    TPML_PCR_SELECTION* pcrSelection) {
+string CommandTpm2::getQuote(const string& pcr_selection,
+                    const string& nonce) {
+    string quote;
+    stringstream argsStream;
+    int result = 0;
+    for (size_t count = 0; count < nonce.length(); ++count) {
+        result *=2;
+        result += nonce[count] == '1'? 1 : 0;
+    }
+
+    stringstream ss;
+    ss << std::hex << std::setw(8) << std::setfill('0') << result;
+    string hexNonce(ss.str());
+
+    argsStream << " -k " << kDefaultAkHandle
+              << " -g " << kTpm2DefaultSigAlgorithm
+              << " -l " << pcr_selection
+              << " -q " << hexNonce  // this needs to be a hex string
+              << endl;
+
+    LOGGER.info("Running tpm2_quote with arguments: " + argsStream.str());
+    quote = runTpm2CommandWithRetry(kTpm2ToolsGetQuoteCommand,
+                            argsStream.str(),
+                            __LINE__);
+    LOGGER.info("TPM Quote successful");
+
+    return quote;
+}
+
+/**
+ * Method to get the full list of pcrs from the TPM.
+ *
+ */
+string CommandTpm2::getPcrsList() {
+    string pcrslist;
+    stringstream argsStream;
+
+    argsStream << " -g " << kTpm2DefaultSigAlgorithm
+              << endl;
+
+    LOGGER.info("Running tpm2_pcrlist with arguments: " + argsStream.str());
+    pcrslist = runTpm2CommandWithRetry(kTpm2ToolsPcrListCommand,
+                            argsStream.str(),
+                            __LINE__);
+    LOGGER.info("TPM PCRS List successful");
+
+    return pcrslist;
 }
 
 /**

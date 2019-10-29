@@ -58,6 +58,11 @@ class CommandTpm2 {
     static const char* const kDefaultAkNameFilename;
     static const char* const kDefaultAkPubFilename;
     static const char* const kDefaultEkPubFilename;
+    static const char* const kTpm2ToolsGetQuoteCommand;
+    static const char* const kTpm2DefaultQuoteFilename;
+    static const char* const kTpm2DefaultSigFilename;
+    static const char* const kTpm2DefaultSigAlgorithm;
+    static const char* const kTpm2ToolsPcrListCommand;
 
     const hirs::tpm2_tools_utils::Tpm2ToolsVersion version;
 
@@ -129,8 +134,10 @@ class CommandTpm2 {
 
     void storeAKCertificate(const std::string& akCertificateByteString);
 
-    void getQuote(const std::string& akLocation,
-                  TPML_PCR_SELECTION* pcrSelection);
+    std::string getQuote(const std::string& pcr_selection,
+            const std::string& nonce);
+
+    std::string getPcrsList();
 };
 
 }  // namespace tpm2
