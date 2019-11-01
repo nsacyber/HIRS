@@ -48,7 +48,7 @@ public enum Page {
      * Page to display RIMs.
      */
     REFERENCE_MANIFESTS("Reference Integrity Manifests",
-            "ic_important_devices", "first", "certificate-request/"),
+            "ic_important_devices", "first"),
     /**
      * Page that manages Attestation CA Policy.
      */

@@ -22,6 +22,10 @@ import org.springframework.web.servlet.view.RedirectView;
  * @param <P> PageParams class used by the subclass.
  */
 public abstract class PageController<P extends PageParams> {
+    /**
+     * Model attribute name used by initPage for the initial data passed to the page.
+     */
+    public static final String INITIAL_DATA = "initialData";
 
     /**
      * Reserved attribute used by page.tag to identify a page's general
