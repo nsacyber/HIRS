@@ -103,7 +103,7 @@
             </c:if>
             <div class="row">
                 <div class="col-md-1 col-md-offset-1"><span class="colHeader">Serial Number</span></div>
-                <div id="serialNumber" class="col col-md-8"></div>
+                <div id="serialNumber" class="col col-md-8 vertical"></div>
             </div>
             <div class="row">
                 <div class="col-md-1 col-md-offset-1"><span class="colHeader">Validity</span></div>
@@ -192,7 +192,7 @@
             </div>
             <div class="row">
                 <div class="col-md-1 col-md-offset-1"><span class="colHeader">Credential Type</span></div>
-                <div id="credentialType" class="col col-md-8">${initialData.credentialType}</div>
+                <div id="credentialType" class="col col-md-8 vertical">${initialData.credentialType}</div>
             </div>
             <!-- Add the different fields based on the certificate type -->
             <c:choose>
@@ -242,7 +242,7 @@
                     </div>
                     <div class="row">
                         <div class="col-md-1 col-md-offset-1"><span class="colHeader">Policy Reference</span></div>
-                        <div id="policyReference" class="col col-md-8">
+                        <div id="policyReference" class="col col-md-8 vertical">
                             <c:choose>
                                 <c:when test="${not empty initialData.policyReference}">
                                     ${initialData.policyReference}
@@ -320,11 +320,11 @@
                     <c:if test="${not empty initialData.platformType}">
                         <div class="row">
                             <div class="col-md-1 col-md-offset-1"><span class="colHeader">Platform Type</span></div>
-                            <div id="platformType" class="col col-md-8">${initialData.platformType}</div>
+                            <div id="platformType" class="col col-md-8 vertical">${initialData.platformType}</div>
                         </div>
                         <div class="row">
                             <div class="col-md-1 col-md-offset-1"><span class="colHeader">Platform Chain</span></div>
-                            <div id="platformType" class="col col-md-8">
+                            <div id="platformType" class="col col-md-8 vertical">
                                 <span>
                                     <c:forEach items="${initialData.chainCertificates}" var="credential" varStatus="loop">
                                         <c:choose>
@@ -396,7 +396,7 @@
                     </div>
                     <div class="row">
                         <div class="col-md-1 col-md-offset-1"><span class="colHeader">Platform Class</span></div>
-                        <div id="platformClass" class="col col-md-8">${initialData.platformClass}</div>
+                        <div id="platformClass" class="col col-md-8 vertical">${initialData.platformClass}</div>
                     </div>
                     <!-- TBB Security Assertion-->
                     <c:if test="${not empty initialData.tbbSecurityAssertion}">
