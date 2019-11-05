@@ -453,6 +453,7 @@ public final class CertificateStringMapBuilder {
                 data.put("manufacturer", ek.getManufacturer());
                 data.put("model", ek.getModel());
                 data.put("version", ek.getVersion());
+                data.put("crlPoints", ek.getCrlPoints());
             }
             // add platform credential IDs if not empty
             if (!certificate.getPlatformCredentials().isEmpty()) {
