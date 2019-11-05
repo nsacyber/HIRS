@@ -1,15 +1,13 @@
 package hirs.data.persist;
 
 import java.io.StringReader;
+import javax.persistence.Access;
+import javax.persistence.AccessType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
-import javax.persistence.Table;
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Unmarshaller;
-import javax.xml.bind.annotation.XmlAccessType;
-import javax.xml.bind.annotation.XmlAccessorType;
-import javax.xml.bind.annotation.XmlRootElement;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -17,10 +15,8 @@ import org.apache.logging.log4j.Logger;
  *
  */
 @Entity
-@Table(name = "ReferenceManifest")
-@XmlRootElement(name = "rim")
-@XmlAccessorType(XmlAccessType.FIELD)
-public class ReferenceManifest extends Baseline {
+@Access(AccessType.FIELD)
+public abstract class ReferenceManifest extends Baseline {
 
     private static final Logger LOGGER = LogManager.getLogger();
 
@@ -38,6 +34,21 @@ public class ReferenceManifest extends Baseline {
     private String tagId = null;
     @Column
     private String rimType = null;
+
+    /**
+     * Default constructor of given name.
+     * @param name given name.
+     */
+    public ReferenceManifest(final String name) {
+        super(name);
+    }
+
+    /**
+     * Default constructor.
+     */
+    protected ReferenceManifest() {
+        super();
+    }
 
     /**
      * Returns a new <code>Device</code> instance from the XML string. This

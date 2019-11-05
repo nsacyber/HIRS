@@ -17,7 +17,7 @@
     <jsp:body>
         <!-- text and icon resource variables -->
         <div class="aca-input-box-header">
-            <form:form method="POST"  action="${portal}/certificate-request/reference-manifests/upload" enctype="multipart/form-data">
+            <form:form method="POST"  action="${portal}/reference-manifests/upload" enctype="multipart/form-data">
                 Import RIMs
                 <my:file-chooser id="referenceManifestsEditor" label="Import RIMs">
                     <input id="importFile" type="file" name="file" multiple="multiple" />
@@ -26,7 +26,7 @@
         </div>
         <br/>
         <div class="aca-data-table">
-            <table id="rimTable" class="display" width="100%">
+            <table id="referenceManifestTable" class="display" width="100%">
                 <thead>
                     <tr>
                         <th>Tag ID</th>
