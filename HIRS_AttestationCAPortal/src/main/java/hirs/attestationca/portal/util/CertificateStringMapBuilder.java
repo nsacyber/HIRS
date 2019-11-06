@@ -450,17 +450,18 @@ public final class CertificateStringMapBuilder {
                 }
 
                 data.put("policyReference", ek.getPolicyReference());
-                data.put("manufacturer", ek.getManufacturer());
-                data.put("model", ek.getModel());
-                data.put("version", ek.getVersion());
                 data.put("crlPoints", ek.getCrlPoints());
+                data.put("credentialType", ek.getCredentialType());
             }
             // add platform credential IDs if not empty
             if (!certificate.getPlatformCredentials().isEmpty()) {
                 StringBuilder buf = new StringBuilder();
-                for (PlatformCredential pc: certificate.getPlatformCredentials()) {
+                for (PlatformCredential pc : certificate.getPlatformCredentials()) {
                     buf.append(pc.getId().toString());
                     buf.append(',');
+                    data.put("manufacturer", pc.getManufacturer());
+                    data.put("model", pc.getModel());
+                    data.put("version", pc.getVersion());
                 }
                 // remove last comma character
                 buf.deleteCharAt(buf.lastIndexOf(","));

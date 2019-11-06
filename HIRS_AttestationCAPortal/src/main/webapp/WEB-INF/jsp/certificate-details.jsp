@@ -783,6 +783,7 @@
                             <div id="manufacturer">Manufacturer:&nbsp;<span>${initialData.manufacturer}</span></div>
                             <div id="model">Model:&nbsp;<span>${initialData.model}</span></div>
                             <div id="version">Version:&nbsp;<span>${initialData.version}</span></div>
+                            <div id="serial">Serial Number:&nbsp;<span>${initialData.platformSerial}</span></div>
                         </div>
                     </div>
                     <div class="row">
