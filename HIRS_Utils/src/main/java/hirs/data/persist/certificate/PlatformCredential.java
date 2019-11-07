@@ -228,6 +228,15 @@ public class PlatformCredential extends DeviceAssociatedCertificate {
     private int revisionLevel = 0;
 
     @Column
+    private int tcgCredentialMajorVersion = 0;
+
+    @Column
+    private int tcgCredentialMinorVersion = 0;
+
+    @Column
+    private int tcgCredentialRevisionLevel = 0;
+
+    @Column
     private String platformClass = null;
 
     @Column
@@ -238,6 +247,7 @@ public class PlatformCredential extends DeviceAssociatedCertificate {
 
     private String platformChainType = Strings.EMPTY;
     private boolean isDeltaChain = false;
+
 
     /**
      * Get a Selector for use in retrieving PlatformCredentials.
@@ -463,6 +473,33 @@ public class PlatformCredential extends DeviceAssociatedCertificate {
      */
     public int getRevisionLevel() {
         return revisionLevel;
+    }
+
+    /**
+     * Gets the TCG Credential major version.
+     *
+     * @return the TCG Credential Major Version
+     */
+    public int getTcgCredentialMajorVersion() {
+        return tcgCredentialMajorVersion;
+    }
+
+    /**
+     * Gets the TCG Credential minor version.
+     *
+     * @return the TCG Credential minor version
+     */
+    public int getTcgCredentialMinorVersion() {
+        return tcgCredentialMinorVersion;
+    }
+
+    /**
+     * Gets the TCG Credential revision level.
+     *
+     * @return the TCG Credential revision level
+     */
+    public int getTcgCredentialRevisionLevel() {
+        return tcgCredentialRevisionLevel;
     }
 
     /**
@@ -728,7 +765,10 @@ public class PlatformCredential extends DeviceAssociatedCertificate {
                             new PlatformConfigurationV2(attributeSequence));
                     break;
                 case TCG_PLATFORM_SPECIFICATION:
+                    // handled in parseFields
+                    break;
                 case TCG_CREDENTIAL_SPECIFICATION:
+                    gatTCGCredentialSpecification(attributeSequence);
                     break;
                 default:
                     // No class defined for this attribute
@@ -797,6 +837,22 @@ public class PlatformCredential extends DeviceAssociatedCertificate {
             return (TBBSecurityAssertion) getAttribute("tbbSecurityAssertion");
         }
         return null;
+    }
+
+    /**
+     *
+     * @param attributeSequence The sequence associated with 2.23.133.2.23
+     */
+    private void gatTCGCredentialSpecification(final ASN1Sequence attributeSequence) {
+        // tcgCredentialMajorVersion
+        ASN1Sequence tcgCredentialSpecification
+                = ASN1Sequence.getInstance(attributeSequence.getObjectAt(0));
+        this.tcgCredentialMajorVersion = Integer.parseInt(
+                tcgCredentialSpecification.getObjectAt(0).toString());
+        this.tcgCredentialMinorVersion = Integer.parseInt(
+                tcgCredentialSpecification.getObjectAt(1).toString());
+        this.tcgCredentialRevisionLevel = Integer.parseInt(
+                tcgCredentialSpecification.getObjectAt(2).toString());
     }
 
     /**

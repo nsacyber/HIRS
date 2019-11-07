@@ -390,7 +390,7 @@
                         </div>                        
                     </div>
                     <div class="row">
-                        <div class="col-md-1 col-md-offset-1"><span class="colHeader">TCG Credential Specification Version</span></div>
+                        <div class="col-md-1 col-md-offset-1"><span class="colHeader">TCG Platform Specification Version</span></div>
                         <div id="majorVersion" class="col col-md-8 vertical">${initialData.majorVersion}.${initialData.minorVersion}.${initialData.revisionLevel}</div>
                     </div>
                     <div class="row">
@@ -826,6 +826,14 @@
                                 </c:forTokens>
                             </c:if>
                         </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-1 col-md-offset-1"><span class="colHeader">TCG Platform Specification Version</span></div>
+                        <div id="majorVersion" class="col col-md-8 vertical">${initialData.majorVersion}.${initialData.minorVersion}.${initialData.revisionLevel}</div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-1 col-md-offset-1"><span class="colHeader">TCG Credential Specification Version</span></div>
+                        <div id="majorVersion" class="col col-md-8 vertical">${initialData.tcgMajorVersion}.${initialData.tcgMinorVersion}.${initialData.tcgRevisionLevel}</div>
                     </div>
                     <div class="row">
                         <div class="col-md-1 col-md-offset-1">

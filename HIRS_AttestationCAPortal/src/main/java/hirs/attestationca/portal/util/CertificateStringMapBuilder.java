@@ -451,7 +451,7 @@ public final class CertificateStringMapBuilder {
 
                 data.put("policyReference", ek.getPolicyReference());
                 data.put("crlPoints", ek.getCrlPoints());
-                data.put("credentialType", ek.getCredentialType());
+                data.put("credentialType", IssuedAttestationCertificate.AIC_TYPE_LABEL);
             }
             // add platform credential IDs if not empty
             if (!certificate.getPlatformCredentials().isEmpty()) {
@@ -462,6 +462,18 @@ public final class CertificateStringMapBuilder {
                     data.put("manufacturer", pc.getManufacturer());
                     data.put("model", pc.getModel());
                     data.put("version", pc.getVersion());
+                    data.put("majorVersion",
+                            Integer.toString(pc.getMajorVersion()));
+                    data.put("minorVersion",
+                            Integer.toString(pc.getMinorVersion()));
+                    data.put("revisionLevel",
+                            Integer.toString(pc.getRevisionLevel()));
+                    data.put("tcgMajorVersion",
+                            Integer.toString(pc.getTcgCredentialMajorVersion()));
+                    data.put("tcgMinorVersion",
+                            Integer.toString(pc.getTcgCredentialMinorVersion()));
+                    data.put("tcgRevisionLevel",
+                            Integer.toString(pc.getTcgCredentialRevisionLevel()));
                 }
                 // remove last comma character
                 buf.deleteCharAt(buf.lastIndexOf(","));
