@@ -16,7 +16,7 @@ import org.apache.logging.log4j.Logger;
  */
 @Entity
 @Access(AccessType.FIELD)
-public abstract class ReferenceManifest extends Baseline {
+public abstract class ReferenceManifest extends ArchivableEntity  {
 
     private static final Logger LOGGER = LogManager.getLogger();
 
@@ -37,17 +37,8 @@ public abstract class ReferenceManifest extends Baseline {
 
     /**
      * Default constructor of given name.
-     * @param name given name.
      */
-    public ReferenceManifest(final String name) {
-        super(name);
-    }
-
-    /**
-     * Default constructor.
-     */
-    protected ReferenceManifest() {
-        super();
+    public ReferenceManifest() {
     }
 
     /**

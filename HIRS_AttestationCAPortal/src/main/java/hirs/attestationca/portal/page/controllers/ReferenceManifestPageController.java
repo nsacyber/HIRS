@@ -4,13 +4,7 @@ package hirs.attestationca.portal.page.controllers;
 import hirs.attestationca.portal.page.Page;
 import hirs.attestationca.portal.page.PageController;
 import hirs.attestationca.portal.page.params.ReferenceManifestPageParams;
-import hirs.attestationca.portal.datatables.DataTableInput;
-import hirs.attestationca.portal.datatables.DataTableResponse;
-import hirs.attestationca.portal.datatables.OrderedListQueryDataTableAdapter;
-import hirs.data.persist.Baseline;
-import hirs.data.persist.ReferenceManifest;
-import hirs.persist.BaselineManager;
-import hirs.FilteredRecordsList;
+import hirs.persist.ReferenceManifestManager;
 
 import java.text.DateFormat;
 import java.text.ParseException;
@@ -19,12 +13,9 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.MediaType;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.servlet.ModelAndView;
 
 
@@ -33,12 +24,13 @@ import org.springframework.web.servlet.ModelAndView;
  */
 @Controller
 @RequestMapping("/reference-manifests")
-public class ReferenceManifestPageController extends PageController<ReferenceManifestPageParams> {
+public class ReferenceManifestPageController
+extends PageController<ReferenceManifestPageParams> {
 
     private static final String BIOS_RELEASE_DATE_FORMAT = "yyyy-MM-dd";
 
     private final BiosDateValidator biosValidator;
-    private final BaselineManager baselineManager;
+    private final ReferenceManifestManager referenceManifestManager;
     private static final Logger LOGGER =
             LogManager.getLogger(ReferenceManifestPageController.class);
 
@@ -84,13 +76,13 @@ public class ReferenceManifestPageController extends PageController<ReferenceMan
 
     /**
      * Constructor providing the Page's display and routing specification.
-     * @param baselineManager the baseline manager
+     * @param referenceManifestManager the reference manifest manager
      */
     @Autowired
     public ReferenceManifestPageController(
-            final BaselineManager baselineManager) {
+            final ReferenceManifestManager referenceManifestManager) {
         super(Page.REFERENCE_MANIFESTS);
-        this.baselineManager = baselineManager;
+        this.referenceManifestManager = referenceManifestManager;
         this.biosValidator = new BiosDateValidator(BIOS_RELEASE_DATE_FORMAT);
     }
 
@@ -114,23 +106,23 @@ public class ReferenceManifestPageController extends PageController<ReferenceMan
      * @return the data tables response, including the result set
      * and paging information
      */
-    @ResponseBody
-    @RequestMapping(value = "list", produces = MediaType.APPLICATION_JSON_VALUE,
-            method = RequestMethod.GET)
-    public DataTableResponse<? extends Baseline> getTableData(
-            final DataTableInput input) {
-        LOGGER.debug("Handling request for summary list: " + input);
-
-        String orderColumnName = input.getOrderColumnName();
-        LOGGER.debug("Ordering on column: " + orderColumnName);
-
-        FilteredRecordsList<ReferenceManifest> records
-                = OrderedListQueryDataTableAdapter.getOrderedList(
-                        ReferenceManifest.class, baselineManager,
-                        input, orderColumnName);
-
-
-        LOGGER.debug("Returning list of size: " + records.size());
-        return new DataTableResponse<>(records, input);
-    }
+//    @ResponseBody
+//    @RequestMapping(value = "list", produces = MediaType.APPLICATION_JSON_VALUE,
+//            method = RequestMethod.GET)
+//    public DataTableResponse<? extends ArchivableEntity> getTableData(
+//            final DataTableInput input) {
+//        LOGGER.debug("Handling request for summary list: " + input);
+//
+//        String orderColumnName = input.getOrderColumnName();
+//        LOGGER.debug("Ordering on column: " + orderColumnName);
+//
+//        FilteredRecordsList<ReferenceManifest> records
+//                = OrderedListQueryDataTableAdapter.getOrderedList(
+//                        ReferenceManifest.class, referenceManifestManager,
+//                        input, orderColumnName);
+//
+//
+//        LOGGER.debug("Returning list of size: " + records.size());
+//        return new DataTableResponse<>(records, input);
+//    }
 }
