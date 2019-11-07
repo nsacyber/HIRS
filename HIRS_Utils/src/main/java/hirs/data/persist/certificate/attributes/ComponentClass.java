@@ -144,6 +144,14 @@ public class ComponentClass {
     }
 
     /**
+     * Getter for the Component Class Value.
+     * @return int value of the component class.
+     */
+    public final int getValue() {
+        return componentIdentifier;
+    }
+
+    /**
      * This is the main way this class will be referenced and how it
      * will be displayed on the portal.
      * @return String combination of category and component.

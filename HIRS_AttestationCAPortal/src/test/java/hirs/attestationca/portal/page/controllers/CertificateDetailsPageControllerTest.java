@@ -58,6 +58,7 @@ public class CertificateDetailsPageControllerTest extends PageControllerTest {
     private CertificateAuthorityCredential caRootCertificate;
     private PlatformCredential platformCredential;
     private PlatformCredential platformCredential2;
+    private PlatformCredential platformCertificatePCI;
     private EndorsementCredential endorsementCredential;
     private IssuedAttestationCertificate issuedCredential;
 
@@ -69,6 +70,8 @@ public class CertificateDetailsPageControllerTest extends PageControllerTest {
             = "/platform_credentials/Intel_pc.cer";
     private static final String TEST_PLATFORM_CREDENTIAL_2
             = "/platform_credentials/basic_plat_cert_2-0.pem";
+    private static final String TEST_PLATFORM_CREDENTIAL_2_PCI
+            = "/platform_credentials/pciids_plat_cert_2-0.pem";
     private static final String TEST_CA_CERTIFICATE
             = "/certificates/fakestmtpmekint02.pem";
     private static final String TEST_ROOT_CA_CERTIFICATE
@@ -150,6 +153,17 @@ public class CertificateDetailsPageControllerTest extends PageControllerTest {
         certificateManager.save(platformCredential2);
 
         pcCertSet.add(platformCredential);
+
+        //Upload and save Platform Cert 2.0 PCI
+        platformCertificatePCI = (PlatformCredential)
+                    getTestCertificate(
+                            PlatformCredential.class,
+                            TEST_PLATFORM_CREDENTIAL_2_PCI,
+                            null,
+                            null);
+        certificateManager.save(platformCertificatePCI);
+
+        pcCertSet.add(platformCertificatePCI);
 
         //Upload and save Issued Attestation Cert
         issuedCredential = (IssuedAttestationCertificate)
@@ -306,6 +320,44 @@ public class CertificateDetailsPageControllerTest extends PageControllerTest {
         Assert.assertNotNull(initialData.get("platformProperties"));
         obj = (List<?>) initialData.get("platformProperties");
         Assert.assertEquals(obj.size(), 2);
+
+    }
+
+    /**
+     * Tests initial page when the certificate type is
+     * an Platform Certificate 2.0 with PCI IDs.
+     * @throws Exception if an exception occurs
+     */
+    @Test
+    @Rollback
+    @SuppressWarnings("unchecked")
+    public void testInitPagePlatform20PCI() throws Exception {
+
+        MvcResult result = getMockMvc()
+                .perform(MockMvcRequestBuilders.get("/" + getPage().getViewName())
+                .param("id", platformCertificatePCI.getId().toString())
+                .param("type", "platform"))
+                .andExpect(status().isOk())
+                .andExpect(model().attributeExists(PolicyPageController.INITIAL_DATA))
+                .andReturn();
+
+        // Obtain initialData HashMap
+        Map<String, Object> initialData = (Map<String, Object>) result
+                                    .getModelAndView()
+                                    .getModel()
+                                    .get(PolicyPageController.INITIAL_DATA);
+        Assert.assertEquals(initialData.get("issuer"), platformCertificatePCI.getIssuer());
+        Assert.assertEquals(initialData.get("credentialType"),
+                            ((PlatformCredential) platformCertificatePCI).getCredentialType());
+        // Check component identifier
+        Assert.assertNotNull(initialData.get("componentsIdentifier"));
+        List<?> obj = (List<?>) initialData.get("componentsIdentifier");
+        Assert.assertEquals(obj.size(), 14);
+
+        // Check platform properties
+        Assert.assertNotNull(initialData.get("platformProperties"));
+        obj = (List<?>) initialData.get("platformProperties");
+        Assert.assertEquals(obj.size(), 0);
 
     }
 

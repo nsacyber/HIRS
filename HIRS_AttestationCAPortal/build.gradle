@@ -31,6 +31,7 @@ dependencies {
     compile libs.jstl
     compile libs.log4j2
     compile libs.log4j2_web
+    compile libs.pci_ids
     compile libs.servlet_api
     compile libs.spring_webmvc
     compile 'org.springframework:spring-context-support:4.2.1.RELEASE'

@@ -17,6 +17,7 @@ import hirs.data.persist.certificate.CertificateAuthorityCredential;
 import hirs.data.persist.certificate.EndorsementCredential;
 import hirs.data.persist.certificate.PlatformCredential;
 import hirs.data.persist.certificate.IssuedAttestationCertificate;
+import hirs.data.persist.certificate.attributes.ComponentIdentifier;
 import hirs.data.persist.certificate.attributes.PlatformConfiguration;
 import hirs.persist.CertificateManager;
 import hirs.utils.BouncyCastleUtils;
@@ -351,8 +352,12 @@ public final class CertificateStringMapBuilder {
             //Get platform Configuration values and set map with it
             PlatformConfiguration platformConfiguration = certificate.getPlatformConfiguration();
             if (platformConfiguration != null) {
-                //Component Identifier
-                data.put("componentsIdentifier", platformConfiguration.getComponentIdentifier());
+                //Component Identifier - attempt to translate hardware IDs
+                List<ComponentIdentifier> comps = platformConfiguration.getComponentIdentifier();
+                if (PciIds.DB.isReady()) {
+                    comps = PciIds.translate(comps);
+                }
+                data.put("componentsIdentifier", comps);
                 //Component Identifier URI
                 data.put("componentsIdentifierURI", platformConfiguration
                         .getComponentIdentifierUri());

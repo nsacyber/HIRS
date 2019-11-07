@@ -29,7 +29,7 @@ allprojects {
     }
 
     group = 'hirs'
-    version = new File('./VERSION').text.trim() + "-SNAPSHOT"
+    version = file("$rootDir/VERSION").text.trim() + "-SNAPSHOT"
 }
 
 subprojects {
@@ -131,6 +131,7 @@ subprojects {
       mockito:       'org.mockito:mockito-all:1.10.19',
       mariadb:       'org.mariadb.jdbc:mariadb-java-client:2.2.1',
       minimal_json:  'com.eclipsesource.minimal-json:minimal-json:0.9.5',
+      pci_ids:       'com.github.marandus:pci-ids:0.3',
       pmd:           'net.sourceforge.pmd:pmd:5.1.1',
       powermock:   [ 'org.powermock:powermock-core:1.6.3',
                      'org.powermock:powermock-api-mockito:1.6.3',
