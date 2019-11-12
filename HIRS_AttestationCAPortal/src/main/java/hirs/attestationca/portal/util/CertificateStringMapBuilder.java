@@ -437,7 +437,6 @@ public final class CertificateStringMapBuilder {
             // add endorsement credential ID if not null
             if (certificate.getEndorsementCredential() != null) {
                 EndorsementCredential ek = certificate.getEndorsementCredential();
-                certificate.getEndorsementCredential().getId().toString();
                 data.put("endorsementID", ek.getId().toString());
                 // Add hashmap with TPM information if available
                 if (ek.getTpmSpecification() != null) {

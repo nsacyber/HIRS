@@ -768,7 +768,7 @@ public class PlatformCredential extends DeviceAssociatedCertificate {
                     // handled in parseFields
                     break;
                 case TCG_CREDENTIAL_SPECIFICATION:
-                    gatTCGCredentialSpecification(attributeSequence);
+                    getTCGCredentialSpecification(attributeSequence);
                     break;
                 default:
                     // No class defined for this attribute
@@ -840,19 +840,33 @@ public class PlatformCredential extends DeviceAssociatedCertificate {
     }
 
     /**
+     * This method sets the TCG Credential fields from a certificate, if provided.
      *
      * @param attributeSequence The sequence associated with 2.23.133.2.23
      */
-    private void gatTCGCredentialSpecification(final ASN1Sequence attributeSequence) {
-        // tcgCredentialMajorVersion
-        ASN1Sequence tcgCredentialSpecification
-                = ASN1Sequence.getInstance(attributeSequence.getObjectAt(0));
-        this.tcgCredentialMajorVersion = Integer.parseInt(
-                tcgCredentialSpecification.getObjectAt(0).toString());
-        this.tcgCredentialMinorVersion = Integer.parseInt(
-                tcgCredentialSpecification.getObjectAt(1).toString());
-        this.tcgCredentialRevisionLevel = Integer.parseInt(
-                tcgCredentialSpecification.getObjectAt(2).toString());
+    private void getTCGCredentialSpecification(final ASN1Sequence attributeSequence) {
+        try {
+            this.tcgCredentialMajorVersion = Integer.parseInt(
+                    attributeSequence.getObjectAt(0).toString());
+            this.tcgCredentialMinorVersion = Integer.parseInt(
+                    attributeSequence.getObjectAt(1).toString());
+            this.tcgCredentialRevisionLevel = Integer.parseInt(
+                    attributeSequence.getObjectAt(2).toString());
+        } catch (NumberFormatException nfEx) {
+            // ill-formed ASN1
+            String fieldContents = attributeSequence.toString();
+
+            if (fieldContents != null && fieldContents.contains(",")) {
+                fieldContents = fieldContents.replaceAll("[^a-zA-Z0-9,]", "");
+                String[] fields = fieldContents.split(",");
+
+                if (fields.length == 3) {
+                    this.tcgCredentialMajorVersion = Integer.parseInt(fields[0]);
+                    this.tcgCredentialMinorVersion = Integer.parseInt(fields[1]);
+                    this.tcgCredentialRevisionLevel = Integer.parseInt(fields[2]);
+                }
+            }
+        }
     }
 
     /**
