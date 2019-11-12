@@ -54,6 +54,7 @@ import org.bouncycastle.operator.ContentVerifierProvider;
 @Entity
 public class PlatformCredential extends DeviceAssociatedCertificate {
     private static final Logger LOGGER = LogManager.getLogger(PlatformCredential.class);
+    private static final int TCG_SPECIFICATION_LENGTH = 3;
     // These are Object Identifiers (OIDs) for sections in the credentials
     private static final String POLICY_QUALIFIER_CPSURI = "1.3.6.1.5.5.7.2.1";
     private static final String POLICY_QUALIFIER_USER_NOTICE = "1.3.6.1.5.5.7.2.2";
@@ -860,7 +861,7 @@ public class PlatformCredential extends DeviceAssociatedCertificate {
                 fieldContents = fieldContents.replaceAll("[^a-zA-Z0-9,]", "");
                 String[] fields = fieldContents.split(",");
 
-                if (fields.length == 3) {
+                if (fields.length == TCG_SPECIFICATION_LENGTH) {
                     this.tcgCredentialMajorVersion = Integer.parseInt(fields[0]);
                     this.tcgCredentialMinorVersion = Integer.parseInt(fields[1]);
                     this.tcgCredentialRevisionLevel = Integer.parseInt(fields[2]);
