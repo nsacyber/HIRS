@@ -20,6 +20,11 @@ import javax.persistence.ManyToOne;
 @Entity
 public class IssuedAttestationCertificate extends DeviceAssociatedCertificate {
 
+    /**
+     * AIC label that must be used.
+     */
+    public static final String AIC_TYPE_LABEL = "TCPA Trusted Platform Identity";
+
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "ek_id")
     private EndorsementCredential endorsementCredential;

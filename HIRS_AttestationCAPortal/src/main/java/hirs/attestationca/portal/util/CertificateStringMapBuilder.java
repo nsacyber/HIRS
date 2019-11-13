@@ -413,7 +413,7 @@ public final class CertificateStringMapBuilder {
         // Separate key and value and parse the key
         for (String pair: data.split(",")) {
             String[] keyValue = pair.split("=");
-            // Remove white space and change firt charater in the key to uppsercase
+            // Remove white space and change first character in the key to uppercase
             keyValue[0] = Character.toUpperCase(
                     keyValue[0].trim().charAt(0)) + keyValue[0].trim().substring(1);
 
@@ -441,15 +441,43 @@ public final class CertificateStringMapBuilder {
 
             // add endorsement credential ID if not null
             if (certificate.getEndorsementCredential() != null) {
-                data.put("endorsementID",
-                        certificate.getEndorsementCredential().getId().toString());
+                EndorsementCredential ek = certificate.getEndorsementCredential();
+                data.put("endorsementID", ek.getId().toString());
+                // Add hashmap with TPM information if available
+                if (ek.getTpmSpecification() != null) {
+                    data.putAll(
+                            convertStringToHash(ek.getTpmSpecification().toString()));
+                }
+                if (ek.getTpmSecurityAssertions() != null) {
+                    data.putAll(
+                            convertStringToHash(ek.getTpmSecurityAssertions().toString()));
+                }
+
+                data.put("policyReference", ek.getPolicyReference());
+                data.put("crlPoints", ek.getCrlPoints());
+                data.put("credentialType", IssuedAttestationCertificate.AIC_TYPE_LABEL);
             }
             // add platform credential IDs if not empty
             if (!certificate.getPlatformCredentials().isEmpty()) {
                 StringBuilder buf = new StringBuilder();
-                for (PlatformCredential pc: certificate.getPlatformCredentials()) {
+                for (PlatformCredential pc : certificate.getPlatformCredentials()) {
                     buf.append(pc.getId().toString());
                     buf.append(',');
+                    data.put("manufacturer", pc.getManufacturer());
+                    data.put("model", pc.getModel());
+                    data.put("version", pc.getVersion());
+                    data.put("majorVersion",
+                            Integer.toString(pc.getMajorVersion()));
+                    data.put("minorVersion",
+                            Integer.toString(pc.getMinorVersion()));
+                    data.put("revisionLevel",
+                            Integer.toString(pc.getRevisionLevel()));
+                    data.put("tcgMajorVersion",
+                            Integer.toString(pc.getTcgCredentialMajorVersion()));
+                    data.put("tcgMinorVersion",
+                            Integer.toString(pc.getTcgCredentialMinorVersion()));
+                    data.put("tcgRevisionLevel",
+                            Integer.toString(pc.getTcgCredentialRevisionLevel()));
                 }
                 // remove last comma character
                 buf.deleteCharAt(buf.lastIndexOf(","));

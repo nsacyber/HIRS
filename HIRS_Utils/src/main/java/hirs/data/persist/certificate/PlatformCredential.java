@@ -54,6 +54,7 @@ import org.bouncycastle.operator.ContentVerifierProvider;
 @Entity
 public class PlatformCredential extends DeviceAssociatedCertificate {
     private static final Logger LOGGER = LogManager.getLogger(PlatformCredential.class);
+    private static final int TCG_SPECIFICATION_LENGTH = 3;
     // These are Object Identifiers (OIDs) for sections in the credentials
     private static final String POLICY_QUALIFIER_CPSURI = "1.3.6.1.5.5.7.2.1";
     private static final String POLICY_QUALIFIER_USER_NOTICE = "1.3.6.1.5.5.7.2.2";
@@ -228,6 +229,15 @@ public class PlatformCredential extends DeviceAssociatedCertificate {
     private int revisionLevel = 0;
 
     @Column
+    private int tcgCredentialMajorVersion = 0;
+
+    @Column
+    private int tcgCredentialMinorVersion = 0;
+
+    @Column
+    private int tcgCredentialRevisionLevel = 0;
+
+    @Column
     private String platformClass = null;
 
     @Column
@@ -238,6 +248,7 @@ public class PlatformCredential extends DeviceAssociatedCertificate {
 
     private String platformChainType = Strings.EMPTY;
     private boolean isDeltaChain = false;
+
 
     /**
      * Get a Selector for use in retrieving PlatformCredentials.
@@ -463,6 +474,33 @@ public class PlatformCredential extends DeviceAssociatedCertificate {
      */
     public int getRevisionLevel() {
         return revisionLevel;
+    }
+
+    /**
+     * Gets the TCG Credential major version.
+     *
+     * @return the TCG Credential Major Version
+     */
+    public int getTcgCredentialMajorVersion() {
+        return tcgCredentialMajorVersion;
+    }
+
+    /**
+     * Gets the TCG Credential minor version.
+     *
+     * @return the TCG Credential minor version
+     */
+    public int getTcgCredentialMinorVersion() {
+        return tcgCredentialMinorVersion;
+    }
+
+    /**
+     * Gets the TCG Credential revision level.
+     *
+     * @return the TCG Credential revision level
+     */
+    public int getTcgCredentialRevisionLevel() {
+        return tcgCredentialRevisionLevel;
     }
 
     /**
@@ -728,7 +766,10 @@ public class PlatformCredential extends DeviceAssociatedCertificate {
                             new PlatformConfigurationV2(attributeSequence));
                     break;
                 case TCG_PLATFORM_SPECIFICATION:
+                    // handled in parseFields
+                    break;
                 case TCG_CREDENTIAL_SPECIFICATION:
+                    getTCGCredentialSpecification(attributeSequence);
                     break;
                 default:
                     // No class defined for this attribute
@@ -797,6 +838,36 @@ public class PlatformCredential extends DeviceAssociatedCertificate {
             return (TBBSecurityAssertion) getAttribute("tbbSecurityAssertion");
         }
         return null;
+    }
+
+    /**
+     * This method sets the TCG Credential fields from a certificate, if provided.
+     *
+     * @param attributeSequence The sequence associated with 2.23.133.2.23
+     */
+    private void getTCGCredentialSpecification(final ASN1Sequence attributeSequence) {
+        try {
+            this.tcgCredentialMajorVersion = Integer.parseInt(
+                    attributeSequence.getObjectAt(0).toString());
+            this.tcgCredentialMinorVersion = Integer.parseInt(
+                    attributeSequence.getObjectAt(1).toString());
+            this.tcgCredentialRevisionLevel = Integer.parseInt(
+                    attributeSequence.getObjectAt(2).toString());
+        } catch (NumberFormatException nfEx) {
+            // ill-formed ASN1
+            String fieldContents = attributeSequence.toString();
+
+            if (fieldContents != null && fieldContents.contains(",")) {
+                fieldContents = fieldContents.replaceAll("[^a-zA-Z0-9,]", "");
+                String[] fields = fieldContents.split(",");
+
+                if (fields.length == TCG_SPECIFICATION_LENGTH) {
+                    this.tcgCredentialMajorVersion = Integer.parseInt(fields[0]);
+                    this.tcgCredentialMinorVersion = Integer.parseInt(fields[1]);
+                    this.tcgCredentialRevisionLevel = Integer.parseInt(fields[2]);
+                }
+            }
+        }
     }
 
     /**

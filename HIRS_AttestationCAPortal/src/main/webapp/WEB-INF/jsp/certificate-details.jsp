@@ -103,7 +103,7 @@
             </c:if>
             <div class="row">
                 <div class="col-md-1 col-md-offset-1"><span class="colHeader">Serial Number</span></div>
-                <div id="serialNumber" class="col col-md-8"></div>
+                <div id="serialNumber" class="col col-md-8 vertical"></div>
             </div>
             <div class="row">
                 <div class="col-md-1 col-md-offset-1"><span class="colHeader">Validity</span></div>
@@ -192,7 +192,7 @@
             </div>
             <div class="row">
                 <div class="col-md-1 col-md-offset-1"><span class="colHeader">Credential Type</span></div>
-                <div id="credentialType" class="col col-md-8">${initialData.credentialType}</div>
+                <div id="credentialType" class="col col-md-8 vertical">${initialData.credentialType}</div>
             </div>
             <!-- Add the different fields based on the certificate type -->
             <c:choose>
@@ -242,7 +242,7 @@
                     </div>
                     <div class="row">
                         <div class="col-md-1 col-md-offset-1"><span class="colHeader">Policy Reference</span></div>
-                        <div id="policyReference" class="col col-md-8">
+                        <div id="policyReference" class="col col-md-8 vertical">
                             <c:choose>
                                 <c:when test="${not empty initialData.policyReference}">
                                     ${initialData.policyReference}
@@ -278,7 +278,6 @@
                             </div>
                         </c:when>
                     </c:choose>
-                    <!-- Need to test this -->
                     <div class="row">
                         <div class="col-md-1 col-md-offset-1">
                             <span class="colHeader">
@@ -320,11 +319,11 @@
                     <c:if test="${not empty initialData.platformType}">
                         <div class="row">
                             <div class="col-md-1 col-md-offset-1"><span class="colHeader">Platform Type</span></div>
-                            <div id="platformType" class="col col-md-8">${initialData.platformType}</div>
+                            <div id="platformType" class="col col-md-8 vertical">${initialData.platformType}</div>
                         </div>
                         <div class="row">
                             <div class="col-md-1 col-md-offset-1"><span class="colHeader">Platform Chain</span></div>
-                            <div id="platformType" class="col col-md-8">
+                            <div id="platformType" class="col col-md-8 vertical">
                                 <span>
                                     <c:forEach items="${initialData.chainCertificates}" var="credential" varStatus="loop">
                                         <c:choose>
@@ -391,12 +390,12 @@
                         </div>                        
                     </div>
                     <div class="row">
-                        <div class="col-md-1 col-md-offset-1"><span class="colHeader">TCG Credential Specification Version</span></div>
+                        <div class="col-md-1 col-md-offset-1"><span class="colHeader">TCG Platform Specification Version</span></div>
                         <div id="majorVersion" class="col col-md-8 vertical">${initialData.majorVersion}.${initialData.minorVersion}.${initialData.revisionLevel}</div>
                     </div>
                     <div class="row">
                         <div class="col-md-1 col-md-offset-1"><span class="colHeader">Platform Class</span></div>
-                        <div id="platformClass" class="col col-md-8">${initialData.platformClass}</div>
+                        <div id="platformClass" class="col col-md-8 vertical">${initialData.platformClass}</div>
                     </div>
                     <!-- TBB Security Assertion-->
                     <c:if test="${not empty initialData.tbbSecurityAssertion}">
@@ -779,6 +778,34 @@
                 </c:when>
                 <c:when test="${param.type=='issued'}">
                     <div class="row">
+                        <div class="col-md-1 col-md-offset-1"><span class="colHeader">System Information</span></div>
+                        <div id="subjectAltName" class="col col-md-8">
+                            <div id="manufacturer">Manufacturer:&nbsp;<span>${initialData.manufacturer}</span></div>
+                            <div id="model">Model:&nbsp;<span>${initialData.model}</span></div>
+                            <div id="version">Version:&nbsp;<span>${initialData.version}</span></div>
+                            <div id="serial">Serial Number:&nbsp;<span>${initialData.platformSerial}</span></div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-1 col-md-offset-1"><span class="colHeader">Policy Reference</span></div>
+                        <div id="policyReference" class="col col-md-8 vertical">
+                            <c:choose>
+                                <c:when test="${not empty initialData.policyReference}">
+                                    ${initialData.policyReference}
+                                </c:when>
+                                <c:otherwise>
+                                    Not Specified
+                                </c:otherwise>
+                            </c:choose>
+                        </div>
+                    </div>
+                    <c:if test="${initialData.crlPoints}">
+                        <div class="row">
+                            <div class="col-md-1 col-md-offset-1"><span class="colHeader">Revocation Locator</span></div>
+                            <div id="revocationLocator" class="col col-md-8"><a href="${initialData.crlPoints}">${initialData.crlPoints}</div>
+                        </div>
+                    </c:if>
+                    <div class="row">
                         <div class="col-md-1 col-md-offset-1"><span class="colHeader">Endorsement Credential</span></div>
                         <div id="endorsementID" class="col col-md-8">
                             <c:if test="${not empty initialData.endorsementID}">
@@ -798,6 +825,50 @@
                                     </a>
                                 </c:forTokens>
                             </c:if>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-1 col-md-offset-1"><span class="colHeader">TCG Platform Specification Version</span></div>
+                        <div id="majorVersion" class="col col-md-8 vertical">${initialData.majorVersion}.${initialData.minorVersion}.${initialData.revisionLevel}</div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-1 col-md-offset-1"><span class="colHeader">TCG Credential Specification Version</span></div>
+                        <div id="majorVersion" class="col col-md-8 vertical">${initialData.tcgMajorVersion}.${initialData.tcgMinorVersion}.${initialData.tcgRevisionLevel}</div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-1 col-md-offset-1">
+                            <span class="colHeader">
+                                <a role="button" data-toggle="collapse" class="collapsed" href="#tpmSpecificationInner"
+                                   aria-expanded="true" data-placement="top" aria-controls="tpmSpecificationInner">
+                                    TPM Specification
+                                </a>
+                            </span>
+                        </div>
+                        <div id="tpmSpecification" class="col col-md-8">
+                            <div id="tpmSpecificationInner" class="panel-body collapse" role="tabpanel" aria-expanded="false">
+                                <div>Family:&nbsp;<span>${initialData.TPMSpecificationFamily}</span></div>
+                                <div>Level:&nbsp;<span>${initialData.TPMSpecificationLevel}</span></div>
+                                <div>Revision:&nbsp;<span>${initialData.TPMSpecificationRevision}</span></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-1 col-md-offset-1">
+                            <span class="colHeader">
+                                <a role="button" data-toggle="collapse" class="collapsed" href="#tpmSecurityAssertionInner"
+                                   aria-expanded="true" data-placement="top" aria-controls="tpmSecurityAssertionInner">
+                                    TPM Security Assertion
+                                </a>
+                            </span>
+                        </div>
+                        <div id="tpmSecurityAssertion" class="col col-md-8">
+                            <div id="tpmSecurityAssertionInner" class="panel-body collapse" role="tabpanel" aria-expanded="false">
+                                <div>Version:&nbsp;<span>${initialData.TPMSecurityAssertionsVersion}</span></div>
+                                <div>Field Upgradeable:&nbsp;<span>${initialData.TPMSecurityAssertionsFieldUpgradeable}</span></div>
+                                <div>ek Generation Type:&nbsp;<span>${initialData.TPMSecurityAssertionsEkGenType}</span></div>
+                                <div>ek Generation Location:&nbsp;<span>${initialData.TPMSecurityAssertionsEkGenLoc}</span></div>
+                                <div>ek Certificate Generation Location:&nbsp;<span>${initialData.TPMSecurityAssertionsEkCertGenLoc}</span></div>
+                            </div>
                         </div>
                     </div>
                 </c:when>
@@ -858,7 +929,7 @@
                 }
             </c:if>            
 
-                //Initiliaze tooltips
+                //Initilize tooltips
                 $('[data-toggle="tooltip"]').tooltip();
 
                 //Vertical alignment on data columns
