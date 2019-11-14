@@ -20,10 +20,6 @@ public abstract class ReferenceManifest extends ArchivableEntity  {
 
     private static final Logger LOGGER = LogManager.getLogger();
 
-    private static final String RIM_TYPE_PRIMARY = "Primary";
-    private static final String RIM_TYPE_SUPPLEMENTAL = "Supplemental";
-    private static final String RIM_TYPE_PATCH = "Patch";
-
     @Column
     private String manufacturer = null;
     @Column
@@ -34,6 +30,24 @@ public abstract class ReferenceManifest extends ArchivableEntity  {
     private String tagId = null;
     @Column
     private String rimType = null;
+
+    /**
+     * Holds the different RIM types.
+     */
+    public enum RimType {
+        /**
+        * Primary Reference Integrity Manifest.
+        */
+        PRIMARY_RIM,
+        /**
+        * Supplemental Reference Integrity Manifest.
+        */
+        SUPPLEMENTAL_RIM,
+        /**
+        * Patch Reference Integrity Manifest.
+        */
+        PATCH_RIM
+    }
 
     /**
      * Default constructor of given name.
