@@ -1,10 +1,15 @@
 
 package hirs.attestationca.portal.page.controllers;
 
+import hirs.attestationca.portal.datatables.DataTableInput;
+import hirs.attestationca.portal.datatables.DataTableResponse;
 import hirs.attestationca.portal.page.Page;
 import hirs.attestationca.portal.page.PageController;
 import hirs.attestationca.portal.page.params.ReferenceManifestPageParams;
+
+import hirs.FilteredRecordsList;
 import hirs.persist.ReferenceManifestManager;
+import hirs.data.persist.ReferenceManifest;
 
 import java.text.DateFormat;
 import java.text.ParseException;
@@ -13,9 +18,12 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.MediaType;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.servlet.ModelAndView;
 
 
@@ -106,23 +114,24 @@ extends PageController<ReferenceManifestPageParams> {
      * @return the data tables response, including the result set
      * and paging information
      */
-//    @ResponseBody
-//    @RequestMapping(value = "list", produces = MediaType.APPLICATION_JSON_VALUE,
-//            method = RequestMethod.GET)
-//    public DataTableResponse<? extends ArchivableEntity> getTableData(
-//            final DataTableInput input) {
-//        LOGGER.debug("Handling request for summary list: " + input);
-//
-//        String orderColumnName = input.getOrderColumnName();
-//        LOGGER.debug("Ordering on column: " + orderColumnName);
-//
-//        FilteredRecordsList<ReferenceManifest> records
+    @ResponseBody
+    @RequestMapping(value = "list", produces = MediaType.APPLICATION_JSON_VALUE,
+            method = RequestMethod.GET)
+    public DataTableResponse<ReferenceManifest> getTableData(
+            final DataTableInput input) {
+        LOGGER.debug("Handling request for summary list: " + input);
+
+        String orderColumnName = input.getOrderColumnName();
+        LOGGER.debug("Ordering on column: " + orderColumnName);
+
+        FilteredRecordsList<ReferenceManifest> records
+                = new FilteredRecordsList<>();
 //                = OrderedListQueryDataTableAdapter.getOrderedList(
 //                        ReferenceManifest.class, referenceManifestManager,
 //                        input, orderColumnName);
-//
-//
-//        LOGGER.debug("Returning list of size: " + records.size());
-//        return new DataTableResponse<>(records, input);
-//    }
+
+
+        LOGGER.debug("Returning list of size: " + records.size());
+        return new DataTableResponse<>(records, input);
+    }
 }

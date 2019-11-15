@@ -44,9 +44,7 @@
             $(document).ready(function() {
                 var url = pagePath +'/list';
                 var columns = [
-                        {
-                            data: 'tag.id',
-                        },
+                        {data: 'tag.id'},
                         {data: 'type'},
                         {data: 'manufacturer'},
                         {data: 'model'},
@@ -70,7 +68,7 @@
                     ];
 
                 //Set data tables
-                setDataTables("#rimTable", url, columns);
+                setDataTables("#referenceManifestTable", url, columns);
             });
         </script>
     </jsp:body>
