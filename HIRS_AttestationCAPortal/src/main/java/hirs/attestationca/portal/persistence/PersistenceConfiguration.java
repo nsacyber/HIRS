@@ -5,6 +5,7 @@ import hirs.persist.AppraiserManager;
 import hirs.persist.CrudManager;
 import hirs.persist.DBAppraiserManager;
 import hirs.persist.DBCertificateManager;
+import hirs.persist.DBReferenceManifestManager;
 import hirs.persist.DBDeviceGroupManager;
 import hirs.persist.DBDeviceManager;
 import hirs.persist.DBManager;
@@ -58,6 +59,16 @@ public class PersistenceConfiguration {
     @Bean
     public DBCertificateManager certificateManager() {
         return new DBCertificateManager(sessionFactory.getObject());
+    }
+
+    /**
+     * Creates a {@link DBReferenceManifestManager} ready to use.
+     *
+     * @return {@link DBReferenceManifestManager}
+     */
+    @Bean
+    public DBReferenceManifestManager referenceManifestManager() {
+        return new DBReferenceManifestManager(sessionFactory.getObject());
     }
 
     /**

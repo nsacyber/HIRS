@@ -142,6 +142,19 @@ public class PersistenceConfiguration {
     }
 
     /**
+     * Creates a {@link ReferenceManifestManager} ready to use.
+     *
+     * @return {@link ReferenceManifestManager}
+     */
+    @Bean
+    public ReferenceManifestManager referenceManifestManager() {
+        DBReferenceManifestManager manager
+                = new DBReferenceManifestManager(sessionFactory.getObject());
+        setDbManagerRetrySettings(manager);
+        return manager;
+    }
+
+    /**
      * Creates a {@link DeviceStateManager} ready to use.
      *
      * @return {@link DeviceStateManager}
