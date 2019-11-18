@@ -57,6 +57,7 @@ extends PageController<ReferenceManifestPageParams> {
         /**
          * Default constructor that sets the format to parse against.
          * @param dateFormat
+import hirs.data.persist.ReferenceManifest.RimType;
          */
         public BiosDateValidator(final String dateFormat) {
             this.dateFormat = dateFormat;
@@ -124,6 +125,12 @@ extends PageController<ReferenceManifestPageParams> {
         String orderColumnName = input.getOrderColumnName();
         LOGGER.debug("Ordering on column: " + orderColumnName);
 
+        ReferenceManifest rm = new ReferenceManifest();
+        rm.setManufacturer("Ford");
+        rm.setModel("Mach-E");
+        rm.setFirmwareVersion("1.1");
+        rm.setTagId("0000-60000");
+        rm.setRimType("primary");
         FilteredRecordsList<ReferenceManifest> records
                 = new FilteredRecordsList<>();
 //                = OrderedListQueryDataTableAdapter.getOrderedList(
@@ -131,6 +138,7 @@ extends PageController<ReferenceManifestPageParams> {
 //                        input, orderColumnName);
 
 
+        records.add(rm);
         LOGGER.debug("Returning list of size: " + records.size());
         return new DataTableResponse<>(records, input);
     }

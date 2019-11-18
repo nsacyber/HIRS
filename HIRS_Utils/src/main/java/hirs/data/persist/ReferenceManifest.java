@@ -16,7 +16,7 @@ import org.apache.logging.log4j.Logger;
  */
 @Entity
 @Access(AccessType.FIELD)
-public abstract class ReferenceManifest extends ArchivableEntity  {
+public class ReferenceManifest extends ArchivableEntity  {
 
     private static final Logger LOGGER = LogManager.getLogger();
 
@@ -38,15 +38,29 @@ public abstract class ReferenceManifest extends ArchivableEntity  {
         /**
         * Primary Reference Integrity Manifest.
         */
-        PRIMARY_RIM,
+        PRIMARY_RIM("Primary"),
         /**
         * Supplemental Reference Integrity Manifest.
         */
-        SUPPLEMENTAL_RIM,
+        SUPPLEMENTAL_RIM("Supplemental"),
         /**
         * Patch Reference Integrity Manifest.
         */
-        PATCH_RIM
+        PATCH_RIM("Patch");
+
+        private String type;
+
+        private RimType(final String type) {
+            this.type = type;
+        }
+
+        /**
+         * Assessor for RIM Type.
+         * @return string for type
+         */
+        public String getType() {
+            return type;
+        }
     }
 
     /**

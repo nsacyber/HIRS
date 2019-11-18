@@ -44,11 +44,11 @@
             $(document).ready(function() {
                 var url = pagePath +'/list';
                 var columns = [
-                        {data: 'tag.id'},
-                        {data: 'type'},
+                        {data: 'tagId'},
+                        {data: 'rimType'},
                         {data: 'manufacturer'},
                         {data: 'model'},
-                        {data: 'version'},
+                        {data: 'firmwareVersion'},
                         {
                             data: 'id',
                             orderable: false,
