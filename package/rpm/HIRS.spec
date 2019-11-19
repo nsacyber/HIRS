@@ -192,10 +192,20 @@ if [ $1 -gt 1 ]; then
 		exit 1;
 	fi
     elif [ %{version} == "1.1.0" ]; then
-	if (mysql -u root hirs_db < /opt/hirs/scripts/common/upgrade_schema_1.0.4.sql && mysql -u root hirs_db < /opt/hirs/scripts/common/upgrade_schema_1.1.0.sql); then
+	if (mysql -u root hirs_db < /opt/hirs/scripts/common/upgrade_schema_1.0.4.sql && \
+	    mysql -u root hirs_db < /opt/hirs/scripts/common/upgrade_schema_1.1.0.sql); then
 		echo "Upgrade to version 1.1.0"
 	else
 		echo "Error upgrading HIRS database schema to 1.1.0!"
+		exit 1;
+	fi
+    elif [ %{version} == "1.1.1" ]; then
+	if (mysql -u root hirs_db < /opt/hirs/scripts/common/upgrade_schema_1.0.4.sql && \
+	    mysql -u root hirs_db < /opt/hirs/scripts/common/upgrade_schema_1.1.0.sql && \
+	    mysql -u root hirs_db < /opt/hirs/scripts/common/upgrade_schema_1.1.1.sql); then
+		echo "Upgrade to version 1.1.1"
+	else
+		echo "Error upgrading HIRS database schema to 1.1.1!"
 		exit 1;
 	fi
     fi
