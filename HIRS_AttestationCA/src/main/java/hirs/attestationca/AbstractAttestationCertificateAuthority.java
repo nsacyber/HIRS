@@ -14,6 +14,7 @@ import hirs.data.persist.FirmwareInfo;
 import hirs.data.persist.HardwareInfo;
 import hirs.data.persist.NetworkInfo;
 import hirs.data.persist.OSInfo;
+import hirs.data.persist.SupplyChainPolicy;
 import hirs.data.persist.SupplyChainValidationSummary;
 import hirs.data.persist.TPMInfo;
 import hirs.data.persist.certificate.Certificate;
@@ -203,6 +204,7 @@ public abstract class AbstractAttestationCertificateAuthority
             throw new IllegalArgumentException("The IdentityRequest sent by the client"
                     + " cannot be null or empty.");
         }
+        LOG.warn("TDM - Entered Process IR.");
 
         LOG.debug("received request to process identity request");
 
@@ -463,6 +465,7 @@ public abstract class AbstractAttestationCertificateAuthority
     @Override
     public byte[] processCertificateRequest(final byte[] certificateRequest) {
         LOG.info("Got certificate request");
+        LOG.warn("TDM - Entered Process CR.");
 
         if (ArrayUtils.isEmpty(certificateRequest)) {
             throw new IllegalArgumentException("The CertificateRequest sent by the client"
@@ -1462,12 +1465,26 @@ public abstract class AbstractAttestationCertificateAuthority
                                             final EndorsementCredential endorsementCredential,
                                             final Set<PlatformCredential> platformCredentials,
                                             final Device device) {
+        IssuedAttestationCertificate issuedAc;
+        boolean validDate = false;
+        SupplyChainPolicy scp = this.supplyChainValidationService.getPolicy();
         try {
             // save issued certificate
             IssuedAttestationCertificate attCert = new IssuedAttestationCertificate(
                     derEncodedAttestationCertificate, endorsementCredential, platformCredentials);
-            attCert.setDevice(device);
-            certificateManager.save(attCert);
+
+            if (!scp.isIssueAttestationCertificate()) {
+                issuedAc = IssuedAttestationCertificate.select(certificateManager)
+                        .byDeviceId(device.getId()).getCertificate();
+                if (issuedAc != null) {
+                    validDate = issuedAc.isValidOn(attCert.getBeginValidity());
+                }
+            }
+
+            if (!validDate) {
+                attCert.setDevice(device);
+                certificateManager.save(attCert);
+            }
         } catch (Exception e) {
             LOG.error("Error saving generated Attestation Certificate to database.", e);
             throw new CertificateProcessingException(

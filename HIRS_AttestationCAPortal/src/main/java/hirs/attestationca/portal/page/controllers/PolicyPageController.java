@@ -201,6 +201,47 @@ public class PolicyPageController extends PageController<NoPageParams> {
     }
 
     /**
+     * Updates the Attestation Certificate generation policy setting and redirects
+     * back to the original page.
+     *
+     * @param ppModel The data posted by the form mapped into an object.
+     * @param attr RedirectAttributes used to forward data back to the original page.
+     * @return View containing the url and parameters
+     * @throws URISyntaxException if malformed URI
+     */
+    @RequestMapping(value = "update-issue-attestation", method = RequestMethod.POST)
+    public RedirectView updateAttestationVal(@ModelAttribute final PolicyPageModel ppModel,
+            final RedirectAttributes attr) throws URISyntaxException {
+
+        // set the data received to be populated back into the form
+        Map<String, Object> model = new HashMap<>();
+        PageMessages messages = new PageMessages();
+        String successMessage;
+        boolean issuedAttestationOptionEnabled =
+                ppModel.getAttestationCertificateIssued().equalsIgnoreCase(ENABLED_PARAMETER_VALUE);
+
+        try {
+            SupplyChainPolicy policy = getDefaultPolicyAndSetInModel(ppModel, model);
+
+            if (issuedAttestationOptionEnabled) {
+                successMessage = "Attestation Certificate generation enabled.";
+            } else {
+                successMessage = "Attestation Certificate generation disabled.";
+            }
+
+            policy.setIssueAttestationCertificate(issuedAttestationOptionEnabled);
+            savePolicyAndApplySuccessMessage(ppModel, model, messages, successMessage, policy);
+        } catch (PolicyManagerException e) {
+            handlePolicyManagerUpdateError(model, messages, e,
+                    "Error changing ACA endorsement validation policy",
+                    "Error updating policy. \n" + e.getMessage());
+        }
+
+        // return the redirect
+        return redirectToSelf(new NoPageParams(), model, attr);
+    }
+
+    /**
      * Updates the Endorsement Credential Validation policy setting and redirects back
      * to the original page.
      *

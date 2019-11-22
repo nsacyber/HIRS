@@ -12,11 +12,13 @@ public class PolicyPageModel {
     private boolean enableEcValidation;
     private boolean enablePcCertificateValidation;
     private boolean enablePcCertificateAttributeValidation;
+    private boolean issueAttestationCertificate;
 
     // Variables to get policy settings from page
     private String pcValidate;
     private String pcAttributeValidate;
     private String ecValidate;
+    private String attestationCertificateIssued;
 
     /**
      * Constructor. Sets fields from policy.
@@ -27,6 +29,7 @@ public class PolicyPageModel {
         this.enableEcValidation = policy.isEcValidationEnabled();
         this.enablePcCertificateValidation = policy.isPcValidationEnabled();
         this.enablePcCertificateAttributeValidation = policy.isPcAttributeValidationEnabled();
+        this.issueAttestationCertificate = policy.isIssueAttestationCertificate();
     }
 
     /**
@@ -63,6 +66,14 @@ public class PolicyPageModel {
     }
 
     /**
+     * Gets the Attestation Certificate issued State.
+     * @return the issued state.
+     */
+    public boolean isIssueAttestationCertificate() {
+        return issueAttestationCertificate;
+    }
+
+    /**
      * Gets the EC Validation value.
      *
      * @return the model string representation of this field (checked or unchecked)
@@ -87,6 +98,14 @@ public class PolicyPageModel {
      */
     public String getPcAttributeValidate() {
         return pcAttributeValidate;
+    }
+
+    /**
+     * Sets the attestation certificate issued state.
+     * @return the model string representation of this field.
+     */
+    public String getAttestationCertificateIssued() {
+        return attestationCertificateIssued;
     }
 
     /**
@@ -118,6 +137,15 @@ public class PolicyPageModel {
     }
 
     /**
+     * Sets the Attestation Certificate Issued state.
+     * @param issueAttestationCertificate true if generating Certificates.
+     */
+    public void setIssueAttestationCertificate(
+            final boolean issueAttestationCertificate) {
+        this.issueAttestationCertificate = issueAttestationCertificate;
+    }
+
+    /**
      * Sets the Platform Certificate Validation state.
      *
      * @param pcValidate "checked" if enabling validation, false otherwise
@@ -142,6 +170,15 @@ public class PolicyPageModel {
      */
     public void setPcAttributeValidate(final String pcAttributeValidate) {
         this.pcAttributeValidate = pcAttributeValidate;
+    }
+
+    /**
+     * Sets the Issued Attestation Certificate state.
+     * @param attestationCertificateIssued "checked" if generating certificates.
+     */
+    public void setAttestationCertificateIssued(
+            final String attestationCertificateIssued) {
+        this.attestationCertificateIssued = attestationCertificateIssued;
     }
 
     @Override

@@ -33,6 +33,9 @@ public class SupplyChainPolicy extends Policy {
     @Column(nullable = false)
     private boolean replaceEC = false;
 
+    @Column(nullable = false)
+    private boolean issueAttestationCertificate = true;
+
     /**
      * Constructor used to initialize SupplyChainPolicy object.
      *
@@ -172,5 +175,19 @@ public class SupplyChainPolicy extends Policy {
         this.replaceEC = replaceEC;
     }
 
+    /**
+     * Returns whether or not to generate an Attestation Issued Certificate.
+     * @return current state for generation.
+     */
+    public boolean isIssueAttestationCertificate() {
+        return issueAttestationCertificate;
+    }
 
+    /**
+     * Sets whether or not to generate an Attestation Issued Certificate.
+     * @param issueAttestationCertificate the flag for generation.
+     */
+    public void setIssueAttestationCertificate(final boolean issueAttestationCertificate) {
+        this.issueAttestationCertificate = issueAttestationCertificate;
+    }
 }

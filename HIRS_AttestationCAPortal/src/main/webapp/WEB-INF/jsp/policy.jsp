@@ -59,6 +59,26 @@
                     </li>
                 </form:form>
             </div>
+            
+            <%-- Generate Issued Attestation Certificate --%>
+            <div class="aca-input-box">
+                <br />
+                <form:form method="POST" modelAttribute="initialData" action="policy/update-issue-attestation">
+                    <li>Generate Issued Attestation Certificate: ${initialData.issueAttestationCertificate ? 'Enabled' : 'Disabled'}
+                        <my:editor id="issuedCertificatePolicyEditor" label="Edit Settings">
+                            <div class="radio">
+                                <label><input id="aicTop" type="radio" name="attestationCertificateIssued" ${initialData.issueAttestationCertificate ? 'checked' : ''} value="checked"/> Attestation Certificate will be generated</label>
+                            </div>
+                            <div class="radio">
+                                <label><input id="aicBot" type="radio" name="attestationCertificateIssued" ${initialData.issueAttestationCertificate ? '' : 'checked'}  value="unchecked"/> Attestation Certificate will not be generated</label>
+                            </div>
+                            <div class="radio">
+                                <label><input id="validLen" type="text" name="numValidDays" value="3650" size="6" maxlength="6" /> valid number of days</label>
+                            </div>
+                        </my:editor>
+                    </li>
+                </form:form>
+            </div>
         </ul>
     </jsp:body>
 </my:page>
