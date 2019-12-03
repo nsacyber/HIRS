@@ -13,12 +13,15 @@ public class PolicyPageModel {
     private boolean enablePcCertificateValidation;
     private boolean enablePcCertificateAttributeValidation;
     private boolean issueAttestationCertificate;
+    private boolean generateOnExpiration;
 
     // Variables to get policy settings from page
     private String pcValidate;
     private String pcAttributeValidate;
     private String ecValidate;
     private String attestationCertificateIssued;
+    private String attestationCertificateExpiration;
+    private String numOfValidDays = "";
 
     /**
      * Constructor. Sets fields from policy.
@@ -30,6 +33,8 @@ public class PolicyPageModel {
         this.enablePcCertificateValidation = policy.isPcValidationEnabled();
         this.enablePcCertificateAttributeValidation = policy.isPcAttributeValidationEnabled();
         this.issueAttestationCertificate = policy.isIssueAttestationCertificate();
+        this.generateOnExpiration = policy.generateOnExpiration();
+        this.numOfValidDays = policy.getValidityDays();
     }
 
     /**
@@ -74,6 +79,14 @@ public class PolicyPageModel {
     }
 
     /**
+     * Gets the state of generating a certificate.
+     * @return true or false
+     */
+    public boolean generateOnExpiration() {
+        return generateOnExpiration;
+    }
+
+    /**
      * Gets the EC Validation value.
      *
      * @return the model string representation of this field (checked or unchecked)
@@ -101,11 +114,28 @@ public class PolicyPageModel {
     }
 
     /**
-     * Sets the attestation certificate issued state.
+     * Gets the attestation certificate issued state.
      * @return the model string representation of this field.
      */
     public String getAttestationCertificateIssued() {
         return attestationCertificateIssued;
+    }
+
+    /**
+     * Getter for the state of expiration date issuing.
+     * @return true or false
+     */
+    public String getAttestationCertificateExpiration() {
+        return attestationCertificateExpiration;
+    }
+
+    /**
+     * Gets the number of selected valid days.
+     *
+     * @return the number of the days for validity
+     */
+    public String getNumOfValidDays() {
+        return numOfValidDays;
     }
 
     /**
@@ -146,6 +176,24 @@ public class PolicyPageModel {
     }
 
     /**
+     * Setter for the state of generating a certificate.
+     * @param generateOnExpiration true or false
+     */
+    public void setGenerateOnExpiration(final boolean generateOnExpiration) {
+        this.generateOnExpiration = generateOnExpiration;
+    }
+
+    /**
+     * Setter for the expiration state.
+     * @param attestationCertificateExpiration true or false
+     */
+    public void setAttestationCertificateExpiration(
+            final String attestationCertificateExpiration) {
+        this.attestationCertificateExpiration
+                = attestationCertificateExpiration;
+    }
+
+    /**
      * Sets the Platform Certificate Validation state.
      *
      * @param pcValidate "checked" if enabling validation, false otherwise
@@ -174,11 +222,21 @@ public class PolicyPageModel {
 
     /**
      * Sets the Issued Attestation Certificate state.
+     *
      * @param attestationCertificateIssued "checked" if generating certificates.
      */
     public void setAttestationCertificateIssued(
             final String attestationCertificateIssued) {
         this.attestationCertificateIssued = attestationCertificateIssued;
+    }
+
+    /**
+     * Sets the number of valid days.
+     *
+     * @param numOfValidDays what to use for the certificate
+     */
+    public void setNumOfValidDays(final String numOfValidDays) {
+        this.numOfValidDays = numOfValidDays;
     }
 
     @Override

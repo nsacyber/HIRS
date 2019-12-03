@@ -150,7 +150,7 @@ public abstract class AbstractAttestationCertificateAuthority
      * Container wired application configuration property identifying the number of days that
      * certificates issued by this ACA are valid for.
      */
-    private final Integer validDays;
+    private Integer validDays;
 
     private final CertificateManager certificateManager;
     private final DeviceRegister deviceRegister;
@@ -204,7 +204,6 @@ public abstract class AbstractAttestationCertificateAuthority
             throw new IllegalArgumentException("The IdentityRequest sent by the client"
                     + " cannot be null or empty.");
         }
-        LOG.warn("TDM - Entered Process IR.");
 
         LOG.debug("received request to process identity request");
 
@@ -327,7 +326,7 @@ public abstract class AbstractAttestationCertificateAuthority
             final EndorsementCredential endorsementCredential,
             final Set<PlatformCredential> platformCredentials, final Device device) {
         // decrypt the asymmetric / symmetric blobs
-        LOG.debug("unwrapping identity request");
+        LOG.error("unwrapping identity request");
         byte[] identityProof = unwrapIdentityRequest(challenge.getRequest());
 
         // the decrypted symmetric blob should be in the format of an IdentityProof. Use the
@@ -335,15 +334,18 @@ public abstract class AbstractAttestationCertificateAuthority
         IdentityProof proof = structConverter.convert(identityProof, IdentityProof.class);
 
         // generate a session key and convert to byte array
-        LOG.debug("generating symmetric key for response");
+        LOG.error("generating symmetric key for response");
         SymmetricKey sessionKey = generateSymmetricKey();
 
         // generate the asymmetric contents for the identity response
-        LOG.debug("generating asymmetric contents for response");
+        LOG.error("generating asymmetric contents for response");
         byte[] asymmetricContents = generateAsymmetricContents(proof, sessionKey, ekPublicKey);
 
         // generate the identity credential
-        LOG.debug("generating credential from identity proof");
+        LOG.error("generating credential from identity proof");
+        // check the policy set valid date
+        SupplyChainPolicy scp = this.supplyChainValidationService.getPolicy();
+        this.validDays = Integer.getInteger(scp.getValidityDays());
         // transform the public key struct into a public key
         PublicKey publicKey = assemblePublicKey(proof.getIdentityKey().getStorePubKey().getKey());
         X509Certificate credential = generateCredential(publicKey, endorsementCredential,
@@ -353,7 +355,7 @@ public abstract class AbstractAttestationCertificateAuthority
                         .getHostName());
 
         // generate the attestation using the credential and the key for this session
-        LOG.debug("generating symmetric response");
+        LOG.error("generating symmetric response");
         SymmetricAttestation attestation = generateAttestation(credential, sessionKey);
 
         // construct the response with the both the asymmetric contents and the CA attestation
@@ -380,7 +382,6 @@ public abstract class AbstractAttestationCertificateAuthority
      */
     @Override
     public byte[] processIdentityClaimTpm2(final byte[] identityClaim) {
-
         LOG.debug("Got identity claim");
 
         if (ArrayUtils.isEmpty(identityClaim)) {
@@ -465,7 +466,6 @@ public abstract class AbstractAttestationCertificateAuthority
     @Override
     public byte[] processCertificateRequest(final byte[] certificateRequest) {
         LOG.info("Got certificate request");
-        LOG.warn("TDM - Entered Process CR.");
 
         if (ArrayUtils.isEmpty(certificateRequest)) {
             throw new IllegalArgumentException("The CertificateRequest sent by the client"
@@ -513,6 +513,9 @@ public abstract class AbstractAttestationCertificateAuthority
             // Get device name and device
             String deviceName = claim.getDv().getNw().getHostname();
             Device device = deviceManager.getDevice(deviceName);
+            // check the policy set valid date
+            SupplyChainPolicy scp = this.supplyChainValidationService.getPolicy();
+            this.validDays = Integer.parseInt(scp.getValidityDays());
 
             // Create signed, attestation certificate
             X509Certificate attestationCertificate = generateCredential(akPub,
@@ -1058,7 +1061,7 @@ public abstract class AbstractAttestationCertificateAuthority
 
             builder.addExtension(subjectAlternativeName);
             // identify cert as an AIK with this extension
-            if (null != IssuedCertificateAttributeHelper.EXTENDED_KEY_USAGE_EXTENSION) {
+            if (IssuedCertificateAttributeHelper.EXTENDED_KEY_USAGE_EXTENSION != null) {
                 builder.addExtension(IssuedCertificateAttributeHelper.EXTENDED_KEY_USAGE_EXTENSION);
             } else {
                 LOG.warn("Failed to build extended key usage extension and add to AIK");

@@ -229,6 +229,7 @@ public class PolicyPageController extends PageController<NoPageParams> {
                 successMessage = "Attestation Certificate generation disabled.";
             }
 
+            policy.setValidityDays(ppModel.getNumOfValidDays());
             policy.setIssueAttestationCertificate(issuedAttestationOptionEnabled);
             savePolicyAndApplySuccessMessage(ppModel, model, messages, successMessage, policy);
         } catch (PolicyManagerException e) {

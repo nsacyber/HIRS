@@ -16,9 +16,9 @@
             <div class="aca-input-box">
                 <form:form method="POST" modelAttribute="initialData" action="policy/update-ec-validation">
                     <li>Endorsement Credential Validation: ${initialData.enableEcValidation ? 'Enabled' : 'Disabled'}
-                        <my:editor id="ecPolicyEditor" label="Edit Settings ">
+                        <my:editor id="ecPolicyEditor" label="Edit Settings">
                             <div class="radio">
-                                <label><input id="ecTop" type="radio" name="ecValidate" ${initialData.enableEcValidation ? 'checked' : ''}  value="checked"/> Endorsement Credentials will be validated</label>
+                                <label><input id="ecTop" type="radio" name="ecValidate" ${initialData.enableEcValidation ? 'checked' : ''} value="checked"/> Endorsement Credentials will be validated</label>
                             </div>
                             <div class="radio">
                                 <label><input id="ecBot" type="radio" name="ecValidate" ${initialData.enableEcValidation ? '' : 'checked'} value="unchecked"/> Endorsement Credentials will not be validated</label>
@@ -37,7 +37,7 @@
                                 <label><input id="pcTop" type="radio" name="pcValidate" ${initialData.enablePcCertificateValidation ? 'checked' : ''} value="checked"/> Platform Credentials will be validated</label>
                             </div>
                             <div class="radio">
-                                <label><input id="pcBot" type="radio" name="pcValidate" ${initialData.enablePcCertificateValidation ? '' : 'checked'}  value="unchecked"/> Platform Credentials will not be validated</label>
+                                <label><input id="pcBot" type="radio" name="pcValidate" ${initialData.enablePcCertificateValidation ? '' : 'checked'} value="unchecked"/> Platform Credentials will not be validated</label>
                             </div>
                         </my:editor>
                     </li>
@@ -53,7 +53,7 @@
                                 <label><input id="pcAttrTop" type="radio" name="pcAttributeValidate" ${initialData.enablePcCertificateAttributeValidation ? 'checked' : ''} value="checked"/> Platform Credential Attributes will be validated</label>
                             </div>
                             <div class="radio">
-                                <label><input id="pcAttrBot" type="radio" name="pcAttributeValidate" ${initialData.enablePcCertificateAttributeValidation ? '' : 'checked'}  value="unchecked"/> Platform Credential Attributes will not be validated</label>
+                                <label><input id="pcAttrBot" type="radio" name="pcAttributeValidate" ${initialData.enablePcCertificateAttributeValidation ? '' : 'checked'} value="unchecked"/> Platform Credential Attributes will not be validated</label>
                             </div>
                         </my:editor>
                     </li>
@@ -67,13 +67,16 @@
                     <li>Generate Issued Attestation Certificate: ${initialData.issueAttestationCertificate ? 'Enabled' : 'Disabled'}
                         <my:editor id="issuedCertificatePolicyEditor" label="Edit Settings">
                             <div class="radio">
-                                <label><input id="aicTop" type="radio" name="attestationCertificateIssued" ${initialData.issueAttestationCertificate ? 'checked' : ''} value="checked"/> Attestation Certificate will be generated</label>
+                                <label><input id="aicTop" type="radio" name="attestationCertificateIssued" ${initialData.issueAttestationCertificate ? '' : 'checked'} value="unchecked"/> Never generate an Attestation Certificate</label>
                             </div>
                             <div class="radio">
-                                <label><input id="aicBot" type="radio" name="attestationCertificateIssued" ${initialData.issueAttestationCertificate ? '' : 'checked'}  value="unchecked"/> Attestation Certificate will not be generated</label>
+                                <label><input id="aicMid" type="radio" name="attestationCertificateIssued" ${initialData.issueAttestationCertificate && !initialData.generateOnExpiration ? 'checked' : ''} value="checked"/> Always generate an Attestation Certificate</label>
                             </div>
                             <div class="radio">
-                                <label><input id="validLen" type="text" name="numValidDays" value="3650" size="6" maxlength="6" /> valid number of days</label>
+                                <label>
+                                    <input id="aicBot" type="radio" name="attestationCertificateExpiration" ${initialData.issueAttestationCertificate && initialData.generateOnExpiration ? '' : 'checked'} value="unchecked"/> 
+                                    Only Generate when current Attestation Certificate expires - <input id="validLen" type="text" name="numOfValidDays" value="3650" size="6" maxlength="6" />
+                                </label>
                             </div>
                         </my:editor>
                     </li>

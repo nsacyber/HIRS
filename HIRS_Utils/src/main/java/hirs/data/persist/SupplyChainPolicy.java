@@ -14,6 +14,7 @@ public class SupplyChainPolicy extends Policy {
      * Name of the default Supply Chain Policy.
      */
     public static final String DEFAULT_POLICY = "Default Supply Chain Policy";
+    private static final String TEN_YEARS = "3650";
 
     @Column(nullable = false)
     private boolean enableEcValidation = false;
@@ -35,6 +36,12 @@ public class SupplyChainPolicy extends Policy {
 
     @Column(nullable = false)
     private boolean issueAttestationCertificate = true;
+
+    @Column(nullable = false)
+    private String validityDays = TEN_YEARS;
+
+    @Column(nullable = false)
+    private boolean generateOnExpiration = false;
 
     /**
      * Constructor used to initialize SupplyChainPolicy object.
@@ -189,5 +196,37 @@ public class SupplyChainPolicy extends Policy {
      */
     public void setIssueAttestationCertificate(final boolean issueAttestationCertificate) {
         this.issueAttestationCertificate = issueAttestationCertificate;
+    }
+
+    /**
+     * Getter for the number of days for the certificates validity.
+     * @return number of days
+     */
+    public String getValidityDays() {
+        return validityDays;
+    }
+
+    /**
+     * Setter for the number of days for validity.
+     * @param validityDays validity.
+     */
+    public void setValidityDays(final String validityDays) {
+        this.validityDays = validityDays;
+    }
+
+    /**
+     * Getter for the state of when to generate a certificate.
+     * @return true or false
+     */
+    public boolean generateOnExpiration() {
+        return generateOnExpiration;
+    }
+
+    /**
+     * Setter for the state of when to generate a certificate.
+     * @param generateOnExpiration sets true or false
+     */
+    public void setGenerateOnExpiration(final boolean generateOnExpiration) {
+        this.generateOnExpiration = generateOnExpiration;
     }
 }
