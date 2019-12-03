@@ -91,7 +91,7 @@ try:
 			if numComponentsFound < 2:
 				raise Exception("Need at least 2 components with SERIAL NUMBERS to run system tests!")
 			else:
-				print ("We're OK!")
+				print ("Found at least 2 components with SERIAL NUMBERS...running system tests!!")
 
  			# Delete the two components from pBaseComponentDict
  			del pBaseComponentDict['COMPONENTS'][delComponent2AtIndex]
