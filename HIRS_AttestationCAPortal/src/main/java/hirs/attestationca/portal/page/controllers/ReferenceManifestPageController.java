@@ -57,7 +57,6 @@ extends PageController<ReferenceManifestPageParams> {
         /**
          * Default constructor that sets the format to parse against.
          * @param dateFormat
-import hirs.data.persist.ReferenceManifest.RimType;
          */
         public BiosDateValidator(final String dateFormat) {
             this.dateFormat = dateFormat;
