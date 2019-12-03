@@ -57,10 +57,6 @@ try:
 		else:
 			print("Splitting into 1 base and multiple delta JSON files to generate the certs...")
 
-			# Setup good base...
-			# Delete the last two components for PBaseCertA certificate
-			#del pBaseComponentDict['COMPONENTS'][len(pBaseComponentDict['COMPONENTS'])-2:]
-
 			# Setup good base. Find the first two components that have a Serial included.
 			for i in range(len(pBaseComponentDict['COMPONENTS'])):
 				print("Current component[%d]:" % i)
