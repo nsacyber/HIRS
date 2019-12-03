@@ -810,29 +810,29 @@ class SystemTest(unittest.TestCase):
 		devices = AcaPortal.get_devices()
 		self.assertEqual(devices['data'][0]['device']['supplyChainStatus'], "PASS")
 
-# 	@collectors(['BASE_DELTA_GOOD'], COLLECTOR_LIST)
-# 	@unittest.skipIf(not is_tpm2(TPM_VERSION), "Skipping this test due to TPM Version " + TPM_VERSION)
-# 	def test_19_A5_base_delta(self):
-# 		"""Test Delta Certificates A5 - Provisioning with Good Base Platform Cert and 1 Bad Delta Cert"""
-# 		logging.info("*****************test_19_A5 - beginning of delta certificate test *****************")
-# 		logging.info("Provisioning with Good Base Platform Cert and 1 Bad Delta Cert")
+	@collectors(['BASE_DELTA_GOOD'], COLLECTOR_LIST)
+	@unittest.skipIf(not is_tpm2(TPM_VERSION), "Skipping this test due to TPM Version " + TPM_VERSION)
+	def test_19_A5_base_delta(self):
+		"""Test Delta Certificates A5 - Provisioning with Good Base Platform Cert and 1 Bad Delta Cert"""
+		logging.info("*****************test_19_A5 - beginning of delta certificate test *****************")
+		logging.info("Provisioning with Good Base Platform Cert and 1 Bad Delta Cert")
+
+		# TODO: Determine if we need this test
+
+#		 # Verify device supply chain appraisal result is PASS
+#		 devices = AcaPortal.get_devices()
+#		 self.assertEqual(devices['data'][0]['device']['supplyChainStatus'], "PASS")
 #
-# 		# TODO: Determine if we need this test
+#		 # Upload the VARDelta cert and provision
+#		 AcaPortal.upload_pk_cert(SIDeltaCertA2_LOCATION)
+#		 AcaPortal.enable_supply_chain_validations()
+#		 provisioner_out = run_hirs_provisioner_tpm2(CLIENT)
 #
-# #		 # Verify device supply chain appraisal result is PASS
-# #		 devices = AcaPortal.get_devices()
-# #		 self.assertEqual(devices['data'][0]['device']['supplyChainStatus'], "PASS")
-# #
-# #		 # Upload the VARDelta cert and provision
-# #		 AcaPortal.upload_pk_cert(SIDeltaCertA2_LOCATION)
-# #		 AcaPortal.enable_supply_chain_validations()
-# #		 provisioner_out = run_hirs_provisioner_tpm2(CLIENT)
-# #
-# #		 print("test_19_A4_base_delta SHOULD FAIL provisioning!!")
-# #		 print("test_19_A4_base_delta run output: {0}".format(provisioner_out))
-# #
-# #		 # Provisioning should fail since the Delta contains a bad component.
-# #		 self.assertIn("Provisioning failed", format(provisioner_out))
+#		 print("test_19_A4_base_delta SHOULD FAIL provisioning!!")
+#		 print("test_19_A4_base_delta run output: {0}".format(provisioner_out))
+#
+#		 # Provisioning should fail since the Delta contains a bad component.
+#		 self.assertIn("Provisioning failed", format(provisioner_out))
 
 	@collectors(['BASE_DELTA_GOOD'], COLLECTOR_LIST)
 	@unittest.skipIf(not is_tpm2(TPM_VERSION), "Skipping this test due to TPM Version " + TPM_VERSION)
