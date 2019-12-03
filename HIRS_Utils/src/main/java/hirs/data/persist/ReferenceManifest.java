@@ -50,7 +50,11 @@ public class ReferenceManifest extends ArchivableEntity  {
 
         private String type;
 
-        private RimType(final String type) {
+        /**
+         * Default constructor.
+         * @param type a string for the type.
+         */
+        RimType(final String type) {
             this.type = type;
         }
 
