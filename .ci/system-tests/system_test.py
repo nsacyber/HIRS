@@ -21,7 +21,6 @@ import uuid
 import time
 import sys
 import argparse
-import pprint
 
 from system_test_core import HIRSPortal, AttestationCAPortal, collectors, \
 	send_command, send_command_sha1sum, run_hirs_report, \
@@ -766,11 +765,8 @@ class SystemTest(unittest.TestCase):
 		AcaPortal.upload_pk_cert(SIDeltaCertA1_LOCATION)
 		AcaPortal.enable_supply_chain_validations()
 		provisioner_out = run_hirs_provisioner_tpm2(CLIENT)
-		print("The provisioner_out info:")
-		pp = pprint.PrettyPrinter(indent=4)
-		pp.pprint(provisioner_out)
-
 		print("test_19_A3_base_delta run output: {0}".format(provisioner_out))
+
 		supply_chain_validation_summaries = AcaPortal.get_supply_chain_validation_summaries()
  		# Verify this is one SCVS record indicating PASS
  		self.assertEqual(supply_chain_validation_summaries['recordsTotal'], 2)
