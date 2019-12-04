@@ -73,6 +73,9 @@ function InitTpm2Emulator {
 	mkdir -p $PC_DIR
 
     echo "Running PACCOR to generate local component information..."
+    # Use specific PACCOR script for system testing.
+	# Will provide default component SN#s when needed.
+	cp -f /opt/paccor/scripts/allcomponents_hirs_system_tests.sh /opt/paccor/scripts/allcomponents.sh
 	/opt/paccor/scripts/allcomponents.sh > $PC_DIR/componentsFile
 
 	# Split into JSON files needed to generate the certificates
