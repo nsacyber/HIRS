@@ -70,4 +70,15 @@ public abstract class DeviceAssociatedCertificate extends Certificate {
     public void setDevice(final Device device) {
         this.device = device;
     }
+
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder();
+        sb.append(super.toString());
+        if (device != null) {
+            sb.append(String.format("%nDevice -> %s", getDevice().toString()));
+        }
+
+        return sb.toString();
+    }
 }

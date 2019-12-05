@@ -739,7 +739,6 @@ public class CertificateRequestPageController extends PageController<NoPageParam
             // if an identical certificate is archived, update the existing certificate to
             // unarchive it and change the creation date
             if (existingCertificate.isArchived()) {
-
                 existingCertificate.restore();
                 existingCertificate.resetCreateTime();
                 certificateManager.update(existingCertificate);

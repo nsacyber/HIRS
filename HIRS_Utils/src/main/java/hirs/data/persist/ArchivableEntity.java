@@ -107,4 +107,16 @@ public abstract class ArchivableEntity extends AbstractEntity {
     public final String getArchivedDescription() {
         return this.archivedDescription;
     }
+
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder();
+        sb.append(super.toString());
+        if (archivedTime != null) {
+            sb.append(String.format(", archivedTime=%s, archiveDescription=%s",
+                archivedTime.toString(), archivedDescription));
+        }
+
+        return sb.toString();
+    }
 }
