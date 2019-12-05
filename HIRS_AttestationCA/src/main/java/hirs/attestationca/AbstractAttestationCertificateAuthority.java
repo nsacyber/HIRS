@@ -1466,9 +1466,6 @@ public abstract class AbstractAttestationCertificateAuthority
             // save issued certificate
             IssuedAttestationCertificate attCert = new IssuedAttestationCertificate(
                     derEncodedAttestationCertificate, endorsementCredential, platformCredentials);
-            for (PlatformCredential pc : platformCredentials) {
-                LOG.error("Another TDM -> " + pc.toString());
-            }
             attCert.setDevice(device);
             certificateManager.save(attCert);
         } catch (Exception e) {
