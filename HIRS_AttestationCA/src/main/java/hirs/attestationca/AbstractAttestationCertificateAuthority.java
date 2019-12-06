@@ -326,7 +326,7 @@ public abstract class AbstractAttestationCertificateAuthority
             final EndorsementCredential endorsementCredential,
             final Set<PlatformCredential> platformCredentials, final Device device) {
         // decrypt the asymmetric / symmetric blobs
-        LOG.error("unwrapping identity request");
+        LOG.debug("unwrapping identity request");
         byte[] identityProof = unwrapIdentityRequest(challenge.getRequest());
 
         // the decrypted symmetric blob should be in the format of an IdentityProof. Use the
@@ -334,15 +334,15 @@ public abstract class AbstractAttestationCertificateAuthority
         IdentityProof proof = structConverter.convert(identityProof, IdentityProof.class);
 
         // generate a session key and convert to byte array
-        LOG.error("generating symmetric key for response");
+        LOG.debug("generating symmetric key for response");
         SymmetricKey sessionKey = generateSymmetricKey();
 
         // generate the asymmetric contents for the identity response
-        LOG.error("generating asymmetric contents for response");
+        LOG.debug("generating asymmetric contents for response");
         byte[] asymmetricContents = generateAsymmetricContents(proof, sessionKey, ekPublicKey);
 
         // generate the identity credential
-        LOG.error("generating credential from identity proof");
+        LOG.debug("generating credential from identity proof");
         // check the policy set valid date
         SupplyChainPolicy scp = this.supplyChainValidationService.getPolicy();
         this.validDays = Integer.getInteger(scp.getValidityDays());
@@ -355,7 +355,7 @@ public abstract class AbstractAttestationCertificateAuthority
                         .getHostName());
 
         // generate the attestation using the credential and the key for this session
-        LOG.error("generating symmetric response");
+        LOG.debug("generating symmetric response");
         SymmetricAttestation attestation = generateAttestation(credential, sessionKey);
 
         // construct the response with the both the asymmetric contents and the CA attestation

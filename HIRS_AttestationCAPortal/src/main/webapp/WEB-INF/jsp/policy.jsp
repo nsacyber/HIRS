@@ -1,18 +1,14 @@
-<%@page contentType="text/html" pageEncoding="UTF-8"%>
-
-<%-- JSP TAGS --%>
+<%@ page contentType="text/html"%>
+<%@ page pageEncoding="UTF-8"%><%-- JSP TAGS--%>
 <%@taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core"%>
 <%@taglib prefix="spring" uri="http://www.springframework.org/tags"%>
 <%@taglib prefix="form" uri="http://www.springframework.org/tags/form"%>
-<%@taglib prefix="my" tagdir="/WEB-INF/tags"%>
-
-<%-- CONTENT --%>
+<%@taglib prefix="my" tagdir="/WEB-INF/tags"%><%-- CONTENT--%>
 <my:page>
     <jsp:attribute name="pageHeaderTitle">Attestation Identity CA Policy Options</jsp:attribute>
 
     <jsp:body>
-        <ul>
-            <%-- Endorsement validation --%>
+        <ul><%-- Endorsement validation--%>
             <div class="aca-input-box">
                 <form:form method="POST" modelAttribute="initialData" action="policy/update-ec-validation">
                     <li>Endorsement Credential Validation: ${initialData.enableEcValidation ? 'Enabled' : 'Disabled'}
@@ -27,8 +23,7 @@
                     </li>
                 </form:form>
             </div>
-            
-            <%-- Platform validation --%>
+            <%-- Platform validation--%>
             <div class="aca-input-box">
                 <form:form method="POST" modelAttribute="initialData" action="policy/update-pc-validation">
                     <li>Platform Credential Validation: ${initialData.enablePcCertificateValidation ? 'Enabled' : 'Disabled'}
@@ -42,9 +37,7 @@
                         </my:editor>
                     </li>
                 </form:form>
-            </div>
-
-            <%-- Platform attribute validation --%>
+            </div><%-- Platform attribute validation--%>
             <div class="aca-input-box">
                 <form:form method="POST" modelAttribute="initialData" action="policy/update-pc-attribute-validation">
                     <li>Platform Attribute Credential Validation: ${initialData.enablePcCertificateAttributeValidation ? 'Enabled' : 'Disabled'}
@@ -59,8 +52,7 @@
                     </li>
                 </form:form>
             </div>
-            
-            <%-- Generate Issued Attestation Certificate --%>
+            <%-- Generate Issued Attestation Certificate--%>
             <div class="aca-input-box">
                 <br />
                 <form:form method="POST" modelAttribute="initialData" action="policy/update-issue-attestation">
@@ -70,12 +62,12 @@
                                 <label><input id="aicTop" type="radio" name="attestationCertificateIssued" ${initialData.issueAttestationCertificate ? '' : 'checked'} value="unchecked"/> Never generate an Attestation Certificate</label>
                             </div>
                             <div class="radio">
-                                <label><input id="aicMid" type="radio" name="attestationCertificateIssued" ${initialData.issueAttestationCertificate && !initialData.generateOnExpiration ? 'checked' : ''} value="checked"/> Always generate an Attestation Certificate</label>
+                                <label><input id="aicMid" type="radio" name="attestationCertificateIssued" ${initialData.issueAttestationCertificate ? 'checked' : ''} value="checked"/> Always generate an Attestation Certificate</label>
                             </div>
                             <div class="radio">
                                 <label>
-                                    <input id="aicBot" type="radio" name="attestationCertificateExpiration" ${initialData.issueAttestationCertificate && initialData.generateOnExpiration ? '' : 'checked'} value="unchecked"/> 
-                                    Only Generate when current Attestation Certificate expires - <input id="validLen" type="text" name="numOfValidDays" value="3650" size="6" maxlength="6" />
+                                    <input id="aicBot" type="radio" name="attestationCertificateExpiration" ${"#expirationOn" ? '' : 'checked'} value="unchecked"/>
+                                    Only Generate when current Attestation Certificate expires - <input id="validLen" type="text" name="numOfValidDays" value="3650" size="6" maxlength="6" ${initialData.issueAttestationCertificate ? '' : 'disabled'} />
                                 </label>
                             </div>
                         </my:editor>
@@ -83,5 +75,17 @@
                 </form:form>
             </div>
         </ul>
+            <script>
+                $(document).ready(function () {                    
+                <c:choose>
+                    <c:when test="${initialData.issueAttestationCertificate}">
+                        var expirationOn = ${initialData.generateOnExpiration};
+                    </c:when>
+                    <c:otherwise>
+                        var expirationOn = false;
+                    </c:otherwise>
+                </c:choose>
+                });
+            </script>
     </jsp:body>
 </my:page>

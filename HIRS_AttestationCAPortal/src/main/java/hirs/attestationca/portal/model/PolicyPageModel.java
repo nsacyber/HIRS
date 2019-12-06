@@ -21,7 +21,7 @@ public class PolicyPageModel {
     private String ecValidate;
     private String attestationCertificateIssued;
     private String attestationCertificateExpiration;
-    private String numOfValidDays = "";
+    private String numOfValidDays;
 
     /**
      * Constructor. Sets fields from policy.
@@ -33,7 +33,7 @@ public class PolicyPageModel {
         this.enablePcCertificateValidation = policy.isPcValidationEnabled();
         this.enablePcCertificateAttributeValidation = policy.isPcAttributeValidationEnabled();
         this.issueAttestationCertificate = policy.isIssueAttestationCertificate();
-        this.generateOnExpiration = policy.generateOnExpiration();
+        this.generateOnExpiration = policy.isGenerateOnExpiration();
         this.numOfValidDays = policy.getValidityDays();
     }
 

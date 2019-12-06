@@ -234,7 +234,7 @@ public class PolicyPageController extends PageController<NoPageParams> {
             savePolicyAndApplySuccessMessage(ppModel, model, messages, successMessage, policy);
         } catch (PolicyManagerException e) {
             handlePolicyManagerUpdateError(model, messages, e,
-                    "Error changing ACA endorsement validation policy",
+                    "Error changing ACA Attestation Certificate generation policy",
                     "Error updating policy. \n" + e.getMessage());
         }
 

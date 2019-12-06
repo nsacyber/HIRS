@@ -218,7 +218,7 @@ public class SupplyChainPolicy extends Policy {
      * Getter for the state of when to generate a certificate.
      * @return true or false
      */
-    public boolean generateOnExpiration() {
+    public boolean isGenerateOnExpiration() {
         return generateOnExpiration;
     }
 
