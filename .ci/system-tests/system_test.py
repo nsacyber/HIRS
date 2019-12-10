@@ -745,8 +745,10 @@ class SystemTest(unittest.TestCase):
 
 		if (cert_list['recordsTotal'] == 1):
 			print ("SUCCESS.")
+			print ("")
 		else:
 			print ("FAILED.")
+			print ("")
 
 	@collectors(['BASE_DELTA_GOOD'], COLLECTOR_LIST)
 	@unittest.skipIf(not is_tpm2(TPM_VERSION), "Skipping this test due to TPM Version " + TPM_VERSION)
@@ -763,14 +765,13 @@ class SystemTest(unittest.TestCase):
 		AcaPortal.upload_pk_cert(SIDeltaCertA1_LOCATION)
 		AcaPortal.enable_supply_chain_validations()
 		provisioner_out = run_hirs_provisioner_tpm2(CLIENT)
-
 		print("test_19_A3_base_delta run output: {0}".format(provisioner_out))
-		supply_chain_validation_summaries = AcaPortal.get_supply_chain_validation_summaries()
 
-		# Verify this is one SCVS record indicating PASS
-		self.assertEqual(supply_chain_validation_summaries['recordsTotal'], 2)
-		self.assertEqual(supply_chain_validation_summaries['data'][0]['overallValidationResult'], "PASS")
-		self.assertEqual(supply_chain_validation_summaries['data'][1]['overallValidationResult'], "PASS")
+		supply_chain_validation_summaries = AcaPortal.get_supply_chain_validation_summaries()
+ 		# Verify this is one SCVS record indicating PASS
+ 		self.assertEqual(supply_chain_validation_summaries['recordsTotal'], 2)
+ 		self.assertEqual(supply_chain_validation_summaries['data'][0]['overallValidationResult'], "PASS")
+ 		self.assertEqual(supply_chain_validation_summaries['data'][1]['overallValidationResult'], "PASS")
 
 		# Verify device has been updated with supply chain appraisal result
 		devices = AcaPortal.get_devices()

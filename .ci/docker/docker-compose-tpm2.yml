@@ -28,13 +28,7 @@ services:
       volumes:
          - ../../:/HIRS
       entrypoint: /bin/bash -c
-      command: [yum list installed|grep paccor;
-                yum info dmidecode;
-                dmidecode -u;
-                lshw -c disk -numeric;
-                lshw -c display -numeric;
-                lshw -c network -numeric;
-                HIRS/.ci/setup/setup-tpm2provisioner.sh;
+      command: [HIRS/.ci/setup/setup-tpm2provisioner.sh;
                 HIRS/.ci/system-tests/systems-test-centos7-tpm2.sh]
       devices:
          - "/dev/mem:/dev/mem"
