@@ -1,13 +1,12 @@
 package hirs.utils;
 
+import com.google.common.base.Charsets;
+import com.google.common.io.Resources;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import java.io.BufferedReader;
-import java.io.FileInputStream;
-import java.io.InputStreamReader;
-import java.io.File;
 import java.io.IOException;
+import java.net.URL;
 
 /**
  * Utility class to get the current version from the VERSION file.
@@ -59,16 +58,7 @@ public final class VersionHelper {
      * @throws IOException
      */
     private static String getFileContents(final String filename) throws IOException {
-
-        File versionFileLink = new File(VersionHelper.class.getClassLoader()
-                                            .getResource(filename).getFile());
-        String versionFilePath = versionFileLink.getCanonicalPath();
-        BufferedReader reader = new BufferedReader(
-                                    new InputStreamReader(
-                                         new FileInputStream(versionFilePath), "UTF-8"));
-        String version = reader.readLine();
-        reader.close();
-
-        return version;
+        URL url = Resources.getResource(filename);
+        return Resources.toString(url, Charsets.UTF_8).trim();
     }
 }
