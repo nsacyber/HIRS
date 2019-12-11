@@ -422,6 +422,12 @@ def run_hirs_report_and_clear_cache(client_hostname):
         CACHED_XML_REPORT = None
     return client_out
 
+def run_hirs_provisioner_tpm_1_2(client_hostname):
+    """Runs the hirs provisioner TPM 1.2"""
+    logging.info("running hirs provisioner tpm 1.2 on {0}".format(client_hostname))
+    client_out = send_command("hirs-provisioner provision")
+    return client_out
+
 def run_hirs_provisioner_tpm2(client_hostname):
     """Runs the hirs provisioner TPM2
     """
@@ -478,6 +484,9 @@ def get_current_timestamp():
 
 def is_ubuntu_client(client_os):
     return client_os in ["ubuntu14", "ubuntu16"]
+
+def is_tpm_1_2(tpm_version):
+    return tpm_version in ["1.2"]
 
 def is_tpm2(tpm_version):
     return tpm_version in ["2.0", "2"]

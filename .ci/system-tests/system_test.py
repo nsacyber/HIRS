@@ -26,7 +26,7 @@ from system_test_core import HIRSPortal, AttestationCAPortal, collectors, \
 	send_command, send_command_sha1sum, run_hirs_report, \
 	run_hirs_provisioner_tpm2, parse_xml_with_stripped_namespaces, get_current_timestamp, \
 	get_all_nodes_recursively, touch_random_file_and_remove, get_random_pcr_hex_value, \
-	is_ubuntu_client, is_tpm2,\
+	is_ubuntu_client, is_tpm2, is_tpm_1_2, run_hirs_provisioner_tpm_1_2, \
 	DEFAULT_IMA_POLICY, DEFAULT_TPM_POLICY
 
 NUMBER_OF_PCRS = 24
@@ -978,6 +978,16 @@ class SystemTest(unittest.TestCase):
 		# Verify device has been updated with supply chain appraisal of PASS
 		devices = AcaPortal.get_devices()
 		self.assertEqual(devices['data'][0]['device']['supplyChainStatus'], "PASS")
+
+	@collectors(['TPM'], COLLECTOR_LIST)
+	@unittest.skipIf(not is_tpm_1_2(TPM_VERSION), "Skipping this test due to TPM Version " + TPM_VERSION)
+	def test_20_tpm_1_2_initial_provision(self):
+		"""Test that running the TPM 1.2 hirs provisioner works"""
+		logging.info("*****************test_20 - beginning of initial TPM 1.2 provisioner run *****************")
+
+		# Run the provisioner to ensure that it provisions successfully
+		provisioner_out = run_hirs_provisioner_tpm_1_2(CLIENT)
+		print("Initial TPM 1.2 provisioner run output: {0}".format(provisioner_out))
 
 def make_simple_ima_baseline():
     timestamp = get_current_timestamp()
