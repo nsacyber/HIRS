@@ -82,7 +82,7 @@ public class PolicyPageModel {
      * Gets the state of generating a certificate.
      * @return true or false
      */
-    public boolean generateOnExpiration() {
+    public boolean isGenerateOnExpiration() {
         return generateOnExpiration;
     }
 
@@ -245,6 +245,11 @@ public class PolicyPageModel {
                 + "enableEcValidation=" + enableEcValidation
                 + ", enablePcCertificateValidation=" + enablePcCertificateValidation
                 + ", enablePcCertificateAttributeValidation="
-                + enablePcCertificateAttributeValidation + '}';
+                + enablePcCertificateAttributeValidation
+                + ", issueAttestationCertificate="
+                + issueAttestationCertificate
+                + ", generateOnExpiration="
+                + generateOnExpiration
+                + ", numOfValidDays=" + numOfValidDays + "}";
     }
 }

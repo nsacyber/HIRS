@@ -39,7 +39,8 @@ public class PolicyPageController extends PageController<NoPageParams> {
      * Represents a web request indicating to enable a setting (based on radio buttons from a
      * web form).
      */
-    private static final String ENABLED_PARAMETER_VALUE = "checked";
+    private static final String ENABLED_CHECKED_PARAMETER_VALUE = "checked";
+    private static final String ENABLED_ON_PARAMETER_VALUE = "on";
 
 
     private PolicyManager policyManager;
@@ -90,6 +91,7 @@ public class PolicyPageController extends PageController<NoPageParams> {
         PolicyPageModel pageModel = new PolicyPageModel(policy);
         mav.addObject(INITIAL_DATA, pageModel);
 
+        LOGGER.error("TDM ===>>>" + pageModel);
         LOGGER.debug(pageModel);
 
         return mav;
@@ -113,7 +115,7 @@ public class PolicyPageController extends PageController<NoPageParams> {
         PageMessages messages = new PageMessages();
         String successMessage;
         boolean pcValidationOptionEnabled =
-                ppModel.getPcValidate().equalsIgnoreCase(ENABLED_PARAMETER_VALUE);
+                ppModel.getPcValidate().equalsIgnoreCase(ENABLED_CHECKED_PARAMETER_VALUE);
 
         try {
             SupplyChainPolicy policy = getDefaultPolicyAndSetInModel(ppModel, model);
@@ -165,7 +167,7 @@ public class PolicyPageController extends PageController<NoPageParams> {
         PageMessages messages = new PageMessages();
         String successMessage;
         boolean pcAttributeValidationOptionEnabled = ppModel.getPcAttributeValidate()
-                .equalsIgnoreCase(ENABLED_PARAMETER_VALUE);
+                .equalsIgnoreCase(ENABLED_CHECKED_PARAMETER_VALUE);
 
         try {
             SupplyChainPolicy policy = getDefaultPolicyAndSetInModel(ppModel, model);
@@ -217,8 +219,18 @@ public class PolicyPageController extends PageController<NoPageParams> {
         Map<String, Object> model = new HashMap<>();
         PageMessages messages = new PageMessages();
         String successMessage;
-        boolean issuedAttestationOptionEnabled =
-                ppModel.getAttestationCertificateIssued().equalsIgnoreCase(ENABLED_PARAMETER_VALUE);
+        boolean generateCertificate = false;
+        String numOfDays = "";
+        boolean issuedAttestationOptionEnabled
+                = ppModel.getAttestationCertificateIssued()
+                        .equalsIgnoreCase(ENABLED_CHECKED_PARAMETER_VALUE);
+        if (ppModel.getAttestationCertificateExpiration() != null) {
+            generateCertificate
+                = ppModel.getAttestationCertificateExpiration()
+                        .equalsIgnoreCase(ENABLED_ON_PARAMETER_VALUE);
+
+            LOGGER.error("TDM ->>>> " + generateCertificate);
+        }
 
         try {
             SupplyChainPolicy policy = getDefaultPolicyAndSetInModel(ppModel, model);
@@ -227,10 +239,21 @@ public class PolicyPageController extends PageController<NoPageParams> {
                 successMessage = "Attestation Certificate generation enabled.";
             } else {
                 successMessage = "Attestation Certificate generation disabled.";
+                generateCertificate = false;
             }
 
-            policy.setValidityDays(ppModel.getNumOfValidDays());
+            if (ppModel.getNumOfValidDays() != null) {
+                numOfDays = ppModel.getNumOfValidDays();
+            } else {
+                numOfDays = policy.getValidityDays();
+            }
+
+            LOGGER.error("TDM ->> " + policy.getValidityDays());
+            LOGGER.error("TDM ->> " + numOfDays);
+            LOGGER.error("TDM ->> " + ppModel);
+            policy.setValidityDays(numOfDays);
             policy.setIssueAttestationCertificate(issuedAttestationOptionEnabled);
+            policy.setGenerateOnExpiration(generateCertificate);
             savePolicyAndApplySuccessMessage(ppModel, model, messages, successMessage, policy);
         } catch (PolicyManagerException e) {
             handlePolicyManagerUpdateError(model, messages, e,
@@ -260,7 +283,7 @@ public class PolicyPageController extends PageController<NoPageParams> {
         PageMessages messages = new PageMessages();
         String successMessage;
         boolean ecValidationOptionEnabled =
-                ppModel.getEcValidate().equalsIgnoreCase(ENABLED_PARAMETER_VALUE);
+                ppModel.getEcValidate().equalsIgnoreCase(ENABLED_CHECKED_PARAMETER_VALUE);
 
         try {
 

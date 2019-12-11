@@ -14,7 +14,10 @@ public class SupplyChainPolicy extends Policy {
      * Name of the default Supply Chain Policy.
      */
     public static final String DEFAULT_POLICY = "Default Supply Chain Policy";
-    private static final String TEN_YEARS = "3650";
+    /**
+     * Number of days in 10 years.
+     */
+    public static final String TEN_YEARS = "3650";
 
     @Column(nullable = false)
     private boolean enableEcValidation = false;

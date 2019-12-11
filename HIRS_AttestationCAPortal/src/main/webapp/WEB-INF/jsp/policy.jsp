@@ -66,8 +66,10 @@
                             </div>
                             <div class="radio">
                                 <label>
-                                    <input id="aicBot" type="radio" name="attestationCertificateExpiration" ${"#expirationOn" ? '' : 'checked'} value="unchecked"/>
-                                    Only Generate when current Attestation Certificate expires - <input id="validLen" type="text" name="numOfValidDays" value="3650" size="6" maxlength="6" ${initialData.issueAttestationCertificate ? '' : 'disabled'} />
+                                    <input id="aicBot" type="checkbox" name="attestationCertificateExpiration" ${initialData.generateOnExpiration ? 'checked value="on"' : ''} />
+                                    Only Generate when current Attestation Certificate expires<br /> 
+                                    ** Validity period for the Attestation Certificate
+                                    <input id="validLen" type="text" name="numOfValidDays" value="3650" size="6" maxlength="6" ${initialData.issueAttestationCertificate ? '' : 'disabled'} />
                                 </label>
                             </div>
                         </my:editor>
@@ -75,17 +77,5 @@
                 </form:form>
             </div>
         </ul>
-            <script>
-                $(document).ready(function () {                    
-                <c:choose>
-                    <c:when test="${initialData.issueAttestationCertificate}">
-                        var expirationOn = ${initialData.generateOnExpiration};
-                    </c:when>
-                    <c:otherwise>
-                        var expirationOn = false;
-                    </c:otherwise>
-                </c:choose>
-                });
-            </script>
     </jsp:body>
 </my:page>
