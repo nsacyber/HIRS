@@ -9,7 +9,7 @@ echo "System Tests TPM 1.2 Starting..."
 echo ""
 
 # Start System Testing Docker Environment
-cd .ci/dockerr
+cd .ci/docker
 
 docker-compose up -d
 
