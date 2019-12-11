@@ -5,11 +5,11 @@
 set -e
 
 echo ""
-echo "System Tests Starting..."
+echo "System Tests TPM 1.2 Starting..."
 echo ""
 
 # Start System Testing Docker Environment
-cd .ci/docker
+cd .ci/dockerr
 
 docker-compose up -d
 
@@ -23,7 +23,7 @@ while [[ $tpm_container_status == "running" ]]
 do
   sleep 20
 
-  # Add status message, so Travis will not time out. 
+  # Add status message, so Travis will not time out.
   # It may timeout if it hasn't received output for more than 10 minutes.
   echo "Still running tests, please wait..."
 
@@ -52,5 +52,5 @@ then
     exit 0
 fi
 
-echo "ERROR: System tests failed"
+echo "ERROR: System Tests TPM 1.2 failed"
 exit 1

@@ -22,9 +22,9 @@ function InstallProvisioner {
   popd
 }
 
-# Function to initialize the TPM Emulator
+# Function to initialize the TPM 1.2 Emulator
 function InitTpmEmulator {
-	echo "===========Initializing TPM Emulator...==========="
+	echo "===========Initializing TPM 1.2 Emulator...==========="
 
   # Set variables for server
   export TPM_PATH=/tpm_emulator/tpm_storage
@@ -61,10 +61,10 @@ function InitTpmEmulator {
   echo "Starting TrouSerS Daemon"
   tcsd -e
 
-  echo "Testing TPM Connectivity"
+  echo "Testing TPM 1.2 Connectivity"
   tpm_selftest
 
-	echo "===========TPM Emulator Initialization Complete!==========="
+	echo "===========TPM 1.2 Emulator Initialization Complete!==========="
 }
 
 # Function to update the hirs-site.config file
@@ -108,3 +108,5 @@ UpdateHirsSiteConfigFile
 
 echo ""
 echo "===========HIRS ACA Provisioner Setup Complete!==========="
+
+#tail -f /dev/null
