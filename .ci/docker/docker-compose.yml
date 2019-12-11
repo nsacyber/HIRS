@@ -5,10 +5,10 @@ services:
       image: hirs/hirs-ci:aca
       container_name: hirs-aca
       volumes:
-         - ../../:/HIRS
+         - ../../:/HIRS:z
       ports:
          - "${HIRS_ACA_PORTAL_PORT}:${HIRS_ACA_PORTAL_CONTAINER_PORT}"
-      entrypoint: /bin/bash -c
+      entrypoint: /usr/bin/bash -c
       command: [HIRS/.ci/setup/setup-aca.sh]
       hostname: ${HIRS_ACA_HOSTNAME}
       networks:
@@ -23,15 +23,10 @@ services:
       depends_on:
          - aca
       volumes:
-         - ../../:/HIRS
-      entrypoint: /bin/bash -c
-      command: [yum list installed|grep paccor;
-          yum info dmidecode;
-          dmidecode -u;
-          lshw -c disk -numeric;
-          lshw -c display -numeric;
-          lshw -c network -numeric;
-          HIRS/.ci/setup/setup-tpmprovisioner.sh]
+         - ../../:/HIRS:z
+      entrypoint: /usr/bin/bash -c
+      command: [HIRS/.ci/setup/setup-tpmprovisioner.sh;
+                HIRS/.ci/system-tests/systems-test-centos7-tpm1-2.sh]
       devices:
         - "/dev/mem:/dev/mem"
       cap_add:

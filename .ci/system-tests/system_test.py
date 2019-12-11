@@ -180,7 +180,7 @@ class SystemTest(unittest.TestCase):
 # 		self.assertTrue(random_hash in latest_alert['expected'])
 # 		self.assertTrue(missing_file in latest_alert['expected'])
 
-	@collectors(['TPM'], COLLECTOR_LIST)
+	@collectors(['IMA'], COLLECTOR_LIST)
 	def test_05_tpm_white_list_appraisal(self):
 		"""Test that appraisal works with a TPM white list baseline
 
@@ -608,7 +608,6 @@ class SystemTest(unittest.TestCase):
 # 		self.assertEqual(Portal.get_alert_count_from_latest_report(), 0)
 
 	@collectors(['TPM'], COLLECTOR_LIST)
-	@unittest.skipIf(not is_tpm2(TPM_VERSION), "Skipping this test due to TPM Version " + TPM_VERSION)
 	def test_12_attestation_ca_portal_online(self):
 		"""Test that the Attestation CA Portal is online and accessible by making a GET request.
 		    If not online, an exception will be raised since the response code is non-200"""
