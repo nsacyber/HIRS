@@ -607,7 +607,7 @@ class SystemTest(unittest.TestCase):
 # 		self.assertTrue(run_hirs_report(CLIENT))
 # 		self.assertEqual(Portal.get_alert_count_from_latest_report(), 0)
 
-   @collectors(['TPM'], COLLECTOR_LIST)
+   @collectors(['TPM', 'BASE_DELTA_BAD', 'BASE_DELTA_GOOD'], COLLECTOR_LIST)
    def test_12_attestation_ca_portal_online(self):
       """Test that the Attestation CA Portal is online and accessible by making a GET request.
           If not online, an exception will be raised since the response code is non-200"""
