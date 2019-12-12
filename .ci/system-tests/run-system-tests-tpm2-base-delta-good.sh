@@ -14,10 +14,10 @@ cd .ci/docker
 docker-compose -f docker-compose-tpm2-base-delta-good.yml up -d
 
 tpm2_container_id="$(docker ps -aqf "name=hirs-aca-provisioner-tpm2")"
-echo "TPM2 Container ID: $tpm2_container_id"
+echo "TPM 2.0 Container ID: $tpm2_container_id"
 
 tpm2_container_status="$(docker inspect $tpm2_container_id --format='{{.State.Status}}')"
-echo "TPM2 Container Status: $tpm2_container_status"
+echo "TPM 2.0 Container Status: $tpm2_container_status"
 
 while [[ $tpm2_container_status == "running" ]]
 do
@@ -32,7 +32,7 @@ done
 
 # Store container exit code
 tpm2_container_exit_code="$(docker inspect $tpm2_container_id --format='{{.State.ExitCode}}')"
-echo "TPM2 Container Exit Code: $tpm2_container_exit_code"
+echo "TPM 2.0 Container Exit Code: $tpm2_container_exit_code"
 
 # Display container log
 echo ""

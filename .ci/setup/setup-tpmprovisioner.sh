@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Script to setup the TPM Provisioner Docker Image for Integration Tests
+# Script to setup the TPM 1.2 Provisioner Docker Image for Integration Tests
 set -e
 
 # Wait for ACA to boot
@@ -12,7 +12,7 @@ echo "ACA is up!"
 
 # Function to install Provisioner packages.
 function InstallProvisioner {
-	echo "===========Installing Provisioner Packages...==========="
+   echo "===========Installing TPM 1.2 Provisioner Packages...==========="
 
   pushd /HIRS
   if [ ! -d package/rpm/RPMS ]; then
@@ -24,7 +24,7 @@ function InstallProvisioner {
 
 # Function to initialize the TPM 1.2 Emulator
 function InitTpmEmulator {
-	echo "===========Initializing TPM 1.2 Emulator...==========="
+   echo "===========Initializing TPM 1.2 Emulator...==========="
 
   # Set variables for server
   export TPM_PATH=/tpm_emulator/tpm_storage
@@ -64,18 +64,18 @@ function InitTpmEmulator {
   echo "Testing TPM 1.2 Connectivity"
   tpm_selftest
 
-	echo "===========TPM 1.2 Emulator Initialization Complete!==========="
+   echo "===========TPM 1.2 Emulator Initialization Complete!==========="
 }
 
 # Function to update the hirs-site.config file
 function UpdateHirsSiteConfigFile {
-	HIRS_SITE_CONFIG="/etc/hirs/hirs-site.config"
+   HIRS_SITE_CONFIG="/etc/hirs/hirs-site.config"
 
-	echo ""
-	echo "===========Updating ${HIRS_SITE_CONFIG}, using values from /HIRS/.ci/docker/.env file...==========="
-	cat /HIRS/.ci/docker/.env
+   echo ""
+   echo "===========Updating ${HIRS_SITE_CONFIG}, using values from /HIRS/.ci/docker/.env file...==========="
+   cat /HIRS/.ci/docker/.env
 
-	cat <<DEFAULT_SITE_CONFIG_FILE > $HIRS_SITE_CONFIG
+   cat <<DEFAULT_SITE_CONFIG_FILE > $HIRS_SITE_CONFIG
 #*******************************************
 #* HIRS site configuration properties file
 #*******************************************
@@ -107,6 +107,4 @@ InitTpmEmulator
 UpdateHirsSiteConfigFile
 
 echo ""
-echo "===========HIRS ACA Provisioner Setup Complete!==========="
-
-#tail -f /dev/null
+echo "===========HIRS ACA TPM 1.2 Provisioner Setup Complete!==========="

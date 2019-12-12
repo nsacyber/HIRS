@@ -12,115 +12,115 @@ echo "ACA is up!"
 
 # Function to install TPM2 Provisioner packages.
 function InstallProvisioner {
-	echo "===========Installing TPM2 Provisioner Packages...==========="
+   echo "===========Installing TPM 2.0 Provisioner Packages...==========="
 
-	pushd /HIRS
-	if [ ! -d package/rpm/RPMS ]; then
-    	./package/package.centos.sh
-	fi
-	yum install -y package/rpm/RPMS/x86_64/HIRS_Provisioner_TPM_2_0*.el7.x86_64.rpm
-	popd
+   pushd /HIRS
+   if [ ! -d package/rpm/RPMS ]; then
+       ./package/package.centos.sh
+   fi
+   yum install -y package/rpm/RPMS/x86_64/HIRS_Provisioner_TPM_2_0*.el7.x86_64.rpm
+   popd
 }
 
-# Function to initialize the TPM2 Emulator
+# Function to initialize the TPM 2.0 Emulator
 function InitTpm2Emulator {
-	echo "===========Initializing TPM2 Emulator...==========="
+   echo "===========Initializing TPM 2.0 Emulator...==========="
 
-	mkdir -p /var/run/dbus
-	if [ -e /var/run/dbus/pid ]; then
-	  rm /var/run/dbus/pid
-	fi
+   mkdir -p /var/run/dbus
+   if [ -e /var/run/dbus/pid ]; then
+     rm /var/run/dbus/pid
+   fi
 
-	if [ -e /var/run/dbus/system_bus_socket ]; then
-	  rm /var/run/dbus/system_bus_socket
-	fi
+   if [ -e /var/run/dbus/system_bus_socket ]; then
+     rm /var/run/dbus/system_bus_socket
+   fi
 
-	# Start the DBus
-	dbus-daemon --fork --system
-	echo "DBus started"
+   # Start the DBus
+   dbus-daemon --fork --system
+   echo "DBus started"
 
-	# Give DBus time to start up
-	sleep 5
+   # Give DBus time to start up
+   sleep 5
 
-	/ibmtpm/src/./tpm_server &
-	echo "TPM Emulator started"
+   /ibmtpm/src/./tpm_server &
+   echo "TPM Emulator started"
 
-	# Give tpm_server time to start and register on the DBus
-	sleep 5
+   # Give tpm_server time to start and register on the DBus
+   sleep 5
 
-	tpm2-abrmd -t socket &
-	echo "TPM2-Abrmd started"
+   tpm2-abrmd -t socket &
+   echo "TPM2-Abrmd started"
 
-	# Give ABRMD time to start and register on the DBus
-	sleep 5
+   # Give ABRMD time to start and register on the DBus
+   sleep 5
 
-	# Certificates
-	ek_cert="/HIRS/.ci/setup/certs/ek_cert.der"
-	ca_key="/HIRS/.ci/setup/certs/ca.key"
-	ca_cert="/HIRS/.ci/setup/certs/ca.crt"
-	platform_cert="platformAttributeCertificate.der"
+   # Certificates
+   ek_cert="/HIRS/.ci/setup/certs/ek_cert.der"
+   ca_key="/HIRS/.ci/setup/certs/ca.key"
+   ca_cert="/HIRS/.ci/setup/certs/ca.crt"
+   platform_cert="platformAttributeCertificate.der"
 
-	# PACCOR directory
-	PC_DIR=/var/hirs/pc_generation
-	mkdir -p $PC_DIR
+   # PACCOR directory
+   PC_DIR=/var/hirs/pc_generation
+   mkdir -p $PC_DIR
 
-	echo "Running PACCOR to generate local component information..."
-	# Use specific PACCOR script for system testing.
-	# Will provide default component SN#s when needed.
-	cp -f /opt/paccor/scripts/allcomponents_hirs_system_tests.sh /opt/paccor/scripts/allcomponents.sh
-	/opt/paccor/scripts/allcomponents.sh > $PC_DIR/componentsFile
-	/opt/paccor/scripts/referenceoptions.sh > $PC_DIR/optionsFile
-	/opt/paccor/scripts/otherextensions.sh > $PC_DIR/extensionsFile
+   echo "Running PACCOR to generate local component information..."
+   # Use specific PACCOR script for system testing.
+   # Will provide default component SN#s when needed.
+   cp -f /opt/paccor/scripts/allcomponents_hirs_system_tests.sh /opt/paccor/scripts/allcomponents.sh
+   /opt/paccor/scripts/allcomponents.sh > $PC_DIR/componentsFile
+   /opt/paccor/scripts/referenceoptions.sh > $PC_DIR/optionsFile
+   /opt/paccor/scripts/otherextensions.sh > $PC_DIR/extensionsFile
 
-	echo "Generating $platform_cert..."
-	/opt/paccor/bin/observer -c $PC_DIR/componentsFile -p $PC_DIR/optionsFile -e $ek_cert -f $PC_DIR/observerFile
-	/opt/paccor/bin/signer -o $PC_DIR/observerFile -x $PC_DIR/extensionsFile -b 20180101 -a 20280201 -N $RANDOM -k $ca_key -P $ca_cert -f $PC_DIR/$platform_cert
+   echo "Generating $platform_cert..."
+   /opt/paccor/bin/observer -c $PC_DIR/componentsFile -p $PC_DIR/optionsFile -e $ek_cert -f $PC_DIR/observerFile
+   /opt/paccor/bin/signer -o $PC_DIR/observerFile -x $PC_DIR/extensionsFile -b 20180101 -a 20280201 -N $RANDOM -k $ca_key -P $ca_cert -f $PC_DIR/$platform_cert
 
-	if tpm2_nvlist | grep -q 0x1c00002; then
-	  echo "Released NVRAM for EK."
-	  tpm2_nvrelease -x 0x1c00002 -a 0x40000001
-	fi
+   if tpm2_nvlist | grep -q 0x1c00002; then
+     echo "Released NVRAM for EK."
+     tpm2_nvrelease -x 0x1c00002 -a 0x40000001
+   fi
 
-	# Define nvram space to enable loading of EK cert (-x NV Index, -a handle to
-	# authorize [0x40000001 = ownerAuth handle], -s size [defaults to 2048], -t
-	# specifies attribute value in publicInfo struct
-	# [0x2000A = ownerread|ownerwrite|policywrite])
-	size=$(cat $ek_cert | wc -c)
-	echo "Define NVRAM location for EK cert of size $size."
-	tpm2_nvdefine -x 0x1c00002 -a 0x40000001 -t 0x2000A -s $size
+   # Define nvram space to enable loading of EK cert (-x NV Index, -a handle to
+   # authorize [0x40000001 = ownerAuth handle], -s size [defaults to 2048], -t
+   # specifies attribute value in publicInfo struct
+   # [0x2000A = ownerread|ownerwrite|policywrite])
+   size=$(cat $ek_cert | wc -c)
+   echo "Define NVRAM location for EK cert of size $size."
+   tpm2_nvdefine -x 0x1c00002 -a 0x40000001 -t 0x2000A -s $size
 
-	# Load key into TPM nvram
-	echo "Loading EK cert $ek_cert into NVRAM."
-	tpm2_nvwrite -x 0x1c00002 -a 0x40000001 $ek_cert
+   # Load key into TPM nvram
+   echo "Loading EK cert $ek_cert into NVRAM."
+   tpm2_nvwrite -x 0x1c00002 -a 0x40000001 $ek_cert
 
-	if tpm2_nvlist | grep -q 0x1c90000; then
-	  echo "Released NVRAM for PC."
-	  tpm2_nvrelease -x 0x1c90000 -a 0x40000001
-	fi
+   if tpm2_nvlist | grep -q 0x1c90000; then
+     echo "Released NVRAM for PC."
+     tpm2_nvrelease -x 0x1c90000 -a 0x40000001
+   fi
 
-	# Store the platform certificate in the TPM's NVRAM
-	size=$(cat $PC_DIR/$platform_cert | wc -c)
-	echo "Define NVRAM location for PC cert of size $size."
-	tpm2_nvdefine -x 0x1c90000 -a 0x40000001 -t 0x2000A -s $size
+   # Store the platform certificate in the TPM's NVRAM
+   size=$(cat $PC_DIR/$platform_cert | wc -c)
+   echo "Define NVRAM location for PC cert of size $size."
+   tpm2_nvdefine -x 0x1c90000 -a 0x40000001 -t 0x2000A -s $size
 
-	echo "Loading PC cert $PC_DIR/$platform_cert into NVRAM."
-	tpm2_nvwrite -x 0x1c90000 -a 0x40000001 $PC_DIR/$platform_cert
+   echo "Loading PC cert $PC_DIR/$platform_cert into NVRAM."
+   tpm2_nvwrite -x 0x1c90000 -a 0x40000001 $PC_DIR/$platform_cert
 
-	echo "===========TPM2 Emulator Initialization Complete!==========="
+   echo "===========TPM 2.0 Emulator Initialization Complete!==========="
 
-	# Set Logging to INFO Level
-	sed -i "s/WARN/INFO/" /etc/hirs/TPM2_Provisioner/log4cplus_config.ini
+   # Set Logging to INFO Level
+   sed -i "s/WARN/INFO/" /etc/hirs/TPM2_Provisioner/log4cplus_config.ini
 }
 
 # Function to update the hirs-site.config file
 function UpdateHirsSiteConfigFile {
-	HIRS_SITE_CONFIG="/etc/hirs/hirs-site.config"
+   HIRS_SITE_CONFIG="/etc/hirs/hirs-site.config"
 
-	echo ""
-	echo "===========Updating ${HIRS_SITE_CONFIG}, using values from /HIRS/.ci/docker/.env file...==========="
-	cat /HIRS/.ci/docker/.env
+   echo ""
+   echo "===========Updating ${HIRS_SITE_CONFIG}, using values from /HIRS/.ci/docker/.env file...==========="
+   cat /HIRS/.ci/docker/.env
 
-	cat <<DEFAULT_SITE_CONFIG_FILE > $HIRS_SITE_CONFIG
+   cat <<DEFAULT_SITE_CONFIG_FILE > $HIRS_SITE_CONFIG
 #*******************************************
 #* HIRS site configuration properties file
 #*******************************************
@@ -152,8 +152,8 @@ InitTpm2Emulator
 UpdateHirsSiteConfigFile
 
 echo ""
-echo "TPM2 Emulator NV RAM list"
+echo "TPM 2.0 Emulator NV RAM list"
 tpm2_nvlist
 
 echo ""
-echo "===========HIRS ACA TPM2 Provisioner Setup Complete!==========="
+echo "===========HIRS ACA TPM 2.0 Provisioner Setup Complete!==========="
