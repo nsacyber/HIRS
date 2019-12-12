@@ -290,8 +290,8 @@ class AttestationCAPortal:
 
     def disable_supply_chain_validations(self):
 
-        # the initial POST request goes through, but the redirect from the server is attempted which results in a 404,
-        # or possibly a 200 on centos7, apparently.
+        # The initial POST request goes through, but the redirect from the server is attempted
+        # which results in a 404, or possibly a 200 on centos7, apparently.
         self.request("post", "portal/policy/update-ec-validation",
                      expected_status_codes=[404, 200], params={'ecValidate': "unchecked",})
         self.request("post", "portal/policy/update-pc-validation",
@@ -301,8 +301,8 @@ class AttestationCAPortal:
 
     def enable_supply_chain_validations(self):
 
-        # the initial POST request goes through, but the redirect from the server is attempted which results in a 404,
-        # or possibly a 200 on centos7, apparently.
+        # The initial POST request goes through, but the redirect from the server is attempted
+        # which results in a 404, or possibly a 200 on centos7, apparently.
         self.request("post", "portal/policy/update-ec-validation",
                      expected_status_codes=[404, 200], params={'ecValidate': "checked",})
         self.request("post", "portal/policy/update-pc-validation",
@@ -424,14 +424,14 @@ def run_hirs_report_and_clear_cache(client_hostname):
 
 def run_hirs_provisioner_tpm_1_2(client_hostname):
     """Runs the hirs provisioner TPM 1.2"""
-    logging.info("running hirs provisioner tpm 1.2 on {0}".format(client_hostname))
+    logging.info("running hirs provisioner TPM 1.2 on {0}".format(client_hostname))
     client_out = send_command("hirs-provisioner provision")
     return client_out
 
 def run_hirs_provisioner_tpm2(client_hostname):
-    """Runs the hirs provisioner TPM2
+    """Runs the hirs provisioner TPM 2.0
     """
-    logging.info("running hirs provisioner tpm2 on {0}".format(client_hostname))
+    logging.info("running hirs provisioner TPM 2.0 on {0}".format(client_hostname))
     client_out = send_command("hirs-provisioner-tpm2 provision")
     return client_out
 
@@ -467,7 +467,6 @@ def touch_random_file_and_remove(client_hostname):
     rm_command = "rm {}".format(filename)
 
     combined_command = "{};{};{};{}".format(echo_command, cat_command, sha_command, rm_command)
-#    command_output = send_vagrant_command(combined_command, client_hostname)
     sha_hash = command_output.split()[1]
 
     return (filename, sha_hash)

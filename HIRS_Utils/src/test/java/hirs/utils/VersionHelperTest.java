@@ -14,8 +14,8 @@ public class VersionHelperTest {
     @Test
     public void testGetVersionFail() {
 
-        String version = VersionHelper.getVersion("somefile");
-        Assert.assertEquals(version, "");
+        String actual = VersionHelper.getVersion("somefile");
+        Assert.assertTrue(actual.startsWith(""));
     }
 
     /**
