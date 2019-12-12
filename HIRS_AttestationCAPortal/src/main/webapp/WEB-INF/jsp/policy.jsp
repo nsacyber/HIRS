@@ -56,7 +56,7 @@
             <div class="aca-input-box">
                 <br />
                 <form:form method="POST" modelAttribute="initialData" action="policy/update-issue-attestation">
-                    <li>Generate Issued Attestation Certificate: ${initialData.issueAttestationCertificate ? 'Enabled' : 'Disabled'}
+                    <li>Generate Issued Attestation Certificate: ${(initialData.issueAttestationCertificate || initialData.generateOnExpiration) ? 'Enabled' : 'Disabled'}
                         <my:editor id="issuedCertificatePolicyEditor" label="Edit Settings">
                             <div class="radio">
                                 <label><input id="aicTop" type="radio" name="attestationCertificateIssued" ${initialData.issueAttestationCertificate ? '' : 'checked'} value="unchecked"/> Never generate an Attestation Certificate</label>
@@ -66,10 +66,9 @@
                             </div>
                             <div class="radio">
                                 <label>
-                                    <input id="aicBot" type="checkbox" name="attestationCertificateExpiration" ${initialData.generateOnExpiration ? 'checked value="on"' : ''} />
-                                    Only Generate when current Attestation Certificate expires<br /> 
+                                    <input id="aicBot" type="radio" name="attestationCertificateIssued" ${initialData.generateOnExpiration ? 'checked' : ''} value="expires"/> Only Generate when current Attestation Certificate expires<br /> 
                                     ** Validity period for the Attestation Certificate
-                                    <input id="validLen" type="text" name="numOfValidDays" value="3650" size="6" maxlength="6" ${initialData.issueAttestationCertificate ? '' : 'disabled'} />
+                                    <input id="validLen" type="text" name="numOfValidDays" value="3650" size="6" maxlength="6" ${(initialData.issueAttestationCertificate || initialData.generateOnExpiration) ? '' : 'disabled'} />
                                 </label>
                             </div>
                         </my:editor>

@@ -40,7 +40,8 @@ public class PolicyPageController extends PageController<NoPageParams> {
      * web form).
      */
     private static final String ENABLED_CHECKED_PARAMETER_VALUE = "checked";
-    private static final String ENABLED_ON_PARAMETER_VALUE = "on";
+
+    private static final String ENABLED_EXPIRES_PARAMETER_VALUE = "expires";
 
 
     private PolicyManager policyManager;
@@ -219,18 +220,15 @@ public class PolicyPageController extends PageController<NoPageParams> {
         Map<String, Object> model = new HashMap<>();
         PageMessages messages = new PageMessages();
         String successMessage;
-        boolean generateCertificate = false;
         String numOfDays = "";
         boolean issuedAttestationOptionEnabled
                 = ppModel.getAttestationCertificateIssued()
                         .equalsIgnoreCase(ENABLED_CHECKED_PARAMETER_VALUE);
-        if (ppModel.getAttestationCertificateExpiration() != null) {
-            generateCertificate
-                = ppModel.getAttestationCertificateExpiration()
-                        .equalsIgnoreCase(ENABLED_ON_PARAMETER_VALUE);
+        boolean generateCertificateEnabled
+                = ppModel.getAttestationCertificateIssued()
+                        .equalsIgnoreCase(ENABLED_EXPIRES_PARAMETER_VALUE);
 
-            LOGGER.error("TDM ->>>> " + generateCertificate);
-        }
+        LOGGER.error("TDM ->>>> " + generateCertificateEnabled);
 
         try {
             SupplyChainPolicy policy = getDefaultPolicyAndSetInModel(ppModel, model);
@@ -239,10 +237,9 @@ public class PolicyPageController extends PageController<NoPageParams> {
                 successMessage = "Attestation Certificate generation enabled.";
             } else {
                 successMessage = "Attestation Certificate generation disabled.";
-                generateCertificate = false;
             }
 
-            if (ppModel.getNumOfValidDays() != null) {
+            if (generateCertificateEnabled) {
                 numOfDays = ppModel.getNumOfValidDays();
             } else {
                 numOfDays = policy.getValidityDays();
@@ -251,9 +248,10 @@ public class PolicyPageController extends PageController<NoPageParams> {
             LOGGER.error("TDM ->> " + policy.getValidityDays());
             LOGGER.error("TDM ->> " + numOfDays);
             LOGGER.error("TDM ->> " + ppModel);
+
             policy.setValidityDays(numOfDays);
             policy.setIssueAttestationCertificate(issuedAttestationOptionEnabled);
-            policy.setGenerateOnExpiration(generateCertificate);
+            policy.setGenerateOnExpiration(generateCertificateEnabled);
             savePolicyAndApplySuccessMessage(ppModel, model, messages, successMessage, policy);
         } catch (PolicyManagerException e) {
             handlePolicyManagerUpdateError(model, messages, e,

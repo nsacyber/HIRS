@@ -20,7 +20,6 @@ public class PolicyPageModel {
     private String pcAttributeValidate;
     private String ecValidate;
     private String attestationCertificateIssued;
-    private String attestationCertificateExpiration;
     private String numOfValidDays;
 
     /**
@@ -122,14 +121,6 @@ public class PolicyPageModel {
     }
 
     /**
-     * Getter for the state of expiration date issuing.
-     * @return true or false
-     */
-    public String getAttestationCertificateExpiration() {
-        return attestationCertificateExpiration;
-    }
-
-    /**
      * Gets the number of selected valid days.
      *
      * @return the number of the days for validity
@@ -181,16 +172,6 @@ public class PolicyPageModel {
      */
     public void setGenerateOnExpiration(final boolean generateOnExpiration) {
         this.generateOnExpiration = generateOnExpiration;
-    }
-
-    /**
-     * Setter for the expiration state.
-     * @param attestationCertificateExpiration true or false
-     */
-    public void setAttestationCertificateExpiration(
-            final String attestationCertificateExpiration) {
-        this.attestationCertificateExpiration
-                = attestationCertificateExpiration;
     }
 
     /**
