@@ -10,7 +10,7 @@ until [ "`curl --silent --connect-timeout 1 -I -k https://${HIRS_ACA_PORTAL_IP}:
 done
 echo "ACA is up!"
 
-# Function to install Provisioner packages.
+# Function to install TPM 1.2 Provisioner packages
 function InstallProvisioner {
    echo "===========Installing TPM 1.2 Provisioner Packages...==========="
 
@@ -100,7 +100,7 @@ DEFAULT_SITE_CONFIG_FILE
 # Install packages
 InstallProvisioner
 
-# Install TPM Emulator
+# Install TPM 1.2 Emulator
 InitTpmEmulator
 
 # Update the hirs-site.config file
