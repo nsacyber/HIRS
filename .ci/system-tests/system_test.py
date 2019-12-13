@@ -26,7 +26,7 @@ from system_test_core import HIRSPortal, AttestationCAPortal, collectors, \
    send_command, send_command_sha1sum, run_hirs_report,run_hirs_provisioner_tpm_1_2, \
    run_hirs_provisioner_tpm_2_0, parse_xml_with_stripped_namespaces, \
    get_all_nodes_recursively, touch_random_file_and_remove, get_random_pcr_hex_value, \
-   get_current_timestamp, is_ubuntu_client, is_tpm2, is_tpm_1_2, \
+   get_current_timestamp, is_ubuntu_client, is_tpm_2_0, is_tpm_1_2, \
    DEFAULT_IMA_POLICY, DEFAULT_TPM_POLICY, \
    make_simple_ima_baseline, make_baseline_from_xml, \
    make_simple_ima_blacklist_baseline, \
@@ -249,7 +249,7 @@ class SystemTest(unittest.TestCase):
 # 			self.assertTrue(reported_hash in pcr_alert['received'])
 
    @collectors(['IMA'], COLLECTOR_LIST)
-   @unittest.skipIf(not is_tpm2(TPM_VERSION), "Skipping this test due to TPM Version " + TPM_VERSION)
+   @unittest.skipIf(not is_tpm_2_0(TPM_VERSION), "Skipping this test due to TPM Version " + TPM_VERSION)
    def test_07_ima_blacklist_appraisal(self):
       """Test that appraisal works with a small IMA blacklist baseline
 
@@ -361,7 +361,7 @@ class SystemTest(unittest.TestCase):
 # 		self.assertTrue(result)
 
    @collectors(['IMA'], COLLECTOR_LIST)
-   @unittest.skipIf(not is_tpm2(TPM_VERSION), "Skipping this test due to TPM Version " + TPM_VERSION)
+   @unittest.skipIf(not is_tpm_2_0(TPM_VERSION), "Skipping this test due to TPM Version " + TPM_VERSION)
    def test_08_delta_reports_required_set(self):
       """Test that appraisal works with delta reports and required sets.
 
@@ -435,7 +435,7 @@ class SystemTest(unittest.TestCase):
 # 		send_vagrant_command('rm {0}'.format(foo_bar_file_name), CLIENT)
 
    @collectors(['IMA'], COLLECTOR_LIST)
-   @unittest.skipIf(not is_tpm2(TPM_VERSION), "Skipping this test due to TPM Version " + TPM_VERSION)
+   @unittest.skipIf(not is_tpm_2_0(TPM_VERSION), "Skipping this test due to TPM Version " + TPM_VERSION)
    def test_09_delta_reports_whitelist(self):
       """Test that appraisal works with delta reports. Each report should be
          appraised individually. Checks that a failed appraisal can be followed
@@ -501,7 +501,7 @@ class SystemTest(unittest.TestCase):
 # 		send_vagrant_command('rm {0}'.format(foo_file_name), CLIENT)
 
    @collectors(['IMA', 'TPM'], COLLECTOR_LIST)
-   @unittest.skipIf(not is_tpm2(TPM_VERSION), "Skipping this test due to TPM Version " + TPM_VERSION)
+   @unittest.skipIf(not is_tpm_2_0(TPM_VERSION), "Skipping this test due to TPM Version " + TPM_VERSION)
    def test_10_on_demand(self):
       """Test that on-demand (server-initiated) appraisal works.
 
@@ -629,7 +629,7 @@ class SystemTest(unittest.TestCase):
       print("Initial TPM 1.2 provisioner run output: {0}".format(provisioner_out))
 
    @collectors(['TPM'], COLLECTOR_LIST)
-   @unittest.skipIf(not is_tpm2(TPM_VERSION), "Skipping this test due to TPM Version " + TPM_VERSION)
+   @unittest.skipIf(not is_tpm_2_0(TPM_VERSION), "Skipping this test due to TPM Version " + TPM_VERSION)
    def test_14_tpm_2_0_initial_provision(self):
       """Test that running the TPM 2.0 hirs provisioner works"""
       logging.info("***************** Beginning of initial TPM 2.0 provisioner run *****************")
@@ -639,7 +639,7 @@ class SystemTest(unittest.TestCase):
       print("Initial TPM 2.0 provisioner run output: {0}".format(provisioner_out))
 
    @collectors(['TPM'], COLLECTOR_LIST)
-   @unittest.skipIf(not is_tpm2(TPM_VERSION), "Skipping this test due to TPM Version " + TPM_VERSION)
+   @unittest.skipIf(not is_tpm_2_0(TPM_VERSION), "Skipping this test due to TPM Version " + TPM_VERSION)
    def test_15_device_info_report_stored_after_provisioning(self):
       """Test that running the hirs provisioner results in storing a device info report for
          the device in the DB"""
@@ -650,7 +650,7 @@ class SystemTest(unittest.TestCase):
       self.assertEqual(aca_portal_devices['recordsTotal'], 1)
 
    @collectors(['TPM'], COLLECTOR_LIST)
-   @unittest.skipIf(not is_tpm2(TPM_VERSION), "Skipping this test due to TPM Version " + TPM_VERSION)
+   @unittest.skipIf(not is_tpm_2_0(TPM_VERSION), "Skipping this test due to TPM Version " + TPM_VERSION)
    def test_16_supply_chain_validation_summary_stored_after_second_provisioning(self):
       """Test that running the hirs provisioner, a second time, results in storing a supply chain validation
          record in the database"""
@@ -674,7 +674,7 @@ class SystemTest(unittest.TestCase):
       self.assertEqual(devices['data'][0]['device']['supplyChainStatus'], "PASS")
 
    @collectors(['TPM'], COLLECTOR_LIST)
-   @unittest.skipIf(not is_tpm2(TPM_VERSION), "Skipping this test due to TPM Version " + TPM_VERSION)
+   @unittest.skipIf(not is_tpm_2_0(TPM_VERSION), "Skipping this test due to TPM Version " + TPM_VERSION)
    def test_17_ek_info_report(self):
       """Test that running the hirs provisioner results in storing EK certs info report for
          the device in the DB"""
@@ -686,7 +686,7 @@ class SystemTest(unittest.TestCase):
       self.assertEqual(cert_list['data'][0]['credentialType'], "TCPA Trusted Platform Module Endorsement")
 
    @collectors(['TPM'], COLLECTOR_LIST)
-   @unittest.skipIf(not is_tpm2(TPM_VERSION), "Skipping this test due to TPM Version " + TPM_VERSION)
+   @unittest.skipIf(not is_tpm_2_0(TPM_VERSION), "Skipping this test due to TPM Version " + TPM_VERSION)
    def test_18_pk_info_report(self):
       """Test that running the hirs provisioner results in storing PK certs info report for
          the device in the DB"""
@@ -698,7 +698,7 @@ class SystemTest(unittest.TestCase):
       self.assertEqual(cert_list['data'][0]['credentialType'], "TCG Trusted Platform Endorsement")
 
    @collectors(['TPM'], COLLECTOR_LIST)
-   @unittest.skipIf(not is_tpm2(TPM_VERSION), "Skipping this test due to TPM Version " + TPM_VERSION)
+   @unittest.skipIf(not is_tpm_2_0(TPM_VERSION), "Skipping this test due to TPM Version " + TPM_VERSION)
    def test_19_trust_chain_info_report(self):
       """Test that running the hirs provisioner results in storing trust chains info report for
          the device in the DB"""
@@ -708,7 +708,7 @@ class SystemTest(unittest.TestCase):
       self.assertEqual(trust_chain_list['recordsTotal'], 1)
 
    @collectors(['BASE_DELTA_GOOD'], COLLECTOR_LIST)
-   @unittest.skipIf(not is_tpm2(TPM_VERSION), "Skipping this test due to TPM Version " + TPM_VERSION)
+   @unittest.skipIf(not is_tpm_2_0(TPM_VERSION), "Skipping this test due to TPM Version " + TPM_VERSION)
    def test_20_A1_base_delta(self):
       """Test Delta Certificates A1 - Provisioning with Good Base Platform Cert (via Platform Cert on TPM Emulator)"""
       logging.info("***************** test_20_A1 - Beginning of delta certificate test *****************")
@@ -729,7 +729,7 @@ class SystemTest(unittest.TestCase):
       self.assertEqual(devices['data'][0]['device']['supplyChainStatus'], "PASS")
 
    @collectors(['BASE_DELTA_GOOD'], COLLECTOR_LIST)
-   @unittest.skipIf(not is_tpm2(TPM_VERSION), "Skipping this test due to TPM Version " + TPM_VERSION)
+   @unittest.skipIf(not is_tpm_2_0(TPM_VERSION), "Skipping this test due to TPM Version " + TPM_VERSION)
    def test_20_A2_base_delta(self):
       """Test Delta Certificates A2 - Attempt to upload Base cert with holder already having a Base Platform Cert associated with it"""
       logging.info("***************** test_20_A2 - Beginning of delta certificate test *****************")
@@ -761,7 +761,7 @@ class SystemTest(unittest.TestCase):
          print ("FAILED.\n")
 
    @collectors(['BASE_DELTA_GOOD'], COLLECTOR_LIST)
-   @unittest.skipIf(not is_tpm2(TPM_VERSION), "Skipping this test due to TPM Version " + TPM_VERSION)
+   @unittest.skipIf(not is_tpm_2_0(TPM_VERSION), "Skipping this test due to TPM Version " + TPM_VERSION)
    def test_20_A3_base_delta(self):
       """Test Delta Certificates A3 - Provisioning with Good Base Platform Cert Base and 1 Delta Cert"""
       logging.info("***************** test_20_A3 - Beginning of delta certificate test *****************")
@@ -788,7 +788,7 @@ class SystemTest(unittest.TestCase):
       self.assertEqual(devices['data'][0]['device']['supplyChainStatus'], "PASS")
 
    @collectors(['BASE_DELTA_GOOD'], COLLECTOR_LIST)
-   @unittest.skipIf(not is_tpm2(TPM_VERSION), "Skipping this test due to TPM Version " + TPM_VERSION)
+   @unittest.skipIf(not is_tpm_2_0(TPM_VERSION), "Skipping this test due to TPM Version " + TPM_VERSION)
    def test_20_A4_base_delta(self):
       """Test Delta Certificates A4 - Provisioning with Good Base Platform Cert Base and 2 Delta Certs"""
       logging.info("***************** test_20_A4 - Beginning of delta certificate test *****************")
@@ -817,7 +817,7 @@ class SystemTest(unittest.TestCase):
       self.assertEqual(devices['data'][0]['device']['supplyChainStatus'], "PASS")
 
    @collectors(['BASE_DELTA_GOOD'], COLLECTOR_LIST)
-   @unittest.skipIf(not is_tpm2(TPM_VERSION), "Skipping this test due to TPM Version " + TPM_VERSION)
+   @unittest.skipIf(not is_tpm_2_0(TPM_VERSION), "Skipping this test due to TPM Version " + TPM_VERSION)
    def test_20_A5_base_delta(self):
       """Test Delta Certificates A5 - Provisioning with Good Base Platform Cert and 1 Bad Delta Cert"""
       logging.info("***************** test_20_A5 - Beginning of delta certificate test *****************")
@@ -841,7 +841,7 @@ class SystemTest(unittest.TestCase):
 #		 self.assertIn("Provisioning failed", format(provisioner_out))
 
    @collectors(['BASE_DELTA_GOOD'], COLLECTOR_LIST)
-   @unittest.skipIf(not is_tpm2(TPM_VERSION), "Skipping this test due to TPM Version " + TPM_VERSION)
+   @unittest.skipIf(not is_tpm_2_0(TPM_VERSION), "Skipping this test due to TPM Version " + TPM_VERSION)
    def test_20_A6_base_delta(self):
       """Test Delta Certificates A6 - Provisioning with Good Base Platform, 2 Good Delta Certs and 1 Bad Delta Cert"""
       logging.info("***************** test_20_A6 - Beginning of delta certificate test *****************")
@@ -875,7 +875,7 @@ class SystemTest(unittest.TestCase):
       self.assertEqual(devices['data'][0]['device']['supplyChainStatus'], "PASS")
 
    @collectors(['BASE_DELTA_GOOD'], COLLECTOR_LIST)
-   @unittest.skipIf(not is_tpm2(TPM_VERSION), "Skipping this test due to TPM Version " + TPM_VERSION)
+   @unittest.skipIf(not is_tpm_2_0(TPM_VERSION), "Skipping this test due to TPM Version " + TPM_VERSION)
    def test_20_A7_base_delta(self):
       """Test Delta Certificates A7 - Provisioning with Good Base Platform, 2 Good Delta Certs and
          1 Bad Delta Cert with non present component"""
@@ -906,7 +906,7 @@ class SystemTest(unittest.TestCase):
       self.assertEqual(devices['data'][0]['device']['supplyChainStatus'], "PASS")
 
    @collectors(['BASE_DELTA_GOOD'], COLLECTOR_LIST)
-   @unittest.skipIf(not is_tpm2(TPM_VERSION), "Skipping this test due to TPM Version " + TPM_VERSION)
+   @unittest.skipIf(not is_tpm_2_0(TPM_VERSION), "Skipping this test due to TPM Version " + TPM_VERSION)
    def test_20_A8_base_delta(self):
       """Test Delta Certificates A8 - Provisioning with Good Base Platform, 2 Good Delta Certs with 1 Delta cert
          replacing component from previous, using the Delta as a base certificate"""
@@ -925,7 +925,7 @@ class SystemTest(unittest.TestCase):
       self.assertEqual(devices['data'][0]['device']['supplyChainStatus'], "PASS")
 
    @collectors(['BASE_DELTA_BAD'], COLLECTOR_LIST)
-   @unittest.skipIf(not is_tpm2(TPM_VERSION), "Skipping this test due to TPM Version " + TPM_VERSION)
+   @unittest.skipIf(not is_tpm_2_0(TPM_VERSION), "Skipping this test due to TPM Version " + TPM_VERSION)
    def test_20_B1_base_delta(self):
       """Test Base/Delta Certificates B1 - Provisioning with Bad Platform Cert Base """
       logging.info("***************** test_20_B1 - Beginning of delta certificate test *****************")
@@ -946,7 +946,7 @@ class SystemTest(unittest.TestCase):
       self.assertIn("Provisioning failed", format(provisioner_out))
 
    @collectors(['BASE_DELTA_BAD'], COLLECTOR_LIST)
-   @unittest.skipIf(not is_tpm2(TPM_VERSION), "Skipping this test due to TPM Version " + TPM_VERSION)
+   @unittest.skipIf(not is_tpm_2_0(TPM_VERSION), "Skipping this test due to TPM Version " + TPM_VERSION)
    def test_20_B2_base_delta(self):
       """Test Base/Delta Certificates B2 - Provisioning with Bad Platform Cert Base and 1 Good delta with 1 bad component unresolved"""
       logging.info("***************** test_20_B2 - Beginning of delta certificate test *****************")
@@ -968,7 +968,7 @@ class SystemTest(unittest.TestCase):
       self.assertIn("Provisioning failed", format(provisioner_out))
 
    @collectors(['BASE_DELTA_BAD'], COLLECTOR_LIST)
-   @unittest.skipIf(not is_tpm2(TPM_VERSION), "Skipping this test due to TPM Version " + TPM_VERSION)
+   @unittest.skipIf(not is_tpm_2_0(TPM_VERSION), "Skipping this test due to TPM Version " + TPM_VERSION)
    def test_20_B3_base_delta(self):
       """Test Base/Delta Certificates B3 - Provisioning with Bad Platform Cert Base and 2 Good delta with all component resolved"""
       logging.info("***************** test_20_B3 - Beginning of delta certificate test *****************")

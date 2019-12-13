@@ -575,5 +575,5 @@ def is_ubuntu_client(client_os):
 def is_tpm_1_2(tpm_version):
     return tpm_version in ["1.2"]
 
-def is_tpm2(tpm_version):
+def is_tpm_2_0(tpm_version):
     return tpm_version in ["2.0", "2"]
