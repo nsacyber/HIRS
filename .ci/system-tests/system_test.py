@@ -23,7 +23,7 @@ import sys
 import argparse
 
 from system_test_core import HIRSPortal, AttestationCAPortal, collectors, \
-   send_command, send_command_sha1sum, run_hirs_report,run_hirs_provisioner_tpm_1_2, \
+   send_command, send_command_sha1sum, run_hirs_report, run_hirs_provisioner_tpm_1_2, \
    run_hirs_provisioner_tpm_2_0, parse_xml_with_stripped_namespaces, \
    get_all_nodes_recursively, touch_random_file_and_remove, get_random_pcr_hex_value, \
    get_current_timestamp, is_ubuntu_client, is_tpm_2_0, is_tpm_1_2, \
