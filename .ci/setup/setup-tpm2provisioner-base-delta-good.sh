@@ -72,8 +72,8 @@ function InitTpm2Emulator {
    PC_DIR=/var/hirs/pc_generation
    mkdir -p $PC_DIR
 
-    echo "Running PACCOR to generate local component information..."
-    # Use specific PACCOR script for system testing.
+   echo "Running PACCOR to generate local component information..."
+   # Use specific PACCOR script for system testing.
    # Will provide default component SN#s when needed.
    cp -f /opt/paccor/scripts/allcomponents_hirs_system_tests.sh /opt/paccor/scripts/allcomponents.sh
    /opt/paccor/scripts/allcomponents.sh > $PC_DIR/componentsFile
@@ -97,51 +97,51 @@ function InitTpm2Emulator {
    cp $PC_DIR/$pBase_certA $PC_DIR/$pBase_certB
    echo "Done"
 
-    # Generate the SIDeltaCertA1 certificate
-    echo "Generating $si_delta_cert_A1, using $pBase_certA..."
-    rm -f $PC_DIR/observerFile
+   # Generate the SIDeltaCertA1 certificate
+   echo "Generating $si_delta_cert_A1, using $pBase_certA..."
+   rm -f $PC_DIR/observerFile
    /opt/paccor/bin/observer -c $PC_DIR/SIDeltaCertA1.componentlist.json -p $PC_DIR/optionsFile -e $PC_DIR/$pBase_certA -f $PC_DIR/observerFile
    /opt/paccor/bin/signer -c $PC_DIR/SIDeltaCertA1.componentlist.json -o $PC_DIR/observerFile -x $PC_DIR/extensionsFile -b 20180201 -a 20280101 -N $RANDOM -k $ca_key -P $ca_cert -e $PC_DIR/$pBase_certA -f $PC_DIR/$si_delta_cert_A1
    echo "Done"
 
    # Generate the VARDeltaCertA1 certificate
-    echo "Generating $var_delta_cert_A1, using $pBase_certA..."
-    rm -f $PC_DIR/observerFile
+   echo "Generating $var_delta_cert_A1, using $pBase_certA..."
+   rm -f $PC_DIR/observerFile
    /opt/paccor/bin/observer -c $PC_DIR/VARDeltaCertA1.componentlist.json -p $PC_DIR/optionsFile -e $PC_DIR/$pBase_certA -f $PC_DIR/observerFile
    /opt/paccor/bin/signer -c $PC_DIR/VARDeltaCertA1.componentlist.json -o $PC_DIR/observerFile -x $PC_DIR/extensionsFile -b 20180301 -a 20280101 -N $RANDOM -k $ca_key -P $ca_cert -e $PC_DIR/$pBase_certA -f $PC_DIR/$var_delta_cert_A1
    echo "Done"
 
-    # Generate the SIDeltaCertA2 certificate
-    echo "Generating $si_delta_cert_A2, using $pBase_certA..."
-    rm -f $PC_DIR/observerFile
+   # Generate the SIDeltaCertA2 certificate
+   echo "Generating $si_delta_cert_A2, using $pBase_certA..."
+   rm -f $PC_DIR/observerFile
    /opt/paccor/bin/observer -c $PC_DIR/SIDeltaCertA2.componentlist.json -p $PC_DIR/optionsFile -e $PC_DIR/$pBase_certA -f $PC_DIR/observerFile
    /opt/paccor/bin/signer -c $PC_DIR/SIDeltaCertA2.componentlist.json -o $PC_DIR/observerFile -x $PC_DIR/extensionsFile -b 20180401 -a 20280101 -N $RANDOM -k $ca_key -P $ca_cert -e $PC_DIR/$pBase_certA -f $PC_DIR/$si_delta_cert_A2
    echo "Done"
 
    # Generate the SIDeltaCertA2_resolved certificate
-    echo "Generating $si_delta_cert_A2_resolved, using $pBase_certA..."
-    rm -f $PC_DIR/observerFile
+   echo "Generating $si_delta_cert_A2_resolved, using $pBase_certA..."
+   rm -f $PC_DIR/observerFile
    /opt/paccor/bin/observer -c $PC_DIR/SIDeltaCertA2.resolved.componentlist.json -p $PC_DIR/optionsFile -e $PC_DIR/$pBase_certA -f $PC_DIR/observerFile
    /opt/paccor/bin/signer -c $PC_DIR/SIDeltaCertA2.resolved.componentlist.json -o $PC_DIR/observerFile -x $PC_DIR/extensionsFile -b 20180501 -a 20280101 -N $RANDOM -k $ca_key -P $ca_cert -e $PC_DIR/$pBase_certA -f $PC_DIR/$si_delta_cert_A2_resolved
    echo "Done"
 
    # Generate the VARDeltaCertA2 certificate
-    echo "Generating $var_delta_cert_A2, using $pBase_certA..."
-    rm -f $PC_DIR/observerFile
+   echo "Generating $var_delta_cert_A2, using $pBase_certA..."
+   rm -f $PC_DIR/observerFile
    /opt/paccor/bin/observer -c $PC_DIR/VARDeltaCertA2.componentlist.json -p $PC_DIR/optionsFile -e $PC_DIR/$pBase_certA -f $PC_DIR/observerFile
    /opt/paccor/bin/signer -c $PC_DIR/VARDeltaCertA2.componentlist.json -o $PC_DIR/observerFile -x $PC_DIR/extensionsFile -b 20180601 -a 20280101 -N $RANDOM -k $ca_key -P $ca_cert -e $PC_DIR/$pBase_certA -f $PC_DIR/$var_delta_cert_A2
    echo "Done"
 
    # Generate the VARDeltaCertA2_resolved certificate
-    echo "Generating $var_delta_cert_A2_resolved, using $pBase_certA..."
-    rm -f $PC_DIR/observerFile
+   echo "Generating $var_delta_cert_A2_resolved, using $pBase_certA..."
+   rm -f $PC_DIR/observerFile
    /opt/paccor/bin/observer -c $PC_DIR/VARDeltaCertA2.resolved.componentlist.json -p $PC_DIR/optionsFile -e $PC_DIR/$pBase_certA -f $PC_DIR/observerFile
    /opt/paccor/bin/signer -c $PC_DIR/VARDeltaCertA2.resolved.componentlist.json -o $PC_DIR/observerFile -x $PC_DIR/extensionsFile -b 20180701 -a 20280101 -N $RANDOM -k $ca_key -P $ca_cert -e $PC_DIR/$pBase_certA -f $PC_DIR/$var_delta_cert_A2_resolved
    echo "Done"
 
    # Generate the SIDeltaCertA3 certificate
-    echo "Generating $si_delta_cert_A3, using $si_delta_cert_A1 as Base..."
-    rm -f $PC_DIR/observerFile
+   echo "Generating $si_delta_cert_A3, using $si_delta_cert_A1 as Base..."
+   rm -f $PC_DIR/observerFile
    /opt/paccor/bin/observer -c $PC_DIR/SIDeltaCertA3.componentlist.json -p $PC_DIR/optionsFile -e $PC_DIR/$si_delta_cert_A1 -f $PC_DIR/observerFile
    /opt/paccor/bin/signer -c $PC_DIR/SIDeltaCertA3.componentlist.json -o $PC_DIR/observerFile -x $PC_DIR/extensionsFile -b 20180801 -a 20280101 -N $RANDOM -k $ca_key -P $ca_cert -e $PC_DIR/$si_delta_cert_A1 -f $PC_DIR/$si_delta_cert_A3
    echo "Done"
@@ -210,8 +210,8 @@ PORTAL_PORT=${HIRS_ACA_PORTAL_PORT}
 
 DEFAULT_SITE_CONFIG_FILE
 
- echo "===========New HIRS Config File==========="
- cat /etc/hirs/hirs-site.config
+   echo "===========New HIRS Config File==========="
+   cat /etc/hirs/hirs-site.config
 }
 
 # Install packages

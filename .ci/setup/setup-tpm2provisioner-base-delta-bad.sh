@@ -64,20 +64,20 @@ function InitTpm2Emulator {
 
    # PACCOR directory
    PC_DIR=/var/hirs/pc_generation
-    mkdir -p $PC_DIR
+   mkdir -p $PC_DIR
 
-    echo "Running PACCOR to generate local component information..."
-    # Use specific PACCOR script for system testing.
+   echo "Running PACCOR to generate local component information..."
+   # Use specific PACCOR script for system testing.
    # Will provide default component SN#s when needed.
    cp -f /opt/paccor/scripts/allcomponents_hirs_system_tests.sh /opt/paccor/scripts/allcomponents.sh
    /opt/paccor/scripts/allcomponents.sh > $PC_DIR/componentsFile
    echo
 
-    # Add faulty component JSON files needed to generate the certificates
-    python /HIRS/.ci/setup/addFaultyComponentsForPBaseCertB.py
-    echo
+   # Add faulty component JSON files needed to generate the certificates
+   python /HIRS/.ci/setup/addFaultyComponentsForPBaseCertB.py
+   echo
 
-    # Generate certificates in the order they'll be used in the system tests.
+   # Generate certificates in the order they'll be used in the system tests.
    # And stager the begin dates properly (the -b option for the /opt/paccor/bin/signer)
 
    # Generate the bad base certificate
@@ -89,20 +89,20 @@ function InitTpm2Emulator {
    /opt/paccor/bin/signer -c $PC_DIR/PBaseCertB.componentlist.json -o $PC_DIR/observerFile -x $PC_DIR/extensionsFile -b 20180101 -a 20280101 -N $RANDOM -k $ca_key -P $ca_cert -f $PC_DIR/$platform_cert
    echo "Done"
 
-    # Create good delta component and create SIDeltaCertB1.componentlist.json
-    python /HIRS/.ci/setup/createDeltaComponentsForPBaseCertB.py
-    echo
+   # Create good delta component and create SIDeltaCertB1.componentlist.json
+   python /HIRS/.ci/setup/createDeltaComponentsForPBaseCertB.py
+   echo
 
-    # Generate the SIDeltaCertB1certificate
-    echo "Generating $si_delta_cert_B1..."
-    rm -f $PC_DIR/observerFile
+   # Generate the SIDeltaCertB1certificate
+   echo "Generating $si_delta_cert_B1..."
+   rm -f $PC_DIR/observerFile
    /opt/paccor/bin/observer -c $PC_DIR/SIDeltaCertB1.componentlist.json -p $PC_DIR/optionsFile -e $PC_DIR/$platform_cert -f $PC_DIR/observerFile
    /opt/paccor/bin/signer -c $PC_DIR/SIDeltaCertB1.componentlist.json -o $PC_DIR/observerFile -x $PC_DIR/extensionsFile -b 20180201 -a 20280101 -N $RANDOM -k $ca_key -P $ca_cert -e $PC_DIR/$platform_cert -f $PC_DIR/$si_delta_cert_B1
    echo "Done"
 
    # Generate the VARDeltaCertB1 certificate
-    echo "Generating $var_delta_cert_B1..."
-    rm -f $PC_DIR/observerFile
+   echo "Generating $var_delta_cert_B1..."
+   rm -f $PC_DIR/observerFile
    /opt/paccor/bin/observer -c $PC_DIR/VARDeltaCertB1.componentlist.json -p $PC_DIR/optionsFile -e $PC_DIR/$platform_cert -f $PC_DIR/observerFile
    /opt/paccor/bin/signer -c $PC_DIR/VARDeltaCertB1.componentlist.json -o $PC_DIR/observerFile -x $PC_DIR/extensionsFile -b 20180301 -a 20280101 -N $RANDOM -k $ca_key -P $ca_cert -e $PC_DIR/$platform_cert -f $PC_DIR/$var_delta_cert_B1
    echo "Done"
@@ -171,8 +171,8 @@ PORTAL_PORT=${HIRS_ACA_PORTAL_PORT}
 
 DEFAULT_SITE_CONFIG_FILE
 
- echo "===========New HIRS Config File==========="
- cat /etc/hirs/hirs-site.config
+   echo "===========New HIRS Config File==========="
+   cat /etc/hirs/hirs-site.config
 }
 
 # Install packages

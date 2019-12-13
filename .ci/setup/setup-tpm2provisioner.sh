@@ -138,8 +138,8 @@ PORTAL_PORT=${HIRS_ACA_PORTAL_PORT}
 
 DEFAULT_SITE_CONFIG_FILE
 
- echo "===========New HIRS Config File==========="
- cat /etc/hirs/hirs-site.config
+   echo "===========New HIRS Config File==========="
+   cat /etc/hirs/hirs-site.config
 }
 
 # Install packages
