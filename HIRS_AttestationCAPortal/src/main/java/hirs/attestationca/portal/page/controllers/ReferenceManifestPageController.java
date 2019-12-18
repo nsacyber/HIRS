@@ -124,20 +124,8 @@ extends PageController<ReferenceManifestPageParams> {
         String orderColumnName = input.getOrderColumnName();
         LOGGER.debug("Ordering on column: " + orderColumnName);
 
-        ReferenceManifest rm = new ReferenceManifest();
-        rm.setManufacturer("Ford");
-        rm.setModel("Mach-E");
-        rm.setFirmwareVersion("1.1");
-        rm.setTagId("0000-60000");
-        rm.setRimType("primary");
         FilteredRecordsList<ReferenceManifest> records
                 = new FilteredRecordsList<>();
-//                = OrderedListQueryDataTableAdapter.getOrderedList(
-//                        ReferenceManifest.class, referenceManifestManager,
-//                        input, orderColumnName);
-
-
-        records.add(rm);
         LOGGER.debug("Returning list of size: " + records.size());
         return new DataTableResponse<>(records, input);
     }
