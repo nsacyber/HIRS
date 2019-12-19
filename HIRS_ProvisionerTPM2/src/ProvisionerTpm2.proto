@@ -44,6 +44,14 @@ message OsInfo {
   required string distributionRelease = 5;
 }
 
+message TpmInfo {
+  required string tpmMake = 1;
+  required string tpmVersionMajor = 2;
+  required string tpmVersionMinor = 3;
+  required string tpmRevMajor = 4;
+  required string tpmRevMinor = 5;
+}
+
 message DeviceInfo {
   required FirmwareInfo fw = 1;
   required HardwareInfo hw = 2;
@@ -59,7 +67,10 @@ message IdentityClaim {
   repeated bytes platform_credential = 5;
   optional string client_version = 6;
   optional string paccorOutput = 7;
+}
 
+message TpmQuote {
+  required string success = 1;
 }
 
 message IdentityClaimResponse {
@@ -68,6 +79,8 @@ message IdentityClaimResponse {
 
 message CertificateRequest {
   required bytes nonce = 1;
+  optional bytes quote = 2;
+  optional bytes pcrslist = 3;
 }
 
 message CertificateResponse {

@@ -120,6 +120,7 @@ public abstract class AbstractAttestationCertificateAuthority
     private static final String AK_NAME_PREFIX = "000b";
     private static final String AK_NAME_HASH_PREFIX =
             "0001000b00050072000000100014000b0800000000000100";
+    private static final String TPM_SIGNATURE_ALG = "sha256";
 
     private static final int MAC_BYTES = 6;
 
@@ -154,6 +155,9 @@ public abstract class AbstractAttestationCertificateAuthority
     private final DeviceRegister deviceRegister;
     private final DeviceManager deviceManager;
     private final DBManager<TPM2ProvisionerState> tpm2ProvisionerStateDBManager;
+    private String[] pcrsList;
+    private String tpmQuoteHash;
+    private String tpmSignatureHash;
 
     /**
      * Constructor.
@@ -372,6 +376,7 @@ public abstract class AbstractAttestationCertificateAuthority
      * @param identityClaim the request to process, cannot be null
      * @return an identity claim response for the specified request containing a wrapped blob
      */
+    @Override
     public byte[] processIdentityClaimTpm2(final byte[] identityClaim) {
 
         LOG.debug("Got identity claim");
@@ -455,6 +460,7 @@ public abstract class AbstractAttestationCertificateAuthority
      *                           claim handshake
      * @return a certificateResponse containing the signed certificate
      */
+    @Override
     public byte[] processCertificateRequest(final byte[] certificateRequest) {
         LOG.info("Got certificate request");
 
@@ -492,6 +498,15 @@ public abstract class AbstractAttestationCertificateAuthority
             Set<PlatformCredential> platformCredentials = parsePcsFromIdentityClaim(claim,
                     endorsementCredential);
 
+            // Parse through the Provisioner supplied TPM Quote and pcr values
+            // these fields are optional
+            if (request.getQuote() != null && !request.getQuote().isEmpty()) {
+                parseTPMQuote(request.getQuote().toStringUtf8());
+            }
+            if (request.getPcrslist() != null && !request.getPcrslist().isEmpty()) {
+                parsePCRValues(request.getPcrslist().toStringUtf8());
+            }
+
             // Get device name and device
             String deviceName = claim.getDv().getNw().getHostname();
             Device device = deviceManager.getDevice(deviceName);
@@ -519,6 +534,44 @@ public abstract class AbstractAttestationCertificateAuthority
                     + request.getNonce().toString());
             throw new CertificateProcessingException("Invalid nonce given in request by client.");
         }
+    }
+
+    /**
+     * This method takes the provided TPM Quote and splits it between the PCR
+     * quote and the signature hash.
+     * @param tpmQuote contains hash values for the quote and the signature
+     */
+    private void parseTPMQuote(final String tpmQuote) {
+        if (tpmQuote != null) {
+            String[] lines = tpmQuote.split(":");
+            if (lines[1].contains("signature")) {
+                this.tpmQuoteHash = lines[1].replace("signature", "").trim();
+            } else {
+                this.tpmQuoteHash = lines[1].trim();
+            }
+            this.tpmSignatureHash = lines[2].trim();
+        }
+    }
+
+    /**
+     * This method splits all hashed pcr values into an array.
+     * @param pcrValues contains the full list of 24 pcr values
+     */
+    private void parsePCRValues(final String pcrValues) {
+        String[] pcrs = null;
+
+        if (pcrValues != null) {
+            int counter = 0;
+            String[] lines = pcrValues.split("\\r?\\n");
+            pcrs = new String[lines.length - 1];
+            for (String line : lines) {
+                if (!line.contains(TPM_SIGNATURE_ALG)) {
+                    pcrs[counter++] = line.split(":")[1].trim();
+                }
+            }
+        }
+
+        this.pcrsList = pcrs;
     }
 
     /**

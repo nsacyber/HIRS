@@ -8,7 +8,7 @@ RUN yum install -y java-1.8.0-openjdk wget util-linux chkconfig sed systemd gmp-
 RUN mkdir tpm_module && pushd tpm_module && wget https://github.com/nsacyber/HIRS/releases/download/v1.0.4/tpm_module-1.0.4-1558547257.cedc93.x86_64.rpm && yum -y install tpm_module-*.rpm && popd
 
 # Install PACCOR for Device Info Gathering
-RUN mkdir paccor && pushd paccor && wget https://github.com/nsacyber/paccor/releases/download/v1.1.2r3/paccor-1.1.2-3.noarch.rpm && yum -y install paccor-*.rpm && popd
+RUN mkdir paccor && pushd paccor && wget https://github.com/nsacyber/paccor/releases/download/v1.1.3r3/paccor-1.1.3-3.noarch.rpm && yum -y install paccor-*.rpm && popd
 
 # Install Software TPM for Provisioning
 RUN mkdir tpm_emulator && pushd tpm_emulator && wget https://phoenixnap.dl.sourceforge.net/project/ibmswtpm/tpm4769tar.gz && tar -xzvf tpm4769tar.gz && pushd libtpm && ./autogen && ./configure && make && popd && pushd tpm && make -f makefile-tpm && popd && popd

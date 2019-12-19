@@ -49,10 +49,10 @@ jobs:
       env: null
       name: "System Tests TPM2"
     - stage: Packaging and System Tests
-      script: .ci/system-tests/./run-system-tests-tpm2-base-delta-good.sh
-      env: null
-      name: "System Tests TPM2 Base/Delta Good"
-    - stage: Packaging and System Tests
       script: .ci/system-tests/./run-system-tests-tpm2-base-delta-bad.sh
       env: null
       name: "System Tests TPM2 Base/Delta Bad"
+    - stage: Packaging and System Tests
+      script: .ci/system-tests/./run-system-tests-tpm2-base-delta-good.sh
+      env: null
+      name: "System Tests TPM2 Base/Delta Good"

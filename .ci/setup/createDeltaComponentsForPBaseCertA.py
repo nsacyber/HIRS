@@ -57,10 +57,6 @@ try:
 		else:
 			print("Splitting into 1 base and multiple delta JSON files to generate the certs...")
 
-			# Setup good base...
-			# Delete the last two components for PBaseCertA certificate
-			#del pBaseComponentDict['COMPONENTS'][len(pBaseComponentDict['COMPONENTS'])-2:]
-
 			# Setup good base. Find the first two components that have a Serial included.
 			for i in range(len(pBaseComponentDict['COMPONENTS'])):
 				print("Current component[%d]:" % i)
@@ -91,9 +87,15 @@ try:
 					varDeltaA1ComponentDict['COMPONENTS'][0]['STATUS'] = "ADDED"
 					break
 
-			# Delete the two components from pBaseComponentDict
-			del pBaseComponentDict['COMPONENTS'][delComponent2AtIndex]
-			del pBaseComponentDict['COMPONENTS'][delComponent1AtIndex]
+		  	# Raise exception if we don't have two components with serial numbers.
+			if numComponentsFound < 2:
+				raise Exception("Need at least 2 components with SERIAL NUMBERS to run system tests!")
+			else:
+				print ("Found at least 2 components with SERIAL NUMBERS...running system tests!!")
+
+ 			# Delete the two components from pBaseComponentDict
+ 			del pBaseComponentDict['COMPONENTS'][delComponent2AtIndex]
+ 			del pBaseComponentDict['COMPONENTS'][delComponent1AtIndex]
 
 			# Setup bad and good delta...
 			# Create SIDeltaA2 with one component, MODEL as "-FAULTY", STATUS as "MODIFIED"
