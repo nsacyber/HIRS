@@ -3,24 +3,10 @@
 # TODO: test_01-test_11 will need to be implemented when the additional HIRS
 # projects are imported to the new GitHub repo. The test code is commented out for now.
 
-import binascii
-from ConfigParser import SafeConfigParser
-import datetime
-import json
-import os
-import shlex
-import subprocess
-import unittest
-import re
-import requests
 import logging
-import pprint
-import hashlib
-import random
-import uuid
-import time
+import os
 import sys
-import argparse
+import unittest
 import urllib3
 
 from system_test_core import HIRSPortal, AttestationCAPortal, collectors, \
@@ -82,7 +68,6 @@ logging.info("The ACA Portal is: " + HIRS_ATTESTATION_CA_PORTAL_URL)
 Portal = HIRSPortal(HIRS_SERVER_URL)
 AcaPortal = AttestationCAPortal(HIRS_ATTESTATION_CA_PORTAL_URL)
 
-#requests.packages.urllib3.disable_warnings()
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
 class SystemTest(unittest.TestCase):
@@ -620,12 +605,12 @@ class SystemTest(unittest.TestCase):
 # 		self.assertTrue(run_hirs_report(CLIENT))
 # 		self.assertEqual(Portal.get_alert_count_from_latest_report(), 0)
 
-#    @collectors(['TPM'], COLLECTOR_LIST)
-#    @unittest.skipIf(not is_tpm_1_2(TPM_VERSION), "Skipping this test due to TPM Version " + TPM_VERSION)
-#    def test_13_tpm_1_2_initial_provision(self):
-#       """Test that running the TPM 1.2 hirs provisioner works"""
-#       logging.info("***************** Beginning of initial TPM 1.2 provisioner run *****************")
-#
+   @collectors(['TPM'], COLLECTOR_LIST)
+   @unittest.skipIf(not is_tpm_1_2(TPM_VERSION), "Skipping this test due to TPM Version " + TPM_VERSION)
+   def test_13_tpm_1_2_initial_provision(self):
+      """Test that running the TPM 1.2 hirs provisioner works"""
+      logging.info("***************** Beginning of initial TPM 1.2 provisioner run *****************")
+
 #       # Run the provisioner to ensure that it provisions successfully
 #       provisioner_out = run_hirs_provisioner_tpm_1_2(CLIENT)
 #       print("Initial TPM 1.2 provisioner run output: {0}".format(provisioner_out))
