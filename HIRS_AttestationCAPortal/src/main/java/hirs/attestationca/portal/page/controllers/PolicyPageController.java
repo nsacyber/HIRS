@@ -241,6 +241,9 @@ public class PolicyPageController extends PageController<NoPageParams> {
 
             if (generateCertificateEnabled) {
                 numOfDays = ppModel.getNumOfValidDays();
+                if (numOfDays == null) {
+                    numOfDays = SupplyChainPolicy.TEN_YEARS;
+                }
             } else {
                 numOfDays = policy.getValidityDays();
             }

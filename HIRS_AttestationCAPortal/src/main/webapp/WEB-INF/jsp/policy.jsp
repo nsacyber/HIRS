@@ -68,7 +68,7 @@
                                 <label>
                                     <input id="aicBot" type="radio" name="attestationCertificateIssued" ${initialData.generateOnExpiration ? 'checked' : ''} value="expires"/> Only Generate when current Attestation Certificate expires<br /> 
                                     ** Validity period for the Attestation Certificate
-                                    <input id="validLen" type="text" name="numOfValidDays" value="3650" size="6" maxlength="6" ${(initialData.issueAttestationCertificate || initialData.generateOnExpiration) ? '' : 'disabled'} />
+                                    <input id="validLen" type="text" name="numOfValidDays" value="3650" size="6" maxlength="6" ${(initialData.generateOnExpiration) ? '' : 'disabled'} />
                                 </label>
                             </div>
                         </my:editor>
