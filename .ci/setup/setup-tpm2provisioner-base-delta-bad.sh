@@ -66,7 +66,10 @@ function InitTpm2Emulator {
 	PC_DIR=/var/hirs/pc_generation
  	mkdir -p $PC_DIR
 
-    echo "Running PACCOR to generate local components..."
+    echo "Running PACCOR to generate local component information..."
+    # Use specific PACCOR script for system testing.
+	# Will provide default component SN#s when needed.
+	cp -f /opt/paccor/scripts/allcomponents_hirs_system_tests.sh /opt/paccor/scripts/allcomponents.sh
 	/opt/paccor/scripts/allcomponents.sh > $PC_DIR/componentsFile
 	echo
 
