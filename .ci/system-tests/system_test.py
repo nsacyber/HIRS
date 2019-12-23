@@ -21,6 +21,7 @@ import uuid
 import time
 import sys
 import argparse
+import urllib3
 
 from system_test_core import HIRSPortal, AttestationCAPortal, collectors, \
    send_command, send_command_sha1sum, run_hirs_report, run_hirs_provisioner_tpm_1_2, \
@@ -81,7 +82,8 @@ logging.info("The ACA Portal is: " + HIRS_ATTESTATION_CA_PORTAL_URL)
 Portal = HIRSPortal(HIRS_SERVER_URL)
 AcaPortal = AttestationCAPortal(HIRS_ATTESTATION_CA_PORTAL_URL)
 
-requests.packages.urllib3.disable_warnings()
+#requests.packages.urllib3.disable_warnings()
+urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
 class SystemTest(unittest.TestCase):
 
