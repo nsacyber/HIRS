@@ -290,8 +290,8 @@ class AttestationCAPortal:
 
     def disable_supply_chain_validations(self):
 
-        # the initial POST request goes through, but the redirect from the server is attempted which results in a 404,
-        # or possibly a 200 on centos7, apparently.
+        # The initial POST request goes through, but the redirect from the server is attempted
+        # which results in a 404, or possibly a 200 on centos7, apparently.
         self.request("post", "portal/policy/update-ec-validation",
                      expected_status_codes=[404, 200], params={'ecValidate': "unchecked",})
         self.request("post", "portal/policy/update-pc-validation",
@@ -301,8 +301,8 @@ class AttestationCAPortal:
 
     def enable_supply_chain_validations(self):
 
-        # the initial POST request goes through, but the redirect from the server is attempted which results in a 404,
-        # or possibly a 200 on centos7, apparently.
+        # The initial POST request goes through, but the redirect from the server is attempted
+        # which results in a 404, or possibly a 200 on centos7, apparently.
         self.request("post", "portal/policy/update-ec-validation",
                      expected_status_codes=[404, 200], params={'ecValidate': "checked",})
         self.request("post", "portal/policy/update-pc-validation",
@@ -422,10 +422,16 @@ def run_hirs_report_and_clear_cache(client_hostname):
         CACHED_XML_REPORT = None
     return client_out
 
-def run_hirs_provisioner_tpm2(client_hostname):
-    """Runs the hirs provisioner TPM2
+def run_hirs_provisioner_tpm_1_2(client_hostname):
+    """Runs the hirs provisioner TPM 1.2"""
+    logging.info("running hirs provisioner TPM 1.2 on {0}".format(client_hostname))
+    client_out = send_command("hirs-provisioner provision")
+    return client_out
+
+def run_hirs_provisioner_tpm_2_0(client_hostname):
+    """Runs the hirs provisioner TPM 2.0
     """
-    logging.info("running hirs provisioner tpm2 on {0}".format(client_hostname))
+    logging.info("running hirs provisioner TPM 2.0 on {0}".format(client_hostname))
     client_out = send_command("hirs-provisioner-tpm2 provision")
     return client_out
 
@@ -448,7 +454,6 @@ def parse_xml_with_stripped_namespaces(raw_xml_string):
 def get_all_nodes_recursively(tree_node, node_name):
     return tree_node.findall('.//' + node_name)
 
-
 def touch_random_file_and_remove(client_hostname):
     """Write a random string to a random filename in /tmp/, read it as root, then delete it.
     """
@@ -461,10 +466,98 @@ def touch_random_file_and_remove(client_hostname):
     rm_command = "rm {}".format(filename)
 
     combined_command = "{};{};{};{}".format(echo_command, cat_command, sha_command, rm_command)
-#    command_output = send_vagrant_command(combined_command, client_hostname)
     sha_hash = command_output.split()[1]
 
     return (filename, sha_hash)
+
+def make_simple_ima_baseline():
+    timestamp = get_current_timestamp()
+
+    if CLIENT_OS == "centos6":
+        records = [{"path": "/lib/udev/console_init",
+                    "hash": send_command_sha1sum("sha1sum /lib/udev/console_init")},
+                   {"path": "/bin/mknod",
+                    "hash": send_command_sha1sum("sha1sum /bin/mknod")}]
+    elif CLIENT_OS == "centos7":
+        records = [{"path": "/lib/systemd/rhel-readonly",
+            "hash": send_command_sha1sum("sha1sum /lib/systemd/rhel-readonly")},
+           {"path": "/bin/sort",
+            "hash": send_command_sha1sum("sha1sum /bin/sort")}]
+    elif CLIENT_OS == "ubuntu16":
+        records = [{"path": "/lib/systemd/systemd-udevd",
+            "hash": send_command_sha1sum("sha1sum /lib/systemd/systemd-udevd")},
+           {"path": "/bin/udevadm",
+            "hash": send_command_sha1sum("sha1sum /bin/udevadm")}]
+    else:
+        logging.error("unsupported client os type: %s",  CLIENT_OS)
+
+    simple_baseline = {"name": "simple_ima_baseline_{0}".format(timestamp),
+                       "description": "a simple hard-coded ima baseline for systems testing",
+                       "records": records}
+    return simple_baseline
+
+def make_baseline_from_xml(xml_report, appraiser_type):
+    """search the xml for records and add each one to a dictionary."""
+    timestamp = get_current_timestamp()
+    baseline_name = "full_{0}_baseline_{1}".format(appraiser_type, timestamp)
+    baseline_description = "{0} baseline created by parsing an xml report and uploaded for systems testing".format(appraiser_type)
+    baseline = {"name": baseline_name, "description": baseline_description}
+    baseline["records"] = []
+    tree = parse_xml_with_stripped_namespaces(xml_report)
+
+    if appraiser_type == "TPM":
+        pcr_tags = get_all_nodes_recursively(tree, "PcrValue")
+        for pcr_tag in pcr_tags:
+            tpm_digest = get_all_nodes_recursively(pcr_tag, "digest")[0].text
+            parsed_record = {}
+            parsed_record["pcr"] = pcr_tag.attrib['PcrNumber']
+            parsed_record["hash"] = binascii.hexlify(binascii.a2b_base64(tpm_digest))
+            baseline["records"].append(parsed_record)
+    if appraiser_type == "IMA":
+        ima_records = get_all_nodes_recursively(tree, "imaRecords")
+        for ima_record in ima_records:
+            ima_path = get_all_nodes_recursively(ima_record, "path")[0].text
+            ima_digest = get_all_nodes_recursively(ima_record, "digest")[0].text
+            parsed_record = {}
+            parsed_record['path'] = ima_path
+            hash64 = ima_digest
+            parsed_record["hash"] = (
+                binascii.hexlify(binascii.a2b_base64(hash64)))
+            baseline["records"].append(parsed_record)
+    logging.info("created {0} baseline from xml with {1} records".format(
+                 appraiser_type, str(len(baseline["records"]))))
+    return baseline
+
+def make_simple_ima_blacklist_baseline():
+    return {
+            "name": "simple_ima_blacklist_baseline_{0}".format(get_current_timestamp()),
+            "description": "a simple blacklist ima baseline for systems testing",
+            "records": [{"path": "/boot/usb-storage-foo.ko"}]
+            #"records": [{"path": "usb-storage-foo.ko"}]
+    }
+
+def make_simple_ima_blacklist_baseline_with_hash():
+    return {
+        "name": "simple_ima_blacklist_baseline_{0}".format(get_current_timestamp()),
+        "description": "a simple blacklist ima baseline for systems testing",
+        "records": [{"hash": USB_STORAGE_FILE_HASH}]
+    }
+
+def make_simple_ima_blacklist_baseline_with_file_and_hash():
+    return {
+        "name": "simple_ima_blacklist_baseline_{0}".format(get_current_timestamp()),
+        "description": "a simple blacklist ima baseline for systems testing",
+        "records": [{"path": "usb-storage_2.ko",
+                     "hash": USB_STORAGE_FILE_HASH}]
+    }
+
+def make_simple_ima_blacklist_baseline_with_updated_file_and_hash():
+    return {
+        "name": "simple_ima_blacklist_baseline_{0}".format(get_current_timestamp()),
+        "description": "a simple blacklist ima baseline for systems testing",
+        "records": [{"path": "test-file",
+                     "hash": USB_STORAGE_FILE_HASH_2}]
+    }
 
 def get_random_pcr_hex_value():
     """ Gets a random TPM PCR value by combining 2 UUIDs and getting a substring
@@ -479,5 +572,8 @@ def get_current_timestamp():
 def is_ubuntu_client(client_os):
     return client_os in ["ubuntu14", "ubuntu16"]
 
-def is_tpm2(tpm_version):
+def is_tpm_1_2(tpm_version):
+    return tpm_version in ["1.2"]
+
+def is_tpm_2_0(tpm_version):
     return tpm_version in ["2.0", "2"]

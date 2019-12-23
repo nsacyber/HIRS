@@ -20,9 +20,9 @@ SYSTEM_TEST_EXIT_CODE=$PIPESTATUS
 # Check result
 if [[ $SYSTEM_TEST_EXIT_CODE == 0 ]]
 then
-    echo "SUCCESS: System tests passed"
+    echo "SUCCESS: System tests TPM $TPM_VERSION passed"
     exit 0
 fi
 
-echo "ERROR: System tests failed"
+echo "ERROR: System tests TPM $TPM_VERSION failed"
 exit 1
