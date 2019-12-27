@@ -92,7 +92,6 @@ public class PolicyPageController extends PageController<NoPageParams> {
         PolicyPageModel pageModel = new PolicyPageModel(policy);
         mav.addObject(INITIAL_DATA, pageModel);
 
-        LOGGER.error("TDM ===>>>" + pageModel);
         LOGGER.debug(pageModel);
 
         return mav;
@@ -220,15 +219,13 @@ public class PolicyPageController extends PageController<NoPageParams> {
         Map<String, Object> model = new HashMap<>();
         PageMessages messages = new PageMessages();
         String successMessage;
-        String numOfDays = "";
+        String numOfDays;
         boolean issuedAttestationOptionEnabled
                 = ppModel.getAttestationCertificateIssued()
                         .equalsIgnoreCase(ENABLED_CHECKED_PARAMETER_VALUE);
         boolean generateCertificateEnabled
                 = ppModel.getAttestationCertificateIssued()
                         .equalsIgnoreCase(ENABLED_EXPIRES_PARAMETER_VALUE);
-
-        LOGGER.error("TDM ->>>> " + generateCertificateEnabled);
 
         try {
             SupplyChainPolicy policy = getDefaultPolicyAndSetInModel(ppModel, model);
@@ -247,10 +244,6 @@ public class PolicyPageController extends PageController<NoPageParams> {
             } else {
                 numOfDays = policy.getValidityDays();
             }
-
-            LOGGER.error("TDM ->> " + policy.getValidityDays());
-            LOGGER.error("TDM ->> " + numOfDays);
-            LOGGER.error("TDM ->> " + ppModel);
 
             policy.setValidityDays(numOfDays);
             policy.setIssueAttestationCertificate(issuedAttestationOptionEnabled);
