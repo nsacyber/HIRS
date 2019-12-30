@@ -123,6 +123,9 @@ public class SwidTagGateway {
     /**
      * This generator method is used by the create method.
      *
+     * This method should be updated to incorporate the RIM fields that are implemented
+     * in generateSwidTag(final File outputFile) below.
+     *
      * @param inputFile - the file in csv format that is used as data
      * @param outputFile - output specific to the given file
      * @param hashType - the optional labeling of the hash type
@@ -189,7 +192,7 @@ public class SwidTagGateway {
 
     /**
      * This method generates a primary SWID tag from the values in
-     * resources/swidExamples.properties
+     * resources/swidExamples.properties.
      *
      * @param outputFile
      */
@@ -243,7 +246,7 @@ public class SwidTagGateway {
     /**
      * This method validates the .swidtag file at the given filepath against the
      * schema. A successful validation results in the output of the tag's name
-     * and tagId attributes.
+     * and tagId attributes, otherwise a generic error message is printed.
      *
      * @param path the location of the file to be validated
      */
@@ -258,6 +261,12 @@ public class SwidTagGateway {
         return true;
     }
 
+    /**
+     * This method calls the marshal() method that writes the swidtag data to the output file.
+     *
+     * @param jaxbe
+     * @param outputFile
+     */
     public void writeSwidTagFile(JAXBElement<SoftwareIdentity> jaxbe, File outputFile) {
         JAXBContext jaxbContext;
         try {
@@ -272,7 +281,12 @@ public class SwidTagGateway {
     }
     
     /**
-     * Given an input swidtag at <path> parse any PCRs in the payload into an InputStream object
+     * Given an input swidtag at [path] parse any PCRs in the payload into an InputStream object.
+     * This method will be used in a following pull request.
+     *
+     * @param path
+     * @return
+     * @throws IOException
      */
     public ByteArrayInputStream parsePayload(String path) throws IOException {
         JAXBElement jaxbe = unmarshallSwidTag(path);
@@ -300,8 +314,8 @@ public class SwidTagGateway {
     }
 
     /**
-     * This method sets up the standard information for the swig tag, provided
-     * by the property file.
+     * This method creates SoftwareIdentity element based on the parameters read in from
+     * a properties file.
      *
      * @param properties the Properties object containing parameters from file
      * @return SoftwareIdentity object created from the properties
@@ -338,6 +352,12 @@ public class SwidTagGateway {
         return entity;
     }
 
+    /**
+     * Thsi method creates a Link element based on the parameters read in from a properties
+     * file.
+     * @param properties the Properties object containing parameters from file
+     * @return Link element created from the properties
+     */
     private Link createLink(Properties properties) {
         Link link = objectFactory.createLink();
         link.setHref(properties.getProperty(SwidTagConstants.LINK_HREF));
@@ -345,6 +365,13 @@ public class SwidTagGateway {
 
         return link;
     }
+
+    /**
+     * This method creates a Meta element based on the parameters read in from a properties
+     * file.
+     * @param properties the Properties object containing parameters from file
+     * @return the Meta element created from the properties
+     */
     private SoftwareMeta createSoftwareMeta(Properties properties) {
         SoftwareMeta softwareMeta = objectFactory.createSoftwareMeta();
         Map<QName, String> attributes = softwareMeta.getOtherAttributes();
@@ -363,10 +390,9 @@ public class SwidTagGateway {
     }
 
     /**
-     * This method uses the property file to create and populate a Directory
-     * object.
+     * This method creates a Directory from the parameters read in from a properties file.
      *
-     * @param properties
+     * @param properties the Properties object containing parameters from file
      * @return Directory object created from the properties
      */
     private Directory createDirectory(Properties properties) {
@@ -382,9 +408,8 @@ public class SwidTagGateway {
     }
 
     /**
-     * This method creates a File object specific for the SwidTag formatting.
-     * This version of the method takes a java.nio.File object and produces an
-     * object that represents it out of the hirs.swid.xjc library
+     * This method creates a hirs.swid.xjc.File from a java.nio.File object.
+     * This method signature is not currently used and may be removed later.
      *
      * @param file
      * @return hirs.swid.xjc.File object from File object
@@ -394,6 +419,8 @@ public class SwidTagGateway {
     }
 
     /**
+     * This method creates a hirs.swid.xjc.File from three arguments, then calculates
+     * and stores its hash as an attribute in itself.
      *
      * @param filename
      * @param location
@@ -411,9 +438,10 @@ public class SwidTagGateway {
     }
 
     /**
+     * This method creates a Payload from the parameters read in from a properties file.
      *
-     * @param properties
-     * @return
+     * @param properties the Properties object containing parameters from file
+     * @return the Payload object created
      */
     private ResourceCollection createPayload(Properties properties) {
         ResourceCollection rc = objectFactory.createResourceCollection();
@@ -426,6 +454,9 @@ public class SwidTagGateway {
     }
 
     /**
+     * This method creates a Payload from a list of Strings and a hash algorithm.
+     * The Strings in the list are expected to be in the form of "[PCR_NUMBER],[PCR_VALUE]"
+     * and the hash algorithm is attached as the file's xml namespace identifier.
      *
      * @param populate
      * @return
@@ -449,8 +480,10 @@ public class SwidTagGateway {
     }
 
     /**
-     * Incomplete, and not yet implemented.
-     * @return
+     * This method creates an xml signature based on the xmldsig schema.
+     * This method is incomplete and not yet implemented.
+     *
+     * @return the Signature object created
      */
     private SignatureType createSignature() {
         SignatureType signature = objectFactory.createSignatureType();
@@ -487,7 +520,15 @@ public class SwidTagGateway {
 
         return signature;
     }
-    
+
+    /**
+     * This method traverses a hirs.swid.xjc.Directory recursively until it finds at
+     * least one hirs.swid.xjc.File.  This File is expected to have an attribute of the form
+     * "[hash algorithm]=[hash value]."
+     *
+     * @param list of swidtag elements
+     * @return the hash value(s) parsed from the File object(s)
+     */
     private String parsePCRs(List list) {
         final String newline = System.lineSeparator();
     	StringBuilder sb = new StringBuilder();
@@ -513,7 +554,15 @@ public class SwidTagGateway {
     	System.out.println(sb.toString());
     	return sb.toString();
     }
-    
+
+    /**
+     * This method unmarshalls the swidtag found at [path] and validates it according to the
+     * schema.
+     *
+     * @param path to the input swidtag
+     * @return the SoftwareIdentity element at the root of the swidtag
+     * @throws IOException if the swidtag cannot be unmarshalled or validated
+     */
     private JAXBElement unmarshallSwidTag(String path) throws IOException {
     	File input = null;
     	InputStream is = null;
