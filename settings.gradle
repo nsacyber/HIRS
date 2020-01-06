@@ -6,5 +6,5 @@ include 'TPM_Utils',
         'HIRS_Structs',
         'HIRS_AttestationCA',
         'HIRS_AttestationCAPortal',
-        'ACA_SwidTag',
-        'tpm_module'
+        'tpm_module',
+        'tools'

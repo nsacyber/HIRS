@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<SoftwareIdentity xmlns="http://standards.iso.org/iso/19770/-2/2015/schema.xsd" xmlns:ns2="http://www.w3.org/2000/09/xmldsig#" corpus="false" patch="false" name="HIRS SWID Tag application" supplemental="false" tagId="hirs.swid.SwidTags" version="0.1">
+    <Entity name="HIRS" regid="hirs.org" role="softwareCreator tagCreator"/>
+    <Payload>
+        <File name="PCR0" ns2:SHA256="18382098108101841048"/>
+    </Payload>
+</SoftwareIdentity>

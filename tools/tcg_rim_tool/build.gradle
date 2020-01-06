@@ -1,0 +1,24 @@
+apply plugin: 'java'
+version = '1.0'
+
+repositories {
+	mavenCentral()
+}
+
+dependencies {
+	testCompile 'org.testng:testng:6.8.8'
+}
+
+jar {
+	manifest {
+		attributes("Main-Class": "hirs.swid.Main")
+	}
+}
+
+uploadArchives {
+	repositories {
+		flatDir {
+			dirs "${buildDir}"
+		}
+	}
+}
