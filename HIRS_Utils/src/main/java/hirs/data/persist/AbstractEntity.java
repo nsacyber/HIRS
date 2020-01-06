@@ -86,4 +86,14 @@ public abstract class AbstractEntity {
         }
         return this.hashCode() == obj.hashCode();
     }
+
+    @Override
+    public String toString() {
+        try {
+            return String.format("UUID=%s, createTime=%s",
+                getId(), getCreateTime().toString());
+        } catch (NullPointerException npEx) {
+            return "";
+        }
+    }
 }

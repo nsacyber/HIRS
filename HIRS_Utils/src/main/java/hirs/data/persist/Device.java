@@ -394,4 +394,9 @@ public class Device extends AbstractEntity {
         return this.name.equals(other.name);
     }
 
+    @Override
+    public String toString() {
+        return String.format("Device{name=%s, status=%s}",
+                name, supplyChainValidationStatus);
+    }
 }
