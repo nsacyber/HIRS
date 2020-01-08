@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<SoftwareIdentity xmlns="http://standards.iso.org/iso/19770/-2/2015/schema.xsd" xmlns:ns2="http://www.w3.org/2000/09/xmldsig#" corpus="false" patch="false" name="HIRS SWID Tag example" supplemental="false" tagId="hirs.swid.SwidTags.example" version="0.1">
+    <Entity name="HIRS" regid="hirs.org" role="softwareCreator tagCreator"/>
+    <Link href="https://Example.com/support/ProductA/firmware/installfiles" rel="installationmedia"/>
+    <Meta xmlns:rim="https://trustedcomputinggroup.org/wp-content/uploads/TCG_RIM_Model" rim:componentManufacturerId="00213022" rim:platformManufacturerId="00201234" rim:bindingSpec="IOT RIM" rim:pcURILocal="/boot/tcg/manifest/swidtag" rim:componentManufacturer="BIOSVendorA" rim:rimLinkHash="88f21d8e44d4271149297404df91caf207130bfa116582408abd04ede6db7f51" rim:componentClass="Firmware" rim:platformManufacturerStr="Example.com" rim:platformModel="ProductA" rim:bindingSpecVersion="1.2"/>
+    <Payload xmlns:n8060="http://csrc.nist.gov/ns/swid/2015-extensions/1.0" n8060:envVarPrefix="$" n8060:pathSeparator="/" n8060:envVarSuffix="">
+        <Directory location="/boot/iot/" name="iotBase">
+            <File xmlns:SHA256="http://www.w3.org/2001/04/xmlenc#sha256" size="15400" version="01.00" name="Example.com.iotBase.bin" SHA256:hash="688e293e3ccb522f6cf8a027c9ade7960f84bd0bf3a0b99812bc1fa498a2db8d"/>
+            <File xmlns:SHA256="http://www.w3.org/2001/04/xmlenc#sha256" size="1024" version="01.00" name="iotExec.bin" SHA256:hash="7afb71275b8036a43d75f3bf1a4b84867de289b2edc6980890ec9748a112156e"/>
+        </Directory>
+    </Payload>
+</SoftwareIdentity>
