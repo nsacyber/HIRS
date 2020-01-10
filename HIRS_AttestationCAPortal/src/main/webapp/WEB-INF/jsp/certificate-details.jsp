@@ -35,6 +35,12 @@
                     <img src="${icons}/ic_file_download_black_24dp.png" title="Download Certificate">
                 </a>
             </c:when>
+            <c:when test="${param.type=='referencemanifest'}">
+                Reference Integrity Manifest
+                <a href="${portal}/certificate-request/reference-manifests/download?id=${param.id}">
+                    <img src="${icons}/ic_file_download_black_24dp.png" title="Download Certificate">
+                </a>
+            </c:when>
             <c:otherwise>
                 Unknown Certificate
             </c:otherwise>

@@ -20,6 +20,7 @@ import hirs.data.persist.certificate.IssuedAttestationCertificate;
 import hirs.data.persist.certificate.attributes.ComponentIdentifier;
 import hirs.data.persist.certificate.attributes.PlatformConfiguration;
 import hirs.persist.CertificateManager;
+import hirs.persist.ReferenceManifestManager;
 import hirs.utils.BouncyCastleUtils;
 import java.util.Collections;
 
@@ -489,5 +490,21 @@ public final class CertificateStringMapBuilder {
             LOGGER.error(notFoundMessage);
         }
         return data;
+    }
+
+    /**
+     * Returns the Reference Integrity Manifest information.
+     *
+     * @param uuid ID for the reference integrity manifest.
+     * @param referenceManifestManager the reference manifest
+     * manager for retrieving certs.
+     * @return a hash map with the reference manifest manager.
+     */
+    public static HashMap<String, String> getReferenceManifestInformation(final UUID uuid,
+            final ReferenceManifestManager referenceManifestManager) {
+       HashMap<String, String> data = new HashMap<>();
+
+
+       return data;
     }
 }
