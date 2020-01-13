@@ -9,10 +9,10 @@ services:
       image: busaboy1340/hirs-testing:aca
       container_name: hirs-aca
       volumes:
-         - ../../:/HIRS:Z
+         - ../../:/HIRS
       ports:
          - "${HIRS_ACA_PORTAL_PORT}:${HIRS_ACA_PORTAL_CONTAINER_PORT}"
-      entrypoint: /usr/bin/bash -c
+      entrypoint: /bin/bash -c
       command: [HIRS/.ci/setup/setup-aca.sh]
       hostname: ${HIRS_ACA_HOSTNAME}
       networks:
@@ -28,8 +28,8 @@ services:
       depends_on:
          - aca
       volumes:
-         - ../../:/HIRS:z
-      entrypoint: /usr/bin/bash -c
+         - ../../:/HIRS
+      entrypoint: /bin/bash -c
       command: [HIRS/.ci/setup/setup-tpm2provisioner-base-delta-bad.sh;
                 HIRS/.ci/system-tests/systems-test-centos7-tpm2-base-delta-bad.sh]
       devices:

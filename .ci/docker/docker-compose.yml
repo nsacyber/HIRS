@@ -6,10 +6,10 @@ services:
       image: busaboy1340/hirs-testing:aca
       container_name: hirs-aca
       volumes:
-         - ../../:/HIRS:z
+         - ../../:/HIRS
       ports:
          - "${HIRS_ACA_PORTAL_PORT}:${HIRS_ACA_PORTAL_CONTAINER_PORT}"
-      entrypoint: /usr/bin/bash -c
+      entrypoint: /bin/bash -c
       command: [HIRS/.ci/setup/setup-aca.sh]
       hostname: ${HIRS_ACA_HOSTNAME}
       networks:
