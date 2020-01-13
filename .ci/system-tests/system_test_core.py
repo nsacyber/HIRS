@@ -1,6 +1,10 @@
 # Defines core methods shared amongst system test scripts
 
-import sets
+from future import standard_library
+standard_library.install_aliases()
+from builtins import str
+from builtins import filter
+from builtins import object
 import unittest
 import shlex
 import subprocess
@@ -14,7 +18,7 @@ import datetime
 import json
 import pprint
 import xml.etree.ElementTree as ET
-from StringIO import StringIO
+from io import StringIO
 
 DEFAULT_GROUP_NAME = "Default Group"
 DEFAULT_TPM_POLICY = "Test TPM Policy"
@@ -23,7 +27,7 @@ CACHED_XML_REPORT = None
 
 APPRAISAL_SUCCESS_MESSAGE = "Appraisal passed"
 
-class HIRSPortal:
+class HIRSPortal(object):
     def __init__(self, hirs_server_url):
         self.server_url = hirs_server_url
 
@@ -117,7 +121,7 @@ class HIRSPortal:
             # (works for full or partial path)
             return (record['hash']['digestString'] == sha_hash) and (filename in record['path'])
 
-        matching_records = filter(record_matcher, ima_records)
+        matching_records = list(filter(record_matcher, ima_records))
         return len(matching_records) > 0
 
     def upload_payload(self, payload):
@@ -275,7 +279,7 @@ class HIRSPortal:
     def get_alerts(self):
         return self.request("get", "portal/alerts/list").json()
 
-class AttestationCAPortal:
+class AttestationCAPortal(object):
     def __init__(self, hirs_server_url):
         self.server_url = hirs_server_url
 
@@ -362,8 +366,8 @@ def check_request_response(expected_status_codes, request_result, operation):
         raise RuntimeError(message)
 
 def collectors(collectors, collector_list):
-    enabled_collectors = sets.Set(collector_list)
-    tested_collectors = sets.Set(collectors)
+    enabled_collectors = set(collector_list)
+    tested_collectors = set(collectors)
     if tested_collectors.issubset(enabled_collectors):
         return lambda func: func
     return unittest.skip("{0} collector isn't enabled".format(tested_collectors.difference(enabled_collectors)))
@@ -443,7 +447,7 @@ def parse_xml_with_stripped_namespaces(raw_xml_string):
     for _, el in it:
         if '}' in el.tag:
             el.tag = el.tag.split('}', 1)[1]  # strip all namespaces
-        for at in el.attrib.keys(): # strip namespaces of attributes too
+        for at in list(el.attrib.keys()): # strip namespaces of attributes too
             if '}' in at:
                 newat = at.split('}', 1)[1]
                 el.attrib[newat] = el.attrib[at]

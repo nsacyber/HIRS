@@ -1,3 +1,4 @@
+from __future__ import print_function
 # system_test.py - implements a group of tests that run appraisals on a client and server
 
 # TODO: test_01-test_11 will need to be implemented when the additional HIRS
@@ -611,9 +612,9 @@ class SystemTest(unittest.TestCase):
       """Test that running the TPM 1.2 hirs provisioner works"""
       logging.info("***************** Beginning of initial TPM 1.2 provisioner run *****************")
 
-#       # Run the provisioner to ensure that it provisions successfully
-#       provisioner_out = run_hirs_provisioner_tpm_1_2(CLIENT)
-#       print("Initial TPM 1.2 provisioner run output: {0}".format(provisioner_out))
+      # Run the provisioner to ensure that it provisions successfully
+      provisioner_out = run_hirs_provisioner_tpm_1_2(CLIENT)
+      print("Initial TPM 1.2 provisioner run output: {0}".format(provisioner_out))
 
    @collectors(['TPM'], COLLECTOR_LIST)
    @unittest.skipIf(not is_tpm_2_0(TPM_VERSION), "Skipping this test due to TPM Version " + TPM_VERSION)

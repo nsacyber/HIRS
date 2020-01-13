@@ -144,5 +144,9 @@ UpdateHirsSiteConfigFile
 # Update the logging.properties file
 UpdateLoggingConfigFile
 
+# Set alias to use python3
+alias python='/usr/bin/python3.6'
+alias
+
 echo ""
 echo "===========HIRS ACA TPM 1.2 Provisioner Setup Complete!==========="

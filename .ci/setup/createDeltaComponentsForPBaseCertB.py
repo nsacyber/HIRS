@@ -1,3 +1,4 @@
+from __future__ import print_function
 # Create JSON files needed to create the following certificates:
 #    SIDeltaCertB1 - Bad Delta
 #	 VARDeltaCertB1 - Good Delta

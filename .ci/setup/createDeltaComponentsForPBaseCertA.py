@@ -1,3 +1,4 @@
+from __future__ import print_function
 # Create JSON files needed to create the following certificates:
 #    PBaseCertA - Good Base
 #    SIDeltaCertA1 - Good Delta
@@ -8,6 +9,7 @@
 #    VARDeltaCertA2 - Bad Delta
 #    VARDeltaCertA2Resolved - Good Delta
 
+from builtins import range
 import sys
 import json
 import copy
