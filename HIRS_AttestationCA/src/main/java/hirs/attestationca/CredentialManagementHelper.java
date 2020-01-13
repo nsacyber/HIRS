@@ -109,7 +109,10 @@ public final class CredentialManagementHelper {
             }
             PlatformCredential existingCredential =
                     PlatformCredential.select(certificateManager)
-                .byHashCode(platformCredential.getCertificateHash()).getCertificate();
+                            .includeArchived()
+                            .byHashCode(platformCredential
+                                    .getCertificateHash())
+                            .getCertificate();
             if (existingCredential == null) {
                 if (platformCredential.getPlatformSerial() != null) {
                     List<PlatformCredential> certificates = PlatformCredential

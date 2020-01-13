@@ -1083,10 +1083,12 @@ public abstract class Certificate extends ArchivableEntity {
 
     @Override
     public String toString() {
-        return "Certificate{"
-                + ", serialNumber=" + serialNumber
-                + ", issuer='" + issuer + '\''
-                + '}';
+        return String.format("Certificate{%s, AuthID=%s, serialNumber=%s, "
+                + "issuer=%s, AuthSerialNumber=%s, publicKeySize=%d, "
+                + "signatureAlg=%s, Hash=%d}", super.toString(),
+                authorityKeyIdentifier, serialNumber.toString(),
+                issuer, authoritySerialNumber.toString(), publicKeySize,
+                signatureAlgorithm, certificateHash);
     }
 
     @Override

@@ -40,6 +40,12 @@
                         </a>
                     </h3> 
                     <h4>Upload, view and manage endorsement credentials.</h4>
+                    <h3>
+                        <a href="${portal}/reference-manifests">
+                            <img src="${icons}/ic_important_devices_black_24dp.png" /> Reference Integrity Manifests
+                        </a>
+                    </h3> 
+                    <h4>Upload, view and manage reference integrity manifests.</h4>
                 </div>
                 <div class="col col-md-6 index-right-side">
                     <div class="row">

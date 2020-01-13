@@ -16,7 +16,7 @@ import java.util.UUID;
  * A <code>BaselineManager</code> manages <code>Baseline</code>s. A <code>BaselineManager</code> can
  * read, update, and archive <code>Baseline</code>s.
  */
-public interface BaselineManager {
+public interface BaselineManager extends OrderedListQuerier<Baseline> {
 
     /**
      * Stores a new <code>Baseline</code>. This stores a new

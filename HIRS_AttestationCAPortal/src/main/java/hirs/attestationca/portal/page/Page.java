@@ -45,6 +45,11 @@ public enum Page {
      */
     DEVICES("Devices", "ic_devices", "first"),
     /**
+     * Page to display RIMs.
+     */
+    REFERENCE_MANIFESTS("Reference Integrity Manifests",
+            "ic_important_devices", "first"),
+    /**
      * Page that manages Attestation CA Policy.
      */
     POLICY("Policy", "ic_subtitles"),
