@@ -1,5 +1,4 @@
-#FROM hirs/hirs-ci:centos7
-FROM busaboy1340/hirs-testing:centos7
+FROM hirs/hirs-ci:centos7
 
 # Install packages for installing HIRS TPM Provisioner
 RUN yum -y update && yum clean all

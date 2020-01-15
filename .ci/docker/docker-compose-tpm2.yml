@@ -5,8 +5,7 @@ version: "3.1"
 
 services:
    aca:
-      #mage: hirs/hirs-ci:aca
-      image: busaboy1340/hirs-testing:aca
+      image: hirs/hirs-ci:aca
       container_name: hirs-aca
       volumes:
          - ../../:/HIRS
@@ -22,8 +21,7 @@ services:
                - ${HIRS_ACA_HOSTNAME}
 
    tpm2provisioner:
-      #image: hirs/hirs-ci:tpm2provisioner
-      image: busaboy1340/hirs-testing:tpm2provisioner
+      image: hirs/hirs-ci:tpm2provisioner
       container_name: hirs-aca-provisioner-tpm2
       depends_on:
          - aca
