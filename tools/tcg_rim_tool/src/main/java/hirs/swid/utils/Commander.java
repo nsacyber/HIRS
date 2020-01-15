@@ -241,16 +241,15 @@ public class Commander {
                 + "   \t-in <file>\tand produces swidtag payloads.\n"
                 + "   \t-out <file>\tThe -hash argument is optional.\n"
                 + "   \t-hash <algorithm>\n");
+        sb.append("   -e, --example\tCreate example swid tag file (generated_swidTag.swidtag)\n");
+        sb.append("   <no file>\t\tListing no command with no argument will also\n"
+                + "   \t\t\tcreate an example tag file\n");
+        sb.append("   -p, --parse\t\tParse a swidtag's payload\n"
+        		+ "   \t<file>\t\tInput swidtag\n");
         sb.append("   -v, --verify\t\tTakes the provided input file and\n"
                 + "   \t\t\tvalidates it against the schema at\n"
                 + "   \t\t\thttp://standards.iso.org/iso/19770/-2/2015/schema.xsd\n");
-        sb.append("   -e, --example\tCreate example swid tag file (generated_swidTag.swidtag)\n");
-        sb.append("   -h, --help\t\tPrints the command help information\n");
-        sb.append("   <no file>\t\tListing no command with no argument will\n"
-                + "   \t\t\tcreate an example tag file\n");
-        sb.append("   <file>\t\tValidate the given file argument\n");
-        sb.append("   -p, --parse\t\tParse a swidtag's payload\n"
-        		+ "   <file>\t\tInput swidtag");
+        sb.append("   -h, --help\t\tPrints this command help information\n");
 
         System.out.println(sb.toString());
         System.exit(1);

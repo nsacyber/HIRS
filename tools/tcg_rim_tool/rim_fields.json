@@ -1,0 +1,39 @@
+{
+	SoftwareIdentity: {
+		name: "HIRS SWID Tag example",
+		version: "0.1",
+		tagId: "hirs.swid.SwidTags.example",
+		tagVersion: "0.1"
+	},
+	Entity: {
+		name: "HIRS",
+		role: "softwareCreator,tagCreator",
+		thumbprint: ""
+	},
+	Link: {
+		href: "https://Example.com/support/ProductA/firmware/installfiles",
+		rel: "installationmedia"
+	},
+	Meta: {
+		colloquialVersion: "",
+		edition: "",
+		product: "",
+		revision: "",
+		platformManufacturerStr: "Example.com",
+		platformManufacturerId: "00201234",
+		platformModel: "ProductA",
+		bindingSpec: "IOT RIM",
+		bindingSpecVersion: "1.2",
+		rimLinkHash: "88f21d8e44d4271149297404df91caf207130bfa116582408abd04ede6db7f51"
+	},
+	Payload: {
+		Directory: {
+			name: "iotBase",
+			File: {
+				name: "Example.com.iotBase.bin",
+				size: "15400",
+				hash: "688e293e3ccb522f6cf8a027c9ade7960f84bd0bf3a0b99812bc1fa498a2db8d"
+			}
+		}
+	}
+}
