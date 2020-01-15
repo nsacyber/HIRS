@@ -1,4 +1,3 @@
-from __future__ import print_function
 # Create JSON files needed to create the following certificates:
 #    PBaseCertA - Good Base
 #    SIDeltaCertA1 - Good Delta
@@ -9,11 +8,12 @@ from __future__ import print_function
 #    VARDeltaCertA2 - Bad Delta
 #    VARDeltaCertA2Resolved - Good Delta
 
+from __future__ import print_function
 from builtins import range
-import sys
-import json
 import copy
+import json
 import pprint
+import sys
 
 try:
 	minNumOfComponents = 3

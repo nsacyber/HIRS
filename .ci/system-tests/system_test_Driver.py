@@ -1,33 +1,33 @@
-from __future__ import print_function
 # System Test Driver to help with debugging.
 
+from __future__ import print_function
 from future import standard_library
 standard_library.install_aliases()
-import binascii
 from configparser import SafeConfigParser
+import argparse
+import binascii
 import datetime
+import hashlib
 import json
+import logging
 import os
-import shlex
-import subprocess
-import unittest
+import pprint
+import random
 import re
 import requests
-import logging
-import pprint
-import hashlib
-import random
-import uuid
-import time
+import shlex
+import subprocess
 import sys
-import argparse
+import time
+import uuid
+import unittest
 
-from system_test_core import HIRSPortal, AttestationCAPortal, collectors, \
+from system_test_core import DEFAULT_IMA_POLICY, DEFAULT_TPM_POLICY, \
+    HIRSPortal, AttestationCAPortal, collectors, \
     send_command, send_command_sha1sum, run_hirs_report, run_hirs_provisioner_tpm_1_2, \
     run_hirs_provisioner_tpm_2_0, parse_xml_with_stripped_namespaces, get_current_timestamp, \
     get_all_nodes_recursively, touch_random_file_and_remove, get_random_pcr_hex_value, \
-    is_ubuntu_client, is_tpm_2_0, is_tpm_1_2, \
-    DEFAULT_IMA_POLICY, DEFAULT_TPM_POLICY
+    is_ubuntu_client, is_tpm_2_0, is_tpm_1_2 \
 
 NUMBER_OF_PCRS = 24
 

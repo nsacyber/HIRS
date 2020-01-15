@@ -1,24 +1,24 @@
-# Defines core methods shared amongst system test scripts
+# Defines core methods shared amongst system test scripts.
 
 from future import standard_library
 standard_library.install_aliases()
 from builtins import str
 from builtins import filter
 from builtins import object
-import unittest
-import shlex
-import subprocess
-import os
+from io import StringIO
 import binascii
-import requests
-import logging
-import random
-import time
 import datetime
 import json
+import logging
+import os
 import pprint
+import random
+import requests
+import shlex
+import subprocess
+import time
+import unittest
 import xml.etree.ElementTree as ET
-from io import StringIO
 
 DEFAULT_GROUP_NAME = "Default Group"
 DEFAULT_TPM_POLICY = "Test TPM Policy"
