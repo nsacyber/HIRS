@@ -185,6 +185,7 @@ InitTpm2Emulator
 UpdateHirsSiteConfigFile
 
 # Set alias to use python3
+echo "===========Python Version==========="
 alias python='/usr/bin/python3.6'
 alias
 
