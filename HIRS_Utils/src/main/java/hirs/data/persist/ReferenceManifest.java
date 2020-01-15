@@ -67,6 +67,7 @@ public class ReferenceManifest extends ArchivableEntity  {
         }
     }
 
+    private 
     /**
      * Default constructor of given name.
      */

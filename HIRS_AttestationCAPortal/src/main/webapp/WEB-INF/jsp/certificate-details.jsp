@@ -106,18 +106,22 @@
                     <div class="col-md-1 col-md-offset-1"><span class="colHeader">Subject</span></div>
                     <div id="subject" class="col col-md-8">${initialData.subject}</div>
                 </div>
-            </c:if>
-            <div class="row">
-                <div class="col-md-1 col-md-offset-1"><span class="colHeader">Serial Number</span></div>
-                <div id="serialNumber" class="col col-md-8 vertical"></div>
-            </div>
-            <div class="row">
-                <div class="col-md-1 col-md-offset-1"><span class="colHeader">Validity</span></div>
-                <div id="validity" class="col col-md-8">
-                    <div>Not Before:&nbsp;<span>${initialData.beginValidity}</span></div>
-                    <div>Not After:&nbsp;<span>${initialData.endValidity}</span></div>
+            </c:if>            
+            <c:if test="${not empty initialData.serialNumber}">
+                <div class="row">
+                    <div class="col-md-1 col-md-offset-1"><span class="colHeader">Serial Number</span></div>
+                    <div id="serialNumber" class="col col-md-8 vertical"></div>
                 </div>
+            </c:if>
+            <c:if test="${not empty initialData.beginValidity}">
+                <div class="row">
+                    <div class="col-md-1 col-md-offset-1"><span class="colHeader">Validity</span></div>
+                    <div id="validity" class="col col-md-8">
+                        <div>Not Before:&nbsp;<span>${initialData.beginValidity}</span></div>
+                        <div>Not After:&nbsp;<span>${initialData.endValidity}</span></div>
+                    </div>
             </div>
+            </c:if>
             <div class="row">
                 <div class="col-md-1 col-md-offset-1"><span class="colHeader">Signature</span></div><div id="signatureSection" class="col col-md-8">
                     <div class="panel-body">
@@ -878,6 +882,51 @@
                         </div>
                     </div>
                 </c:when>
+                    <c:when test="${param.type=='referencemanifest'}">
+                        <div class="row">
+                            <div id="swidSchema" class="col col-md-8">
+                                SWID Schema
+                            </div>
+                        </div>                        
+                        <div class="row">
+                            <div id="payloadType" class="col col-md-8">
+                                Payload Type
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div id="payload" class="col col-md-8">
+                                Payload
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-1 col-md-offset-1">
+                                <span class="colHeader">Support RIM(s)</span>
+                                <div id="rimConfiguration" class="col col-md-8">                                
+                                    <c:if test="${not empty initialData.componentsIdentifier}">
+                                        <!-- Support RIMs -->                                    
+                                        <div class="panel panel-default">
+                                            <div class="panel-heading" role="tab" id="headingOne">
+                                                <h4 class="panel-title">
+                                                    <a role="button" data-toggle="collapse" data-parent="#rimConfiguration" class="collapsed"
+                                                       href="#supportRimcollapse" aria-expanded="true" aria-controls="supportRimcollapse">
+                                                        Support RIM
+                                                    </a>
+                                                </h4>
+                                            </div>
+                                            <div id="componentIdentifiercollapse" class="panel-collapse collapse in" role="tabpanel" aria-labelledby="headingOne" aria-expanded="true">
+                                                <div class="panel-body">
+                                                    <div id="supportRim" class="row">
+                                                        
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>   
+                                    </c:if>
+                                </div>
+                            </div>
+                        </div>
+                    </c:when>
             </c:choose>
         </div>
         <script>
