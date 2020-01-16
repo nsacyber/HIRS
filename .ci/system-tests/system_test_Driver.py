@@ -19,8 +19,8 @@ import shlex
 import subprocess
 import sys
 import time
-import uuid
 import unittest
+import uuid
 
 from system_test_core import DEFAULT_IMA_POLICY, DEFAULT_TPM_POLICY, \
     HIRSPortal, AttestationCAPortal, collectors, \
@@ -116,7 +116,7 @@ class SystemTest(unittest.TestCase):
 
     def setUp(self):
         """Set the systems tests state up for testing"""
-        #AcaPortal.disable_supply_chain_validations()
+        AcaPortal.disable_supply_chain_validations()
 
     def tearDown(self):
         """Tears down the state for testing"""
@@ -126,8 +126,6 @@ class SystemTest(unittest.TestCase):
           If not online, an exception will be raised since the response code is non-200"""
       logging.info("***************** Beginning of attestation ca portal online test *****************")
       AcaPortal.check_is_online()
-
-      print("Converting to Python 3..")
 
     @collectors(['IMA', 'TPM'], COLLECTOR_LIST)
     def test_02_empty_baselines(self):
