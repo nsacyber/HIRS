@@ -1,26 +1,11 @@
 # System Test Driver to help with debugging.
 
 from __future__ import print_function
-from future import standard_library
-standard_library.install_aliases()
-from configparser import SafeConfigParser
-import argparse
-import binascii
-import datetime
-import hashlib
-import json
 import logging
 import os
-import pprint
-import random
-import re
-import requests
-import shlex
-import subprocess
 import sys
-import time
 import unittest
-import uuid
+import urllib3
 
 from system_test_core import DEFAULT_IMA_POLICY, DEFAULT_TPM_POLICY, \
     HIRSPortal, AttestationCAPortal, collectors, \
@@ -40,8 +25,8 @@ else:
 
 # Change to point to your HIRS directory
 #HOME_DIR = "/HIRS/"
-HOME_DIR = "/workspace/git/python2to3-dev/"
-#HIRS_ACA_PORTAL_IP="172.17.0.2"
+HOME_DIR = "/workspace/git/python2to3-dev-3/"
+HIRS_ACA_PORTAL_IP="172.17.0.2"
 TPM_VERSION="2.0"
 #TPM_VERSION="1.2"
 # Change accordingly
@@ -102,7 +87,7 @@ logging.info("The ACA Portal is: " + HIRS_ATTESTATION_CA_PORTAL_URL)
 #Portal = HIRSPortal(HIRS_SERVER_URL)
 AcaPortal = AttestationCAPortal(HIRS_ATTESTATION_CA_PORTAL_URL)
 
-requests.packages.urllib3.disable_warnings()
+urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
 class SystemTest(unittest.TestCase):
 
