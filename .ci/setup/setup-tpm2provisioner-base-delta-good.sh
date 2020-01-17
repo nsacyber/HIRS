@@ -225,6 +225,7 @@ UpdateHirsSiteConfigFile
 
 # Set alias to use python3
 echo "===========Python Version==========="
+python3 --version
 alias python='/usr/bin/python3.6'
 alias
 
