@@ -1,6 +1,7 @@
 # Add faulty components to the PACCOR generated JSON componentsFile.
 # This will be used to create a bad platform certificate.
 
+from __future__ import print_function
 import json
 import pprint
 
