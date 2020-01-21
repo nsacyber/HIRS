@@ -74,7 +74,7 @@ function setDataTables(id, url, columns) {
 * @param type of certificate
 * @param id of the certificate
 * @param sameType boolean indicating if the details is the same
-*       certificatr type.
+*       certificate type.
 */
 function certificateDetailsLink(type, id, sameType){
     var href = portal + '/certificate-details?id=' + id + '&type=' + type;

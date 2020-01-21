@@ -67,7 +67,6 @@ public class ReferenceManifest extends ArchivableEntity  {
         }
     }
 
-    private 
     /**
      * Default constructor of given name.
      */
@@ -88,22 +87,22 @@ public class ReferenceManifest extends ArchivableEntity  {
      *             if unable to unmarshal the string
      */
     public static ReferenceManifest getInstance(final String xml) throws JAXBException {
-        final JAXBContext context = JAXBContext.newInstance(Device.class);
+        final JAXBContext context = JAXBContext.newInstance(ReferenceManifest.class);
         final Unmarshaller unmarshaller = context.createUnmarshaller();
         final StringReader reader = new StringReader(xml);
         return (ReferenceManifest) unmarshaller.unmarshal(reader);
     }
 
     /**
-     * Getter for the manufacturuer info.
-     * @return string for the manufacturuer
+     * Getter for the manufacturer info.
+     * @return string for the manufacturer
      */
     public String getManufacturer() {
         return manufacturer;
     }
 
     /**
-     * Setter for the manufacturuer info.
+     * Setter for the manufacturer info.
      * @param manufacturer passed in info.
      */
     public void setManufacturer(final String manufacturer) {
