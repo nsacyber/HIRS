@@ -319,7 +319,7 @@ public class SwidTagGateway {
     private Entity createEntity(JsonObject jsonObject) {
         Entity entity = objectFactory.createEntity();
         entity.setName(jsonObject.getString(SwidTagConstants.NAME, ""));
-        //entity.setRegid(jsonObject.getString(SwidTagConstants.REGID));
+        entity.setRegid(jsonObject.getString(SwidTagConstants.REGID, ""));
         String[] roles = jsonObject.getString(SwidTagConstants.ROLE, "").split(",");
         for (int i = 0; i < roles.length; i++) {
             entity.getRole().add(roles[i]);
@@ -352,16 +352,24 @@ public class SwidTagGateway {
     private SoftwareMeta createSoftwareMeta(JsonObject jsonObject) {
         SoftwareMeta softwareMeta = objectFactory.createSoftwareMeta();
         Map<QName, String> attributes = softwareMeta.getOtherAttributes();
-        //attributes.put(SwidTagConstants._RIM_PCURILOCAL, jsonObject.getString(SwidTagConstants.PCURILOCAL, ""));
-        attributes.put(SwidTagConstants._RIM_BINDINGSPEC, jsonObject.getString(SwidTagConstants.BINDING_SPEC, ""));
-        attributes.put(SwidTagConstants._RIM_BINDINGSPECVERSION, jsonObject.getString(SwidTagConstants.BINDING_SPEC_VERSION, ""));
-        attributes.put(SwidTagConstants._RIM_PLATFORMMANUFACTURERID, jsonObject.getString(SwidTagConstants.PLATFORM_MANUFACTURER_ID, ""));
-        attributes.put(SwidTagConstants._RIM_PLATFORMMANUFACTURERSTR, jsonObject.getString(SwidTagConstants.PLATFORM_MANUFACTURER_STR, ""));
-        attributes.put(SwidTagConstants._RIM_PLATFORMMODEL, jsonObject.getString(SwidTagConstants.PLATFORM_MODEL, ""));
-        //attributes.put(SwidTagConstants._RIM_COMPONENTCLASS, jsonObject.getString(SwidTagConstants.COMPONENTCLASS, ""));
-        //attributes.put(SwidTagConstants._RIM_COMPONENTMANUFACTURER, jsonObject.getString(SwidTagConstants.COMPONENTMANUFACTURER, ""));
-        //attributes.put(SwidTagConstants._RIM_COMPONENTMANUFACTURERID, jsonObject.getString(SwidTagConstants.OMPONENTMANUFACTURERID, ""));
-        attributes.put(SwidTagConstants._RIM_RIMLINKHASH, jsonObject.getString(SwidTagConstants.RIM_LINK_HASH, ""));
+        attributes.put(SwidTagConstants._COLLOQUIAL_VERSION, jsonObject.getString(SwidTagConstants.COLLOQUIAL_VERSION, ""));
+        attributes.put(SwidTagConstants._EDITION, jsonObject.getString(SwidTagConstants.EDITION, ""));
+        attributes.put(SwidTagConstants._PRODUCT, jsonObject.getString(SwidTagConstants.PRODUCT, ""));
+        attributes.put(SwidTagConstants._REVISION, jsonObject.getString(SwidTagConstants.REVISION, ""));
+        attributes.put(SwidTagConstants._PAYLOAD_TYPE, jsonObject.getString(SwidTagConstants.PAYLOAD_TYPE, ""));
+        attributes.put(SwidTagConstants._PLATFORM_MANUFACTURER_STR, jsonObject.getString(SwidTagConstants.PLATFORM_MANUFACTURER_STR, ""));
+        attributes.put(SwidTagConstants._PLATFORM_MANUFACTURER_ID, jsonObject.getString(SwidTagConstants.PLATFORM_MANUFACTURER_ID, ""));
+        attributes.put(SwidTagConstants._PLATFORM_MODEL, jsonObject.getString(SwidTagConstants.PLATFORM_MODEL, ""));
+        attributes.put(SwidTagConstants._PLATFORM_VERSION, jsonObject.getString(SwidTagConstants.PLATFORM_VERSION, ""));
+        attributes.put(SwidTagConstants._FIRMWARE_MANUFACTURER_STR, jsonObject.getString(SwidTagConstants.FIRMWARE_MANUFACTURER_STR, ""));
+        attributes.put(SwidTagConstants._FIRMWARE_MANUFACTURER_ID, jsonObject.getString(SwidTagConstants.FIRMWARE_MANUFACTURER_ID, ""));
+        attributes.put(SwidTagConstants._FIRMWARE_MODEL, jsonObject.getString(SwidTagConstants.FIRMWARE_MODEL, ""));
+        attributes.put(SwidTagConstants._FIRMWARE_VERSION, jsonObject.getString(SwidTagConstants.FIRMWARE_VERSION, ""));
+        attributes.put(SwidTagConstants._BINDING_SPEC, jsonObject.getString(SwidTagConstants.BINDING_SPEC, ""));
+        attributes.put(SwidTagConstants._BINDING_SPEC_VERSION, jsonObject.getString(SwidTagConstants.BINDING_SPEC_VERSION, ""));
+        attributes.put(SwidTagConstants._PC_URI_LOCAL, jsonObject.getString(SwidTagConstants.PC_URI_LOCAL, ""));
+        attributes.put(SwidTagConstants._PC_URI_GLOBAL, jsonObject.getString(SwidTagConstants.PC_URI_GLOBAL, ""));
+        attributes.put(SwidTagConstants._RIM_LINK_HASH, jsonObject.getString(SwidTagConstants.RIM_LINK_HASH, ""));
 
         return softwareMeta;
     }
@@ -373,13 +381,13 @@ public class SwidTagGateway {
      * @return the Payload object created
      */
     private ResourceCollection createPayload(JsonObject jsonObject) {
-        ResourceCollection rc = objectFactory.createResourceCollection();
-/*
-        rc.getOtherAttributes().put(SwidTagConstants._N8060_ENVVARPREFIX, jsonObject.getString(SwidTagConstants.PAYLOAD_ENVVARPREFIX));
-        rc.getOtherAttributes().put(SwidTagConstants._N8060_ENVVARSUFFIX, jsonObject.getString(SwidTagConstants.PAYLOAD_ENVVARSUFFIX));
-        rc.getOtherAttributes().put(SwidTagConstants._N8060_PATHSEPARATOR, jsonObject.getString(SwidTagConstants.PAYLOAD_PATHSEPARATOR));
-*/
-        return rc;
+        ResourceCollection payload = objectFactory.createResourceCollection();
+
+        //payload.getOtherAttributes().put(SwidTagConstants._N8060_ENVVARPREFIX, jsonObject.getString(SwidTagConstants.PAYLOAD_ENVVARPREFIX));
+        //payload.getOtherAttributes().put(SwidTagConstants._N8060_ENVVARSUFFIX, jsonObject.getString(SwidTagConstants.PAYLOAD_ENVVARSUFFIX));
+        //payload.getOtherAttributes().put(SwidTagConstants._N8060_PATHSEPARATOR, jsonObject.getString(SwidTagConstants.PAYLOAD_PATHSEPARATOR));
+
+        return payload;
     }
 
     /**
@@ -391,6 +399,10 @@ public class SwidTagGateway {
     private Directory createDirectory(JsonObject jsonObject) {
         Directory directory = objectFactory.createDirectory();
         directory.setName(jsonObject.getString(SwidTagConstants.NAME, ""));
+        Map<QName, String> attributes = directory.getOtherAttributes();
+        attributes.put(SwidTagConstants._SUPPORT_RIM_TYPE, jsonObject.getString(SwidTagConstants.SUPPORT_RIM_TYPE, ""));
+        attributes.put(SwidTagConstants._SUPPORT_RIM_FORMAT, jsonObject.getString(SwidTagConstants.SUPPORT_RIM_FORMAT, ""));
+        attributes.put(SwidTagConstants._SUPPORT_RIM_URI_GLOBAL, jsonObject.getString(SwidTagConstants.SUPPORT_RIM_URI_GLOBAL, ""));
 //        System.out.println(jsonObject.getString(SwidTagConstants.NAME, ""));
 /*
         directory.setLocation(jsonObject.getString(SwidTagConstants.DIRECTORY_LOCATION));
@@ -414,7 +426,11 @@ public class SwidTagGateway {
         hirs.swid.xjc.File file = objectFactory.createFile();
         file.setName(jsonObject.getString(SwidTagConstants.NAME, ""));
         file.setSize(new BigInteger(jsonObject.getString(SwidTagConstants.SIZE, "")));
-        file.getOtherAttributes().put(_SHA256_HASH, jsonObject.getString(SwidTagConstants.HASH, ""));
+        Map<QName, String> attributes = file.getOtherAttributes();
+        attributes.put(_SHA256_HASH, jsonObject.getString(SwidTagConstants.HASH, ""));
+        attributes.put(SwidTagConstants._SUPPORT_RIM_TYPE, jsonObject.getString(SwidTagConstants.SUPPORT_RIM_TYPE, ""));
+        attributes.put(SwidTagConstants._SUPPORT_RIM_FORMAT, jsonObject.getString(SwidTagConstants.SUPPORT_RIM_FORMAT, ""));
+        attributes.put(SwidTagConstants._SUPPORT_RIM_URI_GLOBAL, jsonObject.getString(SwidTagConstants.SUPPORT_RIM_URI_GLOBAL, ""));
 
         return file;
     }
