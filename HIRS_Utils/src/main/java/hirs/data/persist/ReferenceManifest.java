@@ -1,13 +1,26 @@
 package hirs.data.persist;
 
+import java.io.ByteArrayInputStream;
+import java.io.FileInputStream;
+import java.io.IOException;
 import java.io.StringReader;
+import java.util.Arrays;
 import javax.persistence.Access;
 import javax.persistence.AccessType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.xml.bind.JAXBContext;
+import javax.xml.bind.JAXBElement;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Unmarshaller;
+//import javax.xml.bind.annotation.XmlRootElement;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.google.common.base.Preconditions;
+import hirs.persist.ReferenceManifestManager;
+import hirs.persist.ReferenceManifestSelector;
+import hirs.utils.SwidTagGateway;
+import hirs.utils.xjc.SoftwareIdentity;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -18,7 +31,23 @@ import org.apache.logging.log4j.Logger;
 @Access(AccessType.FIELD)
 public class ReferenceManifest extends ArchivableEntity  {
 
+    private static final int MAX_CERT_LENGTH_BYTES = 2048;
     private static final Logger LOGGER = LogManager.getLogger();
+
+    /**
+     * This class enables the retrieval of PlatformCredentials by their attributes.
+     */
+    public static class Selector extends ReferenceManifestSelector<ReferenceManifest> {
+        /**
+         * Construct a new ReferenceManifestSelector that will use the given {@link ReferenceManifestManager} to
+         * retrieve one or many Reference Integrity Manifest.
+         *
+         * @param referenceManifestManager the RIM manager to be used to retrieve RIMs
+         */
+        public Selector(final ReferenceManifestManager referenceManifestManager) {
+            super(referenceManifestManager);
+        }
+    }
 
     @Column
     private String manufacturer = null;
@@ -30,6 +59,16 @@ public class ReferenceManifest extends ArchivableEntity  {
     private String tagId = null;
     @Column
     private String rimType = null;
+    @Column(length = MAX_CERT_LENGTH_BYTES, nullable = false)
+    @JsonIgnore
+    private byte[] rimBytes;
+    /**
+     * Holds the name of the 'rimHash' field.
+     */
+    public static final String RIM_HASH_FIELD = "rimHash";
+    @Column(nullable = false)
+    @JsonIgnore
+    private final int rimHash;
 
     /**
      * Holds the different RIM types.
@@ -68,29 +107,61 @@ public class ReferenceManifest extends ArchivableEntity  {
     }
 
     /**
-     * Default constructor of given name.
+     * Get a Selector for use in retrieving ReferenceManifest.
+     *
+     * @param rimMan the ReferenceManifestManager to be used to retrieve persisted RIMs
+     * @return a ReferenceManifest.Selector instance to use for retrieving RIMs
      */
-    public ReferenceManifest() {
+    public static Selector select(final ReferenceManifestManager rimMan) {
+        return new Selector(rimMan);
     }
 
     /**
-     * Returns a new <code>Device</code> instance from the XML string. This
-     * unmarshals the XML string and generates a <code>ReferenceManifest</code>
-     * object.
-     * This is a utility method for creating <code>ReferenceManifest</code>
-     * objects.
+     * Default constructor of given name.
+     */
+    protected ReferenceManifest() {
+        super();
+        this.manufacturer = null;
+        this.model = null;
+        this.firmwareVersion = null;
+        this.tagId = null;
+        this.rimBytes = null;
+        this.rimHash = 0;
+    }
+
+    /**
      *
-     * @param xml
-     *            XML representation of device
-     * @return device
+     *
+     * @param rimBytes byte array representation of the RIM     *
      * @throws JAXBException
      *             if unable to unmarshal the string
      */
-    public static ReferenceManifest getInstance(final String xml) throws JAXBException {
-        final JAXBContext context = JAXBContext.newInstance(ReferenceManifest.class);
-        final Unmarshaller unmarshaller = context.createUnmarshaller();
-        final StringReader reader = new StringReader(xml);
-        return (ReferenceManifest) unmarshaller.unmarshal(reader);
+    public ReferenceManifest(final byte[] rimBytes) throws IOException {
+        Preconditions.checkArgument(
+                rimBytes != null,
+                "Cannot construct a RIM from a null byte array"
+        );
+
+        Preconditions.checkArgument(
+                rimBytes.length > 0,
+                "Cannot construct a RIM from an empty byte array"
+        );
+
+        this.rimBytes = rimBytes.clone();
+
+
+        SoftwareIdentity si = (new SwidTagGateway()).validateSwidTag(
+                new ByteArrayInputStream(rimBytes));
+
+        if (si != null) {
+            for (Object object : si.getEntityOrEvidenceOrLink()) {
+                if (object instanceof JAXBElement) {
+                    JAXBElement element = (JAXBElement) object;
+                }
+            }
+        }
+
+        this.rimHash = Arrays.hashCode(this.rimBytes);
     }
 
     /**
@@ -171,5 +242,29 @@ public class ReferenceManifest extends ArchivableEntity  {
      */
     public void setRimType(final String type) {
         this.rimType = type;
+    }
+
+    /**
+     * Getter for the Reference Integrity Manifest as a byte array
+     * @return
+     */
+    public byte[] getRimBytes() {
+        return rimBytes;
+    }
+
+    /**
+     * Setter for the Reference Integrity Manifest as a byte array
+     * @param rimBytes
+     */
+    public void setRimBytes(byte[] rimBytes) {
+        this.rimBytes = rimBytes;
+    }
+
+    /**
+     * Getter for the Reference Integrity Manifest hash value.
+     * @return int representation of the hash value
+     */
+    public int getRimHash() {
+        return rimHash;
     }
 }

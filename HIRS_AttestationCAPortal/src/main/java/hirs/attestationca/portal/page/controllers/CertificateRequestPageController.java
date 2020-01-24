@@ -583,8 +583,6 @@ public class CertificateRequestPageController extends PageController<NoPageParam
      *
      * @param certificateType String containing the certificate type
      * @param file the file being uploaded from the portal
-     * @param model the map of page elements to populate with error messages
-     * upon failure
      * @param messages contains any messages that will be display on the page
      * @return the parsed certificate or null if parsing failed.
      */
@@ -721,15 +719,15 @@ public class CertificateRequestPageController extends PageController<NoPageParam
 
                 certificateManager.save(certificate);
 
-                final String successMsg = "New certificate successfully uploaded ("
-                    + fileName + ")";
+                final String successMsg
+                        = String.format("New certificate successfully uploaded (%s): ", fileName);
                 messages.addSuccess(successMsg);
                 LOGGER.info(successMsg);
                 return;
             }
         } catch (DBManagerException e) {
-            final String failMessage = "Storing new certificate failed ("
-                    + fileName + "): ";
+            final String failMessage = String.format("Storing new certificate failed (%s): ",
+                    fileName);
             messages.addError(failMessage + e.getMessage());
             LOGGER.error(failMessage, e);
             return;
@@ -743,15 +741,17 @@ public class CertificateRequestPageController extends PageController<NoPageParam
                 existingCertificate.resetCreateTime();
                 certificateManager.update(existingCertificate);
 
-                final String successMsg = "Pre-existing certificate found and unarchived ("
-                    + fileName + ")";
+                final String successMsg = String.format("Pre-existing certificate " +
+                        "found and unarchived (%s): "
+                    + fileName + ")");
                 messages.addSuccess(successMsg);
                 LOGGER.info(successMsg);
                 return;
             }
         } catch (DBManagerException e) {
-            final String failMessage = "Found an identical pre-existing certificate in the "
-                    + "archive, but failed to unarchive it (" + fileName + "): ";
+            final String failMessage = String.format("Found an identical" +
+                    " pre-existing certificate in the "
+                    + "archive, but failed to unarchive it (%s): ", fileName);
             messages.addError(failMessage + e.getMessage());
             LOGGER.error(failMessage, e);
             return;
@@ -759,8 +759,8 @@ public class CertificateRequestPageController extends PageController<NoPageParam
 
         // if an identical certificate is already unarchived, do nothing and show a fail message
         final String failMessage
-                = "Storing certificate failed: an identical certificate already exists ("
-                    + fileName + ")";
+                = String.format("Storing certificate failed: an identical" +
+                " certificate already exists (%s): ", fileName);
         messages.addError(failMessage);
         LOGGER.error(failMessage);
     }

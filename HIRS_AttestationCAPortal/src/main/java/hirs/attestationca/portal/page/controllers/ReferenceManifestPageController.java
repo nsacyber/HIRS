@@ -8,12 +8,13 @@ import hirs.attestationca.portal.page.PageController;
 import hirs.attestationca.portal.page.params.ReferenceManifestPageParams;
 
 import hirs.FilteredRecordsList;
-import static hirs.attestationca.portal.page.PageController.MESSAGES_ATTRIBUTE;
 import hirs.attestationca.portal.page.PageMessages;
+import hirs.data.persist.certificate.Certificate;
+import hirs.persist.CertificateManager;
+import hirs.persist.DBManagerException;
 import hirs.persist.ReferenceManifestManager;
 import hirs.data.persist.ReferenceManifest;
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
 import java.net.URISyntaxException;
 
 import java.text.DateFormat;
@@ -21,6 +22,9 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.HashMap;
 import java.util.Map;
+
+import hirs.utils.SwidTagGateway;
+import hirs.utils.xjc.SoftwareIdentity;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -156,24 +160,20 @@ extends PageController<ReferenceManifestPageParams> {
     protected RedirectView upload(
             @RequestParam("file") final MultipartFile[] files,
             final RedirectAttributes attr) throws URISyntaxException, Exception {
-
-        LOGGER.error("Made it into the upload method for RIM");
         Map<String, Object> model = new HashMap<>();
         PageMessages messages = new PageMessages();
 
+        // loop through the files
         for (MultipartFile file : files) {
             //Parse reference manifests
-            ReferenceManifest rims
-                    = parseRIMs(file, messages);
+            ReferenceManifest rims = parseRIMs(file, messages);
 
             //Store only if it was parsed
             if (rims != null) {
-//                storeCertificate(
-//                        rims,
-//                        file.getOriginalFilename(),
-//                        messages, rims,
-//                        referenceManifestManager);
-                int i = 1;
+                storeManifest(file.getOriginalFilename(),
+                        messages,
+                        rims,
+                        referenceManifestManager);
             }
         }
 
@@ -186,24 +186,93 @@ extends PageController<ReferenceManifestPageParams> {
 
     private ReferenceManifest parseRIMs(
             final MultipartFile file,
-            final PageMessages messages) throws Exception {
-
-        LOGGER.info("Received File of Size: " + file.getSize());
+            final PageMessages messages) {
 
         byte[] fileBytes;
         String fileName = file.getOriginalFilename();
 
-        // build the certificate from the uploaded bytes
+        // build the manifest from the uploaded bytes
         try {
             fileBytes = file.getBytes();
         } catch (IOException e) {
-            final String failMessage = "Failed to read uploaded file ("
-                    + fileName + "): ";
+            final String failMessage
+                    = String.format("Failed to read uploaded file (%s): ", fileName);
             LOGGER.error(failMessage, e);
             messages.addError(failMessage + e.getMessage());
             return null;
         }
 
-        return ReferenceManifest.getInstance(new String(fileBytes, StandardCharsets.UTF_8));
+        try {
+            return new ReferenceManifest(fileBytes);
+            // the this is a List<Object> is object is a JaxBElement that can be matched up to the QName
+        } catch (IOException ioEx) {
+            final String failMessage
+                    = String.format("Failed to parse uploaded file (%s): ", fileName);
+            LOGGER.error(failMessage, ioEx);
+            messages.addError(failMessage + ioEx.getMessage());
+            return null;
+        }
+    }
+
+    private void storeManifest(
+            final String fileName,
+            final PageMessages messages,
+            final ReferenceManifest referenceManifest,
+            final ReferenceManifestManager referenceManifestManager) {
+
+        ReferenceManifest existingManifest;
+
+        // look for existing manifest in the database
+        try {
+            existingManifest = ReferenceManifest
+                    .select(referenceManifestManager)
+                    .includeArchived()
+                    .byHashCode(referenceManifest.getRimHash())
+                    .getRIM();
+        } catch (DBManagerException e) {
+            final String failMessage = String.format("Querying for existing certificate failed (%s): ", fileName);
+            messages.addError(failMessage + e.getMessage());
+            LOGGER.error(failMessage, e);
+            return;
+        }
+
+        try {
+            // save the new certificate if no match is found
+            if (existingManifest == null) {
+                referenceManifestManager.save(referenceManifest);
+
+                final String successMsg = String.format("New RIM successfully uploaded (%s): ", fileName);
+                messages.addSuccess(successMsg);
+                LOGGER.info(successMsg);
+                return;
+            }
+        } catch (DBManagerException dbmEx) {
+            final String failMessage = String.format("Storing new RIM failed (%s): ", fileName);
+            messages.addError(failMessage + dbmEx.getMessage());
+            LOGGER.error(failMessage, dbmEx);
+            return;
+        }
+
+        try {
+            // if an identical RIM is archived, update the existing RIM to
+            // unarchive it and change the creation date
+            if (existingManifest.isArchived()) {
+                existingManifest.restore();
+                existingManifest.resetCreateTime();
+                referenceManifestManager.update(existingManifest);
+
+                final String successMsg
+                        = String.format("Pre-existing RIM found and unarchived (%s): ", fileName);
+                messages.addSuccess(successMsg);
+                LOGGER.info(successMsg);
+                return;
+            }
+        } catch (DBManagerException dbmEx) {
+            final String failMessage = String.format("Found an identical pre-existing RIM in the "
+                    + "archive, but failed to unarchive it (%s): ", fileName);
+            messages.addError(failMessage + dbmEx.getMessage());
+            LOGGER.error(failMessage, dbmEx);
+            return;
+        }
     }
 }
