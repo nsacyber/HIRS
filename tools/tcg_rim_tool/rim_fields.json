@@ -3,7 +3,8 @@
 		"name": "TCG RIM example",
 		"version": "0.1",
 		"tagId": "hirs.swid.SwidTags.example",
-		"tagVersion": "0.1"
+		"tagVersion": "1",
+		"patch": true
 	},
 	"Entity": {
 		"name": "HIRS",

@@ -12,6 +12,11 @@ import javax.xml.namespace.QName;
  */
 public class SwidTagConstants {
 
+    public static final String KEYSTORE_PATH = "keystore.jks";
+    public static final String KEYSTORE_PASSWORD = "password";
+    public static final String PRIVATE_KEY_ALIAS = "selfsigned";
+    public static final String SIGNATURE_ALGORITHM_RSA_SHA256 = "http://www.w3.org/2001/04/xmldsig-more#rsa-sha256";
+
     public static final String SCHEMA_STATEMENT = "ISO/IEC 19770-2:2015 Schema (XSD 1.0) "
             + "- September 2015, see http://standards.iso.org/iso/19770/-2/2015/schema.xsd";
     public static final String SCHEMA_PACKAGE = "hirs.swid.xjc";

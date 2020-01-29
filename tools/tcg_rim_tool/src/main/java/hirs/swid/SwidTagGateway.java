@@ -1,16 +1,51 @@
 package hirs.swid;
 
+import javax.xml.bind.JAXB;
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBElement;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Marshaller;
 import javax.xml.bind.Unmarshaller;
 import javax.xml.bind.UnmarshalException;
+import javax.xml.transform.OutputKeys;
+import javax.xml.transform.TransformerFactory;
+import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerConfigurationException;
+import javax.xml.transform.TransformerException;
+import javax.xml.transform.dom.DOMSource;
+import javax.xml.transform.stream.StreamResult;
 import javax.xml.transform.stream.StreamSource;
 import javax.xml.validation.Schema;
 import javax.xml.validation.SchemaFactory;
 import javax.xml.namespace.QName;
+import javax.xml.crypto.AlgorithmMethod;
+import javax.xml.crypto.KeySelector;
+import javax.xml.crypto.KeySelectorException;
+import javax.xml.crypto.KeySelectorResult;
+import javax.xml.crypto.MarshalException;
+import javax.xml.crypto.XMLCryptoContext;
+import javax.xml.crypto.XMLStructure;
+import javax.xml.crypto.dsig.CanonicalizationMethod;
+import javax.xml.crypto.dsig.DigestMethod;
+import javax.xml.crypto.dsig.Reference;
+import javax.xml.crypto.dsig.SignatureMethod;
+import javax.xml.crypto.dsig.SignedInfo;
+import javax.xml.crypto.dsig.Transform;
+import javax.xml.crypto.dsig.XMLSignature;
+import javax.xml.crypto.dsig.XMLSignatureException;
+import javax.xml.crypto.dsig.XMLSignatureFactory;
+import javax.xml.crypto.dsig.dom.DOMSignContext;
+import javax.xml.crypto.dsig.dom.DOMValidateContext;
+import javax.xml.crypto.dsig.keyinfo.KeyInfoFactory;
+import javax.xml.crypto.dsig.keyinfo.KeyInfo;
+import javax.xml.crypto.dsig.keyinfo.X509Data;
+import javax.xml.crypto.dsig.spec.C14NMethodParameterSpec;
+import javax.xml.crypto.dsig.spec.TransformParameterSpec;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
 
+import org.w3c.dom.Document;
+import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
 import java.io.File;
@@ -19,12 +54,27 @@ import java.io.InputStream;
 import java.io.ByteArrayInputStream;
 import java.io.BufferedReader;
 import java.io.FileNotFoundException;
+import java.io.OutputStream;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
+import java.security.InvalidAlgorithmParameterException;
+import java.security.Key;
+import java.security.KeyStore;
+import java.security.KeyStoreException;
+import java.security.NoSuchAlgorithmException;
+import java.security.PublicKey;
+import java.security.UnrecoverableEntryException;
+import java.security.cert.CertificateException;
+import java.security.cert.X509Certificate;
+
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
@@ -84,9 +134,23 @@ public class SwidTagGateway {
     private final File generatedFile = new File("generated_swidTag.swidtag");
     private final Path configFile = Paths.get("/etc/hirs/rim_fields.json");
     private QName hashValue = null;
-    
-    private static final String ENTITY = "Entity";
-    private static final String PAYLOAD = "Payload";
+
+    private JAXBContext jaxbContext;
+    private Marshaller marshaller;
+    private Unmarshaller unmarshaller;
+
+    /**
+     * Default constructor initializes jaxbcontext, marshaller, and unmarshaller
+     */
+    public SwidTagGateway() {
+        try {
+            jaxbContext = JAXBContext.newInstance(SwidTagConstants.SCHEMA_PACKAGE);
+            marshaller = jaxbContext.createMarshaller();
+            unmarshaller = jaxbContext.createUnmarshaller();
+        } catch (JAXBException e) {
+            System.out.println("Error initializing jaxbcontext: " + e.getMessage());
+        }
+    }
 
     /**
      * default generator method that has no parameters
@@ -216,8 +280,10 @@ public class SwidTagGateway {
         } catch (Exception e) {
             System.out.println(e.getMessage());
         }
-        JAXBElement<SoftwareIdentity> jaxbe = objectFactory.createSoftwareIdentity(swidTag);
-        writeSwidTagFile(jaxbe, outputFile);
+
+        Document signedSoftwareIdentity = signXMLDocument(objectFactory.createSoftwareIdentity(swidTag));
+        System.out.println("Signature core validity: " + validateSignedXMLDocument(signedSoftwareIdentity));
+        writeSwidTagFile(signedSoftwareIdentity);
     }
 
    /**
@@ -256,6 +322,28 @@ public class SwidTagGateway {
             e.printStackTrace();
         } 
     }
+
+    /**
+     * This method writes a Document object out to the file specified by generatedFile.
+     *
+     * @param swidTag
+     */
+    public void writeSwidTagFile(Document swidTag) {
+        try {
+            OutputStream outStream = new FileOutputStream(generatedFile);
+            TransformerFactory tf = TransformerFactory.newInstance();
+            Transformer transformer = tf.newTransformer();
+            transformer.setOutputProperty(OutputKeys.INDENT, "yes");
+            transformer.setOutputProperty("{http://xml.apache.org/xslt}indent-amount", "2");
+            transformer.transform(new DOMSource(swidTag), new StreamResult(outStream));
+        } catch (FileNotFoundException e) {
+            System.out.println("Unable to write to file: " + e.getMessage());
+        } catch (TransformerConfigurationException e) {
+            System.out.println("Error instantiating TransformerFactory class: " + e.getMessage());
+        } catch (TransformerException e) {
+            System.out.println("Error instantiating Transformer class: " + e.getMessage());
+        }
+    }
     
     /**
      * Given an input swidtag at [path] parse any PCRs in the payload into an InputStream object.
@@ -275,7 +363,7 @@ public class SwidTagGateway {
 				try {
 					JAXBElement element = (JAXBElement) obj;
 					String elementName = element.getName().getLocalPart();
-					if (elementName.equals(PAYLOAD)) {
+					if (elementName.equals(SwidTagConstants.PAYLOAD)) {
 						ResourceCollection rc = (ResourceCollection) element.getValue();
 						if (!rc.getDirectoryOrFileOrProcess().isEmpty()) {
 							pcrs = parsePCRs(rc.getDirectoryOrFileOrProcess());
@@ -299,9 +387,19 @@ public class SwidTagGateway {
      */
     private SoftwareIdentity createSwidTag(JsonObject jsonObject) {
         SoftwareIdentity swidTag = objectFactory.createSoftwareIdentity();
-        swidTag.setName(jsonObject.getString(SwidTagConstants.NAME, ""));
-        swidTag.setTagId(jsonObject.getString(SwidTagConstants.TAGID, ""));
-        swidTag.setVersion(jsonObject.getString(SwidTagConstants.VERSION, ""));
+        String name = jsonObject.getString(SwidTagConstants.NAME, "");
+        if (!name.isEmpty()) {
+            swidTag.setName(name);
+        }
+        String tagId = jsonObject.getString(SwidTagConstants.TAGID, "");
+        if (!tagId.isEmpty()) {
+            swidTag.setTagId(tagId);
+        }
+        swidTag.setTagVersion(new BigInteger(jsonObject.getString(SwidTagConstants.TAGVERSION, "0")));
+        String version = jsonObject.getString(SwidTagConstants.VERSION, "");
+        if (!version.isEmpty()) {
+            swidTag.setVersion(version);
+        }
         swidTag.setCorpus(jsonObject.getBoolean(SwidTagConstants.CORPUS, false));
         swidTag.setPatch(jsonObject.getBoolean(SwidTagConstants.PATCH, false));
         swidTag.setSupplemental(jsonObject.getBoolean(SwidTagConstants.SUPPLEMENTAL, false));
@@ -318,14 +416,22 @@ public class SwidTagGateway {
      */
     private Entity createEntity(JsonObject jsonObject) {
         Entity entity = objectFactory.createEntity();
-        entity.setName(jsonObject.getString(SwidTagConstants.NAME, ""));
-        entity.setRegid(jsonObject.getString(SwidTagConstants.REGID, ""));
+        String name = jsonObject.getString(SwidTagConstants.NAME, "");
+        if (!name.isEmpty()) {
+            entity.setName(name);
+        }
+        String regId = jsonObject.getString(SwidTagConstants.REGID, "");
+        if (!regId.isEmpty()) {
+            entity.setRegid(regId);
+        }
         String[] roles = jsonObject.getString(SwidTagConstants.ROLE, "").split(",");
         for (int i = 0; i < roles.length; i++) {
             entity.getRole().add(roles[i]);
         }
-        entity.setThumbprint(jsonObject.getString(SwidTagConstants.THUMBPRINT, ""));
-
+        String thumbprint = jsonObject.getString(SwidTagConstants.THUMBPRINT, "");
+        if (!thumbprint.isEmpty()) {
+            entity.setThumbprint(thumbprint);
+        }
         return entity;
     }
 
@@ -337,8 +443,14 @@ public class SwidTagGateway {
      */
     private Link createLink(JsonObject jsonObject) {
         Link link = objectFactory.createLink();
-        link.setHref(jsonObject.getString(SwidTagConstants.HREF, ""));
-        link.setRel(jsonObject.getString(SwidTagConstants.REL, ""));
+        String href = jsonObject.getString(SwidTagConstants.HREF, "");
+        if (!href.isEmpty()) {
+            link.setHref(href);
+        }
+        String rel = jsonObject.getString(SwidTagConstants.REL, "");
+        if (!rel.isEmpty()) {
+            link.setRel(rel);
+        }
 
         return link;
     }
@@ -352,24 +464,24 @@ public class SwidTagGateway {
     private SoftwareMeta createSoftwareMeta(JsonObject jsonObject) {
         SoftwareMeta softwareMeta = objectFactory.createSoftwareMeta();
         Map<QName, String> attributes = softwareMeta.getOtherAttributes();
-        attributes.put(SwidTagConstants._COLLOQUIAL_VERSION, jsonObject.getString(SwidTagConstants.COLLOQUIAL_VERSION, ""));
-        attributes.put(SwidTagConstants._EDITION, jsonObject.getString(SwidTagConstants.EDITION, ""));
-        attributes.put(SwidTagConstants._PRODUCT, jsonObject.getString(SwidTagConstants.PRODUCT, ""));
-        attributes.put(SwidTagConstants._REVISION, jsonObject.getString(SwidTagConstants.REVISION, ""));
-        attributes.put(SwidTagConstants._PAYLOAD_TYPE, jsonObject.getString(SwidTagConstants.PAYLOAD_TYPE, ""));
-        attributes.put(SwidTagConstants._PLATFORM_MANUFACTURER_STR, jsonObject.getString(SwidTagConstants.PLATFORM_MANUFACTURER_STR, ""));
-        attributes.put(SwidTagConstants._PLATFORM_MANUFACTURER_ID, jsonObject.getString(SwidTagConstants.PLATFORM_MANUFACTURER_ID, ""));
-        attributes.put(SwidTagConstants._PLATFORM_MODEL, jsonObject.getString(SwidTagConstants.PLATFORM_MODEL, ""));
-        attributes.put(SwidTagConstants._PLATFORM_VERSION, jsonObject.getString(SwidTagConstants.PLATFORM_VERSION, ""));
-        attributes.put(SwidTagConstants._FIRMWARE_MANUFACTURER_STR, jsonObject.getString(SwidTagConstants.FIRMWARE_MANUFACTURER_STR, ""));
-        attributes.put(SwidTagConstants._FIRMWARE_MANUFACTURER_ID, jsonObject.getString(SwidTagConstants.FIRMWARE_MANUFACTURER_ID, ""));
-        attributes.put(SwidTagConstants._FIRMWARE_MODEL, jsonObject.getString(SwidTagConstants.FIRMWARE_MODEL, ""));
-        attributes.put(SwidTagConstants._FIRMWARE_VERSION, jsonObject.getString(SwidTagConstants.FIRMWARE_VERSION, ""));
-        attributes.put(SwidTagConstants._BINDING_SPEC, jsonObject.getString(SwidTagConstants.BINDING_SPEC, ""));
-        attributes.put(SwidTagConstants._BINDING_SPEC_VERSION, jsonObject.getString(SwidTagConstants.BINDING_SPEC_VERSION, ""));
-        attributes.put(SwidTagConstants._PC_URI_LOCAL, jsonObject.getString(SwidTagConstants.PC_URI_LOCAL, ""));
-        attributes.put(SwidTagConstants._PC_URI_GLOBAL, jsonObject.getString(SwidTagConstants.PC_URI_GLOBAL, ""));
-        attributes.put(SwidTagConstants._RIM_LINK_HASH, jsonObject.getString(SwidTagConstants.RIM_LINK_HASH, ""));
+        addNonNullAttribute(attributes, SwidTagConstants._COLLOQUIAL_VERSION, jsonObject.getString(SwidTagConstants.COLLOQUIAL_VERSION, ""));
+        addNonNullAttribute(attributes, SwidTagConstants._EDITION, jsonObject.getString(SwidTagConstants.EDITION, ""));
+        addNonNullAttribute(attributes, SwidTagConstants._PRODUCT, jsonObject.getString(SwidTagConstants.PRODUCT, ""));
+        addNonNullAttribute(attributes, SwidTagConstants._REVISION, jsonObject.getString(SwidTagConstants.REVISION, ""));
+        addNonNullAttribute(attributes, SwidTagConstants._PAYLOAD_TYPE, jsonObject.getString(SwidTagConstants.PAYLOAD_TYPE, ""));
+        addNonNullAttribute(attributes, SwidTagConstants._PLATFORM_MANUFACTURER_STR, jsonObject.getString(SwidTagConstants.PLATFORM_MANUFACTURER_STR, ""));
+        addNonNullAttribute(attributes, SwidTagConstants._PLATFORM_MANUFACTURER_ID, jsonObject.getString(SwidTagConstants.PLATFORM_MANUFACTURER_ID, ""));
+        addNonNullAttribute(attributes, SwidTagConstants._PLATFORM_MODEL, jsonObject.getString(SwidTagConstants.PLATFORM_MODEL, ""));
+        addNonNullAttribute(attributes, SwidTagConstants._PLATFORM_VERSION, jsonObject.getString(SwidTagConstants.PLATFORM_VERSION, ""));
+        addNonNullAttribute(attributes, SwidTagConstants._FIRMWARE_MANUFACTURER_STR, jsonObject.getString(SwidTagConstants.FIRMWARE_MANUFACTURER_STR, ""));
+        addNonNullAttribute(attributes, SwidTagConstants._FIRMWARE_MANUFACTURER_ID, jsonObject.getString(SwidTagConstants.FIRMWARE_MANUFACTURER_ID, ""));
+        addNonNullAttribute(attributes, SwidTagConstants._FIRMWARE_MODEL, jsonObject.getString(SwidTagConstants.FIRMWARE_MODEL, ""));
+        addNonNullAttribute(attributes, SwidTagConstants._FIRMWARE_VERSION, jsonObject.getString(SwidTagConstants.FIRMWARE_VERSION, ""));
+        addNonNullAttribute(attributes, SwidTagConstants._BINDING_SPEC, jsonObject.getString(SwidTagConstants.BINDING_SPEC, ""));
+        addNonNullAttribute(attributes, SwidTagConstants._BINDING_SPEC_VERSION, jsonObject.getString(SwidTagConstants.BINDING_SPEC_VERSION, ""));
+        addNonNullAttribute(attributes, SwidTagConstants._PC_URI_LOCAL, jsonObject.getString(SwidTagConstants.PC_URI_LOCAL, ""));
+        addNonNullAttribute(attributes, SwidTagConstants._PC_URI_GLOBAL, jsonObject.getString(SwidTagConstants.PC_URI_GLOBAL, ""));
+        addNonNullAttribute(attributes, SwidTagConstants._RIM_LINK_HASH, jsonObject.getString(SwidTagConstants.RIM_LINK_HASH, ""));
 
         return softwareMeta;
     }
@@ -382,10 +494,10 @@ public class SwidTagGateway {
      */
     private ResourceCollection createPayload(JsonObject jsonObject) {
         ResourceCollection payload = objectFactory.createResourceCollection();
-
-        //payload.getOtherAttributes().put(SwidTagConstants._N8060_ENVVARPREFIX, jsonObject.getString(SwidTagConstants.PAYLOAD_ENVVARPREFIX));
-        //payload.getOtherAttributes().put(SwidTagConstants._N8060_ENVVARSUFFIX, jsonObject.getString(SwidTagConstants.PAYLOAD_ENVVARSUFFIX));
-        //payload.getOtherAttributes().put(SwidTagConstants._N8060_PATHSEPARATOR, jsonObject.getString(SwidTagConstants.PAYLOAD_PATHSEPARATOR));
+        Map<QName, String> attributes = payload.getOtherAttributes();
+        addNonNullAttribute(attributes, SwidTagConstants._N8060_ENVVARPREFIX, jsonObject.getString(SwidTagConstants.PAYLOAD_ENVVARPREFIX, ""));
+        addNonNullAttribute(attributes, SwidTagConstants._N8060_ENVVARSUFFIX, jsonObject.getString(SwidTagConstants.PAYLOAD_ENVVARSUFFIX, ""));
+        addNonNullAttribute(attributes, SwidTagConstants._N8060_PATHSEPARATOR, jsonObject.getString(SwidTagConstants.PAYLOAD_PATHSEPARATOR, ""));
 
         return payload;
     }
@@ -400,10 +512,9 @@ public class SwidTagGateway {
         Directory directory = objectFactory.createDirectory();
         directory.setName(jsonObject.getString(SwidTagConstants.NAME, ""));
         Map<QName, String> attributes = directory.getOtherAttributes();
-        attributes.put(SwidTagConstants._SUPPORT_RIM_TYPE, jsonObject.getString(SwidTagConstants.SUPPORT_RIM_TYPE, ""));
-        attributes.put(SwidTagConstants._SUPPORT_RIM_FORMAT, jsonObject.getString(SwidTagConstants.SUPPORT_RIM_FORMAT, ""));
-        attributes.put(SwidTagConstants._SUPPORT_RIM_URI_GLOBAL, jsonObject.getString(SwidTagConstants.SUPPORT_RIM_URI_GLOBAL, ""));
-//        System.out.println(jsonObject.getString(SwidTagConstants.NAME, ""));
+        addNonNullAttribute(attributes, SwidTagConstants._SUPPORT_RIM_TYPE, jsonObject.getString(SwidTagConstants.SUPPORT_RIM_TYPE, ""));
+        addNonNullAttribute(attributes, SwidTagConstants._SUPPORT_RIM_FORMAT, jsonObject.getString(SwidTagConstants.SUPPORT_RIM_FORMAT, ""));
+        addNonNullAttribute(attributes, SwidTagConstants._SUPPORT_RIM_URI_GLOBAL, jsonObject.getString(SwidTagConstants.SUPPORT_RIM_URI_GLOBAL, ""));
 /*
         directory.setLocation(jsonObject.getString(SwidTagConstants.DIRECTORY_LOCATION));
         String directoryRoot = jsonObject.getString(SwidTagConstants.DIRECTORY_ROOT);
@@ -427,12 +538,18 @@ public class SwidTagGateway {
         file.setName(jsonObject.getString(SwidTagConstants.NAME, ""));
         file.setSize(new BigInteger(jsonObject.getString(SwidTagConstants.SIZE, "")));
         Map<QName, String> attributes = file.getOtherAttributes();
-        attributes.put(_SHA256_HASH, jsonObject.getString(SwidTagConstants.HASH, ""));
-        attributes.put(SwidTagConstants._SUPPORT_RIM_TYPE, jsonObject.getString(SwidTagConstants.SUPPORT_RIM_TYPE, ""));
-        attributes.put(SwidTagConstants._SUPPORT_RIM_FORMAT, jsonObject.getString(SwidTagConstants.SUPPORT_RIM_FORMAT, ""));
-        attributes.put(SwidTagConstants._SUPPORT_RIM_URI_GLOBAL, jsonObject.getString(SwidTagConstants.SUPPORT_RIM_URI_GLOBAL, ""));
+        addNonNullAttribute(attributes, _SHA256_HASH, jsonObject.getString(SwidTagConstants.HASH, ""));
+        addNonNullAttribute(attributes, SwidTagConstants._SUPPORT_RIM_TYPE, jsonObject.getString(SwidTagConstants.SUPPORT_RIM_TYPE, ""));
+        addNonNullAttribute(attributes, SwidTagConstants._SUPPORT_RIM_FORMAT, jsonObject.getString(SwidTagConstants.SUPPORT_RIM_FORMAT, ""));
+        addNonNullAttribute(attributes, SwidTagConstants._SUPPORT_RIM_URI_GLOBAL, jsonObject.getString(SwidTagConstants.SUPPORT_RIM_URI_GLOBAL, ""));
 
         return file;
+    }
+
+    private void addNonNullAttribute(Map<QName, String> attributes, QName key, String value) {
+        if (!value.isEmpty()) {
+            attributes.put(key, value);
+        }
     }
 
     /**
@@ -462,45 +579,130 @@ public class SwidTagGateway {
     }
 
     /**
-     * This method creates an xml signature based on the xmldsig schema.
-     * This method is incomplete and not yet implemented.
-     *
-     * @return the Signature object created
+     * This method signs a SoftwareIdentity with an xmldsig in compatibility mode.
+     * Current assumptions: digest method SHA256, signature method SHA256, enveloped signature
      */
-    private SignatureType createSignature() {
-        SignatureType signature = objectFactory.createSignatureType();
-        SignedInfoType signedInfo = objectFactory.createSignedInfoType();
+    private Document signXMLDocument(JAXBElement<SoftwareIdentity> swidTag) {
+        Document doc = null;
+        try {
+            XMLSignatureFactory sigFactory = XMLSignatureFactory.getInstance("DOM");
+            Reference reference = sigFactory.newReference(
+                    "",
+                    sigFactory.newDigestMethod(DigestMethod.SHA256, null),
+                    Collections.singletonList(sigFactory.newTransform(Transform.ENVELOPED, (TransformParameterSpec) null)),
+                    null,
+                    null
+            );
+            SignedInfo signedInfo = sigFactory.newSignedInfo(
+                    sigFactory.newCanonicalizationMethod(CanonicalizationMethod.INCLUSIVE, (C14NMethodParameterSpec) null),
+                    sigFactory.newSignatureMethod(SwidTagConstants.SIGNATURE_ALGORITHM_RSA_SHA256, null),
+                    Collections.singletonList(reference)
+            );
+            KeyStore keystore = KeyStore.getInstance("JKS");
+            keystore.load(new FileInputStream(SwidTagConstants.KEYSTORE_PATH), SwidTagConstants.KEYSTORE_PASSWORD.toCharArray());
+            KeyStore.PrivateKeyEntry privateKey = (KeyStore.PrivateKeyEntry) keystore.getEntry(SwidTagConstants.PRIVATE_KEY_ALIAS,
+                    new KeyStore.PasswordProtection(SwidTagConstants.KEYSTORE_PASSWORD.toCharArray()));
+            X509Certificate certificate = (X509Certificate) privateKey.getCertificate();
+            KeyInfoFactory kiFactory = sigFactory.getKeyInfoFactory();
+            ArrayList<Object> x509Content = new ArrayList<Object>();
+            x509Content.add(certificate.getSubjectX500Principal().getName());
+            x509Content.add(certificate);
+            X509Data data = kiFactory.newX509Data(x509Content);
+            KeyInfo keyinfo = kiFactory.newKeyInfo(Collections.singletonList(data));
 
-        CanonicalizationMethodType canonicalizationMethod = objectFactory.createCanonicalizationMethodType();
-        canonicalizationMethod.setAlgorithm("http://www.w3.org/TR/2001/REC-xml-c14n-20010315");
+            doc = DocumentBuilderFactory.newInstance().newDocumentBuilder().newDocument();
+            marshaller.marshal(swidTag, doc);
+            DOMSignContext context = new DOMSignContext(privateKey.getPrivateKey(), doc.getDocumentElement());
+            XMLSignature signature = sigFactory.newXMLSignature(signedInfo, keyinfo);
+            signature.sign(context);
+        } catch (FileNotFoundException e) {
+            System.out.println("Keystore not found! " + e.getMessage());
+        } catch (IOException e) {
+            System.out.println("Error loading keystore: " + e.getMessage());
+        } catch (NoSuchAlgorithmException | KeyStoreException | InvalidAlgorithmParameterException |
+                        ParserConfigurationException | UnrecoverableEntryException e) {
+            System.out.println(e.getMessage());
+        } catch (CertificateException e) {
+            System.out.println("Certificate error: " + e.getMessage());
+        } catch (JAXBException e) {
+            System.out.println("Error marshaling signed swidtag: " + e.getMessage());
+        } catch (MarshalException | XMLSignatureException e) {
+            System.out.println("Error while signing SoftwareIdentity: " + e.getMessage());
+        }
 
-        SignatureMethodType signatureMethod = objectFactory.createSignatureMethodType();
-        signatureMethod.setAlgorithm("http://www.w3.org/2000/09/xmldsig#rsa-sha512");
+        return doc;
+    }
 
-        ReferenceType reference = objectFactory.createReferenceType();
-        TransformsType transforms = objectFactory.createTransformsType();
+    /**
+     * This method validates a Document with a signature element.
+     *
+     * @param doc
+     */
+    private boolean validateSignedXMLDocument(Document doc) {
+        boolean isValid = false;
+        try {
+            NodeList nodes = doc.getElementsByTagNameNS(XMLSignature.XMLNS, "Signature");
+            if (nodes.getLength() == 0) {
+                throw new Exception("Signature element not found!");
+            }
+            DOMValidateContext context = new DOMValidateContext(new X509KeySelector(), nodes.item(0));
+            XMLSignatureFactory sigFactory = XMLSignatureFactory.getInstance("DOM");
+            XMLSignature signature = sigFactory.unmarshalXMLSignature(context);
+            isValid = signature.validate(context);
+        } catch (MarshalException | XMLSignatureException e) {
+            System.out.println(e.getMessage());
+        } catch (Exception e) {
+            System.out.println(e.getMessage());
+        }
 
-        TransformType transform = objectFactory.createTransformType();
-        transform.setAlgorithm("http://www.w3.org/2000/09/xmldsig#enveloped-signature");
-        transforms.getTransform().add(transform);
+        return isValid;
+    }
 
-        DigestMethodType digestMethod = objectFactory.createDigestMethodType();
-        digestMethod.setAlgorithm("http://www.w3.org/2000/09/xmldsig#sha256");
+    public class X509KeySelector extends KeySelector {
+        public KeySelectorResult select(KeyInfo keyinfo,
+                                            KeySelector.Purpose purpose,
+                                            AlgorithmMethod algorithm,
+                                            XMLCryptoContext context) throws KeySelectorException {
+            Iterator keyinfoItr = keyinfo.getContent().iterator();
+            while(keyinfoItr.hasNext()) {
+                XMLStructure element = (XMLStructure) keyinfoItr.next();
+                if (element instanceof X509Data) {
+                    X509Data data = (X509Data) element;
+                    Iterator dataItr = data.getContent().iterator();
+                    while (dataItr.hasNext()) {
+                        Object object = dataItr.next();
+                        if (object instanceof X509Certificate) {
+                            final PublicKey publicKey = ((X509Certificate) object).getPublicKey();
+                            if (areAlgorithmsEqual(algorithm.getAlgorithm(), publicKey.getAlgorithm())) {
+                                return new RIMKeySelectorResult(publicKey);
+                            }
+                        }
+                    }
+                }
+            }
 
-        reference.setTransforms(transforms);
-        reference.setDigestMethod(digestMethod);
-        reference.setDigestValue(new byte[10]);
+            throw new KeySelectorException("No key found!");
+        }
 
-        signedInfo.setCanonicalizationMethod(canonicalizationMethod);
-        signedInfo.setSignatureMethod(signatureMethod);
-        signedInfo.getReference().add(reference);
+        public boolean areAlgorithmsEqual(String uri, String name) {
+            if (uri.equals(SwidTagConstants.SIGNATURE_ALGORITHM_RSA_SHA256) && name.equalsIgnoreCase("RSA")) {
+                return true;
+            } else {
+                return false;
+            }
+        }
 
-        SignatureValueType signatureValue = objectFactory.createSignatureValueType();
-        signatureValue.setValue(new byte[10]);
+        private class RIMKeySelectorResult implements KeySelectorResult {
+            private Key key;
 
-        signature.setSignedInfo(signedInfo);
+            public RIMKeySelectorResult(Key key) {
+                this.key = key;
+            }
 
-        return signature;
+            public Key getKey() {
+                return key;
+            }
+        }
     }
 
     /**
@@ -554,8 +756,6 @@ public class SwidTagGateway {
     		is = SwidTagGateway.class.getClassLoader().getResourceAsStream(SwidTagConstants.SCHEMA_URL);
     		SchemaFactory schemaFactory = SchemaFactory.newInstance(SwidTagConstants.SCHEMA_LANGUAGE);
     		Schema schema = schemaFactory.newSchema(new StreamSource(is));
-    		JAXBContext jaxbContext = JAXBContext.newInstance(SwidTagConstants.SCHEMA_PACKAGE);
-    		Unmarshaller unmarshaller = jaxbContext.createUnmarshaller();
     		unmarshaller.setSchema(schema);
     		jaxbe = (JAXBElement) unmarshaller.unmarshal(input);
     	} catch (SAXException e) {
