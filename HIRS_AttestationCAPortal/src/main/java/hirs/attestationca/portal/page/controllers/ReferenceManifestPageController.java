@@ -5,15 +5,16 @@ import hirs.attestationca.portal.datatables.DataTableInput;
 import hirs.attestationca.portal.datatables.DataTableResponse;
 import hirs.attestationca.portal.page.Page;
 import hirs.attestationca.portal.page.PageController;
-import hirs.attestationca.portal.page.params.ReferenceManifestPageParams;
 
 import hirs.FilteredRecordsList;
+import hirs.attestationca.portal.datatables.OrderedListQueryDataTableAdapter;
 import hirs.attestationca.portal.page.PageMessages;
-import hirs.data.persist.certificate.Certificate;
-import hirs.persist.CertificateManager;
+import hirs.attestationca.portal.page.params.NoPageParams;
 import hirs.persist.DBManagerException;
 import hirs.persist.ReferenceManifestManager;
+import hirs.persist.CriteriaModifier;
 import hirs.data.persist.ReferenceManifest;
+import hirs.data.persist.certificate.Certificate;
 import java.io.IOException;
 import java.net.URISyntaxException;
 
@@ -22,12 +23,14 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.UUID;
+import javax.servlet.http.HttpServletResponse;
 
-import hirs.utils.SwidTagGateway;
-import hirs.utils.xjc.SoftwareIdentity;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import org.hibernate.Criteria;
+import org.hibernate.criterion.Restrictions;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Controller;
@@ -48,7 +51,7 @@ import org.springframework.web.servlet.view.RedirectView;
 @Controller
 @RequestMapping("/reference-manifests")
 public class ReferenceManifestPageController
-extends PageController<ReferenceManifestPageParams> {
+extends PageController<NoPageParams> {
 
     private static final String BIOS_RELEASE_DATE_FORMAT = "yyyy-MM-dd";
 
@@ -117,7 +120,7 @@ extends PageController<ReferenceManifestPageParams> {
      * @return the path for the view and data model for the page.
      */
     @Override
-    public ModelAndView initPage(final ReferenceManifestPageParams params,
+    public ModelAndView initPage(final NoPageParams params,
             final Model model) {
         return getBaseModelAndView();
     }
@@ -135,14 +138,26 @@ extends PageController<ReferenceManifestPageParams> {
             method = RequestMethod.GET)
     public DataTableResponse<ReferenceManifest> getTableData(
             final DataTableInput input) {
-        LOGGER.error("Made it into the list method for RIM");
         LOGGER.debug("Handling request for summary list: " + input);
 
         String orderColumnName = input.getOrderColumnName();
         LOGGER.debug("Ordering on column: " + orderColumnName);
 
+        // check that the alert is not archived and that it is in the specified report
+        CriteriaModifier criteriaModifier = new CriteriaModifier() {
+            @Override
+            public void modify(final Criteria criteria) {
+                criteria.add(Restrictions.isNull(Certificate.ARCHIVE_FIELD));
+
+            }
+        };
         FilteredRecordsList<ReferenceManifest> records
-                = new FilteredRecordsList<>();
+                = OrderedListQueryDataTableAdapter.getOrderedList(
+                        ReferenceManifest.class,
+                        referenceManifestManager,
+                        input, orderColumnName, criteriaModifier);
+
+
         LOGGER.debug("Returning list of size: " + records.size());
         return new DataTableResponse<>(records, input);
     }
@@ -181,7 +196,114 @@ extends PageController<ReferenceManifestPageParams> {
         model.put(MESSAGES_ATTRIBUTE, messages);
 
         return redirectTo(Page.REFERENCE_MANIFESTS,
-                new ReferenceManifestPageParams(), model, attr);
+                new NoPageParams(), model, attr);
+    }
+
+    /**
+     * Archives (soft delete) the Reference Integrity Manifest entry.
+     *
+     * @param id the UUID of the rim to delete
+     * @param attr RedirectAttributes used to forward data back to the original
+     * page.
+     * @return redirect to this page
+     * @throws URISyntaxException if malformed URI
+     */
+    @RequestMapping(value = "/delete", method = RequestMethod.POST)
+    public RedirectView delete(@RequestParam final String id,
+            final RedirectAttributes attr) throws URISyntaxException {
+        LOGGER.info("Handling request to delete " + id);
+
+        Map<String, Object> model = new HashMap<>();
+        PageMessages messages = new PageMessages();
+
+        try {
+            ReferenceManifest referenceManifest = getRimFromDb(id);
+
+            if (referenceManifest == null) {
+                String notFoundMessage = "Unable to locate RIM with ID: " + id;
+                messages.addError(notFoundMessage);
+                LOGGER.warn(notFoundMessage);
+            } else {
+                referenceManifest.archive();
+                referenceManifestManager.update(referenceManifest);
+
+                String deleteCompletedMessage = "RIM successfully deleted";
+                messages.addInfo(deleteCompletedMessage);
+                LOGGER.info(deleteCompletedMessage);
+            }
+        } catch (IllegalArgumentException ex) {
+            String uuidError = "Failed to parse ID from: " + id;
+            messages.addError(uuidError);
+            LOGGER.error(uuidError, ex);
+        } catch (DBManagerException ex) {
+            String dbError = "Failed to archive cert: " + id;
+            messages.addError(dbError);
+            LOGGER.error(dbError, ex);
+        }
+
+        model.put(MESSAGES_ATTRIBUTE, messages);
+        return redirectTo(Page.REFERENCE_MANIFESTS, new NoPageParams(), model, attr);
+    }
+
+    /**
+     * Handles request to download the rim by writing it to the response stream
+     * for download.
+     *
+     * @param id the UUID of the rim to download
+     * @param response the response object (needed to update the header with the
+     * file name)
+     * @throws java.io.IOException when writing to response output stream
+     */
+    @RequestMapping(value = "/download", method = RequestMethod.GET)
+    public void download(@RequestParam final String id,
+            final HttpServletResponse response)
+            throws IOException {
+        LOGGER.info("Handling RIM request to download " + id);
+
+        try {
+            ReferenceManifest referenceManifest = getRimFromDb(id);
+
+            if (referenceManifest == null) {
+                String notFoundMessage = "Unable to locate RIM with ID: " + id;
+                LOGGER.warn(notFoundMessage);
+                // send a 404 error when invalid Reference Manifest
+                response.sendError(HttpServletResponse.SC_NOT_FOUND);
+            } else {
+                StringBuilder fileName = new StringBuilder("filename=\"");
+                fileName.append(referenceManifest.getPlatformManufacturer());
+                fileName.append("_[");
+                fileName.append(referenceManifest.getRimHash());
+                fileName.append("]");
+                fileName.append(".swidTag\"");
+
+                // Set filename for download.
+                response.setHeader("Content-Disposition", "attachment;" + fileName);
+                response.setContentType("application/octet-stream");
+
+                // write cert to output stream
+                response.getOutputStream().write(referenceManifest.getRimBytes());
+            }
+        } catch (IllegalArgumentException ex) {
+            String uuidError = "Failed to parse ID from: " + id;
+            LOGGER.error(uuidError, ex);
+            // send a 404 error when invalid certificate
+            response.sendError(HttpServletResponse.SC_NOT_FOUND);
+        }
+    }
+
+    /**
+     *
+     *
+     * @param id of the RIM
+     * @return the associated RIM from the DB
+     * @throws IllegalArgumentException
+     */
+    private ReferenceManifest getRimFromDb(final String id) throws IllegalArgumentException {
+            UUID uuid = UUID.fromString(id);
+
+            return ReferenceManifest
+                    .select(referenceManifestManager)
+                    .byEntityId(uuid).getRIM();
     }
 
     private ReferenceManifest parseRIMs(
@@ -204,7 +326,8 @@ extends PageController<ReferenceManifestPageParams> {
 
         try {
             return new ReferenceManifest(fileBytes);
-            // the this is a List<Object> is object is a JaxBElement that can be matched up to the QName
+            // the this is a List<Object> is object is a JaxBElement that can
+            // be matched up to the QName
         } catch (IOException ioEx) {
             final String failMessage
                     = String.format("Failed to parse uploaded file (%s): ", fileName);
@@ -230,7 +353,8 @@ extends PageController<ReferenceManifestPageParams> {
                     .byHashCode(referenceManifest.getRimHash())
                     .getRIM();
         } catch (DBManagerException e) {
-            final String failMessage = String.format("Querying for existing certificate failed (%s): ", fileName);
+            final String failMessage = String.format("Querying for existing certificate "
+                    + "failed (%s): ", fileName);
             messages.addError(failMessage + e.getMessage());
             LOGGER.error(failMessage, e);
             return;
@@ -241,7 +365,8 @@ extends PageController<ReferenceManifestPageParams> {
             if (existingManifest == null) {
                 referenceManifestManager.save(referenceManifest);
 
-                final String successMsg = String.format("New RIM successfully uploaded (%s): ", fileName);
+                final String successMsg = String.format("New RIM successfully uploaded (%s): ",
+                        fileName);
                 messages.addSuccess(successMsg);
                 LOGGER.info(successMsg);
                 return;
@@ -265,14 +390,12 @@ extends PageController<ReferenceManifestPageParams> {
                         = String.format("Pre-existing RIM found and unarchived (%s): ", fileName);
                 messages.addSuccess(successMsg);
                 LOGGER.info(successMsg);
-                return;
             }
         } catch (DBManagerException dbmEx) {
             final String failMessage = String.format("Found an identical pre-existing RIM in the "
                     + "archive, but failed to unarchive it (%s): ", fileName);
             messages.addError(failMessage + dbmEx.getMessage());
             LOGGER.error(failMessage, dbmEx);
-            return;
         }
     }
 }

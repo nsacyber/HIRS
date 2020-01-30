@@ -1,7 +1,6 @@
 package hirs.persist;
 
 import com.google.common.base.Preconditions;
-import hirs.data.persist.ReferenceManifest;
 import hirs.data.persist.certificate.Certificate;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -17,20 +16,40 @@ import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 
+/**
+ * This class is used to select one or many RIMs in conjunction
+ * with a {@link ReferenceManifestManager}.  To make use of this object,
+ * use (some ReferenceManifest).select(ReferenceManifestManager).
+ *
+ * @param <ReferenceManifest> the type of referenceManifest that will be retrieved
+ */
 public abstract class ReferenceManifestSelector<ReferenceManifest> {
+
     private final ReferenceManifestManager referenceManifestManager;
 
     private final Map<String, Object> fieldValueSelections;
     private boolean excludeArchivedRims;
 
+    /**
+     * Default Constructor.
+     *
+     * @param referenceManifestManager the RIM manager to be used to retrieve RIMs
+     */
     public ReferenceManifestSelector(final ReferenceManifestManager referenceManifestManager) {
         this(referenceManifestManager, true);
     }
 
-    public ReferenceManifestSelector(final ReferenceManifestManager referenceManifestManager, final boolean excludeArchivedRims) {
+    /**
+     * Standard Constructor for the Selector.
+     *
+     * @param referenceManifestManager the RIM manager to be used to retrieve RIMs
+     * @param excludeArchivedRims true if excluding archived RIMs
+     */
+    public ReferenceManifestSelector(final ReferenceManifestManager referenceManifestManager,
+            final boolean excludeArchivedRims) {
         Preconditions.checkArgument(
                 referenceManifestManager != null,
-                "certificate manager cannot be null"
+                "reference manifest manager cannot be null"
         );
 
         this.referenceManifestManager = referenceManifestManager;
@@ -39,8 +58,7 @@ public abstract class ReferenceManifestSelector<ReferenceManifest> {
     }
 
     /**
-     * Specify the entity id that rims must have to be considered
-     * as matching.
+     * Specify the entity id that rims must have to be considered as matching.
      *
      * @param uuid the UUID to query
      * @return this instance (for chaining further calls)
@@ -57,7 +75,7 @@ public abstract class ReferenceManifestSelector<ReferenceManifest> {
      * @return this instance (for chaining further calls)
      */
     public ReferenceManifestSelector byHashCode(final int rimHash) {
-        setFieldValue(Certificate.CERTIFICATE_HASH_FIELD, rimHash);
+        setFieldValue(hirs.data.persist.ReferenceManifest.RIM_HASH_FIELD, rimHash);
         return this;
     }
 
@@ -97,27 +115,28 @@ public abstract class ReferenceManifestSelector<ReferenceManifest> {
     }
 
     /**
-     * Retrieve the result set as a single {@link hirs.data.persist.ReferenceManifest}.
-     * This method is best used when selecting on a unique attribute.
-     * If the result set contains more than one RIM, one is chosen
-     * arbitrarily and returned.  If no matching RIMs are found,
-     * this method returns null.
+     * Retrieve the result set as a single
+     * {@link hirs.data.persist.ReferenceManifest}. This method is best used
+     * when selecting on a unique attribute. If the result set contains more
+     * than one RIM, one is chosen arbitrarily and returned. If no matching RIMs
+     * are found, this method returns null.
      *
      * @return a matching RIM or null if none is found
      */
     public hirs.data.persist.ReferenceManifest getRIM() {
         Set<hirs.data.persist.ReferenceManifest> certs = execute();
-        if (certs.size() == 0) {
+        if (certs.isEmpty()) {
             return null;
         }
         return certs.iterator().next();
     }
 
     /**
-     * Retrieve the result set as a set of {@link hirs.data.persist.ReferenceManifest}s.
-     * This method is best used when selecting on non-unique attributes.
-     * ReferenceManifests are populated into the set in no specific order.
-     * If no matching certificates are found, the returned Set will be empty.
+     * Retrieve the result set as a set of
+     * {@link hirs.data.persist.ReferenceManifest}s. This method is best used
+     * when selecting on non-unique attributes. ReferenceManifests are populated
+     * into the set in no specific order. If no matching certificates are found,
+     * the returned Set will be empty.
      *
      * @return a Set of matching RIMs, possibly empty
      */
@@ -126,11 +145,11 @@ public abstract class ReferenceManifestSelector<ReferenceManifest> {
     }
 
     /**
-     * Construct the criterion that can be used to query for rims matching the configuration
-     * of this {@link ReferenceManifestSelector}.
+     * Construct the criterion that can be used to query for rims matching the
+     * configuration of this {@link ReferenceManifestSelector}.
      *
-     * @return a Criterion that can be used to query for rims matching the configuration of
-     *         this instance
+     * @return a Criterion that can be used to query for rims matching the
+     * configuration of this instance
      */
     Criterion getCriterion() {
         Conjunction conj = new Conjunction();
@@ -161,9 +180,10 @@ public abstract class ReferenceManifestSelector<ReferenceManifest> {
 
     /**
      * Configures the selector to query for archived and unarchived rims.
+     *
      * @return the selector
      */
-    public ReferenceManifestSelector<hirs.data.persist.ReferenceManifest> includeArchived() {
+    public ReferenceManifestSelector<ReferenceManifest> includeArchived() {
         this.excludeArchivedRims = false;
         return this;
     }

@@ -9,7 +9,7 @@ import java.util.Set;
  * This class facilitates the persistence of {@link ReferenceManifest}s
  * including storage, retrieval, and deletion.
  */
-public interface ReferenceManifestManager {
+public interface ReferenceManifestManager extends OrderedListQuerier<ReferenceManifest> {
 
     /**
      * Persists a new Reference Manifest.

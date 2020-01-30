@@ -16,7 +16,6 @@ import org.apache.logging.log4j.Logger;
 import org.xml.sax.SAXException;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.ByteArrayInputStream;
@@ -43,8 +42,6 @@ import hirs.utils.xjc.TransformsType;
 
 import java.nio.charset.StandardCharsets;
 
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.List;
@@ -109,7 +106,7 @@ public class SwidTagGateway {
             "pathSeparator", "n8060");
 
     private final ObjectFactory objectFactory = new ObjectFactory();
-    
+
     private static final String ENTITY = "Entity";
     private static final String PAYLOAD = "Payload";
     private static final Logger LOGGER =
@@ -139,6 +136,8 @@ public class SwidTagGateway {
      * and tagId attributes, otherwise a generic error message is printed.
      *
      * @param fileStream the input stream of the file content to be validated
+     * @throws java.io.IOException
+     * @return a validated swid tag
      */
     public SoftwareIdentity validateSwidTag(InputStream fileStream) throws IOException {
         JAXBElement jaxbe = unmarshallSwidTag(null, fileStream);
@@ -168,9 +167,9 @@ public class SwidTagGateway {
         } catch (JAXBException e) {
             System.out.println("Error generating xml: ");
             e.printStackTrace();
-        } 
+        }
     }
-    
+
     /**
      * Given an input swidtag at [path] parse any PCRs in the payload into an InputStream object.
      * This method will be used in a following pull request.
@@ -437,20 +436,20 @@ public class SwidTagGateway {
      */
     @SuppressWarnings("PMD")
     private JAXBElement unmarshallSwidTag(String path, InputStream stream) throws IOException {
-    	File input = null;
+//    	File input = null;
     	InputStream is = null;
     	JAXBElement jaxbe = null;
         JAXBElement jaxbeFile = null;
     	try {
-    		input = new File(path);
-    		is = SwidTagGateway.class.getClassLoader().getResourceAsStream(SwidTagConstants.SCHEMA_URL);
-    		SchemaFactory schemaFactory = SchemaFactory.newInstance(SwidTagConstants.SCHEMA_LANGUAGE);
-    		Schema schema = schemaFactory.newSchema(new StreamSource(is));
-    		JAXBContext jaxbContext = JAXBContext.newInstance(SwidTagConstants.SCHEMA_PACKAGE);
-    		Unmarshaller unmarshaller = jaxbContext.createUnmarshaller();
-    		unmarshaller.setSchema(schema);
-    		jaxbeFile = (JAXBElement) unmarshaller.unmarshal(input);
-    		jaxbe = (JAXBElement) unmarshaller.unmarshal(stream);
+//            input = new File(path);
+            is = SwidTagGateway.class.getClassLoader().getResourceAsStream(SwidTagConstants.SCHEMA_URL);
+            SchemaFactory schemaFactory = SchemaFactory.newInstance(SwidTagConstants.SCHEMA_LANGUAGE);
+            Schema schema = schemaFactory.newSchema(new StreamSource(is));
+            JAXBContext jaxbContext = JAXBContext.newInstance(SwidTagConstants.SCHEMA_PACKAGE);
+            Unmarshaller unmarshaller = jaxbContext.createUnmarshaller();
+            unmarshaller.setSchema(schema);
+//            jaxbeFile = (JAXBElement) unmarshaller.unmarshal(input);
+            jaxbe = (JAXBElement) unmarshaller.unmarshal(stream);
     	} catch (SAXException e) {
             LOGGER.error("Error setting schema for validation!");
         } catch (UnmarshalException e) {
@@ -465,25 +464,25 @@ public class SwidTagGateway {
         } catch (JAXBException e) {
             e.printStackTrace();
         } finally {
-        	if (is != null) {
-        		try {
-        			is.close();
-        		} catch (IOException e) {
+            if (is != null) {
+                try {
+                    is.close();
+                } catch (IOException e) {
                     LOGGER.error("Error closing input stream");
-        		}
-        	} else {
-        	    LOGGER.error("input stream variable is null");
+                }
+            } else {
+                LOGGER.error("input stream variable is null");
             }
             if (jaxbeFile != null) {
                 return jaxbeFile;
             }
-        	if (jaxbe != null) {
-        	    return jaxbe;
-        	} else {
+            if (jaxbe != null) {
+                return jaxbe;
+            } else {
                 LOGGER.error(String.format("%s -> %s", "TDM", path));
                 LOGGER.error(stream);
-        	    throw new IOException("Invalid swidtag file!");
-        	}
+                throw new IOException("Invalid swidtag file!");
+            }
         }
     }
 

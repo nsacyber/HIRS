@@ -182,7 +182,7 @@ public class CertificateRequestPageController extends PageController<NoPageParam
         CriteriaModifier criteriaModifier = new CriteriaModifier() {
             @Override
             public void modify(final Criteria criteria) {
-                criteria.add(Restrictions.isNull("archivedTime"));
+                criteria.add(Restrictions.isNull(Certificate.ARCHIVE_FIELD));
 
                 // add a device alias if this query includes the device table
                 // for getting the device (e.g. device name).
@@ -321,7 +321,7 @@ public class CertificateRequestPageController extends PageController<NoPageParam
         try {
             UUID uuid = UUID.fromString(id);
             Certificate certificate = getCertificateById(certificateType, uuid, certificateManager);
-            if (null == certificate) {
+            if (certificate == null) {
                 // Use the term "record" here to avoid user confusion b/t cert and cred
                 String notFoundMessage = "Unable to locate record with ID: " + uuid;
                 LOGGER.warn(notFoundMessage);
@@ -741,16 +741,16 @@ public class CertificateRequestPageController extends PageController<NoPageParam
                 existingCertificate.resetCreateTime();
                 certificateManager.update(existingCertificate);
 
-                final String successMsg = String.format("Pre-existing certificate " +
-                        "found and unarchived (%s): "
-                    + fileName + ")");
+                final String successMsg = String.format("Pre-existing certificate "
+                        + "found and unarchived (%s): "
+                        + fileName + ")");
                 messages.addSuccess(successMsg);
                 LOGGER.info(successMsg);
                 return;
             }
         } catch (DBManagerException e) {
-            final String failMessage = String.format("Found an identical" +
-                    " pre-existing certificate in the "
+            final String failMessage = String.format("Found an identical"
+                    + " pre-existing certificate in the "
                     + "archive, but failed to unarchive it (%s): ", fileName);
             messages.addError(failMessage + e.getMessage());
             LOGGER.error(failMessage, e);
@@ -759,8 +759,8 @@ public class CertificateRequestPageController extends PageController<NoPageParam
 
         // if an identical certificate is already unarchived, do nothing and show a fail message
         final String failMessage
-                = String.format("Storing certificate failed: an identical" +
-                " certificate already exists (%s): ", fileName);
+                = String.format("Storing certificate failed: an identical"
+                        + " certificate already exists (%s): ", fileName);
         messages.addError(failMessage);
         LOGGER.error(failMessage);
     }
