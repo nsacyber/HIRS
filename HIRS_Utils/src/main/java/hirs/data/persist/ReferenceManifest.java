@@ -14,17 +14,26 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.common.base.Preconditions;
 import hirs.persist.ReferenceManifestManager;
 import hirs.persist.ReferenceManifestSelector;
-import hirs.utils.SwidTagGateway;
 import hirs.utils.xjc.ResourceCollection;
 import hirs.utils.xjc.SoftwareIdentity;
 import hirs.utils.xjc.SoftwareMeta;
+import java.io.InputStream;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import java.util.Map;
 import javax.persistence.Table;
+import javax.xml.XMLConstants;
+import javax.xml.bind.JAXBContext;
+import javax.xml.bind.JAXBException;
+import javax.xml.bind.UnmarshalException;
+import javax.xml.bind.Unmarshaller;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlRootElement;
+import javax.xml.transform.stream.StreamSource;
+import javax.xml.validation.Schema;
+import javax.xml.validation.SchemaFactory;
+import org.xml.sax.SAXException;
 
 /**
  *
@@ -36,8 +45,26 @@ import javax.xml.bind.annotation.XmlRootElement;
 @Access(AccessType.FIELD)
 public class ReferenceManifest extends ArchivableEntity {
 
-    private static final int MAX_CERT_LENGTH_BYTES = 2048;
+    /**
+     * String for the xml schema ios standard.
+     */
+    public static final String SCHEMA_STATEMENT = "ISO/IEC 19770-2:2015 Schema (XSD 1.0) "
+            + "- September 2015, see http://standards.iso.org/iso/19770/-2/2015/schema.xsd";
+    /**
+     * String for the xml schema URL file name.
+     */
+    public static final String SCHEMA_URL = "swid_schema.xsd";
+    /**
+     * String for the language type for the xml schema.
+     */
+    public static final String SCHEMA_LANGUAGE = XMLConstants.W3C_XML_SCHEMA_NS_URI;
+    /**
+     * String for the package location of the xml generated java files.
+     */
+    public static final String SCHEMA_PACKAGE = "hirs.utils.xjc";
+
     private static final Logger LOGGER = LogManager.getLogger(ReferenceManifest.class);
+    private static final int MAX_CERT_LENGTH_BYTES = 2048;
 
     /**
      * This class enables the retrieval of PlatformCredentials by their
@@ -147,8 +174,7 @@ public class ReferenceManifest extends ArchivableEntity {
 
         this.rimBytes = rimBytes.clone();
 
-        SoftwareIdentity si = (new SwidTagGateway()).validateSwidTag(
-                new ByteArrayInputStream(rimBytes));
+        SoftwareIdentity si = validateSwidTag(new ByteArrayInputStream(rimBytes));
 
         if (si != null) {
             this.tagId = si.getTagId();
@@ -202,6 +228,70 @@ public class ReferenceManifest extends ArchivableEntity {
         }
 
         this.rimHash = Arrays.hashCode(this.rimBytes);
+    }
+
+    private SoftwareIdentity validateSwidTag(final InputStream fileStream) throws IOException {
+        JAXBElement jaxbe = unmarshallSwidTag(fileStream);
+        SoftwareIdentity swidTag = (SoftwareIdentity) jaxbe.getValue();
+
+        LOGGER.error(String.format("SWID Tag found: %nname: %s;%ntagId:  %s%n%s",
+                swidTag.getName(), swidTag.getTagId(), SCHEMA_STATEMENT));
+        return swidTag;
+    }
+
+    /**
+     * This method unmarshalls the swidtag found at [path] and validates it according to the
+     * schema.
+     *
+     * @param path to the input swidtag
+     * @return the SoftwareIdentity element at the root of the swidtag
+     * @throws IOException if the swidtag cannot be unmarshalled or validated
+     */
+//    @SuppressWarnings("PMD")
+    private JAXBElement unmarshallSwidTag(final InputStream stream) throws IOException {
+        InputStream is = null;
+        JAXBElement jaxbe = null;
+        try {
+            is = ReferenceManifest.class.getClassLoader().getResourceAsStream(SCHEMA_URL);
+            SchemaFactory schemaFactory = SchemaFactory.newInstance(SCHEMA_LANGUAGE);
+            Schema schema = schemaFactory.newSchema(new StreamSource(is));
+            JAXBContext jaxbContext = JAXBContext.newInstance(SCHEMA_PACKAGE);
+            Unmarshaller unmarshaller = jaxbContext.createUnmarshaller();
+            unmarshaller.setSchema(schema);
+            jaxbe = (JAXBElement) unmarshaller.unmarshal(stream);
+        } catch (SAXException saxEx) {
+            LOGGER.error(String.format("Error setting schema for validation!%n%s",
+                    saxEx.getMessage()));
+        } catch (UnmarshalException umEx) {
+            LOGGER.error(String.format("Error validating swidtag file!%n%s%n%s",
+                    umEx.getMessage(), umEx.toString()));
+            for (StackTraceElement ste : umEx.getStackTrace()) {
+                LOGGER.error(ste.toString());
+            }
+        } catch (IllegalArgumentException iaEx) {
+            LOGGER.error("Input file empty.");
+        } catch (JAXBException jaxEx) {
+            for (StackTraceElement ste : jaxEx.getStackTrace()) {
+                LOGGER.error(ste.toString());
+            }
+        } finally {
+            if (is != null) {
+                try {
+                    is.close();
+                } catch (IOException ioEx) {
+                    LOGGER.error(String.format("Error closing input stream%n%s",
+                            ioEx.getMessage()));
+                }
+            } else {
+                LOGGER.error("Input stream variable is null");
+            }
+        }
+
+        if (jaxbe != null) {
+            return jaxbe;
+        } else {
+            throw new IOException("Invalid swidtag file!");
+        }
     }
 
     /**
