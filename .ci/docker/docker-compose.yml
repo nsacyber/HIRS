@@ -18,7 +18,8 @@ services:
               - ${HIRS_ACA_HOSTNAME}
 
    tpmprovisioner:
-      image: hirs/hirs-ci:tpmprovisioner
+      #image: hirs/hirs-ci:tpmprovisioner
+      image: busaboy1340/hirs-testing:tpmprovisioner
       container_name: hirs-aca-provisioner
       depends_on:
          - aca
