@@ -130,7 +130,7 @@ public class TcgTpmtHa {
      */
     @Override
     public String toString() {
-        return String.format("%s hash = ", hashName, HexUtils.byteArrayToHexString(digest));
+        return String.format("%s hash = %s", hashName, HexUtils.byteArrayToHexString(digest));
     }
 
     /**
