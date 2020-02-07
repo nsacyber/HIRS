@@ -1,6 +1,7 @@
 package hirs.utils;
 
 import java.math.BigInteger;
+import java.nio.ByteBuffer;
 
 /**
  * Utilities for working with hex strings and byte arrays.
@@ -42,7 +43,7 @@ public final class HexUtils {
      * @return hex string representation of array
      */
     public static String byteArrayToHexString(final byte[] b) {
-        StringBuffer sb = new StringBuffer();
+        StringBuilder sb = new StringBuilder();
         String returnStr = "";
         for (int i = 0; i < b.length; i++) {
             String singleByte = Integer.toHexString(b[i] & FF_BYTE);
@@ -96,10 +97,7 @@ public final class HexUtils {
      * @return integer that represents the reversed byte array
      */
     public static int leReverseInt(final byte[] in) {
-        byte[] finished = new byte[in.length];
-        for (int i = 0; i < finished.length; i++) {
-            finished[i] = in[(in.length - 1) - i];
-           }
+        byte[] finished = leReverseByte(in);
         return new BigInteger(finished).intValue();
     }
 
@@ -110,7 +108,7 @@ public final class HexUtils {
      */
     public static long bytesToLong(final byte[] bytes) {
       BigInteger lValue = new BigInteger(bytes);
-      long longValue = lValue.abs().longValue();
-     return longValue;
+
+      return  lValue.abs().longValue();
     }
 }
