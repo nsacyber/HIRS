@@ -91,7 +91,8 @@ public class SHA1EventLog implements TCGEventLog {
         for (TpmPcrEvent currentEvent : eventList) {
             if (currentEvent.getPcrIndex() >= 0) {   // Ignore NO_EVENTS which can have a PCR=-1
                 try {
-                    if (currentEvent.getEventType() != NO_ACTION_EVENT) { // Don't include EV_NO_ACTION event
+                    if (currentEvent.getEventType() != NO_ACTION_EVENT) {
+                        // Don't include EV_NO_ACTION event
                         extendedPCR = extendPCRsha1(pcrList1[currentEvent.getPcrIndex()],
                                 currentEvent.getEventDigest());
                         System.arraycopy(extendedPCR, 0, pcrList1[currentEvent.getPcrIndex()],

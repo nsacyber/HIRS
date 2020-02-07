@@ -1,7 +1,6 @@
 package hirs.utils;
 
 import java.math.BigInteger;
-import java.nio.ByteBuffer;
 
 /**
  * Utilities for working with hex strings and byte arrays.
