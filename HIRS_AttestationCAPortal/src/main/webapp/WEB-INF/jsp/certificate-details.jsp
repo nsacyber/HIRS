@@ -35,12 +35,6 @@
                     <img src="${icons}/ic_file_download_black_24dp.png" title="Download Certificate">
                 </a>
             </c:when>
-            <c:when test="${param.type=='referencemanifest'}">
-                Reference Integrity Manifest
-                <a href="${portal}/certificate-request/reference-manifests/download?id=${param.id}">
-                    <img src="${icons}/ic_file_download_black_24dp.png" title="Download Certificate">
-                </a>
-            </c:when>
             <c:otherwise>
                 Unknown Certificate
             </c:otherwise>
@@ -882,51 +876,6 @@
                         </div>
                     </div>
                 </c:when>
-                    <c:when test="${param.type=='referencemanifest'}">
-                        <div class="row">
-                            <div id="swidSchema" class="col col-md-8">
-                                SWID Schema
-                            </div>
-                        </div>                        
-                        <div class="row">
-                            <div id="payloadType" class="col col-md-8">
-                                Payload Type
-                            </div>
-                        </div>
-                        
-                        <div class="row">
-                            <div id="payload" class="col col-md-8">
-                                Payload
-                            </div>
-                        </div>
-                        <div class="row">
-                            <div class="col-md-1 col-md-offset-1">
-                                <span class="colHeader">Support RIM(s)</span>
-                                <div id="rimConfiguration" class="col col-md-8">                                
-                                    <c:if test="${not empty initialData.componentsIdentifier}">
-                                        <!-- Support RIMs -->                                    
-                                        <div class="panel panel-default">
-                                            <div class="panel-heading" role="tab" id="headingOne">
-                                                <h4 class="panel-title">
-                                                    <a role="button" data-toggle="collapse" data-parent="#rimConfiguration" class="collapsed"
-                                                       href="#supportRimcollapse" aria-expanded="true" aria-controls="supportRimcollapse">
-                                                        Support RIM
-                                                    </a>
-                                                </h4>
-                                            </div>
-                                            <div id="componentIdentifiercollapse" class="panel-collapse collapse in" role="tabpanel" aria-labelledby="headingOne" aria-expanded="true">
-                                                <div class="panel-body">
-                                                    <div id="supportRim" class="row">
-                                                        
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>   
-                                    </c:if>
-                                </div>
-                            </div>
-                        </div>
-                    </c:when>
             </c:choose>
         </div>
         <script>

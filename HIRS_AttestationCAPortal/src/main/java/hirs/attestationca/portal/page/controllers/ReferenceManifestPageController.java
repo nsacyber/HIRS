@@ -270,7 +270,7 @@ extends PageController<NoPageParams> {
                 response.sendError(HttpServletResponse.SC_NOT_FOUND);
             } else {
                 StringBuilder fileName = new StringBuilder("filename=\"");
-                fileName.append(referenceManifest.getPlatformManufacturer());
+                fileName.append(referenceManifest.getSwidName());
                 fileName.append("_[");
                 fileName.append(referenceManifest.getRimHash());
                 fileName.append("]");
@@ -292,7 +292,8 @@ extends PageController<NoPageParams> {
     }
 
     /**
-     *
+     * This method takes the parameter and looks for this information in the
+     * Database.
      *
      * @param id of the RIM
      * @return the associated RIM from the DB
@@ -306,6 +307,14 @@ extends PageController<NoPageParams> {
                     .byEntityId(uuid).getRIM();
     }
 
+    /**
+     * Takes the rim files provided and returns a {@link ReferenceManifest}
+     * object.
+     * @param file the provide user file via browser.
+     * @param messages the object that handles displaying information to the
+     * user.
+     * @return a single or collection of reference manifest files.
+     */
     private ReferenceManifest parseRIMs(
             final MultipartFile file,
             final PageMessages messages) {
@@ -337,6 +346,14 @@ extends PageController<NoPageParams> {
         }
     }
 
+    /**
+     * Stores the {@link ReferenceManifest} objects.
+     * @param fileName name of the file given
+     * @param messages message object for user display of statuses
+     * @param referenceManifest the object to store
+     * @param referenceManifestManager the class that handles the storage
+     * process.
+     */
     private void storeManifest(
             final String fileName,
             final PageMessages messages,

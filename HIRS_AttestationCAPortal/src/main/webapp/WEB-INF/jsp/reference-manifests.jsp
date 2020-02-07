@@ -58,8 +58,8 @@
                                 // sets up a hidden input field containing the ID which is
                                 // used as a parameter to the REST POST call to delete
                                 var html = '';
-                                html += certificateDetailsLink('referenceManifest', full.id, true);
-                                html += certificateDownloadLink(full.id, pagePath);
+                                html += rimDetailsLink(full.id);
+                                html += rimDownloadLink(full.id, pagePath);
                                 html += certificateDeleteLink(full.id, pagePath);
 
                                 return html;

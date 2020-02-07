@@ -28,10 +28,20 @@ public class DBReferenceManifestManager extends DBManager<ReferenceManifest>
         super(ReferenceManifest.class, sessionFactory);
     }
 
+    /**
+     * This method does not need to be used directly as it is used by
+     * {@link ReferenceManifestSelector}'s get* methods.  Regardless, it may
+     * be used to retrieve ReferenceManifest by other code in this
+     * package, given a configured ReferenceManifestSelector.
+     *
+     * @param referenceManifestSelector a configured
+     * {@link ReferenceManifestSelector} to use for querying
+     * @return the resulting set of ReferenceManifest, possibly empty
+     */
     @Override
     @SuppressWarnings("unchecked")
     public Set<ReferenceManifest> get(final ReferenceManifestSelector referenceManifestSelector) {
-        LOGGER.error("Getting the full set of Reference Manifest files.");
+        LOGGER.info("Getting the full set of Reference Manifest files.");
         return new HashSet<>(
                 (List<ReferenceManifest>) getWithCriteria(
                         referenceManifestSelector.getReferenceManifestClass(),
@@ -41,13 +51,13 @@ public class DBReferenceManifestManager extends DBManager<ReferenceManifest>
     }
 
     /**
-     * Remove a rim from the database.
+     * Remove a ReferenceManifest from the database.
      *
      * @param referenceManifest the referenceManifest to delete
      * @return true if deletion was successful, false otherwise
      */
     public boolean deleteReferenceManifest(final ReferenceManifest referenceManifest) {
-        LOGGER.error(String.format("Deleting reference to %s", referenceManifest.getTagId()));
+        LOGGER.info(String.format("Deleting reference to %s", referenceManifest.getTagId()));
         return delete(referenceManifest);
     }
 }
