@@ -742,8 +742,7 @@ public class CertificateRequestPageController extends PageController<NoPageParam
                 certificateManager.update(existingCertificate);
 
                 final String successMsg = String.format("Pre-existing certificate "
-                        + "found and unarchived (%s): "
-                        + fileName + ")");
+                        + "found and unarchived (%s): ", fileName);
                 messages.addSuccess(successMsg);
                 LOGGER.info(successMsg);
                 return;

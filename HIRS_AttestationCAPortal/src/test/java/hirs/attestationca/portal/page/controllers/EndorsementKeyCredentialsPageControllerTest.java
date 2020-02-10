@@ -82,7 +82,7 @@ public class EndorsementKeyCredentialsPageControllerTest extends PageControllerT
         FlashMap flashMap = result.getFlashMap();
         PageMessages pageMessages = (PageMessages) flashMap.get("messages");
         Assert.assertEquals(pageMessages.getSuccess().get(0), "New certificate successfully "
-                + "uploaded (" + EKCERT + ")");
+                + "uploaded (" + EKCERT + "): ");
         Assert.assertEquals(pageMessages.getError().size(), 0);
 
         // verify the cert was actually stored

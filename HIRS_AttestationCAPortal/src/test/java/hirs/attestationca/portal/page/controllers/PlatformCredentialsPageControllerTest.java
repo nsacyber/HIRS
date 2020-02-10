@@ -144,7 +144,7 @@ public class PlatformCredentialsPageControllerTest extends PageControllerTest {
         Assert.assertEquals(pageMessages.getSuccess().size(), 1);
         Assert.assertEquals(pageMessages.getError().size(), 0);
         Assert.assertEquals(pageMessages.getSuccess().get(0),
-                "Pre-existing certificate found and unarchived (" + REALPCCERT + ")");
+                "Pre-existing certificate found and unarchived (" + REALPCCERT + "): ");
 
         // verify the cert was actually stored
         Set<Certificate> records = certificateManager.get(PlatformCredential.select(

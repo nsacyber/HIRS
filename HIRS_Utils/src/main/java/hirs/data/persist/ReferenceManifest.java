@@ -71,7 +71,7 @@ public class ReferenceManifest extends ArchivableEntity {
     public static final String SCHEMA_PACKAGE = "hirs.utils.xjc";
 
     private static final Logger LOGGER = LogManager.getLogger(ReferenceManifest.class);
-    private static final int MAX_CERT_LENGTH_BYTES = 2048;
+    private static final int MAX_CERT_LENGTH_BYTES = 4096;
 
     /**
      * This class enables the retrieval of PlatformCredentials by their
