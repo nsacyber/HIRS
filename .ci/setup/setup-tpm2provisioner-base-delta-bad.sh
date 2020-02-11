@@ -69,7 +69,7 @@ function InitTpm2Emulator {
    echo "Running PACCOR to generate local component information..."
    # Use specific PACCOR script for system testing.
    # Will provide default component SN#s when needed.
-   cp -f /opt/paccor/scripts/allcomponents_hirs_system_tests.sh /opt/paccor/scripts/allcomponents.sh
+   cp -f /HIRS/.ci/system-tests/allcomponents_hirs_system_tests.sh /opt/paccor/scripts/allcomponents.sh
    /opt/paccor/scripts/allcomponents.sh > $PC_DIR/componentsFile
    echo
 
@@ -183,6 +183,12 @@ InitTpm2Emulator
 
 # Update the hirs-site.config file
 UpdateHirsSiteConfigFile
+
+# Set alias to use python3
+echo "===========Python Version==========="
+python3 --version
+alias python='/usr/bin/python3.6'
+alias
 
 echo ""
 echo "TPM 2.0 Emulator NV RAM list"

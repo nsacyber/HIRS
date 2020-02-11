@@ -2,7 +2,7 @@ FROM hirs/hirs-ci:centos7
 
 # Install packages for installing HIRS TPM Provisioner
 RUN yum -y update && yum clean all
-RUN yum install -y java-1.8.0-openjdk wget util-linux chkconfig sed systemd gmp-devel coreutils dmidecode bash autoconf autoconf-archive automake libtool pkgconfig m4 gcc-c++ openssl python-requests && yum clean all
+RUN yum install -y java-1.8.0-openjdk wget util-linux chkconfig sed systemd gmp-devel coreutils dmidecode bash autoconf autoconf-archive automake libtool pkgconfig m4 gcc-c++ openssl python-requests python2-future python36-future && yum clean all
 
 # Install tpm_module for Communicating with TPM
 RUN mkdir tpm_module && pushd tpm_module && wget https://github.com/nsacyber/HIRS/releases/download/v1.0.4/tpm_module-1.0.4-1558547257.cedc93.x86_64.rpm && yum -y install tpm_module-*.rpm && popd
