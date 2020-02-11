@@ -1,7 +1,7 @@
 package hirs.attestationca.portal.page.controllers;
 
 import hirs.data.persist.ReferenceManifest;
-import hirs.persist.ReferenceManifestManager;
+import hirs.persist.DBReferenceManifestManager;
 import hirs.attestationca.portal.page.Page;
 import hirs.attestationca.portal.page.PageController;
 import hirs.attestationca.portal.page.PageControllerTest;
@@ -32,11 +32,10 @@ import org.testng.annotations.Test;
 public class ReferenceManifestDetailsPageControllerTest extends PageControllerTest {
 
     private static final String GOOD_RIM_FILE = "/rims/generated_good.swidtag";
-    private static final String BAD_RIM_FILE = "generated_bad.swidtag";
     private static final String ID = "046b6c7f-0b8a-43b9-b35d-6489e6daee91";
 
     @Autowired
-    private ReferenceManifestManager referenceManifestManager;
+    private DBReferenceManifestManager referenceManifestManager;
     private ReferenceManifest referenceManifest;
 
 

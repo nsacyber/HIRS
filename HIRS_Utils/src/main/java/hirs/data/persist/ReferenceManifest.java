@@ -71,6 +71,10 @@ public class ReferenceManifest extends ArchivableEntity {
     public static final String SCHEMA_PACKAGE = "hirs.utils.xjc";
 
     private static final Logger LOGGER = LogManager.getLogger(ReferenceManifest.class);
+    private static final SchemaFactory SCHEMA_FACTORY
+            = SchemaFactory.newInstance(ReferenceManifest.SCHEMA_LANGUAGE);
+    private static JAXBContext jaxbContext;
+    private static Schema schema;
 
     /**
      * This class enables the retrieval of PlatformCredentials by their
@@ -435,13 +439,19 @@ public class ReferenceManifest extends ArchivableEntity {
      * @throws IOException if the swidtag cannot be unmarshalled or validated
      */
     private JAXBElement unmarshallSwidTag(final InputStream stream) throws IOException {
-        InputStream is = null;
         JAXBElement jaxbe = null;
+        InputStream is = null;
+
         try {
-            is = ReferenceManifest.class.getClassLoader().getResourceAsStream(SCHEMA_URL);
-            SchemaFactory schemaFactory = SchemaFactory.newInstance(SCHEMA_LANGUAGE);
-            Schema schema = schemaFactory.newSchema(new StreamSource(is));
-            JAXBContext jaxbContext = JAXBContext.newInstance(SCHEMA_PACKAGE);
+            if (schema == null) {
+                is = ReferenceManifest.class
+                        .getClassLoader()
+                        .getResourceAsStream(ReferenceManifest.SCHEMA_URL);
+                schema = SCHEMA_FACTORY.newSchema(new StreamSource(is));
+            }
+            if (jaxbContext == null) {
+                jaxbContext = JAXBContext.newInstance(SCHEMA_PACKAGE);
+            }
             Unmarshaller unmarshaller = jaxbContext.createUnmarshaller();
             unmarshaller.setSchema(schema);
             jaxbe = (JAXBElement) unmarshaller.unmarshal(stream);
