@@ -35,7 +35,4 @@
     <Match>
         <Package name="~hirs\.utils\.xjc.*" />
     </Match>
-    <Match>
-        <Class name="hirs.utils.SwidTagGateway" />
-    </Match>
 </FindBugsFilter>
