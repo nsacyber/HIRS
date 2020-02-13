@@ -35,33 +35,36 @@ import hirs.persist.DBDeviceGroupManager;
 import hirs.persist.DBDeviceManager;
 import hirs.persist.DeviceGroupManager;
 import hirs.persist.DeviceManager;
+import hirs.persist.ReferenceManifestManager;
+import hirs.persist.DBReferenceManifestManager;
 import hirs.persist.HibernateConfiguration;
 import hirs.structs.converters.SimpleStructConverter;
 import hirs.structs.converters.StructConverter;
 import hirs.utils.LogConfigurationUtil;
 
 /**
- * Provides application context configuration for the Attestation Certificate Authority
- * application. The properties are processed in order and as such, the last property file read in
- * will override properties that may had already been defined previously. In other words, the
- * 'defaults.properties' file provides a basic standard of properties that can be overrode by the
+ * Provides application context configuration for the Attestation Certificate
+ * Authority application. The properties are processed in order and as such, the
+ * last property file read in will override properties that may had already been
+ * defined previously. In other words, the 'defaults.properties' file provides a
+ * basic standard of properties that can be overrode by the
  */
 @Configuration
 @PropertySources({
-        @PropertySource(value = "classpath:defaults.properties"),
+    @PropertySource(value = "classpath:defaults.properties"),
 
-        // detects if file exists, if not, ignore errors
-        @PropertySource(value = "file:/etc/hirs/aca/aca.properties",
-                ignoreResourceNotFound = true)
+    // detects if file exists, if not, ignore errors
+    @PropertySource(value = "file:/etc/hirs/aca/aca.properties",
+            ignoreResourceNotFound = true)
 })
 @ComponentScan({ "hirs.attestationca", "hirs.attestationca.service", "hirs.attestationca.rest",
-        "hirs.validation", "hirs.data.service" })
+    "hirs.validation", "hirs.data.service" })
 @Import(HibernateConfiguration.class)
 @EnableWebMvc
 public class AttestationCertificateAuthorityConfiguration extends WebMvcConfigurerAdapter {
 
-    private static final Logger LOG =
-            LogManager.getLogger(AttestationCertificateAuthorityConfiguration.class);
+    private static final Logger LOG
+            = LogManager.getLogger(AttestationCertificateAuthorityConfiguration.class);
 
     static {
         try {
@@ -91,10 +94,9 @@ public class AttestationCertificateAuthorityConfiguration extends WebMvcConfigur
     @Autowired
     private LocalSessionFactoryBean sessionFactory;
 
-
     /**
-     * @return bean to resolve injected annotation.Value
-     * property expressions for beans.
+     * @return bean to resolve injected annotation.Value property expressions
+     * for beans.
      */
     @Bean
     public static PropertySourcesPlaceholderConfigurer propertySourcesPlaceholderConfigurer() {
@@ -102,8 +104,9 @@ public class AttestationCertificateAuthorityConfiguration extends WebMvcConfigur
     }
 
     /**
-     * Initialization of the ACA. Detects environment and runs configuration methods as required.
-     * This method is intended to be invoked by the Spring application context.
+     * Initialization of the ACA. Detects environment and runs configuration
+     * methods as required. This method is intended to be invoked by the Spring
+     * application context.
      */
     @PostConstruct
     void initialize() {
@@ -184,7 +187,8 @@ public class AttestationCertificateAuthorityConfiguration extends WebMvcConfigur
     }
 
     /**
-     * @return the {@link java.security.KeyStore} that contains the certificates for the ACA.
+     * @return the {@link java.security.KeyStore} that contains the certificates
+     * for the ACA.
      */
     @Bean
     public KeyStore keyStore() {
@@ -198,16 +202,17 @@ public class AttestationCertificateAuthorityConfiguration extends WebMvcConfigur
         } catch (Exception e) {
             LOG.error(String.format(
                     "Encountered error while loading ACA key store. The most common issue is "
-                            + "that configured password does not work on the configured key"
-                            + " store %s.", keyStorePath));
+                    + "that configured password does not work on the configured key"
+                    + " store %s.", keyStorePath));
             LOG.error(String.format("Exception message: %s", e.getMessage()));
             throw new BeanInitializationException(e.getMessage(), e);
         }
     }
 
     /**
-     * Prototyped {@link StructConverter}. In other words, all instances returned by this method
-     * will be configured identically, but subsequent invocations will return a new instance.
+     * Prototyped {@link StructConverter}. In other words, all instances
+     * returned by this method will be configured identically, but subsequent
+     * invocations will return a new instance.
      *
      * @return ready to use {@link StructConverter}.
      */
@@ -235,6 +240,16 @@ public class AttestationCertificateAuthorityConfiguration extends WebMvcConfigur
     @Bean
     public DeviceManager deviceManager() {
         return new DBDeviceManager(sessionFactory.getObject());
+    }
+
+    /**
+     * Creates a {@link ReferenceManifestManager} ready to use.
+     *
+     * @return {@link ReferenceManifestManager}
+     */
+    @Bean
+    public ReferenceManifestManager referenceManifestManager() {
+        return new DBReferenceManifestManager(sessionFactory.getObject());
     }
 
     @Override

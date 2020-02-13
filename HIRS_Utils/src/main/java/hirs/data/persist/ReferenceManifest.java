@@ -15,6 +15,7 @@ import javax.xml.bind.JAXBElement;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.common.base.Preconditions;
+import hirs.persist.DBReferenceManifestManager;
 import hirs.persist.ReferenceManifestManager;
 import hirs.persist.ReferenceManifestSelector;
 import hirs.utils.xjc.BaseElement;
@@ -36,10 +37,7 @@ import javax.xml.bind.Unmarshaller;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlRootElement;
-import javax.xml.transform.stream.StreamSource;
 import javax.xml.validation.Schema;
-import javax.xml.validation.SchemaFactory;
-import org.xml.sax.SAXException;
 
 /**
  * This class represents the Reference Integrity Manifest object that will be
@@ -71,10 +69,7 @@ public class ReferenceManifest extends ArchivableEntity {
     public static final String SCHEMA_PACKAGE = "hirs.utils.xjc";
 
     private static final Logger LOGGER = LogManager.getLogger(ReferenceManifest.class);
-    private static final SchemaFactory SCHEMA_FACTORY
-            = SchemaFactory.newInstance(ReferenceManifest.SCHEMA_LANGUAGE);
     private static JAXBContext jaxbContext;
-    private static Schema schema;
 
     /**
      * This class enables the retrieval of PlatformCredentials by their
@@ -440,24 +435,16 @@ public class ReferenceManifest extends ArchivableEntity {
      */
     private JAXBElement unmarshallSwidTag(final InputStream stream) throws IOException {
         JAXBElement jaxbe = null;
-        InputStream is = null;
+        Schema schema = null;
 
         try {
-            if (schema == null) {
-                is = ReferenceManifest.class
-                        .getClassLoader()
-                        .getResourceAsStream(ReferenceManifest.SCHEMA_URL);
-                schema = SCHEMA_FACTORY.newSchema(new StreamSource(is));
-            }
+            schema = DBReferenceManifestManager.getSchemaObject();
             if (jaxbContext == null) {
                 jaxbContext = JAXBContext.newInstance(SCHEMA_PACKAGE);
             }
             Unmarshaller unmarshaller = jaxbContext.createUnmarshaller();
             unmarshaller.setSchema(schema);
             jaxbe = (JAXBElement) unmarshaller.unmarshal(stream);
-        } catch (SAXException saxEx) {
-            LOGGER.error(String.format("Error setting schema for validation!%n%s",
-                    saxEx.getMessage()));
         } catch (UnmarshalException umEx) {
             LOGGER.error(String.format("Error validating swidtag file!%n%s%n%s",
                     umEx.getMessage(), umEx.toString()));
@@ -469,17 +456,6 @@ public class ReferenceManifest extends ArchivableEntity {
         } catch (JAXBException jaxEx) {
             for (StackTraceElement ste : jaxEx.getStackTrace()) {
                 LOGGER.error(ste.toString());
-            }
-        } finally {
-            if (is != null) {
-                try {
-                    is.close();
-                } catch (IOException ioEx) {
-                    LOGGER.error(String.format("Error closing input stream%n%s",
-                            ioEx.getMessage()));
-                }
-            } else {
-                LOGGER.error("Input stream variable is null");
             }
         }
 
