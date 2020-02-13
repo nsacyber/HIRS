@@ -19,19 +19,29 @@ public class Commander {
     private static final String HELP_STRING = "help";
     private static final String EXAMPLE_STRING = "example";
     private static final String PARSE_STRING = "parse";
+    private static final String ATTRIBUTES_STRING = "attributes";
+    private static final String KEY_STRING = "key";
     private static final String IN_STRING = "in";
     private static final String OUT_STRING = "out";
     private static final String HASH_STRING = "hash";
+    private static final String PATH_STRING = "path";
+    private static final String PRIVATE_KEY_STRING = "privatekey";
+    private static final String CERT_STRING = "cert";
 
     private boolean hasArguments = false;
     private boolean validate = false;
     private boolean create = false;
     private boolean parse = false;
+    private boolean attributesGiven = false;
+    private boolean keystoreGiven = false;
+    private boolean generateExample = false;
 
     private String validateFile;
     private String createInFile;
     private String createOutFile;
     private String parseFile;
+    private String attributesFile = "";
+    private String keystore = "";
     private String hashAlg = null;
 
     /**
@@ -45,7 +55,7 @@ public class Commander {
         if (hasArguments) {
             parseArguments(args);
         } else {
-            //printHelp();
+            printHelp();
         }
 
         if (create) {
@@ -113,8 +123,8 @@ public class Commander {
                     break;
                 case FULL_COMMAND_PREFIX + EXAMPLE_STRING:
                 case COMMAND_PREFIX + "e":
-                    hasArguments = false;
-                    return; // default is generate
+                    generateExample = true;
+                    break;
                 case COMMAND_PREFIX + HASH_STRING:
                     hashAlg = args[++i];
                     break;
@@ -123,15 +133,22 @@ public class Commander {
                 	parse = true;
                 	parseFile = args[++i];
                 	break;
+                case FULL_COMMAND_PREFIX + ATTRIBUTES_STRING:
+                case COMMAND_PREFIX + "a":
+                    attributesGiven = true;
+                    break;
+                case COMMAND_PREFIX + PATH_STRING:
+                    if (attributesGiven) {
+                        attributesFile = args[++i];
+                    }
+                    break;
+                case FULL_COMMAND_PREFIX + KEY_STRING:
+                case COMMAND_PREFIX + "k":
+                    keystore = args[++i];
+                    break;
                 case FULL_COMMAND_PREFIX + HELP_STRING:
                 case COMMAND_PREFIX + "h":
                 default:
-                    if (Files.exists(Paths.get(args[i]))) {
-                        validate = true;
-                        validateFile = args[i];
-                        break;
-                    }
-
                     printHelp();
             }
         }
@@ -218,7 +235,47 @@ public class Commander {
     public final String getParseFile() {
     	return parseFile;
     }
-    
+
+    /**
+     * Getter for the attributes file given flag
+     * @return
+     */
+    public boolean isAttributesGiven() {
+        return attributesGiven;
+    }
+
+    /**
+     * Getter for the file containing attribute key-value pairs
+     * @return
+     */
+    public String getAttributesFile() {
+        return attributesFile;
+    }
+
+    /**
+     * Getter for the keystore given flag
+     * @return
+     */
+    public boolean isKeystoreGiven() {
+        return keystoreGiven;
+    }
+
+    /**
+     * Getter for the keystore used for digital signatures
+     * @return
+     */
+    public String getKeystore() {
+        return keystore;
+    }
+
+    /**
+     * Getter for the flag to generate an example
+     * @return
+     */
+    public boolean isGenerateExample() {
+        return generateExample;
+    }
+
     /**
      * Default no parameter help method.
      */
@@ -237,19 +294,23 @@ public class Commander {
             sb.append(String.format("ERROR: %s\n\n", message));
         }
         sb.append("Usage: HIRS_SwidTag\n");
-        sb.append("   -c, --create \tTakes given input in the csv format\n"
-                + "   \t-in <file>\tand produces swidtag payloads.\n"
-                + "   \t-out <file>\tThe -hash argument is optional.\n"
-                + "   \t-hash <algorithm>\n");
-        sb.append("   -e, --example\tCreate example swid tag file (generated_swidTag.swidtag)\n");
-        sb.append("   <no file>\t\tListing no command with no argument will also\n"
-                + "   \t\t\tcreate an example tag file\n");
-        sb.append("   -p, --parse\t\tParse a swidtag's payload\n"
-        		+ "   \t<file>\t\tInput swidtag\n");
-        sb.append("   -v, --verify\t\tTakes the provided input file and\n"
-                + "   \t\t\tvalidates it against the schema at\n"
-                + "   \t\t\thttp://standards.iso.org/iso/19770/-2/2015/schema.xsd\n");
-        sb.append("   -h, --help\t\tPrints this command help information\n");
+        sb.append("   -c, --create \t\tTakes given input in the csv format\n"
+                + "   \t-in <file>\t\tand produces swidtag payloads.\n"
+                + "   \t-out <file>\t\tThe -hash argument is optional.\n"
+                + "   \t-hash <algorithm>\n\n");
+        sb.append("   -v, --verify\t\t\tTakes the provided input file and\n"
+                + "   \t\t\t\tvalidates it against the schema at\n"
+                + "   \t\t\t\thttp://standards.iso.org/iso/19770/-2/2015/schema.xsd\n\n");
+        sb.append("   -p, --parse <file>\t\tParse the given swidtag's payload\n\n");
+        sb.append("   -a, --attributes\t\tSpecify the JSON file that contains\n"
+                + "   \t-path <file>\t\tthe xml attributes to add to the RIM\n\n");
+/*        sb.append("   -k, --key\t\t\tSpecify the credential and its location to use\n"
+                + "   \t-privatekey <file>\tfor digital signatures\n"
+                + "   \t-cert <file>\n\n");
+*/        sb.append("   -e, --example\t\tCreate example swid tag file (generated_swidTag.swidtag)\n\n");
+        sb.append("   -h, --help, <no args>\tPrints this command help information.\n");
+        sb.append("   \t\t\t\tListing no command arguments will also\n"
+                + "   \t\t\t\tprint this help text.\n");
 
         System.out.println(sb.toString());
         System.exit(1);

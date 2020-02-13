@@ -132,12 +132,12 @@ public class SwidTagGateway {
 
     private final ObjectFactory objectFactory = new ObjectFactory();
     private final File generatedFile = new File("generated_swidTag.swidtag");
-    private final Path configFile = Paths.get("/etc/hirs/rim_fields.json");
     private QName hashValue = null;
 
     private JAXBContext jaxbContext;
     private Marshaller marshaller;
     private Unmarshaller unmarshaller;
+    private String attributesFile;
 
     /**
      * Default constructor initializes jaxbcontext, marshaller, and unmarshaller
@@ -147,9 +147,14 @@ public class SwidTagGateway {
             jaxbContext = JAXBContext.newInstance(SwidTagConstants.SCHEMA_PACKAGE);
             marshaller = jaxbContext.createMarshaller();
             unmarshaller = jaxbContext.createUnmarshaller();
+            attributesFile = SwidTagConstants.DEFAULT_ATTRIBUTES_FILE;
         } catch (JAXBException e) {
             System.out.println("Error initializing jaxbcontext: " + e.getMessage());
         }
+    }
+
+    public void setAttributesFile(String attributesFile) {
+        this.attributesFile = attributesFile;
     }
 
     /**
@@ -237,7 +242,7 @@ public class SwidTagGateway {
     public void generateSwidTag(final File outputFile) {
         SoftwareIdentity swidTag = null;
         try {
-            BufferedReader jsonIn = Files.newBufferedReader(configFile, StandardCharsets.UTF_8);
+            BufferedReader jsonIn = Files.newBufferedReader(Paths.get(attributesFile), StandardCharsets.UTF_8);
             JsonObject configProperties = Json.parse(jsonIn).asObject();
             //SoftwareIdentity
             swidTag = createSwidTag(configProperties.get(SwidTagConstants.SOFTWARE_IDENTITY).asObject());
@@ -599,9 +604,9 @@ public class SwidTagGateway {
                     Collections.singletonList(reference)
             );
             KeyStore keystore = KeyStore.getInstance("JKS");
-            keystore.load(new FileInputStream(SwidTagConstants.KEYSTORE_PATH), SwidTagConstants.KEYSTORE_PASSWORD.toCharArray());
-            KeyStore.PrivateKeyEntry privateKey = (KeyStore.PrivateKeyEntry) keystore.getEntry(SwidTagConstants.PRIVATE_KEY_ALIAS,
-                    new KeyStore.PasswordProtection(SwidTagConstants.KEYSTORE_PASSWORD.toCharArray()));
+            keystore.load(new FileInputStream(SwidTagConstants.DEFAULT_KEYSTORE_PATH), SwidTagConstants.DEFAULT_KEYSTORE_PASSWORD.toCharArray());
+            KeyStore.PrivateKeyEntry privateKey = (KeyStore.PrivateKeyEntry) keystore.getEntry(SwidTagConstants.DEFAULT_PRIVATE_KEY_ALIAS,
+                    new KeyStore.PasswordProtection(SwidTagConstants.DEFAULT_KEYSTORE_PASSWORD.toCharArray()));
             X509Certificate certificate = (X509Certificate) privateKey.getCertificate();
             KeyInfoFactory kiFactory = sigFactory.getKeyInfoFactory();
             ArrayList<Object> x509Content = new ArrayList<Object>();
