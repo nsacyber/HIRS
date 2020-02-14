@@ -1,20 +1,20 @@
-# system_test.py - implements a group of tests that run appraisals on a client and server
-
-# TODO: test_01-test_11 will need to be implemented when the additional HIRS
+# system_test.py - implements a group of tests that run appraisals on a client and server.
+# TODO: test_02-test_12 will need to be implemented when the additional HIRS
 # projects are imported to the new GitHub repo. The test code is commented out for now.
 
+from __future__ import print_function
 import logging
 import os
 import sys
 import unittest
 import urllib3
 
-from system_test_core import HIRSPortal, AttestationCAPortal, collectors, \
+from system_test_core import DEFAULT_IMA_POLICY, DEFAULT_TPM_POLICY, \
+   HIRSPortal, AttestationCAPortal, collectors, \
    send_command, send_command_sha1sum, run_hirs_report, run_hirs_provisioner_tpm_1_2, \
    run_hirs_provisioner_tpm_2_0, parse_xml_with_stripped_namespaces, \
    get_all_nodes_recursively, touch_random_file_and_remove, get_random_pcr_hex_value, \
    get_current_timestamp, is_ubuntu_client, is_tpm_2_0, is_tpm_1_2, \
-   DEFAULT_IMA_POLICY, DEFAULT_TPM_POLICY, \
    make_simple_ima_baseline, make_baseline_from_xml, \
    make_simple_ima_blacklist_baseline, \
    make_simple_ima_blacklist_baseline_with_hash, \
@@ -611,9 +611,9 @@ class SystemTest(unittest.TestCase):
       """Test that running the TPM 1.2 hirs provisioner works"""
       logging.info("***************** Beginning of initial TPM 1.2 provisioner run *****************")
 
-#       # Run the provisioner to ensure that it provisions successfully
-#       provisioner_out = run_hirs_provisioner_tpm_1_2(CLIENT)
-#       print("Initial TPM 1.2 provisioner run output: {0}".format(provisioner_out))
+      # Run the provisioner to ensure that it provisions successfully
+      provisioner_out = run_hirs_provisioner_tpm_1_2(CLIENT)
+      print("Initial TPM 1.2 provisioner run output: {0}".format(provisioner_out))
 
    @collectors(['TPM'], COLLECTOR_LIST)
    @unittest.skipIf(not is_tpm_2_0(TPM_VERSION), "Skipping this test due to TPM Version " + TPM_VERSION)

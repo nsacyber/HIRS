@@ -8,10 +8,12 @@
 #    VARDeltaCertA2 - Bad Delta
 #    VARDeltaCertA2Resolved - Good Delta
 
-import sys
-import json
+from __future__ import print_function
+from builtins import range
 import copy
+import json
 import pprint
+import sys
 
 try:
 	minNumOfComponents = 3
