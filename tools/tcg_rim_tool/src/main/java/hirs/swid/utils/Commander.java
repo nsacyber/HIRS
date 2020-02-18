@@ -17,14 +17,9 @@ public class Commander {
     private static final String CREATE_STRING = "create";
     private static final String VERIFY_STRING = "verify";
     private static final String HELP_STRING = "help";
-    private static final String EXAMPLE_STRING = "example";
     private static final String PARSE_STRING = "parse";
     private static final String ATTRIBUTES_STRING = "attributes";
     private static final String KEY_STRING = "key";
-    private static final String IN_STRING = "in";
-    private static final String OUT_STRING = "out";
-    private static final String HASH_STRING = "hash";
-    private static final String PATH_STRING = "path";
     private static final String PRIVATE_KEY_STRING = "privatekey";
     private static final String CERT_STRING = "cert";
 
@@ -34,11 +29,9 @@ public class Commander {
     private boolean parse = false;
     private boolean attributesGiven = false;
     private boolean keystoreGiven = false;
-    private boolean generateExample = false;
 
     private String validateFile;
-    private String createInFile;
-    private String createOutFile;
+    private String createOutFile = "";
     private String parseFile;
     private String attributesFile = "";
     private String keystore = "";
@@ -59,26 +52,13 @@ public class Commander {
         }
 
         if (create) {
-            if (!Files.exists(Paths.get(getCreateInFile()))) {
-                create = false;
-                printHelp("Input file doesn't exist...");
-            }
-
             if (hashAlg == null) {
                 hashAlg = "256";
             }
             
-            if (!isValidPath(getCreateOutFile())) {
-                printHelp(String.format("Invalid file path on creation file...(%s)",
-                        getCreateOutFile()));
+            if (!getCreateOutFile().isEmpty() && !isValidPath(getCreateOutFile())) {
+                printHelp(String.format("Invalid file path %s!", getCreateOutFile()));
             }
-        }
-
-        if (validate && create) {
-            // there maybe a time in which you could validate what you created
-            // but not right now
-            // print the help information
-            printHelp();
         }
     }
 
@@ -105,15 +85,15 @@ public class Commander {
                 case FULL_COMMAND_PREFIX + CREATE_STRING:
                 case COMMAND_PREFIX + "c":
                     create = true;
-                    break;
-                case COMMAND_PREFIX + IN_STRING:
-                    if (create) {
-                        createInFile = args[++i];
+                    if (i+1 < args.length && !args[i+1].substring(0,1).equals(COMMAND_PREFIX)) {
+                        createOutFile = args[++i];
                     }
                     break;
-                case COMMAND_PREFIX + OUT_STRING:
-                    if (create) {
-                        createOutFile = args[++i];
+                case FULL_COMMAND_PREFIX + ATTRIBUTES_STRING:
+                case COMMAND_PREFIX + "a":
+                    attributesGiven = true;
+                    if (i+1 < args.length && !args[i+1].substring(0,1).equals(COMMAND_PREFIX)) {
+                        attributesFile = args[++i];
                     }
                     break;
                 case FULL_COMMAND_PREFIX + VERIFY_STRING:
@@ -121,27 +101,11 @@ public class Commander {
                     validate = true;
                     validateFile = args[++i];
                     break;
-                case FULL_COMMAND_PREFIX + EXAMPLE_STRING:
-                case COMMAND_PREFIX + "e":
-                    generateExample = true;
-                    break;
-                case COMMAND_PREFIX + HASH_STRING:
-                    hashAlg = args[++i];
-                    break;
                 case FULL_COMMAND_PREFIX + PARSE_STRING:
                 case COMMAND_PREFIX + "p":
                 	parse = true;
                 	parseFile = args[++i];
                 	break;
-                case FULL_COMMAND_PREFIX + ATTRIBUTES_STRING:
-                case COMMAND_PREFIX + "a":
-                    attributesGiven = true;
-                    break;
-                case COMMAND_PREFIX + PATH_STRING:
-                    if (attributesGiven) {
-                        attributesFile = args[++i];
-                    }
-                    break;
                 case FULL_COMMAND_PREFIX + KEY_STRING:
                 case COMMAND_PREFIX + "k":
                     keystore = args[++i];
@@ -161,15 +125,6 @@ public class Commander {
      */
     public final String getValidateFile() {
         return validateFile;
-    }
-
-    /**
-     * Getter for the input create file associated with the create flag
-     *
-     * @return
-     */
-    public final String getCreateInFile() {
-        return createInFile;
     }
 
     /**
@@ -269,14 +224,6 @@ public class Commander {
     }
 
     /**
-     * Getter for the flag to generate an example
-     * @return
-     */
-    public boolean isGenerateExample() {
-        return generateExample;
-    }
-
-    /**
      * Default no parameter help method.
      */
     private void printHelp() {
@@ -294,23 +241,29 @@ public class Commander {
             sb.append(String.format("ERROR: %s\n\n", message));
         }
         sb.append("Usage: HIRS_SwidTag\n");
-        sb.append("   -c, --create \t\tTakes given input in the csv format\n"
-                + "   \t-in <file>\t\tand produces swidtag payloads.\n"
-                + "   \t-out <file>\t\tThe -hash argument is optional.\n"
-                + "   \t-hash <algorithm>\n\n");
+        sb.append("   -c, --create <file>\t\tCreate a base rim and write to\n"
+                + "   \t\t\t\tthe given file. If no file is given the default is\n"
+                + "   \t\t\t\tgenerated_swidTag.swidtag\n\n");
+        sb.append("   -a, --attributes <file>\tSpecify the JSON file that contains\n"
+                + "   \t\t\t\tthe xml attributes to add to the RIM\n\n");
         sb.append("   -v, --verify\t\t\tTakes the provided input file and\n"
                 + "   \t\t\t\tvalidates it against the schema at\n"
                 + "   \t\t\t\thttp://standards.iso.org/iso/19770/-2/2015/schema.xsd\n\n");
         sb.append("   -p, --parse <file>\t\tParse the given swidtag's payload\n\n");
-        sb.append("   -a, --attributes\t\tSpecify the JSON file that contains\n"
-                + "   \t-path <file>\t\tthe xml attributes to add to the RIM\n\n");
 /*        sb.append("   -k, --key\t\t\tSpecify the credential and its location to use\n"
                 + "   \t-privatekey <file>\tfor digital signatures\n"
                 + "   \t-cert <file>\n\n");
-*/        sb.append("   -e, --example\t\tCreate example swid tag file (generated_swidTag.swidtag)\n\n");
-        sb.append("   -h, --help, <no args>\tPrints this command help information.\n");
+*/        sb.append("   -h, --help, <no args>\tPrints this command help information.\n");
         sb.append("   \t\t\t\tListing no command arguments will also\n"
-                + "   \t\t\t\tprint this help text.\n");
+                + "   \t\t\t\tprint this help text.\n\n");
+        sb.append("Example commands: \n"
+                + "   Create a base rim from the default attribute file and write the rim\n"
+                + "   to generated_swidTag.swidtag:\n\n"
+                + "   \t\tjava -jar tcg_rim_tool-1.0.jar -c\n\n"
+                + "   Create a base rim from the values in config.json and write the rim\n"
+                + "   to base_rim.swidtag:\n\n"
+                + "   \t\tjava -jar tcg_rim_tool-1.0.jar -c base_rim.swidtag -a config.json\n\n"
+                + "   ");
 
         System.out.println(sb.toString());
         System.exit(1);

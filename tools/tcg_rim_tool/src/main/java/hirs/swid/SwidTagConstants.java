@@ -75,17 +75,17 @@ public class SwidTagConstants {
     public static final String SUPPORT_RIM_URI_GLOBAL = "supportRIMURIGlobal";
 
     public static final QName _COLLOQUIAL_VERSION = new QName(
-            "https://trustedcomputinggroup.org/wp-content/uploads/TCG_RIM_Model",
-            "colloquialVersion", "rim");
+            "http://csrc.nist.gov/ns/swid/2015-extensions/1.0",
+            "colloquialVersion", "n8060");
     public static final QName _EDITION = new QName(
-            "https://trustedcomputinggroup.org/wp-content/uploads/TCG_RIM_Model",
-            "edition", "rim");
+            "http://csrc.nist.gov/ns/swid/2015-extensions/1.0",
+            "edition", "n8060");
     public static final QName _PRODUCT = new QName(
-            "https://trustedcomputinggroup.org/wp-content/uploads/TCG_RIM_Model",
-            "product", "rim");
+            "http://csrc.nist.gov/ns/swid/2015-extensions/1.0",
+            "product", "n8060");
     public static final QName _REVISION = new QName(
-            "https://trustedcomputinggroup.org/wp-content/uploads/TCG_RIM_Model",
-                    "revision", "rim");
+            "http://csrc.nist.gov/ns/swid/2015-extensions/1.0",
+            "revision", "n8060");
     public static final QName _PAYLOAD_TYPE = new QName(
             "https://trustedcomputinggroup.org/wp-content/uploads/TCG_RIM_Model",
             "payloadType", "rim");

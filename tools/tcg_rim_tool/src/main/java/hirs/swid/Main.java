@@ -31,8 +31,7 @@ public class Main {
                     //set keystore for gateway if given
                 }
                 // parsing the arguments detected a create parameter (-c)
-                gateway.generateSwidTag(commander.getCreateInFile(),
-                        commander.getCreateOutFile(), commander.getHashAlg());
+                gateway.generateSwidTag(commander.getCreateOutFile());
             }
             if (commander.validate()) {
                 // parsing the arguments detected a validation parameter (-v)
@@ -48,11 +47,6 @@ public class Main {
                 } catch (IOException e) {
                     System.out.println("Unable to parse file: " + e.getMessage());
                 }
-            }
-            if (commander.isGenerateExample()) {
-                // development stage in which no valid arguments were given
-                // therefore generate a mock tag file
-                gateway.generateSwidTag();
             }
         }
     }

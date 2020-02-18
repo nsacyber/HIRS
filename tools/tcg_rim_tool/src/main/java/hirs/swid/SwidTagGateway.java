@@ -8,6 +8,7 @@ import javax.xml.bind.Marshaller;
 import javax.xml.bind.Unmarshaller;
 import javax.xml.bind.UnmarshalException;
 import javax.xml.transform.OutputKeys;
+import javax.xml.transform.Source;
 import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerConfigurationException;
@@ -161,7 +162,7 @@ public class SwidTagGateway {
      * default generator method that has no parameters
      */
     public void generateSwidTag() {
-        generateSwidTag(generatedFile);
+        generateSwidTag("");
     }
 
     /**
@@ -239,9 +240,10 @@ public class SwidTagGateway {
      *
      * @param outputFile
      */
-    public void generateSwidTag(final File outputFile) {
+    public void generateSwidTag(final String filename) {
         SoftwareIdentity swidTag = null;
         try {
+            System.out.println("Reading base rim values from " + attributesFile);
             BufferedReader jsonIn = Files.newBufferedReader(Paths.get(attributesFile), StandardCharsets.UTF_8);
             JsonObject configProperties = Json.parse(jsonIn).asObject();
             //SoftwareIdentity
@@ -288,7 +290,11 @@ public class SwidTagGateway {
 
         Document signedSoftwareIdentity = signXMLDocument(objectFactory.createSoftwareIdentity(swidTag));
         System.out.println("Signature core validity: " + validateSignedXMLDocument(signedSoftwareIdentity));
-        writeSwidTagFile(signedSoftwareIdentity);
+        if (!filename.isEmpty()) {
+            writeSwidTagFile(signedSoftwareIdentity, new File(filename));
+        } else {
+            writeSwidTagFile(signedSoftwareIdentity, generatedFile);
+        }
     }
 
    /**
@@ -333,14 +339,17 @@ public class SwidTagGateway {
      *
      * @param swidTag
      */
-    public void writeSwidTagFile(Document swidTag) {
+    public void writeSwidTagFile(Document swidTag, File outputFile) {
         try {
-            OutputStream outStream = new FileOutputStream(generatedFile);
+            OutputStream outStream = new FileOutputStream(outputFile);
             TransformerFactory tf = TransformerFactory.newInstance();
             Transformer transformer = tf.newTransformer();
             transformer.setOutputProperty(OutputKeys.INDENT, "yes");
             transformer.setOutputProperty("{http://xml.apache.org/xslt}indent-amount", "2");
-            transformer.transform(new DOMSource(swidTag), new StreamResult(outStream));
+            Source source = new DOMSource(swidTag);
+            System.out.println("Writing to file: " + outputFile.getName());
+            transformer.transform(source, new StreamResult(outStream));
+            transformer.transform(source, new StreamResult(System.out));
         } catch (FileNotFoundException e) {
             System.out.println("Unable to write to file: " + e.getMessage());
         } catch (TransformerConfigurationException e) {
