@@ -4,11 +4,12 @@
 		"version": "0.1",
 		"tagId": "hirs.swid.SwidTags.example",
 		"tagVersion": "1",
-		"patch": true
+		"patch": false
 	},
 	"Entity": {
 		"name": "HIRS",
 		"role": "softwareCreator,tagCreator",
+		"regid": "www.example.com",
 		"thumbprint": ""
 	},
 	"Link": {

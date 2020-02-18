@@ -392,6 +392,7 @@ public class SwidTagGateway {
      */
     private SoftwareIdentity createSwidTag(JsonObject jsonObject) {
         SoftwareIdentity swidTag = objectFactory.createSoftwareIdentity();
+        swidTag.setLang(SwidTagConstants.DEFAULT_ENGLISH);
         String name = jsonObject.getString(SwidTagConstants.NAME, "");
         if (!name.isEmpty()) {
             swidTag.setName(name);
@@ -408,6 +409,10 @@ public class SwidTagGateway {
         swidTag.setCorpus(jsonObject.getBoolean(SwidTagConstants.CORPUS, false));
         swidTag.setPatch(jsonObject.getBoolean(SwidTagConstants.PATCH, false));
         swidTag.setSupplemental(jsonObject.getBoolean(SwidTagConstants.SUPPLEMENTAL, false));
+        if (!swidTag.isCorpus() && !swidTag.isPatch()
+                && !swidTag.isSupplemental() && swidTag.getVersion() != "0.0") {
+            swidTag.setVersionScheme(jsonObject.getString(SwidTagConstants.VERSION_SCHEME, "multipartnumeric"));
+        }
 
         return swidTag;
     }
@@ -420,18 +425,28 @@ public class SwidTagGateway {
      * @return Entity object created from the properties
      */
     private Entity createEntity(JsonObject jsonObject) {
+        boolean isTagCreator = false;
         Entity entity = objectFactory.createEntity();
         String name = jsonObject.getString(SwidTagConstants.NAME, "");
         if (!name.isEmpty()) {
             entity.setName(name);
         }
-        String regId = jsonObject.getString(SwidTagConstants.REGID, "");
-        if (!regId.isEmpty()) {
-            entity.setRegid(regId);
-        }
         String[] roles = jsonObject.getString(SwidTagConstants.ROLE, "").split(",");
         for (int i = 0; i < roles.length; i++) {
             entity.getRole().add(roles[i]);
+            if (roles[i].equals("tagCreator")) {
+                isTagCreator = true;
+            }
+        }
+        if (isTagCreator) {
+            String regid = jsonObject.getString(SwidTagConstants.REGID, "");
+            if (regid.isEmpty()) {
+                //throw exception that regid is required
+            } else {
+                entity.setRegid(regid);
+            }
+        } else {
+            entity.setRegid(jsonObject.getString(SwidTagConstants.REGID, "invalid.unavailable"));
         }
         String thumbprint = jsonObject.getString(SwidTagConstants.THUMBPRINT, "");
         if (!thumbprint.isEmpty()) {
@@ -541,7 +556,7 @@ public class SwidTagGateway {
     private hirs.swid.xjc.File createFile(JsonObject jsonObject) {
         hirs.swid.xjc.File file = objectFactory.createFile();
         file.setName(jsonObject.getString(SwidTagConstants.NAME, ""));
-        file.setSize(new BigInteger(jsonObject.getString(SwidTagConstants.SIZE, "")));
+        file.setSize(new BigInteger(jsonObject.getString(SwidTagConstants.SIZE, "0")));
         Map<QName, String> attributes = file.getOtherAttributes();
         addNonNullAttribute(attributes, _SHA256_HASH, jsonObject.getString(SwidTagConstants.HASH, ""));
         addNonNullAttribute(attributes, SwidTagConstants._SUPPORT_RIM_TYPE, jsonObject.getString(SwidTagConstants.SUPPORT_RIM_TYPE, ""));
