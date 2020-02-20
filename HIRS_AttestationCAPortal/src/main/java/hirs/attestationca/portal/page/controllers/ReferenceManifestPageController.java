@@ -1,4 +1,3 @@
-
 package hirs.attestationca.portal.page.controllers;
 
 import hirs.attestationca.portal.datatables.DataTableInput;
@@ -18,12 +17,24 @@ import hirs.data.persist.certificate.Certificate;
 import java.io.IOException;
 import java.net.URISyntaxException;
 
+//import java.math.BigInteger;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
+import java.util.zip.ZipInputStream;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipFile;
+import java.util.Enumeration;
+import java.io.File;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.io.InputStream;
+import java.io.FileOutputStream;
+import java.io.FileNotFoundException;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.logging.log4j.LogManager;
@@ -44,36 +55,36 @@ import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import org.springframework.web.servlet.view.RedirectView;
 
-
 /**
  * Controller for the Reference Manifest page.
  */
 @Controller
 @RequestMapping("/reference-manifests")
 public class ReferenceManifestPageController
-extends PageController<NoPageParams> {
+        extends PageController<NoPageParams> {
 
     private static final String BIOS_RELEASE_DATE_FORMAT = "yyyy-MM-dd";
 
     private final BiosDateValidator biosValidator;
     private final ReferenceManifestManager referenceManifestManager;
-    private static final Logger LOGGER =
-            LogManager.getLogger(ReferenceManifestPageController.class);
+    private static final Logger LOGGER
+            = LogManager.getLogger(ReferenceManifestPageController.class);
 
     /**
-     * This class was created for the purposes of avoiding findbugs message:
-     * As the JavaDoc states, DateFormats are inherently unsafe for
-     * multi-threaded use. The detector has found a call to an instance
-     * of DateFormat that has been obtained via a static field.
-     * This looks suspicious.
+     * This class was created for the purposes of avoiding findbugs message: As
+     * the JavaDoc states, DateFormats are inherently unsafe for multi-threaded
+     * use. The detector has found a call to an instance of DateFormat that has
+     * been obtained via a static field. This looks suspicious.
      *
      * This class can have uses elsewhere but for now it will remain here.
      */
     private static final class BiosDateValidator {
+
         private final String dateFormat;
 
         /**
          * Default constructor that sets the format to parse against.
+         *
          * @param dateFormat
          */
         public BiosDateValidator(final String dateFormat) {
@@ -82,6 +93,7 @@ extends PageController<NoPageParams> {
 
         /**
          * Validates a date by attempting to parse based on format provided.
+         *
          * @param date string of the given date
          * @return true if the format matches
          */
@@ -102,6 +114,7 @@ extends PageController<NoPageParams> {
 
     /**
      * Constructor providing the Page's display and routing specification.
+     *
      * @param referenceManifestManager the reference manifest manager
      */
     @Autowired
@@ -116,7 +129,8 @@ extends PageController<NoPageParams> {
      * Returns the path for the view and the data model for the page.
      *
      * @param params The object to map url parameters into.
-     * @param model The data model for the request. Can contain data from redirect.
+     * @param model The data model for the request. Can contain data from
+     * redirect.
      * @return the path for the view and data model for the page.
      */
     @Override
@@ -126,11 +140,12 @@ extends PageController<NoPageParams> {
     }
 
     /**
-     * Returns the list of RIMs using the data table input for paging,
-     * ordering, and filtering.
+     * Returns the list of RIMs using the data table input for paging, ordering,
+     * and filtering.
+     *
      * @param input the data tables input
-     * @return the data tables response, including the result set
-     * and paging information
+     * @return the data tables response, including the result set and paging
+     * information
      */
     @ResponseBody
     @RequestMapping(value = "/list",
@@ -157,7 +172,6 @@ extends PageController<NoPageParams> {
                         referenceManifestManager,
                         input, orderColumnName, criteriaModifier);
 
-
         LOGGER.debug("Returning list of size: " + records.size());
         return new DataTableResponse<>(records, input);
     }
@@ -180,15 +194,19 @@ extends PageController<NoPageParams> {
 
         // loop through the files
         for (MultipartFile file : files) {
-            //Parse reference manifests
-            ReferenceManifest rims = parseRIMs(file, messages);
+            if (file.getOriginalFilename().endsWith("zip")) {
+                unarchiveZip(file);
+            } else {
+                //Parse reference manifests
+                ReferenceManifest rims = parseRIMs(file, messages);
 
-            //Store only if it was parsed
-            if (rims != null) {
-                storeManifest(file.getOriginalFilename(),
-                        messages,
-                        rims,
-                        referenceManifestManager);
+                //Store only if it was parsed
+                if (rims != null) {
+                    storeManifest(file.getOriginalFilename(),
+                            messages,
+                            rims,
+                            referenceManifestManager);
+                }
             }
         }
 
@@ -300,16 +318,17 @@ extends PageController<NoPageParams> {
      * @throws IllegalArgumentException
      */
     private ReferenceManifest getRimFromDb(final String id) throws IllegalArgumentException {
-            UUID uuid = UUID.fromString(id);
+        UUID uuid = UUID.fromString(id);
 
-            return ReferenceManifest
-                    .select(referenceManifestManager)
-                    .byEntityId(uuid).getRIM();
+        return ReferenceManifest
+                .select(referenceManifestManager)
+                .byEntityId(uuid).getRIM();
     }
 
     /**
      * Takes the rim files provided and returns a {@link ReferenceManifest}
      * object.
+     *
      * @param file the provide user file via browser.
      * @param messages the object that handles displaying information to the
      * user.
@@ -348,6 +367,7 @@ extends PageController<NoPageParams> {
 
     /**
      * Stores the {@link ReferenceManifest} objects.
+     *
      * @param fileName name of the file given
      * @param messages message object for user display of statuses
      * @param referenceManifest the object to store
@@ -414,5 +434,50 @@ extends PageController<NoPageParams> {
             messages.addError(failMessage + dbmEx.getMessage());
             LOGGER.error(failMessage, dbmEx);
         }
+    }
+
+    private void unarchiveZip(final MultipartFile zipUpload) {
+//        byte[] buffer = new byte[Integer.SIZE * Integer.SIZE];
+        ZipInputStream zis;
+        FileOutputStream fos;
+        ZipFile zipFile = null;
+        String uploadDirStr = "/etc/hirs/upload/";
+
+        try {
+            File uploadDirFile = new File(uploadDirStr);
+            if (uploadDirFile.mkdir()) {
+                LOGGER.error("FUSTA - Directory created");
+                Path path = Paths.get(uploadDirStr + zipUpload.getOriginalFilename());
+                Files.write(path, zipUpload.getBytes());
+
+                if (Files.exists(path)) {
+                    LOGGER.error(path.getFileName());
+                    zipFile = new ZipFile(new File(path.toUri()));
+                }
+            }
+
+            if (zipFile != null) {
+                Enumeration<? extends ZipEntry> zipEntries = zipFile.entries();
+                while (zipEntries.hasMoreElements()) {
+                    ZipEntry zipEntry = zipEntries.nextElement();
+                    LOGGER.error(zipEntry.getName());
+                    try (InputStream is = zipFile.getInputStream(zipEntry);) {
+                        String fileName = zipEntry.getName().toLowerCase();
+                        if (fileName.endsWith("swidtag")) {
+                            // parse as tag
+                            int i = 1 + 2;
+                            System.out.print(i);
+                        }
+                    }
+                }
+                zipFile.close();
+            }
+
+        } catch (FileNotFoundException fnfEx) {
+            LOGGER.error(fnfEx);
+        } catch (IOException ioEx) {
+            LOGGER.error(ioEx);
+        }
+
     }
 }
