@@ -170,7 +170,7 @@ public class ReferenceManifestDetailsPageController
                     }
                 }
             } catch (NoSuchFileException nsfEx) {
-                LOGGER.error(String.format("FILLe NOt fouND! "
+                LOGGER.error(String.format("File Not found! "
                     + "Manifest with ID: %s", uuid));
             }
 

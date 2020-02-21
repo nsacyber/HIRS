@@ -146,7 +146,7 @@
                                                         </c:if>
                                                         <c:if test="${not empty resource.getPcrValues()}"> 
                                                             <div class="panel-body">
-                                                                <div class="component col col-md-10" role="tab" id="pcrValues">
+                                                                <div class="component" role="tab" id="pcrValues">
                                                                     <a role="button" data-toggle="collapse" data-parent="#directorycollapse" class="collapsed"
                                                                        href="#pcrscollapse" aria-expanded="false" aria-controls="pcrscollapse">
                                                                         Expected PCR Values
