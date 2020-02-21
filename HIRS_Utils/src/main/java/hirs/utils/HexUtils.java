@@ -1,5 +1,7 @@
 package hirs.utils;
 
+import java.math.BigInteger;
+
 /**
  * Utilities for working with hex strings and byte arrays.
  */
@@ -40,7 +42,7 @@ public final class HexUtils {
      * @return hex string representation of array
      */
     public static String byteArrayToHexString(final byte[] b) {
-        StringBuffer sb = new StringBuffer();
+        StringBuilder sb = new StringBuilder();
         String returnStr = "";
         for (int i = 0; i < b.length; i++) {
             String singleByte = Integer.toHexString(b[i] & FF_BYTE);
@@ -73,5 +75,39 @@ public final class HexUtils {
         byte[] copy = new byte[end - start + 1];
         System.arraycopy(b, start, copy, 0, end - start + 1);
         return copy;
+    }
+
+    /**
+     * Takes in a byte array and reverses the order.
+     * @param in  byte array to reverse
+     * @return reversed byte array
+     */
+   public static byte[] leReverseByte(final byte[] in) {
+        byte[] finished = new byte[in.length];
+          for (int i = 0; i < finished.length; i++) {
+             finished[i] = in[(in.length - 1) - i];
+         }
+      return finished;
+    }
+
+    /**
+     * Takes in a byte array and reverses the order then converts to an int.
+     * @param in  byte array to reverse
+     * @return integer that represents the reversed byte array
+     */
+    public static int leReverseInt(final byte[] in) {
+        byte[] finished = leReverseByte(in);
+        return new BigInteger(finished).intValue();
+    }
+
+    /**
+     * Takes in a byte array of 4 bytes and returns a long.
+     * @param bytes  byte array to convert
+     * @return long representation of the bytes
+     */
+    public static long bytesToLong(final byte[] bytes) {
+      BigInteger lValue = new BigInteger(bytes);
+
+      return  lValue.abs().longValue();
     }
 }
