@@ -157,16 +157,16 @@ public class ReferenceManifestDetailsPageController
                     + "/webapps/HIRS_AttestationCAPortal/upload/";
             Path pathDir = Paths.get(uploadDirStr);
             Path logPath;
-            TCGEventLogProcessor logProcessor = null;
+            TCGEventLogProcessor logProcessor;
             try {
                 for (SwidResource swidRes : resources) {
                     resourceFilename = swidRes.getName();
                     logPath = Paths.get(pathDir.toString() + "/" + resourceFilename);
-                    logProcessor = new TCGEventLogProcessor(Files.readAllBytes(logPath));
-
-                    swidRes.setPcrValues(Arrays.asList(logProcessor.getExpectedPCRValues()));
-                    for (String string : swidRes.getPcrValues()) {
-                        LOGGER.error(string);
+                    if (Files.exists(logPath)) {
+                        logProcessor = new TCGEventLogProcessor(
+                                Files.readAllBytes(logPath));
+                        swidRes.setPcrValues(Arrays.asList(
+                                logProcessor.getExpectedPCRValues()));
                     }
                 }
             } catch (NoSuchFileException nsfEx) {

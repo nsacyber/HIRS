@@ -145,22 +145,24 @@
                                                             <span class="fieldValue">${resource.getRimUriGlobal()}</span><br/>
                                                         </c:if>
                                                         <c:if test="${not empty resource.getPcrValues()}"> 
-                                                            <div class="component col col-md-10" role="tab" id="pcrValues">
-                                                                <a role="button" data-toggle="collapse" data-parent="#directorycollapse" class="collapsed"
-                                                                   href="#pcrscollapse" aria-expanded="false" aria-controls="pcrscollapse">
-                                                                    Expected PCR Values
-                                                                </a>                                                         
-                                                            </div>
-                                                            <div id="pcrscollapse" class="panel-collapse collapse" role="tabpanel" aria-labelledby="headingThree" aria-expanded="true">
-                                                                <div>
-                                                                <c:forEach items="${resource.getPcrValues()}" var="pcrValue">
-                                                                    <div id="componentIdentifier" class="row">
-                                                                        <div>                                                            
-                                                                            <span>PCR :</span>
-                                                                            <span style="overflow-wrap: break-word">${pcrValue}</span>
-                                                                        </div>
+                                                            <div class="panel-body">
+                                                                <div class="component col col-md-10" role="tab" id="pcrValues">
+                                                                    <a role="button" data-toggle="collapse" data-parent="#directorycollapse" class="collapsed"
+                                                                       href="#pcrscollapse" aria-expanded="false" aria-controls="pcrscollapse">
+                                                                        Expected PCR Values
+                                                                    </a>                                                         
+                                                                </div>
+                                                                <div id="pcrscollapse" class="panel-collapse collapse" role="tabpanel" aria-labelledby="headingThree" aria-expanded="true">
+                                                                    <div>
+                                                                        <c:forEach items="${resource.getPcrValues()}" var="pcrValue">
+                                                                            <div id="componentIdentifier" class="row">
+                                                                                <div>                                                            
+                                                                                    <span>PCR :</span>
+                                                                                    <span style="overflow-wrap: break-word">${pcrValue}</span>
+                                                                                </div>
+                                                                            </div>
+                                                                        </c:forEach>
                                                                     </div>
-                                                                </c:forEach>
                                                                 </div>
                                                             </div>
                                                         </c:if>

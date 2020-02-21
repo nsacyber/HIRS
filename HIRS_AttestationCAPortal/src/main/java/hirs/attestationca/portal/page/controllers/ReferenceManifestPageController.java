@@ -201,8 +201,16 @@ public class ReferenceManifestPageController
                 if (Files.notExists(pathDir)) {
                     Files.createDirectory(pathDir);
                 }
-                Files.createFile(path);
+                if (Files.notExists(path)) {
+                    Files.createFile(path);
+                }
+
                 Files.write(path, file.getBytes());
+
+                String uploadCompletedMessage = String.format(
+                        "%s successfully uploaded", file.getOriginalFilename());
+                messages.addSuccess(uploadCompletedMessage);
+                LOGGER.info(uploadCompletedMessage);
             }
         }
 
@@ -219,27 +227,6 @@ public class ReferenceManifestPageController
             }
         }
 
-        // loop through the files
-//        for (MultipartFile file : files) {
-//            if (file.getOriginalFilename().endsWith("zip")) {
-//                unarchiveZip(file);
-//            } else if (file.getOriginalFilename().endsWith("swidtag")) {
-//                //Parse reference manifests
-//                ReferenceManifest rim = parseRIM(file, messages);
-//
-//                //Store only if it was parsed
-//                if (rim != null) {
-//                    storeManifest(file.getOriginalFilename(),
-//                            messages,
-//                            rim,
-//                            referenceManifestManager);
-//                }
-//            } else {
-//                // currently assuming this is bin file
-//                TCGEventLogProcessor logProcessor = new TCGEventLogProcessor(file.getBytes());
-//                String[] pcrFromLog = logProcessor.getExpectedPCRValues();
-//            }
-//        }
         //Add messages to the model
         model.put(MESSAGES_ATTRIBUTE, messages);
 
