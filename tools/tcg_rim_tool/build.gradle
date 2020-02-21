@@ -6,13 +6,17 @@ repositories {
 }
 
 dependencies {
-	testCompile 'org.testng:testng:6.8.8'
+	compile libs.minimal_json
+	testCompile libs.testng
 }
 
 jar {
 	manifest {
-		attributes("Main-Class": "hirs.swid.Main")
+		attributes("Main-Class": "hirs.swid.Main",
+			   "Class-Path": configurations.runtime.files.collect { "lib/$it.name" }.join(' ')
+			  )
 	}
+	from(configurations.compile.collect { it.isDirectory() ? it : zipTree(it) }) {}
 }
 
 uploadArchives {
