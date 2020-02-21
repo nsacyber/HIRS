@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<SoftwareIdentity xmlns="http://standards.iso.org/iso/19770/-2/2015/schema.xsd" xmlns:ns2="http://www.w3.org/2000/09/xmldsig#" xmlns:ns3="http://standards.iso.org/iso/19770/-2/2015/schema.xsd" corpus="true" name="HIRS SWID Tag example" patch="false" supplemental="false" tagId="hirs.swid.SwidTags.example2" version="0.1">
+  <ns3:Entity name="HIRS2" regid="" role="softwareCreator tagCreator" thumbprint=""/>
+  <ns3:Link href="https://Example.com/support/ProductA/firmware/installfiles" rel="installationmedia"/>
+  <ns3:Meta xmlns:rim="https://trustedcomputinggroup.org/wp-content/uploads/TCG_RIM_Model" rim:bindingSpec="IOT RIM" rim:bindingSpecVersion="1.2" rim:colloquialVersion="1.0" rim:edition="First" rim:payloadType="Support" rim:pcURIGlobal="" rim:pcURILocal="" rim:platformManufacturerId="8813724" rim:platformManufacturerStr="6644133" rim:platformModel="ProductBlu" rim:platformVersion="5.50" rim:product="Bloobu" rim:revision="3.0" rim:rimLinkHash="88f21d8e44d4271149297404df91caf207130bfa116582408abd04ede6db7f51"/>
+  <ns3:Payload>
+    <ns3:Directory xmlns:rim="https://trustedcomputinggroup.org/wp-content/uploads/TCG_RIM_Model" name="iotBase" rim:supportRIMFormat="" rim:supportRIMType="" rim:supportRIMURIGlobal="">
+      <ns3:File xmlns:SHA256="http://www.w3.org/2001/04/xmlenc#sha256" SHA256:hash="688e293e3ccb522f6cf8a027c9ade7960f84bd0bf3a0b99812bc1fa498a2db8d" name="Example.com.iotBase.bin1" rim:supportRIMFormat="Direct" rim:supportRIMType="Support" rim:supportRIMURIGlobal="" size="15400"/>
+      <ns3:File xmlns:SHA256="http://www.w3.org/2001/04/xmlenc#sha256" SHA256:hash="688e293e3ccb522f6cf8a027c9ade7960f84bd0bf3a0b99812bc1fa498a2db8d" name="Example.com.iotBase.bin2" rim:supportRIMFormat="Direct" rim:supportRIMType="Support" rim:supportRIMURIGlobal="" size="15401"/>
+    </ns3:Directory>
+  </ns3:Payload>
+  <Signature xmlns="http://www.w3.org/2000/09/xmldsig#">
+    <SignedInfo>
+      <CanonicalizationMethod Algorithm="http://www.w3.org/TR/2001/REC-xml-c14n-20010315"/>
+      <SignatureMethod Algorithm="http://www.w3.org/2001/04/xmldsig-more#rsa-sha256"/>
+      <Reference URI="">
+        <Transforms>
+          <Transform Algorithm="http://www.w3.org/2000/09/xmldsig#enveloped-signature"/>
+        </Transforms>
+        <DigestMethod Algorithm="http://www.w3.org/2001/04/xmlenc#sha256"/>
+        <DigestValue>1Q6yBiNzRDboqNf/E+3uKGPqcAekPV24lSAcfp63TKo=</DigestValue>
+      </Reference>
+    </SignedInfo>
+    <SignatureValue>X2RsKxcqlhshMOEGZrcF1j2y5cBAMuSsd+YgOL1aJj2T6FGVx8c4ec2Z8ENUcuVlFI4zMLZGzeJI
+EjxnmN5GTRayF5wOqt25oyeif+9s2VwRm4mPZp24JbpDfIeyxRVBXXcPm6h6ydRfupvEsOJLihxd
+t3KxYQXEqnpteGuLSmg2jJk8oKKpb+e9GeOOw9QjQGKH49+f3snA5rghNW8x8jaxvM64tf+GRT/q
+XAMSpZiGMPe9PvLgp8VqPw4P0HBE4bwUVBnaf6qtkI7psAc6uem4qeghP02cZOdcW8W0ZJjcxOeH
+xYLu4qdByZ/m+Z97YQj4dwSQCAulHFWs246a4Q==</SignatureValue>
+    <KeyInfo>
+      <X509Data>
+        <X509SubjectName>CN=chubtub,OU=hirs,O=nsacyber,L=Unknown,ST=Unknown,C=US</X509SubjectName>
+        <X509Certificate>MIIDaTCCAlGgAwIBAgIEVTtDKzANBgkqhkiG9w0BAQsFADBlMQswCQYDVQQGEwJVUzEQMA4GA1UE
+CBMHVW5rbm93bjEQMA4GA1UEBxMHVW5rbm93bjERMA8GA1UEChMIbnNhY3liZXIxDTALBgNVBAsT
+BGhpcnMxEDAOBgNVBAMTB2NodWJ0dWIwHhcNMjAwMTI5MTYxODI5WhcNMjEwMTIzMTYxODI5WjBl
+MQswCQYDVQQGEwJVUzEQMA4GA1UECBMHVW5rbm93bjEQMA4GA1UEBxMHVW5rbm93bjERMA8GA1UE
+ChMIbnNhY3liZXIxDTALBgNVBAsTBGhpcnMxEDAOBgNVBAMTB2NodWJ0dWIwggEiMA0GCSqGSIb3
+DQEBAQUAA4IBDwAwggEKAoIBAQCFuwsH9AREu1t/u1dFyWIUaHff0R+wR2gDfQ8VOZKAMnJjSUfc
+P7m4kFedXOMj9AHQp8Ck6rMLcj5rXg81MxCykEZ8zb189A0iaaLg7fqqlQljDMc4LRhl7ZEAI9u1
++SPg+tS/xfFrd6SmRwcpa/2D77EmILYTneQqcxEUg2aNZbP/I1vJK/ibTL4mI/Y2D5fIKPI9aI+0
+rs0nqlEZcAViYgo8Ejxur9/3erdxQZS4csFmnIyF595w+0dbECsmG8VKTvt5x2z3Tm4spXKFDa5M
+0OmkyP3OMhPUWwDeAXziKzBWZ/Ak1S69/C5HceN/WrtX7AKhq2WYEyAnidZyMdDDAgMBAAGjITAf
+MB0GA1UdDgQWBBQXLczKOk0woNFfZMhqpY9p9bRncTANBgkqhkiG9w0BAQsFAAOCAQEAC7/atbbJ
+fntti1K1JJ/J2V5wJVYmhUUyuFzpTY1Dfwp/aNYILnOEs9WHrpI1AsgIXc1hLprs0vPM0kZsmaV9
+QfvYEijV11c9NCxphKvw9cfuawR09RMNdNQ6VJuFfLd5prMFdd13lcbBDx7tfd9Ryj2D9EcuiC1H
+Zyhrl5TzDeGEKSdlWUZVaa3GGg1bX/zV3rpFx5y+Vjen5NZXaZOavxtBakYIlY2/AEAiEe13EeJE
+Tjee053v9SWHtGvrjWOY2e1UQ2NOM6y+lUzv8IHFrQDpEzIycL8Uv2+S+KFZpQmpaPhIqm3RjmLf
+mD0XYHlNxV1SE5YmatMB5qDAFvYcDw==</X509Certificate>
+      </X509Data>
+    </KeyInfo>
+  </Signature>
+</SoftwareIdentity>

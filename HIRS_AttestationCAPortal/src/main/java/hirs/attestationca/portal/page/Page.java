@@ -50,6 +50,11 @@ public enum Page {
     REFERENCE_MANIFESTS("Reference Integrity Manifests",
             "ic_important_devices", "first"),
     /**
+     * Non-menu page to display rims.
+     */
+    RIM_DETAILS("Reference Integrity Manifest Details",
+            "", null, true, false, null, null),
+    /**
      * Page that manages Attestation CA Policy.
      */
     POLICY("Policy", "ic_subtitles"),
