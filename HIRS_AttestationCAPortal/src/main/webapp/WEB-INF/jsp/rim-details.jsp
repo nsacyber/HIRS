@@ -107,51 +107,71 @@
                     </div>
                     <div id="directorycollapse" class="panel-collapse collapse in" role="tabpanel" aria-labelledby="headingOne" aria-expanded="true">
                         <div class="panel-body">
-                            
-                                <div class="panel-heading" role="tab" id="headingThree">
-                                    <h3 class="panel-title">
-                                        <a role="button" data-toggle="collapse" data-parent="#directorycollapse" class="collapsed"
-                                           href="#filescollapse" aria-expanded="false" aria-controls="filescollapse">
-                                            Files
-                                        </a>
-                                    </h3>
-                                </div>
 
-                                <div id="filescollapse" class="panel-collapse collapse" role="tabpanel" aria-labelledby="headingThree" aria-expanded="true">
-                                    <c:if test="${not empty initialData.swidFiles}">
-                                        <div id="componentIdentifier" class="row">
-                                            <c:forEach items="${initialData.swidFiles}" var="resource">
-                                                <div class="component col col-md-10" style="padding-left: 20px">
-                                                    <div class="panel panel-default">     
-                                                        <div class="panel-heading">
-                                                            <span data-toggle="tooltip" data-placement="top" title="Resource File">${resource.getName()}
-                                                            </span>
-                                                        </div>
-                                                        <div class="component col col-md-10">                                                            
-                                                            <span class="fieldHeader">File Size:</span>
-                                                            <span class="fieldValue">${resource.getSize()}</span><br/>
-                                                            <span class="fieldHeader">Hash:</span>
-                                                            <span class="fieldValue" style="overflow-wrap: break-word">${resource.getHashValue()}</span><br/>
-                                                            <c:if test="${not empty resource.getRimFormat()}">
-                                                                <span class="fieldHeader">RIM Format:</span>
-                                                                <span class="fieldValue">${resource.getRimFormat()}</span><br/>
-                                                            </c:if>
-                                                            <c:if test="${not empty resource.getRimType()}">
-                                                                <span class="fieldHeader">RIM Type:</span>
-                                                                <span class="fieldValue">${resource.getRimType()}</span><br/>
-                                                            </c:if>
-                                                            <c:if test="${not empty resource.getRimUriGlobal()}">
-                                                                <span class="fieldHeader">URI Global:</span>
-                                                                <span class="fieldValue">${resource.getRimUriGlobal()}</span><br/>
-                                                            </c:if>
-                                                        </div>
-                                                    </div>                                                    
-                                                </div>
-                                            </c:forEach>
-                                        </div>                                    
-                                    </c:if>
-                                </div>                                
-                            
+                            <div class="panel-heading" role="tab" id="headingThree">
+                                <h3 class="panel-title">
+                                    <a role="button" data-toggle="collapse" data-parent="#directorycollapse" class="collapsed"
+                                       href="#filescollapse" aria-expanded="false" aria-controls="filescollapse">
+                                        Files
+                                    </a>
+                                </h3>
+                            </div>
+
+                            <div id="filescollapse" class="panel-collapse collapse" role="tabpanel" aria-labelledby="headingThree" aria-expanded="true">
+                                <c:if test="${not empty initialData.swidFiles}">
+                                    <div id="componentIdentifier" class="row">
+                                        <c:forEach items="${initialData.swidFiles}" var="resource">
+                                            <div class="component col col-md-10" style="padding-left: 20px">
+                                                <div class="panel panel-default">     
+                                                    <div class="panel-heading">
+                                                        <span data-toggle="tooltip" data-placement="top" title="Resource File">${resource.getName()}
+                                                        </span>
+                                                    </div>
+                                                    <div class="component col col-md-10">                                                            
+                                                        <span class="fieldHeader">File Size:</span>
+                                                        <span class="fieldValue">${resource.getSize()}</span><br/>
+                                                        <span class="fieldHeader">Hash:</span>
+                                                        <span class="fieldValue" style="overflow-wrap: break-word">${resource.getHashValue()}</span><br/>
+                                                        <c:if test="${not empty resource.getRimFormat()}">
+                                                            <span class="fieldHeader">RIM Format:</span>
+                                                            <span class="fieldValue">${resource.getRimFormat()}</span><br/>
+                                                        </c:if>
+                                                        <c:if test="${not empty resource.getRimType()}">
+                                                            <span class="fieldHeader">RIM Type:</span>
+                                                            <span class="fieldValue">${resource.getRimType()}</span><br/>
+                                                        </c:if>
+                                                        <c:if test="${not empty resource.getRimUriGlobal()}">
+                                                            <span class="fieldHeader">URI Global:</span>
+                                                            <span class="fieldValue">${resource.getRimUriGlobal()}</span><br/>
+                                                        </c:if>
+                                                        <c:if test="${not empty resource.getPcrValues()}"> 
+                                                            <div class="component col col-md-10" role="tab" id="pcrValues">
+                                                                <a role="button" data-toggle="collapse" data-parent="#directorycollapse" class="collapsed"
+                                                                   href="#pcrscollapse" aria-expanded="false" aria-controls="pcrscollapse">
+                                                                    Expected PCR Values
+                                                                </a>                                                         
+                                                            </div>
+                                                            <div id="pcrscollapse" class="panel-collapse collapse" role="tabpanel" aria-labelledby="headingThree" aria-expanded="true">
+                                                                <div>
+                                                                <c:forEach items="${resource.getPcrValues()}" var="pcrValue">
+                                                                    <div id="componentIdentifier" class="row">
+                                                                        <div>                                                            
+                                                                            <span>PCR :</span>
+                                                                            <span style="overflow-wrap: break-word">${pcrValue}</span>
+                                                                        </div>
+                                                                    </div>
+                                                                </c:forEach>
+                                                                </div>
+                                                            </div>
+                                                        </c:if>
+                                                    </div>
+                                                </div>                                                    
+                                            </div>
+                                        </c:forEach>
+                                    </div>                                    
+                                </c:if>
+                            </div>                                
+
                         </div>
                     </div>
                 </div>

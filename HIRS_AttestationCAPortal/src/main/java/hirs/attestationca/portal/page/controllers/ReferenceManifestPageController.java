@@ -21,20 +21,14 @@ import java.net.URISyntaxException;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.List;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
-import java.util.zip.ZipInputStream;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipFile;
-import java.util.Enumeration;
-import java.io.File;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.io.InputStream;
-import java.io.FileOutputStream;
-import java.io.FileNotFoundException;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.logging.log4j.LogManager;
@@ -191,25 +185,61 @@ public class ReferenceManifestPageController
             final RedirectAttributes attr) throws URISyntaxException, Exception {
         Map<String, Object> model = new HashMap<>();
         PageMessages messages = new PageMessages();
+        List<MultipartFile> rims = new ArrayList<>();
+        String fileName;
+        String uploadDirStr = System.getProperty("catalina.base")
+                        + "/webapps/HIRS_AttestationCAPortal/upload/";
+        Path pathDir = Paths.get(uploadDirStr);
+        Path path;
 
-        // loop through the files
         for (MultipartFile file : files) {
-            if (file.getOriginalFilename().endsWith("zip")) {
-                unarchiveZip(file);
+            fileName = file.getOriginalFilename();
+            if (fileName.toLowerCase().endsWith("swidtag")) {
+                rims.add(file);
             } else {
-                //Parse reference manifests
-                ReferenceManifest rims = parseRIMs(file, messages);
-
-                //Store only if it was parsed
-                if (rims != null) {
-                    storeManifest(file.getOriginalFilename(),
-                            messages,
-                            rims,
-                            referenceManifestManager);
+                path = Paths.get(uploadDirStr + file.getOriginalFilename());
+                if (Files.notExists(pathDir)) {
+                    Files.createDirectory(pathDir);
                 }
+                Files.createFile(path);
+                Files.write(path, file.getBytes());
             }
         }
 
+        for (MultipartFile file : rims) {
+            //Parse reference manifests
+            ReferenceManifest rim = parseRIM(file, messages);
+
+            //Store only if it was parsed
+            if (rim != null) {
+                storeManifest(file.getOriginalFilename(),
+                        messages,
+                        rim,
+                        referenceManifestManager);
+            }
+        }
+
+        // loop through the files
+//        for (MultipartFile file : files) {
+//            if (file.getOriginalFilename().endsWith("zip")) {
+//                unarchiveZip(file);
+//            } else if (file.getOriginalFilename().endsWith("swidtag")) {
+//                //Parse reference manifests
+//                ReferenceManifest rim = parseRIM(file, messages);
+//
+//                //Store only if it was parsed
+//                if (rim != null) {
+//                    storeManifest(file.getOriginalFilename(),
+//                            messages,
+//                            rim,
+//                            referenceManifestManager);
+//                }
+//            } else {
+//                // currently assuming this is bin file
+//                TCGEventLogProcessor logProcessor = new TCGEventLogProcessor(file.getBytes());
+//                String[] pcrFromLog = logProcessor.getExpectedPCRValues();
+//            }
+//        }
         //Add messages to the model
         model.put(MESSAGES_ATTRIBUTE, messages);
 
@@ -334,7 +364,7 @@ public class ReferenceManifestPageController
      * user.
      * @return a single or collection of reference manifest files.
      */
-    private ReferenceManifest parseRIMs(
+    private ReferenceManifest parseRIM(
             final MultipartFile file,
             final PageMessages messages) {
 
@@ -436,48 +466,48 @@ public class ReferenceManifestPageController
         }
     }
 
-    private void unarchiveZip(final MultipartFile zipUpload) {
-//        byte[] buffer = new byte[Integer.SIZE * Integer.SIZE];
-        ZipInputStream zis;
-        FileOutputStream fos;
-        ZipFile zipFile = null;
-        String uploadDirStr = "/etc/hirs/upload/";
-
-        try {
-            File uploadDirFile = new File(uploadDirStr);
-            if (uploadDirFile.mkdir()) {
-                LOGGER.error("FUSTA - Directory created");
-                Path path = Paths.get(uploadDirStr + zipUpload.getOriginalFilename());
-                Files.write(path, zipUpload.getBytes());
-
-                if (Files.exists(path)) {
-                    LOGGER.error(path.getFileName());
-                    zipFile = new ZipFile(new File(path.toUri()));
-                }
-            }
-
-            if (zipFile != null) {
-                Enumeration<? extends ZipEntry> zipEntries = zipFile.entries();
-                while (zipEntries.hasMoreElements()) {
-                    ZipEntry zipEntry = zipEntries.nextElement();
-                    LOGGER.error(zipEntry.getName());
-                    try (InputStream is = zipFile.getInputStream(zipEntry);) {
-                        String fileName = zipEntry.getName().toLowerCase();
-                        if (fileName.endsWith("swidtag")) {
-                            // parse as tag
-                            int i = 1 + 2;
-                            System.out.print(i);
-                        }
-                    }
-                }
-                zipFile.close();
-            }
-
-        } catch (FileNotFoundException fnfEx) {
-            LOGGER.error(fnfEx);
-        } catch (IOException ioEx) {
-            LOGGER.error(ioEx);
-        }
-
-    }
+//    private void unarchiveZip(final MultipartFile zipUpload) {
+////        byte[] buffer = new byte[Integer.SIZE * Integer.SIZE];
+//        ZipInputStream zis;
+//        FileOutputStream fos;
+//        ZipFile zipFile = null;
+//        String uploadDirStr = "/etc/hirs/upload/";
+//
+//        try {
+//            File uploadDirFile = new File(uploadDirStr);
+//            if (uploadDirFile.mkdir()) {
+//                LOGGER.error("FUSTA - Directory created");
+//                Path path = Paths.get(uploadDirStr + zipUpload.getOriginalFilename());
+//                Files.write(path, zipUpload.getBytes());
+//
+//                if (Files.exists(path)) {
+//                    LOGGER.error(path.getFileName());
+//                    zipFile = new ZipFile(new File(path.toUri()));
+//                }
+//            }
+//
+//            if (zipFile != null) {
+//                Enumeration<? extends ZipEntry> zipEntries = zipFile.entries();
+//                while (zipEntries.hasMoreElements()) {
+//                    ZipEntry zipEntry = zipEntries.nextElement();
+//                    LOGGER.error(zipEntry.getName());
+//                    try (InputStream is = zipFile.getInputStream(zipEntry);) {
+//                        String fileName = zipEntry.getName().toLowerCase();
+//                        if (fileName.endsWith("swidtag")) {
+//                            // parse as tag
+//                            int i = 1 + 2;
+//                            System.out.print(i);
+//                        }
+//                    }
+//                }
+//                zipFile.close();
+//            }
+//
+//        } catch (FileNotFoundException fnfEx) {
+//            LOGGER.error(fnfEx);
+//        } catch (IOException ioEx) {
+//            LOGGER.error(ioEx);
+//        }
+//
+//    }
 }

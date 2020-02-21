@@ -3,6 +3,8 @@ package hirs.data.persist;
 import com.google.common.base.Preconditions;
 import hirs.utils.xjc.File;
 import java.util.Map;
+import java.util.List;
+import java.util.Collections;
 import java.math.BigInteger;
 import javax.xml.namespace.QName;
 
@@ -15,6 +17,7 @@ public class SwidResource {
     private String name, size;
 
     private String rimFormat, rimType, rimUriGlobal, hashValue;
+    private List<String> pcrValues;
 
     /**
      * Default constructor.
@@ -26,6 +29,7 @@ public class SwidResource {
         rimType = null;
         rimUriGlobal = null;
         hashValue = null;
+        pcrValues = null;
     }
 
     /**
@@ -111,5 +115,21 @@ public class SwidResource {
      */
     public String getHashValue() {
         return hashValue;
+    }
+
+    /**
+     * Getter for the list of PCR Values.
+     * @return an unmodifiable list
+     */
+    public List<String> getPcrValues() {
+        return Collections.unmodifiableList(pcrValues);
+    }
+
+    /**
+     * Setter for the list of associated PCR Values.
+     * @param pcrValues a collection of PCRs
+     */
+    public void setPcrValues(final List<String> pcrValues) {
+        this.pcrValues = pcrValues;
     }
 }

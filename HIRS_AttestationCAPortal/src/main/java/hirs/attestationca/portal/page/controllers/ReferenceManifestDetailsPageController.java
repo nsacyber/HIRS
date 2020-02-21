@@ -1,14 +1,22 @@
-
 package hirs.attestationca.portal.page.controllers;
 
 import hirs.data.persist.ReferenceManifest;
+import hirs.data.persist.SwidResource;
 import hirs.persist.ReferenceManifestManager;
+import hirs.tpm.eventlog.TCGEventLogProcessor;
 import hirs.attestationca.portal.page.Page;
 import hirs.attestationca.portal.page.PageController;
 import hirs.attestationca.portal.page.PageMessages;
 import hirs.attestationca.portal.page.params.ReferenceManifestDetailsPageParams;
+import java.io.IOException;
+import java.nio.file.NoSuchFileException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 import java.util.UUID;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -24,14 +32,15 @@ import org.springframework.web.servlet.ModelAndView;
 @Controller
 @RequestMapping("/rim-details")
 public class ReferenceManifestDetailsPageController
-extends PageController<ReferenceManifestDetailsPageParams> {
+        extends PageController<ReferenceManifestDetailsPageParams> {
 
     private final ReferenceManifestManager referenceManifestManager;
-    private static final Logger LOGGER =
-            LogManager.getLogger(ReferenceManifestDetailsPageController.class);
+    private static final Logger LOGGER
+            = LogManager.getLogger(ReferenceManifestDetailsPageController.class);
 
     /**
      * Constructor providing the Page's display and routing specification.
+     *
      * @param referenceManifestManager the reference manifest manager
      */
     @Autowired
@@ -92,12 +101,14 @@ extends PageController<ReferenceManifestDetailsPageParams> {
     /**
      * This method takes the place of an entire class for a string builder.
      * Gathers all information and returns it for displays.
+     *
      * @param uuid database reference for the requested RIM.
      * @param referenceManifestManager the reference manifest manager.
      * @return mapping of the RIM information from the database.
+     * @throws java.io.IOException error for reading file bytes.
      */
     public static HashMap<String, Object> getRimDetailInfo(final UUID uuid,
-            final ReferenceManifestManager referenceManifestManager) {
+            final ReferenceManifestManager referenceManifestManager) throws IOException {
         HashMap<String, Object> data = new HashMap<>();
 
         ReferenceManifest rim = ReferenceManifest
@@ -140,7 +151,30 @@ extends PageController<ReferenceManifestDetailsPageParams> {
 
             // checkout later
             data.put("rimType", rim.getRimType());
-            data.put("swidFiles", rim.parseResource());
+            List<SwidResource> resources = rim.parseResource();
+            String resourceFilename;
+            String uploadDirStr = System.getProperty("catalina.base")
+                    + "/webapps/HIRS_AttestationCAPortal/upload/";
+            Path pathDir = Paths.get(uploadDirStr);
+            Path logPath;
+            TCGEventLogProcessor logProcessor = null;
+            try {
+                for (SwidResource swidRes : resources) {
+                    resourceFilename = swidRes.getName();
+                    logPath = Paths.get(pathDir.toString() + "/" + resourceFilename);
+                    logProcessor = new TCGEventLogProcessor(Files.readAllBytes(logPath));
+
+                    swidRes.setPcrValues(Arrays.asList(logProcessor.getExpectedPCRValues()));
+                    for (String string : swidRes.getPcrValues()) {
+                        LOGGER.error(string);
+                    }
+                }
+            } catch (NoSuchFileException nsfEx) {
+                LOGGER.error(String.format("FILLe NOt fouND! "
+                    + "Manifest with ID: %s", uuid));
+            }
+
+            data.put("swidFiles", resources);
         } else {
             LOGGER.error(String.format("Unable to find Reference Integrity "
                     + "Manifest with ID: %s", uuid));
