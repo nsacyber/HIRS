@@ -139,6 +139,13 @@ public class SwidTagGateway {
     private Marshaller marshaller;
     private Unmarshaller unmarshaller;
     private String attributesFile;
+    /**
+     * The keystoreFile is used in signXMLDocument() to pass in the keystore path.
+     * The same method requires the keystore password and the alias of the private key,
+     * which would need to be passed in if not using the default keystore.
+     */
+    private String keystoreFile;
+    private boolean showCert;
 
     /**
      * Default constructor initializes jaxbcontext, marshaller, and unmarshaller
@@ -149,13 +156,35 @@ public class SwidTagGateway {
             marshaller = jaxbContext.createMarshaller();
             unmarshaller = jaxbContext.createUnmarshaller();
             attributesFile = SwidTagConstants.DEFAULT_ATTRIBUTES_FILE;
+            keystoreFile = SwidTagConstants.DEFAULT_KEYSTORE_PATH;
+            showCert = false;
         } catch (JAXBException e) {
             System.out.println("Error initializing jaxbcontext: " + e.getMessage());
         }
     }
 
+    /**
+     * Setter for String holding attributes file path
+     * @param attributesFile
+     */
     public void setAttributesFile(String attributesFile) {
         this.attributesFile = attributesFile;
+    }
+
+    /**
+     * Setter for String holding keystore path
+     * @param keystore
+     */
+    public void setKeystoreFile(String keystoreFile) {
+        this.keystoreFile = keystoreFile;
+    }
+
+    /**
+     * Setter for boolean to display certificate block in xml signature
+     * @param showCert
+     */
+    public void setShowCert(boolean showCert) {
+        this.showCert = showCert;
     }
 
     /**
@@ -628,14 +657,16 @@ public class SwidTagGateway {
                     Collections.singletonList(reference)
             );
             KeyStore keystore = KeyStore.getInstance("JKS");
-            keystore.load(new FileInputStream(SwidTagConstants.DEFAULT_KEYSTORE_PATH), SwidTagConstants.DEFAULT_KEYSTORE_PASSWORD.toCharArray());
+            keystore.load(new FileInputStream(keystoreFile), SwidTagConstants.DEFAULT_KEYSTORE_PASSWORD.toCharArray());
             KeyStore.PrivateKeyEntry privateKey = (KeyStore.PrivateKeyEntry) keystore.getEntry(SwidTagConstants.DEFAULT_PRIVATE_KEY_ALIAS,
                     new KeyStore.PasswordProtection(SwidTagConstants.DEFAULT_KEYSTORE_PASSWORD.toCharArray()));
             X509Certificate certificate = (X509Certificate) privateKey.getCertificate();
             KeyInfoFactory kiFactory = sigFactory.getKeyInfoFactory();
             ArrayList<Object> x509Content = new ArrayList<Object>();
             x509Content.add(certificate.getSubjectX500Principal().getName());
-            x509Content.add(certificate);
+            if (showCert) {
+                x509Content.add(certificate);
+            }
             X509Data data = kiFactory.newX509Data(x509Content);
             KeyInfo keyinfo = kiFactory.newKeyInfo(Collections.singletonList(data));
 

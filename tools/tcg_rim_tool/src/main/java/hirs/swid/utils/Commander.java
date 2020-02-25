@@ -19,9 +19,8 @@ public class Commander {
     private static final String HELP_STRING = "help";
     private static final String PARSE_STRING = "parse";
     private static final String ATTRIBUTES_STRING = "attributes";
-    private static final String KEY_STRING = "key";
-    private static final String PRIVATE_KEY_STRING = "privatekey";
-    private static final String CERT_STRING = "cert";
+    private static final String KEYSTORE_STRING = "keystore";
+    private static final String SHOW_CERT_STRING = "show-cert";
 
     private boolean hasArguments = false;
     private boolean validate = false;
@@ -29,6 +28,7 @@ public class Commander {
     private boolean parse = false;
     private boolean attributesGiven = false;
     private boolean keystoreGiven = false;
+    private boolean showCert = false;
 
     private String validateFile;
     private String createOutFile = "";
@@ -106,9 +106,14 @@ public class Commander {
                 	parse = true;
                 	parseFile = args[++i];
                 	break;
-                case FULL_COMMAND_PREFIX + KEY_STRING:
+/*
+                case FULL_COMMAND_PREFIX + KEYSTORE_STRING:
                 case COMMAND_PREFIX + "k":
                     keystore = args[++i];
+                    break;
+*/
+                case FULL_COMMAND_PREFIX + SHOW_CERT_STRING:
+                    showCert = true;
                     break;
                 case FULL_COMMAND_PREFIX + HELP_STRING:
                 case COMMAND_PREFIX + "h":
@@ -224,6 +229,14 @@ public class Commander {
     }
 
     /**
+     * Getter for boolean to show certificate data or not
+     * @return
+     */
+    public boolean isShowCert() {
+        return showCert;
+    }
+
+    /**
      * Default no parameter help method.
      */
     private void printHelp() {
@@ -250,10 +263,13 @@ public class Commander {
                 + "   \t\t\t\tvalidates it against the schema at\n"
                 + "   \t\t\t\thttp://standards.iso.org/iso/19770/-2/2015/schema.xsd\n\n");
         sb.append("   -p, --parse <file>\t\tParse the given swidtag's payload\n\n");
-/*        sb.append("   -k, --key\t\t\tSpecify the credential and its location to use\n"
-                + "   \t-privatekey <file>\tfor digital signatures\n"
-                + "   \t-cert <file>\n\n");
-*/        sb.append("   -h, --help, <no args>\tPrints this command help information.\n");
+/*
+        sb.append("   -k, --keystore <file>\tSpecify the keystore and its location to use\n"
+                + "   \t\t\t\tfor digital signatures\n");
+ */
+        sb.append("   --show-cert\t\t\tPrint the certificate in the signature block of\n"
+                + "   \t\t\t\tthe base RIM\n\n");
+        sb.append("   -h, --help, <no args>\tPrints this command help information.\n");
         sb.append("   \t\t\t\tListing no command arguments will also\n"
                 + "   \t\t\t\tprint this help text.\n\n");
         sb.append("Example commands: \n"
