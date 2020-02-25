@@ -152,16 +152,15 @@ public class ReferenceManifestDetailsPageController
             // checkout later
             data.put("rimType", rim.getRimType());
             List<SwidResource> resources = rim.parseResource();
-            String resourceFilename;
-            String uploadDirStr = System.getProperty("catalina.base")
-                    + "/webapps/HIRS_AttestationCAPortal/upload/";
-            Path pathDir = Paths.get(uploadDirStr);
-            Path logPath;
+            String resourceFilename = null;
             TCGEventLogProcessor logProcessor;
+
             try {
                 for (SwidResource swidRes : resources) {
                     resourceFilename = swidRes.getName();
-                    logPath = Paths.get(pathDir.toString() + "/" + resourceFilename);
+                    Path logPath = Paths.get(String.format("%s/%s",
+                            SwidResource.RESOURCE_UPLOAD_FOLDER,
+                            resourceFilename));
                     if (Files.exists(logPath)) {
                         logProcessor = new TCGEventLogProcessor(
                                 Files.readAllBytes(logPath));
@@ -170,8 +169,9 @@ public class ReferenceManifestDetailsPageController
                     }
                 }
             } catch (NoSuchFileException nsfEx) {
-                LOGGER.error(String.format("File Not found! "
-                    + "Manifest with ID: %s", uuid));
+                LOGGER.error(String.format("File Not found!: %s",
+                        resourceFilename));
+                LOGGER.error(nsfEx);
             }
 
             data.put("swidFiles", resources);

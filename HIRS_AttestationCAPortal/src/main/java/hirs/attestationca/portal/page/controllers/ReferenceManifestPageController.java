@@ -13,6 +13,7 @@ import hirs.persist.DBManagerException;
 import hirs.persist.ReferenceManifestManager;
 import hirs.persist.CriteriaModifier;
 import hirs.data.persist.ReferenceManifest;
+import hirs.data.persist.SwidResource;
 import hirs.data.persist.certificate.Certificate;
 import java.io.IOException;
 import java.net.URISyntaxException;
@@ -120,12 +121,12 @@ public class ReferenceManifestPageController
     }
 
     /**
-     * Returns the path for the view and the data model for the page.
+     * Returns the filePath for the view and the data model for the page.
      *
      * @param params The object to map url parameters into.
      * @param model The data model for the request. Can contain data from
      * redirect.
-     * @return the path for the view and data model for the page.
+     * @return the filePath for the view and data model for the page.
      */
     @Override
     public ModelAndView initPage(final NoPageParams params,
@@ -187,25 +188,24 @@ public class ReferenceManifestPageController
         PageMessages messages = new PageMessages();
         List<MultipartFile> rims = new ArrayList<>();
         String fileName;
-        String uploadDirStr = System.getProperty("catalina.base")
-                        + "/webapps/HIRS_AttestationCAPortal/upload/";
-        Path pathDir = Paths.get(uploadDirStr);
-        Path path;
+        Path filePath;
 
         for (MultipartFile file : files) {
             fileName = file.getOriginalFilename();
             if (fileName.toLowerCase().endsWith("swidtag")) {
                 rims.add(file);
             } else {
-                path = Paths.get(uploadDirStr + file.getOriginalFilename());
-                if (Files.notExists(pathDir)) {
-                    Files.createDirectory(pathDir);
+                filePath = Paths.get(String.format("%s/%s",
+                            SwidResource.RESOURCE_UPLOAD_FOLDER,
+                            file.getOriginalFilename()));
+                if (Files.notExists(Paths.get(SwidResource.RESOURCE_UPLOAD_FOLDER))) {
+                    Files.createDirectory(Paths.get(SwidResource.RESOURCE_UPLOAD_FOLDER));
                 }
-                if (Files.notExists(path)) {
-                    Files.createFile(path);
+                if (Files.notExists(filePath)) {
+                    Files.createFile(filePath);
                 }
 
-                Files.write(path, file.getBytes());
+                Files.write(filePath, file.getBytes());
 
                 String uploadCompletedMessage = String.format(
                         "%s successfully uploaded", file.getOriginalFilename());
@@ -452,49 +452,4 @@ public class ReferenceManifestPageController
             LOGGER.error(failMessage, dbmEx);
         }
     }
-
-//    private void unarchiveZip(final MultipartFile zipUpload) {
-////        byte[] buffer = new byte[Integer.SIZE * Integer.SIZE];
-//        ZipInputStream zis;
-//        FileOutputStream fos;
-//        ZipFile zipFile = null;
-//        String uploadDirStr = "/etc/hirs/upload/";
-//
-//        try {
-//            File uploadDirFile = new File(uploadDirStr);
-//            if (uploadDirFile.mkdir()) {
-//                LOGGER.error("FUSTA - Directory created");
-//                Path path = Paths.get(uploadDirStr + zipUpload.getOriginalFilename());
-//                Files.write(path, zipUpload.getBytes());
-//
-//                if (Files.exists(path)) {
-//                    LOGGER.error(path.getFileName());
-//                    zipFile = new ZipFile(new File(path.toUri()));
-//                }
-//            }
-//
-//            if (zipFile != null) {
-//                Enumeration<? extends ZipEntry> zipEntries = zipFile.entries();
-//                while (zipEntries.hasMoreElements()) {
-//                    ZipEntry zipEntry = zipEntries.nextElement();
-//                    LOGGER.error(zipEntry.getName());
-//                    try (InputStream is = zipFile.getInputStream(zipEntry);) {
-//                        String fileName = zipEntry.getName().toLowerCase();
-//                        if (fileName.endsWith("swidtag")) {
-//                            // parse as tag
-//                            int i = 1 + 2;
-//                            System.out.print(i);
-//                        }
-//                    }
-//                }
-//                zipFile.close();
-//            }
-//
-//        } catch (FileNotFoundException fnfEx) {
-//            LOGGER.error(fnfEx);
-//        } catch (IOException ioEx) {
-//            LOGGER.error(ioEx);
-//        }
-//
-//    }
 }

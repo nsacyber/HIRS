@@ -154,11 +154,11 @@
                                                                 </div>
                                                                 <div id="pcrscollapse" class="panel-collapse collapse" role="tabpanel" aria-labelledby="headingThree" aria-expanded="true">
                                                                     <div>
-                                                                        <c:forEach items="${resource.getPcrValues()}" var="pcrValue">
+                                                                        <c:forEach items="${resource.getPcrMap()}" var="pcrValue">
                                                                             <div id="componentIdentifier" class="row">
-                                                                                <div>                                                            
-                                                                                    <span>PCR :</span>
-                                                                                    <span style="overflow-wrap: break-word">${pcrValue}</span>
+                                                                                <div>                                                                                    
+                                                                                    <span>${pcrValue.key}</span>
+                                                                                    <span style="overflow-wrap: break-word">${pcrValue.value}</span>
                                                                                 </div>
                                                                             </div>
                                                                         </c:forEach>

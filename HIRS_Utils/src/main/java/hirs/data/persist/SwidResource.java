@@ -4,6 +4,7 @@ import com.google.common.base.Preconditions;
 import hirs.utils.xjc.File;
 import java.util.Map;
 import java.util.List;
+import java.util.LinkedHashMap;
 import java.util.Collections;
 import java.math.BigInteger;
 import javax.xml.namespace.QName;
@@ -13,6 +14,16 @@ import javax.xml.namespace.QName;
  * section.
  */
 public class SwidResource {
+
+    private static final String CATALINA_HOME = System.getProperty("catalina.base");
+    private static final String TOMCAT_UPLOAD_DIRECTORY
+            = "/webapps/HIRS_AttestationCAPortal/upload/";
+
+    /**
+     * String holder for location for storing binaries.
+     */
+    public static final String RESOURCE_UPLOAD_FOLDER
+            = CATALINA_HOME + TOMCAT_UPLOAD_DIRECTORY;
 
     private String name, size;
 
@@ -131,5 +142,22 @@ public class SwidResource {
      */
     public void setPcrValues(final List<String> pcrValues) {
         this.pcrValues = pcrValues;
+    }
+
+    /**
+     * Getter for a generated map of the PCR values.
+     * @return mapping of PCR# to the actual value.
+     */
+    public LinkedHashMap<String, String> getPcrMap() {
+        LinkedHashMap<String, String> innerMap = new LinkedHashMap<>();
+
+        if (!this.pcrValues.isEmpty()) {
+            int iterate = 0;
+            for (String string : this.pcrValues) {
+                innerMap.put(String.format("PCR%s:", iterate++), string);
+            }
+        }
+
+        return innerMap;
     }
 }
