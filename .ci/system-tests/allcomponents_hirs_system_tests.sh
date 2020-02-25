@@ -756,6 +756,7 @@ parseNvmeData () {
         manufacturer="" # Making this appear as it does on windows, lshw doesn't see nvme drives and nvme-cli doesn't return a manufacturer field
         model=$(nvmeGetModelNumberForDevice "$i")
         serial=$(nvmeGetNguidForDevice "$i")
+
         if [[ $serial =~ ^[0]+$ ]]; then
            serial=$(nvmeGetEuiForDevice "$i")
         fi

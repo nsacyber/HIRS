@@ -35,12 +35,6 @@
                     <img src="${icons}/ic_file_download_black_24dp.png" title="Download Certificate">
                 </a>
             </c:when>
-            <c:when test="${param.type=='referencemanifest'}">
-                Reference Integrity Manifest
-                <a href="${portal}/certificate-request/reference-manifests/download?id=${param.id}">
-                    <img src="${icons}/ic_file_download_black_24dp.png" title="Download Certificate">
-                </a>
-            </c:when>
             <c:otherwise>
                 Unknown Certificate
             </c:otherwise>
@@ -106,18 +100,22 @@
                     <div class="col-md-1 col-md-offset-1"><span class="colHeader">Subject</span></div>
                     <div id="subject" class="col col-md-8">${initialData.subject}</div>
                 </div>
-            </c:if>
-            <div class="row">
-                <div class="col-md-1 col-md-offset-1"><span class="colHeader">Serial Number</span></div>
-                <div id="serialNumber" class="col col-md-8 vertical"></div>
-            </div>
-            <div class="row">
-                <div class="col-md-1 col-md-offset-1"><span class="colHeader">Validity</span></div>
-                <div id="validity" class="col col-md-8">
-                    <div>Not Before:&nbsp;<span>${initialData.beginValidity}</span></div>
-                    <div>Not After:&nbsp;<span>${initialData.endValidity}</span></div>
+            </c:if>            
+            <c:if test="${not empty initialData.serialNumber}">
+                <div class="row">
+                    <div class="col-md-1 col-md-offset-1"><span class="colHeader">Serial Number</span></div>
+                    <div id="serialNumber" class="col col-md-8 vertical"></div>
                 </div>
+            </c:if>
+            <c:if test="${not empty initialData.beginValidity}">
+                <div class="row">
+                    <div class="col-md-1 col-md-offset-1"><span class="colHeader">Validity</span></div>
+                    <div id="validity" class="col col-md-8">
+                        <div>Not Before:&nbsp;<span>${initialData.beginValidity}</span></div>
+                        <div>Not After:&nbsp;<span>${initialData.endValidity}</span></div>
+                    </div>
             </div>
+            </c:if>
             <div class="row">
                 <div class="col-md-1 col-md-offset-1"><span class="colHeader">Signature</span></div><div id="signatureSection" class="col col-md-8">
                     <div class="panel-body">

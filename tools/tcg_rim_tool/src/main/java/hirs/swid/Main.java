@@ -14,31 +14,40 @@ public class Main {
 
     public static void main(String[] args) {
         Commander commander = new Commander(args);
+        SwidTagGateway gateway = new SwidTagGateway();
 
         if (commander.hasArguments()) {
             // we have arguments to work with
+            if (commander.isAttributesGiven()) {
+                gateway.setAttributesFile(commander.getAttributesFile());
+            }
+/*            if (commander.isKeystoreGiven()) {
+
+            }
+*/
             if (commander.create()) {
+                String keystore = commander.getKeystore();
+                if (!keystore.isEmpty()) {
+                    //set keystore for gateway if given
+                }
                 // parsing the arguments detected a create parameter (-c)
-                (new SwidTagGateway()).generateSwidTag(commander.getCreateInFile(),
-                        commander.getCreateOutFile(), commander.getHashAlg());
-            } else if (commander.validate()) {
+                gateway.generateSwidTag(commander.getCreateOutFile());
+            }
+            if (commander.validate()) {
                 // parsing the arguments detected a validation parameter (-v)
                 try {
-                    (new SwidTagGateway()).validateSwidTag(commander.getValidateFile());
+                    gateway.validateSwidTag(commander.getValidateFile());
                 } catch (IOException e) {
                     System.out.println("Unable to validate file: " + e.getMessage());
                 }
-            } else if (commander.parse()) {
+            }
+            if (commander.parse()) {
                 try {
-                    (new SwidTagGateway()).parsePayload(commander.getParseFile());
+                    gateway.parsePayload(commander.getParseFile());
                 } catch (IOException e) {
                     System.out.println("Unable to parse file: " + e.getMessage());
                 }
             }
-        } else {
-                // development stage in which no valid arguments were given
-            // therefore generate a mock tag file
-            (new SwidTagGateway()).generateSwidTag();
         }
     }
 }
