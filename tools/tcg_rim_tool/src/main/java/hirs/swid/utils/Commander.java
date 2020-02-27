@@ -106,12 +106,6 @@ public class Commander {
                 	parse = true;
                 	parseFile = args[++i];
                 	break;
-/*
-                case FULL_COMMAND_PREFIX + KEYSTORE_STRING:
-                case COMMAND_PREFIX + "k":
-                    keystore = args[++i];
-                    break;
-*/
                 case FULL_COMMAND_PREFIX + SHOW_CERT_STRING:
                     showCert = true;
                     break;
