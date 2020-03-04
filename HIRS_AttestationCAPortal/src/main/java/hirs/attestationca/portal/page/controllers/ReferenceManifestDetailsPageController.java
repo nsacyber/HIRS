@@ -153,7 +153,7 @@ public class ReferenceManifestDetailsPageController
             data.put("rimType", rim.getRimType());
             List<SwidResource> resources = rim.parseResource();
             String resourceFilename = null;
-            TCGEventLogProcessor logProcessor;
+            TCGEventLogProcessor logProcessor = new TCGEventLogProcessor();
 
             try {
                 for (SwidResource swidRes : resources) {
@@ -164,6 +164,9 @@ public class ReferenceManifestDetailsPageController
                     if (Files.exists(logPath)) {
                         logProcessor = new TCGEventLogProcessor(
                                 Files.readAllBytes(logPath));
+                        swidRes.setPcrValues(Arrays.asList(
+                                logProcessor.getExpectedPCRValues()));
+                    } else {
                         swidRes.setPcrValues(Arrays.asList(
                                 logProcessor.getExpectedPCRValues()));
                     }

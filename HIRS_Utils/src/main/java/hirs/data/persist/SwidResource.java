@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.LinkedHashMap;
 import java.util.Collections;
 import java.math.BigInteger;
+import java.text.DecimalFormat;
 import javax.xml.namespace.QName;
 
 /**
@@ -150,11 +151,14 @@ public class SwidResource {
      */
     public LinkedHashMap<String, String> getPcrMap() {
         LinkedHashMap<String, String> innerMap = new LinkedHashMap<>();
+        DecimalFormat df = new DecimalFormat("00");
 
         if (!this.pcrValues.isEmpty()) {
-            int iterate = 0;
+            long iterate = 0;
+            String pcrNum;
             for (String string : this.pcrValues) {
-                innerMap.put(String.format("PCR%s:", iterate++), string);
+                pcrNum = df.format(iterate++);
+                innerMap.put(String.format("PCR%s:", pcrNum), string);
             }
         }
 

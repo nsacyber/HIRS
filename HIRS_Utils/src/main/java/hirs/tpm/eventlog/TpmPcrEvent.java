@@ -168,16 +168,6 @@ public class TpmPcrEvent {
     }
 
     /**
-     * Sets the event digest value after processing.
-     *
-     * @param digestData SHA1 or SHA256 digest to set
-     */
-    protected void setDigest(final byte[] digestData) {
-        digest = new byte[digestLength];
-        System.arraycopy(digestData, 0, digest, 0, digestLength);
-    }
-
-    /**
      * Sets the event content after processing.
      *
      * @param eventData The PFP defined event content
