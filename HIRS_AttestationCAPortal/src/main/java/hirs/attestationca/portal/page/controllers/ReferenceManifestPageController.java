@@ -1,9 +1,11 @@
+
 package hirs.attestationca.portal.page.controllers;
 
 import hirs.attestationca.portal.datatables.DataTableInput;
 import hirs.attestationca.portal.datatables.DataTableResponse;
 import hirs.attestationca.portal.page.Page;
 import hirs.attestationca.portal.page.PageController;
+import hirs.attestationca.portal.page.params.ReferenceManifestPageParams;
 
 import hirs.FilteredRecordsList;
 import hirs.attestationca.portal.datatables.OrderedListQueryDataTableAdapter;
@@ -18,7 +20,6 @@ import hirs.data.persist.certificate.Certificate;
 import java.io.IOException;
 import java.net.URISyntaxException;
 
-//import java.math.BigInteger;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -190,6 +191,7 @@ public class ReferenceManifestPageController
         String fileName;
         Path filePath;
 
+        // loop through the files
         for (MultipartFile file : files) {
             fileName = file.getOriginalFilename();
             if (fileName.toLowerCase().endsWith("swidtag")) {
