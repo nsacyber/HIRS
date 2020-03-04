@@ -5,7 +5,6 @@ import hirs.attestationca.portal.datatables.DataTableInput;
 import hirs.attestationca.portal.datatables.DataTableResponse;
 import hirs.attestationca.portal.page.Page;
 import hirs.attestationca.portal.page.PageController;
-import hirs.attestationca.portal.page.params.ReferenceManifestPageParams;
 
 import hirs.FilteredRecordsList;
 import hirs.attestationca.portal.datatables.OrderedListQueryDataTableAdapter;
