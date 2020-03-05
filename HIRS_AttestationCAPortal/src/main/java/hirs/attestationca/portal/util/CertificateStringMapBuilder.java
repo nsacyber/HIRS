@@ -342,9 +342,15 @@ public final class CertificateStringMapBuilder {
             data.put("CPSuri", certificate.getCPSuri());
             //component failure
             StringBuilder savedFailures = new StringBuilder();
+            String[] serialSplit;
             for (String s : certificate.getComponentFailures().split(",")) {
                 if (s.contains("Serial")) {
-                    savedFailures.append(s.split("=")[SERIAL_INDEX]);
+                    serialSplit = s.split("=");
+                    if (serialSplit.length > SERIAL_INDEX) {
+                        savedFailures.append(s.split("=")[SERIAL_INDEX]);
+                    } else {
+                        savedFailures.append(s);
+                    }
                 }
             }
             data.put("failures", savedFailures.toString());

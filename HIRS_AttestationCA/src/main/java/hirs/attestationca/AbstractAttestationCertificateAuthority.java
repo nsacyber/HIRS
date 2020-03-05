@@ -284,6 +284,13 @@ public abstract class AbstractAttestationCertificateAuthority
         // store device and device info report.
         Device device = this.deviceRegister.saveOrUpdateDevice(deviceInfoReport);
 
+        LOG.error("Trying to print pcrs...");
+        if (pcrsList.length > 0) {
+            for (int i = 0; i < pcrsList.length; i++) {
+                LOG.error(pcrsList[i]);
+            }
+        }
+
         // perform supply chain validation. Note: It's possible that this should be done earlier
         // in this method.
         SupplyChainValidationSummary summary =
