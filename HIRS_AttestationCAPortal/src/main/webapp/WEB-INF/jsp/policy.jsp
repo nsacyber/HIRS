@@ -52,11 +52,11 @@
                     </li>
                 </form:form>
             </div>
-            <%-- Generate Issued Attestation Certificate--%>
+            <%-- Generate Attestation Certificate--%>
             <div class="aca-input-box">
                 <br />
                 <form:form method="POST" modelAttribute="initialData" action="policy/update-issue-attestation">
-                    <li>Generate Issued Attestation Certificate: ${(initialData.issueAttestationCertificate || initialData.generateOnExpiration) ? 'Enabled' : 'Disabled'}
+                    <li>Generate Attestation Certificate: ${(initialData.issueAttestationCertificate || initialData.generateOnExpiration) ? 'Enabled' : 'Disabled'}
                         <my:editor id="issuedCertificatePolicyEditor" label="Edit Settings">
                             <div class="radio">
                                 <label><input id="aicTop" type="radio" name="attestationCertificateIssued" ${initialData.issueAttestationCertificate ? '' : 'checked'} value="unchecked"/> Never generate an Attestation Certificate</label>
