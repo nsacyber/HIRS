@@ -165,7 +165,7 @@ public class TrustChainManagementPageControllerTest extends PageControllerTest {
         FlashMap flashMap = result.getFlashMap();
         PageMessages pageMessages = (PageMessages) flashMap.get("messages");
         Assert.assertEquals(pageMessages.getSuccess()
-                .get(0), "New certificate successfully uploaded (" + NONCACERT + ")");
+                .get(0), "New certificate successfully uploaded (" + NONCACERT + "): ");
         Assert.assertEquals(pageMessages.getError().size(), 0);
 
         // verify the cert was actually stored
@@ -218,7 +218,7 @@ public class TrustChainManagementPageControllerTest extends PageControllerTest {
         Assert.assertEquals(pageMessages.getSuccess().size(), 1);
         Assert.assertEquals(pageMessages.getError().size(), 0);
         Assert.assertEquals(pageMessages.getSuccess().get(0),
-                "Pre-existing certificate found and unarchived (" + NONCACERT + ")");
+                "Pre-existing certificate found and unarchived (" + NONCACERT + "): ");
 
         // verify the cert can be retrieved without looking at archived certs
         Set<Certificate> records = certificateManager.get(CertificateAuthorityCredential

@@ -12,6 +12,7 @@ ENTERPRISE_NUMBERS_FILE="$APP_HOME""/enterprise-numbers"
 PEN_ROOT="1.3.6.1.4.1." # OID root for the private enterprise numbers
 SMBIOS_SCRIPT="$APP_HOME""/smbios.sh"
 HW_SCRIPT="$APP_HOME""/hw.sh" # For components not covered by SMBIOS
+NVME_SCRIPT="$APP_HOME""/nvme.sh" # For nvme components, until lshw supports them
 
 ### SMBIOS Type Constants
 source $SMBIOS_SCRIPT
@@ -24,6 +25,7 @@ SMBIOS_TYPE_RAM="17"
 
 ### hw
 source $HW_SCRIPT
+source $NVME_SCRIPT
 
 ### ComponentClass values
 COMPCLASS_REGISTRY_TCG="2.23.133.18.3.1" # switch off values within SMBIOS to reveal accurate component classes
@@ -610,11 +612,12 @@ parseNicData () {
 
     for ((i = 0 ; i < numHandles ; i++ )); do
         manufacturer=$(lshwGetVendorIDFromBusItem "$i")
-    model=$(lshwGetProductIDFromBusItem "$i")
-    serialConstant=$(lshwGetSerialFromBusItem "$i")
+    	model=$(lshwGetProductIDFromBusItem "$i")
+    	serialConstant=$(lshwGetLogicalNameFromBusItem "$i")
+        serialConstant=$(ethtoolPermAddr "$serialConstant")
         serialConstant=$(standardizeMACAddr "${serialConstant}")
         serial=""
-    revision=$(lshwGetVersionFromBusItem "$i")
+    	revision=$(lshwGetVersionFromBusItem "$i")
 
         if [[ -z "${manufacturer// }" ]] && [[ -z "${model// }" ]] && (! [[ -z "${serialConstant// }" ]] || ! [[ -z "${revision// }" ]]); then
             manufacturer=$(lshwGetVendorNameFromBusItem "$i")
@@ -690,9 +693,9 @@ parseHddData () {
 
     for ((i = 0 ; i < numHandles ; i++ )); do
         manufacturer=$(lshwGetVendorIDFromBusItem "$i")
-    model=$(lshwGetProductIDFromBusItem "$i")
-    serial=$(lshwGetSerialFromBusItem "$i")
-    revision=$(lshwGetVersionFromBusItem "$i")
+	    model=$(lshwGetProductIDFromBusItem "$i")
+	    serial=$(lshwGetSerialFromBusItem "$i")
+	    revision=$(lshwGetVersionFromBusItem "$i")
 
         if [[ -z "${manufacturer// }" ]] && [[ -z "${model// }" ]] && (! [[ -z "${serial// }" ]] || ! [[ -z "${revision// }" ]]); then
             model=$(lshwGetProductNameFromBusItem "$i")
@@ -741,6 +744,54 @@ parseHddData () {
     printf "$tmpData"
 }
 
+parseNvmeData () {
+    nvmeParse
+
+    replaceable=$(jsonFieldReplaceable "true")
+    tmpData=""
+    numHandles=$(nvmeNumDevices)
+    class=$(jsonComponentClass "$COMPCLASS_REGISTRY_TCG" "$COMPCLASS_HDD")
+
+    for ((i = 0 ; i < numHandles ; i++ )); do
+        manufacturer="" # Making this appear as it does on windows, lshw doesn't see nvme drives and nvme-cli doesn't return a manufacturer field
+        model=$(nvmeGetModelNumberForDevice "$i")
+        serial=$(nvmeGetNguidForDevice "$i")
+
+        if [[ $serial =~ ^[0]+$ ]]; then
+           serial=$(nvmeGetEuiForDevice "$i")
+        fi
+        revision="" # empty for a similar reason to the manufacturer field
+
+    if [[ -z "${manufacturer// }" ]]; then
+        manufacturer="$NOT_SPECIFIED"
+    fi
+    manufacturer=$(echo "$manufacturer" | sed 's/^[ \t]*//;s/[ \t]*$//')
+    manufacturer=$(jsonManufacturer "$manufacturer")
+
+    if [[ -z "${model// }" ]]; then
+        model="$NOT_SPECIFIED"
+    fi
+    model=$(echo "${model:0:16}" | sed 's/^[ \t]*//;s/[ \t]*$//') # limited to 16 characters for compatibility to windows, then trimmed
+    model=$(jsonModel "$model")
+
+    optional=""
+    if ! [[ -z "${serial// }" ]]; then
+        serial=$(echo "${serial^^}" | sed 's/^[ \t]*//;s/[ \t]*$//' | sed 's/.\{4\}/&_/g' | sed 's/_$/\./')
+        serial=$(jsonSerial "$serial")
+        optional="$optional"",""$serial"
+    fi
+    optional=$(printf "$optional" | cut -c2-)
+
+        newHddData=$(jsonComponent "$class" "$manufacturer" "$model" "$replaceable" "$optional")
+        tmpData="$tmpData"",""$newHddData"
+    done
+
+    # remove leading comma
+    tmpData=$(printf "$tmpData" | cut -c2-)
+
+    printf "$tmpData"
+}
+
 parseGfxData () {
     lshwDisplay
 
@@ -757,7 +808,7 @@ parseGfxData () {
 
         if [[ -z "${manufacturer// }" ]] && [[ -z "${model// }" ]] && (! [[ -z "${serial// }" ]] || ! [[ -z "${revision// }" ]]); then
             manufacturer=$(lshwGetVendorNameFromBusItem "$i")
-        model=$(lshwGetProductNameFromBusItem "$i")
+        	model=$(lshwGetProductNameFromBusItem "$i")
         fi
 
     if [[ -z "${manufacturer// }" ]]; then
@@ -812,7 +863,7 @@ componentsRAM=$(parseRamData)
 componentsNIC=$(parseNicData)
 componentsHDD=$(parseHddData)
 componentsGFX=$(parseGfxData)
-componentArray=$(jsonComponentArray "$componentChassis" "$componentBaseboard" "$componentBios" "$componentsCPU" "$componentsRAM" "$componentsNIC" "$componentsHDD" "$componentsGFX")
+componentArray=$(jsonComponentArray "$componentChassis" "$componentBaseboard" "$componentBios" "$componentsCPU" "$componentsRAM" "$componentsNIC" "$componentsHDD" "$componentsNVMe" "$componentsGFX")
 
 ### Collate the property details
 propertyArray=$(jsonPropertyArray "$property1" "$property2")

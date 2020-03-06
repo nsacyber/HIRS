@@ -32,4 +32,7 @@
      <Match>
        <Class name="hirs.utils.SpringContextProvider" />
      </Match>
+    <Match>
+        <Package name="~hirs\.utils\.xjc.*" />
+    </Match>
 </FindBugsFilter>
