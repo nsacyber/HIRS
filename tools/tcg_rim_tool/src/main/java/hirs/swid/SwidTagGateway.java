@@ -139,6 +139,13 @@ public class SwidTagGateway {
     private Marshaller marshaller;
     private Unmarshaller unmarshaller;
     private String attributesFile;
+    /**
+     * The keystoreFile is used in signXMLDocument() to pass in the keystore path.
+     * The same method requires the keystore password and the alias of the private key,
+     * which would need to be passed in if not using the default keystore.
+     */
+    private String keystoreFile;
+    private boolean showCert;
 
     /**
      * Default constructor initializes jaxbcontext, marshaller, and unmarshaller
@@ -149,13 +156,35 @@ public class SwidTagGateway {
             marshaller = jaxbContext.createMarshaller();
             unmarshaller = jaxbContext.createUnmarshaller();
             attributesFile = SwidTagConstants.DEFAULT_ATTRIBUTES_FILE;
+            keystoreFile = SwidTagConstants.DEFAULT_KEYSTORE_PATH;
+            showCert = false;
         } catch (JAXBException e) {
             System.out.println("Error initializing jaxbcontext: " + e.getMessage());
         }
     }
 
+    /**
+     * Setter for String holding attributes file path
+     * @param attributesFile
+     */
     public void setAttributesFile(String attributesFile) {
         this.attributesFile = attributesFile;
+    }
+
+    /**
+     * Setter for String holding keystore path
+     * @param keystore
+     */
+    public void setKeystoreFile(String keystoreFile) {
+        this.keystoreFile = keystoreFile;
+    }
+
+    /**
+     * Setter for boolean to display certificate block in xml signature
+     * @param showCert
+     */
+    public void setShowCert(boolean showCert) {
+        this.showCert = showCert;
     }
 
     /**
@@ -359,39 +388,6 @@ public class SwidTagGateway {
         }
     }
     
-    /**
-     * Given an input swidtag at [path] parse any PCRs in the payload into an InputStream object.
-     * This method will be used in a following pull request.
-     *
-     * @param path
-     * @return
-     * @throws IOException
-     */
-    public ByteArrayInputStream parsePayload(String path) throws IOException {
-        JAXBElement jaxbe = unmarshallSwidTag(path);
-		SoftwareIdentity softwareIdentity = (SoftwareIdentity) jaxbe.getValue();
-		String pcrs = "";
-		if (!softwareIdentity.getEntityOrEvidenceOrLink().isEmpty()) {
-			List<Object> swidtag = softwareIdentity.getEntityOrEvidenceOrLink();
-			for (Object obj : swidtag) {
-				try {
-					JAXBElement element = (JAXBElement) obj;
-					String elementName = element.getName().getLocalPart();
-					if (elementName.equals(SwidTagConstants.PAYLOAD)) {
-						ResourceCollection rc = (ResourceCollection) element.getValue();
-						if (!rc.getDirectoryOrFileOrProcess().isEmpty()) {
-							pcrs = parsePCRs(rc.getDirectoryOrFileOrProcess());
-						}
-					}
-				} catch (ClassCastException e) {
-					System.out.println("Found a non-JAXBElement object!" + e.getMessage());
-					throw new IOException("Found an invalid element in the swidtag file!");
-				}
-			}
-		}
-		return new ByteArrayInputStream(pcrs.getBytes(StandardCharsets.UTF_8));
-    }
-
     /**
      * This method creates SoftwareIdentity element based on the parameters read in from
      * a properties file.
@@ -628,14 +624,16 @@ public class SwidTagGateway {
                     Collections.singletonList(reference)
             );
             KeyStore keystore = KeyStore.getInstance("JKS");
-            keystore.load(new FileInputStream(SwidTagConstants.DEFAULT_KEYSTORE_PATH), SwidTagConstants.DEFAULT_KEYSTORE_PASSWORD.toCharArray());
+            keystore.load(new FileInputStream(keystoreFile), SwidTagConstants.DEFAULT_KEYSTORE_PASSWORD.toCharArray());
             KeyStore.PrivateKeyEntry privateKey = (KeyStore.PrivateKeyEntry) keystore.getEntry(SwidTagConstants.DEFAULT_PRIVATE_KEY_ALIAS,
                     new KeyStore.PasswordProtection(SwidTagConstants.DEFAULT_KEYSTORE_PASSWORD.toCharArray()));
             X509Certificate certificate = (X509Certificate) privateKey.getCertificate();
             KeyInfoFactory kiFactory = sigFactory.getKeyInfoFactory();
             ArrayList<Object> x509Content = new ArrayList<Object>();
             x509Content.add(certificate.getSubjectX500Principal().getName());
-            x509Content.add(certificate);
+            if (showCert) {
+                x509Content.add(certificate);
+            }
             X509Data data = kiFactory.newX509Data(x509Content);
             KeyInfo keyinfo = kiFactory.newKeyInfo(Collections.singletonList(data));
 
@@ -735,6 +733,39 @@ public class SwidTagGateway {
     }
 
     /**
+     * Given an input swidtag at [path] parse any PCRs in the payload into an InputStream object.
+     * This method will be used in a following pull request.
+     *
+     * @param path
+     * @return
+     * @throws IOException
+     */
+    public ByteArrayInputStream parsePayload(String path) throws IOException {
+        JAXBElement jaxbe = unmarshallSwidTag(path);
+        SoftwareIdentity softwareIdentity = (SoftwareIdentity) jaxbe.getValue();
+        String pcrs = "";
+        if (!softwareIdentity.getEntityOrEvidenceOrLink().isEmpty()) {
+            List<Object> swidtag = softwareIdentity.getEntityOrEvidenceOrLink();
+            for (Object obj : swidtag) {
+                try {
+                    JAXBElement element = (JAXBElement) obj;
+                    String elementName = element.getName().getLocalPart();
+                    if (elementName.equals(SwidTagConstants.PAYLOAD)) {
+                        ResourceCollection rc = (ResourceCollection) element.getValue();
+                        if (!rc.getDirectoryOrFileOrProcess().isEmpty()) {
+                            pcrs = parsePCRs(rc.getDirectoryOrFileOrProcess());
+                        }
+                    }
+                } catch (ClassCastException e) {
+                    System.out.println("Found a non-JAXBElement object!" + e.getMessage());
+                    throw new IOException("Found an invalid element in the swidtag file!");
+                }
+            }
+        }
+        return new ByteArrayInputStream(pcrs.getBytes(StandardCharsets.UTF_8));
+    }
+
+    /**
      * This method traverses a hirs.swid.xjc.Directory recursively until it finds at
      * least one hirs.swid.xjc.File.  This File is expected to have an attribute of the form
      * "[hash algorithm]=[hash value]."
@@ -761,7 +792,7 @@ public class SwidTagGateway {
     			if (pcrHash.isEmpty()) {
     				pcrHash = "null";
     			}
-    			sb.append(pcr.getName() + "," + pcrHash + newline);
+    			sb.append(pcr.getName() + "," + pcrHash);
     		}
     	}
     	System.out.println(sb.toString());
@@ -769,8 +800,8 @@ public class SwidTagGateway {
     }
 
     /**
-     * This method unmarshalls the swidtag found at [path] and validates it according to the
-     * schema.
+     * This method unmarshalls the swidtag found at [path] into a JAXBElement object
+     * and validates it according to the schema.
      *
      * @param path to the input swidtag
      * @return the SoftwareIdentity element at the root of the swidtag
@@ -779,14 +810,14 @@ public class SwidTagGateway {
     private JAXBElement unmarshallSwidTag(String path) throws IOException {
     	File input = null;
     	InputStream is = null;
-    	JAXBElement jaxbe = null;
+    	JAXBElement swidtag = null;
     	try {
     		input = new File(path);
     		is = SwidTagGateway.class.getClassLoader().getResourceAsStream(SwidTagConstants.SCHEMA_URL);
     		SchemaFactory schemaFactory = SchemaFactory.newInstance(SwidTagConstants.SCHEMA_LANGUAGE);
     		Schema schema = schemaFactory.newSchema(new StreamSource(is));
     		unmarshaller.setSchema(schema);
-    		jaxbe = (JAXBElement) unmarshaller.unmarshal(input);
+            swidtag = (JAXBElement) unmarshaller.unmarshal(input);
     	} catch (SAXException e) {
             System.out.println("Error setting schema for validation!");
         } catch (UnmarshalException e) {
@@ -803,8 +834,8 @@ public class SwidTagGateway {
         			System.out.println("Error closing input stream");
         		}
         	}
-        	if (jaxbe != null) {
-        	    return jaxbe;
+        	if (swidtag != null) {
+        	    return swidtag;
         	} else {
         	    throw new IOException("Invalid swidtag file!");
         	}

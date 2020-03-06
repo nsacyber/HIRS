@@ -21,15 +21,14 @@ public class Main {
             if (commander.isAttributesGiven()) {
                 gateway.setAttributesFile(commander.getAttributesFile());
             }
-/*            if (commander.isKeystoreGiven()) {
-
+            if (commander.isKeystoreGiven()) {
+                gateway.setKeystoreFile(commander.getKeystore());
             }
-*/
+            if (commander.isShowCert()) {
+                gateway.setShowCert(true);
+            }
+
             if (commander.create()) {
-                String keystore = commander.getKeystore();
-                if (!keystore.isEmpty()) {
-                    //set keystore for gateway if given
-                }
                 // parsing the arguments detected a create parameter (-c)
                 gateway.generateSwidTag(commander.getCreateOutFile());
             }
