@@ -41,7 +41,7 @@ public class TpmPcrEvent1 extends TpmPcrEvent {
             setEventType(unit32Data);
             byte[] eventDigest = new byte[SHA1_LENGTH];
             is.read(eventDigest);
-            setDigest(eventDigest);
+            setEventDigest(eventDigest);
             is.read(unit32Data);
             int eventSize = HexUtils.leReverseInt(unit32Data);
             byte[] eventContent = new byte[eventSize];

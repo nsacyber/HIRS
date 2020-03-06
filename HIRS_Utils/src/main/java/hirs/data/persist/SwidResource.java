@@ -3,7 +3,11 @@ package hirs.data.persist;
 import com.google.common.base.Preconditions;
 import hirs.utils.xjc.File;
 import java.util.Map;
+import java.util.List;
+import java.util.LinkedHashMap;
+import java.util.Collections;
 import java.math.BigInteger;
+import java.text.DecimalFormat;
 import javax.xml.namespace.QName;
 
 /**
@@ -12,9 +16,20 @@ import javax.xml.namespace.QName;
  */
 public class SwidResource {
 
+    private static final String CATALINA_HOME = System.getProperty("catalina.base");
+    private static final String TOMCAT_UPLOAD_DIRECTORY
+            = "/webapps/HIRS_AttestationCAPortal/upload/";
+
+    /**
+     * String holder for location for storing binaries.
+     */
+    public static final String RESOURCE_UPLOAD_FOLDER
+            = CATALINA_HOME + TOMCAT_UPLOAD_DIRECTORY;
+
     private String name, size;
 
     private String rimFormat, rimType, rimUriGlobal, hashValue;
+    private List<String> pcrValues;
 
     /**
      * Default constructor.
@@ -26,6 +41,7 @@ public class SwidResource {
         rimType = null;
         rimUriGlobal = null;
         hashValue = null;
+        pcrValues = null;
     }
 
     /**
@@ -111,5 +127,41 @@ public class SwidResource {
      */
     public String getHashValue() {
         return hashValue;
+    }
+
+    /**
+     * Getter for the list of PCR Values.
+     * @return an unmodifiable list
+     */
+    public List<String> getPcrValues() {
+        return Collections.unmodifiableList(pcrValues);
+    }
+
+    /**
+     * Setter for the list of associated PCR Values.
+     * @param pcrValues a collection of PCRs
+     */
+    public void setPcrValues(final List<String> pcrValues) {
+        this.pcrValues = pcrValues;
+    }
+
+    /**
+     * Getter for a generated map of the PCR values.
+     * @return mapping of PCR# to the actual value.
+     */
+    public LinkedHashMap<String, String> getPcrMap() {
+        LinkedHashMap<String, String> innerMap = new LinkedHashMap<>();
+        DecimalFormat df = new DecimalFormat("00");
+
+        if (!this.pcrValues.isEmpty()) {
+            long iterate = 0;
+            String pcrNum;
+            for (String string : this.pcrValues) {
+                pcrNum = df.format(iterate++);
+                innerMap.put(String.format("PCR%s:", pcrNum), string);
+            }
+        }
+
+        return innerMap;
     }
 }
