@@ -96,7 +96,7 @@ public class SupplyChainValidationServiceImpl implements SupplyChainValidationSe
     @Override
     public SupplyChainValidationSummary validateSupplyChain(final EndorsementCredential ec,
         final Set<PlatformCredential> pcs,
-        final Device device) {
+        final Device device, String pcrs) {
         final Appraiser supplyChainAppraiser = appraiserManager.getAppraiser(
                 SupplyChainAppraiser.NAME);
         SupplyChainPolicy policy = (SupplyChainPolicy) policyManager.getDefaultPolicy(
@@ -111,7 +111,7 @@ public class SupplyChainValidationServiceImpl implements SupplyChainValidationSe
         if (policy.isEcValidationEnabled()) {
             validations.add(validateEndorsementCredential(ec, acceptExpiredCerts));
             // store the device with the credential
-            if (null != ec) {
+            if (ec != null) {
                 ec.setDevice(device);
                 this.certificateManager.update(ec);
             }
@@ -212,6 +212,13 @@ public class SupplyChainValidationServiceImpl implements SupplyChainValidationSe
                     }
                 }
             }
+        }
+
+        if (policy.isFirmwareValidationEnabled()) {
+            // may need to associated with device to pull the correct info
+            // compare tpm quote with what is pulled from RIM associated file
+
+            LOGGER.error(pcrs);
         }
 
         // Generate validation summary, save it, and return it.

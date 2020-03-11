@@ -24,6 +24,8 @@ import java.util.UUID;
  * @param <ReferenceManifest> the type of referenceManifest that will be retrieved
  */
 public abstract class ReferenceManifestSelector<ReferenceManifest> {
+    private static final String PLATFORM_MANUFACTURER = "platformManufacturer";
+    private static final String PLATFORM_MODEL = "platformModel";
 
     private final ReferenceManifestManager referenceManifestManager;
 
@@ -65,6 +67,28 @@ public abstract class ReferenceManifestSelector<ReferenceManifest> {
      */
     public ReferenceManifestSelector byEntityId(final UUID uuid) {
         setFieldValue(Certificate.ID_FIELD, uuid);
+        return this;
+    }
+
+    /**
+     * Specify the platform manufacturer that rims must have to be considered
+     * as matching.
+     * @param manufacturer string for the manufacturer
+     * @return this instance
+     */
+    public ReferenceManifestSelector byManufacturer(final String manufacturer) {
+        setFieldValue(PLATFORM_MANUFACTURER, manufacturer);
+        return this;
+    }
+
+    /**
+     * Specify the platform model that rims must have to be considered
+     * as matching.
+     * @param model string for the model
+     * @return this instance
+     */
+    public ReferenceManifestSelector byModel(final String model) {
+        setFieldValue(PLATFORM_MODEL, model);
         return this;
     }
 

@@ -158,6 +158,7 @@ public abstract class AbstractAttestationCertificateAuthority
     private String[] pcrsList;
     private String tpmQuoteHash;
     private String tpmSignatureHash;
+    private String pcrValues;
 
     /**
      * Constructor.
@@ -215,7 +216,6 @@ public abstract class AbstractAttestationCertificateAuthority
         // the decrypted symmetric blob should be in the format of an IdentityProof. Use the
         // struct converter to generate it.
         IdentityProof proof = structConverter.convert(identityProof, IdentityProof.class);
-
 
         // convert the credential into an actual key.
         LOG.debug("assembling public endorsement key");
@@ -402,7 +402,6 @@ public abstract class AbstractAttestationCertificateAuthority
         RSAPublicKey ekPub = parsePublicKey(claim.getEkPublicArea().toByteArray());
 
         AppraisalStatus.Status validationResult = doSupplyChainValidation(claim, ekPub);
-
         if (validationResult == AppraisalStatus.Status.PASS) {
 
             RSAPublicKey akPub = parsePublicKey(claim.getAkPublicArea().toByteArray());
@@ -447,6 +446,14 @@ public abstract class AbstractAttestationCertificateAuthority
         // Parse and save device info
         Device device = processDeviceInfo(claim);
 
+        IssuedAttestationCertificate attCert = IssuedAttestationCertificate
+                .select(this.certificateManager)
+                .byDeviceId(device.getId())
+                .getCertificate();
+
+        if (attCert != null) {
+            LOG.error(attCert.getPcrValues());
+        }
         // perform supply chain validation
         SupplyChainValidationSummary summary = supplyChainValidationService.validateSupplyChain(
                 endorsementCredential, platformCredentials, device);
@@ -512,6 +519,12 @@ public abstract class AbstractAttestationCertificateAuthority
             }
             if (request.getPcrslist() != null && !request.getPcrslist().isEmpty()) {
                 parsePCRValues(request.getPcrslist().toStringUtf8());
+                if (pcrsList != null && pcrsList.length > 0) {
+                    String s;
+                    for (int i = 0; i < pcrsList.length; i++) {
+                        s = pcrsList[i];
+                    }
+                }
             }
 
             // Get device name and device
@@ -568,6 +581,7 @@ public abstract class AbstractAttestationCertificateAuthority
         String[] pcrs = null;
 
         if (pcrValues != null) {
+            this.pcrValues = pcrValues;
             int counter = 0;
             String[] lines = pcrValues.split("\\r?\\n");
             pcrs = new String[lines.length - 1];
@@ -1473,6 +1487,7 @@ public abstract class AbstractAttestationCertificateAuthority
             // save issued certificate
             IssuedAttestationCertificate attCert = new IssuedAttestationCertificate(
                     derEncodedAttestationCertificate, endorsementCredential, platformCredentials);
+            attCert.setPcrValues(pcrValues);
             attCert.setDevice(device);
             certificateManager.save(attCert);
         } catch (Exception e) {

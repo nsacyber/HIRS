@@ -90,6 +90,11 @@ public final class SupplyChainCredentialValidator implements CredentialValidator
     public static final String PLATFORM_ATTRIBUTES_VALID =
             "Platform credential attributes validated";
 
+    /**
+     * AppraisalStatus message for a valid platform credential appraisal.
+     */
+    public static final String FIRMWARE_VALID = "Firmware validated";
+
     private static final Map<PlatformCredential, StringBuilder> DELTA_FAILURES = new HashMap<>();
 
     /*
