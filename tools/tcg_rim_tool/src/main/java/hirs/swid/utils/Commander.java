@@ -18,7 +18,7 @@ public class Commander {
     private boolean help;
     @Parameter(names = {"-c", "--create"}, order = 0,
             description = "The type of RIM to create. A base RIM will be created by default.")
-    private String createType = "base";//other possible values: "eventlog" and "pcr"
+    private String createType = "";//other possible values: "eventlog" and "pcr"
     @Parameter(names = {"-a", "--attributes"}, order = 1,
             description = "The configuration file holding attributes to populate the base RIM with.")
     private String attributesFile = "";
@@ -113,6 +113,10 @@ public class Commander {
                 "sign it with the default keystore, alias, and password;\n");
         sb.append("and write the data to base_rim.swidtag:\n\n");
         sb.append("\t\t-c base -a attributes.json -o base_rim.swidtag\n\n\n");
+        sb.append("Create a base RIM using the default attribute values; " +
+                "sign it using privateKey in my_keystore.jks after prompting for the password;\n");
+        sb.append("and write the data to console output, to include the public certificate in the signature block:\n\n");
+        sb.append("\t\t-c base -k my_keystore.jks --alias privateKey --password -p my_cert.ca\n\n\n");
 
         return sb.toString();
     }

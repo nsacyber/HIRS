@@ -147,6 +147,8 @@ public class SwidTagConstants {
             "http://csrc.nist.gov/ns/swid/2015-extensions/1.0",
             "pathSeparator", "n8060");
 
+    public static final String CERTIFICATE_SUBJECT_KEY_IDENTIFIER = "2.5.29.14";
+
 //Below properties can probably be deleted
     public static final String SOFTWARE_IDENTITY_NAME = "softwareIdentity.name";
     public static final String SOFTWARE_IDENTITY_TAGID = "softwareIdentity.tagId";

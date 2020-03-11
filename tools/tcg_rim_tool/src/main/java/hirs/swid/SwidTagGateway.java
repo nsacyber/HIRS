@@ -6,6 +6,7 @@ import javax.xml.bind.JAXBException;
 import javax.xml.bind.Marshaller;
 import javax.xml.bind.Unmarshaller;
 import javax.xml.bind.UnmarshalException;
+import javax.xml.crypto.dsig.keyinfo.*;
 import javax.xml.transform.OutputKeys;
 import javax.xml.transform.Source;
 import javax.xml.transform.TransformerFactory;
@@ -35,14 +36,12 @@ import javax.xml.crypto.dsig.XMLSignatureException;
 import javax.xml.crypto.dsig.XMLSignatureFactory;
 import javax.xml.crypto.dsig.dom.DOMSignContext;
 import javax.xml.crypto.dsig.dom.DOMValidateContext;
-import javax.xml.crypto.dsig.keyinfo.KeyInfoFactory;
-import javax.xml.crypto.dsig.keyinfo.KeyInfo;
-import javax.xml.crypto.dsig.keyinfo.X509Data;
 import javax.xml.crypto.dsig.spec.C14NMethodParameterSpec;
 import javax.xml.crypto.dsig.spec.TransformParameterSpec;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 
+import org.bouncycastle.cert.jcajce.JcaX509ExtensionUtils;
 import org.w3c.dom.Document;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
@@ -53,7 +52,6 @@ import java.io.InputStream;
 import java.io.ByteArrayInputStream;
 import java.io.BufferedReader;
 import java.io.FileNotFoundException;
-import java.io.OutputStream;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 
@@ -61,13 +59,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 
-import java.security.InvalidAlgorithmParameterException;
-import java.security.Key;
-import java.security.KeyStore;
-import java.security.KeyStoreException;
-import java.security.NoSuchAlgorithmException;
-import java.security.PublicKey;
-import java.security.UnrecoverableEntryException;
+import java.security.*;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 
@@ -627,14 +619,19 @@ public class SwidTagGateway {
             KeyStore.PrivateKeyEntry privateKey = (KeyStore.PrivateKeyEntry) keystore.getEntry(privateKeyAlias,
                     new KeyStore.PasswordProtection(privateKeyPassword.toCharArray()));
             X509Certificate certificate = (X509Certificate) privateKey.getCertificate();
+            PublicKey publicKey = certificate.getPublicKey();
+            List<XMLStructure> keyInfoElements = new ArrayList<XMLStructure>();
             KeyInfoFactory kiFactory = sigFactory.getKeyInfoFactory();
+            KeyName keyName = kiFactory.newKeyName(getCertificateSubjectKeyIdentifier(certificate));
+            keyInfoElements.add(keyName);
+            KeyValue keyValue = kiFactory.newKeyValue(publicKey);
+            keyInfoElements.add(keyValue);
             ArrayList<Object> x509Content = new ArrayList<Object>();
             x509Content.add(certificate.getSubjectX500Principal().getName());
-            if (showCert) {
-                x509Content.add(certificate);
-            }
+            x509Content.add(certificate);
             X509Data data = kiFactory.newX509Data(x509Content);
-            KeyInfo keyinfo = kiFactory.newKeyInfo(Collections.singletonList(data));
+            keyInfoElements.add(data);
+            KeyInfo keyinfo = kiFactory.newKeyInfo(keyInfoElements);
 
             doc = DocumentBuilderFactory.newInstance().newDocumentBuilder().newDocument();
             marshaller.marshal(swidTag, doc);
@@ -650,6 +647,8 @@ public class SwidTagGateway {
             System.out.println(e.getMessage());
         } catch (CertificateException e) {
             System.out.println("Certificate error: " + e.getMessage());
+        } catch (KeyException e) {
+            System.out.println("Error setting public key in KeyValue: " + e.getMessage());
         } catch (JAXBException e) {
             System.out.println("Error marshaling signed swidtag: " + e.getMessage());
         } catch (MarshalException | XMLSignatureException e) {
@@ -729,6 +728,22 @@ public class SwidTagGateway {
                 return key;
             }
         }
+    }
+
+    /**
+     * Utility method for extracting the subjectKeyIdentifier from an X509Certificate.
+     * The subjectKeyIdentifier is stored as a DER-encoded octet and will be converted to a String.
+     * @param certificate
+     * @return
+     */
+    private String getCertificateSubjectKeyIdentifier(X509Certificate certificate) throws IOException {
+        String decodedValue = null;
+        byte[] extension = certificate.getExtensionValue(SwidTagConstants.CERTIFICATE_SUBJECT_KEY_IDENTIFIER);
+        if (extension != null) {
+            decodedValue = JcaX509ExtensionUtils.parseExtensionValue(extension).toString();
+        }
+
+        return decodedValue;
     }
 
     /**

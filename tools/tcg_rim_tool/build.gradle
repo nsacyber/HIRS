@@ -8,6 +8,7 @@ repositories {
 dependencies {
 	compile libs.minimal_json
 	compile libs.jcommander
+	compile libs.bouncy_castle
 	testCompile libs.testng
 }
 
@@ -18,6 +19,7 @@ jar {
 			  )
 	}
 	from(configurations.compile.collect { it.isDirectory() ? it : zipTree(it) }) {}
+	exclude 'META-INF/*.RSA', 'META-INF/*.SF', 'META-INF/*.DSA'
 }
 
 uploadArchives {
