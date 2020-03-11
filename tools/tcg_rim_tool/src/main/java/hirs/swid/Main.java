@@ -1,51 +1,59 @@
 package hirs.swid;
 
 import hirs.swid.utils.Commander;
+import com.beust.jcommander.JCommander;
+
 import java.io.IOException;
 
-/*
- * Command-line application for generating and validating SWID tags.
- * Input arg: path to *.swidtag file
- * 
- * If an argument is given it will be validated against the schema at http://standards.iso.org/iso/19770/-2/2015/schema.xsd
- * If an argument is not given a SWID tag file will be generated.
- */
 public class Main {
 
     public static void main(String[] args) {
-        Commander commander = new Commander(args);
+        Commander commander = new Commander();
+        JCommander jc = JCommander.newBuilder().addObject(commander).build();
+        jc.parse(args);
         SwidTagGateway gateway = new SwidTagGateway();
 
-        if (commander.hasArguments()) {
-            // we have arguments to work with
-            if (commander.isAttributesGiven()) {
-                gateway.setAttributesFile(commander.getAttributesFile());
-            }
-            if (commander.isKeystoreGiven()) {
-                gateway.setKeystoreFile(commander.getKeystore());
-            }
-            if (commander.isShowCert()) {
-                gateway.setShowCert(true);
-            }
-
-            if (commander.create()) {
-                // parsing the arguments detected a create parameter (-c)
-                gateway.generateSwidTag(commander.getCreateOutFile());
-            }
-            if (commander.validate()) {
-                // parsing the arguments detected a validation parameter (-v)
+        if (commander.isHelp()) {
+            jc.usage();
+            System.out.println(commander.printHelpExamples());
+        } else if (!commander.getVerifyFile().isEmpty()) {
+            System.out.println(commander.toString());
+            String verifyFile = commander.getVerifyFile();
+            String publicCertificate = commander.getPublicCertificate();
+            if (!verifyFile.isEmpty() && !publicCertificate.isEmpty()) {
                 try {
-                    gateway.validateSwidTag(commander.getValidateFile());
+                    gateway.validateSwidTag(verifyFile);
                 } catch (IOException e) {
-                    System.out.println("Unable to validate file: " + e.getMessage());
+                    System.out.println("Error validating RIM file: " + e.getMessage());
                 }
+            } else {
+                System.out.println("Need both a RIM file to validate and a public certificate to validate with!");
             }
-            if (commander.parse()) {
-                try {
-                    gateway.parsePayload(commander.getParseFile());
-                } catch (IOException e) {
-                    System.out.println("Unable to parse file: " + e.getMessage());
-                }
+        } else {
+            System.out.println(commander.toString());
+            String createType = commander.getCreateType().toUpperCase();
+            String attributesFile = commander.getAttributesFile();
+            String privateKeyFile = commander.getPrivateKeyFile();
+            String alias = commander.getAlias();
+            String privateKeyPassword = commander.getPrivateKeyPassword();
+            switch (createType) {
+                case "BASE":
+                    if (!attributesFile.isEmpty()) {
+                        gateway.setAttributesFile(attributesFile);
+                    }
+                    if (!privateKeyFile.isEmpty() &&
+                            !alias.isEmpty() &&
+                            !privateKeyPassword.isEmpty()) {
+                        gateway.setKeystoreFile(privateKeyFile);
+                        gateway.setPrivateKeyAlias(alias);
+                        gateway.setPrivateKeyPassword(privateKeyPassword);
+                    }
+                    gateway.generateSwidTag(commander.getOutFile());
+                    break;
+                case "EVENTLOG":
+                    break;
+                case "PCR":
+                    break;
             }
         }
     }

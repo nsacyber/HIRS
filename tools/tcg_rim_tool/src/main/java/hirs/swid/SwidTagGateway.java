@@ -1,6 +1,5 @@
 package hirs.swid;
 
-import javax.xml.bind.JAXB;
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBElement;
 import javax.xml.bind.JAXBException;
@@ -29,7 +28,6 @@ import javax.xml.crypto.XMLStructure;
 import javax.xml.crypto.dsig.CanonicalizationMethod;
 import javax.xml.crypto.dsig.DigestMethod;
 import javax.xml.crypto.dsig.Reference;
-import javax.xml.crypto.dsig.SignatureMethod;
 import javax.xml.crypto.dsig.SignedInfo;
 import javax.xml.crypto.dsig.Transform;
 import javax.xml.crypto.dsig.XMLSignature;
@@ -61,7 +59,6 @@ import java.io.FileOutputStream;
 
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
-import java.nio.file.Path;
 import java.nio.file.Paths;
 
 import java.security.InvalidAlgorithmParameterException;
@@ -85,30 +82,16 @@ import java.util.Properties;
 import java.math.BigInteger;
 
 import hirs.swid.utils.CsvParser;
-import hirs.swid.utils.HashSwid;
-import hirs.swid.xjc.BaseElement;
-import hirs.swid.xjc.CanonicalizationMethodType;
-import hirs.swid.xjc.DigestMethodType;
 import hirs.swid.xjc.Directory;
 import hirs.swid.xjc.Entity;
 import hirs.swid.xjc.Link;
 import hirs.swid.xjc.ObjectFactory;
 import hirs.swid.xjc.ResourceCollection;
-import hirs.swid.xjc.ReferenceType;
-import hirs.swid.xjc.SignatureType;
-import hirs.swid.xjc.SignatureValueType;
-import hirs.swid.xjc.SignatureMethodType;
-import hirs.swid.xjc.SignedInfoType;
 import hirs.swid.xjc.SoftwareIdentity;
 import hirs.swid.xjc.SoftwareMeta;
-import hirs.swid.xjc.TransformType;
-import hirs.swid.xjc.TransformsType;
 
 import com.eclipsesource.json.Json;
 import com.eclipsesource.json.JsonObject;
-import com.eclipsesource.json.JsonObject.Member;
-import com.eclipsesource.json.JsonValue;
-import com.eclipsesource.json.Location;
 import com.eclipsesource.json.ParseException;
 
 
@@ -145,6 +128,8 @@ public class SwidTagGateway {
      * which would need to be passed in if not using the default keystore.
      */
     private String keystoreFile;
+    private String privateKeyAlias;
+    private String privateKeyPassword;
     private boolean showCert;
 
     /**
@@ -157,6 +142,8 @@ public class SwidTagGateway {
             unmarshaller = jaxbContext.createUnmarshaller();
             attributesFile = SwidTagConstants.DEFAULT_ATTRIBUTES_FILE;
             keystoreFile = SwidTagConstants.DEFAULT_KEYSTORE_PATH;
+            privateKeyAlias = SwidTagConstants.DEFAULT_PRIVATE_KEY_ALIAS;
+            privateKeyPassword = SwidTagConstants.DEFAULT_KEYSTORE_PASSWORD;
             showCert = false;
         } catch (JAXBException e) {
             System.out.println("Error initializing jaxbcontext: " + e.getMessage());
@@ -173,10 +160,26 @@ public class SwidTagGateway {
 
     /**
      * Setter for String holding keystore path
-     * @param keystore
+     * @param keystoreFile
      */
     public void setKeystoreFile(String keystoreFile) {
         this.keystoreFile = keystoreFile;
+    }
+
+    /**
+     * Setter for String holding private key alias
+     * @param privateKeyAlias
+     */
+    public void setPrivateKeyAlias(String privateKeyAlias) {
+        this.privateKeyAlias = privateKeyAlias;
+    }
+
+    /**
+     * Setter for String holding private key password
+     * @param privateKeyPassword
+     */
+    public void setPrivateKeyPassword(String privateKeyPassword) {
+        this.privateKeyPassword = privateKeyPassword;
     }
 
     /**
@@ -267,12 +270,11 @@ public class SwidTagGateway {
     /**
      * This method generates a base RIM from the values in a JSON file.
      *
-     * @param outputFile
+     * @param filename
      */
     public void generateSwidTag(final String filename) {
         SoftwareIdentity swidTag = null;
         try {
-            System.out.println("Reading base rim values from " + attributesFile);
             BufferedReader jsonIn = Files.newBufferedReader(Paths.get(attributesFile), StandardCharsets.UTF_8);
             JsonObject configProperties = Json.parse(jsonIn).asObject();
             //SoftwareIdentity
@@ -319,11 +321,7 @@ public class SwidTagGateway {
 
         Document signedSoftwareIdentity = signXMLDocument(objectFactory.createSoftwareIdentity(swidTag));
         System.out.println("Signature core validity: " + validateSignedXMLDocument(signedSoftwareIdentity));
-        if (!filename.isEmpty()) {
-            writeSwidTagFile(signedSoftwareIdentity, new File(filename));
-        } else {
-            writeSwidTagFile(signedSoftwareIdentity, generatedFile);
-        }
+        writeSwidTagFile(signedSoftwareIdentity, filename);
     }
 
    /**
@@ -368,17 +366,18 @@ public class SwidTagGateway {
      *
      * @param swidTag
      */
-    public void writeSwidTagFile(Document swidTag, File outputFile) {
+    public void writeSwidTagFile(Document swidTag, String output) {
         try {
-            OutputStream outStream = new FileOutputStream(outputFile);
             TransformerFactory tf = TransformerFactory.newInstance();
             Transformer transformer = tf.newTransformer();
             transformer.setOutputProperty(OutputKeys.INDENT, "yes");
             transformer.setOutputProperty("{http://xml.apache.org/xslt}indent-amount", "2");
             Source source = new DOMSource(swidTag);
-            System.out.println("Writing to file: " + outputFile.getName());
-            transformer.transform(source, new StreamResult(outStream));
-            transformer.transform(source, new StreamResult(System.out));
+            if (output.isEmpty()) {
+                transformer.transform(source, new StreamResult(System.out));
+            } else {
+                transformer.transform(source, new StreamResult(new FileOutputStream(output)));
+            }
         } catch (FileNotFoundException e) {
             System.out.println("Unable to write to file: " + e.getMessage());
         } catch (TransformerConfigurationException e) {
@@ -392,7 +391,7 @@ public class SwidTagGateway {
      * This method creates SoftwareIdentity element based on the parameters read in from
      * a properties file.
      *
-     * @param properties the Properties object containing parameters from file
+     * @param jsonObject the Properties object containing parameters from file
      * @return SoftwareIdentity object created from the properties
      */
     private SoftwareIdentity createSwidTag(JsonObject jsonObject) {
@@ -624,9 +623,9 @@ public class SwidTagGateway {
                     Collections.singletonList(reference)
             );
             KeyStore keystore = KeyStore.getInstance("JKS");
-            keystore.load(new FileInputStream(keystoreFile), SwidTagConstants.DEFAULT_KEYSTORE_PASSWORD.toCharArray());
-            KeyStore.PrivateKeyEntry privateKey = (KeyStore.PrivateKeyEntry) keystore.getEntry(SwidTagConstants.DEFAULT_PRIVATE_KEY_ALIAS,
-                    new KeyStore.PasswordProtection(SwidTagConstants.DEFAULT_KEYSTORE_PASSWORD.toCharArray()));
+            keystore.load(new FileInputStream(keystoreFile), privateKeyPassword.toCharArray());
+            KeyStore.PrivateKeyEntry privateKey = (KeyStore.PrivateKeyEntry) keystore.getEntry(privateKeyAlias,
+                    new KeyStore.PasswordProtection(privateKeyPassword.toCharArray()));
             X509Certificate certificate = (X509Certificate) privateKey.getCertificate();
             KeyInfoFactory kiFactory = sigFactory.getKeyInfoFactory();
             ArrayList<Object> x509Content = new ArrayList<Object>();
