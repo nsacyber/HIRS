@@ -14,6 +14,7 @@ import hirs.persist.DBManagerException;
 import hirs.persist.ReferenceManifestManager;
 import hirs.persist.CriteriaModifier;
 import hirs.data.persist.ReferenceManifest;
+import hirs.data.persist.SwidResource;
 import hirs.data.persist.certificate.Certificate;
 import java.io.IOException;
 import java.net.URISyntaxException;
@@ -21,9 +22,14 @@ import java.net.URISyntaxException;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.List;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.logging.log4j.LogManager;
@@ -44,36 +50,36 @@ import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import org.springframework.web.servlet.view.RedirectView;
 
-
 /**
  * Controller for the Reference Manifest page.
  */
 @Controller
 @RequestMapping("/reference-manifests")
 public class ReferenceManifestPageController
-extends PageController<NoPageParams> {
+        extends PageController<NoPageParams> {
 
     private static final String BIOS_RELEASE_DATE_FORMAT = "yyyy-MM-dd";
 
     private final BiosDateValidator biosValidator;
     private final ReferenceManifestManager referenceManifestManager;
-    private static final Logger LOGGER =
-            LogManager.getLogger(ReferenceManifestPageController.class);
+    private static final Logger LOGGER
+            = LogManager.getLogger(ReferenceManifestPageController.class);
 
     /**
-     * This class was created for the purposes of avoiding findbugs message:
-     * As the JavaDoc states, DateFormats are inherently unsafe for
-     * multi-threaded use. The detector has found a call to an instance
-     * of DateFormat that has been obtained via a static field.
-     * This looks suspicious.
+     * This class was created for the purposes of avoiding findbugs message: As
+     * the JavaDoc states, DateFormats are inherently unsafe for multi-threaded
+     * use. The detector has found a call to an instance of DateFormat that has
+     * been obtained via a static field. This looks suspicious.
      *
      * This class can have uses elsewhere but for now it will remain here.
      */
     private static final class BiosDateValidator {
+
         private final String dateFormat;
 
         /**
          * Default constructor that sets the format to parse against.
+         *
          * @param dateFormat
          */
         public BiosDateValidator(final String dateFormat) {
@@ -82,6 +88,7 @@ extends PageController<NoPageParams> {
 
         /**
          * Validates a date by attempting to parse based on format provided.
+         *
          * @param date string of the given date
          * @return true if the format matches
          */
@@ -102,6 +109,7 @@ extends PageController<NoPageParams> {
 
     /**
      * Constructor providing the Page's display and routing specification.
+     *
      * @param referenceManifestManager the reference manifest manager
      */
     @Autowired
@@ -113,11 +121,12 @@ extends PageController<NoPageParams> {
     }
 
     /**
-     * Returns the path for the view and the data model for the page.
+     * Returns the filePath for the view and the data model for the page.
      *
      * @param params The object to map url parameters into.
-     * @param model The data model for the request. Can contain data from redirect.
-     * @return the path for the view and data model for the page.
+     * @param model The data model for the request. Can contain data from
+     * redirect.
+     * @return the filePath for the view and data model for the page.
      */
     @Override
     public ModelAndView initPage(final NoPageParams params,
@@ -126,11 +135,12 @@ extends PageController<NoPageParams> {
     }
 
     /**
-     * Returns the list of RIMs using the data table input for paging,
-     * ordering, and filtering.
+     * Returns the list of RIMs using the data table input for paging, ordering,
+     * and filtering.
+     *
      * @param input the data tables input
-     * @return the data tables response, including the result set
-     * and paging information
+     * @return the data tables response, including the result set and paging
+     * information
      */
     @ResponseBody
     @RequestMapping(value = "/list",
@@ -157,7 +167,6 @@ extends PageController<NoPageParams> {
                         referenceManifestManager,
                         input, orderColumnName, criteriaModifier);
 
-
         LOGGER.debug("Returning list of size: " + records.size());
         return new DataTableResponse<>(records, input);
     }
@@ -177,17 +186,44 @@ extends PageController<NoPageParams> {
             final RedirectAttributes attr) throws URISyntaxException, Exception {
         Map<String, Object> model = new HashMap<>();
         PageMessages messages = new PageMessages();
+        List<MultipartFile> rims = new ArrayList<>();
+        String fileName;
+        Path filePath;
 
         // loop through the files
         for (MultipartFile file : files) {
+            fileName = file.getOriginalFilename();
+            if (fileName.toLowerCase().endsWith("swidtag")) {
+                rims.add(file);
+            } else {
+                filePath = Paths.get(String.format("%s/%s",
+                            SwidResource.RESOURCE_UPLOAD_FOLDER,
+                            file.getOriginalFilename()));
+                if (Files.notExists(Paths.get(SwidResource.RESOURCE_UPLOAD_FOLDER))) {
+                    Files.createDirectory(Paths.get(SwidResource.RESOURCE_UPLOAD_FOLDER));
+                }
+                if (Files.notExists(filePath)) {
+                    Files.createFile(filePath);
+                }
+
+                Files.write(filePath, file.getBytes());
+
+                String uploadCompletedMessage = String.format(
+                        "%s successfully uploaded", file.getOriginalFilename());
+                messages.addSuccess(uploadCompletedMessage);
+                LOGGER.info(uploadCompletedMessage);
+            }
+        }
+
+        for (MultipartFile file : rims) {
             //Parse reference manifests
-            ReferenceManifest rims = parseRIMs(file, messages);
+            ReferenceManifest rim = parseRIM(file, messages);
 
             //Store only if it was parsed
-            if (rims != null) {
+            if (rim != null) {
                 storeManifest(file.getOriginalFilename(),
                         messages,
-                        rims,
+                        rim,
                         referenceManifestManager);
             }
         }
@@ -300,22 +336,23 @@ extends PageController<NoPageParams> {
      * @throws IllegalArgumentException
      */
     private ReferenceManifest getRimFromDb(final String id) throws IllegalArgumentException {
-            UUID uuid = UUID.fromString(id);
+        UUID uuid = UUID.fromString(id);
 
-            return ReferenceManifest
-                    .select(referenceManifestManager)
-                    .byEntityId(uuid).getRIM();
+        return ReferenceManifest
+                .select(referenceManifestManager)
+                .byEntityId(uuid).getRIM();
     }
 
     /**
      * Takes the rim files provided and returns a {@link ReferenceManifest}
      * object.
+     *
      * @param file the provide user file via browser.
      * @param messages the object that handles displaying information to the
      * user.
      * @return a single or collection of reference manifest files.
      */
-    private ReferenceManifest parseRIMs(
+    private ReferenceManifest parseRIM(
             final MultipartFile file,
             final PageMessages messages) {
 
@@ -348,6 +385,7 @@ extends PageController<NoPageParams> {
 
     /**
      * Stores the {@link ReferenceManifest} objects.
+     *
      * @param fileName name of the file given
      * @param messages message object for user display of statuses
      * @param referenceManifest the object to store

@@ -84,7 +84,7 @@ public class TpmPcrEvent2 extends TpmPcrEvent {
                 hashAlg = new TcgTpmtHa(is);
                 hashlist.add(hashAlg);
                 if (hashAlg.getHashName().compareToIgnoreCase("TPM_ALG_SHA256") == 0) {
-                    setDigest(hashAlg.getDigest());
+                    setEventDigest(hashAlg.getDigest());
                 }
             }
             is.read(rawInt);

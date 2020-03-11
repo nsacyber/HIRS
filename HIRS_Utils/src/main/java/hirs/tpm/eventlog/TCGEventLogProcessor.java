@@ -21,10 +21,6 @@ public class TCGEventLogProcessor {
      */
     private String algorithm = "SHA256";
     /**
-     * PFP defined EV_NO_ACTION identifier.
-     */
-    private static final int NO_ACTION_EVENT = 0x00000003;
-    /**
      * Parsed event log array.
      */
     private TCGEventLog tcgLog = null;
@@ -38,6 +34,13 @@ public class TCGEventLogProcessor {
     private static final int SIG_SIZE = 16;
 
     /**
+     * Default Constructor.
+     */
+    public TCGEventLogProcessor() {
+        tcgLog = new TCGEventLog();
+    }
+
+    /**
      * Constructor.
      *
      * @param rawLog the byte array holding the contents of the TCG Event Log
@@ -45,9 +48,10 @@ public class TCGEventLogProcessor {
      */
     public TCGEventLogProcessor(final byte[] rawLog) throws IOException {
         if (isLogCrytoAgile(rawLog)) {
-            tcgLog = new CryptoAgileEventLog(rawLog);
+            tcgLog = new TCGEventLog(rawLog, TpmPcrEvent.SHA256_LENGTH,
+                    TCGEventLog.HASH256_STRING, TCGEventLog.INIT_SHA256_LIST);
         } else {
-            tcgLog = new SHA1EventLog(rawLog);
+            tcgLog = new TCGEventLog(rawLog);
             algorithm = "SHA";
         }
     }
@@ -80,8 +84,8 @@ public class TCGEventLogProcessor {
      */
     public TpmWhiteListBaseline createTPMBaseline(final String name) {
         TpmWhiteListBaseline baseline = new TpmWhiteListBaseline(name);
-        TPMMeasurementRecord record = null;
-        String pcrValue = "";
+        TPMMeasurementRecord record;
+        String pcrValue;
         for (int i = 0; i < TpmPcrEvent.PCR_COUNT; i++) {
             if (algorithm.compareToIgnoreCase("SHA1") == 0) { // Log Was SHA1 Format
                 pcrValue = tcgLog.getExpectedPCRValue(i);
@@ -112,15 +116,13 @@ public class TCGEventLogProcessor {
         System.arraycopy(log, TpmPcrEvent.INT_LENGTH, eType, 0, TpmPcrEvent.INT_LENGTH);
         byte[] eventType = HexUtils.leReverseByte(eType);
         int eventID = new BigInteger(eventType).intValue();
-        if (eventID != NO_ACTION_EVENT) {
+        if (eventID != TCGEventLog.NO_ACTION_EVENT) {
             return false;
         }  // Event Type should be EV_NO_ACTION
         byte[] signature = new byte[SIG_SIZE];
         System.arraycopy(log, SIG_OFFSET, signature, 0, SIG_SIZE); // should be "Spec ID Event03"
         String sig = new String(signature, "UTF-8").substring(0, SIG_SIZE - 1);  // remove null char
-        if (sig.equals("Spec ID Event03")) {
-            return true;
-        }
-        return (false);
+
+        return sig.equals("Spec ID Event03");
     }
 }

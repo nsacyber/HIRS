@@ -347,7 +347,7 @@ public final class CertificateStringMapBuilder {
                 if (s.contains("Serial")) {
                     serialSplit = s.split("=");
                     if (serialSplit.length > SERIAL_INDEX) {
-                        savedFailures.append(s.split("=")[SERIAL_INDEX]);
+                        savedFailures.append(serialSplit[SERIAL_INDEX]);
                     } else {
                         savedFailures.append(s);
                     }
