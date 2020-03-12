@@ -41,7 +41,6 @@ import javax.xml.crypto.dsig.spec.TransformParameterSpec;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 
-import org.bouncycastle.cert.jcajce.JcaX509ExtensionUtils;
 import org.w3c.dom.Document;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
@@ -52,7 +51,6 @@ import java.io.InputStream;
 import java.io.ByteArrayInputStream;
 import java.io.BufferedReader;
 import java.io.FileNotFoundException;
-import java.io.FileInputStream;
 import java.io.FileOutputStream;
 
 import java.nio.charset.StandardCharsets;
@@ -60,7 +58,6 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 
 import java.security.*;
-import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 
 import java.util.ArrayList;
@@ -114,15 +111,9 @@ public class SwidTagGateway {
     private Marshaller marshaller;
     private Unmarshaller unmarshaller;
     private String attributesFile;
-    /**
-     * The keystoreFile is used in signXMLDocument() to pass in the keystore path.
-     * The same method requires the keystore password and the alias of the private key,
-     * which would need to be passed in if not using the default keystore.
-     */
-    private String keystoreFile;
-    private String privateKeyAlias;
-    private String privateKeyPassword;
-    private boolean showCert;
+    private boolean defaultCredentials;
+    private String pemPrivateKeyFile;
+    private String pemCertificateFile;
 
     /**
      * Default constructor initializes jaxbcontext, marshaller, and unmarshaller
@@ -133,10 +124,8 @@ public class SwidTagGateway {
             marshaller = jaxbContext.createMarshaller();
             unmarshaller = jaxbContext.createUnmarshaller();
             attributesFile = SwidTagConstants.DEFAULT_ATTRIBUTES_FILE;
-            keystoreFile = SwidTagConstants.DEFAULT_KEYSTORE_PATH;
-            privateKeyAlias = SwidTagConstants.DEFAULT_PRIVATE_KEY_ALIAS;
-            privateKeyPassword = SwidTagConstants.DEFAULT_KEYSTORE_PASSWORD;
-            showCert = false;
+            defaultCredentials = true;
+            pemCertificateFile = "";
         } catch (JAXBException e) {
             System.out.println("Error initializing jaxbcontext: " + e.getMessage());
         }
@@ -151,35 +140,27 @@ public class SwidTagGateway {
     }
 
     /**
-     * Setter for String holding keystore path
-     * @param keystoreFile
+     * Setter for boolean governing signing credentials
+     * @param defaultCredentials
+     * @return
      */
-    public void setKeystoreFile(String keystoreFile) {
-        this.keystoreFile = keystoreFile;
+    public void setDefaultCredentials(boolean defaultCredentials) {
+        this.defaultCredentials = defaultCredentials;
     }
 
     /**
-     * Setter for String holding private key alias
-     * @param privateKeyAlias
+     * Setter for private key file in PEM format
+     * @param pemPrivateKeyFile
      */
-    public void setPrivateKeyAlias(String privateKeyAlias) {
-        this.privateKeyAlias = privateKeyAlias;
+    public void setPemPrivateKeyFile(String pemPrivateKeyFile) {
+        this.pemPrivateKeyFile = pemPrivateKeyFile;
     }
 
-    /**
-     * Setter for String holding private key password
-     * @param privateKeyPassword
+    /** Setter for certificate file in PEM format
+     * @param pemCertificateFile
      */
-    public void setPrivateKeyPassword(String privateKeyPassword) {
-        this.privateKeyPassword = privateKeyPassword;
-    }
-
-    /**
-     * Setter for boolean to display certificate block in xml signature
-     * @param showCert
-     */
-    public void setShowCert(boolean showCert) {
-        this.showCert = showCert;
+    public void setPemCertificateFile(String pemCertificateFile) {
+        this.pemCertificateFile = pemCertificateFile;
     }
 
     /**
@@ -614,39 +595,45 @@ public class SwidTagGateway {
                     sigFactory.newSignatureMethod(SwidTagConstants.SIGNATURE_ALGORITHM_RSA_SHA256, null),
                     Collections.singletonList(reference)
             );
-            KeyStore keystore = KeyStore.getInstance("JKS");
-            keystore.load(new FileInputStream(keystoreFile), privateKeyPassword.toCharArray());
-            KeyStore.PrivateKeyEntry privateKey = (KeyStore.PrivateKeyEntry) keystore.getEntry(privateKeyAlias,
-                    new KeyStore.PasswordProtection(privateKeyPassword.toCharArray()));
-            X509Certificate certificate = (X509Certificate) privateKey.getCertificate();
-            PublicKey publicKey = certificate.getPublicKey();
             List<XMLStructure> keyInfoElements = new ArrayList<XMLStructure>();
+
             KeyInfoFactory kiFactory = sigFactory.getKeyInfoFactory();
-            KeyName keyName = kiFactory.newKeyName(getCertificateSubjectKeyIdentifier(certificate));
+            PrivateKey privateKey;
+            PublicKey publicKey;
+            CredentialParser cp = new CredentialParser();
+            if (defaultCredentials) {
+                cp.parseJKSCredentials();
+                privateKey = cp.getPrivateKey();
+                publicKey = cp.getPublicKey();
+            } else {
+                cp.parsePEMCredentials(pemCertificateFile, pemPrivateKeyFile);
+                X509Certificate certificate = cp.getCertificate();
+                privateKey = cp.getPrivateKey();
+                publicKey = cp.getPublicKey();
+                ArrayList<Object> x509Content = new ArrayList<Object>();
+                x509Content.add(certificate.getSubjectX500Principal().getName());
+                x509Content.add(certificate);
+                X509Data data = kiFactory.newX509Data(x509Content);
+                keyInfoElements.add(data);
+            }
+            KeyName keyName = kiFactory.newKeyName(cp.getCertificateSubjectKeyIdentifier());
             keyInfoElements.add(keyName);
             KeyValue keyValue = kiFactory.newKeyValue(publicKey);
             keyInfoElements.add(keyValue);
-            ArrayList<Object> x509Content = new ArrayList<Object>();
-            x509Content.add(certificate.getSubjectX500Principal().getName());
-            x509Content.add(certificate);
-            X509Data data = kiFactory.newX509Data(x509Content);
-            keyInfoElements.add(data);
             KeyInfo keyinfo = kiFactory.newKeyInfo(keyInfoElements);
 
             doc = DocumentBuilderFactory.newInstance().newDocumentBuilder().newDocument();
             marshaller.marshal(swidTag, doc);
-            DOMSignContext context = new DOMSignContext(privateKey.getPrivateKey(), doc.getDocumentElement());
+            DOMSignContext context = new DOMSignContext(privateKey, doc.getDocumentElement());
             XMLSignature signature = sigFactory.newXMLSignature(signedInfo, keyinfo);
             signature.sign(context);
         } catch (FileNotFoundException e) {
             System.out.println("Keystore not found! " + e.getMessage());
         } catch (IOException e) {
             System.out.println("Error loading keystore: " + e.getMessage());
-        } catch (NoSuchAlgorithmException | KeyStoreException | InvalidAlgorithmParameterException |
-                        ParserConfigurationException | UnrecoverableEntryException e) {
+        } catch (NoSuchAlgorithmException | InvalidAlgorithmParameterException |
+                        ParserConfigurationException e) {
             System.out.println(e.getMessage());
-        } catch (CertificateException e) {
-            System.out.println("Certificate error: " + e.getMessage());
         } catch (KeyException e) {
             System.out.println("Error setting public key in KeyValue: " + e.getMessage());
         } catch (JAXBException e) {
@@ -728,22 +715,6 @@ public class SwidTagGateway {
                 return key;
             }
         }
-    }
-
-    /**
-     * Utility method for extracting the subjectKeyIdentifier from an X509Certificate.
-     * The subjectKeyIdentifier is stored as a DER-encoded octet and will be converted to a String.
-     * @param certificate
-     * @return
-     */
-    private String getCertificateSubjectKeyIdentifier(X509Certificate certificate) throws IOException {
-        String decodedValue = null;
-        byte[] extension = certificate.getExtensionValue(SwidTagConstants.CERTIFICATE_SUBJECT_KEY_IDENTIFIER);
-        if (extension != null) {
-            decodedValue = JcaX509ExtensionUtils.parseExtensionValue(extension).toString();
-        }
-
-        return decodedValue;
     }
 
     /**
