@@ -31,6 +31,7 @@ import hirs.data.persist.certificate.Certificate;
 import hirs.data.persist.certificate.CertificateAuthorityCredential;
 import hirs.data.persist.certificate.EndorsementCredential;
 import hirs.data.persist.certificate.PlatformCredential;
+import hirs.data.persist.certificate.IssuedAttestationCertificate;
 import hirs.persist.AppraiserManager;
 import hirs.persist.CertificateManager;
 import hirs.persist.CertificateSelector;
@@ -96,7 +97,7 @@ public class SupplyChainValidationServiceImpl implements SupplyChainValidationSe
     @Override
     public SupplyChainValidationSummary validateSupplyChain(final EndorsementCredential ec,
         final Set<PlatformCredential> pcs,
-        final Device device, String pcrs) {
+        final Device device) {
         final Appraiser supplyChainAppraiser = appraiserManager.getAppraiser(
                 SupplyChainAppraiser.NAME);
         SupplyChainPolicy policy = (SupplyChainPolicy) policyManager.getDefaultPolicy(
@@ -217,8 +218,18 @@ public class SupplyChainValidationServiceImpl implements SupplyChainValidationSe
         if (policy.isFirmwareValidationEnabled()) {
             // may need to associated with device to pull the correct info
             // compare tpm quote with what is pulled from RIM associated file
+            IssuedAttestationCertificate attCert = IssuedAttestationCertificate
+                .select(this.certificateManager)
+                .byDeviceId(device.getId())
+                .getCertificate();
 
-            LOGGER.error(pcrs);
+            if (attCert != null) {
+                LOGGER.error(attCert.getPcrValues());
+
+//                ReferenceManifest.select().byManufacturer().getRims();
+            }
+
+//            LOGGER.error(pcrs);
         }
 
         // Generate validation summary, save it, and return it.

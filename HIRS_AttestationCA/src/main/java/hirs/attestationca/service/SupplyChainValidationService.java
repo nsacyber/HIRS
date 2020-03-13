@@ -20,10 +20,9 @@ public interface SupplyChainValidationService {
      * @param ec The endorsement credential from the identity request.
      * @param pc The set of platform credentials from the identity request.
      * @param device The device to be validated.
-     * @param pcrs the string of device pcrs.
      * @return True if validation is successful, false otherwise.
      */
     SupplyChainValidationSummary validateSupplyChain(EndorsementCredential ec,
                                                      Set<PlatformCredential> pc,
-                                                     Device device, String pcrs);
+                                                     Device device);
 }

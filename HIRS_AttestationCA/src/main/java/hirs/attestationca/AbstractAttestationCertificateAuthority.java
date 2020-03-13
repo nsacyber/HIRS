@@ -446,14 +446,6 @@ public abstract class AbstractAttestationCertificateAuthority
         // Parse and save device info
         Device device = processDeviceInfo(claim);
 
-        IssuedAttestationCertificate attCert = IssuedAttestationCertificate
-                .select(this.certificateManager)
-                .byDeviceId(device.getId())
-                .getCertificate();
-
-        if (attCert != null) {
-            LOG.error(attCert.getPcrValues());
-        }
         // perform supply chain validation
         SupplyChainValidationSummary summary = supplyChainValidationService.validateSupplyChain(
                 endorsementCredential, platformCredentials, device);
@@ -518,13 +510,11 @@ public abstract class AbstractAttestationCertificateAuthority
                 parseTPMQuote(request.getQuote().toStringUtf8());
             }
             if (request.getPcrslist() != null && !request.getPcrslist().isEmpty()) {
+                LOG.error(request.getPcrslist().toStringUtf8());
                 parsePCRValues(request.getPcrslist().toStringUtf8());
-                if (pcrsList != null && pcrsList.length > 0) {
-                    String s;
-                    for (int i = 0; i < pcrsList.length; i++) {
-                        s = pcrsList[i];
-                    }
-                }
+            }
+            if (request.getPcrs256List() != null && !request.getPcrs256List().isEmpty()) {
+                LOG.error(request.getPcrs256List().toStringUtf8());
             }
 
             // Get device name and device
@@ -578,6 +568,7 @@ public abstract class AbstractAttestationCertificateAuthority
      * @param pcrValues contains the full list of 24 pcr values
      */
     private void parsePCRValues(final String pcrValues) {
+        String[][] pcrsMatrix = null;
         String[] pcrs = null;
 
         if (pcrValues != null) {

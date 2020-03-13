@@ -81,6 +81,7 @@ message CertificateRequest {
   required bytes nonce = 1;
   optional bytes quote = 2;
   optional bytes pcrslist = 3;
+  optional bytes pcrs256list = 4;
 }
 
 message CertificateResponse {
