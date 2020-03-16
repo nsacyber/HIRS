@@ -120,7 +120,8 @@ public abstract class AbstractAttestationCertificateAuthority
     private static final String AK_NAME_PREFIX = "000b";
     private static final String AK_NAME_HASH_PREFIX =
             "0001000b00050072000000100014000b0800000000000100";
-    private static final String TPM_SIGNATURE_ALG = "sha256";
+    private static final String TPM1_SIGNATURE_ALG = "sha1";
+    private static final String TPM256_SIGNATURE_ALG = "sha256";
 
     private static final int MAC_BYTES = 6;
 
@@ -156,6 +157,7 @@ public abstract class AbstractAttestationCertificateAuthority
     private final DeviceManager deviceManager;
     private final DBManager<TPM2ProvisionerState> tpm2ProvisionerStateDBManager;
     private String[] pcrsList;
+    private String[] pcrs256List;
     private String tpmQuoteHash;
     private String tpmSignatureHash;
     private String pcrValues;
@@ -511,10 +513,15 @@ public abstract class AbstractAttestationCertificateAuthority
             }
             if (request.getPcrslist() != null && !request.getPcrslist().isEmpty()) {
                 LOG.error(request.getPcrslist().toStringUtf8());
-                parsePCRValues(request.getPcrslist().toStringUtf8());
+                String values = request.getPcrslist().toStringUtf8();
+                String[] pcrsSet = values.split("/+");
+                parsePCRValues(pcrsSet[0]);
+                parsePCR256Values(pcrsSet[1]);
             }
             if (request.getPcrs256List() != null && !request.getPcrs256List().isEmpty()) {
                 LOG.error(request.getPcrs256List().toStringUtf8());
+            } else {
+                LOG.error("Mustang - they didn't print 256...");
             }
 
             // Get device name and device
@@ -577,7 +584,30 @@ public abstract class AbstractAttestationCertificateAuthority
             String[] lines = pcrValues.split("\\r?\\n");
             pcrs = new String[lines.length - 1];
             for (String line : lines) {
-                if (!line.contains(TPM_SIGNATURE_ALG)) {
+                if (!line.contains(TPM1_SIGNATURE_ALG)) {
+                    pcrs[counter++] = line.split(":")[1].trim();
+                }
+            }
+        }
+
+        this.pcrsList = pcrs;
+    }
+
+    /**
+     * This method splits all hashed pcr values into an array.
+     * @param pcrValues contains the full list of 24 pcr values
+     */
+    private void parsePCR256Values(final String pcrValues) {
+        String[][] pcrsMatrix = null;
+        String[] pcrs = null;
+
+        if (pcrValues != null) {
+            this.pcrValues = pcrValues;
+            int counter = 0;
+            String[] lines = pcrValues.split("\\r?\\n");
+            pcrs = new String[lines.length - 1];
+            for (String line : lines) {
+                if (!line.contains(TPM1_SIGNATURE_ALG)) {
                     pcrs[counter++] = line.split(":")[1].trim();
                 }
             }
