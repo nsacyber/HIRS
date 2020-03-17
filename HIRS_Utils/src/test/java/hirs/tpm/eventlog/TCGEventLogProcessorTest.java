@@ -105,6 +105,11 @@ public class TCGEventLogProcessorTest extends SpringPersistenceTest {
       // Test 2 get an individual PCR
       String pcr3 = tlp.getExpectedPCRValue(3);
       Assert.assertEquals(pcr3, pcrFromLog[3]);
+      // Test 3 check the Algorithm Identifiers used in the log
+      String algStr = tlp.getEventLogHashAlgorithm();
+      Assert.assertEquals(algStr, "TPM_ALG_SHA256");
+      int id = tlp.getEventLogHashAlgorithmID();
+      Assert.assertEquals(id, TcgTpmtHa.TPM_ALG_SHA256);
       LOGGER.debug("OK. Parsing of a Crypto Agile Format Success");
     }
 
@@ -135,6 +140,11 @@ public class TCGEventLogProcessorTest extends SpringPersistenceTest {
        // Test 2 get an individual PCR
        String pcr0 = tlp.getExpectedPCRValue(0);
        Assert.assertEquals(pcr0, pcrFromLog[0]);
+       // Test 3 check the Algorithm Identifiers used in the log
+       String algStr = tlp.getEventLogHashAlgorithm();
+       Assert.assertEquals(algStr, "TPM_ALG_SHA1");
+       int id = tlp.getEventLogHashAlgorithmID();
+       Assert.assertEquals(id, TcgTpmtHa.TPM_ALG_SHA1);
        LOGGER.debug("OK. Parsing of a SHA1 formatted TCG Event Log Success");
       }
 
