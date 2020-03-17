@@ -26,9 +26,17 @@ zu3HTmQfeRYs/c6Ck1k3bL1jnyWoNzhBqCuPYrZtPbv9opVP0YOxM5IjRkRgkZIDgYbh1k4WXw8O
 /iIMZuVJDfKQJSNCTAZsIbUatGDQc/nOihLHdI90wG8zu9amgrl1AEKzH8z864Fan5uuXolfAaak
 sLJl6RPCNcp+JNCXMMZiS8bmYPQnVJc1ze0I1A==</SignatureValue>
     <KeyInfo>
-      <X509Data>
-        <X509SubjectName>CN=example.RIM.signer,OU=PCClient,O=Example,ST=VA,C=US</X509SubjectName>
-      </X509Data>
+      <KeyName>#2fdeb8e7d030a2209daa01861a964fedecf2bcc1</KeyName>
+      <KeyValue>
+        <RSAKeyValue>
+          <Modulus>p3WVYaRJG7EABjbAdqDYZXFSTV1nHY9Ol9A5+W8t5xwBXBryZCGWxERGr5AryKWPxd+qzjj+cFpx
+xkM6N18jEhQIx/CEZePEJqpluBO5w2wTEOe7hqtMatqgDDMeDRxUuIpP8LGP00vh1wyDFFew90d9
+dvT3bcLvFh3a3ap9bTm6aBqPup5CXpzrwIU2wZfgkDytYVBm+8bHkMaUrgpNyM+5BAg2zl/Fqw0q
+otjaGr7PzbH+urCvaGbKLMPoWkVLIgAE8Qw98HTfoYSFHC7VYQySrzIinaOBFSgViR72kHemH2lW
+jDQeHiY0VIoPik/jVVIpjWe6zzeZ2S66Q/LmjQ==</Modulus>
+          <Exponent>AQAB</Exponent>
+        </RSAKeyValue>
+      </KeyValue>
     </KeyInfo>
   </Signature>
 </SoftwareIdentity>
