@@ -12,9 +12,6 @@ import hirs.utils.HexUtils;
  * } UEFI_PLATFORM_FIRMWARE_BLOB;
  */
 public class UefiFirmware {
-  /** standard uefi address length. */
-  private static final int ADDRESS_LENGTH = 8;
-  /** error flag. */
   private boolean berror = false;
   /** byte array holding the firmwares physical address. */
   private byte[] physicalAddress = null;
@@ -24,19 +21,19 @@ public class UefiFirmware {
   private int blobAddress = 0;
   /** uefi address length. */
   private int blobLength = 0;
-  /** standard uefi address length. */
 
   /**
    * UefiFirmware constructor.
    * @param blob byte array holding a Firmware Blob.
    */
   public UefiFirmware(final byte[] blob) {
-    if (blob.length != 16) {
+    if (blob.length != UefiConstants.SIZE_16) {
         berror = true;
      } else {
-        physicalAddress = new byte[ADDRESS_LENGTH];
-        System.arraycopy(blob, 0, physicalAddress, 0, ADDRESS_LENGTH);
-        System.arraycopy(blob, ADDRESS_LENGTH, addressLength, 0, ADDRESS_LENGTH);
+        physicalAddress = new byte[UefiConstants.SIZE_8];
+        addressLength = new byte[UefiConstants.SIZE_8];
+        System.arraycopy(blob, 0, physicalAddress, 0, UefiConstants.SIZE_8);
+        System.arraycopy(blob, UefiConstants.SIZE_8, addressLength, 0, UefiConstants.SIZE_8);
         byte[] lelength = HexUtils.leReverseByte(addressLength);
         BigInteger bigIntLength = new BigInteger(lelength);
         blobLength = bigIntLength.intValue();
@@ -61,13 +58,13 @@ public int getBlobLength() {
 }
 /**
  *  Returns a description of the firmware blobs location.
- *  @returns a descritpion of the the firmware blobs location.
+ *  @return a description of the the firmware blobs location.
  */
 public String toString() {
      String blobInfo = "";
-     if(!berror) {
-         blobInfo += "   Platform Firwmare Blob Address = "+blobAddress;
-         blobInfo += " length = "+ blobLength;
+     if (!berror) {
+         blobInfo += "   Platform Firwmare Blob Address = " + blobAddress;
+         blobInfo += " length = " + blobLength;
       } else {
          blobInfo += " Invalid Firmware Blob event encountered";
       }

@@ -13,54 +13,44 @@ import hirs.utils.HexUtils;
  *  } EFI_PARTITION_ENTRY;
  *
  *   UEFI Table 23. Defined GPT Partition Entry - Partition Type GUIDs (implemented in EFIGui.java)
+ *   Examples:
  *   Unused Entry                             00000000-0000-0000-0000-000000000000
  *   EFI System Partition                     C12A7328-F81F-11D2-BA4B-00A0C93EC93B
  *   Partition containing a legacy MBR        024DEE41-33E7-11D3-9D69-0008C781F39F
- *
- *   A list of type Partition GUIDs from: https://en.wikipedia.org/wiki/GUID_Partition_Table
  *   Linux filesystem data                    0FC63DAF-8483-4772-8E79-3D69D8477DE4
  *   Logical Volume Manager (LVM) partition   E6D6D379-F507-44C2-A23C-238F2A3DF928
  *   Plain dm-crypt partition                 7FFEC5C9-2D00-49B7-8941-3EA10A5586B7
  *   Root partition (x86-64)                  4F68BCE3-E8CD-4DB1-96E7-FBCAF984B709
  *   RAID partition                           A19D880F-05FC-4D3B-A006-743F0F84911E
  *   LUKS partition                           CA7D7CCB-63ED-4C53-861C-1742536059CC
- *   Swap partition                           0657FD6D-A4AB-43C4-84E5-0933C84B4F4F
- *   /home partition                          933AC7E1-2EB4-4F13-B844-0E14E2AEF915
- *   /srv (server data) partition             3B8F8425-20E0-4F3B-907F-1A25A76F98E8
  *
  *   linux commands to check uuids:
  *       blkid list //unique parition guids
  *       ls /dev/disk/by-partuuid
  */
-public class UEFIPartition {
+public class UefiPartition {
   private UefiGuid partitionTypeGUID = null;
   private UefiGuid uniquePartitionGUID = null;
   private String partitionName = "";
   private String attributes = "";
-  /** standard byte length. */
-  private static final int BYTE_LENGTH = 8;
-  /** standard byte length. */
-  private static final int ATTRIBUTE_LENGTH = 48;
-  /** standard byte length. */
-  private static final int PART_NAME_LENGTH = 56;
-  /** standard UEFI partition table lengh. */
-  private static final int UEFI_PT_LENGTH = 72;
+
 /**
  * Processes a UEFI defined partition entry.
  * @param table byte array holding the partition table.
  */
-  public UEFIPartition(final byte[] table) {
+  public UefiPartition(final byte[] table) {
     byte[] partitionGUID = new byte[UefiGuid.getGuidLength()];
     System.arraycopy(table, 0, partitionGUID, 0, UefiGuid.getGuidLength());
     partitionTypeGUID = new UefiGuid(partitionGUID);
     byte[] uniquePartGUID = new byte[UefiGuid.getGuidLength()];
     System.arraycopy(table, UefiGuid.getGuidLength(), uniquePartGUID, 0, UefiGuid.getGuidLength());
     uniquePartitionGUID = new UefiGuid(uniquePartGUID);
-    byte[] attribute = new byte[BYTE_LENGTH];
-    System.arraycopy(table, ATTRIBUTE_LENGTH, attribute, 0, BYTE_LENGTH);
+    byte[] attribute = new byte[UefiConstants.SIZE_8];
+    System.arraycopy(table, UefiConstants.ATTRIBUTE_LENGTH, attribute, 0, UefiConstants.SIZE_8);
     attributes = HexUtils.byteArrayToHexString(attribute);
-    byte[] partitionname = new byte[UEFI_PT_LENGTH];
-    System.arraycopy(table, PART_NAME_LENGTH, partitionname, 0, UEFI_PT_LENGTH);
+    byte[] partitionname = new byte[UefiConstants.UEFI_PT_LENGTH];
+    System.arraycopy(table, UefiConstants.PART_NAME_LENGTH, partitionname,
+                                                      0, UefiConstants.UEFI_PT_LENGTH);
     byte[] pName = convertChar16tobyteArray(partitionname);
     partitionName = HexUtils.byteArrayToHexString(pName);
     String[] parts = partitionName.split("[^\\x00-\\x7F]");   // remove any non ASCII

@@ -10,20 +10,12 @@ import hirs.utils.HexUtils;
  * GUIDs are essentially UUID as defined by RFC-1422, however Microsoft refers to GUIDS.
  */
 public class UefiGuid {
-    /** standard GUID length. */
-    private static final int GUID_LENGTH = 16;
-    /** standard short length. */
-    private static final int SHORT_LENGTH = 2;
-    /** standard int length. */
-    private static final int INT_LENGTH = 4;
-    /** standard long length. */
-    private static final int LONG_LENGTH = 8;
     /** number of 100ns intervals since UUID Epoch. */
     private static final long UUID_EPOCH_INTERVALS =  0x01b21dd213814000L;
     /** used for conversion to uuid time. */
     private static final int UUID_EPOCH_DIVISOR = 10000;
     /** guid byte array. */
-    private byte[] guid = new byte[GUID_LENGTH ];
+    private byte[] guid = new byte[UefiConstants.SIZE_16 ];
     /** UUID object. */
     private UUID uuid;
 
@@ -32,7 +24,7 @@ public class UefiGuid {
      * @param guidBytes byte array holding a valid guid.
      */
     public UefiGuid(final byte[] guidBytes) {
-      System.arraycopy(guidBytes, 0, guid, 0, GUID_LENGTH);
+      System.arraycopy(guidBytes, 0, guid, 0, UefiConstants.SIZE_16);
       uuid = processGuid(guidBytes);
     }
 
@@ -41,21 +33,21 @@ public class UefiGuid {
   * Matched uuids found in /sys/firmware/efi/efivars on Centos 7.
   */
 private static UUID processGuid(final byte[] guid) {
-   byte[] msb1 = new byte[INT_LENGTH];
-   System.arraycopy(guid, 0, msb1, 0, INT_LENGTH);
+   byte[] msb1 = new byte[UefiConstants.SIZE_4];
+   System.arraycopy(guid, 0, msb1, 0, UefiConstants.SIZE_4);
    byte[] msb1r = HexUtils.leReverseByte(msb1);
-   byte[] msb2 = new byte[INT_LENGTH];
-   System.arraycopy(guid, INT_LENGTH, msb2, 0, INT_LENGTH);
+   byte[] msb2 = new byte[UefiConstants.SIZE_4];
+   System.arraycopy(guid, UefiConstants.OFFSET_4, msb2, 0, UefiConstants.SIZE_4);
    byte[] msb2r = HexUtils.leReverseByte(msb2);
-   byte[] msb2rs = new byte[INT_LENGTH];
-   System.arraycopy(msb2r, 0, msb2rs, SHORT_LENGTH, SHORT_LENGTH);
-   System.arraycopy(msb2r, SHORT_LENGTH, msb2rs, 0, SHORT_LENGTH);
-   byte[] msbt = new byte[LONG_LENGTH];
-   System.arraycopy(msb1r, 0, msbt, 0, INT_LENGTH);
-   System.arraycopy(msb2rs, 0, msbt, INT_LENGTH, INT_LENGTH);
+   byte[] msb2rs = new byte[UefiConstants.SIZE_4];
+   System.arraycopy(msb2r, 0, msb2rs, UefiConstants.OFFSET_2, UefiConstants.SIZE_2);
+   System.arraycopy(msb2r, UefiConstants.OFFSET_2, msb2rs, 0, UefiConstants.SIZE_2);
+   byte[] msbt = new byte[UefiConstants.SIZE_8];
+   System.arraycopy(msb1r, 0, msbt, 0, UefiConstants.SIZE_4);
+   System.arraycopy(msb2rs, 0, msbt, UefiConstants.OFFSET_4, UefiConstants.SIZE_4);
    long msbl = new BigInteger(msbt).longValue();
-   byte[] lsb = new byte[LONG_LENGTH];
-   System.arraycopy(guid, LONG_LENGTH, lsb, 0, LONG_LENGTH);
+   byte[] lsb = new byte[UefiConstants.SIZE_8];
+   System.arraycopy(guid, UefiConstants.OFFSET_8, lsb, 0, UefiConstants.SIZE_8);
    long lsbl = new BigInteger(lsb).longValue();
    UUID tmpUuid = new UUID(msbl, lsbl);
    return tmpUuid;
@@ -65,7 +57,7 @@ private static UUID processGuid(final byte[] guid) {
  * @return guid length
  */
 public static int getGuidLength() {
-    return GUID_LENGTH;
+    return UefiConstants.SIZE_16;
 }
 /**
  * Returns a String that represents a specification name referenced by the EFI_CONFIGURATION_TABLE
