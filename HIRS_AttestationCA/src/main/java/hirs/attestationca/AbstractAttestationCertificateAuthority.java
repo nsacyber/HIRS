@@ -285,13 +285,6 @@ public abstract class AbstractAttestationCertificateAuthority
         // store device and device info report.
         Device device = this.deviceRegister.saveOrUpdateDevice(deviceInfoReport);
 
-        LOG.error("Trying to print pcrs...");
-        if (pcrsList.length > 0) {
-            for (int i = 0; i < pcrsList.length; i++) {
-                LOG.error(pcrsList[i]);
-            }
-        }
-
         // perform supply chain validation. Note: It's possible that this should be done earlier
         // in this method.
         SupplyChainValidationSummary summary =
@@ -1069,7 +1062,7 @@ public abstract class AbstractAttestationCertificateAuthority
 
             builder.addExtension(subjectAlternativeName);
             // identify cert as an AIK with this extension
-            if (null != IssuedCertificateAttributeHelper.EXTENDED_KEY_USAGE_EXTENSION) {
+            if (IssuedCertificateAttributeHelper.EXTENDED_KEY_USAGE_EXTENSION != null) {
                 builder.addExtension(IssuedCertificateAttributeHelper.EXTENDED_KEY_USAGE_EXTENSION);
             } else {
                 LOG.warn("Failed to build extended key usage extension and add to AIK");
