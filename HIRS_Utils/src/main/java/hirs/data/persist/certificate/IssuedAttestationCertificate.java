@@ -21,7 +21,7 @@ import javax.persistence.ManyToOne;
 @Entity
 public class IssuedAttestationCertificate extends DeviceAssociatedCertificate {
 
-    private static final int MAX_CERT_LENGTH_BYTES = 2048;
+    private static final int MAX_CERT_LENGTH_BYTES = 4096;
 
     /**
      * AIC label that must be used.

@@ -225,11 +225,7 @@ public class SupplyChainValidationServiceImpl implements SupplyChainValidationSe
 
             if (attCert != null) {
                 LOGGER.error(attCert.getPcrValues());
-
-//                ReferenceManifest.select().byManufacturer().getRims();
             }
-
-//            LOGGER.error(pcrs);
         }
 
         // Generate validation summary, save it, and return it.
