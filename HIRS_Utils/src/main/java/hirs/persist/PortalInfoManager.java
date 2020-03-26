@@ -1,6 +1,7 @@
 package hirs.persist;
 
 import hirs.data.persist.PortalInfo;
+import hirs.data.persist.enums.PortalScheme;
 
 /**
  * A <code>PortalInfoManager</code> manages <code>PortalInfo</code> objects. A
@@ -49,7 +50,7 @@ public interface PortalInfoManager {
      * @throws PortalInfoManagerException
      *             if unable to retrieve the PortalInfo
      */
-    PortalInfo getPortalInfo(PortalInfo.Scheme scheme)
+    PortalInfo getPortalInfo(PortalScheme scheme)
             throws PortalInfoManagerException;
 
     /**
@@ -64,7 +65,7 @@ public interface PortalInfoManager {
      *             if unable to delete the PortalInfo for any reason other
      *             than not found
      */
-    boolean deletePortalInfo(PortalInfo.Scheme scheme)
+    boolean deletePortalInfo(PortalScheme scheme)
             throws PortalInfoManagerException;
 
     /**

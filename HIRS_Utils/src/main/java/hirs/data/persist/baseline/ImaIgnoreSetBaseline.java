@@ -3,11 +3,14 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package hirs.data.persist;
+package hirs.data.persist.baseline;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import com.google.common.base.Preconditions;
+import hirs.data.persist.IMAMeasurementRecord;
+import hirs.data.persist.IMAPolicy;
+import hirs.data.persist.ImaIgnoreSetRecord;
 import hirs.ima.matching.BatchImaMatchStatus;
 import hirs.ima.matching.ImaIgnoreSetRecordMatcher;
 import hirs.persist.ImaBaselineRecordManager;
@@ -202,7 +205,7 @@ public class ImaIgnoreSetBaseline extends ImaBaseline<ImaIgnoreSetRecord> {
      * @return
      *      returns true is the record was added to the list, false if not
      */
-    final synchronized boolean addOnlyToBaseline(final ImaIgnoreSetRecord record) {
+    public final synchronized boolean addOnlyToBaseline(final ImaIgnoreSetRecord record) {
         if (record == null) {
             LOGGER.error("invalid parameter (NULL value) "
                     + "passed to ImaIgnoreSetBaseline.addOnlyToBaseline");
@@ -227,7 +230,7 @@ public class ImaIgnoreSetBaseline extends ImaBaseline<ImaIgnoreSetRecord> {
      *            record to remove
      * @return a boolean indicating if the removal was successful
      */
-    final boolean removeOnlyBaseline(final ImaIgnoreSetRecord record) {
+    public final boolean removeOnlyBaseline(final ImaIgnoreSetRecord record) {
         return imaIgnoreSetRecords.remove(record);
     }
 }

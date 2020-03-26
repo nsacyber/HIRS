@@ -1,5 +1,7 @@
-package hirs.data.persist;
+package hirs.data.persist.baseline;
 
+import hirs.data.persist.IMAMeasurementRecord;
+import hirs.data.persist.IMAPolicy;
 import hirs.ima.matching.BatchImaMatchStatus;
 import hirs.persist.ImaBaselineRecordManager;
 import org.hibernate.annotations.Type;

@@ -7,9 +7,9 @@ import hirs.alert.resolve.IgnoreAlertResolver;
 import hirs.alert.resolve.RemoveFromIMABaselineAlertResolver;
 import hirs.alert.resolve.RemoveFromTPMBaselineAlertResolver;
 import hirs.alert.resolve.RequestNewReportAlertResolver;
-import hirs.data.persist.Baseline;
-import hirs.data.persist.SimpleImaBaseline;
-import hirs.data.persist.TpmWhiteListBaseline;
+import hirs.data.persist.baseline.Baseline;
+import hirs.data.persist.baseline.SimpleImaBaseline;
+import hirs.data.persist.baseline.TpmWhiteListBaseline;
 
 /**
  * Specifies actions that can be taken to resolve an Alert.

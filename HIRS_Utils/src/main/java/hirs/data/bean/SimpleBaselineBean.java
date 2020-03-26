@@ -3,7 +3,7 @@ package hirs.data.bean;
 import java.util.Date;
 import java.util.UUID;
 
-import hirs.data.persist.Alert;
+import hirs.data.persist.enums.AlertSeverity;
 
 /**
  * Provides a bean that can be used to encapsulate simple baseline data.
@@ -12,7 +12,7 @@ public class SimpleBaselineBean {
     private UUID id;
     private Date createTime;
     private String name;
-    private Alert.Severity severity;
+    private AlertSeverity severity;
     private String type;
 
     /**
@@ -43,7 +43,7 @@ public class SimpleBaselineBean {
      * Get the severity.
      * @return Alert.Severity.
      */
-    public Alert.Severity getSeverity() {
+    public AlertSeverity getSeverity() {
         return severity;
     }
 

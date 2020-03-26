@@ -22,10 +22,9 @@ import org.hibernate.annotations.Type;
 @Embeddable
 public class TPMInfo implements Serializable {
     private static final Logger LOGGER = LogManager.getLogger(TPMInfo.class);
-    private static final int STRING_LENGTH = 64;
 
     @XmlElement
-    @Column(length = STRING_LENGTH, nullable = true)
+    @Column(length = DeviceInfoReport.MED_STRING_LENGTH, nullable = true)
     private String tpmMake;
 
     @XmlElement
@@ -226,7 +225,7 @@ public class TPMInfo implements Serializable {
     private void setTPMMake(final String tpmMake) {
         LOGGER.debug("setting TPM make info: {}", tpmMake);
         this.tpmMake = StringValidator.check(tpmMake, "tpmMake")
-                .notNull().maxLength(STRING_LENGTH).get();
+                .notNull().maxLength(DeviceInfoReport.MED_STRING_LENGTH).get();
     }
 
     private void setTPMVersionMajor(final short tpmVersionMajor) {

@@ -1,5 +1,8 @@
-package hirs.data.persist;
+package hirs.data.persist.baseline;
 
+import hirs.data.persist.Digest;
+import hirs.data.persist.enums.DigestAlgorithm;
+import hirs.data.persist.OptionalDigest;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -70,7 +73,7 @@ public abstract class AbstractImaBaselineRecord {
      * @throws IllegalArgumentException
      *             if digest algorithm is not SHA-1
      */
-    AbstractImaBaselineRecord(final String path, final Digest hash, final String description)
+    public AbstractImaBaselineRecord(final String path, final Digest hash, final String description)
             throws IllegalArgumentException {
         if (hash != null && hash.getAlgorithm() != DigestAlgorithm.SHA1) {
             throw new IllegalArgumentException("Hash algorithm is not SHA-1");

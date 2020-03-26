@@ -1,4 +1,4 @@
-package hirs.data.persist;
+package hirs.data.persist.enums;
 
 /**
  * Enum used to represent operating system names.

@@ -1,4 +1,4 @@
-package hirs.data.persist;
+package hirs.data.persist.enums;
 
 /**
  * <code>HealthStatus</code> is used to represent the health of a device.

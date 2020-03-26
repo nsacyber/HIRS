@@ -1,10 +1,10 @@
 package hirs.persist;
 
 import hirs.data.persist.Digest;
-import hirs.data.persist.IMABaselineRecord;
+import hirs.data.persist.baseline.IMABaselineRecord;
 import hirs.data.persist.OptionalDigest;
-import hirs.data.persist.QueryableRecordImaBaseline;
-import hirs.data.persist.SimpleImaBaseline;
+import hirs.data.persist.baseline.QueryableRecordImaBaseline;
+import hirs.data.persist.baseline.SimpleImaBaseline;
 
 import hirs.utils.Callback;
 import hirs.utils.Job;

@@ -1,7 +1,9 @@
-package hirs.data.persist;
+package hirs.data.persist.baseline;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.common.base.Preconditions;
+import hirs.data.persist.IMAMeasurementRecord;
+import hirs.data.persist.IMAPolicy;
 import hirs.ima.matching.BatchImaMatchStatus;
 import hirs.ima.matching.ImaAcceptableHashRecordMatcher;
 import hirs.ima.matching.ImaAcceptablePathAndHashRecordMatcher;

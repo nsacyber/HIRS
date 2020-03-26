@@ -2,17 +2,17 @@ package hirs.ima;
 
 import hirs.data.persist.DeviceInfoReport;
 import hirs.data.persist.Digest;
-import hirs.data.persist.DigestAlgorithm;
+import hirs.data.persist.enums.DigestAlgorithm;
 import hirs.data.persist.FirmwareInfo;
 import hirs.data.persist.HardwareInfo;
-import hirs.data.persist.IMABaselineRecord;
-import hirs.data.persist.ImaBlacklistBaseline;
+import hirs.data.persist.baseline.IMABaselineRecord;
+import hirs.data.persist.baseline.ImaBlacklistBaseline;
 import hirs.data.persist.ImaBlacklistRecord;
 import hirs.data.persist.OSInfo;
-import hirs.data.persist.SimpleImaBaseline;
+import hirs.data.persist.baseline.SimpleImaBaseline;
 import hirs.data.persist.TPMInfo;
 import hirs.data.persist.TPMMeasurementRecord;
-import hirs.data.persist.TpmWhiteListBaseline;
+import hirs.data.persist.baseline.TpmWhiteListBaseline;
 import hirs.tpm.TPMBaselineGenerator;
 import hirs.tpm.TPMBaselineGeneratorException;
 

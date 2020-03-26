@@ -1,4 +1,4 @@
-package hirs.data.persist;
+package hirs.data.persist.enums;
 
 /**
  * Enumeration identifying the different outcomes of a comparison between

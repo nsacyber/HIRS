@@ -1,5 +1,7 @@
 package hirs.data.persist;
 
+import hirs.data.persist.enums.ExamineState;
+import hirs.data.persist.enums.DigestAlgorithm;
 import java.text.ParseException;
 
 import org.apache.commons.codec.DecoderException;

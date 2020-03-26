@@ -24,10 +24,10 @@ import org.junit.Assert;
 import org.junit.BeforeClass;
 */
 
-import hirs.data.persist.Baseline;
+import hirs.data.persist.baseline.Baseline;
 import hirs.data.persist.Digest;
 import hirs.data.persist.SpringPersistenceTest;
-import hirs.data.persist.TpmWhiteListBaseline;
+import hirs.data.persist.baseline.TpmWhiteListBaseline;
 import hirs.utils.HexUtils;
 
 /**

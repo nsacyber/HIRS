@@ -1,4 +1,4 @@
-package hirs.data.persist;
+package hirs.data.persist.enums;
 
 /**
  * This enum represents the result of a search for a record in a baseline.
@@ -20,5 +20,4 @@ public enum ReportMatchStatus {
      * Indicates the baseline has no entries matching the file path.
      */
     UNKNOWN
-
 }

@@ -1,5 +1,7 @@
 package hirs.data.persist;
 
+import hirs.data.persist.enums.DigestComparisonResultType;
+import hirs.data.persist.enums.DigestAlgorithm;
 import java.util.Arrays;
 
 import org.apache.commons.codec.digest.DigestUtils;

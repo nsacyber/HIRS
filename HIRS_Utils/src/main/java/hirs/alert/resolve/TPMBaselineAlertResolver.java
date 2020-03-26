@@ -2,8 +2,8 @@ package hirs.alert.resolve;
 
 import hirs.data.persist.Alert;
 import hirs.data.persist.Digest;
-import hirs.data.persist.DigestAlgorithm;
-import hirs.data.persist.TPMBaseline;
+import hirs.data.persist.enums.DigestAlgorithm;
+import hirs.data.persist.baseline.TPMBaseline;
 import hirs.data.persist.TPMMeasurementRecord;
 import java.util.HashSet;
 import java.util.Set;

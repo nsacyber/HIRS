@@ -1,5 +1,6 @@
 package hirs.data.persist;
 
+import hirs.data.persist.enums.ComponentType;
 import javax.persistence.DiscriminatorValue;
 import javax.persistence.Entity;
 
@@ -7,7 +8,7 @@ import javax.persistence.Entity;
  * Class to hold hard drive component information.
  */
 @Entity
-@DiscriminatorValue(value = ComponentInfo.ComponentTypeEnum.Values.HARD_DRIVE)
+@DiscriminatorValue(value = ComponentType.Values.HARD_DRIVE)
 public class HardDriveComponentInfo extends ComponentInfo {
     /**
      * Default constructor required by Hibernate.

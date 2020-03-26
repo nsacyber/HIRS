@@ -1,5 +1,6 @@
 package hirs.data.persist;
 
+import hirs.data.persist.baseline.TpmWhiteListBaseline;
 import hirs.foss.XMLCleaner;
 import hirs.persist.DBReportManager;
 import hirs.persist.ReportManager;

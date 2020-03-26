@@ -1,5 +1,6 @@
 package hirs.data.persist;
 
+import hirs.data.persist.enums.PortalScheme;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import javax.persistence.Access;
@@ -18,20 +19,6 @@ import javax.persistence.Table;
 @Table(name = "PortalInfo")
 @Access(AccessType.FIELD)
 public class PortalInfo {
-    /**
-     * Schemes used by the HIRS Portal.
-     */
-    public enum Scheme {
-        /**
-         * HTTP.
-         */
-        HTTP,
-        /**
-         * HTTPS.
-         */
-        HTTPS;
-    }
-
     @Id
     @Column
     @GeneratedValue(strategy = GenerationType.AUTO)
@@ -60,7 +47,7 @@ public class PortalInfo {
      *
      * @param scheme Name of the portal.
      */
-    public final void setSchemeName(final PortalInfo.Scheme scheme) {
+    public final void setSchemeName(final PortalScheme scheme) {
         if (scheme == null) {
             throw new NullPointerException("Scheme cannot be null");
         }

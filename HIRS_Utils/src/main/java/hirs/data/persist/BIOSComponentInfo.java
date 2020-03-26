@@ -1,5 +1,6 @@
 package hirs.data.persist;
 
+import hirs.data.persist.enums.ComponentType;
 import javax.persistence.DiscriminatorValue;
 import javax.persistence.Entity;
 
@@ -7,7 +8,7 @@ import javax.persistence.Entity;
  * Class to hold BIOS/UEFI Component information.
  */
 @Entity
-@DiscriminatorValue(value = ComponentInfo.ComponentTypeEnum.Values.BIOS_UEFI)
+@DiscriminatorValue(value = ComponentType.Values.BIOS_UEFI)
 public class BIOSComponentInfo extends ComponentInfo {
     /**
      * Default constructor required by Hibernate.

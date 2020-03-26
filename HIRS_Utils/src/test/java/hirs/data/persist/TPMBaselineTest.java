@@ -1,5 +1,9 @@
 package hirs.data.persist;
 
+import hirs.data.persist.enums.DigestAlgorithm;
+import hirs.data.persist.baseline.TpmWhiteListBaseline;
+import hirs.data.persist.baseline.TPMBaseline;
+import hirs.data.persist.baseline.Baseline;
 import static hirs.data.persist.TPMMeasurementRecord.MAX_PCR_ID;
 import static hirs.data.persist.TPMMeasurementRecord.MIN_PCR_ID;
 import static hirs.data.persist.DeviceInfoReport.NOT_SPECIFIED;

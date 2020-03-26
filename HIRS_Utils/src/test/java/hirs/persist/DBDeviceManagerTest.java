@@ -12,7 +12,7 @@ import hirs.data.persist.Device;
 import hirs.data.persist.DeviceGroup;
 import hirs.data.persist.DeviceInfoReport;
 import hirs.data.persist.DeviceTest;
-import hirs.data.persist.HealthStatus;
+import hirs.data.persist.enums.HealthStatus;
 import hirs.data.persist.NetworkInfo;
 import hirs.data.persist.SpringPersistenceTest;
 import org.apache.logging.log4j.LogManager;

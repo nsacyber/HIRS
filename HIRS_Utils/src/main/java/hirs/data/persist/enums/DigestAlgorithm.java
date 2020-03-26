@@ -1,4 +1,6 @@
-package hirs.data.persist;
+package hirs.data.persist.enums;
+
+import hirs.data.persist.AbstractDigest;
 
 /**
  * Enum of digest algorithms. The enum values also provide a standardized
@@ -52,7 +54,7 @@ public enum DigestAlgorithm {
      *
      * @return standard Java algorithm name
      */
-    String getStandardAlgorithmName() {
+    public String getStandardAlgorithmName() {
         return this.standardAlgorithmName;
     }
 

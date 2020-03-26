@@ -6,7 +6,7 @@ import hirs.data.persist.FirmwareInfo;
 import hirs.data.persist.HardwareInfo;
 import hirs.data.persist.NetworkInfo;
 import hirs.data.persist.OSInfo;
-import hirs.data.persist.OSName;
+import hirs.data.persist.enums.OSName;
 import hirs.data.persist.TPMInfo;
 import hirs.structs.converters.StructConverter;
 import hirs.structs.elements.tpm.AsymmetricPublicKey;

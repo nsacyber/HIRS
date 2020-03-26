@@ -1,4 +1,4 @@
-package hirs.data.persist;
+package hirs.data.persist.baseline;
 
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -13,6 +13,7 @@ import javax.persistence.Table;
 import javax.persistence.Transient;
 
 import com.google.common.base.Preconditions;
+import hirs.data.persist.Digest;
 
 /**
  * An <code>IMABaselineRecord</code> represents a single entry in an

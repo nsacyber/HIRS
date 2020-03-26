@@ -1,5 +1,11 @@
-package hirs.data.persist;
+package hirs.data.persist.baseline;
 
+import hirs.data.persist.Digest;
+import hirs.data.persist.FirmwareInfo;
+import hirs.data.persist.HardwareInfo;
+import hirs.data.persist.OSInfo;
+import hirs.data.persist.TPMInfo;
+import hirs.data.persist.TPMMeasurementRecord;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -66,44 +72,11 @@ public abstract class TPMBaseline extends Baseline {
 
 
     private void initDeviceInfo() {
-        initFirmwareInfo();
-        initHardwareInfo();
-        initOSInfo();
-        initTPMInfo();
-    }
-
-    /**
-     * Creates default FirmwareInfo object.
-     */
-    private void initFirmwareInfo() {
         firmwareInfo = new FirmwareInfo();
+        hardwareInfo = new HardwareInfo();
+        osInfo = new OSInfo();
+        tpmInfo = new TPMInfo();
     }
-
-
-    /**
-     * Creates default HardwareInfo object.
-     */
-    private void initHardwareInfo() {
-        hardwareInfo =
-                new HardwareInfo();
-    }
-
-    /**
-     * Creates default OSInfo object.
-     */
-    private void initOSInfo() {
-        osInfo =
-                new OSInfo();
-    }
-
-    /**
-     * Creates default TPMInfo object.
-     */
-    private void initTPMInfo() {
-        tpmInfo =
-                new TPMInfo();
-    }
-
 
     /**
      * Retrieves the FirmwareInfo for this <code>TPMBaseline</code>.
@@ -144,7 +117,7 @@ public abstract class TPMBaseline extends Baseline {
      */
     public final void setFirmwareInfo(final FirmwareInfo firmwareInfo) {
         if (firmwareInfo == null) {
-            initFirmwareInfo();
+            this.firmwareInfo = new FirmwareInfo();
         } else {
             this.firmwareInfo = firmwareInfo;
         }
@@ -157,7 +130,7 @@ public abstract class TPMBaseline extends Baseline {
      */
     public final void setHardwareInfo(final HardwareInfo hardwareInfo) {
         if (hardwareInfo == null) {
-            initHardwareInfo();
+            this.hardwareInfo = new HardwareInfo();
         } else {
             this.hardwareInfo = hardwareInfo;
         }
@@ -170,7 +143,7 @@ public abstract class TPMBaseline extends Baseline {
      */
     public final void setOSInfo(final OSInfo osInfo) {
         if (osInfo == null) {
-            initOSInfo();
+            this.osInfo = new OSInfo();
         } else {
             this.osInfo = osInfo;
         }
@@ -183,7 +156,7 @@ public abstract class TPMBaseline extends Baseline {
      */
     public final void setTPMInfo(final TPMInfo tpmInfo) {
         if (tpmInfo == null) {
-            initTPMInfo();
+            this.tpmInfo = new TPMInfo();
         } else {
             this.tpmInfo = tpmInfo;
         }
@@ -227,9 +200,6 @@ public abstract class TPMBaseline extends Baseline {
      * @return true if measurement record is found in list, otherwise false
      */
     public final boolean isInBaseline(final TPMMeasurementRecord record) {
-        if (record == null) {
-            return false;
-        }
         return pcrRecords.contains(record);
     }
 
@@ -244,7 +214,7 @@ public abstract class TPMBaseline extends Baseline {
         LOGGER.debug("adding record {} to baseline {}", record, getName());
         if (record == null) {
             LOGGER.error("null record");
-            throw new NullPointerException("record");
+            throw new NullPointerException("TPMMeasurementRecord");
         }
 
         if (pcrRecords.contains(record)) {
@@ -268,7 +238,7 @@ public abstract class TPMBaseline extends Baseline {
     public final boolean removeFromBaseline(final TPMMeasurementRecord record) {
         LOGGER.debug("removing record {} from baseline {}", record, getName());
         if (record == null) {
-            LOGGER.error("null record");
+            LOGGER.error("null record can not be removed");
             return false;
         }
 

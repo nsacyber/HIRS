@@ -14,31 +14,29 @@ import java.util.Objects;
  */
 @Embeddable
 public class HardwareInfo implements Serializable {
-    private static final int SHORT_STRING_LENGTH = 64;
-    private static final int LONG_STRING_LENGTH = 256;
 
     @XmlElement
-    @Column(length = LONG_STRING_LENGTH, nullable = false)
+    @Column(length = DeviceInfoReport.LONG_STRING_LENGTH, nullable = false)
     private String manufacturer = DeviceInfoReport.NOT_SPECIFIED;
 
     @XmlElement
-    @Column(length = LONG_STRING_LENGTH, nullable = false)
+    @Column(length = DeviceInfoReport.LONG_STRING_LENGTH, nullable = false)
     private String productName = DeviceInfoReport.NOT_SPECIFIED;
 
     @XmlElement
-    @Column(length = SHORT_STRING_LENGTH, nullable = false)
+    @Column(length = DeviceInfoReport.MED_STRING_LENGTH, nullable = false)
     private String version = DeviceInfoReport.NOT_SPECIFIED;
 
     @XmlElement
-    @Column(length = LONG_STRING_LENGTH, nullable = false)
+    @Column(length = DeviceInfoReport.LONG_STRING_LENGTH, nullable = false)
     private String systemSerialNumber = DeviceInfoReport.NOT_SPECIFIED;
 
     @XmlElement
-    @Column(length = LONG_STRING_LENGTH, nullable = false)
+    @Column(length = DeviceInfoReport.LONG_STRING_LENGTH, nullable = false)
     private String chassisSerialNumber = DeviceInfoReport.NOT_SPECIFIED;
 
     @XmlElement
-    @Column(length = LONG_STRING_LENGTH, nullable = false)
+    @Column(length = DeviceInfoReport.LONG_STRING_LENGTH, nullable = false)
     private String baseboardSerialNumber = DeviceInfoReport.NOT_SPECIFIED;
 
     /**
@@ -61,33 +59,35 @@ public class HardwareInfo implements Serializable {
     ) {
         if (!StringUtils.isBlank(manufacturer)) {
             this.manufacturer = StringValidator.check(manufacturer, "manufacturer")
-                    .maxLength(LONG_STRING_LENGTH).get();
+                    .maxLength(DeviceInfoReport.LONG_STRING_LENGTH).get();
         }
 
         if (!StringUtils.isBlank(productName)) {
             this.productName = StringValidator.check(productName, "productName")
-                    .maxLength(LONG_STRING_LENGTH).get();
+                    .maxLength(DeviceInfoReport.LONG_STRING_LENGTH).get();
         }
 
         if (!StringUtils.isBlank(version)) {
             this.version = StringValidator.check(version, "version")
-                    .maxLength(SHORT_STRING_LENGTH).get();
+                    .maxLength(DeviceInfoReport.MED_STRING_LENGTH).get();
         }
 
         if (!StringUtils.isBlank(systemSerialNumber)) {
             this.systemSerialNumber = StringValidator.check(systemSerialNumber,
-                    "systemSerialNumber").maxLength(LONG_STRING_LENGTH).get();
+                    "systemSerialNumber")
+                    .maxLength(DeviceInfoReport.LONG_STRING_LENGTH).get();
         }
 
         if (!StringUtils.isBlank(chassisSerialNumber)) {
             this.chassisSerialNumber = StringValidator.check(chassisSerialNumber,
-                    "chassisSerialNumber").maxLength(LONG_STRING_LENGTH).get();
+                    "chassisSerialNumber")
+                    .maxLength(DeviceInfoReport.LONG_STRING_LENGTH).get();
         }
 
         if (!StringUtils.isBlank(baseboardSerialNumber)) {
             this.baseboardSerialNumber = StringValidator.check(
-                    baseboardSerialNumber, "baseboardSerialNumber"
-            ).maxLength(LONG_STRING_LENGTH).get();
+                    baseboardSerialNumber, "baseboardSerialNumber")
+                    .maxLength(DeviceInfoReport.LONG_STRING_LENGTH).get();
         }
     }
 

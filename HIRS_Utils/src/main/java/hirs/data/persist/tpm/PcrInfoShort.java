@@ -1,7 +1,7 @@
 package hirs.data.persist.tpm;
 
 import hirs.data.persist.Digest;
-import hirs.data.persist.DigestAlgorithm;
+import hirs.data.persist.enums.DigestAlgorithm;
 import hirs.data.persist.TPMMeasurementRecord;
 
 import javax.persistence.AttributeOverride;

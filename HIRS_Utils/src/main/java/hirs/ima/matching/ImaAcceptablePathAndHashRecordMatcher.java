@@ -1,12 +1,12 @@
 package hirs.ima.matching;
 
 import com.google.common.base.Preconditions;
-import hirs.data.persist.DigestComparisonResultType;
-import hirs.data.persist.IMABaselineRecord;
+import hirs.data.persist.enums.DigestComparisonResultType;
+import hirs.data.persist.baseline.IMABaselineRecord;
 import hirs.data.persist.IMAMeasurementRecord;
 import hirs.data.persist.IMAPolicy;
-import hirs.data.persist.ImaBaseline;
-import hirs.data.persist.ReportMatchStatus;
+import hirs.data.persist.baseline.ImaBaseline;
+import hirs.data.persist.enums.ReportMatchStatus;
 import org.apache.logging.log4j.Logger;
 
 import java.util.Collection;

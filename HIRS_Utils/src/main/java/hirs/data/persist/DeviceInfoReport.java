@@ -1,5 +1,6 @@
 package hirs.data.persist;
 
+import hirs.data.persist.baseline.TpmWhiteListBaseline;
 import static org.apache.logging.log4j.LogManager.getLogger;
 
 import javax.persistence.Column;
@@ -34,6 +35,18 @@ public class DeviceInfoReport extends Report implements Serializable {
      * A variable used to describe unavailable hardware, firmware, or OS info.
      */
     public static final String NOT_SPECIFIED = "Not Specified";
+    /**
+     *
+     */
+    public static final int SHORT_STRING_LENGTH = 32;
+    /**
+     *
+     */
+    public static final int MED_STRING_LENGTH = 64;
+    /**
+     *
+     */
+    public static final int LONG_STRING_LENGTH = 255;
 
     @XmlElement
     @Embedded
@@ -54,6 +67,10 @@ public class DeviceInfoReport extends Report implements Serializable {
     @XmlElement
     @Embedded
     private TPMInfo tpmInfo;
+
+    @XmlElement
+    @Embedded
+    private RimInfo rimInfo;
 
     @XmlElement
     @Column(nullable = false)

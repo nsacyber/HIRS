@@ -5,10 +5,10 @@ import java.io.UnsupportedEncodingException;
 import java.math.BigInteger;
 
 import hirs.data.persist.TPMMeasurementRecord;
-import hirs.data.persist.TpmWhiteListBaseline;
+import hirs.data.persist.baseline.TpmWhiteListBaseline;
 import hirs.utils.HexUtils;
 import hirs.data.persist.Digest;
-import hirs.data.persist.DigestAlgorithm;;
+import hirs.data.persist.enums.DigestAlgorithm;;
 
 /**
  * Class for parsing a TCG EventLogs (both SHA1 and Crypto Agile Formats).

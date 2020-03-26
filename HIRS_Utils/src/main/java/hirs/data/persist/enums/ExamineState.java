@@ -1,4 +1,4 @@
-package hirs.data.persist;
+package hirs.data.persist.enums;
 
 /**
  * State capturing if a record was examined during appraisal or not.

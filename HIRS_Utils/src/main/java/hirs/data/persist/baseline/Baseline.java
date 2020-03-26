@@ -1,5 +1,7 @@
-package hirs.data.persist;
+package hirs.data.persist.baseline;
 
+import hirs.data.persist.UserDefinedEntity;
+import hirs.data.persist.enums.AlertSeverity;
 import javax.persistence.Access;
 import javax.persistence.AccessType;
 import javax.persistence.Column;
@@ -29,7 +31,7 @@ public abstract class Baseline extends UserDefinedEntity {
 
     @Column(nullable = false, name = "severity")
     @Enumerated(EnumType.STRING)
-    private Alert.Severity severity = Alert.Severity.UNSPECIFIED;
+    private AlertSeverity severity = AlertSeverity.UNSPECIFIED;
 
     @Column(nullable = false)
     private String type;
@@ -67,7 +69,7 @@ public abstract class Baseline extends UserDefinedEntity {
      * Gets the baseline severity.
      * @return the severity
      */
-    public Alert.Severity getSeverity() {
+    public AlertSeverity getSeverity() {
         return severity;
     }
 
@@ -75,7 +77,7 @@ public abstract class Baseline extends UserDefinedEntity {
      * Sets the severity of alerts raised by this baseline.
      * @param severity The desired severity of alerts raised by this baseline
      */
-    public void setSeverity(final Alert.Severity severity) {
+    public void setSeverity(final AlertSeverity severity) {
         this.severity = severity;
     }
 }

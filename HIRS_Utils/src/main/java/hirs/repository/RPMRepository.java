@@ -1,8 +1,8 @@
 package hirs.repository;
 
 import hirs.data.persist.Digest;
-import hirs.data.persist.DigestAlgorithm;
-import hirs.data.persist.IMABaselineRecord;
+import hirs.data.persist.enums.DigestAlgorithm;
+import hirs.data.persist.baseline.IMABaselineRecord;
 import hirs.repository.measurement.PackageMeasurer;
 import hirs.repository.measurement.RPMMeasurer;
 import hirs.utils.exec.ExecBuilder;

@@ -5,7 +5,7 @@ import org.testng.annotations.Test;
 
 import java.io.IOException;
 import java.io.InputStream;
-import hirs.data.persist.ImaBlacklistBaseline;
+import hirs.data.persist.baseline.ImaBlacklistBaseline;
 import hirs.data.persist.ImaBlacklistRecord;
 
 /**

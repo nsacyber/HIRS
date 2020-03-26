@@ -1,6 +1,6 @@
 package hirs.repository;
 
-import hirs.data.persist.IMABaselineRecord;
+import hirs.data.persist.baseline.IMABaselineRecord;
 import hirs.persist.DBRepositoryManagerTest;
 
 import javax.persistence.Column;

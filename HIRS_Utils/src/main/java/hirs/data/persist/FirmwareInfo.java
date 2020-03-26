@@ -10,19 +10,17 @@ import java.io.Serializable;
  * Used for representing the firmware info of a device, such as the BIOS information.
  */
 public class FirmwareInfo implements Serializable {
-    private static final int SHORT_STRING_LENGTH = 32;
-    private static final int LONG_STRING_LENGTH = 256;
 
     @XmlElement
-    @Column(length = LONG_STRING_LENGTH, nullable = false)
+    @Column(length = DeviceInfoReport.LONG_STRING_LENGTH, nullable = false)
     private final String biosVendor;
 
     @XmlElement
-    @Column(length = LONG_STRING_LENGTH, nullable = false)
+    @Column(length = DeviceInfoReport.LONG_STRING_LENGTH, nullable = false)
     private final String biosVersion;
 
     @XmlElement
-    @Column(length = SHORT_STRING_LENGTH, nullable = false)
+    @Column(length = DeviceInfoReport.SHORT_STRING_LENGTH, nullable = false)
     private final String biosReleaseDate;
 
     /**
@@ -35,13 +33,13 @@ public class FirmwareInfo implements Serializable {
     public FirmwareInfo(final String biosVendor, final String biosVersion,
                         final String biosReleaseDate) {
         this.biosVendor = StringValidator.check(biosVendor, "biosVendor")
-                .notBlank().maxLength(LONG_STRING_LENGTH).get();
+                .notBlank().maxLength(DeviceInfoReport.LONG_STRING_LENGTH).get();
 
         this.biosVersion = StringValidator.check(biosVersion, "biosVersion")
-                .notBlank().maxLength(LONG_STRING_LENGTH).get();
+                .notBlank().maxLength(DeviceInfoReport.LONG_STRING_LENGTH).get();
 
         this.biosReleaseDate = StringValidator.check(biosReleaseDate, "biosReleaseDate")
-                .notBlank().maxLength(SHORT_STRING_LENGTH).get();
+                .notBlank().maxLength(DeviceInfoReport.SHORT_STRING_LENGTH).get();
     }
 
     /**

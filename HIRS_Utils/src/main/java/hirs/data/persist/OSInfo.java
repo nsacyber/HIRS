@@ -15,27 +15,25 @@ import java.io.Serializable;
 @Embeddable
 public class OSInfo implements Serializable {
     private static final Logger LOGGER = LogManager.getLogger(OSInfo.class);
-    private static final int SHORT_STRING_LENGTH = 32;
-    private static final int LONG_STRING_LENGTH = 256;
 
     @XmlElement
-    @Column(length = LONG_STRING_LENGTH, nullable = false)
+    @Column(length = DeviceInfoReport.LONG_STRING_LENGTH, nullable = false)
     private final String osName;
 
     @XmlElement
-    @Column(length = LONG_STRING_LENGTH, nullable = false)
+    @Column(length = DeviceInfoReport.LONG_STRING_LENGTH, nullable = false)
     private final String osVersion;
 
     @XmlElement
-    @Column(length = SHORT_STRING_LENGTH, nullable = false)
+    @Column(length = DeviceInfoReport.SHORT_STRING_LENGTH, nullable = false)
     private final String osArch;
 
     @XmlElement
-    @Column(length = SHORT_STRING_LENGTH, nullable = true)
+    @Column(length = DeviceInfoReport.SHORT_STRING_LENGTH, nullable = true)
     private final String distribution;
 
     @XmlElement
-    @Column(length = SHORT_STRING_LENGTH, nullable = true)
+    @Column(length = DeviceInfoReport.SHORT_STRING_LENGTH, nullable = true)
     private final String distributionRelease;
 
     /**
@@ -61,24 +59,24 @@ public class OSInfo implements Serializable {
             final String distributionRelease) {
         LOGGER.debug("setting OS name information to: {}", osName);
         this.osName = StringValidator.check(osName, "osName")
-                .notNull().maxLength(LONG_STRING_LENGTH).get();
+                .notNull().maxLength(DeviceInfoReport.LONG_STRING_LENGTH).get();
 
         LOGGER.debug("setting OS version information to: {}", osVersion);
         this.osVersion = StringValidator.check(osVersion, "osVersion")
-                .notNull().maxLength(LONG_STRING_LENGTH).get();
+                .notNull().maxLength(DeviceInfoReport.LONG_STRING_LENGTH).get();
 
         LOGGER.debug("setting OS arch information to: {}", osArch);
         this.osArch = StringValidator.check(osArch, "osArch")
-                .notNull().maxLength(SHORT_STRING_LENGTH).get();
+                .notNull().maxLength(DeviceInfoReport.SHORT_STRING_LENGTH).get();
 
         LOGGER.debug("setting OS distribution information to: {}", distribution);
         this.distribution = StringValidator.check(distribution, "distribution")
-                .maxLength(SHORT_STRING_LENGTH).get();
+                .maxLength(DeviceInfoReport.SHORT_STRING_LENGTH).get();
 
         LOGGER.debug("setting OS distribution release information to: {}",
                 distributionRelease);
         this.distributionRelease = StringValidator.check(distributionRelease, "distributionRelease")
-                .maxLength(SHORT_STRING_LENGTH).get();
+                .maxLength(DeviceInfoReport.SHORT_STRING_LENGTH).get();
     }
 
     /**

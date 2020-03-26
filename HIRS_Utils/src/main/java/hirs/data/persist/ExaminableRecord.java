@@ -1,5 +1,6 @@
 package hirs.data.persist;
 
+import hirs.data.persist.enums.ExamineState;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 

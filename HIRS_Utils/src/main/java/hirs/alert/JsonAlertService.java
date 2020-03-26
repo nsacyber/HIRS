@@ -28,6 +28,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import hirs.data.persist.enums.AlertSeverity;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -88,7 +89,7 @@ public class JsonAlertService extends ManagedAlertService {
         items.put("hostname", InetAddress.getLocalHost().getHostName());
         items.put("source", "PORTAL");
         items.put("type", "Test JSON");
-        items.put("severity", Alert.Severity.INFO.toString());
+        items.put("severity", AlertSeverity.INFO.toString());
         items.put("details", "This is a test alert sent by the HIRS portal.");
 
         return send(jsonMonitor, buildJson(items));

@@ -1,5 +1,6 @@
 package hirs.data.persist;
 
+import hirs.data.persist.enums.ComponentType;
 import javax.persistence.DiscriminatorValue;
 import javax.persistence.Entity;
 
@@ -7,7 +8,7 @@ import javax.persistence.Entity;
  * Class to hold processor component information.
  */
 @Entity
-@DiscriminatorValue(value = ComponentInfo.ComponentTypeEnum.Values.PROCESSOR)
+@DiscriminatorValue(value = ComponentType.Values.PROCESSOR)
 public class ProcessorComponentInfo extends ComponentInfo {
     /**
      * Default constructor required by Hibernate.
