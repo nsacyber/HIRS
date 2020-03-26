@@ -50,7 +50,7 @@ public class TestSwidTagGateway {
 	/**
 	 * This test corresponds to the arguments:
 	 * -c base
-	 * -c base -a attributes.json
+	 * -c base -a <path>
 	 */
 	@Test
 	public void testCreateBaseWithoutCert() {
@@ -61,7 +61,8 @@ public class TestSwidTagGateway {
 	}
 
 	/**
-	 * Validate a base RIM with default attributes with an X509Certificate element.
+	 * This test corresponds to the arguments:
+	 * -v <path> -p RimSignCert.pem
 	 */
 	@Test
 	public void testValidateSwidTag() {

@@ -7,7 +7,6 @@ import javax.xml.bind.Marshaller;
 import javax.xml.bind.Unmarshaller;
 import javax.xml.bind.UnmarshalException;
 import javax.xml.crypto.dsig.keyinfo.*;
-import javax.xml.parsers.DocumentBuilder;
 import javax.xml.transform.OutputKeys;
 import javax.xml.transform.Source;
 import javax.xml.transform.TransformerFactory;
@@ -51,7 +50,6 @@ import org.xml.sax.SAXException;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.ByteArrayInputStream;
 import java.io.BufferedReader;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
@@ -66,14 +64,11 @@ import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.Properties;
 
 import java.math.BigInteger;
 
-import hirs.swid.utils.CsvParser;
 import hirs.swid.xjc.Directory;
 import hirs.swid.xjc.Entity;
 import hirs.swid.xjc.Link;
@@ -95,21 +90,9 @@ import com.eclipsesource.json.ParseException;
  */
 public class SwidTagGateway {
 
-    private static final QName _DEFAULT_QNAME = new QName(
-            "http://www.w3.org/2000/09/xmldsig#", "SHA256", "ds");
-    private static final QName _SHA1Value_QNAME = new QName(
-            "http://www.w3.org/2000/09/xmldsig#", "SHA1", "ds");
-    private static final QName _SHA384Value_QNAME = new QName(
-            "http://www.w3.org/2000/09/xmldsig#", "SHA384", "ds");
-    private static final QName _SHA512Value_QNAME = new QName(
-            "http://www.w3.org/2000/09/xmldsig#", "SHA512", "ds");
     private static final QName _SHA256_HASH = new QName(
             "http://www.w3.org/2001/04/xmlenc#sha256", "hash", "SHA256");
-
     private final ObjectFactory objectFactory = new ObjectFactory();
-    private final File generatedFile = new File("generated_swidTag.swidtag");
-    private QName hashValue = null;
-
     private JAXBContext jaxbContext;
     private Marshaller marshaller;
     private Unmarshaller unmarshaller;
@@ -304,7 +287,7 @@ public class SwidTagGateway {
      * This method creates an Entity object based on the parameters read in from
      * a properties file.
      *
-     * @param properties the Properties object containing parameters from file
+     * @param jsonObject the Properties object containing parameters from file
      * @return Entity object created from the properties
      */
     private Entity createEntity(JsonObject jsonObject) {
@@ -341,7 +324,7 @@ public class SwidTagGateway {
     /**
      * Thsi method creates a Link element based on the parameters read in from a properties
      * file.
-     * @param properties the Properties object containing parameters from file
+     * @param jsonObject the Properties object containing parameters from file
      * @return Link element created from the properties
      */
     private Link createLink(JsonObject jsonObject) {
@@ -361,7 +344,7 @@ public class SwidTagGateway {
     /**
      * This method creates a Meta element based on the parameters read in from a properties
      * file.
-     * @param properties the Properties object containing parameters from file
+     * @param jsonObject the Properties object containing parameters from file
      * @return the Meta element created from the properties
      */
     private SoftwareMeta createSoftwareMeta(JsonObject jsonObject) {
@@ -392,15 +375,15 @@ public class SwidTagGateway {
     /**
      * This method creates a Payload from the parameters read in from a properties file.
      *
-     * @param properties the Properties object containing parameters from file
+     * @param jsonObject the Properties object containing parameters from file
      * @return the Payload object created
      */
     private ResourceCollection createPayload(JsonObject jsonObject) {
         ResourceCollection payload = objectFactory.createResourceCollection();
         Map<QName, String> attributes = payload.getOtherAttributes();
-        addNonNullAttribute(attributes, SwidTagConstants._N8060_ENVVARPREFIX, jsonObject.getString(SwidTagConstants.PAYLOAD_ENVVARPREFIX, ""));
-        addNonNullAttribute(attributes, SwidTagConstants._N8060_ENVVARSUFFIX, jsonObject.getString(SwidTagConstants.PAYLOAD_ENVVARSUFFIX, ""));
-        addNonNullAttribute(attributes, SwidTagConstants._N8060_PATHSEPARATOR, jsonObject.getString(SwidTagConstants.PAYLOAD_PATHSEPARATOR, ""));
+        addNonNullAttribute(attributes, SwidTagConstants._N8060_ENVVARPREFIX, jsonObject.getString(SwidTagConstants._N8060_ENVVARPREFIX.getLocalPart(), ""));
+        addNonNullAttribute(attributes, SwidTagConstants._N8060_ENVVARSUFFIX, jsonObject.getString(SwidTagConstants._N8060_ENVVARSUFFIX.getLocalPart(), ""));
+        addNonNullAttribute(attributes, SwidTagConstants._N8060_PATHSEPARATOR, jsonObject.getString(SwidTagConstants._N8060_PATHSEPARATOR.getLocalPart(), ""));
 
         return payload;
     }
@@ -408,7 +391,7 @@ public class SwidTagGateway {
     /**
      * This method creates a Directory from the parameters read in from a properties file.
      *
-     * @param properties the Properties object containing parameters from file
+     * @param jsonObject the Properties object containing parameters from file
      * @return Directory object created from the properties
      */
     private Directory createDirectory(JsonObject jsonObject) {
@@ -418,13 +401,7 @@ public class SwidTagGateway {
         addNonNullAttribute(attributes, SwidTagConstants._SUPPORT_RIM_TYPE, jsonObject.getString(SwidTagConstants.SUPPORT_RIM_TYPE, ""));
         addNonNullAttribute(attributes, SwidTagConstants._SUPPORT_RIM_FORMAT, jsonObject.getString(SwidTagConstants.SUPPORT_RIM_FORMAT, ""));
         addNonNullAttribute(attributes, SwidTagConstants._SUPPORT_RIM_URI_GLOBAL, jsonObject.getString(SwidTagConstants.SUPPORT_RIM_URI_GLOBAL, ""));
-/*
-        directory.setLocation(jsonObject.getString(SwidTagConstants.DIRECTORY_LOCATION));
-        String directoryRoot = jsonObject.getString(SwidTagConstants.DIRECTORY_ROOT);
-        if (!directoryRoot.isEmpty()) {
-            directory.setRoot(directoryRoot);
-        }
-*/
+
         return directory;
     }
 
@@ -432,8 +409,7 @@ public class SwidTagGateway {
      * This method creates a hirs.swid.xjc.File from three arguments, then calculates
      * and stores its hash as an attribute in itself.
      *
-     * @param filename
-     * @param location
+     * @param jsonObject
      * @return hirs.swid.xjc.File object from File object
      */
     private hirs.swid.xjc.File createFile(JsonObject jsonObject) {
