@@ -574,7 +574,7 @@ public class SwidTagGateway {
     }
 
     /**
-     * This method unmarshalls the swidtag found at [path] into a JAXBElement object
+     * This method unmarshalls the swidtag found at [path] into a Document object
      * and validates it according to the schema.
      *
      * @param path to the input swidtag

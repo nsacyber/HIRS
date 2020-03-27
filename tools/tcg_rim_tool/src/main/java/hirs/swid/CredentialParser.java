@@ -181,7 +181,10 @@ public class CredentialParser {
         if (extension != null) {
             decodedValue = JcaX509ExtensionUtils.parseExtensionValue(extension).toString();
         }
-
+        //If there is a # symbol at the beginning of the string, remove it
+        if (decodedValue.startsWith("#")) {
+            decodedValue = decodedValue.substring(1);
+        }
         return decodedValue;
     }
 }
