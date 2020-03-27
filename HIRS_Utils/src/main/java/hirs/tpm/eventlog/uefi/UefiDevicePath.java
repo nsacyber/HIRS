@@ -15,12 +15,12 @@ import hirs.utils.HexUtils;
  *    } EFI_DEVICE_PATH_PROTOCOL;
  *
  *  Where Type is defined in the UEFI spec section 10:
- *    Type 0x01 – Hardware Device Path
- *    Type 0x02 – ACPI Device Path
- *    Type 0x03 – Messaging Device Path
- *    Type 0x04 – Media Device Path
- *    Type 0x05 – BIOS Boot Specification Device Path
- *    Type 0x7F – End of Hardware Device Path
+ *    Type 0x01  Hardware Device Path
+ *    Type 0x02  ACPI Device Path
+ *    Type 0x03  Messaging Device Path
+ *    Type 0x04  Media Device Path
+ *    Type 0x05  BIOS Boot Specification Device Path
+ *    Type 0x7F  End of Hardware Device Path
  *  Each Type has a sub-type that may or may no be defined in the section
  *
  *  Only a few of the SubTypes have been implemented as there are many,
@@ -330,8 +330,8 @@ private String vendorSubType(final byte[] path, final int offset) {
  * Returns nvm device info.
  * UEFI Specification, Version 2.8.
  * Name space Identifier (NSID) and IEEE Extended Unique Identifier (EUI-64):
- * See “Links to UEFI-Related Documents”
- * (http://uefi.org/uefi under the headings “NVM Express Specification”.
+ * See Links to UEFI Related Documents
+ * (http://uefi.org/uefi under the headings NVM Express Specification.
  * @param path
  * @param offset
  * @return NVM device info.

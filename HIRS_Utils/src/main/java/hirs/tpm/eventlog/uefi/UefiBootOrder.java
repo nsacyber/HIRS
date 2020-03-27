@@ -3,7 +3,7 @@ package hirs.tpm.eventlog.uefi;
 /**
  * Class to process a UEFI BootOrder variable.
  * UEFI spec version 2.8 section 3.3 on page 83 defines the Boot Order as:
- *     an array of UINT16’s that make up an ordered list of the Boot#### options.
+ *     an array of UINT16s that make up an ordered list of the Boot#### options.
  */
 public class UefiBootOrder {
   /** list of UINT16 Boot#### numbers.*/

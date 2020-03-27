@@ -246,9 +246,9 @@ public String getVendorTableReference() {
  // Linux Boot GUIDS
  // https://github.com/linuxboot/linuxboot/blob/master/boards/s2600wf/vendor-files.txt
  case "9cfd802c-09a1-43d6-8217-aa49c1f90d2c":
-                reference = "Intel® Management Engine BIOS Extension (Mebx)"; break;
+                reference = "Intel Management Engine BIOS Extension (Mebx)"; break;
  case "b62efbbb-3923-4cb9-a6e8-db818e828a80":
-                reference = "Intel® Management Engine BIOS Extension (Mebx) Setup Browser"; break;
+                reference = "Intel Management Engine BIOS Extension (Mebx) Setup Browser"; break;
  case "9ce4325e-003e-11e3-b582-b8ac6f199a57":
                 reference = "Non-Volatile Dual In-line Memory Module (NVDIMM) Driver"; break;
  case "ea9de6d5-7839-46f7-9e63-4de8b00e2e5d":
