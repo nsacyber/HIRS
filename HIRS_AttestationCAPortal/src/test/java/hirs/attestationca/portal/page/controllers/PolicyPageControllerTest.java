@@ -93,6 +93,7 @@ public class PolicyPageControllerTest extends PageControllerTest {
 
         boolean ec = policy.isEcValidationEnabled();
         boolean pc = policy.isPcValidationEnabled();
+        boolean fm = policy.isFirmwareValidationEnabled();
 
         // perform test
         getMockMvc()
@@ -102,8 +103,9 @@ public class PolicyPageControllerTest extends PageControllerTest {
                 .andExpect(model().attribute(PolicyPageController.INITIAL_DATA,
                     hasProperty("enableEcValidation", is(ec))))
                 .andExpect(model().attribute(PolicyPageController.INITIAL_DATA,
-                    hasProperty("enablePcCertificateValidation",
-                            is(pc))));
+                    hasProperty("enablePcCertificateValidation", is(pc))))
+                .andExpect(model().attribute(PolicyPageController.INITIAL_DATA,
+                        hasProperty("enableFirmwareValidation", is(fm))));
     }
 
     /**
@@ -149,6 +151,7 @@ public class PolicyPageControllerTest extends PageControllerTest {
         policy = getDefaultPolicy();
         policy.setPcValidationEnabled(false);
         policy.setEcValidationEnabled(true);
+        policy.setFirmwareValidationEnabled(false);
         policyManager.updatePolicy(policy);
 
         // perform the mock request
@@ -170,6 +173,7 @@ public class PolicyPageControllerTest extends PageControllerTest {
         //reset database for invalid policy test
         policy.setEcValidationEnabled(true);
         policy.setPcValidationEnabled(true);
+        policy.setFirmwareValidationEnabled(false);
         policyManager.updatePolicy(policy);
 
         // perform the mock request
@@ -206,6 +210,7 @@ public class PolicyPageControllerTest extends PageControllerTest {
         policy = getDefaultPolicy();
         policy.setEcValidationEnabled(true);
         policy.setPcValidationEnabled(false);
+        policy.setFirmwareValidationEnabled(false);
         policyManager.updatePolicy(policy);
 
         // perform the mock request
@@ -227,6 +232,7 @@ public class PolicyPageControllerTest extends PageControllerTest {
         //reset database for invalid policy test
         policy.setEcValidationEnabled(false);
         policy.setPcValidationEnabled(false);
+        policy.setFirmwareValidationEnabled(false);
         policyManager.updatePolicy(policy);
 
         // perform the mock request
@@ -262,6 +268,7 @@ public class PolicyPageControllerTest extends PageControllerTest {
         policy = getDefaultPolicy();
         policy.setPcValidationEnabled(true);
         policy.setPcAttributeValidationEnabled(false);
+        policy.setFirmwareValidationEnabled(false);
         policyManager.updatePolicy(policy);
 
         // perform the mock request
@@ -283,6 +290,7 @@ public class PolicyPageControllerTest extends PageControllerTest {
         //reset database for invalid policy test
         policy.setPcAttributeValidationEnabled(true);
         policy.setPcValidationEnabled(true);
+        policy.setFirmwareValidationEnabled(false);
         policyManager.updatePolicy(policy);
 
         // perform the mock request
@@ -319,6 +327,7 @@ public class PolicyPageControllerTest extends PageControllerTest {
         policy = getDefaultPolicy();
         policy.setPcAttributeValidationEnabled(false);
         policy.setPcValidationEnabled(true);
+        policy.setFirmwareValidationEnabled(false);
         policyManager.updatePolicy(policy);
 
         // perform the mock request

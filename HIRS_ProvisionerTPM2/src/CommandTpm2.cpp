@@ -123,7 +123,8 @@ const char* const CommandTpm2::kDefaultActivatedIdentityFilename
         = "activatedIdentity.secret";
 const char* const CommandTpm2::kTpm2DefaultQuoteFilename = "/tmp/quote.bin";
 const char* const CommandTpm2::kTpm2DefaultSigFilename = "/tmp/sig.bin";
-const char* const CommandTpm2::kTpm2DefaultSigAlgorithm = "sha256";
+const char* const CommandTpm2::kTpm2Sha1SigAlgorithm = "sha1";
+const char* const CommandTpm2::kTpm2Sha256SigAlgorithm = "sha256";
 
 /**
  * Constructor to create an interface to TPM 2.0 devices.
@@ -540,7 +541,7 @@ string CommandTpm2::getQuote(const string& pcr_selection,
     string hexNonce(ss.str());
 
     argsStream << " -k " << kDefaultAkHandle
-              << " -g " << kTpm2DefaultSigAlgorithm
+              << " -g " << kTpm2Sha256SigAlgorithm
               << " -l " << pcr_selection
               << " -q " << hexNonce  // this needs to be a hex string
               << endl;
@@ -562,7 +563,7 @@ string CommandTpm2::getPcrsList() {
     string pcrslist;
     stringstream argsStream;
 
-    argsStream << " -g " << kTpm2DefaultSigAlgorithm
+    argsStream << " -g " << kTpm2Sha1SigAlgorithm
               << endl;
 
     LOGGER.info("Running tpm2_pcrlist with arguments: " + argsStream.str());
@@ -570,6 +571,25 @@ string CommandTpm2::getPcrsList() {
                             argsStream.str(),
                             __LINE__);
     LOGGER.info("TPM PCRS List successful");
+
+    return pcrslist;
+}
+
+/**
+ * Method to get the full list of pcrs from the TPM as SHA256. *
+ */
+string CommandTpm2::getPcrs256List() {
+    string pcrslist;
+    stringstream argsStream;
+
+    argsStream << " -g " << kTpm2Sha256SigAlgorithm
+              << endl;
+
+    LOGGER.info("Running tpm2_pcrlist with arguments: " + argsStream.str());
+    pcrslist = runTpm2CommandWithRetry(kTpm2ToolsPcrListCommand,
+                            argsStream.str(),
+                            __LINE__);
+    LOGGER.info("TPM PCRS (SHA 256) List successful");
 
     return pcrslist;
 }

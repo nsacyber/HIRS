@@ -120,7 +120,7 @@ public abstract class AbstractAttestationCertificateAuthority
     private static final String AK_NAME_PREFIX = "000b";
     private static final String AK_NAME_HASH_PREFIX =
             "0001000b00050072000000100014000b0800000000000100";
-    private static final String TPM_SIGNATURE_ALG = "sha256";
+    private static final String TPM_SIGNATURE_ALG = "sha";
 
     private static final int MAC_BYTES = 6;
 
@@ -156,8 +156,10 @@ public abstract class AbstractAttestationCertificateAuthority
     private final DeviceManager deviceManager;
     private final DBManager<TPM2ProvisionerState> tpm2ProvisionerStateDBManager;
     private String[] pcrsList;
+    private String[] pcrs256List;
     private String tpmQuoteHash;
     private String tpmSignatureHash;
+    private String pcrValues;
 
     /**
      * Constructor.
@@ -215,7 +217,6 @@ public abstract class AbstractAttestationCertificateAuthority
         // the decrypted symmetric blob should be in the format of an IdentityProof. Use the
         // struct converter to generate it.
         IdentityProof proof = structConverter.convert(identityProof, IdentityProof.class);
-
 
         // convert the credential into an actual key.
         LOG.debug("assembling public endorsement key");
@@ -372,7 +373,8 @@ public abstract class AbstractAttestationCertificateAuthority
      * Basic implementation of the ACA processIdentityClaimTpm2 method. Parses the claim,
      * stores the device info, performs supply chain validation, generates a nonce,
      * and wraps that nonce with the make credential process before returning it to the client.
-     *
+     *            attCert.setPcrValues(pcrValues);
+
      * @param identityClaim the request to process, cannot be null
      * @return an identity claim response for the specified request containing a wrapped blob
      */
@@ -395,7 +397,6 @@ public abstract class AbstractAttestationCertificateAuthority
         RSAPublicKey ekPub = parsePublicKey(claim.getEkPublicArea().toByteArray());
 
         AppraisalStatus.Status validationResult = doSupplyChainValidation(claim, ekPub);
-
         if (validationResult == AppraisalStatus.Status.PASS) {
 
             RSAPublicKey akPub = parsePublicKey(claim.getAkPublicArea().toByteArray());
@@ -504,7 +505,10 @@ public abstract class AbstractAttestationCertificateAuthority
                 parseTPMQuote(request.getQuote().toStringUtf8());
             }
             if (request.getPcrslist() != null && !request.getPcrslist().isEmpty()) {
-                parsePCRValues(request.getPcrslist().toStringUtf8());
+                this.pcrValues = request.getPcrslist().toStringUtf8();
+                String[] pcrsSet = this.pcrValues.split("\\+");
+                this.pcrsList = parsePCRValues(pcrsSet[0]);
+                this.pcrs256List = parsePCRValues(pcrsSet[1]);
             }
 
             // Get device name and device
@@ -557,21 +561,24 @@ public abstract class AbstractAttestationCertificateAuthority
      * This method splits all hashed pcr values into an array.
      * @param pcrValues contains the full list of 24 pcr values
      */
-    private void parsePCRValues(final String pcrValues) {
+    private String[] parsePCRValues(final String pcrValues) {
         String[] pcrs = null;
 
         if (pcrValues != null) {
             int counter = 0;
             String[] lines = pcrValues.split("\\r?\\n");
             pcrs = new String[lines.length - 1];
+
             for (String line : lines) {
-                if (!line.contains(TPM_SIGNATURE_ALG)) {
+                if (!line.isEmpty()
+                        && !line.contains(TPM_SIGNATURE_ALG)) {
+                    LOG.error(line);
                     pcrs[counter++] = line.split(":")[1].trim();
                 }
             }
         }
 
-        this.pcrsList = pcrs;
+        return pcrs;
     }
 
     /**
@@ -1055,7 +1062,7 @@ public abstract class AbstractAttestationCertificateAuthority
 
             builder.addExtension(subjectAlternativeName);
             // identify cert as an AIK with this extension
-            if (null != IssuedCertificateAttributeHelper.EXTENDED_KEY_USAGE_EXTENSION) {
+            if (IssuedCertificateAttributeHelper.EXTENDED_KEY_USAGE_EXTENSION != null) {
                 builder.addExtension(IssuedCertificateAttributeHelper.EXTENDED_KEY_USAGE_EXTENSION);
             } else {
                 LOG.warn("Failed to build extended key usage extension and add to AIK");
@@ -1466,6 +1473,7 @@ public abstract class AbstractAttestationCertificateAuthority
             // save issued certificate
             IssuedAttestationCertificate attCert = new IssuedAttestationCertificate(
                     derEncodedAttestationCertificate, endorsementCredential, platformCredentials);
+            attCert.setPcrValues(pcrValues);
             attCert.setDevice(device);
             certificateManager.save(attCert);
         } catch (Exception e) {

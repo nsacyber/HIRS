@@ -34,7 +34,12 @@ public class SupplyChainValidation extends ArchivableEntity {
         /**
          * Validation of a platform credential's attributes.
          */
-        PLATFORM_CREDENTIAL_ATTRIBUTES
+        PLATFORM_CREDENTIAL_ATTRIBUTES,
+
+        /**
+         * Validation of the device firmware.
+         */
+        FIRMWARE
     }
 
     @Column
