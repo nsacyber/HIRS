@@ -37,7 +37,7 @@ public class UefiFirmware {
         byte[] lelength = HexUtils.leReverseByte(addressLength);
         BigInteger bigIntLength = new BigInteger(lelength);
         blobLength = bigIntLength.intValue();
-        byte[]leAddress = HexUtils.leReverseByte(addressLength);
+        byte[]leAddress = HexUtils.leReverseByte(physicalAddress);
         BigInteger bigIntAddress = new BigInteger(leAddress);
         blobAddress = bigIntAddress.intValue();
       }

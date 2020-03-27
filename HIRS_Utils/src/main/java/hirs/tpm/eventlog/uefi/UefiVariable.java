@@ -53,9 +53,9 @@ public UefiVariable(final byte[] varibaleData)
   byte[] dataLength = new byte[UefiConstants.SIZE_8];
   byte[] name = null;
   int variableLength = 0;
-  uefiGuid = new UefiGuid(guid);
 
   System.arraycopy(varibaleData, 0, guid, 0, UefiConstants.SIZE_16);
+  uefiGuid = new UefiGuid(guid);
   System.arraycopy(varibaleData, UefiConstants.SIZE_16, nameLength, 0, UefiConstants.SIZE_8);
   int nlength = HexUtils.leReverseInt(nameLength);
   System.arraycopy(varibaleData, UefiConstants.OFFSET_24, dataLength, 0, UefiConstants.SIZE_8);
