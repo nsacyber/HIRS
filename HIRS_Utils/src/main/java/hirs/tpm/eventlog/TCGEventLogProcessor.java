@@ -19,7 +19,7 @@ public class TCGEventLogProcessor {
     /**
      * Name of the hash algorithm used to process the Event Log, default is SHA256.
      */
-    private String algorithm = "SHA256";
+    private String algorithm = "TPM_ALG_SHA256";
     /**
      * Parsed event log array.
      */
@@ -52,7 +52,7 @@ public class TCGEventLogProcessor {
                     TCGEventLog.HASH256_STRING, TCGEventLog.INIT_SHA256_LIST);
         } else {
             tcgLog = new TCGEventLog(rawLog);
-            algorithm = "SHA";
+            algorithm = "TPM_ALG_SHA1";
         }
     }
 
@@ -76,6 +76,24 @@ public class TCGEventLogProcessor {
     }
 
     /**
+     * Returns the TCG Algorithm Registry defined string for the Digest Algorithm
+     * used in the event log.
+     * @return TCG Defined Algorithm name
+     */
+    public String getEventLogHashAlgorithm() {
+        return algorithm;
+    }
+
+    /**
+     * Returns the TCG Algorithm Registry defined ID for the Digest Algorithm
+     * used in the event log.
+     * @return TCG Defined Algorithm name
+     */
+    public int getEventLogHashAlgorithmID() {
+       return TcgTpmtHa.tcgAlgStringtoId(algorithm);
+    }
+
+    /**
      * Creates a TPM baseline using the expected PCR Values.
      * Expected PCR Values were Calculated from the EventLog (RIM Support file).
      *
@@ -87,7 +105,7 @@ public class TCGEventLogProcessor {
         TPMMeasurementRecord record;
         String pcrValue;
         for (int i = 0; i < TpmPcrEvent.PCR_COUNT; i++) {
-            if (algorithm.compareToIgnoreCase("SHA1") == 0) { // Log Was SHA1 Format
+            if (algorithm.compareToIgnoreCase("TPM_ALG_SHA1") == 0) { // Log Was SHA1 Format
                 pcrValue = tcgLog.getExpectedPCRValue(i);
                 byte[] hexValue = HexUtils.hexStringToByteArray(pcrValue);
                 final Digest hash = new Digest(DigestAlgorithm.SHA1, hexValue);
