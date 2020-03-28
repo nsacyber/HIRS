@@ -1,17 +1,17 @@
 package hirs.ima;
 
 import hirs.data.persist.Digest;
-import hirs.data.persist.FirmwareInfo;
-import hirs.data.persist.HardwareInfo;
+import hirs.data.persist.info.FirmwareInfo;
+import hirs.data.persist.info.HardwareInfo;
 import hirs.data.persist.baseline.IMABaselineRecord;
 import hirs.data.persist.baseline.ImaAcceptableRecordBaseline;
 import hirs.data.persist.baseline.ImaBlacklistBaseline;
 import hirs.data.persist.ImaBlacklistRecord;
 import hirs.data.persist.baseline.ImaIgnoreSetBaseline;
 import hirs.data.persist.ImaIgnoreSetRecord;
-import hirs.data.persist.OSInfo;
+import hirs.data.persist.info.OSInfo;
 import hirs.data.persist.baseline.TPMBaseline;
-import hirs.data.persist.TPMInfo;
+import hirs.data.persist.info.TPMInfo;
 import hirs.data.persist.TPMMeasurementRecord;
 import hirs.tpm.TPMBaselineGenerator.TPMBaselineFields;
 import org.apache.commons.codec.binary.Hex;

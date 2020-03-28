@@ -1,11 +1,13 @@
 package hirs.data.persist.baseline;
 
+import hirs.data.persist.DeviceInfoReport;
 import hirs.data.persist.Digest;
-import hirs.data.persist.FirmwareInfo;
-import hirs.data.persist.HardwareInfo;
-import hirs.data.persist.OSInfo;
-import hirs.data.persist.TPMInfo;
+import hirs.data.persist.info.FirmwareInfo;
+import hirs.data.persist.info.HardwareInfo;
+import hirs.data.persist.info.OSInfo;
+import hirs.data.persist.info.TPMInfo;
 import hirs.data.persist.TPMMeasurementRecord;
+import hirs.data.persist.info.RIMInfo;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -29,13 +31,11 @@ import java.util.Set;
 public abstract class TPMBaseline extends Baseline {
 
     private static final Logger LOGGER = LogManager.getLogger(TPMBaseline.class);
-    private static final String NOT_SPECIFIED = "Not Specified";
 
     @ElementCollection(fetch = FetchType.EAGER)
     @CollectionTable(name = "TPMBaselineRecords",
         joinColumns = { @JoinColumn(name = "BaselineID", nullable = false) })
     private final Set<TPMMeasurementRecord> pcrRecords = new LinkedHashSet<>();
-
 
     @Embedded
     private FirmwareInfo firmwareInfo;
@@ -49,6 +49,8 @@ public abstract class TPMBaseline extends Baseline {
     @Embedded
     private TPMInfo tpmInfo;
 
+    @Embedded
+    private RIMInfo rimInfo;
 
     /**
      * Creates a new <code>TPMBaseline</code> with no valid PCR entries and no device-specific PCRs.
@@ -69,13 +71,12 @@ public abstract class TPMBaseline extends Baseline {
         initDeviceInfo();
     }
 
-
-
     private void initDeviceInfo() {
         firmwareInfo = new FirmwareInfo();
         hardwareInfo = new HardwareInfo();
         osInfo = new OSInfo();
         tpmInfo = new TPMInfo();
+        rimInfo = new RIMInfo();
     }
 
     /**
@@ -88,7 +89,7 @@ public abstract class TPMBaseline extends Baseline {
 
     /**
      * Retrieves the HardwareInfo for this <code>TPMBaseline</code>.
-     * @return FirmwareInfo
+     * @return HardwareInfo
      */
     public final HardwareInfo getHardwareInfo() {
         return hardwareInfo;
@@ -96,7 +97,7 @@ public abstract class TPMBaseline extends Baseline {
 
     /**
      * Retrieves the OSInfo for this <code>TPMBaseline</code>.
-     * @return FirmwareInfo
+     * @return OSInfo
      */
     public final OSInfo getOSInfo() {
         return osInfo;
@@ -104,10 +105,18 @@ public abstract class TPMBaseline extends Baseline {
 
     /**
      * Retrieves the TPMInfo for this <code>TPMBaseline</code>.
-     * @return FirmwareInfo
+     * @return TPMInfo
      */
     public final TPMInfo getTPMInfo() {
         return tpmInfo;
+    }
+
+    /**
+     * Retrieves the RIMInfo for this <code>TPMBaseline</code>.
+     * @return an instance of RIMInfo
+     */
+    public final RIMInfo getRIMInfo() {
+        return rimInfo;
     }
 
     /**
@@ -253,25 +262,28 @@ public abstract class TPMBaseline extends Baseline {
      */
     public boolean isEmpty() {
         LOGGER.debug("Check for empty baseline");
-        return (firmwareInfo.getBiosReleaseDate().equals(NOT_SPECIFIED)
-                && firmwareInfo.getBiosVendor().equals(NOT_SPECIFIED)
-                && firmwareInfo.getBiosVersion().equals(NOT_SPECIFIED)
-                && hardwareInfo.getBaseboardSerialNumber().equals(NOT_SPECIFIED)
-                && hardwareInfo.getChassisSerialNumber().equals(NOT_SPECIFIED)
-                && hardwareInfo.getManufacturer().equals(NOT_SPECIFIED)
-                && hardwareInfo.getProductName().equals(NOT_SPECIFIED)
-                && hardwareInfo.getSystemSerialNumber().equals(NOT_SPECIFIED)
-                && hardwareInfo.getVersion().equals(NOT_SPECIFIED)
-                && osInfo.getDistribution().equals(NOT_SPECIFIED)
-                && osInfo.getDistributionRelease().equals(NOT_SPECIFIED)
-                && osInfo.getOSArch().equals(NOT_SPECIFIED)
-                && osInfo.getOSName().equals(NOT_SPECIFIED)
-                && osInfo.getOSVersion().equals(NOT_SPECIFIED)
-                && tpmInfo.getTPMMake().equals(NOT_SPECIFIED)
+        return (firmwareInfo.getBiosReleaseDate().equals(DeviceInfoReport.NOT_SPECIFIED)
+                && firmwareInfo.getBiosVendor().equals(DeviceInfoReport.NOT_SPECIFIED)
+                && firmwareInfo.getBiosVersion().equals(DeviceInfoReport.NOT_SPECIFIED)
+                && hardwareInfo.getBaseboardSerialNumber().equals(DeviceInfoReport.NOT_SPECIFIED)
+                && hardwareInfo.getChassisSerialNumber().equals(DeviceInfoReport.NOT_SPECIFIED)
+                && hardwareInfo.getManufacturer().equals(DeviceInfoReport.NOT_SPECIFIED)
+                && hardwareInfo.getProductName().equals(DeviceInfoReport.NOT_SPECIFIED)
+                && hardwareInfo.getSystemSerialNumber().equals(DeviceInfoReport.NOT_SPECIFIED)
+                && hardwareInfo.getVersion().equals(DeviceInfoReport.NOT_SPECIFIED)
+                && osInfo.getDistribution().equals(DeviceInfoReport.NOT_SPECIFIED)
+                && osInfo.getDistributionRelease().equals(DeviceInfoReport.NOT_SPECIFIED)
+                && osInfo.getOSArch().equals(DeviceInfoReport.NOT_SPECIFIED)
+                && osInfo.getOSName().equals(DeviceInfoReport.NOT_SPECIFIED)
+                && osInfo.getOSVersion().equals(DeviceInfoReport.NOT_SPECIFIED)
+                && tpmInfo.getTPMMake().equals(DeviceInfoReport.NOT_SPECIFIED)
                 && tpmInfo.getTPMVersionMajor() == 0
                 && tpmInfo.getTPMVersionMinor() == 0
                 && tpmInfo.getTPMVersionRevMajor() == 0
                 && tpmInfo.getTPMVersionRevMinor() == 0
+                && rimInfo.getRimManufacturer().equals(DeviceInfoReport.NOT_SPECIFIED)
+                && rimInfo.getModel().equals(DeviceInfoReport.NOT_SPECIFIED)
                 && pcrRecords.isEmpty());
     }
+    // TODO: got a different 404 error, this time with 1015, whatever that means.
 }

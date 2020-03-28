@@ -1,6 +1,8 @@
-package hirs.data.persist;
+package hirs.data.persist.info;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import hirs.data.persist.DeviceInfoReport;
+import hirs.data.persist.X509CertificateAdapter;
 
 import java.io.Serializable;
 import java.security.cert.X509Certificate;

@@ -79,6 +79,14 @@ public final class Digest extends AbstractDigest {
     }
 
     /**
+     * Creates a new <code>Digest</code> when an algorithm isn't specified.
+     * @param digest byte array value
+     */
+    public Digest(final byte[] digest) {
+        this(AbstractDigest.getDigestAlgorithm(digest), digest);
+    }
+
+    /**
      * Default constructor necessary for Hibernate.
      */
     protected Digest() {

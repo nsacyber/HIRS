@@ -3,18 +3,11 @@ package hirs.attestationca.portal.page.controllers;
 import hirs.data.persist.ReferenceManifest;
 import hirs.data.persist.SwidResource;
 import hirs.persist.ReferenceManifestManager;
-import hirs.tpm.eventlog.TCGEventLogProcessor;
 import hirs.attestationca.portal.page.Page;
 import hirs.attestationca.portal.page.PageController;
 import hirs.attestationca.portal.page.PageMessages;
 import hirs.attestationca.portal.page.params.ReferenceManifestDetailsPageParams;
 import java.io.IOException;
-import java.nio.file.NoSuchFileException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.UUID;
@@ -153,29 +146,7 @@ public class ReferenceManifestDetailsPageController
             data.put("rimType", rim.getRimType());
             List<SwidResource> resources = rim.parseResource();
             String resourceFilename = null;
-            TCGEventLogProcessor logProcessor = new TCGEventLogProcessor();
 
-            try {
-                for (SwidResource swidRes : resources) {
-                    resourceFilename = swidRes.getName();
-                    Path logPath = Paths.get(String.format("%s/%s",
-                            SwidResource.RESOURCE_UPLOAD_FOLDER,
-                            resourceFilename));
-                    if (Files.exists(logPath)) {
-                        logProcessor = new TCGEventLogProcessor(
-                                Files.readAllBytes(logPath));
-                        swidRes.setPcrValues(Arrays.asList(
-                                logProcessor.getExpectedPCRValues()));
-                    } else {
-                        swidRes.setPcrValues(Arrays.asList(
-                                logProcessor.getExpectedPCRValues()));
-                    }
-                }
-            } catch (NoSuchFileException nsfEx) {
-                LOGGER.error(String.format("File Not found!: %s",
-                        resourceFilename));
-                LOGGER.error(nsfEx);
-            }
 
             data.put("swidFiles", resources);
         } else {

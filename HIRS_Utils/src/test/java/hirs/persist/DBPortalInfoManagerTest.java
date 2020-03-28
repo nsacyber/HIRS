@@ -9,7 +9,7 @@ import java.util.Map;
 import hirs.data.persist.SpringPersistenceTest;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import hirs.data.persist.PortalInfo;
+import hirs.data.persist.info.PortalInfo;
 import hirs.data.persist.enums.PortalScheme;
 import org.testng.Assert;
 import org.testng.annotations.AfterClass;

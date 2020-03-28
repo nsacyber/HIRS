@@ -39,7 +39,8 @@ public class TPMMeasurementRecordTest {
      */
     @Test(expectedExceptions = NullPointerException.class)
     public final void tpmMeasurementRecordNullHash() {
-        new TPMMeasurementRecord(0, null);
+        Digest digest = null;
+        new TPMMeasurementRecord(0, digest);
     }
 
     /**

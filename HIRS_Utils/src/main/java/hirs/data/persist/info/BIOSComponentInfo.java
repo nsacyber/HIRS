@@ -1,4 +1,4 @@
-package hirs.data.persist;
+package hirs.data.persist.info;
 
 import hirs.data.persist.enums.ComponentType;
 import javax.persistence.DiscriminatorValue;

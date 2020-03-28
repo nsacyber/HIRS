@@ -1,5 +1,6 @@
 package hirs.data.persist;
 
+import hirs.data.persist.info.PortalInfo;
 import hirs.data.persist.enums.PortalScheme;
 import java.net.InetAddress;
 import org.testng.Assert;

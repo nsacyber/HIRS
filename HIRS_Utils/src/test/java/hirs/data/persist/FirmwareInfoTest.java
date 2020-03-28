@@ -1,5 +1,6 @@
 package hirs.data.persist;
 
+import hirs.data.persist.info.FirmwareInfo;
 import org.apache.commons.lang3.StringUtils;
 import static hirs.data.persist.DeviceInfoReport.NOT_SPECIFIED;
 import org.testng.Assert;

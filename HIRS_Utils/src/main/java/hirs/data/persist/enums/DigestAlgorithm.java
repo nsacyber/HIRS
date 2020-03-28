@@ -1,6 +1,7 @@
 package hirs.data.persist.enums;
 
 import hirs.data.persist.AbstractDigest;
+import hirs.data.persist.DeviceInfoReport;
 
 /**
  * Enum of digest algorithms. The enum values also provide a standardized
@@ -31,7 +32,12 @@ public enum DigestAlgorithm {
     /**
      * SHA-512 digest algorithm.
      */
-    SHA512("SHA-512", AbstractDigest.SHA512_DIGEST_LENGTH);
+    SHA512("SHA-512", AbstractDigest.SHA512_DIGEST_LENGTH),
+    /**
+     * Condition used when an algorithm is not specified and
+     * the size doesn't match known digests.
+     */
+    UNSPECIFIED(DeviceInfoReport.NOT_SPECIFIED, Integer.BYTES);
 
     private final String standardAlgorithmName;
 

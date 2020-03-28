@@ -1,6 +1,6 @@
 package hirs.persist;
 
-import hirs.data.persist.PortalInfo;
+import hirs.data.persist.info.PortalInfo;
 import hirs.data.persist.enums.PortalScheme;
 
 import java.net.URI;

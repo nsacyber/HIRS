@@ -10,6 +10,7 @@ import javax.xml.bind.DatatypeConverter;
 
 import org.apache.commons.codec.binary.Hex;
 import org.apache.commons.lang3.ArrayUtils;
+import org.apache.logging.log4j.LogManager;
 
 /**
  * This abstract class represents a message digest. Extending classes include
@@ -21,6 +22,8 @@ import org.apache.commons.lang3.ArrayUtils;
  * (see {@link ImaBlacklistRecord} for reference.)
  */
 public abstract class AbstractDigest {
+    private static final org.apache.logging.log4j.Logger LOGGER =
+            LogManager.getLogger(AbstractDigest.class);
     /**
      * Length of MD2 digest.
      */
@@ -62,13 +65,57 @@ public abstract class AbstractDigest {
         }
 
         if (ArrayUtils.isEmpty(digest)) {
-            final String msg = "Digest must have at least one byte";
-            throw new IllegalArgumentException(msg);
+            throw new IllegalArgumentException("Digest must have at least one byte");
         }
 
         if (digest.length != algorithm.getLengthInBytes()) {
             throw new AbstractDigest.IllegalDigestLength(algorithm, digest);
         }
+    }
+
+    /**
+     * This method will help class determine the algorithm associated with the
+     * pcr values given.
+     *
+     * @param digest list of pcr values.
+     * @return the associated algorithm.
+     */
+    public static final DigestAlgorithm getDigestAlgorithm(final byte[] digest) {
+        if (digest == null || ArrayUtils.isEmpty(digest)) {
+            return DigestAlgorithm.UNSPECIFIED;
+        }
+
+        switch (digest.length) {
+            case MD2_DIGEST_LENGTH:
+                return DigestAlgorithm.MD5;
+            case SHA1_DIGEST_LENGTH:
+                return DigestAlgorithm.SHA1;
+            case SHA256_DIGEST_LENGTH:
+                return DigestAlgorithm.SHA256;
+            case SHA384_DIGEST_LENGTH:
+                return DigestAlgorithm.SHA384;
+            case SHA512_DIGEST_LENGTH:
+                return DigestAlgorithm.SHA512;
+            default:
+                return DigestAlgorithm.UNSPECIFIED;
+        }
+    }
+
+    /**
+     * This method will help class determine the algorithm associated with the
+     * pcr values given.
+     *
+     * @param digest list of pcr values.
+     * @return the associated algorithm.
+     */
+    public static final DigestAlgorithm getDigestAlgorithm(final String digest) {
+        try {
+            return getDigestAlgorithm(Hex.decodeHex(digest.toCharArray()));
+        } catch (Exception deEx) {
+            LOGGER.error(deEx);
+        }
+
+        return DigestAlgorithm.UNSPECIFIED;
     }
 
     /**

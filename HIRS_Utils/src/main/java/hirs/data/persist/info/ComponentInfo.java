@@ -1,4 +1,4 @@
-package hirs.data.persist;
+package hirs.data.persist.info;
 
 import org.apache.commons.lang3.StringUtils;
 import org.hibernate.annotations.DiscriminatorOptions;

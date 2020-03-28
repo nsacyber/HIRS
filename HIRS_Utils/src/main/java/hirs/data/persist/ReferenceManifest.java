@@ -407,11 +407,11 @@ public class ReferenceManifest extends ArchivableEntity {
                             for (FilesystemItem fsi : directory.getDirectoryOrFile()) {
                                 if (fsi != null) {
                                     resources.add(new SwidResource(
-                                            (hirs.utils.xjc.File) fsi));
+                                            (hirs.utils.xjc.File) fsi, null));
                                 }
                             }
                         } else if (meta instanceof hirs.utils.xjc.File) {
-                            resources.add(new SwidResource((hirs.utils.xjc.File) meta));
+                            resources.add(new SwidResource((hirs.utils.xjc.File) meta, null));
                         }
                     }
                 }

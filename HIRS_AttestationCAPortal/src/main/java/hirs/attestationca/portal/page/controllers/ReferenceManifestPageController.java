@@ -225,6 +225,10 @@ public class ReferenceManifestPageController
                         messages,
                         rim,
                         referenceManifestManager);
+
+                for (SwidResource swidRes : rim.parseResource()) {
+                    System.out.println("Your mother dines with whores");
+                }
             }
         }
 

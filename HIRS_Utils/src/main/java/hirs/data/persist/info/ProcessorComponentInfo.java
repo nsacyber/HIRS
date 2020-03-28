@@ -1,19 +1,19 @@
-package hirs.data.persist;
+package hirs.data.persist.info;
 
 import hirs.data.persist.enums.ComponentType;
 import javax.persistence.DiscriminatorValue;
 import javax.persistence.Entity;
 
 /**
- * Class to hold information about baseboard components.
+ * Class to hold processor component information.
  */
 @Entity
-@DiscriminatorValue(value = ComponentType.Values.BASEBOARD)
-public class BaseboardComponentInfo extends ComponentInfo {
+@DiscriminatorValue(value = ComponentType.Values.PROCESSOR)
+public class ProcessorComponentInfo extends ComponentInfo {
     /**
      * Default constructor required by Hibernate.
      */
-    public BaseboardComponentInfo() {
+    public ProcessorComponentInfo() {
     }
 
     /**
@@ -24,11 +24,11 @@ public class BaseboardComponentInfo extends ComponentInfo {
      * @param componentSerial       Component Serial Number (can be null)
      * @param componentRevision     Component Revision or Version (can be null)
      */
-    public BaseboardComponentInfo(final String componentManufacturer,
+    public ProcessorComponentInfo(final String componentManufacturer,
                                   final String componentModel,
                                   final String componentSerial,
                                   final String componentRevision) {
-        super(componentManufacturer, componentModel, componentSerial,
-                componentRevision);
+        super(componentManufacturer, componentModel,
+                componentSerial, componentRevision);
     }
 }

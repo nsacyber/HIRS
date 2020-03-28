@@ -1,5 +1,7 @@
-package hirs.data.persist;
+package hirs.data.persist.info;
 
+import hirs.data.persist.DeviceInfoReport;
+import hirs.data.persist.InetAddressXmlAdapter;
 import java.io.Serializable;
 import java.net.InetAddress;
 import java.util.Arrays;
@@ -26,12 +28,10 @@ public class NetworkInfo implements Serializable {
 
     @XmlElement
     @Column(length = DeviceInfoReport.LONG_STRING_LENGTH, nullable = true)
-    @SuppressWarnings("checkstyle:magicnumber")
     private String hostname;
 
     @XmlElement
     @XmlJavaTypeAdapter(value = InetAddressXmlAdapter.class)
-    @SuppressWarnings("checkstyle:magicnumber")
     @Column(length = DeviceInfoReport.SHORT_STRING_LENGTH, nullable = true)
     @Type(type = "hirs.data.persist.type.InetAddressType")
     private InetAddress ipAddress;

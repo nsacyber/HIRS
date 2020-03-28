@@ -1,5 +1,9 @@
 package hirs.data.persist;
 
+import hirs.data.persist.info.OSInfo;
+import hirs.data.persist.info.HardwareInfo;
+import hirs.data.persist.info.FirmwareInfo;
+import hirs.data.persist.info.TPMInfo;
 import hirs.data.persist.enums.DigestAlgorithm;
 import hirs.data.persist.baseline.TpmWhiteListBaseline;
 import hirs.data.persist.baseline.TPMBaseline;

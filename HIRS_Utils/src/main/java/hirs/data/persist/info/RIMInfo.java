@@ -1,18 +1,21 @@
-package hirs.data.persist;
+package hirs.data.persist.info;
 
+import hirs.data.persist.DeviceInfoReport;
 import hirs.utils.StringValidator;
 import java.io.Serializable;
 import javax.persistence.Column;
+import javax.persistence.Embeddable;
 import javax.xml.bind.annotation.XmlElement;
 
 /**
  *
  */
-public class RimInfo implements Serializable {
+@Embeddable
+public class RIMInfo implements Serializable {
 
     @XmlElement
     @Column(length = DeviceInfoReport.MED_STRING_LENGTH, nullable = false)
-    private final String manufacturer;
+    private final String rimManufacturer;
 
     @XmlElement
     @Column(length = DeviceInfoReport.MED_STRING_LENGTH, nullable = false)
@@ -28,14 +31,14 @@ public class RimInfo implements Serializable {
 
     /**
      * Constructor for the initial values of the class.
-     * @param manufacturer string of the manufacturer
+     * @param rimManufacturer string of the rimManufacturer
      * @param model string of the model
      * @param fileHash string of the file hash
      * @param pcrHash string of the pcr hash
      */
-    public RimInfo(final String manufacturer, final String model,
+    public RIMInfo(final String rimManufacturer, final String model,
             final String fileHash, final String pcrHash) {
-        this.manufacturer = StringValidator.check(manufacturer, "manufacturer")
+        this.rimManufacturer = StringValidator.check(rimManufacturer, "rimManufacturer")
                 .notBlank().maxLength(DeviceInfoReport.MED_STRING_LENGTH).get();
         this.model = StringValidator.check(model, "model")
                 .notBlank().maxLength(DeviceInfoReport.MED_STRING_LENGTH).get();
@@ -48,17 +51,17 @@ public class RimInfo implements Serializable {
     /**
      * Default no parameter constructor.
      */
-    public RimInfo() {
+    public RIMInfo() {
         this(DeviceInfoReport.NOT_SPECIFIED, DeviceInfoReport.NOT_SPECIFIED,
                 DeviceInfoReport.NOT_SPECIFIED, DeviceInfoReport.NOT_SPECIFIED);
     }
 
     /**
-     * Getter for the manufacturer string.
-     * @return string of the manufacturer.
+     * Getter for the rimManufacturer string.
+     * @return string of the rimManufacturer.
      */
-    public final String getManufacturer() {
-        return this.manufacturer;
+    public final String getRimManufacturer() {
+        return this.rimManufacturer;
     }
 
     /**
@@ -69,9 +72,26 @@ public class RimInfo implements Serializable {
         return this.model;
     }
 
+    /**
+     * Getter for the file hash string.
+     * @return fileHash string
+     */
+    public String getFileHash() {
+        return fileHash;
+    }
+
+    /**
+     * Getter for the pcr hash.
+     * @return pcrhash string
+     */
+    public String getPcrHash() {
+        return pcrHash;
+    }
+
     @Override
     public String toString() {
-        return String.format("%s, %s", manufacturer, model);
+        return String.format("%s, %s, %s, %s", rimManufacturer, model,
+                fileHash, pcrHash);
     }
 
     @Override
@@ -82,15 +102,21 @@ public class RimInfo implements Serializable {
         if (obj == null) {
             return false;
         }
-        if (!(obj instanceof RimInfo)) {
+        if (!(obj instanceof RIMInfo)) {
             return false;
         }
-        RimInfo other = (RimInfo) obj;
+        RIMInfo other = (RIMInfo) obj;
 
-        if (manufacturer != null && !manufacturer.equals(other.manufacturer)) {
+        if (rimManufacturer != null && !rimManufacturer.equals(other.rimManufacturer)) {
             return false;
         }
         if (model != null && !model.equals(other.model)) {
+            return false;
+        }
+        if (fileHash != null && !fileHash.equals(other.fileHash)) {
+            return false;
+        }
+        if (pcrHash != null && !pcrHash.equals(other.pcrHash)) {
             return false;
         }
 
@@ -102,7 +128,7 @@ public class RimInfo implements Serializable {
         final int prime = 31;
         int result = 1;
 
-        result = prime * result + manufacturer.hashCode();
+        result = prime * result + rimManufacturer.hashCode();
         result = prime * result + model.hashCode();
         result = prime * result + fileHash.hashCode();
         result = prime * result + pcrHash.hashCode();

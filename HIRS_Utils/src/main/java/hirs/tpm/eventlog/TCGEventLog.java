@@ -1,11 +1,13 @@
 package hirs.tpm.eventlog;
 
-import hirs.utils.HexUtils;
+import hirs.data.persist.AbstractDigest;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
+import org.apache.commons.codec.DecoderException;
+import org.apache.commons.codec.binary.Hex;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -68,6 +70,7 @@ public class TCGEventLog {
 
     /**
      * Default constructor for just the rawlog that'll set up SHA1 Log.
+     *
      * @param rawlog data for the event log file
      * @throws IOException IO Stream for the event log
      */
@@ -77,6 +80,7 @@ public class TCGEventLog {
 
     /**
      * Default constructor for specific log.
+     *
      * @param rawlog data for the event log file
      * @param pcrLength determined by SHA1 or 256
      * @param hashType the type of algorithm
@@ -101,16 +105,21 @@ public class TCGEventLog {
      * This method puts blank values in the pcrList.
      */
     private void initPcrList() {
-        for (int i = 0; i < PCR_COUNT; i++) {  // Initialize the PCRlist1 array
-            System.arraycopy(HexUtils.hexStringToByteArray(
-                    initValue),
-                    0, pcrList[i], 0, pcrLength);
+        for (int i = 0; i < PCR_COUNT; i++) {
+            try {
+                // Initialize the PCRlist1 array
+                System.arraycopy(Hex.decodeHex(initValue.toCharArray()),
+                        0, pcrList[i], 0, pcrLength);
+            } catch (DecoderException deEx) {
+                LOGGER.error(deEx);
+            }
         }
     }
 
     /**
-     * Calculates the "Expected Values for TPM PCRs based upon Event digests in the Event Log.
-     * Uses the algorithm and eventList passed into the constructor,
+     * Calculates the "Expected Values for TPM PCRs based upon Event digests in
+     * the Event Log. Uses the algorithm and eventList passed into the
+     * constructor,
      */
     private void calculatePcrValues() {
         byte[] extendedPCR;
@@ -136,27 +145,35 @@ public class TCGEventLog {
      * Extends a hash with a hash of new data.
      *
      * @param currentValue value to extend
-     * @param newEvent     value to extend with
+     * @param newEvent value to extend with
      * @return new hash resultant hash
      * @throws NoSuchAlgorithmException if hash algorithm not supported
      */
     private byte[] extendPCR(final byte[] currentValue, final byte[] newEvent)
             throws NoSuchAlgorithmException {
         MessageDigest md = MessageDigest.getInstance(hashType);
-        md.update(HexUtils.hexStringToByteArray(HexUtils.byteArrayToHexString(currentValue)
-                + HexUtils.byteArrayToHexString(newEvent)));
+        StringBuilder sb = new StringBuilder(AbstractDigest.SHA512_DIGEST_LENGTH);
+        sb.append(Hex.encodeHexString(currentValue).toCharArray());
+        sb.append(Hex.encodeHexString(newEvent).toCharArray());
+
+        try {
+            md.update(Hex.decodeHex(sb.toString().toCharArray()));
+        } catch (DecoderException deEx) {
+            LOGGER.error(deEx);
+        }
         return md.digest();
     }
 
     /**
      * Returns all 24 PCR values for display purposes.
      *
-     * @return Returns an array of strings representing the expected hash values for all 24 PCRs
+     * @return Returns an array of strings representing the expected hash values
+     * for all 24 PCRs
      */
     public String[] getExpectedPCRValues() {
         String[] pcrs = new String[PCR_COUNT];
         for (int i = 0; i < PCR_COUNT; i++) {
-            pcrs[i] = HexUtils.byteArrayToHexString(pcrList[i]);
+            pcrs[i] = Hex.encodeHexString(pcrList[i]);
         }
         return pcrs;
     }
@@ -167,7 +184,17 @@ public class TCGEventLog {
      * @param index pcr index
      * @return String representing the PCR contents
      */
-    public String getExpectedPCRValue(final int index) {
-        return HexUtils.byteArrayToHexString(pcrList[index]);
+    public String getExpectedPCRString(final int index) {
+        return Hex.encodeHexString(pcrList[index]);
+    }
+
+    /**
+     * Returns a single PCR value given an index (PCR Number).
+     *
+     * @param index pcr index.
+     * @return byte array of the pcr contents.
+     */
+    public byte[] getExpectedPCRBytes(final int index) {
+        return pcrList[index];
     }
 }

@@ -8,7 +8,8 @@ import hirs.data.persist.TPMMeasurementRecord;
 import hirs.data.persist.baseline.TpmWhiteListBaseline;
 import hirs.utils.HexUtils;
 import hirs.data.persist.Digest;
-import hirs.data.persist.enums.DigestAlgorithm;;
+import hirs.data.persist.enums.DigestAlgorithm;
+import org.apache.commons.codec.DecoderException;
 
 /**
  * Class for parsing a TCG EventLogs (both SHA1 and Crypto Agile Formats).
@@ -72,7 +73,7 @@ public class TCGEventLogProcessor {
      * @return String representing the PCR contents
      */
     public String getExpectedPCRValue(final int index) {
-        return tcgLog.getExpectedPCRValue(index);
+        return tcgLog.getExpectedPCRString(index);
     }
 
     /**
@@ -81,22 +82,21 @@ public class TCGEventLogProcessor {
      *
      * @param name name to call the TPM Baseline
      * @return whitelist baseline
+     * @throws DecoderException hex string problem.
      */
-    public TpmWhiteListBaseline createTPMBaseline(final String name) {
+    public TpmWhiteListBaseline createTPMBaseline(final String name) throws DecoderException {
         TpmWhiteListBaseline baseline = new TpmWhiteListBaseline(name);
         TPMMeasurementRecord record;
-        String pcrValue;
+
         for (int i = 0; i < TpmPcrEvent.PCR_COUNT; i++) {
             if (algorithm.compareToIgnoreCase("SHA1") == 0) { // Log Was SHA1 Format
-                pcrValue = tcgLog.getExpectedPCRValue(i);
-                byte[] hexValue = HexUtils.hexStringToByteArray(pcrValue);
-                final Digest hash = new Digest(DigestAlgorithm.SHA1, hexValue);
-                record = new TPMMeasurementRecord(i, hash);
+                record = new TPMMeasurementRecord(i,
+                        new Digest(DigestAlgorithm.SHA1,
+                        tcgLog.getExpectedPCRBytes(i)));
             } else {  // Log was Crypto Agile, currently assumes SHA256
-                pcrValue = tcgLog.getExpectedPCRValue(i);
-                byte[] hexValue = HexUtils.hexStringToByteArray(pcrValue);
-                final Digest hash = new Digest(DigestAlgorithm.SHA256, hexValue);
-                record = new TPMMeasurementRecord(i, hash);
+                record = new TPMMeasurementRecord(i,
+                        new Digest(DigestAlgorithm.SHA256,
+                                tcgLog.getExpectedPCRBytes(i)));
             }
             baseline.addToBaseline(record);
         }

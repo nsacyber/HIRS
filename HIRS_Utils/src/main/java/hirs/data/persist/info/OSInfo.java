@@ -1,5 +1,6 @@
-package hirs.data.persist;
+package hirs.data.persist.info;
 
+import hirs.data.persist.DeviceInfoReport;
 import hirs.utils.StringValidator;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
