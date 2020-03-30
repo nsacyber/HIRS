@@ -285,5 +285,4 @@ public abstract class TPMBaseline extends Baseline {
                 && rimInfo.getModel().equals(DeviceInfoReport.NOT_SPECIFIED)
                 && pcrRecords.isEmpty());
     }
-    // TODO: got a different 404 error, this time with 1015, whatever that means.
 }

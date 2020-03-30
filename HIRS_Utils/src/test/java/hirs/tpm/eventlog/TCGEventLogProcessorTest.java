@@ -177,7 +177,7 @@ public class TCGEventLogProcessorTest extends SpringPersistenceTest {
                 String pcrValue = HexUtils.byteArrayToHexString(digest.getDigest());
                 if (pcrFromLog[i].compareToIgnoreCase(pcrValue) != 0) {
                     testPass = false;
-                    LOGGER.error("\testTPMBaselineCreate error with PCR " + i);
+                    LOGGER.error("\ttestTPMBaselineCreate error with PCR " + i);
                 }
              }
          }

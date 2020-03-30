@@ -73,7 +73,7 @@ public class TCGEventLogProcessor {
      * @return String representing the PCR contents
      */
     public String getExpectedPCRValue(final int index) {
-        return tcgLog.getExpectedPCRValue(index);
+        return tcgLog.getExpectedPCRString(index);
     }
 
     /**
@@ -107,7 +107,7 @@ public class TCGEventLogProcessor {
         TPMMeasurementRecord record;
 
         for (int i = 0; i < TpmPcrEvent.PCR_COUNT; i++) {
-            if (algorithm.compareToIgnoreCase("SHA1") == 0) { // Log Was SHA1 Format
+            if (algorithm.compareToIgnoreCase("TPM_ALG_SHA1") == 0) { // Log Was SHA1 Format
                 record = new TPMMeasurementRecord(i,
                         new Digest(DigestAlgorithm.SHA1,
                         tcgLog.getExpectedPCRBytes(i)));
