@@ -12,7 +12,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 /**
- * Interface for handling different formats of TCG Event logs.
+ * Class for handling different formats of TCG Event logs.
  */
 public class TCGEventLog {
 
@@ -94,9 +94,15 @@ public class TCGEventLog {
         this.hashType = hashType;
         this.initValue = initValue;
         ByteArrayInputStream is = new ByteArrayInputStream(rawlog);
+        // Process the 1st entry as a SHA1 format (per the spec)
+        eventList.add(new TpmPcrEvent1(is));
         // put all events into an event list for further processing
         while (is.available() > 0) {
-            eventList.add(new TpmPcrEvent1(is));
+            if (hashType.compareToIgnoreCase(HASH_STRING) == 0) {
+                eventList.add(new TpmPcrEvent1(is));
+            } else {
+                eventList.add(new TpmPcrEvent2(is));
+            }
         }
         calculatePcrValues();
     }

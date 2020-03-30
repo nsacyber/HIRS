@@ -47,6 +47,7 @@
             <%-- Platform attribute validation --%>
             <div class="aca-input-box">
                 <form:form method="POST" modelAttribute="initialData" action="policy/update-pc-attribute-validation">
+                    <ul>
                     <li>Platform Attribute Credential Validation: ${initialData.enablePcCertificateAttributeValidation ? 'Enabled' : 'Disabled'}
                         <my:editor id="pcAttributePolicyEditor" label="Edit Settings">
                             <div class="radio">
@@ -54,6 +55,22 @@
                             </div>
                             <div class="radio">
                                 <label><input id="pcAttrBot" type="radio" name="pcAttributeValidate" ${initialData.enablePcCertificateAttributeValidation ? '' : 'checked'}  value="unchecked"/> Platform Credential Attributes will not be validated</label>
+                            </div>
+                        </my:editor>
+                    </li>
+                    </ul>
+                </form:form>
+            </div>
+            
+            <div class="aca-input-box">
+                <form:form method="POST" modelAttribute="initialData" action="policy/update-firmware-validation">
+                    <li>Firmware Validation: ${initialData.enableFirmwareValidation ? 'Enabled' : 'Disabled'}
+                        <my:editor id="firmwarePolicyEditor" label="Edit Settings">
+                            <div class="radio">
+                                <label><input id="firmwareTop" type="radio" name="fmValidate" ${initialData.enableFirmwareValidation ? 'checked' : ''} value="checked"/> Firmware will be validated</label>
+                            </div>
+                            <div class="radio">
+                                <label><input id="firmwareBot" type="radio" name="fmValidate" ${initialData.enableFirmwareValidation ? '' : 'checked'}  value="unchecked"/> Firmware will not be validated</label>
                             </div>
                         </my:editor>
                     </li>

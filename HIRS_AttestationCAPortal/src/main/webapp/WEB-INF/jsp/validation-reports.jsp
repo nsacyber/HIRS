@@ -32,11 +32,12 @@
                         <th rowspan="2">Result</th>
                         <th rowspan="2">Timestamp</th>
                         <th rowspan="2">Device</th>
-                        <th colspan="2">Credential Validations</th>
+                        <th colspan="3">Credential Validations</th>
                     </tr>
                     <tr>
                         <th style="text-align:center">Endorsement</th>
                         <th style="text-align:center">Platform</th>
+                        <th style="text-align:center">Firmware</th>
                     </tr>
                 </thead>
             </table>
@@ -110,6 +111,14 @@
                                 return getValidationDisplayHtml(full, "PLATFORM_CREDENTIAL")
                             }
                         },
+                        {
+                            data: 'id',
+                            searchable: false,
+                            orderable: false,
+                            render: function (data, type, full, meta) {
+                                return getValidationDisplayHtml(full, "FIRMWARE")
+                            }
+                        }
                     ];
 
                 //Set data tables

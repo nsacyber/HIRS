@@ -12,11 +12,13 @@ public class PolicyPageModel {
     private boolean enableEcValidation;
     private boolean enablePcCertificateValidation;
     private boolean enablePcCertificateAttributeValidation;
+    private boolean enableFirmwareValidation;
 
     // Variables to get policy settings from page
     private String pcValidate;
     private String pcAttributeValidate;
     private String ecValidate;
+    private String fmValidate;
 
     /**
      * Constructor. Sets fields from policy.
@@ -27,6 +29,7 @@ public class PolicyPageModel {
         this.enableEcValidation = policy.isEcValidationEnabled();
         this.enablePcCertificateValidation = policy.isPcValidationEnabled();
         this.enablePcCertificateAttributeValidation = policy.isPcAttributeValidationEnabled();
+        this.enableFirmwareValidation = policy.isFirmwareValidationEnabled();
     }
 
     /**
@@ -63,6 +66,15 @@ public class PolicyPageModel {
     }
 
     /**
+     * Gets the Firmware Validation state.
+     *
+     * @return the validation state.
+     */
+    public boolean getEnableFirmwareValidation() {
+        return enableFirmwareValidation;
+    }
+
+    /**
      * Gets the EC Validation value.
      *
      * @return the model string representation of this field (checked or unchecked)
@@ -87,6 +99,15 @@ public class PolicyPageModel {
      */
     public String getPcAttributeValidate() {
         return pcAttributeValidate;
+    }
+
+    /**
+     * Gets the Firmware Validation value.
+     *
+     * @return the model string representation of this field (checked or unchecked)
+     */
+    public String getFmValidate() {
+        return fmValidate;
     }
 
     /**
@@ -118,6 +139,15 @@ public class PolicyPageModel {
     }
 
     /**
+     * Sets the Firmware Validation state.
+     *
+     * @param enableFirmwareValidation true if performing validation, false otherwise
+     */
+    public void setEnableFirmwareValidation(final boolean enableFirmwareValidation) {
+        this.enableFirmwareValidation = enableFirmwareValidation;
+    }
+
+    /**
      * Sets the Platform Certificate Validation state.
      *
      * @param pcValidate "checked" if enabling validation, false otherwise
@@ -144,12 +174,22 @@ public class PolicyPageModel {
         this.pcAttributeValidate = pcAttributeValidate;
     }
 
+    /**
+     * Sets the Firmware state.
+     *
+     * @param fmValidate "checked" if enabling validation, false otherwise
+     */
+    public void setFmValidate(final String fmValidate) {
+        this.fmValidate = fmValidate;
+    }
+
     @Override
     public String toString() {
         return "PolicyPageModel{"
                 + "enableEcValidation=" + enableEcValidation
                 + ", enablePcCertificateValidation=" + enablePcCertificateValidation
                 + ", enablePcCertificateAttributeValidation="
-                + enablePcCertificateAttributeValidation + '}';
+                + enablePcCertificateAttributeValidation
+                + ", enableFirmwareValidation=" + enableFirmwareValidation + '}';
     }
 }
