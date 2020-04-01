@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.common.base.Preconditions;
 import hirs.data.persist.ArchivableEntity;
 import hirs.utils.HexUtils;
+import org.apache.commons.codec.binary.Hex;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.bouncycastle.asn1.ASN1BitString;
@@ -639,7 +640,7 @@ public abstract class Certificate extends ArchivableEntity {
         if (aki != null) {
             byte[] keyArray = aki.getKeyIdentifier();
             if (keyArray != null) {
-                retValue = HexUtils.byteArrayToHexString(keyArray);
+                retValue = Hex.encodeHexString(keyArray);
             }
         }
 

@@ -6,6 +6,9 @@ import java.io.IOException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
+
+import org.apache.commons.codec.DecoderException;
+import org.apache.commons.codec.binary.Hex;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -63,7 +66,11 @@ public class TCGEventLog {
         this.pcrList = new byte[PCR_COUNT][TpmPcrEvent.SHA1_LENGTH];
         initValue = INIT_SHA1_LIST;
         pcrLength = TpmPcrEvent.SHA1_LENGTH;
-        initPcrList();
+        try {
+            initPcrList();
+        } catch (DecoderException deEx) {
+            LOGGER.error(deEx);
+        }
     }
 
     /**
@@ -100,16 +107,20 @@ public class TCGEventLog {
                 eventList.add(new TpmPcrEvent2(is));
             }
         }
-        calculatePcrValues();
+        try {
+            calculatePcrValues();
+        } catch (DecoderException deEx) {
+            LOGGER.error(deEx);
+        }
     }
 
     /**
      * This method puts blank values in the pcrList.
      */
-    private void initPcrList() {
+    private void initPcrList() throws DecoderException {
         for (int i = 0; i < PCR_COUNT; i++) {  // Initialize the PCRlist1 array
-            System.arraycopy(HexUtils.hexStringToByteArray(
-                    initValue),
+            System.arraycopy(Hex.decodeHex(
+                    initValue.toCharArray()),
                     0, pcrList[i], 0, pcrLength);
         }
     }
@@ -118,7 +129,7 @@ public class TCGEventLog {
      * Calculates the "Expected Values for TPM PCRs based upon Event digests in the Event Log.
      * Uses the algorithm and eventList passed into the constructor,
      */
-    private void calculatePcrValues() {
+    private void calculatePcrValues() throws DecoderException {
         byte[] extendedPCR;
         initPcrList();
         for (TpmPcrEvent currentEvent : eventList) {
@@ -147,10 +158,10 @@ public class TCGEventLog {
      * @throws NoSuchAlgorithmException if hash algorithm not supported
      */
     private byte[] extendPCR(final byte[] currentValue, final byte[] newEvent)
-            throws NoSuchAlgorithmException {
+            throws NoSuchAlgorithmException, DecoderException {
         MessageDigest md = MessageDigest.getInstance(hashType);
-        md.update(HexUtils.hexStringToByteArray(HexUtils.byteArrayToHexString(currentValue)
-                + HexUtils.byteArrayToHexString(newEvent)));
+        md.update(Hex.decodeHex((Hex.encodeHexString(currentValue)
+                + Hex.encodeHexString(newEvent)).toCharArray()));
         return md.digest();
     }
 
@@ -162,7 +173,7 @@ public class TCGEventLog {
     public String[] getExpectedPCRValues() {
         String[] pcrs = new String[PCR_COUNT];
         for (int i = 0; i < PCR_COUNT; i++) {
-            pcrs[i] = HexUtils.byteArrayToHexString(pcrList[i]);
+            pcrs[i] = Hex.encodeHexString(pcrList[i]);
         }
         return pcrs;
     }
@@ -174,6 +185,6 @@ public class TCGEventLog {
      * @return String representing the PCR contents
      */
     public String getExpectedPCRValue(final int index) {
-        return HexUtils.byteArrayToHexString(pcrList[index]);
+        return Hex.encodeHexString(pcrList[index]);
     }
 }

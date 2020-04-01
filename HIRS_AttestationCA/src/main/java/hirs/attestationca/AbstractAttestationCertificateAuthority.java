@@ -36,6 +36,7 @@ import hirs.structs.elements.tpm.IdentityRequest;
 import hirs.structs.elements.tpm.SymmetricKey;
 import hirs.structs.elements.tpm.SymmetricKeyParams;
 import hirs.utils.HexUtils;
+import org.apache.commons.codec.DecoderException;
 import org.apache.commons.codec.binary.Hex;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.logging.log4j.LogManager;
@@ -50,6 +51,7 @@ import org.bouncycastle.operator.ContentSigner;
 import org.bouncycastle.operator.OperatorCreationException;
 import org.bouncycastle.operator.jcajce.JcaContentSignerBuilder;
 import org.springframework.util.SerializationUtils;
+import sun.rmi.runtime.Log;
 
 import javax.crypto.BadPaddingException;
 import javax.crypto.Cipher;
@@ -80,6 +82,7 @@ import java.security.interfaces.RSAPublicKey;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.MGF1ParameterSpec;
 import java.security.spec.RSAPublicKeySpec;
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashSet;
@@ -401,9 +404,14 @@ public abstract class AbstractAttestationCertificateAuthority
 
             RSAPublicKey akPub = parsePublicKey(claim.getAkPublicArea().toByteArray());
             byte[] nonce = generateRandomBytes(NONCE_LENGTH);
-            ByteString blobStr = tpm20MakeCredential(ekPub, akPub, nonce);
+            ByteString blobStr = null;
+            try {
+                blobStr = tpm20MakeCredential(ekPub, akPub, nonce);
+            } catch (DecoderException deEx) {
+                LOG.error(deEx);
+            }
 
-            String strNonce = HexUtils.byteArrayToHexString(nonce);
+            String strNonce = Hex.encodeHexString(nonce);
             LOG.info("Sending nonce: " + strNonce);
             LOG.info("Persisting claim of length: " + identityClaim.length);
 
@@ -593,9 +601,10 @@ public abstract class AbstractAttestationCertificateAuthority
                     "EK or AK public data segment is not long enough");
         }
         // public data ends with 256 byte modulus
-        byte[] modulus = HexUtils.subarray(publicArea,
-                pubLen - RSA_MODULUS_LENGTH,
-                pubLen - 1);
+        byte[] modulus = Arrays.copyOfRange(publicArea, pubLen - RSA_MODULUS_LENGTH,
+                pubLen);//HexUtils.subarray(publicArea,
+                //pubLen - RSA_MODULUS_LENGTH,
+                //pubLen - 1);
         RSAPublicKey pub = (RSAPublicKey) assemblePublicKey(modulus);
         return pub;
     }
@@ -623,7 +632,7 @@ public abstract class AbstractAttestationCertificateAuthority
         byte[] macAddressBytes = new byte[MAC_BYTES];
         if (macAddressParts.length == MAC_BYTES) {
             for (int i = 0; i < MAC_BYTES; i++) {
-                Integer hex = HexUtils.hexToInt(macAddressParts[i]);
+                Integer hex = Integer.parseInt(macAddressParts[i], Short.SIZE);
                 macAddressBytes[i] = hex.byteValue();
             }
         }
@@ -1098,7 +1107,7 @@ public abstract class AbstractAttestationCertificateAuthority
      * @return the encrypted blob forming the identity claim challenge
      */
     protected ByteString tpm20MakeCredential(final RSAPublicKey ek, final RSAPublicKey ak,
-                                             final byte[] secret) {
+                                             final byte[] secret) throws DecoderException {
         // check size of the secret
         if (secret.length > MAX_SECRET_LENGTH) {
             throw new IllegalArgumentException("Secret must be " + MAX_SECRET_LENGTH
@@ -1144,7 +1153,7 @@ public abstract class AbstractAttestationCertificateAuthority
 
             // encrypt size prefix + secret with AES key
             Cipher symCipher = Cipher.getInstance("AES/CFB/NoPadding");
-            byte[] defaultIv = HexUtils.hexStringToByteArray("00000000000000000000000000000000");
+            byte[] defaultIv = Hex.decodeHex("00000000000000000000000000000000".toCharArray());
             IvParameterSpec ivSpec = new IvParameterSpec(defaultIv);
             symCipher.init(Cipher.ENCRYPT_MODE, new SecretKeySpec(aesKey, "AES"), ivSpec);
             byte[] encSecret = symCipher.doFinal(secretBytes);
@@ -1211,9 +1220,9 @@ public abstract class AbstractAttestationCertificateAuthority
      * @return the ak name byte array
      * @throws NoSuchAlgorithmException Underlying SHA256 method used a bad algorithm
      */
-    byte[] generateAkName(final byte[] akModulus) throws NoSuchAlgorithmException {
-        byte[] namePrefix = HexUtils.hexStringToByteArray(AK_NAME_PREFIX);
-        byte[] hashPrefix = HexUtils.hexStringToByteArray(AK_NAME_HASH_PREFIX);
+    byte[] generateAkName(final byte[] akModulus) throws NoSuchAlgorithmException, DecoderException {
+        byte[] namePrefix = Hex.decodeHex(AK_NAME_PREFIX.toCharArray());
+        byte[] hashPrefix = Hex.decodeHex(AK_NAME_HASH_PREFIX.toCharArray());
         byte[] toHash = new byte[hashPrefix.length + akModulus.length];
         System.arraycopy(hashPrefix, 0, toHash, 0, hashPrefix.length);
         System.arraycopy(akModulus, 0, toHash, hashPrefix.length, akModulus.length);

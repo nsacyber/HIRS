@@ -8,7 +8,9 @@ import hirs.data.persist.TPMMeasurementRecord;
 import hirs.data.persist.TpmWhiteListBaseline;
 import hirs.utils.HexUtils;
 import hirs.data.persist.Digest;
-import hirs.data.persist.DigestAlgorithm;;
+import hirs.data.persist.DigestAlgorithm;
+import org.apache.commons.codec.DecoderException;
+import org.apache.commons.codec.binary.Hex;;
 
 /**
  * Class for parsing a TCG EventLogs (both SHA1 and Crypto Agile Formats).
@@ -100,19 +102,19 @@ public class TCGEventLogProcessor {
      * @param name name to call the TPM Baseline
      * @return whitelist baseline
      */
-    public TpmWhiteListBaseline createTPMBaseline(final String name) {
+    public TpmWhiteListBaseline createTPMBaseline(final String name) throws DecoderException {
         TpmWhiteListBaseline baseline = new TpmWhiteListBaseline(name);
         TPMMeasurementRecord record;
         String pcrValue;
         for (int i = 0; i < TpmPcrEvent.PCR_COUNT; i++) {
             if (algorithm.compareToIgnoreCase("TPM_ALG_SHA1") == 0) { // Log Was SHA1 Format
                 pcrValue = tcgLog.getExpectedPCRValue(i);
-                byte[] hexValue = HexUtils.hexStringToByteArray(pcrValue);
+                byte[] hexValue = Hex.decodeHex(pcrValue.toCharArray());
                 final Digest hash = new Digest(DigestAlgorithm.SHA1, hexValue);
                 record = new TPMMeasurementRecord(i, hash);
             } else {  // Log was Crypto Agile, currently assumes SHA256
                 pcrValue = tcgLog.getExpectedPCRValue(i);
-                byte[] hexValue = HexUtils.hexStringToByteArray(pcrValue);
+                byte[] hexValue = Hex.decodeHex(pcrValue.toCharArray());
                 final Digest hash = new Digest(DigestAlgorithm.SHA256, hexValue);
                 record = new TPMMeasurementRecord(i, hash);
             }

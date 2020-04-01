@@ -6,6 +6,8 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
 
+import org.apache.commons.codec.DecoderException;
+import org.apache.commons.codec.binary.Hex;
 import org.apache.commons.io.IOUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -153,7 +155,7 @@ public class TCGEventLogProcessorTest extends SpringPersistenceTest {
      * @throws IOException when processing the test fails
      */
     @Test
-    public final void testTPMBaselineCreate() throws IOException {
+    public final void testTPMBaselineCreate() throws IOException, DecoderException {
         LOGGER.debug("Create and save TPM baseline from TCG Event Log test started");
         InputStream log;
         boolean testPass = true;
@@ -172,7 +174,7 @@ public class TCGEventLogProcessorTest extends SpringPersistenceTest {
         for (int i = 0; i < 24; i++) {
             Set<Digest> records = b.getPCRHashes(i);
             for (Digest digest:records) {
-                String pcrValue = HexUtils.byteArrayToHexString(digest.getDigest());
+                String pcrValue = Hex.encodeHexString(digest.getDigest());
                 if (pcrFromLog[i].compareToIgnoreCase(pcrValue) != 0) {
                     testPass = false;
                     LOGGER.error("\testTPMBaselineCreate error with PCR " + i);

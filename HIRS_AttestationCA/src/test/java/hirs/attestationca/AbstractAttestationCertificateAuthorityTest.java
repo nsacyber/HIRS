@@ -2,6 +2,7 @@ package hirs.attestationca;
 
 import com.google.protobuf.ByteString;
 import hirs.utils.HexUtils;
+import org.apache.commons.codec.DecoderException;
 import org.apache.commons.codec.binary.Hex;
 import org.apache.commons.lang3.ArrayUtils;
 import org.bouncycastle.asn1.x500.X500Name;
@@ -708,7 +709,7 @@ public class AbstractAttestationCertificateAuthorityTest {
             System.arraycopy(mod, 1, tmp, 0, mod.length - 1);
             mod = tmp;
         }
-        String hex = HexUtils.byteArrayToHexString(mod);
+        String hex = Hex.encodeHexString(mod);
         String realMod = EK_MODULUS_HEX.replaceAll("\\s+", "");
         assertEquals(hex, realMod);
     }
@@ -735,7 +736,7 @@ public class AbstractAttestationCertificateAuthorityTest {
             System.arraycopy(mod, 1, tmp, 0, mod.length - 1);
             mod = tmp;
         }
-        String hex = HexUtils.byteArrayToHexString(mod);
+        String hex = Hex.encodeHexString(mod);
         String realMod = AK_MODULUS_HEX.replaceAll("\\s+", "");
         assertEquals(hex, realMod);
     }
@@ -748,7 +749,7 @@ public class AbstractAttestationCertificateAuthorityTest {
      */
     @Test
     public void testGenerateAkName() throws URISyntaxException, IOException,
-            NoSuchAlgorithmException {
+            NoSuchAlgorithmException, DecoderException {
         Path akNamePath = Paths.get(getClass().getResource(
                 AK_NAME_PATH).toURI());
 
@@ -756,9 +757,9 @@ public class AbstractAttestationCertificateAuthorityTest {
         String realHex = HexUtils.byteArrayToHexString(akNameFileBytes);
 
         String realMod = AK_MODULUS_HEX.replaceAll("\\s+", "");
-        byte[] akName = aca.generateAkName(HexUtils.hexStringToByteArray(realMod));
+        byte[] akName = aca.generateAkName(Hex.decodeHex(realMod.toCharArray()));
 
-        String hex = HexUtils.byteArrayToHexString(akName);
+        String hex = Hex.encodeHexString(akName);
         String realName = AK_NAME_HEX.replaceAll("\\s+", "");
         assertEquals(hex, realName);
         assertEquals(hex, realHex);
@@ -776,7 +777,7 @@ public class AbstractAttestationCertificateAuthorityTest {
      * @throws IOException unable to read file
      */
     @Test(enabled = false)
-    public void testMakeCredential() throws URISyntaxException, IOException {
+    public void testMakeCredential() throws URISyntaxException, IOException, DecoderException {
         Path akPubPath = Paths.get(getClass().getResource(
                 AK_PUBLIC_PATH).toURI());
         Path ekPubPath = Paths.get(getClass().getResource(

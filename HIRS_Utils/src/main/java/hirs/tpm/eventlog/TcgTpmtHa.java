@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.math.BigInteger;
 
 import hirs.utils.HexUtils;
+import org.apache.commons.codec.binary.Hex;
 
 /**
  * Class to for the TCG defined TPMT_HA structure used to support the Crypto Agile Log format.
@@ -130,7 +131,7 @@ public class TcgTpmtHa {
      */
     @Override
     public String toString() {
-        return String.format("%s hash = %s", hashName, HexUtils.byteArrayToHexString(digest));
+        return String.format("%s hash = %s", hashName, Hex.encodeHexString(digest));
     }
 
     /**
