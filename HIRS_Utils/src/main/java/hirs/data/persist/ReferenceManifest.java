@@ -429,7 +429,7 @@ public class ReferenceManifest extends ArchivableEntity {
      * This method unmarshalls the swidtag found at [path] and validates it
      * according to the schema.
      *
-     * @param path to the input swidtag
+     * @param stream to the input swidtag
      * @return the SoftwareIdentity element at the root of the swidtag
      * @throws IOException if the swidtag cannot be unmarshalled or validated
      */
