@@ -30,7 +30,6 @@ import hirs.data.persist.Baseline;
 import hirs.data.persist.Digest;
 import hirs.data.persist.SpringPersistenceTest;
 import hirs.data.persist.TpmWhiteListBaseline;
-import hirs.utils.HexUtils;
 
 /**
  *  Class for testing TCG Event Log processing.
@@ -153,6 +152,7 @@ public class TCGEventLogProcessorTest extends SpringPersistenceTest {
     /**
      * Tests TPM Baseline creation from a EventLog.
      * @throws IOException when processing the test fails
+     * @throws DecoderException error on Hex array being decoded.
      */
     @Test
     public final void testTPMBaselineCreate() throws IOException, DecoderException {

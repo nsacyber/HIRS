@@ -1,6 +1,5 @@
 package hirs.tpm.eventlog;
 
-import hirs.utils.HexUtils;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.security.MessageDigest;

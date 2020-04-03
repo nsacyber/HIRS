@@ -3,7 +3,6 @@ package hirs.data.persist.certificate;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.common.base.Preconditions;
 import hirs.data.persist.ArchivableEntity;
-import hirs.utils.HexUtils;
 import org.apache.commons.codec.binary.Hex;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;

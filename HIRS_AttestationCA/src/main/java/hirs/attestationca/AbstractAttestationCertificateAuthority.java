@@ -35,7 +35,6 @@ import hirs.structs.elements.tpm.IdentityProof;
 import hirs.structs.elements.tpm.IdentityRequest;
 import hirs.structs.elements.tpm.SymmetricKey;
 import hirs.structs.elements.tpm.SymmetricKeyParams;
-import hirs.utils.HexUtils;
 import org.apache.commons.codec.DecoderException;
 import org.apache.commons.codec.binary.Hex;
 import org.apache.commons.lang3.ArrayUtils;
@@ -51,7 +50,6 @@ import org.bouncycastle.operator.ContentSigner;
 import org.bouncycastle.operator.OperatorCreationException;
 import org.bouncycastle.operator.jcajce.JcaContentSignerBuilder;
 import org.springframework.util.SerializationUtils;
-import sun.rmi.runtime.Log;
 
 import javax.crypto.BadPaddingException;
 import javax.crypto.Cipher;
@@ -602,9 +600,7 @@ public abstract class AbstractAttestationCertificateAuthority
         }
         // public data ends with 256 byte modulus
         byte[] modulus = Arrays.copyOfRange(publicArea, pubLen - RSA_MODULUS_LENGTH,
-                pubLen);//HexUtils.subarray(publicArea,
-                //pubLen - RSA_MODULUS_LENGTH,
-                //pubLen - 1);
+                pubLen);
         RSAPublicKey pub = (RSAPublicKey) assemblePublicKey(modulus);
         return pub;
     }
@@ -1105,6 +1101,7 @@ public abstract class AbstractAttestationCertificateAuthority
      * @param ak attestation key in the identity claim
      * @param secret a nonce
      * @return the encrypted blob forming the identity claim challenge
+     * @throws DecoderException error on Hex array being decoded.
      */
     protected ByteString tpm20MakeCredential(final RSAPublicKey ek, final RSAPublicKey ak,
                                              final byte[] secret) throws DecoderException {
@@ -1219,8 +1216,10 @@ public abstract class AbstractAttestationCertificateAuthority
      * @param akModulus modulus of an attestation key
      * @return the ak name byte array
      * @throws NoSuchAlgorithmException Underlying SHA256 method used a bad algorithm
+     * @throws DecoderException error on Hex array being decoded.
      */
-    byte[] generateAkName(final byte[] akModulus) throws NoSuchAlgorithmException, DecoderException {
+    byte[] generateAkName(final byte[] akModulus) throws NoSuchAlgorithmException,
+            DecoderException {
         byte[] namePrefix = Hex.decodeHex(AK_NAME_PREFIX.toCharArray());
         byte[] hashPrefix = Hex.decodeHex(AK_NAME_HASH_PREFIX.toCharArray());
         byte[] toHash = new byte[hashPrefix.length + akModulus.length];

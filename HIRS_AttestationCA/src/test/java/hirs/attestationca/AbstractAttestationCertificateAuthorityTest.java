@@ -1,7 +1,6 @@
 package hirs.attestationca;
 
 import com.google.protobuf.ByteString;
-import hirs.utils.HexUtils;
 import org.apache.commons.codec.DecoderException;
 import org.apache.commons.codec.binary.Hex;
 import org.apache.commons.lang3.ArrayUtils;
@@ -746,6 +745,7 @@ public class AbstractAttestationCertificateAuthorityTest {
      * @throws URISyntaxException incorrect resource path
      * @throws IOException unable to read from file
      * @throws NoSuchAlgorithmException inavlid algorithm
+     * @throws DecoderException error on Hex array being decoded.
      */
     @Test
     public void testGenerateAkName() throws URISyntaxException, IOException,
@@ -754,7 +754,7 @@ public class AbstractAttestationCertificateAuthorityTest {
                 AK_NAME_PATH).toURI());
 
         byte[] akNameFileBytes = Files.readAllBytes(akNamePath);
-        String realHex = HexUtils.byteArrayToHexString(akNameFileBytes);
+        String realHex = Hex.encodeHexString(akNameFileBytes);
 
         String realMod = AK_MODULUS_HEX.replaceAll("\\s+", "");
         byte[] akName = aca.generateAkName(Hex.decodeHex(realMod.toCharArray()));
@@ -775,6 +775,7 @@ public class AbstractAttestationCertificateAuthorityTest {
      * output as HIRS_AttestationCA/src/test/resources/tpm2/test/secret.blob
      * @throws URISyntaxException invalid file path
      * @throws IOException unable to read file
+     * @throws DecoderException error on Hex array being decoded.
      */
     @Test(enabled = false)
     public void testMakeCredential() throws URISyntaxException, IOException, DecoderException {

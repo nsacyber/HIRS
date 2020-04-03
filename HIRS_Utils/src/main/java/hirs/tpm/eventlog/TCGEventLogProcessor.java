@@ -101,6 +101,7 @@ public class TCGEventLogProcessor {
      *
      * @param name name to call the TPM Baseline
      * @return whitelist baseline
+     * @throws DecoderException error on Hex array being decoded.
      */
     public TpmWhiteListBaseline createTPMBaseline(final String name) throws DecoderException {
         TpmWhiteListBaseline baseline = new TpmWhiteListBaseline(name);
