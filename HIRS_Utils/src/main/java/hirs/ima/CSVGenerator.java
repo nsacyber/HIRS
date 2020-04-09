@@ -131,28 +131,28 @@ public final class CSVGenerator {
         // Add device info records to the map
         HashMap<TPMBaselineFields, String> map = new HashMap<TPMBaselineFields, String>();
         final FirmwareInfo firmwareInfo = tpmBaseline.getFirmwareInfo();
-        map.put(TPMBaselineFields.biosvendor, firmwareInfo.getBiosVendor());
-        map.put(TPMBaselineFields.biosversion, firmwareInfo.getBiosVersion());
-        map.put(TPMBaselineFields.biosreleasedate, firmwareInfo.getBiosReleaseDate());
+        map.put(TPMBaselineFields.BIOS_VENDOR, firmwareInfo.getBiosVendor());
+        map.put(TPMBaselineFields.BIOS_VERSION, firmwareInfo.getBiosVersion());
+        map.put(TPMBaselineFields.BIOS_RELEASE_DATE, firmwareInfo.getBiosReleaseDate());
         final HardwareInfo hardwareInfo = tpmBaseline.getHardwareInfo();
-        map.put(TPMBaselineFields.manufacturer, hardwareInfo.getManufacturer());
-        map.put(TPMBaselineFields.productname, hardwareInfo.getProductName());
-        map.put(TPMBaselineFields.version, hardwareInfo.getVersion());
-        map.put(TPMBaselineFields.systemserialnumber, hardwareInfo.getSystemSerialNumber());
-        map.put(TPMBaselineFields.chassisserialnumber, hardwareInfo.getChassisSerialNumber());
-        map.put(TPMBaselineFields.baseboardserialnumber, hardwareInfo.getBaseboardSerialNumber());
+        map.put(TPMBaselineFields.MANUFACTURER, hardwareInfo.getManufacturer());
+        map.put(TPMBaselineFields.PRODUCT_NAME, hardwareInfo.getProductName());
+        map.put(TPMBaselineFields.VERSION, hardwareInfo.getVersion());
+        map.put(TPMBaselineFields.SYSTEM_SERIAL_NUMBER, hardwareInfo.getSystemSerialNumber());
+        map.put(TPMBaselineFields.CHASSIS_SERIAL_NUMBER, hardwareInfo.getChassisSerialNumber());
+        map.put(TPMBaselineFields.BASEBOARD_SERIAL_NUMBER, hardwareInfo.getBaseboardSerialNumber());
         final OSInfo osInfo = tpmBaseline.getOSInfo();
-        map.put(TPMBaselineFields.osname, osInfo.getOSName());
-        map.put(TPMBaselineFields.osversion, osInfo.getOSVersion());
-        map.put(TPMBaselineFields.osarch, osInfo.getOSArch());
-        map.put(TPMBaselineFields.distribution, osInfo.getDistribution());
-        map.put(TPMBaselineFields.distributionrelease, osInfo.getDistributionRelease());
+        map.put(TPMBaselineFields.OS_NAME, osInfo.getOSName());
+        map.put(TPMBaselineFields.OS_VERSION, osInfo.getOSVersion());
+        map.put(TPMBaselineFields.OS_ARCH, osInfo.getOSArch());
+        map.put(TPMBaselineFields.DISTRIBUTION, osInfo.getDistribution());
+        map.put(TPMBaselineFields.DISTRIBUTION_RELEASE, osInfo.getDistributionRelease());
         final TPMInfo tpmInfo = tpmBaseline.getTPMInfo();
-        map.put(TPMBaselineFields.tpmmake, tpmInfo.getTPMMake());
-        map.put(TPMBaselineFields.tpmversionmajor, "" + tpmInfo.getTPMVersionMajor());
-        map.put(TPMBaselineFields.tpmversionminor, "" + tpmInfo.getTPMVersionMinor());
-        map.put(TPMBaselineFields.tpmversionrevmajor, "" + tpmInfo.getTPMVersionRevMajor());
-        map.put(TPMBaselineFields.tpmversionrevminor, "" + tpmInfo.getTPMVersionRevMinor());
+        map.put(TPMBaselineFields.TPM_MAKE, tpmInfo.getTPMMake());
+        map.put(TPMBaselineFields.TPM_VERSION_MAJOR, "" + tpmInfo.getTPMVersionMajor());
+        map.put(TPMBaselineFields.TPM_VERSION_MINOR, "" + tpmInfo.getTPMVersionMinor());
+        map.put(TPMBaselineFields.TPM_VERSION_REV_MAJOR, "" + tpmInfo.getTPMVersionRevMajor());
+        map.put(TPMBaselineFields.TPM_VERSION_REV_MINOR, "" + tpmInfo.getTPMVersionRevMinor());
         // Add device info records to the CSV file
         sb.append(TPMBaselineFields.toCSV(map));
 

@@ -303,9 +303,10 @@ public class ReferenceManifest extends ArchivableEntity {
         if (rimBytes != null && elementName != null) {
             try {
                 SoftwareIdentity si = validateSwidTag(new ByteArrayInputStream(this.rimBytes));
+                JAXBElement element;
                 for (Object object : si.getEntityOrEvidenceOrLink()) {
                     if (object instanceof JAXBElement) {
-                        JAXBElement element = (JAXBElement) object;
+                        element = (JAXBElement) object;
                         if (element.getName().getLocalPart().equals(elementName)) {
                             // found the element
                             baseElement = (BaseElement) element.getValue();
@@ -435,7 +436,7 @@ public class ReferenceManifest extends ArchivableEntity {
      */
     private JAXBElement unmarshallSwidTag(final InputStream stream) throws IOException {
         JAXBElement jaxbe = null;
-        Schema schema = null;
+        Schema schema;
 
         try {
             schema = DBReferenceManifestManager.getSchemaObject();

@@ -224,12 +224,9 @@ public class SwidResource {
             if (Files.exists(logPath)) {
                 logProcessor = new TCGEventLogProcessor(
                         Files.readAllBytes(logPath));
-                this.setPcrValues(Arrays.asList(
-                        logProcessor.getExpectedPCRValues()));
-            } else {
-                this.setPcrValues(Arrays.asList(
-                        logProcessor.getExpectedPCRValues()));
             }
+            this.setPcrValues(Arrays.asList(
+                        logProcessor.getExpectedPCRValues()));
         } catch (NoSuchFileException nsfEx) {
             LOGGER.error(String.format("File Not found!: %s",
                     this.getName()));

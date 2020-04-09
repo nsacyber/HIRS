@@ -5,6 +5,10 @@ import java.security.KeyStore;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.security.cert.CertificateException;
+
+import hirs.data.persist.TPMMeasurementRecord;
+import hirs.data.persist.baseline.TPMBaseline;
+import hirs.validation.SupplyChainCredentialValidator;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -42,6 +46,9 @@ import hirs.persist.PolicyManager;
 import hirs.validation.CredentialValidator;
 import java.util.HashMap;
 import java.util.Map;
+
+import static hirs.data.persist.AppraisalStatus.Status.FAIL;
+import static hirs.data.persist.AppraisalStatus.Status.PASS;
 
 /**
  * The main executor of supply chain verification tasks. The AbstractAttestationCertificateAuthority
@@ -186,16 +193,16 @@ public class SupplyChainValidationServiceImpl implements SupplyChainValidationSe
                         if (platformScv != null) {
                             // have to make sure the attribute validation isn't ignored and
                             // doesn't override general validation status
-                            if (platformScv.getResult() == AppraisalStatus.Status.PASS
-                                    && attributeScv.getResult() != AppraisalStatus.Status.PASS) {
+                            if (platformScv.getResult() == PASS
+                                    && attributeScv.getResult() != PASS) {
                                 // if the platform trust store validated but the attribute didn't
                                 // replace
                                 validations.remove(platformScv);
                                 validations.add(attributeScv);
-                            } else if ((platformScv.getResult() == AppraisalStatus.Status.PASS
-                                    && attributeScv.getResult() == AppraisalStatus.Status.PASS)
-                                    || (platformScv.getResult() != AppraisalStatus.Status.PASS
-                                    && attributeScv.getResult() != AppraisalStatus.Status.PASS)) {
+                            } else if ((platformScv.getResult() == PASS
+                                    && attributeScv.getResult() == PASS)
+                                    || (platformScv.getResult() != PASS
+                                    && attributeScv.getResult() != PASS)) {
                                 // if both trust store and attributes validated or failed
                                 // combine messages
                                 validations.remove(platformScv);
@@ -222,10 +229,12 @@ public class SupplyChainValidationServiceImpl implements SupplyChainValidationSe
                 .select(this.certificateManager)
                 .byDeviceId(device.getId())
                 .getCertificate();
+            PlatformCredential pc = PlatformCredential
+                    .select(this.certificateManager)
+                    .byDeviceId(device.getId())
+                    .getCertificate();
 
-            if (attCert != null) {
-                LOGGER.error(attCert.getPcrValues());
-            }
+            validations.add(validateFirmware(pc, attCert));
         }
 
         // Generate validation summary, save it, and return it.
@@ -266,7 +275,7 @@ public class SupplyChainValidationServiceImpl implements SupplyChainValidationSe
             // if it is, then update the SupplyChainValidation message and result
             if (result) {
                 String message = "Multiple Base certificates found in chain.";
-                if (!platformScv.getResult().equals(AppraisalStatus.Status.PASS)) {
+                if (!platformScv.getResult().equals(PASS)) {
                     message = String.format("%s,%n%s", platformScv.getMessage(), message);
                 }
                 subPlatformScv = buildValidationRecord(
@@ -299,6 +308,67 @@ public class SupplyChainValidationServiceImpl implements SupplyChainValidationSe
         return subPlatformScv;
     }
 
+    private SupplyChainValidation validateFirmware(final PlatformCredential pc,
+                                                   final IssuedAttestationCertificate attCert) {
+        // get the baseline?
+        // how does one does that!
+        TPMBaseline tpmBline;
+        String[] baseline = new String[Integer.SIZE];
+        Level level = Level.ERROR;
+        AppraisalStatus fwStatus;
+
+        if (attCert != null) {
+            LOGGER.error(attCert.getPcrValues());
+            String[] pcrsSet = attCert.getPcrValues().split("\\+");
+            String[] pcrs1 = pcrsSet[0].split("\\n");
+            String[] pcrs256 = pcrsSet[1].split("\\n");
+            for (int i = 0; i < pcrs1.length; i++) {
+                if (pcrs1[i].contains(":")) {
+                    pcrs1[i].split(":");
+                }
+            }
+
+            for (int i = 0; i < pcrs256.length; i++) {
+                if (pcrs256[i].contains(":")) {
+                    pcrs256[i].split(":");
+                }
+            }
+
+            StringBuilder sb = new StringBuilder();
+            fwStatus = new AppraisalStatus(PASS,
+                    SupplyChainCredentialValidator.FIRMWARE_VALID);
+            String failureMsg = "Firmware validation failed: PCR %d does not"
+                    + " match%n%tBaseline [%s] <> Device [%s]%n";
+            if (baseline[0].length() == pcrs1[0].length()) {
+                for (int i = 0; i <= TPMMeasurementRecord.MAX_PCR_ID; i++) {
+                    if (!baseline[i].equals(pcrs1[i])) {
+                        sb.append(String.format(failureMsg, i, baseline[i], pcrs1[i]));
+                        break;
+                    }
+                }
+            } else if (baseline[0].length() == pcrs256[0].length()) {
+                for (int i = 0; i <= TPMMeasurementRecord.MAX_PCR_ID; i++) {
+                    if (!baseline[i].equals(pcrs256[i])) {
+                        sb.append(String.format(failureMsg, i, baseline[i], pcrs256[i]));
+                        break;
+                    }
+                }
+            }
+            if (sb.length() > 0) {
+                level = Level.ERROR;
+                fwStatus = new AppraisalStatus(FAIL, sb.toString());
+            } else {
+                level = Level.INFO;
+            }
+        } else {
+            fwStatus = new AppraisalStatus(FAIL, "Associated Issued Attestation"
+                    + " Certificate can not be found.");
+        }
+
+        return buildValidationRecord(SupplyChainValidation.ValidationType.FIRMWARE,
+                fwStatus.getAppStatus(), fwStatus.getMessage(), pc, level);
+    }
+
     private SupplyChainValidation validateEndorsementCredential(final EndorsementCredential ec,
                                                                 final boolean acceptExpiredCerts) {
         final SupplyChainValidation.ValidationType validationType
@@ -316,14 +386,12 @@ public class SupplyChainValidationServiceImpl implements SupplyChainValidationSe
                 validateEndorsementCredential(ec, ecStore, acceptExpiredCerts);
         switch (result.getAppStatus()) {
             case PASS:
-                return buildValidationRecord(validationType, AppraisalStatus.Status.PASS,
+                return buildValidationRecord(validationType, PASS,
                         result.getMessage(), ec, Level.INFO);
             case FAIL:
                 return buildValidationRecord(validationType, AppraisalStatus.Status.FAIL,
                         result.getMessage(), ec, Level.WARN);
             case ERROR:
-                return buildValidationRecord(validationType, AppraisalStatus.Status.ERROR,
-                        result.getMessage(), ec, Level.ERROR);
             default:
                 return buildValidationRecord(validationType, AppraisalStatus.Status.ERROR,
                         result.getMessage(), ec, Level.ERROR);
@@ -347,14 +415,12 @@ public class SupplyChainValidationServiceImpl implements SupplyChainValidationSe
                 trustedCertificateAuthority, acceptExpiredCerts);
         switch (result.getAppStatus()) {
             case PASS:
-                return buildValidationRecord(validationType, AppraisalStatus.Status.PASS,
+                return buildValidationRecord(validationType, PASS,
                         result.getMessage(), pc, Level.INFO);
             case FAIL:
                 return buildValidationRecord(validationType, AppraisalStatus.Status.FAIL,
                         result.getMessage(), pc, Level.WARN);
             case ERROR:
-                return buildValidationRecord(validationType, AppraisalStatus.Status.ERROR,
-                        result.getMessage(), pc, Level.ERROR);
             default:
                 return buildValidationRecord(validationType, AppraisalStatus.Status.ERROR,
                         result.getMessage(), pc, Level.ERROR);
@@ -378,14 +444,12 @@ public class SupplyChainValidationServiceImpl implements SupplyChainValidationSe
                 validatePlatformCredentialAttributes(pc, deviceInfoReport, ec);
         switch (result.getAppStatus()) {
             case PASS:
-                return buildValidationRecord(validationType, AppraisalStatus.Status.PASS,
+                return buildValidationRecord(validationType, PASS,
                         result.getMessage(), pc, Level.INFO);
             case FAIL:
                 return buildValidationRecord(validationType, AppraisalStatus.Status.FAIL,
                         result.getMessage(), pc, Level.WARN);
             case ERROR:
-                return buildValidationRecord(validationType, AppraisalStatus.Status.ERROR,
-                        result.getMessage(), pc, Level.ERROR);
             default:
                 return buildValidationRecord(validationType, AppraisalStatus.Status.ERROR,
                         result.getMessage(), pc, Level.ERROR);
@@ -412,14 +476,12 @@ public class SupplyChainValidationServiceImpl implements SupplyChainValidationSe
                         base, deltaMapping);
         switch (result.getAppStatus()) {
             case PASS:
-                return buildValidationRecord(validationType, AppraisalStatus.Status.PASS,
+                return buildValidationRecord(validationType, PASS,
                         result.getMessage(), delta, Level.INFO);
             case FAIL:
                 return buildValidationRecord(validationType, AppraisalStatus.Status.FAIL,
                         result.getMessage(), delta, Level.WARN);
             case ERROR:
-                return buildValidationRecord(validationType, AppraisalStatus.Status.ERROR,
-                        result.getMessage(), delta, Level.ERROR);
             default:
                 return buildValidationRecord(validationType, AppraisalStatus.Status.ERROR,
                         result.getMessage(), delta, Level.ERROR);

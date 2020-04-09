@@ -155,8 +155,6 @@ public abstract class AbstractAttestationCertificateAuthority
     private final DeviceRegister deviceRegister;
     private final DeviceManager deviceManager;
     private final DBManager<TPM2ProvisionerState> tpm2ProvisionerStateDBManager;
-    private String[] pcrsList;
-    private String[] pcrs256List;
     private String tpmQuoteHash;
     private String tpmSignatureHash;
     private String pcrValues;
@@ -212,7 +210,6 @@ public abstract class AbstractAttestationCertificateAuthority
         IdentityRequestEnvelope challenge =
                 structConverter.convert(identityRequest, IdentityRequestEnvelope.class);
 
-        //
         byte[] identityProof = unwrapIdentityRequest(challenge.getRequest());
         // the decrypted symmetric blob should be in the format of an IdentityProof. Use the
         // struct converter to generate it.
@@ -506,9 +503,6 @@ public abstract class AbstractAttestationCertificateAuthority
             }
             if (request.getPcrslist() != null && !request.getPcrslist().isEmpty()) {
                 this.pcrValues = request.getPcrslist().toStringUtf8();
-                String[] pcrsSet = this.pcrValues.split("\\+");
-                this.pcrsList = parsePCRValues(pcrsSet[0]);
-                this.pcrs256List = parsePCRValues(pcrsSet[1]);
             }
 
             // Get device name and device
@@ -596,8 +590,7 @@ public abstract class AbstractAttestationCertificateAuthority
         byte[] modulus = HexUtils.subarray(publicArea,
                 pubLen - RSA_MODULUS_LENGTH,
                 pubLen - 1);
-        RSAPublicKey pub = (RSAPublicKey) assemblePublicKey(modulus);
-        return pub;
+        return (RSAPublicKey) assemblePublicKey(modulus);
     }
 
     /**
@@ -621,9 +614,10 @@ public abstract class AbstractAttestationCertificateAuthority
 
         // convert mac hex string to byte values
         byte[] macAddressBytes = new byte[MAC_BYTES];
+        Integer hex;
         if (macAddressParts.length == MAC_BYTES) {
             for (int i = 0; i < MAC_BYTES; i++) {
-                Integer hex = HexUtils.hexToInt(macAddressParts[i]);
+                hex = HexUtils.hexToInt(macAddressParts[i]);
                 macAddressBytes[i] = hex.byteValue();
             }
         }
@@ -884,7 +878,6 @@ public abstract class AbstractAttestationCertificateAuthority
      * Assembles a public key using a defined big int modulus and the well known exponent.
      */
     private PublicKey assemblePublicKey(final BigInteger modulus) {
-
         // generate a key spec using mod and exp
         RSAPublicKeySpec keySpec = new RSAPublicKeySpec(modulus, EXPONENT);
 
@@ -1242,8 +1235,7 @@ public abstract class AbstractAttestationCertificateAuthority
     private byte[] cryptKDFa(final byte[] seed, final String label, final byte[] context,
                                    final int sizeInBytes)
             throws NoSuchAlgorithmException, InvalidKeyException {
-        ByteBuffer b;
-        b = ByteBuffer.allocate(4);
+        ByteBuffer b = ByteBuffer.allocate(4);
         b.putInt(1);
         byte[] counter = b.array();
         // get the label
@@ -1271,14 +1263,13 @@ public abstract class AbstractAttestationCertificateAuthority
         }
         System.arraycopy(desiredSizeInBits, 0, message, marker, 4);
         Mac hmac;
-        byte[] toReturn = null;
+        byte[] toReturn = new byte[sizeInBytes];
 
         hmac = Mac.getInstance("HmacSHA256");
         SecretKeySpec hmacKey = new SecretKeySpec(seed, hmac.getAlgorithm());
         hmac.init(hmacKey);
         hmac.update(message);
         byte[] hmacResult = hmac.doFinal();
-        toReturn = new byte[sizeInBytes];
         System.arraycopy(hmacResult, 0, toReturn, 0, sizeInBytes);
         return toReturn;
     }
@@ -1290,11 +1281,9 @@ public abstract class AbstractAttestationCertificateAuthority
      * @throws NoSuchAlgorithmException improper algorithm selected
      */
     private byte[] sha256hash(final byte[] blob) throws NoSuchAlgorithmException {
-        byte[] toReturn = null;
         MessageDigest md = MessageDigest.getInstance("SHA-256");
         md.update(blob);
-        toReturn = md.digest();
-        return toReturn;
+        return md.digest();
     }
 
     /**
