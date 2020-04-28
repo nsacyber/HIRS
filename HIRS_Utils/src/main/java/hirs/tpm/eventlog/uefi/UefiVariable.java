@@ -134,7 +134,7 @@ private void processSigList(final byte[] data)
  *  @return human readable description of the UEFi variable.
  */
 public String toString() {
-  StringBuffer efiVariable = new StringBuffer();
+  StringBuilder efiVariable = new StringBuilder();
   efiVariable.append("UEFI Variable Name:" + varName + "\n");
   efiVariable.append("UEFI_GUID = " + getEfiVarGuid().toString() + "\n");
   efiVariable.append("UEFI Variable Contents => " + "\n");

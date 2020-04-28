@@ -15,7 +15,7 @@ public class UefiBootOrder {
    */
   UefiBootOrder(final byte[] order) {
     bootOrder = new char[order.length / UefiConstants.SIZE_2];
-    for (int i = 0; i < order.length; i = i + UefiConstants.SIZE_2) {
+    for (int i = 0; i < order.length; i += UefiConstants.SIZE_2) {
         bootOrder[i / UefiConstants.SIZE_2] =
                 (char) (order[i + 1] * UefiConstants.SIZE_256 + order[i]);
       }
@@ -26,11 +26,10 @@ public class UefiBootOrder {
  * @return A human readable Boot Order
  */
 public String toString() {
- StringBuffer orderList = new StringBuffer();
+ StringBuilder orderList = new StringBuilder();
  orderList.append("BootOrder = ");
  for (int i = 0; i < bootOrder.length; i++) {
-    int order = bootOrder[i];
-    orderList.append(" Boot" + String.format("%04d", order));
+    orderList.append(String.format("Boot %04d", (int) bootOrder[i]));
  }
  return orderList.toString();
  }

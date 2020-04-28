@@ -188,7 +188,7 @@ public boolean isValidSigListGUID(final UefiGuid guid) {
  * @return human readable description.
  */
 public String toString() {
-  StringBuffer sigInfo = new StringBuffer();
+  StringBuilder sigInfo = new StringBuilder();
   sigInfo.append("UEFI Signature List Type = " + signatureType.toString() + "\n");
   sigInfo.append("Number if items = " + numberOfItems + "\n");
   sigList.iterator();

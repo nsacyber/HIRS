@@ -13,13 +13,6 @@ import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
-/*
-import org.junit.Test;
-import org.junit.AfterClass;
-import org.junit.Assert;
-import org.junit.BeforeClass;
-*/
-
 /**
  *  Class for testing TCG Event Log processing of UEFI defined Data.
  */
