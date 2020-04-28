@@ -42,19 +42,20 @@ public class UefiPartition {
  * @throws UnsupportedEncodingException if parsing of the data fails.
  */
   public UefiPartition(final byte[] table) throws UnsupportedEncodingException {
-    byte[] partitionGUID = new byte[UefiGuid.getGuidLength()];
-    System.arraycopy(table, 0, partitionGUID, 0, UefiGuid.getGuidLength());
-    partitionTypeGUID = new UefiGuid(partitionGUID);
-    byte[] uniquePartGUID = new byte[UefiGuid.getGuidLength()];
-    System.arraycopy(table, UefiGuid.getGuidLength(), uniquePartGUID, 0, UefiGuid.getGuidLength());
-    uniquePartitionGUID = new UefiGuid(uniquePartGUID);
-    byte[] attribute = new byte[UefiConstants.SIZE_8];
-    System.arraycopy(table, UefiConstants.ATTRIBUTE_LENGTH, attribute, 0, UefiConstants.SIZE_8);
-    attributes = HexUtils.byteArrayToHexString(attribute);
-    byte[] partitionname = new byte[UefiConstants.UEFI_PT_LENGTH];
-    System.arraycopy(table, UefiConstants.PART_NAME_LENGTH, partitionname,
+    byte[] partitionGuidBytes = new byte[UefiConstants.SIZE_16];
+    System.arraycopy(table, 0, partitionGuidBytes, 0, UefiConstants.SIZE_16);
+    partitionTypeGUID = new UefiGuid(partitionGuidBytes);
+    byte[] uniquePartGuidBytes = new byte[UefiConstants.SIZE_16];
+    System.arraycopy(table, UefiConstants.SIZE_16, uniquePartGuidBytes, 0, UefiConstants.SIZE_16);
+    uniquePartitionGUID = new UefiGuid(uniquePartGuidBytes);
+    byte[] attributeBytes = new byte[UefiConstants.SIZE_8];
+    System.arraycopy(table, UefiConstants.ATTRIBUTE_LENGTH, attributeBytes,
+                                                      0, UefiConstants.SIZE_8);
+    attributes = HexUtils.byteArrayToHexString(attributeBytes);
+    byte[] partitionNameBytes = new byte[UefiConstants.UEFI_PT_LENGTH];
+    System.arraycopy(table, UefiConstants.PART_NAME_LENGTH, partitionNameBytes,
                                                       0, UefiConstants.UEFI_PT_LENGTH);
-    byte[] pName = convertChar16tobyteArray(partitionname);
+    byte[] pName = convertChar16tobyteArray(partitionNameBytes);
     partitionName = new String(pName, "UTF-8").trim();
    }
 
@@ -102,7 +103,7 @@ public String toString() {
 private  byte[] convertChar16tobyteArray(final byte[] data) {
   byte[] hexdata = new byte[data.length];
   int j = 0;
-  for (int i = 0; i < data.length; i = i + 2) {
+  for (int i = 0; i < data.length; i += 2) {
     hexdata[j++] = data[i];
     }
   return hexdata;

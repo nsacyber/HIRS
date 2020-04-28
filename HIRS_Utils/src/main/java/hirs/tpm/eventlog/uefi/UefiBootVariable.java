@@ -1,6 +1,7 @@
 package hirs.tpm.eventlog.uefi;
 
 import java.io.UnsupportedEncodingException;
+import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 
 import hirs.utils.HexUtils;
@@ -49,7 +50,7 @@ public UefiBootVariable(final byte[] bootVar) throws UnsupportedEncodingExceptio
   int descLength = getChar16ArrayLength(blob);
   byte[] desc = new byte[descLength * UefiConstants.SIZE_2];
   System.arraycopy(bootVar, UefiConstants.OFFSET_6, desc, 0, descLength * UefiConstants.SIZE_2);
-  description = new String(UefiDevicePath.convertChar16tobyteArray(desc), "UTF-8");
+  description = new String(UefiDevicePath.convertChar16tobyteArray(desc), StandardCharsets.UTF_8);
   // Data following the Description should be EFI Partition Data (EFI_DEVICE_PATH_PROTOCOL)
   int devPathLength = blobLength;
   int devPathOffset = UefiConstants.OFFSET_6 + descLength;   //attributes+bloblength+desc+length+2
@@ -66,11 +67,10 @@ public UefiBootVariable(final byte[] bootVar) throws UnsupportedEncodingExceptio
  * @return string that represents a UEFI boot variable.
  */
 public String toString() {
-  String bootInfo = "";
+  StringBuilder bootInfo = new StringBuilder("Description = ");
   String bootvar = description.replaceAll("[^a-zA-Z_0-0\\s]", "");  // remove all non ascii chars
-  bootInfo += "Description = " + bootvar + "\n";
-  bootInfo += efiDevPath.toString();
-  return bootInfo;
+  bootInfo.append(bootvar + "\n" + efiDevPath.toString());
+  return bootInfo.toString();
 }
 
 /**
@@ -82,15 +82,15 @@ public String toString() {
  */
 public int getChar16ArrayLength(final byte[] data) {
   int count = 0;
-  byte[] nullTerminitor = new byte[UefiConstants.SIZE_2];
+  byte[] nullTerminator = new byte[UefiConstants.SIZE_2];
   byte[] char16 = new byte[UefiConstants.SIZE_2];
-  nullTerminitor[0] = 0;
-  nullTerminitor[1] = 0;
-  for (int i = 0; i < data.length; i = i + UefiConstants.SIZE_2) {
+  nullTerminator[0] = 0;
+  nullTerminator[1] = 0;
+  for (int i = 0; i < data.length; i += UefiConstants.SIZE_2) {
     char16[0] = data[i];
     char16[1] = data[i + 1];
     count++;
-    if (Arrays.equals(nullTerminitor, char16)) {
+    if (Arrays.equals(nullTerminator, char16)) {
         return count * UefiConstants.SIZE_2;
     }
   }

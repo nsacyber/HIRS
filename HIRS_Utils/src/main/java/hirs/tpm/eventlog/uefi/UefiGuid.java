@@ -52,13 +52,7 @@ private static UUID processGuid(final byte[] guid) {
    UUID tmpUuid = new UUID(msbl, lsbl);
    return tmpUuid;
  }
-/**
- * Returns the standard GUID length.
- * @return guid length
- */
-public static int getGuidLength() {
-    return UefiConstants.SIZE_16;
-}
+
 /**
  * Returns a String that represents a specification name referenced by the EFI_CONFIGURATION_TABLE
  * VendorGUID field.  For structure of EFI_CONFIGURATION_TABLE type, the UEFI specification
@@ -71,10 +65,9 @@ public static int getGuidLength() {
 @SuppressWarnings("checkstyle:methodlength")
 public String getVendorTableReference() {
 
- String vendorRef = uuid.toString().toLowerCase();
  String reference = "";
 
- switch (vendorRef) {
+ switch (uuid.toString().toLowerCase()) {
  // UUIDS listed in the UEFI Specification
  case "eb9d2d30-2d88-11d3-9a16-0090273fc14d": reference = "ACPI_TABLE_GUID"; break;
  case "eb9d2d32-2d88-11d3-9a16-0090273fc14d": reference = "SAL_SYSTEM_TABLE_GUID"; break;
@@ -206,7 +199,7 @@ public String getVendorTableReference() {
  // RHBoot Lenovo specific UUIDS
  case "3cc24e96-22c7-41d8-8863-8e39dcdcc2cf":reference = "lenovo"; break;
  case "82988420-7467-4490-9059-feb448dd1963":reference = "lenovo_me_config"; break;
- case "f7e615b-0d45-4f80-88dc-26b234958560":reference = "lenovo_diag"; break;
+ case "3f7e615b-0d45-4f80-88dc-26b234958560":reference = "lenovo_diag"; break;
  case "665d3f60-ad3e-4cad-8e26-db46eee9f1b5":reference = "lenovo_rescue"; break;
  case "721c8b66-426c-4e86-8e99-3457c46ab0b9":reference = "lenovo_setup"; break;
  case "f46ee6f4-4785-43a3-923d-7f786c3c8479":reference = "lenovo_startup_interrupt"; break;
@@ -234,7 +227,7 @@ public String getVendorTableReference() {
 
  // Linux specific GUIDS
  case "0fc63daf-8483-4772-8e79-3d69d8477de":reference = "Linux filesystem data"; break;
- case "44479540-f297-41b2-9af7-d131d5f0458a4":reference = "Root partition (x86)"; break;
+ case "44479540-f297-41b2-9af7-d131d5f0458a":reference = "Root partition (x86)"; break;
  case "69dad710-2ce4-4e3c-b16c-21a1d49abed3":reference = "Root partition (32-bit ARM)"; break;
  case "b921b045-1df0-41c3-af44-4c6f280d3fae":
                 reference = "Root partition (64-bit ARM/AArch64)"; break;
@@ -295,7 +288,7 @@ public String getVendorTableReference() {
  case "26a2481e-4424-46a2-9943-cc4039ead8f8":reference = "S3Save"; break;
  case "efd652cc-0e99-40f0-96c0-e08c089070fc":reference = "S3Restore"; break;
  case "8c783970-f02a-4a4d-af09-8797a51eec8d":reference = "PowerManagement"; break;
- case "299141bb-211a-48a5-92c0-6f9a0a3a006e0":reference = "PowerManagement-ACPI-table"; break;
+ case "299141bb-211a-48a5-92c0-6f9a0a3a006e":reference = "PowerManagement-ACPI-table"; break;
  case "2df10014-cf21-4280-8c3f-e539b8ee5150":reference = "PpmPolicyInitDxe"; break;
  case "4b680e2d-0d63-4f62-b930-7ae995b9b3a3":reference = "SmBusDxe"; break;
  // SMM handlers
@@ -382,7 +375,7 @@ public static boolean isValidUUID(final byte[] guid) {
  if (tmpUuid.toString().length() != 0)  {
        valid = true;
       }
-    return (valid);
+    return valid;
  }
 
 /**
@@ -398,10 +391,7 @@ public boolean isEmptyUUID() {
  * @return true if the uuid is the Empty UUID, false if not
  */
 public boolean isUnknownUUID() {
-   if (getVendorTableReference().equals("Unknown GUID reference")) {
-       return true;
-      }
-       return false;
+    return getVendorTableReference().equals("Unknown GUID reference");
  }
 
 /**
