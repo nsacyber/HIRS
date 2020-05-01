@@ -158,6 +158,13 @@ public final class TCGEventLog {
     }
 
     /**
+     * Returns a list of event found in the Event Log.
+     * @return an arraylist of event.
+     */
+    public ArrayList<TpmPcrEvent>  getEventList() {
+        return eventList;
+    }
+    /**
      * Returns a single PCR value given an index (PCR Number).
      *
      * @param index pcr index
@@ -167,4 +174,15 @@ public final class TCGEventLog {
         return HexUtils.byteArrayToHexString(pcrList[index]);
     }
 
+    /**
+     * Human readable string representing the contents of the Event Log.
+     * @return Description of the log.
+     */
+    public String toString() {
+        StringBuilder sb = new StringBuilder();
+        for (TpmPcrEvent event:eventList) {
+            sb.append(event.toString() + "\n");
+        }
+       return sb.toString();
+    }
 }

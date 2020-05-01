@@ -5,6 +5,7 @@ import java.io.UnsupportedEncodingException;
 import java.math.BigInteger;
 import java.security.NoSuchAlgorithmException;
 import java.security.cert.CertificateException;
+import java.util.ArrayList;
 
 import hirs.data.persist.TPMMeasurementRecord;
 import hirs.data.persist.TpmWhiteListBaseline;
@@ -86,6 +87,14 @@ public class TCGEventLogProcessor {
     }
 
     /**
+     * Returns a list of event found in the Event Log.
+     * @return an arraylist of event.
+     */
+    public ArrayList<TpmPcrEvent>  getEventList() {
+        return tcgLog.getEventList();
+    }
+
+    /**
      * Returns the TCG Algorithm Registry defined ID for the Digest Algorithm
      * used in the event log.
      * @return TCG Defined Algorithm name
@@ -143,5 +152,13 @@ public class TCGEventLogProcessor {
         String sig = new String(signature, "UTF-8").substring(0, SIG_SIZE - 1);  // remove null char
 
         return sig.equals("Spec ID Event03");
+    }
+
+    /**
+     * Human readable string representing the contents of the Event Log.
+     * @return Description of the log.
+     */
+    public String toString() {
+       return tcgLog.toString();
     }
 }

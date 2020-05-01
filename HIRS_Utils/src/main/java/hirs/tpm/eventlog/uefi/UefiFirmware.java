@@ -63,7 +63,7 @@ public int getBlobLength() {
 public String toString() {
      String blobInfo = "";
      if (!berror) {
-         blobInfo += "   Platform Firwmare Blob Address = " + blobAddress;
+         blobInfo += "   Platform Firwmare Blob Address = " + Integer.toHexString(blobAddress);
          blobInfo += " length = " + blobLength;
       } else {
          blobInfo += " Invalid Firmware Blob event encountered";

@@ -57,12 +57,12 @@ public class TpmPcrEvent {
     private String version = "Unknown";
     /** TCG Event Log errata version. */
     private String errata = "Unknown";
+    /** Description for toString support. */
+    private String description = "";
     /**  Length (in bytes) of a pcr. */
     private int digestLength = 0;
     /**  Event Number. */
     private int eventNumber = 1;
-    /**  Index. */
-    private int index = -1;
     /**  Event Contents flag. */
     private boolean bEvContent = false;
     /**  Event hash for SHA1 event logs. */
@@ -148,7 +148,7 @@ public class TpmPcrEvent {
      * @param type byte array holding the PFP defined log event type
      */
     protected void setEventType(final byte[] type) {
-        eventType = new BigInteger(HexUtils.leReverseByte(type)).longValue();
+        eventType = new BigInteger(1, HexUtils.leReverseByte(type)).longValue();
     }
 
     /**
@@ -187,7 +187,7 @@ public class TpmPcrEvent {
      */
     protected void setEventContent(final byte[] eventData) {
         eventContent = new byte[eventData.length];
-        System.arraycopy(eventContent, 0, eventData, 0, eventData.length);
+        System.arraycopy(eventData, 0, eventContent, 0, eventData.length);
     }
 
     /**
@@ -230,11 +230,10 @@ public class TpmPcrEvent {
      */
  public String processEvent(final byte[] event, final byte[] eventContent)
                             throws CertificateException, NoSuchAlgorithmException, IOException {
-        String description = "";
         int eventID = (int) eventType;
         description += "Event# " + eventNumber++ + ": ";
-        description += "Index PCR[" + this.index + "]\n";
-        description += "Event Type: 0x" + this.eventType + " " + eventString(eventID);
+        description += "Index PCR[" + getPcrIndex() + "]\n";
+        description += "Event Type: 0x" + Long.toHexString(eventType) + " " + eventString(eventID);
         description += "\n";
         if (logFormat == 1) {   // Digest
             description += "digest (SHA-1): " + HexUtils.byteArrayToHexString(this.digest) + "\n";
@@ -276,17 +275,14 @@ public class TpmPcrEvent {
                         description += "Seperator event content = " + seperatorEventData + "\n";
                     }
                    }
-                description += eventHashCheck();
                 break;
             case EvConstants.EV_ACTION:
                 description += "Event Content:\n"
                                       + new String(eventContent, StandardCharsets.UTF_8) + "\n";
-                description += eventHashCheck();
                 break;
             case EvConstants.EV_EVENT_TAG:
                 EvEventTag eventTag = new EvEventTag(eventContent);
                 description += eventTag.toString() + "\n";
-                description += eventHashCheck();
                 break;
             case EvConstants.EV_S_CRTM_CONTENTS:
                 EvSCrtmContents sCrtmContents = new EvSCrtmContents(eventContent);
@@ -295,19 +291,16 @@ public class TpmPcrEvent {
             case EvConstants.EV_S_CRTM_VERSION:
                 EvSCrtmVersion sCrtmVersion = new EvSCrtmVersion(eventContent);
                 description += "Event Content:\n" + sCrtmVersion.toString() + "\n";
-                description += eventHashCheck();
                 break;
             case EvConstants.EV_CPU_MICROCODE:
                 break;
             case EvConstants.EV_PLATFORM_CONFIG_FLAGS:
-                description += eventHashCheck();
                 break;
             case EvConstants.EV_TABLE_OF_DEVICES:
                 break;
             case EvConstants.EV_COMPACT_HASH:
                 EvCompactHash compactHash =  new EvCompactHash(eventContent);
                 description += "Event Content:\n" + compactHash.toString() + "\n";
-                description += eventHashCheck();
                 break;
             case EvConstants.EV_IPL:
                 EvIPL ipl = new EvIPL(eventContent);
@@ -328,11 +321,9 @@ public class TpmPcrEvent {
             case EvConstants.EV_EFI_VARIABLE_DRIVER_CONFIG:
                 UefiVariable efiVar = new UefiVariable(eventContent);
                 description += "Event Content:\n" + efiVar.toString();
-                description += eventHashCheck();
                 break;
             case EvConstants.EV_EFI_VARIABLE_BOOT:
                 description += "Event Content:\n" + new UefiVariable(eventContent).toString();
-                description += eventHashCheck();
                 break;
             case EvConstants.EV_EFI_BOOT_SERVICES_APPLICATION:
                 EvEfiBootServicesApp bootServices = new EvEfiBootServicesApp(eventContent);
@@ -346,11 +337,9 @@ public class TpmPcrEvent {
                 break;
             case EvConstants.EV_EFI_GPT_EVENT:
                 description += "Event Content:\n" + new EvEfiGptPartition(eventContent).toString();
-                description += eventHashCheck();
                 break;
             case EvConstants.EV_EFI_ACTION:
                 description += new String(eventContent, StandardCharsets.UTF_8) + "\n";
-                description += eventHashCheck();
                 break;
             case EvConstants.EV_EFI_PLATFORM_FIRMWARE_BLOB:
                 description += "Event Content:\n"
@@ -382,62 +371,73 @@ public class TpmPcrEvent {
      * @return TCG defined String that represents the event id
      */
      private static String eventString(final long event) {
-         String evString = "";
-         long tmpEvent = event;
-         Long longEvent = Long.valueOf(tmpEvent & SIGN_MASK); // Remove signed extension
-         Long intEvent = Long.valueOf(tmpEvent & INT_MASK); // truncate to an int value
-         // Check to see if value is larger than an int, if it is then truncate the value
-         if (longEvent.longValue() > (long) Integer.MAX_VALUE) {
-             switch (intEvent.intValue()) {
-             case  EvConstants.EV_EFI_EVENT_BASE: evString = "EV_EFI_EVENT_BASE"; break;
-             case  EvConstants.EV_EFI_VARIABLE_DRIVER_CONFIG:
-                                       evString = "EV_EFI_VARIABLE_DRIVER_CONFIG"; break;
-             case  EvConstants.EV_EFI_VARIABLE_BOOT:
-                                                evString = "EV_EFI_VARIABLE_BOOT"; break;
-             case  EvConstants.EV_EFI_BOOT_SERVICES_APPLICATION:
-                                     evString = "EV_EFI_BOOT_SERVICES_APPLICATION"; break;
-             case  EvConstants.EV_EFI_BOOT_SERVICES_DRIVER:
-                                           evString = "EV_EFI_BOOT_SERVICES_DRIVER"; break;
-             case  EvConstants.EV_EFI_RUNTIME_SERVICES_DRIVER:
-                                        evString = "EV_EFI_RUNTIME_SERVICES_DRIVER"; break;
-             case  EvConstants.EV_EFI_GPT_EVENT: evString = "EV_EFI_GPT_EVENT"; break;
-             case  EvConstants.EV_EFI_ACTION: evString = "EV_EFI_ACTION"; break;
-             case  EvConstants.EV_EFI_PLATFORM_FIRMWARE_BLOB:
-                                           evString = "EV_EFI_PLATFORM_FIRMWARE_BLOB"; break;
-             case  EvConstants.EV_EFI_HANDOFF_TABLES: evString = "EV_EFI_HANDOFF_TABLES"; break;
-             case  EvConstants.EV_EFI_HCRTM_EVENT: evString = "EV_EFI_HCRTM_EVENT"; break;
-             case  EvConstants.EV_EFI_VARIABLE_AUTHORITY:
-                                               evString = "EV_EFI_VARIABLE_AUTHORITY"; break;
-             default: evString = "Unknown Event ID " + event + " encountered";
-             }
-         } else {
-           switch (intEvent.intValue()) {
-               case  EvConstants.EV_PREBOOT_CERT: evString = "EV_PREBOOT_CERT"; break;
-               case  EvConstants.EV_POST_CODE: evString = "EV_POST_CODE"; break;
-               case  EvConstants.EV_UNUSED: evString = "EV_Unused"; break;
-               case  EvConstants.EV_NO_ACTION: evString = "EV_NO_ACTION"; break;
-               case  EvConstants.EV_SEPARATOR: evString = "EV_SEPARATOR"; break;
-               case  EvConstants.EV_ACTION: evString = "EV_ACTION"; break;
-               case  EvConstants.EV_EVENT_TAG: evString = "EV_EVENT_TAG"; break;
-               case  EvConstants.EV_S_CRTM_CONTENTS: evString = "EV_S_CRTM_CONTENTS"; break;
-               case  EvConstants.EV_S_CRTM_VERSION: evString = "EV_S_CRTM_VERSION"; break;
-               case  EvConstants.EV_CPU_MICROCODE: evString = "EV_CPU_MICROCODE"; break;
-               case  EvConstants.EV_PLATFORM_CONFIG_FLAGS: evString = "EV_PLATFORM_CONFIG_FLAGS ";
-                                                                                  break;
-               case  EvConstants.EV_TABLE_OF_DEVICES: evString = "EV_TABLE_OF_DEVICES"; break;
-               case  EvConstants.EV_COMPACT_HASH: evString = "EV_COMPACT_HASH"; break;
-               case  EvConstants.EV_IPL: evString = "EV_IPL"; break;
-               case  EvConstants.EV_IPL_PARTITION_DATA: evString = "EV_IPL_PARTITION_DATA"; break;
-               case  EvConstants.EV_NONHOST_CODE: evString = "EV_NONHOST_CODE"; break;
-               case  EvConstants.EV_NONHOST_CONFIG: evString = "EV_NONHOST_CONFIG"; break;
-               case  EvConstants.EV_NONHOST_INFO: evString = "EV_NONHOST_INFO"; break;
-               case  EvConstants.EV_EV_OMIT_BOOT_DEVICES_EVENTS:
-                                                 evString = "EV_EV_OMIT_BOOT_DEVICES_EVENTS"; break;
-               default: evString = "Unknown Event ID " + event + " encountered";
-         }
-         }
-         return evString;
+
+     if (event == EvConstants.EV_PREBOOT_CERT) {
+         return "EV_PREBOOT_CERT";
+     } else if (event == EvConstants.EV_POST_CODE) {
+         return "EV_POST_CODE";
+     } else if (event == EvConstants.EV_UNUSED) {
+         return "EV_Unused";
+     } else if (event == EvConstants.EV_NO_ACTION) {
+         return "EV_NO_ACTION";
+     } else if (event == EvConstants.EV_SEPARATOR) {
+         return "EV_SEPARATOR";
+     } else if (event == EvConstants.EV_ACTION) {
+         return "EV_ACTION";
+     } else if (event == EvConstants.EV_EVENT_TAG) {
+         return "EV_EVENT_TAG";
+     } else  if (event == EvConstants.EV_S_CRTM_CONTENTS) {
+         return "EV_S_CRTM_CONTENTS";
+     } else if (event == EvConstants.EV_S_CRTM_VERSION) {
+         return "EV_S_CRTM_VERSION";
+     } else if (event == EvConstants.EV_CPU_MICROCODE) {
+         return "EV_CPU_MICROCODE";
+     } else if (event == EvConstants.EV_PLATFORM_CONFIG_FLAGS) {
+         return "EV_PLATFORM_CONFIG_FLAGS ";
+     } else if (event == EvConstants.EV_TABLE_OF_DEVICES) {
+         return "EV_TABLE_OF_DEVICES";
+     } else if (event == EvConstants.EV_COMPACT_HASH) {
+         return "EV_COMPACT_HASH";
+     } else if (event == EvConstants.EV_IPL) {
+         return "EV_IPL";
+     } else if (event == EvConstants.EV_IPL_PARTITION_DATA) {
+         return "EV_IPL_PARTITION_DATA";
+     } else if (event == EvConstants.EV_NONHOST_CODE) {
+         return "EV_NONHOST_CODE";
+     } else if (event == EvConstants.EV_NONHOST_CONFIG) {
+         return "EV_NONHOST_CONFIG";
+     } else if (event == EvConstants.EV_NONHOST_INFO) {
+         return "EV_NONHOST_INFO";
+     } else if (event == EvConstants.EV_EV_OMIT_BOOT_DEVICES_EVENTS) {
+         return "EV_EV_OMIT_BOOT_DEVICES_EVENTS";
+     } else if (event == EvConstants.EV_EFI_EVENT_BASE) {
+         return "EV_EFI_EVENT_BASE";
+     } else if (event == EvConstants.EV_EFI_VARIABLE_DRIVER_CONFIG) {
+         return "EV_EFI_VARIABLE_DRIVER_CONFIG";
+     } else if (event == EvConstants.EV_EFI_VARIABLE_BOOT) {
+         return "EV_EFI_VARIABLE_BOOT";
+     } else if (event == EvConstants.EV_EFI_BOOT_SERVICES_APPLICATION) {
+         return "EV_EFI_BOOT_SERVICES_APPLICATION";
+     } else if (event == EvConstants.EV_EFI_BOOT_SERVICES_DRIVER) {
+         return "EV_EFI_BOOT_SERVICES_DRIVER";
+     } else if (event == EvConstants.EV_EFI_RUNTIME_SERVICES_DRIVER) {
+         return "EV_EFI_RUNTIME_SERVICES_DRIVER";
+     } else if (event == EvConstants.EV_EFI_GPT_EVENT) {
+         return "EV_EFI_GPT_EVENT";
+     } else if (event == EvConstants.EV_EFI_ACTION) {
+         return  "EV_EFI_ACTION";
+     } else if (event == EvConstants.EV_EFI_PLATFORM_FIRMWARE_BLOB) {
+         return  "EV_EFI_PLATFORM_FIRMWARE_BLOB";
+     } else if (event == EvConstants.EV_EFI_HANDOFF_TABLES) {
+         return "EV_EFI_HANDOFF_TABLES";
+     } else if (event == EvConstants.EV_EFI_HCRTM_EVENT) {
+         return "EV_EFI_HCRTM_EVENT";
+     } else if (event == EvConstants.EV_EFI_VARIABLE_AUTHORITY) {
+         return "EV_EFI_VARIABLE_AUTHORITY";
+     } else {
+         return "Unknown Event ID " + event + " encountered";
      }
+   }
 
      /**
       * Human readable output of a check of input against the current event hash.
@@ -475,5 +475,13 @@ public class TpmPcrEvent {
              }
          }
          return true;
+     }
+
+     /**
+      * Human readable string representing the contents of the Event Log.
+      * @return Description of the log.
+      */
+     public String toString() {
+        return description;
      }
 }
