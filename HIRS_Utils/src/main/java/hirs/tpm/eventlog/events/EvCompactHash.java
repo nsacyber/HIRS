@@ -14,6 +14,7 @@ import hirs.utils.HexUtils;
  */
 public class EvCompactHash {
 
+    /** Holds the Compact Hash description. */
     private String eventInfo = "";
 
     /**

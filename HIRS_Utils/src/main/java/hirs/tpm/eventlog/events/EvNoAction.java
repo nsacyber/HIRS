@@ -1,6 +1,7 @@
 package hirs.tpm.eventlog.events;
 
 import java.io.UnsupportedEncodingException;
+import java.nio.charset.StandardCharsets;
 
 import hirs.tpm.eventlog.uefi.UefiConstants;
 
@@ -31,9 +32,9 @@ public class EvNoAction {
      * @throws UnsupportedEncodingException if input fails to parse.
      */
     public EvNoAction(final byte[] eventData) throws UnsupportedEncodingException {
-      byte[] signatureBytes = new byte[UefiConstants.SIZE_16];
-      System.arraycopy(eventData, 0, signatureBytes, 0, UefiConstants.SIZE_16);
-      signature = new String(signatureBytes, "UFT-8");
+      byte[] signatureBytes = new byte[UefiConstants.SIZE_15];
+      System.arraycopy(eventData, 0, signatureBytes, 0, UefiConstants.SIZE_15);
+      signature = new String(signatureBytes, StandardCharsets.UTF_8);
       signature = signature.replaceAll("[^\\P{C}\t\r\n]", ""); // remove null characters
       if (signature.contains("Spec ID Event03")) {      // implies CryptAgileFormat
           specIDEvent = new EvEfiSpecIdEvent(eventData);

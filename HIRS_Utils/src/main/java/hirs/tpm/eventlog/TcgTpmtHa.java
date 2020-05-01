@@ -15,62 +15,36 @@ import hirs.utils.HexUtils;
  * } TPMT_HA;
  */
 public class TcgTpmtHa {
-    /**
-     * TCG Defined Algorithm Identifiers .
-     */
+    /**  TCG Defined Algorithm Identifiers.  */
     private int hashAlgId = 0;
-    /**
-     * Length of the  hash.
-     */
+    /**  Length of the  hash.  */
     private int hashLength = 0;
-    /**
-     * Human readable name of the hash algorithm.
-     */
+    /**  Human readable name of the hash algorithm.  */
     private String hashName = "";
-    /**
-     * Hash data.
-     */
+    /**  Hash data.  */
     private byte[] digest = null;
-    /**
-     * TCG ID for SHA1.
-     */
+    /**  TCG ID for SHA1.   */
     public static final int TPM_ALG_SHA1 = 0x04;
-    /**
-     * TCG ID for SHA1.
-     */
+    /**  TCG ID for SHA1.  */
     public static final int TPM_ALG_SHA256 = 0x0B;
-    /**
-     * TCG ID for SHA 384.
-     */
+    /**   * TCG ID for SHA 384.   */
     public static final int TPM_ALG_SHA384 = 0x0C;
-    /**
-     * TCG ID for SHA512.
-     */
+    /**  TCG ID for SHA512.  */
     public static final int TPM_ALG_SHA_512 = 0x0D;
-    /**
-     * TCG ID for Null algorithm.
-     */
+    /**  TCG ID for Null algorithm.  */
     public static final int TPM_ALG_NULL = 0x10;
-    /**
-     * TCG ID for SHA1.
-     */
+    /**  TCG ID for SHA1.  */
     public static final int TPM_ALG_SHA1_LENGTH = 20;
-    /**
-     * TCG ID for SHA1.
-     */
+    /**  TCG ID for SHA1.  */
     public static final int TPM_ALG_SHA256_LENGTH = 32;
-    /**
-     * TCG ID for SHA 384.
-     */
+    /** TCG ID for SHA 384.   */
     public static final int TPM_ALG_SHA384_LENGTH = 48;
-    /**
-     * TCG ID for SHA512.
-     */
+    /**  TCG ID for SHA512.   */
     public static final int TPM_ALG_SHA512_LENGTH = 64;
-    /**
-     * TCG ID for Null algorithm.
-     */
+    /**  TCG ID for Null algorithm.   */
     public static final int TPM_ALG_NULL_LENGTH = 0;
+    /** buffer to hold the structure. */
+    private byte[] buffer = null;
 
     /**
      * Constructor.
@@ -87,6 +61,9 @@ public class TcgTpmtHa {
         hashLength = tcgAlgLength(algID[0]);
         digest = new byte[hashLength];
         is.read(digest);
+        buffer = new byte[algID.length + digest.length];
+        System.arraycopy(algID, 0, buffer, 0, algID.length);
+        System.arraycopy(digest, 0, buffer, algID.length, digest.length);
     }
 
     /**
@@ -96,6 +73,14 @@ public class TcgTpmtHa {
      */
     public int getAlgId() {
         return hashAlgId;
+    }
+
+    /**
+     * Returns the contents of the TPMT_HA structure buffer.
+     * @return contents of the TPMT_HA structure.
+     */
+    public byte[]  getBuffer() {
+        return java.util.Arrays.copyOf(buffer, buffer.length);
     }
 
     /**
