@@ -241,12 +241,12 @@ private String hardDriveSubType(final byte[] path, final int offset) {
   subType += HexUtils.byteArrayToHexString(partnumber);
   byte[] data = new byte[UefiConstants.SIZE_8];
   System.arraycopy(path, UefiConstants.OFFSET_8 + offset, data, 0, UefiConstants.SIZE_8);
-  subType += "Partition Start = " + HexUtils.byteArrayToHexString(data);
+  subType += " Partition Start = " + HexUtils.byteArrayToHexString(data);
   System.arraycopy(path, UefiConstants.OFFSET_16 + offset, data, 0, UefiConstants.SIZE_8);
-  subType += "Partition Size = " + HexUtils.byteArrayToHexString(data);
+  subType += " Partition Size = " + HexUtils.byteArrayToHexString(data);
   byte[] signature = new byte[UefiConstants.SIZE_16];
   System.arraycopy(path, UefiConstants.OFFSET_24 + offset, signature, 0, UefiConstants.SIZE_16);
-  subType += "Partition Signature = ";
+  subType += "\n       Partition Signature = ";
   if (path[UefiConstants.OFFSET_41 + offset] == UefiConstants.DRIVE_SIG_NONE) {
       subType += "None";
   } else if (path[UefiConstants.OFFSET_41 + offset] == UefiConstants.DRIVE_SIG_32BIT) {
@@ -257,13 +257,13 @@ private String hardDriveSubType(final byte[] path, final int offset) {
   } else {
       subType += "invalid partition signature type";
   }
-  subType += "Partition Format = ";
+  subType += " Partition Format = ";
   if (path[UefiConstants.OFFSET_40 + offset] == UefiConstants.DRIVE_TYPE_PC_AT) {
-      subType += "PC-AT compatible legacy MBR";
+      subType += " PC-AT compatible legacy MBR";
   } else if (path[UefiConstants.OFFSET_40 + offset] == UefiConstants.DRIVE_TYPE_GPT) {
-      subType += "GUID Partition Table";
+      subType += " GUID Partition Table";
   } else {
-      subType += "Invalid partition table type";
+      subType += " Invalid partition table type";
   }
   return subType;
  }

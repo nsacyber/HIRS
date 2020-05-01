@@ -136,8 +136,10 @@ private void processSigList(final byte[] data)
 public String toString() {
   StringBuilder efiVariable = new StringBuilder();
   efiVariable.append("UEFI Variable Name:" + varName + "\n");
-  efiVariable.append("UEFI_GUID = " + getEfiVarGuid().toString() + "\n");
-  efiVariable.append("UEFI Variable Contents => " + "\n");
+  efiVariable.append("UEFI_GUID = " + getEfiVarGuid().toString() + "\n ");
+  if (varName != "") {
+      efiVariable.append("UEFI Variable Contents => " + "\n  ");
+  }
   String tmpName = varName;
   if (varName.contains("Boot00")) {
       tmpName = "Boot00";
@@ -148,7 +150,7 @@ public String toString() {
      case "Boot00":     efiVariable.append(bootv.toString()); break;
      case "BootOrder":  efiVariable.append(booto.toString()); break;
      case "SecureBoot": efiVariable.append(sb.toString()); break;
-     default:
+     default: efiVariable.append("Data not provided for  UEFI var named " + tmpName + "\n");
      }
   for (int i = 0; i < certSuperList.size(); i++) {
         efiVariable.append(certSuperList.get(i).toString());
