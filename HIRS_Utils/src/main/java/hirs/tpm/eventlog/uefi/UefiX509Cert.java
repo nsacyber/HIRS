@@ -74,14 +74,14 @@ public String getSHA1FingerPrint() {
 public String toString() {
   X509Certificate x509Cert = (X509Certificate) cert;
   String certData = "";
-  certData += "Certificate Serial Number = "
+  certData += "  Certificate Serial Number = "
                + x509Cert.getSerialNumber().toString(UefiConstants.SIZE_16) + "\n";
-  certData += "Subject DN = " + x509Cert.getSubjectDN() + "\n";
-  certData += "Issuer DN = " + x509Cert.getIssuerDN() + "\n";
-  certData += "Not Before Date = " + x509Cert.getNotBefore() + "\n";
-  certData += "Not After Date = " + x509Cert.getNotAfter() + "\n";
-  certData += "Signature Algorithm = " + x509Cert.getSigAlgName() + "\n";
-  certData += "SHA1 Fingerprint =  " + getSHA1FingerPrint() + "\n";
+  certData += "  Subject DN = " + x509Cert.getSubjectDN() + "\n";
+  certData += "  Issuer DN = " + x509Cert.getIssuerDN() + "\n";
+  certData += "  Not Before Date = " + x509Cert.getNotBefore() + "\n";
+  certData += "  Not After Date = " + x509Cert.getNotAfter() + "\n";
+  certData += "  Signature Algorithm = " + x509Cert.getSigAlgName() + "\n";
+  certData += "  SHA1 Fingerprint =  " + getSHA1FingerPrint() + "\n";
   return certData;
  }
 }

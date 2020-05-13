@@ -51,6 +51,8 @@ public class TpmPcrEvent {
     private long eventType = 0;
     /**  Event digest. */
     private byte[] digest = null;
+    /**  Even data (no content). */
+    private byte[] event;
     /**  Even content data. */
     private byte[] eventContent;
     /** TCG Event Log spec version.  */
@@ -61,18 +63,12 @@ public class TpmPcrEvent {
     private String description = "";
     /**  Length (in bytes) of a pcr. */
     private int digestLength = 0;
-    /**  Event Number. */
-    private int eventNumber = 1;
-    /**  Event Contents flag. */
-    private boolean bEvContent = false;
     /**  Event hash for SHA1 event logs. */
     private byte[] eventDataSha1hash;
     /**  Event hash for Crypto Agile events. */
     private byte[] eventDataSha256hash;
-    /** Signature extension mask.*/
-    private static final long SIGN_MASK = 0x00000000FFFFFFFFL;
-    /** Mask used to remove upper values from a long. */
-    private static final long INT_MASK = 0x000000007FFFFFFFL;
+    /**  Indent Offset. */
+    private static final int INDENT_3 = 3;
 
     /**
      * Constructor.
@@ -179,7 +175,24 @@ public class TpmPcrEvent {
     public String getSpecErrataVersion() {
         return errata;
     }
+    /**
+     * Sets the event data after processing.
+     *
+     * @param eventData The PFP defined event content
+     */
+    protected void setEventData(final byte[] eventData) {
+        event = new byte[eventData.length];
+        System.arraycopy(eventData, 0, event, 0, eventData.length);
+    }
 
+    /**
+     * Gets the Event Data (no event content) for the event.
+     * event log format.
+     * @return byte array holding the event structure.
+     */
+    public byte[] getEvent() {
+        return java.util.Arrays.copyOf(event, event.length);
+    }
     /**
      * Sets the event content after processing.
      *
@@ -191,9 +204,7 @@ public class TpmPcrEvent {
     }
 
     /**
-     * Gets the length of number of bytes in a PCR for the event.
-     * event log format.
-     *
+     * Gets the event Content Data (not the entire event structure).
      * @return byte array holding the events content field
      */
     public byte[] getEventContent() {
@@ -223,15 +234,16 @@ public class TpmPcrEvent {
      * Parses the event content and creates a human readable description of each event.
      * @param event the byte array holding the event data.
      * @param eventContent the byte array holding the event content.
+     * @param eventNumber event position within the event log.
      * @return String description of the event.
      * @throws CertificateException if the event contains an event that cannot be processed.
      * @throws NoSuchAlgorithmException if an event contains an unsupported algorithm.
      * @throws IOException if the event cannot be parsed.
      */
- public String processEvent(final byte[] event, final byte[] eventContent)
+ public String processEvent(final byte[] event, final byte[] eventContent, final int eventNumber)
                             throws CertificateException, NoSuchAlgorithmException, IOException {
         int eventID = (int) eventType;
-        description += "Event# " + eventNumber++ + ": ";
+        description += "Event# " + eventNumber + ": ";
         description += "Index PCR[" + getPcrIndex() + "]\n";
         description += "Event Type: 0x" + Long.toHexString(eventType) + " " + eventString(eventID);
         description += "\n";
@@ -320,7 +332,9 @@ public class TpmPcrEvent {
                 break;
             case EvConstants.EV_EFI_VARIABLE_DRIVER_CONFIG:
                 UefiVariable efiVar = new UefiVariable(eventContent);
-                description += "Event Content:\n" + efiVar.toString();
+                String efiVarDescription = efiVar.toString().replace("\n", "\n   ");
+                description += "Event Content:\n   " + efiVarDescription.substring(0,
+                                               efiVarDescription.length() - INDENT_3);
                 break;
             case EvConstants.EV_EFI_VARIABLE_BOOT:
                 description += "Event Content:\n" + new UefiVariable(eventContent).toString();
@@ -355,11 +369,6 @@ public class TpmPcrEvent {
                 description += "Event Content:\n" + new UefiVariable(eventContent).toString();
                 break;
             default: description += " Unknown Event found" + "\n";
-        }
-
-        if (bEvContent) {
-            description += "Event content (Hex) (" + event.length + "): "
-                                            + HexUtils.byteArrayToHexString(eventContent) + "\n\n";
         }
         return description;
     }

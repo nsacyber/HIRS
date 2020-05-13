@@ -32,12 +32,13 @@ public class TpmPcrEvent1 extends TpmPcrEvent {
      * Constructor.
      *
      * @param is ByteArrayInputStream holding the TCG Log event.
+     * @param eventNumber event position within the event log.
      * @throws IOException if an error occurs in parsing the event.
      * @throws NoSuchAlgorithmException if an undefined algorithm is encountered.
      * @throws CertificateException If a certificate within an event can't be processed.
      */
-    public TpmPcrEvent1(final ByteArrayInputStream is) throws IOException, CertificateException,
-                                                                     NoSuchAlgorithmException {
+    public TpmPcrEvent1(final ByteArrayInputStream is, final int eventNumber)
+                    throws IOException, CertificateException, NoSuchAlgorithmException {
         super(is);
         setDigestLength(EvConstants.SHA1_LENGTH);
         setLogFormat(1);
@@ -75,8 +76,9 @@ public class TpmPcrEvent1 extends TpmPcrEvent {
         offset += eventDigest.length;
         System.arraycopy(rawEventSize, 0, event, offset, rawEventSize.length);
         offset += rawEventSize.length;
+        setEventData(event);
         //System.arraycopy(eventContent, 0, event, offset, eventContent.length);
-        this.processEvent(event, eventContent);
+        this.processEvent(event, eventContent, eventNumber);
         }
  }
 }
