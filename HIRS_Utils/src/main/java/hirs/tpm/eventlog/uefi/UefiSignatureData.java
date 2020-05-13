@@ -175,7 +175,7 @@ public String toString() {
   } else {
         if (signatureType.getVendorTableReference().equals("EFI_CERT_SHA256_GUID")) {
            sigInfo += "UEFI Signature Owner = " + efiGuid.toString() + "\n";
-           sigInfo += "Binary Hash = " + HexUtils.byteArrayToHexString(binaryHash) + "\n";
+           sigInfo += "  Binary Hash = " + HexUtils.byteArrayToHexString(binaryHash) + "\n";
         } else {
               sigInfo += "UEFI Signature Owner = " +  efiGuid.toString() + "\n";
               sigInfo += cert.toString();

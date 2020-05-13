@@ -6,15 +6,13 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.security.NoSuchAlgorithmException;
-import java.security.cert.CertificateException;
 
-import hirs.tpm.eventlog.TCGEventLogProcessor;
+import hirs.tpm.eventlog.TCGEventLog;
 
 /**
  * Command-line application for processing TCG Event Logs.
  * Input arg: path to *.tcglp file
- * 
+ *
  * If an argument is given it will be validated against the schema at http://standards.iso.org/iso/19770/-2/2015/schema.xsd
  * If an argument is not given a SWID tag file will be generated.
  */
@@ -22,10 +20,11 @@ public class Main {
     private static Commander commander = null;
     static FileOutputStream outputStream = null;
     static byte[] eventLlog = null;
+    static boolean bContentFlag, bEventFlag, bHexEvent, bOutFile = false;
     public static void main(String[] args) {
     commander = new Commander(args);
     String os = System.getProperty("os.name").toLowerCase();
-    
+
         if (commander.hasArguments()) {
             // we have arguments to work with
             if (commander.getFileFlag()) {
@@ -39,35 +38,28 @@ public class Main {
             }
             if (commander.getPCRFlag()) {
                 try {
-                    TCGEventLogProcessor tlp = new TCGEventLogProcessor(eventLlog);
+                    TCGEventLog tlp = new TCGEventLog(eventLlog, bEventFlag, bContentFlag, bHexEvent);
                     String[] pcrs = tlp.getExpectedPCRValues();
                     int i=0;
-                    System.out.print("Platform Configuration Register (PCR) values: \n");
+                    System.out.print("Platform Configuration Register (PCR) values: \n\n");
                     for (String pcr: pcrs) {
-                        System.out.print("pcr "+ i++ + " = " + pcr.toString() + "\n");
+                        System.out.print(" pcr "+ i++ + " = " + pcr.toString() + "\n");
                     }
                 } catch (Exception e) {
                     System.out.print("Error processing Event Log " + commander.getInFileName() 
                     + "\nError was "+ e.toString());
                     System.exit(1);
                 } 
+                System.out.print("\n----------------- End PCR Values ----------------- \n\n");
             }
             if (commander.getContentFlag()) {
-  
+                bContentFlag = true;
             }
             if (commander.getHexFlag()) {
-                
+                bHexEvent = true;
             }
             if (commander.getEventIdsFlag()) {
-                try {
-                    TCGEventLogProcessor tlp = new TCGEventLogProcessor(eventLlog);
-                    writeOut(tlp.toString());                 
-                } catch (Exception e) {
-                    System.out.print("Error processing Event Log " + commander.getInFileName() 
-                    + "\nError was "+ e.toString());
-                    System.exit(1);
-                } 
-         
+                bEventFlag = true;
             }
             if (commander.getOutputFile()) {
                 try {
@@ -87,8 +79,18 @@ public class Main {
             System.out.print("Nothing to do: No Parameters provided.");
             System.exit(1);
         }
+        
+    try {
+        TCGEventLog tlp = new TCGEventLog(eventLlog, bEventFlag, bContentFlag, bHexEvent);
+        writeOut(tlp.toString());                 
+    } catch (Exception e) {
+        System.out.print("Error processing Event Log " + commander.getInFileName() 
+        + "\nError was "+ e.toString());
+        System.exit(1);
     }
-    
+        
+}
+
 
     /**
      * Opens a TCG Event log file

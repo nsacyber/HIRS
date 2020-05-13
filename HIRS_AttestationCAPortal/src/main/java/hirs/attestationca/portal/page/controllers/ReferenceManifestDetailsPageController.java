@@ -3,7 +3,7 @@ package hirs.attestationca.portal.page.controllers;
 import hirs.data.persist.ReferenceManifest;
 import hirs.data.persist.SwidResource;
 import hirs.persist.ReferenceManifestManager;
-import hirs.tpm.eventlog.TCGEventLogProcessor;
+import hirs.tpm.eventlog.TCGEventLog;
 import hirs.attestationca.portal.page.Page;
 import hirs.attestationca.portal.page.PageController;
 import hirs.attestationca.portal.page.PageMessages;
@@ -157,7 +157,7 @@ public class ReferenceManifestDetailsPageController
             data.put("rimType", rim.getRimType());
             List<SwidResource> resources = rim.parseResource();
             String resourceFilename = null;
-            TCGEventLogProcessor logProcessor = new TCGEventLogProcessor();
+            TCGEventLog logProcessor = new TCGEventLog();
 
             try {
                 for (SwidResource swidRes : resources) {
@@ -166,7 +166,7 @@ public class ReferenceManifestDetailsPageController
                             SwidResource.RESOURCE_UPLOAD_FOLDER,
                             resourceFilename));
                     if (Files.exists(logPath)) {
-                        logProcessor = new TCGEventLogProcessor(
+                        logProcessor = new TCGEventLog(
                                 Files.readAllBytes(logPath));
                         swidRes.setPcrValues(Arrays.asList(
                                 logProcessor.getExpectedPCRValues()));

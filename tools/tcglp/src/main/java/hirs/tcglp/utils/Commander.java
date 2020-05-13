@@ -229,10 +229,10 @@ public class Commander {
                 + "  -e\t--eventids\t Filters the output to only display events using ID's provided.\n\t\t\t ID is single work mask of the event ID's. \n\t\t\t No EventID will output all events.\n"
                 + "  -f\t--file\t\t Use specific input file. \n\t\t\t Following parameter MUST be a relative path and file name.\n"
                 + "  -o\t--output\t Output to a file. \n\t\t\t Following parameter MUST be a relative path and file name.\n"
-                + "  -t\t--tpmpcrs\t Output PCR contents calculated from the TCG Log. \n\t\t\t Following parameter MAY be a PCR number or Text PCR[] string.\n\t\t\t No following parameters will display ALl PCRs.\n"
+                + "  -p\t--tpmpcrs\t Output PCR contents calculated from the TCG Log. \n\t\t\t Following parameter MAY be a PCR number or Text PCR[] string.\n\t\t\t No following parameters will display ALl PCRs.\n"
                 + "  -v\t--Version\t Parser Version.\n" 
                 + "  -V\t--Verify\t Attempts to verify the log file against values on the local device.\n"
-                + "  -x\t--hex\t\t Displays entire event log in hexdecimal.\n");
+                + "  -x\t--hex\t\t Displays event structure of each log event in hexdecimal.\n");
         if (os.compareToIgnoreCase("linux")==0) {
         sb.append("\nIf no FILE parameter is provided then the standard Linux TCGEventLog path (/sys/kernel/security/tpm0/binary_bios_measurements) is used."
                 +"\n Note admin privileges may be required (e.g. use sudo when running the script).\n"

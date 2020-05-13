@@ -28,14 +28,14 @@ import org.testng.annotations.Test;
 /**
  *  Class for testing TCG Event Log processing.
  */
-//public class TCGEventLogProcessorTest extends SpringPersistenceTest {
-public class TCGEventLogProcessorTest {
-    private static final String DEFAULT_EVENT_LOG = "/tcgeventlog/TpmLog.bin";
+//public class TCGEventLogTest extends SpringPersistenceTest {
+public class TCGEventLogTest {
+   private static final String DEFAULT_EVENT_LOG = "/tcgeventlog/TpmLog.bin";
    private static final String DEFAULT_EXPECTED_PCRS = "/tcgeventlog/TpmLogExpectedPcrs.txt";
    private static final String SHA1_EVENT_LOG = "/tcgeventlog/TpmLogSHA1.bin";
    private static final String SHA1_EXPECTED_PCRS = "/tcgeventlog/TpmLogSHA1ExpectedPcrs.txt";
    private static final Logger LOGGER
-            = LogManager.getLogger(TCGEventLogProcessorTest.class);
+            = LogManager.getLogger(TCGEventLogTest.class);
 
    /**
     * Initializes a <code>SessionFactory</code>. The factory is used for an in-memory database that
@@ -89,8 +89,8 @@ public class TCGEventLogProcessorTest {
      boolean testPass = true;
      log = this.getClass().getResourceAsStream(DEFAULT_EVENT_LOG);
      byte[] rawLogBytes = IOUtils.toByteArray(log);
-     TCGEventLogProcessor tlp = new TCGEventLogProcessor(rawLogBytes);
-     String[] pcrFromLog = tlp.getExpectedPCRValues();
+     TCGEventLog evlog = new TCGEventLog(rawLogBytes, false, false, false);
+     String[] pcrFromLog = evlog.getExpectedPCRValues();
      pcrs = this.getClass().getResourceAsStream(DEFAULT_EXPECTED_PCRS);
      Object[] pcrObj = IOUtils.readLines(pcrs).toArray();
      String[] pcrTxt = Arrays.copyOf(pcrObj, pcrObj.length, String[].class);
@@ -103,12 +103,12 @@ public class TCGEventLogProcessorTest {
       }
       Assert.assertTrue(testPass);
       // Test 2 get an individual PCR
-      String pcr3 = tlp.getExpectedPCRValue(3);
+      String pcr3 = evlog.getExpectedPCRValue(3);
       Assert.assertEquals(pcr3, pcrFromLog[3]);
       // Test 3 check the Algorithm Identifiers used in the log
-      String algStr = tlp.getEventLogHashAlgorithm();
+      String algStr = evlog.getEventLogHashAlgorithm();
       Assert.assertEquals(algStr, "TPM_ALG_SHA256");
-      int id = tlp.getEventLogHashAlgorithmID();
+      int id = evlog.getEventLogHashAlgorithmID();
       Assert.assertEquals(id, TcgTpmtHa.TPM_ALG_SHA256);
       LOGGER.debug("OK. Parsing of a Crypto Agile Format Success");
     }
@@ -127,8 +127,8 @@ public class TCGEventLogProcessorTest {
       boolean testPass = true;
       log = this.getClass().getResourceAsStream(SHA1_EVENT_LOG);
       byte[] rawLogBytes = IOUtils.toByteArray(log);
-      TCGEventLogProcessor tlp =  new TCGEventLogProcessor(rawLogBytes);
-      String[] pcrFromLog = tlp.getExpectedPCRValues();
+      TCGEventLog evlog =  new TCGEventLog(rawLogBytes, false, false, false);
+      String[] pcrFromLog = evlog.getExpectedPCRValues();
       pcrs = this.getClass().getResourceAsStream(SHA1_EXPECTED_PCRS);
       Object[] pcrObj = IOUtils.readLines(pcrs).toArray();
       String[] pcrTxt = Arrays.copyOf(pcrObj, pcrObj.length, String[].class);
@@ -141,12 +141,12 @@ public class TCGEventLogProcessorTest {
        }
        Assert.assertTrue(testPass);
        // Test 2 get an individual PCR
-       String pcr0 = tlp.getExpectedPCRValue(0);
+       String pcr0 = evlog.getExpectedPCRValue(0);
        Assert.assertEquals(pcr0, pcrFromLog[0]);
        // Test 3 check the Algorithm Identifiers used in the log
-       String algStr = tlp.getEventLogHashAlgorithm();
+       String algStr = evlog.getEventLogHashAlgorithm();
        Assert.assertEquals(algStr, "TPM_ALG_SHA1");
-       int id = tlp.getEventLogHashAlgorithmID();
+       int id = evlog.getEventLogHashAlgorithmID();
        Assert.assertEquals(id, TcgTpmtHa.TPM_ALG_SHA1);
        LOGGER.debug("OK. Parsing of a SHA1 formatted TCG Event Log Success");
       }
