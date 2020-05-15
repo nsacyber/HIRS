@@ -45,7 +45,6 @@ public class TcgTpmtHa {
     public static final int TPM_ALG_NULL_LENGTH = 0;
     /** buffer to hold the structure. */
     private byte[] buffer = null;
-
     /**
      * Constructor.
      *
