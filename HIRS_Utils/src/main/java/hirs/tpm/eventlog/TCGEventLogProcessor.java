@@ -105,7 +105,7 @@ public class TCGEventLogProcessor {
         TpmWhiteListBaseline baseline = new TpmWhiteListBaseline(name);
         TPMMeasurementRecord record;
         String pcrValue;
-        for (int i = 0; i < TpmPcrEvent.PCR_COUNT; i++) {
+        for (int i = 0; i < PCR_COUNT; i++) {
             if (algorithm.compareToIgnoreCase("TPM_ALG_SHA1") == 0) { // Log Was SHA1 Format
                 pcrValue = tcgLog.getExpectedPCRValue(i);
                 byte[] hexValue = HexUtils.hexStringToByteArray(pcrValue);
