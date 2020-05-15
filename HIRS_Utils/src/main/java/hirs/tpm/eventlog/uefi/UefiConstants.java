@@ -19,16 +19,30 @@ public final class UefiConstants {
     public static final int SIZE_5 = 5;
     /** 8 byte size. */
     public static final int SIZE_8 = 8;
+    /** 12 byte size. */
+    public static final int SIZE_12 = 12;
+    /** 15 byte size. */
+    public static final int SIZE_15 = 15;
     /** 16 byte size. */
     public static final int SIZE_16 = 16;
     /** 20 byte size. */
     public static final int SIZE_20 = 20;
+    /** 21 byte size. */
+    public static final int SIZE_21 = 21;
+    /** 22 byte size. */
+    public static final int SIZE_22 = 22;
+    /** 23 byte size. */
+    public static final int SIZE_23 = 23;
+    /** 24 byte size. */
+    public static final int SIZE_24 = 24;
     /** 28 byte size. */
     public static final int SIZE_28 = 28;
     /** 32 byte size. */
     public static final int SIZE_32 = 32;
     /** 40 byte size. */
     public static final int SIZE_40 = 40;
+    /** 128 byte size. */
+    public static final int SIZE_128 = 128;
     /** 256 byte size. */
     public static final int SIZE_256 = 256;
     /** 1 byte offset. */
@@ -47,6 +61,10 @@ public final class UefiConstants {
     public static final int OFFSET_16 = 16;
     /** 20 byte offset. */
     public static final int OFFSET_20 = 20;
+    /** 21 byte offset. */
+    public static final int OFFSET_21 = 21;
+    /** 22 byte offset. */
+    public static final int OFFSET_22 = 22;
     /** 24 byte offset. */
     public static final int OFFSET_24 = 24;
     /** 28 byte offset. */

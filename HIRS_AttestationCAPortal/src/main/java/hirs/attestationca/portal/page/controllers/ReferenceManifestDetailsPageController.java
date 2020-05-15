@@ -13,7 +13,8 @@ import java.nio.file.NoSuchFileException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-
+import java.security.NoSuchAlgorithmException;
+import java.security.cert.CertificateException;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -106,9 +107,12 @@ public class ReferenceManifestDetailsPageController
      * @param referenceManifestManager the reference manifest manager.
      * @return mapping of the RIM information from the database.
      * @throws java.io.IOException error for reading file bytes.
+     * @throws NoSuchAlgorithmException If an unknown Algorithm is encountered.
+     * @throws CertificateException if a certificate doesn't parse.
      */
     public static HashMap<String, Object> getRimDetailInfo(final UUID uuid,
-            final ReferenceManifestManager referenceManifestManager) throws IOException {
+            final ReferenceManifestManager referenceManifestManager) throws IOException,
+                                              CertificateException, NoSuchAlgorithmException {
         HashMap<String, Object> data = new HashMap<>();
 
         ReferenceManifest rim = ReferenceManifest
