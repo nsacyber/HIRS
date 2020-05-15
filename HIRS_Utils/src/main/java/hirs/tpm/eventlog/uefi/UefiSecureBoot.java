@@ -43,11 +43,11 @@ public int getSecurBootVariable() {
 public String toString() {
   if (!berror) {
   if (secureBootVar == 1) {
-      info += "    Secure Boot is enabled \n";
+      info += " Secure Boot is enabled   ";
    } else if (secureBootVar == 0) {
-      info += "    Secure Boot is NOT enabled \n";
+      info += " Secure Boot is NOT enabled   ";
    } else {
-      info += " Unkown State: Secure Variable is undefined \n";
+      info += " Unkown State: Secure Variable is undefined   ";
    }
   }
  return info;

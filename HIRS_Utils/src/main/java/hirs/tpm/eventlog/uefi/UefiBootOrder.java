@@ -31,6 +31,7 @@ public String toString() {
  for (int i = 0; i < bootOrder.length; i++) {
     orderList.append(String.format("Boot %04d", (int) bootOrder[i]));
  }
+ //orderList.append("\n");
  return orderList.toString();
  }
 }

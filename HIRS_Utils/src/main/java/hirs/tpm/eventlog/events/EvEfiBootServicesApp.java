@@ -122,11 +122,11 @@ public class EvEfiBootServicesApp {
     info += "  Image physical address: " + HexUtils.byteArrayToHexString(physicalAddress);
     info += " Image length = " + imageLength;
     info += " Image link time address: " + HexUtils.byteArrayToHexString(physicalAddress);
-    info += " Device path length = " + devicePathLength + "\n";
+    info += " Device path length = " + devicePathLength;
     if (devicePathValid) {
-        info += devPath.toString();
+        info += "\n" + devPath.toString();
     } else {
-        info += "   Error processing device path" + "\n";
+        info += "\n   Error processing device path" + "\n";
     }
     return info;
     }
