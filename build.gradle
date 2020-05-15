@@ -119,7 +119,7 @@ subprojects {
                       'com.fasterxml.jackson.core:jackson-databind:2.6.3',
                       'com.fasterxml.jackson.core:jackson-annotations:2.6.3'],
       jadira_usertype: 'org.jadira.usertype:usertype.core:4.0.0.GA',
-      jcommander:    'com.beust:jcommander:1.35',
+      jcommander:    'com.beust:jcommander:1.72',
       joda_time:     'joda-time:joda-time:2.9.4',
       jstl:        [ 'org.apache.taglibs:taglibs-standard-impl:1.2.5',
                      'org.apache.taglibs:taglibs-standard-spec:1.2.5'],
