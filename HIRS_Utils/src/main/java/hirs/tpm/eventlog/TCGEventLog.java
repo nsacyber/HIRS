@@ -244,24 +244,9 @@ public final class TCGEventLog {
     public String toString() {
         StringBuilder sb = new StringBuilder();
         for (TpmPcrEvent event:eventList) {
-            if (bEvent) {
-                sb.append(event.toString());
-            }
-            if (bHexEvent) {
-                byte[] eventData = event.getEvent();
-                sb.append("Event (Hex no Content) (" + eventData.length + " bytes): "
-                        + HexUtils.byteArrayToHexString(eventData) + "\n");
-            }
-            if (bContent) {
-                byte[] eventContent = event.getEventContent();
-                sb.append("Event content (Hex) (" + eventContent.length + " bytes): "
-                        + HexUtils.byteArrayToHexString(eventContent) + "\n");
-            }
-            if (bEvent || bHexEvent || bContent) {
-                sb.append("\n");
-            }
+            sb.append(event.toString(bEvent, bHexEvent, bContent));
        }
-        sb.append("Event Log proessing completed.\n");
+        sb.append("Event Log processing completed.\n");
        return sb.toString();
     }
     /**

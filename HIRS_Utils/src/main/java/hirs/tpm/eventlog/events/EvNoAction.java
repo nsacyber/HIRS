@@ -66,13 +66,13 @@ public class EvNoAction {
            if (bSpecIDEvent) {
                specInfo += "   Signature = Spec ID Event03 : ";
                if (specIDEvent.isCryptoAgile()) {
-                   specInfo += "Log format is Crypto Agile \n";
+                   specInfo += "Log format is Crypto Agile\n";
                } else {
-                   specInfo += "Log format is SHA 1 (NOT Crypto Agile) \n";
+                   specInfo += "Log format is SHA 1 (NOT Crypto Agile)\n";
+               }
                specInfo += "   Platform Profile Specification version = "
                   + specIDEvent.getVersionMajor() + "." + specIDEvent.getVersionMinor()
-                  + " using errata version " + specIDEvent.getErrata() + "\n";
-               }
+                  + " using errata version " + specIDEvent.getErrata();
            }  else {
                specInfo = "EV_NO_ACTION event named " + signature
          + " encountered but support for processing it has not been added to this application.\n";
