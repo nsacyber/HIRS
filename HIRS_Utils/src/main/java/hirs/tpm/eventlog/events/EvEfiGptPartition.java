@@ -119,7 +119,10 @@ public class EvEfiGptPartition {
      partitionInfo.append("GPT Header Signature = " + headerStr + " : Number of Paritions = "
                                                                 + numberOfPartitions + "\n");
      for (int i = 0; i < numberOfPartitions; i++) {
-       partitionInfo.append("Partition " + i + " information\n");
+       if (i > 0)  {
+           partitionInfo.append("\n");
+       }
+       partitionInfo.append("  Partition " + i + " information\n");
        partitionInfo.append(partitionList.get(i).toString());
      }
     return partitionInfo.toString();

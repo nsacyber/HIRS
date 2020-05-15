@@ -169,7 +169,7 @@ public class EvEfiSpecIdEvent {
        String specInfo = "";
        if (signature == "Spec ID Event#")  {
            specInfo += "Platform Profile Specification version = " + vMaj + "." + vMin
-                                                   + " using errata version" + errata + "\n";
+                                                   + " using errata version" + errata;
        } else {
            specInfo = "EV_NO_ACTION event named " + signature
         + " ecncountered but support for processing it has not been added to this application";

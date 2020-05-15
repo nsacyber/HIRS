@@ -101,7 +101,7 @@ public class EvEfiHandoffTable {
              tableInfo.append("  UEFI industry standard table type = "
                                             + currentGuid.getVendorTableReference() + "\n");
              tableInfo.append("  VendorTable " + i + " address: "
-                                  + HexUtils.byteArrayToHexString(vendorTables.get(i)) + "\n");
+                                  + HexUtils.byteArrayToHexString(vendorTables.get(i)));
              }
          return tableInfo.toString();
     }

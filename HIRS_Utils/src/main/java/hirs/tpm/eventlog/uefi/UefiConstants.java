@@ -53,6 +53,8 @@ public final class UefiConstants {
     public static final int OFFSET_3 = 3;
     /** 4 byte offset. */
     public static final int OFFSET_4 = 4;
+    /** 5 byte offset. */
+    public static final int OFFSET_5 = 5;
     /** 6 byte offset. */
     public static final int OFFSET_6 = 4;
     /** 8 byte offset. */
@@ -89,6 +91,8 @@ public final class UefiConstants {
     public static final int DEV_MEDIA = 0x04;
     /** Device Type Hardware. */
     public static final int DEV_BIOS = 0x05;
+    /** Device Sub-Type USV. */
+    public static final int DEV_SUB_USB = 0x05;
     /** Device Sub-Type Sata. */
     public static final int DEV_SUB_SATA = 0x12;
    /** Device Sub-Type nvm. */

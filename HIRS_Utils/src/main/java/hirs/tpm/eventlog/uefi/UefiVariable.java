@@ -143,6 +143,8 @@ public String toString() {
   String tmpName = varName;
   if (varName.contains("Boot00")) {
       tmpName = "Boot00";
+  } else {
+      tmpName = varName;
   }
   switch (tmpName) {
      case "Shim":       efiVariable.append(printCert(uefiVaribelData, 0)); break;
@@ -150,7 +152,12 @@ public String toString() {
      case "Boot00":     efiVariable.append(bootv.toString()); break;
      case "BootOrder":  efiVariable.append(booto.toString()); break;
      case "SecureBoot": efiVariable.append(sb.toString()); break;
-     default: efiVariable.append("Data not provided for  UEFI var named " + tmpName + "\n");
+     default:
+         if (!tmpName.isEmpty()) {
+             efiVariable.append("Data not provided for UEFI variable named " + tmpName + "   ");
+         } else {
+             efiVariable.append("Data not provided   ");
+         }
      }
   for (int i = 0; i < certSuperList.size(); i++) {
         efiVariable.append(certSuperList.get(i).toString());
@@ -175,7 +182,7 @@ public String printCert(final byte[] data, final int offset) {
       UefiX509Cert cert = new UefiX509Cert(certData);
       certInfo = cert.toString();
       } catch (Exception e) {
-         certInfo = "Error Processing Certificate : " + e.getMessage() + "\n";
+         certInfo = "Error Processing Certificate : " + e.getMessage();
       }
   return (certInfo);
  }

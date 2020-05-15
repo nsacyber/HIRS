@@ -84,26 +84,24 @@ public class UefiDevicePath {
  */
  private String processDevPath(final byte[] path) throws UnsupportedEncodingException {
   StringBuilder pInfo = new StringBuilder();
-  String devicePathInfo = "";
-  int devLength = 0, pathOffset = 0;
+  int devLength = 0, pathOffset = 0, devCount = 0;
   while (true) {
   Byte devPath = Byte.valueOf(path[pathOffset]);
   if ((devPath.intValue() == UefiConstants.TERMINATOR)
           || (devPath.intValue() == UefiConstants.END_FLAG)) {
     break;
   }
-  devicePathInfo = processDev(path, pathOffset);
-  if (devicePathInfo.contains("Unknown Device Path")) {
+  if (devCount++ > 0) {
+      pInfo.append("\n");
+  }
+  pInfo.append(processDev(path, pathOffset));
+  devLength = path[pathOffset + UefiConstants.OFFSET_3] * UefiConstants.SIZE_256
+            + path[pathOffset + UefiConstants.OFFSET_2];
+  pathOffset = pathOffset + devLength;
+  if (pathOffset >= path.length) {
       break;
-      }
-     pInfo.append(devicePathInfo);
-     devLength = path[pathOffset + UefiConstants.OFFSET_3] * UefiConstants.SIZE_256
-             + path[pathOffset + UefiConstants.OFFSET_2];
-     pathOffset = pathOffset + devLength;
-     if (pathOffset >= path.length) {
-         break;
-     }
-    }
+   }
+ }
  return pInfo.toString();
 }
 
@@ -120,6 +118,7 @@ public class UefiDevicePath {
                               throws UnsupportedEncodingException {
   String devInfo = "    ";
   int devPath = path[offset];
+  byte unknownSubType = path[offset + UefiConstants.OFFSET_1];
   switch (path[0 + offset]) {
     case UefiConstants.DEV_HW: type = "Hardware Device Path";
          if (devPath == UefiConstants.DEVPATH_HARWARE) {
@@ -132,9 +131,12 @@ public class UefiDevicePath {
     case UefiConstants.DEV_MSG: type = "Messaging Device Path";
          if (path[offset + UefiConstants.OFFSET_1] == UefiConstants.DEV_SUB_SATA) {
              devInfo += type + ": " + sataSubType(path, offset);
-         }
-         if (path[offset + UefiConstants.OFFSET_1] == UefiConstants.DEV_SUB_NVM) {
+         } else if (path[offset + UefiConstants.OFFSET_1] == UefiConstants.DEV_SUB_NVM) {
              devInfo += type + ": " + nvmSubType(path, offset);
+         } else if (path[offset + UefiConstants.OFFSET_1] == UefiConstants.DEV_SUB_USB) {
+             devInfo += type + ": " + usbSubType(path, offset);
+         } else {
+             devInfo += "UEFI Messaging Device Path Type " + Integer.valueOf(unknownSubType);
          }
          break;
     case UefiConstants.DEV_MEDIA: type = "Media Device Path";
@@ -148,6 +150,8 @@ public class UefiDevicePath {
              devInfo += type + ": " + piwgFirmVolFile(path, offset);
          } else if (path[offset + UefiConstants.OFFSET_1] == UefiConstants.DEVPATH_PWIG_VOL) {
              devInfo += type + ": " + piwgFirmVolPath(path, offset);
+         } else {
+             devInfo += "UEFI Media Device Path Type " + Integer.valueOf(unknownSubType);
          }
          break;
     case UefiConstants.DEV_BIOS: type = "BIOS Device Path";
@@ -155,11 +159,10 @@ public class UefiDevicePath {
          break;
     case UefiConstants.TERMINATOR: devInfo += "End of Hardware Device Path";
          break;
-    default: type = "Unknown Device Path";
-         devInfo = type;
+    default:
+         devInfo += "UEFI Device Path Type " + Integer.valueOf(unknownSubType);
   }
-    devInfo += "\n";
-    return devInfo;
+  return devInfo;
 }
 
 /**
@@ -318,7 +321,27 @@ private String vendorSubType(final byte[] path, final int offset) {
 }
 
 /**
- * Returns nvm device info.
+ * Returns USB device info.
+ * UEFI Specification, Version 2.8.
+ * @param path
+ * @param offset
+ * @return USB device info.
+ */
+private String usbSubType(final byte[] path, final int offset) {
+  subType = " USB ";
+  subType += " port = " + Integer.valueOf(path[offset + UefiConstants.OFFSET_4]);
+  subType += " interface = " + Integer.valueOf(path[offset + UefiConstants.OFFSET_5]);
+  byte[] lengthBytes = new byte[UefiConstants.SIZE_2];
+  System.arraycopy(path, UefiConstants.OFFSET_2 + offset, lengthBytes, 0, UefiConstants.SIZE_2);
+  int subTypeLength = HexUtils.leReverseInt(lengthBytes);
+  byte[] usbData = new byte[subTypeLength];
+  System.arraycopy(path, UefiConstants.OFFSET_4 + offset, usbData, 0, subTypeLength);
+  // Todo add further USB processing ...
+  return subType;
+}
+
+/**
+ * Returns NVM device info.
  * UEFI Specification, Version 2.8.
  * Name space Identifier (NSID) and IEEE Extended Unique Identifier (EUI-64):
  * See Links to UEFI Related Documents

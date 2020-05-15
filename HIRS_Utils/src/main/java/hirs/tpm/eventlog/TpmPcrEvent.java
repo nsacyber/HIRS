@@ -21,6 +21,7 @@ import hirs.tpm.eventlog.events.EvNoAction;
 import hirs.tpm.eventlog.events.EvPostCode;
 import hirs.tpm.eventlog.events.EvSCrtmContents;
 import hirs.tpm.eventlog.events.EvSCrtmVersion;
+import hirs.tpm.eventlog.uefi.UefiConstants;
 import hirs.tpm.eventlog.uefi.UefiFirmware;
 import hirs.tpm.eventlog.uefi.UefiVariable;
 import hirs.utils.HexUtils;
@@ -248,9 +249,12 @@ public class TpmPcrEvent {
         description += "Event Type: 0x" + Long.toHexString(eventType) + " " + eventString(eventID);
         description += "\n";
         if (logFormat == 1) {   // Digest
-            description += "digest (SHA-1): " + HexUtils.byteArrayToHexString(this.digest) + "\n";
+            description += "digest (SHA-1): " + HexUtils.byteArrayToHexString(this.digest);
         } else {
-            description += "digest (SHA256): " + HexUtils.byteArrayToHexString(this.digest) + "\n";
+            description += "digest (SHA256): " + HexUtils.byteArrayToHexString(this.digest);
+        }
+        if (eventID != UefiConstants.SIZE_4) {
+            description += "\n";
         }
         // Calculate both the SHA1 and SHA256 on the event since this will equal the digest
         // field of about half the log messages.
@@ -267,7 +271,7 @@ public class TpmPcrEvent {
             break;
             case EvConstants.EV_POST_CODE:
                 EvPostCode postCode = new EvPostCode(eventContent);
-                   description += "Event Content:\n" + postCode.toString() + "\n";
+                   description += "Event Content:\n" + postCode.toString();
             break;
             case EvConstants.EV_UNUSED:
                 break;
@@ -284,25 +288,25 @@ public class TpmPcrEvent {
                 if (EvPostCode.isAscii(eventContent)) {
                     String seperatorEventData = new String(eventContent, StandardCharsets.UTF_8);
                     if (!this.isEmpty(eventContent)) {
-                        description += "Seperator event content = " + seperatorEventData + "\n";
+                        description += "Seperator event content = " + seperatorEventData;
                     }
                    }
                 break;
             case EvConstants.EV_ACTION:
                 description += "Event Content:\n"
-                                      + new String(eventContent, StandardCharsets.UTF_8) + "\n";
+                                      + new String(eventContent, StandardCharsets.UTF_8);
                 break;
             case EvConstants.EV_EVENT_TAG:
                 EvEventTag eventTag = new EvEventTag(eventContent);
-                description += eventTag.toString() + "\n";
+                description += eventTag.toString();
                 break;
             case EvConstants.EV_S_CRTM_CONTENTS:
                 EvSCrtmContents sCrtmContents = new EvSCrtmContents(eventContent);
-                description += "Event Content:\n   " + sCrtmContents.toString() + "\n";
+                description += "Event Content:\n   " + sCrtmContents.toString();
                 break;
             case EvConstants.EV_S_CRTM_VERSION:
                 EvSCrtmVersion sCrtmVersion = new EvSCrtmVersion(eventContent);
-                description += "Event Content:\n" + sCrtmVersion.toString() + "\n";
+                description += "Event Content:\n" + sCrtmVersion.toString();
                 break;
             case EvConstants.EV_CPU_MICROCODE:
                 break;
@@ -312,11 +316,11 @@ public class TpmPcrEvent {
                 break;
             case EvConstants.EV_COMPACT_HASH:
                 EvCompactHash compactHash =  new EvCompactHash(eventContent);
-                description += "Event Content:\n" + compactHash.toString() + "\n";
+                description += "Event Content:\n" + compactHash.toString();
                 break;
             case EvConstants.EV_IPL:
                 EvIPL ipl = new EvIPL(eventContent);
-                description += "Event Content:\n" + ipl.toString() + "\n";
+                description += "Event Content:\n" + ipl.toString();
                 break;
             case EvConstants.EV_IPL_PARTITION_DATA:
                 break;
@@ -353,11 +357,11 @@ public class TpmPcrEvent {
                 description += "Event Content:\n" + new EvEfiGptPartition(eventContent).toString();
                 break;
             case EvConstants.EV_EFI_ACTION:
-                description += new String(eventContent, StandardCharsets.UTF_8) + "\n";
+                description += new String(eventContent, StandardCharsets.UTF_8);
                 break;
             case EvConstants.EV_EFI_PLATFORM_FIRMWARE_BLOB:
                 description += "Event Content:\n"
-                                    + new UefiFirmware(eventContent).toString() + "\n";
+                                    + new UefiFirmware(eventContent).toString();
                 break;
             case EvConstants.EV_EFI_HANDOFF_TABLES:
                 EvEfiHandoffTable efiTable = new EvEfiHandoffTable(eventContent);
@@ -491,6 +495,37 @@ public class TpmPcrEvent {
       * @return Description of the log.
       */
      public String toString() {
-        return description;
+        return description + "\n";
+     }
+
+     /**
+      * Human readable string representing the contents of the Event Log.
+      * @param bEvent event Flag.
+      * @param bContent content flag.
+      * @param  bHexEvent hex event flag.
+      * @return Description of the log.
+      */
+     public String toString(final boolean bEvent, final boolean bContent, final boolean bHexEvent) {
+         StringBuilder sb = new StringBuilder();
+         if (bEvent) {
+             sb.append(description);
+         }
+         if (bHexEvent) {
+             if (bEvent || bContent) {
+                 sb.append("\n");
+             }
+             byte[] eventData = getEvent();
+             sb.append("Event (Hex no Content) (" + eventData.length + " bytes): "
+                     + HexUtils.byteArrayToHexString(eventData));
+         }
+         if (bContent) {
+             byte[] evContent = getEventContent();
+             if (bEvent) {
+                 sb.append("\n");
+             }
+             sb.append("Event content (Hex) (" + evContent.length + " bytes): "
+                     + HexUtils.byteArrayToHexString(evContent));
+         }
+        return sb.toString() + "\n";
      }
 }
