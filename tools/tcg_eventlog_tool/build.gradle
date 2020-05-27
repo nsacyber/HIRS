@@ -1,0 +1,55 @@
+apply plugin: 'java'
+apply plugin: 'findbugs'
+apply plugin: 'checkstyle'
+
+version = '1.0'
+
+repositories {
+	mavenCentral()
+}
+
+dependencies {
+    compile project(':HIRS_Utils')
+    compile libs.jcommander
+
+    compileOnly libs.checkstyle
+    compileOnly libs.findbugs
+
+    testCompile libs.testng
+}
+
+ext.configDir = new File(projectDir, 'config')
+ext.checkstyleConfigDir = "$configDir/checkstyle"
+checkstyle {
+    toolVersion = '5.7'
+    configFile = checkstyleConfigFile
+    configProperties.put('basedir', checkstyleConfigDir)
+    ignoreFailures = false
+    showViolations = true
+}
+
+ext.findbugsConfigDir = "$configDir/findbugs"
+
+findbugs {
+    toolVersion = '3.0.0'
+    ignoreFailures = false
+    effort = 'max'
+}
+
+jar {
+	manifest {
+		attributes("Main-Class": "hirs.tcg_eventlog.Main",
+			   "Class-Path": configurations.runtime.files.collect { "lib/$it.name" }.join(' ')
+			  )
+	}
+	from(configurations.compile.collect { it.isDirectory() ? it : zipTree(it) }) {}
+	exclude 'META-INF/*.RSA', 'META-INF/*.SF', 'META-INF/*.DSA'
+}
+
+uploadArchives {
+	repositories {
+		flatDir {
+			dirs "${buildDir}"
+		}
+	}
+}
