@@ -37,6 +37,7 @@ public class Commander {
     private boolean bPCRs = false;
     private boolean bVerify = false;
     private boolean bHelp = false;
+    private boolean bDone = false;
 
     private String inFile = "";
     private String inFile2  = "";
@@ -103,12 +104,14 @@ public class Commander {
                     } else {
                         inFile = args[i++  + 1];
                         inFile2 = args[i++ + 1];
+                        /*
                         if (args.length > i + 1) {
                             if (!args[i + 1].contains("-")) { // pcr filter provided
                                 eventFilter = args[i++ + 1];
                                 eventNumber = Integer.parseInt(eventFilter);
                             }
                         }
+                        */
                         bDiff = true;
                     }
                     break;
@@ -141,8 +144,8 @@ public class Commander {
                     break;
                 case FULL_COMMAND_PREFIX + VERSION_STRING:
                 case COMMAND_PREFIX + "v":
-                    System.out.print("TCG Event Log Parser version " + VERSION_NUMBER);
-                    bValidArgs = false;
+                    System.out.print("TCG Event Log Parser version " + VERSION_NUMBER + "\n");
+                    bDone = true;
                     break;
                 case FULL_COMMAND_PREFIX + VERIFY_STRING:
                 case COMMAND_PREFIX + "V":
@@ -153,9 +156,9 @@ public class Commander {
                     bHex = true;
                     break;
                 case FULL_COMMAND_PREFIX + HELP_STRING:
+                case COMMAND_PREFIX + "h":
                     bHelp = true;
                     break;
-                case COMMAND_PREFIX + "h":
                 default:
                     printHelp("");
                     bValidArgs = false;
@@ -171,13 +174,19 @@ public class Commander {
     public final boolean hasArguments() {
         return hasArguments;
     }
-
     /**
-     * Getter for the input All flag.
+     * Getter for the validity of the commands.
      * @return true if the All flag was set.
      */
     public final boolean getValidityFlag() {
         return bValidArgs;
+    }
+    /**
+     * Getter for the Done flag.
+     * @return true if the Done flag was set.
+     */
+    public final boolean getDoneFlag() {
+        return bDone;
     }
     /**
      * Getter for the help flag.
@@ -193,7 +202,6 @@ public class Commander {
     public final boolean getPCRFlag() {
         return bPCRs;
     }
-
     /**
      * Getter for the input associated with the Event flag.
      * @return true if the Event Flag was set.
@@ -201,7 +209,6 @@ public class Commander {
     public final boolean getContentFlag() {
         return bContentHex;
     }
-
     /**
      * Getter for the input associated with the Event Hex flag.
      * @return true if the Hex Flag was set.
@@ -216,7 +223,6 @@ public class Commander {
     public final boolean getHexFlag() {
         return bHex;
     }
-
     /**
      * Getter for the input associated with the EventIds flag.
      * @return true of EventIds Flag was set.
@@ -224,7 +230,6 @@ public class Commander {
     public final boolean getEventIdsFlag() {
         return bEventIds;
     }
-
     /**
      * Getter for the input associated with the File flag.
      * @return true if File Flag was set.
@@ -239,7 +244,6 @@ public class Commander {
     public final boolean getDiffFlag() {
         return bDiff;
     }
-
     /**
      * Getter for the input associated with the Verify flag.
      * @return true if the verify flag was set
@@ -324,9 +328,9 @@ public class Commander {
                 + "\n\t\t\t Following parameter MUST be a path and file name."
                 + "\n\t\t\t The local Event Log file will be used if this option is not present."
                 + "\n\t\t\t Note: Access to the local Event Log may require admin privileges.\n"
-                + "  -e\t--event\t\t Display event descriptions (including event content) in "
+                + "  -e\t--event\t Display event descriptions (including event content) in "
                 + "human readable form."
-                + "\n\t\t\t Following optional parameter is a single pcr id used to filter"
+                + "\n\t\t\t Following optional parameter is a single event number used to filter"
                 + " the output."
                 + "\n\t\t\t All events will be displayed if the optional parameter is not +"
                 + "provided.\n"
@@ -344,7 +348,7 @@ public class Commander {
                 + "\n\t\t\t No following parameters will display all PCRs.\n"
                 + "  -v\t--version\t Parser Version.\n"
 //                + "  -V\t--Verify\t Attempts to verify the log file against values."
-                + "  -x\t--hex\t\t Displays output in hex format."
+                + "  -x\t--hex\t\t Displays event in hex format. Use with -ec to get content."
                 + "\n\t\t\t Use -e -ec and -ex options to filter output."
                 + "\n\t\t\t All output will be human readble form if not present."
                 + "\n\n");

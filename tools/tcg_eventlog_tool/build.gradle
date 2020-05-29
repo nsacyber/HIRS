@@ -1,6 +1,7 @@
 apply plugin: 'java'
 apply plugin: 'findbugs'
 apply plugin: 'checkstyle'
+apply plugin: 'nebula.ospackage'
 
 version = '1.0'
 
@@ -11,10 +12,10 @@ repositories {
 dependencies {
     compile project(':HIRS_Utils')
     compile libs.jcommander
-
+    compile libs.commons_io
+    compile libs.log4j2
     compileOnly libs.checkstyle
     compileOnly libs.findbugs
-
     testCompile libs.testng
 }
 
@@ -52,4 +53,64 @@ uploadArchives {
 			dirs "${buildDir}"
 		}
 	}
+}
+
+buildscript {
+    repositories {
+        mavenCentral()
+    }
+    dependencies {
+        classpath 'com.netflix.nebula:gradle-ospackage-plugin:4.9.3'
+    }
+}
+
+// Produce packages
+ospackage {
+    packageName='tcgeventlogtool'
+    os=LINUX
+    arch=NOARCH
+    version='1.0.0'
+    release='1'
+
+    into '/opt/hirs/eventlog'
+    user 'root'
+    fileMode=0755
+
+    from(jar.outputs.files) {
+        into 'lib'
+    }
+    from('lib') {
+        into 'lib'
+    }
+    from(configurations.runtime) {
+        into 'lib'
+    }
+    from('scripts') {
+        exclude {
+            FileTreeElement details ->
+            details.file.name.endsWith('.bat')
+        }
+        into 'scripts'
+    }
+    from('docs') {
+        exclude {
+            FileTreeElement details ->
+            details.file.name.endsWith('.odt')
+        }
+        into 'docs'
+    }
+    from('./') {
+        include {
+            FileTreeElement details ->
+            details.file.name.endsWith('.md')
+        }
+        into './'
+    link("/usr/local/bin/elt","/opt/hirs/eventlog/scripts/eventlog.sh",0x755 ) 
+    }
+buildRpm {
+    arch = I386
+}
+buildDeb {
+    arch = I386
+}
 }
