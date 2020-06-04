@@ -89,6 +89,12 @@ public class ReferenceManifest extends ArchivableEntity {
         public Selector(final ReferenceManifestManager referenceManifestManager) {
             super(referenceManifestManager);
         }
+
+        /**
+         * Specify a manufacturer that certificates must have to be considered as matching.
+         * @param rimType the manufacturer to query, not empty or null
+         * @return this instance (for chaining further calls)
+         */
     }
 
     @Column

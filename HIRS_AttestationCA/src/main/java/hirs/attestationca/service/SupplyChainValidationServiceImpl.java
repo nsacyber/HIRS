@@ -8,6 +8,7 @@ import java.security.cert.CertificateException;
 
 import hirs.data.persist.TPMMeasurementRecord;
 import hirs.data.persist.baseline.TPMBaseline;
+import hirs.data.persist.SwidResource;
 import hirs.validation.SupplyChainCredentialValidator;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -36,8 +37,10 @@ import hirs.data.persist.certificate.CertificateAuthorityCredential;
 import hirs.data.persist.certificate.EndorsementCredential;
 import hirs.data.persist.certificate.PlatformCredential;
 import hirs.data.persist.certificate.IssuedAttestationCertificate;
+import hirs.data.persist.ReferenceManifest;
 import hirs.persist.AppraiserManager;
 import hirs.persist.CertificateManager;
+import hirs.persist.ReferenceManifestManager;
 import hirs.persist.CertificateSelector;
 import hirs.persist.CrudManager;
 import hirs.persist.DBManagerException;
@@ -51,10 +54,11 @@ import static hirs.data.persist.AppraisalStatus.Status.FAIL;
 import static hirs.data.persist.AppraisalStatus.Status.PASS;
 
 /**
- * The main executor of supply chain verification tasks. The AbstractAttestationCertificateAuthority
- * will feed it the PC, EC, other relevant certificates, and serial numbers of the provisioning
- * task, and it will then manipulate the data as necessary, retrieve useful certs, and arrange
- * for actual validation by the SupplyChainValidator.
+ * The main executor of supply chain verification tasks. The
+ * AbstractAttestationCertificateAuthority will feed it the PC, EC, other
+ * relevant certificates, and serial numbers of the provisioning task, and it
+ * will then manipulate the data as necessary, retrieve useful certs, and
+ * arrange for actual validation by the SupplyChainValidator.
  */
 @Service
 @Import(PersistenceConfiguration.class)
@@ -62,19 +66,21 @@ public class SupplyChainValidationServiceImpl implements SupplyChainValidationSe
 
     private PolicyManager policyManager;
     private AppraiserManager appraiserManager;
+    private ReferenceManifestManager referenceManifestManager;
     private CertificateManager certificateManager;
     private CredentialValidator supplyChainCredentialValidator;
     private CrudManager<SupplyChainValidationSummary> supplyChainValidatorSummaryManager;
 
-    private static final Logger LOGGER =
-            LogManager.getLogger(SupplyChainValidationServiceImpl.class);
-
+    private static final Logger LOGGER
+            = LogManager.getLogger(SupplyChainValidationServiceImpl.class);
 
     /**
      * Constructor.
+     *
      * @param policyManager the policy manager
      * @param appraiserManager the appraiser manager
      * @param certificateManager the cert manager
+     * @param referenceManifestManager the RIM manager
      * @param supplyChainValidatorSummaryManager the summary manager
      * @param supplyChainCredentialValidator the credential validator
      */
@@ -82,19 +88,21 @@ public class SupplyChainValidationServiceImpl implements SupplyChainValidationSe
     public SupplyChainValidationServiceImpl(final PolicyManager policyManager,
             final AppraiserManager appraiserManager,
             final CertificateManager certificateManager,
+            final ReferenceManifestManager referenceManifestManager,
             final CrudManager<SupplyChainValidationSummary> supplyChainValidatorSummaryManager,
             final CredentialValidator supplyChainCredentialValidator) {
         this.policyManager = policyManager;
         this.appraiserManager = appraiserManager;
         this.certificateManager = certificateManager;
+        this.referenceManifestManager = referenceManifestManager;
         this.supplyChainValidatorSummaryManager = supplyChainValidatorSummaryManager;
         this.supplyChainCredentialValidator = supplyChainCredentialValidator;
     }
 
     /**
-     * The "main" method of supply chain validation. Takes the credentials from an identity
-     * request and validates the supply chain in accordance to the current supply chain
-     * policy.
+     * The "main" method of supply chain validation. Takes the credentials from
+     * an identity request and validates the supply chain in accordance to the
+     * current supply chain policy.
      *
      * @param ec The endorsement credential from the identity request.
      * @param pcs The platform credentials from the identity request.
@@ -103,8 +111,8 @@ public class SupplyChainValidationServiceImpl implements SupplyChainValidationSe
      */
     @Override
     public SupplyChainValidationSummary validateSupplyChain(final EndorsementCredential ec,
-        final Set<PlatformCredential> pcs,
-        final Device device) {
+            final Set<PlatformCredential> pcs,
+            final Device device) {
         final Appraiser supplyChainAppraiser = appraiserManager.getAppraiser(
                 SupplyChainAppraiser.NAME);
         SupplyChainPolicy policy = (SupplyChainPolicy) policyManager.getDefaultPolicy(
@@ -170,7 +178,7 @@ public class SupplyChainValidationServiceImpl implements SupplyChainValidationSe
                         SupplyChainValidation.ValidationType.PLATFORM_CREDENTIAL,
                         AppraisalStatus.Status.FAIL,
                         "Platform credential(s) missing."
-                                + " Cannot validate attributes",
+                        + " Cannot validate attributes",
                         null, Level.ERROR));
             } else {
                 Iterator<PlatformCredential> it = pcs.iterator();
@@ -180,11 +188,11 @@ public class SupplyChainValidationServiceImpl implements SupplyChainValidationSe
 
                     if (pc != null) {
                         if (pc.isDeltaChain()) {
-                        // this check validates the delta changes and recompares
-                        // the modified list to the original.
+                            // this check validates the delta changes and recompares
+                            // the modified list to the original.
                             attributeScv = validateDeltaPlatformCredentialAttributes(
-                                            pc, device.getDeviceInfo(),
-                                            baseCredential, deltaMapping);
+                                    pc, device.getDeviceInfo(),
+                                    baseCredential, deltaMapping);
                         } else {
                             attributeScv = validatePlatformCredentialAttributes(
                                     pc, device.getDeviceInfo(), ec);
@@ -226,9 +234,9 @@ public class SupplyChainValidationServiceImpl implements SupplyChainValidationSe
             // may need to associated with device to pull the correct info
             // compare tpm quote with what is pulled from RIM associated file
             IssuedAttestationCertificate attCert = IssuedAttestationCertificate
-                .select(this.certificateManager)
-                .byDeviceId(device.getId())
-                .getCertificate();
+                    .select(this.certificateManager)
+                    .byDeviceId(device.getId())
+                    .getCertificate();
             PlatformCredential pc = PlatformCredential
                     .select(this.certificateManager)
                     .byDeviceId(device.getId())
@@ -238,8 +246,8 @@ public class SupplyChainValidationServiceImpl implements SupplyChainValidationSe
         }
 
         // Generate validation summary, save it, and return it.
-        SupplyChainValidationSummary summary =
-                new SupplyChainValidationSummary(device, validations);
+        SupplyChainValidationSummary summary
+                = new SupplyChainValidationSummary(device, validations);
         if (baseCredential != null) {
             baseCredential.setComponentFailures(summary.getMessage());
             this.certificateManager.update(baseCredential);
@@ -252,10 +260,16 @@ public class SupplyChainValidationServiceImpl implements SupplyChainValidationSe
         return summary;
     }
 
+            /**
+             * TDM: I need to compare the manufacturer id, name and model load
+             * that RIM file and associated eventlog, pull that flag for sha 1
+             * or 256 and then compare pcrs
+             */
+
     /**
-     * This method is a sub set of the validate supply chain method and focuses on the specific
-     * multibase validation check for a delta chain.  This method also includes the check
-     * for delta certificate CA validation as well.
+     * This method is a sub set of the validate supply chain method and focuses
+     * on the specific multibase validation check for a delta chain. This method
+     * also includes the check for delta certificate CA validation as well.
      *
      * @param pc The platform credential getting checked
      * @param platformScv The validation record
@@ -309,9 +323,8 @@ public class SupplyChainValidationServiceImpl implements SupplyChainValidationSe
     }
 
     private SupplyChainValidation validateFirmware(final PlatformCredential pc,
-                                                   final IssuedAttestationCertificate attCert) {
-        // get the baseline?
-        // how does one does that!
+            final IssuedAttestationCertificate attCert) {
+
         TPMBaseline tpmBline;
         String[] baseline = new String[Integer.SIZE];
         Level level = Level.ERROR;
@@ -334,31 +347,56 @@ public class SupplyChainValidationServiceImpl implements SupplyChainValidationSe
                 }
             }
 
-            StringBuilder sb = new StringBuilder();
-            fwStatus = new AppraisalStatus(PASS,
-                    SupplyChainCredentialValidator.FIRMWARE_VALID);
-            String failureMsg = "Firmware validation failed: PCR %d does not"
-                    + " match%n%tBaseline [%s] <> Device [%s]%n";
-            if (baseline[0].length() == pcrs1[0].length()) {
-                for (int i = 0; i <= TPMMeasurementRecord.MAX_PCR_ID; i++) {
-                    if (!baseline[i].equals(pcrs1[i])) {
-                        sb.append(String.format(failureMsg, i, baseline[i], pcrs1[i]));
-                        break;
-                    }
-                }
-            } else if (baseline[0].length() == pcrs256[0].length()) {
-                for (int i = 0; i <= TPMMeasurementRecord.MAX_PCR_ID; i++) {
-                    if (!baseline[i].equals(pcrs256[i])) {
-                        sb.append(String.format(failureMsg, i, baseline[i], pcrs256[i]));
-                        break;
-                    }
-                }
-            }
-            if (sb.length() > 0) {
-                level = Level.ERROR;
-                fwStatus = new AppraisalStatus(FAIL, sb.toString());
+            ReferenceManifest rim = ReferenceManifest.select(
+                    this.referenceManifestManager)
+                    .byManufacturer(pc.getManufacturer())
+                    .getRIM();
+
+            if (rim == null) {
+                fwStatus = new AppraisalStatus(FAIL, String.format("Firmware validation failed: "
+                        + "No associated RIM file could be found for %s",
+                        pc.getManufacturer()));
             } else {
-                level = Level.INFO;
+                StringBuilder sb = new StringBuilder();
+                fwStatus = new AppraisalStatus(PASS,
+                        SupplyChainCredentialValidator.FIRMWARE_VALID);
+                String failureMsg = "Firmware validation failed: PCR %d does not"
+                        + " match%n%tBaseline [%s] <> Device [%s]%n";
+
+                List<SwidResource> swids = rim.parseResource();
+                for (SwidResource swid : swids) {
+                    baseline = swid.getPcrValues()
+                            .toArray(new String[swid.getPcrValues().size()]);
+                }
+                /**
+                 * baseline is null. The purpose of the if check was to
+                 * determine to process doing pcrs1 or pcrs256. So I have to
+                 * rethink this.
+                 *
+                 * this goes back to not knowing if I should do one or the other
+                 * and how to make that a setting of some kind.
+                 */
+                if (baseline[0].length() == pcrs1[0].length()) {
+                    for (int i = 0; i <= TPMMeasurementRecord.MAX_PCR_ID; i++) {
+                        if (!baseline[i].equals(pcrs1[i])) {
+                            sb.append(String.format(failureMsg, i, baseline[i], pcrs1[i]));
+                            break;
+                        }
+                    }
+                } else if (baseline[0].length() == pcrs256[0].length()) {
+                    for (int i = 0; i <= TPMMeasurementRecord.MAX_PCR_ID; i++) {
+                        if (!baseline[i].equals(pcrs256[i])) {
+                            sb.append(String.format(failureMsg, i, baseline[i], pcrs256[i]));
+                            break;
+                        }
+                    }
+                }
+                if (sb.length() > 0) {
+                    level = Level.ERROR;
+                    fwStatus = new AppraisalStatus(FAIL, sb.toString());
+                } else {
+                    level = Level.INFO;
+                }
             }
         } else {
             fwStatus = new AppraisalStatus(FAIL, "Associated Issued Attestation"
@@ -370,7 +408,7 @@ public class SupplyChainValidationServiceImpl implements SupplyChainValidationSe
     }
 
     private SupplyChainValidation validateEndorsementCredential(final EndorsementCredential ec,
-                                                                final boolean acceptExpiredCerts) {
+            final boolean acceptExpiredCerts) {
         final SupplyChainValidation.ValidationType validationType
                 = SupplyChainValidation.ValidationType.ENDORSEMENT_CREDENTIAL;
         LOGGER.info("Validating endorsement credential");
@@ -399,9 +437,8 @@ public class SupplyChainValidationServiceImpl implements SupplyChainValidationSe
     }
 
     private SupplyChainValidation validatePlatformCredential(final PlatformCredential pc,
-                                                             final KeyStore
-                                                                     trustedCertificateAuthority,
-                                                             final boolean acceptExpiredCerts) {
+            final KeyStore trustedCertificateAuthority,
+            final boolean acceptExpiredCerts) {
         final SupplyChainValidation.ValidationType validationType
                 = SupplyChainValidation.ValidationType.PLATFORM_CREDENTIAL;
 
@@ -428,8 +465,8 @@ public class SupplyChainValidationServiceImpl implements SupplyChainValidationSe
     }
 
     private SupplyChainValidation validatePlatformCredentialAttributes(final PlatformCredential pc,
-           final DeviceInfoReport deviceInfoReport,
-           final EndorsementCredential ec) {
+            final DeviceInfoReport deviceInfoReport,
+            final EndorsementCredential ec) {
         final SupplyChainValidation.ValidationType validationType
                 = SupplyChainValidation.ValidationType.PLATFORM_CREDENTIAL;
 
@@ -461,8 +498,8 @@ public class SupplyChainValidationServiceImpl implements SupplyChainValidationSe
             final DeviceInfoReport deviceInfoReport,
             final PlatformCredential base,
             final Map<PlatformCredential, SupplyChainValidation> deltaMapping) {
-        final SupplyChainValidation.ValidationType validationType =
-                SupplyChainValidation.ValidationType.PLATFORM_CREDENTIAL;
+        final SupplyChainValidation.ValidationType validationType
+                = SupplyChainValidation.ValidationType.PLATFORM_CREDENTIAL;
 
         if (delta == null) {
             LOGGER.error("No delta certificate to validate");
@@ -489,8 +526,9 @@ public class SupplyChainValidationServiceImpl implements SupplyChainValidationSe
     }
 
     /**
-     * Creates a supply chain validation record and logs the validation
-     * message at the specified log level.
+     * Creates a supply chain validation record and logs the validation message
+     * at the specified log level.
+     *
      * @param validationType the type of validation
      * @param result the appraisal status
      * @param message the validation message to include in the summary and log
@@ -513,18 +551,19 @@ public class SupplyChainValidationServiceImpl implements SupplyChainValidationSe
     }
 
     /**
-     * This method is used to retrieve the entire CA chain (up to a
-     * trusted self-signed certificate) for the given certificate.  This method will look up
-     * CA certificates that have a matching issuer organization as the given certificate, and will
-     * perform that operation recursively until all certificates for all relevant organizations
-     * have been retrieved.  For that reason, the returned set of certificates may be larger
-     * than the the single trust chain for the queried certificate, but is guaranteed to include
-     * the trust chain if it exists in this class' CertificateManager.
+     * This method is used to retrieve the entire CA chain (up to a trusted
+     * self-signed certificate) for the given certificate. This method will look
+     * up CA certificates that have a matching issuer organization as the given
+     * certificate, and will perform that operation recursively until all
+     * certificates for all relevant organizations have been retrieved. For that
+     * reason, the returned set of certificates may be larger than the the
+     * single trust chain for the queried certificate, but is guaranteed to
+     * include the trust chain if it exists in this class' CertificateManager.
      * Returns the certificate authority credentials in a KeyStore.
      *
      * @param credential the credential whose CA chain should be retrieved
-     * @return A keystore containing all relevant CA credentials to the given certificate's
-     * organization or null if the keystore can't be assembled
+     * @return A keystore containing all relevant CA credentials to the given
+     * certificate's organization or null if the keystore can't be assembled
      */
     public KeyStore getCaChain(final Certificate credential) {
         KeyStore caKeyStore = null;
@@ -537,33 +576,37 @@ public class SupplyChainValidationServiceImpl implements SupplyChainValidationSe
     }
 
     /**
-     * This is a recursive method which is used to retrieve the entire CA chain (up to a
-     * trusted self-signed certificate) for the given certificate.  This method will look up
-     * CA certificates that have a matching issuer organization as the given certificate, and will
-     * perform that operation recursively until all certificates for all relevant organizations
-     * have been retrieved.  For that reason, the returned set of certificates may be larger
-     * than the the single trust chain for the queried certificate, but is guaranteed to include
-     * the trust chain if it exists in this class' CertificateManager.
+     * This is a recursive method which is used to retrieve the entire CA chain
+     * (up to a trusted self-signed certificate) for the given certificate. This
+     * method will look up CA certificates that have a matching issuer
+     * organization as the given certificate, and will perform that operation
+     * recursively until all certificates for all relevant organizations have
+     * been retrieved. For that reason, the returned set of certificates may be
+     * larger than the the single trust chain for the queried certificate, but
+     * is guaranteed to include the trust chain if it exists in this class'
+     * CertificateManager.
      *
-     * Implementation notes:
-     * 1. Queries for CA certs with a subject org matching the given (argument's) issuer org
-     * 2. Add that org to queriedOrganizations, so we don't search for that organization again
-     * 3. For each returned CA cert, add that cert to the result set, and recurse with that as the
-     *      argument (to go up the chain), if and only if we haven't already queried for that
-     *      organization (which prevents infinite loops on certs with an identical subject and
-     *      issuer org)
+     * Implementation notes: 1. Queries for CA certs with a subject org matching
+     * the given (argument's) issuer org 2. Add that org to
+     * queriedOrganizations, so we don't search for that organization again 3.
+     * For each returned CA cert, add that cert to the result set, and recurse
+     * with that as the argument (to go up the chain), if and only if we haven't
+     * already queried for that organization (which prevents infinite loops on
+     * certs with an identical subject and issuer org)
      *
      * @param credential the credential whose CA chain should be retrieved
-     * @param previouslyQueriedOrganizations a list of organizations to refrain from querying
-     * @return a Set containing all relevant CA credentials to the given certificate's organization
+     * @param previouslyQueriedOrganizations a list of organizations to refrain
+     * from querying
+     * @return a Set containing all relevant CA credentials to the given
+     * certificate's organization
      */
     private Set<CertificateAuthorityCredential> getCaChainRec(
             final Certificate credential,
             final Set<String> previouslyQueriedOrganizations
     ) {
-        CertificateSelector<CertificateAuthorityCredential> caSelector =
-                CertificateAuthorityCredential.select(certificateManager)
-                        .bySubjectOrganization(credential.getIssuerOrganization());
+        CertificateSelector<CertificateAuthorityCredential> caSelector
+                = CertificateAuthorityCredential.select(certificateManager)
+                .bySubjectOrganization(credential.getIssuerOrganization());
         Set<CertificateAuthorityCredential> certAuthsWithMatchingOrg = caSelector.getCertificates();
 
         Set<String> queriedOrganizations = new HashSet<>(previouslyQueriedOrganizations);

@@ -22,6 +22,7 @@ import hirs.data.persist.certificate.IssuedAttestationCertificate;
 import hirs.data.persist.certificate.PlatformCredential;
 import hirs.data.service.DeviceRegister;
 import hirs.persist.CertificateManager;
+import hirs.persist.ReferenceManifestManager;
 import hirs.persist.DBManager;
 import hirs.persist.DeviceManager;
 import hirs.persist.TPM2ProvisionerState;
@@ -152,6 +153,7 @@ public abstract class AbstractAttestationCertificateAuthority
     private final Integer validDays;
 
     private final CertificateManager certificateManager;
+    private final ReferenceManifestManager referenceManifestManager;
     private final DeviceRegister deviceRegister;
     private final DeviceManager deviceManager;
     private final DBManager<TPM2ProvisionerState> tpm2ProvisionerStateDBManager;
@@ -166,6 +168,7 @@ public abstract class AbstractAttestationCertificateAuthority
      * @param acaCertificate the ACA certificate
      * @param structConverter the struct converter
      * @param certificateManager the certificate manager
+     * @param referenceManifestManager the Reference Manifest manager
      * @param deviceRegister the device register
      * @param validDays the number of days issued certs are valid
      * @param deviceManager the device manager
@@ -177,6 +180,7 @@ public abstract class AbstractAttestationCertificateAuthority
             final PrivateKey privateKey, final X509Certificate acaCertificate,
             final StructConverter structConverter,
             final CertificateManager certificateManager,
+            final ReferenceManifestManager referenceManifestManager,
             final DeviceRegister deviceRegister, final int validDays,
             final DeviceManager deviceManager,
             final DBManager<TPM2ProvisionerState> tpm2ProvisionerStateDBManager) {
@@ -185,6 +189,7 @@ public abstract class AbstractAttestationCertificateAuthority
         this.acaCertificate = acaCertificate;
         this.structConverter = structConverter;
         this.certificateManager = certificateManager;
+        this.referenceManifestManager = referenceManifestManager;
         this.deviceRegister = deviceRegister;
         this.validDays = validDays;
         this.deviceManager = deviceManager;
