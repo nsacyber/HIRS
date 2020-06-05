@@ -4,8 +4,8 @@ project(cpr-download NONE)
 
 include(ExternalProject)
 ExternalProject_Add(cpr
-        GIT_REPOSITORY    https://github.com/whoshuu/cpr
-        GIT_TAG           1.3.0
+        URL               https://github.com/whoshuu/cpr/archive/1.3.0.zip
+        URL_HASH          SHA1=d669d94b41ffaa2de478923c35a83074e34fdc12
         SOURCE_DIR        "${CMAKE_BINARY_DIR}/lib/cpr-src"
         BINARY_DIR        "${CMAKE_BINARY_DIR}/lib/cpr-build"
         CONFIGURE_COMMAND ""
