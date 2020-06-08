@@ -150,15 +150,17 @@ public abstract class AbstractAttestationCertificateAuthority
      * Container wired application configuration property identifying the number of days that
      * certificates issued by this ACA are valid for.
      */
-    private Integer validDays;
+    private final Integer validDays;
 
     private final CertificateManager certificateManager;
     private final DeviceRegister deviceRegister;
     private final DeviceManager deviceManager;
     private final DBManager<TPM2ProvisionerState> tpm2ProvisionerStateDBManager;
     private String[] pcrsList;
+    private String[] pcrs256List;
     private String tpmQuoteHash;
     private String tpmSignatureHash;
+    private String pcrValues;
 
     /**
      * Constructor.
@@ -216,7 +218,6 @@ public abstract class AbstractAttestationCertificateAuthority
         // the decrypted symmetric blob should be in the format of an IdentityProof. Use the
         // struct converter to generate it.
         IdentityProof proof = structConverter.convert(identityProof, IdentityProof.class);
-
 
         // convert the credential into an actual key.
         LOG.debug("assembling public endorsement key");
@@ -382,6 +383,7 @@ public abstract class AbstractAttestationCertificateAuthority
      */
     @Override
     public byte[] processIdentityClaimTpm2(final byte[] identityClaim) {
+
         LOG.debug("Got identity claim");
 
         if (ArrayUtils.isEmpty(identityClaim)) {
@@ -507,7 +509,10 @@ public abstract class AbstractAttestationCertificateAuthority
                 parseTPMQuote(request.getQuote().toStringUtf8());
             }
             if (request.getPcrslist() != null && !request.getPcrslist().isEmpty()) {
-                parsePCRValues(request.getPcrslist().toStringUtf8());
+                this.pcrValues = request.getPcrslist().toStringUtf8();
+                String[] pcrsSet = this.pcrValues.split("\\+");
+                this.pcrsList = parsePCRValues(pcrsSet[0]);
+                this.pcrs256List = parsePCRValues(pcrsSet[1]);
             }
 
             // Get device name and device
@@ -563,21 +568,24 @@ public abstract class AbstractAttestationCertificateAuthority
      * This method splits all hashed pcr values into an array.
      * @param pcrValues contains the full list of 24 pcr values
      */
-    private void parsePCRValues(final String pcrValues) {
+    private String[] parsePCRValues(final String pcrValues) {
         String[] pcrs = null;
 
         if (pcrValues != null) {
             int counter = 0;
             String[] lines = pcrValues.split("\\r?\\n");
             pcrs = new String[lines.length - 1];
+
             for (String line : lines) {
-                if (!line.contains(TPM_SIGNATURE_ALG)) {
+                if (!line.isEmpty()
+                        && !line.contains(TPM_SIGNATURE_ALG)) {
+                    LOG.error(line);
                     pcrs[counter++] = line.split(":")[1].trim();
                 }
             }
         }
 
-        this.pcrsList = pcrs;
+        return pcrs;
     }
 
     /**

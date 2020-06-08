@@ -280,7 +280,6 @@ public class PolicyPageController extends PageController<NoPageParams> {
                 ppModel.getEcValidate().equalsIgnoreCase(ENABLED_CHECKED_PARAMETER_VALUE);
 
         try {
-
             SupplyChainPolicy policy = getDefaultPolicyAndSetInModel(ppModel, model);
 
             //If PC Validation is enabled without EC Validation, disallow change
@@ -311,7 +310,60 @@ public class PolicyPageController extends PageController<NoPageParams> {
 
         // return the redirect
         return redirectToSelf(new NoPageParams(), model, attr);
+    }
 
+    /**
+     * Updates the Endorsement Credential Validation policy setting and redirects back
+     * to the original page.
+     *
+     * @param ppModel The data posted by the form mapped into an object.
+     * @param attr RedirectAttributes used to forward data back to the original page.
+     * @return View containing the url and parameters
+     * @throws URISyntaxException if malformed URI
+     */
+    @RequestMapping(value = "update-firmware-validation", method = RequestMethod.POST)
+    public RedirectView updateFirmwareVal(@ModelAttribute final PolicyPageModel ppModel,
+            final RedirectAttributes attr) throws URISyntaxException {
+
+        // set the data received to be populated back into the form
+        Map<String, Object> model = new HashMap<>();
+        PageMessages messages = new PageMessages();
+        String successMessage;
+        boolean firmwareValidationOptionEnabled = ppModel.getFmValidate()
+                .equalsIgnoreCase(ENABLED_PARAMETER_VALUE);
+
+        try {
+            SupplyChainPolicy policy = getDefaultPolicyAndSetInModel(ppModel, model);
+
+            //If PC Validation is enabled without EC Validation, disallow change
+//            if (!isPolicyValid(firmwareValidationOptionEnabled,
+            //policy.isFirmwareValidationEnabled(),
+//                    policy.isFirmwareValidationEnabled())) {
+//                handleUserError(model, messages,
+//                    "To disable Endorsement Credential Validation, Platform Validation"
+//                            + " must also be disabled.");
+//                return redirectToSelf(new NoPageParams(), model, attr);
+//            }
+
+            // set the policy option and create success message
+            if (firmwareValidationOptionEnabled) {
+                policy.setFirmwareValidationEnabled(true);
+                successMessage = "Firmware validation enabled";
+            } else {
+                policy.setFirmwareValidationEnabled(false);
+                successMessage = "Firmware validation disabled";
+            }
+
+            savePolicyAndApplySuccessMessage(ppModel, model, messages, successMessage, policy);
+        } catch (PolicyManagerException e) {
+            handlePolicyManagerUpdateError(model, messages, e,
+                    "Error changing ACA endorsement validation policy",
+                    "Error updating policy. \n" + e.getMessage());
+
+        }
+
+        // return the redirect
+        return redirectToSelf(new NoPageParams(), model, attr);
     }
 
     private void handlePolicyManagerUpdateError(final Map<String, Object> model,

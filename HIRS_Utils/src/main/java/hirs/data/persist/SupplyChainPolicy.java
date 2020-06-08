@@ -29,6 +29,9 @@ public class SupplyChainPolicy extends Policy {
     private boolean enablePcAttributeValidation = false;
 
     @Column(nullable = false)
+    private boolean enableFirmwareValidation = false;
+
+    @Column(nullable = false)
     private boolean enableUtcValidation = false;
 
     @Column(nullable = false)
@@ -137,6 +140,24 @@ public class SupplyChainPolicy extends Policy {
      */
     public void setPcAttributeValidationEnabled(final boolean enablePcAttributeValidation) {
         this.enablePcAttributeValidation = enablePcAttributeValidation;
+    }
+
+    /**
+     * Returns whether or not to validate the firmware on the device.
+     *
+     * @return whether or not to validate the firmware.
+     */
+    public boolean isFirmwareValidationEnabled() {
+        return enableFirmwareValidation;
+    }
+
+    /**
+     * Sets  whether or not to validate the firmware on the device.
+     *
+     * @param enableFirmwareValidation whether or not to validate the firmware.
+     */
+    public void setFirmwareValidationEnabled(final boolean enableFirmwareValidation) {
+        this.enableFirmwareValidation = enableFirmwareValidation;
     }
 
     /**

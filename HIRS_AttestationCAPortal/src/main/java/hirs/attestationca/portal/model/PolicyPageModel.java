@@ -12,13 +12,15 @@ public class PolicyPageModel {
     private boolean enableEcValidation;
     private boolean enablePcCertificateValidation;
     private boolean enablePcCertificateAttributeValidation;
-    private boolean issueAttestationCertificate;
+    private boolean enableFirmwareValidation;
+private boolean issueAttestationCertificate;
     private boolean generateOnExpiration;
 
     // Variables to get policy settings from page
     private String pcValidate;
     private String pcAttributeValidate;
     private String ecValidate;
+    private String fmValidate;
     private String attestationCertificateIssued;
     private String numOfValidDays;
 
@@ -31,7 +33,8 @@ public class PolicyPageModel {
         this.enableEcValidation = policy.isEcValidationEnabled();
         this.enablePcCertificateValidation = policy.isPcValidationEnabled();
         this.enablePcCertificateAttributeValidation = policy.isPcAttributeValidationEnabled();
-        this.issueAttestationCertificate = policy.isIssueAttestationCertificate();
+        this.enableFirmwareValidation = policy.isFirmwareValidationEnabled();
+this.issueAttestationCertificate = policy.isIssueAttestationCertificate();
         this.generateOnExpiration = policy.isGenerateOnExpiration();
         this.numOfValidDays = policy.getValidityDays();
     }
@@ -70,6 +73,13 @@ public class PolicyPageModel {
     }
 
     /**
+     * Gets the Firmware Validation state.
+     *
+     * @return the validation state.
+     */
+    public boolean getEnableFirmwareValidation() {
+        return enableFirmwareValidation;
+    }/**
      * Gets the Attestation Certificate issued State.
      * @return the issued state.
      */
@@ -113,6 +123,13 @@ public class PolicyPageModel {
     }
 
     /**
+     * Gets the Firmware Validation value.
+     *
+     * @return the model string representation of this field (checked or unchecked)
+     */
+    public String getFmValidate() {
+        return fmValidate;
+    }/**
      * Gets the attestation certificate issued state.
      * @return the model string representation of this field.
      */
@@ -158,6 +175,14 @@ public class PolicyPageModel {
     }
 
     /**
+     * Sets the Firmware Validation state.
+     *
+     * @param enableFirmwareValidation true if performing validation, false otherwise
+     */
+    public void setEnableFirmwareValidation(final boolean enableFirmwareValidation) {
+        this.enableFirmwareValidation = enableFirmwareValidation;
+    }
+/**
      * Sets the Attestation Certificate Issued state.
      * @param issueAttestationCertificate true if generating Certificates.
      */
@@ -202,6 +227,14 @@ public class PolicyPageModel {
     }
 
     /**
+     * Sets the Firmware state.
+     *
+     * @param fmValidate "checked" if enabling validation, false otherwise
+     */
+    public void setFmValidate(final String fmValidate) {
+        this.fmValidate = fmValidate;
+    }
+/**
      * Sets the Issued Attestation Certificate state.
      *
      * @param attestationCertificateIssued "checked" if generating certificates.
@@ -211,15 +244,6 @@ public class PolicyPageModel {
         this.attestationCertificateIssued = attestationCertificateIssued;
     }
 
-    /**
-     * Sets the number of valid days.
-     *
-     * @param numOfValidDays what to use for the certificate
-     */
-    public void setNumOfValidDays(final String numOfValidDays) {
-        this.numOfValidDays = numOfValidDays;
-    }
-
     @Override
     public String toString() {
         return "PolicyPageModel{"
@@ -227,7 +251,7 @@ public class PolicyPageModel {
                 + ", enablePcCertificateValidation=" + enablePcCertificateValidation
                 + ", enablePcCertificateAttributeValidation="
                 + enablePcCertificateAttributeValidation
-                + ", issueAttestationCertificate="
+                + ", enableFirmwareValidation=" + enableFirmwareValidation + ", issueAttestationCertificate="
                 + issueAttestationCertificate
                 + ", generateOnExpiration="
                 + generateOnExpiration
