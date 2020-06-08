@@ -27,9 +27,11 @@ public class Main {
                         gateway.validateSwidTag(verifyFile);
                     } catch (IOException e) {
                         System.out.println("Error validating RIM file: " + e.getMessage());
+                        System.exit(1);
                     }
                 } else {
                     System.out.println("Need both a RIM file to validate and a public certificate to validate with!");
+                    System.exit(1);
                 }
             } else {
                 System.out.println(commander.toString());
