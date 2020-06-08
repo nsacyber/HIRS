@@ -13,7 +13,7 @@ public class PolicyPageModel {
     private boolean enablePcCertificateValidation;
     private boolean enablePcCertificateAttributeValidation;
     private boolean enableFirmwareValidation;
-private boolean issueAttestationCertificate;
+    private boolean issueAttestationCertificate;
     private boolean generateOnExpiration;
 
     // Variables to get policy settings from page
@@ -34,7 +34,7 @@ private boolean issueAttestationCertificate;
         this.enablePcCertificateValidation = policy.isPcValidationEnabled();
         this.enablePcCertificateAttributeValidation = policy.isPcAttributeValidationEnabled();
         this.enableFirmwareValidation = policy.isFirmwareValidationEnabled();
-this.issueAttestationCertificate = policy.isIssueAttestationCertificate();
+        this.issueAttestationCertificate = policy.isIssueAttestationCertificate();
         this.generateOnExpiration = policy.isGenerateOnExpiration();
         this.numOfValidDays = policy.getValidityDays();
     }
@@ -79,8 +79,11 @@ this.issueAttestationCertificate = policy.isIssueAttestationCertificate();
      */
     public boolean getEnableFirmwareValidation() {
         return enableFirmwareValidation;
-    }/**
+    }
+
+    /**
      * Gets the Attestation Certificate issued State.
+     *
      * @return the issued state.
      */
     public boolean isIssueAttestationCertificate() {
@@ -89,6 +92,7 @@ this.issueAttestationCertificate = policy.isIssueAttestationCertificate();
 
     /**
      * Gets the state of generating a certificate.
+     *
      * @return true or false
      */
     public boolean isGenerateOnExpiration() {
@@ -98,7 +102,8 @@ this.issueAttestationCertificate = policy.isIssueAttestationCertificate();
     /**
      * Gets the EC Validation value.
      *
-     * @return the model string representation of this field (checked or unchecked)
+     * @return the model string representation of this field (checked or
+     * unchecked)
      */
     public String getEcValidate() {
         return ecValidate;
@@ -107,7 +112,8 @@ this.issueAttestationCertificate = policy.isIssueAttestationCertificate();
     /**
      * Gets the Platform Certificate Validation value.
      *
-     * @return the model string representation of this field (checked or unchecked)
+     * @return the model string representation of this field (checked or
+     * unchecked)
      */
     public String getPcValidate() {
         return pcValidate;
@@ -116,7 +122,8 @@ this.issueAttestationCertificate = policy.isIssueAttestationCertificate();
     /**
      * Gets the platform certificate attribute validation value.
      *
-     * @return the model string representation of this field (checked or unchecked)
+     * @return the model string representation of this field (checked or
+     * unchecked)
      */
     public String getPcAttributeValidate() {
         return pcAttributeValidate;
@@ -125,12 +132,16 @@ this.issueAttestationCertificate = policy.isIssueAttestationCertificate();
     /**
      * Gets the Firmware Validation value.
      *
-     * @return the model string representation of this field (checked or unchecked)
+     * @return the model string representation of this field (checked or
+     * unchecked)
      */
     public String getFmValidate() {
         return fmValidate;
-    }/**
+    }
+
+    /**
      * Gets the attestation certificate issued state.
+     *
      * @return the model string representation of this field.
      */
     public String getAttestationCertificateIssued() {
@@ -158,7 +169,8 @@ this.issueAttestationCertificate = policy.isIssueAttestationCertificate();
     /**
      * Sets the Platform Certificate Validation state.
      *
-     * @param enablePcCertificateValidation true if performing validation, false otherwise
+     * @param enablePcCertificateValidation true if performing validation, false
+     * otherwise
      */
     public void setEnablePcCertificateValidation(final boolean enablePcCertificateValidation) {
         this.enablePcCertificateValidation = enablePcCertificateValidation;
@@ -167,7 +179,8 @@ this.issueAttestationCertificate = policy.isIssueAttestationCertificate();
     /**
      * Sets the Platform Certificate Attribute Validation state.
      *
-     * @param enablePcCertificateAttributeValidation true if performing validation, false otherwise
+     * @param enablePcCertificateAttributeValidation true if performing
+     * validation, false otherwise
      */
     public void setEnablePcCertificateAttributeValidation(
             final boolean enablePcCertificateAttributeValidation) {
@@ -177,13 +190,16 @@ this.issueAttestationCertificate = policy.isIssueAttestationCertificate();
     /**
      * Sets the Firmware Validation state.
      *
-     * @param enableFirmwareValidation true if performing validation, false otherwise
+     * @param enableFirmwareValidation true if performing validation, false
+     * otherwise
      */
     public void setEnableFirmwareValidation(final boolean enableFirmwareValidation) {
         this.enableFirmwareValidation = enableFirmwareValidation;
     }
-/**
+
+    /**
      * Sets the Attestation Certificate Issued state.
+     *
      * @param issueAttestationCertificate true if generating Certificates.
      */
     public void setIssueAttestationCertificate(
@@ -193,6 +209,7 @@ this.issueAttestationCertificate = policy.isIssueAttestationCertificate();
 
     /**
      * Setter for the state of generating a certificate.
+     *
      * @param generateOnExpiration true or false
      */
     public void setGenerateOnExpiration(final boolean generateOnExpiration) {
@@ -220,7 +237,8 @@ this.issueAttestationCertificate = policy.isIssueAttestationCertificate();
     /**
      * Sets the PC Attribute Validation state.
      *
-     * @param pcAttributeValidate "checked" if enabling validation, false otherwise
+     * @param pcAttributeValidate "checked" if enabling validation, false
+     * otherwise
      */
     public void setPcAttributeValidate(final String pcAttributeValidate) {
         this.pcAttributeValidate = pcAttributeValidate;
@@ -234,7 +252,8 @@ this.issueAttestationCertificate = policy.isIssueAttestationCertificate();
     public void setFmValidate(final String fmValidate) {
         this.fmValidate = fmValidate;
     }
-/**
+
+    /**
      * Sets the Issued Attestation Certificate state.
      *
      * @param attestationCertificateIssued "checked" if generating certificates.
@@ -251,10 +270,9 @@ this.issueAttestationCertificate = policy.isIssueAttestationCertificate();
                 + ", enablePcCertificateValidation=" + enablePcCertificateValidation
                 + ", enablePcCertificateAttributeValidation="
                 + enablePcCertificateAttributeValidation
-                + ", enableFirmwareValidation=" + enableFirmwareValidation + ", issueAttestationCertificate="
-                + issueAttestationCertificate
-                + ", generateOnExpiration="
-                + generateOnExpiration
+                + ", enableFirmwareValidation=" + enableFirmwareValidation
+                + ", issueAttestationCertificate=" + issueAttestationCertificate
+                + ", generateOnExpiration=" + generateOnExpiration
                 + ", numOfValidDays=" + numOfValidDays + "}";
     }
 }

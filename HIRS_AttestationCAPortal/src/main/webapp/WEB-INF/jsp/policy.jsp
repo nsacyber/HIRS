@@ -8,7 +8,8 @@
     <jsp:attribute name="pageHeaderTitle">Attestation Identity CA Policy Options</jsp:attribute>
 
     <jsp:body>
-        <ul><%-- Endorsement validation--%>
+        <ul>
+            <%-- Endorsement validation--%>
             <div class="aca-input-box">
                 <form:form method="POST" modelAttribute="initialData" action="policy/update-ec-validation">
                     <li>Endorsement Credential Validation: ${initialData.enableEcValidation ? 'Enabled' : 'Disabled'}
@@ -37,25 +38,26 @@
                         </my:editor>
                     </li>
                 </form:form>
-            </div><%-- Platform attribute validation--%>
+            </div>
+            <%-- Platform attribute validation--%>
             <div class="aca-input-box">
                 <form:form method="POST" modelAttribute="initialData" action="policy/update-pc-attribute-validation">
                     <ul>
-                    <li>Platform Attribute Credential Validation: ${initialData.enablePcCertificateAttributeValidation ? 'Enabled' : 'Disabled'}
-                        <my:editor id="pcAttributePolicyEditor" label="Edit Settings">
-                            <div class="radio">
-                                <label><input id="pcAttrTop" type="radio" name="pcAttributeValidate" ${initialData.enablePcCertificateAttributeValidation ? 'checked' : ''} value="checked"/> Platform Credential Attributes will be validated</label>
-                            </div>
-                            <div class="radio">
-                                <label><input id="pcAttrBot" type="radio" name="pcAttributeValidate" ${initialData.enablePcCertificateAttributeValidation ? '' : 'checked'} value="unchecked"/> Platform Credential Attributes will not be validated</label>
-                            </div>
-                        </my:editor>
-                    </li>
+                        <li>Platform Attribute Credential Validation: ${initialData.enablePcCertificateAttributeValidation ? 'Enabled' : 'Disabled'}
+                            <my:editor id="pcAttributePolicyEditor" label="Edit Settings">
+                                <div class="radio">
+                                    <label><input id="pcAttrTop" type="radio" name="pcAttributeValidate" ${initialData.enablePcCertificateAttributeValidation ? 'checked' : ''} value="checked"/> Platform Credential Attributes will be validated</label>
+                                </div>
+                                <div class="radio">
+                                    <label><input id="pcAttrBot" type="radio" name="pcAttributeValidate" ${initialData.enablePcCertificateAttributeValidation ? '' : 'checked'} value="unchecked"/> Platform Credential Attributes will not be validated</label>
+                                </div>
+                            </my:editor>
+                        </li>
+                    </ul>
                 </form:form>
             </div>
             <%-- Generate Attestation Certificate--%>
             <div class="aca-input-box">
-                <br />
                 <form:form method="POST" modelAttribute="initialData" action="policy/update-issue-attestation">
                     <li>Generate Attestation Certificate: ${(initialData.issueAttestationCertificate || initialData.generateOnExpiration) ? 'Enabled' : 'Disabled'}
                         <my:editor id="issuedCertificatePolicyEditor" label="Edit Settings">
@@ -74,10 +76,9 @@
                             </div>
                         </my:editor>
                     </li>
-                    </ul>
                 </form:form>
             </div>
-            
+            <%-- Firmware validation--%>
             <div class="aca-input-box">
                 <form:form method="POST" modelAttribute="initialData" action="policy/update-firmware-validation">
                     <li>Firmware Validation: ${initialData.enableFirmwareValidation ? 'Enabled' : 'Disabled'}

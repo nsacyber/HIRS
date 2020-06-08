@@ -87,11 +87,11 @@ import java.util.HashSet;
 import java.util.Set;
 
 /**
- * Provides base implementation of common tasks of an ACA that are required for attestation of an
- * Identity Request.
+ * Provides base implementation of common tasks of an ACA that are required for
+ * attestation of an Identity Request.
  */
 public abstract class AbstractAttestationCertificateAuthority
-                                                    implements AttestationCertificateAuthority {
+        implements AttestationCertificateAuthority {
 
     /**
      * Logger instance for for subclass instances.
@@ -99,7 +99,8 @@ public abstract class AbstractAttestationCertificateAuthority
     protected static final Logger LOG = LogManager.getLogger(AttestationCertificateAuthority.class);
 
     /**
-     * Defines the well known exponent. https://en.wikipedia.org/wiki/65537_(number)#Applications
+     * Defines the well known exponent.
+     * https://en.wikipedia.org/wiki/65537_(number)#Applications
      */
     private static final BigInteger EXPONENT = new BigInteger("010001",
             AttestationCertificateAuthority.DEFAULT_IV_SIZE);
@@ -119,8 +120,8 @@ public abstract class AbstractAttestationCertificateAuthority
 
     // Constants used to parse out the ak name from the ak public data. Used in generateAkName
     private static final String AK_NAME_PREFIX = "000b";
-    private static final String AK_NAME_HASH_PREFIX =
-            "0001000b00050072000000100014000b0800000000000100";
+    private static final String AK_NAME_HASH_PREFIX
+            = "0001000b00050072000000100014000b0800000000000100";
     private static final String TPM_SIGNATURE_ALG = "sha256";
 
     private static final int MAC_BYTES = 6;
@@ -136,8 +137,8 @@ public abstract class AbstractAttestationCertificateAuthority
     private final X509Certificate acaCertificate;
 
     /**
-     * Container wired {@link StructConverter} to be used in serialization / deserialization of TPM
-     * data structures.
+     * Container wired {@link StructConverter} to be used in serialization /
+     * deserialization of TPM data structures.
      */
     private final StructConverter structConverter;
 
@@ -147,10 +148,10 @@ public abstract class AbstractAttestationCertificateAuthority
     private final SupplyChainValidationService supplyChainValidationService;
 
     /**
-     * Container wired application configuration property identifying the number of days that
-     * certificates issued by this ACA are valid for.
+     * Container wired application configuration property identifying the number
+     * of days that certificates issued by this ACA are valid for.
      */
-    private final Integer validDays;
+    private Integer validDays;
 
     private final CertificateManager certificateManager;
     private final DeviceRegister deviceRegister;
@@ -164,6 +165,7 @@ public abstract class AbstractAttestationCertificateAuthority
 
     /**
      * Constructor.
+     *
      * @param supplyChainValidationService the supply chain service
      * @param privateKey the ACA private key
      * @param acaCertificate the ACA certificate
@@ -172,7 +174,8 @@ public abstract class AbstractAttestationCertificateAuthority
      * @param deviceRegister the device register
      * @param validDays the number of days issued certs are valid
      * @param deviceManager the device manager
-     * @param tpm2ProvisionerStateDBManager the DBManager for persisting provisioner state
+     * @param tpm2ProvisionerStateDBManager the DBManager for persisting
+     * provisioner state
      */
     @SuppressWarnings("checkstyle:parameternumber")
     public AbstractAttestationCertificateAuthority(
@@ -210,8 +213,8 @@ public abstract class AbstractAttestationCertificateAuthority
         LOG.debug("received request to process identity request");
 
         // translate the bytes into the challenge
-        IdentityRequestEnvelope challenge =
-                structConverter.convert(identityRequest, IdentityRequestEnvelope.class);
+        IdentityRequestEnvelope challenge
+                = structConverter.convert(identityRequest, IdentityRequestEnvelope.class);
 
         //
         byte[] identityProof = unwrapIdentityRequest(challenge.getRequest());
@@ -247,8 +250,8 @@ public abstract class AbstractAttestationCertificateAuthority
         } else if (ArrayUtils.isNotEmpty(challenge.getEndorsementCredentialModulus())) {
             LOG.warn("EKC was not in the identity proof from the client. Checking for uploads.");
             // Check if the EC was uploaded
-            ekPublicKey =
-                    assemblePublicKey(new String(challenge.getEndorsementCredentialModulus()));
+            ekPublicKey
+                    = assemblePublicKey(new String(challenge.getEndorsementCredentialModulus()));
             endorsementCredential = getEndorsementCredential(ekPublicKey);
         } else {
             LOG.warn("Zero-length endorsement credential received in identity request.");
@@ -288,8 +291,8 @@ public abstract class AbstractAttestationCertificateAuthority
 
         // perform supply chain validation. Note: It's possible that this should be done earlier
         // in this method.
-        SupplyChainValidationSummary summary =
-                supplyChainValidationService.validateSupplyChain(endorsementCredential,
+        SupplyChainValidationSummary summary
+                = supplyChainValidationService.validateSupplyChain(endorsementCredential,
                         platformCredentials, device);
 
         // update the validation result in the device
@@ -299,9 +302,9 @@ public abstract class AbstractAttestationCertificateAuthority
         // check if supply chain validation succeeded.
         // If it did not, do not provide the IdentityResponseEnvelope
         if (summary.getOverallValidationResult() == AppraisalStatus.Status.PASS) {
-            IdentityResponseEnvelope identityResponse =
-                generateIdentityResponseEnvelopeAndStoreIssuedCert(challenge,
-                ekPublicKey, endorsementCredential, platformCredentials, device);
+            IdentityResponseEnvelope identityResponse
+                    = generateIdentityResponseEnvelopeAndStoreIssuedCert(challenge,
+                            ekPublicKey, endorsementCredential, platformCredentials, device);
 
             return structConverter.convert(identityResponse);
         } else {
@@ -312,9 +315,11 @@ public abstract class AbstractAttestationCertificateAuthority
     }
 
     /**
-     * Given a successful supply chain validation, generate an Identity Response envelope and
-     * the issued certificate. The issued cert is stored in the database. The identity response
-     * envelope is returned, and sent back to the client using the struct converter.
+     * Given a successful supply chain validation, generate an Identity Response
+     * envelope and the issued certificate. The issued cert is stored in the
+     * database. The identity response envelope is returned, and sent back to
+     * the client using the struct converter.
+     *
      * @param challenge the identity request envelope
      * @param ekPublicKey the EK public key
      * @param endorsementCredential the endorsement credential
@@ -351,19 +356,19 @@ public abstract class AbstractAttestationCertificateAuthority
         PublicKey publicKey = assemblePublicKey(proof.getIdentityKey().getStorePubKey().getKey());
         X509Certificate credential = generateCredential(publicKey, endorsementCredential,
                 platformCredentials, device.getDeviceInfo()
-                        .getNetworkInfo()
-                        .getIpAddress()
-                        .getHostName());
+                .getNetworkInfo()
+                .getIpAddress()
+                .getHostName());
 
         // generate the attestation using the credential and the key for this session
         LOG.debug("generating symmetric response");
         SymmetricAttestation attestation = generateAttestation(credential, sessionKey);
 
         // construct the response with the both the asymmetric contents and the CA attestation
-        IdentityResponseEnvelope identityResponse =
-                new SimpleStructBuilder<>(IdentityResponseEnvelope.class)
-                        .set("asymmetricContents", asymmetricContents)
-                        .set("symmetricAttestation", attestation).build();
+        IdentityResponseEnvelope identityResponse
+                = new SimpleStructBuilder<>(IdentityResponseEnvelope.class)
+                .set("asymmetricContents", asymmetricContents)
+                .set("symmetricAttestation", attestation).build();
 
         // save new attestation certificate
         byte[] derEncodedAttestationCertificate = getDerEncodedCertificate(credential);
@@ -374,12 +379,14 @@ public abstract class AbstractAttestationCertificateAuthority
     }
 
     /**
-     * Basic implementation of the ACA processIdentityClaimTpm2 method. Parses the claim,
-     * stores the device info, performs supply chain validation, generates a nonce,
-     * and wraps that nonce with the make credential process before returning it to the client.
+     * Basic implementation of the ACA processIdentityClaimTpm2 method. Parses
+     * the claim, stores the device info, performs supply chain validation,
+     * generates a nonce, and wraps that nonce with the make credential process
+     * before returning it to the client.
      *
      * @param identityClaim the request to process, cannot be null
-     * @return an identity claim response for the specified request containing a wrapped blob
+     * @return an identity claim response for the specified request containing a
+     * wrapped blob
      */
     @Override
     public byte[] processIdentityClaimTpm2(final byte[] identityClaim) {
@@ -457,12 +464,12 @@ public abstract class AbstractAttestationCertificateAuthority
     }
 
     /**
-     * Basic implementation of the ACA processCertificateRequest method.
-     * Parses the nonce, validates its correctness, generates the signed,
-     * public attestation certificate, stores it, and returns it to the client.
+     * Basic implementation of the ACA processCertificateRequest method. Parses
+     * the nonce, validates its correctness, generates the signed, public
+     * attestation certificate, stores it, and returns it to the client.
      *
      * @param certificateRequest request containing nonce from earlier identity
-     *                           claim handshake
+     * claim handshake
      * @return a certificateResponse containing the signed certificate
      */
     @Override
@@ -550,6 +557,7 @@ public abstract class AbstractAttestationCertificateAuthority
     /**
      * This method takes the provided TPM Quote and splits it between the PCR
      * quote and the signature hash.
+     *
      * @param tpmQuote contains hash values for the quote and the signature
      */
     private void parseTPMQuote(final String tpmQuote) {
@@ -566,6 +574,7 @@ public abstract class AbstractAttestationCertificateAuthority
 
     /**
      * This method splits all hashed pcr values into an array.
+     *
      * @param pcrValues contains the full list of 24 pcr values
      */
     private String[] parsePCRValues(final String pcrValues) {
@@ -590,6 +599,7 @@ public abstract class AbstractAttestationCertificateAuthority
 
     /**
      * Parse public key from public data segment generated by TPM 2.0.
+     *
      * @param publicArea the public area segment to parse
      * @return the RSA public key of the supplied public data
      */
@@ -608,8 +618,11 @@ public abstract class AbstractAttestationCertificateAuthority
     }
 
     /**
-     * Converts a protobuf DeviceInfo object to a HIRS Utils DeviceInfoReport object.
-     * @param claim the protobuf serialized identity claim containing the device info
+     * Converts a protobuf DeviceInfo object to a HIRS Utils DeviceInfoReport
+     * object.
+     *
+     * @param claim the protobuf serialized identity claim containing the device
+     * info
      * @return a HIRS Utils DeviceInfoReport representation of device info
      */
     private DeviceInfoReport parseDeviceInfo(final ProvisionerTpm2.IdentityClaim claim) {
@@ -662,7 +675,6 @@ public abstract class AbstractAttestationCertificateAuthority
                 hwProto.getProductVersion(), hwProto.getSystemSerialNumber(),
                 firstChassisSerialNumber, firstBaseboardSerialNumber);
 
-
         // Get TPM info, currently unimplemented
         TPMInfo tpm = new TPMInfo();
 
@@ -690,6 +702,7 @@ public abstract class AbstractAttestationCertificateAuthority
 
     /**
      * Gets the Endorsement Credential from the DB given the EK public key.
+     *
      * @param ekPublicKey the EK public key
      * @return the Endorsement credential, if found, otherwise null
      */
@@ -726,10 +739,10 @@ public abstract class AbstractAttestationCertificateAuthority
             LOG.warn("Cannot look for platform credential(s).  Endorsement credential was null.");
         } else {
             LOG.debug("Searching for platform credential(s) based on holder serial number: "
-                        + ec.getSerialNumber());
+                    + ec.getSerialNumber());
             credentials = PlatformCredential.select(this.certificateManager)
-                                            .byHolderSerialNumber(ec.getSerialNumber())
-                                            .getCertificates();
+                    .byHolderSerialNumber(ec.getSerialNumber())
+                    .getCertificates();
             if (credentials == null || credentials.isEmpty()) {
                 LOG.warn("No platform credential(s) found");
             } else {
@@ -746,11 +759,11 @@ public abstract class AbstractAttestationCertificateAuthority
     }
 
     /**
-     * Unwraps a given identityRequest. That is to say, decrypt the asymmetric portion of a data
-     * structure to determine the method to decrypt the symmetric portion.
+     * Unwraps a given identityRequest. That is to say, decrypt the asymmetric
+     * portion of a data structure to determine the method to decrypt the
+     * symmetric portion.
      *
-     * @param identityRequest
-     *            to be decrypted
+     * @param identityRequest to be decrypted
      * @return the decrypted symmetric portion of an identity request.
      */
     byte[] unwrapIdentityRequest(final byte[] identityRequest) {
@@ -767,20 +780,20 @@ public abstract class AbstractAttestationCertificateAuthority
         }
 
         // determine the encryption scheme from the algorithm
-        EncryptionScheme asymmetricScheme =
-                EncryptionScheme.fromInt(request.getAsymmetricAlgorithm().getEncryptionScheme());
+        EncryptionScheme asymmetricScheme
+                = EncryptionScheme.fromInt(request.getAsymmetricAlgorithm().getEncryptionScheme());
 
         // decrypt the asymmetric blob
-        byte[] decryptedAsymmetricBlob =
-                decryptAsymmetricBlob(request.getAsymmetricBlob(), asymmetricScheme);
+        byte[] decryptedAsymmetricBlob
+                = decryptAsymmetricBlob(request.getAsymmetricBlob(), asymmetricScheme);
 
         // construct our symmetric key structure from the decrypted asymmetric blob
-        SymmetricKey symmetricKey =
-                structConverter.convert(decryptedAsymmetricBlob, SymmetricKey.class);
+        SymmetricKey symmetricKey
+                = structConverter.convert(decryptedAsymmetricBlob, SymmetricKey.class);
 
-        byte[] decryptedSymmetricBlob =
-                decryptSymmetricBlob(request.getSymmetricBlob(), symmetricKey.getKey(), iv,
-                "AES/CBC/PKCS5Padding");
+        byte[] decryptedSymmetricBlob
+                = decryptSymmetricBlob(request.getSymmetricBlob(), symmetricKey.getKey(), iv,
+                        "AES/CBC/PKCS5Padding");
 
         // decrypt the symmetric blob
         return decryptedSymmetricBlob;
@@ -788,12 +801,11 @@ public abstract class AbstractAttestationCertificateAuthority
 
     /**
      * Will attempt to decrypt the asymmetric blob that originated from an
-     * {@link hirs.structs.elements.tpm.IdentityRequest} using the cipher transformation.
+     * {@link hirs.structs.elements.tpm.IdentityRequest} using the cipher
+     * transformation.
      *
-     * @param asymmetricBlob
-     *            to be decrypted
-     * @param scheme
-     *            to decrypt with
+     * @param asymmetricBlob to be decrypted
+     * @param scheme to decrypt with
      * @return decrypted blob
      */
     byte[] decryptAsymmetricBlob(final byte[] asymmetricBlob, final EncryptionScheme scheme) {
@@ -802,43 +814,39 @@ public abstract class AbstractAttestationCertificateAuthority
             Cipher cipher = Cipher.getInstance(scheme.toString());
 
             switch (scheme) {
-            case OAEP:
-                OAEPParameterSpec spec =
-                        new OAEPParameterSpec("Sha1", "MGF1", MGF1ParameterSpec.SHA1,
-                                new PSource.PSpecified("".getBytes()));
+                case OAEP:
+                    OAEPParameterSpec spec
+                            = new OAEPParameterSpec("Sha1", "MGF1", MGF1ParameterSpec.SHA1,
+                                    new PSource.PSpecified("".getBytes()));
 
-                cipher.init(Cipher.PRIVATE_KEY, privateKey, spec);
-                break;
-            default:
-                // initialize the cipher to decrypt using the ACA private key.
-                cipher.init(Cipher.DECRYPT_MODE, privateKey);
+                    cipher.init(Cipher.PRIVATE_KEY, privateKey, spec);
+                    break;
+                default:
+                    // initialize the cipher to decrypt using the ACA private key.
+                    cipher.init(Cipher.DECRYPT_MODE, privateKey);
             }
 
             cipher.update(asymmetricBlob);
 
             return cipher.doFinal();
-        } catch (NoSuchPaddingException | NoSuchAlgorithmException | InvalidKeyException
-                | BadPaddingException | IllegalBlockSizeException
-                | InvalidAlgorithmParameterException e) {
+        } catch (NoSuchPaddingException | NoSuchAlgorithmException
+                | InvalidKeyException | BadPaddingException
+                | IllegalBlockSizeException | InvalidAlgorithmParameterException e) {
             throw new IdentityProcessingException(
                     "Encountered error while decrypting asymmetric blob of an identity request: "
-                            + e.getMessage(), e);
+                    + e.getMessage(), e);
         }
     }
 
     /**
      * Will attempt to decrypt the symmetric blob that originated from an
-     * {@link hirs.structs.elements.tpm.IdentityRequest} using the specified symmetric key
-     * and cipher transformation.
+     * {@link hirs.structs.elements.tpm.IdentityRequest} using the specified
+     * symmetric key and cipher transformation.
      *
-     * @param symmetricBlob
-     *            to be decrypted
-     * @param symmetricKey
-     *            to use to decrypt
-     * @param iv
-     *            to use with decryption cipher
-     * @param transformation
-     *            of the cipher
+     * @param symmetricBlob to be decrypted
+     * @param symmetricKey to use to decrypt
+     * @param iv to use with decryption cipher
+     * @param transformation of the cipher
      * @return decrypted symmetric blob
      */
     byte[] decryptSymmetricBlob(final byte[] symmetricBlob, final byte[] symmetricKey,
@@ -855,20 +863,19 @@ public abstract class AbstractAttestationCertificateAuthority
 
             // decrypt the symmetric blob
             return cipher.doFinal(symmetricBlob);
-        } catch (IllegalBlockSizeException | InvalidKeyException | NoSuchAlgorithmException
-                | BadPaddingException | NoSuchPaddingException
-                | InvalidAlgorithmParameterException e) {
+        } catch (IllegalBlockSizeException | InvalidKeyException
+                | NoSuchAlgorithmException | BadPaddingException
+                | NoSuchPaddingException | InvalidAlgorithmParameterException e) {
             throw new IdentityProcessingException(
                     "Encountered error while decrypting symmetric blob of an identity request: "
-                            + e.getMessage(), e);
+                    + e.getMessage(), e);
         }
     }
 
     /**
      * Constructs a public key where the modulus is in raw form.
      *
-     * @param modulus
-     *            in byte array form
+     * @param modulus in byte array form
      * @return public key using specific modulus and the well known exponent
      */
     PublicKey assemblePublicKey(final byte[] modulus) {
@@ -878,8 +885,7 @@ public abstract class AbstractAttestationCertificateAuthority
     /**
      * Constructs a public key where the modulus is Hex encoded.
      *
-     * @param modulus
-     *            hex encoded modulus
+     * @param modulus hex encoded modulus
      * @return public key using specific modulus and the well known exponent
      */
     PublicKey assemblePublicKey(final String modulus) {
@@ -888,7 +894,8 @@ public abstract class AbstractAttestationCertificateAuthority
     }
 
     /**
-     * Assembles a public key using a defined big int modulus and the well known exponent.
+     * Assembles a public key using a defined big int modulus and the well known
+     * exponent.
      */
     private PublicKey assemblePublicKey(final BigInteger modulus) {
 
@@ -911,27 +918,26 @@ public abstract class AbstractAttestationCertificateAuthority
     SymmetricKey generateSymmetricKey() {
 
         // create a session key for the CA contents
-        byte[] responseSymmetricKey =
-                generateRandomBytes(AttestationCertificateAuthority.DEFAULT_IV_SIZE);
+        byte[] responseSymmetricKey
+                = generateRandomBytes(AttestationCertificateAuthority.DEFAULT_IV_SIZE);
 
         // create a symmetric key struct for the CA contents
-        SymmetricKey sessionKey =
-                new SimpleStructBuilder<>(SymmetricKey.class)
-                        .set("algorithmId", SymmetricKey.ALGORITHM_AES)
-                        .set("encryptionScheme", SymmetricKey.SCHEME_CBC)
-                        .set("key", responseSymmetricKey).build();
+        SymmetricKey sessionKey
+                = new SimpleStructBuilder<>(SymmetricKey.class)
+                .set("algorithmId", SymmetricKey.ALGORITHM_AES)
+                .set("encryptionScheme", SymmetricKey.SCHEME_CBC)
+                .set("key", responseSymmetricKey).build();
         return sessionKey;
     }
 
     /**
      * Generate asymmetric contents part of the identity response.
      *
-     * @param proof
-     *            identity requests symmetric contents, otherwise, the identity proof
-     * @param symmetricKey
-     *            identity response session key
-     * @param publicKey
-     *            of the EK certificate contained within the identity proof
+     * @param proof identity requests symmetric contents, otherwise, the
+     * identity proof
+     * @param symmetricKey identity response session key
+     * @param publicKey of the EK certificate contained within the identity
+     * proof
      * @return encrypted asymmetric contents
      */
     byte[] generateAsymmetricContents(final IdentityProof proof, final SymmetricKey symmetricKey,
@@ -952,8 +958,8 @@ public abstract class AbstractAttestationCertificateAuthority
             byte[] asymmetricContents = ArrayUtils.addAll(sessionKey, identityDigest);
 
             // encrypt the asymmetric contents and return
-            OAEPParameterSpec oaepSpec =
-                    new OAEPParameterSpec("Sha1", "MGF1", MGF1ParameterSpec.SHA1,
+            OAEPParameterSpec oaepSpec
+                    = new OAEPParameterSpec("Sha1", "MGF1", MGF1ParameterSpec.SHA1,
                             new PSource.PSpecified("TCPA".getBytes()));
 
             // initialize the asymmetric cipher using the default OAEP transformation
@@ -963,21 +969,20 @@ public abstract class AbstractAttestationCertificateAuthority
             cipher.init(Cipher.PUBLIC_KEY, publicKey, oaepSpec);
 
             return cipher.doFinal(asymmetricContents);
-        } catch (NoSuchAlgorithmException | IllegalBlockSizeException | NoSuchPaddingException
-                | InvalidKeyException | BadPaddingException
-                | InvalidAlgorithmParameterException e) {
+        } catch (NoSuchAlgorithmException | IllegalBlockSizeException
+                | NoSuchPaddingException | InvalidKeyException
+                | BadPaddingException | InvalidAlgorithmParameterException e) {
             throw new CertificateProcessingException(
                     "Encountered error while generating ACA session key: " + e.getMessage(), e);
         }
     }
 
     /**
-     * Generate the Identity Response using the identity credential and the session key.
+     * Generate the Identity Response using the identity credential and the
+     * session key.
      *
-     * @param credential
-     *            the identity credential
-     * @param symmetricKey
-     *            generated session key for this request/response chain
+     * @param credential the identity credential
+     * @param symmetricKey generated session key for this request/response chain
      * @return identity response for an identity request
      */
     SymmetricAttestation generateAttestation(final X509Certificate credential,
@@ -992,7 +997,7 @@ public abstract class AbstractAttestationCertificateAuthority
 
             // fill IV with random bytes
             byte[] credentialIV = generateRandomBytes(
-                                                AttestationCertificateAuthority.DEFAULT_IV_SIZE);
+                    AttestationCertificateAuthority.DEFAULT_IV_SIZE);
 
             // create IV encryption parameter specification
             IvParameterSpec ivParameterSpec = new IvParameterSpec(credentialIV);
@@ -1007,20 +1012,21 @@ public abstract class AbstractAttestationCertificateAuthority
             byte[] credentialBytes = ArrayUtils.addAll(credentialIV, encryptedCredential);
 
             // create attestation for identity response that contains the credential
-            SymmetricAttestation attestation =
-                    new SimpleStructBuilder<>(SymmetricAttestation.class)
-                            .set("credential", credentialBytes)
-                            .set("algorithm",
-                                    new SimpleStructBuilder<>(SymmetricKeyParams.class)
-                                            .set("algorithmId", SymmetricKeyParams.ALGORITHM_AES)
-                                            .set("encryptionScheme",
-                                                    SymmetricKeyParams.SCHEME_CBC_PKCS5PADDING)
-                                            .set("signatureScheme", 0).build()).build();
+            SymmetricAttestation attestation
+                    = new SimpleStructBuilder<>(SymmetricAttestation.class)
+                    .set("credential", credentialBytes)
+                    .set("algorithm",
+                            new SimpleStructBuilder<>(SymmetricKeyParams.class)
+                            .set("algorithmId", SymmetricKeyParams.ALGORITHM_AES)
+                            .set("encryptionScheme",
+                                    SymmetricKeyParams.SCHEME_CBC_PKCS5PADDING)
+                            .set("signatureScheme", 0).build()).build();
 
             return attestation;
 
-        } catch (BadPaddingException | IllegalBlockSizeException | NoSuchAlgorithmException
-                | InvalidKeyException | InvalidAlgorithmParameterException | NoSuchPaddingException
+        } catch (BadPaddingException | IllegalBlockSizeException
+                | NoSuchAlgorithmException | InvalidKeyException
+                | InvalidAlgorithmParameterException | NoSuchPaddingException
                 | CertificateEncodingException e) {
             throw new CertificateProcessingException(
                     "Encountered error while generating Identity Response: " + e.getMessage(), e);
@@ -1030,42 +1036,38 @@ public abstract class AbstractAttestationCertificateAuthority
     /**
      * Generates a credential using the specified public key.
      *
-     * @param publicKey
-     *            cannot be null
-     * @param endorsementCredential
-     *            the endorsement credential
-     * @param platformCredentials
-     *            the set of platform credentials
-     * @param deviceName
-     *            The host name used in the subject alternative name
+     * @param publicKey cannot be null
+     * @param endorsementCredential the endorsement credential
+     * @param platformCredentials the set of platform credentials
+     * @param deviceName The host name used in the subject alternative name
      * @return identity credential
      */
     X509Certificate generateCredential(final PublicKey publicKey,
-                                       final EndorsementCredential endorsementCredential,
-                                       final Set<PlatformCredential> platformCredentials,
-                                       final String deviceName) {
+            final EndorsementCredential endorsementCredential,
+            final Set<PlatformCredential> platformCredentials,
+            final String deviceName) {
         try {
             // have the certificate expire in the configured number of days
             Calendar expiry = Calendar.getInstance();
             expiry.add(Calendar.DAY_OF_YEAR, validDays);
 
-            X500Name issuer =
-                    new X500Name(acaCertificate.getSubjectX500Principal().getName());
+            X500Name issuer
+                    = new X500Name(acaCertificate.getSubjectX500Principal().getName());
             Date notBefore = new Date();
             Date notAfter = expiry.getTime();
             BigInteger serialNumber = BigInteger.valueOf(System.currentTimeMillis());
 
-            SubjectPublicKeyInfo subjectPublicKeyInfo =
-                    SubjectPublicKeyInfo.getInstance(publicKey.getEncoded());
+            SubjectPublicKeyInfo subjectPublicKeyInfo
+                    = SubjectPublicKeyInfo.getInstance(publicKey.getEncoded());
 
             // The subject should be left blank, per spec
-            X509v3CertificateBuilder builder =
-                    new X509v3CertificateBuilder(issuer, serialNumber,
+            X509v3CertificateBuilder builder
+                    = new X509v3CertificateBuilder(issuer, serialNumber,
                             notBefore, notAfter, null /* subjectName */, subjectPublicKeyInfo);
 
-            Extension subjectAlternativeName =
-                IssuedCertificateAttributeHelper.buildSubjectAlternativeNameFromCerts(
-                endorsementCredential, platformCredentials, deviceName);
+            Extension subjectAlternativeName
+                    = IssuedCertificateAttributeHelper.buildSubjectAlternativeNameFromCerts(
+                            endorsementCredential, platformCredentials, deviceName);
 
             builder.addExtension(subjectAlternativeName);
             // identify cert as an AIK with this extension
@@ -1078,10 +1080,10 @@ public abstract class AbstractAttestationCertificateAuthority
             }
 
             ContentSigner signer = new JcaContentSignerBuilder("SHA1WithRSA")
-                .setProvider("BC").build(privateKey);
+                    .setProvider("BC").build(privateKey);
             X509CertificateHolder holder = builder.build(signer);
             X509Certificate certificate = new JcaX509CertificateConverter()
-                .setProvider("BC").getCertificate(holder);
+                    .setProvider("BC").getCertificate(holder);
             return certificate;
         } catch (IOException | OperatorCreationException | CertificateException e) {
             throw new CertificateProcessingException("Encountered error while generating "
@@ -1090,12 +1092,13 @@ public abstract class AbstractAttestationCertificateAuthority
     }
 
     /**
-     * Performs the first step of the TPM 2.0 identity claim process. Takes an ek, ak, and secret
-     * and then generates a seed that is used to generate AES and HMAC keys. Parses the ak name.
-     * Encrypts the seed with the public ek. Uses the AES key to encrypt the secret. Uses the HMAC
-     * key to generate an HMAC to cover the encrypted secret and the ak name. The output is an
-     * encrypted blob that acts as the first part of a challenge-response authentication mechanism
-     * to validate an identity claim.
+     * Performs the first step of the TPM 2.0 identity claim process. Takes an
+     * ek, ak, and secret and then generates a seed that is used to generate AES
+     * and HMAC keys. Parses the ak name. Encrypts the seed with the public ek.
+     * Uses the AES key to encrypt the secret. Uses the HMAC key to generate an
+     * HMAC to cover the encrypted secret and the ak name. The output is an
+     * encrypted blob that acts as the first part of a challenge-response
+     * authentication mechanism to validate an identity claim.
      *
      * Equivalent to calling tpm2_makecredential using tpm2_tools.
      *
@@ -1105,7 +1108,7 @@ public abstract class AbstractAttestationCertificateAuthority
      * @return the encrypted blob forming the identity claim challenge
      */
     protected ByteString tpm20MakeCredential(final RSAPublicKey ek, final RSAPublicKey ak,
-                                             final byte[] secret) {
+            final byte[] secret) {
         // check size of the secret
         if (secret.length > MAX_SECRET_LENGTH) {
             throw new IllegalArgumentException("Secret must be " + MAX_SECRET_LENGTH
@@ -1173,19 +1176,19 @@ public abstract class AbstractAttestationCertificateAuthority
             byte[] bytesToReturn = assembleCredential(topSize, integrity, encSecret, encSeed);
             return ByteString.copyFrom(bytesToReturn);
 
-        } catch (BadPaddingException | IllegalBlockSizeException | NoSuchAlgorithmException
-                | InvalidKeyException | InvalidAlgorithmParameterException
-                | NoSuchPaddingException e) {
+        } catch (BadPaddingException | IllegalBlockSizeException
+                | NoSuchAlgorithmException | InvalidKeyException
+                | InvalidAlgorithmParameterException | NoSuchPaddingException e) {
             throw new IdentityProcessingException(
                     "Encountered error while making the identity claim challenge: "
-                            + e.getMessage(), e);
+                    + e.getMessage(), e);
         }
     }
 
     @SuppressWarnings("magicnumber")
     private byte[] assembleCredential(final byte[] topSize, final byte[] integrityHmac,
-                                             final byte[] encryptedSecret,
-                                             final byte[] encryptedSeed) {
+            final byte[] encryptedSecret,
+            final byte[] encryptedSeed) {
         /*
          * Credential structure breakdown with endianness:
          * 0-1 topSize (2), LE
@@ -1214,9 +1217,11 @@ public abstract class AbstractAttestationCertificateAuthority
 
     /**
      * Determines the AK name from the AK Modulus.
+     *
      * @param akModulus modulus of an attestation key
      * @return the ak name byte array
-     * @throws NoSuchAlgorithmException Underlying SHA256 method used a bad algorithm
+     * @throws NoSuchAlgorithmException Underlying SHA256 method used a bad
+     * algorithm
      */
     byte[] generateAkName(final byte[] akModulus) throws NoSuchAlgorithmException {
         byte[] namePrefix = HexUtils.hexStringToByteArray(AK_NAME_PREFIX);
@@ -1232,10 +1237,11 @@ public abstract class AbstractAttestationCertificateAuthority
     }
 
     /**
-     * This replicates the TPM 2.0 CryptKDFa function to an extent. It will only work for generation
-     * that uses SHA-256, and will only generate values of 32 B or less. Counters above zero and
-     * multiple contexts are not supported in this implementation. This should work for all uses of
-     * the KDF for TPM2_MakeCredential.
+     * This replicates the TPM 2.0 CryptKDFa function to an extent. It will only
+     * work for generation that uses SHA-256, and will only generate values of
+     * 32 B or less. Counters above zero and multiple contexts are not supported
+     * in this implementation. This should work for all uses of the KDF for
+     * TPM2_MakeCredential.
      *
      * @param seed random value used to generate the key
      * @param label first portion of message used to generate key
@@ -1247,7 +1253,7 @@ public abstract class AbstractAttestationCertificateAuthority
      */
     @SuppressWarnings("magicnumber")
     private byte[] cryptKDFa(final byte[] seed, final String label, final byte[] context,
-                                   final int sizeInBytes)
+            final int sizeInBytes)
             throws NoSuchAlgorithmException, InvalidKeyException {
         ByteBuffer b;
         b = ByteBuffer.allocate(4);
@@ -1292,6 +1298,7 @@ public abstract class AbstractAttestationCertificateAuthority
 
     /**
      * Computes the sha256 hash of the given blob.
+     *
      * @param blob byte array to take the hash of
      * @return sha256 hash of blob
      * @throws NoSuchAlgorithmException improper algorithm selected
@@ -1307,8 +1314,7 @@ public abstract class AbstractAttestationCertificateAuthority
     /**
      * Generates a array of random bytes.
      *
-     * @param numberOfBytes
-     *            to be generated
+     * @param numberOfBytes to be generated
      * @return byte array filled with the specified number of bytes.
      */
     private byte[] generateRandomBytes(final int numberOfBytes) {
@@ -1319,11 +1325,11 @@ public abstract class AbstractAttestationCertificateAuthority
     }
 
     /**
-     * Extracts the IV from the identity request. That is, take the first block of data from the
-     * symmetric blob and treat that as the IV. This modifies the original symmetric block.
+     * Extracts the IV from the identity request. That is, take the first block
+     * of data from the symmetric blob and treat that as the IV. This modifies
+     * the original symmetric block.
      *
-     * @param identityRequest
-     *            to extract the IV from
+     * @param identityRequest to extract the IV from
      * @return the IV from the identity request
      */
     private byte[] extractInitialValue(final IdentityRequest identityRequest) {
@@ -1350,11 +1356,13 @@ public abstract class AbstractAttestationCertificateAuthority
     }
 
     /**
-     * Helper method to unwrap the certificate request sent by the client and verify the
-     * provided nonce.
+     * Helper method to unwrap the certificate request sent by the client and
+     * verify the provided nonce.
      *
-     * @param request Client Certificate Request containing nonce to complete identity claim
-     * @return the {@link TPM2ProvisionerState} if valid nonce provided / null, otherwise
+     * @param request Client Certificate Request containing nonce to complete
+     * identity claim
+     * @return the {@link TPM2ProvisionerState} if valid nonce provided / null,
+     * otherwise
      */
     private TPM2ProvisionerState getTpm2ProvisionerState(
             final ProvisionerTpm2.CertificateRequest request) {
@@ -1367,11 +1375,13 @@ public abstract class AbstractAttestationCertificateAuthority
     }
 
     /**
-     * Helper method to parse a byte array into an {@link ProvisionerTpm2.IdentityClaim}.
+     * Helper method to parse a byte array into an
+     * {@link ProvisionerTpm2.IdentityClaim}.
      *
-     * @param identityClaim byte array that should be converted to a Protobuf IdentityClaim
-     *                      object
-     * @throws {@link IdentityProcessingException} if byte array could not be parsed
+     * @param identityClaim byte array that should be converted to a Protobuf
+     * IdentityClaim object
+     * @throws {@link IdentityProcessingException} if byte array could not be
+     * parsed
      * @return the Protobuf generated Identity Claim object
      */
     private ProvisionerTpm2.IdentityClaim parseIdentityClaim(final byte[] identityClaim) {
@@ -1384,9 +1394,10 @@ public abstract class AbstractAttestationCertificateAuthority
     }
 
     /**
-     * Helper method to parse an Endorsement Credential from a Protobuf generated
-     * IdentityClaim. Will also check if the Endorsement Credential was already uploaded.
-     * Persists the Endorsement Credential if it does not already exist.
+     * Helper method to parse an Endorsement Credential from a Protobuf
+     * generated IdentityClaim. Will also check if the Endorsement Credential
+     * was already uploaded. Persists the Endorsement Credential if it does not
+     * already exist.
      *
      * @param identityClaim a Protobuf generated Identity Claim object
      * @param ekPub the endorsement public key from the Identity Claim object
@@ -1412,14 +1423,15 @@ public abstract class AbstractAttestationCertificateAuthority
     }
 
     /**
-     * Helper method to parse a set of Platform Credentials from a Protobuf generated
-     * IdentityClaim and Endorsement Credential. Persists the Platform Credentials if they
-     * do not already exist.
+     * Helper method to parse a set of Platform Credentials from a Protobuf
+     * generated IdentityClaim and Endorsement Credential. Persists the Platform
+     * Credentials if they do not already exist.
      *
      * @param identityClaim a Protobuf generated Identity Claim object
-     * @param endorsementCredential an endorsement credential to check if platform credentials
-     *                              exist
-     * @return the Set of Platform Credentials, if they exist, an empty set otherwise
+     * @param endorsementCredential an endorsement credential to check if
+     * platform credentials exist
+     * @return the Set of Platform Credentials, if they exist, an empty set
+     * otherwise
      */
     private Set<PlatformCredential> parsePcsFromIdentityClaim(
             final ProvisionerTpm2.IdentityClaim identityClaim,
@@ -1443,10 +1455,12 @@ public abstract class AbstractAttestationCertificateAuthority
     }
 
     /**
-     * Helper method to extract a DER encoded ASN.1 certificate from an X509 certificate.
+     * Helper method to extract a DER encoded ASN.1 certificate from an X509
+     * certificate.
      *
      * @param certificate the X509 certificate to be converted to DER encoding
-     * @throws {@link UnexpectedServerException} if error occurs during encoding retrieval
+     * @throws {@link UnexpectedServerException} if error occurs during encoding
+     * retrieval
      * @return the byte array representing the DER encoded certificate
      */
     private byte[] getDerEncodedCertificate(final X509Certificate certificate) {
@@ -1456,26 +1470,28 @@ public abstract class AbstractAttestationCertificateAuthority
             LOG.error("Error converting certificate to ASN.1 DER Encoding.", e);
             throw new UnexpectedServerException(
                     "Encountered error while converting X509 Certificate to ASN.1 DER Encoding: "
-                            + e.getMessage(), e);
+                    + e.getMessage(), e);
         }
     }
 
     /**
-     * Helper method to create an {@link IssuedAttestationCertificate} object, set its
-     * corresponding device and persist it.
+     * Helper method to create an {@link IssuedAttestationCertificate} object,
+     * set its corresponding device and persist it.
      *
-     * @param derEncodedAttestationCertificate the byte array representing the Attestation
-     *                                         certificate
-     * @param endorsementCredential the endorsement credential used to generate the AC
-     * @param platformCredentials the platform credentials used to generate the AC
+     * @param derEncodedAttestationCertificate the byte array representing the
+     * Attestation certificate
+     * @param endorsementCredential the endorsement credential used to generate
+     * the AC
+     * @param platformCredentials the platform credentials used to generate the
+     * AC
      * @param device the device to which the attestation certificate is tied
-     * @throws {@link CertificateProcessingException} if error occurs in persisting the Attestation
-     *                                             Certificate
+     * @throws {@link CertificateProcessingException} if error occurs in
+     * persisting the Attestation Certificate
      */
     private void saveAttestationCertificate(final byte[] derEncodedAttestationCertificate,
-                                            final EndorsementCredential endorsementCredential,
-                                            final Set<PlatformCredential> platformCredentials,
-                                            final Device device) {
+            final EndorsementCredential endorsementCredential,
+            final Set<PlatformCredential> platformCredentials,
+            final Device device) {
         IssuedAttestationCertificate issuedAc;
         boolean validDate = false;
         SupplyChainPolicy scp = this.supplyChainValidationService.getPolicy();
@@ -1500,7 +1516,7 @@ public abstract class AbstractAttestationCertificateAuthority
             LOG.error("Error saving generated Attestation Certificate to database.", e);
             throw new CertificateProcessingException(
                     "Encountered error while storing Attestation Certificate: "
-                            + e.getMessage(), e);
+                    + e.getMessage(), e);
         }
     }
 }

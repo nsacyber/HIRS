@@ -330,7 +330,7 @@ public class PolicyPageController extends PageController<NoPageParams> {
         PageMessages messages = new PageMessages();
         String successMessage;
         boolean firmwareValidationOptionEnabled = ppModel.getFmValidate()
-                .equalsIgnoreCase(ENABLED_PARAMETER_VALUE);
+                .equalsIgnoreCase(ENABLED_CHECKED_PARAMETER_VALUE);
 
         try {
             SupplyChainPolicy policy = getDefaultPolicyAndSetInModel(ppModel, model);
