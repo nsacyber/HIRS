@@ -2,8 +2,12 @@ package hirs.tpm.eventlog;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.security.NoSuchAlgorithmException;
+import java.security.cert.CertificateException;
 import java.util.ArrayList;
 
+import hirs.tpm.eventlog.events.EvConstants;
+import hirs.tpm.eventlog.uefi.UefiConstants;
 import hirs.utils.HexUtils;
 
 /**
@@ -64,21 +68,33 @@ public class TpmPcrEvent2 extends TpmPcrEvent {
      *
      * @param is ByteArrayInputStream holding the TCG Log event
      * @throws IOException if an error occurs in parsing the event
+    * @throws NoSuchAlgorithmException if an undefined algorithm is encountered.
+     * @throws CertificateException If a certificate within an event can't be processed.
      */
-    public TpmPcrEvent2(final ByteArrayInputStream is) throws IOException {
+    public TpmPcrEvent2(final ByteArrayInputStream is) throws IOException, CertificateException,
+                                                                        NoSuchAlgorithmException {
         super(is);
-        setDigestLength(SHA256_LENGTH);
+        setDigestLength(EvConstants.SHA256_LENGTH);
+        setLogFormat(2);
+        /**  Event data. */
+        byte[] event;
+        byte[] rawIndex = new byte[UefiConstants.SIZE_4];
+        byte[] algCountBytes = new byte[UefiConstants.SIZE_4];
+        byte[] rawType = new byte[UefiConstants.SIZE_4];
+        byte[] rawEventSize = new byte[UefiConstants.SIZE_4];
+        byte[] eventDigest = new byte[EvConstants.SHA256_LENGTH];
+        byte[] eventContent = null;
+        TcgTpmtHa hashAlg = null;
+        int eventSize = 0;
         //TCG_PCR_EVENT2
-        byte[] rawInt = new byte[INT_LENGTH];
-        if (is.available() > MIN_SIZE) {
-            is.read(rawInt);
-            setPcrIndex(rawInt);
-            is.read(rawInt);
-            setEventType(rawInt);
+        if (is.available() > UefiConstants.SIZE_32) {
+            is.read(rawIndex);
+            setPcrIndex(rawIndex);
+            is.read(rawType);
+            setEventType(rawType);
             // TPML_DIGEST_VALUES
-            is.read(rawInt);
-            algCount = HexUtils.leReverseInt(rawInt);
-            TcgTpmtHa hashAlg = null;
+            is.read(algCountBytes);
+            algCount = HexUtils.leReverseInt(algCountBytes);
             // Process TPMT_HA,
             for (int i = 0; i < algCount; i++) {
                 hashAlg = new TcgTpmtHa(is);
@@ -87,11 +103,36 @@ public class TpmPcrEvent2 extends TpmPcrEvent {
                     setEventDigest(hashAlg.getDigest());
                 }
             }
-            is.read(rawInt);
-            int eventSize = HexUtils.leReverseInt(rawInt);
-            byte[] eventContent = new byte[eventSize];
+            is.read(rawEventSize);
+            eventSize = HexUtils.leReverseInt(rawEventSize);
+            eventContent = new byte[eventSize];
             is.read(eventContent);
             setEventContent(eventContent);
+            int eventLength = rawIndex.length + rawType.length + eventDigest.length
+                                                  + rawEventSize.length;
+            int offset = 0;
+            for (TcgTpmtHa hash:hashlist) {
+                eventLength += hash.getBuffer().length;
+            }
+            event = new byte[eventLength];
+            System.arraycopy(rawIndex, 0, event, offset, rawIndex.length);
+            offset += rawIndex.length;
+            System.arraycopy(rawType, 0, event, offset, rawType.length);
+            offset += rawType.length;
+            System.arraycopy(eventDigest, 0, event, offset, eventDigest.length);
+            offset += eventDigest.length;
+            System.arraycopy(rawEventSize, 0, event, offset, rawEventSize.length);
+            offset += rawEventSize.length;
+            //System.arraycopy(eventContent, 0, event, offset, eventContent.length);
+            this.processEvent(event, eventContent);
         }
+    }
+
+    /**
+     * Returns a list of digests within this event.
+     * @return a list of digests.
+     */
+    public ArrayList<TcgTpmtHa> getHashList() {
+        return hashlist;
     }
 }

@@ -1,18 +1,19 @@
 package hirs.swid;
 
-import javax.xml.bind.JAXB;
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBElement;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Marshaller;
 import javax.xml.bind.Unmarshaller;
 import javax.xml.bind.UnmarshalException;
+import javax.xml.crypto.dsig.keyinfo.*;
 import javax.xml.transform.OutputKeys;
 import javax.xml.transform.Source;
 import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerConfigurationException;
 import javax.xml.transform.TransformerException;
+import javax.xml.transform.dom.DOMResult;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 import javax.xml.transform.stream.StreamSource;
@@ -29,7 +30,6 @@ import javax.xml.crypto.XMLStructure;
 import javax.xml.crypto.dsig.CanonicalizationMethod;
 import javax.xml.crypto.dsig.DigestMethod;
 import javax.xml.crypto.dsig.Reference;
-import javax.xml.crypto.dsig.SignatureMethod;
 import javax.xml.crypto.dsig.SignedInfo;
 import javax.xml.crypto.dsig.Transform;
 import javax.xml.crypto.dsig.XMLSignature;
@@ -37,78 +37,48 @@ import javax.xml.crypto.dsig.XMLSignatureException;
 import javax.xml.crypto.dsig.XMLSignatureFactory;
 import javax.xml.crypto.dsig.dom.DOMSignContext;
 import javax.xml.crypto.dsig.dom.DOMValidateContext;
-import javax.xml.crypto.dsig.keyinfo.KeyInfoFactory;
-import javax.xml.crypto.dsig.keyinfo.KeyInfo;
-import javax.xml.crypto.dsig.keyinfo.X509Data;
 import javax.xml.crypto.dsig.spec.C14NMethodParameterSpec;
 import javax.xml.crypto.dsig.spec.TransformParameterSpec;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 
 import org.w3c.dom.Document;
+import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.ByteArrayInputStream;
 import java.io.BufferedReader;
 import java.io.FileNotFoundException;
-import java.io.OutputStream;
-import java.io.FileInputStream;
 import java.io.FileOutputStream;
 
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
-import java.nio.file.Path;
 import java.nio.file.Paths;
 
-import java.security.InvalidAlgorithmParameterException;
-import java.security.Key;
-import java.security.KeyStore;
-import java.security.KeyStoreException;
-import java.security.NoSuchAlgorithmException;
-import java.security.PublicKey;
-import java.security.UnrecoverableEntryException;
-import java.security.cert.CertificateException;
+import java.security.*;
 import java.security.cert.X509Certificate;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.Properties;
 
 import java.math.BigInteger;
 
-import hirs.swid.utils.CsvParser;
-import hirs.swid.utils.HashSwid;
-import hirs.swid.xjc.BaseElement;
-import hirs.swid.xjc.CanonicalizationMethodType;
-import hirs.swid.xjc.DigestMethodType;
 import hirs.swid.xjc.Directory;
 import hirs.swid.xjc.Entity;
 import hirs.swid.xjc.Link;
 import hirs.swid.xjc.ObjectFactory;
 import hirs.swid.xjc.ResourceCollection;
-import hirs.swid.xjc.ReferenceType;
-import hirs.swid.xjc.SignatureType;
-import hirs.swid.xjc.SignatureValueType;
-import hirs.swid.xjc.SignatureMethodType;
-import hirs.swid.xjc.SignedInfoType;
 import hirs.swid.xjc.SoftwareIdentity;
 import hirs.swid.xjc.SoftwareMeta;
-import hirs.swid.xjc.TransformType;
-import hirs.swid.xjc.TransformsType;
 
 import com.eclipsesource.json.Json;
 import com.eclipsesource.json.JsonObject;
-import com.eclipsesource.json.JsonObject.Member;
-import com.eclipsesource.json.JsonValue;
-import com.eclipsesource.json.Location;
 import com.eclipsesource.json.ParseException;
 
 
@@ -120,32 +90,16 @@ import com.eclipsesource.json.ParseException;
  */
 public class SwidTagGateway {
 
-    private static final QName _DEFAULT_QNAME = new QName(
-            "http://www.w3.org/2000/09/xmldsig#", "SHA256", "ds");
-    private static final QName _SHA1Value_QNAME = new QName(
-            "http://www.w3.org/2000/09/xmldsig#", "SHA1", "ds");
-    private static final QName _SHA384Value_QNAME = new QName(
-            "http://www.w3.org/2000/09/xmldsig#", "SHA384", "ds");
-    private static final QName _SHA512Value_QNAME = new QName(
-            "http://www.w3.org/2000/09/xmldsig#", "SHA512", "ds");
     private static final QName _SHA256_HASH = new QName(
             "http://www.w3.org/2001/04/xmlenc#sha256", "hash", "SHA256");
-
     private final ObjectFactory objectFactory = new ObjectFactory();
-    private final File generatedFile = new File("generated_swidTag.swidtag");
-    private QName hashValue = null;
-
     private JAXBContext jaxbContext;
     private Marshaller marshaller;
     private Unmarshaller unmarshaller;
     private String attributesFile;
-    /**
-     * The keystoreFile is used in signXMLDocument() to pass in the keystore path.
-     * The same method requires the keystore password and the alias of the private key,
-     * which would need to be passed in if not using the default keystore.
-     */
-    private String keystoreFile;
-    private boolean showCert;
+    private boolean defaultCredentials;
+    private String pemPrivateKeyFile;
+    private String pemCertificateFile;
 
     /**
      * Default constructor initializes jaxbcontext, marshaller, and unmarshaller
@@ -156,8 +110,8 @@ public class SwidTagGateway {
             marshaller = jaxbContext.createMarshaller();
             unmarshaller = jaxbContext.createUnmarshaller();
             attributesFile = SwidTagConstants.DEFAULT_ATTRIBUTES_FILE;
-            keystoreFile = SwidTagConstants.DEFAULT_KEYSTORE_PATH;
-            showCert = false;
+            defaultCredentials = true;
+            pemCertificateFile = "";
         } catch (JAXBException e) {
             System.out.println("Error initializing jaxbcontext: " + e.getMessage());
         }
@@ -172,107 +126,37 @@ public class SwidTagGateway {
     }
 
     /**
-     * Setter for String holding keystore path
-     * @param keystore
+     * Setter for boolean governing signing credentials
+     * @param defaultCredentials
+     * @return
      */
-    public void setKeystoreFile(String keystoreFile) {
-        this.keystoreFile = keystoreFile;
+    public void setDefaultCredentials(boolean defaultCredentials) {
+        this.defaultCredentials = defaultCredentials;
     }
 
     /**
-     * Setter for boolean to display certificate block in xml signature
-     * @param showCert
+     * Setter for private key file in PEM format
+     * @param pemPrivateKeyFile
      */
-    public void setShowCert(boolean showCert) {
-        this.showCert = showCert;
+    public void setPemPrivateKeyFile(String pemPrivateKeyFile) {
+        this.pemPrivateKeyFile = pemPrivateKeyFile;
     }
 
-    /**
-     * default generator method that has no parameters
+    /** Setter for certificate file in PEM format
+     * @param pemCertificateFile
      */
-    public void generateSwidTag() {
-        generateSwidTag("");
-    }
-
-    /**
-     * This generator method is used by the create method.
-     *
-     * This method should be updated to incorporate the RIM fields that are implemented
-     * in generateSwidTag(final File outputFile) below.
-     *
-     * @param inputFile - the file in csv format that is used as data
-     * @param outputFile - output specific to the given file
-     * @param hashType - the optional labeling of the hash type
-     */
-    public void generateSwidTag(final String inputFile,
-            final String outputFile, final String hashType) {
-        // create file instances
-        File input = new File(inputFile);
-        File output = new File(outputFile);
-        List<String> tempList = new LinkedList<>();
-
-        // I need to go over this again about which needs to be checked.
-        if (input.exists()) {
-            // parse the csv file
-            CsvParser parser = new CsvParser(input);
-            for (String line : parser.getContent()) {
-                tempList.add(line);
-            }
-
-            if (hashType.contains("256")) {
-                hashValue = _DEFAULT_QNAME;
-            } else if (hashType.contains("384")) {
-                hashValue = _SHA384Value_QNAME;
-            } else if (hashType.contains("512")) {
-                hashValue = _SHA512Value_QNAME;
-            } else if (hashType.contains("1")) {
-                hashValue = _SHA1Value_QNAME;
-            } else {
-                hashValue = _DEFAULT_QNAME;
-            }
-
-            // generate a swid tag
-            Properties properties = new Properties();
-            InputStream is = null;
-            try {
-                is = SwidTagGateway.class.getClassLoader().getResourceAsStream(SwidTagConstants.HIRS_SWIDTAG_HEADERS);
-                properties.load(is);
-
-                SoftwareIdentity swidTag = createSwidTag(new JsonObject());
-
-                JAXBElement<Entity> entity = objectFactory.createSoftwareIdentityEntity(createEntity(new JsonObject()));
-                swidTag.getEntityOrEvidenceOrLink().add(entity);
-
-                // we should have resources, there for we need a collection
-                JAXBElement<ResourceCollection> resources = objectFactory.createSoftwareIdentityPayload(createPayload(tempList, hashValue));
-                swidTag.getEntityOrEvidenceOrLink().add(resources);
-
-                JAXBElement<SoftwareIdentity> jaxbe = objectFactory.createSoftwareIdentity(swidTag);
-                writeSwidTagFile(jaxbe, output);
-            } catch (IOException e) {
-                System.out.println("Error reading properties file: ");
-                e.printStackTrace();
-            } finally {
-                if (is != null) {
-                    try {
-                        is.close();
-                    } catch (IOException ex) {
-                        // ignore
-                    }
-                }
-            }
-        }
+    public void setPemCertificateFile(String pemCertificateFile) {
+        this.pemCertificateFile = pemCertificateFile;
     }
 
     /**
      * This method generates a base RIM from the values in a JSON file.
      *
-     * @param outputFile
+     * @param filename
      */
     public void generateSwidTag(final String filename) {
         SoftwareIdentity swidTag = null;
         try {
-            System.out.println("Reading base rim values from " + attributesFile);
             BufferedReader jsonIn = Files.newBufferedReader(Paths.get(attributesFile), StandardCharsets.UTF_8);
             JsonObject configProperties = Json.parse(jsonIn).asObject();
             //SoftwareIdentity
@@ -318,12 +202,7 @@ public class SwidTagGateway {
         }
 
         Document signedSoftwareIdentity = signXMLDocument(objectFactory.createSoftwareIdentity(swidTag));
-        System.out.println("Signature core validity: " + validateSignedXMLDocument(signedSoftwareIdentity));
-        if (!filename.isEmpty()) {
-            writeSwidTagFile(signedSoftwareIdentity, new File(filename));
-        } else {
-            writeSwidTagFile(signedSoftwareIdentity, generatedFile);
-        }
+        writeSwidTagFile(signedSoftwareIdentity, filename);
     }
 
    /**
@@ -334,33 +213,14 @@ public class SwidTagGateway {
      * @param path the location of the file to be validated
      */
     public boolean validateSwidTag(String path) throws IOException {
-        JAXBElement jaxbe = unmarshallSwidTag(path);
-        SoftwareIdentity swidTag = (SoftwareIdentity) jaxbe.getValue();
-        String output = String.format("name: %s;\ntagId:  %s\n%s",
-                swidTag.getName(), swidTag.getTagId(),
-                SwidTagConstants.SCHEMA_STATEMENT);
-        System.out.println("SWID Tag found: ");
-        System.out.println(output);
+        Document document = unmarshallSwidTag(path);
+        Element softwareIdentity = (Element) document.getElementsByTagName("SoftwareIdentity").item(0);
+        StringBuilder si = new StringBuilder("Base RIM detected:\n");
+        si.append("SoftwareIdentity name: " + softwareIdentity.getAttribute("name") + "\n");
+        si.append("SoftwareIdentity tagId: " + softwareIdentity.getAttribute("tagId") + "\n");
+        System.out.println(si.toString());
+        System.out.println("Signature core validity: " + validateSignedXMLDocument(document));
         return true;
-    }
-
-    /**
-     * This method calls the marshal() method that writes the swidtag data to the output file.
-     *
-     * @param jaxbe
-     * @param outputFile
-     */
-    public void writeSwidTagFile(JAXBElement<SoftwareIdentity> jaxbe, File outputFile) {
-        JAXBContext jaxbContext;
-        try {
-            jaxbContext = JAXBContext.newInstance(SwidTagConstants.SCHEMA_PACKAGE);
-            Marshaller marshaller = jaxbContext.createMarshaller();
-            marshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, true);
-            marshaller.marshal(jaxbe, outputFile);
-        } catch (JAXBException e) {
-            System.out.println("Error generating xml: ");
-            e.printStackTrace();
-        } 
     }
 
     /**
@@ -368,17 +228,18 @@ public class SwidTagGateway {
      *
      * @param swidTag
      */
-    public void writeSwidTagFile(Document swidTag, File outputFile) {
+    public void writeSwidTagFile(Document swidTag, String output) {
         try {
-            OutputStream outStream = new FileOutputStream(outputFile);
             TransformerFactory tf = TransformerFactory.newInstance();
             Transformer transformer = tf.newTransformer();
             transformer.setOutputProperty(OutputKeys.INDENT, "yes");
             transformer.setOutputProperty("{http://xml.apache.org/xslt}indent-amount", "2");
             Source source = new DOMSource(swidTag);
-            System.out.println("Writing to file: " + outputFile.getName());
-            transformer.transform(source, new StreamResult(outStream));
-            transformer.transform(source, new StreamResult(System.out));
+            if (output.isEmpty()) {
+                transformer.transform(source, new StreamResult(System.out));
+            } else {
+                transformer.transform(source, new StreamResult(new FileOutputStream(output)));
+            }
         } catch (FileNotFoundException e) {
             System.out.println("Unable to write to file: " + e.getMessage());
         } catch (TransformerConfigurationException e) {
@@ -392,7 +253,7 @@ public class SwidTagGateway {
      * This method creates SoftwareIdentity element based on the parameters read in from
      * a properties file.
      *
-     * @param properties the Properties object containing parameters from file
+     * @param jsonObject the Properties object containing parameters from file
      * @return SoftwareIdentity object created from the properties
      */
     private SoftwareIdentity createSwidTag(JsonObject jsonObject) {
@@ -426,7 +287,7 @@ public class SwidTagGateway {
      * This method creates an Entity object based on the parameters read in from
      * a properties file.
      *
-     * @param properties the Properties object containing parameters from file
+     * @param jsonObject the Properties object containing parameters from file
      * @return Entity object created from the properties
      */
     private Entity createEntity(JsonObject jsonObject) {
@@ -463,7 +324,7 @@ public class SwidTagGateway {
     /**
      * Thsi method creates a Link element based on the parameters read in from a properties
      * file.
-     * @param properties the Properties object containing parameters from file
+     * @param jsonObject the Properties object containing parameters from file
      * @return Link element created from the properties
      */
     private Link createLink(JsonObject jsonObject) {
@@ -483,7 +344,7 @@ public class SwidTagGateway {
     /**
      * This method creates a Meta element based on the parameters read in from a properties
      * file.
-     * @param properties the Properties object containing parameters from file
+     * @param jsonObject the Properties object containing parameters from file
      * @return the Meta element created from the properties
      */
     private SoftwareMeta createSoftwareMeta(JsonObject jsonObject) {
@@ -514,15 +375,15 @@ public class SwidTagGateway {
     /**
      * This method creates a Payload from the parameters read in from a properties file.
      *
-     * @param properties the Properties object containing parameters from file
+     * @param jsonObject the Properties object containing parameters from file
      * @return the Payload object created
      */
     private ResourceCollection createPayload(JsonObject jsonObject) {
         ResourceCollection payload = objectFactory.createResourceCollection();
         Map<QName, String> attributes = payload.getOtherAttributes();
-        addNonNullAttribute(attributes, SwidTagConstants._N8060_ENVVARPREFIX, jsonObject.getString(SwidTagConstants.PAYLOAD_ENVVARPREFIX, ""));
-        addNonNullAttribute(attributes, SwidTagConstants._N8060_ENVVARSUFFIX, jsonObject.getString(SwidTagConstants.PAYLOAD_ENVVARSUFFIX, ""));
-        addNonNullAttribute(attributes, SwidTagConstants._N8060_PATHSEPARATOR, jsonObject.getString(SwidTagConstants.PAYLOAD_PATHSEPARATOR, ""));
+        addNonNullAttribute(attributes, SwidTagConstants._N8060_ENVVARPREFIX, jsonObject.getString(SwidTagConstants._N8060_ENVVARPREFIX.getLocalPart(), ""));
+        addNonNullAttribute(attributes, SwidTagConstants._N8060_ENVVARSUFFIX, jsonObject.getString(SwidTagConstants._N8060_ENVVARSUFFIX.getLocalPart(), ""));
+        addNonNullAttribute(attributes, SwidTagConstants._N8060_PATHSEPARATOR, jsonObject.getString(SwidTagConstants._N8060_PATHSEPARATOR.getLocalPart(), ""));
 
         return payload;
     }
@@ -530,7 +391,7 @@ public class SwidTagGateway {
     /**
      * This method creates a Directory from the parameters read in from a properties file.
      *
-     * @param properties the Properties object containing parameters from file
+     * @param jsonObject the Properties object containing parameters from file
      * @return Directory object created from the properties
      */
     private Directory createDirectory(JsonObject jsonObject) {
@@ -540,13 +401,7 @@ public class SwidTagGateway {
         addNonNullAttribute(attributes, SwidTagConstants._SUPPORT_RIM_TYPE, jsonObject.getString(SwidTagConstants.SUPPORT_RIM_TYPE, ""));
         addNonNullAttribute(attributes, SwidTagConstants._SUPPORT_RIM_FORMAT, jsonObject.getString(SwidTagConstants.SUPPORT_RIM_FORMAT, ""));
         addNonNullAttribute(attributes, SwidTagConstants._SUPPORT_RIM_URI_GLOBAL, jsonObject.getString(SwidTagConstants.SUPPORT_RIM_URI_GLOBAL, ""));
-/*
-        directory.setLocation(jsonObject.getString(SwidTagConstants.DIRECTORY_LOCATION));
-        String directoryRoot = jsonObject.getString(SwidTagConstants.DIRECTORY_ROOT);
-        if (!directoryRoot.isEmpty()) {
-            directory.setRoot(directoryRoot);
-        }
-*/
+
         return directory;
     }
 
@@ -554,8 +409,7 @@ public class SwidTagGateway {
      * This method creates a hirs.swid.xjc.File from three arguments, then calculates
      * and stores its hash as an attribute in itself.
      *
-     * @param filename
-     * @param location
+     * @param jsonObject
      * @return hirs.swid.xjc.File object from File object
      */
     private hirs.swid.xjc.File createFile(JsonObject jsonObject) {
@@ -578,32 +432,6 @@ public class SwidTagGateway {
     }
 
     /**
-     * This method creates a Payload from a list of Strings and a hash algorithm.
-     * The Strings in the list are expected to be in the form of "[PCR_NUMBER],[PCR_VALUE]"
-     * and the hash algorithm is attached as the file's xml namespace identifier.
-     *
-     * @param populate
-     * @return
-     */
-    private ResourceCollection createPayload(List<String> populate, QName hashStr) {
-        ResourceCollection rc = objectFactory.createResourceCollection();
-        hirs.swid.xjc.File xjcFile = null;
-        String[] tempArray = null;
-
-        for (String item : populate) {
-            xjcFile = objectFactory.createFile();
-
-            tempArray = item.split(",");
-
-            xjcFile.setName(tempArray[SwidTagConstants.PCR_NUMBER]);
-            xjcFile.getOtherAttributes().put(hashStr, tempArray[SwidTagConstants.PCR_VALUE]);
-            rc.getDirectoryOrFileOrProcess().add(xjcFile);
-        }
-
-        return rc;
-    }
-
-    /**
      * This method signs a SoftwareIdentity with an xmldsig in compatibility mode.
      * Current assumptions: digest method SHA256, signature method SHA256, enveloped signature
      */
@@ -623,34 +451,47 @@ public class SwidTagGateway {
                     sigFactory.newSignatureMethod(SwidTagConstants.SIGNATURE_ALGORITHM_RSA_SHA256, null),
                     Collections.singletonList(reference)
             );
-            KeyStore keystore = KeyStore.getInstance("JKS");
-            keystore.load(new FileInputStream(keystoreFile), SwidTagConstants.DEFAULT_KEYSTORE_PASSWORD.toCharArray());
-            KeyStore.PrivateKeyEntry privateKey = (KeyStore.PrivateKeyEntry) keystore.getEntry(SwidTagConstants.DEFAULT_PRIVATE_KEY_ALIAS,
-                    new KeyStore.PasswordProtection(SwidTagConstants.DEFAULT_KEYSTORE_PASSWORD.toCharArray()));
-            X509Certificate certificate = (X509Certificate) privateKey.getCertificate();
+            List<XMLStructure> keyInfoElements = new ArrayList<XMLStructure>();
+
             KeyInfoFactory kiFactory = sigFactory.getKeyInfoFactory();
-            ArrayList<Object> x509Content = new ArrayList<Object>();
-            x509Content.add(certificate.getSubjectX500Principal().getName());
-            if (showCert) {
+            PrivateKey privateKey;
+            PublicKey publicKey;
+            CredentialParser cp = new CredentialParser();
+            if (defaultCredentials) {
+                cp.parseJKSCredentials();
+                privateKey = cp.getPrivateKey();
+                publicKey = cp.getPublicKey();
+            } else {
+                cp.parsePEMCredentials(pemCertificateFile, pemPrivateKeyFile);
+                X509Certificate certificate = cp.getCertificate();
+                privateKey = cp.getPrivateKey();
+                publicKey = cp.getPublicKey();
+                ArrayList<Object> x509Content = new ArrayList<Object>();
+                x509Content.add(certificate.getSubjectX500Principal().getName());
                 x509Content.add(certificate);
+                X509Data data = kiFactory.newX509Data(x509Content);
+                keyInfoElements.add(data);
             }
-            X509Data data = kiFactory.newX509Data(x509Content);
-            KeyInfo keyinfo = kiFactory.newKeyInfo(Collections.singletonList(data));
+            KeyName keyName = kiFactory.newKeyName(cp.getCertificateSubjectKeyIdentifier());
+            keyInfoElements.add(keyName);
+            KeyValue keyValue = kiFactory.newKeyValue(publicKey);
+            keyInfoElements.add(keyValue);
+            KeyInfo keyinfo = kiFactory.newKeyInfo(keyInfoElements);
 
             doc = DocumentBuilderFactory.newInstance().newDocumentBuilder().newDocument();
             marshaller.marshal(swidTag, doc);
-            DOMSignContext context = new DOMSignContext(privateKey.getPrivateKey(), doc.getDocumentElement());
+            DOMSignContext context = new DOMSignContext(privateKey, doc.getDocumentElement());
             XMLSignature signature = sigFactory.newXMLSignature(signedInfo, keyinfo);
             signature.sign(context);
         } catch (FileNotFoundException e) {
             System.out.println("Keystore not found! " + e.getMessage());
         } catch (IOException e) {
             System.out.println("Error loading keystore: " + e.getMessage());
-        } catch (NoSuchAlgorithmException | KeyStoreException | InvalidAlgorithmParameterException |
-                        ParserConfigurationException | UnrecoverableEntryException e) {
+        } catch (NoSuchAlgorithmException | InvalidAlgorithmParameterException |
+                        ParserConfigurationException e) {
             System.out.println(e.getMessage());
-        } catch (CertificateException e) {
-            System.out.println("Certificate error: " + e.getMessage());
+        } catch (KeyException e) {
+            System.out.println("Error setting public key in KeyValue: " + e.getMessage());
         } catch (JAXBException e) {
             System.out.println("Error marshaling signed swidtag: " + e.getMessage());
         } catch (MarshalException | XMLSignatureException e) {
@@ -733,92 +574,26 @@ public class SwidTagGateway {
     }
 
     /**
-     * Given an input swidtag at [path] parse any PCRs in the payload into an InputStream object.
-     * This method will be used in a following pull request.
-     *
-     * @param path
-     * @return
-     * @throws IOException
-     */
-    public ByteArrayInputStream parsePayload(String path) throws IOException {
-        JAXBElement jaxbe = unmarshallSwidTag(path);
-        SoftwareIdentity softwareIdentity = (SoftwareIdentity) jaxbe.getValue();
-        String pcrs = "";
-        if (!softwareIdentity.getEntityOrEvidenceOrLink().isEmpty()) {
-            List<Object> swidtag = softwareIdentity.getEntityOrEvidenceOrLink();
-            for (Object obj : swidtag) {
-                try {
-                    JAXBElement element = (JAXBElement) obj;
-                    String elementName = element.getName().getLocalPart();
-                    if (elementName.equals(SwidTagConstants.PAYLOAD)) {
-                        ResourceCollection rc = (ResourceCollection) element.getValue();
-                        if (!rc.getDirectoryOrFileOrProcess().isEmpty()) {
-                            pcrs = parsePCRs(rc.getDirectoryOrFileOrProcess());
-                        }
-                    }
-                } catch (ClassCastException e) {
-                    System.out.println("Found a non-JAXBElement object!" + e.getMessage());
-                    throw new IOException("Found an invalid element in the swidtag file!");
-                }
-            }
-        }
-        return new ByteArrayInputStream(pcrs.getBytes(StandardCharsets.UTF_8));
-    }
-
-    /**
-     * This method traverses a hirs.swid.xjc.Directory recursively until it finds at
-     * least one hirs.swid.xjc.File.  This File is expected to have an attribute of the form
-     * "[hash algorithm]=[hash value]."
-     *
-     * @param list of swidtag elements
-     * @return the hash value(s) parsed from the File object(s)
-     */
-    private String parsePCRs(List list) {
-        final String newline = System.lineSeparator();
-    	StringBuilder sb = new StringBuilder();
-    	for (Object listItem : list) {
-    		if (listItem instanceof Directory) {
-    			Directory dir = (Directory) listItem;
-    			if (!dir.getDirectoryOrFile().isEmpty()) {
-    				parsePCRs(dir.getDirectoryOrFile());
-    			}
-    		} else if (listItem instanceof hirs.swid.xjc.File){
-    			hirs.swid.xjc.File pcr = (hirs.swid.xjc.File) listItem;
-    			String pcrHash = "";
-    			if (!pcr.getOtherAttributes().isEmpty()) {
-    				Object[] fileAttributes = pcr.getOtherAttributes().values().toArray();
-    				pcrHash = (String) fileAttributes[0];
-    			}
-    			if (pcrHash.isEmpty()) {
-    				pcrHash = "null";
-    			}
-    			sb.append(pcr.getName() + "," + pcrHash);
-    		}
-    	}
-    	System.out.println(sb.toString());
-    	return sb.toString();
-    }
-
-    /**
-     * This method unmarshalls the swidtag found at [path] into a JAXBElement object
+     * This method unmarshalls the swidtag found at [path] into a Document object
      * and validates it according to the schema.
      *
      * @param path to the input swidtag
      * @return the SoftwareIdentity element at the root of the swidtag
      * @throws IOException if the swidtag cannot be unmarshalled or validated
      */
-    private JAXBElement unmarshallSwidTag(String path) throws IOException {
-    	File input = null;
-    	InputStream is = null;
-    	JAXBElement swidtag = null;
-    	try {
-    		input = new File(path);
-    		is = SwidTagGateway.class.getClassLoader().getResourceAsStream(SwidTagConstants.SCHEMA_URL);
-    		SchemaFactory schemaFactory = SchemaFactory.newInstance(SwidTagConstants.SCHEMA_LANGUAGE);
-    		Schema schema = schemaFactory.newSchema(new StreamSource(is));
-    		unmarshaller.setSchema(schema);
-            swidtag = (JAXBElement) unmarshaller.unmarshal(input);
-    	} catch (SAXException e) {
+    private Document unmarshallSwidTag(String path) {
+        InputStream is = null;
+        Document document = null;
+        try {
+            document = removeXMLWhitespace(path);
+            is = SwidTagGateway.class.getClassLoader().getResourceAsStream(SwidTagConstants.SCHEMA_URL);
+            SchemaFactory schemaFactory = SchemaFactory.newInstance(SwidTagConstants.SCHEMA_LANGUAGE);
+            Schema schema = schemaFactory.newSchema(new StreamSource(is));
+            unmarshaller.setSchema(schema);
+            unmarshaller.unmarshal(document);
+        } catch (IOException e) {
+            System.out.println(e.getMessage());
+        } catch (SAXException e) {
             System.out.println("Error setting schema for validation!");
         } catch (UnmarshalException e) {
             System.out.println("Error validating swidtag file!");
@@ -827,18 +602,46 @@ public class SwidTagGateway {
         } catch (JAXBException e) {
             e.printStackTrace();
         } finally {
-        	if (is != null) {
-        		try {
-        			is.close();
-        		} catch (IOException e) {
-        			System.out.println("Error closing input stream");
-        		}
-        	}
-        	if (swidtag != null) {
-        	    return swidtag;
-        	} else {
-        	    throw new IOException("Invalid swidtag file!");
-        	}
+            if (is != null) {
+                try {
+                    is.close();
+                } catch (IOException e) {
+                    System.out.println("Error closing input stream");
+                }
+            }
         }
+
+        return document;
+    }
+
+    /**
+     * This method strips all whitespace from an xml file, including indents and spaces
+     * added for human-readability.
+     * @param path
+     * @return
+     */
+    private Document removeXMLWhitespace(String path) throws IOException {
+        TransformerFactory tf = TransformerFactory.newInstance();
+        Source source = new StreamSource(new File("identity_transform.xslt"));
+        Document document = null;
+        File input = new File(path);
+        if (input.length() > 0) {
+            try {
+                Transformer transformer = tf.newTransformer(source);
+                DOMResult result = new DOMResult();
+                transformer.transform(new StreamSource(input), result);
+                document = (Document) result.getNode();
+            } catch (TransformerConfigurationException e) {
+                System.out.println("Error configuring transformer!");
+                e.printStackTrace();
+            } catch (TransformerException e) {
+                System.out.println("Error transforming input!");
+                e.printStackTrace();
+            }
+        } else {
+            throw new IOException("Input file is empty!");
+        }
+
+        return document;
     }
 }

@@ -3,14 +3,13 @@ package hirs.tpm.eventlog;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Arrays;
-import java.util.List;
-import java.util.Set;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.hibernate.Session;
 
+import java.security.NoSuchAlgorithmException;
+import java.security.cert.CertificateException;
 
 import org.testng.Assert;
 import org.testng.annotations.AfterClass;
@@ -24,12 +23,7 @@ import org.junit.Assert;
 import org.junit.BeforeClass;
 */
 
-import hirs.data.persist.baseline.Baseline;
-import hirs.data.persist.Digest;
 import hirs.data.persist.SpringPersistenceTest;
-import hirs.data.persist.baseline.TpmWhiteListBaseline;
-import hirs.utils.HexUtils;
-import org.apache.commons.codec.DecoderException;
 
 /**
  *  Class for testing TCG Event Log processing.
@@ -65,6 +59,7 @@ public class TCGEventLogProcessorTest extends SpringPersistenceTest {
     * removing all <code>Baseline</code> objects.
     */
   // @AfterMethod
+ /*
    public final void resetTestState() {
        LOGGER.debug("reset test state");
        LOGGER.debug("deleting all baselines");
@@ -78,13 +73,16 @@ public class TCGEventLogProcessorTest extends SpringPersistenceTest {
        LOGGER.debug("all baselines removed");
        session.getTransaction().commit();
    }
-
+*/
    /**
-    * Tests the processing of a cryto agile event log.
+    * Tests the processing of a crypto agile event log.
     * @throws IOException when processing the test fails
+    * @throws NoSuchAlgorithmException if an unknown algorithm is encountered.
+    * @throws CertificateException if a certificate fails to parse.
     */
    @Test
-   public final void testCryptoAgileTCGEventLog() throws IOException {
+   public final void testCryptoAgileTCGEventLog() throws IOException, CertificateException,
+                                                                 NoSuchAlgorithmException {
      LOGGER.debug("Testing the parsing of a Crypto Agile formatted TCG Event Log");
      InputStream log, pcrs;
      boolean testPass = true;
@@ -117,9 +115,12 @@ public class TCGEventLogProcessorTest extends SpringPersistenceTest {
    /**
     * Tests the processing of a SHA1 formatted Event log.
     * @throws IOException when processing the test fails
+    * @throws NoSuchAlgorithmException if an unknown algorithm is encountered.
+    * @throws CertificateException if a certificate fails to parse.
     */
     @Test
-    public final void testSHA1TCGEventLog() throws IOException {
+    public final void testSHA1TCGEventLog() throws IOException, CertificateException,
+                                                           NoSuchAlgorithmException {
       LOGGER.debug("Testing the parsing of a SHA1 formated TCG Event Log");
       InputStream log, pcrs;
       boolean testPass = true;
@@ -152,10 +153,10 @@ public class TCGEventLogProcessorTest extends SpringPersistenceTest {
     /**
      * Tests TPM Baseline creation from a EventLog.
      * @throws IOException when processing the test fails
-     * @throws DecoderException hex string problem.
      */
-    @Test
-    public final void testTPMBaselineCreate() throws IOException, DecoderException {
+    //@Test
+    /*
+    public final void testTPMBaselineCreate() throws IOException {
         LOGGER.debug("Create and save TPM baseline from TCG Event Log test started");
         InputStream log;
         boolean testPass = true;
@@ -184,4 +185,5 @@ public class TCGEventLogProcessorTest extends SpringPersistenceTest {
         Assert.assertTrue(testPass);
         LOGGER.debug("OK. Create and save TPM baseline from TCG Event Log was a success");
     }
+    */
 }

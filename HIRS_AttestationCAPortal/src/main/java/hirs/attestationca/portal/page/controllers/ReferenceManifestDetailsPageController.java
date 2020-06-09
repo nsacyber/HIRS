@@ -3,11 +3,19 @@ package hirs.attestationca.portal.page.controllers;
 import hirs.data.persist.ReferenceManifest;
 import hirs.data.persist.SwidResource;
 import hirs.persist.ReferenceManifestManager;
+import hirs.tpm.eventlog.TCGEventLogProcessor;
 import hirs.attestationca.portal.page.Page;
 import hirs.attestationca.portal.page.PageController;
 import hirs.attestationca.portal.page.PageMessages;
 import hirs.attestationca.portal.page.params.ReferenceManifestDetailsPageParams;
 import java.io.IOException;
+import java.nio.file.NoSuchFileException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.security.NoSuchAlgorithmException;
+import java.security.cert.CertificateException;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.UUID;
@@ -99,9 +107,12 @@ public class ReferenceManifestDetailsPageController
      * @param referenceManifestManager the reference manifest manager.
      * @return mapping of the RIM information from the database.
      * @throws java.io.IOException error for reading file bytes.
+     * @throws NoSuchAlgorithmException If an unknown Algorithm is encountered.
+     * @throws CertificateException if a certificate doesn't parse.
      */
     public static HashMap<String, Object> getRimDetailInfo(final UUID uuid,
-            final ReferenceManifestManager referenceManifestManager) throws IOException {
+            final ReferenceManifestManager referenceManifestManager) throws IOException,
+                                              CertificateException, NoSuchAlgorithmException {
         HashMap<String, Object> data = new HashMap<>();
 
         ReferenceManifest rim = ReferenceManifest
@@ -146,7 +157,29 @@ public class ReferenceManifestDetailsPageController
             data.put("rimType", rim.getRimType());
             List<SwidResource> resources = rim.parseResource();
             String resourceFilename = null;
+            TCGEventLogProcessor logProcessor = new TCGEventLogProcessor();
 
+            try {
+                for (SwidResource swidRes : resources) {
+                    resourceFilename = swidRes.getName();
+                    Path logPath = Paths.get(String.format("%s/%s",
+                            SwidResource.RESOURCE_UPLOAD_FOLDER,
+                            resourceFilename));
+                    if (Files.exists(logPath)) {
+                        logProcessor = new TCGEventLogProcessor(
+                                Files.readAllBytes(logPath));
+                        swidRes.setPcrValues(Arrays.asList(
+                                logProcessor.getExpectedPCRValues()));
+                    } else {
+                        swidRes.setPcrValues(Arrays.asList(
+                                logProcessor.getExpectedPCRValues()));
+                    }
+                }
+            } catch (NoSuchFileException nsfEx) {
+                LOGGER.error(String.format("File Not found!: %s",
+                        resourceFilename));
+                LOGGER.error(nsfEx);
+            }
 
             data.put("swidFiles", resources);
         } else {

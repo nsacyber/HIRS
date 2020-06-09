@@ -1,10 +1,12 @@
 package hirs.tpm.eventlog;
 
 import hirs.data.persist.AbstractDigest;
+import hirs.tpm.eventlog.uefi.UefiConstants;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.security.cert.CertificateException;
 import java.util.ArrayList;
 import org.apache.commons.codec.DecoderException;
 import org.apache.commons.codec.binary.Hex;
@@ -14,7 +16,7 @@ import org.apache.logging.log4j.Logger;
 /**
  * Class for handling different formats of TCG Event logs.
  */
-public class TCGEventLog {
+public final class TCGEventLog {
 
     private static final Logger LOGGER
             = LogManager.getLogger(TCGEventLog.class);
@@ -62,33 +64,37 @@ public class TCGEventLog {
      * Default blank object constructor.
      */
     public TCGEventLog() {
-        this.pcrList = new byte[PCR_COUNT][TpmPcrEvent.SHA1_LENGTH];
+        this.pcrList = new byte[PCR_COUNT][UefiConstants.SIZE_20];
         initValue = INIT_SHA1_LIST;
-        pcrLength = TpmPcrEvent.SHA1_LENGTH;
+        pcrLength = UefiConstants.SIZE_20;
         initPcrList();
     }
 
     /**
      * Default constructor for just the rawlog that'll set up SHA1 Log.
-     *
      * @param rawlog data for the event log file
      * @throws IOException IO Stream for the event log
+     * @throws CertificateException certificate exception
+     * @throws NoSuchAlgorithmException no such alogirthm exception
      */
-    public TCGEventLog(final byte[] rawlog) throws IOException {
-        this(rawlog, TpmPcrEvent.SHA1_LENGTH, HASH_STRING, INIT_SHA1_LIST);
+    public TCGEventLog(final byte[] rawlog) throws IOException,
+            CertificateException, NoSuchAlgorithmException {
+        this(rawlog, UefiConstants.SIZE_20, HASH_STRING, INIT_SHA1_LIST);
     }
 
     /**
      * Default constructor for specific log.
-     *
      * @param rawlog data for the event log file
      * @param pcrLength determined by SHA1 or 256
      * @param hashType the type of algorithm
      * @param initValue the default blank value
      * @throws IOException IO Stream for the event log
+     * @throws CertificateException certificate exception
+     * @throws NoSuchAlgorithmException no such alogirthm exception
      */
     public TCGEventLog(final byte[] rawlog, final int pcrLength,
-            final String hashType, final String initValue) throws IOException {
+            final String hashType, final String initValue) throws IOException,
+            CertificateException, NoSuchAlgorithmException {
         this.pcrLength = pcrLength;
         this.pcrList = new byte[PCR_COUNT][pcrLength];
         this.hashType = hashType;
@@ -123,9 +129,8 @@ public class TCGEventLog {
     }
 
     /**
-     * Calculates the "Expected Values for TPM PCRs based upon Event digests in
-     * the Event Log. Uses the algorithm and eventList passed into the
-     * constructor,
+     * Calculates the "Expected Values for TPM PCRs based upon Event digests in the Event Log.
+     * Uses the algorithm and eventList passed into the constructor,
      */
     private void calculatePcrValues() {
         byte[] extendedPCR;
@@ -147,7 +152,7 @@ public class TCGEventLog {
         }
     }
 
-    /**
+    /**hjmmm I'll h
      * Extends a hash with a hash of new data.
      *
      * @param currentValue value to extend

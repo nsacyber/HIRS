@@ -9,6 +9,9 @@ import hirs.data.persist.baseline.TpmWhiteListBaseline;
 import hirs.utils.HexUtils;
 import hirs.data.persist.Digest;
 import hirs.data.persist.enums.DigestAlgorithm;
+import hirs.tpm.eventlog.uefi.UefiConstants;
+import java.security.NoSuchAlgorithmException;
+import java.security.cert.CertificateException;
 import org.apache.commons.codec.DecoderException;
 
 /**
@@ -46,10 +49,13 @@ public class TCGEventLogProcessor {
      *
      * @param rawLog the byte array holding the contents of the TCG Event Log
      * @throws IOException if there is a parsing error
+     * @throws CertificateException certificate exception
+     * @throws NoSuchAlgorithmException no such alogirthm exception
      */
-    public TCGEventLogProcessor(final byte[] rawLog) throws IOException {
+    public TCGEventLogProcessor(final byte[] rawLog) throws IOException,
+            CertificateException, NoSuchAlgorithmException {
         if (isLogCrytoAgile(rawLog)) {
-            tcgLog = new TCGEventLog(rawLog, TpmPcrEvent.SHA256_LENGTH,
+            tcgLog = new TCGEventLog(rawLog, UefiConstants.SIZE_32,
                     TCGEventLog.HASH256_STRING, TCGEventLog.INIT_SHA256_LIST);
         } else {
             tcgLog = new TCGEventLog(rawLog);
@@ -106,7 +112,7 @@ public class TCGEventLogProcessor {
         TpmWhiteListBaseline baseline = new TpmWhiteListBaseline(name);
         TPMMeasurementRecord record;
 
-        for (int i = 0; i < TpmPcrEvent.PCR_COUNT; i++) {
+        for (int i = 0; i <= TPMMeasurementRecord.MAX_PCR_ID; i++) {
             if (algorithm.compareToIgnoreCase("TPM_ALG_SHA1") == 0) { // Log Was SHA1 Format
                 record = new TPMMeasurementRecord(i,
                         new Digest(DigestAlgorithm.SHA1,
@@ -127,11 +133,11 @@ public class TCGEventLogProcessor {
      *
      * @param log The Event Log
      * @return true if EfiSpecIDEvent is found and indicates that the format is crypto agile
-     * @throws UnsupportedEncodingException
+     * @throws UnsupportedEncodingException if parsing error occurs.
      */
-    private boolean isLogCrytoAgile(final byte[] log) throws UnsupportedEncodingException {
-        byte[] eType = new byte[TpmPcrEvent.INT_LENGTH];
-        System.arraycopy(log, TpmPcrEvent.INT_LENGTH, eType, 0, TpmPcrEvent.INT_LENGTH);
+    public boolean isLogCrytoAgile(final byte[] log) throws UnsupportedEncodingException {
+        byte[] eType = new byte[Integer.BYTES];
+        System.arraycopy(log, Integer.BYTES, eType, 0, Integer.BYTES);
         byte[] eventType = HexUtils.leReverseByte(eType);
         int eventID = new BigInteger(eventType).intValue();
         if (eventID != TCGEventLog.NO_ACTION_EVENT) {

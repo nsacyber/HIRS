@@ -15,6 +15,8 @@ import java.nio.file.Files;
 import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.security.NoSuchAlgorithmException;
+import java.security.cert.CertificateException;
 import java.text.DecimalFormat;
 import java.util.Arrays;
 import javax.xml.namespace.QName;
@@ -233,6 +235,10 @@ public class SwidResource {
             LOGGER.error(nsfEx);
         } catch (IOException ioEx) {
             LOGGER.error(ioEx);
+        } catch (CertificateException cEx) {
+            LOGGER.error(cEx);
+        } catch (NoSuchAlgorithmException naEx) {
+            LOGGER.error(naEx);
         }
     }
 }
