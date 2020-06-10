@@ -54,10 +54,7 @@ public class CredentialParser {
 
     public void parsePEMCredentials(String certificateFile, String privateKeyFile) throws FileNotFoundException {
         certificate = parsePEMCertificate(certificateFile);
-
-        /*User input on algorithm???*/
         privateKey = parsePEMPrivateKey(privateKeyFile, "RSA");
-
         publicKey = certificate.getPublicKey();
     }
 
@@ -69,20 +66,33 @@ public class CredentialParser {
      */
     private X509Certificate parsePEMCertificate(String filename) throws FileNotFoundException {
         X509Certificate certificate = null;
+        FileInputStream fis = null;
+        BufferedInputStream bis = null;
         try {
-            FileInputStream fis = new FileInputStream(filename);
-            BufferedInputStream bis = new BufferedInputStream(fis);
+            fis = new FileInputStream(filename);
+            bis = new BufferedInputStream(fis);
             CertificateFactory certificateFactory = CertificateFactory.getInstance(X509);
 
             while (bis.available() > 0) {
                 certificate = (X509Certificate) certificateFactory.generateCertificate(bis);
             }
 
-
+            bis.close();
         } catch (CertificateException e) {
             System.out.println("Error in certificate factory: " + e.getMessage());
         } catch (IOException e) {
             System.out.println("Error reading from input stream: " + e.getMessage());
+        } finally {
+            try {
+                if (fis != null) {
+                    fis.close();
+                }
+                if (bis != null) {
+                    bis.close();
+                }
+            } catch (IOException e) {
+                System.out.println("Error closing input stream: " + e.getMessage());
+            }
         }
 
         return certificate;
@@ -98,10 +108,12 @@ public class CredentialParser {
      */
     private PrivateKey parsePEMPrivateKey(String filename, String algorithm) {
         PrivateKey privateKey = null;
+        FileInputStream fis = null;
+        DataInputStream dis = null;
         try {
             File file = new File(filename);
-            FileInputStream fis = new FileInputStream(file);
-            DataInputStream dis = new DataInputStream(fis);
+            fis = new FileInputStream(file);
+            dis = new DataInputStream(fis);
             byte[] key = new byte[(int) file.length()];
             dis.readFully(key);
             dis.close();
@@ -127,6 +139,17 @@ public class CredentialParser {
             System.out.println("IOException: " + e.getMessage());
         } catch (InvalidKeySpecException e) {
             System.out.println("Error instantiating PKCS8EncodedKeySpec object: " + e.getMessage());
+        } finally {
+            try {
+                if (fis != null) {
+                    fis.close();
+                }
+                if (dis != null) {
+                    dis.close();
+                }
+            } catch (IOException e) {
+                System.out.println("Error closing input stream: " + e.getMessage());
+            }
         }
 
         return privateKey;

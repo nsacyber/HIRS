@@ -9,20 +9,26 @@ import java.security.NoSuchAlgorithmException;
 import java.security.cert.CertificateException;
 import java.util.ArrayList;
 
+import org.apache.commons.codec.DecoderException;
+import org.apache.commons.codec.binary.Hex;
+
+import hirs.data.persist.AbstractDigest;
 import hirs.data.persist.Digest;
-import hirs.data.persist.DigestAlgorithm;
 import hirs.data.persist.TPMMeasurementRecord;
-import hirs.data.persist.TpmWhiteListBaseline;
+import hirs.data.persist.baseline.TpmWhiteListBaseline;
+import hirs.data.persist.enums.DigestAlgorithm;
 import hirs.tpm.eventlog.events.EvConstants;
 import hirs.tpm.eventlog.uefi.UefiConstants;
 import hirs.utils.HexUtils;
-
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 /**
  * Class for handling different formats of TCG Event logs.
  */
 public final class TCGEventLog {
 
-//    private static final Logger LOGGER = (Logger) LogManager.getLogger(TCGEventLog.class);
+    /** Logger. */
+    private static final Logger LOGGER = LogManager.getLogger(TCGEventLog.class);
     /** Name of the hash algorithm used to process the Event Log, default is SHA256.  */
     private String algorithm = "TPM_ALG_SHA256";
     /** Parsed event log array. */
@@ -134,10 +140,14 @@ public final class TCGEventLog {
      * This method puts blank values in the pcrList.
      */
     private void initPcrList() {
-        for (int i = 0; i < PCR_COUNT; i++) {  // Initialize the PCRlist1 array
-            System.arraycopy(HexUtils.hexStringToByteArray(
-                    initValue),
-                    0, pcrList[i], 0, pcrLength);
+        for (int i = 0; i < PCR_COUNT; i++) {
+            try {
+                // Initialize the PCRlist1 array
+                System.arraycopy(Hex.decodeHex(initValue.toCharArray()),
+                        0, pcrList[i], 0, pcrLength);
+            } catch (DecoderException deEx) {
+                LOGGER.error(deEx);
+            }
         }
     }
 
@@ -187,7 +197,7 @@ public final class TCGEventLog {
                                 0, currentEvent.getDigestLength());
                     }
                 } catch (NoSuchAlgorithmException e) {
-              //      ((org.apache.logging.log4j.Logger) LOGGER).error(e);
+                    LOGGER.error(e);
                 }
             }
         }
@@ -204,8 +214,15 @@ public final class TCGEventLog {
     private byte[] extendPCR(final byte[] currentValue, final byte[] newEvent)
             throws NoSuchAlgorithmException {
         MessageDigest md = MessageDigest.getInstance(hashType);
-        md.update(HexUtils.hexStringToByteArray(HexUtils.byteArrayToHexString(currentValue)
-                + HexUtils.byteArrayToHexString(newEvent)));
+        StringBuilder sb = new StringBuilder(AbstractDigest.SHA512_DIGEST_LENGTH);
+        sb.append(Hex.encodeHexString(currentValue).toCharArray());
+        sb.append(Hex.encodeHexString(newEvent).toCharArray());
+
+        try {
+            md.update(Hex.decodeHex(sb.toString().toCharArray()));
+        } catch (DecoderException deEx) {
+            LOGGER.error(deEx);
+        }
         return md.digest();
     }
 

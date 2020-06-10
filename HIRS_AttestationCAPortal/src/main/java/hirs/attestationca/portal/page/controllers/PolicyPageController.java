@@ -276,15 +276,13 @@ public class PolicyPageController extends PageController<NoPageParams> {
         try {
             SupplyChainPolicy policy = getDefaultPolicyAndSetInModel(ppModel, model);
 
-            //If PC Validation is enabled without EC Validation, disallow change
-//            if (!isPolicyValid(firmwareValidationOptionEnabled,
-            //policy.isFirmwareValidationEnabled(),
-//                    policy.isFirmwareValidationEnabled())) {
-//                handleUserError(model, messages,
-//                    "To disable Endorsement Credential Validation, Platform Validation"
-//                            + " must also be disabled.");
-//                return redirectToSelf(new NoPageParams(), model, attr);
-//            }
+            //If firmware is enabled without PC attributes, disallow change
+            if (firmwareValidationOptionEnabled && !policy.isPcAttributeValidationEnabled()) {
+                handleUserError(model, messages,
+                    "Firmware validation can not be "
+                            + "enabled without PC Attributes policy enabled.");
+                return redirectToSelf(new NoPageParams(), model, attr);
+            }
 
             // set the policy option and create success message
             if (firmwareValidationOptionEnabled) {

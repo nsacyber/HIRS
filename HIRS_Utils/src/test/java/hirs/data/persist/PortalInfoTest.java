@@ -1,5 +1,7 @@
 package hirs.data.persist;
 
+import hirs.data.persist.info.PortalInfo;
+import hirs.data.persist.enums.PortalScheme;
 import java.net.InetAddress;
 import org.testng.Assert;
 import org.testng.annotations.Test;
@@ -25,7 +27,7 @@ public class PortalInfoTest {
      */
     @Test
     public void testScheme() {
-        final PortalInfo.Scheme scheme = PortalInfo.Scheme.HTTPS;
+        final PortalScheme scheme = PortalScheme.HTTPS;
 
         PortalInfo info = new PortalInfo();
         info.setSchemeName(scheme);
@@ -38,7 +40,7 @@ public class PortalInfoTest {
      */
     @Test
     public void testSchemeNull() {
-        final PortalInfo.Scheme scheme = null;
+        final PortalScheme scheme = null;
 
         PortalInfo info = new PortalInfo();
 

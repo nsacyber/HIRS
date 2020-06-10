@@ -1,5 +1,6 @@
 package hirs.data.persist;
 
+import hirs.data.persist.enums.DigestAlgorithm;
 import static org.apache.logging.log4j.LogManager.getLogger;
 
 import hirs.data.persist.tpm.PcrComposite;

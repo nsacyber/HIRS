@@ -1,5 +1,8 @@
 package hirs.data.persist;
 
+import hirs.data.persist.baseline.ImaBlacklistBaseline;
+import hirs.data.persist.baseline.AbstractImaBaselineRecord;
+import hirs.data.persist.enums.AlertType;
 import org.apache.commons.lang3.StringUtils;
 
 import javax.persistence.Entity;
@@ -97,8 +100,7 @@ public class ImaBlacklistRecord extends AbstractImaBaselineRecord {
     public ImaBlacklistRecord(
             final String path,
             final Digest hash,
-            final String description
-    ) {
+            final String description) {
         this(path, hash, description, null);
     }
 
@@ -125,8 +127,7 @@ public class ImaBlacklistRecord extends AbstractImaBaselineRecord {
             final String path,
             final Digest hash,
             final String description,
-            final ImaBlacklistBaseline baseline
-    ) {
+            final ImaBlacklistBaseline baseline) {
         super(path, hash, description);
         if (path == null && hash == null) {
             throw new IllegalArgumentException("Cannot instantiate with both a null path and hash");
@@ -171,13 +172,13 @@ public class ImaBlacklistRecord extends AbstractImaBaselineRecord {
      *
      * @return the alert match type
      */
-    public Alert.AlertType getAlertMatchType() {
+    public AlertType getAlertMatchType() {
         if (getPath() == null) {
-            return Alert.AlertType.IMA_BLACKLIST_HASH_MATCH;
+            return AlertType.IMA_BLACKLIST_HASH_MATCH;
         } else if (getHash() == null) {
-            return Alert.AlertType.IMA_BLACKLIST_PATH_MATCH;
+            return AlertType.IMA_BLACKLIST_PATH_MATCH;
         } else {
-            return Alert.AlertType.IMA_BLACKLIST_PATH_AND_HASH_MATCH;
+            return AlertType.IMA_BLACKLIST_PATH_AND_HASH_MATCH;
         }
     }
 }

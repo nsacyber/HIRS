@@ -3,7 +3,7 @@ package hirs.ima;
 import com.google.common.base.Charsets;
 import com.google.common.base.Preconditions;
 import hirs.data.persist.Digest;
-import hirs.data.persist.ImaBlacklistBaseline;
+import hirs.data.persist.baseline.ImaBlacklistBaseline;
 import hirs.data.persist.ImaBlacklistRecord;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVParser;

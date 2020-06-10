@@ -1,5 +1,11 @@
 package hirs.data.persist;
 
+import hirs.data.persist.enums.DigestAlgorithm;
+import hirs.data.persist.baseline.ImaBaseline;
+import hirs.data.persist.baseline.IMABaselineRecord;
+import hirs.data.persist.baseline.SimpleImaBaseline;
+import hirs.data.persist.baseline.Baseline;
+import hirs.data.persist.enums.ReportMatchStatus;
 import hirs.ima.matching.BatchImaMatchStatus;
 import hirs.ima.matching.IMAMatchStatus;
 import hirs.persist.BaselineManager;

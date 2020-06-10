@@ -89,6 +89,12 @@ public class ReferenceManifest extends ArchivableEntity {
         public Selector(final ReferenceManifestManager referenceManifestManager) {
             super(referenceManifestManager);
         }
+
+        /**
+         * Specify a manufacturer that certificates must have to be considered as matching.
+         * @param rimType the manufacturer to query, not empty or null
+         * @return this instance (for chaining further calls)
+         */
     }
 
     @Column
@@ -303,9 +309,10 @@ public class ReferenceManifest extends ArchivableEntity {
         if (rimBytes != null && elementName != null) {
             try {
                 SoftwareIdentity si = validateSwidTag(new ByteArrayInputStream(this.rimBytes));
+                JAXBElement element;
                 for (Object object : si.getEntityOrEvidenceOrLink()) {
                     if (object instanceof JAXBElement) {
-                        JAXBElement element = (JAXBElement) object;
+                        element = (JAXBElement) object;
                         if (element.getName().getLocalPart().equals(elementName)) {
                             // found the element
                             baseElement = (BaseElement) element.getValue();
@@ -407,11 +414,11 @@ public class ReferenceManifest extends ArchivableEntity {
                             for (FilesystemItem fsi : directory.getDirectoryOrFile()) {
                                 if (fsi != null) {
                                     resources.add(new SwidResource(
-                                            (hirs.utils.xjc.File) fsi));
+                                            (hirs.utils.xjc.File) fsi, null));
                                 }
                             }
                         } else if (meta instanceof hirs.utils.xjc.File) {
-                            resources.add(new SwidResource((hirs.utils.xjc.File) meta));
+                            resources.add(new SwidResource((hirs.utils.xjc.File) meta, null));
                         }
                     }
                 }
@@ -429,13 +436,13 @@ public class ReferenceManifest extends ArchivableEntity {
      * This method unmarshalls the swidtag found at [path] and validates it
      * according to the schema.
      *
-     * @param path to the input swidtag
+     * @param stream to the input swidtag
      * @return the SoftwareIdentity element at the root of the swidtag
      * @throws IOException if the swidtag cannot be unmarshalled or validated
      */
     private JAXBElement unmarshallSwidTag(final InputStream stream) throws IOException {
         JAXBElement jaxbe = null;
-        Schema schema = null;
+        Schema schema;
 
         try {
             schema = DBReferenceManifestManager.getSchemaObject();

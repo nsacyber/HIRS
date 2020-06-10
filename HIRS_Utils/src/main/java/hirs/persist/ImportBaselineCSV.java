@@ -1,6 +1,6 @@
 package hirs.persist;
 
-import hirs.data.persist.Baseline;
+import hirs.data.persist.baseline.Baseline;
 import hirs.ima.IMABaselineGeneratorException;
 import hirs.ima.ImaIgnoreSetBaselineGenerator;
 import hirs.ima.ImaIgnoreSetBaselineGeneratorException;

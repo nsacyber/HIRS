@@ -1,5 +1,6 @@
 package hirs.data.persist;
 
+import hirs.data.persist.enums.DigestAlgorithm;
 import java.io.InputStream;
 import java.io.StringReader;
 import java.io.StringWriter;

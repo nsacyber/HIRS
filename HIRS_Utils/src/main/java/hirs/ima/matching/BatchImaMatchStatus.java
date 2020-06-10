@@ -2,8 +2,8 @@ package hirs.ima.matching;
 
 import com.google.common.base.Preconditions;
 import hirs.data.persist.IMAMeasurementRecord;
-import hirs.data.persist.AbstractImaBaselineRecord;
-import hirs.data.persist.ReportMatchStatus;
+import hirs.data.persist.baseline.AbstractImaBaselineRecord;
+import hirs.data.persist.enums.ReportMatchStatus;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -17,7 +17,7 @@ import java.util.Set;
 
 /**
  * This class holds the results of the appraisal of a batch of {@link IMAMeasurementRecord}s against
- * one or many {@link hirs.data.persist.ImaBaseline}s.
+ * one or many {@link hirs.data.persist.baseline.ImaBaseline}s.
  *
  * @param <T> the type of IMA baseline record that an instance of this class matches against
  */

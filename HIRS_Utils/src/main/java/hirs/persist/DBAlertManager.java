@@ -4,7 +4,7 @@ import hirs.FilteredRecordsList;
 import static org.apache.logging.log4j.LogManager.getLogger;
 
 import hirs.data.persist.Alert;
-import hirs.data.persist.Baseline;
+import hirs.data.persist.baseline.Baseline;
 import hirs.data.persist.Device;
 import hirs.data.persist.DeviceGroup;
 import hirs.data.persist.Policy;
@@ -17,6 +17,7 @@ import java.util.Map;
 import java.util.UUID;
 
 import hirs.data.persist.Report;
+import hirs.data.persist.enums.AlertSource;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 import org.hibernate.Criteria;
@@ -613,7 +614,7 @@ public class DBAlertManager extends DBManager<Alert> implements AlertManager {
      * @param source counted alerts must originate from
      * @return count of unresolved alerts
      */
-    public final int countUnresolvedAlerts(final Device device, final Alert.Source source) {
+    public final int countUnresolvedAlerts(final Device device, final AlertSource source) {
         if (device == null) {
             String msg = "invalid argument - null value for device";
             LOGGER.error(msg);

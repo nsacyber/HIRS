@@ -1,5 +1,6 @@
 package hirs.data.persist;
 
+import hirs.data.persist.baseline.Baseline;
 import javax.persistence.Entity;
 
 /**

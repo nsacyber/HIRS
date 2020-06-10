@@ -1,5 +1,6 @@
 package hirs.data.persist;
 
+import hirs.data.persist.enums.DigestAlgorithm;
 import org.apache.commons.codec.binary.Hex;
 import org.testng.Assert;
 import org.testng.annotations.Test;

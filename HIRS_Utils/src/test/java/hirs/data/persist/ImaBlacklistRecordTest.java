@@ -1,5 +1,6 @@
 package hirs.data.persist;
 
+import hirs.data.persist.baseline.ImaBlacklistBaseline;
 import hirs.persist.DBManager;
 
 import org.testng.Assert;

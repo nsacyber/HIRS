@@ -5,7 +5,7 @@ import hirs.data.persist.Alert;
 import java.util.List;
 
 /**
- * Class for managing the {@link hirs.data.persist.HealthStatus}
+ * Class for managing the {@link hirs.data.persist.enums.HealthStatus}
  * of a {@link hirs.data.persist.Device}.
  */
 public interface DeviceHealthManager {

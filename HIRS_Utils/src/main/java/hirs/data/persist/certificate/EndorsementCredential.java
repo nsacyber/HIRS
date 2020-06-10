@@ -314,9 +314,10 @@ public class EndorsementCredential extends DeviceAssociatedCertificate {
             asn1In = new ASN1InputStream(ec.getEncoded());
 
             ASN1Primitive obj = asn1In.readObject();
+            ASN1Sequence seq;
 
             while (obj != null) {
-                ASN1Sequence seq = ASN1Sequence.getInstance(obj);
+                seq = ASN1Sequence.getInstance(obj);
                 parseSequence(seq, false, null);
                 obj = asn1In.readObject();
             }
@@ -328,10 +329,12 @@ public class EndorsementCredential extends DeviceAssociatedCertificate {
             }
         }
 
+        String oid;
+        Object value;
         // unpack fields from parsedFields and set field values
         for (Map.Entry<String, Object> entry : parsedFields.entrySet()) {
-            String oid = entry.getKey();
-            Object value = entry.getValue();
+            oid = entry.getKey();
+            value = entry.getValue();
             if (oid.equals(TPM_MODEL)) {
                 model = value.toString();
                 LOGGER.debug("Found TPM Model: " + model);
@@ -415,10 +418,12 @@ public class EndorsementCredential extends DeviceAssociatedCertificate {
 
             LOGGER.debug("Found TPM Assertions: " + tpmSecurityAssertions.toString());
             // Iterate through remaining fields to set optional attributes
+            int tag;
+            DERTaggedObject obj;
             for (int i = seqPosition; i < seq.size(); i++) {
                 if (seq.getObjectAt(i) instanceof DERTaggedObject) {
-                    DERTaggedObject obj = (DERTaggedObject) seq.getObjectAt(i);
-                    int tag = obj.getTagNo();
+                    obj = (DERTaggedObject) seq.getObjectAt(i);
+                    tag = obj.getTagNo();
                     if (tag == EK_TYPE_TAG) {
                         int ekGenTypeVal = ((ASN1Enumerated) obj.getObject()).getValue().intValue();
                         if (ekGenTypeVal >= EK_TYPE_VAL_MIN && ekGenTypeVal <= EK_TYPE_VAL_MAX) {
@@ -523,8 +528,9 @@ public class EndorsementCredential extends DeviceAssociatedCertificate {
             // parseSequences in the future
             ASN1Set set = (ASN1Set) component;
             Enumeration setContents = set.getObjects();
+            ASN1Encodable subComp;
             while (setContents.hasMoreElements()) {
-                ASN1Encodable subComp = (ASN1Encodable) setContents.nextElement();
+                subComp = (ASN1Encodable) setContents.nextElement();
                 if (subComp instanceof ASN1ObjectIdentifier) {
                     LOGGER.warn("OID in top level of ASN1Set");
                 }

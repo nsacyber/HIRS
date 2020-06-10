@@ -1,5 +1,11 @@
 package hirs.data.persist;
 
+import hirs.data.persist.baseline.ImaIgnoreSetBaseline;
+import hirs.data.persist.baseline.ImaBlacklistBaseline;
+import hirs.data.persist.baseline.ImaBaseline;
+import hirs.data.persist.baseline.ImaAcceptableRecordBaseline;
+import hirs.data.persist.baseline.HasBaselines;
+import hirs.data.persist.baseline.Baseline;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
 import org.apache.logging.log4j.LogManager;

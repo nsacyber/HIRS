@@ -1,5 +1,6 @@
 package hirs.data.persist;
 
+import hirs.data.persist.enums.AlertSource;
 import org.hibernate.criterion.Criterion;
 import org.hibernate.criterion.Restrictions;
 
@@ -197,7 +198,7 @@ public class IMADeviceState extends DeviceState {
     @Override
     public Criterion getDeviceTrustAlertCriterion() {
         Criterion createTimeRestriction =  Restrictions.ge("createTime", mostRecentFullReportDate);
-        Criterion sourceRestriction = Restrictions.eq("source", Alert.Source.IMA_APPRAISER);
+        Criterion sourceRestriction = Restrictions.eq("source", AlertSource.IMA_APPRAISER);
         return Restrictions.and(createTimeRestriction, sourceRestriction);
     }
 

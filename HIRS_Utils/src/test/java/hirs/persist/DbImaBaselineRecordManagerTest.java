@@ -1,10 +1,10 @@
 package hirs.persist;
 
-import hirs.data.persist.Baseline;
+import hirs.data.persist.baseline.Baseline;
 import hirs.data.persist.Digest;
-import hirs.data.persist.DigestAlgorithm;
-import hirs.data.persist.IMABaselineRecord;
-import hirs.data.persist.SimpleImaBaseline;
+import hirs.data.persist.enums.DigestAlgorithm;
+import hirs.data.persist.baseline.IMABaselineRecord;
+import hirs.data.persist.baseline.SimpleImaBaseline;
 
 import java.io.UnsupportedEncodingException;
 import java.math.BigInteger;
