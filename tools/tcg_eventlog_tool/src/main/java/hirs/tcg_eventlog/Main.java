@@ -26,21 +26,24 @@ final class Main {
     private static byte[] eventLog = null;
     private static boolean bContentFlag, bEventFlag, bHexEvent, bHexFlag, bPcrFlag = false;
 
-    /**
-     * Main Constructor.
-     * @param args command line parameters.
-     */
-    public static void main(final String[] args) {
-    commander = new Commander(args);
-        if (!commander.getValidityFlag()) {
-            System.out.print("Program exiting wihtout processs due to issues with"
-                                                            + " parameters provided.");
-            System.exit(1);
+/**
+ * Main Constructor.
+ * @param args command line parameters.
+ */
+public static void main(final String[] args) {
+commander = new Commander(args);
+    if (!commander.getValidityFlag()) {
+        System.out.print("Program exiting wihtout processs due to issues with"
+                                                        + " parameters provided.");
+        System.exit(1);
+    }
+    if (commander.hasArguments()) {
+        if (commander.getDoneFlag()) {
+            System.exit(0);
         }
-        if (commander.hasArguments()) {
         if (commander.getHelpFlag()) {
             commander.printHelp("");
-            System.exit(1);
+            System.exit(0);
         }
         if (commander.getOutputFlag()) {
             try {
@@ -80,10 +83,10 @@ final class Main {
         if (commander.getHexFlag()) {
             bHexFlag = true;
         }
-    } else {
-        System.out.print("Nothing to do: No Parameters provided.");
-        System.exit(1);
-    }   // End commander processing
+} else {
+    System.out.print("Nothing to do: No Parameters provided.");
+    System.exit(1);
+}   // End commander processing
 
     try {
         if (eventLog == null)  {
@@ -123,19 +126,23 @@ final class Main {
                             + evLog.getEventList().size() + " events:\n\n");
                 }
             }
+            int eventCount = 0;
                 for (TpmPcrEvent event: evLog.getEventList()) {
-                    if ((commander.getEventNumber() == event.getPcrIndex())
+                    if ((commander.getEventNumber() == eventCount++)
                                                            || commander.getEventNumber() == -1) {
-                        if (bHexFlag) {
-                             if (bEventFlag || bHexEvent) {
-                                 writeOut(HexUtils.byteArrayToHexString(event.getEvent()) + "\n");
-                             }
-                             if (bContentFlag) {
-                                 writeOut(HexUtils.byteArrayToHexString(event.getEventContent())
-                                                                                          + "\n");
-                             }
-                        } else {
-                             writeOut(event.toString(bEventFlag, bContentFlag, bHexEvent) + "\n");
+                        if ((commander.getPcrNumber() == event.getPcrIndex())
+                                || commander.getPcrNumber() == -1) {
+                            if (bHexFlag) {
+                                 if (bEventFlag || bHexEvent) {
+                                  writeOut(HexUtils.byteArrayToHexString(event.getEvent()) + "\n");
+                                 }
+                                 if (bContentFlag) {
+                                  writeOut(HexUtils.byteArrayToHexString(event.getEventContent())
+                                                                                           + "\n");
+                                 }
+                            } else {
+                              writeOut(event.toString(bEventFlag, bContentFlag, bHexEvent) + "\n");
+                            }
                         }
                 }
             }
@@ -218,6 +225,7 @@ final class Main {
         byte[] evLog = openLog(logFileName1);
         byte[] evLog2 = openLog(logFileName2);
         StringBuilder sb = new StringBuilder();
+        bHexFlag = commander.getHexFlag();
         try {
             eventLog1 = new TCGEventLog(evLog);
         } catch (Exception e) {
