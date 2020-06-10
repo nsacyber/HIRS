@@ -65,7 +65,7 @@ public class EvEfiBootServicesApp {
      System.arraycopy(bootServices, UefiConstants.SIZE_24, lengthBytes, 0, UefiConstants.SIZE_8);
  //      if (imageLength != 0) {
        devicePathLength = HexUtils.leReverseInt(lengthBytes);
-       if(devicePathLength !=0) {
+       if (devicePathLength != 0) {
            byte[] devPathBytes = new byte[devicePathLength];
            System.arraycopy(bootServices, UefiConstants.SIZE_32, devPathBytes,
                                                                         0, devicePathLength);
