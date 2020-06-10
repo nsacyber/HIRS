@@ -2,11 +2,11 @@ package hirs.ima.matching;
 
 import hirs.data.persist.Digest;
 import hirs.data.persist.DigestTest;
-import hirs.data.persist.IMABaselineRecord;
+import hirs.data.persist.baseline.IMABaselineRecord;
 import hirs.data.persist.IMAMeasurementRecord;
-import hirs.data.persist.ImaAcceptableRecordBaseline;
-import hirs.data.persist.ReportMatchStatus;
-import hirs.data.persist.SimpleImaBaseline;
+import hirs.data.persist.baseline.ImaAcceptableRecordBaseline;
+import hirs.data.persist.enums.ReportMatchStatus;
+import hirs.data.persist.baseline.SimpleImaBaseline;
 import hirs.data.persist.SimpleImaBaselineTest;
 import org.testng.Assert;
 import org.testng.annotations.Test;

@@ -2,11 +2,12 @@ package hirs.persist;
 
 import hirs.FilteredRecordsList;
 import hirs.data.persist.Alert;
-import hirs.data.persist.Baseline;
+import hirs.data.persist.baseline.Baseline;
 import hirs.data.persist.Device;
 import hirs.data.persist.DeviceGroup;
 import hirs.data.persist.Policy;
 import hirs.data.persist.Report;
+import hirs.data.persist.enums.AlertSource;
 import org.hibernate.criterion.Criterion;
 
 import java.util.Date;
@@ -217,7 +218,7 @@ public interface AlertManager {
      * @param source counted alerts must originate from
      * @return count of unresolved alerts
      */
-    int countUnresolvedAlerts(Device device, Alert.Source source);
+    int countUnresolvedAlerts(Device device, AlertSource source);
 
     /**
      * Count the total number of devices with at least one unresolved alert within the given group.

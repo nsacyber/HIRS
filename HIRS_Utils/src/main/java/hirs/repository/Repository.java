@@ -123,7 +123,7 @@ public abstract class Repository<T extends RepoPackage> extends UserDefinedEntit
     /**
      * This method retrieves the given package and measures its contents.  The resulting
      * measurements are stored in the given <code>RepoPackage</code> objects.  The measurements
-     * are a set of {@link hirs.data.persist.IMABaselineRecord}s
+     * are a set of {@link hirs.data.persist.baseline.IMABaselineRecord}s
      * that describe the full file paths and their hashes
      * that a software package contains.  The software package itself will also be measured, and
      * the measurement will be recorded in the RepoPackage.

@@ -17,6 +17,7 @@ import hirs.attestationca.AbstractAttestationCertificateAuthority;
 import hirs.attestationca.service.SupplyChainValidationService;
 import hirs.data.service.DeviceRegister;
 import hirs.persist.CertificateManager;
+import hirs.persist.ReferenceManifestManager;
 import hirs.persist.DeviceManager;
 import hirs.structs.converters.StructConverter;
 
@@ -36,6 +37,7 @@ public class RestfulAttestationCertificateAuthority
      * @param acaCertificate the ACA certificate
      * @param structConverter the struct converter
      * @param certificateManager the certificate manager
+     * @param referenceManifestManager the referenceManifestManager
      * @param deviceRegister the device register
      * @param validDays the number of days issued certs are valid
      * @param deviceManager the device manager
@@ -48,12 +50,14 @@ public class RestfulAttestationCertificateAuthority
             final PrivateKey privateKey, final X509Certificate acaCertificate,
             final StructConverter structConverter,
             final CertificateManager certificateManager,
+            final ReferenceManifestManager referenceManifestManager,
             final DeviceRegister deviceRegister,
             final DeviceManager deviceManager,
             final DBManager<TPM2ProvisionerState> tpm2ProvisionerStateDBManager,
             @Value("${aca.certificates.validity}") final int validDays) {
         super(supplyChainValidationService, privateKey, acaCertificate, structConverter,
-                certificateManager, deviceRegister, validDays, deviceManager,
+                certificateManager, referenceManifestManager,
+                deviceRegister, validDays, deviceManager,
                 tpm2ProvisionerStateDBManager);
     }
 

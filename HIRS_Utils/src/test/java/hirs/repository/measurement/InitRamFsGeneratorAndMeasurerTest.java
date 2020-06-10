@@ -4,7 +4,7 @@ import com.google.common.collect.Multimap;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hirs.data.persist.Digest;
-import hirs.data.persist.DigestAlgorithm;
+import hirs.data.persist.enums.DigestAlgorithm;
 
 import org.apache.commons.io.FileUtils;
 import org.testng.Assert;

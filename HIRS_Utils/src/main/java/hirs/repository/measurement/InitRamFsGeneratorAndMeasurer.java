@@ -2,7 +2,7 @@ package hirs.repository.measurement;
 
 import com.google.common.collect.Multimap;
 import hirs.data.persist.Digest;
-import hirs.data.persist.DigestAlgorithm;
+import hirs.data.persist.enums.DigestAlgorithm;
 import hirs.repository.RPMRepoPackage;
 import hirs.utils.exec.ExecBuilder;
 import org.apache.commons.io.FileUtils;

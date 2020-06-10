@@ -398,6 +398,7 @@ public class SupplyChainValidationServiceImplTest extends SpringPersistenceTest 
                 policyManager,
                 appraiserManager,
                 realCertMan,
+                null,
                 supplyChainValidationSummaryDBManager,
                 supplyChainCredentialValidator
         );
@@ -451,6 +452,7 @@ public class SupplyChainValidationServiceImplTest extends SpringPersistenceTest 
                 policyManager,
                 appraiserManager,
                 realCertMan,
+                null,
                 supplyChainValidationSummaryDBManager,
                 supplyChainCredentialValidator
         );
@@ -495,6 +497,7 @@ public class SupplyChainValidationServiceImplTest extends SpringPersistenceTest 
                 policyManager,
                 appraiserManager,
                 realCertMan,
+                null,
                 supplyChainValidationSummaryDBManager,
                 supplyChainCredentialValidator
         );
@@ -530,6 +533,7 @@ public class SupplyChainValidationServiceImplTest extends SpringPersistenceTest 
                 policyManager,
                 appraiserManager,
                 realCertMan,
+                null,
                 supplyChainValidationSummaryDBManager,
                 supplyChainCredentialValidator
         );
@@ -588,6 +592,7 @@ public class SupplyChainValidationServiceImplTest extends SpringPersistenceTest 
                 policyManager,
                 appraiserManager,
                 realCertMan,
+                null,
                 supplyChainValidationSummaryDBManager,
                 supplyChainCredentialValidator
         );
@@ -633,6 +638,7 @@ public class SupplyChainValidationServiceImplTest extends SpringPersistenceTest 
                 policyManager,
                 appraiserManager,
                 realCertMan,
+                null,
                 supplyChainValidationSummaryDBManager,
                 supplyChainCredentialValidator
         );
@@ -683,6 +689,7 @@ public class SupplyChainValidationServiceImplTest extends SpringPersistenceTest 
                 policyManager,
                 appraiserManager,
                 realCertMan,
+                null,
                 supplyChainValidationSummaryDBManager,
                 new SupplyChainCredentialValidator()
         );

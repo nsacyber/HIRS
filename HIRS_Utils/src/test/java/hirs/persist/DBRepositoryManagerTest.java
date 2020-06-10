@@ -1,7 +1,7 @@
 package hirs.persist;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
-import hirs.data.persist.IMABaselineRecord;
+import hirs.data.persist.baseline.IMABaselineRecord;
 import hirs.data.persist.SpringPersistenceTest;
 import hirs.repository.RPMRepoPackage;
 import hirs.repository.RepoPackage;

@@ -1,5 +1,6 @@
 package hirs.data.persist;
 
+import hirs.data.persist.enums.HealthStatus;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import hirs.persist.ScheduledJobInfo;
 import org.apache.logging.log4j.LogManager;

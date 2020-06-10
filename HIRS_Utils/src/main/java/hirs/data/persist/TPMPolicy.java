@@ -1,5 +1,10 @@
 package hirs.data.persist;
 
+import hirs.data.persist.baseline.TpmBlackListBaseline;
+import hirs.data.persist.baseline.TpmWhiteListBaseline;
+import hirs.data.persist.baseline.HasBaselines;
+import hirs.data.persist.baseline.Baseline;
+import hirs.data.persist.enums.AlertSeverity;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -73,7 +78,7 @@ public final class TPMPolicy extends Policy implements HasBaselines {
 
     @Column(nullable = false)
     @Enumerated(EnumType.STRING)
-    private Alert.Severity kernelUpdateAlertSeverity = Alert.Severity.UNSPECIFIED;
+    private AlertSeverity kernelUpdateAlertSeverity = AlertSeverity.UNSPECIFIED;
 
     @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(name = "TPMWhiteListBaselines",
@@ -550,7 +555,7 @@ public final class TPMPolicy extends Policy implements HasBaselines {
      * Gets the severity of kernel update alerts.
      * @return the severity
      */
-    public Alert.Severity getKernelUpdateAlertSeverity() {
+    public AlertSeverity getKernelUpdateAlertSeverity() {
         return kernelUpdateAlertSeverity;
     }
 
@@ -558,7 +563,7 @@ public final class TPMPolicy extends Policy implements HasBaselines {
      * Sets the severity of kernel update alerts.
      * @param severity The desired severity of kernel update alerts.
      */
-    public void setKernelUpdateAlertSeverity(final Alert.Severity severity) {
+    public void setKernelUpdateAlertSeverity(final AlertSeverity severity) {
         kernelUpdateAlertSeverity = severity;
     }
 

@@ -3,11 +3,11 @@ package hirs.ima.matching;
 import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.Multimap;
 import hirs.data.persist.Digest;
-import hirs.data.persist.IMABaselineRecord;
+import hirs.data.persist.baseline.IMABaselineRecord;
 import hirs.data.persist.IMAMeasurementRecord;
 import hirs.data.persist.IMAPolicy;
-import hirs.data.persist.AbstractImaBaselineRecord;
-import hirs.data.persist.ImaBaseline;
+import hirs.data.persist.baseline.AbstractImaBaselineRecord;
+import hirs.data.persist.baseline.ImaBaseline;
 
 import java.util.ArrayList;
 import java.util.Collection;

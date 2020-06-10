@@ -9,7 +9,8 @@ import java.util.Map;
 import hirs.data.persist.SpringPersistenceTest;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import hirs.data.persist.PortalInfo;
+import hirs.data.persist.info.PortalInfo;
+import hirs.data.persist.enums.PortalScheme;
 import org.testng.Assert;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.AfterMethod;
@@ -52,7 +53,7 @@ public class DBPortalInfoManagerTest extends SpringPersistenceTest {
     */
     @Test
     public final void deletePortalInfo() {
-        final PortalInfo.Scheme scheme = PortalInfo.Scheme.HTTPS;
+        final PortalScheme scheme = PortalScheme.HTTPS;
 
         LOGGER.debug("creating DBPortalInfoManager");
         PortalInfoManager dbpim = new DBPortalInfoManager(sessionFactory);
@@ -78,7 +79,7 @@ public class DBPortalInfoManagerTest extends SpringPersistenceTest {
     */
     @Test
     public final void getPortalInfo() {
-        final PortalInfo.Scheme scheme = PortalInfo.Scheme.HTTPS;
+        final PortalScheme scheme = PortalScheme.HTTPS;
 
         PortalInfoManager dbpim = new DBPortalInfoManager(sessionFactory);
         PortalInfo info = new PortalInfo();
@@ -97,7 +98,7 @@ public class DBPortalInfoManagerTest extends SpringPersistenceTest {
     */
     @Test
     public final void savePortalInfo() {
-        final PortalInfo.Scheme scheme = PortalInfo.Scheme.HTTPS;
+        final PortalScheme scheme = PortalScheme.HTTPS;
 
         PortalInfoManager dbpim = new DBPortalInfoManager(sessionFactory);
         PortalInfo info = new PortalInfo();
@@ -115,7 +116,7 @@ public class DBPortalInfoManagerTest extends SpringPersistenceTest {
     */
     @Test
     public final void updatePortalInfo() {
-        final PortalInfo.Scheme scheme = PortalInfo.Scheme.HTTPS;
+        final PortalScheme scheme = PortalScheme.HTTPS;
         final int port = 127;
 
         PortalInfoManager dbpim = new DBPortalInfoManager(sessionFactory);
@@ -139,13 +140,13 @@ public class DBPortalInfoManagerTest extends SpringPersistenceTest {
      */
     @Test
     public final void testGetPortalUrl() throws Exception {
-        final PortalInfo.Scheme scheme = PortalInfo.Scheme.HTTPS;
+        final PortalScheme scheme = PortalScheme.HTTPS;
         final int port = 127;
         final String contextName = "HIRS_Portal";
         final String address = "localhost";
 
         try {
-            HashMap<String, String> envMap = new HashMap<String, String>(System.getenv());
+            HashMap<String, String> envMap = new HashMap<>(System.getenv());
             setEnv(envMap);
 
             PortalInfoManager dbpim = new DBPortalInfoManager(sessionFactory);
@@ -164,7 +165,7 @@ public class DBPortalInfoManagerTest extends SpringPersistenceTest {
             Assert.assertEquals(url + urlExtension, URI.create(url + urlExtension).toString());
         } finally {
             // Unset the process environment variable for other tests.
-            HashMap<String, String> envMap = new HashMap<String, String>(System.getenv());
+            HashMap<String, String> envMap = new HashMap<>(System.getenv());
             envMap.remove("HIRS_HIBERNATE_CONFIG");
             setEnv(envMap);
         }
@@ -177,7 +178,7 @@ public class DBPortalInfoManagerTest extends SpringPersistenceTest {
     @Test
     public final void testGetPortalUrlNoPortalInfoObject() throws Exception {
         PortalInfoManager dbpim = new DBPortalInfoManager(sessionFactory);
-        dbpim.getPortalInfo(PortalInfo.Scheme.HTTPS);
+        dbpim.getPortalInfo(PortalScheme.HTTPS);
 
         String url = dbpim.getPortalUrlBase();
         Assert.assertEquals(url, "Your_HIRS_Portal/");

@@ -2,7 +2,7 @@ package hirs.repository;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import hirs.data.persist.Digest;
-import hirs.data.persist.IMABaselineRecord;
+import hirs.data.persist.baseline.IMABaselineRecord;
 import org.hibernate.annotations.Type;
 
 import javax.persistence.CascadeType;

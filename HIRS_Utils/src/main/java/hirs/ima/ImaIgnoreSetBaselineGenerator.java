@@ -1,6 +1,6 @@
 package hirs.ima;
 
-import hirs.data.persist.ImaIgnoreSetBaseline;
+import hirs.data.persist.baseline.ImaIgnoreSetBaseline;
 import hirs.data.persist.ImaIgnoreSetRecord;
 
 import java.io.BufferedReader;

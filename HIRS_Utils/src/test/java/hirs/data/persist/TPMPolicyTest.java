@@ -1,5 +1,8 @@
 package hirs.data.persist;
 
+import hirs.data.persist.baseline.TpmWhiteListBaseline;
+import hirs.data.persist.baseline.TPMBaseline;
+import hirs.data.persist.enums.AlertSeverity;
 import java.io.InputStream;
 import java.io.Serializable;
 import java.util.Arrays;
@@ -420,8 +423,8 @@ public class TPMPolicyTest extends HibernateTest<TPMPolicy> {
      */
     @Test
     public final void testSetKernelUpdateAlertSeverity() {
-        final Alert.Severity defaultSeverity = Alert.Severity.UNSPECIFIED;
-        final Alert.Severity newSeverity = Alert.Severity.INFO;
+        final AlertSeverity defaultSeverity = AlertSeverity.UNSPECIFIED;
+        final AlertSeverity newSeverity = AlertSeverity.INFO;
         TPMPolicy tpmPolicy = new TPMPolicy("TestTPMPolicy");
         Assert.assertEquals(tpmPolicy.getKernelUpdateAlertSeverity(), defaultSeverity);
         tpmPolicy.setKernelUpdateAlertSeverity(newSeverity);

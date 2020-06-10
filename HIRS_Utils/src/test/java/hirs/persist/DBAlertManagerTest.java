@@ -2,14 +2,16 @@ package hirs.persist;
 
 import hirs.FilteredRecordsList;
 import hirs.data.persist.Alert;
-import hirs.data.persist.Baseline;
+import hirs.data.persist.baseline.Baseline;
 import hirs.data.persist.Device;
 import hirs.data.persist.DeviceGroup;
 import hirs.data.persist.Report;
-import hirs.data.persist.SimpleImaBaseline;
+import hirs.data.persist.baseline.SimpleImaBaseline;
 import hirs.data.persist.SpringPersistenceTest;
 import hirs.data.persist.TestReport;
-import hirs.data.persist.TpmWhiteListBaseline;
+import hirs.data.persist.baseline.TpmWhiteListBaseline;
+import hirs.data.persist.enums.AlertSeverity;
+import hirs.data.persist.enums.AlertSource;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.testng.Assert;
@@ -629,7 +631,7 @@ public final class DBAlertManagerTest extends SpringPersistenceTest {
         for (int i = 0; i < unresolvedDetails1.length; ++i) {
             newAlert = new Alert(unresolvedDetails1[i]);
             newAlert.setDeviceName(deviceName);
-            newAlert.setSource(Alert.Source.IMA_APPRAISER);
+            newAlert.setSource(AlertSource.IMA_APPRAISER);
             mgr.saveAlert(newAlert);
         }
 
@@ -638,13 +640,13 @@ public final class DBAlertManagerTest extends SpringPersistenceTest {
         for (int i = 0; i < unresolvedDetails2.length; ++i) {
             newAlert = new Alert(unresolvedDetails2[i]);
             newAlert.setDeviceName(deviceName);
-            newAlert.setSource(Alert.Source.TPM_APPRAISER);
+            newAlert.setSource(AlertSource.TPM_APPRAISER);
             mgr.saveAlert(newAlert);
         }
 
-        Assert.assertEquals(mgr.countUnresolvedAlerts(device, Alert.Source.IMA_APPRAISER),
+        Assert.assertEquals(mgr.countUnresolvedAlerts(device, AlertSource.IMA_APPRAISER),
                 unresolvedDetails1.length);
-        Assert.assertEquals(mgr.countUnresolvedAlerts(device, Alert.Source.TPM_APPRAISER),
+        Assert.assertEquals(mgr.countUnresolvedAlerts(device, AlertSource.TPM_APPRAISER),
                 unresolvedDetails2.length);
     }
 
@@ -772,8 +774,8 @@ public final class DBAlertManagerTest extends SpringPersistenceTest {
     @Test
     public void testBaselineIdsAndSeverity() {
         Alert alert = new Alert(ALERT_DETAILS);
-        Set<Baseline> baselines = initBaselines(Alert.Severity.SEVERE, Alert.Severity.SEVERE,
-                Alert.Severity.SEVERE, Alert.Severity.SEVERE);
+        Set<Baseline> baselines = initBaselines(AlertSeverity.SEVERE, AlertSeverity.SEVERE,
+                AlertSeverity.SEVERE, AlertSeverity.SEVERE);
 
         alert.setBaselineIdsAndSeverity(baselines);
         Set<UUID> alertBaselines = alert.getBaselineIds();
@@ -782,7 +784,7 @@ public final class DBAlertManagerTest extends SpringPersistenceTest {
             Assert.assertTrue(foundMatchingBaselineId(id, baselines));
         }
 
-        Assert.assertEquals(alert.getSeverity(), Alert.Severity.SEVERE);
+        Assert.assertEquals(alert.getSeverity(), AlertSeverity.SEVERE);
     }
 
     /**
@@ -792,8 +794,8 @@ public final class DBAlertManagerTest extends SpringPersistenceTest {
     @Test
     public void testBaselineIdsAndSevereSeverity() {
         Alert alert = new Alert(ALERT_DETAILS);
-        Set<Baseline> baselines = initBaselines(Alert.Severity.SEVERE, Alert.Severity.HIGH,
-                Alert.Severity.INFO, Alert.Severity.UNSPECIFIED);
+        Set<Baseline> baselines = initBaselines(AlertSeverity.SEVERE, AlertSeverity.HIGH,
+                AlertSeverity.INFO, AlertSeverity.UNSPECIFIED);
 
         alert.setBaselineIdsAndSeverity(baselines);
         Set<UUID> alertBaselines = alert.getBaselineIds();
@@ -802,7 +804,7 @@ public final class DBAlertManagerTest extends SpringPersistenceTest {
             Assert.assertTrue(foundMatchingBaselineId(id, baselines));
         }
 
-        Assert.assertEquals(alert.getSeverity(), Alert.Severity.SEVERE);
+        Assert.assertEquals(alert.getSeverity(), AlertSeverity.SEVERE);
     }
 
     /**
@@ -812,8 +814,8 @@ public final class DBAlertManagerTest extends SpringPersistenceTest {
     @Test
     public void testBaselineIdsAndHighSeverity() {
         Alert alert = new Alert(ALERT_DETAILS);
-        Set<Baseline> baselines = initBaselines(Alert.Severity.INFO, Alert.Severity.HIGH,
-                Alert.Severity.INFO, Alert.Severity.UNSPECIFIED);
+        Set<Baseline> baselines = initBaselines(AlertSeverity.INFO, AlertSeverity.HIGH,
+                AlertSeverity.INFO, AlertSeverity.UNSPECIFIED);
 
         alert.setBaselineIdsAndSeverity(baselines);
         Set<UUID> alertBaselines = alert.getBaselineIds();
@@ -822,7 +824,7 @@ public final class DBAlertManagerTest extends SpringPersistenceTest {
             Assert.assertTrue(foundMatchingBaselineId(id, baselines));
         }
 
-        Assert.assertEquals(alert.getSeverity(), Alert.Severity.HIGH);
+        Assert.assertEquals(alert.getSeverity(), AlertSeverity.HIGH);
     }
 
     /**
@@ -832,8 +834,8 @@ public final class DBAlertManagerTest extends SpringPersistenceTest {
     @Test
     public void testBaselineIdsAndLowSeverity() {
         Alert alert = new Alert(ALERT_DETAILS);
-        Set<Baseline> baselines = initBaselines(Alert.Severity.INFO, Alert.Severity.LOW,
-                Alert.Severity.INFO, Alert.Severity.UNSPECIFIED);
+        Set<Baseline> baselines = initBaselines(AlertSeverity.INFO, AlertSeverity.LOW,
+                AlertSeverity.INFO, AlertSeverity.UNSPECIFIED);
 
         alert.setBaselineIdsAndSeverity(baselines);
         Set<UUID> alertBaselines = alert.getBaselineIds();
@@ -842,7 +844,7 @@ public final class DBAlertManagerTest extends SpringPersistenceTest {
             Assert.assertTrue(foundMatchingBaselineId(id, baselines));
         }
 
-        Assert.assertEquals(alert.getSeverity(), Alert.Severity.LOW);
+        Assert.assertEquals(alert.getSeverity(), AlertSeverity.LOW);
     }
 
     /**
@@ -852,8 +854,8 @@ public final class DBAlertManagerTest extends SpringPersistenceTest {
     @Test
     public void testBaselineIdsAndInfoSeverity() {
         Alert alert = new Alert(ALERT_DETAILS);
-        Set<Baseline> baselines = initBaselines(Alert.Severity.INFO, Alert.Severity.INFO,
-                Alert.Severity.INFO, Alert.Severity.UNSPECIFIED);
+        Set<Baseline> baselines = initBaselines(AlertSeverity.INFO, AlertSeverity.INFO,
+                AlertSeverity.INFO, AlertSeverity.UNSPECIFIED);
 
         alert.setBaselineIdsAndSeverity(baselines);
         Set<UUID> alertBaselines = alert.getBaselineIds();
@@ -862,7 +864,7 @@ public final class DBAlertManagerTest extends SpringPersistenceTest {
             Assert.assertTrue(foundMatchingBaselineId(id, baselines));
         }
 
-        Assert.assertEquals(alert.getSeverity(), Alert.Severity.INFO);
+        Assert.assertEquals(alert.getSeverity(), AlertSeverity.INFO);
     }
 
     private boolean foundMatchingBaselineId(final UUID baselineId, final Collection<Baseline>
@@ -874,10 +876,10 @@ public final class DBAlertManagerTest extends SpringPersistenceTest {
         }
         return false;
     }
-    private Set<Baseline> initBaselines(final Alert.Severity severity,
-                                        final Alert.Severity severity2,
-                                        final Alert.Severity severity3,
-                                        final Alert.Severity severity4) {
+    private Set<Baseline> initBaselines(final AlertSeverity severity,
+                                        final AlertSeverity severity2,
+                                        final AlertSeverity severity3,
+                                        final AlertSeverity severity4) {
         final BaselineManager bMgr = new DBBaselineManager(sessionFactory);
         Baseline baseline = bMgr.saveBaseline(new TpmWhiteListBaseline(TEST_BASELINE_NAME + "1"));
         Baseline baseline2 = bMgr.saveBaseline(new TpmWhiteListBaseline(TEST_BASELINE_NAME + "2"));

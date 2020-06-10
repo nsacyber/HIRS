@@ -1,5 +1,6 @@
 package hirs.data.persist;
 
+import hirs.data.persist.enums.DigestAlgorithm;
 import org.apache.commons.codec.DecoderException;
 import org.apache.commons.codec.binary.Hex;
 
@@ -75,6 +76,14 @@ public final class Digest extends AbstractDigest {
         validateInput(algorithm, digest);
         this.algorithm = algorithm;
         this.digest = Arrays.copyOf(digest, digest.length);
+    }
+
+    /**
+     * Creates a new <code>Digest</code> when an algorithm isn't specified.
+     * @param digest byte array value
+     */
+    public Digest(final byte[] digest) {
+        this(AbstractDigest.getDigestAlgorithm(digest), digest);
     }
 
     /**

@@ -1,7 +1,7 @@
 package hirs.alert.resolve;
 
 import hirs.alert.AlertResolutionAction;
-import hirs.data.persist.Baseline;
+import hirs.data.persist.baseline.Baseline;
 import hirs.persist.BaselineManager;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;

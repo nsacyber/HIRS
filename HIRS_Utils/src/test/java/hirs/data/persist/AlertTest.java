@@ -1,5 +1,11 @@
 package hirs.data.persist;
 
+import hirs.data.persist.baseline.ImaBaseline;
+import hirs.data.persist.baseline.SimpleImaBaseline;
+import hirs.data.persist.baseline.Baseline;
+import hirs.data.persist.enums.AlertSeverity;
+import hirs.data.persist.enums.AlertSource;
+import hirs.data.persist.enums.AlertType;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashSet;
@@ -27,9 +33,9 @@ public final class AlertTest {
     @Test
     public void testAlertDefaults() {
         Alert alert = new Alert(TEST_DETAILS);
-        Assert.assertEquals(alert.getSeverity(), Alert.Severity.UNSPECIFIED);
-        Assert.assertEquals(alert.getType(), Alert.AlertType.UNSPECIFIED);
-        Assert.assertEquals(alert.getSource(), Alert.Source.UNSPECIFIED);
+        Assert.assertEquals(alert.getSeverity(), AlertSeverity.UNSPECIFIED);
+        Assert.assertEquals(alert.getType(), AlertType.UNSPECIFIED);
+        Assert.assertEquals(alert.getSource(), AlertSource.UNSPECIFIED);
         Assert.assertNull(alert.getDisplayTitle());
     }
 
@@ -91,7 +97,7 @@ public final class AlertTest {
     public void testBaselineIdAndSeverity() {
         Alert alert = new Alert(TEST_DETAILS);
         ImaBaseline baseline = new SimpleImaBaseline(TEST_BASELINE_NAME);
-        baseline.setSeverity(Alert.Severity.SEVERE);
+        baseline.setSeverity(AlertSeverity.SEVERE);
         alert.setBaselineIdsAndSeverity(Collections.singleton(baseline));
         Assert.assertEquals(alert.getBaselineIds().iterator().next(), baseline.getId());
         Assert.assertEquals(alert.getSeverity(), baseline.getSeverity());
@@ -103,8 +109,8 @@ public final class AlertTest {
     @Test
     public void testSource() {
         Alert alert = new Alert(TEST_DETAILS);
-        alert.setSource(Alert.Source.IMA_APPRAISER);
-        Assert.assertEquals(alert.getSource(), Alert.Source.IMA_APPRAISER);
+        alert.setSource(AlertSource.IMA_APPRAISER);
+        Assert.assertEquals(alert.getSource(), AlertSource.IMA_APPRAISER);
     }
 
     /**
@@ -113,9 +119,9 @@ public final class AlertTest {
     @Test
     public void testType() {
         Alert alert = new Alert(TEST_DETAILS);
-        alert.setType(Alert.AlertType.REPORT_REQUESTS_MISSING);
+        alert.setType(AlertType.REPORT_REQUESTS_MISSING);
         Assert.assertEquals(alert.getType(),
-                Alert.AlertType.REPORT_REQUESTS_MISSING);
+                AlertType.REPORT_REQUESTS_MISSING);
     }
 
     /**
@@ -135,7 +141,7 @@ public final class AlertTest {
     @Test
     public void testSeverity() {
         Alert alert = new Alert(TEST_DETAILS);
-        Assert.assertEquals(alert.getSeverity(), Alert.Severity.UNSPECIFIED);
+        Assert.assertEquals(alert.getSeverity(), AlertSeverity.UNSPECIFIED);
     }
 
     /**
@@ -143,18 +149,18 @@ public final class AlertTest {
      */
     @Test
     public void testSetSeverity() {
-        final Alert.Severity baselineSeverity = Alert.Severity.SEVERE;
-        final Alert.Severity alertSeverity = Alert.Severity.LOW;
+        final AlertSeverity baselineSeverity = AlertSeverity.SEVERE;
+        final AlertSeverity alertSeverity = AlertSeverity.LOW;
 
         // Set up a baseline with a severity
         ImaBaseline baseline = new SimpleImaBaseline(TEST_BASELINE_NAME);
         baseline.setSeverity(baselineSeverity);
-        HashSet<Baseline> baselineSet = new HashSet<Baseline>();
+        HashSet<Baseline> baselineSet = new HashSet<>();
         baselineSet.add(baseline);
 
         // Track the status of the severity value
         Alert alert = new Alert(TEST_DETAILS);
-        Assert.assertEquals(alert.getSeverity(), Alert.Severity.UNSPECIFIED);
+        Assert.assertEquals(alert.getSeverity(), AlertSeverity.UNSPECIFIED);
         alert.setBaselineIdsAndSeverity(baselineSet);
         Assert.assertEquals(alert.getSeverity(), baselineSeverity);
         alert.setSeverity(alertSeverity);

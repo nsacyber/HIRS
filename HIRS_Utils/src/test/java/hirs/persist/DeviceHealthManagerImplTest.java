@@ -4,7 +4,7 @@ import hirs.data.persist.Alert;
 import hirs.data.persist.Device;
 import hirs.data.persist.DeviceGroup;
 import hirs.data.persist.DeviceState;
-import hirs.data.persist.HealthStatus;
+import hirs.data.persist.enums.HealthStatus;
 import hirs.data.persist.Report;
 import hirs.data.persist.ReportSummary;
 

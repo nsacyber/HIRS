@@ -1,5 +1,6 @@
 package hirs.data.persist;
 
+import hirs.data.persist.info.OSInfo;
 import static hirs.data.persist.DeviceInfoReport.NOT_SPECIFIED;
 
 import org.apache.commons.lang3.StringUtils;

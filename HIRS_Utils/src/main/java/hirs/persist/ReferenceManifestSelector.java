@@ -25,7 +25,9 @@ import java.util.UUID;
  */
 public abstract class ReferenceManifestSelector<ReferenceManifest> {
     private static final String PLATFORM_MANUFACTURER = "platformManufacturer";
+    private static final String PLATFORM_MANUFACTURER_ID = "platformManufacturerId";
     private static final String PLATFORM_MODEL = "platformModel";
+    private static final String RIM_TYPE_FIELD = "rimType";
 
     private final ReferenceManifestManager referenceManifestManager;
 
@@ -82,6 +84,17 @@ public abstract class ReferenceManifestSelector<ReferenceManifest> {
     }
 
     /**
+     * Specify the platform manufacturer id that rims must have to be considered
+     * as matching.
+     * @param manufacturerId string for the id of the manufacturer
+     * @return this instance
+     */
+    public ReferenceManifestSelector byManufacturerId(final String manufacturerId) {
+        setFieldValue(PLATFORM_MANUFACTURER_ID, manufacturerId);
+        return this;
+    }
+
+    /**
      * Specify the platform model that rims must have to be considered
      * as matching.
      * @param model string for the model
@@ -102,6 +115,16 @@ public abstract class ReferenceManifestSelector<ReferenceManifest> {
         setFieldValue(hirs.data.persist.ReferenceManifest.RIM_HASH_FIELD, rimHash);
         return this;
     }
+
+    /**
+     * Specify the RIM Type to match.
+     * @param rimType the type of rim
+     * @return this instance
+     */
+    public ReferenceManifestSelector byRimType(final String rimType) {
+            setFieldValue(RIM_TYPE_FIELD, rimType);
+            return this;
+        }
 
     /**
      * Set a field name and value to match.
