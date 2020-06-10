@@ -2,18 +2,18 @@ package hirs.tpm;
 
 import hirs.data.persist.DeviceInfoReport;
 import hirs.data.persist.Digest;
-import hirs.data.persist.DigestAlgorithm;
-import hirs.data.persist.FirmwareInfo;
-import hirs.data.persist.HardwareInfo;
+import hirs.data.persist.enums.DigestAlgorithm;
+import hirs.data.persist.info.FirmwareInfo;
+import hirs.data.persist.info.HardwareInfo;
 import hirs.data.persist.IntegrityReport;
-import hirs.data.persist.OSInfo;
+import hirs.data.persist.info.OSInfo;
 import hirs.data.persist.Report;
-import hirs.data.persist.TPMBaseline;
-import hirs.data.persist.TPMInfo;
+import hirs.data.persist.baseline.TPMBaseline;
+import hirs.data.persist.info.TPMInfo;
 import hirs.data.persist.TPMMeasurementRecord;
 import hirs.data.persist.TPMReport;
-import hirs.data.persist.TpmBlackListBaseline;
-import hirs.data.persist.TpmWhiteListBaseline;
+import hirs.data.persist.baseline.TpmBlackListBaseline;
+import hirs.data.persist.baseline.TpmWhiteListBaseline;
 import org.apache.commons.codec.binary.Hex;
 import org.apache.commons.lang3.StringEscapeUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -54,97 +54,97 @@ public class TPMBaselineGenerator {
         /**
          * FirmwareInfo's BIOS Vendor.
          */
-        biosvendor,
+        BIOS_VENDOR,
 
         /**
          * FirmwareInfo's BIOS Version.
          */
-        biosversion,
+        BIOS_VERSION,
 
         /**
          * FirmwareInfo's BIOS Release Date.
          */
-        biosreleasedate,
+        BIOS_RELEASE_DATE,
 
         /**
          * HardwareInfo's Manufacturer.
          */
-        manufacturer,
+        MANUFACTURER,
 
         /**
          * HardwareInfo's Product Name.
          */
-        productname,
+        PRODUCT_NAME,
 
         /**
          * HardwareInfo's Version.
          */
-        version,
+        VERSION,
 
         /**
          * HardwareInfo's Serial number.
          */
-        systemserialnumber,
+        SYSTEM_SERIAL_NUMBER,
 
         /**
          * HardwareInfo's Chassis serial number.
          */
-        chassisserialnumber,
+        CHASSIS_SERIAL_NUMBER,
 
         /**
          * HardwareInfo's baseboard serial number.
          */
-        baseboardserialnumber,
+        BASEBOARD_SERIAL_NUMBER,
 
         /**
          * OSInfo's OS Name.
          */
-        osname,
+        OS_NAME,
 
         /**
          * OSInfo's OS Version.
          */
-        osversion,
+        OS_VERSION,
 
         /**
          * OSInfo's OS Arch.
          */
-        osarch,
+        OS_ARCH,
 
         /**
          * OSInfo's Distribution.
          */
-        distribution,
+        DISTRIBUTION,
 
         /**
          * OSInfo's Distribution Release.
          */
-        distributionrelease,
+        DISTRIBUTION_RELEASE,
 
         /**
          * TPMInfo's TPM Make.
          */
-        tpmmake,
+        TPM_MAKE,
 
         /**
          * TPMInfo's TPM Version Major.
          */
-        tpmversionmajor,
+        TPM_VERSION_MAJOR,
 
         /**
          * TPMInfo's TPM Version Minor.
          */
-        tpmversionminor,
+        TPM_VERSION_MINOR,
 
         /**
          * TPMInfo's TPM Version Rev Major.
          */
-        tpmversionrevmajor,
+        TPM_VERSION_REV_MAJOR,
 
         /**
          * TPMInfo's TPM Version Rev Minor.
          */
-        tpmversionrevminor;
+        TPM_VERSION_REV_MINOR;
 
         /**
          * Generates a CSV String from a map of TPMBaselineFields to values.
@@ -181,19 +181,19 @@ public class TPMBaselineGenerator {
                     + " This method should not have been called with a null parameter.");
             }
 
-            final String biosvendor =
+            final String biosVendor =
                 StringUtils.defaultIfBlank(
-                    map.get(TPMBaselineFields.biosvendor), defaultInfo.getBiosVendor());
+                    map.get(TPMBaselineFields.BIOS_VENDOR), defaultInfo.getBiosVendor());
 
-            final String biosversion =
+            final String biosVersion =
                     StringUtils.defaultIfBlank(
-                        map.get(TPMBaselineFields.biosversion), defaultInfo.getBiosVersion());
+                        map.get(TPMBaselineFields.BIOS_VERSION), defaultInfo.getBiosVersion());
 
-            final String biosreleasedate =
-                    StringUtils.defaultIfBlank(map.get(TPMBaselineFields.biosreleasedate),
+            final String biosReleaseDate =
+                    StringUtils.defaultIfBlank(map.get(TPMBaselineFields.BIOS_RELEASE_DATE),
                         defaultInfo.getBiosReleaseDate());
 
-            return new FirmwareInfo(biosvendor, biosversion, biosreleasedate);
+            return new FirmwareInfo(biosVendor, biosVersion, biosReleaseDate);
         }
 
         /**
@@ -213,33 +213,33 @@ public class TPMBaselineGenerator {
 
             final String manufacturer =
                 StringUtils.defaultIfBlank(
-                    map.get(TPMBaselineFields.manufacturer), defaultInfo.getManufacturer());
+                    map.get(TPMBaselineFields.MANUFACTURER), defaultInfo.getManufacturer());
 
-            final String productname =
+            final String productName =
                     StringUtils.defaultIfBlank(
-                        map.get(TPMBaselineFields.productname), defaultInfo.getProductName());
+                        map.get(TPMBaselineFields.PRODUCT_NAME), defaultInfo.getProductName());
 
             final String version =
                     StringUtils.defaultIfBlank(
-                        map.get(TPMBaselineFields.version), defaultInfo.getVersion());
+                        map.get(TPMBaselineFields.VERSION), defaultInfo.getVersion());
 
-            final String serialnumber =
-                    StringUtils.defaultIfBlank(map.get(TPMBaselineFields.systemserialnumber),
+            final String serialNumber =
+                    StringUtils.defaultIfBlank(map.get(TPMBaselineFields.SYSTEM_SERIAL_NUMBER),
                         defaultInfo.getSystemSerialNumber());
 
             final String chassisSerialNumber =
-                    StringUtils.defaultIfBlank(map.get(TPMBaselineFields.chassisserialnumber),
+                    StringUtils.defaultIfBlank(map.get(TPMBaselineFields.CHASSIS_SERIAL_NUMBER),
                             defaultInfo.getChassisSerialNumber());
 
             final String baseboardSerialNumber =
-                    StringUtils.defaultIfBlank(map.get(TPMBaselineFields.baseboardserialnumber),
+                    StringUtils.defaultIfBlank(map.get(TPMBaselineFields.BASEBOARD_SERIAL_NUMBER),
                             defaultInfo.getBaseboardSerialNumber());
 
             return new HardwareInfo(
                     manufacturer,
-                    productname,
+                    productName,
                     version,
-                    serialnumber,
+                    serialNumber,
                     chassisSerialNumber,
                     baseboardSerialNumber
             );
@@ -260,27 +260,27 @@ public class TPMBaselineGenerator {
                     + " This method should not have been called with a null parameter.");
             }
 
-            final String osname =
+            final String osName =
                 StringUtils.defaultIfBlank(
-                    map.get(TPMBaselineFields.osname), defaultInfo.getOSName());
+                    map.get(TPMBaselineFields.OS_NAME), defaultInfo.getOSName());
 
-            final String osversion =
+            final String osVersion =
                     StringUtils.defaultIfBlank(
-                        map.get(TPMBaselineFields.osversion), defaultInfo.getOSVersion());
+                        map.get(TPMBaselineFields.OS_VERSION), defaultInfo.getOSVersion());
 
-            final String osarch =
+            final String osArch =
                     StringUtils.defaultIfBlank(
-                        map.get(TPMBaselineFields.osarch), defaultInfo.getOSArch());
+                        map.get(TPMBaselineFields.OS_ARCH), defaultInfo.getOSArch());
 
             final String distribution =
-                    StringUtils.defaultIfBlank(map.get(TPMBaselineFields.distribution),
+                    StringUtils.defaultIfBlank(map.get(TPMBaselineFields.DISTRIBUTION),
                         defaultInfo.getDistribution());
 
-            final String distributionrelease =
-                    StringUtils.defaultIfBlank(map.get(TPMBaselineFields.distributionrelease),
+            final String distributionRelease =
+                    StringUtils.defaultIfBlank(map.get(TPMBaselineFields.DISTRIBUTION_RELEASE),
                         defaultInfo.getDistributionRelease());
 
-            return new OSInfo(osname, osversion, osarch, distribution, distributionrelease);
+            return new OSInfo(osName, osVersion, osArch, distribution, distributionRelease);
         }
 
         /**
@@ -298,29 +298,29 @@ public class TPMBaselineGenerator {
                     + " This method should not have been called with a null parameter.");
             }
 
-            final String tpmmake =
+            final String tpmMake =
                 StringUtils.defaultIfBlank(
-                    map.get(TPMBaselineFields.tpmmake), defaultInfo.getTPMMake());
+                    map.get(TPMBaselineFields.TPM_MAKE), defaultInfo.getTPMMake());
 
-            final String tpmversionmajor =
-                    StringUtils.defaultIfBlank(map.get(TPMBaselineFields.tpmversionmajor),
+            final String tpmVersionMajor =
+                    StringUtils.defaultIfBlank(map.get(TPMBaselineFields.TPM_VERSION_MAJOR),
                         "" + defaultInfo.getTPMVersionMajor());
 
-            final String tpmversionminor =
-                    StringUtils.defaultIfBlank(map.get(TPMBaselineFields.tpmversionminor),
+            final String tpmVersionMinor =
+                    StringUtils.defaultIfBlank(map.get(TPMBaselineFields.TPM_VERSION_MINOR),
                         "" + defaultInfo.getTPMVersionMinor());
 
-            final String tpmversionrevmajor =
-                    StringUtils.defaultIfBlank(map.get(TPMBaselineFields.tpmversionrevmajor),
+            final String tpmVersionRevMajor =
+                    StringUtils.defaultIfBlank(map.get(TPMBaselineFields.TPM_VERSION_REV_MAJOR),
                         "" + defaultInfo.getTPMVersionRevMajor());
 
-            final String tpmversionrevminor =
-                    StringUtils.defaultIfBlank(map.get(TPMBaselineFields.tpmversionrevminor),
+            final String tpmVersionRevMinor =
+                    StringUtils.defaultIfBlank(map.get(TPMBaselineFields.TPM_VERSION_REV_MINOR),
                         "" + defaultInfo.getTPMVersionMinor());
 
-            return new TPMInfo(tpmmake, Short.valueOf(tpmversionmajor),
-                Short.valueOf(tpmversionminor), Short.valueOf(tpmversionrevmajor),
-                Short.valueOf(tpmversionrevminor));
+            return new TPMInfo(tpmMake, Short.valueOf(tpmVersionMajor),
+                Short.valueOf(tpmVersionMinor), Short.valueOf(tpmVersionRevMajor),
+                Short.valueOf(tpmVersionRevMinor));
         }
     }
 
@@ -510,8 +510,8 @@ public class TPMBaselineGenerator {
         // Copy the criteria from the device info report corroborated the kernel update.
         final OSInfo referenceOSInfo = referenceBaseline.getOSInfo();
         final HashMap<TPMBaselineFields, String> map = new HashMap<>();
-        map.put(TPMBaselineFields.osname, referenceOSInfo.getOSName());
-        map.put(TPMBaselineFields.osversion, referenceOSInfo.getOSVersion());
+        map.put(TPMBaselineFields.OS_NAME, referenceOSInfo.getOSName());
+        map.put(TPMBaselineFields.OS_VERSION, referenceOSInfo.getOSVersion());
         final OSInfo osInfo = TPMBaselineFields.toOSInfo(map, new OSInfo());
         newBaseline.setOSInfo(osInfo);
 

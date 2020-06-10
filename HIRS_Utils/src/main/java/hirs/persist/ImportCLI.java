@@ -1,6 +1,6 @@
 package hirs.persist;
 
-import hirs.data.persist.Baseline;
+import hirs.data.persist.baseline.Baseline;
 import hirs.data.persist.DeviceInfoReport;
 import hirs.data.persist.IMAReport;
 import hirs.data.persist.IntegrityReport;

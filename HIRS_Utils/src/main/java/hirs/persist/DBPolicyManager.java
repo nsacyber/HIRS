@@ -2,10 +2,10 @@ package hirs.persist;
 
 import com.google.common.base.Preconditions;
 import hirs.appraiser.Appraiser;
-import hirs.data.persist.Baseline;
+import hirs.data.persist.baseline.Baseline;
 import hirs.data.persist.Device;
 import hirs.data.persist.DeviceGroup;
-import hirs.data.persist.HasBaselines;
+import hirs.data.persist.baseline.HasBaselines;
 import hirs.data.persist.Policy;
 
 import java.io.Serializable;

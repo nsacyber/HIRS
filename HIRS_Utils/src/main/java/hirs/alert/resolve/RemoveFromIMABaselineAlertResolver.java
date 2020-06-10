@@ -1,7 +1,7 @@
 package hirs.alert.resolve;
 
 import hirs.data.persist.Alert;
-import hirs.data.persist.IMABaselineRecord;
+import hirs.data.persist.baseline.IMABaselineRecord;
 import org.springframework.stereotype.Component;
 
 /**

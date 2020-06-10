@@ -1,5 +1,8 @@
 package hirs.data.persist;
 
+import hirs.data.persist.enums.DigestAlgorithm;
+import hirs.data.persist.baseline.ImaIgnoreSetBaseline;
+import hirs.data.persist.baseline.Baseline;
 import hirs.ima.matching.BatchImaMatchStatus;
 
 import java.util.Collections;

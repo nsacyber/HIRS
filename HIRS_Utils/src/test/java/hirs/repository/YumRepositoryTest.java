@@ -5,7 +5,7 @@ import static org.apache.logging.log4j.LogManager.getLogger;
 import java.net.URL;
 import java.util.HashSet;
 import java.util.Set;
-import hirs.data.persist.IMABaselineRecord;
+import hirs.data.persist.baseline.IMABaselineRecord;
 import hirs.data.persist.SpringPersistenceTest;
 import hirs.persist.DBRepositoryManager;
 import hirs.persist.RepositoryManager;

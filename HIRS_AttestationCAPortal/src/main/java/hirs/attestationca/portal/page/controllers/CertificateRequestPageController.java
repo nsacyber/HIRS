@@ -153,6 +153,17 @@ public class CertificateRequestPageController extends PageController<NoPageParam
 
         return mav;
     }
+    /**
+     * TODO
+     * 1. add flag for rim validation dependent on pc attribute flag DONE
+     * 2. create tpmbaseline on upload of rimel file (DONE?)
+     *    a. add device id?  though one won't exist yet
+     * 3. validation
+     *    a. looks for baseline
+     *    b. if it doesn't find one, looks for rim
+     *          a. creates baseline if it exists
+     *    c. validates after reading rimel, if it finds one.
+     */
 
     /**
      * Queries for the list of Certificates and returns a data table response
@@ -600,8 +611,8 @@ public class CertificateRequestPageController extends PageController<NoPageParam
         try {
             fileBytes = file.getBytes();
         } catch (IOException e) {
-            final String failMessage = "Failed to read uploaded file ("
-                    + fileName + "): ";
+            final String failMessage = String.format(
+                    "Failed to read uploaded file (%s): ", fileName);
             LOGGER.error(failMessage, e);
             messages.addError(failMessage + e.getMessage());
             return null;
@@ -615,22 +626,21 @@ public class CertificateRequestPageController extends PageController<NoPageParam
                 case TRUSTCHAIN:
                     return new CertificateAuthorityCredential(fileBytes);
                 default:
-                    final String failMessage = "Failed to parse uploaded file ("
-                            + fileName + "). Invalid certificate type: "
-                            + certificateType;
+                    final String failMessage = String.format("Failed to parse uploaded file "
+                            + "(%s). Invalid certificate type: %s", fileName, certificateType);
                     LOGGER.error(failMessage);
                     messages.addError(failMessage);
                     return null;
             }
         } catch (IOException e) {
-            final String failMessage = "Failed to parse uploaded file ("
-                    + fileName + "): ";
+            final String failMessage = String.format(
+                    "Failed to parse uploaded file (%s): ", fileName);
             LOGGER.error(failMessage, e);
             messages.addError(failMessage + e.getMessage());
             return null;
         } catch (IllegalArgumentException e) {
-            final String failMessage = "Certificate format not recognized("
-                    + fileName + "): ";
+            final String failMessage = String.format(
+                    "Certificate format not recognized(%s): ", fileName);
             LOGGER.error(failMessage, e);
             messages.addError(failMessage + e.getMessage());
             return null;

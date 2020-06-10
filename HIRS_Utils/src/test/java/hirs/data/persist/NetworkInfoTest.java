@@ -1,5 +1,6 @@
 package hirs.data.persist;
 
+import hirs.data.persist.info.NetworkInfo;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 

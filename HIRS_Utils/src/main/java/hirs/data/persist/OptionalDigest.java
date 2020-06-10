@@ -1,5 +1,6 @@
 package hirs.data.persist;
 
+import hirs.data.persist.enums.DigestAlgorithm;
 import javax.persistence.Access;
 import javax.persistence.AccessType;
 import javax.persistence.Column;

@@ -1,8 +1,8 @@
 package hirs.alert.resolve;
 
 import hirs.data.persist.Alert;
-import hirs.data.persist.IMABaselineRecord;
-import hirs.data.persist.SimpleImaBaseline;
+import hirs.data.persist.baseline.IMABaselineRecord;
+import hirs.data.persist.baseline.SimpleImaBaseline;
 import hirs.persist.ImaBaselineRecordManager;
 import org.springframework.beans.factory.annotation.Autowired;
 

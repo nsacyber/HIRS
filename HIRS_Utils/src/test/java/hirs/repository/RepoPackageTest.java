@@ -1,8 +1,8 @@
 package hirs.repository;
 
 import hirs.data.persist.Digest;
-import hirs.data.persist.DigestAlgorithm;
-import hirs.data.persist.IMABaselineRecord;
+import hirs.data.persist.enums.DigestAlgorithm;
+import hirs.data.persist.baseline.IMABaselineRecord;
 
 import org.testng.Assert;
 import org.testng.annotations.AfterMethod;

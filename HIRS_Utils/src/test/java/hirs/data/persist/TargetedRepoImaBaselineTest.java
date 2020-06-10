@@ -1,5 +1,9 @@
 package hirs.data.persist;
 
+import hirs.data.persist.baseline.IMABaselineRecord;
+import hirs.data.persist.baseline.TargetedRepoImaBaseline;
+import hirs.data.persist.baseline.Baseline;
+import hirs.data.persist.enums.ReportMatchStatus;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;

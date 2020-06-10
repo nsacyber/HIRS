@@ -1,5 +1,8 @@
 package hirs.data.persist;
 
+import hirs.data.persist.enums.DigestAlgorithm;
+import hirs.data.persist.baseline.IMABaselineRecord;
+import hirs.data.persist.baseline.SimpleImaBaseline;
 import java.text.ParseException;
 import java.util.Set;
 

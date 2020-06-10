@@ -1,6 +1,7 @@
 package hirs.persist;
 
-import hirs.data.persist.PortalInfo;
+import hirs.data.persist.info.PortalInfo;
+import hirs.data.persist.enums.PortalScheme;
 
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -78,7 +79,7 @@ public class DBPortalInfoManager extends DBManager<PortalInfo> implements Portal
      * <code>PortalInfo</code>
      */
     @Override
-    public final PortalInfo getPortalInfo(final PortalInfo.Scheme scheme)
+    public final PortalInfo getPortalInfo(final PortalScheme scheme)
             throws PortalInfoManagerException {
         LOGGER.debug("getting Portal Info: {}", scheme.name());
         try {
@@ -101,7 +102,7 @@ public class DBPortalInfoManager extends DBManager<PortalInfo> implements Portal
      * from the database
      */
     @Override
-    public final boolean deletePortalInfo(final PortalInfo.Scheme scheme)
+    public final boolean deletePortalInfo(final PortalScheme scheme)
             throws PortalInfoManagerException {
         LOGGER.debug("deleting Portal Info: {}", scheme.name());
         try {
@@ -123,9 +124,9 @@ public class DBPortalInfoManager extends DBManager<PortalInfo> implements Portal
 
         try {
             // Prefer HIRS to use HTTPS, but check HTTP if needed
-            info = getPortalInfo(PortalInfo.Scheme.HTTPS);
+            info = getPortalInfo(PortalScheme.HTTPS);
             if (info == null) {
-                info = getPortalInfo(PortalInfo.Scheme.HTTP);
+                info = getPortalInfo(PortalScheme.HTTP);
             }
         } catch (Exception e) {
             info = null;

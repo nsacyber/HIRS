@@ -1,5 +1,6 @@
 package hirs.data.persist;
 
+import hirs.data.persist.info.TPMInfo;
 import static hirs.data.persist.DeviceInfoReport.NOT_SPECIFIED;
 
 import java.io.FileNotFoundException;

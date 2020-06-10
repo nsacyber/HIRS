@@ -1,5 +1,9 @@
 package hirs.data.persist;
 
+import hirs.data.persist.baseline.Baseline;
+import hirs.data.persist.enums.AlertSeverity;
+import hirs.data.persist.enums.AlertSource;
+import hirs.data.persist.enums.AlertType;
 import javax.persistence.Access;
 import javax.persistence.AccessType;
 import javax.persistence.CollectionTable;
@@ -16,7 +20,6 @@ import javax.persistence.Table;
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
-import javax.xml.bind.annotation.XmlType;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
@@ -68,7 +71,7 @@ public class Alert extends ArchivableEntity {
 
     @Column(name = "source")
     @Enumerated(EnumType.STRING)
-    private Source source = Source.UNSPECIFIED;
+    private AlertSource source = AlertSource.UNSPECIFIED;
 
     @Column(name = "type")
     @Enumerated(EnumType.STRING)
@@ -82,231 +85,7 @@ public class Alert extends ArchivableEntity {
 
     @Column(name = "severity")
     @Enumerated(EnumType.STRING)
-    private Severity severity = Severity.UNSPECIFIED;
-
-    /**
-     * The 'source' of the <code>Alert</code>, which is a string enumeration
-     * representing the component within the HIRS system that caused the
-     * <code>Alert</code> to be generated. For example, if a record mismatch is
-     * detected by the <code>IMAAppraiser</code>, the source of the
-     * <code>Alert</code> will be "IMAAppraiser". In some cases the class name
-     * may be used, and in other cases a more abstract name may be used to
-     * provide clarity to the user, such as the <code>REPORT_PROCESSOR</code>
-     * type, which can come from the <code>SOAPMessageProcessor</code>, the
-     * <code>SOAPReportProcessor</code>, or the <code>HIRSAppraiser</code>.
-     */
-    @XmlType(name = "AlertSource")
-    public enum Source {
-        /**
-         * The alerts generated from an unspecified source.
-         */
-        UNSPECIFIED,
-        /**
-         * Alerts generated within <code>SOAPMessageProcessor</code>,
-         * <code>SOAPReportProcessor</code>, or <code>HIRSAppraiser</code> will
-         * all use the same source. This makes sense right now because those
-         * Alerts will all be related to <code>Report</code>s that do not match
-         * the expected format.
-         */
-        REPORT_PROCESSOR,
-        /**
-         * Alerts generated within the <code>IMAAppraiser</code>.
-         */
-        IMA_APPRAISER,
-        /**
-         * Alerts generated within the <code>TPMAppraiser</code>.
-         */
-        TPM_APPRAISER,
-        /**
-         * Alerts generated within <code>OnDemandReportRequestManager</code>.
-         */
-        REPORT_REQUESTOR
-    }
-
-
-
-    /**
-     * The 'type' of the Alert, which is the category of problem identified by
-     * the 'source'.
-     */
-    @XmlType(name = "AlertType")
-    public enum AlertType {
-        /**
-         * The alert type has not been specified.
-         */
-        UNSPECIFIED,
-
-        /**
-         * The <code>Report</code> does not contain the necessary elements or it
-         * contains certain unnecessary elements.
-         */
-        MALFORMED_REPORT,
-
-        /**
-         * The <code>Report</code> does not contain the correct
-         * <code>TPMMeasurementRecord</code>s or the PCR values are not correct.
-         */
-        WHITE_LIST_PCR_MISMATCH,
-
-        /**
-         * The <code>Report</code> contains a <code>TPMMeasurementRecord</code>
-         * matching a TPM BlackList.
-         */
-        BLACK_LIST_PCR_MATCH,
-
-        /**
-         * The <code>TPMReport</code> does not contain a valid nonce.
-         */
-        INVALID_NONCE,
-
-        /**
-         * The <code>TPMReport</code> does not contain a valid TPM Quote (PCR Digest).
-         */
-        INVALID_TPM_QUOTE,
-
-        /**
-         * The <code>TPMReport</code> does not contain a valid signature.
-         */
-        INVALID_SIGNATURE,
-
-        /**
-         * The <code>TPMReport</code> does not contain a valid certificate.
-         */
-        INVALID_CERTIFICATE,
-
-        /**
-         * The <code>IMAReport</code> contains a whitelist hash mismatch.
-         */
-        WHITELIST_MISMATCH,
-
-        /**
-         * The <code>IMAReport</code> contains a required set hash mismatch.
-         */
-        REQUIRED_SET_MISMATCH,
-
-        /**
-         * The <code>Report</code> is missing a required record.
-         */
-        MISSING_RECORD,
-
-        /**
-         * The <code>IMAReport</code> contains an unknown filepath.
-         */
-        UNKNOWN_FILE,
-
-        /**
-         * The client's <code>ReportRequest</code> query messages missing.
-         */
-        REPORT_REQUESTS_MISSING,
-
-        /**
-         * Client periodic <code>IntegrityReport</code> missing.
-         */
-        PERIODIC_REPORT_MISSING,
-
-        /**
-         * On-demand <code>IntegrityReport</code> missing.
-         */
-        ON_DEMAND_REPORT_MISSING,
-
-        /**
-         * The client sent a report that indicates IMA was not enabled correctly.
-         */
-        IMA_MISCONFIGURED,
-
-        /**
-         * PCR mismatches and device info changes indicated a kernel update.
-         */
-        KERNEL_UPDATE_DETECTED,
-
-        /**
-         * The <code>Report</code> does not contain the correct
-         * <code>TPMMeasurementRecord</code>s associated with IMA measurements.
-         */
-        IMA_PCR_MISMATCH,
-
-        /**
-         * Indicates an IMA measurement had a path which matched an entry in a blacklist baseline.
-         */
-        IMA_BLACKLIST_PATH_MATCH,
-
-        /**
-         * Indicates an IMA measurement had a hash which matched an entry in a blacklist baseline.
-         */
-        IMA_BLACKLIST_HASH_MATCH,
-
-        /**
-         * Indicates an IMA measurement had both a path and hash which matched an entry in a
-         * blacklist baseline.
-         */
-        IMA_BLACKLIST_PATH_AND_HASH_MATCH,
-
-        /**
-         * Indicates an IMA measurement had a path that matched an entry in a blacklist baseline,
-         * and also had a hash that matched another entry in the same (or another) baseline.
-         */
-        IMA_BLACKLIST_MIXED_MATCH
-    }
-
-    /**
-     * The 'severity' of the <code>Alert</code>, which is a string enumeration
-     * representing the predicted importance of the problem identified.
-     *
-     * A constructor with the enum is used to set a criticality number for each severity level.
-     * Severity levels can be compared against each other by using the getCriticality method.
-     *
-     */
-    @XmlType(name = "AlertSeverity")
-    public enum Severity {
-
-        /**
-         * Used for situations where Severity remains to be implemented or the
-         * exact level has not been determined for a specific use case.
-         */
-        UNSPECIFIED(5),
-        /**
-         * Equivalent to "Ignore" or "Quiet". This is not used for general logging,
-         * but for Alert level messages that, in specific cases, are not applicable
-         * or can be or need to be ignored.
-         */
-        INFO(10),
-        /**
-         * Applies to a non-system critical file or condition.
-         */
-        LOW(15),
-        /**
-         *  Involves a stable or system-critical file or a stable PCR value.
-         */
-        HIGH(25),
-        /**
-         * Equivalent to "Fatal".  Involves Alerts so clearly indicative of malicious
-         * intent that an automated response, such as network disconnection, is warranted.
-         */
-        SEVERE(30);
-
-        /**
-         * Criticality number assigned to a severity level.
-         */
-        private int criticality;
-
-        /**
-         * Constructor used to set the criticality level.
-         *
-         * @param c criticality level
-         */
-        Severity(final int c) {
-            criticality = c;
-        }
-
-        /**
-         * Return criticality level assigned to severity level.
-         *
-         * @return criticality level
-         */
-        int getCriticality() {
-            return criticality;
-        }
-    }
+    private AlertSeverity severity = AlertSeverity.UNSPECIFIED;
 
     /**
      * Creates a new <code>Alert</code> with the message details. The details
@@ -465,7 +244,7 @@ public class Alert extends ArchivableEntity {
      * @see Source
      */
     @XmlAttribute(name = "source")
-    public final Source getSource() {
+    public final AlertSource getSource() {
         return source;
     }
 
@@ -474,7 +253,7 @@ public class Alert extends ArchivableEntity {
      *
      * @param source of this <code>Alert</code>
      */
-    public final void setSource(final Source source) {
+    public final void setSource(final AlertSource source) {
         this.source = source;
     }
 
@@ -574,7 +353,7 @@ public class Alert extends ArchivableEntity {
      * Set the severity of the alert regardless of baseline.
      * @param severity Alert.Severity.
      */
-    public final void setSeverity(final Alert.Severity severity) {
+    public final void setSeverity(final AlertSeverity severity) {
         // only overwrite severity if the new one is non-null
         if (severity != null) {
             this.severity = severity;
@@ -602,7 +381,7 @@ public class Alert extends ArchivableEntity {
      * @see Severity
      */
     @XmlAttribute(name = "severity")
-    public final Severity getSeverity() {
+    public final AlertSeverity getSeverity() {
         return severity;
     }
 
@@ -635,8 +414,8 @@ public class Alert extends ArchivableEntity {
      * @return prioritized severity level based on criticality
      *
      */
-    private Alert.Severity getPrioritizedSeverityLevel(final Alert.Severity checkSeverity) {
-        Alert.Severity severityLevel = this.severity;
+    private AlertSeverity getPrioritizedSeverityLevel(final AlertSeverity checkSeverity) {
+        AlertSeverity severityLevel = this.severity;
         if (severityLevel.getCriticality() < checkSeverity.getCriticality()) {
             severityLevel = checkSeverity;
         }

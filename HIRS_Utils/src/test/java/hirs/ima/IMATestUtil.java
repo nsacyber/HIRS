@@ -11,9 +11,9 @@ import org.testng.Assert;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import hirs.data.persist.Digest;
-import hirs.data.persist.DigestAlgorithm;
-import hirs.data.persist.IMABaselineRecord;
-import hirs.data.persist.SimpleImaBaseline;
+import hirs.data.persist.enums.DigestAlgorithm;
+import hirs.data.persist.baseline.IMABaselineRecord;
+import hirs.data.persist.baseline.SimpleImaBaseline;
 
 /**
  * This class contains utility methods and constants that can be used for IMA

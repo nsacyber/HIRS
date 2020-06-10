@@ -21,7 +21,7 @@ import java.util.Enumeration;
 import hirs.DeviceInfoReportRequest;
 import hirs.collector.CollectorException;
 import hirs.data.persist.DeviceInfoReport;
-import hirs.data.persist.OSName;
+import hirs.data.persist.enums.OSName;
 
 /**
  * Unit tests for <code>DeviceInfoCollector</code>.
