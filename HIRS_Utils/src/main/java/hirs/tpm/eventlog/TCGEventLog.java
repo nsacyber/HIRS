@@ -64,6 +64,8 @@ public final class TCGEventLog {
     private boolean bHexEvent = false;
     /** Event Output Flag use. */
     private boolean bEvent = false;
+    /** Event Output Flag use. */
+    private boolean bCryptoAgile = false;
     /**
      * Default blank object constructor.
      */
@@ -102,7 +104,7 @@ public final class TCGEventLog {
                        final boolean bContentFlag, final boolean bHexEventFlag)
                        throws CertificateException, NoSuchAlgorithmException, IOException {
 
-        boolean bCryptoAgile = isLogCrytoAgile(rawlog);
+        bCryptoAgile = isLogCrytoAgile(rawlog);
         if (bCryptoAgile) {
             initValue = INIT_SHA256_LIST;
             algorithm = "TPM_ALG_SHA256";
@@ -236,7 +238,14 @@ public final class TCGEventLog {
         }
         return pcrs;
     }
-
+    /**
+     * Returns a flag which is set if the event log follows the "Crypto Agile" Format Type.
+     * A false implies the type is SHA1 format.
+     * @return true if log follows the Crypto Agile format.
+     */
+    public boolean  isCryptoAgile() {
+        return bCryptoAgile;
+    }
     /**
      * Returns a list of event found in the Event Log.
      * @return an arraylist of event.

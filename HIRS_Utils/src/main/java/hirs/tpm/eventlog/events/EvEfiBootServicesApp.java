@@ -63,8 +63,9 @@ public class EvEfiBootServicesApp {
      System.arraycopy(bootServices, UefiConstants.OFFSET_16, linkTimeAddress, 0,
                                                                            UefiConstants.SIZE_8);
      System.arraycopy(bootServices, UefiConstants.SIZE_24, lengthBytes, 0, UefiConstants.SIZE_8);
-       if (imageLength != 0) {
-           devicePathLength = HexUtils.leReverseInt(lengthBytes);
+ //      if (imageLength != 0) {
+       devicePathLength = HexUtils.leReverseInt(lengthBytes);
+       if (devicePathLength != 0) {
            byte[] devPathBytes = new byte[devicePathLength];
            System.arraycopy(bootServices, UefiConstants.SIZE_32, devPathBytes,
                                                                         0, devicePathLength);
@@ -126,7 +127,7 @@ public class EvEfiBootServicesApp {
     if (devicePathValid) {
         info += "\n" + devPath.toString();
     } else {
-        info += "\n   Error processing device path" + "\n";
+        info += "\n   No uefi device paths were specified";
     }
     return info;
     }
