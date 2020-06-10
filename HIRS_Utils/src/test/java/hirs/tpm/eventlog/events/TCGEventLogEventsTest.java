@@ -13,7 +13,7 @@ import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
-import hirs.tpm.eventlog.TCGEventLogProcessorTest;
+import hirs.tpm.eventlog.TCGEventLogTest;
 import hirs.utils.HexUtils;
 import hirs.tpm.eventlog.uefi.UefiGuid;
 import hirs.tpm.eventlog.uefi.UefiPartition;
@@ -31,7 +31,7 @@ public class TCGEventLogEventsTest {
     private static final String EVENT_HANDOFF_TABLES = "/tcgeventlog/events/EvHandoffTables.txt";
     private static final String UEFI_POST_CODE = "/tcgeventlog/events/EvPostCode.txt";
     private static final Logger LOGGER
-                              = LogManager.getLogger(TCGEventLogProcessorTest.class);
+                              = LogManager.getLogger(TCGEventLogTest.class);
 
     /**
      * Initializes a <code>SessionFactory</code>.

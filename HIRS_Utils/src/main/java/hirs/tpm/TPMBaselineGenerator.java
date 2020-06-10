@@ -614,7 +614,7 @@ public class TPMBaselineGenerator {
                 // Device info records will start with the field name of the device info to set
                 try {
                     TPMBaselineFields field =
-                        TPMBaselineFields.valueOf(dataArray[0].toLowerCase());
+                        TPMBaselineFields.valueOf(dataArray[0].toUpperCase());
                     fieldMap.put(field, StringEscapeUtils.unescapeCsv(dataArray[1]));
                 } catch (IllegalArgumentException e) {
                     // Wasn't in the list of fields, treat it as a measurement record

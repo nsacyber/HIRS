@@ -3,7 +3,7 @@ package hirs.data.persist;
 import com.google.common.base.Preconditions;
 import hirs.data.persist.baseline.TpmWhiteListBaseline;
 import hirs.data.persist.enums.DigestAlgorithm;
-import hirs.tpm.eventlog.TCGEventLogProcessor;
+import hirs.tpm.eventlog.TCGEventLog;
 import hirs.utils.xjc.File;
 import java.io.IOException;
 import java.util.Map;
@@ -217,14 +217,14 @@ public class SwidResource {
      *
      */
     private void parsePcrValues() {
-        TCGEventLogProcessor logProcessor = new TCGEventLogProcessor();
+        TCGEventLog logProcessor = new TCGEventLog();
 
         try {
             Path logPath = Paths.get(String.format("%s/%s",
                     SwidResource.RESOURCE_UPLOAD_FOLDER,
                     this.getName()));
             if (Files.exists(logPath)) {
-                logProcessor = new TCGEventLogProcessor(
+                logProcessor = new TCGEventLog(
                         Files.readAllBytes(logPath));
             }
             this.setPcrValues(Arrays.asList(

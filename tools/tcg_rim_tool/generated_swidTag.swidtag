@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<SoftwareIdentity xmlns="http://standards.iso.org/iso/19770/-2/2015/schema.xsd" xmlns:ns2="http://www.w3.org/2000/09/xmldsig#" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:nil="true">
-  <Signature xmlns="http://www.w3.org/2000/09/xmldsig#">
+<ns2:SoftwareIdentity xmlns:ns2="http://standards.iso.org/iso/19770/-2/2015/schema.xsd" xmlns="http://www.w3.org/2000/09/xmldsig#" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:nil="true">
+  <Signature>
     <SignedInfo>
       <CanonicalizationMethod Algorithm="http://www.w3.org/TR/2001/REC-xml-c14n-20010315"/>
       <SignatureMethod Algorithm="http://www.w3.org/2001/04/xmldsig-more#rsa-sha256"/>
@@ -9,34 +9,26 @@
           <Transform Algorithm="http://www.w3.org/2000/09/xmldsig#enveloped-signature"/>
         </Transforms>
         <DigestMethod Algorithm="http://www.w3.org/2001/04/xmlenc#sha256"/>
-        <DigestValue>jfwo1CF30jTNX7m/j85Avnt0EedV/QJIsRUZnaOY+Dg=</DigestValue>
+        <DigestValue>gLCM4kz8qvB6JkV+yDnv3KzqEloiSsBik2OeyBOSw/A=</DigestValue>
       </Reference>
     </SignedInfo>
-    <SignatureValue>VqUHbt1UqkxlLHVkTOlQs54KWjv5IPKzSCxrsPb8kGjaj5XjHkc1Z/h88znIIMTdCLcyrKgNEXS4
-9EHI9nn9LmwXEd/ozKWd8adu6wLdxKj6uIfd0HaCLFrVlnf/b16xO9AW6wp5pLmXwoFi7zBXXJrn
-F9MDKy55mXkxb/Z5RUC3IKqsoz+EuKjs6d+yhtb1EQtpJD2dZj23+VjMH4gXxEerDNR1PiPhma/i
-QMFa1hwSO7AuasYPy0WCRIgrJ5ZL5x2ZoaSIdE2TsCqnStVL+KLZeMWNCqw4k89hsuELW7Azrl57
-Vm2qzPok0svrB1K4QyZdyK2bnG1QY3Fip5Jdmg==</SignatureValue>
+    <SignatureValue>a+kmQfOSpSaMnazRJIOq2349Iuskpan4vh0N4dobjJ8Tb3lPjf97YiqgFsoSm5uydOPXs/lkN51g
+Ox9CCBZ2bquDuuBPpAq5IQ3wZ28G+DYzva+pz7EHKge3gIRzMKjCyDx4bjn+3GUeg+A4KNHNcUfi
+qkDVi3245/4IC/nIzm6a+3qVqsYH4mLqp1yO/Xbuqvkc5X0GobGIO6EOhXxuBii6O7GGv+cIVp3v
+Xdd9zIwFVedeqeYextz5EDzDNHittmtNd+KEl0N3/45aXGDiRFiuiNy/sf7KR+wutbwJV7RlaDN7
+QEaanCXCs6h5PehTh8EDEE9atceBS7IBje0dtw==</SignatureValue>
     <KeyInfo>
-      <X509Data>
-        <X509SubjectName>CN=example.RIM.signer,OU=PCClient,O=Example,ST=VA,C=US</X509SubjectName>
-        <X509Certificate>MIIDYTCCAkmgAwIBAgIJAPB+r6VBhBn4MA0GCSqGSIb3DQEBCwUAMFMxCzAJBgNVBAYTAlVTMQsw
-CQYDVQQIDAJWQTEQMA4GA1UECgwHRXhhbXBsZTERMA8GA1UECwwIUENDbGllbnQxEjAQBgNVBAMM
-CUV4YW1wbGVDQTAeFw0yMDAyMTAxODE1MzRaFw0yOTEyMTkxODE1MzRaMFwxCzAJBgNVBAYTAlVT
-MQswCQYDVQQIDAJWQTEQMA4GA1UECgwHRXhhbXBsZTERMA8GA1UECwwIUENDbGllbnQxGzAZBgNV
-BAMMEmV4YW1wbGUuUklNLnNpZ25lcjCCASIwDQYJKoZIhvcNAQEBBQADggEPADCCAQoCggEBAKd1
-lWGkSRuxAAY2wHag2GVxUk1dZx2PTpfQOflvLeccAVwa8mQhlsRERq+QK8ilj8Xfqs44/nBaccZD
-OjdfIxIUCMfwhGXjxCaqZbgTucNsExDnu4arTGraoAwzHg0cVLiKT/Cxj9NL4dcMgxRXsPdHfXb0
-923C7xYd2t2qfW05umgaj7qeQl6c68CFNsGX4JA8rWFQZvvGx5DGlK4KTcjPuQQINs5fxasNKqLY
-2hq+z82x/rqwr2hmyizD6FpFSyIABPEMPfB036GEhRwu1WEMkq8yIp2jgRUoFYke9pB3ph9pVow0
-Hh4mNFSKD4pP41VSKY1nus83mdkuukPy5o0CAwEAAaMvMC0wCQYDVR0TBAIwADALBgNVHQ8EBAMC
-BsAwEwYDVR0lBAwwCgYIKwYBBQUHAwMwDQYJKoZIhvcNAQELBQADggEBAGuJ+dasb3/Mb7TBJ1Oe
-al5ISq8d2LQD5ke5qnjgSQWKXfQ9fcUy3dWnt3Oked/i8B/Tyk3jCdTZJU3J3iRNgTqFfMLP8rU1
-w2tPYBjjuPKiiK4YRBHPxtFxPdOL1BPmL4ZzNs33Lv6H0m4aff9p6QpMclX5b/CRjl+80JWRLiLj
-U3B0CejZB9dJrPr9SBaC31cDoeTpja9Cl86ip7KkqrZZIYeMuNF6ucWyWtjrW2kr3UhmEy8x/6y4
-KigsK8sBwmNv4N2Pu3RppeIcpjYj5NVA1hwRA4eeMgJp2u+urm3l1oo1UNX1HsSSBHp1Owc9zZLm
-07Pl8T46kpIA4sroCAU=</X509Certificate>
-      </X509Data>
+      <KeyName>2fdeb8e7d030a2209daa01861a964fedecf2bcc1</KeyName>
+      <KeyValue>
+        <RSAKeyValue>
+          <Modulus>p3WVYaRJG7EABjbAdqDYZXFSTV1nHY9Ol9A5+W8t5xwBXBryZCGWxERGr5AryKWPxd+qzjj+cFpx
+xkM6N18jEhQIx/CEZePEJqpluBO5w2wTEOe7hqtMatqgDDMeDRxUuIpP8LGP00vh1wyDFFew90d9
+dvT3bcLvFh3a3ap9bTm6aBqPup5CXpzrwIU2wZfgkDytYVBm+8bHkMaUrgpNyM+5BAg2zl/Fqw0q
+otjaGr7PzbH+urCvaGbKLMPoWkVLIgAE8Qw98HTfoYSFHC7VYQySrzIinaOBFSgViR72kHemH2lW
+jDQeHiY0VIoPik/jVVIpjWe6zzeZ2S66Q/LmjQ==</Modulus>
+          <Exponent>AQAB</Exponent>
+        </RSAKeyValue>
+      </KeyValue>
     </KeyInfo>
   </Signature>
-</SoftwareIdentity>
+</ns2:SoftwareIdentity>

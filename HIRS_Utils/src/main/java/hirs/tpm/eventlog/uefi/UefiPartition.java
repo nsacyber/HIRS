@@ -91,7 +91,7 @@ public String toString() {
   partitionInfo += "     Partition Name        : " + partitionName + "\n";
   partitionInfo += "     Partition Type GUID   : " + partitionTypeGUID.toString() + "\n";
   partitionInfo += "     Unique Partition GUID : " + uniquePartitionGUID.toStringNoLookup() + "\n";
-  partitionInfo += "     Attributes            : " + attributes + "\n";
+  partitionInfo += "     Attributes            : " + attributes;
   return partitionInfo;
  }
 
