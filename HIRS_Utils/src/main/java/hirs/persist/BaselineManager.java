@@ -2,8 +2,8 @@ package hirs.persist;
 
 import hirs.FilteredRecordsList;
 import hirs.data.bean.SimpleBaselineBean;
-import hirs.data.persist.Baseline;
-import hirs.data.persist.IMABaselineRecord;
+import hirs.data.persist.baseline.Baseline;
+import hirs.data.persist.baseline.IMABaselineRecord;
 import hirs.data.persist.ImaBlacklistRecord;
 import hirs.repository.RepoPackage;
 

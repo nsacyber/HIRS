@@ -2,35 +2,34 @@ package hirs.tpm.eventlog;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.security.NoSuchAlgorithmException;
-import java.security.cert.CertificateException;
 import java.util.Arrays;
-//import java.util.List;
-//import java.util.Set;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-//import org.hibernate.Session;
 
+import java.security.NoSuchAlgorithmException;
+import java.security.cert.CertificateException;
 
 import org.testng.Assert;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
-//import hirs.data.persist.Baseline;
-//import hirs.data.persist.Digest;
-//import hirs.data.persist.SpringPersistenceTest;
-//import hirs.data.persist.TpmWhiteListBaseline;
-//import hirs.utils.HexUtils;
+/*
+import org.junit.Test;
+import org.junit.AfterClass;
+import org.junit.Assert;
+import org.junit.BeforeClass;
+*/
+
+import hirs.data.persist.SpringPersistenceTest;
 
 /**
  *  Class for testing TCG Event Log processing.
  */
-//public class TCGEventLogProcessorTest extends SpringPersistenceTest {
-public class TCGEventLogProcessorTest {
-    private static final String DEFAULT_EVENT_LOG = "/tcgeventlog/TpmLog.bin";
+public class TCGEventLogProcessorTest extends SpringPersistenceTest {
+   private static final String DEFAULT_EVENT_LOG = "/tcgeventlog/TpmLog.bin";
    private static final String DEFAULT_EXPECTED_PCRS = "/tcgeventlog/TpmLogExpectedPcrs.txt";
    private static final String SHA1_EVENT_LOG = "/tcgeventlog/TpmLogSHA1.bin";
    private static final String SHA1_EXPECTED_PCRS = "/tcgeventlog/TpmLogSHA1ExpectedPcrs.txt";
@@ -127,7 +126,7 @@ public class TCGEventLogProcessorTest {
       boolean testPass = true;
       log = this.getClass().getResourceAsStream(SHA1_EVENT_LOG);
       byte[] rawLogBytes = IOUtils.toByteArray(log);
-      TCGEventLogProcessor tlp =  new TCGEventLogProcessor(rawLogBytes);
+      TCGEventLogProcessor tlp = new TCGEventLogProcessor(rawLogBytes);
       String[] pcrFromLog = tlp.getExpectedPCRValues();
       pcrs = this.getClass().getResourceAsStream(SHA1_EXPECTED_PCRS);
       Object[] pcrObj = IOUtils.readLines(pcrs).toArray();
@@ -179,7 +178,7 @@ public class TCGEventLogProcessorTest {
                 String pcrValue = HexUtils.byteArrayToHexString(digest.getDigest());
                 if (pcrFromLog[i].compareToIgnoreCase(pcrValue) != 0) {
                     testPass = false;
-                    LOGGER.error("\testTPMBaselineCreate error with PCR " + i);
+                    LOGGER.error("\ttestTPMBaselineCreate error with PCR " + i);
                 }
              }
          }

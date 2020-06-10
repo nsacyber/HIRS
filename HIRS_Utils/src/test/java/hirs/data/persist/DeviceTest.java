@@ -1,5 +1,6 @@
 package hirs.data.persist;
 
+import hirs.data.persist.enums.HealthStatus;
 import org.testng.Assert;
 import org.testng.annotations.Test;
 

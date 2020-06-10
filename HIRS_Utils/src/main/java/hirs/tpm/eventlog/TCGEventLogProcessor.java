@@ -3,16 +3,16 @@ package hirs.tpm.eventlog;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.math.BigInteger;
-import java.security.NoSuchAlgorithmException;
-import java.security.cert.CertificateException;
 
 import hirs.data.persist.TPMMeasurementRecord;
-import hirs.data.persist.TpmWhiteListBaseline;
-import hirs.tpm.eventlog.events.EvConstants;
-import hirs.tpm.eventlog.uefi.UefiConstants;
+import hirs.data.persist.baseline.TpmWhiteListBaseline;
 import hirs.utils.HexUtils;
 import hirs.data.persist.Digest;
-import hirs.data.persist.DigestAlgorithm;;
+import hirs.data.persist.enums.DigestAlgorithm;
+import hirs.tpm.eventlog.uefi.UefiConstants;
+import java.security.NoSuchAlgorithmException;
+import java.security.cert.CertificateException;
+import org.apache.commons.codec.DecoderException;
 
 /**
  * Class for parsing a TCG EventLogs (both SHA1 and Crypto Agile Formats).
@@ -20,16 +20,22 @@ import hirs.data.persist.DigestAlgorithm;;
  * Constructor parses the input byte array into a List of TpmPcrEvents.
  */
 public class TCGEventLogProcessor {
-    /** Name of the hash algorithm used to process the Event Log, default is SHA256.  */
+    /**
+     * Name of the hash algorithm used to process the Event Log, default is SHA256.
+     */
     private String algorithm = "TPM_ALG_SHA256";
-    /** Parsed event log array. */
+    /**
+     * Parsed event log array.
+     */
     private TCGEventLog tcgLog = null;
-    /** EV_NO_ACTION signature offset. */
+    /**
+     * EV_NO_ACTION signature offset.
+     */
     private static final int SIG_OFFSET = 32;
-    /**  TEV_NO_ACTION signature size. */
+    /**
+     * TEV_NO_ACTION signature size.
+     */
     private static final int SIG_SIZE = 16;
-    /**  Number of PCRs in a TPM PCR Bank. */
-    private static final int PCR_COUNT = 24;
 
     /**
      * Default Constructor.
@@ -41,15 +47,15 @@ public class TCGEventLogProcessor {
     /**
      * Constructor.
      *
-     * @param rawLog the byte array holding the contents of the TCG Event Log.
-     * @throws IOException IO Stream for the event log.
-     * @throws NoSuchAlgorithmException if an unknown algorithm is encountered.
-     * @throws CertificateException f a certificate in the log cannot be parsed.
+     * @param rawLog the byte array holding the contents of the TCG Event Log
+     * @throws IOException if there is a parsing error
+     * @throws CertificateException certificate exception
+     * @throws NoSuchAlgorithmException no such alogirthm exception
      */
-    public TCGEventLogProcessor(final byte[] rawLog) throws IOException, CertificateException,
-                                                                      NoSuchAlgorithmException {
+    public TCGEventLogProcessor(final byte[] rawLog) throws IOException,
+            CertificateException, NoSuchAlgorithmException {
         if (isLogCrytoAgile(rawLog)) {
-            tcgLog = new TCGEventLog(rawLog, EvConstants.SHA256_LENGTH,
+            tcgLog = new TCGEventLog(rawLog, UefiConstants.SIZE_32,
                     TCGEventLog.HASH256_STRING, TCGEventLog.INIT_SHA256_LIST);
         } else {
             tcgLog = new TCGEventLog(rawLog);
@@ -73,7 +79,7 @@ public class TCGEventLogProcessor {
      * @return String representing the PCR contents
      */
     public String getExpectedPCRValue(final int index) {
-        return tcgLog.getExpectedPCRValue(index);
+        return tcgLog.getExpectedPCRString(index);
     }
 
     /**
@@ -100,22 +106,21 @@ public class TCGEventLogProcessor {
      *
      * @param name name to call the TPM Baseline
      * @return whitelist baseline
+     * @throws DecoderException hex string problem.
      */
-    public TpmWhiteListBaseline createTPMBaseline(final String name) {
+    public TpmWhiteListBaseline createTPMBaseline(final String name) throws DecoderException {
         TpmWhiteListBaseline baseline = new TpmWhiteListBaseline(name);
         TPMMeasurementRecord record;
-        String pcrValue;
-        for (int i = 0; i < PCR_COUNT; i++) {
+
+        for (int i = 0; i <= TPMMeasurementRecord.MAX_PCR_ID; i++) {
             if (algorithm.compareToIgnoreCase("TPM_ALG_SHA1") == 0) { // Log Was SHA1 Format
-                pcrValue = tcgLog.getExpectedPCRValue(i);
-                byte[] hexValue = HexUtils.hexStringToByteArray(pcrValue);
-                final Digest hash = new Digest(DigestAlgorithm.SHA1, hexValue);
-                record = new TPMMeasurementRecord(i, hash);
+                record = new TPMMeasurementRecord(i,
+                        new Digest(DigestAlgorithm.SHA1,
+                        tcgLog.getExpectedPCRBytes(i)));
             } else {  // Log was Crypto Agile, currently assumes SHA256
-                pcrValue = tcgLog.getExpectedPCRValue(i);
-                byte[] hexValue = HexUtils.hexStringToByteArray(pcrValue);
-                final Digest hash = new Digest(DigestAlgorithm.SHA256, hexValue);
-                record = new TPMMeasurementRecord(i, hash);
+                record = new TPMMeasurementRecord(i,
+                        new Digest(DigestAlgorithm.SHA256,
+                                tcgLog.getExpectedPCRBytes(i)));
             }
             baseline.addToBaseline(record);
         }
@@ -131,8 +136,8 @@ public class TCGEventLogProcessor {
      * @throws UnsupportedEncodingException if parsing error occurs.
      */
     public boolean isLogCrytoAgile(final byte[] log) throws UnsupportedEncodingException {
-        byte[] eType = new byte[UefiConstants.SIZE_4];
-        System.arraycopy(log, UefiConstants.SIZE_4, eType, 0, UefiConstants.SIZE_4);
+        byte[] eType = new byte[Integer.BYTES];
+        System.arraycopy(log, Integer.BYTES, eType, 0, Integer.BYTES);
         byte[] eventType = HexUtils.leReverseByte(eType);
         int eventID = new BigInteger(eventType).intValue();
         if (eventID != TCGEventLog.NO_ACTION_EVENT) {

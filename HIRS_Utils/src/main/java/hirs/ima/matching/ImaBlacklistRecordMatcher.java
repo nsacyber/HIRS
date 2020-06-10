@@ -1,11 +1,11 @@
 package hirs.ima.matching;
 
-import hirs.data.persist.Alert;
 import hirs.data.persist.IMAMeasurementRecord;
 import hirs.data.persist.IMAPolicy;
-import hirs.data.persist.ImaBaseline;
+import hirs.data.persist.baseline.ImaBaseline;
 import hirs.data.persist.ImaBlacklistRecord;
-import hirs.data.persist.ReportMatchStatus;
+import hirs.data.persist.enums.AlertType;
+import hirs.data.persist.enums.ReportMatchStatus;
 
 import java.util.Collection;
 import java.util.HashSet;
@@ -81,16 +81,16 @@ public class ImaBlacklistRecordMatcher extends ImaRecordMatcher<ImaBlacklistReco
      * @param blacklistMatches the list of matches
      * @return the relevant alert type
      */
-    public static Alert.AlertType getBlacklistAlertType(
+    public static AlertType getBlacklistAlertType(
             final Set<IMAMatchStatus<ImaBlacklistRecord>> blacklistMatches) {
-        Alert.AlertType type = null;
+        AlertType type = null;
         for (IMAMatchStatus<ImaBlacklistRecord> match : blacklistMatches) {
             for (ImaBlacklistRecord blacklistRecord : match.getBaselineRecords()) {
                 if (type == null) {
                     type = blacklistRecord.getAlertMatchType();
                 } else {
                     if (type != blacklistRecord.getAlertMatchType()) {
-                        return Alert.AlertType.IMA_BLACKLIST_MIXED_MATCH;
+                        return AlertType.IMA_BLACKLIST_MIXED_MATCH;
                     }
                 }
             }

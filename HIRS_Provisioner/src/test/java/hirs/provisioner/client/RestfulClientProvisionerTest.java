@@ -2,12 +2,12 @@ package hirs.provisioner.client;
 
 import hirs.client.collector.DeviceInfoCollector;
 import hirs.data.persist.DeviceInfoReport;
-import hirs.data.persist.FirmwareInfo;
-import hirs.data.persist.HardwareInfo;
-import hirs.data.persist.NetworkInfo;
-import hirs.data.persist.OSInfo;
-import hirs.data.persist.OSName;
-import hirs.data.persist.TPMInfo;
+import hirs.data.persist.info.FirmwareInfo;
+import hirs.data.persist.info.HardwareInfo;
+import hirs.data.persist.info.NetworkInfo;
+import hirs.data.persist.info.OSInfo;
+import hirs.data.persist.enums.OSName;
+import hirs.data.persist.info.TPMInfo;
 import hirs.structs.converters.StructConverter;
 import hirs.structs.elements.tpm.AsymmetricPublicKey;
 import hirs.tpm.tss.Tpm;

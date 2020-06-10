@@ -6,19 +6,17 @@ import hirs.appraiser.IMAAppraiser;
 import hirs.appraiser.TPMAppraiser;
 import hirs.data.persist.Alert;
 import hirs.alert.resolve.AlertResolverFactory;
-import static hirs.data.persist.Alert.AlertType.WHITE_LIST_PCR_MISMATCH;
-import static hirs.data.persist.Alert.AlertType.REQUIRED_SET_MISMATCH;
-import static hirs.data.persist.Alert.AlertType.UNKNOWN_FILE;
-import static hirs.data.persist.Alert.AlertType.WHITELIST_MISMATCH;
 import hirs.data.persist.Device;
 import hirs.data.persist.DeviceGroup;
 import hirs.data.persist.IMAPolicy;
-import hirs.data.persist.ImaAcceptableRecordBaseline;
-import hirs.data.persist.ImaBaseline;
-import hirs.data.persist.ImaIgnoreSetBaseline;
-import hirs.data.persist.TPMBaseline;
+import hirs.data.persist.baseline.ImaAcceptableRecordBaseline;
+import hirs.data.persist.baseline.ImaBaseline;
+import hirs.data.persist.baseline.ImaIgnoreSetBaseline;
+import hirs.data.persist.baseline.TPMBaseline;
 import hirs.data.persist.TPMPolicy;
-import hirs.data.persist.TpmWhiteListBaseline;
+import hirs.data.persist.baseline.TpmWhiteListBaseline;
+import hirs.data.persist.enums.AlertSource;
+import hirs.data.persist.enums.AlertType;
 import hirs.persist.AppraiserManager;
 import hirs.persist.DeviceManager;
 import hirs.persist.PolicyManager;
@@ -90,7 +88,7 @@ public class AlertResolutionService {
         // the same, so take them from the first alert
         DeviceGroup deviceGroup = deviceManager.getDevice(alerts.get(0).getDeviceName())
                 .getDeviceGroup();
-        Alert.Source source = alerts.get(0).getSource();
+        AlertSource source = alerts.get(0).getSource();
 
         // build a list of resolution options specific to the alert source
         LOGGER.debug(String.format("source of alerts is %s", source.toString()));
@@ -122,8 +120,8 @@ public class AlertResolutionService {
 
         List<AlertResolutionOption> options = new ArrayList<>();
         Device device = null;
-        Alert.Source sharedSource = null;
-        Alert.Source currentSource = null;
+        AlertSource sharedSource = null;
+        AlertSource currentSource = null;
         DeviceGroup sharedDeviceGroup = null;
         DeviceGroup currentDeviceGroup = null;
 
@@ -191,14 +189,14 @@ public class AlertResolutionService {
 
         boolean canAddToBaseline = true;
 
-        Alert.AlertType alertType;
+        AlertType alertType;
         for (Alert alert : alertList) {
             alertType = alert.getType();
 
             // addToBaseline only helps if each alert would be fixed by adding a record
-            if (!alertType.equals(WHITELIST_MISMATCH)
-                    && !alertType.equals(REQUIRED_SET_MISMATCH)
-                    && !alertType.equals(UNKNOWN_FILE)) {
+            if (!alertType.equals(AlertType.WHITELIST_MISMATCH)
+                    && !alertType.equals(AlertType.REQUIRED_SET_MISMATCH)
+                    && !alertType.equals(AlertType.UNKNOWN_FILE)) {
                 LOGGER.debug("cannot add ima record to baseline to resolve alert because alert is"
                         + " type {}", alertType);
                 canAddToBaseline = false;
@@ -269,7 +267,7 @@ public class AlertResolutionService {
         // should only attempt to add to the baseline if all the alerts are of
         // the type WHITE_LIST_PCR_MISMATCH
         for (Alert alert : alertList) {
-            if (!alert.getType().equals(WHITE_LIST_PCR_MISMATCH)) {
+            if (!alert.getType().equals(AlertType.WHITE_LIST_PCR_MISMATCH)) {
                 canEditBaseline = false;
                 break;
             }

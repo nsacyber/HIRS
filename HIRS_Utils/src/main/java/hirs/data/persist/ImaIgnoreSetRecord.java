@@ -5,6 +5,8 @@
  */
 package hirs.data.persist;
 
+import hirs.data.persist.baseline.ImaIgnoreSetBaseline;
+import hirs.data.persist.baseline.AbstractImaBaselineRecord;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
 import javax.persistence.JoinColumn;

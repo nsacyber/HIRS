@@ -1,10 +1,10 @@
 package hirs.ima.matching;
 
-import hirs.data.persist.Baseline;
+import hirs.data.persist.baseline.Baseline;
 import hirs.data.persist.IMAMeasurementRecord;
-import hirs.data.persist.AbstractImaBaselineRecord;
-import hirs.data.persist.ImaBaseline;
-import hirs.data.persist.ReportMatchStatus;
+import hirs.data.persist.baseline.AbstractImaBaselineRecord;
+import hirs.data.persist.baseline.ImaBaseline;
+import hirs.data.persist.enums.ReportMatchStatus;
 
 import java.util.Collections;
 import java.util.HashSet;

@@ -2,9 +2,9 @@ package hirs.ima.matching;
 
 import hirs.data.persist.IMAMeasurementRecord;
 import hirs.data.persist.IMAPolicy;
-import hirs.data.persist.ImaBaseline;
+import hirs.data.persist.baseline.ImaBaseline;
 import hirs.data.persist.ImaIgnoreSetRecord;
-import hirs.data.persist.ReportMatchStatus;
+import hirs.data.persist.enums.ReportMatchStatus;
 import hirs.utils.RegexFilePathMatcher;
 
 import java.util.Collection;

@@ -1,8 +1,8 @@
 package hirs.tpm;
 
-import hirs.data.persist.TPMBaseline;
-import hirs.data.persist.TPMInfo;
-import hirs.data.persist.TpmWhiteListBaseline;
+import hirs.data.persist.baseline.TPMBaseline;
+import hirs.data.persist.info.TPMInfo;
+import hirs.data.persist.baseline.TpmWhiteListBaseline;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -18,12 +18,12 @@ import org.testng.annotations.Test;
 
 import hirs.data.persist.DeviceInfoReport;
 import hirs.data.persist.Digest;
-import hirs.data.persist.DigestAlgorithm;
-import hirs.data.persist.FirmwareInfo;
-import hirs.data.persist.HardwareInfo;
+import hirs.data.persist.enums.DigestAlgorithm;
+import hirs.data.persist.info.FirmwareInfo;
+import hirs.data.persist.info.HardwareInfo;
 import hirs.data.persist.IMAReport;
 import hirs.data.persist.IntegrityReport;
-import hirs.data.persist.OSInfo;
+import hirs.data.persist.info.OSInfo;
 import hirs.data.persist.TPMReport;
 
 import org.apache.logging.log4j.LogManager;

@@ -3,11 +3,11 @@ package hirs.data.service;
 import hirs.data.persist.Device;
 import hirs.data.persist.DeviceGroup;
 import hirs.data.persist.DeviceInfoReport;
-import hirs.data.persist.FirmwareInfo;
-import hirs.data.persist.HardwareInfo;
-import hirs.data.persist.NetworkInfo;
-import hirs.data.persist.OSInfo;
-import hirs.data.persist.TPMInfo;
+import hirs.data.persist.info.FirmwareInfo;
+import hirs.data.persist.info.HardwareInfo;
+import hirs.data.persist.info.NetworkInfo;
+import hirs.data.persist.info.OSInfo;
+import hirs.data.persist.info.TPMInfo;
 import hirs.persist.DeviceGroupManager;
 import hirs.persist.DeviceManager;
 

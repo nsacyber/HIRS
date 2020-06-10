@@ -1,5 +1,12 @@
 package hirs.data.persist;
 
+import hirs.data.persist.enums.DigestAlgorithm;
+import hirs.data.persist.baseline.ImaBaseline;
+import hirs.data.persist.baseline.ImaIgnoreSetBaseline;
+import hirs.data.persist.baseline.ImaAcceptableRecordBaseline;
+import hirs.data.persist.baseline.IMABaselineRecord;
+import hirs.data.persist.baseline.SimpleImaBaseline;
+import hirs.data.persist.baseline.Baseline;
 import java.io.InputStream;
 import java.io.Serializable;
 import java.util.LinkedList;

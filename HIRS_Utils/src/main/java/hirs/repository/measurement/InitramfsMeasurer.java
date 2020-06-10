@@ -3,7 +3,7 @@ package hirs.repository.measurement;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
 import hirs.data.persist.Digest;
-import hirs.data.persist.DigestAlgorithm;
+import hirs.data.persist.enums.DigestAlgorithm;
 
 import java.io.File;
 import java.io.FileNotFoundException;

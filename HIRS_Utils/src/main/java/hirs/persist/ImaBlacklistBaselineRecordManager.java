@@ -2,8 +2,8 @@ package hirs.persist;
 
 import hirs.data.persist.Digest;
 import hirs.data.persist.ImaBlacklistRecord;
-import hirs.data.persist.QueryableRecordImaBaseline;
-import hirs.data.persist.ImaBlacklistBaseline;
+import hirs.data.persist.baseline.QueryableRecordImaBaseline;
+import hirs.data.persist.baseline.ImaBlacklistBaseline;
 import hirs.utils.Callback;
 
 import java.util.Collection;

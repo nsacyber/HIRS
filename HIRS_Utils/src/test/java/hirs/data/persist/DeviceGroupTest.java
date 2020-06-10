@@ -1,5 +1,6 @@
 package hirs.data.persist;
 
+import hirs.data.persist.enums.HealthStatus;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;

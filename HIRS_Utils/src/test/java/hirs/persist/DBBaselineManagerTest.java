@@ -4,15 +4,15 @@ import hirs.FilteredRecordsList;
 import java.io.UnsupportedEncodingException;
 
 import hirs.data.bean.SimpleBaselineBean;
-import hirs.data.persist.Baseline;
-import hirs.data.persist.SimpleImaBaseline;
+import hirs.data.persist.baseline.Baseline;
+import hirs.data.persist.baseline.SimpleImaBaseline;
 import hirs.data.persist.Digest;
-import hirs.data.persist.DigestAlgorithm;
-import hirs.data.persist.ImaBaseline;
-import hirs.data.persist.IMABaselineRecord;
+import hirs.data.persist.enums.DigestAlgorithm;
+import hirs.data.persist.baseline.ImaBaseline;
+import hirs.data.persist.baseline.IMABaselineRecord;
 import hirs.data.persist.SpringPersistenceTest;
-import hirs.data.persist.TPMBaseline;
-import hirs.data.persist.TpmWhiteListBaseline;
+import hirs.data.persist.baseline.TPMBaseline;
+import hirs.data.persist.baseline.TpmWhiteListBaseline;
 
 import java.util.ArrayList;
 import java.util.Arrays;
