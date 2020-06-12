@@ -1,14 +1,12 @@
 package hirs.attestationca.service;
 
 import java.io.IOException;
-import java.lang.ref.Reference;
 import java.security.KeyStore;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.security.cert.CertificateException;
 
 import hirs.data.persist.TPMMeasurementRecord;
-import hirs.data.persist.baseline.TPMBaseline;
 import hirs.data.persist.SwidResource;
 import hirs.validation.SupplyChainCredentialValidator;
 import org.apache.logging.log4j.LogManager;
