@@ -1,6 +1,7 @@
 package hirs.attestationca.service;
 
 import java.io.IOException;
+import java.lang.ref.Reference;
 import java.security.KeyStore;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
@@ -119,6 +120,7 @@ public class SupplyChainValidationServiceImpl implements SupplyChainValidationSe
                 supplyChainAppraiser);
         boolean acceptExpiredCerts = policy.isExpiredCertificateValidationEnabled();
         PlatformCredential baseCredential = null;
+        String componentFailures = "";
         List<SupplyChainValidation> validations = new LinkedList<>();
         Map<PlatformCredential, SupplyChainValidation> deltaMapping = new HashMap<>();
         SupplyChainValidation platformScv = null;
@@ -221,6 +223,7 @@ public class SupplyChainValidationServiceImpl implements SupplyChainValidationSe
                                         String.format("%s%n%s", platformScv.getMessage(),
                                                 attributeScv.getMessage())));
                             }
+                            componentFailures = attributeScv.getMessage();
                         }
 
                         pc.setDevice(device);
@@ -235,12 +238,10 @@ public class SupplyChainValidationServiceImpl implements SupplyChainValidationSe
             // compare tpm quote with what is pulled from RIM associated file
             IssuedAttestationCertificate attCert = IssuedAttestationCertificate
                     .select(this.certificateManager)
-                    .byDeviceId(device.getId())
-                    .getCertificate();
+                    .byDeviceId(device.getId()).getCertificate();
             PlatformCredential pc = PlatformCredential
                     .select(this.certificateManager)
-                    .byDeviceId(device.getId())
-                    .getCertificate();
+                    .byDeviceId(device.getId()).getCertificate();
 
             validations.add(validateFirmware(pc, attCert));
         }
@@ -249,7 +250,7 @@ public class SupplyChainValidationServiceImpl implements SupplyChainValidationSe
         SupplyChainValidationSummary summary
                 = new SupplyChainValidationSummary(device, validations);
         if (baseCredential != null) {
-            baseCredential.setComponentFailures(summary.getMessage());
+            baseCredential.setComponentFailures(componentFailures);
             this.certificateManager.update(baseCredential);
         }
         try {
@@ -325,29 +326,17 @@ public class SupplyChainValidationServiceImpl implements SupplyChainValidationSe
     private SupplyChainValidation validateFirmware(final PlatformCredential pc,
             final IssuedAttestationCertificate attCert) {
 
-        TPMBaseline tpmBline;
+        ReferenceManifest rim = null;
         String[] baseline = new String[Integer.SIZE];
         Level level = Level.ERROR;
         AppraisalStatus fwStatus;
 
         if (attCert != null) {
-            LOGGER.error(attCert.getPcrValues());
             String[] pcrsSet = attCert.getPcrValues().split("\\+");
             String[] pcrs1 = pcrsSet[0].split("\\n");
             String[] pcrs256 = pcrsSet[1].split("\\n");
-            for (int i = 0; i < pcrs1.length; i++) {
-                if (pcrs1[i].contains(":")) {
-                    pcrs1[i].split(":");
-                }
-            }
 
-            for (int i = 0; i < pcrs256.length; i++) {
-                if (pcrs256[i].contains(":")) {
-                    pcrs256[i].split(":");
-                }
-            }
-
-            ReferenceManifest rim = ReferenceManifest.select(
+            rim = ReferenceManifest.select(
                     this.referenceManifestManager)
                     .byManufacturer(pc.getManufacturer())
                     .getRIM();
@@ -360,34 +349,31 @@ public class SupplyChainValidationServiceImpl implements SupplyChainValidationSe
                 StringBuilder sb = new StringBuilder();
                 fwStatus = new AppraisalStatus(PASS,
                         SupplyChainCredentialValidator.FIRMWARE_VALID);
-                String failureMsg = "Firmware validation failed: PCR %d does not"
-                        + " match%n%tBaseline [%s] <> Device [%s]%n";
+                String failureMsg = "Firmware validation failed: PCR %s does not"
+                        + " match%n";
 
                 List<SwidResource> swids = rim.parseResource();
                 for (SwidResource swid : swids) {
                     baseline = swid.getPcrValues()
                             .toArray(new String[swid.getPcrValues().size()]);
                 }
-                /**
-                 * baseline is null. The purpose of the if check was to
-                 * determine to process doing pcrs1 or pcrs256. So I have to
-                 * rethink this.
-                 *
-                 * this goes back to not knowing if I should do one or the other
-                 * and how to make that a setting of some kind.
-                 */
-                if (baseline[0].length() == pcrs1[0].length()) {
+
+                String pcrNum;
+                String pcrValue;
+                if (baseline[0].length() == TPMMeasurementRecord.SHA_BYTE_LENGTH) {
                     for (int i = 0; i <= TPMMeasurementRecord.MAX_PCR_ID; i++) {
-                        if (!baseline[i].equals(pcrs1[i])) {
-                            sb.append(String.format(failureMsg, i, baseline[i], pcrs1[i]));
-                            break;
+                        pcrNum = pcrs1[i + 1].split(":")[0].trim();
+                        pcrValue = pcrs1[i + 1].split(":")[1].trim();
+                        if (!baseline[i].equals(pcrValue)) {
+                            sb.append(String.format(failureMsg, pcrNum));
                         }
                     }
-                } else if (baseline[0].length() == pcrs256[0].length()) {
+                } else if (baseline[0].length() == TPMMeasurementRecord.SHA_256_BYTE_LENGTH) {
                     for (int i = 0; i <= TPMMeasurementRecord.MAX_PCR_ID; i++) {
-                        if (!baseline[i].equals(pcrs256[i])) {
-                            sb.append(String.format(failureMsg, i, baseline[i], pcrs256[i]));
-                            break;
+                        pcrNum = pcrs256[i + 1].split(":")[0].trim();
+                        pcrValue = pcrs256[i + 1].split(":")[1].trim();
+                        if (!baseline[i].equals(pcrValue)) {
+                            sb.append(String.format(failureMsg, pcrNum));
                         }
                     }
                 }
