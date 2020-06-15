@@ -248,7 +248,6 @@ public class SupplyChainValidationSummary extends ArchivableEntity {
                 default:
                     break;
             }
-
         }
         // if failures, but no error, indicate failure result.
         if (hasAnyFailures) {
