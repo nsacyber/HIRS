@@ -4,6 +4,8 @@ import java.io.BufferedInputStream;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Base64;
@@ -24,8 +26,8 @@ public class HashSwid {
      * @param value
      * @return 
      */
-    public static String get256Hash(String value) {
-        return getHashValue(value, SHA256);
+    public static String get256Hash(String filepath) {
+        return getHashValue(filepath, SHA256);
     }
 
     /**
@@ -33,8 +35,8 @@ public class HashSwid {
      * @param value
      * @return 
      */
-    public String get384Hash(String value) {
-        return getHashValue(value, SHA384);
+    public String get384Hash(String filepath) {
+        return getHashValue(filepath, SHA384);
     }
 
     /**
@@ -42,24 +44,28 @@ public class HashSwid {
      * @param value
      * @return 
      */
-    public String get512Hash(String value) {
-        return getHashValue(value, SHA512);
+    public String get512Hash(String filepath) {
+        return getHashValue(filepath, SHA512);
     }
 
     /**
      * This method creates the hash based on the provided algorithm and salt
      * only accessible through helper methods.
+     *
+     * This method assumes an input file that is small enough to read in its
+     * entirety.  Large files should be handled similarly to the public static
+     * getHashValue() below.
      * 
-     * @param value string object to hash
+     * @param filepath file contents to hash
      * @param salt random value to make the hash stronger
      * @param sha the algorithm to use for the hash
      * @return 
      */
-    private static String getHashValue(String value, String sha) {
+    private static String getHashValue(String filepath, String sha) {
         String resultString = null;
         try {
             MessageDigest md = MessageDigest.getInstance(sha);            
-            byte[] bytes = md.digest(value.getBytes(ENCODING));
+            byte[] bytes = md.digest(Files.readAllBytes(Paths.get(filepath)));
             StringBuilder sb = new StringBuilder();
 
             for (int i = 0; i < bytes.length; i++) {
@@ -68,6 +74,8 @@ public class HashSwid {
             resultString = sb.toString();
         } catch (UnsupportedEncodingException | NoSuchAlgorithmException grex) {
             System.out.println(grex.getMessage());
+        } catch (IOException e) {
+            System.out.println("Error reading in file to hash: " + e.getMessage());
         }
 
         return resultString;

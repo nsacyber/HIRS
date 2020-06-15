@@ -6,10 +6,8 @@ repositories {
 }
 
 dependencies {
-	compile libs.minimal_json
-	compile libs.jcommander
-	compile libs.bouncy_castle
-	testCompile libs.testng
+	compile 'com.eclipsesource.minimal-json:minimal-json:0.9.5', 'com.beust:jcommander:1.72', 'org.bouncycastle:bcmail-jdk15on:1.59'
+	testCompile 'org.testng:testng:6.8.8'
 }
 
 jar {

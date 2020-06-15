@@ -15,7 +15,7 @@ public class SwidTagConstants {
     public static final String DEFAULT_KEYSTORE_PATH = "keystore.jks";
     public static final String DEFAULT_KEYSTORE_PASSWORD = "password";
     public static final String DEFAULT_PRIVATE_KEY_ALIAS = "selfsigned";
-    public static final String DEFAULT_ATTRIBUTES_FILE = "/etc/hirs/rim_fields.json";
+    public static final String DEFAULT_ATTRIBUTES_FILE = "rim_fields.json";
     public static final String DEFAULT_ENGLISH = "en";
 
     public static final String SIGNATURE_ALGORITHM_RSA_SHA256 = "http://www.w3.org/2001/04/xmldsig-more#rsa-sha256";
