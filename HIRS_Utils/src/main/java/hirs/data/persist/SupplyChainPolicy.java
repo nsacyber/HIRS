@@ -36,6 +36,9 @@ public class SupplyChainPolicy extends Policy {
     @Column(nullable = false)
     private boolean replaceEC = false;
 
+    @Column(nullable = false)
+    private PCRPolicy pcrPolicy = new PCRPolicy();
+
     /**
      * Constructor used to initialize SupplyChainPolicy object.
      *
@@ -193,5 +196,11 @@ public class SupplyChainPolicy extends Policy {
         this.replaceEC = replaceEC;
     }
 
+    public PCRPolicy getPcrPolicy() {
+        return pcrPolicy;
+    }
 
+    public void setPcrPolicy(final PCRPolicy pcrPolicy) {
+        this.pcrPolicy = pcrPolicy;
+    }
 }
