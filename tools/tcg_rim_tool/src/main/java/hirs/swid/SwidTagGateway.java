@@ -75,6 +75,7 @@ import java.math.BigInteger;
 import hirs.swid.xjc.Directory;
 import hirs.swid.xjc.Entity;
 import hirs.swid.xjc.Link;
+import hirs.swid.xjc.Meta;
 import hirs.swid.xjc.ObjectFactory;
 import hirs.swid.xjc.ResourceCollection;
 import hirs.swid.xjc.SoftwareIdentity;
@@ -229,6 +230,8 @@ public class SwidTagGateway {
         si.append("SoftwareIdentity name: " + softwareIdentity.getAttribute("name") + "\n");
         si.append("SoftwareIdentity tagId: " + softwareIdentity.getAttribute("tagId") + "\n");
         System.out.println(si.toString());
+        Element file = (Element) document.getElementsByTagName("File").item(0);
+        validateFile(file);
         System.out.println("Signature core validity: " + validateSignedXMLDocument(document));
         return true;
     }
@@ -430,7 +433,22 @@ public class SwidTagGateway {
         return file;
     }
 
-   /**
+    /**
+     * This method validates a hirs.swid.xjc.File from an indirect payload
+     */
+    private boolean validateFile(Element file) {
+        String filepath = file.getAttribute(SwidTagConstants.NAME);
+        System.out.println("Support rim found at " + filepath);
+        if (HashSwid.get256Hash(filepath).equals(file.getAttribute(_SHA256_HASH.getPrefix() + ":" + _SHA256_HASH.getLocalPart()))) {
+            System.out.println("Support RIM hash verified!");
+            return true;
+        } else {
+            System.out.println("Support RIM hash does not match Base RIM!");
+            return false;
+        }
+    }
+
+    /**
      * This method creates a hirs.swid.xjc.File from a direct payload type.
      *
      * @param jsonObject

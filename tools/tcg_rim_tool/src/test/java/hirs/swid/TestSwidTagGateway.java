@@ -44,10 +44,8 @@ public class TestSwidTagGateway {
 	@Test
 	public void testCreateBaseWithCert() throws URISyntaxException {
 		gateway.setDefaultCredentials(false);
-		gateway.setPemCertificateFile(
-				Paths.get(this.getClass().getResource(certificateFile).toURI()).toString());
-		gateway.setPemPrivateKeyFile(
-				Paths.get(this.getClass().getResource(privateKeyFile).toURI()).toString());
+		gateway.setPemCertificateFile(certificateFile);
+		gateway.setPemPrivateKeyFile(privateKeyFile);
 		gateway.generateSwidTag(DEFAULT_OUTPUT);
 		expectedFile = (InputStream) TestSwidTagGateway.class.getClassLoader().getResourceAsStream(DEFAULT_WITH_CERT);
 		Assert.assertTrue(compareFileBytesToExpectedFile(DEFAULT_OUTPUT));
