@@ -55,8 +55,8 @@ import java.util.stream.Collectors;
 import static hirs.data.persist.AppraisalStatus.Status.ERROR;
 import static hirs.data.persist.AppraisalStatus.Status.FAIL;
 import static hirs.data.persist.AppraisalStatus.Status.PASS;
+import hirs.data.persist.ArchivableEntity;
 import hirs.data.persist.SupplyChainValidation;
-import hirs.data.persist.certificate.Certificate;
 import hirs.data.persist.certificate.attributes.V2.ComponentIdentifierV2;
 import java.util.Collections;
 import java.util.Comparator;
@@ -592,7 +592,7 @@ public final class SupplyChainCredentialValidator implements CredentialValidator
         });
 
         String ciSerial;
-        List<Certificate> certificateList = null;
+        List<ArchivableEntity> certificateList = null;
         SupplyChainValidation scv = null;
         resultMessage.append("There are errors with Delta "
                     + "Component Statuses components:\n");

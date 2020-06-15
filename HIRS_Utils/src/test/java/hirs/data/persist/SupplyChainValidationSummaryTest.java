@@ -22,7 +22,7 @@ import java.util.List;
 public class SupplyChainValidationSummaryTest extends SpringPersistenceTest {
     private Device device;
     private DeviceGroup deviceGroup;
-    private List<Certificate> certificates;
+    private List<ArchivableEntity> certificates;
 
     /**
      * Create a session factory to use for persistence testing and persist some certificates
@@ -34,8 +34,8 @@ public class SupplyChainValidationSummaryTest extends SpringPersistenceTest {
     public void setup() throws Exception {
         certificates = CertificateTest.getAllTestCertificates();
         DBCertificateManager certMan = new DBCertificateManager(sessionFactory);
-        for (Certificate cert : certificates) {
-            certMan.save(cert);
+        for (ArchivableEntity cert : certificates) {
+            certMan.save((Certificate) cert);
         }
 
         deviceGroup = new DeviceGroup("TestDeviceGroup", "TestDeviceGroupDescription");
@@ -54,8 +54,8 @@ public class SupplyChainValidationSummaryTest extends SpringPersistenceTest {
     @AfterClass
     public void teardown() {
         DBCertificateManager certManager = new DBCertificateManager(sessionFactory);
-        for (Certificate cert : certificates) {
-            certManager.deleteCertificate(cert);
+        for (ArchivableEntity cert : certificates) {
+            certManager.deleteCertificate((Certificate) cert);
         }
     }
 
@@ -233,7 +233,7 @@ public class SupplyChainValidationSummaryTest extends SpringPersistenceTest {
                 SupplyChainValidationSummary.class, sessionFactory
         );
 
-        List<Certificate> singleCert = certificates.subList(0, 1);
+        List<ArchivableEntity> singleCert = certificates.subList(0, 1);
 
         SupplyChainValidationSummary smallSummary = getTestSummary(
                 1,
@@ -304,7 +304,7 @@ public class SupplyChainValidationSummaryTest extends SpringPersistenceTest {
     private SupplyChainValidationSummary getTestSummary(
             final int numberOfValidations,
             final int numFail,
-            final List<Certificate> certificates
+            final List<ArchivableEntity> certificates
     ) {
         SupplyChainValidation.ValidationType[] validationTypes =
                 SupplyChainValidation.ValidationType.values();

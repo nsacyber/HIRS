@@ -6,7 +6,6 @@ import hirs.data.persist.certificate.CertificateTest;
 
 import java.io.IOException;
 import java.util.List;
-import hirs.data.persist.certificate.Certificate;
 
 /**
  * Simple tests for the {@link SupplyChainValidation} class.  Tests for the persistence of this
@@ -106,7 +105,7 @@ public class SupplyChainValidationTest {
     public static SupplyChainValidation getTestSupplyChainValidation(
             final SupplyChainValidation.ValidationType type,
             final AppraisalStatus.Status result,
-            final List<Certificate> certificates) {
+            final List<ArchivableEntity> certificates) {
         return new SupplyChainValidation(
                 type,
                 result,

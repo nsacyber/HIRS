@@ -2,6 +2,7 @@ package hirs.validation;
 
 import hirs.client.collector.DeviceInfoCollector;
 import hirs.data.persist.AppraisalStatus;
+import hirs.data.persist.ArchivableEntity;
 import hirs.data.persist.info.ComponentInfo;
 import hirs.data.persist.DeviceInfoReport;
 import hirs.data.persist.info.FirmwareInfo;
@@ -2097,7 +2098,7 @@ public class SupplyChainCredentialValidatorTest {
         when(delta2.getComponentIdentifiers()).thenReturn(delta2List);
 
         Map<PlatformCredential, SupplyChainValidation> chainCredentials = new HashMap<>(0);
-        List<Certificate> certsUsed = new ArrayList<>();
+        List<ArchivableEntity> certsUsed = new ArrayList<>();
         certsUsed.add(base);
         chainCredentials.put(base, new SupplyChainValidation(
                 SupplyChainValidation.ValidationType.PLATFORM_CREDENTIAL,
@@ -2202,7 +2203,7 @@ public class SupplyChainCredentialValidatorTest {
         when(delta1.getComponentIdentifiers()).thenReturn(delta1List);
 
         Map<PlatformCredential, SupplyChainValidation> chainCredentials = new HashMap<>(0);
-        List<Certificate> certsUsed = new ArrayList<>();
+        List<ArchivableEntity> certsUsed = new ArrayList<>();
         certsUsed.add(base);
         chainCredentials.put(base, new SupplyChainValidation(
                 SupplyChainValidation.ValidationType.PLATFORM_CREDENTIAL,

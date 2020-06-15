@@ -1,5 +1,6 @@
 package hirs.data.persist.certificate;
 
+import hirs.data.persist.ArchivableEntity;
 import hirs.data.persist.certificate.Certificate.CertificateType;
 import org.bouncycastle.cert.X509AttributeCertificateHolder;
 import org.testng.Assert;
@@ -524,7 +525,7 @@ public class CertificateTest {
      * @return the newly-constructed Certificate
      * @throws IOException if there is a problem constructing the test certificate
      */
-    public static <T extends Certificate> Certificate getTestCertificate(
+    public static <T extends ArchivableEntity> Certificate getTestCertificate(
             final Class<T> certificateClass, final String filename)
             throws IOException {
         return getTestCertificate(certificateClass, filename, null, null);
@@ -541,7 +542,7 @@ public class CertificateTest {
      * @return the newly-constructed Certificate
      * @throws IOException if there is a problem constructing the test certificate
      */
-    public static <T extends Certificate> Certificate getTestCertificate(
+    public static <T extends ArchivableEntity> Certificate getTestCertificate(
             final Class<T> certificateClass, final String filename,
             final EndorsementCredential endorsementCredential,
             final Set<PlatformCredential> platformCredentials)
@@ -579,7 +580,7 @@ public class CertificateTest {
      * @return a list of all test certificates
      * @throws IOException if there is a problem deserializing certificates
      */
-    public static List<Certificate> getAllTestCertificates() throws IOException {
+    public static List<ArchivableEntity> getAllTestCertificates() throws IOException {
         return Arrays.asList(
                 getTestCertificate(CertificateAuthorityCredential.class, FAKE_SGI_INT_CA_FILE),
                 getTestCertificate(CertificateAuthorityCredential.class, FAKE_INTEL_INT_CA_FILE),

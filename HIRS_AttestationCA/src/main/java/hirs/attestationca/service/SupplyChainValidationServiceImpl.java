@@ -8,6 +8,7 @@ import java.security.cert.CertificateException;
 
 import hirs.data.persist.TPMMeasurementRecord;
 import hirs.data.persist.SwidResource;
+import hirs.data.persist.ArchivableEntity;
 import hirs.validation.SupplyChainCredentialValidator;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -214,10 +215,13 @@ public class SupplyChainValidationServiceImpl implements SupplyChainValidationSe
                                 // if both trust store and attributes validated or failed
                                 // combine messages
                                 validations.remove(platformScv);
+                                List<ArchivableEntity> aes = new ArrayList<>();
+                                for (Certificate cert : platformScv.getCertificatesUsed()) {
+                                    aes.add(cert);
+                                }
                                 validations.add(new SupplyChainValidation(
                                         platformScv.getValidationType(),
-                                        platformScv.getResult(),
-                                        platformScv.getCertificatesUsed(),
+                                        platformScv.getResult(), aes,
                                         String.format("%s%n%s", platformScv.getMessage(),
                                                 attributeScv.getMessage())));
                             }
@@ -388,7 +392,7 @@ public class SupplyChainValidationServiceImpl implements SupplyChainValidationSe
         }
 
         return buildValidationRecord(SupplyChainValidation.ValidationType.FIRMWARE,
-                fwStatus.getAppStatus(), fwStatus.getMessage(), pc, level);
+                fwStatus.getAppStatus(), fwStatus.getMessage(), rim, level);
     }
 
     private SupplyChainValidation validateEndorsementCredential(final EndorsementCredential ec,
@@ -523,15 +527,15 @@ public class SupplyChainValidationServiceImpl implements SupplyChainValidationSe
     private SupplyChainValidation buildValidationRecord(
             final SupplyChainValidation.ValidationType validationType,
             final AppraisalStatus.Status result, final String message,
-            final Certificate certificate, final Level logLevel) {
+            final ArchivableEntity archivableEntity, final Level logLevel) {
 
-        List<Certificate> certificateList = new ArrayList<>();
-        if (certificate != null) {
-            certificateList.add(certificate);
+        List<ArchivableEntity> aeList = new ArrayList<>();
+        if (archivableEntity != null) {
+            aeList.add(archivableEntity);
         }
 
         LOGGER.log(logLevel, message);
-        return new SupplyChainValidation(validationType, result, certificateList, message);
+        return new SupplyChainValidation(validationType, result, aeList, message);
     }
 
     /**

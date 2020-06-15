@@ -11,6 +11,7 @@ import javax.persistence.JoinTable;
 import javax.persistence.ManyToMany;
 import java.util.Collections;
 import java.util.List;
+import java.util.ArrayList;
 
 /**
  * Stores results of a single element of the supply chain validation process.
@@ -56,6 +57,9 @@ public class SupplyChainValidation extends ArchivableEntity {
     @Column(length = MAX_MESSAGE_LENGTH)
     private final String message;
 
+    @Column
+    private String rimId;
+
     /**
      * Default constructor necessary for Hibernate.
      */
@@ -64,6 +68,7 @@ public class SupplyChainValidation extends ArchivableEntity {
         this.validationResult = AppraisalStatus.Status.ERROR;
         this.certificatesUsed = Collections.emptyList();
         this.message = null;
+        this.rimId = "";
     }
 
     /**
@@ -76,7 +81,7 @@ public class SupplyChainValidation extends ArchivableEntity {
      */
     public SupplyChainValidation(final ValidationType validationType,
                                  final AppraisalStatus.Status validationResult,
-                                 final List<Certificate> certificatesUsed,
+                                 final List<ArchivableEntity> certificatesUsed,
                                  final String message) {
         Preconditions.checkArgument(
                 validationType != null,
@@ -90,7 +95,17 @@ public class SupplyChainValidation extends ArchivableEntity {
 
         this.validationType = validationType;
         this.validationResult = validationResult;
-        this.certificatesUsed = certificatesUsed;
+        this.certificatesUsed = new ArrayList<>();
+        this.rimId = "";
+        for (ArchivableEntity ae : certificatesUsed) {
+            if (ae instanceof ReferenceManifest) {
+                this.rimId = ae.getId().toString();
+                break;
+            } else {
+                this.certificatesUsed.add((Certificate) ae);
+            }
+        }
+
         this.message = message;
     }
 
@@ -120,5 +135,12 @@ public class SupplyChainValidation extends ArchivableEntity {
      */
     public String getMessage() {
         return message;
+    }
+
+    /**
+     * @return Getter for the Rim ID.
+     */
+    public String getRimId() {
+        return rimId;
     }
 }
