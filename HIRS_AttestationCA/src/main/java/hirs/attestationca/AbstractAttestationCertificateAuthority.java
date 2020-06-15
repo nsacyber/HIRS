@@ -513,6 +513,8 @@ public abstract class AbstractAttestationCertificateAuthority
             // Get device name and device
             String deviceName = claim.getDv().getNw().getHostname();
             Device device = deviceManager.getDevice(deviceName);
+            device.setPcrValues(this.pcrValues);
+            deviceManager.updateDevice(device);
 
             // Create signed, attestation certificate
             X509Certificate attestationCertificate = generateCredential(akPub,

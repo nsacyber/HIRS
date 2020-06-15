@@ -54,6 +54,7 @@ import java.util.Date;
 @XmlAccessorType(XmlAccessType.FIELD)
 public class Device extends AbstractEntity {
 
+    private static final int MAX_CERT_LENGTH_BYTES = 4096;
     private static final Logger LOGGER = LogManager.getLogger();
 
     @Column(name = "name", unique = true)
@@ -94,6 +95,9 @@ public class Device extends AbstractEntity {
 
     @Column(name = "state_override_reason")
     private String overrideReason;
+
+    @Column(nullable = true, length = MAX_CERT_LENGTH_BYTES)
+    private String pcrValues;
 
     /**
      * Default constructor required by Hibernate.
@@ -356,6 +360,22 @@ public class Device extends AbstractEntity {
             throw new NullPointerException(" supply chain validation status");
         }
         this.supplyChainValidationStatus = supplyChainValidationStatus;
+    }
+
+    /**
+     * Getter for the pcrValues passed up by the client.
+     * @return a string blob of pcrs
+     */
+    public String getPcrValues() {
+        return pcrValues;
+    }
+
+    /**
+     * Setter for the pcrValues passed up by the client.
+     * @param pcrValues to be stored.
+     */
+    public void setPcrValues(final String pcrValues) {
+        this.pcrValues = pcrValues;
     }
 
     /**

@@ -245,7 +245,7 @@ public class SupplyChainValidationServiceImpl implements SupplyChainValidationSe
                     .select(this.certificateManager)
                     .byDeviceId(device.getId()).getCertificate();
 
-            validations.add(validateFirmware(pc, attCert));
+            validations.add(validateFirmware(pc, attCert, device));
         }
 
         // Generate validation summary, save it, and return it.
@@ -326,15 +326,15 @@ public class SupplyChainValidationServiceImpl implements SupplyChainValidationSe
     }
 
     private SupplyChainValidation validateFirmware(final PlatformCredential pc,
-            final IssuedAttestationCertificate attCert) {
+            final IssuedAttestationCertificate attCert, final Device device) {
 
         ReferenceManifest rim = null;
         String[] baseline = new String[Integer.SIZE];
         Level level = Level.ERROR;
         AppraisalStatus fwStatus;
 
-        if (pc != null) {
-            String[] pcrsSet = pc.getPcrValues().split("\\+");
+        if (pc != null && device != null) {
+            String[] pcrsSet = device.getPcrValues().split("\\+");
             String[] pcrs1 = pcrsSet[0].split("\\n");
             String[] pcrs256 = pcrsSet[1].split("\\n");
 
