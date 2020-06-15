@@ -333,8 +333,8 @@ public class SupplyChainValidationServiceImpl implements SupplyChainValidationSe
         Level level = Level.ERROR;
         AppraisalStatus fwStatus;
 
-        if (pc != null && device != null) {
-            String[] pcrsSet = device.getPcrValues().split("\\+");
+        if (attCert != null) {
+            String[] pcrsSet = attCert.getPcrValues().split("\\+");
             String[] pcrs1 = pcrsSet[0].split("\\n");
             String[] pcrs256 = pcrsSet[1].split("\\n");
 
