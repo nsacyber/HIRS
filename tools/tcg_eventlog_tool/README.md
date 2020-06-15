@@ -13,7 +13,7 @@ To create an RPM on a linux device use the following command in the dame directo
 To install this tool use the following commmand from the same directory:
 > sudo yum localinstall build/distrobutions/tgc_rim_tool.*.rpm
 
-#Usage
+# Usage
 The tcg_eventlog_tool can be invoked using the elt command has various command line options to view all, specific events,
 or specific PCRs. 
 Current options for the tool can be found using the -h option:
