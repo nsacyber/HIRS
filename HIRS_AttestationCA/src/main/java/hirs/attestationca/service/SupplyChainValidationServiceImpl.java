@@ -321,6 +321,7 @@ public class SupplyChainValidationServiceImpl implements SupplyChainValidationSe
         }
         return subPlatformScv;
     }
+    private static final int IMA_TEN = 9;
 
     private SupplyChainValidation validateFirmware(final PlatformCredential pc,
             final IssuedAttestationCertificate attCert) {
@@ -368,26 +369,24 @@ public class SupplyChainValidationServiceImpl implements SupplyChainValidationSe
                     baseline = swid.getPcrValues()
                             .toArray(new String[swid.getPcrValues().size()]);
                 }
-                /**
-                 * baseline is null. The purpose of the if check was to
-                 * determine to process doing pcrs1 or pcrs256. So I have to
-                 * rethink this.
-                 *
-                 * this goes back to not knowing if I should do one or the other
-                 * and how to make that a setting of some kind.
-                 */
+
+                int imaValue = IMA_TEN;
                 if (baseline[0].length() == pcrs1[0].length()) {
                     for (int i = 0; i <= TPMMeasurementRecord.MAX_PCR_ID; i++) {
-                        if (!baseline[i].equals(pcrs1[i])) {
-                            sb.append(String.format(failureMsg, i, baseline[i], pcrs1[i]));
-                            break;
+                        if (i != imaValue) {
+                            if (i != imaValue && !baseline[i].equals(pcrs1[i])) {
+                                sb.append(String.format(failureMsg, i, baseline[i], pcrs1[i]));
+                                break;
+                            }
                         }
                     }
                 } else if (baseline[0].length() == pcrs256[0].length()) {
                     for (int i = 0; i <= TPMMeasurementRecord.MAX_PCR_ID; i++) {
-                        if (!baseline[i].equals(pcrs256[i])) {
-                            sb.append(String.format(failureMsg, i, baseline[i], pcrs256[i]));
-                            break;
+                        if (i != imaValue) {
+                            if (!baseline[i].equals(pcrs256[i])) {
+                                sb.append(String.format(failureMsg, i, baseline[i], pcrs256[i]));
+                                break;
+                            }
                         }
                     }
                 }
