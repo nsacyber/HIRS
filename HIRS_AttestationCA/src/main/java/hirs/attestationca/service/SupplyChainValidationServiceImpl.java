@@ -333,8 +333,8 @@ public class SupplyChainValidationServiceImpl implements SupplyChainValidationSe
         Level level = Level.ERROR;
         AppraisalStatus fwStatus;
 
-        if (attCert != null) {
-            String[] pcrsSet = attCert.getPcrValues().split("\\+");
+        if (pc != null) {
+            String[] pcrsSet = pc.getPcrValues().split("\\+");
             String[] pcrs1 = pcrsSet[0].split("\\n");
             String[] pcrs256 = pcrsSet[1].split("\\n");
 
@@ -387,7 +387,7 @@ public class SupplyChainValidationServiceImpl implements SupplyChainValidationSe
                 }
             }
         } else {
-            fwStatus = new AppraisalStatus(FAIL, "Associated Issued Attestation"
+            fwStatus = new AppraisalStatus(FAIL, "Associated Platform"
                     + " Certificate can not be found.");
         }
 
