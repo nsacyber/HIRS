@@ -362,7 +362,7 @@ public class SupplyChainValidationServiceImpl implements SupplyChainValidationSe
                 fwStatus = new AppraisalStatus(PASS,
                         SupplyChainCredentialValidator.FIRMWARE_VALID);
                 String failureMsg = "Firmware validation failed: PCR %d does not"
-                        + " match%n%tBaseline [%s] <> Device [%s]%n";
+                        + " match%n";
 
                 List<SwidResource> swids = rim.parseResource();
                 for (SwidResource swid : swids) {
@@ -374,8 +374,8 @@ public class SupplyChainValidationServiceImpl implements SupplyChainValidationSe
                 if (baseline[0].length() == pcrs1[0].length()) {
                     for (int i = 0; i <= TPMMeasurementRecord.MAX_PCR_ID; i++) {
                         if (i != imaValue) {
-                            if (i != imaValue && !baseline[i].equals(pcrs1[i])) {
-                                sb.append(String.format(failureMsg, i, baseline[i], pcrs1[i]));
+                            if (!baseline[i].equals(pcrs1[i])) {
+                                sb.append(String.format(failureMsg, i));
                                 break;
                             }
                         }
@@ -384,7 +384,7 @@ public class SupplyChainValidationServiceImpl implements SupplyChainValidationSe
                     for (int i = 0; i <= TPMMeasurementRecord.MAX_PCR_ID; i++) {
                         if (i != imaValue) {
                             if (!baseline[i].equals(pcrs256[i])) {
-                                sb.append(String.format(failureMsg, i, baseline[i], pcrs256[i]));
+                                sb.append(String.format(failureMsg, i));
                                 break;
                             }
                         }
