@@ -245,7 +245,7 @@ public class SupplyChainValidationServiceImpl implements SupplyChainValidationSe
                     .select(this.certificateManager)
                     .byDeviceId(device.getId()).getCertificate();
 
-            validations.add(validateFirmware(pc, attCert, device));
+            validations.add(validateFirmware(pc, attCert));
         }
 
         // Generate validation summary, save it, and return it.
@@ -326,7 +326,7 @@ public class SupplyChainValidationServiceImpl implements SupplyChainValidationSe
     }
 
     private SupplyChainValidation validateFirmware(final PlatformCredential pc,
-            final IssuedAttestationCertificate attCert, final Device device) {
+            final IssuedAttestationCertificate attCert) {
 
         ReferenceManifest rim = null;
         String[] baseline = new String[Integer.SIZE];
