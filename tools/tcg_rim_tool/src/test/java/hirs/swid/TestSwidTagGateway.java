@@ -5,7 +5,9 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.file.Paths;
 import java.util.Scanner;
+import java.net.URISyntaxException;
 
 import org.testng.Assert;
 import org.testng.annotations.BeforeClass;
@@ -19,11 +21,13 @@ public class TestSwidTagGateway {
 	private final String DEFAULT_NO_CERT = "generated_no_cert.swidtag";
 	private final String certificateFile = "RimSignCert.pem";
 	private final String privateKeyFile = "privateRimKey.pem";
+	private final String supportRimFile = "TpmLog.bin";
 	private InputStream expectedFile;
 
 	@BeforeClass
 	public void setUp() throws Exception {
 		gateway = new SwidTagGateway();
+		gateway.setRimEventLog(supportRimFile);
 	}
 
 	@AfterClass
@@ -38,7 +42,7 @@ public class TestSwidTagGateway {
 	 * -c base -k privateRimKey.pem -p RimSignCert.pem
 	 */
 	@Test
-	public void testCreateBaseWithCert() {
+	public void testCreateBaseWithCert() throws URISyntaxException {
 		gateway.setDefaultCredentials(false);
 		gateway.setPemCertificateFile(certificateFile);
 		gateway.setPemPrivateKeyFile(privateKeyFile);
