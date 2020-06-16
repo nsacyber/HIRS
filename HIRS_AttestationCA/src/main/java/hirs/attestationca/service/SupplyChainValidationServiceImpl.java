@@ -7,7 +7,6 @@ import java.security.NoSuchAlgorithmException;
 import java.security.cert.CertificateException;
 
 import hirs.data.persist.TPMMeasurementRecord;
-import hirs.data.persist.baseline.TPMBaseline;
 import hirs.data.persist.SwidResource;
 import hirs.validation.SupplyChainCredentialValidator;
 import org.apache.logging.log4j.LogManager;
@@ -119,6 +118,7 @@ public class SupplyChainValidationServiceImpl implements SupplyChainValidationSe
                 supplyChainAppraiser);
         boolean acceptExpiredCerts = policy.isExpiredCertificateValidationEnabled();
         PlatformCredential baseCredential = null;
+        String componentFailures = "";
         List<SupplyChainValidation> validations = new LinkedList<>();
         Map<PlatformCredential, SupplyChainValidation> deltaMapping = new HashMap<>();
         SupplyChainValidation platformScv = null;
@@ -221,6 +221,7 @@ public class SupplyChainValidationServiceImpl implements SupplyChainValidationSe
                                         String.format("%s%n%s", platformScv.getMessage(),
                                                 attributeScv.getMessage())));
                             }
+                            componentFailures = attributeScv.getMessage();
                         }
 
                         pc.setDevice(device);
@@ -235,12 +236,10 @@ public class SupplyChainValidationServiceImpl implements SupplyChainValidationSe
             // compare tpm quote with what is pulled from RIM associated file
             IssuedAttestationCertificate attCert = IssuedAttestationCertificate
                     .select(this.certificateManager)
-                    .byDeviceId(device.getId())
-                    .getCertificate();
+                    .byDeviceId(device.getId()).getCertificate();
             PlatformCredential pc = PlatformCredential
                     .select(this.certificateManager)
-                    .byDeviceId(device.getId())
-                    .getCertificate();
+                    .byDeviceId(device.getId()).getCertificate();
 
             validations.add(validateFirmware(pc, attCert));
         }
@@ -249,7 +248,7 @@ public class SupplyChainValidationServiceImpl implements SupplyChainValidationSe
         SupplyChainValidationSummary summary
                 = new SupplyChainValidationSummary(device, validations);
         if (baseCredential != null) {
-            baseCredential.setComponentFailures(summary.getMessage());
+            baseCredential.setComponentFailures(componentFailures);
             this.certificateManager.update(baseCredential);
         }
         try {
@@ -259,12 +258,6 @@ public class SupplyChainValidationServiceImpl implements SupplyChainValidationSe
         }
         return summary;
     }
-
-            /**
-             * TDM: I need to compare the manufacturer id, name and model load
-             * that RIM file and associated eventlog, pull that flag for sha 1
-             * or 256 and then compare pcrs
-             */
 
     /**
      * This method is a sub set of the validate supply chain method and focuses
@@ -326,29 +319,17 @@ public class SupplyChainValidationServiceImpl implements SupplyChainValidationSe
     private SupplyChainValidation validateFirmware(final PlatformCredential pc,
             final IssuedAttestationCertificate attCert) {
 
-        TPMBaseline tpmBline;
+        ReferenceManifest rim = null;
         String[] baseline = new String[Integer.SIZE];
         Level level = Level.ERROR;
         AppraisalStatus fwStatus;
 
         if (attCert != null) {
-            LOGGER.error(attCert.getPcrValues());
             String[] pcrsSet = attCert.getPcrValues().split("\\+");
             String[] pcrs1 = pcrsSet[0].split("\\n");
             String[] pcrs256 = pcrsSet[1].split("\\n");
-            for (int i = 0; i < pcrs1.length; i++) {
-                if (pcrs1[i].contains(":")) {
-                    pcrs1[i].split(":");
-                }
-            }
 
-            for (int i = 0; i < pcrs256.length; i++) {
-                if (pcrs256[i].contains(":")) {
-                    pcrs256[i].split(":");
-                }
-            }
-
-            ReferenceManifest rim = ReferenceManifest.select(
+            rim = ReferenceManifest.select(
                     this.referenceManifestManager)
                     .byManufacturer(pc.getManufacturer())
                     .getRIM();
@@ -361,7 +342,7 @@ public class SupplyChainValidationServiceImpl implements SupplyChainValidationSe
                 StringBuilder sb = new StringBuilder();
                 fwStatus = new AppraisalStatus(PASS,
                         SupplyChainCredentialValidator.FIRMWARE_VALID);
-                String failureMsg = "Firmware validation failed: PCR %d does not"
+                String failureMsg = "Firmware validation failed: PCR %s does not"
                         + " match%n";
 
                 List<SwidResource> swids = rim.parseResource();
@@ -371,21 +352,25 @@ public class SupplyChainValidationServiceImpl implements SupplyChainValidationSe
                 }
 
                 int imaValue = IMA_TEN;
-                if (baseline[0].length() == pcrs1[0].length()) {
+                String pcrNum;
+                String pcrValue;
+                if (baseline[0].length() == TPMMeasurementRecord.SHA_BYTE_LENGTH) {
                     for (int i = 0; i <= TPMMeasurementRecord.MAX_PCR_ID; i++) {
+                        pcrNum = pcrs1[i + 1].split(":")[0].trim();
+                        pcrValue = pcrs1[i + 1].split(":")[1].trim();
                         if (i != imaValue) {
-                            if (!baseline[i].equals(pcrs1[i])) {
-                                sb.append(String.format(failureMsg, i));
-                                break;
+                            if (!baseline[i].equals(pcrValue)) {
+                                sb.append(String.format(failureMsg, pcrNum));
                             }
                         }
                     }
-                } else if (baseline[0].length() == pcrs256[0].length()) {
+                } else if (baseline[0].length() == TPMMeasurementRecord.SHA_256_BYTE_LENGTH) {
                     for (int i = 0; i <= TPMMeasurementRecord.MAX_PCR_ID; i++) {
+                        pcrNum = pcrs256[i + 1].split(":")[0].trim();
+                        pcrValue = pcrs256[i + 1].split(":")[1].trim();
                         if (i != imaValue) {
-                            if (!baseline[i].equals(pcrs256[i])) {
-                                sb.append(String.format(failureMsg, i));
-                                break;
+                            if (!baseline[i].equals(pcrValue)) {
+                                sb.append(String.format(failureMsg, pcrNum));
                             }
                         }
                     }

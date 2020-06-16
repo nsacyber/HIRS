@@ -34,6 +34,16 @@ public final class TPMMeasurementRecord extends ExaminableRecord {
      */
     public static final int MAX_PCR_ID = 23;
 
+    /**
+     * String length of a SHA 1 PCR value.
+     */
+    public static final int SHA_BYTE_LENGTH = 40;
+
+    /**
+     * String length of a 256 SHA PCR value.
+     */
+    public static final int SHA_256_BYTE_LENGTH = 64;
+
     private static final Logger LOGGER =
             LogManager.getLogger(TPMMeasurementRecord.class);
 
