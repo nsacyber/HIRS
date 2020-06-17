@@ -240,7 +240,7 @@ public class PlatformCredential extends DeviceAssociatedCertificate {
     @Column
     private String platformClass = null;
 
-    @Column
+    @Column(length = MAX_MESSAGE_LENGTH)
     private String componentFailures = Strings.EMPTY;
 
     @Transient
