@@ -428,7 +428,11 @@ public class SwidTagGateway {
         File rimEventLogFile = new File(rimEventLog);
         file.setSize(new BigInteger(Long.toString(rimEventLogFile.length())));
         Map<QName, String> attributes = file.getOtherAttributes();
-        addNonNullAttribute(attributes, _SHA256_HASH, HashSwid.get256Hash(rimEventLog));
+        try {
+            addNonNullAttribute(attributes, _SHA256_HASH, HashSwid.getHashValue(Files.readAllBytes(Paths.get(rimEventLog))));
+        } catch (IOException e) {
+            System.out.println("Error hashing support RIM: " + e.getMessage());
+        }
 
         return file;
     }
@@ -439,13 +443,19 @@ public class SwidTagGateway {
     private boolean validateFile(Element file) {
         String filepath = file.getAttribute(SwidTagConstants.NAME);
         System.out.println("Support rim found at " + filepath);
-        if (HashSwid.get256Hash(filepath).equals(file.getAttribute(_SHA256_HASH.getPrefix() + ":" + _SHA256_HASH.getLocalPart()))) {
-            System.out.println("Support RIM hash verified!");
-            return true;
-        } else {
-            System.out.println("Support RIM hash does not match Base RIM!");
-            return false;
+        byte[] bytes = new byte[]{};
+        try {
+           bytes = Files.readAllBytes(Paths.get(filepath));
+        } catch (IOException e) {
+            System.out.println("Error while hashing support RIM to verify: " + e.getMessage());
         }
+            if (HashSwid.getHashValue(bytes).equals(file.getAttribute(_SHA256_HASH.getPrefix() + ":" + _SHA256_HASH.getLocalPart()))) {
+                System.out.println("Support RIM hash verified!");
+                return true;
+            } else {
+                System.out.println("Support RIM hash does not match Base RIM!");
+                return false;
+            }
     }
 
     /**
