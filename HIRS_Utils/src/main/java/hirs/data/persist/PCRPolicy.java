@@ -22,6 +22,9 @@ public final class PCRPolicy extends Policy {
 
     private String[] baselinePcrs;
 
+    /**
+     * Default constructor
+     */
     public PCRPolicy() {
         baselinePcrs = new String[TPMMeasurementRecord.MAX_PCR_ID];
     }

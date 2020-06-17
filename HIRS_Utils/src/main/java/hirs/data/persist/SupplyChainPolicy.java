@@ -196,10 +196,16 @@ public class SupplyChainPolicy extends Policy {
         this.replaceEC = replaceEC;
     }
 
+    /**
+     * @return the PCR Policy
+     */
     public PCRPolicy getPcrPolicy() {
         return pcrPolicy;
     }
 
+    /**
+     * @param pcrPolicy to apply 
+     */
     public void setPcrPolicy(final PCRPolicy pcrPolicy) {
         this.pcrPolicy = pcrPolicy;
     }
