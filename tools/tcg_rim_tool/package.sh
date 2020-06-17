@@ -6,7 +6,7 @@ pushd $SCRIPT_DIR
 
 name="tcg_rim_tool"
 
-tar -cf $name.tar build.gradle gradle* src/ docs/ rim_fields.json keystore.jks
+tar -cf $name.tar build.gradle gradle* src/ docs/ rim_fields.json keystore.jks scripts/
 gzip $name.tar
 if [ -d rpmbuild ]; then
 	rm -rf rpmbuild
