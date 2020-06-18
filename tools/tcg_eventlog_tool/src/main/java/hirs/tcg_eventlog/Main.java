@@ -33,7 +33,7 @@ final class Main {
 public static void main(final String[] args) {
 commander = new Commander(args);
     if (!commander.getValidityFlag()) {
-        System.out.print("Program exiting wihtout processs due to issues with"
+        System.out.print("Program exiting without processs due to issues with"
                                                         + " parameters provided.");
         System.exit(1);
     }
@@ -97,7 +97,7 @@ commander = new Commander(args);
         if (bPcrFlag) {
             String[] pcrs = evLog.getExpectedPCRValues();
             int count = 0;
-            if (!commander.getHexFlag()) {
+            if (!bHexFlag) {
                   writeOut("Expected Platform Configuration Register (PCR) values"
                     + " derived from the Event Log: \n\n");
             }
@@ -171,18 +171,21 @@ commander = new Commander(args);
         String os = System.getProperty("os.name").toLowerCase(), fName = fileName;
         byte[] rawLog = null;
         boolean bDefault = false;
+        bHexFlag = commander.getHexFlag();
         try {
 
             if (fileName.isEmpty()) {
                 if (os.compareToIgnoreCase("linux") == 0) { // need to find Windows path
                     fName = "/sys/kernel/security/tpm0/binary_bios_measurements";
                     bDefault = true;
-                    writeOut("Local Event Log being used: " + fileName + "\n");
+                    if (!bHexFlag) {
+                        writeOut("Local Event Log being used: " + fileName + "\n");
+                    }
                 }
             }
             Path path = Paths.get(fName);
             rawLog = Files.readAllBytes(path);
-            if (!commander.getHexFlag()) {
+            if (!bHexFlag) {
                writeOut("tcg_eventlog_tool is opening file:" + path + "\n");
             }
         } catch (Exception e) {
