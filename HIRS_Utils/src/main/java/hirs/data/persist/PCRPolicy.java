@@ -57,8 +57,7 @@ public final class PCRPolicy extends Policy {
      */
     public StringBuilder validatePcrs(final String[] quotePcrs) {
         StringBuilder sb = new StringBuilder();
-        String failureMsg = "Firmware validation failed: PCR %d does not"
-                + " match%n";
+        String failureMsg = "PCR %d does not match%n";
 
         for (int i = 0; i <= TPMMeasurementRecord.MAX_PCR_ID; i++) {
             if (enableIgnoreIma && i == IMA_PCR) {
