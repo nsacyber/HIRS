@@ -8,6 +8,7 @@ import java.security.cert.CertificateException;
 
 import hirs.data.persist.TPMMeasurementRecord;
 import hirs.data.persist.SwidResource;
+import hirs.data.persist.PCRPolicy;
 import hirs.validation.SupplyChainCredentialValidator;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -241,7 +242,7 @@ public class SupplyChainValidationServiceImpl implements SupplyChainValidationSe
                     .select(this.certificateManager)
                     .byDeviceId(device.getId()).getCertificate();
 
-            validations.add(validateFirmware(pc, attCert));
+            validations.add(validateFirmware(pc, attCert, policy.getPcrPolicy()));
         }
 
         // Generate validation summary, save it, and return it.
@@ -314,73 +315,72 @@ public class SupplyChainValidationServiceImpl implements SupplyChainValidationSe
         }
         return subPlatformScv;
     }
-    private static final int IMA_TEN = 9;
 
     private SupplyChainValidation validateFirmware(final PlatformCredential pc,
-            final IssuedAttestationCertificate attCert) {
+            final IssuedAttestationCertificate attCert, final PCRPolicy pcrPolicy) {
 
-        ReferenceManifest rim = null;
+        ReferenceManifest rim;
         String[] baseline = new String[Integer.SIZE];
         Level level = Level.ERROR;
-        AppraisalStatus fwStatus;
+        AppraisalStatus fwStatus = null;
 
-        if (attCert != null) {
-            String[] pcrsSet = attCert.getPcrValues().split("\\+");
-            String[] pcrs1 = pcrsSet[0].split("\\n");
-            String[] pcrs256 = pcrsSet[1].split("\\n");
-
+        if (pc != null) {
             rim = ReferenceManifest.select(
                     this.referenceManifestManager)
                     .byManufacturer(pc.getManufacturer())
                     .getRIM();
 
             if (rim == null) {
-                fwStatus = new AppraisalStatus(FAIL, String.format("Firmware validation failed: "
-                        + "No associated RIM file could be found for %s",
-                        pc.getManufacturer()));
+                fwStatus = new AppraisalStatus(FAIL,
+                        String.format("Firmware validation failed: "
+                                + "No associated RIM file could be found for %s",
+                                pc.getManufacturer()));
             } else {
-                StringBuilder sb = new StringBuilder();
-                fwStatus = new AppraisalStatus(PASS,
-                        SupplyChainCredentialValidator.FIRMWARE_VALID);
-                String failureMsg = "Firmware validation failed: PCR %s does not"
-                        + " match%n";
-
                 List<SwidResource> swids = rim.parseResource();
                 for (SwidResource swid : swids) {
                     baseline = swid.getPcrValues()
                             .toArray(new String[swid.getPcrValues().size()]);
                 }
+                pcrPolicy.setBaselinePcrs(baseline);
+            }
+        }
 
-                int imaValue = IMA_TEN;
-                String pcrNum;
-                String pcrValue;
-                if (baseline[0].length() == TPMMeasurementRecord.SHA_BYTE_LENGTH) {
-                    for (int i = 0; i <= TPMMeasurementRecord.MAX_PCR_ID; i++) {
-                        pcrNum = pcrs1[i + 1].split(":")[0].trim();
-                        pcrValue = pcrs1[i + 1].split(":")[1].trim();
-                        if (i != imaValue) {
-                            if (!baseline[i].equals(pcrValue)) {
-                                sb.append(String.format(failureMsg, pcrNum));
-                            }
-                        }
-                    }
-                } else if (baseline[0].length() == TPMMeasurementRecord.SHA_256_BYTE_LENGTH) {
-                    for (int i = 0; i <= TPMMeasurementRecord.MAX_PCR_ID; i++) {
-                        pcrNum = pcrs256[i + 1].split(":")[0].trim();
-                        pcrValue = pcrs256[i + 1].split(":")[1].trim();
-                        if (i != imaValue) {
-                            if (!baseline[i].equals(pcrValue)) {
-                                sb.append(String.format(failureMsg, pcrNum));
-                            }
-                        }
-                    }
+        if (attCert != null && fwStatus == null) {
+            String[] pcrsSet = attCert.getPcrValues().split("\\+");
+            String[] pcrs1 = pcrsSet[0].split("\\n");
+            String[] pcrs256 = pcrsSet[1].split("\\n");
+            String[] quote = new String[TPMMeasurementRecord.MAX_PCR_ID + 1];
+            int offset = 0;
+
+            StringBuilder sb;
+            fwStatus = new AppraisalStatus(PASS,
+                    SupplyChainCredentialValidator.FIRMWARE_VALID);
+
+            if (baseline[0].length() == TPMMeasurementRecord.SHA_BYTE_LENGTH) {
+                // quote from provisioner is formated to indicate the encryption
+                if (pcrs1[0].split(":")[0].contains("sha")) {
+                    offset = 1;
                 }
-                if (sb.length() > 0) {
-                    level = Level.ERROR;
-                    fwStatus = new AppraisalStatus(FAIL, sb.toString());
-                } else {
-                    level = Level.INFO;
+                for (int i = 0; i <= TPMMeasurementRecord.MAX_PCR_ID; i++) {
+                    //update quote with the pcr only, based on offset
+                    quote[i] = pcrs1[i + offset].split(":")[1].trim();
                 }
+            } else if (baseline[0].length() == TPMMeasurementRecord.SHA_256_BYTE_LENGTH) {
+                // quote from provisioner is formated to indicate the encryption
+                if (pcrs256[0].split(":")[0].contains("sha")) {
+                    offset = 1;
+                }
+                for (int i = 0; i <= TPMMeasurementRecord.MAX_PCR_ID; i++) {
+                    //update quote with the pcr only, based on offset
+                    quote[i] = pcrs256[i + offset].split(":")[1].trim();
+                }
+            }
+            sb = pcrPolicy.validatePcrs(quote);
+            if (sb.length() > 0) {
+                level = Level.ERROR;
+                fwStatus = new AppraisalStatus(FAIL, sb.toString());
+            } else {
+                level = Level.INFO;
             }
         } else {
             fwStatus = new AppraisalStatus(FAIL, "Associated Issued Attestation"

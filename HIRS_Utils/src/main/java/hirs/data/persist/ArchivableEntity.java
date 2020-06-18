@@ -13,7 +13,7 @@ public abstract class ArchivableEntity extends AbstractEntity {
     /**
      * Defining the size of a message field for error display.
      */
-    public static final int MAX_MESSAGE_LENGTH = 520;
+    public static final int MAX_MESSAGE_LENGTH = 1200;
 
     @Column(name = "archived_time")
     private Date archivedTime;

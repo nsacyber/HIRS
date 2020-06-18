@@ -1,6 +1,7 @@
 package hirs.data.persist;
 
 import javax.persistence.Column;
+import javax.persistence.Embedded;
 import javax.persistence.Entity;
 
 /**
@@ -36,7 +37,7 @@ public class SupplyChainPolicy extends Policy {
     @Column(nullable = false)
     private boolean replaceEC = false;
 
-    @Column(nullable = false)
+    @Embedded
     private PCRPolicy pcrPolicy = new PCRPolicy();
 
     /**
@@ -151,6 +152,40 @@ public class SupplyChainPolicy extends Policy {
     }
 
     /**
+     * Returns whether or not to validate the ignore ima on the device.
+     *
+     * @return whether or not to validate the ignore imag.
+     */
+    public boolean isIgnoreImaEnabled() {
+        return this.pcrPolicy.isEnableIgnoreIma();
+    }
+
+    /**
+     * Sets whether or not validate the ignore ima on the device.
+     * @param enableIgnoreIma whether or not to validate the ignore ima
+     */
+    public void setIgnoreImaEnabled(final boolean enableIgnoreIma) {
+        this.pcrPolicy.setEnableIgnoreIma(enableIgnoreIma);
+    }
+
+    /**
+     * Returns whether or not to validate the ignore tboot on the device.
+     *
+     * @return whether or not to validate the ignore tboot
+     */
+    public boolean isIgnoreTbootEnabled() {
+        return this.pcrPolicy.isEnableIgnoretBoot();
+    }
+
+    /**
+     * Sets whether or not validate the ignore tboot on the device.
+     * @param enableIgnoreTboot whether or not to validate the ignore tboot
+     */
+    public void setIgnoreTbootEnabled(final boolean enableIgnoreTboot) {
+        this.pcrPolicy.setEnableIgnoretBoot(enableIgnoreTboot);
+    }
+
+    /**
      * Returns whether or not to allow expired credentials and certificates to be considered
      * valid if their supply chain is otherwise verified.
      *
@@ -204,7 +239,7 @@ public class SupplyChainPolicy extends Policy {
     }
 
     /**
-     * @param pcrPolicy to apply 
+     * @param pcrPolicy to apply
      */
     public void setPcrPolicy(final PCRPolicy pcrPolicy) {
         this.pcrPolicy = pcrPolicy;
