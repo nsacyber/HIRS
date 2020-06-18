@@ -24,6 +24,7 @@ public class Commander {
     private static final String VERIFY_STRING = "Verify";
     private static final String VERSION_STRING = "version";
     private static final String VERSION_NUMBER = "1.0";
+    private static final String REGEX = "[0-9]+";
 
     private boolean hasArguments = false;
     private boolean bValidArgs = true;
@@ -58,7 +59,7 @@ public class Commander {
         if (hasArguments) {
             parseArguments(args);
         } else {
-            String[] defualtArgs=new String[1];
+            String[] defualtArgs = new String[1];
             defualtArgs[0] = "-e";
             hasArguments = true;
             parseArguments(defualtArgs);
@@ -79,7 +80,7 @@ public class Commander {
             tempValue = args[i];
 
         if (args.length == 0) {    // Process default params if none were given
-            bEventIds = true;     
+            bEventIds = true;
         } else {
             switch (tempValue) {
                 case FULL_COMMAND_PREFIX + CONTENT_STRING:
@@ -88,11 +89,10 @@ public class Commander {
                     if (i < args.length - 1) {  // Check for a filter following the -e
                         if (!args[i + 1].startsWith("-")) {
                             eventFilter = args[i++ + 1];
-                            if(eventFilter.chars().allMatch( Character::isDigit )) {
+                            if (eventFilter.matches(REGEX)) {
                                 eventNumber = Integer.parseInt(eventFilter);
                             } else {
                               System.out.println("invalid parameter following -e: " + eventFilter);
-                              System.exit(1);
                             }
                         }
                     }
@@ -141,11 +141,10 @@ public class Commander {
                     if (i < args.length - 1) {  // Check for a filter following the -p
                         if (!args[i + 1].startsWith("-")) {
                             pcrFilter = args[i++ + 1 ];
-                            if(pcrFilter.chars().allMatch( Character::isDigit )) {
+                            if (pcrFilter.matches(REGEX)) {
                                 pcrNumber = Integer.parseInt(pcrFilter);
                             } else {
                               System.out.println("invalid parameter following -p: " + pcrFilter);
-                              System.exit(1);
                             }
                         }
                     }
