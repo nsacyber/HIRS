@@ -16,7 +16,7 @@ function eventcheck_help() {
   echo "-h --help : help listing";
 }
 
- while [[ "$#" -gt 0 ]]; do
+while [[ "$#" -gt 0 ]]; do
     case $1 in
         -p|--publicCertificate) oem_cert="$2"; shift ;;
         -r|--rim) oem_rim=$2; shift ;;

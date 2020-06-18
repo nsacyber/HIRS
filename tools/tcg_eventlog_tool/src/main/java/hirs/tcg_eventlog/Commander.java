@@ -24,6 +24,7 @@ public class Commander {
     private static final String VERIFY_STRING = "Verify";
     private static final String VERSION_STRING = "version";
     private static final String VERSION_NUMBER = "1.0";
+    private static final String REGEX = "[0-9]+";
 
     private boolean hasArguments = false;
     private boolean bValidArgs = true;
@@ -58,7 +59,11 @@ public class Commander {
         if (hasArguments) {
             parseArguments(args);
         } else {
-            printHelp("");
+            String[] defualtArgs = new String[1];
+            defualtArgs[0] = "-e";
+            hasArguments = true;
+            parseArguments(defualtArgs);
+ //           printHelp("");
         }
     }
 
@@ -74,6 +79,9 @@ public class Commander {
         for (int i = 0; i < args.length; i++) {
             tempValue = args[i];
 
+        if (args.length == 0) {    // Process default params if none were given
+            bEventIds = true;
+        } else {
             switch (tempValue) {
                 case FULL_COMMAND_PREFIX + CONTENT_STRING:
                 case FULL_COMMAND_PREFIX + EVENTIDS_STRING:
@@ -81,7 +89,11 @@ public class Commander {
                     if (i < args.length - 1) {  // Check for a filter following the -e
                         if (!args[i + 1].startsWith("-")) {
                             eventFilter = args[i++ + 1];
-                            eventNumber = Integer.parseInt(eventFilter);
+                            if (eventFilter.matches(REGEX)) {
+                                eventNumber = Integer.parseInt(eventFilter);
+                            } else {
+                              System.out.println("invalid parameter following -e: " + eventFilter);
+                            }
                         }
                     }
                     bEventIds = true;
@@ -104,14 +116,6 @@ public class Commander {
                     } else {
                         inFile = args[i++  + 1];
                         inFile2 = args[i++ + 1];
-                        /*
-                        if (args.length > i + 1) {
-                            if (!args[i + 1].contains("-")) { // pcr filter provided
-                                eventFilter = args[i++ + 1];
-                                eventNumber = Integer.parseInt(eventFilter);
-                            }
-                        }
-                        */
                         bDiff = true;
                     }
                     break;
@@ -137,7 +141,11 @@ public class Commander {
                     if (i < args.length - 1) {  // Check for a filter following the -p
                         if (!args[i + 1].startsWith("-")) {
                             pcrFilter = args[i++ + 1 ];
-                            pcrNumber = Integer.parseInt(pcrFilter);
+                            if (pcrFilter.matches(REGEX)) {
+                                pcrNumber = Integer.parseInt(pcrFilter);
+                            } else {
+                              System.out.println("invalid parameter following -p: " + pcrFilter);
+                            }
                         }
                     }
                     bPCRs = true;
@@ -163,6 +171,7 @@ public class Commander {
                     printHelp("");
                     bValidArgs = false;
             }
+          }
         }
     }
 
@@ -336,8 +345,7 @@ public class Commander {
                 + "provided.\n"
                 + "  -ec\t--contenthex\t Displays event content"
                 + " in eventhex format when -event is used.\n"
-                + "  -ex\t--eventhex\t Displays event in hex format when -event is used"
-                + " when -event is used.\n"
+                + "  -ex\t--eventhex\t Displays event in hex format when -event is used.\n"
                 + "  -d\t--diff\t\t Compares two TCG Event Logs and outputs a list of events"
                 + " of the second log that differred.\n"
                 + "  -o\t--output\t Output to a file. "

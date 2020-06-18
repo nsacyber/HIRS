@@ -16,17 +16,25 @@ This tool will generate a root RIM file for PC clients in accordance with the sc
 %prep
 %setup -q -c -n %{name}
 
+%pre
+rm -f /opt/hirs/rimtool/%{name}*.jar
 
 %build
 ./gradlew build
 
 %install
-mkdir -p %{buildroot}/opt/hirs/rim/
-cp build/libs/%{name}-%{version}.jar %{buildroot}/opt/hirs/rim/
+mkdir -p %{buildroot}/opt/hirs/rimtool/
+cp build/libs/%{name}-%{version}.jar %{buildroot}/opt/hirs/rimtool/
+cp ./rim_fields.json %{buildroot}/opt/hirs/rimtool/
+cp ./keystore.jks %{buildroot}/opt/hirs/rimtool/
 
 %files
-/opt/hirs/rim/%{name}-%{version}.jar
+/opt/hirs/rimtool/%{name}-%{version}.jar
+/opt/hirs/rimtool/rim_fields.json
+/opt/hirs/rimtool/keystore.jks
 
 %changelog
+* Mon Jun 15 2020 chubtub
+- First release
 * Mon Jan 6 2020 chubtub
 - First change

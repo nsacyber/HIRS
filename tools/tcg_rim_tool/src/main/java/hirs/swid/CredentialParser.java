@@ -52,8 +52,11 @@ public class CredentialParser {
         publicKey = certificate.getPublicKey();
     }
 
-    public void parsePEMCredentials(String certificateFile, String privateKeyFile) throws FileNotFoundException {
+    public void parsePEMCredentials(String certificateFile, String privateKeyFile) throws CertificateException, FileNotFoundException {
         certificate = parsePEMCertificate(certificateFile);
+        if (certificate.getIssuerX500Principal().equals(certificate.getSubjectX500Principal())) {
+            throw new CertificateException("Signing certificate cannot be self-signed!");
+        }
         privateKey = parsePEMPrivateKey(privateKeyFile, "RSA");
         publicKey = certificate.getPublicKey();
     }
