@@ -49,7 +49,7 @@ public class HashSwid {
     }
 
     /**
-     * This method creates the hash based on the provided algorithm and salt
+     * This method creates the hash based on the provided algorithm
      * only accessible through helper methods.
      *
      * This method assumes an input file that is small enough to read in its
@@ -57,7 +57,6 @@ public class HashSwid {
      * getHashValue() below.
      * 
      * @param filepath file contents to hash
-     * @param salt random value to make the hash stronger
      * @param sha the algorithm to use for the hash
      * @return 
      */

@@ -22,7 +22,7 @@ rm -f /opt/hirs/rimtool/%{name}*.jar
 ./gradlew build
 
 %install
-mkdir -p %{buildroot}/opt/hirs/rimtool/ %{buildroot}/usr/local/bin/rim/
+mkdir -p %{buildroot}/opt/hirs/rimtool/ %{buildroot}/usr/local/bin
 cp build/libs/%{name}-%{version}.jar %{buildroot}/opt/hirs/rimtool/
 cp ./rim_fields.json %{buildroot}/opt/hirs/rimtool/
 cp ./keystore.jks %{buildroot}/opt/hirs/rimtool/
@@ -33,8 +33,10 @@ ln -sf /opt/hirs/rimtool/scripts/rimtool.sh %{buildroot}/usr/local/bin/rim
 /opt/hirs/rimtool/%{name}-%{version}.jar
 /opt/hirs/rimtool/rim_fields.json
 /opt/hirs/rimtool/keystore.jks
-/opt/hirs/rimtool/scripts/rimtool.sh
-/usr/local/bin/rim/
+/opt/hirs/rimtool/scripts
+/usr/local/bin/rim
+
+%attr(755, root, root) /opt/hirs/rimtool/scripts/rimtool.sh
 
 %changelog
 * Mon Jun 15 2020 chubtub
