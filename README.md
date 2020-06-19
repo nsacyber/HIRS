@@ -93,3 +93,7 @@ To see the results and interact with the ACA, go to the ACA Portal at `https://A
 * [HIRS Attestation Certificate Authority FAQ](https://github.com/nsacyber/HIRS/wiki/FAQ)
 * [TPM Provisioner Debug](https://github.com/nsacyber/HIRS/wiki/provisioner_debug)
 * [ACA Debug](https://github.com/nsacyber/HIRS/wiki/aca_debug)
+* Tools
+  * [Platform Certificate Creator](https://github.com/nsacyber/paccor) 
+  * [Reference Integrity Manifest tool (tcg_rim_tool)](https://github.com/nsacyber/HIRS/releases)
+  * [Event Log tool (tcg_eventlog_tool)](https://github.com/nsacyber/HIRS/releases)
