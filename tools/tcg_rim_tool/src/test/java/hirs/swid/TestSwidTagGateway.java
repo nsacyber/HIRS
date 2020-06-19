@@ -39,7 +39,7 @@ public class TestSwidTagGateway {
 
 	/**
 	 * This test corresponds to the arguments:
-	 * -c base -k privateRimKey.pem -p RimSignCert.pem
+	 * -c base -l TpmLog.bin -k privateRimKey.pem -p RimSignCert.pem
 	 */
 	@Test
 	public void testCreateBaseWithCert() throws URISyntaxException {
@@ -53,8 +53,7 @@ public class TestSwidTagGateway {
 
 	/**
 	 * This test corresponds to the arguments:
-	 * -c base
-	 * -c base -a <path>
+	 * -c base -l TpmLog.bin
 	 */
 	@Test
 	public void testCreateBaseWithoutCert() {
@@ -66,7 +65,7 @@ public class TestSwidTagGateway {
 
 	/**
 	 * This test corresponds to the arguments:
-	 * -v <path> -p RimSignCert.pem
+	 * -v <path>
 	 */
 	@Test
 	public void testValidateSwidTag() {
