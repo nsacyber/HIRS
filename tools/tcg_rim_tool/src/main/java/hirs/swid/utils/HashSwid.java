@@ -52,6 +52,10 @@ public class HashSwid {
      * This method creates the hash based on the provided algorithm and salt
      * only accessible through helper methods.
      *
+     * This method assumes an input file that is small enough to read in its
+     * entirety.  Large files should be handled similarly to the public static
+     * getHashValue() below.
+     * 
      * @param filepath file contents to hash
      * @param salt random value to make the hash stronger
      * @param sha the algorithm to use for the hash
@@ -61,7 +65,7 @@ public class HashSwid {
         String resultString = null;
         try {
             MessageDigest md = MessageDigest.getInstance(sha);            
-            byte[] bytes = md.digest(filepath.getBytes(ENCODING));
+            byte[] bytes = md.digest(Files.readAllBytes(Paths.get(filepath)));
             StringBuilder sb = new StringBuilder();
 
             for (int i = 0; i < bytes.length; i++) {
@@ -70,34 +74,8 @@ public class HashSwid {
             resultString = sb.toString();
         } catch (UnsupportedEncodingException | NoSuchAlgorithmException grex) {
             System.out.println(grex.getMessage());
-        }
-
-        return resultString;
-    }
-
-    /**
-     * This method creates a hash based on the provided algorithm and salt
-     * only accessible through helper methods.
-     *
-     * This method assumes an input file that is small enough to read in its
-     * entirety.  Large files should be handled similarly to the public static
-     * getHashValue() below.
-     *
-     * This method is also largely redundant and should be refactored after 2.0.
-     */
-    public static String getHashValue(byte[] content) {
-        String resultString = null;
-        try {
-            MessageDigest md = MessageDigest.getInstance(SHA256);
-            byte[] bytes = md.digest(content);
-            StringBuilder sb = new StringBuilder();
-
-            for (int i = 0; i < bytes.length; i++) {
-                sb.append(Integer.toString((bytes[i] & 0xff) + 0x100, 16).substring(1));
-            }
-            resultString = sb.toString();
-        } catch (NoSuchAlgorithmException grex) {
-            System.out.println(grex.getMessage());
+        } catch (IOException e) {
+            System.out.println("Error reading in file to hash: " + e.getMessage());
         }
 
         return resultString;
