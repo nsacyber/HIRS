@@ -21,8 +21,8 @@ public class Main {
             if (!commander.getVerifyFile().isEmpty()) {
                 System.out.println(commander.toString());
                 String verifyFile = commander.getVerifyFile();
-                String publicCertificate = commander.getPublicCertificate();
-                if (!verifyFile.isEmpty() && !publicCertificate.isEmpty()) {
+                //String publicCertificate = commander.getPublicCertificate();
+                if (!verifyFile.isEmpty()) {
                     try {
                         gateway.validateSwidTag(verifyFile);
                     } catch (IOException e) {
@@ -30,7 +30,7 @@ public class Main {
                         System.exit(1);
                     }
                 } else {
-                    System.out.println("Need both a RIM file to validate and a public certificate to validate with!");
+                    System.out.println("Need a RIM file to validate!");
                     System.exit(1);
                 }
             } else {
@@ -39,6 +39,7 @@ public class Main {
                 String attributesFile = commander.getAttributesFile();
                 String certificateFile = commander.getPublicCertificate();
                 String privateKeyFile = commander.getPrivateKeyFile();
+                String rimEventLog = commander.getRimEventLog();
                 switch (createType) {
                     case "BASE":
                         if (!attributesFile.isEmpty()) {
@@ -49,11 +50,13 @@ public class Main {
                             gateway.setPemCertificateFile(certificateFile);
                             gateway.setPemPrivateKeyFile(privateKeyFile);
                         }
+                        if (rimEventLog.isEmpty()) {
+                            System.out.println("Error: a support RIM is required!");
+                            System.exit(1);
+                        } else {
+                            gateway.setRimEventLog(rimEventLog);
+                        }
                         gateway.generateSwidTag(commander.getOutFile());
-                        break;
-                    case "EVENTLOG":
-                        break;
-                    case "PCR":
                         break;
                 }
             }

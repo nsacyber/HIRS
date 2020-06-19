@@ -66,7 +66,7 @@ buildscript {
 
 // Produce packages
 ospackage {
-    packageName='tcgeventlogtool'
+    packageName='tcg_eventlog_tool'
     os=LINUX
     arch=NOARCH
     version='1.0.0'

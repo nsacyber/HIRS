@@ -6,11 +6,15 @@
 
 The Host Integrity at Runtime and Start-up Attestation Certificate Authority is a Proof of Concept - Prototype intended to spur interest and adoption of the [Trusted Platform Module (TPM)](https://trustedcomputinggroup.org/work-groups/trusted-platform-module/). It's intended for testing and development purposes only and is not intended for production. The ACA's functionality supports the provisioning of both the TPM 1.2 and [TPM 2.0](https://trustedcomputinggroup.org/wp-content/uploads/2019_TCG_TPM2_BriefOverview_DR02web.pdf) with an [Attestation Identity Credential (AIC)](https://www.trustedcomputinggroup.org/wp-content/uploads/IWG-Credential_Profiles_V1_R1_14.pdf). The ACA can be configured to enforce the Validation of Endorsement and Platform Credentials to illustrate a supply chain validation capability. 
 
-Version 1.1 adds support for the [Platform Certificate v1.1 Specification](https://trustedcomputinggroup.org/wp-content/uploads/IWG_Platform_Certificate_Profile_v1p1_r15_pubrev.pdf). This allows entities that are part of the supply chain (System integrators and Value Added Resellers) the ability to create Delta Platform Certificate to compliment the Base Platform Certificate created by the Platform Manufacturer. See the [Article on Base and Delta Platform Certificates](https://github.com/nsacyber/HIRS/wiki/Base-and-Delta-Platform-Certificates) for details.
-
 The ACA provides a “provisioner” application to be installed on all devices which will be requesting Attestation Credentials.
 The ACA is a web based server which processes Attestation Identity Requests.
 ![TPM Provisioning](images/TPM_Provisioning.jpg)
+
+Version 1.1 added support for the [Platform Certificate v1.1 Specification](https://trustedcomputinggroup.org/wp-content/uploads/IWG_Platform_Certificate_Profile_v1p1_r15_pubrev.pdf). This allows entities that are part of the supply chain (System integrators and Value Added Resellers) the ability to create Delta Platform Certificate to compliment the Base Platform Certificate created by the Platform Manufacturer. See the [Article on Base and Delta Platform Certificates](https://github.com/nsacyber/HIRS/wiki/Base-and-Delta-Platform-Certificates) for details.
+
+Version 2.0 will add support for the [PC Client Reference Integrity Manifest (RIM) Specification](https://trustedcomputinggroup.org/wp-content/uploads/TCG_PC_Client_RIM_r0p15_15june2020.pdf) to provide firmware validation capability to the HIRS ACA. This requires that the manufacturer of a device provide a digitally signed RIM "Bundle" for each device. The HIRS ACA has a new page for uploading and viewing RIM Bundles and a policy setting for requiring Firmware validation.
+
+To support the TCG RIM concept a new tools folder has been added to the HIRS project which contains a tcg_rim_tool command line application. The tcg_rim_tool can be used to create NISTIR 8060 compatible SWID tags that adhere to the TCG PC Client RIM specification. It also supports the ability to digitally sign the Base RIM file as the HIRS ACA will require a valid signature in order to upload any RIM file. See the tgc_rim_tool READ.md for more details.
 
 ## Features
 
@@ -37,7 +41,11 @@ Revision 14](https://www.trustedcomputinggroup.org/wp-content/uploads/Credential
   * Enables ACA policy configuration for validation of Endorsement and Platform Credentials
   * Enables Import/Export of Certificate (Trust) Chains, Endorsement Credentials, and Platform Credentials
   * Optionally allows uploaded credentials to be used in validation for machines that have been reprovisioned by trusted parties since leaving the OEM
-
+* Firmware Integrity Validation
+  * Checks that firmware and boot related file hashes match those provided by OEMs.
+  * Validates the import of All RIM files imported to the ACA (insure all RIM files were signed by trusted sources)
+  * Verifies that the firmware hashes captured by the TPMs Platform Configuration Registers (PCRs) match the firmware hashes obtained from the OEM(s).
+  * Verifies TCG/UEFI boot variables (e.g. BIOS setup data) have not been altered (e.g secure boot).
 ## Requirements
 
 The HIRS Attestation Certificate Authority (ACA) supports installation on CentOS 6 and 7 instances.
@@ -85,3 +93,7 @@ To see the results and interact with the ACA, go to the ACA Portal at `https://A
 * [HIRS Attestation Certificate Authority FAQ](https://github.com/nsacyber/HIRS/wiki/FAQ)
 * [TPM Provisioner Debug](https://github.com/nsacyber/HIRS/wiki/provisioner_debug)
 * [ACA Debug](https://github.com/nsacyber/HIRS/wiki/aca_debug)
+* Tools
+  * [Platform Certificate Creator](https://github.com/nsacyber/paccor) 
+  * [Reference Integrity Manifest tool (tcg_rim_tool)](https://github.com/nsacyber/HIRS/releases)
+  * [Event Log tool (tcg_eventlog_tool)](https://github.com/nsacyber/HIRS/releases)

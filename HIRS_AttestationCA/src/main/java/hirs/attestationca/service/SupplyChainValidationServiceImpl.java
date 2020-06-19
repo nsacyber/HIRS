@@ -263,12 +263,6 @@ public class SupplyChainValidationServiceImpl implements SupplyChainValidationSe
         return summary;
     }
 
-            /**
-             * TDM: I need to compare the manufacturer id, name and model load
-             * that RIM file and associated eventlog, pull that flag for sha 1
-             * or 256 and then compare pcrs
-             */
-
     /**
      * This method is a sub set of the validate supply chain method and focuses
      * on the specific multibase validation check for a delta chain. This method
@@ -324,6 +318,7 @@ public class SupplyChainValidationServiceImpl implements SupplyChainValidationSe
         }
         return subPlatformScv;
     }
+    private static final int IMA_TEN = 9;
 
     private SupplyChainValidation validateFirmware(final PlatformCredential pc,
             final IssuedAttestationCertificate attCert) {
@@ -360,22 +355,27 @@ public class SupplyChainValidationServiceImpl implements SupplyChainValidationSe
                             .toArray(new String[swid.getPcrValues().size()]);
                 }
 
+                int imaValue = IMA_TEN;
                 String pcrNum;
                 String pcrValue;
                 if (baseline[0].length() == TPMMeasurementRecord.SHA_BYTE_LENGTH) {
                     for (int i = 0; i <= TPMMeasurementRecord.MAX_PCR_ID; i++) {
                         pcrNum = pcrs1[i + 1].split(":")[0].trim();
                         pcrValue = pcrs1[i + 1].split(":")[1].trim();
-                        if (!baseline[i].equals(pcrValue)) {
-                            sb.append(String.format(failureMsg, pcrNum));
+                        if (i != imaValue) {
+                            if (!baseline[i].equals(pcrValue)) {
+                                sb.append(String.format(failureMsg, pcrNum));
+                            }
                         }
                     }
                 } else if (baseline[0].length() == TPMMeasurementRecord.SHA_256_BYTE_LENGTH) {
                     for (int i = 0; i <= TPMMeasurementRecord.MAX_PCR_ID; i++) {
                         pcrNum = pcrs256[i + 1].split(":")[0].trim();
                         pcrValue = pcrs256[i + 1].split(":")[1].trim();
-                        if (!baseline[i].equals(pcrValue)) {
-                            sb.append(String.format(failureMsg, pcrNum));
+                        if (i != imaValue) {
+                            if (!baseline[i].equals(pcrValue)) {
+                                sb.append(String.format(failureMsg, pcrNum));
+                            }
                         }
                     }
                 }

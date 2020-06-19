@@ -42,6 +42,7 @@ import javax.xml.crypto.dsig.spec.TransformParameterSpec;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 
+import hirs.swid.utils.HashSwid;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
@@ -59,6 +60,8 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 
 import java.security.*;
+import java.security.cert.Certificate;
+import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 
 import java.util.ArrayList;
@@ -72,6 +75,7 @@ import java.math.BigInteger;
 import hirs.swid.xjc.Directory;
 import hirs.swid.xjc.Entity;
 import hirs.swid.xjc.Link;
+import hirs.swid.xjc.Meta;
 import hirs.swid.xjc.ObjectFactory;
 import hirs.swid.xjc.ResourceCollection;
 import hirs.swid.xjc.SoftwareIdentity;
@@ -100,6 +104,7 @@ public class SwidTagGateway {
     private boolean defaultCredentials;
     private String pemPrivateKeyFile;
     private String pemCertificateFile;
+    private String rimEventLog;
 
     /**
      * Default constructor initializes jaxbcontext, marshaller, and unmarshaller
@@ -142,11 +147,20 @@ public class SwidTagGateway {
         this.pemPrivateKeyFile = pemPrivateKeyFile;
     }
 
-    /** Setter for certificate file in PEM format
+    /**
+     * Setter for certificate file in PEM format
      * @param pemCertificateFile
      */
     public void setPemCertificateFile(String pemCertificateFile) {
         this.pemCertificateFile = pemCertificateFile;
+    }
+
+    /**
+     * Setter for event log support RIM
+     * @param rimEventLog
+     */
+    public void setRimEventLog(String rimEventLog) {
+        this.rimEventLog = rimEventLog;
     }
 
     /**
@@ -174,10 +188,7 @@ public class SwidTagGateway {
                     createSoftwareMeta(configProperties.get(SwidTagConstants.META).asObject()));
             swidTag.getEntityOrEvidenceOrLink().add(meta);
             //File
-            hirs.swid.xjc.File file = createFile(
-                    configProperties.get(SwidTagConstants.PAYLOAD).asObject()
-                                    .get(SwidTagConstants.DIRECTORY).asObject()
-                                    .get(SwidTagConstants.FILE).asObject());
+            hirs.swid.xjc.File file = createFile();
             //Directory
             Directory directory = createDirectory(
                     configProperties.get(SwidTagConstants.PAYLOAD).asObject()
@@ -219,6 +230,8 @@ public class SwidTagGateway {
         si.append("SoftwareIdentity name: " + softwareIdentity.getAttribute("name") + "\n");
         si.append("SoftwareIdentity tagId: " + softwareIdentity.getAttribute("tagId") + "\n");
         System.out.println(si.toString());
+        Element file = (Element) document.getElementsByTagName("File").item(0);
+        validateFile(file);
         System.out.println("Signature core validity: " + validateSignedXMLDocument(document));
         return true;
     }
@@ -405,13 +418,42 @@ public class SwidTagGateway {
         return directory;
     }
 
-   /**
-     * This method creates a hirs.swid.xjc.File from three arguments, then calculates
-     * and stores its hash as an attribute in itself.
+    /**
+     * This method creates a hirs.swid.xjc.File from an indirect payload type by
+     * calculating the hash of a given event log support RIM.
+     */
+    private hirs.swid.xjc.File createFile() {
+        hirs.swid.xjc.File file = objectFactory.createFile();
+        file.setName(rimEventLog);
+        File rimEventLogFile = new File(rimEventLog);
+        file.setSize(new BigInteger(Long.toString(rimEventLogFile.length())));
+        Map<QName, String> attributes = file.getOtherAttributes();
+        addNonNullAttribute(attributes, _SHA256_HASH, HashSwid.get256Hash(rimEventLog));
+
+        return file;
+    }
+
+    /**
+     * This method validates a hirs.swid.xjc.File from an indirect payload
+     */
+    private boolean validateFile(Element file) {
+        String filepath = file.getAttribute(SwidTagConstants.NAME);
+        System.out.println("Support rim found at " + filepath);
+        if (HashSwid.get256Hash(filepath).equals(file.getAttribute(_SHA256_HASH.getPrefix() + ":" + _SHA256_HASH.getLocalPart()))) {
+            System.out.println("Support RIM hash verified!");
+            return true;
+        } else {
+            System.out.println("Support RIM hash does not match Base RIM!");
+            return false;
+        }
+    }
+
+    /**
+     * This method creates a hirs.swid.xjc.File from a direct payload type.
      *
      * @param jsonObject
      * @return hirs.swid.xjc.File object from File object
-     */
+     *
     private hirs.swid.xjc.File createFile(JsonObject jsonObject) {
         hirs.swid.xjc.File file = objectFactory.createFile();
         file.setName(jsonObject.getString(SwidTagConstants.NAME, ""));
@@ -423,7 +465,7 @@ public class SwidTagGateway {
         addNonNullAttribute(attributes, SwidTagConstants._SUPPORT_RIM_URI_GLOBAL, jsonObject.getString(SwidTagConstants.SUPPORT_RIM_URI_GLOBAL, ""));
 
         return file;
-    }
+    }*/
 
     private void addNonNullAttribute(Map<QName, String> attributes, QName key, String value) {
         if (!value.isEmpty()) {
@@ -492,6 +534,8 @@ public class SwidTagGateway {
             System.out.println(e.getMessage());
         } catch (KeyException e) {
             System.out.println("Error setting public key in KeyValue: " + e.getMessage());
+        } catch (CertificateException e) {
+            System.out.println(e.getMessage());
         } catch (JAXBException e) {
             System.out.println("Error marshaling signed swidtag: " + e.getMessage());
         } catch (MarshalException | XMLSignatureException e) {
@@ -622,7 +666,8 @@ public class SwidTagGateway {
      */
     private Document removeXMLWhitespace(String path) throws IOException {
         TransformerFactory tf = TransformerFactory.newInstance();
-        Source source = new StreamSource(new File("identity_transform.xslt"));
+        Source source = new StreamSource(
+                SwidTagGateway.class.getClassLoader().getResourceAsStream("identity_transform.xslt"));
         Document document = null;
         File input = new File(path);
         if (input.length() > 0) {
