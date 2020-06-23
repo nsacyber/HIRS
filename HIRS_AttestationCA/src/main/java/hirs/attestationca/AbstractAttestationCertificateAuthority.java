@@ -1467,8 +1467,8 @@ public abstract class AbstractAttestationCertificateAuthority
             // save issued certificate
             IssuedAttestationCertificate attCert = new IssuedAttestationCertificate(
                     derEncodedAttestationCertificate, endorsementCredential, platformCredentials);
-            attCert.setPcrValues(pcrValues);
             attCert.setDevice(device);
+            attCert.setPcrValues(pcrValues);
             certificateManager.save(attCert);
         } catch (Exception e) {
             LOG.error("Error saving generated Attestation Certificate to database.", e);

@@ -9,6 +9,7 @@ import java.security.cert.CertificateException;
 import hirs.data.persist.TPMMeasurementRecord;
 import hirs.data.persist.SwidResource;
 import hirs.data.persist.PCRPolicy;
+import hirs.data.persist.ArchivableEntity;
 import hirs.validation.SupplyChainCredentialValidator;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -215,10 +216,13 @@ public class SupplyChainValidationServiceImpl implements SupplyChainValidationSe
                                 // if both trust store and attributes validated or failed
                                 // combine messages
                                 validations.remove(platformScv);
+                                List<ArchivableEntity> aes = new ArrayList<>();
+                                for (Certificate cert : platformScv.getCertificatesUsed()) {
+                                    aes.add(cert);
+                                }
                                 validations.add(new SupplyChainValidation(
                                         platformScv.getValidationType(),
-                                        platformScv.getResult(),
-                                        platformScv.getCertificatesUsed(),
+                                        platformScv.getResult(), aes,
                                         String.format("%s%n%s", platformScv.getMessage(),
                                                 attributeScv.getMessage())));
                             }
@@ -235,14 +239,7 @@ public class SupplyChainValidationServiceImpl implements SupplyChainValidationSe
         if (policy.isFirmwareValidationEnabled()) {
             // may need to associated with device to pull the correct info
             // compare tpm quote with what is pulled from RIM associated file
-            IssuedAttestationCertificate attCert = IssuedAttestationCertificate
-                    .select(this.certificateManager)
-                    .byDeviceId(device.getId()).getCertificate();
-            PlatformCredential pc = PlatformCredential
-                    .select(this.certificateManager)
-                    .byDeviceId(device.getId()).getCertificate();
-
-            validations.add(validateFirmware(pc, attCert, policy.getPcrPolicy()));
+            validations.add(validateFirmware(device, policy.getPcrPolicy()));
         }
 
         // Generate validation summary, save it, and return it.
@@ -255,7 +252,7 @@ public class SupplyChainValidationServiceImpl implements SupplyChainValidationSe
         try {
             supplyChainValidatorSummaryManager.save(summary);
         } catch (DBManagerException ex) {
-            LOGGER.error("Failed to save Supply chain summary", ex);
+            LOGGER.error("Failed to save Supply Chain summary", ex);
         }
         return summary;
     }
@@ -316,33 +313,35 @@ public class SupplyChainValidationServiceImpl implements SupplyChainValidationSe
         return subPlatformScv;
     }
 
-    private SupplyChainValidation validateFirmware(final PlatformCredential pc,
-            final IssuedAttestationCertificate attCert, final PCRPolicy pcrPolicy) {
+    private SupplyChainValidation validateFirmware(final Device device,
+            final PCRPolicy pcrPolicy) {
 
-        ReferenceManifest rim;
         String[] baseline = new String[Integer.SIZE];
         Level level = Level.ERROR;
         AppraisalStatus fwStatus = null;
+        String manufacturer = device.getDeviceInfo()
+                        .getHardwareInfo().getManufacturer();
 
-        if (pc != null) {
-            rim = ReferenceManifest.select(
-                    this.referenceManifestManager)
-                    .byManufacturer(pc.getManufacturer())
-                    .getRIM();
+        IssuedAttestationCertificate attCert = IssuedAttestationCertificate
+                .select(this.certificateManager)
+                .byDeviceId(device.getId()).getCertificate();
+        ReferenceManifest rim = ReferenceManifest.select(
+                this.referenceManifestManager)
+                .byManufacturer(manufacturer)
+                .getRIM();
 
-            if (rim == null) {
-                fwStatus = new AppraisalStatus(FAIL,
-                        String.format("Firmware validation failed: "
-                                + "No associated RIM file could be found for %s",
-                                pc.getManufacturer()));
-            } else {
-                List<SwidResource> swids = rim.parseResource();
-                for (SwidResource swid : swids) {
-                    baseline = swid.getPcrValues()
-                            .toArray(new String[swid.getPcrValues().size()]);
-                }
-                pcrPolicy.setBaselinePcrs(baseline);
+        if (rim == null) {
+            fwStatus = new AppraisalStatus(FAIL,
+                    String.format("Firmware validation failed: "
+                            + "No associated RIM file could be found for %s",
+                            manufacturer));
+        } else {
+            List<SwidResource> swids = rim.parseResource();
+            for (SwidResource swid : swids) {
+                baseline = swid.getPcrValues()
+                        .toArray(new String[swid.getPcrValues().size()]);
             }
+            pcrPolicy.setBaselinePcrs(baseline);
         }
 
         if (attCert != null && fwStatus == null) {
@@ -352,7 +351,6 @@ public class SupplyChainValidationServiceImpl implements SupplyChainValidationSe
             String[] quote = new String[TPMMeasurementRecord.MAX_PCR_ID + 1];
             int offset = 0;
 
-            StringBuilder sb;
             fwStatus = new AppraisalStatus(PASS,
                     SupplyChainCredentialValidator.FIRMWARE_VALID);
 
@@ -375,7 +373,7 @@ public class SupplyChainValidationServiceImpl implements SupplyChainValidationSe
                     quote[i] = pcrs256[i + offset].split(":")[1].trim();
                 }
             }
-            sb = pcrPolicy.validatePcrs(quote);
+            StringBuilder sb = pcrPolicy.validatePcrs(quote);
             if (sb.length() > 0) {
                 level = Level.ERROR;
                 fwStatus = new AppraisalStatus(FAIL, sb.toString());
@@ -388,7 +386,7 @@ public class SupplyChainValidationServiceImpl implements SupplyChainValidationSe
         }
 
         return buildValidationRecord(SupplyChainValidation.ValidationType.FIRMWARE,
-                fwStatus.getAppStatus(), fwStatus.getMessage(), pc, level);
+                fwStatus.getAppStatus(), fwStatus.getMessage(), rim, level);
     }
 
     private SupplyChainValidation validateEndorsementCredential(final EndorsementCredential ec,
@@ -516,22 +514,22 @@ public class SupplyChainValidationServiceImpl implements SupplyChainValidationSe
      * @param validationType the type of validation
      * @param result the appraisal status
      * @param message the validation message to include in the summary and log
-     * @param certificate the certificate associated with the validation
+     * @param archivableEntity the archivableEntity associated with the validation
      * @param logLevel the log level
      * @return a SupplyChainValidation
      */
     private SupplyChainValidation buildValidationRecord(
             final SupplyChainValidation.ValidationType validationType,
             final AppraisalStatus.Status result, final String message,
-            final Certificate certificate, final Level logLevel) {
+            final ArchivableEntity archivableEntity, final Level logLevel) {
 
-        List<Certificate> certificateList = new ArrayList<>();
-        if (certificate != null) {
-            certificateList.add(certificate);
+        List<ArchivableEntity> aeList = new ArrayList<>();
+        if (archivableEntity != null) {
+            aeList.add(archivableEntity);
         }
 
         LOGGER.log(logLevel, message);
-        return new SupplyChainValidation(validationType, result, certificateList, message);
+        return new SupplyChainValidation(validationType, result, aeList, message);
     }
 
     /**

@@ -43,83 +43,83 @@
             </table>
         </div>
         <script>
-            $(document).ready(function() {
+            $(document).ready(function () {
                 var url = portal + '/validation-reports/list';
                 var columns = [
-                        {
-                            data: 'overallValidationResult',
-                            searchable:false,
-                            render: function (data, type, full, meta) {
-                                var html = '';
-                                var unknownStatus = '<img class="icon" src="${unknownIcon}" title="${unknownText}"/>';
+                    {
+                        data: 'overallValidationResult',
+                        searchable: false,
+                        render: function (data, type, full, meta) {
+                            var html = '';
+                            var unknownStatus = '<img class="icon" src="${unknownIcon}" title="${unknownText}"/>';
 
-                                // create status icon
-                                var result = full.overallValidationResult;
-                                var ovallMessage = full.message;
-                                if (result) {
-                                    switch (result) {
-                                        case "PASS":
-                                            html += '<img src="${passIcon}" title="${passText}"/>';
-                                            break;
-                                        case "FAIL":
-                                            html += '<img src="${failIcon}" title="' + ovallMessage + '"/>';
-                                            break;
-                                        case "ERROR":
-                                            html += '<img src="${errorIcon}" title="' + ovallMessage + '"/>';
-                                            break;
-                                        default:
-                                            html += unknownStatus;
-                                            break;
-                                    }
-                                } else {
-                                    html += unknownStatus;
+                            // create status icon
+                            var result = full.overallValidationResult;
+                            var ovallMessage = full.message;
+                            if (result) {
+                                switch (result) {
+                                    case "PASS":
+                                        html += '<img src="${passIcon}" title="${passText}"/>';
+                                        break;
+                                    case "FAIL":
+                                        html += '<img src="${failIcon}" title="' + ovallMessage + '"/>';
+                                        break;
+                                    case "ERROR":
+                                        html += '<img src="${errorIcon}" title="' + ovallMessage + '"/>';
+                                        break;
+                                    default:
+                                        html += unknownStatus;
+                                        break;
                                 }
+                            } else {
+                                html += unknownStatus;
+                            }
 
-                                return html;
-                            }
-                        },
-                        {
-                            // Note: DB column is create_time, while the
-                            // JSON property / java property is createTime. Need to sort
-                            // on the field createTime, but the column's
-                            // date source is create_time.
-                            data: 'create_time',
-                            name: 'createTime',
-                            searchable:false,
-                            render: function (data, type, full, meta) {
-                                return formatDateTime(full.createTime);
-                            }
-                        },
-                        {
-                            // TODO render a link to a device details page,
-                            // passing the device.id
-                            data: 'device.name'
-                        },
-                        {
-                            data: 'id',
-                            searchable: false,
-                            orderable: false,
-                            render: function (data, type, full, meta) {
-                                return getValidationDisplayHtml(full, "ENDORSEMENT_CREDENTIAL")
-                            }
-                        },
-                        {
-                            data: 'id',
-                            searchable: false,
-                            orderable: false,
-                            render: function (data, type, full, meta) {
-                                return getValidationDisplayHtml(full, "PLATFORM_CREDENTIAL")
-                            }
-                        },
-                        {
-                            data: 'id',
-                            searchable: false,
-                            orderable: false,
-                            render: function (data, type, full, meta) {
-                                return getValidationDisplayHtml(full, "FIRMWARE")
-                            }
+                            return html;
                         }
-                    ];
+                    },
+                    {
+                        // Note: DB column is create_time, while the
+                        // JSON property / java property is createTime. Need to sort
+                        // on the field createTime, but the column's
+                        // date source is create_time.
+                        data: 'create_time',
+                        name: 'createTime',
+                        searchable: false,
+                        render: function (data, type, full, meta) {
+                            return formatDateTime(full.createTime);
+                        }
+                    },
+                    {
+                        // TODO render a link to a device details page,
+                        // passing the device.id
+                        data: 'device.name'
+                    },
+                    {
+                        data: 'id',
+                        searchable: false,
+                        orderable: false,
+                        render: function (data, type, full, meta) {
+                            return getValidationDisplayHtml(full, "ENDORSEMENT_CREDENTIAL")
+                        }
+                    },
+                    {
+                        data: 'id',
+                        searchable: false,
+                        orderable: false,
+                        render: function (data, type, full, meta) {
+                            return getValidationDisplayHtml(full, "PLATFORM_CREDENTIAL")
+                        }
+                    },
+                    {
+                        data: 'id',
+                        searchable: false,
+                        orderable: false,
+                        render: function (data, type, full, meta) {
+                            return getValidationDisplayHtml(full, "FIRMWARE")
+                        }
+                    }
+                ];
 
                 //Set data tables
                 var dataTable = setDataTables("#reportTable", url, columns);
@@ -127,69 +127,82 @@
             });
 
             /**
-            * Gets HTML to display (icon tag) for the specified validation type.
-            * If a validation for the requested type is not found, an empty
-            * string is returned (and no icon will be displayed).
-            */
+             * Gets HTML to display (icon tag) for the specified validation type.
+             * If a validation for the requested type is not found, an empty
+             * string is returned (and no icon will be displayed).
+             */
             function getValidationDisplayHtml(full, validation_type) {
-               var html = '';
-               // loop through all the validations, looking for the one matching
-               // the validation_type.
-               for (var i = 0; i < full.validations.length; i++) {
-                   var curValidation = full.validations[i];
-                   var curResult = curValidation.result;
-                   var curMessage = curValidation.message;
+                var html = '';
+                // loop through all the validations, looking for the one matching
+                // the validation_type.
+                for (var i = 0; i < full.validations.length; i++) {
+                    var curValidation = full.validations[i];
+                    var curResult = curValidation.result;
+                    var curMessage = curValidation.message;
 
-                   if (curValidation.validationType === validation_type) {
-                       var unknownStatus = '<img class="icon" src="${unknownIcon}" title="${unknownText}"/>';
+                    if (curValidation.validationType === validation_type) {
+                        var unknownStatus = '<img class="icon" src="${unknownIcon}" title="${unknownText}"/>';
 
-                       // display appropriate icon based on result
-                       if (curResult) {
+                        // display appropriate icon based on result
+                        if (curResult) {
 
-                           // if this validation is associated with a certificate,
-                           // link to the details page
-                           if (curValidation.certificatesUsed.length > 0) {
-                               var certType = '';
-                               switch (validation_type) {
-                                   case "PLATFORM_CREDENTIAL":
-                                   case "PLATFORM_CREDENTIAL_ATTRIBUTES":
-                                       certType = "platform";
-                                       break;
-                                   case "ENDORSEMENT_CREDENTIAL":
-                                       certType = "endorsement";
-                                       break;
-                               }
+                            // if this validation is associated with a certificate,
+                            // link to the details page
+                            if (curValidation.certificatesUsed.length > 0) {
+                                var certType = '';
+                                switch (validation_type) {
+                                    case "PLATFORM_CREDENTIAL":
+                                    case "PLATFORM_CREDENTIAL_ATTRIBUTES":
+                                        certType = "platform";
+                                        break;
+                                    case "ENDORSEMENT_CREDENTIAL":
+                                        certType = "endorsement";
+                                        break;
+                                }
 
-                               html += '<a href="${portal}/certificate-details?id='
-                                   + curValidation.certificatesUsed[0].id
-                                   + '&type=' + certType + '">';
-                           }
+                                switch (validation_type) {
+                                    case "PLATFORM_CREDENTIAL":
+                                    case "PLATFORM_CREDENTIAL_ATTRIBUTES":
+                                    case "ENDORSEMENT_CREDENTIAL":
+                                        html += '<a href="${portal}/certificate-details?id='
+                                                + curValidation.certificatesUsed[0].id
+                                                + '&type=' + certType + '">';
+                                        break;
+                                }
+                            }
 
-                           switch (curResult) {
-                               case "PASS":
-                                   html += '<img src="${passIcon}" title="' + curMessage + '"/>';
-                                   break;
-                               case "FAIL":
-                                   html += '<img src="${failIcon}" title="' + curMessage + '"/>';
-                                   break;
-                               case "ERROR":
-                                   html += '<img src="${errorIcon}" title="' + curMessage + '"/>';
-                                   break;
-                               default:
-                                   html += unknownStatus;
-                                   break;
-                           }
+                            switch (validation_type) {
+                                case "FIRMWARE":
+                                    html += '<a href="${portal}/rim-details?id='
+                                            + curValidation.rimId + '">';
+                                    break;
+                            }
 
-                           // add closing tag for href tag if needed.
-                           if (curValidation.certificatesUsed.length > 0) {
-                               html += '</a>';
-                           }
-                       } else {
-                           html += unknownStatus;
-                       }
-                   }
-               }
-               return html;
+                            switch (curResult) {
+                                case "PASS":
+                                    html += '<img src="${passIcon}" title="' + curMessage + '"/>';
+                                    break;
+                                case "FAIL":
+                                    html += '<img src="${failIcon}" title="' + curMessage + '"/>';
+                                    break;
+                                case "ERROR":
+                                    html += '<img src="${errorIcon}" title="' + curMessage + '"/>';
+                                    break;
+                                default:
+                                    html += unknownStatus;
+                                    break;
+                            }
+
+                            // add closing tag for href tag if needed.
+                            if (curValidation.certificatesUsed.length > 0 || curValidation.rimId !== "") {
+                                html += '</a>';
+                            }
+                        } else {
+                            html += unknownStatus;
+                        }
+                    }
+                }
+                return html;
             }
         </script>
     </jsp:body>
