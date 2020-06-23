@@ -36,35 +36,36 @@ public class PolicyPageController extends PageController<NoPageParams> {
     private static final Logger LOGGER = getLogger(PolicyPageController.class);
 
     /**
-     * Represents a web request indicating to enable a setting (based on radio buttons from a
-     * web form).
+     * Represents a web request indicating to enable a setting (based on radio
+     * buttons from a web form).
      */
     private static final String ENABLED_PARAMETER_VALUE = "checked";
-
 
     private PolicyManager policyManager;
 
     private AppraiserManager appraiserManager;
 
     /**
-     * Model attribute name used by initPage for the initial data passed to the page.
+     * Model attribute name used by initPage for the initial data passed to the
+     * page.
      */
     public static final String INITIAL_DATA = "initialData";
 
     /**
-     * Flash attribute name used by initPage and post for the data forwarded during the redirect
-     * from the POST operation back to the page.
+     * Flash attribute name used by initPage and post for the data forwarded
+     * during the redirect from the POST operation back to the page.
      */
     public static final String RESULT_DATA = "resultData";
 
     /**
      * Constructor.
+     *
      * @param policyManager the policy manager
      * @param appraiserManager the appraiser manager
      */
     @Autowired
     public PolicyPageController(final PolicyManager policyManager,
-                                final AppraiserManager appraiserManager) {
+            final AppraiserManager appraiserManager) {
         super(POLICY);
 
         this.policyManager = policyManager;
@@ -75,7 +76,8 @@ public class PolicyPageController extends PageController<NoPageParams> {
      * Returns the path for the view and the data model for the page.
      *
      * @param params The object to map url parameters into.
-     * @param model The data model for the request. Can contain data from redirect.
+     * @param model The data model for the request. Can contain data from
+     * redirect.
      * @return the path for the view and data model for the page.
      */
     @Override
@@ -96,11 +98,12 @@ public class PolicyPageController extends PageController<NoPageParams> {
     }
 
     /**
-     * Updates the Platform Cert Validation policy setting and redirects back
-     * to the original page.
+     * Updates the Platform Cert Validation policy setting and redirects back to
+     * the original page.
      *
      * @param ppModel The data posted by the form mapped into an object.
-     * @param attr RedirectAttributes used to forward data back to the original page.
+     * @param attr RedirectAttributes used to forward data back to the original
+     * page.
      * @return View containing the url and parameters
      * @throws URISyntaxException if malformed URI
      */
@@ -108,12 +111,11 @@ public class PolicyPageController extends PageController<NoPageParams> {
     public RedirectView updatePcVal(@ModelAttribute final PolicyPageModel ppModel,
             final RedirectAttributes attr) throws URISyntaxException {
 
-
         Map<String, Object> model = new HashMap<>();
         PageMessages messages = new PageMessages();
         String successMessage;
-        boolean pcValidationOptionEnabled =
-                ppModel.getPcValidate().equalsIgnoreCase(ENABLED_PARAMETER_VALUE);
+        boolean pcValidationOptionEnabled
+                = ppModel.getPcValidate().equalsIgnoreCase(ENABLED_PARAMETER_VALUE);
 
         try {
             SupplyChainPolicy policy = getDefaultPolicyAndSetInModel(ppModel, model);
@@ -122,8 +124,8 @@ public class PolicyPageController extends PageController<NoPageParams> {
             if (!isPolicyValid(policy.isEcValidationEnabled(), pcValidationOptionEnabled,
                     policy.isPcAttributeValidationEnabled())) {
                 handleUserError(model, messages,
-                    "Unable to change Platform Validation setting,"
-                            + "  invalid policy configuration.");
+                        "Unable to change Platform Validation setting,"
+                        + "  invalid policy configuration.");
                 return redirectToSelf(new NoPageParams(), model, attr);
             }
             // set the policy option and create display message
@@ -132,10 +134,10 @@ public class PolicyPageController extends PageController<NoPageParams> {
                 successMessage = "Platform certificate validation enabled";
             } else {
                 policy.setPcValidationEnabled(false);
+                policy.setPcAttributeValidationEnabled(false);
                 successMessage = "Platform certificate validation disabled";
             }
             savePolicyAndApplySuccessMessage(ppModel, model, messages, successMessage, policy);
-
 
         } catch (PolicyManagerException e) {
             // Log and return any error messages to the user
@@ -147,19 +149,19 @@ public class PolicyPageController extends PageController<NoPageParams> {
     }
 
     /**
-     * Updates the Platform Cert Attribute Validation policy setting and redirects back
-     * to the original page.
+     * Updates the Platform Cert Attribute Validation policy setting and
+     * redirects back to the original page.
      *
      * @param ppModel The data posted by the form mapped into an object.
-     * @param attr RedirectAttributes used to forward data back to the original page.
+     * @param attr RedirectAttributes used to forward data back to the original
+     * page.
      * @return View containing the url and parameters
      * @throws URISyntaxException if malformed URI
      */
     @RequestMapping(value = "update-pc-attribute-validation", method = RequestMethod.POST)
     public RedirectView updatePcAttributeVal(@ModelAttribute final PolicyPageModel ppModel,
-                                             final RedirectAttributes attr)
-    throws URISyntaxException {
-
+            final RedirectAttributes attr)
+            throws URISyntaxException {
 
         Map<String, Object> model = new HashMap<>();
         PageMessages messages = new PageMessages();
@@ -170,14 +172,13 @@ public class PolicyPageController extends PageController<NoPageParams> {
         try {
             SupplyChainPolicy policy = getDefaultPolicyAndSetInModel(ppModel, model);
 
-
             // If PC Attribute Validation is enabled without PC Validation, disallow change
             if (!isPolicyValid(policy.isEcValidationEnabled(),
                     policy.isPcValidationEnabled(), pcAttributeValidationOptionEnabled)) {
 
                 handleUserError(model, messages,
-                    "To enable Platform Attribute Validation, Platform Credential Validation"
-                            + " must also be enabled.");
+                        "To enable Platform Attribute Validation, Platform Credential Validation"
+                        + " must also be enabled.");
                 return redirectToSelf(new NoPageParams(), model, attr);
             }
             // set the policy option and create display message
@@ -190,7 +191,6 @@ public class PolicyPageController extends PageController<NoPageParams> {
             }
             savePolicyAndApplySuccessMessage(ppModel, model, messages, successMessage, policy);
 
-
         } catch (PolicyManagerException e) {
             // Log and return any error messages to the user
             handlePolicyManagerUpdateError(model, messages, e,
@@ -201,11 +201,12 @@ public class PolicyPageController extends PageController<NoPageParams> {
     }
 
     /**
-     * Updates the Endorsement Credential Validation policy setting and redirects back
-     * to the original page.
+     * Updates the Endorsement Credential Validation policy setting and
+     * redirects back to the original page.
      *
      * @param ppModel The data posted by the form mapped into an object.
-     * @param attr RedirectAttributes used to forward data back to the original page.
+     * @param attr RedirectAttributes used to forward data back to the original
+     * page.
      * @return View containing the url and parameters
      * @throws URISyntaxException if malformed URI
      */
@@ -217,8 +218,8 @@ public class PolicyPageController extends PageController<NoPageParams> {
         Map<String, Object> model = new HashMap<>();
         PageMessages messages = new PageMessages();
         String successMessage;
-        boolean ecValidationOptionEnabled =
-                ppModel.getEcValidate().equalsIgnoreCase(ENABLED_PARAMETER_VALUE);
+        boolean ecValidationOptionEnabled
+                = ppModel.getEcValidate().equalsIgnoreCase(ENABLED_PARAMETER_VALUE);
 
         try {
             SupplyChainPolicy policy = getDefaultPolicyAndSetInModel(ppModel, model);
@@ -227,8 +228,8 @@ public class PolicyPageController extends PageController<NoPageParams> {
             if (!isPolicyValid(ecValidationOptionEnabled, policy.isPcValidationEnabled(),
                     policy.isPcAttributeValidationEnabled())) {
                 handleUserError(model, messages,
-                    "To disable Endorsement Credential Validation, Platform Validation"
-                            + " must also be disabled.");
+                        "To disable Endorsement Credential Validation, Platform Validation"
+                        + " must also be disabled.");
                 return redirectToSelf(new NoPageParams(), model, attr);
             }
             // set the policy option and create success message
@@ -254,11 +255,12 @@ public class PolicyPageController extends PageController<NoPageParams> {
     }
 
     /**
-     * Updates the Endorsement Credential Validation policy setting and redirects back
-     * to the original page.
+     * Updates the Firmware Validation policy setting and
+     * redirects back to the original page.
      *
      * @param ppModel The data posted by the form mapped into an object.
-     * @param attr RedirectAttributes used to forward data back to the original page.
+     * @param attr RedirectAttributes used to forward data back to the original
+     * page.
      * @return View containing the url and parameters
      * @throws URISyntaxException if malformed URI
      */
@@ -279,8 +281,8 @@ public class PolicyPageController extends PageController<NoPageParams> {
             //If firmware is enabled without PC attributes, disallow change
             if (firmwareValidationOptionEnabled && !policy.isPcAttributeValidationEnabled()) {
                 handleUserError(model, messages,
-                    "Firmware validation can not be "
-                            + "enabled without PC Attributes policy enabled.");
+                        "Firmware validation can not be "
+                        + "enabled without PC Attributes policy enabled.");
                 return redirectToSelf(new NoPageParams(), model, attr);
             }
 
@@ -290,13 +292,15 @@ public class PolicyPageController extends PageController<NoPageParams> {
                 successMessage = "Firmware validation enabled";
             } else {
                 policy.setFirmwareValidationEnabled(false);
+                policy.getPcrPolicy().setEnableIgnoreIma(false);
+                policy.getPcrPolicy().setEnableIgnoretBoot(false);
                 successMessage = "Firmware validation disabled";
             }
 
             savePolicyAndApplySuccessMessage(ppModel, model, messages, successMessage, policy);
         } catch (PolicyManagerException e) {
             handlePolicyManagerUpdateError(model, messages, e,
-                    "Error changing ACA endorsement validation policy",
+                    "Error changing ACA firmware validation policy",
                     "Error updating policy. \n" + e.getMessage());
 
         }
@@ -305,26 +309,128 @@ public class PolicyPageController extends PageController<NoPageParams> {
         return redirectToSelf(new NoPageParams(), model, attr);
     }
 
+    /**
+     * Updates the ignore IMA policy setting and
+     * redirects back to the original page.
+     *
+     * @param ppModel The data posted by the form mapped into an object.
+     * @param attr RedirectAttributes used to forward data back to the original
+     * page.
+     * @return View containing the url and parameters
+     * @throws URISyntaxException if malformed URI
+     */
+    @RequestMapping(value = "update-ima-ignore", method = RequestMethod.POST)
+    public RedirectView updateIgnoreIma(@ModelAttribute final PolicyPageModel ppModel,
+            final RedirectAttributes attr) throws URISyntaxException {
+        // set the data received to be populated back into the form
+        Map<String, Object> model = new HashMap<>();
+        PageMessages messages = new PageMessages();
+        String successMessage;
+        boolean ignoreImaOptionEnabled = ppModel.getIgnoreIma()
+                .equalsIgnoreCase(ENABLED_PARAMETER_VALUE);
+
+        try {
+            SupplyChainPolicy policy = getDefaultPolicyAndSetInModel(ppModel, model);
+
+            //If Ignore IMA is enabled without firmware, disallow change
+            if (ignoreImaOptionEnabled && !policy.isFirmwareValidationEnabled()) {
+                handleUserError(model, messages,
+                        "Ignore IMA can not be "
+                        + "enabled without Firmware Valdiation policy enabled.");
+                return redirectToSelf(new NoPageParams(), model, attr);
+            }
+
+            // set the policy option and create success message
+            if (ignoreImaOptionEnabled) {
+                policy.getPcrPolicy().setEnableIgnoreIma(true);
+                successMessage = "Ignore IMA enabled";
+            } else {
+                policy.getPcrPolicy().setEnableIgnoreIma(false);
+                successMessage = "Ignore IMA disabled";
+            }
+
+            savePolicyAndApplySuccessMessage(ppModel, model, messages, successMessage, policy);
+        } catch (PolicyManagerException e) {
+            handlePolicyManagerUpdateError(model, messages, e,
+                    "Error changing ACA IMA ignore policy",
+                    "Error updating policy. \n" + e.getMessage());
+        }
+
+        // return the redirect
+        return redirectToSelf(new NoPageParams(), model, attr);
+    }
+
+    /**
+     * Updates the ignore TBoot policy setting and
+     * redirects back to the original page.
+     *
+     * @param ppModel The data posted by the form mapped into an object.
+     * @param attr RedirectAttributes used to forward data back to the original
+     * page.
+     * @return View containing the url and parameters
+     * @throws URISyntaxException if malformed URI
+     */
+    @RequestMapping(value = "update-tboot-ignore", method = RequestMethod.POST)
+    public RedirectView updateIgnoreTboot(@ModelAttribute final PolicyPageModel ppModel,
+            final RedirectAttributes attr) throws URISyntaxException {
+        // set the data received to be populated back into the form
+        Map<String, Object> model = new HashMap<>();
+        PageMessages messages = new PageMessages();
+        String successMessage;
+        boolean ignoreTbootOptionEnabled = ppModel.getIgnoretBoot()
+                .equalsIgnoreCase(ENABLED_PARAMETER_VALUE);
+
+        try {
+            SupplyChainPolicy policy = getDefaultPolicyAndSetInModel(ppModel, model);
+
+            //If Ignore TBoot is enabled without firmware, disallow change
+            if (ignoreTbootOptionEnabled && !policy.isFirmwareValidationEnabled()) {
+                handleUserError(model, messages,
+                        "Ignore TBoot can not be "
+                        + "enabled without Firmware Valdiation policy enabled.");
+                return redirectToSelf(new NoPageParams(), model, attr);
+            }
+
+            // set the policy option and create success message
+            if (ignoreTbootOptionEnabled) {
+                policy.getPcrPolicy().setEnableIgnoretBoot(true);
+                successMessage = "Ignore TBoot enabled";
+            } else {
+                policy.getPcrPolicy().setEnableIgnoretBoot(false);
+                successMessage = "Ignore TBoot disabled";
+            }
+
+            savePolicyAndApplySuccessMessage(ppModel, model, messages, successMessage, policy);
+        } catch (PolicyManagerException e) {
+            handlePolicyManagerUpdateError(model, messages, e,
+                    "Error changing ACA TBoot ignore policy",
+                    "Error updating policy. \n" + e.getMessage());
+        }
+
+        // return the redirect
+        return redirectToSelf(new NoPageParams(), model, attr);
+    }
+
     private void handlePolicyManagerUpdateError(final Map<String, Object> model,
-                                                final PageMessages messages,
-                                                final PolicyManagerException e,
-                                                final String message, final String error) {
+            final PageMessages messages,
+            final PolicyManagerException e,
+            final String message, final String error) {
         LOGGER.error(message, e);
         messages.addError(error);
         model.put(MESSAGES_ATTRIBUTE, messages);
     }
 
     private void handleUserError(final Map<String, Object> model,
-                                                final PageMessages messages,
-                                                final String errorMessage) {
+            final PageMessages messages,
+            final String errorMessage) {
         messages.addError(errorMessage);
         model.put(MESSAGES_ATTRIBUTE, messages);
     }
 
     /**
-     * Takes in policy setting states and determines if policy configuration is valid or not.
-     * PC Attribute Validation must have PC Validation Enabled
-     * PC Validation must have EC Validation enabled
+     * Takes in policy setting states and determines if policy configuration is
+     * valid or not. PC Attribute Validation must have PC Validation Enabled PC
+     * Validation must have EC Validation enabled
      *
      * @param isEcEnable EC Validation Policy State
      * @param isPcEnable PC Validation Policy State
@@ -353,9 +459,10 @@ public class PolicyPageController extends PageController<NoPageParams> {
                 supplyChainAppraiser);
     }
 
-
     /**
-     * Gets the default policy and applies the current values in to the page model.
+     * Gets the default policy and applies the current values in to the page
+     * model.
+     *
      * @param ppModel the page model
      * @param model the map of string messages to be displayed on the view
      * @return The default Supply Chain Policy
@@ -371,10 +478,10 @@ public class PolicyPageController extends PageController<NoPageParams> {
     }
 
     private void savePolicyAndApplySuccessMessage(final PolicyPageModel ppModel,
-                                                  final Map<String, Object> model,
-                                                  final PageMessages messages,
-                                                  final String successMessage,
-                                                  final SupplyChainPolicy policy) {
+            final Map<String, Object> model,
+            final PageMessages messages,
+            final String successMessage,
+            final SupplyChainPolicy policy) {
         // save the policy to the DB
         policyManager.updatePolicy(policy);
 
