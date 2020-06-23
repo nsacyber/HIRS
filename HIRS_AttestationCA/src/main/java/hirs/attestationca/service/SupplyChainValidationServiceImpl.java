@@ -514,22 +514,22 @@ public class SupplyChainValidationServiceImpl implements SupplyChainValidationSe
      * @param validationType the type of validation
      * @param result the appraisal status
      * @param message the validation message to include in the summary and log
-     * @param certificate the certificate associated with the validation
+     * @param archivableEntity the archivableEntity associated with the validation
      * @param logLevel the log level
      * @return a SupplyChainValidation
      */
     private SupplyChainValidation buildValidationRecord(
             final SupplyChainValidation.ValidationType validationType,
             final AppraisalStatus.Status result, final String message,
-            final Certificate certificate, final Level logLevel) {
+            final ArchivableEntity archivableEntity, final Level logLevel) {
 
-        List<Certificate> certificateList = new ArrayList<>();
-        if (certificate != null) {
-            certificateList.add(certificate);
+        List<ArchivableEntity> aeList = new ArrayList<>();
+        if (archivableEntity != null) {
+            aeList.add(archivableEntity);
         }
 
         LOGGER.log(logLevel, message);
-        return new SupplyChainValidation(validationType, result, certificateList, message);
+        return new SupplyChainValidation(validationType, result, aeList, message);
     }
 
     /**
