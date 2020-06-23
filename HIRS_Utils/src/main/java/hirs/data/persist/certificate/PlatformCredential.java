@@ -766,6 +766,7 @@ public class PlatformCredential extends DeviceAssociatedCertificate {
                             new PlatformConfigurationV2(attributeSequence));
                     break;
                 case TCG_PLATFORM_SPECIFICATION:
+                case PLATFORM_CREDENTIAL_TYPE:
                     // handled in parseFields
                     break;
                 case TCG_CREDENTIAL_SPECIFICATION:

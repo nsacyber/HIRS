@@ -55,6 +55,7 @@ SPECS/
 RPM/
 SRPM/
 PLUGIN_SOURCE/
+*.tar.gz
 
 # C++ Files #
 *.o
@@ -131,3 +132,6 @@ HIRS_AttestationCA/src/main/java/hirs/attestationca/configuration/provisionerTpm
 # these files are copied over by ProvisionerTPM2 CMake build
 HIRS_ProvisionerTPM2/config/logging.properties
 HIRS_ProvisionerTPM2/scripts/tpm_aca_provision
+
+# tcg_rim_tool files
+tools/tcg_rim_tool/generated_swidTag.swidtag
