@@ -7,11 +7,18 @@ upload any RIM file.
 To build this tool navigate to the tcg_eventlog-tool directory and use the following commmand: 
 > ./gradlew clean build
 
-# Usage
-The tcg_eventlog_tool can be invoked using java:
+# Packaging
 
-java -jar build/lib.tools/tcg_rim_tool-1.0.jar -h
+To package the tcg_rim_tool use the [package.sh](https://github.com/nsacyber/HIRS/blob/master/tools/tcg_rim_tool/package.sh) script to produce an RPM file.
+The rpm file will be located in the rpmbuild/RPMS/x86_64/ directory if the package script was sucessful.
+
+# Usage
+
+The tcg_rim_tool rpm will create a rim commandline shortcut. This can be invoked from a command line:
+> rim -h
+
+The tcg_eventlog_tool also can be invoked using java:
+
+> java -jar build/lib.tools/tcg_rim_tool-1.0.jar -h
 
 Current options for the tool can be found using the -h option.
-
-Future packages will install a command line: rim.
