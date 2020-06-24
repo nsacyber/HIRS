@@ -14,7 +14,7 @@ Version 1.1 added support for the [Platform Certificate v1.1 Specification](http
 
 Version 2.0 will add support for the [PC Client Reference Integrity Manifest (RIM) Specification](https://trustedcomputinggroup.org/wp-content/uploads/TCG_PC_Client_RIM_r0p15_15june2020.pdf) to provide firmware validation capability to the HIRS ACA. This requires that the manufacturer of a device provide a digitally signed RIM "Bundle" for each device. The HIRS ACA has a new page for uploading and viewing RIM Bundles and a policy setting for requiring Firmware validation.
 
-To support the TCG RIM concept a new tools folder has been added to the HIRS project which contains a tcg_rim_tool command line application. The tcg_rim_tool can be used to create NISTIR 8060 compatible SWID tags that adhere to the TCG PC Client RIM specification. It also supports the ability to digitally sign the Base RIM file as the HIRS ACA will require a valid signature in order to upload any RIM file. See the tgc_rim_tool READ.md for more details.
+To support the TCG RIM concept a new tools folder has been added to the HIRS project which contains a tcg_rim_tool command line application. The tcg_rim_tool can be used to create NISTIR 8060 compatible SWID tags that adhere to the TCG PC Client RIM specification. It also supports the ability to digitally sign the Base RIM file as the HIRS ACA will require a valid signature in order to upload any RIM file. See the [tgc_rim_tool READ.md](https://github.com/nsacyber/HIRS/blob/master/tools/tcg_rim_tool/README.md) for more details.
 
 ## Features
 
