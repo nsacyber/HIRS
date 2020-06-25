@@ -18,6 +18,7 @@ import java.security.cert.CertificateException;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
+import java.util.ArrayList;
 import java.util.UUID;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -157,7 +158,7 @@ public class ReferenceManifestDetailsPageController
             data.put("rimType", rim.getRimType());
             List<SwidResource> resources = rim.parseResource();
             String resourceFilename = null;
-            TCGEventLog logProcessor = new TCGEventLog();
+            TCGEventLog logProcessor;
 
             try {
                 for (SwidResource swidRes : resources) {
@@ -171,8 +172,7 @@ public class ReferenceManifestDetailsPageController
                         swidRes.setPcrValues(Arrays.asList(
                                 logProcessor.getExpectedPCRValues()));
                     } else {
-                        swidRes.setPcrValues(Arrays.asList(
-                                logProcessor.getExpectedPCRValues()));
+                        swidRes.setPcrValues(new ArrayList<>());
                     }
                 }
             } catch (NoSuchFileException nsfEx) {
