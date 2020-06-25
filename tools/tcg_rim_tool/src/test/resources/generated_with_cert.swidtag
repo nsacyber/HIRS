@@ -5,7 +5,7 @@
   <Meta xmlns:rim="https://trustedcomputinggroup.org/wp-content/uploads/TCG_RIM_Model" rim:bindingSpec="IOT RIM" rim:bindingSpecVersion="1.2" rim:platformManufacturerId="00201234" rim:platformManufacturerStr="Example.com" rim:platformModel="ProductA" rim:rimLinkHash="88f21d8e44d4271149297404df91caf207130bfa116582408abd04ede6db7f51"/>
   <Payload>
     <Directory name="iotBase">
-      <File xmlns:SHA256="http://www.w3.org/2001/04/xmlenc#sha256" SHA256:hash="4479ca722623f8c47b703996ced3cbd981b06b1ae8a897db70137e0b7c546848" name="TpmLog.bin" size="7549"/>
+      <File xmlns:SHA256="http://www.w3.org/2001/04/xmlenc#sha256" SHA256:hash="4479ca722623f8c47b703996ced3cbd981b06b1ae8a897db70137e0b7c546848" name="Example.com.iotBase.bin" size="7549"/>
     </Directory>
   </Payload>
   <Signature xmlns="http://www.w3.org/2000/09/xmldsig#">
@@ -17,14 +17,14 @@
           <Transform Algorithm="http://www.w3.org/2000/09/xmldsig#enveloped-signature"/>
         </Transforms>
         <DigestMethod Algorithm="http://www.w3.org/2001/04/xmlenc#sha256"/>
-        <DigestValue>jpPZu16C8KjtwY2JpJuyR3SBc2XclVEaVsv/DgyZKTM=</DigestValue>
+        <DigestValue>HEzVxviL8a3g7VhLtkMDabH2f9n/3mPwEg1NRJBYLA0=</DigestValue>
       </Reference>
     </SignedInfo>
-    <SignatureValue>pWPozFWH2oytfgZse1Ai769c/cBFS/vapKj27asI8XDLdK8FkNs2K/+OTf4lScBiPLTCvWPIihoe
-hielmV8dWZqvR2z09pr+yCF7q/E8sCGhQXSsVlNZjElMXk2Qz2c6C9XtRk4UNmSfTSYsKEm2AST4
-oh6da+x1CeSHipALfuZZrXwa2AMtc9yTNfqaQFBxRqEDeTypLwNQqdr9va2T8C9ZNnEzooTf5FWw
-OUqc+Ewk5V9ZyOJ/0UdUxs40mGPpsIG90ikx59eu1A4qP4BzjHR3vrNbYDA4hBeIpDHC4vzwJrR4
-xqXw1SLqAm8ngL9Haj2Ww+y0PEZfo++JlOMZuQ==</SignatureValue>
+    <SignatureValue>Qjg51EQPVS5paqBbw8e0b8lu4yqzWUEdvE2S64bvt59f6LPaG+1EDgQCimgXMdIg/+tSR4Wou6Hr
+u0ym8K6RqoipWBbF2KNVtR8vCavJblVA+6tCd+iLnFiQ/b2Zud/v/DZq89wQ/hKX0WoskSy/3tiT
+ariMcpP75dYO1b/tYkMshPo0/F0p39VoZxhGDahmYTRT0Wt4KQeIVe/4nDXEu+EbIi18yHVHYFWq
+uO/hC+BoKd/xBKmQnhtGkT4y3vETOoCr0TOHpRUClKC/nL0FhL9hPtpwhPBhakLtbi1WOwBnpxjV
+zFAR1SzeOG87S2Cl8pSDXjwfzHzzcPaJKpXj2g==</SignatureValue>
     <KeyInfo>
       <X509Data>
         <X509SubjectName>CN=example.RIM.signer,OU=PCClient,O=Example,ST=VA,C=US</X509SubjectName>
