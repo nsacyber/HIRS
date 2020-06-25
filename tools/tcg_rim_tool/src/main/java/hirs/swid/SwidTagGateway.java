@@ -437,7 +437,12 @@ public class SwidTagGateway {
      * This method validates a hirs.swid.xjc.File from an indirect payload
      */
     private boolean validateFile(Element file) {
-        String filepath = file.getAttribute(SwidTagConstants.NAME);
+        String filepath;
+        if (rimEventLog.isEmpty()) {
+            filepath = file.getAttribute(SwidTagConstants.NAME);
+        } else {
+            filepath = rimEventLog;
+        }
         System.out.println("Support rim found at " + filepath);
         if (HashSwid.get256Hash(filepath).equals(file.getAttribute(_SHA256_HASH.getPrefix() + ":" + _SHA256_HASH.getLocalPart()))) {
             System.out.println("Support RIM hash verified!");

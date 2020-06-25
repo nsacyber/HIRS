@@ -21,8 +21,12 @@ public class Main {
             if (!commander.getVerifyFile().isEmpty()) {
                 System.out.println(commander.toString());
                 String verifyFile = commander.getVerifyFile();
+                String rimel = commander.getRimEventLog();
                 //String publicCertificate = commander.getPublicCertificate();
                 if (!verifyFile.isEmpty()) {
+                    if (!rimel.isEmpty()) {
+                        gateway.setRimEventLog(rimel);
+                    }
                     try {
                         gateway.validateSwidTag(verifyFile);
                     } catch (IOException e) {
