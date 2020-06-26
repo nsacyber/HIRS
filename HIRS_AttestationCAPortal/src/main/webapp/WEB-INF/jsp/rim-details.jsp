@@ -94,7 +94,7 @@
             </div>
         </div>
         <div class="row">
-            <div class="col-md-1 col-md-offset-1"><span class="colHeader">Support RIM(s)</span></div>
+            <div class="col-md-1 col-md-offset-1"><span class="colHeader">Payload/Support RIM(s)</span></div>
             <div id="platformConfiguration" class="col col-md-8">                    
                 <div class="panel panel-default">
                     <div class="panel-heading" role="tab" id="headingOne">
@@ -107,7 +107,6 @@
                     </div>
                     <div id="directorycollapse" class="panel-collapse collapse in" role="tabpanel" aria-labelledby="headingOne" aria-expanded="true">
                         <div class="panel-body">
-
                             <div class="panel-heading" role="tab" id="headingThree">
                                 <h3 class="panel-title">
                                     <a role="button" data-toggle="collapse" data-parent="#directorycollapse" class="collapsed"
@@ -116,7 +115,6 @@
                                     </a>
                                 </h3>
                             </div>
-
                             <div id="filescollapse" class="panel-collapse collapse" role="tabpanel" aria-labelledby="headingThree" aria-expanded="true">
                                 <c:if test="${not empty initialData.swidFiles}">
                                     <div id="componentIdentifier" class="row">
@@ -124,7 +122,8 @@
                                             <div class="component col col-md-10" style="padding-left: 20px">
                                                 <div class="panel panel-default">     
                                                     <div class="panel-heading">
-                                                        <span data-toggle="tooltip" data-placement="top" title="Resource File">${resource.getName()}
+                                                        <span data-toggle="tooltip" data-placement="top" title="Resource File">
+                                                            ${resource.getName()}
                                                         </span>
                                                     </div>
                                                     <c:choose>
@@ -171,7 +170,7 @@
                                                             </div>
                                                         </c:when>                                                        
                                                         <c:otherwise>
-                                                            <div class="component col col-md-10" style="color: red; padding-left: 20px">File Not Found.</div>
+                                                            <div class="component col col-md-10" style="color: red; padding-left: 20px">Support RIM file named ${resource.getName()} was not imported via the Reference Integrity Manifest page.</div>
                                                         </c:otherwise>
                                                     </c:choose>
                                                 </div>                                                    
