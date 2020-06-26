@@ -380,7 +380,7 @@ public class SupplyChainValidationServiceImpl implements SupplyChainValidationSe
             } else {
                 level = Level.INFO;
             }
-        } else {
+        } else if (fwStatus != null) {
             fwStatus = new AppraisalStatus(FAIL, "Associated Issued Attestation"
                     + " Certificate can not be found.");
         }
