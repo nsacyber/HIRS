@@ -320,7 +320,7 @@ public class SupplyChainValidationServiceImpl implements SupplyChainValidationSe
         Level level = Level.ERROR;
         AppraisalStatus fwStatus = null;
         String manufacturer = device.getDeviceInfo()
-                        .getHardwareInfo().getManufacturer();
+                .getHardwareInfo().getManufacturer();
 
         IssuedAttestationCertificate attCert = IssuedAttestationCertificate
                 .select(this.certificateManager)
@@ -342,47 +342,48 @@ public class SupplyChainValidationServiceImpl implements SupplyChainValidationSe
                         .toArray(new String[swid.getPcrValues().size()]);
             }
             pcrPolicy.setBaselinePcrs(baseline);
-        }
 
-        if (attCert != null && fwStatus == null) {
-            String[] pcrsSet = attCert.getPcrValues().split("\\+");
-            String[] pcrs1 = pcrsSet[0].split("\\n");
-            String[] pcrs256 = pcrsSet[1].split("\\n");
-            String[] quote = new String[TPMMeasurementRecord.MAX_PCR_ID + 1];
-            int offset = 0;
+            if (attCert != null) {
+                String[] pcrsSet = attCert.getPcrValues().split("\\+");
+                String[] pcrs1 = pcrsSet[0].split("\\n");
+                String[] pcrs256 = pcrsSet[1].split("\\n");
+                String[] quote = new String[TPMMeasurementRecord.MAX_PCR_ID + 1];
+                int offset = 0;
 
-            fwStatus = new AppraisalStatus(PASS,
-                    SupplyChainCredentialValidator.FIRMWARE_VALID);
+                fwStatus = new AppraisalStatus(PASS,
+                        SupplyChainCredentialValidator.FIRMWARE_VALID);
 
-            if (baseline[0].length() == TPMMeasurementRecord.SHA_BYTE_LENGTH) {
-                // quote from provisioner is formated to indicate the encryption
-                if (pcrs1[0].split(":")[0].contains("sha")) {
-                    offset = 1;
+                if (baseline[0].length() == TPMMeasurementRecord.SHA_BYTE_LENGTH) {
+                    // quote from provisioner is formated to indicate the encryption
+                    if (pcrs1[0].split(":")[0].contains("sha")) {
+                        offset = 1;
+                    }
+                    for (int i = 0; i <= TPMMeasurementRecord.MAX_PCR_ID; i++) {
+                        //update quote with the pcr only, based on offset
+                        quote[i] = pcrs1[i + offset].split(":")[1].trim();
+                    }
+                } else if (baseline[0].length() == TPMMeasurementRecord.SHA_256_BYTE_LENGTH) {
+                    // quote from provisioner is formated to indicate the encryption
+                    if (pcrs256[0].split(":")[0].contains("sha")) {
+                        offset = 1;
+                    }
+                    for (int i = 0; i <= TPMMeasurementRecord.MAX_PCR_ID; i++) {
+                        //update quote with the pcr only, based on offset
+                        quote[i] = pcrs256[i + offset].split(":")[1].trim();
+                    }
                 }
-                for (int i = 0; i <= TPMMeasurementRecord.MAX_PCR_ID; i++) {
-                    //update quote with the pcr only, based on offset
-                    quote[i] = pcrs1[i + offset].split(":")[1].trim();
+
+                StringBuilder sb = pcrPolicy.validatePcrs(quote);
+                if (sb.length() > 0) {
+                    level = Level.ERROR;
+                    fwStatus = new AppraisalStatus(FAIL, sb.toString());
+                } else {
+                    level = Level.INFO;
                 }
-            } else if (baseline[0].length() == TPMMeasurementRecord.SHA_256_BYTE_LENGTH) {
-                // quote from provisioner is formated to indicate the encryption
-                if (pcrs256[0].split(":")[0].contains("sha")) {
-                    offset = 1;
-                }
-                for (int i = 0; i <= TPMMeasurementRecord.MAX_PCR_ID; i++) {
-                    //update quote with the pcr only, based on offset
-                    quote[i] = pcrs256[i + offset].split(":")[1].trim();
-                }
+            } else if (fwStatus != null) {
+                fwStatus = new AppraisalStatus(FAIL, "Associated Issued Attestation"
+                        + " Certificate can not be found.");
             }
-            StringBuilder sb = pcrPolicy.validatePcrs(quote);
-            if (sb.length() > 0) {
-                level = Level.ERROR;
-                fwStatus = new AppraisalStatus(FAIL, sb.toString());
-            } else {
-                level = Level.INFO;
-            }
-        } else if (fwStatus != null) {
-            fwStatus = new AppraisalStatus(FAIL, "Associated Issued Attestation"
-                    + " Certificate can not be found.");
         }
 
         return buildValidationRecord(SupplyChainValidation.ValidationType.FIRMWARE,
@@ -514,7 +515,8 @@ public class SupplyChainValidationServiceImpl implements SupplyChainValidationSe
      * @param validationType the type of validation
      * @param result the appraisal status
      * @param message the validation message to include in the summary and log
-     * @param archivableEntity the archivableEntity associated with the validation
+     * @param archivableEntity the archivableEntity associated with the
+     * validation
      * @param logLevel the log level
      * @return a SupplyChainValidation
      */
