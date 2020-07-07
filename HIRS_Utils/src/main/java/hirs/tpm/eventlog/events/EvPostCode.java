@@ -13,11 +13,11 @@ import hirs.tpm.eventlog.uefi.UefiFirmware;
  *        } UEFI_PLATFORM_FIRMWARE_BLOB;
  *
  * However Table 9 of the PC Client Platform firmware profile states that even content is a string
- *   For POST code, the event data SHOULD be “POST CODE”.
- *   For embedded SMM code, the event data SHOULD be “SMM CODE”.
- *   For ACPI flash data, the event data SHOULD be “ACPI DATA”.
- *   For BIS code, the event data SHOULD be “BIS CODE”.
- *   For embedded option ROMs, the event data SHOULD be “Embedded UEFI Driver”.
+ *   For POST code, the event data SHOULD be POST CODE.
+ *   For embedded SMM code, the event data SHOULD be SMM CODE.
+ *   For ACPI flash data, the event data SHOULD be ACPI DATA.
+ *   For BIS code, the event data SHOULD be BIS CODE.
+ *   For embedded option ROMs, the event data SHOULD be Embedded UEFI Driver.
  */
 public class EvPostCode {
     /** Event Description. */

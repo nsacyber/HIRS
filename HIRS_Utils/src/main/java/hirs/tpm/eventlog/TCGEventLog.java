@@ -38,8 +38,13 @@ public final class TCGEventLog {
     /** Initial value for SHA 256 values.*/
     public static final String INIT_SHA256_LIST = "00000000000000000000000000"
             + "00000000000000000000000000000000000000";
+    /** Initial value for SHA 256 values.*/
+    public static final String LOCALITY4_SHA256_LIST = "ffffffffffffffffffffffffff"
+            + "ffffffffffffffffffffffffffffffffffffff";
     /** Initial value for SHA 1 values. */
     public static final String INIT_SHA1_LIST = "0000000000000000000000000000000000000000";
+    /** Initial value for SHA 1 values. */
+    public static final String LOCALITY4_SHA1_LIST = "ffffffffffffffffffffffffffffffffffffffff";
     /** PFP defined EV_NO_ACTION identifier. */
     public static final int NO_ACTION_EVENT = 0x00000003;
     /** String value of SHA1 hash.*/
@@ -48,6 +53,10 @@ public final class TCGEventLog {
     public static final String HASH256_STRING = "SHA-256";
     /** Each PCR bank holds 24 registers. */
     public static final int PCR_COUNT = 24;
+    /** Locality 4 starts at PCR 17. */
+    public static final int PCR_LOCALITY4_MIN = 17;
+    /** Locality 4 Ends at PCR 23. */
+    public static final int PCR_LOCALITY4_MAX = 23;
     /** 2 dimensional array holding the PCR values. */
     private byte[][] pcrList;
     /** List of parsed events within the log. */
@@ -56,8 +65,10 @@ public final class TCGEventLog {
     private int pcrLength;
     /** Name of hash algorithm. */
     private String hashType;
-    /** Initial Value to use. */
+    /** Initial PCR Value to use. */
     private String initValue;
+    /** Initial PcR Value to use for locality 4. */
+    private String initLocalityFourValue;
     /** Content Output Flag use. */
     private boolean bContent = false;
     /** Event Output Flag use. */
@@ -72,6 +83,7 @@ public final class TCGEventLog {
     public TCGEventLog() {
         this.pcrList = new byte[PCR_COUNT][EvConstants.SHA1_LENGTH];
         initValue = INIT_SHA1_LIST;
+        initLocalityFourValue = LOCALITY4_SHA1_LIST;
         pcrLength = EvConstants.SHA1_LENGTH;
         hashType = HASH_STRING;
         algorithm = "TPM_ALG_SHA1";
@@ -107,11 +119,13 @@ public final class TCGEventLog {
         bCryptoAgile = isLogCrytoAgile(rawlog);
         if (bCryptoAgile) {
             initValue = INIT_SHA256_LIST;
+            initLocalityFourValue = LOCALITY4_SHA256_LIST;
             algorithm = "TPM_ALG_SHA256";
             hashType = HASH256_STRING;
             pcrLength = EvConstants.SHA256_LENGTH;
         } else {
             initValue = INIT_SHA1_LIST;
+            initLocalityFourValue = LOCALITY4_SHA1_LIST;
             hashType = HASH_STRING;
             algorithm = "TPM_ALG_SHA1";
             pcrLength = EvConstants.SHA1_LENGTH;
@@ -140,15 +154,18 @@ public final class TCGEventLog {
      * This method puts blank values in the pcrList.
      */
     private void initPcrList() {
-        for (int i = 0; i < PCR_COUNT; i++) {
             try {
-                // Initialize the PCRlist1 array
-                System.arraycopy(Hex.decodeHex(initValue.toCharArray()),
+                for (int i = 0; i < PCR_COUNT; i++) {
+                    System.arraycopy(Hex.decodeHex(initValue.toCharArray()),
                         0, pcrList[i], 0, pcrLength);
+                }
+                for (int i = PCR_LOCALITY4_MIN; i < PCR_LOCALITY4_MAX; i++) {
+                        System.arraycopy(Hex.decodeHex(initLocalityFourValue.toCharArray()),
+                            0, pcrList[i], 0, pcrLength);
+                    }
             } catch (DecoderException deEx) {
                 LOGGER.error(deEx);
             }
-        }
     }
 
     /**
