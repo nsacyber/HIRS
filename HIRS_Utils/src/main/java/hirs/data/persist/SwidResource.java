@@ -213,9 +213,6 @@ public class SwidResource {
         return innerMap;
     }
 
-    /**
-     *
-     */
     private void parsePcrValues() {
         TCGEventLog logProcessor = new TCGEventLog();
 

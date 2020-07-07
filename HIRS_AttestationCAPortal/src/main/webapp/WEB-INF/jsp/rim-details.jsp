@@ -94,7 +94,7 @@
             </div>
         </div>
         <div class="row">
-            <div class="col-md-1 col-md-offset-1"><span class="colHeader">Support RIM(s)</span></div>
+            <div class="col-md-1 col-md-offset-1"><span class="colHeader">Payload/Support RIM(s)</span></div>
             <div id="platformConfiguration" class="col col-md-8">                    
                 <div class="panel panel-default">
                     <div class="panel-heading" role="tab" id="headingOne">
@@ -107,7 +107,6 @@
                     </div>
                     <div id="directorycollapse" class="panel-collapse collapse in" role="tabpanel" aria-labelledby="headingOne" aria-expanded="true">
                         <div class="panel-body">
-
                             <div class="panel-heading" role="tab" id="headingThree">
                                 <h3 class="panel-title">
                                     <a role="button" data-toggle="collapse" data-parent="#directorycollapse" class="collapsed"
@@ -116,7 +115,6 @@
                                     </a>
                                 </h3>
                             </div>
-
                             <div id="filescollapse" class="panel-collapse collapse" role="tabpanel" aria-labelledby="headingThree" aria-expanded="true">
                                 <c:if test="${not empty initialData.swidFiles}">
                                     <div id="componentIdentifier" class="row">
@@ -124,49 +122,57 @@
                                             <div class="component col col-md-10" style="padding-left: 20px">
                                                 <div class="panel panel-default">     
                                                     <div class="panel-heading">
-                                                        <span data-toggle="tooltip" data-placement="top" title="Resource File">${resource.getName()}
+                                                        <span data-toggle="tooltip" data-placement="top" title="Resource File">
+                                                            ${resource.getName()}
                                                         </span>
                                                     </div>
-                                                    <div class="component col col-md-10">                                                            
-                                                        <span class="fieldHeader">File Size:</span>
-                                                        <span class="fieldValue">${resource.getSize()}</span><br/>
-                                                        <span class="fieldHeader">Hash:</span>
-                                                        <span class="fieldValue" style="overflow-wrap: break-word">${resource.getHashValue()}</span><br/>
-                                                        <c:if test="${not empty resource.getRimFormat()}">
-                                                            <span class="fieldHeader">RIM Format:</span>
-                                                            <span class="fieldValue">${resource.getRimFormat()}</span><br/>
-                                                        </c:if>
-                                                        <c:if test="${not empty resource.getRimType()}">
-                                                            <span class="fieldHeader">RIM Type:</span>
-                                                            <span class="fieldValue">${resource.getRimType()}</span><br/>
-                                                        </c:if>
-                                                        <c:if test="${not empty resource.getRimUriGlobal()}">
-                                                            <span class="fieldHeader">URI Global:</span>
-                                                            <span class="fieldValue">${resource.getRimUriGlobal()}</span><br/>
-                                                        </c:if>
-                                                        <c:if test="${not empty resource.getPcrValues()}"> 
-                                                            <div class="panel-body">
-                                                                <div class="component" role="tab" id="pcrValues">
-                                                                    <a role="button" data-toggle="collapse" data-parent="#directorycollapse" class="collapsed"
-                                                                       href="#pcrscollapse" aria-expanded="false" aria-controls="pcrscollapse">
-                                                                        Expected PCR Values
-                                                                    </a>                                                         
-                                                                </div>
-                                                                <div id="pcrscollapse" class="panel-collapse collapse" role="tabpanel" aria-labelledby="headingThree" aria-expanded="true">
-                                                                    <div>
-                                                                        <c:forEach items="${resource.getPcrMap()}" var="pcrValue">
-                                                                            <div id="componentIdentifier" class="row">
-                                                                                <div>                                                                                    
-                                                                                    <span>${pcrValue.key}</span>
-                                                                                    <span style="overflow-wrap: break-word">${pcrValue.value}</span>
-                                                                                </div>
+                                                    <c:choose>
+                                                        <c:when test="${not empty resource.getPcrValues()}">
+                                                            <div class="component col col-md-10">
+                                                                <span class="fieldHeader">File Size:</span>
+                                                                <span class="fieldValue">${resource.getSize()}</span><br/>
+                                                                <span class="fieldHeader">Hash:</span>
+                                                                <span class="fieldValue" style="overflow-wrap: break-word">${resource.getHashValue()}</span><br/>
+                                                                <c:if test="${not empty resource.getRimFormat()}">
+                                                                    <span class="fieldHeader">RIM Format:</span>
+                                                                    <span class="fieldValue">${resource.getRimFormat()}</span><br/>
+                                                                </c:if>
+                                                                <c:if test="${not empty resource.getRimType()}">
+                                                                    <span class="fieldHeader">RIM Type:</span>
+                                                                    <span class="fieldValue">${resource.getRimType()}</span><br/>
+                                                                </c:if>
+                                                                <c:if test="${not empty resource.getRimUriGlobal()}">
+                                                                    <span class="fieldHeader">URI Global:</span>
+                                                                    <span class="fieldValue">${resource.getRimUriGlobal()}</span><br/>
+                                                                </c:if>
+                                                                <c:if test="${not empty resource.getPcrValues()}"> 
+                                                                    <div class="panel-body">
+                                                                        <div class="component" role="tab" id="pcrValues">
+                                                                            <a role="button" data-toggle="collapse" data-parent="#directorycollapse" class="collapsed"
+                                                                               href="#pcrscollapse" aria-expanded="false" aria-controls="pcrscollapse">
+                                                                                Expected PCR Values
+                                                                            </a>                                                         
+                                                                        </div>
+                                                                        <div id="pcrscollapse" class="panel-collapse collapse" role="tabpanel" aria-labelledby="headingThree" aria-expanded="true">
+                                                                            <div>
+                                                                                <c:forEach items="${resource.getPcrMap()}" var="pcrValue">
+                                                                                    <div id="componentIdentifier" class="row">
+                                                                                        <div>                                                                                    
+                                                                                            <span>${pcrValue.key}</span>
+                                                                                            <span style="overflow-wrap: break-word">${pcrValue.value}</span>
+                                                                                        </div>
+                                                                                    </div>
+                                                                                </c:forEach>
                                                                             </div>
-                                                                        </c:forEach>
+                                                                        </div>
                                                                     </div>
-                                                                </div>
+                                                                </c:if>
                                                             </div>
-                                                        </c:if>
-                                                    </div>
+                                                        </c:when>                                                        
+                                                        <c:otherwise>
+                                                            <div class="component col col-md-10" style="color: red; padding-left: 20px">Support RIM file named ${resource.getName()} was not imported via the Reference Integrity Manifest page.</div>
+                                                        </c:otherwise>
+                                                    </c:choose>
                                                 </div>                                                    
                                             </div>
                                         </c:forEach>
