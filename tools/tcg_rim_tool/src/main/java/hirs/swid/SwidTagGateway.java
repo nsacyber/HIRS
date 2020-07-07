@@ -117,6 +117,7 @@ public class SwidTagGateway {
             attributesFile = SwidTagConstants.DEFAULT_ATTRIBUTES_FILE;
             defaultCredentials = true;
             pemCertificateFile = "";
+            rimEventLog = "";
         } catch (JAXBException e) {
             System.out.println("Error initializing jaxbcontext: " + e.getMessage());
         }
@@ -188,7 +189,10 @@ public class SwidTagGateway {
                     createSoftwareMeta(configProperties.get(SwidTagConstants.META).asObject()));
             swidTag.getEntityOrEvidenceOrLink().add(meta);
             //File
-            hirs.swid.xjc.File file = createFile();
+            hirs.swid.xjc.File file = createFile(
+                                configProperties.get(SwidTagConstants.PAYLOAD).asObject()
+                                                .get(SwidTagConstants.DIRECTORY).asObject()
+                                                .get(SwidTagConstants.FILE).asObject());
             //Directory
             Directory directory = createDirectory(
                     configProperties.get(SwidTagConstants.PAYLOAD).asObject()
@@ -419,16 +423,23 @@ public class SwidTagGateway {
     }
 
     /**
-     * This method creates a hirs.swid.xjc.File from an indirect payload type by
+     * This method creates a hirs.swid.xjc.File from an indirect payload type
+     * using parameters read in from a properties file and then
      * calculating the hash of a given event log support RIM.
+     *
+     * @param jsonObject the Properties object containing parameters from file
+     * @return File object created from the properties
      */
-    private hirs.swid.xjc.File createFile() {
+    private hirs.swid.xjc.File createFile(JsonObject jsonObject) {
         hirs.swid.xjc.File file = objectFactory.createFile();
-        file.setName(rimEventLog);
+        file.setName(jsonObject.getString(SwidTagConstants.NAME, ""));
         File rimEventLogFile = new File(rimEventLog);
         file.setSize(new BigInteger(Long.toString(rimEventLogFile.length())));
         Map<QName, String> attributes = file.getOtherAttributes();
         addNonNullAttribute(attributes, _SHA256_HASH, HashSwid.get256Hash(rimEventLog));
+        addNonNullAttribute(attributes, SwidTagConstants._SUPPORT_RIM_TYPE, jsonObject.getString(SwidTagConstants.SUPPORT_RIM_TYPE, ""));
+        addNonNullAttribute(attributes, SwidTagConstants._SUPPORT_RIM_FORMAT, jsonObject.getString(SwidTagConstants.SUPPORT_RIM_FORMAT, ""));
+        addNonNullAttribute(attributes, SwidTagConstants._SUPPORT_RIM_URI_GLOBAL, jsonObject.getString(SwidTagConstants.SUPPORT_RIM_URI_GLOBAL, ""));
 
         return file;
     }
@@ -437,7 +448,12 @@ public class SwidTagGateway {
      * This method validates a hirs.swid.xjc.File from an indirect payload
      */
     private boolean validateFile(Element file) {
-        String filepath = file.getAttribute(SwidTagConstants.NAME);
+        String filepath;
+        if (rimEventLog.isEmpty()) {
+            filepath = file.getAttribute(SwidTagConstants.NAME);
+        } else {
+            filepath = rimEventLog;
+        }
         System.out.println("Support rim found at " + filepath);
         if (HashSwid.get256Hash(filepath).equals(file.getAttribute(_SHA256_HASH.getPrefix() + ":" + _SHA256_HASH.getLocalPart()))) {
             System.out.println("Support RIM hash verified!");
