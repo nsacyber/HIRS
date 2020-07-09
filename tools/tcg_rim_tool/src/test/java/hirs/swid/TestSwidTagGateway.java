@@ -30,6 +30,7 @@ public class TestSwidTagGateway {
 		gateway = new SwidTagGateway();
 		gateway.setRimEventLog(supportRimFile);
 		validator = new SwidTagValidator();
+		validator.setRimEventLog(supportRimFile);
 	}
 
 	@AfterClass
