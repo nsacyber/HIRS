@@ -106,9 +106,7 @@ int provision() {
                 "14,15,16,17,18,19,20,21,22,23",
                 decryptedNonce));
 
-    stringstream pcrStream;
-    pcrStream << tpm2.getPcrsList() << "\n+\n" << tpm2.getPcrs256List();
-    certificateRequest.set_pcrslist(pcrStream.str());
+    certificateRequest.set_pcrslist(tpm2.getPcrList());
     const string& akCertificateByteString
             = provisioner.sendAttestationCertificateRequest(certificateRequest);
 

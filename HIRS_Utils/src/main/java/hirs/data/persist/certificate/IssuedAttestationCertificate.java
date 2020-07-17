@@ -2,9 +2,14 @@ package hirs.data.persist.certificate;
 
 import hirs.persist.CertificateManager;
 import hirs.persist.CertificateSelector;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.NoSuchFileException;
 import java.util.Collections;
 import java.util.Set;
 import java.util.UUID;
@@ -21,7 +26,14 @@ import javax.persistence.ManyToOne;
 @Entity
 public class IssuedAttestationCertificate extends DeviceAssociatedCertificate {
 
-    private static final int MAX_CERT_LENGTH_BYTES = 4096;
+    private static final Logger LOGGER = LogManager.getLogger(IssuedAttestationCertificate.class);
+
+    private static final int MAX_CERT_LENGTH_BYTES = 1024;
+    private static final String CATALINA_HOME = System.getProperty("catalina.base");
+    private static final String TOMCAT_UPLOAD_DIRECTORY
+            = "/webapps/HIRS_AttestationCAPortal/upload/device_pcrs/";
+    private static final String PCR_UPLOAD_FOLDER
+            = CATALINA_HOME + TOMCAT_UPLOAD_DIRECTORY;
 
     /**
      * AIC label that must be used.
@@ -143,6 +155,29 @@ public class IssuedAttestationCertificate extends DeviceAssociatedCertificate {
      * @param pcrValues to be stored.
      */
     public void setPcrValues(final String pcrValues) {
-        this.pcrValues = pcrValues;
+        this.pcrValues = savePcrValues(pcrValues);
+    }
+
+    private String savePcrValues(final String pcrValues) {
+        try {
+            if (Files.notExists(Paths.get(PCR_UPLOAD_FOLDER))) {
+                Files.createDirectory(Paths.get(PCR_UPLOAD_FOLDER));
+            }
+            Path pcrPath = Paths.get(String.format("%s/%s",
+                    PCR_UPLOAD_FOLDER, this.getDevice().getName()));
+            if (Files.notExists(pcrPath)) {
+                Files.createFile(pcrPath);
+            }
+            Files.write(pcrPath, pcrValues.getBytes("UTF8"));
+            return pcrPath.toString();
+        } catch (NoSuchFileException nsfEx) {
+            LOGGER.error(String.format("File Not found!: %s",
+                    this.getDevice().getName()));
+            LOGGER.error(nsfEx);
+        } catch (IOException ioEx) {
+            LOGGER.error(ioEx);
+        }
+
+        return "";
     }
 }

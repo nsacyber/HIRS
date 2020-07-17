@@ -144,7 +144,7 @@ public class IssuedCertificatesPageControllerTest extends PageControllerTest {
                 .andReturn();
     }
 
-            /**
+     /**
      * Tests downloading the certificate.
      * @throws java.lang.Exception when getting raw report
      */

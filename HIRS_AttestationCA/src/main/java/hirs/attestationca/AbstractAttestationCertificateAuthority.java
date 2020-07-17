@@ -508,6 +508,7 @@ public abstract class AbstractAttestationCertificateAuthority
             }
             if (request.getPcrslist() != null && !request.getPcrslist().isEmpty()) {
                 this.pcrValues = request.getPcrslist().toStringUtf8();
+                LOG.error(this.pcrValues);
             }
 
             // Get device name and device
