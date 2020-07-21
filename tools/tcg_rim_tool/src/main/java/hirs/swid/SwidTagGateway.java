@@ -424,6 +424,8 @@ public class SwidTagGateway {
                 cp.parseJKSCredentials();
                 privateKey = cp.getPrivateKey();
                 publicKey = cp.getPublicKey();
+                KeyName keyName = kiFactory.newKeyName(cp.getCertificateSubjectKeyIdentifier());
+                keyInfoElements.add(keyName);
             } else {
                 cp.parsePEMCredentials(pemCertificateFile, pemPrivateKeyFile);
                 X509Certificate certificate = cp.getCertificate();
@@ -435,8 +437,6 @@ public class SwidTagGateway {
                 X509Data data = kiFactory.newX509Data(x509Content);
                 keyInfoElements.add(data);
             }
-            KeyName keyName = kiFactory.newKeyName(cp.getCertificateSubjectKeyIdentifier());
-            keyInfoElements.add(keyName);
             KeyValue keyValue = kiFactory.newKeyValue(publicKey);
             keyInfoElements.add(keyValue);
             KeyInfo keyinfo = kiFactory.newKeyInfo(keyInfoElements);

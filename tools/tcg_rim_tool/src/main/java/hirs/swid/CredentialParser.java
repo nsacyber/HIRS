@@ -62,6 +62,16 @@ public class CredentialParser {
     }
 
     /**
+     * This method returns the PublicKey object from a PEM certificate file.
+     * @param certificateFile
+     * @return
+     * @throws FileNotFoundException
+     */
+    public PublicKey parseKeyFromPEMCertificate(String certificateFile) throws FileNotFoundException {
+        return parsePEMCertificate(certificateFile).getPublicKey();
+    }
+
+    /**
      * This method returns the X509Certificate found in a PEM file.
      * @param filename
      * @return

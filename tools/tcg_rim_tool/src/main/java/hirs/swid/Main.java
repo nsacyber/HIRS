@@ -24,10 +24,13 @@ public class Main {
                 System.out.println(commander.toString());
                 String verifyFile = commander.getVerifyFile();
                 String rimel = commander.getRimEventLog();
-                //String publicCertificate = commander.getPublicCertificate();
+                String certificateFile = commander.getPublicCertificate();
                 if (!verifyFile.isEmpty()) {
                     if (!rimel.isEmpty()) {
-                        gateway.setRimEventLog(rimel);
+                        validator.setRimEventLog(rimel);
+                    }
+                    if (!certificateFile.isEmpty()) {
+                        validator.setCertificateFile(certificateFile);
                     }
                     try {
                         validator.validateSwidTag(verifyFile);

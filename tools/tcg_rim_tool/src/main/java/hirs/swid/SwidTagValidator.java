@@ -23,6 +23,7 @@ import javax.xml.transform.stream.StreamSource;
 import javax.xml.validation.Schema;
 import javax.xml.validation.SchemaFactory;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.security.Key;
@@ -32,11 +33,27 @@ import java.util.Iterator;
 
 public class SwidTagValidator {
     private Unmarshaller unmarshaller;
+    private String rimEventLog;
+    private String certificateFile;
+
+    /**
+     * Setter for rimel file path.
+     * @param rimEventLog
+     */
+    public void setRimEventLog(String rimEventLog) {
+        this.rimEventLog = rimEventLog;
+    }
+
+    public void setCertificateFile(String certificateFile) {
+        this.certificateFile = certificateFile;
+    }
 
     public SwidTagValidator() {
         try {
             JAXBContext jaxbContext = JAXBContext.newInstance(SwidTagConstants.SCHEMA_PACKAGE);
             unmarshaller = jaxbContext.createUnmarshaller();
+            rimEventLog = "";
+            certificateFile = "";
         } catch (JAXBException e) {
             System.out.println("Error initializing JAXBContext: " + e.getMessage());
         }
@@ -65,7 +82,12 @@ public class SwidTagValidator {
      * This method validates a hirs.swid.xjc.File from an indirect payload
      */
     private boolean validateFile(Element file) {
-        String filepath = file.getAttribute(SwidTagConstants.NAME);
+        String filepath;
+        if (!rimEventLog.isEmpty()) {
+            filepath = rimEventLog;
+        } else {
+            filepath = file.getAttribute(SwidTagConstants.NAME);
+        }
         System.out.println("Support rim found at " + filepath);
         if (HashSwid.get256Hash(filepath).equals(
                 file.getAttribute(SwidTagConstants._SHA256_HASH.getPrefix() + ":" +
@@ -84,13 +106,25 @@ public class SwidTagValidator {
      * @param doc
      */
     private boolean validateSignedXMLDocument(Document doc) {
+        DOMValidateContext context = null;
         boolean isValid = false;
         try {
             NodeList nodes = doc.getElementsByTagNameNS(XMLSignature.XMLNS, "Signature");
             if (nodes.getLength() == 0) {
                 throw new Exception("Signature element not found!");
             }
-            DOMValidateContext context = new DOMValidateContext(new SwidTagValidator.X509KeySelector(), nodes.item(0));
+            NodeList embeddedCert = doc.getElementsByTagName("X509Data");
+            if (embeddedCert.getLength() > 0) {
+                context = new DOMValidateContext(new SwidTagValidator.X509KeySelector(), nodes.item(0));
+            } else {
+                CredentialParser cp = new CredentialParser();
+                if (!certificateFile.isEmpty()) {
+                    context = new DOMValidateContext(cp.parseKeyFromPEMCertificate(certificateFile), nodes.item(0));
+                } else {
+                    System.out.println("Signing certificate not found for validation!");
+                    System.exit(1);
+                }
+            }
             XMLSignatureFactory sigFactory = XMLSignatureFactory.getInstance("DOM");
             XMLSignature signature = sigFactory.unmarshalXMLSignature(context);
             isValid = signature.validate(context);
