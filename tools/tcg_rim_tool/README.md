@@ -19,6 +19,6 @@ The tcg_rim_tool rpm will create a rim commandline shortcut. This can be invoked
 
 The tcg_eventlog_tool also can be invoked using java:
 
-> java -jar build/lib.tools/tcg_rim_tool-1.0.jar -h
+> java -jar build/libs/tools/tcg_rim_tool-1.0.jar -h
 
 Current options for the tool can be found using the -h option.
