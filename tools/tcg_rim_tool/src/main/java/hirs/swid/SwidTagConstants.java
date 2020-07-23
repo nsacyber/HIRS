@@ -145,5 +145,5 @@ public class SwidTagConstants {
             "http://csrc.nist.gov/ns/swid/2015-extensions/1.0",
             "pathSeparator", "n8060");
 
-    public static final String CERTIFICATE_SUBJECT_KEY_IDENTIFIER = "2.5.29.14";
+    public static final String CA_ISSUERS = "1.3.6.1.5.5.7.48.2";
 }

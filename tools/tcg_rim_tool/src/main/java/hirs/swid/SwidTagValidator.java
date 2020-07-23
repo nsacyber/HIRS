@@ -92,10 +92,10 @@ public class SwidTagValidator {
         if (HashSwid.get256Hash(filepath).equals(
                 file.getAttribute(SwidTagConstants._SHA256_HASH.getPrefix() + ":" +
                         SwidTagConstants._SHA256_HASH.getLocalPart()))) {
-            System.out.println("Support RIM hash verified!");
+            System.out.println("Support RIM hash verified!" + System.lineSeparator());
             return true;
         } else {
-            System.out.println("Support RIM hash does not match Base RIM!");
+            System.out.println("Support RIM hash does not match Base RIM!" + System.lineSeparator());
             return false;
         }
     }
@@ -119,7 +119,10 @@ public class SwidTagValidator {
             } else {
                 CredentialParser cp = new CredentialParser();
                 if (!certificateFile.isEmpty()) {
-                    context = new DOMValidateContext(cp.parseKeyFromPEMCertificate(certificateFile), nodes.item(0));
+                    X509Certificate certificate = cp.parseCertFromPEM(certificateFile);
+                    cp.setCertificate(certificate);
+                    System.out.println(cp.getCertificateAuthorityInfoAccess());
+                    context = new DOMValidateContext(certificate.getPublicKey(), nodes.item(0));
                 } else {
                     System.out.println("Signing certificate not found for validation!");
                     System.exit(1);

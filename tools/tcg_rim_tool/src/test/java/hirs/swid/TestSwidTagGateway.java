@@ -43,6 +43,7 @@ public class TestSwidTagGateway {
 	/**
 	 * This test corresponds to the arguments:
 	 * -c base -l TpmLog.bin -k privateRimKey.pem -p RimSignCert.pem
+	 * where RimSignCert.pem has the AIA extension.
 	 */
 	@Test
 	public void testCreateBaseWithCert() throws URISyntaxException {

@@ -1,5 +1,9 @@
 package hirs.swid;
 
+import org.bouncycastle.asn1.x509.AccessDescription;
+import org.bouncycastle.asn1.x509.AuthorityInformationAccess;
+import org.bouncycastle.asn1.x509.Extension;
+import org.bouncycastle.asn1.x509.GeneralName;
 import org.bouncycastle.cert.jcajce.JcaX509ExtensionUtils;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.bouncycastle.openssl.PEMKeyPair;
@@ -34,6 +38,10 @@ public class CredentialParser {
         return certificate;
     }
 
+    public void setCertificate(X509Certificate certificate) {
+        this.certificate = certificate;
+    }
+
     public PrivateKey getPrivateKey() {
         return privateKey;
     }
@@ -62,13 +70,13 @@ public class CredentialParser {
     }
 
     /**
-     * This method returns the PublicKey object from a PEM certificate file.
+     * This method returns the X509Certificate object from a PEM certificate file.
      * @param certificateFile
      * @return
      * @throws FileNotFoundException
      */
-    public PublicKey parseKeyFromPEMCertificate(String certificateFile) throws FileNotFoundException {
-        return parsePEMCertificate(certificateFile).getPublicKey();
+    public X509Certificate parseCertFromPEM(String certificateFile) throws FileNotFoundException {
+        return parsePEMCertificate(certificateFile);
     }
 
     /**
@@ -207,20 +215,39 @@ public class CredentialParser {
     }
 
     /**
-     * Utility method for extracting the subjectKeyIdentifier from an X509Certificate.
-     * The subjectKeyIdentifier is stored as a DER-encoded octet and will be converted to a String.
+     * This method returns the authorityInfoAccess from an X509Certificate.
      * @return
+     * @throws IOException
+     */
+    public String getCertificateAuthorityInfoAccess() throws IOException {
+        StringBuilder sb = new StringBuilder("Authority Info Access:\n");
+        byte[] extension = certificate.getExtensionValue(Extension.authorityInfoAccess.getId());
+        if (extension != null && extension.length > 0) {
+            AuthorityInformationAccess aia = AuthorityInformationAccess.getInstance(
+                                    JcaX509ExtensionUtils.parseExtensionValue(extension));
+            for (AccessDescription ad : aia.getAccessDescriptions()) {
+                if (ad.getAccessMethod().toString().equals(SwidTagConstants.CA_ISSUERS)) {
+                    sb.append("CA issuers - ");
+                }
+                if (ad.getAccessLocation().getTagNo() == GeneralName.uniformResourceIdentifier) {
+                    sb.append("URI:" + ad.getAccessLocation().getName().toString() + "\n");
+                }
+            }
+        }
+        return sb.toString();
+    }
+
+    /**
+     * This method returns the subjectKeyIdentifier from an X509Certificate.
+     * @return
+     * @throws IOException
      */
     public String getCertificateSubjectKeyIdentifier() throws IOException {
         String decodedValue = null;
-        byte[] extension = certificate.getExtensionValue(SwidTagConstants.CERTIFICATE_SUBJECT_KEY_IDENTIFIER);
-        if (extension != null) {
+        byte[] extension = certificate.getExtensionValue(Extension.subjectKeyIdentifier.getId());
+        if (extension != null && extension.length > 0) {
             decodedValue = JcaX509ExtensionUtils.parseExtensionValue(extension).toString();
         }
-        //If there is a # symbol at the beginning of the string, remove it
-        if (decodedValue.startsWith("#")) {
-            decodedValue = decodedValue.substring(1);
-        }
-        return decodedValue;
+        return decodedValue.substring(1);//Drop the # at the beginning of the string
     }
 }
