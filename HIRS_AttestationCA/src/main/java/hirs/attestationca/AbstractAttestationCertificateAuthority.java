@@ -66,6 +66,10 @@ import java.math.BigInteger;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.nio.ByteBuffer;
+import java.nio.file.Files;
+import java.nio.file.NoSuchFileException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
 import java.security.KeyFactory;
@@ -103,6 +107,11 @@ public abstract class AbstractAttestationCertificateAuthority
      */
     private static final BigInteger EXPONENT = new BigInteger("010001",
             AttestationCertificateAuthority.DEFAULT_IV_SIZE);
+    private static final String CATALINA_HOME = System.getProperty("catalina.base");
+    private static final String TOMCAT_UPLOAD_DIRECTORY
+            = "/webapps/HIRS_AttestationCA/upload/";
+    private static final String PCR_UPLOAD_FOLDER
+            = CATALINA_HOME + TOMCAT_UPLOAD_DIRECTORY;
 
     /**
      * Number of bytes to include in the TPM2.0 nonce.
@@ -508,7 +517,6 @@ public abstract class AbstractAttestationCertificateAuthority
             }
             if (request.getPcrslist() != null && !request.getPcrslist().isEmpty()) {
                 this.pcrValues = request.getPcrslist().toStringUtf8();
-                LOG.error(this.pcrValues);
             }
 
             // Get device name and device
@@ -1469,7 +1477,7 @@ public abstract class AbstractAttestationCertificateAuthority
             IssuedAttestationCertificate attCert = new IssuedAttestationCertificate(
                     derEncodedAttestationCertificate, endorsementCredential, platformCredentials);
             attCert.setDevice(device);
-            attCert.setPcrValues(pcrValues);
+            attCert.setPcrValues(savePcrValues(pcrValues, device.getName()));
             certificateManager.save(attCert);
         } catch (Exception e) {
             LOG.error("Error saving generated Attestation Certificate to database.", e);
@@ -1477,5 +1485,28 @@ public abstract class AbstractAttestationCertificateAuthority
                     "Encountered error while storing Attestation Certificate: "
                             + e.getMessage(), e);
         }
+    }
+
+    private String savePcrValues(final String pcrValues, final String deviceName) {
+        try {
+            if (Files.notExists(Paths.get(PCR_UPLOAD_FOLDER))) {
+                Files.createDirectory(Paths.get(PCR_UPLOAD_FOLDER));
+            }
+            Path pcrPath = Paths.get(String.format("%s/%s",
+                    PCR_UPLOAD_FOLDER, deviceName));
+            if (Files.notExists(pcrPath)) {
+                Files.createFile(pcrPath);
+            }
+            Files.write(pcrPath, pcrValues.getBytes("UTF8"));
+            return pcrPath.toString();
+        } catch (NoSuchFileException nsfEx) {
+            LOG.error(String.format("File Not found!: %s",
+                    deviceName));
+            LOG.error(nsfEx);
+        } catch (IOException ioEx) {
+            LOG.error(ioEx);
+        }
+
+        return "empty";
     }
 }

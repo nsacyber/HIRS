@@ -123,6 +123,7 @@ const char* const CommandTpm2::kDefaultActivatedIdentityFilename
         = "activatedIdentity.secret";
 const char* const CommandTpm2::kTpm2DefaultQuoteFilename = "/tmp/quote.bin";
 const char* const CommandTpm2::kTpm2DefaultSigFilename = "/tmp/sig.bin";
+const char* const CommandTpm2::kTpm2Sha256SigAlgorithm = "sha256";
 
 /**
  * Constructor to create an interface to TPM 2.0 devices.

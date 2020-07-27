@@ -316,18 +316,6 @@ public class SupplyChainValidationServiceImpl implements SupplyChainValidationSe
         return subPlatformScv;
     }
 
-
-    /**
-     *  For some reason the code isn't creating the directory it needs or saving
-     *  the info to that file.
-     *  I'm probably going to have to move the setting of the pcr values
-     *  from the abstract ACA class, and then
-     *  save the filename to the data base.  Then have just this pull that
-     *  file name and open it.  the ACA class saves.
-     *
-     */
-
-
     private SupplyChainValidation validateFirmware(final Device device,
             final PCRPolicy pcrPolicy) {
 
@@ -370,7 +358,6 @@ public class SupplyChainValidationServiceImpl implements SupplyChainValidationSe
                         LOGGER.error(ioEx);
                     }
                 }
-                LOGGER.error(pcrContent);
                 String[] pcrSet = null;
                 String[] quote = null;
                 int algorithmLength = baseline[0].length();
@@ -391,7 +378,6 @@ public class SupplyChainValidationServiceImpl implements SupplyChainValidationSe
                     // a matching hash length
                     int offset = 1;
 
-                    // TDM : I wonder if I can split on the sha line itself
                     for (int i = 0; i < pcrSet.length; i++) {
                         if (pcrSet[i].contains("sha")) {
                             // entered a new set, check size
@@ -399,13 +385,12 @@ public class SupplyChainValidationServiceImpl implements SupplyChainValidationSe
                                     == algorithmLength) {
                                 // found the matching set
                                 for (int j = 0; j <= TPMMeasurementRecord.MAX_PCR_ID; j++) {
-                                    quote[j] = pcrSet[++i];
+                                    quote[j] = pcrSet[++i].split(":")[1].trim();
                                 }
                                 break;
                             }
                         }
                     }
-                    LOGGER.error(quote[offset]);
 
                     if (quote[0].isEmpty()) {
                         // validation fail
