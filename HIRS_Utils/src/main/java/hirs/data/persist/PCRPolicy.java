@@ -69,7 +69,7 @@ public final class PCRPolicy extends Policy {
                 LOGGER.info("PCR Policy TBoot Ignore enabled.");
                 i += NUM_OF_TBOOT_PCR;
             }
-            LOGGER.error(String.format("%s = %s", baselinePcrs[i], quotePcrs[i]));
+
             if (!baselinePcrs[i].equals(quotePcrs[i])) {
                 sb.append(String.format(failureMsg, i));
             }
