@@ -30,6 +30,8 @@ import java.util.UUID;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.logging.log4j.LogManager;
@@ -59,6 +61,7 @@ public class ReferenceManifestPageController
         extends PageController<NoPageParams> {
 
     private static final String BIOS_RELEASE_DATE_FORMAT = "yyyy-MM-dd";
+    private static final String LOG_FILE_PATTERN = "([^\\s]+(\\.(?i)(rim|rimel|bin))$)";
 
     private final BiosDateValidator biosValidator;
     private final ReferenceManifestManager referenceManifestManager;
@@ -193,9 +196,9 @@ public class ReferenceManifestPageController
         // loop through the files
         for (MultipartFile file : files) {
             fileName = file.getOriginalFilename();
-            if (fileName.toLowerCase().endsWith("swidtag")) {
-                rims.add(file);
-            } else {
+            Pattern pattern = Pattern.compile(LOG_FILE_PATTERN);
+            Matcher matcher = pattern.matcher(fileName);
+            if (matcher.matches()) {
                 filePath = Paths.get(String.format("%s/%s",
                             SwidResource.RESOURCE_UPLOAD_FOLDER,
                             file.getOriginalFilename()));
@@ -212,6 +215,10 @@ public class ReferenceManifestPageController
                         "%s successfully uploaded", file.getOriginalFilename());
                 messages.addSuccess(uploadCompletedMessage);
                 LOGGER.info(uploadCompletedMessage);
+            } else {
+                // assume it is a swid tag, processing below will throw and error
+                // if it is not.
+                rims.add(file);
             }
         }
 
