@@ -27,12 +27,12 @@ import hirs.utils.HexUtils;
  *    } EFI_DEVICE_PATH_PROTOCOL;    // ref page of the UEFI spec
  *
  *    Where Type and Subtype are defined the UEFI spec section 10.3.1
- *    Type 0x01 – Hardware Device Path
- *    Type 0x02 – ACPI Device Path
- *    Type 0x03 – Messaging Device Path
- *    Type 0x04 – Media Device Path
- *    Type 0x05 – BIOS Boot Specification Device Path
- *    Type 0x7F – End of Hardware Device Path
+ *    Type 0x01  Hardware Device Path
+ *    Type 0x02  ACPI Device Path
+ *    Type 0x03  Messaging Device Path
+ *    Type 0x04  Media Device Path
+ *    Type 0x05  BIOS Boot Specification Device Path
+ *    Type 0x7F  End of Hardware Device Path
  */
 public class EvEfiBootServicesApp {
    /** UEFI Address. */

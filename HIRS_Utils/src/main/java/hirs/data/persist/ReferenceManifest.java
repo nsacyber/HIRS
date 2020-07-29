@@ -469,7 +469,7 @@ public class ReferenceManifest extends ArchivableEntity {
         if (jaxbe != null) {
             return jaxbe;
         } else {
-            throw new IOException("Invalid swidtag file!");
+            throw new IOException("Invalid Base RIM, swidtag format expected.");
         }
     }
 
