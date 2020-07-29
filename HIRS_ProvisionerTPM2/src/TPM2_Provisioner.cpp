@@ -106,7 +106,7 @@ int provision() {
                 "14,15,16,17,18,19,20,21,22,23",
                 decryptedNonce));
 
-    certificateRequest.set_pcrslist(tpm2.getPcrList());
+    certificateRequest.set_pcrslist(tpm2.getPcrsList());
     const string& akCertificateByteString
             = provisioner.sendAttestationCertificateRequest(certificateRequest);
 

@@ -137,7 +137,7 @@ class CommandTpm2 {
     std::string getQuote(const std::string& pcr_selection,
             const std::string& nonce);
 
-    std::string getPcrList();
+    std::string getPcrsList();
 };
 
 }  // namespace tpm2
