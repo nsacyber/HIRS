@@ -61,7 +61,7 @@ public class ReferenceManifestPageController
         extends PageController<NoPageParams> {
 
     private static final String BIOS_RELEASE_DATE_FORMAT = "yyyy-MM-dd";
-    private static final String LOG_FILE_PATTERN = "([^\\s]+(\\.(?i)(rim|rimel|bin))$)";
+    private static final String LOG_FILE_PATTERN = "([^\\s]+(\\.(?i)(rim|rimel|bin|log))$)";
 
     private final BiosDateValidator biosValidator;
     private final ReferenceManifestManager referenceManifestManager;
@@ -232,10 +232,6 @@ public class ReferenceManifestPageController
                         messages,
                         rim,
                         referenceManifestManager);
-
-                for (SwidResource swidRes : rim.parseResource()) {
-                    System.out.println("testing this section!");
-                }
             }
         }
 
