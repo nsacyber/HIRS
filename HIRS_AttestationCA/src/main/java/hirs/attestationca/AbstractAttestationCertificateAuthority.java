@@ -1488,23 +1488,25 @@ public abstract class AbstractAttestationCertificateAuthority
     }
 
     private String savePcrValues(final String pcrValues, final String deviceName) {
-        try {
-            if (Files.notExists(Paths.get(PCR_UPLOAD_FOLDER))) {
-                Files.createDirectory(Paths.get(PCR_UPLOAD_FOLDER));
+        if (pcrValues != null && !pcrValues.isEmpty()) {
+            try {
+                if (Files.notExists(Paths.get(PCR_UPLOAD_FOLDER))) {
+                    Files.createDirectory(Paths.get(PCR_UPLOAD_FOLDER));
+                }
+                Path pcrPath = Paths.get(String.format("%s/%s",
+                        PCR_UPLOAD_FOLDER, deviceName));
+                if (Files.notExists(pcrPath)) {
+                    Files.createFile(pcrPath);
+                }
+                Files.write(pcrPath, pcrValues.getBytes("UTF8"));
+                return pcrPath.toString();
+            } catch (NoSuchFileException nsfEx) {
+                LOG.error(String.format("File Not found!: %s",
+                        deviceName));
+                LOG.error(nsfEx);
+            } catch (IOException ioEx) {
+                LOG.error(ioEx);
             }
-            Path pcrPath = Paths.get(String.format("%s/%s",
-                    PCR_UPLOAD_FOLDER, deviceName));
-            if (Files.notExists(pcrPath)) {
-                Files.createFile(pcrPath);
-            }
-            Files.write(pcrPath, pcrValues.getBytes("UTF8"));
-            return pcrPath.toString();
-        } catch (NoSuchFileException nsfEx) {
-            LOG.error(String.format("File Not found!: %s",
-                    deviceName));
-            LOG.error(nsfEx);
-        } catch (IOException ioEx) {
-            LOG.error(ioEx);
         }
 
         return "empty";
