@@ -1,6 +1,9 @@
 package hirs.attestationca.service;
 
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.security.KeyStore;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
@@ -330,6 +333,8 @@ public class SupplyChainValidationServiceImpl implements SupplyChainValidationSe
                 .byManufacturer(manufacturer)
                 .getRIM();
 
+        fwStatus = new AppraisalStatus(PASS,
+                SupplyChainCredentialValidator.FIRMWARE_VALID);
         if (rim == null) {
             fwStatus = new AppraisalStatus(FAIL,
                     String.format("Firmware validation failed: "
@@ -344,43 +349,67 @@ public class SupplyChainValidationServiceImpl implements SupplyChainValidationSe
             pcrPolicy.setBaselinePcrs(baseline);
 
             if (attCert != null) {
-                String[] pcrsSet = attCert.getPcrValues().split("\\+");
-                String[] pcrs1 = pcrsSet[0].split("\\n");
-                String[] pcrs256 = pcrsSet[1].split("\\n");
-                String[] quote = new String[TPMMeasurementRecord.MAX_PCR_ID + 1];
-                int offset = 0;
-
-                fwStatus = new AppraisalStatus(PASS,
-                        SupplyChainCredentialValidator.FIRMWARE_VALID);
-
-                if (baseline[0].length() == TPMMeasurementRecord.SHA_BYTE_LENGTH) {
-                    // quote from provisioner is formated to indicate the encryption
-                    if (pcrs1[0].split(":")[0].contains("sha")) {
-                        offset = 1;
-                    }
-                    for (int i = 0; i <= TPMMeasurementRecord.MAX_PCR_ID; i++) {
-                        //update quote with the pcr only, based on offset
-                        quote[i] = pcrs1[i + offset].split(":")[1].trim();
-                    }
-                } else if (baseline[0].length() == TPMMeasurementRecord.SHA_256_BYTE_LENGTH) {
-                    // quote from provisioner is formated to indicate the encryption
-                    if (pcrs256[0].split(":")[0].contains("sha")) {
-                        offset = 1;
-                    }
-                    for (int i = 0; i <= TPMMeasurementRecord.MAX_PCR_ID; i++) {
-                        //update quote with the pcr only, based on offset
-                        quote[i] = pcrs256[i + offset].split(":")[1].trim();
+                Path pcrPath = Paths.get(attCert.getPcrValues());
+                String pcrContent = "";
+                if (Files.exists(pcrPath)) {
+                    try {
+                        pcrContent = new String(Files.readAllBytes(pcrPath), "UTF8");
+                    } catch (IOException ioEx) {
+                        LOGGER.error(ioEx);
                     }
                 }
+                String[] pcrSet = null;
+                String[] quote = null;
+                int algorithmLength = baseline[0].length();
 
-                StringBuilder sb = pcrPolicy.validatePcrs(quote);
-                if (sb.length() > 0) {
-                    level = Level.ERROR;
-                    fwStatus = new AppraisalStatus(FAIL, sb.toString());
+                if (pcrContent.isEmpty()) {
+                    fwStatus = new AppraisalStatus(FAIL,
+                            "Firmware validation failed: Client did not "
+                                    + "provide pcr values.");
+                    LOGGER.warn(String.format(
+                            "Firmware validation failed: Client (%s) did not "
+                                    + "provide pcr values.", attCert.getDevice().getName()));
                 } else {
-                    level = Level.INFO;
+                    // we have a full set of PCR values
+                    pcrSet = pcrContent.split("\\n");
+                    quote = new String[TPMMeasurementRecord.MAX_PCR_ID + 1];
+
+                    // we need to scroll through the entire list until we find
+                    // a matching hash length
+                    int offset = 1;
+
+                    for (int i = 0; i < pcrSet.length; i++) {
+                        if (pcrSet[i].contains("sha")) {
+                            // entered a new set, check size
+                            if (pcrSet[i + offset].split(":")[1].trim().length()
+                                    == algorithmLength) {
+                                // found the matching set
+                                for (int j = 0; j <= TPMMeasurementRecord.MAX_PCR_ID; j++) {
+                                    quote[j] = pcrSet[++i].split(":")[1].trim();
+                                }
+                                break;
+                            }
+                        }
+                    }
+
+                    if (quote[0].isEmpty()) {
+                        // validation fail
+                        fwStatus = new AppraisalStatus(FAIL,
+                                "Firmware validation failed: "
+                                        + "Client provided PCR "
+                                        + "values are not the same algorithm "
+                                        + "as associated RIM.");
+                    } else {
+                        StringBuilder sb = pcrPolicy.validatePcrs(quote);
+                        if (sb.length() > 0) {
+                            level = Level.ERROR;
+                            fwStatus = new AppraisalStatus(FAIL, sb.toString());
+                        } else {
+                            level = Level.INFO;
+                        }
+                    }
                 }
-            } else if (fwStatus != null) {
+            } else {
                 fwStatus = new AppraisalStatus(FAIL, "Associated Issued Attestation"
                         + " Certificate can not be found.");
             }

@@ -61,7 +61,6 @@ class CommandTpm2 {
     static const char* const kTpm2ToolsGetQuoteCommand;
     static const char* const kTpm2DefaultQuoteFilename;
     static const char* const kTpm2DefaultSigFilename;
-    static const char* const kTpm2Sha1SigAlgorithm;
     static const char* const kTpm2Sha256SigAlgorithm;
     static const char* const kTpm2ToolsPcrListCommand;
 
@@ -139,7 +138,6 @@ class CommandTpm2 {
             const std::string& nonce);
 
     std::string getPcrsList();
-    std::string getPcrs256List();
 };
 
 }  // namespace tpm2
