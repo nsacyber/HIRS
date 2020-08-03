@@ -12,23 +12,28 @@ public class Main {
         Commander commander = new Commander();
         JCommander jc = JCommander.newBuilder().addObject(commander).build();
         jc.parse(args);
-        SwidTagGateway gateway = new SwidTagGateway();
+        SwidTagGateway gateway;
+        SwidTagValidator validator;
 
         if (commander.isHelp()) {
             jc.usage();
             System.out.println(commander.printHelpExamples());
         } else {
             if (!commander.getVerifyFile().isEmpty()) {
+                validator = new SwidTagValidator();
                 System.out.println(commander.toString());
                 String verifyFile = commander.getVerifyFile();
                 String rimel = commander.getRimEventLog();
-                //String publicCertificate = commander.getPublicCertificate();
+                String certificateFile = commander.getPublicCertificate();
                 if (!verifyFile.isEmpty()) {
                     if (!rimel.isEmpty()) {
-                        gateway.setRimEventLog(rimel);
+                        validator.setRimEventLog(rimel);
+                    }
+                    if (!certificateFile.isEmpty()) {
+                        validator.setCertificateFile(certificateFile);
                     }
                     try {
-                        gateway.validateSwidTag(verifyFile);
+                        validator.validateSwidTag(verifyFile);
                     } catch (IOException e) {
                         System.out.println("Error validating RIM file: " + e.getMessage());
                         System.exit(1);
@@ -38,6 +43,7 @@ public class Main {
                     System.exit(1);
                 }
             } else {
+                gateway = new SwidTagGateway();
                 System.out.println(commander.toString());
                 String createType = commander.getCreateType().toUpperCase();
                 String attributesFile = commander.getAttributesFile();

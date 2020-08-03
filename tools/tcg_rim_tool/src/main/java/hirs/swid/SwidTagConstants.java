@@ -69,6 +69,9 @@ public class SwidTagConstants {
     public static final String SUPPORT_RIM_FORMAT = "supportRIMFormat";
     public static final String SUPPORT_RIM_URI_GLOBAL = "supportRIMURIGlobal";
 
+    public static final QName _SHA256_HASH = new QName(
+            "http://www.w3.org/2001/04/xmlenc#sha256",
+            "hash", "SHA256");
     public static final QName _COLLOQUIAL_VERSION = new QName(
             "http://csrc.nist.gov/ns/swid/2015-extensions/1.0",
             "colloquialVersion", "n8060");
@@ -142,5 +145,5 @@ public class SwidTagConstants {
             "http://csrc.nist.gov/ns/swid/2015-extensions/1.0",
             "pathSeparator", "n8060");
 
-    public static final String CERTIFICATE_SUBJECT_KEY_IDENTIFIER = "2.5.29.14";
+    public static final String CA_ISSUERS = "1.3.6.1.5.5.7.48.2";
 }

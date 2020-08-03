@@ -16,6 +16,7 @@ import org.testng.annotations.Test;
 
 public class TestSwidTagGateway {
 	private SwidTagGateway gateway;
+	private SwidTagValidator validator;
 	private final String DEFAULT_OUTPUT = "generated_swidTag.swidtag";
 	private final String DEFAULT_WITH_CERT = "generated_with_cert.swidtag";
 	private final String DEFAULT_NO_CERT = "generated_no_cert.swidtag";
@@ -28,6 +29,8 @@ public class TestSwidTagGateway {
 	public void setUp() throws Exception {
 		gateway = new SwidTagGateway();
 		gateway.setRimEventLog(supportRimFile);
+		validator = new SwidTagValidator();
+		validator.setRimEventLog(supportRimFile);
 	}
 
 	@AfterClass
@@ -40,6 +43,7 @@ public class TestSwidTagGateway {
 	/**
 	 * This test corresponds to the arguments:
 	 * -c base -l TpmLog.bin -k privateRimKey.pem -p RimSignCert.pem
+	 * where RimSignCert.pem has the AIA extension.
 	 */
 	@Test
 	public void testCreateBaseWithCert() throws URISyntaxException {
@@ -70,7 +74,7 @@ public class TestSwidTagGateway {
 	@Test
 	public void testValidateSwidTag() {
 	    try {
-	        Assert.assertTrue(gateway.validateSwidTag(TestSwidTagGateway.class.getClassLoader().getResource(DEFAULT_WITH_CERT).getPath()));
+	        Assert.assertTrue(validator.validateSwidTag(TestSwidTagGateway.class.getClassLoader().getResource(DEFAULT_WITH_CERT).getPath()));
 	    } catch (IOException e) {
 	        Assert.fail("Invalid swidtag!");
 	    }

@@ -32,9 +32,7 @@
 		"Directory": {
 			"name": "iotBase",
 			"File": {
-				"name": "Example.com.iotBase.bin",
-				"size": "15400",
-				"hash": "688e293e3ccb522f6cf8a027c9ade7960f84bd0bf3a0b99812bc1fa498a2db8d"
+				"name": "TpmLog.bin"
 			}
 		}
 	}

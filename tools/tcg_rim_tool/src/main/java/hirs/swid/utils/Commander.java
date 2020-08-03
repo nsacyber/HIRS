@@ -96,10 +96,15 @@ public class Commander {
         sb.append("Create a base RIM using the values in attributes.json; " +
                 "sign it with the default keystore, alias, and password;\n");
         sb.append("and write the data to base_rim.swidtag:\n\n");
-        sb.append("\t\t-c base -a attributes.json -l support_rim.swidtag -o base_rim.swidtag\n\n\n");
+        sb.append("\t\t-c base -a attributes.json -l support_rim.bin -o base_rim.swidtag\n\n\n");
         sb.append("Create a base RIM using the default attribute values; sign it using privateKey.pem;\n");
-        sb.append("and write the data to console output, to include cert.pem in the signature block:\n\n");
-        sb.append("\t\t-c base -l support_rim.swidtag -k privateKey.pem -p cert.pem\n\n\n");
+        sb.append("and write the data to console output, to embed cert.pem in the signature block:\n\n");
+        sb.append("\t\t-c base -l support_rim.bin -k privateKey.pem -p cert.pem\n\n\n");
+        sb.append("Validate a base RIM using an external support RIM to override the payload file:\n\n");
+        sb.append("\t\t-v base_rim.swidtag -l support_rim.bin\n\n\n");
+        sb.append("Validate a base RIM with an external cert:\n\n");
+        sb.append("\t\t-v base_rim.swidtag -p signing_cert.pem\n\n\n");
+
 
         return sb.toString();
     }
