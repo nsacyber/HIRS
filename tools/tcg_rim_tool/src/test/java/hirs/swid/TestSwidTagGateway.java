@@ -20,17 +20,17 @@ public class TestSwidTagGateway {
 	private final String DEFAULT_OUTPUT = "generated_swidTag.swidtag";
 	private final String DEFAULT_WITH_CERT = "generated_with_cert.swidtag";
 	private final String DEFAULT_NO_CERT = "generated_no_cert.swidtag";
-	private final String certificateFile = "RimSignCert.pem";
-	private final String privateKeyFile = "privateRimKey.pem";
-	private final String supportRimFile = "TpmLog.bin";
+	private final String SIGNING_CERT_FILE = TestSwidTagGateway.class.getClassLoader().getResource("RimSignCert.pem").getPath();
+	private final String PRIVATE_KEY_FILE = TestSwidTagGateway.class.getClassLoader().getResource("privateRimKey.pem").getPath();
+	private final String SUPPORT_RIM_FILE = TestSwidTagGateway.class.getClassLoader().getResource("TpmLog.bin").getPath();
 	private InputStream expectedFile;
 
 	@BeforeClass
 	public void setUp() throws Exception {
 		gateway = new SwidTagGateway();
-		gateway.setRimEventLog(supportRimFile);
+		gateway.setRimEventLog(SUPPORT_RIM_FILE);
 		validator = new SwidTagValidator();
-		validator.setRimEventLog(supportRimFile);
+		validator.setRimEventLog(SUPPORT_RIM_FILE);
 	}
 
 	@AfterClass
@@ -48,8 +48,8 @@ public class TestSwidTagGateway {
 	@Test
 	public void testCreateBaseWithCert() throws URISyntaxException {
 		gateway.setDefaultCredentials(false);
-		gateway.setPemCertificateFile(certificateFile);
-		gateway.setPemPrivateKeyFile(privateKeyFile);
+		gateway.setPemCertificateFile(SIGNING_CERT_FILE);
+		gateway.setPemPrivateKeyFile(PRIVATE_KEY_FILE);
 		gateway.generateSwidTag(DEFAULT_OUTPUT);
 		expectedFile = (InputStream) TestSwidTagGateway.class.getClassLoader().getResourceAsStream(DEFAULT_WITH_CERT);
 		Assert.assertTrue(compareFileBytesToExpectedFile(DEFAULT_OUTPUT));
@@ -73,11 +73,15 @@ public class TestSwidTagGateway {
 	 */
 	@Test
 	public void testValidateSwidTag() {
+		String filepath = TestSwidTagGateway.class.getClassLoader().getResource(DEFAULT_WITH_CERT).getPath();
+		System.out.println("Validating file at " + filepath);
 	    try {
-	        Assert.assertTrue(validator.validateSwidTag(TestSwidTagGateway.class.getClassLoader().getResource(DEFAULT_WITH_CERT).getPath()));
+	        Assert.assertTrue(validator.validateSwidTag(filepath));
 	    } catch (IOException e) {
 	        Assert.fail("Invalid swidtag!");
-	    }
+	    } catch (NullPointerException e) {
+	    	Assert.fail("Cannot find file: " + filepath);
+		}
 	}
 
 	/**
