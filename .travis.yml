@@ -17,6 +17,7 @@ env:
   - SUBPROJECT=HIRS_AttestationCAPortal
   - SUBPROJECT=TPM_Utils
   - SUBPROJECT=tpm_module
+  - TCG_RIM_TOOL=tools/tcg_rim_tool
 
 services:
   - docker
@@ -32,7 +33,7 @@ cache:
 install: true
 
 script:
-  - docker run --rm -v $(pwd):/HIRS hirs/hirs-ci:centos7 /bin/bash -c "cd /HIRS; ./gradlew :$SUBPROJECT:build -x test"
+        - docker run --rm -v $(pwd):/HIRS hirs/hirs-ci:centos7 /bin/bash -c "cd /HIRS; ./gradlew :$SUBPROJECT:build -x test :$TCG_RIM_TOOL:build"
 
 jobs:
   include:
