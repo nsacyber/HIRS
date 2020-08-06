@@ -213,10 +213,7 @@ public class SwidTagGateway {
             swidTag.setTagId(tagId);
         }
         swidTag.setTagVersion(new BigInteger(jsonObject.getString(SwidTagConstants.TAGVERSION, "0")));
-        String version = jsonObject.getString(SwidTagConstants.VERSION, "");
-        if (!version.isEmpty()) {
-            swidTag.setVersion(version);
-        }
+        swidTag.setVersion(jsonObject.getString(SwidTagConstants.VERSION, "0.0"));
         swidTag.setCorpus(jsonObject.getBoolean(SwidTagConstants.CORPUS, false));
         swidTag.setPatch(jsonObject.getBoolean(SwidTagConstants.PATCH, false));
         swidTag.setSupplemental(jsonObject.getBoolean(SwidTagConstants.SUPPLEMENTAL, false));
@@ -312,6 +309,8 @@ public class SwidTagGateway {
         addNonNullAttribute(attributes, SwidTagConstants._BINDING_SPEC_VERSION, jsonObject.getString(SwidTagConstants.BINDING_SPEC_VERSION, ""));
         addNonNullAttribute(attributes, SwidTagConstants._PC_URI_LOCAL, jsonObject.getString(SwidTagConstants.PC_URI_LOCAL, ""));
         addNonNullAttribute(attributes, SwidTagConstants._PC_URI_GLOBAL, jsonObject.getString(SwidTagConstants.PC_URI_GLOBAL, ""));
+        addNonNullAttribute(attributes, SwidTagConstants._SUPPORT_RIM_TYPE, jsonObject.getString(SwidTagConstants.SUPPORT_RIM_TYPE, ""));
+        addNonNullAttribute(attributes, SwidTagConstants._SUPPORT_RIM_FORMAT, jsonObject.getString(SwidTagConstants.SUPPORT_RIM_FORMAT, ""));
         addNonNullAttribute(attributes, SwidTagConstants._RIM_LINK_HASH, jsonObject.getString(SwidTagConstants.RIM_LINK_HASH, ""));
 
         return softwareMeta;
@@ -329,6 +328,7 @@ public class SwidTagGateway {
         addNonNullAttribute(attributes, SwidTagConstants._N8060_ENVVARPREFIX, jsonObject.getString(SwidTagConstants._N8060_ENVVARPREFIX.getLocalPart(), ""));
         addNonNullAttribute(attributes, SwidTagConstants._N8060_ENVVARSUFFIX, jsonObject.getString(SwidTagConstants._N8060_ENVVARSUFFIX.getLocalPart(), ""));
         addNonNullAttribute(attributes, SwidTagConstants._N8060_PATHSEPARATOR, jsonObject.getString(SwidTagConstants._N8060_PATHSEPARATOR.getLocalPart(), ""));
+        addNonNullAttribute(attributes, SwidTagConstants._SUPPORT_RIM_URI_GLOBAL, jsonObject.getString(SwidTagConstants.SUPPORT_RIM_URI_GLOBAL, ""));
 
         return payload;
     }
@@ -342,10 +342,6 @@ public class SwidTagGateway {
     private Directory createDirectory(JsonObject jsonObject) {
         Directory directory = objectFactory.createDirectory();
         directory.setName(jsonObject.getString(SwidTagConstants.NAME, ""));
-        Map<QName, String> attributes = directory.getOtherAttributes();
-        addNonNullAttribute(attributes, SwidTagConstants._SUPPORT_RIM_TYPE, jsonObject.getString(SwidTagConstants.SUPPORT_RIM_TYPE, ""));
-        addNonNullAttribute(attributes, SwidTagConstants._SUPPORT_RIM_FORMAT, jsonObject.getString(SwidTagConstants.SUPPORT_RIM_FORMAT, ""));
-        addNonNullAttribute(attributes, SwidTagConstants._SUPPORT_RIM_URI_GLOBAL, jsonObject.getString(SwidTagConstants.SUPPORT_RIM_URI_GLOBAL, ""));
 
         return directory;
     }

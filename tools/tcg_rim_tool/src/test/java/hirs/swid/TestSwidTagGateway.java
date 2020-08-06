@@ -20,6 +20,7 @@ public class TestSwidTagGateway {
 	private final String DEFAULT_OUTPUT = "generated_swidTag.swidtag";
 	private final String DEFAULT_WITH_CERT = "generated_with_cert.swidtag";
 	private final String DEFAULT_NO_CERT = "generated_no_cert.swidtag";
+	private final String ATTRIBUTES_FILE = TestSwidTagGateway.class.getClassLoader().getResource("rim_fields.json").getPath();
 	private final String SIGNING_CERT_FILE = TestSwidTagGateway.class.getClassLoader().getResource("RimSignCert.pem").getPath();
 	private final String PRIVATE_KEY_FILE = TestSwidTagGateway.class.getClassLoader().getResource("privateRimKey.pem").getPath();
 	private final String SUPPORT_RIM_FILE = TestSwidTagGateway.class.getClassLoader().getResource("TpmLog.bin").getPath();
@@ -29,6 +30,7 @@ public class TestSwidTagGateway {
 	public void setUp() throws Exception {
 		gateway = new SwidTagGateway();
 		gateway.setRimEventLog(SUPPORT_RIM_FILE);
+		gateway.setAttributesFile(ATTRIBUTES_FILE);
 		validator = new SwidTagValidator();
 		validator.setRimEventLog(SUPPORT_RIM_FILE);
 	}

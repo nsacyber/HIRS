@@ -48,7 +48,7 @@ public class SwidTagConstants {
     public static final String EDITION = "edition";
     public static final String PRODUCT = "product";
     public static final String REVISION = "revision";
-    public static final String PAYLOAD_TYPE = "payloadType";
+    public static final String PAYLOAD_TYPE = "PayloadType";
     public static final String HYBRID = "hybrid";
     public static final String PLATFORM_MANUFACTURER_STR = "platformManufacturerStr";
     public static final String PLATFORM_MANUFACTURER_ID = "platformManufacturerId";
@@ -60,7 +60,7 @@ public class SwidTagConstants {
     public static final String FIRMWARE_VERSION = "firmwareVersion";
     public static final String BINDING_SPEC = "bindingSpec";
     public static final String BINDING_SPEC_VERSION = "bindingSpecVersion";
-    public static final String PC_URI_LOCAL = "pcURILocal";
+    public static final String PC_URI_LOCAL = "pcURIlocal";
     public static final String PC_URI_GLOBAL = "pcURIGlobal";
     public static final String RIM_LINK_HASH = "rimLinkHash";
     public static final String SIZE = "size";
@@ -86,7 +86,7 @@ public class SwidTagConstants {
             "revision", "n8060");
     public static final QName _PAYLOAD_TYPE = new QName(
             "https://trustedcomputinggroup.org/wp-content/uploads/TCG_RIM_Model",
-            "payloadType", "rim");
+            "PayloadType", "rim");
     public static final QName _PLATFORM_MANUFACTURER_STR = new QName(
             "https://trustedcomputinggroup.org/wp-content/uploads/TCG_RIM_Model",
             "platformManufacturerStr", "rim");
@@ -101,22 +101,22 @@ public class SwidTagConstants {
             "platformVersion", "rim");
     public static final QName _FIRMWARE_MANUFACTURER_STR = new QName(
             "https://trustedcomputinggroup.org/wp-content/uploads/TCG_RIM_Model",
-            "platformManufacturerStr", "rim");
+            "firmwareManufacturerStr", "rim");
     public static final QName _FIRMWARE_MANUFACTURER_ID = new QName(
             "https://trustedcomputinggroup.org/wp-content/uploads/TCG_RIM_Model",
-            "platformManufacturerId", "rim");
+            "firmwareManufacturerId", "rim");
     public static final QName _FIRMWARE_MODEL = new QName(
             "https://trustedcomputinggroup.org/wp-content/uploads/TCG_RIM_Model",
-            "platformModel", "rim");
+            "firmwareModel", "rim");
     public static final QName _FIRMWARE_VERSION = new QName(
             "https://trustedcomputinggroup.org/wp-content/uploads/TCG_RIM_Model",
-            "platformVersion", "rim");
+            "firmwareVersion", "rim");
     public static final QName _BINDING_SPEC = new QName(
             "https://trustedcomputinggroup.org/wp-content/uploads/TCG_RIM_Model",
-            "bindingSpec", "rim");
+            "BindingSpec", "rim");
     public static final QName _BINDING_SPEC_VERSION = new QName(
             "https://trustedcomputinggroup.org/wp-content/uploads/TCG_RIM_Model",
-            "bindingSpecVersion", "rim");
+            "BindingSpecVersion", "rim");
     public static final QName _PC_URI_LOCAL = new QName(
             "https://trustedcomputinggroup.org/wp-content/uploads/TCG_RIM_Model",
             "pcURILocal", "rim");

@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<SoftwareIdentity xmlns="http://standards.iso.org/iso/19770/-2/2015/schema.xsd" xmlns:ns2="http://www.w3.org/2000/09/xmldsig#" corpus="false" name="TCG RIM example" patch="false" supplemental="false" tagId="hirs.swid.SwidTags.example" tagVersion="1" version="0.1" versionScheme="multipartnumeric" xml:lang="en">
-  <Entity name="HIRS" regid="www.example.com" role="softwareCreator tagCreator"/>
+<SoftwareIdentity xmlns="http://standards.iso.org/iso/19770/-2/2015/schema.xsd" xmlns:ns2="http://www.w3.org/2000/09/xmldsig#" corpus="false" name="Example.com BIOS" patch="false" supplemental="false" tagId="94f6b457-9ac9-4d35-9b3f-78804173b65as" tagVersion="0" version="01" versionScheme="multipartnumeric" xml:lang="en">
+  <Entity name="Example Inc" regid="http://Example.com" role="softwareCreator tagCreator"/>
   <Link href="https://Example.com/support/ProductA/firmware/installfiles" rel="installationmedia"/>
-  <Meta xmlns:rim="https://trustedcomputinggroup.org/wp-content/uploads/TCG_RIM_Model" rim:bindingSpec="IOT RIM" rim:bindingSpecVersion="1.2" rim:platformManufacturerId="00201234" rim:platformManufacturerStr="Example.com" rim:platformModel="ProductA" rim:rimLinkHash="88f21d8e44d4271149297404df91caf207130bfa116582408abd04ede6db7f51"/>
-  <Payload>
-    <Directory name="iotBase">
-      <File xmlns:SHA256="http://www.w3.org/2001/04/xmlenc#sha256" SHA256:hash="4479ca722623f8c47b703996ced3cbd981b06b1ae8a897db70137e0b7c546848" name="TpmLog.bin" size="7549"/>
+  <Meta xmlns:n8060="http://csrc.nist.gov/ns/swid/2015-extensions/1.0" xmlns:rim="https://trustedcomputinggroup.org/wp-content/uploads/TCG_RIM_Model" n8060:colloquialVersion="Firmware_2019" n8060:edition="12" n8060:product="ProductA" n8060:revision="r2" rim:BindingSpec="PC Client RIM" rim:BindingSpecVersion="1.2" rim:PayloadType="direct" rim:firmwareManufacturerId="00213022" rim:firmwareManufacturerStr="BIOSVendorA" rim:firmwareModel="A0" rim:firmwareVersion="12" rim:pcURIGlobal="https://Example.com/support/ProductA/" rim:pcURILocal="/boot/tcg/manifest/switag/" rim:platformManufacturerId="00201234" rim:platformManufacturerStr="Example.com" rim:platformModel="ProductA" rim:platformVersion="01" rim:supportRIMFormat="TCG_EventLog_Assertion"/>
+  <Payload xmlns:rim="https://trustedcomputinggroup.org/wp-content/uploads/TCG_RIM_Model" rim:supportRIMURIGlobal="https://Example.com/support/ProductA/firmware/rims/">
+    <Directory name="rim">
+      <File xmlns:SHA256="http://www.w3.org/2001/04/xmlenc#sha256" SHA256:hash="4479ca722623f8c47b703996ced3cbd981b06b1ae8a897db70137e0b7c546848" name="Example.com.BIOS.01.rimel" size="7549"/>
     </Directory>
   </Payload>
   <Signature xmlns="http://www.w3.org/2000/09/xmldsig#">
@@ -17,14 +17,14 @@
           <Transform Algorithm="http://www.w3.org/2000/09/xmldsig#enveloped-signature"/>
         </Transforms>
         <DigestMethod Algorithm="http://www.w3.org/2001/04/xmlenc#sha256"/>
-        <DigestValue>jpPZu16C8KjtwY2JpJuyR3SBc2XclVEaVsv/DgyZKTM=</DigestValue>
+        <DigestValue>1rf2CJ9y+OSyPzuqgJt9ve3WiaBjya/RylFFZwSpy5Y=</DigestValue>
       </Reference>
     </SignedInfo>
-    <SignatureValue>pWPozFWH2oytfgZse1Ai769c/cBFS/vapKj27asI8XDLdK8FkNs2K/+OTf4lScBiPLTCvWPIihoe
-hielmV8dWZqvR2z09pr+yCF7q/E8sCGhQXSsVlNZjElMXk2Qz2c6C9XtRk4UNmSfTSYsKEm2AST4
-oh6da+x1CeSHipALfuZZrXwa2AMtc9yTNfqaQFBxRqEDeTypLwNQqdr9va2T8C9ZNnEzooTf5FWw
-OUqc+Ewk5V9ZyOJ/0UdUxs40mGPpsIG90ikx59eu1A4qP4BzjHR3vrNbYDA4hBeIpDHC4vzwJrR4
-xqXw1SLqAm8ngL9Haj2Ww+y0PEZfo++JlOMZuQ==</SignatureValue>
+    <SignatureValue>TRqJ4HtAuQRSqL8TnqhpANTRkAPAI1tUft44xSAzqITT9NSetbLd2Te2D5/jg5kNwfpIYKirGKrd
+suTuBID5DsUsuZqExuvfAKPh1AQuSrQDrZReu+Ma1P/IGzZq3hRV1LVinV5NojdQbyB+yUcTp/d0
+gpBr5Y/PfYGLbkHshw2yJuhd6l1a2WPU8AxBQYTGJiFYX3WEkW20EubJ9FoxCVImdkhzbQKP/3lp
+M31jCMKM1DcFuUU3zdonZukWhd4bbqj926Av+r+qH9S1uGmwQEsNT0lfLljGd7Q7MMxuZ+9fbSgo
+D5GuQbkDL+RfEjbseEpOaB0w4f1uqeCoTEuiiA==</SignatureValue>
     <KeyInfo>
       <X509Data>
         <X509SubjectName>CN=example.RIM.signer,OU=PCClient,O=Example,ST=VA,C=US</X509SubjectName>
