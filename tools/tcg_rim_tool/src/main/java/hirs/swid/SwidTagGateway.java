@@ -309,8 +309,6 @@ public class SwidTagGateway {
         addNonNullAttribute(attributes, SwidTagConstants._BINDING_SPEC_VERSION, jsonObject.getString(SwidTagConstants.BINDING_SPEC_VERSION, ""));
         addNonNullAttribute(attributes, SwidTagConstants._PC_URI_LOCAL, jsonObject.getString(SwidTagConstants.PC_URI_LOCAL, ""));
         addNonNullAttribute(attributes, SwidTagConstants._PC_URI_GLOBAL, jsonObject.getString(SwidTagConstants.PC_URI_GLOBAL, ""));
-        addNonNullAttribute(attributes, SwidTagConstants._SUPPORT_RIM_TYPE, jsonObject.getString(SwidTagConstants.SUPPORT_RIM_TYPE, ""));
-        addNonNullAttribute(attributes, SwidTagConstants._SUPPORT_RIM_FORMAT, jsonObject.getString(SwidTagConstants.SUPPORT_RIM_FORMAT, ""));
         addNonNullAttribute(attributes, SwidTagConstants._RIM_LINK_HASH, jsonObject.getString(SwidTagConstants.RIM_LINK_HASH, ""));
 
         return softwareMeta;
@@ -328,6 +326,8 @@ public class SwidTagGateway {
         addNonNullAttribute(attributes, SwidTagConstants._N8060_ENVVARPREFIX, jsonObject.getString(SwidTagConstants._N8060_ENVVARPREFIX.getLocalPart(), ""));
         addNonNullAttribute(attributes, SwidTagConstants._N8060_ENVVARSUFFIX, jsonObject.getString(SwidTagConstants._N8060_ENVVARSUFFIX.getLocalPart(), ""));
         addNonNullAttribute(attributes, SwidTagConstants._N8060_PATHSEPARATOR, jsonObject.getString(SwidTagConstants._N8060_PATHSEPARATOR.getLocalPart(), ""));
+        addNonNullAttribute(attributes, SwidTagConstants._SUPPORT_RIM_FORMAT, jsonObject.getString(SwidTagConstants.SUPPORT_RIM_FORMAT, ""));
+        addNonNullAttribute(attributes, SwidTagConstants._SUPPORT_RIM_TYPE, jsonObject.getString(SwidTagConstants.SUPPORT_RIM_TYPE, ""));
         addNonNullAttribute(attributes, SwidTagConstants._SUPPORT_RIM_URI_GLOBAL, jsonObject.getString(SwidTagConstants.SUPPORT_RIM_URI_GLOBAL, ""));
 
         return payload;
@@ -366,24 +366,11 @@ public class SwidTagGateway {
     }
 
     /**
-     * This method creates a hirs.swid.xjc.File from a direct payload type.
-     *
-     * @param jsonObject
-     * @return hirs.swid.xjc.File object from File object
-     *
-    private hirs.swid.xjc.File createFile(JsonObject jsonObject) {
-        hirs.swid.xjc.File file = objectFactory.createFile();
-        file.setName(jsonObject.getString(SwidTagConstants.NAME, ""));
-        file.setSize(new BigInteger(jsonObject.getString(SwidTagConstants.SIZE, "0")));
-        Map<QName, String> attributes = file.getOtherAttributes();
-        addNonNullAttribute(attributes, _SHA256_HASH, jsonObject.getString(SwidTagConstants.HASH, ""));
-        addNonNullAttribute(attributes, SwidTagConstants._SUPPORT_RIM_TYPE, jsonObject.getString(SwidTagConstants.SUPPORT_RIM_TYPE, ""));
-        addNonNullAttribute(attributes, SwidTagConstants._SUPPORT_RIM_FORMAT, jsonObject.getString(SwidTagConstants.SUPPORT_RIM_FORMAT, ""));
-        addNonNullAttribute(attributes, SwidTagConstants._SUPPORT_RIM_URI_GLOBAL, jsonObject.getString(SwidTagConstants.SUPPORT_RIM_URI_GLOBAL, ""));
-
-        return file;
-    }*/
-
+     * This utility method checks if an attribute value is empty before adding it to the map.
+     * @param attributes
+     * @param key
+     * @param value
+     */
     private void addNonNullAttribute(Map<QName, String> attributes, QName key, String value) {
         if (!value.isEmpty()) {
             attributes.put(key, value);
