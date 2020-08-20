@@ -33,11 +33,11 @@
                 "bindingSpec": "PC Client RIM",
                 "bindingSpecVersion": "1.2",
                 "pcURIlocal": "/boot/tcg/manifest/switag/",
-                "pcURIGlobal": "https://Example.com/support/ProductA/",
-                "supportRIMFormat":"TCG_EventLog_Assertion"
+                "pcURIGlobal": "https://Example.com/support/ProductA/"
         },
 	"Payload": {
                 "supportRIMURIGlobal": "https://Example.com/support/ProductA/firmware/rims/",
+                "supportRIMFormat":"TCG_EventLog_Assertion",
                 "Directory": {
                         "name": "rim",
                         "root": "/boot/tcg/manifest/rim/",
