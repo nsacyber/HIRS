@@ -25,4 +25,12 @@ public interface SupplyChainValidationService {
     SupplyChainValidationSummary validateSupplyChain(EndorsementCredential ec,
                                                      Set<PlatformCredential> pc,
                                                      Device device);
+
+    /**
+     * A supplemental method that handles validating just the quote post main validation.
+     *
+     * @param device the associated device.
+     * @return True if validation is successful, false otherwise.
+     */
+    SupplyChainValidationSummary validateQuote(Device device);
 }

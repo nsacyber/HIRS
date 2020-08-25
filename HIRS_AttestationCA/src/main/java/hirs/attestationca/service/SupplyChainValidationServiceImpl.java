@@ -127,6 +127,7 @@ public class SupplyChainValidationServiceImpl implements SupplyChainValidationSe
         List<SupplyChainValidation> validations = new LinkedList<>();
         Map<PlatformCredential, SupplyChainValidation> deltaMapping = new HashMap<>();
         SupplyChainValidation platformScv = null;
+        LOGGER.info("Validating supply chain.");
 
         // Validate the Endorsement Credential
         if (policy.isEcValidationEnabled()) {
@@ -261,6 +262,77 @@ public class SupplyChainValidationServiceImpl implements SupplyChainValidationSe
     }
 
     /**
+     * A supplemental method that handles validating just the quote post main validation.
+     *
+     * @param device the associated device.
+     * @return True if validation is successful, false otherwise.
+     */
+    @Override
+    public SupplyChainValidationSummary validateQuote(final Device device) {
+        final Appraiser supplyChainAppraiser = appraiserManager.getAppraiser(
+                SupplyChainAppraiser.NAME);
+        SupplyChainPolicy policy = (SupplyChainPolicy) policyManager.getDefaultPolicy(
+                supplyChainAppraiser);
+        SupplyChainValidation quoteScv = null;
+        SupplyChainValidationSummary summary = supplyChainValidatorSummaryManager.get(device.getId());
+        Level level = Level.ERROR;
+        AppraisalStatus fwStatus = new AppraisalStatus(FAIL,
+                SupplyChainCredentialValidator.FIRMWARE_VALID);
+
+        // If the device already failed, then ignore
+        if (summary.getOverallValidationResult() == PASS) {
+            // check if the policy is enabled
+            if (policy.isFirmwareValidationEnabled()) {
+                String[] baseline = new String[Integer.SIZE];
+                String manufacturer = device.getDeviceInfo()
+                        .getHardwareInfo().getManufacturer();
+
+                // need to get pcrs
+                ReferenceManifest rim = ReferenceManifest.select(
+                        this.referenceManifestManager)
+                        .byManufacturer(manufacturer)
+                        .getRIM();
+
+                if (rim == null) {
+                    fwStatus = new AppraisalStatus(FAIL,
+                            String.format("Firmware Quote validation failed: "
+                                            + "No associated RIM file could be found for %s",
+                                    manufacturer));
+                } else {
+                    List<SwidResource> swids = rim.parseResource();
+                    for (SwidResource swid : swids) {
+                        baseline = swid.getPcrValues()
+                                .toArray(new String[swid.getPcrValues().size()]);
+                    }
+
+                    PCRPolicy pcrPolicy = policy.getPcrPolicy();
+
+                    pcrPolicy.setBaselinePcrs(baseline);
+                    // grab the quote
+//                    byte[] hash = device.getDeviceInfo().getTPMInfo().getTpmQuoteHash();
+//                    byte[] signature = device.getDeviceInfo().getTPMInfo().getTpmQuoteHash();
+//
+//                    if (!pcrPolicy.validateQuote(hash)) {
+//                        quoteScv = buildValidationRecord(SupplyChainValidation.ValidationType.FIRMWARE,
+//                                fwStatus.getAppStatus(),
+//                                "Firmware validation of TPM Quote failed.", rim, level);
+//                    }
+                }
+            }
+        }
+
+        // Generate validation summary, save it, and return it.
+        summary.getValidations().add(quoteScv);  //verify
+        try {
+            supplyChainValidatorSummaryManager.save(summary);
+        } catch (DBManagerException ex) {
+            LOGGER.error("Failed to save Supply Chain summary", ex);
+        }
+
+        return summary;
+    }
+
+    /**
      * This method is a sub set of the validate supply chain method and focuses
      * on the specific multibase validation check for a delta chain. This method
      * also includes the check for delta certificate CA validation as well.
@@ -349,7 +421,7 @@ public class SupplyChainValidationServiceImpl implements SupplyChainValidationSe
             pcrPolicy.setBaselinePcrs(baseline);
 
             if (attCert != null) {
-                Path pcrPath = Paths.get(attCert.getPcrValues());
+                Path pcrPath = Paths.get("");
                 String pcrContent = "";
                 if (Files.exists(pcrPath)) {
                     try {

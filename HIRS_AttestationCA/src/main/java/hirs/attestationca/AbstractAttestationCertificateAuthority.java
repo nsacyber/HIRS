@@ -515,9 +515,9 @@ public abstract class AbstractAttestationCertificateAuthority
             if (request.getQuote() != null && !request.getQuote().isEmpty()) {
                 parseTPMQuote(request.getQuote().toStringUtf8());
             }
-            if (request.getPcrslist() != null && !request.getPcrslist().isEmpty()) {
-                this.pcrValues = request.getPcrslist().toStringUtf8();
-            }
+//            if (request.getPcrslist() != null && !request.getPcrslist().isEmpty()) {
+//                this.pcrValues = request.getPcrslist().toStringUtf8();
+//            }
 
             // Get device name and device
             String deviceName = claim.getDv().getNw().getHostname();
@@ -1477,7 +1477,6 @@ public abstract class AbstractAttestationCertificateAuthority
             IssuedAttestationCertificate attCert = new IssuedAttestationCertificate(
                     derEncodedAttestationCertificate, endorsementCredential, platformCredentials);
             attCert.setDevice(device);
-            attCert.setPcrValues(savePcrValues(pcrValues, device.getName()));
             certificateManager.save(attCert);
         } catch (Exception e) {
             LOG.error("Error saving generated Attestation Certificate to database.", e);
