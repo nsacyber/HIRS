@@ -166,8 +166,8 @@ public abstract class AbstractAttestationCertificateAuthority
     private final DeviceRegister deviceRegister;
     private final DeviceManager deviceManager;
     private final DBManager<TPM2ProvisionerState> tpm2ProvisionerStateDBManager;
-    private String tpmQuoteHash;
-    private String tpmSignatureHash;
+    private String tpmQuoteHash = "";
+    private String tpmSignatureHash = "";
     private String pcrValues;
 
     /**
@@ -460,6 +460,32 @@ public abstract class AbstractAttestationCertificateAuthority
         AppraisalStatus.Status validationResult = summary.getOverallValidationResult();
         device.setSupplyChainStatus(validationResult);
         deviceManager.updateDevice(device);
+        return validationResult;
+    }
+
+    /**
+     * Performs supply chain validation for just the quote under Firmware validation.
+     * Performed after main supply chain validation and a certificate request.
+     *
+     * @param device associated device to validate.
+     * @return the {@link AppraisalStatus} of the supply chain validation
+     */
+    private AppraisalStatus.Status doQuoteValidation(final Device device) {
+        // perform supply chain validation
+        SupplyChainValidationSummary scvs = supplyChainValidationService.validateQuote(device);
+        AppraisalStatus.Status validationResult;
+
+        // either validation wasn't enabled or device already failed
+        if (scvs == null) {
+            // this will just allow for the certificate to be saved.
+            validationResult = AppraisalStatus.Status.PASS;
+        } else {
+            // update the validation result in the device
+            validationResult = scvs.getOverallValidationResult();
+            device.setSupplyChainStatus(validationResult);
+            deviceManager.updateDevice(device);
+        }
+
         return validationResult;
     }
 

@@ -3,7 +3,17 @@ package hirs.data.persist;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import static org.apache.logging.log4j.LogManager.getLogger;
+
+import hirs.data.persist.tpm.PcrComposite;
+import hirs.data.persist.tpm.PcrInfoShort;
+import org.apache.commons.codec.DecoderException;
 import org.apache.logging.log4j.Logger;
+
+import java.io.UnsupportedEncodingException;
+import java.security.NoSuchAlgorithmException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 /**
  * The class handles the flags that ignore certain PCRs for validation.
@@ -28,23 +38,28 @@ public final class PCRPolicy extends Policy {
     private boolean linuxOs = false;
 
     private String[] baselinePcrs;
+    private List<TPMMeasurementRecord> measurements;
 
     /**
      * Default constructor.
      */
     public PCRPolicy() {
         baselinePcrs = new String[TPMMeasurementRecord.MAX_PCR_ID + 1];
+        measurements = new ArrayList<>(baselinePcrs.length);
     }
 
     /**
      * Constructor to parse PCR values.
      *
      * @param pcrValues RIM provided baseline PCRs
+     * @throws DecoderException if byte array could not be decoded.
      */
-    public PCRPolicy(final String[] pcrValues) {
+    public PCRPolicy(final String[] pcrValues) throws DecoderException {
         baselinePcrs = new String[TPMMeasurementRecord.MAX_PCR_ID + 1];
+        measurements = new ArrayList<>(baselinePcrs.length);
         for (int i = 0; i <= TPMMeasurementRecord.MAX_PCR_ID; i++) {
             baselinePcrs[i] = pcrValues[i];
+            measurements.add(new TPMMeasurementRecord(i, pcrValues[i]));
         }
     }
 
@@ -52,10 +67,10 @@ public final class PCRPolicy extends Policy {
      * Compares the baseline pcr list and the quote pcr list.  If the
      * ignore flags are set, 10 and 17-19 will be skipped for comparison.
      *
-     * @param quotePcrs non-baseline pcr list
+     * @param storedPcrs non-baseline pcr list
      * @return a StringBuilder that is empty if everything passes.
      */
-    public StringBuilder validatePcrs(final String[] quotePcrs) {
+    public StringBuilder validatePcrs(final String[] storedPcrs) {
         StringBuilder sb = new StringBuilder();
         String failureMsg = "PCR %d does not match%n";
 
@@ -70,12 +85,46 @@ public final class PCRPolicy extends Policy {
                 i += NUM_OF_TBOOT_PCR;
             }
 
-            if (!baselinePcrs[i].equals(quotePcrs[i])) {
+            if (!baselinePcrs[i].equals(storedPcrs[i])) {
                 sb.append(String.format(failureMsg, i));
             }
         }
 
         return sb;
+    }
+
+    /**
+     * Compares hashs to validate the quote from the client.
+     *
+     * @param tpmQuote the provided quote
+     * @return true if validated, false if not
+     */
+    public boolean validateQuote(final byte[] tpmQuote) {
+        boolean validated = false;
+
+        short localityAtRelease = 0;
+        PcrComposite pcrComposite = new PcrComposite(this.measurements);
+        PcrInfoShort pcrInfoShort = new PcrInfoShort(localityAtRelease,
+                tpmQuote, pcrComposite);
+
+        try {
+            if (!Arrays.equals(pcrInfoShort.getCalculatedDigest(),
+                    pcrInfoShort.getCompositeHash())) {
+                LOGGER.error("This is NOT matching: ");
+                LOGGER.error(new String(pcrInfoShort.getCalculatedDigest(), "UTF-8"));
+                LOGGER.error(new String(pcrInfoShort.getCompositeHash(), "UTF-8"));
+            } else {
+                LOGGER.error("This is matching: ");
+                LOGGER.error(new String(pcrInfoShort.getCalculatedDigest(), "UTF-8"));
+                LOGGER.error(new String(pcrInfoShort.getCompositeHash(), "UTF-8"));
+            }
+        } catch (NoSuchAlgorithmException naEx) {
+            LOGGER.error(naEx);
+        } catch (UnsupportedEncodingException e) {
+            e.printStackTrace();
+        }
+
+        return validated;
     }
 
     /**

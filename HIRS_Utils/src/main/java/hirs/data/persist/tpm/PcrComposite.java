@@ -115,7 +115,7 @@ public class PcrComposite {
     @XmlElement(name = "ValueSize", required = true)
     public final int getValueSize() {
         int valueSize = 0;
-        for (TPMMeasurementRecord record: this.pcrValueList) {
+        for (TPMMeasurementRecord record : this.pcrValueList) {
             valueSize += record.getHash().getDigest().length;
         }
         return valueSize;
