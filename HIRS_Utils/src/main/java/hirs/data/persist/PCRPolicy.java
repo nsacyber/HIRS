@@ -6,14 +6,12 @@ import static org.apache.logging.log4j.LogManager.getLogger;
 
 import hirs.data.persist.tpm.PcrComposite;
 import hirs.data.persist.tpm.PcrInfoShort;
-import org.apache.commons.codec.DecoderException;
+import hirs.data.persist.tpm.PcrSelection;
 import org.apache.logging.log4j.Logger;
 
 import java.io.UnsupportedEncodingException;
 import java.security.NoSuchAlgorithmException;
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.List;
 
 /**
  * The class handles the flags that ignore certain PCRs for validation.
@@ -38,28 +36,23 @@ public final class PCRPolicy extends Policy {
     private boolean linuxOs = false;
 
     private String[] baselinePcrs;
-    private List<TPMMeasurementRecord> measurements;
 
     /**
      * Default constructor.
      */
     public PCRPolicy() {
         baselinePcrs = new String[TPMMeasurementRecord.MAX_PCR_ID + 1];
-        measurements = new ArrayList<>(baselinePcrs.length);
     }
 
     /**
      * Constructor to parse PCR values.
      *
      * @param pcrValues RIM provided baseline PCRs
-     * @throws DecoderException if byte array could not be decoded.
      */
-    public PCRPolicy(final String[] pcrValues) throws DecoderException {
+    public PCRPolicy(final String[] pcrValues) {
         baselinePcrs = new String[TPMMeasurementRecord.MAX_PCR_ID + 1];
-        measurements = new ArrayList<>(baselinePcrs.length);
         for (int i = 0; i <= TPMMeasurementRecord.MAX_PCR_ID; i++) {
             baselinePcrs[i] = pcrValues[i];
-            measurements.add(new TPMMeasurementRecord(i, pcrValues[i]));
         }
     }
 
@@ -101,10 +94,15 @@ public final class PCRPolicy extends Policy {
      */
     public boolean validateQuote(final byte[] tpmQuote) {
         boolean validated = false;
-
         short localityAtRelease = 0;
-        PcrComposite pcrComposite = new PcrComposite(this.measurements);
-        PcrInfoShort pcrInfoShort = new PcrInfoShort(localityAtRelease,
+
+        TPMMeasurementRecord[] measurements = new TPMMeasurementRecord[baselinePcrs.length];
+        PcrSelection pcrSelection = new PcrSelection(PcrSelection.ALL_PCRS_ON);
+        PcrComposite pcrComposite = new PcrComposite(
+                pcrSelection,
+                Arrays.asList(measurements));
+        PcrInfoShort pcrInfoShort = new PcrInfoShort(pcrSelection,
+                localityAtRelease,
                 tpmQuote, pcrComposite);
 
         try {
