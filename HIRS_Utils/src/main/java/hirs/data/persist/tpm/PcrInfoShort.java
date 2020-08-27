@@ -270,6 +270,7 @@ public class PcrInfoShort {
 
         while (iter.hasNext()) {
             TPMMeasurementRecord record = (TPMMeasurementRecord) iter.next();
+            LOGGER.error(record.getHash());
             byteBuffer.put(record.getHash().getDigest());
         }
 
