@@ -9,12 +9,12 @@ import hirs.data.persist.tpm.PcrComposite;
 import hirs.data.persist.tpm.PcrInfoShort;
 import hirs.data.persist.tpm.PcrSelection;
 import org.apache.commons.codec.DecoderException;
+import org.apache.commons.codec.binary.Hex;
 import org.apache.logging.log4j.Logger;
 
-import java.io.UnsupportedEncodingException;
+import java.nio.charset.Charset;
 import java.security.NoSuchAlgorithmException;
 import java.util.Arrays;
-import java.util.Base64;
 
 /**
  * The class handles the flags that ignore certain PCRs for validation.
@@ -100,6 +100,8 @@ public final class PCRPolicy extends Policy {
         LOGGER.info("Validating quote from associated device.");
         boolean validated = false;
         short localityAtRelease = 0;
+        Charset charset = Charset.forName("UTF-8");
+        String quoteString = new String(tpmQuote, charset);
 
         TPMMeasurementRecord[] measurements = new TPMMeasurementRecord[baselinePcrs.length];
         try {
@@ -118,25 +120,17 @@ public final class PCRPolicy extends Policy {
                 tpmQuote, pcrComposite);
 
         try {
-            validated = Arrays.equals(pcrInfoShort.getCalculatedDigest(),
-                    pcrInfoShort.getCompositeHash());
+            String calculatedString = Hex.encodeHexString(
+                    pcrInfoShort.getCalculatedDigest());
+            validated = quoteString.contains(calculatedString);
             if (validated) {
                 LOGGER.error("This is matching: ");
-                String value = Base64.getEncoder().encodeToString(pcrInfoShort
-                        .getCalculatedDigest());
-                LOGGER.error(value);
-                LOGGER.error(new String(pcrInfoShort.getCompositeHash(), "UTF-8"));
+
             } else {
                 LOGGER.error("This is NOT matching: ");
-                String value = new String(pcrInfoShort
-                        .getCalculatedDigest(), "UTF-8");
-                LOGGER.error(value);
-                LOGGER.error(new String(pcrInfoShort.getCompositeHash(), "UTF-8"));
             }
         } catch (NoSuchAlgorithmException naEx) {
             LOGGER.error(naEx);
-        } catch (UnsupportedEncodingException ueEx) {
-            LOGGER.error(ueEx);
         }
 
         return validated;

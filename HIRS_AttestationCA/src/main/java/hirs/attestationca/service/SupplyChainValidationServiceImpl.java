@@ -448,20 +448,19 @@ public class SupplyChainValidationServiceImpl implements SupplyChainValidationSe
             }
 
             // Generate validation summary, save it, and return it.
-
             List<SupplyChainValidation> validations = new ArrayList<>();
             validations.addAll(summary.getValidations());
             validations.add(quoteScv);
             newSummary = new SupplyChainValidationSummary(device, validations);
 
             try {
-                supplyChainValidatorSummaryManager.update(newSummary);
+                supplyChainValidatorSummaryManager.save(summary);
             } catch (DBManagerException ex) {
                 LOGGER.error("Failed to save Supply Chain summary", ex);
             }
         }
 
-        return newSummary;
+        return summary;
     }
 
     private SupplyChainValidation validateEndorsementCredential(final EndorsementCredential ec,
