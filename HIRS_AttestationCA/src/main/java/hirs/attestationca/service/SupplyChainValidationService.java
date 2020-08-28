@@ -1,6 +1,7 @@
 package hirs.attestationca.service;
 
 import java.util.Set;
+
 import hirs.data.persist.Device;
 import hirs.data.persist.SupplyChainValidationSummary;
 import hirs.data.persist.certificate.EndorsementCredential;

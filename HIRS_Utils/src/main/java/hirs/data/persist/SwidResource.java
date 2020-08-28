@@ -48,6 +48,7 @@ public class SwidResource {
     private List<String> pcrValues;
     private TpmWhiteListBaseline tpmWhiteList;
     private DigestAlgorithm digest = DigestAlgorithm.SHA1;
+    private boolean validFileSize = false;
 
     /**
      * Default constructor.
@@ -193,6 +194,14 @@ public class SwidResource {
     }
 
     /**
+     * flag for if the file sizes match with the swidtag.
+     * @return true if they match
+     */
+    public boolean isValidFileSize() {
+        return validFileSize;
+    }
+
+    /**
      * Getter for a generated map of the PCR values.
      *
      * @return mapping of PCR# to the actual value.
@@ -223,6 +232,7 @@ public class SwidResource {
             if (Files.exists(logPath)) {
                 logProcessor = new TCGEventLog(
                         Files.readAllBytes(logPath));
+//                this.validFileSize = Files.size(logPath) == Long.getLong(this.size);
             }
             this.setPcrValues(Arrays.asList(
                         logProcessor.getExpectedPCRValues()));

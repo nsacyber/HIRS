@@ -23,6 +23,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import java.util.LinkedList;
+import java.util.UUID;
 import java.util.stream.Collectors;
 import org.apache.logging.log4j.Level;
 import hirs.appraiser.Appraiser;
@@ -47,6 +48,7 @@ import hirs.persist.DBManagerException;
 import hirs.persist.PersistenceConfiguration;
 import hirs.persist.PolicyManager;
 import hirs.validation.CredentialValidator;
+
 import java.util.HashMap;
 import java.util.Map;
 
@@ -254,6 +256,7 @@ public class SupplyChainValidationServiceImpl implements SupplyChainValidationSe
         } catch (DBManagerException ex) {
             LOGGER.error("Failed to save Supply Chain summary", ex);
         }
+
         return summary;
     }
 
@@ -339,6 +342,7 @@ public class SupplyChainValidationServiceImpl implements SupplyChainValidationSe
             for (SwidResource swid : swids) {
                 baseline = swid.getPcrValues()
                         .toArray(new String[swid.getPcrValues().size()]);
+                LOGGER.error("is file size valid {}", swid.isValidFileSize());
             }
             pcrPolicy.setBaselinePcrs(baseline);
 
@@ -453,9 +457,14 @@ public class SupplyChainValidationServiceImpl implements SupplyChainValidationSe
 
             // Generate validation summary, save it, and return it.
             List<SupplyChainValidation> validations = new ArrayList<>();
+            SupplyChainValidationSummary previous
+                    = this.supplyChainValidatorSummaryManager.get(
+                    UUID.fromString(device.getSummaryId()));
+            validations.addAll(previous.getValidations());
             validations.add(quoteScv);
             summary = new SupplyChainValidationSummary(device, validations);
             supplyChainValidatorSummaryManager.save(summary);
+            supplyChainValidatorSummaryManager.delete(previous.getId());
         }
 
         return summary;

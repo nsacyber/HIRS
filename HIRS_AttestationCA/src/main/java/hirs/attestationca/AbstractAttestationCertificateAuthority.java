@@ -302,7 +302,7 @@ public abstract class AbstractAttestationCertificateAuthority
         // update the validation result in the device
         device.setSupplyChainStatus(summary.getOverallValidationResult());
         deviceManager.updateDevice(device);
-
+        LOG.error("This is the device id? {} ", device.getId());
         // check if supply chain validation succeeded.
         // If it did not, do not provide the IdentityResponseEnvelope
         if (summary.getOverallValidationResult() == AppraisalStatus.Status.PASS) {
@@ -452,6 +452,7 @@ public abstract class AbstractAttestationCertificateAuthority
         // perform supply chain validation
         SupplyChainValidationSummary summary = supplyChainValidationService.validateSupplyChain(
                 endorsementCredential, platformCredentials, device);
+        device.setSummaryId(summary.getId().toString());
         // update the validation result in the device
         AppraisalStatus.Status validationResult = summary.getOverallValidationResult();
         device.setSupplyChainStatus(validationResult);
