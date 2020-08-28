@@ -393,18 +393,16 @@ public class SupplyChainValidationServiceImpl implements SupplyChainValidationSe
      * A supplemental method that handles validating just the quote post main validation.
      *
      * @param device the associated device.
-     * @param summary the associated device summary
      * @return True if validation is successful, false otherwise.
      */
     @Override
-    public SupplyChainValidationSummary validateQuote(final Device device,
-                                                      final SupplyChainValidationSummary summary) {
+    public SupplyChainValidationSummary validateQuote(final Device device) {
         final Appraiser supplyChainAppraiser = appraiserManager.getAppraiser(
                 SupplyChainAppraiser.NAME);
         SupplyChainPolicy policy = (SupplyChainPolicy) policyManager.getDefaultPolicy(
                 supplyChainAppraiser);
         SupplyChainValidation quoteScv = null;
-        SupplyChainValidationSummary newSummary = null;
+        SupplyChainValidationSummary summary = null;
         Level level = Level.ERROR;
         AppraisalStatus fwStatus = new AppraisalStatus(FAIL,
                 SupplyChainCredentialValidator.FIRMWARE_VALID);
@@ -431,33 +429,33 @@ public class SupplyChainValidationServiceImpl implements SupplyChainValidationSe
                     baseline = swid.getPcrValues()
                             .toArray(new String[swid.getPcrValues().size()]);
                 }
-                int algorithmLength = baseline[0].length();
+
                 String pcrContent = new String(device.getDeviceInfo().getTPMInfo().getPcrValues());
-                String[] storedPcrs = buildStoredPcrs(pcrContent, algorithmLength);
+                String[] storedPcrs = buildStoredPcrs(pcrContent, baseline[0].length());
                 PCRPolicy pcrPolicy = policy.getPcrPolicy();
                 pcrPolicy.setBaselinePcrs(baseline);
                 // grab the quote
                 byte[] hash = device.getDeviceInfo().getTPMInfo().getTpmQuoteHash();
-                byte[] signature = device.getDeviceInfo().getTPMInfo().getTpmQuoteHash();
-                if (!pcrPolicy.validateQuote(hash, storedPcrs)) {
-                    quoteScv = buildValidationRecord(SupplyChainValidation
-                                    .ValidationType.FIRMWARE,
-                            fwStatus.getAppStatus(),
-                            "Firmware validation of TPM Quote failed.", rim, level);
+                if (pcrPolicy.validateQuote(hash, storedPcrs)) {
+                    level = Level.INFO;
+                    fwStatus = new AppraisalStatus(PASS,
+                            SupplyChainCredentialValidator.FIRMWARE_VALID);
+                    fwStatus.setMessage("Firmware validation of TPM Quote successful.");
+
+                } else {
+                    fwStatus.setMessage("Firmware validation of TPM Quote failed.");
                 }
             }
 
+            quoteScv = buildValidationRecord(SupplyChainValidation
+                            .ValidationType.FIRMWARE,
+                    fwStatus.getAppStatus(), fwStatus.getMessage(), rim, level);
+
             // Generate validation summary, save it, and return it.
             List<SupplyChainValidation> validations = new ArrayList<>();
-            validations.addAll(summary.getValidations());
             validations.add(quoteScv);
-            newSummary = new SupplyChainValidationSummary(device, validations);
-
-            try {
-                supplyChainValidatorSummaryManager.save(summary);
-            } catch (DBManagerException ex) {
-                LOGGER.error("Failed to save Supply Chain summary", ex);
-            }
+            summary = new SupplyChainValidationSummary(device, validations);
+            supplyChainValidatorSummaryManager.save(summary);
         }
 
         return summary;

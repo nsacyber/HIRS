@@ -30,9 +30,7 @@ public interface SupplyChainValidationService {
      * A supplemental method that handles validating just the quote post main validation.
      *
      * @param device the associated device.
-     * @param summary the associated device summary
      * @return True if validation is successful, false otherwise.
      */
-    SupplyChainValidationSummary validateQuote(Device device,
-                                               SupplyChainValidationSummary summary);
+    SupplyChainValidationSummary validateQuote(Device device);
 }

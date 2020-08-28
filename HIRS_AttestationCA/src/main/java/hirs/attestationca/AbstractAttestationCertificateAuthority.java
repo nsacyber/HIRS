@@ -166,7 +166,6 @@ public abstract class AbstractAttestationCertificateAuthority
     private String tpmQuoteHash = "";
     private String tpmQuoteSignature = "";
     private String pcrValues;
-    private SupplyChainValidationSummary savedSummary;
 
     /**
      * Constructor.
@@ -453,7 +452,6 @@ public abstract class AbstractAttestationCertificateAuthority
         // perform supply chain validation
         SupplyChainValidationSummary summary = supplyChainValidationService.validateSupplyChain(
                 endorsementCredential, platformCredentials, device);
-        savedSummary = summary;
         // update the validation result in the device
         AppraisalStatus.Status validationResult = summary.getOverallValidationResult();
         device.setSupplyChainStatus(validationResult);
@@ -471,7 +469,7 @@ public abstract class AbstractAttestationCertificateAuthority
     private AppraisalStatus.Status doQuoteValidation(final Device device) {
         // perform supply chain validation
         SupplyChainValidationSummary scvs = supplyChainValidationService.validateQuote(
-                device, savedSummary);
+                device);
         AppraisalStatus.Status validationResult;
 
         // either validation wasn't enabled or device already failed

@@ -123,12 +123,6 @@ public final class PCRPolicy extends Policy {
             String calculatedString = Hex.encodeHexString(
                     pcrInfoShort.getCalculatedDigest());
             validated = quoteString.contains(calculatedString);
-            if (validated) {
-                LOGGER.error("This is matching: ");
-
-            } else {
-                LOGGER.error("This is NOT matching: ");
-            }
         } catch (NoSuchAlgorithmException naEx) {
             LOGGER.error(naEx);
         }
