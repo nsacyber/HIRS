@@ -232,7 +232,6 @@ public class SwidResource {
             if (Files.exists(logPath)) {
                 logProcessor = new TCGEventLog(
                         Files.readAllBytes(logPath));
-//                this.validFileSize = Files.size(logPath) == Long.getLong(this.size);
             }
             this.setPcrValues(Arrays.asList(
                         logProcessor.getExpectedPCRValues()));
