@@ -342,7 +342,6 @@ public class SupplyChainValidationServiceImpl implements SupplyChainValidationSe
             for (SwidResource swid : swids) {
                 baseline = swid.getPcrValues()
                         .toArray(new String[swid.getPcrValues().size()]);
-                LOGGER.error("is file size valid {}", swid.isValidFileSize());
             }
             pcrPolicy.setBaselinePcrs(baseline);
 
@@ -460,11 +459,24 @@ public class SupplyChainValidationServiceImpl implements SupplyChainValidationSe
             SupplyChainValidationSummary previous
                     = this.supplyChainValidatorSummaryManager.get(
                     UUID.fromString(device.getSummaryId()));
-            validations.addAll(previous.getValidations());
+            for (SupplyChainValidation scv : previous.getValidations()) {
+                if (scv.getValidationType() != SupplyChainValidation.ValidationType.FIRMWARE) {
+                    validations.add(buildValidationRecord(scv.getValidationType(),
+                            scv.getResult(), scv.getMessage(),
+                            scv.getCertificatesUsed().get(0), Level.INFO));
+                }
+            }
             validations.add(quoteScv);
+            previous.archive();
+            supplyChainValidatorSummaryManager.update(previous);
             summary = new SupplyChainValidationSummary(device, validations);
-            supplyChainValidatorSummaryManager.save(summary);
-            supplyChainValidatorSummaryManager.delete(previous.getId());
+
+            // try removing the supply chain validation as well and resaving that
+            try {
+                supplyChainValidatorSummaryManager.save(summary);
+            } catch (DBManagerException ex) {
+                LOGGER.error("Failed to save Supply Chain Summary", ex);
+            }
         }
 
         return summary;

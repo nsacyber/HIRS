@@ -478,6 +478,7 @@ public abstract class AbstractAttestationCertificateAuthority
             // this will just allow for the certificate to be saved.
             validationResult = AppraisalStatus.Status.PASS;
         } else {
+            device.setSummaryId(scvs.getId().toString());
             // update the validation result in the device
             validationResult = scvs.getOverallValidationResult();
             device.setSupplyChainStatus(validationResult);
