@@ -85,6 +85,7 @@ tar --append -f SOURCES/HIRS-$GIT_HASH.tar --exclude='build' ../../HIRS_Provisio
 tar --append -f SOURCES/HIRS-$GIT_HASH.tar --exclude='build' ../../HIRS_Structs
 tar --append -f SOURCES/HIRS-$GIT_HASH.tar --exclude='build' ../../HIRS_Utils
 tar --append -f SOURCES/HIRS-$GIT_HASH.tar --exclude='build' ../../TPM_Utils
+tar --append -f SOURCES/HIRS-$GIT_HASH.tar --exclude='build' ../../tools/tcgRIMTool
 
 # copy includes directory into release TAR
 tar --append -f SOURCES/HIRS-$GIT_HASH.tar ../extras/

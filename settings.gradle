@@ -7,5 +7,6 @@ include 'TPM_Utils',
         'HIRS_AttestationCA',
         'HIRS_AttestationCAPortal',
         'tpm_module',
-        'tools/tcg_rim_tool',
-        'tools/tcg_eventlog_tool'
+	'tools:tcgRIMTool',
+        'tools:tcg_eventlog_tool'
+

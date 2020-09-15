@@ -240,6 +240,13 @@
                 </c:otherwise>
             </c:choose>
         </div>
+        <div class="row">
+            <div class="col-md-1 col-md-offset-1"><span class="colHeader">Signature</span></div>
+            <div id="signature" class="col col-md-8">
+                <div>Validity:&nbsp;<span>${initialData.signatureValid}</span></div>
+                <div>Signer:&nbsp;<span>Link to signing certificate</span></div>
+            </div>
+        </div>
     </div>
 </div>
 <script>

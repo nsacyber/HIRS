@@ -33,7 +33,7 @@ public class Main {
                         validator.setCertificateFile(certificateFile);
                     }
                     try {
-                        validator.validateSwidTag(verifyFile);
+                        validator.validateSwidtagFile(verifyFile);
                     } catch (IOException e) {
                         System.out.println("Error validating RIM file: " + e.getMessage());
                         System.exit(1);

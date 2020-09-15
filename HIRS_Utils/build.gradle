@@ -22,6 +22,8 @@ task utilsTestJar(type: Jar) {
 }
 
 dependencies {
+    compile(project(':tools:tcgRIMTool'))
+
     compile libs.gson // required for plugin
     compile libs.bouncy_castle
     compile libs.commons_cli

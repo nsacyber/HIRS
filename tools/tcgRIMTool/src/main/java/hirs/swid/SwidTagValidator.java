@@ -1,16 +1,15 @@
 package hirs.swid;
 
 import hirs.swid.utils.HashSwid;
+import hirs.swid.xjc.SoftwareIdentity;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
-import javax.xml.bind.JAXBContext;
-import javax.xml.bind.JAXBException;
-import javax.xml.bind.UnmarshalException;
-import javax.xml.bind.Unmarshaller;
+import javax.xml.bind.*;
 import javax.xml.crypto.*;
+import javax.xml.crypto.MarshalException;
 import javax.xml.crypto.dsig.XMLSignature;
 import javax.xml.crypto.dsig.XMLSignatureException;
 import javax.xml.crypto.dsig.XMLSignatureFactory;
@@ -23,7 +22,6 @@ import javax.xml.transform.stream.StreamSource;
 import javax.xml.validation.Schema;
 import javax.xml.validation.SchemaFactory;
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.security.Key;
@@ -35,6 +33,8 @@ public class SwidTagValidator {
     private Unmarshaller unmarshaller;
     private String rimEventLog;
     private String certificateFile;
+    private boolean schemaValid, payloadFileValid, signatureValid;
+    private SoftwareIdentity softwareIdentity;
 
     /**
      * Setter for rimel file path.
@@ -54,43 +54,123 @@ public class SwidTagValidator {
             unmarshaller = jaxbContext.createUnmarshaller();
             rimEventLog = "";
             certificateFile = "";
+            schemaValid = false;
+            payloadFileValid = false;
+            signatureValid = false;
         } catch (JAXBException e) {
             System.out.println("Error initializing JAXBContext: " + e.getMessage());
         }
     }
+
     /**
-     * This method validates the .swidtag file at the given filepath against the
-     * schema. A successful validation results in the output of the tag's name
-     * and tagId attributes, otherwise a generic error message is printed.
-     *
-     * @param path the location of the file to be validated
+     * Getter for property schemaValid
+     * @return
      */
-    public boolean validateSwidTag(String path) throws IOException {
-        Document document = unmarshallSwidTag(path);
+    public boolean isSchemaValid() {
+        return schemaValid;
+    }
+
+    /**
+     * Getter for property payloadFileValid
+     * @return
+     */
+    public boolean isPayloadFileValid() {
+        return payloadFileValid;
+    }
+
+    /**
+     * Getter for property signatureValid
+     * @return
+     */
+    public boolean isSignatureValid() {
+        return signatureValid;
+    }
+
+    /**
+     * Getter for property softwareIdentity
+     * @return
+     */
+    public SoftwareIdentity getSoftwareIdentity() {
+        return softwareIdentity;
+    }
+
+    /**
+     * This method unmarshalls a flat file to a Document object and passes it to
+     * the validate method.
+     * @param path to swidtag file
+     * @return boolean indicating successful or failed validation
+     * @throws IOException
+     */
+    public boolean validateSwidtagFile(String path) throws IOException {
+        File file;
+        StreamSource input;
+        try {
+            file = new File(path);
+            if (file.length() > 0) {
+                input = new StreamSource(new File(path));
+                Document document = removeXMLWhitespace(input);
+                return validate(unmarshallSwidTag(document));
+            } else {
+                System.out.println("Input file is empty!");
+                return false;
+            }
+        } catch (NullPointerException e) {
+            System.out.println("Path to file must be non-null!");
+        }
+
+        return false;
+    }
+
+    public void validateSwidtagInputStream(InputStream is) throws IOException {
+        Document document = removeXMLWhitespace(new StreamSource(is));
+        validate(unmarshallSwidTag(document));
+    }
+
+    /**
+     * This method validates the Document parameter against the swidtag
+     * schema. Three aspects are inspected, with the following output on success or failure:
+     * 1. Successful schema validation results in the output of the tag's name
+     * and tagId attributes, otherwise a generic error message is printed.
+     * 2. Payload file validation results in a message indicating success or failure.
+     * 3. Signature validation results in a message of true for success or false for failure.
+     *
+     * @param document containing the file to be validated
+     */
+    public boolean validate(Document document) throws IOException {
         Element softwareIdentity = (Element) document.getElementsByTagName("SoftwareIdentity").item(0);
         StringBuilder si = new StringBuilder("Base RIM detected:\n");
         si.append("SoftwareIdentity name: " + softwareIdentity.getAttribute("name") + "\n");
         si.append("SoftwareIdentity tagId: " + softwareIdentity.getAttribute("tagId") + "\n");
         System.out.println(si.toString());
-        Element file = (Element) document.getElementsByTagName("File").item(0);
-        validateFile(file);
-        System.out.println("Signature core validity: " + validateSignedXMLDocument(document));
+        schemaValid = true;
+        Element payloadFile = (Element) document.getElementsByTagName("File").item(0);
+        try {
+            payloadFileValid = validateFile(payloadFile);
+        } catch (NullPointerException e) {
+            System.out.println("Error validating payload file: " + e.getMessage());
+        }
+        if (validateSignedXMLDocument(document)) {
+            System.out.println("Base RIM signature validated!");
+            signatureValid = true;
+        } else {
+            System.out.println("Base RIM signature not valid!");
+        }
         return true;
     }
 
     /**
      * This method validates a hirs.swid.xjc.File from an indirect payload
      */
-    private boolean validateFile(Element file) {
+    private boolean validateFile(Element payloadFile) {
         String filepath;
         if (!rimEventLog.isEmpty()) {
             filepath = rimEventLog;
         } else {
-            filepath = file.getAttribute(SwidTagConstants.NAME);
+            filepath = payloadFile.getAttribute(SwidTagConstants.NAME);
         }
         System.out.println("Support rim found at " + filepath);
         if (HashSwid.get256Hash(filepath).equals(
-                file.getAttribute(SwidTagConstants._SHA256_HASH.getPrefix() + ":" +
+                payloadFile.getAttribute(SwidTagConstants._SHA256_HASH.getPrefix() + ":" +
                         SwidTagConstants._SHA256_HASH.getLocalPart()))) {
             System.out.println("Support RIM hash verified!" + System.lineSeparator());
             return true;
@@ -191,22 +271,18 @@ public class SwidTagValidator {
      * This method unmarshalls the swidtag found at [path] into a Document object
      * and validates it according to the schema.
      *
-     * @param path to the input swidtag
+     * @param document containing the input swidtag
      * @return the SoftwareIdentity element at the root of the swidtag
-     * @throws IOException if the swidtag cannot be unmarshalled or validated
      */
-    private Document unmarshallSwidTag(String path) {
+    private Document unmarshallSwidTag(Document document) {
         InputStream is = null;
-        Document document = null;
         try {
-            document = removeXMLWhitespace(path);
             is = SwidTagGateway.class.getClassLoader().getResourceAsStream(SwidTagConstants.SCHEMA_URL);
             SchemaFactory schemaFactory = SchemaFactory.newInstance(SwidTagConstants.SCHEMA_LANGUAGE);
             Schema schema = schemaFactory.newSchema(new StreamSource(is));
             unmarshaller.setSchema(schema);
-            unmarshaller.unmarshal(document);
-        } catch (IOException e) {
-            System.out.println(e.getMessage());
+            JAXBElement jaxbe = (JAXBElement) unmarshaller.unmarshal(document);
+            softwareIdentity = (SoftwareIdentity) jaxbe.getValue();
         } catch (SAXException e) {
             System.out.println("Error setting schema for validation!");
         } catch (UnmarshalException e) {
@@ -231,30 +307,25 @@ public class SwidTagValidator {
     /**
      * This method strips all whitespace from an xml file, including indents and spaces
      * added for human-readability.
-     * @param path
-     * @return
+     * @param input of xml data
+     * @return Document object
      */
-    private Document removeXMLWhitespace(String path) throws IOException {
+    private Document removeXMLWhitespace(StreamSource input) {
         TransformerFactory tf = TransformerFactory.newInstance();
         Source source = new StreamSource(
                 SwidTagGateway.class.getClassLoader().getResourceAsStream("identity_transform.xslt"));
         Document document = null;
-        File input = new File(path);
-        if (input.length() > 0) {
-            try {
-                Transformer transformer = tf.newTransformer(source);
-                DOMResult result = new DOMResult();
-                transformer.transform(new StreamSource(input), result);
-                document = (Document) result.getNode();
-            } catch (TransformerConfigurationException e) {
-                System.out.println("Error configuring transformer!");
-                e.printStackTrace();
-            } catch (TransformerException e) {
-                System.out.println("Error transforming input!");
-                e.printStackTrace();
-            }
-        } else {
-            throw new IOException("Input file is empty!");
+        try {
+            Transformer transformer = tf.newTransformer(source);
+            DOMResult result = new DOMResult();
+            transformer.transform(input, result);
+            document = (Document) result.getNode();
+        } catch (TransformerConfigurationException e) {
+            System.out.println("Error configuring transformer!");
+            e.printStackTrace();
+        } catch (TransformerException e) {
+            System.out.println("Error transforming input!");
+            e.printStackTrace();
         }
 
         return document;

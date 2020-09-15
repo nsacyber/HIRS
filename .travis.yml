@@ -17,7 +17,7 @@ env:
   - SUBPROJECT=HIRS_AttestationCAPortal
   - SUBPROJECT=TPM_Utils
   - SUBPROJECT=tpm_module
-  - TCG_RIM_TOOL=tools/tcg_rim_tool
+  - TCG_RIM_TOOL=tools/tcgRIMTool
 
 services:
   - docker

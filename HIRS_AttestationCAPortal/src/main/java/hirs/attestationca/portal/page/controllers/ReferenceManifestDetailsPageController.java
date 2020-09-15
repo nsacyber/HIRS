@@ -1,4 +1,4 @@
-package hirs.attestationca.portal.page.controllers;
+ package hirs.attestationca.portal.page.controllers;
 
 import hirs.data.persist.BaseReferenceManifest;
 import hirs.data.persist.ReferenceManifest;
