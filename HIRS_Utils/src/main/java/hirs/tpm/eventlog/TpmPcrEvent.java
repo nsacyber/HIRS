@@ -176,6 +176,7 @@ public class TpmPcrEvent {
     public String getSpecErrataVersion() {
         return errata;
     }
+
     /**
      * Sets the event data after processing.
      *

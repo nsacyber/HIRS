@@ -77,6 +77,7 @@ public final class TCGEventLog {
     private boolean bEvent = false;
     /** Event Output Flag use. */
     private boolean bCryptoAgile = false;
+
     /**
      * Default blank object constructor.
      */
@@ -255,6 +256,8 @@ public final class TCGEventLog {
         }
         return pcrs;
     }
+
+
     /**
      * Returns a flag which is set if the event log follows the "Crypto Agile" Format Type.
      * A false implies the type is SHA1 format.
@@ -263,6 +266,7 @@ public final class TCGEventLog {
     public boolean  isCryptoAgile() {
         return bCryptoAgile;
     }
+
     /**
      * Returns a list of event found in the Event Log.
      * @return an arraylist of event.
@@ -270,6 +274,7 @@ public final class TCGEventLog {
     public ArrayList<TpmPcrEvent>  getEventList() {
         return eventList;
     }
+
     /**
      * Returns a single PCR value given an index (PCR Number).
      *
@@ -286,7 +291,7 @@ public final class TCGEventLog {
      */
     public String toString() {
         StringBuilder sb = new StringBuilder();
-        for (TpmPcrEvent event:eventList) {
+        for (TpmPcrEvent event : eventList) {
             sb.append(event.toString(bEvent, bHexEvent, bContent));
        }
         sb.append("Event Log processing completed.\n");

@@ -10,14 +10,31 @@
         <link type="text/css" rel="stylesheet" href="${common}/certificate_details.css"/>
     </jsp:attribute>
     <jsp:attribute name="pageHeaderTitle">
-        Reference Integrity Manifest
+        ${initialData.rimType} Reference Integrity Manifest
         <a href="${portal}/reference-manifests/download?id=${param.id}">
-            <img src="${icons}/ic_file_download_black_24dp.png" title="Download Certificate">
+            <img src="${icons}/ic_file_download_black_24dp.png" title="Download ${initialData.rimType} RIM">
         </a>
     </jsp:attribute>
     <jsp:body>
-
         <div id="certificate-details-page" class="container-fluid">
+            <div class="row">
+                <c:if test="${initialData.swidSupplemental=='True'}">
+                    <div class="col-md-1 col-md-offset-1"><span class="colHeader">Base RIM</span></div>
+                    <div id="baseRim" class="col col-md-8">
+                    <c:choose>
+                        <c:when test="${not empty initialData.supportBaseRimTagId}">
+                            <a href="${portal}/rim-details?id=${initialData.supportBaseRimId}">
+                                ${initialData.supportBaseRimTagId}
+                            </a>
+                            <!-- Event Number, Event Type, Digest (hex), Event Content -->
+                        </c:when>
+                        <c:otherwise>
+                            <div class="component col col-md-10" style="color: red; padding-left: 20px">Base RIM not uploaded from the ACA RIM Page</div>
+                        </c:otherwise>
+                     </c:choose>
+                    </div>
+                </c:if>
+            </div>
             <div class="row">
                 <div class="col-md-1 col-md-offset-1"><span class="colHeader">Software Identity</span></div>
                 <div id="softwareIdentity" class="col col-md-8">
@@ -168,7 +185,7 @@
                                                                     </div>
                                                                 </c:if>
                                                             </div>
-                                                        </c:when>                                                        
+                                                        </c:when>
                                                         <c:otherwise>
                                                             <div class="component col col-md-10" style="color: red; padding-left: 20px">Support RIM file named ${resource.getName()} was not imported via the Reference Integrity Manifest page.</div>
                                                         </c:otherwise>

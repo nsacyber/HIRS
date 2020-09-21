@@ -124,10 +124,24 @@ public class ReferenceManifestDetailsPageController
             // Software Identity
             data.put("swidName", rim.getSwidName());
             data.put("swidVersion", rim.getSwidVersion());
-            data.put("swidCorpus", Boolean.toString(rim.isSwidCorpus()));
-            data.put("swidPatch", Boolean.toString(rim.isSwidPatch()));
-            data.put("swidSupplemental", Boolean.toString(
-                    rim.isSwidSupplemental()));
+            if (rim.isSwidCorpus() == 1) {
+                data.put("swidCorpus", "True");
+            } else {
+                data.put("swidCorpus", "False");
+            }
+            if (rim.isSwidPatch() == 1) {
+                data.put("swidPatch", "True");
+            } else {
+                data.put("swidPatch", "False");
+            }
+            if (rim.isSwidSupplemental() == 1) {
+                data.put("swidSupplemental", "True");
+            } else {
+                data.put("swidSupplemental", "False");
+            }
+//            data.put("swidCorpus", (rim.isSwidCorpus() == 1) ? "True" : "False");
+//            data.put("swidPatch", (rim.isSwidPatch() == 1) ? "True" : "False");
+//            data.put("swidSupplemental", (rim.isSwidSupplemental() == 1) ? "True" : "False");
             data.put("swidTagId", rim.getTagId());
             // Entity
             data.put("entityName", rim.getEntityName());
@@ -137,7 +151,8 @@ public class ReferenceManifestDetailsPageController
             // Link
             data.put("linkHref", rim.getLinkHref());
             data.put("linkRel", rim.getLinkRel());
-
+            data.put("supportBaseRimId", "");
+            data.put("supportBaseRimTagId", "");
             data.put("platformManufacturer", rim.getPlatformManufacturer());
             data.put("platformManufacturerId", rim.getPlatformManufacturerId());
             data.put("platformModel", rim.getPlatformModel());

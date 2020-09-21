@@ -10,6 +10,8 @@ import hirs.FilteredRecordsList;
 import hirs.attestationca.portal.datatables.OrderedListQueryDataTableAdapter;
 import hirs.attestationca.portal.page.PageMessages;
 import hirs.attestationca.portal.page.params.NoPageParams;
+import hirs.data.persist.BaseReferenceManifest;
+import hirs.data.persist.SupportReferenceManifest;
 import hirs.persist.DBManagerException;
 import hirs.persist.ReferenceManifestManager;
 import hirs.persist.CriteriaModifier;
@@ -22,8 +24,6 @@ import java.net.URISyntaxException;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.List;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
@@ -189,16 +189,20 @@ public class ReferenceManifestPageController
             final RedirectAttributes attr) throws URISyntaxException, Exception {
         Map<String, Object> model = new HashMap<>();
         PageMessages messages = new PageMessages();
-        List<MultipartFile> rims = new ArrayList<>();
         String fileName;
         Path filePath;
+        Pattern pattern;
+        Matcher matcher;
+        boolean supportRIM = false;
 
         // loop through the files
         for (MultipartFile file : files) {
             fileName = file.getOriginalFilename();
-            Pattern pattern = Pattern.compile(LOG_FILE_PATTERN);
-            Matcher matcher = pattern.matcher(fileName);
-            if (matcher.matches()) {
+            pattern = Pattern.compile(LOG_FILE_PATTERN);
+            matcher = pattern.matcher(fileName);
+            supportRIM = matcher.matches();
+
+            if (supportRIM) {
                 filePath = Paths.get(String.format("%s/%s",
                             SwidResource.RESOURCE_UPLOAD_FOLDER,
                             file.getOriginalFilename()));
@@ -215,16 +219,10 @@ public class ReferenceManifestPageController
                         "%s successfully uploaded", file.getOriginalFilename());
                 messages.addSuccess(uploadCompletedMessage);
                 LOGGER.info(uploadCompletedMessage);
-            } else {
-                // assume it is a swid tag, processing below will throw and error
-                // if it is not.
-                rims.add(file);
             }
-        }
 
-        for (MultipartFile file : rims) {
             //Parse reference manifests
-            ReferenceManifest rim = parseRIM(file, messages);
+            ReferenceManifest rim = parseRIM(file, supportRIM, messages);
 
             //Store only if it was parsed
             if (rim != null) {
@@ -313,11 +311,16 @@ public class ReferenceManifestPageController
                 response.sendError(HttpServletResponse.SC_NOT_FOUND);
             } else {
                 StringBuilder fileName = new StringBuilder("filename=\"");
-                fileName.append(referenceManifest.getSwidName());
-                fileName.append("_[");
-                fileName.append(referenceManifest.getRimHash());
-                fileName.append("]");
-                fileName.append(".swidTag\"");
+                if (referenceManifest.getRimType().equals(ReferenceManifest.BASE_RIM)) {
+                    BaseReferenceManifest bRim = (BaseReferenceManifest) referenceManifest;
+                    fileName.append(bRim.getSwidName());
+                    fileName.append("_[");
+                    fileName.append(referenceManifest.getRimHash());
+                    fileName.append("]");
+                    fileName.append(".swidTag\"");
+                } else {
+                    // this needs to be updated for support rims
+                }
 
                 // Set filename for download.
                 response.setHeader("Content-Disposition", "attachment;" + fileName);
@@ -360,7 +363,7 @@ public class ReferenceManifestPageController
      * @return a single or collection of reference manifest files.
      */
     private ReferenceManifest parseRIM(
-            final MultipartFile file,
+            final MultipartFile file, final boolean supportRIM,
             final PageMessages messages) {
 
         byte[] fileBytes;
@@ -378,7 +381,11 @@ public class ReferenceManifestPageController
         }
 
         try {
-            return new ReferenceManifest(fileBytes);
+            if (supportRIM) {
+                return new SupportReferenceManifest(fileBytes);
+            } else {
+                return new BaseReferenceManifest(fileBytes);
+            }
             // the this is a List<Object> is object is a JaxBElement that can
             // be matched up to the QName
         } catch (IOException ioEx) {

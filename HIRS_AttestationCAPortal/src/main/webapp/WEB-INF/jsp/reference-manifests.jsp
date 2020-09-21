@@ -30,6 +30,7 @@
                 <thead>
                     <tr>
                         <th>Tag ID</th>
+                        <th>Type</th>
                         <th>Manufacturer</th>
                         <th>Model</th>
                         <th>Version</th>
@@ -44,6 +45,7 @@
                 var url = pagePath +'/list';
                 var columns = [
                         {data: 'tagId'},
+                        {data: 'rimType'},
                         {data: 'platformManufacturer'},
                         {data: 'platformModel'},
                         {data: 'firmwareVersion'},

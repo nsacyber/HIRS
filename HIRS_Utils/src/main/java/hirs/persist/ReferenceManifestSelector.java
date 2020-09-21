@@ -28,6 +28,7 @@ public abstract class ReferenceManifestSelector<ReferenceManifest> {
     private static final String PLATFORM_MANUFACTURER_ID = "platformManufacturerId";
     private static final String PLATFORM_MODEL = "platformModel";
     private static final String RIM_TYPE_FIELD = "rimType";
+    private static final String RIM_FILENAME_FIELD = "fileName";
 
     private final ReferenceManifestManager referenceManifestManager;
 
@@ -117,6 +118,16 @@ public abstract class ReferenceManifestSelector<ReferenceManifest> {
     }
 
     /**
+     * Specif the file name of the object to grab.
+     * @param fileName the name of the file associated with the rim
+     * @return
+     */
+    public ReferenceManifestSelector byFileName(final int fileName) {
+        setFieldValue(RIM_FILENAME_FIELD, fileName);
+        return this;
+    }
+
+    /**
      * Specify the RIM Type to match.
      * @param rimType the type of rim
      * @return this instance
@@ -124,7 +135,7 @@ public abstract class ReferenceManifestSelector<ReferenceManifest> {
     public ReferenceManifestSelector byRimType(final String rimType) {
             setFieldValue(RIM_TYPE_FIELD, rimType);
             return this;
-        }
+    }
 
     /**
      * Set a field name and value to match.
@@ -171,11 +182,11 @@ public abstract class ReferenceManifestSelector<ReferenceManifest> {
      * @return a matching RIM or null if none is found
      */
     public hirs.data.persist.ReferenceManifest getRIM() {
-        Set<hirs.data.persist.ReferenceManifest> certs = execute();
-        if (certs.isEmpty()) {
+        Set<hirs.data.persist.ReferenceManifest> rims = execute();
+        if (rims.isEmpty()) {
             return null;
         }
-        return certs.iterator().next();
+        return rims.iterator().next();
     }
 
     /**
