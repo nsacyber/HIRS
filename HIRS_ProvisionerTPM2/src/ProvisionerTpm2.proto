@@ -57,6 +57,7 @@ message DeviceInfo {
   required HardwareInfo hw = 2;
   required NetworkInfo nw = 3;
   required OsInfo os = 4;
+  optional bytes pcrslist = 5;
 }
 
 message IdentityClaim {
@@ -80,7 +81,6 @@ message IdentityClaimResponse {
 message CertificateRequest {
   required bytes nonce = 1;
   optional bytes quote = 2;
-  optional bytes pcrslist = 3;
 }
 
 message CertificateResponse {

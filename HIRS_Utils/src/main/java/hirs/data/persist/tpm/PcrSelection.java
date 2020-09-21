@@ -30,6 +30,10 @@ public class PcrSelection {
     private static final Logger LOGGER = LogManager
             .getLogger(PcrSelection.class);
     private static final int MAX_SIZE_PCR_ARRAY = 3;
+    /**
+     * All PCRs are on.
+     */
+    public static final int ALL_PCRS_ON = 0xffffff;
 
     @XmlAttribute(name = "PcrSelect", required = true)
     private final byte[] pcrSelect;
@@ -76,8 +80,7 @@ public class PcrSelection {
      *            long value representing the bits to be selected
      */
     public PcrSelection(final long pcrSelectLong) {
-        final int allPCRsOn = 0xffffff;
-        if (pcrSelectLong > allPCRsOn) {
+        if (pcrSelectLong > ALL_PCRS_ON) {
             LOGGER.error("pcrSelect long value must be less than 3 bytes");
             throw new InvalidParameterException("pcrSelect");
         }

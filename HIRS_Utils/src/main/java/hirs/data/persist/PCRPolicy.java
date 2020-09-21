@@ -2,8 +2,19 @@ package hirs.data.persist;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
+
 import static org.apache.logging.log4j.LogManager.getLogger;
+
+import hirs.data.persist.tpm.PcrComposite;
+import hirs.data.persist.tpm.PcrInfoShort;
+import hirs.data.persist.tpm.PcrSelection;
+import org.apache.commons.codec.DecoderException;
+import org.apache.commons.codec.binary.Hex;
 import org.apache.logging.log4j.Logger;
+
+import java.nio.charset.Charset;
+import java.security.NoSuchAlgorithmException;
+import java.util.Arrays;
 
 /**
  * The class handles the flags that ignore certain PCRs for validation.
@@ -52,10 +63,10 @@ public final class PCRPolicy extends Policy {
      * Compares the baseline pcr list and the quote pcr list.  If the
      * ignore flags are set, 10 and 17-19 will be skipped for comparison.
      *
-     * @param quotePcrs non-baseline pcr list
+     * @param storedPcrs non-baseline pcr list
      * @return a StringBuilder that is empty if everything passes.
      */
-    public StringBuilder validatePcrs(final String[] quotePcrs) {
+    public StringBuilder validatePcrs(final String[] storedPcrs) {
         StringBuilder sb = new StringBuilder();
         String failureMsg = "PCR %d does not match%n";
 
@@ -70,12 +81,53 @@ public final class PCRPolicy extends Policy {
                 i += NUM_OF_TBOOT_PCR;
             }
 
-            if (!baselinePcrs[i].equals(quotePcrs[i])) {
+            if (!baselinePcrs[i].equals(storedPcrs[i])) {
                 sb.append(String.format(failureMsg, i));
             }
         }
 
         return sb;
+    }
+
+    /**
+     * Compares hashs to validate the quote from the client.
+     *
+     * @param tpmQuote the provided quote
+     * @param storedPcrs values from the RIM file
+     * @return true if validated, false if not
+     */
+    public boolean validateQuote(final byte[] tpmQuote, final String[] storedPcrs) {
+        LOGGER.info("Validating quote from associated device.");
+        boolean validated = false;
+        short localityAtRelease = 0;
+        Charset charset = Charset.forName("UTF-8");
+        String quoteString = new String(tpmQuote, charset);
+
+        TPMMeasurementRecord[] measurements = new TPMMeasurementRecord[baselinePcrs.length];
+        try {
+            for (int i = 0; i <= TPMMeasurementRecord.MAX_PCR_ID; i++) {
+                measurements[i] = new TPMMeasurementRecord(i, storedPcrs[i]);
+            }
+        } catch (DecoderException deEx) {
+            LOGGER.error(deEx);
+        }
+        PcrSelection pcrSelection = new PcrSelection(PcrSelection.ALL_PCRS_ON);
+        PcrComposite pcrComposite = new PcrComposite(
+                pcrSelection,
+                Arrays.asList(measurements));
+        PcrInfoShort pcrInfoShort = new PcrInfoShort(pcrSelection,
+                localityAtRelease,
+                tpmQuote, pcrComposite);
+
+        try {
+            String calculatedString = Hex.encodeHexString(
+                    pcrInfoShort.getCalculatedDigest());
+            validated = quoteString.contains(calculatedString);
+        } catch (NoSuchAlgorithmException naEx) {
+            LOGGER.error(naEx);
+        }
+
+        return validated;
     }
 
     /**

@@ -64,6 +64,7 @@ int provision() {
     // collect device info
     cout << "----> Collecting device information" << endl;
     hirs::pb::DeviceInfo dv = DeviceInfoCollector::collectDeviceInfo();
+    dv.set_pcrslist(tpm2.getPcrList());
 
     // send identity claim
     cout << "----> Sending identity claim to Attestation CA" << endl;
@@ -106,10 +107,14 @@ int provision() {
                 "14,15,16,17,18,19,20,21,22,23",
                 decryptedNonce));
 
-    certificateRequest.set_pcrslist(tpm2.getPcrsList());
     const string& akCertificateByteString
             = provisioner.sendAttestationCertificateRequest(certificateRequest);
 
+    if (akCertificateByteString == "") {
+        cout << "----> Provisioning failed.";
+        cout << "Please refer to the Attestation CA for details." << endl;
+        return 0;
+    }
     cout << "----> Storing attestation key certificate" << endl;
     tpm2.storeAKCertificate(akCertificateByteString);
     return 1;

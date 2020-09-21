@@ -62,14 +62,11 @@ import javax.crypto.spec.OAEPParameterSpec;
 import javax.crypto.spec.PSource;
 import javax.crypto.spec.SecretKeySpec;
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.math.BigInteger;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.nio.ByteBuffer;
-import java.nio.file.Files;
-import java.nio.file.NoSuchFileException;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
 import java.security.KeyFactory;
@@ -166,8 +163,8 @@ public abstract class AbstractAttestationCertificateAuthority
     private final DeviceRegister deviceRegister;
     private final DeviceManager deviceManager;
     private final DBManager<TPM2ProvisionerState> tpm2ProvisionerStateDBManager;
-    private String tpmQuoteHash;
-    private String tpmSignatureHash;
+    private String tpmQuoteHash = "";
+    private String tpmQuoteSignature = "";
     private String pcrValues;
 
     /**
@@ -305,7 +302,7 @@ public abstract class AbstractAttestationCertificateAuthority
         // update the validation result in the device
         device.setSupplyChainStatus(summary.getOverallValidationResult());
         deviceManager.updateDevice(device);
-
+        LOG.error("This is the device id? {} ", device.getId());
         // check if supply chain validation succeeded.
         // If it did not, do not provide the IdentityResponseEnvelope
         if (summary.getOverallValidationResult() == AppraisalStatus.Status.PASS) {
@@ -455,11 +452,39 @@ public abstract class AbstractAttestationCertificateAuthority
         // perform supply chain validation
         SupplyChainValidationSummary summary = supplyChainValidationService.validateSupplyChain(
                 endorsementCredential, platformCredentials, device);
-
+        device.setSummaryId(summary.getId().toString());
         // update the validation result in the device
         AppraisalStatus.Status validationResult = summary.getOverallValidationResult();
         device.setSupplyChainStatus(validationResult);
         deviceManager.updateDevice(device);
+        return validationResult;
+    }
+
+    /**
+     * Performs supply chain validation for just the quote under Firmware validation.
+     * Performed after main supply chain validation and a certificate request.
+     *
+     * @param device associated device to validate.
+     * @return the {@link AppraisalStatus} of the supply chain validation
+     */
+    private AppraisalStatus.Status doQuoteValidation(final Device device) {
+        // perform supply chain validation
+        SupplyChainValidationSummary scvs = supplyChainValidationService.validateQuote(
+                device);
+        AppraisalStatus.Status validationResult;
+
+        // either validation wasn't enabled or device already failed
+        if (scvs == null) {
+            // this will just allow for the certificate to be saved.
+            validationResult = AppraisalStatus.Status.PASS;
+        } else {
+            device.setSummaryId(scvs.getId().toString());
+            // update the validation result in the device
+            validationResult = scvs.getOverallValidationResult();
+            device.setSupplyChainStatus(validationResult);
+            deviceManager.updateDevice(device);
+        }
+
         return validationResult;
     }
 
@@ -510,37 +535,63 @@ public abstract class AbstractAttestationCertificateAuthority
             Set<PlatformCredential> platformCredentials = parsePcsFromIdentityClaim(claim,
                     endorsementCredential);
 
-            // Parse through the Provisioner supplied TPM Quote and pcr values
-            // these fields are optional
-            if (request.getQuote() != null && !request.getQuote().isEmpty()) {
-                parseTPMQuote(request.getQuote().toStringUtf8());
-            }
-            if (request.getPcrslist() != null && !request.getPcrslist().isEmpty()) {
-                this.pcrValues = request.getPcrslist().toStringUtf8();
-            }
-
             // Get device name and device
             String deviceName = claim.getDv().getNw().getHostname();
             Device device = deviceManager.getDevice(deviceName);
 
-            // Create signed, attestation certificate
-            X509Certificate attestationCertificate = generateCredential(akPub,
-                    endorsementCredential, platformCredentials, deviceName);
-            byte[] derEncodedAttestationCertificate = getDerEncodedCertificate(
-                    attestationCertificate);
+            // Parse through the Provisioner supplied TPM Quote and pcr values
+            // these fields are optional
+            if (request.getQuote() != null && !request.getQuote().isEmpty()) {
+                parseTPMQuote(request.getQuote().toStringUtf8());
+                TPMInfo savedInfo = device.getDeviceInfo().getTPMInfo();
+                TPMInfo tpmInfo = null;
+                try {
+                    tpmInfo = new TPMInfo(savedInfo.getTPMMake(),
+                        savedInfo.getTPMVersionMajor(),
+                        savedInfo.getTPMVersionMinor(),
+                        savedInfo.getTPMVersionRevMajor(),
+                        savedInfo.getTPMVersionRevMinor(),
+                        savedInfo.getPcrValues(),
+                        this.tpmQuoteHash.getBytes("UTF-8"),
+                        this.tpmQuoteSignature.getBytes("UTF-8"));
+                } catch (UnsupportedEncodingException e) {
+                    LOG.error(e);
+                }
+                DeviceInfoReport dvReport = new DeviceInfoReport(
+                        device.getDeviceInfo().getNetworkInfo(),
+                        device.getDeviceInfo().getOSInfo(),
+                        device.getDeviceInfo().getFirmwareInfo(),
+                        device.getDeviceInfo().getHardwareInfo(), tpmInfo,
+                        claim.getClientVersion());
+                device = this.deviceRegister.saveOrUpdateDevice(dvReport);
+            }
 
-            // We validated the nonce and made use of the identity claim so state can be deleted
-            tpm2ProvisionerStateDBManager.delete(tpm2ProvisionerState);
+            AppraisalStatus.Status validationResult = doQuoteValidation(device);
+            if (validationResult == AppraisalStatus.Status.PASS) {
+                // Create signed, attestation certificate
+                X509Certificate attestationCertificate = generateCredential(akPub,
+                        endorsementCredential, platformCredentials, deviceName);
+                byte[] derEncodedAttestationCertificate = getDerEncodedCertificate(
+                        attestationCertificate);
 
-            // Package the signed certificate into a response
-            ByteString certificateBytes = ByteString.copyFrom(derEncodedAttestationCertificate);
-            ProvisionerTpm2.CertificateResponse response = ProvisionerTpm2.CertificateResponse
-                    .newBuilder().setCertificate(certificateBytes).build();
+                // We validated the nonce and made use of the identity claim so state can be deleted
+                tpm2ProvisionerStateDBManager.delete(tpm2ProvisionerState);
 
-            saveAttestationCertificate(derEncodedAttestationCertificate, endorsementCredential,
-                    platformCredentials, device);
+                // Package the signed certificate into a response
+                ByteString certificateBytes = ByteString.copyFrom(derEncodedAttestationCertificate);
+                ProvisionerTpm2.CertificateResponse response = ProvisionerTpm2.CertificateResponse
+                        .newBuilder().setCertificate(certificateBytes).build();
 
-            return response.toByteArray();
+                saveAttestationCertificate(derEncodedAttestationCertificate, endorsementCredential,
+                        platformCredentials, device);
+
+                return response.toByteArray();
+            } else {
+                LOG.error("Supply chain validation did not succeed. "
+                        + "Firmware Quote Validation failed. Result is: "
+                        + validationResult);
+                return new byte[]{};
+            }
         } else {
             LOG.error("Could not process credential request. Invalid nonce provided: "
                     + request.getNonce().toString());
@@ -553,7 +604,8 @@ public abstract class AbstractAttestationCertificateAuthority
      * quote and the signature hash.
      * @param tpmQuote contains hash values for the quote and the signature
      */
-    private void parseTPMQuote(final String tpmQuote) {
+    private boolean parseTPMQuote(final String tpmQuote) {
+        boolean success = false;
         if (tpmQuote != null) {
             String[] lines = tpmQuote.split(":");
             if (lines[1].contains("signature")) {
@@ -561,8 +613,11 @@ public abstract class AbstractAttestationCertificateAuthority
             } else {
                 this.tpmQuoteHash = lines[1].trim();
             }
-            this.tpmSignatureHash = lines[2].trim();
+            this.tpmQuoteSignature = lines[2].trim();
+            success = true;
         }
+
+        return success;
     }
 
     /**
@@ -663,9 +718,24 @@ public abstract class AbstractAttestationCertificateAuthority
                 hwProto.getProductVersion(), hwProto.getSystemSerialNumber(),
                 firstChassisSerialNumber, firstBaseboardSerialNumber);
 
+        if (dv.getPcrslist() != null && !dv.getPcrslist().isEmpty()) {
+            this.pcrValues = dv.getPcrslist().toStringUtf8();
+        }
 
         // Get TPM info, currently unimplemented
         TPMInfo tpm = new TPMInfo();
+        try {
+            tpm = new TPMInfo(DeviceInfoReport.NOT_SPECIFIED,
+                    (short) 0,
+                    (short) 0,
+                    (short) 0,
+                    (short) 0,
+                    this.pcrValues.getBytes("UTF-8"),
+                    this.tpmQuoteHash.getBytes("UTF-8"),
+                    this.tpmQuoteSignature.getBytes("UTF-8"));
+        } catch (UnsupportedEncodingException e) {
+            tpm = new TPMInfo();
+        }
 
         // Create final report
         DeviceInfoReport dvReport = new DeviceInfoReport(nw, os, fw, hw, tpm,
@@ -1477,7 +1547,6 @@ public abstract class AbstractAttestationCertificateAuthority
             IssuedAttestationCertificate attCert = new IssuedAttestationCertificate(
                     derEncodedAttestationCertificate, endorsementCredential, platformCredentials);
             attCert.setDevice(device);
-            attCert.setPcrValues(savePcrValues(pcrValues, device.getName()));
             certificateManager.save(attCert);
         } catch (Exception e) {
             LOG.error("Error saving generated Attestation Certificate to database.", e);
@@ -1485,30 +1554,5 @@ public abstract class AbstractAttestationCertificateAuthority
                     "Encountered error while storing Attestation Certificate: "
                             + e.getMessage(), e);
         }
-    }
-
-    private String savePcrValues(final String pcrValues, final String deviceName) {
-        if (pcrValues != null && !pcrValues.isEmpty()) {
-            try {
-                if (Files.notExists(Paths.get(PCR_UPLOAD_FOLDER))) {
-                    Files.createDirectory(Paths.get(PCR_UPLOAD_FOLDER));
-                }
-                Path pcrPath = Paths.get(String.format("%s/%s",
-                        PCR_UPLOAD_FOLDER, deviceName));
-                if (Files.notExists(pcrPath)) {
-                    Files.createFile(pcrPath);
-                }
-                Files.write(pcrPath, pcrValues.getBytes("UTF8"));
-                return pcrPath.toString();
-            } catch (NoSuchFileException nsfEx) {
-                LOG.error(String.format("File Not found!: %s",
-                        deviceName));
-                LOG.error(nsfEx);
-            } catch (IOException ioEx) {
-                LOG.error(ioEx);
-            }
-        }
-
-        return "empty";
     }
 }
