@@ -5,9 +5,11 @@ import hirs.attestationca.portal.datatables.DataTableResponse;
 import hirs.attestationca.portal.datatables.OrderedListQueryDataTableAdapter;
 import hirs.attestationca.portal.page.PageController;
 import hirs.attestationca.portal.page.params.NoPageParams;
+import hirs.data.persist.certificate.Certificate;
 import org.apache.logging.log4j.Logger;
 import static org.apache.logging.log4j.LogManager.getLogger;
 import org.hibernate.Criteria;
+import org.hibernate.criterion.Restrictions;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Controller;
@@ -79,16 +81,17 @@ public class ValidationReportsPageController extends PageController<NoPageParams
         // define an alias so the composite object, device, can be used by the
         // datatables / query. This is necessary so the device.name property can
         // be used.
-        CriteriaModifier modifier = new CriteriaModifier() {
+        CriteriaModifier criteriaModifier = new CriteriaModifier() {
             @Override
             public void modify(final Criteria criteria) {
+                criteria.add(Restrictions.isNull(Certificate.ARCHIVE_FIELD));
                 criteria.createAlias("device", "device");
             }
         };
 
         FilteredRecordsList<SupplyChainValidationSummary> records =
                 OrderedListQueryDataTableAdapter.getOrderedList(SupplyChainValidationSummary.class,
-                        supplyChainValidatorSummaryManager, input, orderColumnName, modifier);
+                        supplyChainValidatorSummaryManager, input, orderColumnName, criteriaModifier);
 
         return new DataTableResponse<>(records, input);
     }
