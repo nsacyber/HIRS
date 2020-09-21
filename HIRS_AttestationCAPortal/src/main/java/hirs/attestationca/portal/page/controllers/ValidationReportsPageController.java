@@ -90,8 +90,10 @@ public class ValidationReportsPageController extends PageController<NoPageParams
         };
 
         FilteredRecordsList<SupplyChainValidationSummary> records =
-                OrderedListQueryDataTableAdapter.getOrderedList(SupplyChainValidationSummary.class,
-                        supplyChainValidatorSummaryManager, input, orderColumnName, criteriaModifier);
+                OrderedListQueryDataTableAdapter.getOrderedList(
+                        SupplyChainValidationSummary.class,
+                        supplyChainValidatorSummaryManager, input, orderColumnName,
+                        criteriaModifier);
 
         return new DataTableResponse<>(records, input);
     }
