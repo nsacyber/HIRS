@@ -252,7 +252,7 @@ public final class TCGEventLog {
     public String[] getExpectedPCRValues() {
         String[] pcrs = new String[PCR_COUNT];
         for (int i = 0; i < PCR_COUNT; i++) {
-            pcrs[i] = HexUtils.byteArrayToHexString(pcrList[i]);
+            pcrs[i] = Hex.encodeHexString(pcrList[i]);
         }
         return pcrs;
     }

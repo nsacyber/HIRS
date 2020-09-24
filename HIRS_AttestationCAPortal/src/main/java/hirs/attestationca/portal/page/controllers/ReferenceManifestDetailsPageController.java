@@ -1,7 +1,10 @@
 package hirs.attestationca.portal.page.controllers;
 
+import hirs.data.persist.BaseReferenceManifest;
 import hirs.data.persist.ReferenceManifest;
+import hirs.data.persist.SupportReferenceManifest;
 import hirs.data.persist.SwidResource;
+import hirs.persist.DBManagerException;
 import hirs.persist.ReferenceManifestManager;
 import hirs.tpm.eventlog.TCGEventLog;
 import hirs.attestationca.portal.page.Page;
@@ -10,9 +13,6 @@ import hirs.attestationca.portal.page.PageMessages;
 import hirs.attestationca.portal.page.params.ReferenceManifestDetailsPageParams;
 import java.io.IOException;
 import java.nio.file.NoSuchFileException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.security.NoSuchAlgorithmException;
 import java.security.cert.CertificateException;
 import java.util.Arrays;
@@ -20,6 +20,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.UUID;
+
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -53,6 +54,7 @@ public class ReferenceManifestDetailsPageController
     }
 
     /**
+     * Returns the filePath for the view and the data model for the page.
      *
      * @param params The object to map url parameters into.
      * @param model The data model for the request. Can contain data from
@@ -120,72 +122,75 @@ public class ReferenceManifestDetailsPageController
                 .select(referenceManifestManager)
                 .byEntityId(uuid).getRIM();
 
-        if (rim != null) {
+        if (rim instanceof BaseReferenceManifest) {
+            BaseReferenceManifest bRim = (BaseReferenceManifest) rim;
             // Software Identity
-            data.put("swidName", rim.getSwidName());
-            data.put("swidVersion", rim.getSwidVersion());
-            if (rim.isSwidCorpus() == 1) {
+            data.put("swidName", bRim.getSwidName());
+            data.put("swidVersion", bRim.getSwidVersion());
+            if (bRim.isSwidCorpus() == 1) {
                 data.put("swidCorpus", "True");
             } else {
                 data.put("swidCorpus", "False");
             }
-            if (rim.isSwidPatch() == 1) {
+            if (bRim.isSwidPatch() == 1) {
                 data.put("swidPatch", "True");
             } else {
                 data.put("swidPatch", "False");
             }
-            if (rim.isSwidSupplemental() == 1) {
+            if (bRim.isSwidSupplemental() == 1) {
                 data.put("swidSupplemental", "True");
             } else {
                 data.put("swidSupplemental", "False");
             }
-//            data.put("swidCorpus", (rim.isSwidCorpus() == 1) ? "True" : "False");
-//            data.put("swidPatch", (rim.isSwidPatch() == 1) ? "True" : "False");
-//            data.put("swidSupplemental", (rim.isSwidSupplemental() == 1) ? "True" : "False");
             data.put("swidTagId", rim.getTagId());
             // Entity
-            data.put("entityName", rim.getEntityName());
-            data.put("entityRegId", rim.getEntityRegId());
-            data.put("entityRole", rim.getEntityRole());
-            data.put("entityThumbprint", rim.getEntityThumbprint());
+            data.put("entityName", bRim.getEntityName());
+            data.put("entityRegId", bRim.getEntityRegId());
+            data.put("entityRole", bRim.getEntityRole());
+            data.put("entityThumbprint", bRim.getEntityThumbprint());
             // Link
-            data.put("linkHref", rim.getLinkHref());
-            data.put("linkRel", rim.getLinkRel());
+            data.put("linkHref", bRim.getLinkHref());
+            data.put("linkRel", bRim.getLinkRel());
             data.put("supportBaseRimId", "");
             data.put("supportBaseRimTagId", "");
-            data.put("platformManufacturer", rim.getPlatformManufacturer());
-            data.put("platformManufacturerId", rim.getPlatformManufacturerId());
-            data.put("platformModel", rim.getPlatformModel());
-            data.put("platformVersion", rim.getPlatformVersion());
-            data.put("firmwareVersion", rim.getFirmwareVersion());
-            data.put("payloadType", rim.getPayloadType());
-            data.put("colloquialVersion", rim.getColloquialVersion());
-            data.put("edition", rim.getEdition());
-            data.put("product", rim.getProduct());
-            data.put("revision", rim.getRevision());
-            data.put("bindingSpec", rim.getBindingSpec());
-            data.put("bindingSpecVersion", rim.getBindingSpecVersion());
-            data.put("pcUriGlobal", rim.getPcURIGlobal());
-            data.put("pcUriLocal", rim.getPcURILocal());
-            data.put("rimLinkHash", rim.getRimLinkHash());
+            data.put("platformManufacturer", bRim.getPlatformManufacturer());
+            data.put("platformManufacturerId", bRim.getPlatformManufacturerId());
+            data.put("platformModel", bRim.getPlatformModel());
+            data.put("platformVersion", bRim.getPlatformVersion());
+            data.put("firmwareVersion", bRim.getFirmwareVersion());
+            data.put("payloadType", bRim.getPayloadType());
+            data.put("colloquialVersion", bRim.getColloquialVersion());
+            data.put("edition", bRim.getEdition());
+            data.put("product", bRim.getProduct());
+            data.put("revision", bRim.getRevision());
+            data.put("bindingSpec", bRim.getBindingSpec());
+            data.put("bindingSpecVersion", bRim.getBindingSpecVersion());
+            data.put("pcUriGlobal", bRim.getPcURIGlobal());
+            data.put("pcUriLocal", bRim.getPcURILocal());
+            data.put("rimLinkHash", bRim.getRimLinkHash());
+            data.put("rimType", bRim.getRimType());
+            data.put("associatedRim", bRim.getAssociatedRim());
 
-            // checkout later
-            data.put("rimType", rim.getRimType());
-            List<SwidResource> resources = rim.parseResource();
+            List<SwidResource> resources = bRim.parseResource();
             String resourceFilename = null;
             TCGEventLog logProcessor;
 
+            // going to have to pull the filename and grab that from the DB
+            // to get the id to make the link
             try {
                 for (SwidResource swidRes : resources) {
                     resourceFilename = swidRes.getName();
-                    Path logPath = Paths.get(String.format("%s/%s",
-                            SwidResource.RESOURCE_UPLOAD_FOLDER,
-                            resourceFilename));
-                    if (Files.exists(logPath)) {
-                        logProcessor = new TCGEventLog(
-                                Files.readAllBytes(logPath));
+                    ReferenceManifest dbRim = ReferenceManifest.select(
+                            referenceManifestManager).byFileName(resourceFilename).getRIM();
+
+                    if (dbRim != null) {
+                        logProcessor = new TCGEventLog(dbRim.getRimBytes());
                         swidRes.setPcrValues(Arrays.asList(
                                 logProcessor.getExpectedPCRValues()));
+
+                        if (bRim.getAssociatedRim() == null) {
+                            bRim.setAssociatedRim(dbRim.getId());
+                        }
                     } else {
                         swidRes.setPcrValues(new ArrayList<>());
                     }
@@ -194,12 +199,23 @@ public class ReferenceManifestDetailsPageController
                 LOGGER.error(String.format("File Not found!: %s",
                         resourceFilename));
                 LOGGER.error(nsfEx);
+            } catch (DBManagerException dbmEx) {
+                LOGGER.error(dbmEx);
             }
 
+            data.put("associatedRim", bRim.getAssociatedRim());
             data.put("swidFiles", resources);
+        } else if (rim instanceof SupportReferenceManifest) {
+            SupportReferenceManifest sRim = (SupportReferenceManifest) rim;
+            data.put("baseRim", sRim.getFileName());
+            data.put("associatedRim", sRim.getAssociatedRim());
+            data.put("rimType", sRim.getRimType());
+
+            TCGEventLog logProcessor = new TCGEventLog(sRim.getRimBytes());
+            data.put("events", logProcessor.getEventList());
         } else {
-            LOGGER.error(String.format("Unable to find Reference Integrity "
-                    + "Manifest with ID: %s", uuid));
+                LOGGER.error(String.format("Unable to find Reference Integrity "
+                        + "Manifest with ID: %s", uuid));
         }
 
         return data;

@@ -1,6 +1,7 @@
 package hirs.data.persist;
 
 import java.util.Arrays;
+import java.util.UUID;
 import javax.persistence.Access;
 import javax.persistence.AccessType;
 import javax.persistence.Column;
@@ -12,6 +13,8 @@ import hirs.persist.ReferenceManifestManager;
 import hirs.persist.ReferenceManifestSelector;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.hibernate.annotations.Type;
+
 import javax.persistence.Table;
 import javax.xml.XMLConstants;
 import javax.xml.bind.annotation.XmlAccessType;
@@ -28,7 +31,13 @@ import javax.xml.bind.annotation.XmlRootElement;
 @XmlAccessorType(XmlAccessType.FIELD)
 @Access(AccessType.FIELD)
 public abstract class ReferenceManifest extends ArchivableEntity {
+    /**
+     * String for display of a Base RIM.
+     */
     public static final String BASE_RIM = "Base";
+    /**
+     * String for display of a Support RIM.
+     */
     public static final String SUPPORT_RIM = "Support";
 
     /**
@@ -69,12 +78,6 @@ public abstract class ReferenceManifest extends ArchivableEntity {
         public Selector(final ReferenceManifestManager referenceManifestManager) {
             super(referenceManifestManager);
         }
-
-        /**
-         * Specify a manufacturer that certificates must have to be considered as matching.
-         * @param rimType the manufacturer to query, not empty or null
-         * @return this instance (for chaining further calls)
-         */
     }
 
     /**
@@ -96,9 +99,14 @@ public abstract class ReferenceManifest extends ArchivableEntity {
     @Column
     private String platformManufacturerId = null;
     @Column
+    private String firmwareVersion = null;
+    @Column
     private String platformModel = null;
     @Column(nullable = false)
     private String fileName = null;
+    @Type(type = "uuid-char")
+    @Column
+    private UUID associatedRim;
 
     /**
      * Get a Selector for use in retrieving ReferenceManifest.
@@ -119,8 +127,18 @@ public abstract class ReferenceManifest extends ArchivableEntity {
         this.rimBytes = null;
         this.rimHash = 0;
         this.rimType = null;
+        this.platformManufacturer = null;
+        this.platformManufacturerId = null;
+        this.platformModel = null;
+        this.fileName = BASE_RIM;
+        this.tagId = null;
+        this.associatedRim = null;
     }
 
+    /**
+     * Default constructor for ingesting the bytes of the file content.
+     * @param rimBytes - file contents.
+     */
     public ReferenceManifest(final byte[] rimBytes) {
         Preconditions.checkArgument(rimBytes != null,
                 "Cannot construct a RIM from a null byte array");
@@ -239,6 +257,40 @@ public abstract class ReferenceManifest extends ArchivableEntity {
     }
 
     /**
+     * Getter for the firmware version info.
+     *
+     * @return string for the firmware version
+     */
+    public String getFirmwareVersion() {
+        return firmwareVersion;
+    }
+
+    /**
+     * Setter for the firmware version info.
+     *
+     * @param firmwareVersion passed in firmware version
+     */
+    public void setFirmwareVersion(final String firmwareVersion) {
+        this.firmwareVersion = firmwareVersion;
+    }
+
+    /**
+     * Getter for the associated RIM DB ID.
+     * @return UUID for the rim
+     */
+    public UUID getAssociatedRim() {
+        return associatedRim;
+    }
+
+    /**
+     * Setter for the associated RIM DB ID.
+     * @param associatedRim UUID for the rim
+     */
+    public void setAssociatedRim(final UUID associatedRim) {
+        this.associatedRim = associatedRim;
+    }
+
+    /**
      * Getter for the Reference Integrity Manifest as a byte array.
      *
      * @return array of bytes
@@ -263,5 +315,27 @@ public abstract class ReferenceManifest extends ArchivableEntity {
     @Override
     public int hashCode() {
         return getRimHash();
+    }
+
+    @Override
+    public boolean equals(final Object object) {
+        if (this == object) {
+            return true;
+        }
+        if (object == null || getClass() != object.getClass()) {
+            return false;
+        }
+        if (!super.equals(object)) {
+            return false;
+        }
+        ReferenceManifest that = (ReferenceManifest) object;
+        return rimHash == that.rimHash
+                && Arrays.equals(rimBytes, that.rimBytes)
+                && rimType.equals(that.rimType)
+                && tagId.equals(that.tagId)
+                && platformManufacturer.equals(that.platformManufacturer)
+                && platformManufacturerId.equals(that.platformManufacturerId)
+                && platformModel.equals(that.platformModel)
+                && fileName.equals(that.fileName);
     }
 }

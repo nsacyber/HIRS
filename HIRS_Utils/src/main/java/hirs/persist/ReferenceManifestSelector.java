@@ -118,11 +118,11 @@ public abstract class ReferenceManifestSelector<ReferenceManifest> {
     }
 
     /**
-     * Specif the file name of the object to grab.
+     * Specify the file name of the object to grab.
      * @param fileName the name of the file associated with the rim
-     * @return
+     * @return instance of the manifest in relation to the filename.
      */
-    public ReferenceManifestSelector byFileName(final int fileName) {
+    public ReferenceManifestSelector byFileName(final String fileName) {
         setFieldValue(RIM_FILENAME_FIELD, fileName);
         return this;
     }

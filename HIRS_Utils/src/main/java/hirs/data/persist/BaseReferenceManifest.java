@@ -12,6 +12,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import javax.persistence.Column;
+import javax.persistence.Entity;
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBElement;
 import javax.xml.bind.JAXBException;
@@ -26,6 +27,10 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+/**
+ *
+ */
+@Entity
 public class BaseReferenceManifest extends ReferenceManifest {
     private static final Logger LOGGER = LogManager.getLogger(BaseReferenceManifest.class);
 
@@ -35,14 +40,12 @@ public class BaseReferenceManifest extends ReferenceManifest {
     private String swidName = null;
     @Column
     private String swidVersion = null;
-    @Column(nullable = false)
-    private int swidCorpus = 0;
-    @Column(nullable = false)
-    private int swidPatch = 0;
-    @Column(nullable = false)
-    private int swidSupplemental = 0;
     @Column
-    private String firmwareVersion = null;
+    private int swidCorpus = 0;
+    @Column
+    private int swidPatch = 0;
+    @Column
+    private int swidSupplemental = 0;
     @Column
     private String colloquialVersion = null;
     @Column
@@ -74,10 +77,11 @@ public class BaseReferenceManifest extends ReferenceManifest {
     private String linkRel = null;
 
     /**
+     * Support constructor for the RIM object.
      *
-     * @param fileName
-     * @param rimBytes
-     * @throws IOException
+     * @param fileName - string representation of the uploaded file.
+     * @param rimBytes - the file content of the uploaded file.
+     * @throws IOException - thrown if the file is invalid.
      */
     public BaseReferenceManifest(final String fileName, final byte[] rimBytes) throws IOException {
         this(rimBytes);
@@ -441,24 +445,6 @@ public class BaseReferenceManifest extends ReferenceManifest {
     }
 
     /**
-     * Getter for the firmware version info.
-     *
-     * @return string for the firmware version
-     */
-    public String getFirmwareVersion() {
-        return firmwareVersion;
-    }
-
-    /**
-     * Setter for the firmware version info.
-     *
-     * @param firmwareVersion passed in firmware version
-     */
-    public void setFirmwareVersion(final String firmwareVersion) {
-        this.firmwareVersion = firmwareVersion;
-    }
-
-    /**
      * Getter for the Entity Name.
      *
      * @return string of the entity name.
@@ -769,8 +755,8 @@ public class BaseReferenceManifest extends ReferenceManifest {
         return String.format("ReferenceManifest{swidName=%s,"
                         + "platformManufacturer=%s,"
                         + " platformModel=%s,"
-                        + "firmwareVersion=%s, firmwareVersion=%s, rimHash=%d}",
+                        + "tagId=%s, rimHash=%d}",
                 swidName, this.getPlatformManufacturer(),
-                this.getPlatformModel(), firmwareVersion, getTagId(), this.getRimHash());
+                this.getPlatformModel(), getTagId(), this.getRimHash());
     }
 }

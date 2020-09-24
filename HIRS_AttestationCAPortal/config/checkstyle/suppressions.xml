@@ -6,5 +6,4 @@
 
 <suppressions>
     <suppress checks="MagicNumber" files=".*[/\\]src[/\\]test[/\\]+" />
-    <suppress checks="AvoidInlineConditionals" files=".*[/\\]src[/\\]test[/\\]+" />
 </suppressions>

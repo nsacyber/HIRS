@@ -26,10 +26,9 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
-import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javax.servlet.http.HttpServletResponse;
@@ -202,27 +201,54 @@ public class ReferenceManifestPageController
             matcher = pattern.matcher(fileName);
             supportRIM = matcher.matches();
 
-            if (supportRIM) {
-                filePath = Paths.get(String.format("%s/%s",
-                            SwidResource.RESOURCE_UPLOAD_FOLDER,
-                            file.getOriginalFilename()));
-                if (Files.notExists(Paths.get(SwidResource.RESOURCE_UPLOAD_FOLDER))) {
-                    Files.createDirectory(Paths.get(SwidResource.RESOURCE_UPLOAD_FOLDER));
-                }
-                if (Files.notExists(filePath)) {
-                    Files.createFile(filePath);
-                }
-
-                Files.write(filePath, file.getBytes());
-
-                String uploadCompletedMessage = String.format(
-                        "%s successfully uploaded", file.getOriginalFilename());
-                messages.addSuccess(uploadCompletedMessage);
-                LOGGER.info(uploadCompletedMessage);
-            }
-
             //Parse reference manifests
             ReferenceManifest rim = parseRIM(file, supportRIM, messages);
+            // look for associated base/support
+            Set<ReferenceManifest> rims = ReferenceManifest
+                    .select(referenceManifestManager).getRIMs();
+
+            // update information for associated support rims
+            if (supportRIM) {
+                for (ReferenceManifest element : rims) {
+                    if (element instanceof BaseReferenceManifest) {
+                        BaseReferenceManifest bRim = (BaseReferenceManifest) element;
+                        for (SwidResource swid : bRim.parseResource()) {
+                            if (swid.getName().equals(rim.getFileName())) {
+                                rim.setFirmwareVersion(swid.getSize());
+                                rim.setPlatformManufacturer(element.getPlatformManufacturer());
+                                rim.setPlatformModel(element.getPlatformModel());
+                                rim.setTagId(element.getTagId());
+                                rim.setAssociatedRim(element.getId());
+                                break;
+                            }
+                        }
+                    }
+                }
+            } else {
+                BaseReferenceManifest bRim = (BaseReferenceManifest) rim;
+                for (SwidResource swid : bRim.parseResource()) {
+                    for (ReferenceManifest element : rims) {
+                        if (element instanceof SupportReferenceManifest) {
+                            SupportReferenceManifest sRim = (SupportReferenceManifest) element;
+                            if (swid.getName().equals(sRim.getFileName())) {
+                                sRim.setPlatformManufacturer(bRim.getPlatformManufacturer());
+                                sRim.setPlatformModel(bRim.getPlatformModel());
+                                sRim.setFirmwareVersion(swid.getSize());
+                                sRim.setTagId(bRim.getTagId());
+                                rim.setAssociatedRim(sRim.getId());
+                                try {
+                                    referenceManifestManager.update(sRim);
+                                } catch (DBManagerException dbmEx) {
+                                    LOGGER.error(String.format("Couldn't update Base RIM %s with "
+                                            + "associated UUID %s", rim.getTagId(),
+                                            sRim.getId()), dbmEx);
+                                }
+                                break;
+                            }
+                        }
+                    }
+                }
+            }
 
             //Store only if it was parsed
             if (rim != null) {
@@ -320,6 +346,8 @@ public class ReferenceManifestPageController
                     fileName.append(".swidTag\"");
                 } else {
                     // this needs to be updated for support rims
+                    SupportReferenceManifest bRim = (SupportReferenceManifest) referenceManifest;
+                    fileName.append(bRim.getFileName());
                 }
 
                 // Set filename for download.
@@ -382,9 +410,9 @@ public class ReferenceManifestPageController
 
         try {
             if (supportRIM) {
-                return new SupportReferenceManifest(fileBytes);
+                return new SupportReferenceManifest(fileName, fileBytes);
             } else {
-                return new BaseReferenceManifest(fileBytes);
+                return new BaseReferenceManifest(fileName, fileBytes);
             }
             // the this is a List<Object> is object is a JaxBElement that can
             // be matched up to the QName

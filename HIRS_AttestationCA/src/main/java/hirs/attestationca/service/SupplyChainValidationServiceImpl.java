@@ -9,6 +9,7 @@ import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.security.cert.CertificateException;
 
+import hirs.data.persist.BaseReferenceManifest;
 import hirs.data.persist.TPMMeasurementRecord;
 import hirs.data.persist.SwidResource;
 import hirs.data.persist.PCRPolicy;
@@ -335,13 +336,9 @@ public class SupplyChainValidationServiceImpl implements SupplyChainValidationSe
 
         fwStatus = new AppraisalStatus(PASS,
                 SupplyChainCredentialValidator.FIRMWARE_VALID);
-        if (rim == null) {
-            fwStatus = new AppraisalStatus(FAIL,
-                    String.format("Firmware validation failed: "
-                            + "No associated RIM file could be found for %s",
-                            manufacturer));
-        } else {
-            List<SwidResource> swids = rim.parseResource();
+        if (rim instanceof BaseReferenceManifest) {
+            BaseReferenceManifest bRim = (BaseReferenceManifest) rim;
+            List<SwidResource> swids = bRim.parseResource();
             for (SwidResource swid : swids) {
                 baseline = swid.getPcrValues()
                         .toArray(new String[swid.getPcrValues().size()]);
@@ -413,6 +410,11 @@ public class SupplyChainValidationServiceImpl implements SupplyChainValidationSe
                 fwStatus = new AppraisalStatus(FAIL, "Associated Issued Attestation"
                         + " Certificate can not be found.");
             }
+        } else {
+            fwStatus = new AppraisalStatus(FAIL,
+                    String.format("Firmware validation failed: "
+                                    + "No associated RIM file could be found for %s",
+                            manufacturer));
         }
 
         return buildValidationRecord(SupplyChainValidation.ValidationType.FIRMWARE,
