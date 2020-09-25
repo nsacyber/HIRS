@@ -28,7 +28,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
-import java.nio.file.Path;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javax.servlet.http.HttpServletResponse;
@@ -189,7 +188,6 @@ public class ReferenceManifestPageController
         Map<String, Object> model = new HashMap<>();
         PageMessages messages = new PageMessages();
         String fileName;
-        Path filePath;
         Pattern pattern;
         Matcher matcher;
         boolean supportRIM = false;
@@ -208,26 +206,24 @@ public class ReferenceManifestPageController
                     .select(referenceManifestManager).getRIMs();
 
             // update information for associated support rims
-            if (supportRIM) {
-                for (ReferenceManifest element : rims) {
+            for (ReferenceManifest element : rims) {
+                if (supportRIM) {
                     if (element instanceof BaseReferenceManifest) {
                         BaseReferenceManifest bRim = (BaseReferenceManifest) element;
                         for (SwidResource swid : bRim.parseResource()) {
                             if (swid.getName().equals(rim.getFileName())) {
                                 rim.setFirmwareVersion(swid.getSize());
-                                rim.setPlatformManufacturer(element.getPlatformManufacturer());
-                                rim.setPlatformModel(element.getPlatformModel());
-                                rim.setTagId(element.getTagId());
-                                rim.setAssociatedRim(element.getId());
+                                rim.setPlatformManufacturer(bRim.getPlatformManufacturer());
+                                rim.setPlatformModel(bRim.getPlatformModel());
+                                rim.setTagId(bRim.getTagId());
+                                rim.setAssociatedRim(bRim.getId());
                                 break;
                             }
                         }
                     }
-                }
-            } else {
-                BaseReferenceManifest bRim = (BaseReferenceManifest) rim;
-                for (SwidResource swid : bRim.parseResource()) {
-                    for (ReferenceManifest element : rims) {
+                } else {
+                    BaseReferenceManifest bRim = (BaseReferenceManifest) rim;
+                    for (SwidResource swid : bRim.parseResource()) {
                         if (element instanceof SupportReferenceManifest) {
                             SupportReferenceManifest sRim = (SupportReferenceManifest) element;
                             if (swid.getName().equals(sRim.getFileName())) {
@@ -239,8 +235,8 @@ public class ReferenceManifestPageController
                                 try {
                                     referenceManifestManager.update(sRim);
                                 } catch (DBManagerException dbmEx) {
-                                    LOGGER.error(String.format("Couldn't update Base RIM %s with "
-                                            + "associated UUID %s", rim.getTagId(),
+                                    LOGGER.error(String.format("Couldn't update Support RIM "
+                                                    + "%s with associated UUID %s", rim.getTagId(),
                                             sRim.getId()), dbmEx);
                                 }
                                 break;

@@ -4,21 +4,21 @@ import hirs.data.persist.BaseReferenceManifest;
 import hirs.data.persist.ReferenceManifest;
 import hirs.data.persist.SupportReferenceManifest;
 import hirs.data.persist.SwidResource;
-import hirs.persist.DBManagerException;
 import hirs.persist.ReferenceManifestManager;
 import hirs.tpm.eventlog.TCGEventLog;
 import hirs.attestationca.portal.page.Page;
 import hirs.attestationca.portal.page.PageController;
 import hirs.attestationca.portal.page.PageMessages;
 import hirs.attestationca.portal.page.params.ReferenceManifestDetailsPageParams;
+
 import java.io.IOException;
-import java.nio.file.NoSuchFileException;
 import java.security.NoSuchAlgorithmException;
 import java.security.cert.CertificateException;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.ArrayList;
+import java.util.Set;
 import java.util.UUID;
 
 import org.apache.logging.log4j.LogManager;
@@ -57,13 +57,13 @@ public class ReferenceManifestDetailsPageController
      * Returns the filePath for the view and the data model for the page.
      *
      * @param params The object to map url parameters into.
-     * @param model The data model for the request. Can contain data from
-     * redirect.
+     * @param model  The data model for the request. Can contain data from
+     *               redirect.
      * @return the path for the view and data model for the page.
      */
     @Override
     public ModelAndView initPage(final ReferenceManifestDetailsPageParams params,
-            final Model model) {
+                                 final Model model) {
         // get the basic information to render the page
         ModelAndView mav = getBaseModelAndView();
         PageMessages messages = new PageMessages();
@@ -106,16 +106,16 @@ public class ReferenceManifestDetailsPageController
      * This method takes the place of an entire class for a string builder.
      * Gathers all information and returns it for displays.
      *
-     * @param uuid database reference for the requested RIM.
+     * @param uuid                     database reference for the requested RIM.
      * @param referenceManifestManager the reference manifest manager.
      * @return mapping of the RIM information from the database.
-     * @throws java.io.IOException error for reading file bytes.
+     * @throws java.io.IOException      error for reading file bytes.
      * @throws NoSuchAlgorithmException If an unknown Algorithm is encountered.
-     * @throws CertificateException if a certificate doesn't parse.
+     * @throws CertificateException     if a certificate doesn't parse.
      */
     public static HashMap<String, Object> getRimDetailInfo(final UUID uuid,
-            final ReferenceManifestManager referenceManifestManager) throws IOException,
-                                              CertificateException, NoSuchAlgorithmException {
+             final ReferenceManifestManager referenceManifestManager) throws IOException,
+            CertificateException, NoSuchAlgorithmException {
         HashMap<String, Object> data = new HashMap<>();
 
         ReferenceManifest rim = ReferenceManifest
@@ -169,7 +169,6 @@ public class ReferenceManifestDetailsPageController
             data.put("pcUriLocal", bRim.getPcURILocal());
             data.put("rimLinkHash", bRim.getRimLinkHash());
             data.put("rimType", bRim.getRimType());
-            data.put("associatedRim", bRim.getAssociatedRim());
 
             List<SwidResource> resources = bRim.parseResource();
             String resourceFilename = null;
@@ -177,45 +176,49 @@ public class ReferenceManifestDetailsPageController
 
             // going to have to pull the filename and grab that from the DB
             // to get the id to make the link
-            try {
-                for (SwidResource swidRes : resources) {
-                    resourceFilename = swidRes.getName();
-                    ReferenceManifest dbRim = ReferenceManifest.select(
-                            referenceManifestManager).byFileName(resourceFilename).getRIM();
+            for (SwidResource swidRes : resources) {
+                resourceFilename = swidRes.getName();
+                ReferenceManifest dbRim = ReferenceManifest.select(
+                        referenceManifestManager).byFileName(resourceFilename).getRIM();
 
-                    if (dbRim != null) {
-                        logProcessor = new TCGEventLog(dbRim.getRimBytes());
-                        swidRes.setPcrValues(Arrays.asList(
-                                logProcessor.getExpectedPCRValues()));
+                if (dbRim != null) {
+                    logProcessor = new TCGEventLog(dbRim.getRimBytes());
+                    swidRes.setPcrValues(Arrays.asList(
+                            logProcessor.getExpectedPCRValues()));
 
-                        if (bRim.getAssociatedRim() == null) {
-                            bRim.setAssociatedRim(dbRim.getId());
-                        }
-                    } else {
-                        swidRes.setPcrValues(new ArrayList<>());
+                    if (bRim.getAssociatedRim() == null) {
+                        bRim.setAssociatedRim(dbRim.getId());
                     }
+                } else {
+                    swidRes.setPcrValues(new ArrayList<>());
                 }
-            } catch (NoSuchFileException nsfEx) {
-                LOGGER.error(String.format("File Not found!: %s",
-                        resourceFilename));
-                LOGGER.error(nsfEx);
-            } catch (DBManagerException dbmEx) {
-                LOGGER.error(dbmEx);
             }
 
             data.put("associatedRim", bRim.getAssociatedRim());
             data.put("swidFiles", resources);
         } else if (rim instanceof SupportReferenceManifest) {
             SupportReferenceManifest sRim = (SupportReferenceManifest) rim;
-            data.put("baseRim", sRim.getFileName());
+
+            if (sRim.getAssociatedRim() == null) {
+                Set<ReferenceManifest> rims = ReferenceManifest
+                        .select(referenceManifestManager).getRIMs();
+                for (ReferenceManifest dbRim : rims) {
+                    if (dbRim instanceof BaseReferenceManifest
+                            && dbRim.getTagId().equals(sRim.getTagId())) {
+                        sRim.setAssociatedRim(dbRim.getId());
+                        break;
+                    }
+                }
+            }
+            data.put("baseRim", sRim.getTagId());
             data.put("associatedRim", sRim.getAssociatedRim());
             data.put("rimType", sRim.getRimType());
 
             TCGEventLog logProcessor = new TCGEventLog(sRim.getRimBytes());
             data.put("events", logProcessor.getEventList());
         } else {
-                LOGGER.error(String.format("Unable to find Reference Integrity "
-                        + "Manifest with ID: %s", uuid));
+            LOGGER.error(String.format("Unable to find Reference Integrity "
+                    + "Manifest with ID: %s", uuid));
         }
 
         return data;

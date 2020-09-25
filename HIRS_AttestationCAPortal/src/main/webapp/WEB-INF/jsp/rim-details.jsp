@@ -28,7 +28,6 @@
                                     <a href="${portal}/rim-details?id=${initialData.associatedRim}">
                                         ${initialData.associatedRim}
                                     </a>
-                                    <!-- Event Number, Event Type, Digest (hex), Event Content -->
                                 </c:when>
                                 <c:otherwise>
                                     <div class="component col col-md-10" style="color: red; padding-left: 20px">Base RIM not uploaded from the ACA RIM Page</div>
@@ -54,18 +53,18 @@
                                     <c:forEach items="${initialData.events}" var="event">
                                         <tr>
                                             <td>${count}</td>
-                                            <td>${event.getPcrIndex()}</td>
+                                            <td>PCR${event.getPcrIndex()}</td>
                                             <td>${event.getEventTypeStr()}</td>
                                             <td>${event.getEventDigestStr()}</td>
                                             <td>${event.getEventContentStr()}</td>
                                         </tr>
                                         <c:set var="count" value="${count + 1}" scope="page"/>
-                                        <!-- not status.last ? ‘<hr/>’ : ‘<br/>’ -->
                                     </c:forEach>
                                 </c:if>
                             </tbody>
                         </table>
                     </div>
+                    <div class="col-md-a col-md-offset-1"><span class="colHeader">${initialData.events.size()} entries</span></div>
                 </c:when>
                 <c:otherwise>
                     <div class="row">
@@ -277,6 +276,21 @@
             } else {
                 tr[i].style.display = "none";
             }
+        }
+    }
+    window.onload = function() {
+        // Constant retrieved from server-side via JSP
+        var maxRows = 11;
+
+        var table = document.getElementById('eventLog');
+        var wrapper = table.parentNode;
+        var rowsInTable = table.rows.length;
+        var height = 0;
+        if (rowsInTable > maxRows) {
+            for (var i = 0; i < maxRows; i++) {
+                height += table.rows[i].clientHeight;
+            }
+            wrapper.style.height = height + "px";
         }
     }
 </script>

@@ -1,0 +1,36 @@
+#eventInput {  
+  width: 100%;
+  font-size: 16px; /* Increase font-size */
+  padding: 12px 20px 12px 40px; /* Add some padding */
+  border: 1px solid #ddd; /* Add a grey border */
+  margin-bottom: 12px; /* Add some space below the input */
+}
+
+#tableDivTag {
+    padding-top: 5px;
+    padding-left: 125px;
+    padding-right: 150px;
+    overflow-y: scroll;
+}
+
+#eventLog {
+  border-collapse: collapse; /* Collapse borders */
+  width: 100%;
+  border: 1px solid #ddd; /* Add a grey border */
+  font-size: 14px; /* Increase font-size */    
+}
+
+#eventLog th, #eventLog td {
+  text-align: left; /* Left-align text */
+  padding: 10px; /* Add padding */
+}
+
+#eventLog tr {
+  /* Add a bottom border to all table rows */
+  border-bottom: 1px solid #ddd;
+}
+
+#eventLog tr.header, #eventLog tr:hover {
+  /* Add a grey background color to the table header and on hover */
+  background-color: #f1f1f1;
+}
