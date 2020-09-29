@@ -151,8 +151,8 @@ public class ReferenceManifestDetailsPageController
             // Link
             data.put("linkHref", bRim.getLinkHref());
             data.put("linkRel", bRim.getLinkRel());
-            data.put("supportBaseRimId", "");
-            data.put("supportBaseRimTagId", "");
+            data.put("supportRimId", "");
+            data.put("supportRimTagId", "");
             data.put("platformManufacturer", bRim.getPlatformManufacturer());
             data.put("platformManufacturerId", bRim.getPlatformManufacturerId());
             data.put("platformModel", bRim.getPlatformModel());
