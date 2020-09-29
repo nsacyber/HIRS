@@ -20,7 +20,7 @@ dependencies {
         exclude module: "javassist"
     }
     compile(project(':HIRS_AttestationCA'))
-    compile(project(':tools:tcgRIMTool'))
+    compile(project(':tools:tcg_rim_tool'))
 
     compile libs.commons_io
     compile libs.commons_lang
