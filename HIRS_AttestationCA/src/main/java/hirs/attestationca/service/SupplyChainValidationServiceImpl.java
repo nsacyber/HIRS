@@ -449,8 +449,8 @@ public class SupplyChainValidationServiceImpl implements SupplyChainValidationSe
                     fwStatus.setMessage("Firmware validation of TPM Quote successful.");
 
                 } else {
-                    fwStatus.setMessage("Firmware validation of TPM Quote failed." +
-                            "\nPCR hash and Quote hash do not match.");
+                    fwStatus.setMessage("Firmware validation of TPM Quote failed."
+                            + "\nPCR hash and Quote hash do not match.");
                 }
             }
 
