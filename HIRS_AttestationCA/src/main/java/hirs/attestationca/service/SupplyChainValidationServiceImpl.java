@@ -429,7 +429,8 @@ public class SupplyChainValidationServiceImpl implements SupplyChainValidationSe
                                         + "No associated RIM file could be found for %s",
                                 manufacturer));
             } else {
-                List<SwidResource> swids = rim.parseResource();
+                BaseReferenceManifest bRim = (BaseReferenceManifest) rim;
+                List<SwidResource> swids = bRim.parseResource();
                 for (SwidResource swid : swids) {
                     baseline = swid.getPcrValues()
                             .toArray(new String[swid.getPcrValues().size()]);
@@ -448,7 +449,8 @@ public class SupplyChainValidationServiceImpl implements SupplyChainValidationSe
                     fwStatus.setMessage("Firmware validation of TPM Quote successful.");
 
                 } else {
-                    fwStatus.setMessage("Firmware validation of TPM Quote failed.");
+                    fwStatus.setMessage("Firmware validation of TPM Quote failed." +
+                            "\nPCR hash and Quote hash do not match.");
                 }
             }
 
