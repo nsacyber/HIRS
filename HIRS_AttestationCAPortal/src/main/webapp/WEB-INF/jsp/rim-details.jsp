@@ -26,7 +26,7 @@
                             <c:choose>
                                 <c:when test="${not empty initialData.associatedRim}">
                                     <a href="${portal}/rim-details?id=${initialData.associatedRim}">
-                                        ${initialData.associatedRim}
+                                        ${initialData.tagId}
                                     </a>
                                 </c:when>
                                 <c:otherwise>
@@ -55,7 +55,7 @@
                                             <td>${count}</td>
                                             <td>PCR${event.getPcrIndex()}</td>
                                             <td>${event.getEventTypeStr()}</td>
-                                            <td>${event.getEventDigestStr()}</td>
+                                            <td class="digestCell">${event.getEventDigestStr()}</td>
                                             <td class="dataCell" title="${event.getEventContentStr()}">${event.getEventContentStr()}</td>
                                         </tr>
                                         <c:set var="count" value="${count + 1}" scope="page"/>

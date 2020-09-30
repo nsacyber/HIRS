@@ -44,3 +44,8 @@
   width: auto;
   max-width: 1px;
 }
+
+.digestCell {
+  max-width: 150px;
+  word-wrap: break-word;
+}

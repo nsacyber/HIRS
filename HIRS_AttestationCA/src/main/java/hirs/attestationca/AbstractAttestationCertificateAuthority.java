@@ -515,14 +515,8 @@ public abstract class AbstractAttestationCertificateAuthority
             if (request.getQuote() != null && !request.getQuote().isEmpty()) {
                 parseTPMQuote(request.getQuote().toStringUtf8());
             }
-            if (request.getPcrslist() != null) {
-                LOG.error(String.format("Not Null: %s", request.getPcrslist()));
-            } else {
-                LOG.error("The getPcrsList is null");
-            }
             if (request.getPcrslist() != null && !request.getPcrslist().isEmpty()) {
                 this.pcrValues = request.getPcrslist().toStringUtf8();
-                LOG.error(String.format("%s", request.getPcrslist().toStringUtf8()));
             }
 
             // Get device name and device

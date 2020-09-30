@@ -213,6 +213,7 @@ public class ReferenceManifestDetailsPageController
             data.put("baseRim", sRim.getTagId());
             data.put("associatedRim", sRim.getAssociatedRim());
             data.put("rimType", sRim.getRimType());
+            data.put("tagId", sRim.getTagId());
 
             TCGEventLog logProcessor = new TCGEventLog(sRim.getRimBytes());
             data.put("events", logProcessor.getEventList());
