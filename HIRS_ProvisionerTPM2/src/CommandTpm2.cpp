@@ -558,7 +558,7 @@ string CommandTpm2::getQuote(const string& pcr_selection,
  * Method to get the full list of pcrs from the TPM.
  *
  */
-string CommandTpm2::getPcrsList() {
+string CommandTpm2::getPcrList() {
     string pcrslist;
     stringstream argsStream;
 

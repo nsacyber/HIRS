@@ -48,6 +48,7 @@ public class SwidResource {
     private List<String> pcrValues;
     private TpmWhiteListBaseline tpmWhiteList;
     private DigestAlgorithm digest = DigestAlgorithm.SHA1;
+    private boolean validFileSize = false;
 
     /**
      * Default constructor.
@@ -190,6 +191,14 @@ public class SwidResource {
      */
     public void setPcrValues(final List<String> pcrValues) {
         this.pcrValues = pcrValues;
+    }
+
+    /**
+     * flag for if the file sizes match with the swidtag.
+     * @return true if they match
+     */
+    public boolean isValidFileSize() {
+        return validFileSize;
     }
 
     /**

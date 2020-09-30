@@ -1,9 +1,6 @@
 package hirs.attestationca.service;
 
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.security.KeyStore;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
@@ -27,6 +24,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import java.util.LinkedList;
+import java.util.UUID;
 import java.util.stream.Collectors;
 import org.apache.logging.log4j.Level;
 import hirs.appraiser.Appraiser;
@@ -41,7 +39,6 @@ import hirs.data.persist.certificate.Certificate;
 import hirs.data.persist.certificate.CertificateAuthorityCredential;
 import hirs.data.persist.certificate.EndorsementCredential;
 import hirs.data.persist.certificate.PlatformCredential;
-import hirs.data.persist.certificate.IssuedAttestationCertificate;
 import hirs.data.persist.ReferenceManifest;
 import hirs.persist.AppraiserManager;
 import hirs.persist.CertificateManager;
@@ -52,6 +49,7 @@ import hirs.persist.DBManagerException;
 import hirs.persist.PersistenceConfiguration;
 import hirs.persist.PolicyManager;
 import hirs.validation.CredentialValidator;
+
 import java.util.HashMap;
 import java.util.Map;
 
@@ -128,6 +126,7 @@ public class SupplyChainValidationServiceImpl implements SupplyChainValidationSe
         List<SupplyChainValidation> validations = new LinkedList<>();
         Map<PlatformCredential, SupplyChainValidation> deltaMapping = new HashMap<>();
         SupplyChainValidation platformScv = null;
+        LOGGER.info("Validating supply chain.");
 
         // Validate the Endorsement Credential
         if (policy.isEcValidationEnabled()) {
@@ -258,6 +257,7 @@ public class SupplyChainValidationServiceImpl implements SupplyChainValidationSe
         } catch (DBManagerException ex) {
             LOGGER.error("Failed to save Supply Chain summary", ex);
         }
+
         return summary;
     }
 
@@ -326,9 +326,6 @@ public class SupplyChainValidationServiceImpl implements SupplyChainValidationSe
         String manufacturer = device.getDeviceInfo()
                 .getHardwareInfo().getManufacturer();
 
-        IssuedAttestationCertificate attCert = IssuedAttestationCertificate
-                .select(this.certificateManager)
-                .byDeviceId(device.getId()).getCertificate();
         ReferenceManifest rim = ReferenceManifest.select(
                 this.referenceManifestManager)
                 .byManufacturer(manufacturer)
@@ -345,19 +342,13 @@ public class SupplyChainValidationServiceImpl implements SupplyChainValidationSe
             }
             pcrPolicy.setBaselinePcrs(baseline);
 
-            if (attCert != null) {
-                Path pcrPath = Paths.get(attCert.getPcrValues());
+            if (device != null) {
                 String pcrContent = "";
-                if (Files.exists(pcrPath)) {
-                    try {
-                        pcrContent = new String(Files.readAllBytes(pcrPath), "UTF8");
-                    } catch (IOException ioEx) {
-                        LOGGER.error(ioEx);
-                    }
+                try {
+                    pcrContent = new String(device.getDeviceInfo().getTPMInfo().getPcrValues());
+                } catch (NullPointerException npEx) {
+                    LOGGER.error(npEx);
                 }
-                String[] pcrSet = null;
-                String[] quote = null;
-                int algorithmLength = baseline[0].length();
 
                 if (pcrContent.isEmpty()) {
                     fwStatus = new AppraisalStatus(FAIL,
@@ -365,31 +356,13 @@ public class SupplyChainValidationServiceImpl implements SupplyChainValidationSe
                                     + "provide pcr values.");
                     LOGGER.warn(String.format(
                             "Firmware validation failed: Client (%s) did not "
-                                    + "provide pcr values.", attCert.getDevice().getName()));
+                                    + "provide pcr values.", device.getName()));
                 } else {
                     // we have a full set of PCR values
-                    pcrSet = pcrContent.split("\\n");
-                    quote = new String[TPMMeasurementRecord.MAX_PCR_ID + 1];
+                    int algorithmLength = baseline[0].length();
+                    String[] storedPcrs = buildStoredPcrs(pcrContent, algorithmLength);
 
-                    // we need to scroll through the entire list until we find
-                    // a matching hash length
-                    int offset = 1;
-
-                    for (int i = 0; i < pcrSet.length; i++) {
-                        if (pcrSet[i].contains("sha")) {
-                            // entered a new set, check size
-                            if (pcrSet[i + offset].split(":")[1].trim().length()
-                                    == algorithmLength) {
-                                // found the matching set
-                                for (int j = 0; j <= TPMMeasurementRecord.MAX_PCR_ID; j++) {
-                                    quote[j] = pcrSet[++i].split(":")[1].trim();
-                                }
-                                break;
-                            }
-                        }
-                    }
-
-                    if (quote[0].isEmpty()) {
+                    if (storedPcrs[0].isEmpty()) {
                         // validation fail
                         fwStatus = new AppraisalStatus(FAIL,
                                 "Firmware validation failed: "
@@ -397,7 +370,7 @@ public class SupplyChainValidationServiceImpl implements SupplyChainValidationSe
                                         + "values are not the same algorithm "
                                         + "as associated RIM.");
                     } else {
-                        StringBuilder sb = pcrPolicy.validatePcrs(quote);
+                        StringBuilder sb = pcrPolicy.validatePcrs(storedPcrs);
                         if (sb.length() > 0) {
                             level = Level.ERROR;
                             fwStatus = new AppraisalStatus(FAIL, sb.toString());
@@ -419,6 +392,96 @@ public class SupplyChainValidationServiceImpl implements SupplyChainValidationSe
 
         return buildValidationRecord(SupplyChainValidation.ValidationType.FIRMWARE,
                 fwStatus.getAppStatus(), fwStatus.getMessage(), rim, level);
+    }
+
+    /**
+     * A supplemental method that handles validating just the quote post main validation.
+     *
+     * @param device the associated device.
+     * @return True if validation is successful, false otherwise.
+     */
+    @Override
+    public SupplyChainValidationSummary validateQuote(final Device device) {
+        final Appraiser supplyChainAppraiser = appraiserManager.getAppraiser(
+                SupplyChainAppraiser.NAME);
+        SupplyChainPolicy policy = (SupplyChainPolicy) policyManager.getDefaultPolicy(
+                supplyChainAppraiser);
+        SupplyChainValidation quoteScv = null;
+        SupplyChainValidationSummary summary = null;
+        Level level = Level.ERROR;
+        AppraisalStatus fwStatus = new AppraisalStatus(FAIL,
+                SupplyChainCredentialValidator.FIRMWARE_VALID);
+
+        // check if the policy is enabled
+        if (policy.isFirmwareValidationEnabled()) {
+            String[] baseline = new String[Integer.SIZE];
+            String manufacturer = device.getDeviceInfo()
+                    .getHardwareInfo().getManufacturer();
+
+            // need to get pcrs
+            ReferenceManifest rim = ReferenceManifest.select(
+                    this.referenceManifestManager)
+                    .byManufacturer(manufacturer)
+                    .getRIM();
+            if (rim == null) {
+                fwStatus = new AppraisalStatus(FAIL,
+                        String.format("Firmware Quote validation failed: "
+                                        + "No associated RIM file could be found for %s",
+                                manufacturer));
+            } else {
+                List<SwidResource> swids = rim.parseResource();
+                for (SwidResource swid : swids) {
+                    baseline = swid.getPcrValues()
+                            .toArray(new String[swid.getPcrValues().size()]);
+                }
+
+                String pcrContent = new String(device.getDeviceInfo().getTPMInfo().getPcrValues());
+                String[] storedPcrs = buildStoredPcrs(pcrContent, baseline[0].length());
+                PCRPolicy pcrPolicy = policy.getPcrPolicy();
+                pcrPolicy.setBaselinePcrs(baseline);
+                // grab the quote
+                byte[] hash = device.getDeviceInfo().getTPMInfo().getTpmQuoteHash();
+                if (pcrPolicy.validateQuote(hash, storedPcrs)) {
+                    level = Level.INFO;
+                    fwStatus = new AppraisalStatus(PASS,
+                            SupplyChainCredentialValidator.FIRMWARE_VALID);
+                    fwStatus.setMessage("Firmware validation of TPM Quote successful.");
+
+                } else {
+                    fwStatus.setMessage("Firmware validation of TPM Quote failed.");
+                }
+            }
+
+            quoteScv = buildValidationRecord(SupplyChainValidation
+                            .ValidationType.FIRMWARE,
+                    fwStatus.getAppStatus(), fwStatus.getMessage(), rim, level);
+
+            // Generate validation summary, save it, and return it.
+            List<SupplyChainValidation> validations = new ArrayList<>();
+            SupplyChainValidationSummary previous
+                    = this.supplyChainValidatorSummaryManager.get(
+                    UUID.fromString(device.getSummaryId()));
+            for (SupplyChainValidation scv : previous.getValidations()) {
+                if (scv.getValidationType() != SupplyChainValidation.ValidationType.FIRMWARE) {
+                    validations.add(buildValidationRecord(scv.getValidationType(),
+                            scv.getResult(), scv.getMessage(),
+                            scv.getCertificatesUsed().get(0), Level.INFO));
+                }
+            }
+            validations.add(quoteScv);
+            previous.archive();
+            supplyChainValidatorSummaryManager.update(previous);
+            summary = new SupplyChainValidationSummary(device, validations);
+
+            // try removing the supply chain validation as well and resaving that
+            try {
+                supplyChainValidatorSummaryManager.save(summary);
+            } catch (DBManagerException ex) {
+                LOGGER.error("Failed to save Supply Chain Summary", ex);
+            }
+        }
+
+        return summary;
     }
 
     private SupplyChainValidation validateEndorsementCredential(final EndorsementCredential ec,
@@ -555,7 +618,6 @@ public class SupplyChainValidationServiceImpl implements SupplyChainValidationSe
             final SupplyChainValidation.ValidationType validationType,
             final AppraisalStatus.Status result, final String message,
             final ArchivableEntity archivableEntity, final Level logLevel) {
-
         List<ArchivableEntity> aeList = new ArrayList<>();
         if (archivableEntity != null) {
             aeList.add(archivableEntity);
@@ -672,5 +734,31 @@ public class SupplyChainValidationServiceImpl implements SupplyChainValidationSe
         }
 
         return multiple;
+    }
+
+    private String[] buildStoredPcrs(final String pcrContent, final int algorithmLength) {
+        // we have a full set of PCR values
+        String[] pcrSet = pcrContent.split("\\n");
+        String[] storedPcrs = new String[TPMMeasurementRecord.MAX_PCR_ID + 1];
+
+        // we need to scroll through the entire list until we find
+        // a matching hash length
+        int offset = 1;
+
+        for (int i = 0; i < pcrSet.length; i++) {
+            if (pcrSet[i].contains("sha")) {
+                // entered a new set, check size
+                if (pcrSet[i + offset].split(":")[1].trim().length()
+                        == algorithmLength) {
+                    // found the matching set
+                    for (int j = 0; j <= TPMMeasurementRecord.MAX_PCR_ID; j++) {
+                        storedPcrs[j] = pcrSet[++i].split(":")[1].trim();
+                    }
+                    break;
+                }
+            }
+        }
+
+        return storedPcrs;
     }
 }

@@ -10,7 +10,6 @@ import java.util.Set;
 import java.util.UUID;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
-import javax.persistence.Column;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToMany;
 import javax.persistence.ManyToOne;
@@ -20,8 +19,6 @@ import javax.persistence.ManyToOne;
  */
 @Entity
 public class IssuedAttestationCertificate extends DeviceAssociatedCertificate {
-
-    private static final int MAX_CERT_LENGTH_BYTES = 1024;
 
     /**
      * AIC label that must be used.
@@ -35,9 +32,6 @@ public class IssuedAttestationCertificate extends DeviceAssociatedCertificate {
     @ManyToMany(fetch = FetchType.EAGER)
     @JoinColumn(name = "pc_id")
     private Set<PlatformCredential> platformCredentials;
-
-    @Column(nullable = true, length = MAX_CERT_LENGTH_BYTES)
-    private String pcrValues;
 
     /**
      * This class enables the retrieval of IssuedAttestationCertificate by their attributes.
@@ -128,21 +122,5 @@ public class IssuedAttestationCertificate extends DeviceAssociatedCertificate {
      */
     public Set<PlatformCredential> getPlatformCredentials() {
         return Collections.unmodifiableSet(platformCredentials);
-    }
-
-    /**
-     * Getter for the pcrValues passed up by the client.
-     * @return a string blob of pcrs
-     */
-    public String getPcrValues() {
-        return pcrValues;
-    }
-
-    /**
-     * Setter for the pcrValues passed up by the client.
-     * @param pcrValues to be stored.
-     */
-    public void setPcrValues(final String pcrValues) {
-        this.pcrValues = pcrValues;
     }
 }

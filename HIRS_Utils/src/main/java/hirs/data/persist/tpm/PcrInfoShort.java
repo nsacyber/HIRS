@@ -287,7 +287,6 @@ public class PcrInfoShort {
      * @return byte array representing the PcrInfoShort object
      */
     public final byte[] getValue() {
-
         ByteBuffer byteBuffer = ByteBuffer.allocate(getLength());
         byteBuffer.put(pcrSelection.getValue());
         byteBuffer.put((byte) localityAtRelease);

@@ -98,7 +98,7 @@ string RestfulClientProvisioner::sendIdentityClaim(
         stringstream errormsg;
         errormsg << "Error communicating with ACA server. "
                  << "Received response code: " << to_string(r.status_code)
-                 << "\n\nError message fom ACA was: "
+                 << "\n\nError message from ACA was: "
                  << JSONFieldParser::parseJsonStringField(r.text,
                                                           ACA_ERROR_FIELDNAME);
         throw HirsRuntimeException(errormsg.str(),
