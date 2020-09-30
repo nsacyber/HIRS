@@ -109,6 +109,9 @@ public class BaseReferenceManifest extends ReferenceManifest {
             this.swidPatch = si.isPatch() ? 1 : 0;
             this.swidSupplemental = si.isSupplemental() ? 1 : 0;
             this.swidVersion = si.getVersion();
+            if (si.getTagVersion() != null) {
+                this.setSwidTagVersion(si.getTagVersion().toString());
+            }
 
             for (Object object : si.getEntityOrEvidenceOrLink()) {
                 if (object instanceof JAXBElement) {

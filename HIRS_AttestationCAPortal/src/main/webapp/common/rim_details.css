@@ -34,3 +34,13 @@
   /* Add a grey background color to the table header and on hover */
   background-color: #f1f1f1;
 }
+
+.dataCell {
+  display: table-cell;
+  padding: 2px 15px 2px 15px;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  overflow: hidden;
+  width: auto;
+  max-width: 1px;
+}

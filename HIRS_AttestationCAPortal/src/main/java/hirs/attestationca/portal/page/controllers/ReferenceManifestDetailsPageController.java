@@ -127,6 +127,7 @@ public class ReferenceManifestDetailsPageController
             // Software Identity
             data.put("swidName", bRim.getSwidName());
             data.put("swidVersion", bRim.getSwidVersion());
+            data.put("swidTagVersion", bRim.getSwidTagVersion());
             if (bRim.isSwidCorpus() == 1) {
                 data.put("swidCorpus", "True");
             } else {
@@ -157,7 +158,6 @@ public class ReferenceManifestDetailsPageController
             data.put("platformManufacturerId", bRim.getPlatformManufacturerId());
             data.put("platformModel", bRim.getPlatformModel());
             data.put("platformVersion", bRim.getPlatformVersion());
-            data.put("firmwareVersion", bRim.getFirmwareVersion());
             data.put("payloadType", bRim.getPayloadType());
             data.put("colloquialVersion", bRim.getColloquialVersion());
             data.put("edition", bRim.getEdition());

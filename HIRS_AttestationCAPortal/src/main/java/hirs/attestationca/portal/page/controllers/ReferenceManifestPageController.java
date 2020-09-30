@@ -212,7 +212,7 @@ public class ReferenceManifestPageController
                         BaseReferenceManifest bRim = (BaseReferenceManifest) element;
                         for (SwidResource swid : bRim.parseResource()) {
                             if (swid.getName().equals(rim.getFileName())) {
-                                rim.setFirmwareVersion(swid.getSize());
+                                rim.setSwidTagVersion(bRim.getSwidTagVersion());
                                 rim.setPlatformManufacturer(bRim.getPlatformManufacturer());
                                 rim.setPlatformModel(bRim.getPlatformModel());
                                 rim.setTagId(bRim.getTagId());
@@ -229,7 +229,7 @@ public class ReferenceManifestPageController
                             if (swid.getName().equals(sRim.getFileName())) {
                                 sRim.setPlatformManufacturer(bRim.getPlatformManufacturer());
                                 sRim.setPlatformModel(bRim.getPlatformModel());
-                                sRim.setFirmwareVersion(swid.getSize());
+                                sRim.setSwidTagVersion(bRim.getSwidTagVersion());
                                 sRim.setTagId(bRim.getTagId());
                                 rim.setAssociatedRim(sRim.getId());
                                 try {

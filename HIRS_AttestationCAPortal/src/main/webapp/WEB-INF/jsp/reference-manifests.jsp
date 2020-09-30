@@ -48,7 +48,7 @@
                         {data: 'rimType'},
                         {data: 'platformManufacturer'},
                         {data: 'platformModel'},
-                        {data: 'firmwareVersion'},
+                        {data: 'swidTagVersion'},
                         {
                             data: 'id',
                             orderable: false,

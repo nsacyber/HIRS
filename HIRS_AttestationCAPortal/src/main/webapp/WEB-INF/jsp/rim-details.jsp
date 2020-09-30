@@ -56,7 +56,7 @@
                                             <td>PCR${event.getPcrIndex()}</td>
                                             <td>${event.getEventTypeStr()}</td>
                                             <td>${event.getEventDigestStr()}</td>
-                                            <td>${event.getEventContentStr()}</td>
+                                            <td class="dataCell" title="${event.getEventContentStr()}">${event.getEventContentStr()}</td>
                                         </tr>
                                         <c:set var="count" value="${count + 1}" scope="page"/>
                                     </c:forEach>
@@ -73,7 +73,7 @@
                             <div>SWID Name:&nbsp;<span>${initialData.swidName}</span></div>
                             <div>SWID Version:&nbsp;<span>${initialData.swidVersion}</span></div>
                             <div>SWID Tag ID:&nbsp;<span>${initialData.swidTagId}</span></div>
-                            <div>SWID Tag Version:&nbsp;<span></span></div>
+                            <div>SWID Tag Version:&nbsp;<span>${initialData.swidTagVersion}</span></div>
                             <c:if test="${initialData.swidCorpus}">
                                 <div>SWID Corpus:&nbsp;<span><img src="${icons}/ic_checkbox_marked_circle_black_green_24dp.png" title="Corpus Flag"></span>
                                 </div>
@@ -126,9 +126,6 @@
 
                             <c:if test="${not empty initialData.payloadType}">
                                 <div>Payload Type:&nbsp;<span>${initialData.payloadType}</span></div>                        
-                            </c:if>
-                            <c:if test="${not empty initialData.firmwareVersion}">
-                                <div>Firmware Version:&nbsp;<span>${initialData.firmwareVersion}</span></div>
                             </c:if>
                             <div>Binding Spec:&nbsp;<span>${initialData.bindingSpec}</span></div>
                             <div>Binding Spec Version:&nbsp;<span>${initialData.bindingSpecVersion}</span></div>

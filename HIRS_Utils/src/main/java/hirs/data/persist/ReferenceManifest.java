@@ -99,7 +99,7 @@ public abstract class ReferenceManifest extends ArchivableEntity {
     @Column
     private String platformManufacturerId = null;
     @Column
-    private String firmwareVersion = null;
+    private String swidTagVersion = null;
     @Column
     private String platformModel = null;
     @Column(nullable = false)
@@ -239,6 +239,24 @@ public abstract class ReferenceManifest extends ArchivableEntity {
     }
 
     /**
+     * Getter for the SWID tag version.
+     *
+     * @return string of the tag version number
+     */
+    public String getSwidTagVersion() {
+        return swidTagVersion;
+    }
+
+    /**
+     * Setter for the SWID tag version.
+     *
+     * @param swidTagVersion string of the version
+     */
+    public void setSwidTagVersion(final String swidTagVersion) {
+        this.swidTagVersion = swidTagVersion;
+    }
+
+    /**
      * Getter for the RIM Tag ID.
      *
      * @return string for the RIM tag id
@@ -254,24 +272,6 @@ public abstract class ReferenceManifest extends ArchivableEntity {
      */
     public void setTagId(final String tagId) {
         this.tagId = tagId;
-    }
-
-    /**
-     * Getter for the firmware version info.
-     *
-     * @return string for the firmware version
-     */
-    public String getFirmwareVersion() {
-        return firmwareVersion;
-    }
-
-    /**
-     * Setter for the firmware version info.
-     *
-     * @param firmwareVersion passed in firmware version
-     */
-    public void setFirmwareVersion(final String firmwareVersion) {
-        this.firmwareVersion = firmwareVersion;
     }
 
     /**
