@@ -338,4 +338,11 @@ public abstract class ReferenceManifest extends ArchivableEntity {
                 && platformModel.equals(that.platformModel)
                 && fileName.equals(that.fileName);
     }
+
+    @Override
+    public String toString() {
+        return String.format("Filename->%s%nPlatform Manufacturer->%s%n"
+                + "Platform Model->%s%nRIM Type->%s", this.getFileName(),
+                this.platformManufacturer, this.platformModel, this.getRimType());
+    }
 }
