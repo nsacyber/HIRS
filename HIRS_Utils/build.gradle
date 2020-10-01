@@ -70,6 +70,14 @@ dependencies {
     testCompile libs.commons_lang
 }
 
+task generateXjcLibrary(type:Exec) {
+    workingDir 'config'
+
+    commandLine './genXjcLibrary.sh'
+}
+
+compileJava.dependsOn generateXjcLibrary
+
 task importBaseline(type:JavaExec) {
     description 'Imports Baselines into the database'
     main = "hirs.persist.ImportCLI"
@@ -101,6 +109,10 @@ findbugs {
     ignoreFailures = false
     effort = 'max'
     excludeFilter = new File(findbugsConfigDir, 'suppressions.xml')
+}
+
+pmdMain {
+    exclude '**/xjc/**'
 }
 
 jacocoTestReport {
