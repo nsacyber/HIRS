@@ -20,7 +20,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Import;
 import org.springframework.stereotype.Service;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -328,16 +327,21 @@ public class SupplyChainValidationServiceImpl implements SupplyChainValidationSe
         AppraisalStatus fwStatus = null;
         String manufacturer = device.getDeviceInfo()
                 .getHardwareInfo().getManufacturer();
+        ReferenceManifest baseRim = null;
+        Set<ReferenceManifest> rims = ReferenceManifest
+                .select(referenceManifestManager).getRIMs();
 
-        ReferenceManifest rim = ReferenceManifest.select(
-                this.referenceManifestManager)
-                .byManufacturer(manufacturer)
-                .getRIM();
+        for (ReferenceManifest rim : rims) {
+            if (rim instanceof BaseReferenceManifest
+                    && rim.getPlatformManufacturer().equals(manufacturer)) {
+                baseRim = rim;
+            }
+        }
 
         fwStatus = new AppraisalStatus(PASS,
                 SupplyChainCredentialValidator.FIRMWARE_VALID);
-        if (rim instanceof BaseReferenceManifest) {
-            BaseReferenceManifest bRim = (BaseReferenceManifest) rim;
+        if (baseRim != null) {
+            BaseReferenceManifest bRim = (BaseReferenceManifest) baseRim;
             List<SwidResource> swids = bRim.parseResource();
             TCGEventLog logProcessor;
             for (SwidResource swid : swids) {
@@ -408,7 +412,7 @@ public class SupplyChainValidationServiceImpl implements SupplyChainValidationSe
         }
 
         return buildValidationRecord(SupplyChainValidation.ValidationType.FIRMWARE,
-                fwStatus.getAppStatus(), fwStatus.getMessage(), rim, level);
+                fwStatus.getAppStatus(), fwStatus.getMessage(), baseRim, level);
     }
 
     /**
