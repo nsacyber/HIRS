@@ -12,6 +12,7 @@ import hirs.data.persist.TPMMeasurementRecord;
 import hirs.data.persist.SwidResource;
 import hirs.data.persist.PCRPolicy;
 import hirs.data.persist.ArchivableEntity;
+import hirs.tpm.eventlog.TCGEventLog;
 import hirs.validation.SupplyChainCredentialValidator;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -19,6 +20,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Import;
 import org.springframework.stereotype.Service;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -337,9 +339,23 @@ public class SupplyChainValidationServiceImpl implements SupplyChainValidationSe
         if (rim instanceof BaseReferenceManifest) {
             BaseReferenceManifest bRim = (BaseReferenceManifest) rim;
             List<SwidResource> swids = bRim.parseResource();
+            TCGEventLog logProcessor;
             for (SwidResource swid : swids) {
-                baseline = swid.getPcrValues()
-                        .toArray(new String[swid.getPcrValues().size()]);
+                ReferenceManifest dbRim = ReferenceManifest.select(
+                        referenceManifestManager).byFileName(swid.getName()).getRIM();
+
+                if (dbRim != null) {
+                    try {
+                        logProcessor = new TCGEventLog(dbRim.getRimBytes());
+                        baseline = logProcessor.getExpectedPCRValues();
+                    } catch (CertificateException cEx) {
+                        LOGGER.error(cEx);
+                    } catch (NoSuchAlgorithmException noSaEx) {
+                        LOGGER.error(noSaEx);
+                    } catch (IOException ioEx) {
+                        LOGGER.error(ioEx);
+                    }
+                }
             }
             pcrPolicy.setBaselinePcrs(baseline);
 
