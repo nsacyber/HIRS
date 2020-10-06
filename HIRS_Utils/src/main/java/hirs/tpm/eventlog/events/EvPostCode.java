@@ -34,19 +34,18 @@ public class EvPostCode {
     public EvPostCode(final byte[] postCode) {
         // 2 ways post code has been implemented, check for the ascii string first
         if (isAscii(postCode)) {
-            String info = new String(postCode, StandardCharsets.UTF_8);
-            codeInfo = info;
+            codeInfo = new String(postCode, StandardCharsets.UTF_8);
             bisString = true;
-            } else {
-               blob = new UefiFirmware(postCode);
-            }
+        } else {
+            blob = new UefiFirmware(postCode);
+        }
     }
 
     /**
      * Returns the UEFI Defined Firmware Blob information.
      * @return UEFI Defined Firmware Blob information.
      */
-    public UefiFirmware getfirmwareBlob() {
+    public UefiFirmware getFirmwareBlob() {
         return blob;
     }
 
@@ -75,12 +74,11 @@ public class EvPostCode {
      * @return true if byte array is a string.
      */
     public static boolean isAscii(final byte[] postCode) {
-        boolean bisAscii = true;
         for (byte b : postCode) {
             if (!Character.isDefined(b)) {
                 return false;
             }
         }
-       return bisAscii;
+       return true;
     }
 }

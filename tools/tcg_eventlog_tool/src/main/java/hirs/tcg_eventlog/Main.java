@@ -26,145 +26,147 @@ final class Main {
     private static byte[] eventLog = null;
     private static boolean bContentFlag, bEventFlag, bHexEvent, bHexFlag, bPcrFlag = false;
 
-/**
- * Main Constructor.
- * @param args command line parameters.
- */
-public static void main(final String[] args) {
-commander = new Commander(args);
-    if (!commander.getValidityFlag()) {
-        System.out.print("Program exiting without processs due to issues with"
-                                                        + " parameters provided.");
-        System.exit(1);
-    }
-    if (commander.hasArguments()) {
-        if (commander.getDoneFlag()) {
-            System.exit(0);
-        }
-        if (commander.getHelpFlag()) {
-            commander.printHelp("");
-            System.exit(0);
-        }
-        if (commander.getOutputFlag()) {
-            try {
-                outputStream = new FileOutputStream(commander.getOutputFileName());
-                } catch (FileNotFoundException e) {
-                System.out.print("Error opening output file" + commander.getOutputFileName()
-                             + "\nError was " + e.getMessage());
-                 System.exit(1);
-                }
-        }
-        if (commander.getFileFlag()) {
-            eventLog = openLog(commander.getInFileName());
-        }
-        if (commander.getContentFlag()) {
-            bContentFlag = true;
-        }
-        if (commander.getDiffFlag()) {
-            bEventFlag = true;
-            String results = compareLogs(commander.getInFileName(),
-                                            commander.getInFile2Name());
-            writeOut(results);
-            System.exit(0);
-        }
-        if (commander.getEventIdsFlag()) {
-            bEventFlag = true;
-        }
-        if (commander.getEventHexFlag()) {
-            bHexEvent = true;
-        }
-        if (commander.getPCRFlag()) {
-            bPcrFlag = true;
-        }
-        if (commander.getVerifyFile()) {
-            System.out.print("Verify option is not yet implemented");
+    /**
+     * Main Constructor.
+     *
+     * @param args command line parameters.
+     */
+    public static void main(final String[] args) {
+        commander = new Commander(args);
+        if (!commander.getValidityFlag()) {
+            System.out.print("Program exiting without processs due to issues with"
+                    + " parameters provided.");
             System.exit(1);
         }
-        if (commander.getHexFlag()) {
-            bHexFlag = true;
-        }
-} else {
-    System.out.print("Nothing to do: No Parameters provided.");
-    System.exit(1);
-}   // End commander processing
-
-    try {
-        if (eventLog == null)  {
-            eventLog = openLog("");
-        }
-        // Main Event processing
-        TCGEventLog evLog = new TCGEventLog(eventLog, bEventFlag, bContentFlag, bHexEvent);
-        if (bPcrFlag) {
-            String[] pcrs = evLog.getExpectedPCRValues();
-            int count = 0;
-            if (!bHexFlag) {
-                  writeOut("Expected Platform Configuration Register (PCR) values"
-                    + " derived from the Event Log: \n\n");
+        if (commander.hasArguments()) {
+            if (commander.getDoneFlag()) {
+                System.exit(0);
             }
-            for (String pcr: pcrs) {
-                if (count++ == commander.getPcrNumber() || (commander.getPcrNumber() == -1)) {
-                    if (bHexFlag) {
-                        writeOut(pcr.toString() + "\n");
-                    } else {
-                        writeOut(" pcr " + (count - 1) + " = " + pcr.toString() + "\n");
+            if (commander.getHelpFlag()) {
+                commander.printHelp("");
+                System.exit(0);
+            }
+            if (commander.getOutputFlag()) {
+                try {
+                    outputStream = new FileOutputStream(commander.getOutputFileName());
+                } catch (FileNotFoundException e) {
+                    System.out.print("Error opening output file" + commander.getOutputFileName()
+                            + "\nError was " + e.getMessage());
+                    System.exit(1);
+                }
+            }
+            if (commander.getFileFlag()) {
+                eventLog = openLog(commander.getInFileName());
+            }
+            if (commander.getContentFlag()) {
+                bContentFlag = true;
+            }
+            if (commander.getDiffFlag()) {
+                bEventFlag = true;
+                String results = compareLogs(commander.getInFileName(),
+                        commander.getInFile2Name());
+                writeOut(results);
+                System.exit(0);
+            }
+            if (commander.getEventIdsFlag()) {
+                bEventFlag = true;
+            }
+            if (commander.getEventHexFlag()) {
+                bHexEvent = true;
+            }
+            if (commander.getPCRFlag()) {
+                bPcrFlag = true;
+            }
+            if (commander.getVerifyFile()) {
+                System.out.print("Verify option is not yet implemented");
+                System.exit(1);
+            }
+            if (commander.getHexFlag()) {
+                bHexFlag = true;
+            }
+        } else {
+            System.out.print("Nothing to do: No Parameters provided.");
+            System.exit(1);
+        }   // End commander processing
+
+        try {
+            if (eventLog == null) {
+                eventLog = openLog("");
+            }
+            // Main Event processing
+            TCGEventLog evLog = new TCGEventLog(eventLog, bEventFlag, bContentFlag, bHexEvent);
+            if (bPcrFlag) {
+                String[] pcrs = evLog.getExpectedPCRValues();
+                int count = 0;
+                if (!bHexFlag) {
+                    writeOut("Expected Platform Configuration Register (PCR) values"
+                            + " derived from the Event Log: \n\n");
+                }
+                for (String pcr : pcrs) {
+                    if (count++ == commander.getPcrNumber() || (commander.getPcrNumber() == -1)) {
+                        if (bHexFlag) {
+                            writeOut(pcr.toString() + "\n");
+                        } else {
+                            writeOut(" pcr " + (count - 1) + " = " + pcr.toString() + "\n");
+                        }
                     }
                 }
-            }
-            if (!bHexFlag) {
-                  writeOut("\n----------------- End PCR Values ----------------- \n\n");
-          }
-        }
-
-        // General event log output
-        if (bEventFlag) {
-            if (!bHexFlag) {
-                if (evLog.isCryptoAgile()) {
-                        writeOut("\nEvent Log follows the \"Crypto Agile\" format and has "
-                                               + evLog.getEventList().size() + " events:\n\n");
-                } else {
-                    writeOut("\nEvent Log follows the \"SHA1\" format and has "
-                            + evLog.getEventList().size() + " events:\n\n");
+                if (!bHexFlag) {
+                    writeOut("\n----------------- End PCR Values ----------------- \n\n");
                 }
             }
-            int eventCount = 0;
-                for (TpmPcrEvent event: evLog.getEventList()) {
+
+            // General event log output
+            if (bEventFlag) {
+                if (!bHexFlag) {
+                    if (evLog.isCryptoAgile()) {
+                        writeOut("\nEvent Log follows the \"Crypto Agile\" format and has "
+                                + evLog.getEventList().size() + " events:\n\n");
+                    } else {
+                        writeOut("\nEvent Log follows the \"SHA1\" format and has "
+                                + evLog.getEventList().size() + " events:\n\n");
+                    }
+                }
+                int eventCount = 0;
+                for (TpmPcrEvent event : evLog.getEventList()) {
                     if ((commander.getEventNumber() == eventCount++)
-                                                           || commander.getEventNumber() == -1) {
+                            || commander.getEventNumber() == -1) {
                         if ((commander.getPcrNumber() == event.getPcrIndex())
                                 || commander.getPcrNumber() == -1) {
                             if (bHexFlag) {
-                                 if (bEventFlag || bHexEvent) {
-                                  writeOut(HexUtils.byteArrayToHexString(event.getEvent()) + "\n");
-                                 }
-                                 if (bContentFlag) {
-                                  writeOut(HexUtils.byteArrayToHexString(event.getEventContent())
-                                                                                           + "\n");
-                                 }
+                                if (bEventFlag || bHexEvent) {
+                                    writeOut(HexUtils.byteArrayToHexString(event.getEvent()) + "\n");
+                                }
+                                if (bContentFlag) {
+                                    writeOut(HexUtils.byteArrayToHexString(event.getEventContent())
+                                            + "\n");
+                                }
                             } else {
-                              writeOut(event.toString(bEventFlag, bContentFlag, bHexEvent) + "\n");
+                                writeOut(event.toString(bEventFlag, bContentFlag, bHexEvent) + "\n");
                             }
                         }
+                    }
                 }
             }
+        } catch (IOException i) {
+            System.out.print("IO error processing Event Log " + commander.getInFileName()
+                    + "\nError was " + i.toString());
+            System.exit(1);
+        } catch (CertificateException c) {
+            System.out.print("Certificate error processing Event Log " + commander.getInFileName()
+                    + "\nError was " + c.toString());
+            System.exit(1);
+        } catch (NoSuchAlgorithmException a) {
+            System.out.print("Algorithm error processing Event Log " + commander.getInFileName()
+                    + "\nError was " + a.toString());
+            System.exit(1);
         }
-    } catch (IOException i) {
-        System.out.print("IO error processing Event Log " + commander.getInFileName()
-        + "\nError was " + i.toString());
-        System.exit(1);
-    } catch (CertificateException c) {
-        System.out.print("Certificate error processing Event Log " + commander.getInFileName()
-        + "\nError was " + c.toString());
-        System.exit(1);
-      } catch (NoSuchAlgorithmException a) {
-          System.out.print("Algorithm error processing Event Log " + commander.getInFileName()
-          + "\nError was " + a.toString());
-          System.exit(1);
     }
-}
 
     /**
      * Opens a TCG Event log file.
-     * @param fileName  Name of the log file. Will use a OS specific default.
+     *
+     * @param fileName Name of the log file. Will use a OS specific default.
      * @return a byte array holding the entire log
      */
     public static byte[] openLog(final String fileName) {
@@ -186,10 +188,10 @@ commander = new Commander(args);
             Path path = Paths.get(fName);
             rawLog = Files.readAllBytes(path);
             if (!bHexFlag) {
-               writeOut("tcg_eventlog_tool is opening file:" + path + "\n");
+                writeOut("tcg_eventlog_tool is opening file:" + path + "\n");
             }
         } catch (Exception e) {
-            String error = "Error reading event Log File: " +  e.toString();
+            String error = "Error reading event Log File: " + e.toString();
             if (bDefault) {
                 error += "\nTry using the -f option to specify an Event Log File";
             }
@@ -201,6 +203,7 @@ commander = new Commander(args);
 
     /**
      * Write data out to the system and/or a file.
+     *
      * @param data
      */
     private static void writeOut(final String data) {
@@ -219,6 +222,7 @@ commander = new Commander(args);
     /**
      * Compares 2 Event Logs and returns a string based upon the results.
      * Uses the Events digest field for comparisons.
+     *
      * @param logFileName1 Log file to use as a reference.
      * @param logFileName2 Log file to compare to the reference.
      * @return A sting containing human readable results.
@@ -232,12 +236,12 @@ commander = new Commander(args);
         try {
             eventLog1 = new TCGEventLog(evLog);
         } catch (Exception e) {
-            sb.append("\nError processing event log " + logFileName1   + " : " + e.getMessage());
+            sb.append("\nError processing event log " + logFileName1 + " : " + e.getMessage());
             return sb.toString();
         }
         try {
             eventLog2 = new TCGEventLog(evLog2);
-            ArrayList<TpmPcrEvent>  errors = diffEventLogs(eventLog1.getEventList(),
+            ArrayList<TpmPcrEvent> errors = diffEventLogs(eventLog1.getEventList(),
                     eventLog2.getEventList(), commander.getPcrNumber());
             if (errors.isEmpty() && !bHexFlag) {
                 sb.append("\nEvent Log " + logFileName1 + " MATCHED EventLog " + logFileName2);
@@ -245,8 +249,8 @@ commander = new Commander(args);
                 if (!errors.isEmpty() && !bHexFlag) {
                     sb.append("\nEvent Log " + logFileName1
                             + " did NOT match EventLog " + logFileName2 + "\n");
-                    sb.append("There were " + errors.size()  + " event mismatches: \n\n");
-                    }
+                    sb.append("There were " + errors.size() + " event mismatches: \n\n");
+                }
                 for (TpmPcrEvent error : errors) {
                     if (bHexFlag) {
                         if (bEventFlag || bHexEvent) {
@@ -254,51 +258,53 @@ commander = new Commander(args);
                         }
                         if (bContentFlag) {
                             sb.append(HexUtils.byteArrayToHexString(error.getEventContent())
-                                                                                      + "\n");
+                                    + "\n");
                         }
-                   } else {
-                       sb.append(error.toString(bEventFlag, bContentFlag, bHexEvent) + "\n");
-                   }
+                    } else {
+                        sb.append(error.toString(bEventFlag, bContentFlag, bHexEvent) + "\n");
+                    }
                 }
             }
         } catch (IOException i) {
             System.out.print("IO error processing Event Log " + commander.getInFileName()
-            + "\nError was " + i.toString());
+                    + "\nError was " + i.toString());
             System.exit(1);
         } catch (CertificateException c) {
             System.out.print("Certificate error processing Event Log " + commander.getInFileName()
-            + "\nError was " + c.toString());
+                    + "\nError was " + c.toString());
             System.exit(1);
-          } catch (NoSuchAlgorithmException a) {
-              System.out.print("Algorithm error processing Event Log " + commander.getInFileName()
-              + "\nError was " + a.toString());
-              System.exit(1);
+        } catch (NoSuchAlgorithmException a) {
+            System.out.print("Algorithm error processing Event Log " + commander.getInFileName()
+                    + "\nError was " + a.toString());
+            System.exit(1);
         }
         return sb.toString();
     }
+
     /**
      * Compare this event log against a second event log.
      * Returns a String Array of event descriptions in which the digests from the first
-     *  did no match the second. Return value is null if all events matched.
-     * @param eventList initial events.
+     * did no match the second. Return value is null if all events matched.
+     *
+     * @param eventList  initial events.
      * @param eventList2 events to compare against.
-     * @param pcr used as a filter. Use -1 to check all pcrs.
+     * @param pcr        used as a filter. Use -1 to check all pcrs.
      * @return array list of strings. Null of no events mismatched.
      */
     public static ArrayList<TpmPcrEvent> diffEventLogs(final ArrayList<TpmPcrEvent> eventList,
-                                         final ArrayList<TpmPcrEvent> eventList2, final int pcr) {
+                                                       final ArrayList<TpmPcrEvent> eventList2, final int pcr) {
         ArrayList<TpmPcrEvent> results = new ArrayList<TpmPcrEvent>();
         for (TpmPcrEvent event2 : eventList2) {
             if (pcr >= 0) {
                 if (event2.getPcrIndex() == pcr) {
                     if (!digestMatch(eventList, event2)) {
                         results.add(event2);
-                        }
+                    }
                 }
             } else {
                 if (!digestMatch(eventList, event2)) {
                     results.add(event2);
-                    }
+                }
             }
         }
         return results;
@@ -306,8 +312,9 @@ commander = new Commander(args);
 
     /**
      * Checks a digest from a single event against all digests with the same index in an Event Log.
+     *
      * @param eventLog The Reference Event log.
-     * @param event single event to match.
+     * @param event    single event to match.
      * @return
      */
     private static boolean digestMatch(final ArrayList<TpmPcrEvent> eventLog,

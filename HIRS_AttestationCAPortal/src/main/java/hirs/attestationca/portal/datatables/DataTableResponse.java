@@ -27,7 +27,7 @@ public final class DataTableResponse<T> {
 
     /**
      * Builds a data table response using a FilteredRecordList.
-     * @param recordList the filtered recordd list
+     * @param recordList the filtered record list
      * @param inputQuery the data table input (used for draw)
      */
     public DataTableResponse(final FilteredRecordsList<T> recordList,
