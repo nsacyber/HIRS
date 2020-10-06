@@ -1,5 +1,6 @@
 package hirs.attestationca.portal.page.controllers;
 
+import hirs.data.persist.BaseReferenceManifest;
 import hirs.data.persist.ReferenceManifest;
 import hirs.persist.DBReferenceManifestManager;
 import hirs.attestationca.portal.page.Page;
@@ -52,7 +53,7 @@ public class ReferenceManifestDetailsPageControllerTest extends PageControllerTe
         } catch (URISyntaxException e) {
             throw new IOException("Could not resolve path URI", e);
         }
-        referenceManifest = new ReferenceManifest(Files.readAllBytes(fPath));
+        referenceManifest = new BaseReferenceManifest(Files.readAllBytes(fPath));
         referenceManifestManager.save(referenceManifest);
     }
 

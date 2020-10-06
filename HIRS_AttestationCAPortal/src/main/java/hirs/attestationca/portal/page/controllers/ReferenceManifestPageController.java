@@ -10,6 +10,8 @@ import hirs.FilteredRecordsList;
 import hirs.attestationca.portal.datatables.OrderedListQueryDataTableAdapter;
 import hirs.attestationca.portal.page.PageMessages;
 import hirs.attestationca.portal.page.params.NoPageParams;
+import hirs.data.persist.BaseReferenceManifest;
+import hirs.data.persist.SupportReferenceManifest;
 import hirs.persist.DBManagerException;
 import hirs.persist.ReferenceManifestManager;
 import hirs.persist.CriteriaModifier;
@@ -22,14 +24,10 @@ import java.net.URISyntaxException;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.List;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javax.servlet.http.HttpServletResponse;
@@ -189,42 +187,64 @@ public class ReferenceManifestPageController
             final RedirectAttributes attr) throws URISyntaxException, Exception {
         Map<String, Object> model = new HashMap<>();
         PageMessages messages = new PageMessages();
-        List<MultipartFile> rims = new ArrayList<>();
         String fileName;
-        Path filePath;
+        Pattern pattern;
+        Matcher matcher;
+        boolean supportRIM = false;
 
         // loop through the files
         for (MultipartFile file : files) {
             fileName = file.getOriginalFilename();
-            Pattern pattern = Pattern.compile(LOG_FILE_PATTERN);
-            Matcher matcher = pattern.matcher(fileName);
-            if (matcher.matches()) {
-                filePath = Paths.get(String.format("%s/%s",
-                            SwidResource.RESOURCE_UPLOAD_FOLDER,
-                            file.getOriginalFilename()));
-                if (Files.notExists(Paths.get(SwidResource.RESOURCE_UPLOAD_FOLDER))) {
-                    Files.createDirectory(Paths.get(SwidResource.RESOURCE_UPLOAD_FOLDER));
-                }
-                if (Files.notExists(filePath)) {
-                    Files.createFile(filePath);
-                }
+            pattern = Pattern.compile(LOG_FILE_PATTERN);
+            matcher = pattern.matcher(fileName);
+            supportRIM = matcher.matches();
 
-                Files.write(filePath, file.getBytes());
-
-                String uploadCompletedMessage = String.format(
-                        "%s successfully uploaded", file.getOriginalFilename());
-                messages.addSuccess(uploadCompletedMessage);
-                LOGGER.info(uploadCompletedMessage);
-            } else {
-                // assume it is a swid tag, processing below will throw and error
-                // if it is not.
-                rims.add(file);
-            }
-        }
-
-        for (MultipartFile file : rims) {
             //Parse reference manifests
-            ReferenceManifest rim = parseRIM(file, messages);
+            ReferenceManifest rim = parseRIM(file, supportRIM, messages);
+            // look for associated base/support
+            Set<ReferenceManifest> rims = ReferenceManifest
+                    .select(referenceManifestManager).getRIMs();
+
+            // update information for associated support rims
+            for (ReferenceManifest element : rims) {
+                if (supportRIM) {
+                    if (element instanceof BaseReferenceManifest) {
+                        BaseReferenceManifest bRim = (BaseReferenceManifest) element;
+                        for (SwidResource swid : bRim.parseResource()) {
+                            if (swid.getName().equals(rim.getFileName())) {
+                                rim.setSwidTagVersion(bRim.getSwidTagVersion());
+                                rim.setPlatformManufacturer(bRim.getPlatformManufacturer());
+                                rim.setPlatformModel(bRim.getPlatformModel());
+                                rim.setTagId(bRim.getTagId());
+                                rim.setAssociatedRim(bRim.getId());
+                                break;
+                            }
+                        }
+                    }
+                } else {
+                    BaseReferenceManifest bRim = (BaseReferenceManifest) rim;
+                    for (SwidResource swid : bRim.parseResource()) {
+                        if (element instanceof SupportReferenceManifest) {
+                            SupportReferenceManifest sRim = (SupportReferenceManifest) element;
+                            if (swid.getName().equals(sRim.getFileName())) {
+                                sRim.setPlatformManufacturer(bRim.getPlatformManufacturer());
+                                sRim.setPlatformModel(bRim.getPlatformModel());
+                                sRim.setSwidTagVersion(bRim.getSwidTagVersion());
+                                sRim.setTagId(bRim.getTagId());
+                                rim.setAssociatedRim(sRim.getId());
+                                try {
+                                    referenceManifestManager.update(sRim);
+                                } catch (DBManagerException dbmEx) {
+                                    LOGGER.error(String.format("Couldn't update Support RIM "
+                                                    + "%s with associated UUID %s", rim.getTagId(),
+                                            sRim.getId()), dbmEx);
+                                }
+                                break;
+                            }
+                        }
+                    }
+                }
+            }
 
             //Store only if it was parsed
             if (rim != null) {
@@ -313,11 +333,18 @@ public class ReferenceManifestPageController
                 response.sendError(HttpServletResponse.SC_NOT_FOUND);
             } else {
                 StringBuilder fileName = new StringBuilder("filename=\"");
-                fileName.append(referenceManifest.getSwidName());
-                fileName.append("_[");
-                fileName.append(referenceManifest.getRimHash());
-                fileName.append("]");
-                fileName.append(".swidTag\"");
+                if (referenceManifest.getRimType().equals(ReferenceManifest.BASE_RIM)) {
+                    BaseReferenceManifest bRim = (BaseReferenceManifest) referenceManifest;
+                    fileName.append(bRim.getSwidName());
+                    fileName.append("_[");
+                    fileName.append(referenceManifest.getRimHash());
+                    fileName.append("]");
+                    fileName.append(".swidTag\"");
+                } else {
+                    // this needs to be updated for support rims
+                    SupportReferenceManifest bRim = (SupportReferenceManifest) referenceManifest;
+                    fileName.append(bRim.getFileName());
+                }
 
                 // Set filename for download.
                 response.setHeader("Content-Disposition", "attachment;" + fileName);
@@ -360,7 +387,7 @@ public class ReferenceManifestPageController
      * @return a single or collection of reference manifest files.
      */
     private ReferenceManifest parseRIM(
-            final MultipartFile file,
+            final MultipartFile file, final boolean supportRIM,
             final PageMessages messages) {
 
         byte[] fileBytes;
@@ -378,7 +405,11 @@ public class ReferenceManifestPageController
         }
 
         try {
-            return new ReferenceManifest(fileBytes);
+            if (supportRIM) {
+                return new SupportReferenceManifest(fileName, fileBytes);
+            } else {
+                return new BaseReferenceManifest(fileName, fileBytes);
+            }
             // the this is a List<Object> is object is a JaxBElement that can
             // be matched up to the QName
         } catch (IOException ioEx) {

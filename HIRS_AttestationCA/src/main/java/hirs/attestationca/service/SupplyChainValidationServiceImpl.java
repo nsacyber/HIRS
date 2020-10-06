@@ -6,10 +6,13 @@ import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.security.cert.CertificateException;
 
+import hirs.data.persist.BaseReferenceManifest;
+import hirs.data.persist.SupportReferenceManifest;
 import hirs.data.persist.TPMMeasurementRecord;
 import hirs.data.persist.SwidResource;
 import hirs.data.persist.PCRPolicy;
 import hirs.data.persist.ArchivableEntity;
+import hirs.tpm.eventlog.TCGEventLog;
 import hirs.validation.SupplyChainCredentialValidator;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -324,24 +327,40 @@ public class SupplyChainValidationServiceImpl implements SupplyChainValidationSe
         AppraisalStatus fwStatus = null;
         String manufacturer = device.getDeviceInfo()
                 .getHardwareInfo().getManufacturer();
+        String model = device.getDeviceInfo().getHardwareInfo().getProductName();
+        ReferenceManifest baseRim = null;
+        Set<ReferenceManifest> rims = ReferenceManifest
+                .select(referenceManifestManager).getRIMs();
 
-        ReferenceManifest rim = ReferenceManifest.select(
-                this.referenceManifestManager)
-                .byManufacturer(manufacturer)
-                .getRIM();
+        for (ReferenceManifest rim : rims) {
+            if (rim instanceof BaseReferenceManifest
+                    && rim.getPlatformManufacturer().equals(manufacturer)) {
+                baseRim = rim;
+            }
+        }
 
         fwStatus = new AppraisalStatus(PASS,
                 SupplyChainCredentialValidator.FIRMWARE_VALID);
-        if (rim == null) {
-            fwStatus = new AppraisalStatus(FAIL,
-                    String.format("Firmware validation failed: "
-                            + "No associated RIM file could be found for %s",
-                            manufacturer));
-        } else {
-            List<SwidResource> swids = rim.parseResource();
+        if (baseRim != null) {
+            BaseReferenceManifest bRim = (BaseReferenceManifest) baseRim;
+            List<SwidResource> swids = bRim.parseResource();
+            TCGEventLog logProcessor;
             for (SwidResource swid : swids) {
-                baseline = swid.getPcrValues()
-                        .toArray(new String[swid.getPcrValues().size()]);
+                ReferenceManifest dbRim = ReferenceManifest.select(
+                        referenceManifestManager).byFileName(swid.getName()).getRIM();
+
+                if (dbRim != null) {
+                    try {
+                        logProcessor = new TCGEventLog(dbRim.getRimBytes());
+                        baseline = logProcessor.getExpectedPCRValues();
+                    } catch (CertificateException cEx) {
+                        LOGGER.error(cEx);
+                    } catch (NoSuchAlgorithmException noSaEx) {
+                        LOGGER.error(noSaEx);
+                    } catch (IOException ioEx) {
+                        LOGGER.error(ioEx);
+                    }
+                }
             }
             pcrPolicy.setBaselinePcrs(baseline);
 
@@ -386,10 +405,15 @@ public class SupplyChainValidationServiceImpl implements SupplyChainValidationSe
                 fwStatus = new AppraisalStatus(FAIL, "Associated Issued Attestation"
                         + " Certificate can not be found.");
             }
+        } else {
+            fwStatus = new AppraisalStatus(FAIL,
+                    String.format("Firmware validation failed: "
+                                    + "No associated RIM file could be found for %s:%s",
+                            manufacturer, model));
         }
 
         return buildValidationRecord(SupplyChainValidation.ValidationType.FIRMWARE,
-                fwStatus.getAppStatus(), fwStatus.getMessage(), rim, level);
+                fwStatus.getAppStatus(), fwStatus.getMessage(), baseRim, level);
     }
 
     /**
@@ -409,6 +433,7 @@ public class SupplyChainValidationServiceImpl implements SupplyChainValidationSe
         Level level = Level.ERROR;
         AppraisalStatus fwStatus = new AppraisalStatus(FAIL,
                 SupplyChainCredentialValidator.FIRMWARE_VALID);
+        SupportReferenceManifest sRim = null;
 
         // check if the policy is enabled
         if (policy.isFirmwareValidationEnabled()) {
@@ -416,43 +441,49 @@ public class SupplyChainValidationServiceImpl implements SupplyChainValidationSe
             String manufacturer = device.getDeviceInfo()
                     .getHardwareInfo().getManufacturer();
 
-            // need to get pcrs
-            ReferenceManifest rim = ReferenceManifest.select(
-                    this.referenceManifestManager)
-                    .byManufacturer(manufacturer)
-                    .getRIM();
-            if (rim == null) {
-                fwStatus = new AppraisalStatus(FAIL,
-                        String.format("Firmware Quote validation failed: "
-                                        + "No associated RIM file could be found for %s",
-                                manufacturer));
-            } else {
-                List<SwidResource> swids = rim.parseResource();
-                for (SwidResource swid : swids) {
-                    baseline = swid.getPcrValues()
-                            .toArray(new String[swid.getPcrValues().size()]);
+            try {
+                // need to get pcrs
+                Set<ReferenceManifest> rims = ReferenceManifest.select(
+                        this.referenceManifestManager).getRIMs();
+                for (ReferenceManifest r : rims) {
+                    if (r instanceof SupportReferenceManifest
+                            && r.getPlatformManufacturer().equals(manufacturer)) {
+                        sRim = (SupportReferenceManifest) r;
+                    }
                 }
 
-                String pcrContent = new String(device.getDeviceInfo().getTPMInfo().getPcrValues());
-                String[] storedPcrs = buildStoredPcrs(pcrContent, baseline[0].length());
-                PCRPolicy pcrPolicy = policy.getPcrPolicy();
-                pcrPolicy.setBaselinePcrs(baseline);
-                // grab the quote
-                byte[] hash = device.getDeviceInfo().getTPMInfo().getTpmQuoteHash();
-                if (pcrPolicy.validateQuote(hash, storedPcrs)) {
-                    level = Level.INFO;
-                    fwStatus = new AppraisalStatus(PASS,
-                            SupplyChainCredentialValidator.FIRMWARE_VALID);
-                    fwStatus.setMessage("Firmware validation of TPM Quote successful.");
-
+                if (sRim == null) {
+                    fwStatus = new AppraisalStatus(FAIL,
+                            String.format("Firmware Quote validation failed: "
+                                            + "No associated RIM file could be found for %s",
+                                    manufacturer));
                 } else {
-                    fwStatus.setMessage("Firmware validation of TPM Quote failed.");
+                    baseline = sRim.getExpectedPCRList();
+                    String pcrContent = new String(device.getDeviceInfo()
+                            .getTPMInfo().getPcrValues());
+                    String[] storedPcrs = buildStoredPcrs(pcrContent, baseline[0].length());
+                    PCRPolicy pcrPolicy = policy.getPcrPolicy();
+                    pcrPolicy.setBaselinePcrs(baseline);
+                    // grab the quote
+                    byte[] hash = device.getDeviceInfo().getTPMInfo().getTpmQuoteHash();
+                    if (pcrPolicy.validateQuote(hash, storedPcrs)) {
+                        level = Level.INFO;
+                        fwStatus = new AppraisalStatus(PASS,
+                                SupplyChainCredentialValidator.FIRMWARE_VALID);
+                        fwStatus.setMessage("Firmware validation of TPM Quote successful.");
+
+                    } else {
+                        fwStatus.setMessage("Firmware validation of TPM Quote failed."
+                                + "\nPCR hash and Quote hash do not match.");
+                    }
                 }
+            } catch (Exception ex) {
+                LOGGER.error(ex);
             }
 
             quoteScv = buildValidationRecord(SupplyChainValidation
                             .ValidationType.FIRMWARE,
-                    fwStatus.getAppStatus(), fwStatus.getMessage(), rim, level);
+                    fwStatus.getAppStatus(), fwStatus.getMessage(), sRim, level);
 
             // Generate validation summary, save it, and return it.
             List<SupplyChainValidation> validations = new ArrayList<>();

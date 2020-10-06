@@ -1075,7 +1075,7 @@ public abstract class Certificate extends ArchivableEntity {
      */
     @JsonIgnore
     public byte[] getRawBytes() {
-        if (null != this.certificateBytes) {
+        if (this.certificateBytes != null) {
             return this.certificateBytes.clone();
         }
         return null;

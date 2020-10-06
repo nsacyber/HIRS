@@ -302,7 +302,6 @@ public abstract class AbstractAttestationCertificateAuthority
         // update the validation result in the device
         device.setSupplyChainStatus(summary.getOverallValidationResult());
         deviceManager.updateDevice(device);
-        LOG.error("This is the device id? {} ", device.getId());
         // check if supply chain validation succeeded.
         // If it did not, do not provide the IdentityResponseEnvelope
         if (summary.getOverallValidationResult() == AppraisalStatus.Status.PASS) {
@@ -590,7 +589,9 @@ public abstract class AbstractAttestationCertificateAuthority
                 LOG.error("Supply chain validation did not succeed. "
                         + "Firmware Quote Validation failed. Result is: "
                         + validationResult);
-                return new byte[]{};
+                ProvisionerTpm2.CertificateResponse response = ProvisionerTpm2.CertificateResponse
+                        .newBuilder().setCertificate(ByteString.EMPTY).build();
+                return response.toByteArray();
             }
         } else {
             LOG.error("Could not process credential request. Invalid nonce provided: "
@@ -723,7 +724,7 @@ public abstract class AbstractAttestationCertificateAuthority
         }
 
         // Get TPM info, currently unimplemented
-        TPMInfo tpm = new TPMInfo();
+        TPMInfo tpm;
         try {
             tpm = new TPMInfo(DeviceInfoReport.NOT_SPECIFIED,
                     (short) 0,

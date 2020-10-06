@@ -120,6 +120,12 @@ public final class PCRPolicy extends Policy {
                 tpmQuote, pcrComposite);
 
         try {
+            /**
+             * The calculated string is being used in the contains method
+             * because the TPM Quote's hash isn't just for PCR values,
+             * it contains the calculated digest of the PCRs, along with
+             * other information.
+             */
             String calculatedString = Hex.encodeHexString(
                     pcrInfoShort.getCalculatedDigest());
             validated = quoteString.contains(calculatedString);
