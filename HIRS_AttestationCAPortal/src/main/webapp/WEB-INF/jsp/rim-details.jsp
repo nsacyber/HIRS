@@ -40,10 +40,10 @@
                         <table id="eventLog">
                             <thead>
                                 <tr class="header">
-                                    <th style="width: 5%">Event #</th>
-                                    <th style="width: 10%">PCR Index</th>
+                                    <th>Event #</th>
+                                    <th>PCR Index</th>
                                     <th style="width: 20%">Event Type</th>
-                                    <th style="width: 20%">Digest</th>
+                                    <th>Digest</th>
                                     <th style="width: 50%">Event Content</th>
                                 </tr>
                             </thead>
@@ -52,11 +52,11 @@
                                     <c:set var="count" value="1" scope="page"/>
                                     <c:forEach items="${initialData.events}" var="event">
                                         <tr>
-                                            <td>${count}</td>
-                                            <td>PCR${event.getPcrIndex()}</td>
+                                            <td style="width: 75px">${count}</td>
+                                            <td class="pcrCell">PCR${event.getPcrIndex()}</td>
                                             <td>${event.getEventTypeStr()}</td>
                                             <td class="digestCell">${event.getEventDigestStr()}</td>
-                                            <td class="dataCell" title="${event.getEventContentStr()}">${event.getEventContentStr()}</td>
+                                            <td title="${event.getEventContentStr()}"><div style="height: 50px; overflow: auto">${event.getEventContentStr()}</div></td>
                                         </tr>
                                         <c:set var="count" value="${count + 1}" scope="page"/>
                                     </c:forEach>

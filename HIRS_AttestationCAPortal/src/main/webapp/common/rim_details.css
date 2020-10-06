@@ -46,6 +46,10 @@
 }
 
 .digestCell {
-  max-width: 150px;
+  max-width: 200px;
   word-wrap: break-word;
+}
+
+.pcrCell {
+  max-width: 50px;
 }

@@ -414,7 +414,7 @@ public class TpmPcrEvent {
                 sb.append("Unknown Event found\n");
         }
 
-        return sb.toString();
+        return cleanTextContent(sb.toString());
     }
 
     /**
@@ -740,5 +740,24 @@ public class TpmPcrEvent {
                     + Hex.encodeHexString(evContent));
         }
         return sb.toString() + "\n";
+    }
+
+    /**
+     * Remove bad visual value text.
+     * @param text content to operate over.
+     * @return cleared string
+     */
+    public String cleanTextContent(final String text) {
+        String result;
+        // strips off all non-ASCII characters
+        result = text.replaceAll("[^\\x00-\\x7F]", "");
+
+        // erases all the ASCII control characters
+        result = result.replaceAll("[\\p{Cntrl}&&[^\r\n\t]]", "");
+
+        // removes non-printable characters from Unicode
+        result = result.replaceAll("\\p{C}", "");
+
+        return result.trim();
     }
 }

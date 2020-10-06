@@ -327,6 +327,7 @@ public class SupplyChainValidationServiceImpl implements SupplyChainValidationSe
         AppraisalStatus fwStatus = null;
         String manufacturer = device.getDeviceInfo()
                 .getHardwareInfo().getManufacturer();
+        String model = device.getDeviceInfo().getHardwareInfo().getProductName();
         ReferenceManifest baseRim = null;
         Set<ReferenceManifest> rims = ReferenceManifest
                 .select(referenceManifestManager).getRIMs();
@@ -407,8 +408,8 @@ public class SupplyChainValidationServiceImpl implements SupplyChainValidationSe
         } else {
             fwStatus = new AppraisalStatus(FAIL,
                     String.format("Firmware validation failed: "
-                                    + "No associated RIM file could be found for %s",
-                            manufacturer));
+                                    + "No associated RIM file could be found for %s:%s",
+                            manufacturer, model));
         }
 
         return buildValidationRecord(SupplyChainValidation.ValidationType.FIRMWARE,
