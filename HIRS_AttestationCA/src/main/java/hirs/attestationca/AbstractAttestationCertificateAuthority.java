@@ -10,6 +10,7 @@ import hirs.attestationca.service.SupplyChainValidationService;
 import hirs.data.persist.AppraisalStatus;
 import hirs.data.persist.Device;
 import hirs.data.persist.DeviceInfoReport;
+import hirs.data.persist.certificate.CertificateAuthorityCredential;
 import hirs.data.persist.info.FirmwareInfo;
 import hirs.data.persist.info.HardwareInfo;
 import hirs.data.persist.info.NetworkInfo;
@@ -721,6 +722,12 @@ public abstract class AbstractAttestationCertificateAuthority
 
         if (dv.getPcrslist() != null && !dv.getPcrslist().isEmpty()) {
             this.pcrValues = dv.getPcrslist().toStringUtf8();
+        }
+
+        if (dv.getLogfile() != null && !dv.getLogfile().isEmpty()) {
+            LOG.error(dv.getLogfile());
+        } else {
+            LOG.error("Didn't find the log file");
         }
 
         // Get TPM info, currently unimplemented

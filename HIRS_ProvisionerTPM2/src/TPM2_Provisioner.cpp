@@ -65,6 +65,7 @@ int provision() {
     cout << "----> Collecting device information" << endl;
     hirs::pb::DeviceInfo dv = DeviceInfoCollector::collectDeviceInfo();
     dv.set_pcrslist(tpm2.getPcrList());
+    dv.set_logfile(DeviceInfoCollector::collectTcgLog());
 
     // send identity claim
     cout << "----> Sending identity claim to Attestation CA" << endl;
