@@ -58,7 +58,7 @@ public abstract class ReferenceManifest extends ArchivableEntity {
     /**
      * String for the package location of the xml generated java files.
      */
-    public static final String SCHEMA_PACKAGE = "hirs.swid.xjc";
+    public static final String SCHEMA_PACKAGE = "hirs.utils.xjc";
 
     private static final Logger LOGGER = LogManager.getLogger(ReferenceManifest.class);
 
@@ -310,42 +310,7 @@ public abstract class ReferenceManifest extends ArchivableEntity {
                 && fileName.equals(that.fileName);
     }
 
-    /**
-     * Getter for payloadFileValid.
-     *
-     * @return payloadFileValid boolean
-     */
-    public boolean isPayloadFileValid() {
-        return payloadFileValid;
-    }
-
-    /**
-     * Setter for payloadFileValid.
-     *
-     * @param payloadFileValid in boolean representation
-     */
-    public void setPayloadFileValid(final boolean payloadFileValid) {
-        this.payloadFileValid = payloadFileValid;
-    }
-
-    /**
-     * Getter for signatureValid.
-     *
-     * @return signatureValid boolean
-     */
-    public boolean isSignatureValid() {
-        return signatureValid;
-    }
-
-    /**
-     * Setter for signatureValid.
-     * @param signatureValid in boolean representation
-     */
-    public void setSignatureValid(final boolean signatureValid) {
-        this.signatureValid = signatureValid;
-    }
-
-    @Override
+   @Override
     public String toString() {
         return String.format("Filename->%s%nPlatform Manufacturer->%s%n"
                 + "Platform Model->%s%nRIM Type->%s", this.getFileName(),

@@ -17,6 +17,12 @@
         </a>
     </jsp:attribute>
     <jsp:body>
+        <!-- text and icon resource variables -->
+        <c:set var="passIcon" value="${icons}/ic_checkbox_marked_circle_black_green_24dp.png"/>
+        <c:set var="failIcon" value="${icons}/ic_error_red_24dp.png"/>
+        <c:set var="passText" value="Validation Passed"/>
+        <c:set var="failText" value="Validation Failed"/>
+
         <div id="certificate-details-page" class="container-fluid">
             <c:choose>
                 <c:when test="${initialData.rimType=='Support'}">
@@ -243,7 +249,11 @@
         <div class="row">
             <div class="col-md-1 col-md-offset-1"><span class="colHeader">Signature</span></div>
             <div id="signature" class="col col-md-8">
-                <div>Validity:&nbsp;<span>${initialData.signatureValid}</span></div>
+                <div>Validity:&nbsp;
+                    <c:choose>
+                        <c:when test="${initialData.signatureValid}"><span><img src="${passIcon}" title="${passText}"/></span></div></c:when>
+                        <c:otherwise><span><img src="${failIcon}" title="${failText}"/></span></c:otherwise>
+                    </c:choose>
                 <div>Signer:&nbsp;<span>Link to signing certificate</span></div>
             </div>
         </div>

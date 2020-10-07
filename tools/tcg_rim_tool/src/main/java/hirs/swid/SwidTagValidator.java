@@ -48,7 +48,12 @@ public class SwidTagValidator {
         this.certificateFile = certificateFile;
     }
 
+    /**
+     * This is the default constructor.  In addition to initializing properties it also
+     * initializes the jaxbContext and schema-related objects for use in unmarshalling.
+     */
     public SwidTagValidator() {
+        InputStream is = null;
         try {
             JAXBContext jaxbContext = JAXBContext.newInstance(SwidTagConstants.SCHEMA_PACKAGE);
             unmarshaller = jaxbContext.createUnmarshaller();
@@ -57,8 +62,24 @@ public class SwidTagValidator {
             schemaValid = false;
             payloadFileValid = false;
             signatureValid = false;
+            is = SwidTagGateway.class.getClassLoader().getResourceAsStream(SwidTagConstants.SCHEMA_URL);
+            SchemaFactory schemaFactory = SchemaFactory.newInstance(SwidTagConstants.SCHEMA_LANGUAGE);
+            Schema schema = schemaFactory.newSchema(new StreamSource(is));
+            unmarshaller.setSchema(schema);
         } catch (JAXBException e) {
             System.out.println("Error initializing JAXBContext: " + e.getMessage());
+        } catch (SAXException e) {
+            System.out.println("Error setting schema for validation!");
+        } catch (IllegalArgumentException e) {
+            System.out.println("Input file empty.");
+        } finally {
+            if (is != null) {
+                try {
+                    is.close();
+                } catch (IOException e) {
+                    System.out.println("Error closing input stream");
+                }
+            }
         }
     }
 
@@ -101,7 +122,7 @@ public class SwidTagValidator {
      * @return boolean indicating successful or failed validation
      * @throws IOException
      */
-    public boolean validateSwidtagFile(String path) throws IOException {
+    public void validateSwidtagFile(String path) throws IOException {
         File file;
         StreamSource input;
         try {
@@ -109,20 +130,24 @@ public class SwidTagValidator {
             if (file.length() > 0) {
                 input = new StreamSource(new File(path));
                 Document document = removeXMLWhitespace(input);
-                return validate(unmarshallSwidTag(document));
+                validate(unmarshallSwidTag(document));
             } else {
                 System.out.println("Input file is empty!");
-                return false;
             }
         } catch (NullPointerException e) {
             System.out.println("Path to file must be non-null!");
         }
-
-        return false;
     }
 
+    /**
+     * This method validates a swidtag uploaded into an inputstream from ACAPortal.
+     * Schema validation is disabled (null) to save time.
+     * @param is
+     * @throws IOException
+     */
     public void validateSwidtagInputStream(InputStream is) throws IOException {
         Document document = removeXMLWhitespace(new StreamSource(is));
+        unmarshaller.setSchema(null);
         validate(unmarshallSwidTag(document));
     }
 
@@ -268,37 +293,21 @@ public class SwidTagValidator {
     }
 
     /**
-     * This method unmarshalls the swidtag found at [path] into a Document object
-     * and validates it according to the schema.
+     * This method unmarshalls the swidtag into a Document object.
      *
      * @param document containing the input swidtag
      * @return the SoftwareIdentity element at the root of the swidtag
      */
     private Document unmarshallSwidTag(Document document) {
-        InputStream is = null;
         try {
-            is = SwidTagGateway.class.getClassLoader().getResourceAsStream(SwidTagConstants.SCHEMA_URL);
-            SchemaFactory schemaFactory = SchemaFactory.newInstance(SwidTagConstants.SCHEMA_LANGUAGE);
-            Schema schema = schemaFactory.newSchema(new StreamSource(is));
-            unmarshaller.setSchema(schema);
             JAXBElement jaxbe = (JAXBElement) unmarshaller.unmarshal(document);
             softwareIdentity = (SoftwareIdentity) jaxbe.getValue();
-        } catch (SAXException e) {
-            System.out.println("Error setting schema for validation!");
         } catch (UnmarshalException e) {
             System.out.println("Error validating swidtag file!");
         } catch (IllegalArgumentException e) {
             System.out.println("Input file empty.");
         } catch (JAXBException e) {
             e.printStackTrace();
-        } finally {
-            if (is != null) {
-                try {
-                    is.close();
-                } catch (IOException e) {
-                    System.out.println("Error closing input stream");
-                }
-            }
         }
 
         return document;

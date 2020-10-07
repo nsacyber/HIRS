@@ -4,7 +4,7 @@ import com.google.common.base.Preconditions;
 import hirs.data.persist.baseline.TpmWhiteListBaseline;
 import hirs.data.persist.enums.DigestAlgorithm;
 import hirs.tpm.eventlog.TCGEventLog;
-import hirs.swid.xjc.File;
+import hirs.utils.xjc.File;
 import java.io.IOException;
 import java.util.Map;
 import java.util.List;
@@ -64,9 +64,9 @@ public class SwidResource {
     }
 
     /**
-     * The main constructor that processes a {@code hirs.utils.xjc.File}.
+     * The main constructor that processes an xjc file.
      *
-     * @param file {@link hirs.swid.xjc.File}
+     * @param file {@link hirs.utils.xjc.File}
      * @param digest algorithm associated with pcr values
      */
     public SwidResource(final File file, final DigestAlgorithm digest) {

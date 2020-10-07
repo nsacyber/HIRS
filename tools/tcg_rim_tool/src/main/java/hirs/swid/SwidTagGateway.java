@@ -123,7 +123,7 @@ public class SwidTagGateway {
             BufferedReader jsonIn = Files.newBufferedReader(Paths.get(attributesFile), StandardCharsets.UTF_8);
             JsonObject configProperties = Json.parse(jsonIn).asObject();
             //SoftwareIdentity
-            swidTag = createSwidTag(configProperties.get(SwidTagConstants.SOFTWARE_IDENTITY).asObject());
+            swidTag = createSoftwareIdentity(configProperties.get(SwidTagConstants.SOFTWARE_IDENTITY).asObject());
             //Entity
             JAXBElement<Entity> entity = objectFactory.createSoftwareIdentityEntity(
                     createEntity(configProperties.get(SwidTagConstants.ENTITY).asObject()));
@@ -201,7 +201,7 @@ public class SwidTagGateway {
      * @param jsonObject the Properties object containing parameters from file
      * @return SoftwareIdentity object created from the properties
      */
-    private SoftwareIdentity createSwidTag(JsonObject jsonObject) {
+    private SoftwareIdentity createSoftwareIdentity(JsonObject jsonObject) {
         SoftwareIdentity swidTag = objectFactory.createSoftwareIdentity();
         swidTag.setLang(SwidTagConstants.DEFAULT_ENGLISH);
         String name = jsonObject.getString(SwidTagConstants.NAME, "");
