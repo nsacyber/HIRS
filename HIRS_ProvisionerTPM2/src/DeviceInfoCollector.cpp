@@ -243,24 +243,3 @@ hirs::pb::OsInfo DeviceInfoCollector::collectOsInfo() {
 
     return info;
 }
-
-// Mimicing above,, open the log, and get all the information and attach that as a byte attribute of....one of the objects,
-// not sure which one yet.  and it can't be a string line, byte, then add running this method to the CollectDevieInfo
-
-string DeviceInfoCollector::collectTcgLog() {
-    ifstream tcgLogFile("/boot/tcg/manifest/rim/Evo.dockerclient.2.rimel",
-            std::ios::binary | std::ios::ate);
-    ifstream::pos_type pos = tcgLogFile.tellg();
-
-    int length = pos;
-    char *pChars = new char[length];
-
-
-    tcgLogFile.seekg(0, std::ios::beg);
-    tcgLogFile.read(pChars, length);
-
-    string content(pos);
-    tcgLogFile.close();
-
-    return content;
-}
