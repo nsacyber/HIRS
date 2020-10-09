@@ -39,7 +39,5 @@ class DeviceInfoCollector {
      * DeviceInfo object.
      */
     static hirs::pb::DeviceInfo collectDeviceInfo();
-
-    static std::string collectTcgLog();
 };
 #endif  // HIRS_PROVISIONERTPM2_INCLUDE_DEVICEINFOCOLLECTOR_H_

@@ -109,7 +109,7 @@ UefiSignatureList(final ByteArrayInputStream lists)
 
 /**
  * Method for processing a set of EFI SignatureList(s).
- * @param sigData  Byte array holding one or more SignatureLists
+ * @param efiSigData  Byte array holding one or more SignatureLists
  * @throws CertificateException If there's a problem parsing the X509 certificate.
  * @throws NoSuchAlgorithmException if there's a problem hashing the certificate.
  * @throws IOException If there's a problem parsing the signature data.
@@ -131,7 +131,7 @@ private void processSignatureList(final byte[] efiSigData)
 
 /**
  * Method for processing a set of EFI SignatureList(s).
- * @param sigData  Byte array holding one or more SignatureLists.
+ * @param sigDataIS  Byte array holding one or more SignatureLists.
  * @throws CertificateException If there's a problem parsing the X509 certificate.
  * @throws NoSuchAlgorithmException if there's a problem hashing the certificate.
  * @throws IOException If there's a problem parsing the signature data.
@@ -173,12 +173,14 @@ public int getNumberOfCerts() {
  */
 public boolean isValidSigListGUID(final UefiGuid guid) {
   switch (guid.getVendorTableReference()) {
-    case "EFI_CERT_SHA256_GUID": return true;
-    case "EFI_CERT_X509_SHA256": return true;
-    case "EFI_CERT_X509_SHA384": return true;
-    case "EFI_CERT_X509_SHA512": return true;
-    case "EFI_CERT_X509_GUID":   return true;
-    default: return false;
+    case "EFI_CERT_SHA256_GUID":
+    case "EFI_CERT_X509_SHA256":
+    case "EFI_CERT_X509_SHA384":
+    case "EFI_CERT_X509_SHA512":
+    case "EFI_CERT_X509_GUID":
+        return true;
+    default:
+        return false;
   }
 }
 
@@ -193,7 +195,7 @@ public String toString() {
   sigInfo.append("Number if items = " + numberOfItems + "\n");
   sigList.iterator();
   for (int i = 0; i < sigList.size(); i++) {
-    UefiSignatureData certData = (UefiSignatureData) sigList.get(i);
+    UefiSignatureData certData = sigList.get(i);
     sigInfo.append(certData.toString());
   }
   if (!valid) {

@@ -13,6 +13,8 @@
 #include <string>
 #include <vector>
 #include <Process.h>
+#include <Properties.h>
+#include <regex>
 
 #include "log4cplus/configurator.h"
 
@@ -31,6 +33,7 @@ using hirs::tpm2::AsymmetricKeyType;
 using hirs::tpm2::CommandTpm2;
 using hirs::tpm2_tools_utils::Tpm2ToolsVersion;
 using hirs::utils::Process;
+using hirs::properties::Properties;
 using std::cout;
 using std::cerr;
 using std::endl;
@@ -65,7 +68,16 @@ int provision() {
     cout << "----> Collecting device information" << endl;
     hirs::pb::DeviceInfo dv = DeviceInfoCollector::collectDeviceInfo();
     dv.set_pcrslist(tpm2.getPcrList());
-    dv.set_logfile(DeviceInfoCollector::collectTcgLog());
+    // collect TCG Boot files
+    Properties props("/etc/hirs/tcg_boot.properties");
+    const std::string& rim_file = props.get("tcg.rim.file", "");
+    const std::string& swid_file = props.get("tcg.swidtag.file", "");
+    try {
+        dv.set_logfile(hirs::file_utils::fileToString(rim_file));
+        dv.set_swidfile(hirs::file_utils::fileToString(swid_file));
+    } catch (HirsRuntimeException& hirsRuntimeException) {
+        logger.error(hirsRuntimeException.what());
+    }
 
     // send identity claim
     cout << "----> Sending identity claim to Attestation CA" << endl;
