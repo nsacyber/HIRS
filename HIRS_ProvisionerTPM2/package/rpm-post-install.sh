@@ -40,6 +40,6 @@ DEFAULT_SITE_CONFIG_FILE
 fi
 ln -s -f /etc/hirs/provisioner/hirs-provisioner.sh /usr/sbin/hirs-provisioner
 
-if ! [ -f "set_tcg_properties.sh" ]; then
+if [ ! -f "set_tcg_properties.sh" ]; then
   sh ./set_tcg_properties.sh
 fi
