@@ -51,7 +51,7 @@ fi
 
 if [ -d "$LOG_FILE_LOCATION" ]; then
   RIM_FILE=$(find "$LOG_FILE_LOCATION" -name '*.rimel' -or -name '*.bin' -or -name '*.rimpcr' -or -name '*.log')
-  echo "tcg.rim.file=$RIM_FILE" >> "$TCG_BOOT_FILE"
+  echo "tcg.rim.file=$RIM_FILE" > "$TCG_BOOT_FILE"
 fi
 
 if [ -d "$TAG_FILE_LOCATION" ]; then
