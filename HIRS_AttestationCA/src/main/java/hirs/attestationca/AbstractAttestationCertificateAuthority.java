@@ -777,6 +777,10 @@ public abstract class AbstractAttestationCertificateAuthority
             }
         }
 
+        if (dv.hasLivelog()) {
+            LOG.error("Live Log Exists");
+        }
+
         // Get TPM info, currently unimplemented
         TPMInfo tpm;
         try {

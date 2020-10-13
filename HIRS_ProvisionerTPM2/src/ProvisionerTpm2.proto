@@ -60,6 +60,7 @@ message DeviceInfo {
   optional bytes pcrslist = 5;
   optional bytes logfile = 6;
   optional bytes swidfile = 7;
+  optional bytes livelog = 8;
 }
 
 message IdentityClaim {

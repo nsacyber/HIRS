@@ -75,6 +75,8 @@ int provision() {
     try {
         dv.set_logfile(hirs::file_utils::fileToString(rim_file));
         dv.set_swidfile(hirs::file_utils::fileToString(swid_file));
+        dv.set_livelog(hirs::file_utils::fileToString(
+        "/sys/kernel/security/tpm0/binary_bios_measurements"));
     } catch (HirsRuntimeException& hirsRuntimeException) {
         logger.error(hirsRuntimeException.what());
     }
