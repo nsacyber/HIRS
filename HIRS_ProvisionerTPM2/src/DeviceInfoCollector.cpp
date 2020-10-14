@@ -243,4 +243,3 @@ hirs::pb::OsInfo DeviceInfoCollector::collectOsInfo() {
 
     return info;
 }
-

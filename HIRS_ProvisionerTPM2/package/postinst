@@ -32,3 +32,7 @@ DEFAULT_SITE_CONFIG_FILE
     echo "Set your site configuration manually in $HIRS_SITE_CONFIG, then run 'hirs-provisioner-tpm2 provision' to provision this system"
 fi
 ln -s -f /etc/hirs/provisioner/hirs-provisioner.sh /usr/sbin/hirs-provisioner
+
+if ! [ -f "set_tcg_properties.sh" ]; then
+  sh ./set_tcg_properties.sh
+fi
