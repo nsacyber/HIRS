@@ -12,4 +12,6 @@ fi
 
 XSD_FILE=$SRC_DIR/main/resources/swid_schema.xsd
 
-xjc -p hirs.utils.xjc $XSD_FILE -d $DEST_DIR -quiet
+if [ ! -d "$DEST_DIR/hirs/utils/xjc" ]; then
+  xjc -p hirs.utils.xjc $XSD_FILE -d $DEST_DIR -quiet
+fi
