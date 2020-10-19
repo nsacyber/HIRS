@@ -9,10 +9,12 @@ import hirs.attestationca.exceptions.UnexpectedServerException;
 import hirs.attestationca.service.SupplyChainValidationService;
 import hirs.data.persist.AppraisalStatus;
 import hirs.data.persist.BaseReferenceManifest;
+import hirs.data.persist.BiosMeasurements;
 import hirs.data.persist.Device;
 import hirs.data.persist.DeviceInfoReport;
 import hirs.data.persist.ReferenceManifest;
 import hirs.data.persist.SupportReferenceManifest;
+import hirs.data.persist.SwidResource;
 import hirs.data.persist.info.FirmwareInfo;
 import hirs.data.persist.info.HardwareInfo;
 import hirs.data.persist.info.NetworkInfo;
@@ -39,7 +41,6 @@ import hirs.structs.elements.tpm.IdentityProof;
 import hirs.structs.elements.tpm.IdentityRequest;
 import hirs.structs.elements.tpm.SymmetricKey;
 import hirs.structs.elements.tpm.SymmetricKeyParams;
-import hirs.tpm.eventlog.TCGEventLog;
 import hirs.utils.HexUtils;
 import org.apache.commons.codec.binary.Hex;
 import org.apache.commons.lang3.ArrayUtils;
@@ -86,10 +87,13 @@ import java.security.interfaces.RSAPublicKey;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.MGF1ParameterSpec;
 import java.security.spec.RSAPublicKeySpec;
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * Provides base implementation of common tasks of an ACA that are required for attestation of an
@@ -672,6 +676,7 @@ public abstract class AbstractAttestationCertificateAuthority
      * @param claim the protobuf serialized identity claim containing the device info
      * @return a HIRS Utils DeviceInfoReport representation of device info
      */
+    @SuppressWarnings("methodlength")
     private DeviceInfoReport parseDeviceInfo(final ProvisionerTpm2.IdentityClaim claim) {
         ProvisionerTpm2.DeviceInfo dv = claim.getDv();
 
@@ -728,49 +733,72 @@ public abstract class AbstractAttestationCertificateAuthority
         }
 
         // check for RIM Base and Support files, if they don't exists in the database, load them
-        String clientName;
-        if (dv.hasLogfile()) {
+        String clientName = String.format("%s_%s",
+                dv.getHw().getManufacturer(),
+                dv.getHw().getProductName());
+        ReferenceManifest dbBaseRim;
+        ReferenceManifest support;
+        String tagId = "";
+        String fileName = "";
+        Pattern pattern = Pattern.compile("([^\\s]+(\\.(?i)(rimpcr|rimel|bin|log))$)");
+        Matcher matcher;
+
+        if (dv.hasSwidfile()) {
             try {
-                ReferenceManifest support = ReferenceManifest.select(referenceManifestManager)
+                dbBaseRim = BaseReferenceManifest.select(referenceManifestManager)
                         .includeArchived()
-                        .byHashCode(dv.getSwidfile().hashCode())
+                        .byHashCode(Arrays.hashCode(dv.getSwidfile().toByteArray()))
                         .getRIM();
-                if (support == null) {
-                    clientName = String.format("%s_%s.rimel",
-                            dv.getHw().getManufacturer(),
-                            dv.getHw().getProductName());
-                    this.referenceManifestManager.save(
-                            new SupportReferenceManifest(clientName,
-                                    dv.getLogfile().toByteArray()));
+
+                if (dbBaseRim == null) {
+                    dbBaseRim = new BaseReferenceManifest(
+                            String.format("%s.swidtag",
+                                    clientName),
+                            dv.getSwidfile().toByteArray());
+
+                    BaseReferenceManifest base = (BaseReferenceManifest) dbBaseRim;
+                    for (SwidResource swid : base.parseResource()) {
+                        matcher = pattern.matcher(swid.getName());
+                        if (matcher.matches()) {
+                            //found the file name
+                            int dotIndex = swid.getName().lastIndexOf(".");
+                            clientName = swid.getName().substring(0, dotIndex);
+                            dbBaseRim = new BaseReferenceManifest(
+                                    String.format("%s.swidtag",
+                                            clientName),
+                                    dv.getSwidfile().toByteArray());
+                            break;
+                        }
+                    }
+                    this.referenceManifestManager.save(dbBaseRim);
                 } else {
-                    LOG.info("Client provided Support RIM already loaded in database.");
+                    LOG.info("Client provided Base RIM already loaded in database.");
                 }
-                TCGEventLog tcgEventLog = new TCGEventLog(dv.getLogfile().toByteArray());
-                LOG.error(tcgEventLog.toString(true, true, true));
-            } catch (CertificateException cEx) {
-                LOG.error(cEx);
-            } catch (NoSuchAlgorithmException noSaEx) {
-                LOG.error(noSaEx);
+
+                tagId = dbBaseRim.getTagId();
             } catch (IOException ioEx) {
                 LOG.error(ioEx);
             }
         }
 
-        if (dv.hasSwidfile()) {
+        if (dv.hasLogfile()) {
             try {
-                ReferenceManifest baseRim = ReferenceManifest.select(referenceManifestManager)
+                support = SupportReferenceManifest.select(referenceManifestManager)
                         .includeArchived()
-                        .byHashCode(dv.getSwidfile().hashCode())
+                        .byHashCode(Arrays.hashCode(dv.getLogfile().toByteArray()))
                         .getRIM();
-                if (baseRim == null) {
-                    clientName = String.format("%s_%s.swidtag",
-                            dv.getHw().getManufacturer(),
-                            dv.getHw().getProductName());
-                    this.referenceManifestManager.save(
-                            new BaseReferenceManifest(clientName,
-                                    dv.getSwidfile().toByteArray()));
+
+                if (support == null) {
+                    support = new SupportReferenceManifest(
+                            String.format("%s.rimel",
+                                    clientName),
+                            dv.getLogfile().toByteArray());
+                    support.setPlatformManufacturer(dv.getHw().getManufacturer());
+                    support.setPlatformModel(dv.getHw().getProductName());
+                    support.setTagId(tagId);
+                    this.referenceManifestManager.save(support);
                 } else {
-                    LOG.info("Client provided Base RIM already loaded in database.");
+                    LOG.info("Client provided Support RIM already loaded in database.");
                 }
             } catch (IOException ioEx) {
                 LOG.error(ioEx);
@@ -778,7 +806,25 @@ public abstract class AbstractAttestationCertificateAuthority
         }
 
         if (dv.hasLivelog()) {
-            LOG.error("Live Log Exists");
+            fileName = String.format("%s.measurement",
+                    clientName);
+            try {
+                // find previous version.  If it exists, delete it
+                support = BiosMeasurements.select(referenceManifestManager)
+                        .byManufacturer(dv.getHw().getManufacturer())
+                        .includeArchived().getRIM();
+                if (support != null) {
+                    this.referenceManifestManager.delete(support);
+                }
+                support = new BiosMeasurements(fileName,
+                        dv.getLivelog().toByteArray());
+                support.setPlatformManufacturer(dv.getHw().getManufacturer());
+                support.setPlatformModel(dv.getHw().getProductName());
+                support.setTagId(tagId);
+                this.referenceManifestManager.save(support);
+            } catch (IOException ioEx) {
+                LOG.error(ioEx);
+            }
         }
 
         // Get TPM info, currently unimplemented

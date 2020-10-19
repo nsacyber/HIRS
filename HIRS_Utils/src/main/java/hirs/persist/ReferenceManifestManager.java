@@ -28,10 +28,11 @@ public interface ReferenceManifestManager extends OrderedListQuerier<ReferenceMa
     /**
      * Retrieve RIMs according to the given {@link ReferenceManifestSelector}.
      *
+     * @param <T> the type of reference manifest that will be retrieved
      *  @param referenceManifestSelector a {@link ReferenceManifestSelector} to use for querying
      * @return a Set of matching RIMs, which may be empty
      */
-    Set<ReferenceManifest> get(ReferenceManifestSelector referenceManifestSelector);
+    <T extends ReferenceManifest> Set<T> get(ReferenceManifestSelector referenceManifestSelector);
 
     /**
      * Delete the given RIM.

@@ -19,31 +19,31 @@ import java.util.Collection;
 
 /**
  * Sub class that will just focus on PCR Values and Events.
+ * Similar to {@link hirs.data.persist.SupportReferenceManifest}
+ * however this is the live log from the client.
  */
 @Entity
-public class SupportReferenceManifest extends ReferenceManifest {
-    private static final Logger LOGGER = LogManager.getLogger(SupportReferenceManifest.class);
+public class BiosMeasurements extends ReferenceManifest {
+    private static final Logger LOGGER = LogManager.getLogger(BiosMeasurements.class);
 
     @Column
     @JsonIgnore
     private int pcrHash = 0;
-    @Column
-    private boolean updated = false;
 
     /**
      * This class enables the retrieval of SupportReferenceManifest by their attributes.
      */
-    public static class Selector extends ReferenceManifestSelector<SupportReferenceManifest> {
+    public static class Selector extends ReferenceManifestSelector<BiosMeasurements> {
         /**
-         * Construct a new ReferenceManifestSelector that will
-         * use the given (@link ReferenceManifestManager}
+         * Construct a new ReferenceManifestSelector that
+         * will use the given (@link ReferenceManifestManager}
          * to retrieve one or may SupportReferenceManifest.
          *
          * @param referenceManifestManager the reference manifest manager to be used to retrieve
          * reference manifests.
          */
         public Selector(final ReferenceManifestManager referenceManifestManager) {
-            super(referenceManifestManager, SupportReferenceManifest.class);
+            super(referenceManifestManager, BiosMeasurements.class, false);
         }
 
         /**
@@ -81,36 +81,35 @@ public class SupportReferenceManifest extends ReferenceManifest {
     }
 
     /**
-     * Main constructor for the RIM object. This takes in a byte array of a
-     * valid swidtag file and parses the information.
+     * Support constructor for the RIM object.
+     *
+     * @param rimBytes byte array representation of the RIM
+     * @throws java.io.IOException if unable to unmarshal the string
+     */
+    public BiosMeasurements(final byte[] rimBytes) throws IOException {
+        this("blank.measurement", rimBytes);
+    }
+    /**
+     * Support constructor for the RIM object.
      *
      * @param fileName - string representation of the uploaded file.
      * @param rimBytes byte array representation of the RIM
-     * @throws IOException if unable to unmarshal the string
+     * @throws java.io.IOException if unable to unmarshal the string
      */
-    public SupportReferenceManifest(final String fileName,
-                                    final byte[] rimBytes) throws IOException {
+    public BiosMeasurements(final String fileName,
+                            final byte[] rimBytes
+                            ) throws IOException {
         super(rimBytes);
         this.setFileName(fileName);
-        this.setRimType(SUPPORT_RIM);
+        this.setRimType(MEASUREMENT_RIM);
+        this.archive("Measurement event log");
         this.pcrHash = 0;
-    }
-
-    /**
-     * Main constructor for the RIM object. This takes in a byte array of a
-     * valid swidtag file and parses the information.
-     *
-     * @param rimBytes byte array representation of the RIM
-     * @throws IOException if unable to unmarshal the string
-     */
-    public SupportReferenceManifest(final byte[] rimBytes) throws IOException {
-        this("blank.rimel", rimBytes);
     }
 
     /**
      * Default constructor necessary for Hibernate.
      */
-    protected SupportReferenceManifest() {
+    protected BiosMeasurements() {
         super();
         this.pcrHash = 0;
     }
@@ -182,21 +181,5 @@ public class SupportReferenceManifest extends ReferenceManifest {
      */
     public void setPcrHash(final int pcrHash) {
         this.pcrHash = pcrHash;
-    }
-
-    /**
-     * Indicates if the support rim has updated information from the base.
-     * @return flag indicating that it is up to date
-     */
-    public boolean isUpdated() {
-        return updated;
-    }
-
-    /**
-     * Setter for the support RIM flag status.
-     * @param updated updated flag status
-     */
-    public void setUpdated(final boolean updated) {
-        this.updated = updated;
     }
 }

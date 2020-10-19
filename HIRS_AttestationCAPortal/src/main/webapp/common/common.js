@@ -44,6 +44,17 @@ function handleDeleteRequest(id) {
 }
 
 /**
+* Handles user request to delete a cert. Prompts user to confirm.
+* Upon confirmation, submits the delete form which is required to make
+* a POST call to delete the reference integrity manifest.
+*/
+function handleRimDeleteRequest(id) {
+   if (confirm("Delete RIM?")) {
+       $('#deleteForm' + id).submit();
+   }
+}
+
+/**
 * Set the data tables using the columns definition, the ajax URL and
 * the ID of the table.
 * @param id of the data table
@@ -133,8 +144,24 @@ function rimDetailsLink(id){
 function certificateDeleteLink(id, pagePath){
     var icon = icons + '/ic_delete_black_24dp.png';
     var formURL = pagePath + "/delete";
-    
-    var html = '<a href="#!" onclick="handleDeleteRequest(\'' + id + '\')">' 
+
+    var html = '<a href="#!" onclick="handleDeleteRequest(\'' + id + '\')">'
+               + '<img src="' + icon + '" title="Delete"></a>'
+               + '<form id="deleteForm' + id + '" action="' + formURL + '" method="post">'
+               + '<input name="id" type="hidden" value="' + id + '"></form>';
+    return html;
+}
+
+/**
+* Create a RIM delete link for the specified ID
+* @param id of the RIM
+* @param pagePath path to the link
+*/
+function rimDeleteLink(id, pagePath){
+    var icon = icons + '/ic_delete_black_24dp.png';
+    var formURL = pagePath + "/delete";
+
+    var html = '<a href="#!" onclick="handleRimDeleteRequest(\'' + id + '\')">'
                + '<img src="' + icon + '" title="Delete"></a>'
                + '<form id="deleteForm' + id + '" action="' + formURL + '" method="post">'
                + '<input name="id" type="hidden" value="' + id + '"></form>';

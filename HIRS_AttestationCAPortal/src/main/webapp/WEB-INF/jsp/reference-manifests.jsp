@@ -60,7 +60,7 @@
                                 var html = '';
                                 html += rimDetailsLink(full.id);
                                 html += rimDownloadLink(full.id, pagePath);
-                                html += certificateDeleteLink(full.id, pagePath);
+                                html += rimDeleteLink(full.id, pagePath);
 
                                 return html;
                             }

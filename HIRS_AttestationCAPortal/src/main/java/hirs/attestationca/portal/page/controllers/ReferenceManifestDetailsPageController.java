@@ -4,6 +4,7 @@ import hirs.data.persist.BaseReferenceManifest;
 import hirs.data.persist.ReferenceManifest;
 import hirs.data.persist.SupportReferenceManifest;
 import hirs.data.persist.SwidResource;
+import hirs.persist.DBManagerException;
 import hirs.persist.ReferenceManifestManager;
 import hirs.tpm.eventlog.TCGEventLog;
 import hirs.attestationca.portal.page.Page;
@@ -18,7 +19,6 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.ArrayList;
-import java.util.Set;
 import java.util.UUID;
 
 import org.apache.logging.log4j.LogManager;
@@ -118,7 +118,7 @@ public class ReferenceManifestDetailsPageController
             CertificateException, NoSuchAlgorithmException {
         HashMap<String, Object> data = new HashMap<>();
 
-        ReferenceManifest rim = ReferenceManifest
+        ReferenceManifest rim = BaseReferenceManifest
                 .select(referenceManifestManager)
                 .byEntityId(uuid).getRIM();
 
@@ -171,24 +171,26 @@ public class ReferenceManifestDetailsPageController
             data.put("rimType", bRim.getRimType());
 
             List<SwidResource> resources = bRim.parseResource();
-            String resourceFilename = null;
-            TCGEventLog logProcessor;
+            TCGEventLog logProcessor = null;
+            ReferenceManifest support = null;
 
+            if (bRim.getAssociatedRim() == null) {
+                support = SupportReferenceManifest.select(referenceManifestManager)
+                        .byManufacturer(bRim.getPlatformManufacturer())
+                        .getRIM();
+                if (support != null) {
+                    bRim.setAssociatedRim(support.getId());
+                    logProcessor = new TCGEventLog(support.getRimBytes());
+                }
+            }
             // going to have to pull the filename and grab that from the DB
             // to get the id to make the link
             for (SwidResource swidRes : resources) {
-                resourceFilename = swidRes.getName();
-                ReferenceManifest dbRim = ReferenceManifest.select(
-                        referenceManifestManager).byFileName(resourceFilename).getRIM();
-
-                if (dbRim != null) {
-                    logProcessor = new TCGEventLog(dbRim.getRimBytes());
+                if (support != null && swidRes.getName()
+                        .equals(support.getFileName())) {
                     swidRes.setPcrValues(Arrays.asList(
                             logProcessor.getExpectedPCRValues()));
-
-                    if (bRim.getAssociatedRim() == null) {
-                        bRim.setAssociatedRim(dbRim.getId());
-                    }
+                    break;
                 } else {
                     swidRes.setPcrValues(new ArrayList<>());
                 }
@@ -196,17 +198,20 @@ public class ReferenceManifestDetailsPageController
 
             data.put("associatedRim", bRim.getAssociatedRim());
             data.put("swidFiles", resources);
-        } else if (rim instanceof SupportReferenceManifest) {
-            SupportReferenceManifest sRim = (SupportReferenceManifest) rim;
+        } else {
+            SupportReferenceManifest sRim = SupportReferenceManifest
+                    .select(referenceManifestManager)
+                    .byEntityId(uuid).getRIM();
 
             if (sRim.getAssociatedRim() == null) {
-                Set<ReferenceManifest> rims = ReferenceManifest
-                        .select(referenceManifestManager).getRIMs();
-                for (ReferenceManifest dbRim : rims) {
-                    if (dbRim instanceof BaseReferenceManifest
-                            && dbRim.getTagId().equals(sRim.getTagId())) {
-                        sRim.setAssociatedRim(dbRim.getId());
-                        break;
+                ReferenceManifest baseRim = BaseReferenceManifest.select(referenceManifestManager)
+                        .byManufacturer(sRim.getPlatformManufacturer()).getRIM();
+                if (baseRim != null) {
+                    sRim.setAssociatedRim(baseRim.getId());
+                    try {
+                        referenceManifestManager.update(sRim);
+                    } catch (DBManagerException ex) {
+                        LOGGER.error("Failed to update Support RIM", ex);
                     }
                 }
             }
@@ -217,9 +222,6 @@ public class ReferenceManifestDetailsPageController
 
             TCGEventLog logProcessor = new TCGEventLog(sRim.getRimBytes());
             data.put("events", logProcessor.getEventList());
-        } else {
-            LOGGER.error(String.format("Unable to find Reference Integrity "
-                    + "Manifest with ID: %s", uuid));
         }
 
         return data;

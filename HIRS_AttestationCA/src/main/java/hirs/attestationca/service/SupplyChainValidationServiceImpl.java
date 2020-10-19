@@ -7,18 +7,20 @@ import java.security.NoSuchAlgorithmException;
 import java.security.cert.CertificateException;
 
 import hirs.data.persist.BaseReferenceManifest;
+import hirs.data.persist.BiosMeasurements;
 import hirs.data.persist.SupportReferenceManifest;
 import hirs.data.persist.TPMMeasurementRecord;
-import hirs.data.persist.SwidResource;
 import hirs.data.persist.PCRPolicy;
 import hirs.data.persist.ArchivableEntity;
 import hirs.tpm.eventlog.TCGEventLog;
+import hirs.tpm.eventlog.TpmPcrEvent;
 import hirs.validation.SupplyChainCredentialValidator;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Import;
 import org.springframework.stereotype.Service;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
@@ -28,6 +30,7 @@ import java.util.Set;
 import java.util.LinkedList;
 import java.util.UUID;
 import java.util.stream.Collectors;
+
 import org.apache.logging.log4j.Level;
 import hirs.appraiser.Appraiser;
 import hirs.appraiser.SupplyChainAppraiser;
@@ -82,20 +85,19 @@ public class SupplyChainValidationServiceImpl implements SupplyChainValidationSe
     /**
      * Constructor.
      *
-     * @param policyManager the policy manager
-     * @param appraiserManager the appraiser manager
-     * @param certificateManager the cert manager
-     * @param referenceManifestManager the RIM manager
+     * @param policyManager                      the policy manager
+     * @param appraiserManager                   the appraiser manager
+     * @param certificateManager                 the cert manager
+     * @param referenceManifestManager           the RIM manager
      * @param supplyChainValidatorSummaryManager the summary manager
-     * @param supplyChainCredentialValidator the credential validator
+     * @param supplyChainCredentialValidator     the credential validator
      */
     @Autowired
     public SupplyChainValidationServiceImpl(final PolicyManager policyManager,
-            final AppraiserManager appraiserManager,
-            final CertificateManager certificateManager,
-            final ReferenceManifestManager referenceManifestManager,
-            final CrudManager<SupplyChainValidationSummary> supplyChainValidatorSummaryManager,
-            final CredentialValidator supplyChainCredentialValidator) {
+           final AppraiserManager appraiserManager, final CertificateManager certificateManager,
+           final ReferenceManifestManager referenceManifestManager,
+           final CrudManager<SupplyChainValidationSummary> supplyChainValidatorSummaryManager,
+           final CredentialValidator supplyChainCredentialValidator) {
         this.policyManager = policyManager;
         this.appraiserManager = appraiserManager;
         this.certificateManager = certificateManager;
@@ -109,15 +111,16 @@ public class SupplyChainValidationServiceImpl implements SupplyChainValidationSe
      * an identity request and validates the supply chain in accordance to the
      * current supply chain policy.
      *
-     * @param ec The endorsement credential from the identity request.
-     * @param pcs The platform credentials from the identity request.
+     * @param ec     The endorsement credential from the identity request.
+     * @param pcs    The platform credentials from the identity request.
      * @param device The device to be validated.
      * @return A summary of the validation results.
      */
     @Override
+    @SuppressWarnings("methodlength")
     public SupplyChainValidationSummary validateSupplyChain(final EndorsementCredential ec,
-            final Set<PlatformCredential> pcs,
-            final Device device) {
+                                                            final Set<PlatformCredential> pcs,
+                                                            final Device device) {
         final Appraiser supplyChainAppraiser = appraiserManager.getAppraiser(
                 SupplyChainAppraiser.NAME);
         SupplyChainPolicy policy = (SupplyChainPolicy) policyManager.getDefaultPolicy(
@@ -185,7 +188,7 @@ public class SupplyChainValidationServiceImpl implements SupplyChainValidationSe
                         SupplyChainValidation.ValidationType.PLATFORM_CREDENTIAL,
                         AppraisalStatus.Status.FAIL,
                         "Platform credential(s) missing."
-                        + " Cannot validate attributes",
+                                + " Cannot validate attributes",
                         null, Level.ERROR));
             } else {
                 Iterator<PlatformCredential> it = pcs.iterator();
@@ -244,7 +247,14 @@ public class SupplyChainValidationServiceImpl implements SupplyChainValidationSe
         if (policy.isFirmwareValidationEnabled()) {
             // may need to associated with device to pull the correct info
             // compare tpm quote with what is pulled from RIM associated file
-            validations.add(validateFirmware(device, policy.getPcrPolicy()));
+            try {
+                validations.add(validateFirmware(device, policy.getPcrPolicy()));
+            } catch (Exception ex) {
+                for (StackTraceElement ste : ex.getStackTrace()) {
+                    LOGGER.error(ste.toString());
+                }
+                LOGGER.error(ex.getMessage());
+            }
         }
 
         // Generate validation summary, save it, and return it.
@@ -268,7 +278,7 @@ public class SupplyChainValidationServiceImpl implements SupplyChainValidationSe
      * on the specific multibase validation check for a delta chain. This method
      * also includes the check for delta certificate CA validation as well.
      *
-     * @param pc The platform credential getting checked
+     * @param pc          The platform credential getting checked
      * @param platformScv The validation record
      * @return The validation record
      */
@@ -319,58 +329,62 @@ public class SupplyChainValidationServiceImpl implements SupplyChainValidationSe
         return subPlatformScv;
     }
 
+    @SuppressWarnings("methodlength")
     private SupplyChainValidation validateFirmware(final Device device,
-            final PCRPolicy pcrPolicy) {
+                                                   final PCRPolicy pcrPolicy) {
 
+        boolean passed = true;
         String[] baseline = new String[Integer.SIZE];
         Level level = Level.ERROR;
         AppraisalStatus fwStatus = null;
         String manufacturer = device.getDeviceInfo()
                 .getHardwareInfo().getManufacturer();
-        String model = device.getDeviceInfo().getHardwareInfo().getProductName();
-        ReferenceManifest baseRim = null;
-        Set<ReferenceManifest> rims = ReferenceManifest
-                .select(referenceManifestManager).getRIMs();
+        ReferenceManifest baseReferenceManifest = null;
+        ReferenceManifest supportReferenceManifest = null;
+        ReferenceManifest measurement = null;
 
-        for (ReferenceManifest rim : rims) {
-            if (rim instanceof BaseReferenceManifest
-                    && rim.getPlatformManufacturer().equals(manufacturer)) {
-                baseRim = rim;
-            }
+        baseReferenceManifest = BaseReferenceManifest.select(referenceManifestManager)
+                .byManufacturer(manufacturer).getRIM();
+        supportReferenceManifest = SupportReferenceManifest.select(referenceManifestManager)
+                .byManufacturer(manufacturer).getRIM();
+        measurement = BiosMeasurements.select(referenceManifestManager)
+                .byManufacturer(manufacturer).includeArchived().getRIM();
+
+        String failedString = "";
+        if (baseReferenceManifest == null) {
+            failedString = "Base Reference Integrity Manifest%n";
+            passed = false;
+        }
+        if (supportReferenceManifest == null) {
+            failedString += "Support Reference Integrity Manifest%n";
+            passed = false;
+        }
+        if (measurement == null) {
+            failedString += "Bios measurement";
+            passed = false;
         }
 
-        fwStatus = new AppraisalStatus(PASS,
-                SupplyChainCredentialValidator.FIRMWARE_VALID);
-        if (baseRim != null) {
-            BaseReferenceManifest bRim = (BaseReferenceManifest) baseRim;
-            List<SwidResource> swids = bRim.parseResource();
+        if (passed) {
+            fwStatus = new AppraisalStatus(PASS,
+                    SupplyChainCredentialValidator.FIRMWARE_VALID);
             TCGEventLog logProcessor;
-            for (SwidResource swid : swids) {
-                ReferenceManifest dbRim = ReferenceManifest.select(
-                        referenceManifestManager).byFileName(swid.getName()).getRIM();
-
-                if (dbRim != null) {
-                    try {
-                        logProcessor = new TCGEventLog(dbRim.getRimBytes());
-                        baseline = logProcessor.getExpectedPCRValues();
-                    } catch (CertificateException cEx) {
-                        LOGGER.error(cEx);
-                    } catch (NoSuchAlgorithmException noSaEx) {
-                        LOGGER.error(noSaEx);
-                    } catch (IOException ioEx) {
-                        LOGGER.error(ioEx);
-                    }
-                }
+            try {
+                logProcessor = new TCGEventLog(supportReferenceManifest.getRimBytes());
+                baseline = logProcessor.getExpectedPCRValues();
+            } catch (CertificateException cEx) {
+                LOGGER.error(cEx);
+            } catch (NoSuchAlgorithmException noSaEx) {
+                LOGGER.error(noSaEx);
+            } catch (IOException ioEx) {
+                LOGGER.error(ioEx);
             }
+
+            // part 1 of firmware validation check: PCR baseline match
             pcrPolicy.setBaselinePcrs(baseline);
 
-            if (device != null) {
+            if (baseline.length > 0) {
                 String pcrContent = "";
-                try {
-                    pcrContent = new String(device.getDeviceInfo().getTPMInfo().getPcrValues());
-                } catch (NullPointerException npEx) {
-                    LOGGER.error(npEx);
-                }
+                pcrContent = new String(device.getDeviceInfo().getTPMInfo().getPcrValues());
 
                 if (pcrContent.isEmpty()) {
                     fwStatus = new AppraisalStatus(FAIL,
@@ -400,20 +414,58 @@ public class SupplyChainValidationServiceImpl implements SupplyChainValidationSe
                             level = Level.INFO;
                         }
                     }
+                    // part 2 of firmware validation check: bios measurements
+                    // vs baseline tcg event log
+                    // find the measurement
+                    TCGEventLog tcgEventLog;
+                    TCGEventLog tcgMeasurementLog;
+                    LinkedList<TpmPcrEvent> tpmPcrEvents = new LinkedList<>();
+                    try {
+                        if (measurement.getPlatformManufacturer().equals(manufacturer)) {
+                            tcgMeasurementLog = new TCGEventLog(measurement.getRimBytes());
+                            tcgEventLog = new TCGEventLog(
+                                    supportReferenceManifest.getRimBytes());
+                            for (TpmPcrEvent tpe : tcgEventLog.getEventList()) {
+                                if (!tpe.eventCompare(
+                                        tcgMeasurementLog.getEventByNumber(
+                                                tpe.getEventNumber()))) {
+                                    tpmPcrEvents.add(tpe);
+                                }
+                            }
+                        }
+                    } catch (CertificateException cEx) {
+                        LOGGER.error(cEx);
+                    } catch (NoSuchAlgorithmException noSaEx) {
+                        LOGGER.error(noSaEx);
+                    } catch (IOException ioEx) {
+                        LOGGER.error(ioEx);
+                    }
+
+                    if (!tpmPcrEvents.isEmpty()) {
+                        StringBuilder sb = new StringBuilder();
+                        for (TpmPcrEvent tpe : tpmPcrEvents) {
+                            sb.append(String.format("Event %s - %s%n",
+                                    tpe.getEventNumber(),
+                                    tpe.getEventTypeStr()));
+                        }
+                        if (fwStatus.getAppStatus().equals(FAIL)) {
+                            fwStatus = new AppraisalStatus(FAIL, String.format("%s%n%s",
+                                    fwStatus.getMessage(), sb.toString()));
+                        } else {
+                            fwStatus = new AppraisalStatus(FAIL, sb.toString());
+                        }
+                    }
                 }
             } else {
-                fwStatus = new AppraisalStatus(FAIL, "Associated Issued Attestation"
-                        + " Certificate can not be found.");
+                fwStatus = new AppraisalStatus(FAIL, "The RIM baseline could not be found.");
             }
         } else {
-            fwStatus = new AppraisalStatus(FAIL,
-                    String.format("Firmware validation failed: "
-                                    + "No associated RIM file could be found for %s:%s",
-                            manufacturer, model));
+            fwStatus = new AppraisalStatus(FAIL, String.format("Firmware Validation failed: "
+                    + "%s for %s can not be found", failedString, manufacturer));
         }
 
         return buildValidationRecord(SupplyChainValidation.ValidationType.FIRMWARE,
-                fwStatus.getAppStatus(), fwStatus.getMessage(), baseRim, level);
+                fwStatus.getAppStatus(), fwStatus.getMessage(), baseReferenceManifest, level);
     }
 
     /**
@@ -442,15 +494,9 @@ public class SupplyChainValidationServiceImpl implements SupplyChainValidationSe
                     .getHardwareInfo().getManufacturer();
 
             try {
-                // need to get pcrs
-                Set<ReferenceManifest> rims = ReferenceManifest.select(
-                        this.referenceManifestManager).getRIMs();
-                for (ReferenceManifest r : rims) {
-                    if (r instanceof SupportReferenceManifest
-                            && r.getPlatformManufacturer().equals(manufacturer)) {
-                        sRim = (SupportReferenceManifest) r;
-                    }
-                }
+                sRim = SupportReferenceManifest.select(
+                        this.referenceManifestManager)
+                        .byManufacturer(manufacturer).getRIM();
 
                 if (sRim == null) {
                     fwStatus = new AppraisalStatus(FAIL,
@@ -514,7 +560,7 @@ public class SupplyChainValidationServiceImpl implements SupplyChainValidationSe
     }
 
     private SupplyChainValidation validateEndorsementCredential(final EndorsementCredential ec,
-            final boolean acceptExpiredCerts) {
+                                                                final boolean acceptExpiredCerts) {
         final SupplyChainValidation.ValidationType validationType
                 = SupplyChainValidation.ValidationType.ENDORSEMENT_CREDENTIAL;
         LOGGER.info("Validating endorsement credential");
@@ -543,8 +589,7 @@ public class SupplyChainValidationServiceImpl implements SupplyChainValidationSe
     }
 
     private SupplyChainValidation validatePlatformCredential(final PlatformCredential pc,
-            final KeyStore trustedCertificateAuthority,
-            final boolean acceptExpiredCerts) {
+             final KeyStore trustedCertificateAuthority, final boolean acceptExpiredCerts) {
         final SupplyChainValidation.ValidationType validationType
                 = SupplyChainValidation.ValidationType.PLATFORM_CREDENTIAL;
 
@@ -570,8 +615,8 @@ public class SupplyChainValidationServiceImpl implements SupplyChainValidationSe
         }
     }
 
-    private SupplyChainValidation validatePlatformCredentialAttributes(final PlatformCredential pc,
-            final DeviceInfoReport deviceInfoReport,
+    private SupplyChainValidation validatePlatformCredentialAttributes(
+            final PlatformCredential pc, final DeviceInfoReport deviceInfoReport,
             final EndorsementCredential ec) {
         final SupplyChainValidation.ValidationType validationType
                 = SupplyChainValidation.ValidationType.PLATFORM_CREDENTIAL;
@@ -635,12 +680,12 @@ public class SupplyChainValidationServiceImpl implements SupplyChainValidationSe
      * Creates a supply chain validation record and logs the validation message
      * at the specified log level.
      *
-     * @param validationType the type of validation
-     * @param result the appraisal status
-     * @param message the validation message to include in the summary and log
+     * @param validationType   the type of validation
+     * @param result           the appraisal status
+     * @param message          the validation message to include in the summary and log
      * @param archivableEntity the archivableEntity associated with the
-     * validation
-     * @param logLevel the log level
+     *                         validation
+     * @param logLevel         the log level
      * @return a SupplyChainValidation
      */
     private SupplyChainValidation buildValidationRecord(
@@ -691,7 +736,7 @@ public class SupplyChainValidationServiceImpl implements SupplyChainValidationSe
      * larger than the the single trust chain for the queried certificate, but
      * is guaranteed to include the trust chain if it exists in this class'
      * CertificateManager.
-     *
+     * <p>
      * Implementation notes: 1. Queries for CA certs with a subject org matching
      * the given (argument's) issuer org 2. Add that org to
      * queriedOrganizations, so we don't search for that organization again 3.
@@ -700,9 +745,9 @@ public class SupplyChainValidationServiceImpl implements SupplyChainValidationSe
      * already queried for that organization (which prevents infinite loops on
      * certs with an identical subject and issuer org)
      *
-     * @param credential the credential whose CA chain should be retrieved
+     * @param credential                     the credential whose CA chain should be retrieved
      * @param previouslyQueriedOrganizations a list of organizations to refrain
-     * from querying
+     *                                       from querying
      * @return a Set containing all relevant CA credentials to the given
      * certificate's organization
      */
