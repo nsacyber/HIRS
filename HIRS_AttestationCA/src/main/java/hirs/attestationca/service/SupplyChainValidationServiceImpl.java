@@ -247,14 +247,7 @@ public class SupplyChainValidationServiceImpl implements SupplyChainValidationSe
         if (policy.isFirmwareValidationEnabled()) {
             // may need to associated with device to pull the correct info
             // compare tpm quote with what is pulled from RIM associated file
-            try {
-                validations.add(validateFirmware(device, policy.getPcrPolicy()));
-            } catch (Exception ex) {
-                for (StackTraceElement ste : ex.getStackTrace()) {
-                    LOGGER.error(ste.toString());
-                }
-                LOGGER.error(ex.getMessage());
-            }
+            validations.add(validateFirmware(device, policy.getPcrPolicy()));
         }
 
         // Generate validation summary, save it, and return it.
