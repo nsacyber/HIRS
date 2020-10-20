@@ -293,10 +293,28 @@ public final class TCGEventLog {
         StringBuilder sb = new StringBuilder();
         for (TpmPcrEvent event : eventList) {
             sb.append(event.toString(bEvent, bHexEvent, bContent));
-       }
+        }
         sb.append("Event Log processing completed.\n");
        return sb.toString();
     }
+
+    /**
+     * Human readable string representing the contents of the Event Log.
+     * @param bEvent flag to set
+     * @param bHexEvent flag to set
+     * @param bContent flag to set
+     * @return Description of the log.
+     */
+    public String toString(final boolean bEvent,
+                           final boolean bHexEvent,
+                           final boolean bContent) {
+        this.bEvent = bEvent;
+        this.bHexEvent = bHexEvent;
+        this.bContent = bContent;
+
+        return this.toString();
+    }
+
     /**
      * Returns the TCG Algorithm Registry defined string for the Digest Algorithm
      * used in the event log.

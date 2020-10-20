@@ -8,8 +8,11 @@ import hirs.attestationca.exceptions.IdentityProcessingException;
 import hirs.attestationca.exceptions.UnexpectedServerException;
 import hirs.attestationca.service.SupplyChainValidationService;
 import hirs.data.persist.AppraisalStatus;
+import hirs.data.persist.BaseReferenceManifest;
 import hirs.data.persist.Device;
 import hirs.data.persist.DeviceInfoReport;
+import hirs.data.persist.ReferenceManifest;
+import hirs.data.persist.SupportReferenceManifest;
 import hirs.data.persist.info.FirmwareInfo;
 import hirs.data.persist.info.HardwareInfo;
 import hirs.data.persist.info.NetworkInfo;
@@ -36,6 +39,7 @@ import hirs.structs.elements.tpm.IdentityProof;
 import hirs.structs.elements.tpm.IdentityRequest;
 import hirs.structs.elements.tpm.SymmetricKey;
 import hirs.structs.elements.tpm.SymmetricKeyParams;
+import hirs.tpm.eventlog.TCGEventLog;
 import hirs.utils.HexUtils;
 import org.apache.commons.codec.binary.Hex;
 import org.apache.commons.lang3.ArrayUtils;
@@ -719,8 +723,62 @@ public abstract class AbstractAttestationCertificateAuthority
                 hwProto.getProductVersion(), hwProto.getSystemSerialNumber(),
                 firstChassisSerialNumber, firstBaseboardSerialNumber);
 
-        if (dv.getPcrslist() != null && !dv.getPcrslist().isEmpty()) {
+        if (dv.hasPcrslist()) {
             this.pcrValues = dv.getPcrslist().toStringUtf8();
+        }
+
+        // check for RIM Base and Support files, if they don't exists in the database, load them
+        String clientName;
+        if (dv.hasLogfile()) {
+            try {
+                ReferenceManifest support = ReferenceManifest.select(referenceManifestManager)
+                        .includeArchived()
+                        .byHashCode(dv.getSwidfile().hashCode())
+                        .getRIM();
+                if (support == null) {
+                    clientName = String.format("%s_%s.rimel",
+                            dv.getHw().getManufacturer(),
+                            dv.getHw().getProductName());
+                    this.referenceManifestManager.save(
+                            new SupportReferenceManifest(clientName,
+                                    dv.getLogfile().toByteArray()));
+                } else {
+                    LOG.info("Client provided Support RIM already loaded in database.");
+                }
+                TCGEventLog tcgEventLog = new TCGEventLog(dv.getLogfile().toByteArray());
+                LOG.error(tcgEventLog.toString(true, true, true));
+            } catch (CertificateException cEx) {
+                LOG.error(cEx);
+            } catch (NoSuchAlgorithmException noSaEx) {
+                LOG.error(noSaEx);
+            } catch (IOException ioEx) {
+                LOG.error(ioEx);
+            }
+        }
+
+        if (dv.hasSwidfile()) {
+            try {
+                ReferenceManifest baseRim = ReferenceManifest.select(referenceManifestManager)
+                        .includeArchived()
+                        .byHashCode(dv.getSwidfile().hashCode())
+                        .getRIM();
+                if (baseRim == null) {
+                    clientName = String.format("%s_%s.swidtag",
+                            dv.getHw().getManufacturer(),
+                            dv.getHw().getProductName());
+                    this.referenceManifestManager.save(
+                            new BaseReferenceManifest(clientName,
+                                    dv.getSwidfile().toByteArray()));
+                } else {
+                    LOG.info("Client provided Base RIM already loaded in database.");
+                }
+            } catch (IOException ioEx) {
+                LOG.error(ioEx);
+            }
+        }
+
+        if (dv.hasLivelog()) {
+            LOG.error("Live Log Exists");
         }
 
         // Get TPM info, currently unimplemented

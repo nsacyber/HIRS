@@ -58,6 +58,9 @@ message DeviceInfo {
   required NetworkInfo nw = 3;
   required OsInfo os = 4;
   optional bytes pcrslist = 5;
+  optional bytes logfile = 6;
+  optional bytes swidfile = 7;
+  optional bytes livelog = 8;
 }
 
 message IdentityClaim {

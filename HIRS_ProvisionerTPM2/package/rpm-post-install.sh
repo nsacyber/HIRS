@@ -39,3 +39,24 @@ DEFAULT_SITE_CONFIG_FILE
     echo "Set your site configuration manually in $HIRS_SITE_CONFIG, then run 'hirs-provisioner-tpm2 provision' to provision this system"
 fi
 ln -s -f /etc/hirs/provisioner/hirs-provisioner.sh /usr/sbin/hirs-provisioner
+
+TCG_BOOT_FILE="/etc/hirs/tcg_boot.properties"
+MAINFEST_DIRECTORY="/boot/tcg/manifest"
+LOG_FILE_LOCATION="$MAINFEST_DIRECTORY/rim/"
+TAG_FILE_LOCATION="$MAINFEST_DIRECTORY/swidtag/"
+
+if [ ! -f "$TCG_BOOT_FILE" ]; then
+  touch "$TCG_BOOT_FILE"
+fi
+
+if [ -d "$LOG_FILE_LOCATION" ]; then
+  RIM_FILE=$(find "$LOG_FILE_LOCATION" -name '*.rimel' -or -name '*.bin' -or -name '*.rimpcr' -or -name '*.log')
+  echo "tcg.rim.file=$RIM_FILE" > "$TCG_BOOT_FILE"
+fi
+
+if [ -d "$TAG_FILE_LOCATION" ]; then
+  SWID_FILE=$(find "$TAG_FILE_LOCATION" -name '*.swidtag')
+  echo "tcg.swidtag.file=$SWID_FILE" >> "$TCG_BOOT_FILE"
+fi
+
+chmod -w "$TCG_BOOT_FILE"

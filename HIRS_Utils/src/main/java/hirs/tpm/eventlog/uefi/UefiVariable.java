@@ -40,12 +40,12 @@ public class UefiVariable {
  * EFIVariable constructor.
  * The UEFI_VARIABLE_DATA contains a "VariableName" field which is used to determine
  * the class used to parse the data within the "VariableData".
- * @param varibaleData byte array holding the UEFI Variable.
+ * @param variableData byte array holding the UEFI Variable.
  * @throws CertificateException If there a problem parsing the X509 certificate.
  * @throws NoSuchAlgorithmException if there's a problem hashing the certificate.
  * @throws IOException If there's a problem parsing the signature data.
  */
-public UefiVariable(final byte[] varibaleData)
+public UefiVariable(final byte[] variableData)
         throws CertificateException, NoSuchAlgorithmException, IOException {
   byte[] guid = new byte[UefiConstants.SIZE_16];
   byte[] nameLength = new byte[UefiConstants.SIZE_8];
@@ -54,21 +54,21 @@ public UefiVariable(final byte[] varibaleData)
   byte[] name = null;
   int variableLength = 0;
 
-  System.arraycopy(varibaleData, 0, guid, 0, UefiConstants.SIZE_16);
+  System.arraycopy(variableData, 0, guid, 0, UefiConstants.SIZE_16);
   uefiGuid = new UefiGuid(guid);
-  System.arraycopy(varibaleData, UefiConstants.SIZE_16, nameLength, 0, UefiConstants.SIZE_8);
+  System.arraycopy(variableData, UefiConstants.SIZE_16, nameLength, 0, UefiConstants.SIZE_8);
   int nlength = HexUtils.leReverseInt(nameLength);
-  System.arraycopy(varibaleData, UefiConstants.OFFSET_24, dataLength, 0, UefiConstants.SIZE_8);
+  System.arraycopy(variableData, UefiConstants.OFFSET_24, dataLength, 0, UefiConstants.SIZE_8);
   nameTemp = new byte[nlength * UefiConstants.SIZE_2];
 
-  System.arraycopy(varibaleData, UefiConstants.OFFSET_32,
+  System.arraycopy(variableData, UefiConstants.OFFSET_32,
                    nameTemp, 0, nlength * UefiConstants.SIZE_2);
   byte[] name1 = UefiDevicePath.convertChar16tobyteArray(nameTemp);
   name = new byte[nlength];
   System.arraycopy(name1, 0, name, 0, nlength);
   variableLength = HexUtils.leReverseInt(dataLength);
   uefiVaribelData = new byte[variableLength];
-  System.arraycopy(varibaleData, UefiConstants.OFFSET_32
+  System.arraycopy(variableData, UefiConstants.OFFSET_32
                    + nlength * UefiConstants.SIZE_2, uefiVaribelData, 0, variableLength);
   varName = new String(name, "UTF-8");
   String tmpName = varName;

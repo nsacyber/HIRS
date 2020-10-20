@@ -59,7 +59,7 @@ public class ReferenceManifestPageController
         extends PageController<NoPageParams> {
 
     private static final String BIOS_RELEASE_DATE_FORMAT = "yyyy-MM-dd";
-    private static final String LOG_FILE_PATTERN = "([^\\s]+(\\.(?i)(rim|rimel|bin|log))$)";
+    private static final String LOG_FILE_PATTERN = "([^\\s]+(\\.(?i)(rimpcr|rimel|bin|log))$)";
 
     private final BiosDateValidator biosValidator;
     private final ReferenceManifestManager referenceManifestManager;
