@@ -51,7 +51,14 @@
                                 <c:if test="${not empty initialData.events}">
                                     <c:set var="count" value="1" scope="page"/>
                                     <c:forEach items="${initialData.events}" var="event">
-                                        <tr>
+                                        <c:choose>
+                                            <c:when test="${event.isError()}">
+                                                <tr style="background: tomato">
+                                                </c:when>
+                                                <c:otherwise>
+                                                <tr>
+                                                </c:otherwise>
+                                            </c:choose>
                                             <td style="width: 75px">${count}</td>
                                             <td class="pcrCell">PCR${event.getPcrIndex()}</td>
                                             <td>${event.getEventTypeStr()}</td>
@@ -65,6 +72,60 @@
                         </table>
                     </div>
                     <div class="col-md-a col-md-offset-1"><span class="colHeader">${initialData.events.size()} entries</span></div>
+                </c:when>
+                <c:when test="${initialData.rimType=='Measurement'}">
+                    <div style="display: inline">
+                        <div class="row">
+                            <div class="col-md-1 col-md-offset-1"><span class="colHeader">Base/Support</span></div>
+                            <div id="measurements" class="col col-md-8">
+                                <c:if test="${not empty initialData.tagId}">
+                                    <div>Base:&nbsp;<span><a href="${portal}/rim-details?id=${initialData.baseId}">${initialData.tagId}</a></span>
+                                    </div>
+                                </c:if>
+                                <c:if test="${not empty initialData.supportId}">
+                                    <div>Support:&nbsp;<span><a href="${portal}/rim-details?id=${initialData.supportId}">${initialData.supportFilename}</a></span>
+                                    </div>
+                                </c:if>
+                            </div>
+                        </div>
+                        <br />
+                        <div class="col-md-offset-1">
+                        <div class="panel panel-default" style="width: 45%; display: inline-block; float: left; margin-right: 10px; word-wrap: break-word;">
+                            <div class="panel-heading">Support</div>
+                            <c:if test="${not empty initialData.supportEvents}">
+                                <c:forEach items="${initialData.supportEvents}" var="sEvent">
+                                    <div class="panel-body">
+                                        <div style="background: lightgrey"><span class="fieldHeader">Event#:</span>
+                                        <span class="fieldValue">${sEvent.getEventNumber()}</span></div>
+                                        <span class="fieldHeader">PCR Index:</span>
+                                        <span class="fieldValue">${sEvent.getPcrIndex()}</span><br />
+                                        <span class="fieldHeader">Digest:</span>
+                                        <span class="fieldValue">${sEvent.getEventDigestStr()}</span><br />
+                                        <span class="fieldHeader">Content:</span>
+                                        <span class="fieldValue">${sEvent.getEventContentStr()}</span><br />
+                                    </div>
+                                </c:forEach>
+                            </c:if>
+                        </div>
+                        <div class="panel panel-default" style="width: 45%; display: inline-block; word-wrap: break-word;">
+                            <div class="panel-heading">Client Log</div>
+                            <c:if test="${not empty initialData.livelogEvents}">
+                                <c:forEach items="${initialData.livelogEvents}" var="lEvent">
+                                    <div class="panel-body">
+                                    <div style="background: lightgrey"><span class="fieldHeader">Event#:</span>
+                                    <span class="fieldValue">${lEvent.getEventNumber()}</span></div>
+                                    <span class="fieldHeader">PCR Index:</span>
+                                    <span class="fieldValue">${lEvent.getPcrIndex()}</span><br />
+                                    <span class="fieldHeader">Digest:</span>
+                                    <span class="fieldValue">${lEvent.getEventDigestStr()}</span><br />
+                                    <span class="fieldHeader">Content:</span>
+                                    <span class="fieldValue">${lEvent.getEventContentStr()}</span><br />
+                                    </div>
+                                </c:forEach>
+                            </c:if>
+                        </div>
+                        </div>
+                    </div>
                 </c:when>
                 <c:otherwise>
                     <div class="row">
@@ -275,7 +336,7 @@
             }
         }
     }
-    window.onload = function() {
+    window.onload = function () {
         // Constant retrieved from server-side via JSP
         var maxRows = 11;
 

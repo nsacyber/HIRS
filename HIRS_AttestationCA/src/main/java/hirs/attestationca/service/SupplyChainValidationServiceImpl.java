@@ -332,6 +332,7 @@ public class SupplyChainValidationServiceImpl implements SupplyChainValidationSe
         AppraisalStatus fwStatus = null;
         String manufacturer = device.getDeviceInfo()
                 .getHardwareInfo().getManufacturer();
+        ReferenceManifest validationObject = null;
         ReferenceManifest baseReferenceManifest = null;
         ReferenceManifest supportReferenceManifest = null;
         ReferenceManifest measurement = null;
@@ -343,6 +344,7 @@ public class SupplyChainValidationServiceImpl implements SupplyChainValidationSe
         measurement = BiosMeasurements.select(referenceManifestManager)
                 .byManufacturer(manufacturer).includeArchived().getRIM();
 
+        validationObject = baseReferenceManifest;
         String failedString = "";
         if (baseReferenceManifest == null) {
             failedString = "Base Reference Integrity Manifest%n";
@@ -401,6 +403,7 @@ public class SupplyChainValidationServiceImpl implements SupplyChainValidationSe
                     } else {
                         StringBuilder sb = pcrPolicy.validatePcrs(storedPcrs);
                         if (sb.length() > 0) {
+                            validationObject = supportReferenceManifest;
                             level = Level.ERROR;
                             fwStatus = new AppraisalStatus(FAIL, sb.toString());
                         } else {
@@ -436,6 +439,7 @@ public class SupplyChainValidationServiceImpl implements SupplyChainValidationSe
 
                     if (!tpmPcrEvents.isEmpty()) {
                         StringBuilder sb = new StringBuilder();
+                        validationObject = measurement;
                         for (TpmPcrEvent tpe : tpmPcrEvents) {
                             sb.append(String.format("Event %s - %s%n",
                                     tpe.getEventNumber(),
@@ -458,7 +462,7 @@ public class SupplyChainValidationServiceImpl implements SupplyChainValidationSe
         }
 
         return buildValidationRecord(SupplyChainValidation.ValidationType.FIRMWARE,
-                fwStatus.getAppStatus(), fwStatus.getMessage(), baseReferenceManifest, level);
+                fwStatus.getAppStatus(), fwStatus.getMessage(), validationObject, level);
     }
 
     /**
