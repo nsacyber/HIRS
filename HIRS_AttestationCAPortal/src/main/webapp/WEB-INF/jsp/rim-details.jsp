@@ -89,41 +89,57 @@
                             </div>
                         </div>
                         <br />
-                        <div class="col-md-offset-1">
-                        <div class="panel panel-default" style="width: 45%; display: inline-block; float: left; margin-right: 10px; word-wrap: break-word;">
-                            <div class="panel-heading">Support</div>
-                            <c:if test="${not empty initialData.supportEvents}">
-                                <c:forEach items="${initialData.supportEvents}" var="sEvent">
-                                    <div class="panel-body">
-                                        <div style="background: lightgrey"><span class="fieldHeader">Event#:</span>
-                                        <span class="fieldValue">${sEvent.getEventNumber()}</span></div>
-                                        <span class="fieldHeader">PCR Index:</span>
-                                        <span class="fieldValue">${sEvent.getPcrIndex()}</span><br />
-                                        <span class="fieldHeader">Digest:</span>
-                                        <span class="fieldValue">${sEvent.getEventDigestStr()}</span><br />
-                                        <span class="fieldHeader">Content:</span>
-                                        <span class="fieldValue">${sEvent.getEventContentStr()}</span><br />
-                                    </div>
-                                </c:forEach>
-                            </c:if>
-                        </div>
-                        <div class="panel panel-default" style="width: 45%; display: inline-block; word-wrap: break-word;">
-                            <div class="panel-heading">Client Log</div>
-                            <c:if test="${not empty initialData.livelogEvents}">
-                                <c:forEach items="${initialData.livelogEvents}" var="lEvent">
-                                    <div class="panel-body">
-                                    <div style="background: lightgrey"><span class="fieldHeader">Event#:</span>
-                                    <span class="fieldValue">${lEvent.getEventNumber()}</span></div>
-                                    <span class="fieldHeader">PCR Index:</span>
-                                    <span class="fieldValue">${lEvent.getPcrIndex()}</span><br />
-                                    <span class="fieldHeader">Digest:</span>
-                                    <span class="fieldValue">${lEvent.getEventDigestStr()}</span><br />
-                                    <span class="fieldHeader">Content:</span>
-                                    <span class="fieldValue">${lEvent.getEventContentStr()}</span><br />
-                                    </div>
-                                </c:forEach>
-                            </c:if>
-                        </div>
+                        <div class="row">
+                            <div class="panel panel-default" style="flex: 1">
+                                <div class="panel-heading">Support</div>
+                                <c:if test="${not empty initialData.supportEvents}">
+                                    <c:forEach items="${initialData.supportEvents}" var="sEvent">
+                                        <div class="event-element">
+                                            <div class="event-data">
+                                                <div class="data-label">Event#:</div>
+                                                <div class="data-value">${sEvent.getEventNumber()}</div>
+                                            </div>           
+                                            <div class="event-data">
+                                                <div class="data-label">PCR Index:</div>
+                                                <div class="data-value">${sEvent.getPcrIndex()}</div>
+                                            </div>
+                                            <div class="event-data">
+                                                <div class="data-label">Digest:</div>
+                                                <div class="data-value">${sEvent.getEventDigestStr()}</div>
+                                            </div>
+                                            <div class="event-data">
+                                                <div class="data-label">Content:</div>
+                                                <div class="data-value">${sEvent.getEventContentStr()}</div>
+                                            </div>
+                                        </div>
+                                    </c:forEach>
+                                </c:if>
+                            </div>
+                            <div class="panel panel-default" style="flex: 1">
+                                <div class="panel-heading">Client Log</div>
+                                <c:if test="${not empty initialData.livelogEvents}">
+                                    <c:forEach items="${initialData.livelogEvents}" var="lEvent">
+                                        <div class="event-element">
+                                            <div class="event-data">
+                                                <div class="data-label">Event#:</div>
+                                                <div class="data-value">${lEvent.getEventNumber()}</div>
+                                            </div>           
+                                            <div class="event-data">
+                                                <div class="data-label">PCR Index:</div>
+                                                <div class="data-value">${lEvent.getPcrIndex()}</div>
+                                            </div>
+                                            <div class="event-data">
+                                                <div class="data-label">Digest:</div>
+                                                <div class="data-value">${lEvent.getEventDigestStr()}</div>
+                                            </div>
+                                            <div class="event-data">
+                                                <div class="data-label">Content:</div>
+                                                <div class="data-value">${lEvent.getEventContentStr()}</div>
+                                            </div>
+                                        </div>
+                                    </c:forEach>
+                                </c:if>
+                            </div>
                         </div>
                     </div>
                 </c:when>

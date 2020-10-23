@@ -53,3 +53,26 @@
 .pcrCell {
   max-width: 50px;
 }
+
+.event-element {
+    padding: 15px;
+    display: flex;
+    flex-direction: column;
+}
+
+.event-data {
+    display: flex;
+    flex: 1
+}
+
+.event-data:first-child {
+    background: lightgray;
+}
+
+.data-label {
+    flex: 1
+}
+
+.data-value {
+    flex: 5
+}
