@@ -89,7 +89,7 @@
                             </div>
                         </div>
                         <br />
-                        <div class="row">
+                        <div class="row" style="margin: auto 260px auto 125px">
                             <div class="panel panel-default" style="flex: 1">
                                 <div class="panel-heading">Support</div>
                                 <c:if test="${not empty initialData.supportEvents}">
