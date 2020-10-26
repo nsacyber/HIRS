@@ -330,7 +330,7 @@
 
         // Loop through all table rows, and hide those who don't match the search query
         for (i = 0; i < tr.length; i++) {
-            txtFound = false;
+            txtFound = true;
             tds = tr[i].getElementsByTagName("td");
             for (j = 0; j < tds.length; j++) {
                 td = tds[j];

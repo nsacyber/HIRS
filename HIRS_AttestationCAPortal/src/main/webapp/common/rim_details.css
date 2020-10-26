@@ -9,7 +9,8 @@
 #tableDivTag {
     padding-top: 5px;
     padding-left: 125px;
-    padding-right: 150px;
+    padding-bottom: 15px;
+    margin-right: 125px;
     overflow-y: scroll;
 }
 
