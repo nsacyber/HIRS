@@ -7,7 +7,7 @@ import java.security.NoSuchAlgorithmException;
 import java.security.cert.CertificateException;
 
 import hirs.data.persist.BaseReferenceManifest;
-import hirs.data.persist.BiosMeasurements;
+import hirs.data.persist.EventLogMeasurements;
 import hirs.data.persist.SupportReferenceManifest;
 import hirs.data.persist.TPMMeasurementRecord;
 import hirs.data.persist.PCRPolicy;
@@ -340,7 +340,7 @@ public class SupplyChainValidationServiceImpl implements SupplyChainValidationSe
                 .byManufacturer(manufacturer).getRIM();
         supportReferenceManifest = SupportReferenceManifest.select(referenceManifestManager)
                 .byManufacturer(manufacturer).getRIM();
-        measurement = BiosMeasurements.select(referenceManifestManager)
+        measurement = EventLogMeasurements.select(referenceManifestManager)
                 .byManufacturer(manufacturer).includeArchived().getRIM();
 
         String failedString = "";

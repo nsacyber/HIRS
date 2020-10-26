@@ -9,7 +9,7 @@ import hirs.attestationca.exceptions.UnexpectedServerException;
 import hirs.attestationca.service.SupplyChainValidationService;
 import hirs.data.persist.AppraisalStatus;
 import hirs.data.persist.BaseReferenceManifest;
-import hirs.data.persist.BiosMeasurements;
+import hirs.data.persist.EventLogMeasurements;
 import hirs.data.persist.Device;
 import hirs.data.persist.DeviceInfoReport;
 import hirs.data.persist.ReferenceManifest;
@@ -810,13 +810,13 @@ public abstract class AbstractAttestationCertificateAuthority
                     clientName);
             try {
                 // find previous version.  If it exists, delete it
-                support = BiosMeasurements.select(referenceManifestManager)
+                support = EventLogMeasurements.select(referenceManifestManager)
                         .byManufacturer(dv.getHw().getManufacturer())
                         .includeArchived().getRIM();
                 if (support != null) {
                     this.referenceManifestManager.delete(support);
                 }
-                support = new BiosMeasurements(fileName,
+                support = new EventLogMeasurements(fileName,
                         dv.getLivelog().toByteArray());
                 support.setPlatformManufacturer(dv.getHw().getManufacturer());
                 support.setPlatformModel(dv.getHw().getProductName());
