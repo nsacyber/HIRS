@@ -5,8 +5,10 @@ import hirs.data.persist.ReferenceManifest;
 import hirs.data.persist.SupportReferenceManifest;
 import hirs.data.persist.SwidResource;
 import hirs.persist.DBManagerException;
+import hirs.data.persist.certificate.Certificate;
+import hirs.data.persist.certificate.CertificateAuthorityCredential;
+import hirs.persist.CertificateManager;
 import hirs.persist.ReferenceManifestManager;
-import hirs.swid.SwidTagValidator;
 import hirs.tpm.eventlog.TCGEventLog;
 import hirs.attestationca.portal.page.Page;
 import hirs.attestationca.portal.page.PageController;
@@ -16,6 +18,7 @@ import hirs.attestationca.portal.page.params.ReferenceManifestDetailsPageParams;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.security.NoSuchAlgorithmException;
+import java.security.PublicKey;
 import java.security.cert.CertificateException;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -31,7 +34,7 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.servlet.ModelAndView;
 
-/**
+ /**
  * Controller for the Reference Manifest Details page.
  */
 @Controller
@@ -40,6 +43,7 @@ public class ReferenceManifestDetailsPageController
         extends PageController<ReferenceManifestDetailsPageParams> {
 
     private final ReferenceManifestManager referenceManifestManager;
+    private final CertificateManager certificateManager;
     private static final Logger LOGGER
             = LogManager.getLogger(ReferenceManifestDetailsPageController.class);
 
@@ -47,12 +51,15 @@ public class ReferenceManifestDetailsPageController
      * Constructor providing the Page's display and routing specification.
      *
      * @param referenceManifestManager the reference manifest manager
+     * @param certificateManager the certificate manager
      */
     @Autowired
     public ReferenceManifestDetailsPageController(
-            final ReferenceManifestManager referenceManifestManager) {
+            final ReferenceManifestManager referenceManifestManager,
+            final CertificateManager certificateManager) {
         super(Page.RIM_DETAILS);
         this.referenceManifestManager = referenceManifestManager;
+        this.certificateManager = certificateManager;
     }
 
     /**
@@ -82,7 +89,7 @@ public class ReferenceManifestDetailsPageController
         } else {
             try {
                 UUID uuid = UUID.fromString(params.getId());
-                data.putAll(getRimDetailInfo(uuid, referenceManifestManager));
+                data.putAll(getRimDetailInfo(uuid, referenceManifestManager, certificateManager));
             } catch (IllegalArgumentException iaEx) {
                 String uuidError = "Failed to parse ID from: " + params.getId();
                 messages.addError(uuidError);
@@ -110,13 +117,15 @@ public class ReferenceManifestDetailsPageController
      *
      * @param uuid                     database reference for the requested RIM.
      * @param referenceManifestManager the reference manifest manager.
+     * @param certificateManager the certificate manager.
      * @return mapping of the RIM information from the database.
      * @throws java.io.IOException      error for reading file bytes.
      * @throws NoSuchAlgorithmException If an unknown Algorithm is encountered.
      * @throws CertificateException     if a certificate doesn't parse.
      */
     public static HashMap<String, Object> getRimDetailInfo(final UUID uuid,
-             final ReferenceManifestManager referenceManifestManager) throws IOException,
+             final ReferenceManifestManager referenceManifestManager,
+             final CertificateManager certificateManager) throws IOException,
             CertificateException, NoSuchAlgorithmException {
         HashMap<String, Object> data = new HashMap<>();
 
@@ -200,6 +209,21 @@ public class ReferenceManifestDetailsPageController
 
             data.put("associatedRim", bRim.getAssociatedRim());
             data.put("swidFiles", resources);
+
+            if (bRim.validateXMLSignature(new ByteArrayInputStream(bRim.getRimBytes()))) {
+                data.put("signatureValid", true);
+                PublicKey publicKey = bRim.getSignaturePK();
+                try {
+                    Certificate certificate =
+                            CertificateAuthorityCredential.select(certificateManager)
+                                    .byEncodedPublicKey(publicKey.getEncoded()).getCertificate();
+                    data.put("issuerID", certificate.getId().toString());
+                } catch (Exception e) {
+                    LOGGER.info("Unable to get certificate by PK: " + e.getMessage());
+                }
+            } else {
+                data.put("signatureValid", false);
+            }
         } else {
             SupportReferenceManifest sRim = SupportReferenceManifest
                     .select(referenceManifestManager)

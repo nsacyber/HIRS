@@ -1,31 +1,40 @@
 package hirs.data.persist;
 
-import hirs.persist.DBReferenceManifestManager;
 import hirs.persist.ReferenceManifestManager;
 import hirs.persist.ReferenceManifestSelector;
-import hirs.utils.xjc.BaseElement;
-import hirs.utils.xjc.Directory;
-import hirs.utils.xjc.FilesystemItem;
-import hirs.utils.xjc.Meta;
-import hirs.utils.xjc.ResourceCollection;
-import hirs.utils.xjc.SoftwareIdentity;
-import hirs.utils.xjc.SoftwareMeta;
+import hirs.swid.SwidTagValidator;
+import hirs.swid.xjc.BaseElement;
+import hirs.swid.xjc.Directory;
+import hirs.swid.xjc.File;
+import hirs.swid.xjc.FilesystemItem;
+import hirs.swid.xjc.Meta;
+import hirs.swid.xjc.ResourceCollection;
+import hirs.swid.xjc.SoftwareIdentity;
+import hirs.swid.xjc.SoftwareMeta;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.w3c.dom.Document;
+import org.w3c.dom.NodeList;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.Transient;
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBElement;
-import javax.xml.bind.JAXBException;
-import javax.xml.bind.UnmarshalException;
-import javax.xml.bind.Unmarshaller;
+import javax.xml.crypto.MarshalException;
+import javax.xml.crypto.dsig.XMLSignature;
+import javax.xml.crypto.dsig.XMLSignatureFactory;
+import javax.xml.crypto.dsig.dom.DOMValidateContext;
+import javax.xml.crypto.dsig.keyinfo.KeyValue;
 import javax.xml.namespace.QName;
-import javax.xml.validation.Schema;
+import javax.xml.transform.stream.StreamSource;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.security.KeyException;
+import java.security.PublicKey;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -77,6 +86,12 @@ public class BaseReferenceManifest extends ReferenceManifest {
     private String entityThumbprint = null;
     private String linkHref = null;
     private String linkRel = null;
+    @Transient
+    private boolean signatureValid = false;
+    @Transient
+    private PublicKey signaturePK = null;
+    @Transient
+    private SwidTagValidator swidTagValidator = new SwidTagValidator();;
 
     /**
      * This class enables the retrieval of BaseReferenceManifest by their attributes.
@@ -150,6 +165,7 @@ public class BaseReferenceManifest extends ReferenceManifest {
     @SuppressWarnings("checkstyle:AvoidInlineConditionals")
     public BaseReferenceManifest(final byte[] rimBytes) throws IOException {
         super(rimBytes);
+        this.setFileName("");
         this.setRimType(BASE_RIM);
         SoftwareIdentity si = validateSwidTag(new ByteArrayInputStream(rimBytes));
 
@@ -174,8 +190,8 @@ public class BaseReferenceManifest extends ReferenceManifest {
                             parseSoftwareMeta((SoftwareMeta) element.getValue());
                             break;
                         case "Entity":
-                            hirs.utils.xjc.Entity entity
-                                    = (hirs.utils.xjc.Entity) element.getValue();
+                            hirs.swid.xjc.Entity entity
+                                    = (hirs.swid.xjc.Entity) element.getValue();
                             if (entity != null) {
                                 this.entityName = entity.getName();
                                 this.entityRegId = entity.getRegid();
@@ -188,8 +204,8 @@ public class BaseReferenceManifest extends ReferenceManifest {
                             }
                             break;
                         case "Link":
-                            hirs.utils.xjc.Link link
-                                    = (hirs.utils.xjc.Link) element.getValue();
+                            hirs.swid.xjc.Link link
+                                    = (hirs.swid.xjc.Link) element.getValue();
                             if (link != null) {
                                 this.linkHref = link.getHref();
                                 this.linkRel = link.getRel();
@@ -198,8 +214,6 @@ public class BaseReferenceManifest extends ReferenceManifest {
                         case "Payload":
                             parseResource((ResourceCollection) element.getValue());
                             break;
-                        case "Signature":
-                            // left blank for a followup issue enhancement
                         default:
                     }
                 }
@@ -232,14 +246,18 @@ public class BaseReferenceManifest extends ReferenceManifest {
      *
      * @param fileStream stream of the swidtag file.
      * @return a {@link SoftwareIdentity} object
-     * @throws IOException Thrown by the unmarhsallSwidTag method.
+     * @throws IOException
      */
     private SoftwareIdentity validateSwidTag(final InputStream fileStream) throws IOException {
-        JAXBElement jaxbe = unmarshallSwidTag(fileStream);
-        SoftwareIdentity swidTag = (SoftwareIdentity) jaxbe.getValue();
-
-        LOGGER.info(String.format("SWID Tag found: %nname: %s;%ntagId:  %s%n%s",
-                swidTag.getName(), swidTag.getTagId(), SCHEMA_STATEMENT));
+        SoftwareIdentity swidTag = null;
+        JAXBElement jaxbe = swidTagValidator.unmarshallInputStreamToJAXBElement(fileStream);
+        if (jaxbe != null) {
+            swidTag = (SoftwareIdentity) jaxbe.getValue();
+            LOGGER.info(String.format("SWID Tag found: %nname: %s;%ntagId:  %s%n%s",
+                    swidTag.getName(), swidTag.getTagId(), SCHEMA_STATEMENT));
+        } else {
+            throw new IOException("Invalid Base RIM, swidtag format expected.");
+        }
         return swidTag;
     }
 
@@ -257,12 +275,14 @@ public class BaseReferenceManifest extends ReferenceManifest {
             try {
                 SoftwareIdentity si = validateSwidTag(new ByteArrayInputStream(getRimBytes()));
                 JAXBElement element;
-                for (Object object : si.getEntityOrEvidenceOrLink()) {
-                    if (object instanceof JAXBElement) {
-                        element = (JAXBElement) object;
-                        if (element.getName().getLocalPart().equals(elementName)) {
-                            // found the element
-                            baseElement = (BaseElement) element.getValue();
+                if (si != null) {
+                    for (Object object : si.getEntityOrEvidenceOrLink()) {
+                        if (object instanceof JAXBElement) {
+                            element = (JAXBElement) object;
+                            if (element.getName().getLocalPart().equals(elementName)) {
+                                // found the element
+                                baseElement = (BaseElement) element.getValue();
+                            }
                         }
                     }
                 }
@@ -302,11 +322,11 @@ public class BaseReferenceManifest extends ReferenceManifest {
                             for (FilesystemItem fsi : directory.getDirectoryOrFile()) {
                                 if (fsi != null) {
                                     resources.add(new SwidResource(
-                                            (hirs.utils.xjc.File) fsi, null));
+                                            (File) fsi, null));
                                 }
                             }
-                        } else if (meta instanceof hirs.utils.xjc.File) {
-                            resources.add(new SwidResource((hirs.utils.xjc.File) meta, null));
+                        } else if (meta instanceof File) {
+                            resources.add(new SwidResource((File) meta, null));
                         }
                     }
                 }
@@ -318,47 +338,6 @@ public class BaseReferenceManifest extends ReferenceManifest {
         }
 
         return resources;
-    }
-
-    /**
-     * This method unmarshalls the swidtag found at [path] and validates it
-     * according to the schema.
-     *
-     * @param stream to the input swidtag
-     * @return the SoftwareIdentity element at the root of the swidtag
-     * @throws IOException if the swidtag cannot be unmarshalled or validated
-     */
-    private JAXBElement unmarshallSwidTag(final InputStream stream) throws IOException {
-        JAXBElement jaxbe = null;
-        Schema schema;
-
-        try {
-            schema = DBReferenceManifestManager.getSchemaObject();
-            if (jaxbContext == null) {
-                jaxbContext = JAXBContext.newInstance(SCHEMA_PACKAGE);
-            }
-            Unmarshaller unmarshaller = jaxbContext.createUnmarshaller();
-            unmarshaller.setSchema(schema);
-            jaxbe = (JAXBElement) unmarshaller.unmarshal(stream);
-        } catch (UnmarshalException umEx) {
-            LOGGER.error(String.format("Error validating swidtag file!%n%s%n%s",
-                    umEx.getMessage(), umEx.toString()));
-            for (StackTraceElement ste : umEx.getStackTrace()) {
-                LOGGER.error(ste.toString());
-            }
-        } catch (IllegalArgumentException iaEx) {
-            LOGGER.error("Input file empty.");
-        } catch (JAXBException jaxEx) {
-            for (StackTraceElement ste : jaxEx.getStackTrace()) {
-                LOGGER.error(ste.toString());
-            }
-        }
-
-        if (jaxbe != null) {
-            return jaxbe;
-        } else {
-            throw new IOException("Invalid Base RIM, swidtag format expected.");
-        }
     }
 
     /**
@@ -417,6 +396,45 @@ public class BaseReferenceManifest extends ReferenceManifest {
                     default:
                 }
             }
+        }
+    }
+
+    public boolean validateXMLSignature(final ByteArrayInputStream input) {
+        Document document = swidTagValidator.unmarshallDocument(new StreamSource(input));
+        if (swidTagValidator.validateSignedXMLDocument(document)) {
+            NodeList nodes = document.getElementsByTagNameNS(XMLSignature.XMLNS, "Signature");
+            if (nodes.getLength() > 0) {
+                DOMValidateContext context = null;
+                XMLSignatureFactory sigFactory = XMLSignatureFactory.getInstance("DOM");
+                XMLSignature signature;
+                try {
+                    for (int i = 0; i < nodes.getLength(); i++) {
+                        if (nodes.item(i).getNodeName().equals("X509Data")) {
+                            context = new DOMValidateContext(
+                                    new SwidTagValidator.X509KeySelector(), nodes.item(i));
+                            signature = sigFactory.unmarshalXMLSignature(context);
+                            List keyInfoContent = signature.getKeyInfo().getContent();
+                            Iterator itr = keyInfoContent.iterator();
+                            while (itr.hasNext()) {
+                                Object obj = itr.next();
+                                if (obj instanceof KeyValue) {
+                                    signaturePK = ((KeyValue) obj).getPublicKey();
+                                }
+                            }
+                            LOGGER.info("Embedded certificate detected in signature");
+                        }
+                    }
+                } catch (MarshalException e) {
+                    LOGGER.error("Error while unmarshalling signature: " + e.getMessage());
+                } catch (KeyException e) {
+                    LOGGER.error("Error while getting public key from KeyValue: "
+                            + e.getMessage());
+                }
+            }
+
+            return true;
+        } else {
+            return false;
         }
     }
 
@@ -814,6 +832,40 @@ public class BaseReferenceManifest extends ReferenceManifest {
      */
     public void setPcURILocal(final String pcURILocal) {
         this.pcURILocal = pcURILocal;
+    }
+
+    /**
+     * Getter for signature validity.
+     *
+     * @return boolean.
+     */
+    public boolean isSignatureValid() {
+        return signatureValid;
+    }
+
+    /**
+     * Setter for signature validity.
+     *
+     * @param signatureValid as boolean.
+     */
+    public void setSignatureValid(final boolean signatureValid) {
+        this.signatureValid = signatureValid;
+    }
+
+    /**
+     * Getter for signature public key.
+     * @return public key.
+     */
+    public PublicKey getSignaturePK() {
+        return signaturePK;
+    }
+
+    /**
+     * Setter for signature public key.
+     * @param signaturePK public key.
+     */
+    public void setSignaturePK(final PublicKey signaturePK) {
+        this.signaturePK = signaturePK;
     }
 
     @Override

@@ -1,18 +1,15 @@
 package hirs.swid;
 
-import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
-import java.nio.file.Paths;
-import java.util.Scanner;
-import java.net.URISyntaxException;
 
 import org.testng.Assert;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.Test;
+
 
 public class TestSwidTagGateway {
 	private SwidTagGateway gateway;
@@ -27,7 +24,7 @@ public class TestSwidTagGateway {
 	private InputStream expectedFile;
 
 	@BeforeClass
-	public void setUp() throws Exception {
+	public void setUp() {
 		gateway = new SwidTagGateway();
 		gateway.setRimEventLog(SUPPORT_RIM_FILE);
 		gateway.setAttributesFile(ATTRIBUTES_FILE);
@@ -48,12 +45,12 @@ public class TestSwidTagGateway {
 	 * where RimSignCert.pem has the AIA extension.
 	 */
 	@Test
-	public void testCreateBaseWithCert() throws URISyntaxException {
+	public void testCreateBaseWithCert() {
 		gateway.setDefaultCredentials(false);
 		gateway.setPemCertificateFile(SIGNING_CERT_FILE);
 		gateway.setPemPrivateKeyFile(PRIVATE_KEY_FILE);
 		gateway.generateSwidTag(DEFAULT_OUTPUT);
-		expectedFile = (InputStream) TestSwidTagGateway.class.getClassLoader().getResourceAsStream(DEFAULT_WITH_CERT);
+		expectedFile = TestSwidTagGateway.class.getClassLoader().getResourceAsStream(DEFAULT_WITH_CERT);
 		Assert.assertTrue(compareFileBytesToExpectedFile(DEFAULT_OUTPUT));
 	}
 
@@ -65,7 +62,7 @@ public class TestSwidTagGateway {
 	public void testCreateBaseWithoutCert() {
 		gateway.setDefaultCredentials(true);
 		gateway.generateSwidTag(DEFAULT_OUTPUT);
-		expectedFile = (InputStream) TestSwidTagGateway.class.getClassLoader().getResourceAsStream(DEFAULT_NO_CERT);
+		expectedFile = TestSwidTagGateway.class.getClassLoader().getResourceAsStream(DEFAULT_NO_CERT);
 		Assert.assertTrue(compareFileBytesToExpectedFile(DEFAULT_OUTPUT));
 	}
 

@@ -20,8 +20,8 @@
         <!-- text and icon resource variables -->
         <c:set var="passIcon" value="${icons}/ic_checkbox_marked_circle_black_green_24dp.png"/>
         <c:set var="failIcon" value="${icons}/ic_error_red_24dp.png"/>
-        <c:set var="passText" value="Validation Passed"/>
-        <c:set var="failText" value="Validation Failed"/>
+        <c:set var="sigValidText" value="Valid signature"/>
+        <c:set var="sigInvalidText" value="Signature invalid!"/>
 
         <div id="certificate-details-page" class="container-fluid">
             <c:choose>
@@ -251,10 +251,15 @@
             <div id="signature" class="col col-md-8">
                 <div>Validity:&nbsp;
                     <c:choose>
-                        <c:when test="${initialData.signatureValid}"><span><img src="${passIcon}" title="${passText}"/></span></div></c:when>
-                        <c:otherwise><span><img src="${failIcon}" title="${failText}"/></span></c:otherwise>
+                        <c:when test="${initialData.signatureValid}"><span><img src="${passIcon}" title="${sigValidText}"/></span></div></c:when>
+                        <c:otherwise><span><img src="${failIcon}" title="${sigInvalidText}"/></span></c:otherwise>
                     </c:choose>
-                <div>Signer:&nbsp;<span>Link to signing certificate</span></div>
+                <div>
+                    <c:if test="${not empty initialData.issuerID}">
+                        Signing certificate:&nbsp;
+                        <span><a href="${portal}/certificate-details?id=${initialData.issuerID}&type=certificateauthority">${initialData.issuerID}</a></span>
+                    </c:if>
+                </div>
             </div>
         </div>
     </div>
