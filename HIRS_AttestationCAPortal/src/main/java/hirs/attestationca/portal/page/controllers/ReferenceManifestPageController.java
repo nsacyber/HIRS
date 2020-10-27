@@ -191,6 +191,8 @@ public class ReferenceManifestPageController
         Pattern pattern;
         Matcher matcher;
         boolean supportRIM = false;
+        BaseReferenceManifest base;
+        SupportReferenceManifest support;
 
         // loop through the files
         for (MultipartFile file : files) {
@@ -201,45 +203,50 @@ public class ReferenceManifestPageController
 
             //Parse reference manifests
             ReferenceManifest rim = parseRIM(file, supportRIM, messages);
-            // look for associated base/support
-            Set<ReferenceManifest> rims = ReferenceManifest
-                    .select(referenceManifestManager).getRIMs();
 
-            // update information for associated support rims
-            for (ReferenceManifest element : rims) {
-                if (supportRIM) {
-                    if (element instanceof BaseReferenceManifest) {
-                        BaseReferenceManifest bRim = (BaseReferenceManifest) element;
-                        for (SwidResource swid : bRim.parseResource()) {
-                            if (swid.getName().equals(rim.getFileName())) {
-                                rim.setSwidTagVersion(bRim.getSwidTagVersion());
-                                rim.setPlatformManufacturer(bRim.getPlatformManufacturer());
-                                rim.setPlatformModel(bRim.getPlatformModel());
-                                rim.setTagId(bRim.getTagId());
-                                rim.setAssociatedRim(bRim.getId());
-                                break;
-                            }
+            if (supportRIM) {
+                // look for associated base/support
+                Set<BaseReferenceManifest> rims = BaseReferenceManifest
+                        .select(referenceManifestManager).getRIMs();
+                support = (SupportReferenceManifest) rim;
+                // update information for associated support rim
+                for (BaseReferenceManifest dbRim : rims) {
+                    for (SwidResource swid : dbRim.parseResource()) {
+                        if (swid.getName().equals(rim.getFileName())) {
+                            support.setSwidTagVersion(dbRim.getSwidTagVersion());
+                            support.setPlatformManufacturer(dbRim.getPlatformManufacturer());
+                            support.setPlatformModel(dbRim.getPlatformModel());
+                            support.setTagId(dbRim.getTagId());
+                            support.setAssociatedRim(dbRim.getId());
+                            support.setUpdated(true);
+                            break;
                         }
                     }
-                } else {
-                    BaseReferenceManifest bRim = (BaseReferenceManifest) rim;
-                    for (SwidResource swid : bRim.parseResource()) {
-                        if (element instanceof SupportReferenceManifest) {
-                            SupportReferenceManifest sRim = (SupportReferenceManifest) element;
-                            if (swid.getName().equals(sRim.getFileName())) {
-                                sRim.setPlatformManufacturer(bRim.getPlatformManufacturer());
-                                sRim.setPlatformModel(bRim.getPlatformModel());
-                                sRim.setSwidTagVersion(bRim.getSwidTagVersion());
-                                sRim.setTagId(bRim.getTagId());
-                                rim.setAssociatedRim(sRim.getId());
-                                try {
-                                    referenceManifestManager.update(sRim);
-                                } catch (DBManagerException dbmEx) {
-                                    LOGGER.error(String.format("Couldn't update Support RIM "
-                                                    + "%s with associated UUID %s", rim.getTagId(),
-                                            sRim.getId()), dbmEx);
-                                }
-                                break;
+                }
+            } else {
+                base = (BaseReferenceManifest) rim;
+
+                for (SwidResource swid : base.parseResource()) {
+                    support = SupportReferenceManifest.select(referenceManifestManager)
+                            .byFileName(swid.getName()).getRIM();
+                    if (support != null) {
+                        base.setAssociatedRim(support.getId());
+                        if (support.isUpdated()) {
+                            // this is separate because I want to break if we found it
+                            // instead of finding it, it is uptodate but still search
+                            break;
+                        } else {
+                            support.setSwidTagVersion(base.getSwidTagVersion());
+                            support.setPlatformManufacturer(base.getPlatformManufacturer());
+                            support.setPlatformModel(base.getPlatformModel());
+                            support.setTagId(base.getTagId());
+                            support.setUpdated(true);
+                            try {
+                                referenceManifestManager.update(support);
+                            } catch (DBManagerException dbmEx) {
+                                LOGGER.error(String.format("Couldn't update Support RIM "
+                                                + "%s with associated UUID %s", rim.getTagId(),
+                                        support.getId()), dbmEx);
                             }
                         }
                     }
@@ -251,7 +258,7 @@ public class ReferenceManifestPageController
                 storeManifest(file.getOriginalFilename(),
                         messages,
                         rim,
-                        referenceManifestManager);
+                        supportRIM);
             }
         }
 
@@ -371,10 +378,15 @@ public class ReferenceManifestPageController
      */
     private ReferenceManifest getRimFromDb(final String id) throws IllegalArgumentException {
         UUID uuid = UUID.fromString(id);
-
-        return ReferenceManifest
-                .select(referenceManifestManager)
+        ReferenceManifest rim = BaseReferenceManifest.select(referenceManifestManager)
                 .byEntityId(uuid).getRIM();
+
+        if (rim == null) {
+            rim = SupportReferenceManifest.select(referenceManifestManager)
+                    .byEntityId(uuid).getRIM();
+        }
+
+        return rim;
     }
 
     /**
@@ -427,24 +439,32 @@ public class ReferenceManifestPageController
      * @param fileName name of the file given
      * @param messages message object for user display of statuses
      * @param referenceManifest the object to store
-     * @param referenceManifestManager the class that handles the storage
+     * @param supportRim boolean flag indicating if this is a support RIM
      * process.
      */
     private void storeManifest(
             final String fileName,
             final PageMessages messages,
             final ReferenceManifest referenceManifest,
-            final ReferenceManifestManager referenceManifestManager) {
+            final boolean supportRim) {
 
         ReferenceManifest existingManifest;
 
         // look for existing manifest in the database
         try {
-            existingManifest = ReferenceManifest
-                    .select(referenceManifestManager)
-                    .includeArchived()
-                    .byHashCode(referenceManifest.getRimHash())
-                    .getRIM();
+            if (supportRim) {
+                existingManifest = SupportReferenceManifest
+                        .select(referenceManifestManager)
+                        .includeArchived()
+                        .byHashCode(referenceManifest.getRimHash())
+                        .getRIM();
+            } else {
+                existingManifest = BaseReferenceManifest
+                        .select(referenceManifestManager)
+                        .includeArchived()
+                        .byHashCode(referenceManifest.getRimHash())
+                        .getRIM();
+            }
         } catch (DBManagerException e) {
             final String failMessage = String.format("Querying for existing certificate "
                     + "failed (%s): ", fileName);
@@ -458,14 +478,14 @@ public class ReferenceManifestPageController
             if (existingManifest == null) {
                 referenceManifestManager.save(referenceManifest);
 
-                final String successMsg = String.format("New RIM successfully uploaded (%s): ",
+                final String successMsg = String.format("RIM successfully uploaded (%s): ",
                         fileName);
                 messages.addSuccess(successMsg);
                 LOGGER.info(successMsg);
                 return;
             }
         } catch (DBManagerException dbmEx) {
-            final String failMessage = String.format("Storing new RIM failed (%s): ", fileName);
+            final String failMessage = String.format("Storing RIM failed (%s): ", fileName);
             messages.addError(failMessage + dbmEx.getMessage());
             LOGGER.error(failMessage, dbmEx);
             return;

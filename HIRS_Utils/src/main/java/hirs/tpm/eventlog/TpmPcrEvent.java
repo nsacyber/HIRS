@@ -55,6 +55,7 @@ public class TpmPcrEvent {
     private static final int INDENT_3 = 3;
     /**
      * Log format. SHA1=1, Crytpo agile=2.
+     * this can be refactored out
      */
     private int logFormat = -1;
     /**
@@ -102,6 +103,7 @@ public class TpmPcrEvent {
      */
     private byte[] eventDataSha256hash;
     private EvPostCode evPostCode;
+    private int eventNumber;
 
     /**
      * Constructor.
@@ -246,6 +248,22 @@ public class TpmPcrEvent {
      */
     public byte[] getEvent() {
         return java.util.Arrays.copyOf(event, event.length);
+    }
+
+    /**
+     * Getter for the event number for this event.
+     * @return the # for this event
+     */
+    public int getEventNumber() {
+        return eventNumber;
+    }
+
+    /**
+     * Setter for the event number.
+     * @param eventNumber position in the list
+     */
+    public final void setEventNumber(final int eventNumber) {
+        this.eventNumber = eventNumber;
     }
 
     /**
@@ -450,6 +468,7 @@ public class TpmPcrEvent {
     public String processEvent(final byte[] event, final byte[] eventContent, final int eventNumber)
             throws CertificateException, NoSuchAlgorithmException, IOException {
         int eventID = (int) eventType;
+        this.eventNumber = eventNumber;
         description += "Event# " + eventNumber + ": ";
         description += "Index PCR[" + getPcrIndex() + "]\n";
         description += "Event Type: 0x" + Long.toHexString(eventType) + " " + eventString(eventID);
@@ -684,6 +703,19 @@ public class TpmPcrEvent {
             }
         }
         return result;
+    }
+
+    /**
+     * This method takes in an event and compares the hashes to verify that they match.
+     * @param tpmPcrEvent an event to match.
+     * @return true if the event # matches and the hash is correct.
+     */
+    public boolean eventCompare(final TpmPcrEvent tpmPcrEvent) {
+        if (tpmPcrEvent.getPcrIndex() != this.getPcrIndex()) {
+            return false;
+        }
+
+        return Arrays.equals(this.digest, tpmPcrEvent.getEventDigest());
     }
 
     /**

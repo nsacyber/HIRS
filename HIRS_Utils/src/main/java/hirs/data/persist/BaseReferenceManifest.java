@@ -1,6 +1,8 @@
 package hirs.data.persist;
 
 import hirs.persist.DBReferenceManifestManager;
+import hirs.persist.ReferenceManifestManager;
+import hirs.persist.ReferenceManifestSelector;
 import hirs.utils.xjc.BaseElement;
 import hirs.utils.xjc.Directory;
 import hirs.utils.xjc.FilesystemItem;
@@ -75,6 +77,56 @@ public class BaseReferenceManifest extends ReferenceManifest {
     private String entityThumbprint = null;
     private String linkHref = null;
     private String linkRel = null;
+
+    /**
+     * This class enables the retrieval of BaseReferenceManifest by their attributes.
+     */
+    public static class Selector extends ReferenceManifestSelector<BaseReferenceManifest> {
+        /**
+         * Construct a new ReferenceManifestSelector that will use
+         * the given (@link ReferenceManifestManager}
+         * to retrieve one or may BaseReferenceManifest.
+         *
+         * @param referenceManifestManager the reference manifest manager to be used to retrieve
+         * reference manifests.
+         */
+        public Selector(final ReferenceManifestManager referenceManifestManager) {
+            super(referenceManifestManager, BaseReferenceManifest.class);
+        }
+
+        /**
+         * Specify the platform manufacturer that rims must have to be considered
+         * as matching.
+         * @param manufacturer string for the manufacturer
+         * @return this instance
+         */
+        public Selector byManufacturer(final String manufacturer) {
+            setFieldValue(PLATFORM_MANUFACTURER, manufacturer);
+            return this;
+        }
+
+        /**
+         * Specify the platform manufacturer id that rims must have to be considered
+         * as matching.
+         * @param manufacturerId string for the id of the manufacturer
+         * @return this instance
+         */
+        public Selector byManufacturerId(final String manufacturerId) {
+            setFieldValue(PLATFORM_MANUFACTURER_ID, manufacturerId);
+            return this;
+        }
+
+        /**
+         * Specify the platform model that rims must have to be considered
+         * as matching.
+         * @param model string for the model
+         * @return this instance
+         */
+        public Selector byModel(final String model) {
+            setFieldValue(PLATFORM_MODEL, model);
+            return this;
+        }
+    }
 
     /**
      * Support constructor for the RIM object.
@@ -160,6 +212,17 @@ public class BaseReferenceManifest extends ReferenceManifest {
      */
     protected BaseReferenceManifest() {
 
+    }
+
+    /**
+     * Get a Selector for use in retrieving ReferenceManifest.
+     *
+     * @param rimMan the ReferenceManifestManager to be used to retrieve
+     * persisted RIMs
+     * @return a Selector instance to use for retrieving RIMs
+     */
+    public static Selector select(final ReferenceManifestManager rimMan) {
+        return new Selector(rimMan);
     }
 
     /**

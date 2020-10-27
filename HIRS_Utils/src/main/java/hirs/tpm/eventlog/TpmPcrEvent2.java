@@ -66,14 +66,14 @@ public class TpmPcrEvent2 extends TpmPcrEvent {
     /**
      * Constructor.
      *
-     * @param is ByteArrayInputStream holding the TCG Log event
+     * @param is          ByteArrayInputStream holding the TCG Log event
      * @param eventNumber event position within the event log.
-     * @throws IOException if an error occurs in parsing the event
+     * @throws IOException              if an error occurs in parsing the event
      * @throws NoSuchAlgorithmException if an undefined algorithm is encountered.
-     * @throws CertificateException If a certificate within an event can't be processed.
+     * @throws CertificateException     If a certificate within an event can't be processed.
      */
     public TpmPcrEvent2(final ByteArrayInputStream is, final int eventNumber)
-                    throws IOException, CertificateException, NoSuchAlgorithmException {
+            throws IOException, CertificateException, NoSuchAlgorithmException {
         super(is);
         setDigestLength(EvConstants.SHA256_LENGTH);
         setLogFormat(2);
@@ -110,9 +110,9 @@ public class TpmPcrEvent2 extends TpmPcrEvent {
             is.read(eventContent);
             setEventContent(eventContent);
             int eventLength = rawIndex.length + rawType.length + eventDigest.length
-                                                  + rawEventSize.length;
+                    + rawEventSize.length;
             int offset = 0;
-            for (TcgTpmtHa hash:hashlist) {
+            for (TcgTpmtHa hash : hashlist) {
                 eventLength += hash.getBuffer().length;
             }
             event = new byte[eventLength];
@@ -128,13 +128,5 @@ public class TpmPcrEvent2 extends TpmPcrEvent {
             setEventData(event);
             this.processEvent(event, eventContent, eventNumber);
         }
-    }
-
-    /**
-     * Returns a list of digests within this event.
-     * @return a list of digests.
-     */
-    public ArrayList<TcgTpmtHa> getHashList() {
-        return hashlist;
     }
 }

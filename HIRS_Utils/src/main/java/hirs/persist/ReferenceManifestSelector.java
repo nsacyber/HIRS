@@ -1,6 +1,7 @@
 package hirs.persist;
 
 import com.google.common.base.Preconditions;
+import hirs.data.persist.ReferenceManifest;
 import hirs.data.persist.certificate.Certificate;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -21,16 +22,26 @@ import java.util.UUID;
  * with a {@link ReferenceManifestManager}.  To make use of this object,
  * use (some ReferenceManifest).select(ReferenceManifestManager).
  *
- * @param <ReferenceManifest> the type of referenceManifest that will be retrieved
+ * @param <T> the type of Reference Integrity Manifest that will be retrived.
  */
-public abstract class ReferenceManifestSelector<ReferenceManifest> {
-    private static final String PLATFORM_MANUFACTURER = "platformManufacturer";
-    private static final String PLATFORM_MANUFACTURER_ID = "platformManufacturerId";
-    private static final String PLATFORM_MODEL = "platformModel";
+public abstract class ReferenceManifestSelector<T extends ReferenceManifest> {
+    /**
+     * String representing the database field for the manufacturer.
+     */
+    public static final String PLATFORM_MANUFACTURER = "platformManufacturer";
+    /**
+     * String representing the database field for the manufacturer id.
+     */
+    public static final String PLATFORM_MANUFACTURER_ID = "platformManufacturerId";
+    /**
+     * String representing the database field for the model.
+     */
+    public static final String PLATFORM_MODEL = "platformModel";
     private static final String RIM_TYPE_FIELD = "rimType";
     private static final String RIM_FILENAME_FIELD = "fileName";
 
     private final ReferenceManifestManager referenceManifestManager;
+    private final Class<T> referenceTypeClass;
 
     private final Map<String, Object> fieldValueSelections;
     private boolean excludeArchivedRims;
@@ -39,25 +50,35 @@ public abstract class ReferenceManifestSelector<ReferenceManifest> {
      * Default Constructor.
      *
      * @param referenceManifestManager the RIM manager to be used to retrieve RIMs
+     * @param referenceTypeClass the type of Reference Manifest to process.
      */
-    public ReferenceManifestSelector(final ReferenceManifestManager referenceManifestManager) {
-        this(referenceManifestManager, true);
+    public ReferenceManifestSelector(final ReferenceManifestManager referenceManifestManager,
+                                     final Class<T> referenceTypeClass) {
+        this(referenceManifestManager, referenceTypeClass, true);
     }
 
     /**
      * Standard Constructor for the Selector.
      *
      * @param referenceManifestManager the RIM manager to be used to retrieve RIMs
+     * @param referenceTypeClass the type of Reference Manifest to process.
      * @param excludeArchivedRims true if excluding archived RIMs
      */
     public ReferenceManifestSelector(final ReferenceManifestManager referenceManifestManager,
+                                     final Class<T> referenceTypeClass,
             final boolean excludeArchivedRims) {
         Preconditions.checkArgument(
                 referenceManifestManager != null,
                 "reference manifest manager cannot be null"
         );
 
+        Preconditions.checkArgument(
+                referenceTypeClass != null,
+                "type cannot be null"
+        );
+
         this.referenceManifestManager = referenceManifestManager;
+        this.referenceTypeClass = referenceTypeClass;
         this.excludeArchivedRims = excludeArchivedRims;
         this.fieldValueSelections = new HashMap<>();
     }
@@ -68,41 +89,8 @@ public abstract class ReferenceManifestSelector<ReferenceManifest> {
      * @param uuid the UUID to query
      * @return this instance (for chaining further calls)
      */
-    public ReferenceManifestSelector byEntityId(final UUID uuid) {
+    public ReferenceManifestSelector<T> byEntityId(final UUID uuid) {
         setFieldValue(Certificate.ID_FIELD, uuid);
-        return this;
-    }
-
-    /**
-     * Specify the platform manufacturer that rims must have to be considered
-     * as matching.
-     * @param manufacturer string for the manufacturer
-     * @return this instance
-     */
-    public ReferenceManifestSelector byManufacturer(final String manufacturer) {
-        setFieldValue(PLATFORM_MANUFACTURER, manufacturer);
-        return this;
-    }
-
-    /**
-     * Specify the platform manufacturer id that rims must have to be considered
-     * as matching.
-     * @param manufacturerId string for the id of the manufacturer
-     * @return this instance
-     */
-    public ReferenceManifestSelector byManufacturerId(final String manufacturerId) {
-        setFieldValue(PLATFORM_MANUFACTURER_ID, manufacturerId);
-        return this;
-    }
-
-    /**
-     * Specify the platform model that rims must have to be considered
-     * as matching.
-     * @param model string for the model
-     * @return this instance
-     */
-    public ReferenceManifestSelector byModel(final String model) {
-        setFieldValue(PLATFORM_MODEL, model);
         return this;
     }
 
@@ -112,7 +100,7 @@ public abstract class ReferenceManifestSelector<ReferenceManifest> {
      * @param rimHash the hash code of the bytes to query for
      * @return this instance (for chaining further calls)
      */
-    public ReferenceManifestSelector byHashCode(final int rimHash) {
+    public ReferenceManifestSelector<T> byHashCode(final int rimHash) {
         setFieldValue(hirs.data.persist.ReferenceManifest.RIM_HASH_FIELD, rimHash);
         return this;
     }
@@ -122,7 +110,7 @@ public abstract class ReferenceManifestSelector<ReferenceManifest> {
      * @param fileName the name of the file associated with the rim
      * @return instance of the manifest in relation to the filename.
      */
-    public ReferenceManifestSelector byFileName(final String fileName) {
+    public ReferenceManifestSelector<T> byFileName(final String fileName) {
         setFieldValue(RIM_FILENAME_FIELD, fileName);
         return this;
     }
@@ -132,7 +120,7 @@ public abstract class ReferenceManifestSelector<ReferenceManifest> {
      * @param rimType the type of rim
      * @return this instance
      */
-    public ReferenceManifestSelector byRimType(final String rimType) {
+    public ReferenceManifestSelector<T> byRimType(final String rimType) {
             setFieldValue(RIM_TYPE_FIELD, rimType);
             return this;
     }
@@ -181,8 +169,8 @@ public abstract class ReferenceManifestSelector<ReferenceManifest> {
      *
      * @return a matching RIM or null if none is found
      */
-    public hirs.data.persist.ReferenceManifest getRIM() {
-        Set<hirs.data.persist.ReferenceManifest> rims = execute();
+    public T getRIM() {
+        Set<T> rims = execute();
         if (rims.isEmpty()) {
             return null;
         }
@@ -198,7 +186,7 @@ public abstract class ReferenceManifestSelector<ReferenceManifest> {
      *
      * @return a Set of matching RIMs, possibly empty
      */
-    public Set<hirs.data.persist.ReferenceManifest> getRIMs() {
+    public Set<T> getRIMs() {
         return Collections.unmodifiableSet(new HashSet<>(execute()));
     }
 
@@ -226,13 +214,13 @@ public abstract class ReferenceManifestSelector<ReferenceManifest> {
     /**
      * @return the rim class that this instance will query
      */
-    public Class<hirs.data.persist.ReferenceManifest> getReferenceManifestClass() {
-        return hirs.data.persist.ReferenceManifest.class;
+    public Class<T> getReferenceManifestClass() {
+        return this.referenceTypeClass;
     }
 
     // construct and execute query
-    private Set<hirs.data.persist.ReferenceManifest> execute() {
-        Set<hirs.data.persist.ReferenceManifest> results = this.referenceManifestManager.get(this);
+    private Set<T> execute() {
+        Set<T> results = this.referenceManifestManager.get(this);
         return results;
     }
 
@@ -241,7 +229,7 @@ public abstract class ReferenceManifestSelector<ReferenceManifest> {
      *
      * @return the selector
      */
-    public ReferenceManifestSelector<ReferenceManifest> includeArchived() {
+    public ReferenceManifestSelector<T> includeArchived() {
         this.excludeArchivedRims = false;
         return this;
     }

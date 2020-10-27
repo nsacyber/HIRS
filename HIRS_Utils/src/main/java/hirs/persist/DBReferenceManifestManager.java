@@ -86,10 +86,11 @@ public class DBReferenceManifestManager extends DBManager<ReferenceManifest>
      */
     @Override
     @SuppressWarnings("unchecked")
-    public Set<ReferenceManifest> get(final ReferenceManifestSelector referenceManifestSelector) {
+    public <T extends  ReferenceManifest> Set<T> get(
+            final ReferenceManifestSelector referenceManifestSelector) {
         LOGGER.info("Getting the full set of Reference Manifest files.");
         return new HashSet<>(
-                (List<ReferenceManifest>) getWithCriteria(
+                (List<T>) getWithCriteria(
                         referenceManifestSelector.getReferenceManifestClass(),
                         Collections.singleton(referenceManifestSelector.getCriterion())
                 )
