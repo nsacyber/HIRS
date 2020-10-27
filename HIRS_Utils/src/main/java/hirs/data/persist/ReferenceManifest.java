@@ -9,8 +9,6 @@ import javax.persistence.Entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.common.base.Preconditions;
-import hirs.persist.ReferenceManifestManager;
-import hirs.persist.ReferenceManifestSelector;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.hibernate.annotations.Type;
@@ -39,6 +37,10 @@ public abstract class ReferenceManifest extends ArchivableEntity {
      * String for display of a Support RIM.
      */
     public static final String SUPPORT_RIM = "Support";
+    /**
+     * String for display of a Support RIM.
+     */
+    public static final String MEASUREMENT_RIM = "Measurement";
 
     /**
      * String for the xml schema ios standard.
@@ -59,26 +61,6 @@ public abstract class ReferenceManifest extends ArchivableEntity {
     public static final String SCHEMA_PACKAGE = "hirs.utils.xjc";
 
     private static final Logger LOGGER = LogManager.getLogger(ReferenceManifest.class);
-
-    /**
-     * This class enables the retrieval of PlatformCredentials by their
-     * attributes.
-     */
-    public static class Selector
-            extends ReferenceManifestSelector<ReferenceManifest> {
-
-        /**
-         * Construct a new ReferenceManifestSelector that will use the given
-         * {@link ReferenceManifestManager} to retrieve one or many Reference
-         * Integrity Manifest.
-         *
-         * @param referenceManifestManager the RIM manager to be used to
-         * retrieve RIMs
-         */
-        public Selector(final ReferenceManifestManager referenceManifestManager) {
-            super(referenceManifestManager);
-        }
-    }
 
     /**
      * Holds the name of the 'rimHash' field.
@@ -107,17 +89,6 @@ public abstract class ReferenceManifest extends ArchivableEntity {
     @Type(type = "uuid-char")
     @Column
     private UUID associatedRim;
-
-    /**
-     * Get a Selector for use in retrieving ReferenceManifest.
-     *
-     * @param rimMan the ReferenceManifestManager to be used to retrieve
-     * persisted RIMs
-     * @return a ReferenceManifest.Selector instance to use for retrieving RIMs
-     */
-    public static Selector select(final ReferenceManifestManager rimMan) {
-        return new Selector(rimMan);
-    }
 
     /**
      * Default constructor necessary for Hibernate.

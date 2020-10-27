@@ -1,5 +1,6 @@
 package hirs.attestationca.portal.page.controllers;
 
+import hirs.data.persist.BaseReferenceManifest;
 import hirs.data.persist.ReferenceManifest;
 import hirs.persist.ReferenceManifestManager;
 import hirs.attestationca.portal.page.Page;
@@ -65,7 +66,7 @@ public class ReferenceManifestPageControllerTest extends PageControllerTest {
                 .andReturn();
 
         Set<ReferenceManifest> records
-                = referenceManifestManager.get(ReferenceManifest
+                = referenceManifestManager.get(BaseReferenceManifest
                         .select(referenceManifestManager).includeArchived());
         Assert.assertEquals(records.size(), 1);
 
@@ -135,7 +136,7 @@ public class ReferenceManifestPageControllerTest extends PageControllerTest {
                 "Pre-existing RIM found and unarchived (generated_good.swidtag): ");
 
         // verify the cert was actually stored
-        Set<ReferenceManifest> records = referenceManifestManager.get(ReferenceManifest.select(
+        Set<ReferenceManifest> records = referenceManifestManager.get(BaseReferenceManifest.select(
                 referenceManifestManager));
         Assert.assertEquals(records.size(), 1);
 
@@ -162,7 +163,8 @@ public class ReferenceManifestPageControllerTest extends PageControllerTest {
 
         // verify the cert was actually stored
         Set<ReferenceManifest> records
-                = referenceManifestManager.get(ReferenceManifest.select(referenceManifestManager));
+                = referenceManifestManager.get(BaseReferenceManifest
+                .select(referenceManifestManager));
         Assert.assertEquals(records.size(), 1);
 
         ReferenceManifest rim = records.iterator().next();
@@ -180,7 +182,7 @@ public class ReferenceManifestPageControllerTest extends PageControllerTest {
                 .andReturn();
 
         Set<ReferenceManifest> records
-                = referenceManifestManager.get(ReferenceManifest
+                = referenceManifestManager.get(BaseReferenceManifest
                         .select(referenceManifestManager).includeArchived());
         Assert.assertEquals(records.size(), 1);
 

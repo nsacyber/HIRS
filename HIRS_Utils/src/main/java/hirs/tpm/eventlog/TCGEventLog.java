@@ -7,7 +7,8 @@ import java.math.BigInteger;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.cert.CertificateException;
-import java.util.ArrayList;
+import java.util.Collection;
+import java.util.LinkedHashMap;
 
 import org.apache.commons.codec.DecoderException;
 import org.apache.commons.codec.binary.Hex;
@@ -22,6 +23,7 @@ import hirs.tpm.eventlog.uefi.UefiConstants;
 import hirs.utils.HexUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+
 /**
  * Class for handling different formats of TCG Event logs.
  */
@@ -60,7 +62,7 @@ public final class TCGEventLog {
     /** 2 dimensional array holding the PCR values. */
     private byte[][] pcrList;
     /** List of parsed events within the log. */
-    private ArrayList<TpmPcrEvent> eventList = new ArrayList<>();
+    private LinkedHashMap<Integer, TpmPcrEvent> eventList = new LinkedHashMap<>();
     /** Length of PCR. Indicates which hash algorithm is used. */
     private int pcrLength;
     /** Name of hash algorithm. */
@@ -138,14 +140,14 @@ public final class TCGEventLog {
         bHexEvent = bHexEventFlag;
         ByteArrayInputStream is = new ByteArrayInputStream(rawlog);
         // Process the 1st entry as a SHA1 format (per the spec)
-        eventList.add(new TpmPcrEvent1(is, eventNumber++));
+        eventList.put(eventNumber, new TpmPcrEvent1(is, eventNumber++));
         // put all events into an event list for further processing
 
         while (is.available() > 0) {
             if (bCryptoAgile) {
-                eventList.add(new TpmPcrEvent2(is, eventNumber++));
+                eventList.put(eventNumber, new TpmPcrEvent2(is, eventNumber++));
             } else {
-                eventList.add(new TpmPcrEvent1(is, eventNumber++));
+                eventList.put(eventNumber, new TpmPcrEvent1(is, eventNumber++));
             }
         }
         calculatePcrValues();
@@ -204,7 +206,7 @@ public final class TCGEventLog {
     private void calculatePcrValues() {
         byte[] extendedPCR;
         initPcrList();
-        for (TpmPcrEvent currentEvent : eventList) {
+        for (TpmPcrEvent currentEvent : eventList.values()) {
             if (currentEvent.getPcrIndex() >= 0) {   // Ignore NO_EVENTS which can have a PCR=-1
                 try {
                     if (currentEvent.getEventType() != NO_ACTION_EVENT) {
@@ -271,8 +273,18 @@ public final class TCGEventLog {
      * Returns a list of event found in the Event Log.
      * @return an arraylist of event.
      */
-    public ArrayList<TpmPcrEvent>  getEventList() {
-        return eventList;
+    public Collection<TpmPcrEvent> getEventList() {
+        return eventList.values();
+    }
+
+    /**
+     * Returns a specific element of the Event Log that corresponds to the requested
+     * event number.
+     * @param eventNumber specific event to find in the list.
+     * @return TPM Event in the position of the list
+     */
+    public TpmPcrEvent getEventByNumber(final int eventNumber) {
+        return eventList.get(eventNumber);
     }
 
     /**
@@ -291,7 +303,7 @@ public final class TCGEventLog {
      */
     public String toString() {
         StringBuilder sb = new StringBuilder();
-        for (TpmPcrEvent event : eventList) {
+        for (TpmPcrEvent event : eventList.values()) {
             sb.append(event.toString(bEvent, bHexEvent, bContent));
         }
         sb.append("Event Log processing completed.\n");
