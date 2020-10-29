@@ -107,6 +107,17 @@ public class SupplyChainValidationServiceImpl implements SupplyChainValidationSe
     }
 
     /**
+     * Allows other service access to the policy information.
+     * @return supply chain policy
+     */
+    public SupplyChainPolicy getPolicy() {
+        final Appraiser supplyChainAppraiser = appraiserManager.getAppraiser(
+                SupplyChainAppraiser.NAME);
+        return (SupplyChainPolicy) policyManager.getDefaultPolicy(
+                supplyChainAppraiser);
+    }
+
+    /**
      * The "main" method of supply chain validation. Takes the credentials from
      * an identity request and validates the supply chain in accordance to the
      * current supply chain policy.

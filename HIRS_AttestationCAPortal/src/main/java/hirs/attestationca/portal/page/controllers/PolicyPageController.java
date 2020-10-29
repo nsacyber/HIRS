@@ -39,7 +39,9 @@ public class PolicyPageController extends PageController<NoPageParams> {
      * Represents a web request indicating to enable a setting (based on radio
      * buttons from a web form).
      */
-    private static final String ENABLED_PARAMETER_VALUE = "checked";
+    private static final String ENABLED_CHECKED_PARAMETER_VALUE = "checked";
+
+    private static final String ENABLED_EXPIRES_PARAMETER_VALUE = "expires";
 
     private PolicyManager policyManager;
 
@@ -115,7 +117,7 @@ public class PolicyPageController extends PageController<NoPageParams> {
         PageMessages messages = new PageMessages();
         String successMessage;
         boolean pcValidationOptionEnabled
-                = ppModel.getPcValidate().equalsIgnoreCase(ENABLED_PARAMETER_VALUE);
+                = ppModel.getPcValidate().equalsIgnoreCase(ENABLED_CHECKED_PARAMETER_VALUE);
 
         try {
             SupplyChainPolicy policy = getDefaultPolicyAndSetInModel(ppModel, model);
@@ -167,7 +169,7 @@ public class PolicyPageController extends PageController<NoPageParams> {
         PageMessages messages = new PageMessages();
         String successMessage;
         boolean pcAttributeValidationOptionEnabled = ppModel.getPcAttributeValidate()
-                .equalsIgnoreCase(ENABLED_PARAMETER_VALUE);
+                .equalsIgnoreCase(ENABLED_CHECKED_PARAMETER_VALUE);
 
         try {
             SupplyChainPolicy policy = getDefaultPolicyAndSetInModel(ppModel, model);
@@ -201,6 +203,64 @@ public class PolicyPageController extends PageController<NoPageParams> {
     }
 
     /**
+     * Updates the Attestation Certificate generation policy setting and redirects
+     * back to the original page.
+     *
+     * @param ppModel The data posted by the form mapped into an object.
+     * @param attr RedirectAttributes used to forward data back to the original page.
+     * @return View containing the url and parameters
+     * @throws URISyntaxException if malformed URI
+     */
+    @RequestMapping(value = "update-issue-attestation", method = RequestMethod.POST)
+    public RedirectView updateAttestationVal(@ModelAttribute final PolicyPageModel ppModel,
+                                             final RedirectAttributes attr)
+            throws URISyntaxException {
+
+        // set the data received to be populated back into the form
+        Map<String, Object> model = new HashMap<>();
+        PageMessages messages = new PageMessages();
+        String successMessage;
+        String numOfDays;
+        boolean issuedAttestationOptionEnabled
+                = ppModel.getAttestationCertificateIssued()
+                .equalsIgnoreCase(ENABLED_CHECKED_PARAMETER_VALUE);
+        boolean generateCertificateEnabled
+                = ppModel.getAttestationCertificateIssued()
+                .equalsIgnoreCase(ENABLED_EXPIRES_PARAMETER_VALUE);
+
+        try {
+            SupplyChainPolicy policy = getDefaultPolicyAndSetInModel(ppModel, model);
+
+            if (issuedAttestationOptionEnabled) {
+                successMessage = "Attestation Certificate generation enabled.";
+            } else {
+                successMessage = "Attestation Certificate generation disabled.";
+            }
+
+            if (generateCertificateEnabled) {
+                numOfDays = ppModel.getNumOfValidDays();
+                if (numOfDays == null) {
+                    numOfDays = SupplyChainPolicy.TEN_YEARS;
+                }
+            } else {
+                numOfDays = policy.getValidityDays();
+            }
+
+            policy.setValidityDays(numOfDays);
+            policy.setIssueAttestationCertificate(issuedAttestationOptionEnabled);
+            policy.setGenerateOnExpiration(generateCertificateEnabled);
+            savePolicyAndApplySuccessMessage(ppModel, model, messages, successMessage, policy);
+        } catch (PolicyManagerException e) {
+            handlePolicyManagerUpdateError(model, messages, e,
+                    "Error changing ACA Attestation Certificate generation policy",
+                    "Error updating policy. \n" + e.getMessage());
+        }
+
+        // return the redirect
+        return redirectToSelf(new NoPageParams(), model, attr);
+    }
+
+    /**
      * Updates the Endorsement Credential Validation policy setting and
      * redirects back to the original page.
      *
@@ -219,7 +279,7 @@ public class PolicyPageController extends PageController<NoPageParams> {
         PageMessages messages = new PageMessages();
         String successMessage;
         boolean ecValidationOptionEnabled
-                = ppModel.getEcValidate().equalsIgnoreCase(ENABLED_PARAMETER_VALUE);
+                = ppModel.getEcValidate().equalsIgnoreCase(ENABLED_CHECKED_PARAMETER_VALUE);
 
         try {
             SupplyChainPolicy policy = getDefaultPolicyAndSetInModel(ppModel, model);
@@ -273,7 +333,7 @@ public class PolicyPageController extends PageController<NoPageParams> {
         PageMessages messages = new PageMessages();
         String successMessage;
         boolean firmwareValidationOptionEnabled = ppModel.getFmValidate()
-                .equalsIgnoreCase(ENABLED_PARAMETER_VALUE);
+                .equalsIgnoreCase(ENABLED_CHECKED_PARAMETER_VALUE);
 
         try {
             SupplyChainPolicy policy = getDefaultPolicyAndSetInModel(ppModel, model);
@@ -327,7 +387,7 @@ public class PolicyPageController extends PageController<NoPageParams> {
         PageMessages messages = new PageMessages();
         String successMessage;
         boolean ignoreImaOptionEnabled = ppModel.getIgnoreIma()
-                .equalsIgnoreCase(ENABLED_PARAMETER_VALUE);
+                .equalsIgnoreCase(ENABLED_CHECKED_PARAMETER_VALUE);
 
         try {
             SupplyChainPolicy policy = getDefaultPolicyAndSetInModel(ppModel, model);
@@ -378,7 +438,7 @@ public class PolicyPageController extends PageController<NoPageParams> {
         PageMessages messages = new PageMessages();
         String successMessage;
         boolean ignoreTbootOptionEnabled = ppModel.getIgnoretBoot()
-                .equalsIgnoreCase(ENABLED_PARAMETER_VALUE);
+                .equalsIgnoreCase(ENABLED_CHECKED_PARAMETER_VALUE);
 
         try {
             SupplyChainPolicy policy = getDefaultPolicyAndSetInModel(ppModel, model);

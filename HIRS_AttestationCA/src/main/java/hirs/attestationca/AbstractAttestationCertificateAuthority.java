@@ -13,6 +13,7 @@ import hirs.data.persist.EventLogMeasurements;
 import hirs.data.persist.Device;
 import hirs.data.persist.DeviceInfoReport;
 import hirs.data.persist.ReferenceManifest;
+import hirs.data.persist.SupplyChainPolicy;
 import hirs.data.persist.SupportReferenceManifest;
 import hirs.data.persist.SwidResource;
 import hirs.data.persist.info.FirmwareInfo;
@@ -108,7 +109,8 @@ public abstract class AbstractAttestationCertificateAuthority
     protected static final Logger LOG = LogManager.getLogger(AttestationCertificateAuthority.class);
 
     /**
-     * Defines the well known exponent. https://en.wikipedia.org/wiki/65537_(number)#Applications
+     * Defines the well known exponent.
+     * https://en.wikipedia.org/wiki/65537_(number)#Applications
      */
     private static final BigInteger EXPONENT = new BigInteger("010001",
             AttestationCertificateAuthority.DEFAULT_IV_SIZE);
@@ -150,8 +152,8 @@ public abstract class AbstractAttestationCertificateAuthority
     private final X509Certificate acaCertificate;
 
     /**
-     * Container wired {@link StructConverter} to be used in serialization / deserialization of TPM
-     * data structures.
+     * Container wired {@link StructConverter} to be used in
+     * serialization / deserialization of TPM data structures.
      */
     private final StructConverter structConverter;
 
@@ -164,7 +166,7 @@ public abstract class AbstractAttestationCertificateAuthority
      * Container wired application configuration property identifying the number of days that
      * certificates issued by this ACA are valid for.
      */
-    private final Integer validDays;
+    private Integer validDays;
 
     private final CertificateManager certificateManager;
     private final ReferenceManifestManager referenceManifestManager;
@@ -358,6 +360,9 @@ public abstract class AbstractAttestationCertificateAuthority
 
         // generate the identity credential
         LOG.debug("generating credential from identity proof");
+        // check the policy set valid date
+        SupplyChainPolicy scp = this.supplyChainValidationService.getPolicy();
+        this.validDays = Integer.getInteger(scp.getValidityDays());
         // transform the public key struct into a public key
         PublicKey publicKey = assemblePublicKey(proof.getIdentityKey().getStorePubKey().getKey());
         X509Certificate credential = generateCredential(publicKey, endorsementCredential,
@@ -545,6 +550,9 @@ public abstract class AbstractAttestationCertificateAuthority
             // Get device name and device
             String deviceName = claim.getDv().getNw().getHostname();
             Device device = deviceManager.getDevice(deviceName);
+            // check the policy set valid date
+            SupplyChainPolicy scp = this.supplyChainValidationService.getPolicy();
+            this.validDays = Integer.parseInt(scp.getValidityDays());
 
             // Parse through the Provisioner supplied TPM Quote and pcr values
             // these fields are optional
@@ -1647,12 +1655,25 @@ public abstract class AbstractAttestationCertificateAuthority
                                             final EndorsementCredential endorsementCredential,
                                             final Set<PlatformCredential> platformCredentials,
                                             final Device device) {
+        IssuedAttestationCertificate issuedAc;
+        boolean validDate = false;
+        SupplyChainPolicy scp = this.supplyChainValidationService.getPolicy();
         try {
             // save issued certificate
             IssuedAttestationCertificate attCert = new IssuedAttestationCertificate(
                     derEncodedAttestationCertificate, endorsementCredential, platformCredentials);
-            attCert.setDevice(device);
-            certificateManager.save(attCert);
+
+            if (!scp.isIssueAttestationCertificate()) {
+                issuedAc = IssuedAttestationCertificate.select(certificateManager)
+                        .byDeviceId(device.getId()).getCertificate();
+                if (issuedAc != null) {
+                    validDate = issuedAc.isValidOn(attCert.getBeginValidity());
+                }
+            }
+            if (!validDate) {
+                attCert.setDevice(device);
+                certificateManager.save(attCert);
+            }
         } catch (Exception e) {
             LOG.error("Error saving generated Attestation Certificate to database.", e);
             throw new CertificateProcessingException(

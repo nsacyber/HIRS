@@ -13,6 +13,8 @@ public class PolicyPageModel {
     private boolean enablePcCertificateValidation;
     private boolean enablePcCertificateAttributeValidation;
     private boolean enableFirmwareValidation;
+    private boolean issueAttestationCertificate;
+    private boolean generateOnExpiration;
     private boolean enableIgnoreIma;
     private boolean enableIgnoreTboot;
 
@@ -21,6 +23,8 @@ public class PolicyPageModel {
     private String pcAttributeValidate;
     private String ecValidate;
     private String fmValidate;
+    private String attestationCertificateIssued;
+    private String numOfValidDays;
     private String ignoreIma;
     private String ignoretBoot;
 
@@ -34,6 +38,9 @@ public class PolicyPageModel {
         this.enablePcCertificateValidation = policy.isPcValidationEnabled();
         this.enablePcCertificateAttributeValidation = policy.isPcAttributeValidationEnabled();
         this.enableFirmwareValidation = policy.isFirmwareValidationEnabled();
+        this.issueAttestationCertificate = policy.isIssueAttestationCertificate();
+        this.generateOnExpiration = policy.isGenerateOnExpiration();
+        this.numOfValidDays = policy.getValidityDays();
         this.enableIgnoreIma = policy.isIgnoreImaEnabled();
         this.enableIgnoreTboot = policy.isIgnoreTbootEnabled();
     }
@@ -78,6 +85,24 @@ public class PolicyPageModel {
      */
     public boolean getEnableFirmwareValidation() {
         return enableFirmwareValidation;
+    }
+
+    /**
+     * Gets the Attestation Certificate issued State.
+     *
+     * @return the issued state.
+     */
+    public boolean isIssueAttestationCertificate() {
+        return issueAttestationCertificate;
+    }
+
+    /**
+     * Gets the state of generating a certificate.
+     *
+     * @return true or false
+     */
+    public boolean isGenerateOnExpiration() {
+        return generateOnExpiration;
     }
 
     /**
@@ -130,6 +155,24 @@ public class PolicyPageModel {
      */
     public String getFmValidate() {
         return fmValidate;
+    }
+
+    /**
+     * Gets the attestation certificate issued state.
+     *
+     * @return the model string representation of this field.
+     */
+    public String getAttestationCertificateIssued() {
+        return attestationCertificateIssued;
+    }
+
+    /**
+     * Gets the number of selected valid days.
+     *
+     * @return the number of the days for validity
+     */
+    public String getNumOfValidDays() {
+        return numOfValidDays;
     }
 
     /**
@@ -188,6 +231,25 @@ public class PolicyPageModel {
     }
 
     /**
+     * Sets the Attestation Certificate Issued state.
+     *
+     * @param issueAttestationCertificate true if generating Certificates.
+     */
+    public void setIssueAttestationCertificate(
+            final boolean issueAttestationCertificate) {
+        this.issueAttestationCertificate = issueAttestationCertificate;
+    }
+
+    /**
+     * Setter for the state of generating a certificate.
+     *
+     * @param generateOnExpiration true or false
+     */
+    public void setGenerateOnExpiration(final boolean generateOnExpiration) {
+        this.generateOnExpiration = generateOnExpiration;
+    }
+
+    /**
      * Sets the Enable Ignore IMA state.
      *
      * @param enableIgnoreIma true if performing validation, false otherwise
@@ -242,6 +304,16 @@ public class PolicyPageModel {
     }
 
     /**
+     * Sets the Issued Attestation Certificate state.
+     *
+     * @param attestationCertificateIssued "checked" if generating certificates.
+     */
+    public void setAttestationCertificateIssued(
+            final String attestationCertificateIssued) {
+        this.attestationCertificateIssued = attestationCertificateIssued;
+    }
+
+    /**
      * Sets the Ignore IMA state.
      *
      * @param ignoreIma "checked" if enabling validation, false otherwise
@@ -266,6 +338,9 @@ public class PolicyPageModel {
                 + ", enablePcCertificateValidation=" + enablePcCertificateValidation
                 + ", enablePcCertificateAttributeValidation="
                 + enablePcCertificateAttributeValidation
-                + ", enableFirmwareValidation=" + enableFirmwareValidation + '}';
+                + ", enableFirmwareValidation=" + enableFirmwareValidation
+                + ", issueAttestationCertificate=" + issueAttestationCertificate
+                + ", generateOnExpiration=" + generateOnExpiration
+                + ", numOfValidDays=" + numOfValidDays + "}";
     }
 }
