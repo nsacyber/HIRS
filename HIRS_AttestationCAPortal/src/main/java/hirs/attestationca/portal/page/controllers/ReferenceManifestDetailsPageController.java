@@ -4,6 +4,9 @@ import hirs.data.persist.BaseReferenceManifest;
 import hirs.data.persist.ReferenceManifest;
 import hirs.data.persist.SupportReferenceManifest;
 import hirs.data.persist.SwidResource;
+import hirs.data.persist.certificate.Certificate;
+import hirs.data.persist.certificate.CertificateAuthorityCredential;
+import hirs.persist.CertificateManager;
 import hirs.persist.DBManagerException;
 import hirs.persist.ReferenceManifestManager;
 import hirs.tpm.eventlog.TCGEventLog;
@@ -12,6 +15,7 @@ import hirs.attestationca.portal.page.PageController;
 import hirs.attestationca.portal.page.PageMessages;
 import hirs.attestationca.portal.page.params.ReferenceManifestDetailsPageParams;
 
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.security.NoSuchAlgorithmException;
 import java.security.cert.CertificateException;
@@ -21,6 +25,7 @@ import java.util.List;
 import java.util.ArrayList;
 import java.util.UUID;
 
+import hirs.utils.ReferenceManifestValidator;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -38,6 +43,7 @@ public class ReferenceManifestDetailsPageController
         extends PageController<ReferenceManifestDetailsPageParams> {
 
     private final ReferenceManifestManager referenceManifestManager;
+    private final CertificateManager certificateManager;
     private static final Logger LOGGER
             = LogManager.getLogger(ReferenceManifestDetailsPageController.class);
 
@@ -48,9 +54,11 @@ public class ReferenceManifestDetailsPageController
      */
     @Autowired
     public ReferenceManifestDetailsPageController(
-            final ReferenceManifestManager referenceManifestManager) {
+            final ReferenceManifestManager referenceManifestManager,
+            final CertificateManager certificateManager) {
         super(Page.RIM_DETAILS);
         this.referenceManifestManager = referenceManifestManager;
+        this.certificateManager = certificateManager;
     }
 
     /**
@@ -80,7 +88,7 @@ public class ReferenceManifestDetailsPageController
         } else {
             try {
                 UUID uuid = UUID.fromString(params.getId());
-                data.putAll(getRimDetailInfo(uuid, referenceManifestManager));
+                data.putAll(getRimDetailInfo(uuid, referenceManifestManager, certificateManager));
             } catch (IllegalArgumentException iaEx) {
                 String uuidError = "Failed to parse ID from: " + params.getId();
                 messages.addError(uuidError);
@@ -114,7 +122,8 @@ public class ReferenceManifestDetailsPageController
      * @throws CertificateException     if a certificate doesn't parse.
      */
     public static HashMap<String, Object> getRimDetailInfo(final UUID uuid,
-             final ReferenceManifestManager referenceManifestManager) throws IOException,
+             final ReferenceManifestManager referenceManifestManager,
+             final CertificateManager certificateManager) throws IOException,
             CertificateException, NoSuchAlgorithmException {
         HashMap<String, Object> data = new HashMap<>();
 
@@ -183,11 +192,22 @@ public class ReferenceManifestDetailsPageController
                     logProcessor = new TCGEventLog(support.getRimBytes());
                 }
             }
+
+            ReferenceManifestValidator rimValidator = new ReferenceManifestValidator(
+                    new ByteArrayInputStream(bRim.getRimBytes()));
+
             // going to have to pull the filename and grab that from the DB
             // to get the id to make the link
             for (SwidResource swidRes : resources) {
                 if (support != null && swidRes.getName()
                         .equals(support.getFileName())) {
+                    rimValidator.validateSupportRimHash(support.getRimBytes(),
+                                rimValidator.getDocument());
+                    if (rimValidator.isSupportRimValid()) {
+                        data.put("supportRimHashValid", true);
+                    } else {
+                        data.put("supportRimHashValid", false);
+                    }
                     swidRes.setPcrValues(Arrays.asList(
                             logProcessor.getExpectedPCRValues()));
                     break;
@@ -198,6 +218,20 @@ public class ReferenceManifestDetailsPageController
 
             data.put("associatedRim", bRim.getAssociatedRim());
             data.put("swidFiles", resources);
+
+            rimValidator.validateXmlSignature(rimValidator.getDocument());
+            data.put("signatureValid", rimValidator.isSignatureValid());
+            if (rimValidator.isSignatureValid()) {
+                try {
+                    Certificate certificate =
+                            CertificateAuthorityCredential.select(certificateManager)
+                                    .byEncodedPublicKey(rimValidator.getPublicKey().getEncoded())
+                                    .getCertificate();
+                    data.put("issuerID", certificate.getId().toString());
+                } catch (NullPointerException e) {
+                    LOGGER.info("Unable to get signing certificate link: " + e.getMessage());
+                }
+            }
         } else {
             SupportReferenceManifest sRim = SupportReferenceManifest
                     .select(referenceManifestManager)
