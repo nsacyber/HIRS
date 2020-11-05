@@ -219,7 +219,7 @@
         "0x00000006": "Touch Pad",
         "0x00000007": "Touch Screen",
         "0x00000008": "Camera",
-        "0x00000009": "Fingerpoint Reader",
+        "0x00000009": "Fingerprint Reader",
         "0x0000000A": "Keyboard",
         "0x0000000B": "Smartcard Reader",
         "0x0000000C": "Biometric Reader",
@@ -321,6 +321,16 @@
         "0x00000009": "Molex Cable",
         "0x0000000A": "Ribbon Cable",
         "0x0000000B": "PCI Express Cable"
+      }
+    },
+    "Firmware": {
+      "ID": "0x00130000",
+      "Types": {
+        "0x00000002": "UEFI",
+        "0x00000003": "System BIOS",
+        "0x00000004": "Drive BIOS",
+        "0x00000005": "Bootloader",
+        "0x00000006": "System Management Module"
       }
     }
   }

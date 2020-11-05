@@ -23,8 +23,8 @@ import java.util.Collection;
  * however this is the live log from the client.
  */
 @Entity
-public class BiosMeasurements extends ReferenceManifest {
-    private static final Logger LOGGER = LogManager.getLogger(BiosMeasurements.class);
+public class EventLogMeasurements extends ReferenceManifest {
+    private static final Logger LOGGER = LogManager.getLogger(EventLogMeasurements.class);
 
     @Column
     @JsonIgnore
@@ -33,7 +33,7 @@ public class BiosMeasurements extends ReferenceManifest {
     /**
      * This class enables the retrieval of SupportReferenceManifest by their attributes.
      */
-    public static class Selector extends ReferenceManifestSelector<BiosMeasurements> {
+    public static class Selector extends ReferenceManifestSelector<EventLogMeasurements> {
         /**
          * Construct a new ReferenceManifestSelector that
          * will use the given (@link ReferenceManifestManager}
@@ -43,7 +43,7 @@ public class BiosMeasurements extends ReferenceManifest {
          * reference manifests.
          */
         public Selector(final ReferenceManifestManager referenceManifestManager) {
-            super(referenceManifestManager, BiosMeasurements.class, false);
+            super(referenceManifestManager, EventLogMeasurements.class, false);
         }
 
         /**
@@ -86,7 +86,7 @@ public class BiosMeasurements extends ReferenceManifest {
      * @param rimBytes byte array representation of the RIM
      * @throws java.io.IOException if unable to unmarshal the string
      */
-    public BiosMeasurements(final byte[] rimBytes) throws IOException {
+    public EventLogMeasurements(final byte[] rimBytes) throws IOException {
         this("blank.measurement", rimBytes);
     }
     /**
@@ -96,8 +96,8 @@ public class BiosMeasurements extends ReferenceManifest {
      * @param rimBytes byte array representation of the RIM
      * @throws java.io.IOException if unable to unmarshal the string
      */
-    public BiosMeasurements(final String fileName,
-                            final byte[] rimBytes
+    public EventLogMeasurements(final String fileName,
+                                final byte[] rimBytes
                             ) throws IOException {
         super(rimBytes);
         this.setFileName(fileName);
@@ -109,7 +109,7 @@ public class BiosMeasurements extends ReferenceManifest {
     /**
      * Default constructor necessary for Hibernate.
      */
-    protected BiosMeasurements() {
+    protected EventLogMeasurements() {
         super();
         this.pcrHash = 0;
     }
