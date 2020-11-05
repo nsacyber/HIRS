@@ -3,7 +3,6 @@ package hirs.utils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.w3c.dom.Document;
-import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
@@ -12,23 +11,30 @@ import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.UnmarshalException;
 import javax.xml.bind.Unmarshaller;
-import javax.xml.crypto.*;
+import javax.xml.crypto.AlgorithmMethod;
+import javax.xml.crypto.KeySelector;
+import javax.xml.crypto.KeySelectorException;
+import javax.xml.crypto.KeySelectorResult;
+import javax.xml.crypto.MarshalException;
+import javax.xml.crypto.XMLCryptoContext;
+import javax.xml.crypto.XMLStructure;
 import javax.xml.crypto.dsig.XMLSignature;
 import javax.xml.crypto.dsig.XMLSignatureException;
 import javax.xml.crypto.dsig.XMLSignatureFactory;
 import javax.xml.crypto.dsig.dom.DOMValidateContext;
 import javax.xml.crypto.dsig.keyinfo.KeyInfo;
 import javax.xml.crypto.dsig.keyinfo.X509Data;
-import javax.xml.transform.*;
+import javax.xml.transform.Source;
+import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerConfigurationException;
+import javax.xml.transform.TransformerException;
+import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMResult;
 import javax.xml.transform.stream.StreamSource;
 import javax.xml.validation.Schema;
 import javax.xml.validation.SchemaFactory;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.UnsupportedEncodingException;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.security.Key;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -36,6 +42,12 @@ import java.security.PublicKey;
 import java.security.cert.X509Certificate;
 import java.util.Iterator;
 
+
+/**
+ * This class handles validation functions of RIM files.
+ * Currently supports validation of support RIM hashes and
+ * base RIM signatures.
+ */
 public class ReferenceManifestValidator {
     private static final String SIGNATURE_ALGORITHM_RSA_SHA256 =
                     "http://www.w3.org/2001/04/xmldsig-more#rsa-sha256";
@@ -44,65 +56,96 @@ public class ReferenceManifestValidator {
     private static final String SCHEMA_LANGUAGE = XMLConstants.W3C_XML_SCHEMA_NS_URI;
     private static final String IDENTITY_TRANSFORM = "identity_transform.xslt";
     private static final String SHA256 = "SHA-256";
+    private static final int EIGHT_BIT_MASK = 0xff;
+    private static final int LEFT_SHIFT = 0x100;
+    private static final int RADIX = 16;
     private static final Logger LOGGER = LogManager.getLogger(ReferenceManifestValidator.class);
 
     private Unmarshaller unmarshaller;
     private PublicKey publicKey;
-    private Document document;
+    private Schema schema;
     private boolean signatureValid, supportRimValid;
 
+    /**
+     * Getter for signatureValid.
+     *
+     * @return true if valid, false if not.
+     */
     public boolean isSignatureValid() {
         return signatureValid;
     }
 
+    /**
+     * Getter for supportRimValid.
+     *
+     * @return true if valid, false if not.
+     */
     public boolean isSupportRimValid() {
         return supportRimValid;
     }
 
-    public PublicKey getPublicKey() { return publicKey; }
+    /**
+     * Getter for certificate PublicKey.
+     *
+     * @return PublicKey
+     */
+    public PublicKey getPublicKey() {
+        return publicKey;
+    }
 
-    public Document getDocument() { return document; }
-
-    public ReferenceManifestValidator() {}
-
-    public ReferenceManifestValidator(InputStream input) {
+    /**
+     * This default constructor creates the Schema object from SCHEMA_URL immediately to save
+     * time during validation calls later.
+     */
+    public ReferenceManifestValidator() {
         try {
-            JAXBContext jaxbContext = JAXBContext.newInstance(SCHEMA_PACKAGE);
-            unmarshaller = jaxbContext.createUnmarshaller();
+            InputStream is = ReferenceManifestValidator.class
+                    .getClassLoader().getResourceAsStream(SCHEMA_URL);
+            SchemaFactory schemaFactory = SchemaFactory.newInstance(SCHEMA_LANGUAGE);
+            schema = schemaFactory.newSchema(new StreamSource(is));
             signatureValid = false;
             supportRimValid = false;
             publicKey = null;
-            document = unmarshallSwidTag(removeXMLWhitespace(new StreamSource(input)));
-        } catch (JAXBException e) {
-            LOGGER.warn("Error initializing JAXBContext: " + e.getMessage());
-        } catch (IOException e) {
-            LOGGER.warn("Error during unmarshalling: " + e.getMessage());
-        }
-    }
-
-    public void validateSupportRimHash(byte[] input, Document doc) {
-        String calculatedHash = getHashValue(input, SHA256);
-        Element file = (Element) doc.getElementsByTagName("File").item(0);
-        LOGGER.info("Calculated hash: " + calculatedHash
-                + ", actual: " + file.getAttribute("SHA256:hash"));
-        if (file.getAttribute("SHA256:hash").equals(calculatedHash)) {
-            supportRimValid = true;
-        } else {
-            supportRimValid = false;
+        } catch (SAXException e) {
+            LOGGER.warn("Error setting schema for validation!");
         }
     }
 
     /**
-     * This method validates the signature block in the Document and stores the
-     * result for public access.
+     * This method calculates the SHA256 hash of the input byte array and compares it against
+     * the value passed in.
      *
-     * @param doc the xml data in Document form.
+     * @param input byte array to hash.
+     * @param expected value to compare against.
      */
-    public void validateXmlSignature(Document doc) throws IOException {
-        signatureValid = validateSignedXMLDocument(doc);
+    public void validateSupportRimHash(final byte[] input, final String expected) {
+        String calculatedHash = getHashValue(input, SHA256);
+        LOGGER.info("Calculated hash: " + calculatedHash + ", actual: " + expected);
+        supportRimValid = calculatedHash.equals(expected);
     }
 
-    private String getHashValue(byte[] input, String sha) {
+    /**
+     * This method validates the xml signature in the stream and stores the
+     * result for public access.
+     *
+     * @param input the xml data stream.
+     */
+    public void validateXmlSignature(final InputStream input) {
+        try {
+            Document doc = unmarshallSwidTag(removeXMLWhitespace(new StreamSource(input)));
+            signatureValid = validateSignedXMLDocument(doc);
+        } catch (IOException e) {
+            LOGGER.warn("Error during unmarshal: " + e.getMessage());
+        }
+    }
+
+    /**
+     * This method calculates the digest of a byte array based on the hashing algorithm passed in.
+     * @param input byte array.
+     * @param sha hash algorithm.
+     * @return String digest.
+     */
+    private String getHashValue(final byte[] input, final String sha) {
         String resultString = null;
         try {
             MessageDigest md = MessageDigest.getInstance(sha);
@@ -110,7 +153,8 @@ public class ReferenceManifestValidator {
             StringBuilder sb = new StringBuilder();
 
             for (int i = 0; i < bytes.length; i++) {
-                sb.append(Integer.toString((bytes[i] & 0xff) + 0x100, 16).substring(1));
+                sb.append(Integer.toString((bytes[i] & EIGHT_BIT_MASK)
+                                            + LEFT_SHIFT, RADIX).substring(1));
             }
             resultString = sb.toString();
         } catch (NoSuchAlgorithmException grex) {
@@ -125,7 +169,7 @@ public class ReferenceManifestValidator {
      *
      * @param doc
      */
-    private boolean validateSignedXMLDocument(Document doc) {
+    private boolean validateSignedXMLDocument(final Document doc) {
         DOMValidateContext context;
         boolean isValid = false;
         try {
@@ -154,15 +198,31 @@ public class ReferenceManifestValidator {
         return isValid;
     }
 
+    /**
+     * This internal class handles selecting an X509 certificate embedded in a KeyInfo element.
+     * It is passed as a parameter to a DOMValidateContext that uses it to validate
+     * an XML signature.
+     */
     public class X509KeySelector extends KeySelector {
         private PublicKey publicKey;
 
-        public KeySelectorResult select(KeyInfo keyinfo,
-                                        KeySelector.Purpose purpose,
-                                        AlgorithmMethod algorithm,
-                                        XMLCryptoContext context) throws KeySelectorException {
+        /**
+         * This method selects an X509 cert based on the provided algorithm.
+         *
+         * @param keyinfo object containing the cert.
+         * @param purpose purpose.
+         * @param algorithm algorithm.
+         * @param context XMLCryptoContext.
+         * @return KeySelectorResult holding the PublicKey.
+         * @throws KeySelectorException exception.
+         */
+        public KeySelectorResult select(final KeyInfo keyinfo,
+                                        final KeySelector.Purpose purpose,
+                                        final AlgorithmMethod algorithm,
+                                        final XMLCryptoContext context)
+                                        throws KeySelectorException {
             Iterator keyinfoItr = keyinfo.getContent().iterator();
-            while(keyinfoItr.hasNext()) {
+            while (keyinfoItr.hasNext()) {
                 XMLStructure element = (XMLStructure) keyinfoItr.next();
                 if (element instanceof X509Data) {
                     X509Data data = (X509Data) element;
@@ -171,8 +231,10 @@ public class ReferenceManifestValidator {
                         Object object = dataItr.next();
                         if (object instanceof X509Certificate) {
                             publicKey = ((X509Certificate) object).getPublicKey();
-                            if (areAlgorithmsEqual(algorithm.getAlgorithm(), publicKey.getAlgorithm())) {
-                                return new ReferenceManifestValidator.X509KeySelector.RIMKeySelectorResult(publicKey);
+                            if (areAlgorithmsEqual(algorithm.getAlgorithm(),
+                                                    publicKey.getAlgorithm())) {
+                                return new ReferenceManifestValidator.X509KeySelector
+                                                        .RIMKeySelectorResult(publicKey);
                             }
                         }
                     }
@@ -182,22 +244,33 @@ public class ReferenceManifestValidator {
             throw new KeySelectorException("No key found!");
         }
 
-        public boolean areAlgorithmsEqual(String uri, String name) {
-            if (uri.equals(SIGNATURE_ALGORITHM_RSA_SHA256) && name.equalsIgnoreCase("RSA")) {
-                return true;
-            } else {
-                return false;
-            }
+        /**
+         * This method checks if two strings refer to the same algorithm.
+         *
+         * @param uri string 1
+         * @param name string 2
+         * @return true if equal, false if not
+         */
+        public boolean areAlgorithmsEqual(final String uri, final String name) {
+            return uri.equals(SIGNATURE_ALGORITHM_RSA_SHA256) && name.equalsIgnoreCase("RSA");
         }
 
+        /**
+         * Getter for the public key that is parsed in the select() method above.
+         *
+         * @return PublicKey encoded in the X509 cert.
+         */
         public PublicKey getPublicKey() {
             return publicKey;
         }
 
+        /**
+         * This internal class creates a KeySelectorResult from the public key.
+         */
         private class RIMKeySelectorResult implements KeySelectorResult {
             private Key key;
 
-            public RIMKeySelectorResult(Key key) {
+            RIMKeySelectorResult(final Key key) {
                 this.key = key;
             }
 
@@ -208,37 +281,23 @@ public class ReferenceManifestValidator {
     }
 
     /**
-     * This method unmarshalls the swidtag found at [path] into a Document object
-     * and validates it according to the schema.
+     * This method unmarshalls the Document object and validates it against the schema.
      *
      * @param doc of the input swidtag.
      * @return document validated against the schema.
      */
-    private Document unmarshallSwidTag(Document doc) {
-        InputStream is = null;
+    private Document unmarshallSwidTag(final Document doc) {
         try {
-            is = ReferenceManifestValidator.class
-                    .getClassLoader().getResourceAsStream(SCHEMA_URL);
-            SchemaFactory schemaFactory = SchemaFactory.newInstance(SCHEMA_LANGUAGE);
-            Schema schema = schemaFactory.newSchema(new StreamSource(is));
+            JAXBContext jaxbContext = JAXBContext.newInstance(SCHEMA_PACKAGE);
+            unmarshaller = jaxbContext.createUnmarshaller();
             unmarshaller.setSchema(schema);
             unmarshaller.unmarshal(doc);
-        } catch (SAXException e) {
-            LOGGER.warn("Error setting schema for validation!");
         } catch (UnmarshalException e) {
             LOGGER.warn("Error validating swidtag file!");
         } catch (IllegalArgumentException e) {
             LOGGER.warn("Input file empty.");
         } catch (JAXBException e) {
             e.printStackTrace();
-        } finally {
-            if (is != null) {
-                try {
-                    is.close();
-                } catch (IOException e) {
-                    LOGGER.warn("Error closing input stream");
-                }
-            }
         }
 
         return doc;
@@ -247,10 +306,11 @@ public class ReferenceManifestValidator {
     /**
      * This method strips all whitespace from an xml file, including indents and spaces
      * added for human-readability.
+     *
      * @param source of the input xml.
      * @return Document representation of the xml.
      */
-    private Document removeXMLWhitespace(StreamSource source) throws IOException {
+    private Document removeXMLWhitespace(final StreamSource source) throws IOException {
         TransformerFactory tf = TransformerFactory.newInstance();
         Source identitySource = new StreamSource(
                 ReferenceManifestValidator.class.getClassLoader()

@@ -44,13 +44,16 @@ public class ReferenceManifestDetailsPageController
 
     private final ReferenceManifestManager referenceManifestManager;
     private final CertificateManager certificateManager;
+    private static final ReferenceManifestValidator RIM_VALIDATOR
+            = new ReferenceManifestValidator();
     private static final Logger LOGGER
             = LogManager.getLogger(ReferenceManifestDetailsPageController.class);
 
     /**
      * Constructor providing the Page's display and routing specification.
      *
-     * @param referenceManifestManager the reference manifest manager
+     * @param referenceManifestManager the reference manifest manager.
+     * @param certificateManager        the certificate manager.
      */
     @Autowired
     public ReferenceManifestDetailsPageController(
@@ -116,6 +119,7 @@ public class ReferenceManifestDetailsPageController
      *
      * @param uuid                     database reference for the requested RIM.
      * @param referenceManifestManager the reference manifest manager.
+     * @param certificateManager        the certificate manager.
      * @return mapping of the RIM information from the database.
      * @throws java.io.IOException      error for reading file bytes.
      * @throws NoSuchAlgorithmException If an unknown Algorithm is encountered.
@@ -193,17 +197,14 @@ public class ReferenceManifestDetailsPageController
                 }
             }
 
-            ReferenceManifestValidator rimValidator = new ReferenceManifestValidator(
-                    new ByteArrayInputStream(bRim.getRimBytes()));
-
             // going to have to pull the filename and grab that from the DB
             // to get the id to make the link
             for (SwidResource swidRes : resources) {
                 if (support != null && swidRes.getName()
                         .equals(support.getFileName())) {
-                    rimValidator.validateSupportRimHash(support.getRimBytes(),
-                                rimValidator.getDocument());
-                    if (rimValidator.isSupportRimValid()) {
+                    RIM_VALIDATOR.validateSupportRimHash(support.getRimBytes(),
+                                swidRes.getHashValue());
+                    if (RIM_VALIDATOR.isSupportRimValid()) {
                         data.put("supportRimHashValid", true);
                     } else {
                         data.put("supportRimHashValid", false);
@@ -219,13 +220,14 @@ public class ReferenceManifestDetailsPageController
             data.put("associatedRim", bRim.getAssociatedRim());
             data.put("swidFiles", resources);
 
-            rimValidator.validateXmlSignature(rimValidator.getDocument());
-            data.put("signatureValid", rimValidator.isSignatureValid());
-            if (rimValidator.isSignatureValid()) {
+            RIM_VALIDATOR.validateXmlSignature(new ByteArrayInputStream(bRim.getRimBytes()));
+            data.put("signatureValid", RIM_VALIDATOR.isSignatureValid());
+            if (RIM_VALIDATOR.isSignatureValid()) {
+                LOGGER.info("Public key: " + RIM_VALIDATOR.getPublicKey().toString());
                 try {
                     Certificate certificate =
                             CertificateAuthorityCredential.select(certificateManager)
-                                    .byEncodedPublicKey(rimValidator.getPublicKey().getEncoded())
+                                    .byEncodedPublicKey(RIM_VALIDATOR.getPublicKey().getEncoded())
                                     .getCertificate();
                     data.put("issuerID", certificate.getId().toString());
                 } catch (NullPointerException e) {
