@@ -1,7 +1,7 @@
 package hirs.attestationca.portal.page.controllers;
 
 import hirs.data.persist.BaseReferenceManifest;
-import hirs.data.persist.BiosMeasurements;
+import hirs.data.persist.EventLogMeasurements;
 import hirs.data.persist.ReferenceManifest;
 import hirs.data.persist.SupportReferenceManifest;
 import hirs.data.persist.SwidResource;
@@ -137,7 +137,7 @@ public class ReferenceManifestDetailsPageController
             data.putAll(getSupportRimInfo(sRim, referenceManifestManager));
         }
 
-        BiosMeasurements bios = BiosMeasurements.select(referenceManifestManager)
+        EventLogMeasurements bios = EventLogMeasurements.select(referenceManifestManager)
                 .byEntityId(uuid).getRIM();
 
         if (bios != null) {
@@ -277,7 +277,7 @@ public class ReferenceManifestDetailsPageController
         data.put("tagId", support.getTagId());
 
         TCGEventLog logProcessor = new TCGEventLog(support.getRimBytes());
-        BiosMeasurements measurements = BiosMeasurements.select(referenceManifestManager)
+        EventLogMeasurements measurements = EventLogMeasurements.select(referenceManifestManager)
                 .byManufacturer(support.getPlatformManufacturer()).getRIM();
 
         LinkedList<TpmPcrEvent> tpmPcrEvents = new LinkedList<>();
@@ -311,7 +311,7 @@ public class ReferenceManifestDetailsPageController
      * @throws CertificateException     if a certificate doesn't parse.
      */
     private HashMap<String, Object> getMeasurementsRimInfo(
-            final BiosMeasurements measurements,
+            final EventLogMeasurements measurements,
             final ReferenceManifestManager referenceManifestManager)
             throws IOException, CertificateException, NoSuchAlgorithmException {
         HashMap<String, Object> data = new HashMap<>();
