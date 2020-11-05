@@ -112,6 +112,21 @@ public class ReferenceManifestValidator {
     }
 
     /**
+     * This constructor is used for a quick signature check which bypasses the loading of
+     * the schema url into memory. As a result the full stream is not validated against the schema.
+     *
+     * @param input xml data byte array.
+     */
+    public ReferenceManifestValidator(final InputStream input) {
+        try {
+            signatureValid = validateSignedXMLDocument(
+                    removeXMLWhitespace(new StreamSource(input)));
+        } catch (IOException e) {
+            LOGGER.warn("Error during unmarshal: " + e.getMessage());
+        }
+    }
+
+    /**
      * This method calculates the SHA256 hash of the input byte array and compares it against
      * the value passed in.
      *
@@ -132,7 +147,7 @@ public class ReferenceManifestValidator {
      */
     public void validateXmlSignature(final InputStream input) {
         try {
-            Document doc = unmarshallSwidTag(removeXMLWhitespace(new StreamSource(input)));
+            Document doc = validateSwidtagSchema(removeXMLWhitespace(new StreamSource(input)));
             signatureValid = validateSignedXMLDocument(doc);
         } catch (IOException e) {
             LOGGER.warn("Error during unmarshal: " + e.getMessage());
@@ -203,7 +218,7 @@ public class ReferenceManifestValidator {
      * It is passed as a parameter to a DOMValidateContext that uses it to validate
      * an XML signature.
      */
-    public class X509KeySelector extends KeySelector {
+    public static class X509KeySelector extends KeySelector {
         private PublicKey publicKey;
 
         /**
@@ -267,7 +282,7 @@ public class ReferenceManifestValidator {
         /**
          * This internal class creates a KeySelectorResult from the public key.
          */
-        private class RIMKeySelectorResult implements KeySelectorResult {
+        private static class RIMKeySelectorResult implements KeySelectorResult {
             private Key key;
 
             RIMKeySelectorResult(final Key key) {
@@ -281,12 +296,12 @@ public class ReferenceManifestValidator {
     }
 
     /**
-     * This method unmarshalls the Document object and validates it against the schema.
+     * This method validates the Document against the schema.
      *
      * @param doc of the input swidtag.
      * @return document validated against the schema.
      */
-    private Document unmarshallSwidTag(final Document doc) {
+    private Document validateSwidtagSchema(final Document doc) {
         try {
             JAXBContext jaxbContext = JAXBContext.newInstance(SCHEMA_PACKAGE);
             unmarshaller = jaxbContext.createUnmarshaller();

@@ -368,7 +368,8 @@ public class SupplyChainValidationServiceImpl implements SupplyChainValidationSe
 
             // verify signatures
             ReferenceManifestValidator referenceManifestValidator =
-                                    new ReferenceManifestValidator();
+                            new ReferenceManifestValidator(
+                                    new ByteArrayInputStream(baseReferenceManifest.getRimBytes()));
 
             for (SwidResource swidRes : resources) {
                 if (swidRes.getName().equals(supportReferenceManifest.getFileName())) {
@@ -376,9 +377,6 @@ public class SupplyChainValidationServiceImpl implements SupplyChainValidationSe
                             supportReferenceManifest.getRimBytes(), swidRes.getHashValue());
                 }
             }
-
-            referenceManifestValidator.validateXmlSignature(
-                    new ByteArrayInputStream(baseReferenceManifest.getRimBytes()));
 
             if (!referenceManifestValidator.isSignatureValid()) {
                 passed = false;
