@@ -1,18 +1,10 @@
 package hirs.data.persist.certificate.attributes;
 
-import com.eclipsesource.json.Json;
 import com.eclipsesource.json.JsonObject;
 import com.eclipsesource.json.JsonObject.Member;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import hirs.utils.JsonUtils;
 
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.FileSystems;
-import java.nio.file.Files;
 import java.nio.file.Path;
 
 /**
@@ -33,7 +25,6 @@ import java.nio.file.Path;
  */
 public class ComponentClass {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(ComponentClass.class);
     private static final Path JSON_PATH = FileSystems.getDefault()
             .getPath("/opt", "hirs", "default-properties", "component-class.json");
     private static final String OTHER_STRING = "Other";
@@ -120,7 +111,7 @@ public class ComponentClass {
                 // Number Format Exception
                 break;
             default:
-                getCategory(getJsonObject(componentClassPath));
+                getCategory(JsonUtils.getSpecificJsonObject(componentClassPath, "Components"));
                 break;
         }
     }
@@ -162,37 +153,10 @@ public class ComponentClass {
     }
 
     /**
-     * Getter for the JSON Object that is associated with the component value
-     * mapped in the associated JSON file.
-     *
-     * @return a JSON Object
-     */
-    private JsonObject getJsonObject(final Path componentClassPath) {
-        // find the file and load it
-        JsonObject components = null;
-
-        if (Files.notExists(componentClassPath)) {
-            LOGGER.info(String.format("No file found at %s.", componentClassPath.toString()));
-        } else {
-            try {
-                InputStream inputStream = new FileInputStream(componentClassPath.toString());
-                JsonObject componentFile = Json.parse(new InputStreamReader(inputStream,
-                        StandardCharsets.UTF_8)).asObject();
-                components = componentFile.get("Components").asObject();
-            } catch (IOException ex) {
-                // add log file thing here indication issue with JSON File
-                components = null;
-            }
-        }
-
-        return components;
-    }
-
-    /**
      * Getter for the Category mapped to the associated value in.
      *
      * @param categories a JSON object associated with mapped categories in file
-     * @componentIndentifier.
+     * {}@link componentIdentifier}.
      */
     private void getCategory(final JsonObject categories) {
         int componentID;
@@ -252,19 +216,19 @@ public class ComponentClass {
      * @return the int representation of the component
      */
     private static int getComponentIntValue(final String component) {
-        int componetValue = ERROR;
+        int componentValue = ERROR;
 
         if (component != null) {
             try {
                 if (component.contains("x")) {
-                    componetValue = Integer.decode(component);
+                    componentValue = Integer.decode(component);
                 } else {
                     if (component.contains("#")) {
-                        componetValue = Integer.valueOf(
+                        componentValue = Integer.valueOf(
                                 component.replace("#", ""),
                                 Short.SIZE);
                     } else {
-                        componetValue = Integer.valueOf(
+                        componentValue = Integer.valueOf(
                                 component, Short.SIZE);
                     }
                 }
@@ -273,6 +237,6 @@ public class ComponentClass {
             }
         }
 
-        return componetValue;
+        return componentValue;
     }
 }
