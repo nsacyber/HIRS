@@ -96,11 +96,12 @@ public class SupplyChainValidationServiceImpl implements SupplyChainValidationSe
      * @param supplyChainCredentialValidator     the credential validator
      */
     @Autowired
-    public SupplyChainValidationServiceImpl(final PolicyManager policyManager,
-           final AppraiserManager appraiserManager, final CertificateManager certificateManager,
-           final ReferenceManifestManager referenceManifestManager,
-           final CrudManager<SupplyChainValidationSummary> supplyChainValidatorSummaryManager,
-           final CredentialValidator supplyChainCredentialValidator) {
+    public SupplyChainValidationServiceImpl(
+            final PolicyManager policyManager, final AppraiserManager appraiserManager,
+            final CertificateManager certificateManager,
+            final ReferenceManifestManager referenceManifestManager,
+            final CrudManager<SupplyChainValidationSummary> supplyChainValidatorSummaryManager,
+            final CredentialValidator supplyChainCredentialValidator) {
         this.policyManager = policyManager;
         this.appraiserManager = appraiserManager;
         this.certificateManager = certificateManager;
@@ -328,13 +329,13 @@ public class SupplyChainValidationServiceImpl implements SupplyChainValidationSe
     @SuppressWarnings("methodlength")
     private SupplyChainValidation validateFirmware(final Device device,
                                                    final PCRPolicy pcrPolicy) {
-
         boolean passed = true;
         String[] baseline = new String[Integer.SIZE];
         Level level = Level.ERROR;
         AppraisalStatus fwStatus = null;
         String manufacturer = device.getDeviceInfo()
                 .getHardwareInfo().getManufacturer();
+        ReferenceManifest validationObject = null;
         ReferenceManifest baseReferenceManifest = null;
         ReferenceManifest supportReferenceManifest = null;
         ReferenceManifest measurement = null;
@@ -348,6 +349,7 @@ public class SupplyChainValidationServiceImpl implements SupplyChainValidationSe
         measurement = EventLogMeasurements.select(referenceManifestManager)
                 .byManufacturer(manufacturer).includeArchived().getRIM();
 
+        validationObject = baseReferenceManifest;
         String failedString = "";
         if (baseReferenceManifest == null) {
             failedString = "Base Reference Integrity Manifest%n";
@@ -368,8 +370,8 @@ public class SupplyChainValidationServiceImpl implements SupplyChainValidationSe
 
             // verify signatures
             ReferenceManifestValidator referenceManifestValidator =
-                            new ReferenceManifestValidator(
-                                    new ByteArrayInputStream(baseReferenceManifest.getRimBytes()));
+                    new ReferenceManifestValidator(
+                            new ByteArrayInputStream(baseReferenceManifest.getRimBytes()));
 
             for (SwidResource swidRes : resources) {
                 if (swidRes.getName().equals(supportReferenceManifest.getFileName())) {
@@ -434,6 +436,7 @@ public class SupplyChainValidationServiceImpl implements SupplyChainValidationSe
                         } else {
                             StringBuilder sb = pcrPolicy.validatePcrs(storedPcrs);
                             if (sb.length() > 0) {
+                                validationObject = supportReferenceManifest;
                                 level = Level.ERROR;
                                 fwStatus = new AppraisalStatus(FAIL, sb.toString());
                             } else {
@@ -469,6 +472,7 @@ public class SupplyChainValidationServiceImpl implements SupplyChainValidationSe
 
                         if (!tpmPcrEvents.isEmpty()) {
                             StringBuilder sb = new StringBuilder();
+                            validationObject = measurement;
                             for (TpmPcrEvent tpe : tpmPcrEvents) {
                                 sb.append(String.format("Event %s - %s%n",
                                         tpe.getEventNumber(),
@@ -492,7 +496,7 @@ public class SupplyChainValidationServiceImpl implements SupplyChainValidationSe
         }
 
         return buildValidationRecord(SupplyChainValidation.ValidationType.FIRMWARE,
-                fwStatus.getAppStatus(), fwStatus.getMessage(), baseReferenceManifest, level);
+                fwStatus.getAppStatus(), fwStatus.getMessage(), validationObject, level);
     }
 
     /**
@@ -615,8 +619,9 @@ public class SupplyChainValidationServiceImpl implements SupplyChainValidationSe
         }
     }
 
-    private SupplyChainValidation validatePlatformCredential(final PlatformCredential pc,
-             final KeyStore trustedCertificateAuthority, final boolean acceptExpiredCerts) {
+    private SupplyChainValidation validatePlatformCredential(
+            final PlatformCredential pc,
+            final KeyStore trustedCertificateAuthority, final boolean acceptExpiredCerts) {
         final SupplyChainValidation.ValidationType validationType
                 = SupplyChainValidation.ValidationType.PLATFORM_CREDENTIAL;
 

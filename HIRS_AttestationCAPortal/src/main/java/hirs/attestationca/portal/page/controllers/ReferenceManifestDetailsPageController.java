@@ -1,6 +1,7 @@
 package hirs.attestationca.portal.page.controllers;
 
 import hirs.data.persist.BaseReferenceManifest;
+import hirs.data.persist.EventLogMeasurements;
 import hirs.data.persist.ReferenceManifest;
 import hirs.data.persist.SupportReferenceManifest;
 import hirs.data.persist.SwidResource;
@@ -21,10 +22,13 @@ import java.security.NoSuchAlgorithmException;
 import java.security.cert.CertificateException;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.ArrayList;
+import java.util.Map;
 import java.util.UUID;
 
+import hirs.tpm.eventlog.TpmPcrEvent;
 import hirs.utils.ReferenceManifestValidator;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -131,135 +135,270 @@ public class ReferenceManifestDetailsPageController
             CertificateException, NoSuchAlgorithmException {
         HashMap<String, Object> data = new HashMap<>();
 
-        ReferenceManifest rim = BaseReferenceManifest
-                .select(referenceManifestManager)
+        BaseReferenceManifest bRim = BaseReferenceManifest.select(referenceManifestManager)
                 .byEntityId(uuid).getRIM();
 
-        if (rim instanceof BaseReferenceManifest) {
-            BaseReferenceManifest bRim = (BaseReferenceManifest) rim;
-            // Software Identity
-            data.put("swidName", bRim.getSwidName());
-            data.put("swidVersion", bRim.getSwidVersion());
-            data.put("swidTagVersion", bRim.getSwidTagVersion());
-            if (bRim.isSwidCorpus() == 1) {
-                data.put("swidCorpus", "True");
-            } else {
-                data.put("swidCorpus", "False");
-            }
-            if (bRim.isSwidPatch() == 1) {
-                data.put("swidPatch", "True");
-            } else {
-                data.put("swidPatch", "False");
-            }
-            if (bRim.isSwidSupplemental() == 1) {
-                data.put("swidSupplemental", "True");
-            } else {
-                data.put("swidSupplemental", "False");
-            }
-            data.put("swidTagId", rim.getTagId());
-            // Entity
-            data.put("entityName", bRim.getEntityName());
-            data.put("entityRegId", bRim.getEntityRegId());
-            data.put("entityRole", bRim.getEntityRole());
-            data.put("entityThumbprint", bRim.getEntityThumbprint());
-            // Link
-            data.put("linkHref", bRim.getLinkHref());
-            data.put("linkRel", bRim.getLinkRel());
-            data.put("supportRimId", "");
-            data.put("supportRimTagId", "");
-            data.put("platformManufacturer", bRim.getPlatformManufacturer());
-            data.put("platformManufacturerId", bRim.getPlatformManufacturerId());
-            data.put("platformModel", bRim.getPlatformModel());
-            data.put("platformVersion", bRim.getPlatformVersion());
-            data.put("payloadType", bRim.getPayloadType());
-            data.put("colloquialVersion", bRim.getColloquialVersion());
-            data.put("edition", bRim.getEdition());
-            data.put("product", bRim.getProduct());
-            data.put("revision", bRim.getRevision());
-            data.put("bindingSpec", bRim.getBindingSpec());
-            data.put("bindingSpecVersion", bRim.getBindingSpecVersion());
-            data.put("pcUriGlobal", bRim.getPcURIGlobal());
-            data.put("pcUriLocal", bRim.getPcURILocal());
-            data.put("rimLinkHash", bRim.getRimLinkHash());
-            data.put("rimType", bRim.getRimType());
-
-            List<SwidResource> resources = bRim.parseResource();
-            TCGEventLog logProcessor = null;
-            ReferenceManifest support = null;
-
-            if (bRim.getAssociatedRim() == null) {
-                support = SupportReferenceManifest.select(referenceManifestManager)
-                        .byManufacturer(bRim.getPlatformManufacturer())
-                        .getRIM();
-                if (support != null) {
-                    bRim.setAssociatedRim(support.getId());
-                    logProcessor = new TCGEventLog(support.getRimBytes());
-                }
-            }
-
-            // going to have to pull the filename and grab that from the DB
-            // to get the id to make the link
-            for (SwidResource swidRes : resources) {
-                if (support != null && swidRes.getName()
-                        .equals(support.getFileName())) {
-                    RIM_VALIDATOR.validateSupportRimHash(support.getRimBytes(),
-                                swidRes.getHashValue());
-                    if (RIM_VALIDATOR.isSupportRimValid()) {
-                        data.put("supportRimHashValid", true);
-                    } else {
-                        data.put("supportRimHashValid", false);
-                    }
-                    swidRes.setPcrValues(Arrays.asList(
-                            logProcessor.getExpectedPCRValues()));
-                    break;
-                } else {
-                    swidRes.setPcrValues(new ArrayList<>());
-                }
-            }
-
-            data.put("associatedRim", bRim.getAssociatedRim());
-            data.put("swidFiles", resources);
-
-            RIM_VALIDATOR.validateXmlSignature(new ByteArrayInputStream(bRim.getRimBytes()));
-            data.put("signatureValid", RIM_VALIDATOR.isSignatureValid());
-            if (RIM_VALIDATOR.isSignatureValid()) {
-                LOGGER.info("Public key: " + RIM_VALIDATOR.getPublicKey().toString());
-                try {
-                    Certificate certificate =
-                            CertificateAuthorityCredential.select(certificateManager)
-                                    .byEncodedPublicKey(RIM_VALIDATOR.getPublicKey().getEncoded())
-                                    .getCertificate();
-                    data.put("issuerID", certificate.getId().toString());
-                } catch (NullPointerException e) {
-                    LOGGER.info("Unable to get signing certificate link: " + e.getMessage());
-                }
-            }
-        } else {
-            SupportReferenceManifest sRim = SupportReferenceManifest
-                    .select(referenceManifestManager)
-                    .byEntityId(uuid).getRIM();
-
-            if (sRim.getAssociatedRim() == null) {
-                ReferenceManifest baseRim = BaseReferenceManifest.select(referenceManifestManager)
-                        .byManufacturer(sRim.getPlatformManufacturer()).getRIM();
-                if (baseRim != null) {
-                    sRim.setAssociatedRim(baseRim.getId());
-                    try {
-                        referenceManifestManager.update(sRim);
-                    } catch (DBManagerException ex) {
-                        LOGGER.error("Failed to update Support RIM", ex);
-                    }
-                }
-            }
-            data.put("baseRim", sRim.getTagId());
-            data.put("associatedRim", sRim.getAssociatedRim());
-            data.put("rimType", sRim.getRimType());
-            data.put("tagId", sRim.getTagId());
-
-            TCGEventLog logProcessor = new TCGEventLog(sRim.getRimBytes());
-            data.put("events", logProcessor.getEventList());
+        if (bRim != null) {
+            data.putAll(getBaseRimInfo(bRim, referenceManifestManager, certificateManager));
         }
 
+        SupportReferenceManifest sRim = SupportReferenceManifest.select(referenceManifestManager)
+                .byEntityId(uuid).getRIM();
+
+        if (sRim != null) {
+            data.putAll(getSupportRimInfo(sRim, referenceManifestManager));
+        }
+
+        EventLogMeasurements bios = EventLogMeasurements.select(referenceManifestManager)
+                .byEntityId(uuid).getRIM();
+
+        if (bios != null) {
+            data.putAll(getMeasurementsRimInfo(bios, referenceManifestManager));
+        }
+
+        return data;
+    }
+
+    /**
+     * This method takes the place of an entire class for a string builder.
+     * Gathers all information and returns it for displays.
+     *
+     * @param baseRim established ReferenceManifest Type.
+     * @param referenceManifestManager the reference manifest manager.
+     * @param certificateManager        the certificate manager.
+     * @return mapping of the RIM information from the database.
+     * @throws java.io.IOException      error for reading file bytes.
+     * @throws NoSuchAlgorithmException If an unknown Algorithm is encountered.
+     * @throws CertificateException     if a certificate doesn't parse.
+     */
+    private static HashMap<String, Object> getBaseRimInfo(
+            final BaseReferenceManifest baseRim,
+            final ReferenceManifestManager referenceManifestManager,
+            final CertificateManager certificateManager)
+            throws IOException, CertificateException, NoSuchAlgorithmException {
+        HashMap<String, Object> data = new HashMap<>();
+
+        // Software Identity
+        data.put("swidName", baseRim.getSwidName());
+        data.put("swidVersion", baseRim.getSwidVersion());
+        data.put("swidTagVersion", baseRim.getSwidTagVersion());
+        if (baseRim.isSwidCorpus() == 1) {
+            data.put("swidCorpus", "True");
+        } else {
+            data.put("swidCorpus", "False");
+        }
+        if (baseRim.isSwidPatch() == 1) {
+            data.put("swidPatch", "True");
+        } else {
+            data.put("swidPatch", "False");
+        }
+        if (baseRim.isSwidSupplemental() == 1) {
+            data.put("swidSupplemental", "True");
+        } else {
+            data.put("swidSupplemental", "False");
+        }
+        data.put("swidTagId", baseRim.getTagId());
+        // Entity
+        data.put("entityName", baseRim.getEntityName());
+        data.put("entityRegId", baseRim.getEntityRegId());
+        data.put("entityRole", baseRim.getEntityRole());
+        data.put("entityThumbprint", baseRim.getEntityThumbprint());
+        // Link
+        data.put("linkHref", baseRim.getLinkHref());
+        data.put("linkRel", baseRim.getLinkRel());
+        data.put("supportRimId", "");
+        data.put("supportRimTagId", "");
+        data.put("platformManufacturer", baseRim.getPlatformManufacturer());
+        data.put("platformManufacturerId", baseRim.getPlatformManufacturerId());
+        data.put("platformModel", baseRim.getPlatformModel());
+        data.put("platformVersion", baseRim.getPlatformVersion());
+        data.put("payloadType", baseRim.getPayloadType());
+        data.put("colloquialVersion", baseRim.getColloquialVersion());
+        data.put("edition", baseRim.getEdition());
+        data.put("product", baseRim.getProduct());
+        data.put("revision", baseRim.getRevision());
+        data.put("bindingSpec", baseRim.getBindingSpec());
+        data.put("bindingSpecVersion", baseRim.getBindingSpecVersion());
+        data.put("pcUriGlobal", baseRim.getPcURIGlobal());
+        data.put("pcUriLocal", baseRim.getPcURILocal());
+        data.put("rimLinkHash", baseRim.getRimLinkHash());
+        data.put("rimType", baseRim.getRimType());
+
+        List<SwidResource> resources = baseRim.parseResource();
+        TCGEventLog logProcessor = null;
+        ReferenceManifest support = null;
+
+        if (baseRim.getAssociatedRim() == null) {
+            support = SupportReferenceManifest.select(referenceManifestManager)
+                    .byManufacturer(baseRim.getPlatformManufacturer())
+                    .getRIM();
+            if (support != null) {
+                baseRim.setAssociatedRim(support.getId());
+                logProcessor = new TCGEventLog(support.getRimBytes());
+            }
+        }
+        // going to have to pull the filename and grab that from the DB
+        // to get the id to make the link
+        for (SwidResource swidRes : resources) {
+            if (support != null && swidRes.getName()
+                    .equals(support.getFileName())) {
+                RIM_VALIDATOR.validateSupportRimHash(support.getRimBytes(),
+                        swidRes.getHashValue());
+                if (RIM_VALIDATOR.isSupportRimValid()) {
+                    data.put("supportRimHashValid", true);
+                } else {
+                    data.put("supportRimHashValid", false);
+                }
+                swidRes.setPcrValues(Arrays.asList(
+                        logProcessor.getExpectedPCRValues()));
+                break;
+            } else {
+                swidRes.setPcrValues(new ArrayList<>());
+            }
+        }
+
+        data.put("associatedRim", baseRim.getAssociatedRim());
+        data.put("swidFiles", resources);
+
+        RIM_VALIDATOR.validateXmlSignature(new ByteArrayInputStream(baseRim.getRimBytes()));
+        data.put("signatureValid", RIM_VALIDATOR.isSignatureValid());
+        if (RIM_VALIDATOR.isSignatureValid()) {
+            LOGGER.info("Public key: " + RIM_VALIDATOR.getPublicKey().toString());
+            try {
+                Certificate certificate =
+                        CertificateAuthorityCredential.select(certificateManager)
+                                .byEncodedPublicKey(RIM_VALIDATOR.getPublicKey().getEncoded())
+                                .getCertificate();
+                data.put("issuerID", certificate.getId().toString());
+            } catch (NullPointerException e) {
+                LOGGER.info("Unable to get signing certificate link: " + e.getMessage());
+            }
+        }
+        return data;
+    }
+
+    /**
+     * This method takes the place of an entire class for a string builder.
+     * Gathers all information and returns it for displays.
+     *
+     * @param support established ReferenceManifest Type.
+     * @param referenceManifestManager the reference manifest manager.
+     * @return mapping of the RIM information from the database.
+     * @throws java.io.IOException      error for reading file bytes.
+     * @throws NoSuchAlgorithmException If an unknown Algorithm is encountered.
+     * @throws CertificateException     if a certificate doesn't parse.
+     */
+    private static HashMap<String, Object> getSupportRimInfo(
+            final SupportReferenceManifest support,
+            final ReferenceManifestManager referenceManifestManager)
+            throws IOException, CertificateException, NoSuchAlgorithmException {
+        HashMap<String, Object> data = new HashMap<>();
+
+        if (support.getAssociatedRim() == null) {
+            ReferenceManifest baseRim = BaseReferenceManifest.select(referenceManifestManager)
+                    .byManufacturer(support.getPlatformManufacturer()).getRIM();
+            if (baseRim != null) {
+                support.setAssociatedRim(baseRim.getId());
+                try {
+                    referenceManifestManager.update(support);
+                } catch (DBManagerException ex) {
+                    LOGGER.error("Failed to update Support RIM", ex);
+                }
+            }
+        }
+        data.put("baseRim", support.getTagId());
+        data.put("associatedRim", support.getAssociatedRim());
+        data.put("rimType", support.getRimType());
+        data.put("tagId", support.getTagId());
+
+        TCGEventLog logProcessor = new TCGEventLog(support.getRimBytes());
+        EventLogMeasurements measurements = EventLogMeasurements.select(referenceManifestManager)
+                .byManufacturer(support.getPlatformManufacturer()).getRIM();
+
+        LinkedList<TpmPcrEvent> tpmPcrEvents = new LinkedList<>();
+        TCGEventLog measurementsProcess;
+        if (measurements != null) {
+            measurementsProcess = new TCGEventLog((measurements.getRimBytes()));
+            for (TpmPcrEvent tpe : logProcessor.getEventList()) {
+                if (!tpe.eventCompare(
+                        measurementsProcess.getEventByNumber(
+                                tpe.getEventNumber()))) {
+                    tpe.setError(true);
+                }
+                tpmPcrEvents.add(tpe);
+            }
+        }
+
+        data.put("events", tpmPcrEvents);
+
+        return data;
+    }
+
+    /**
+     * This method takes the place of an entire class for a string builder.
+     * Gathers all information and returns it for displays.
+     *
+     * @param measurements established ReferenceManifest Type.
+     * @param referenceManifestManager the reference manifest manager.
+     * @return mapping of the RIM information from the database.
+     * @throws java.io.IOException      error for reading file bytes.
+     * @throws NoSuchAlgorithmException If an unknown Algorithm is encountered.
+     * @throws CertificateException     if a certificate doesn't parse.
+     */
+    private static HashMap<String, Object> getMeasurementsRimInfo(
+            final EventLogMeasurements measurements,
+            final ReferenceManifestManager referenceManifestManager)
+            throws IOException, CertificateException, NoSuchAlgorithmException {
+        HashMap<String, Object> data = new HashMap<>();
+        LinkedList<TpmPcrEvent> supportEvents = new LinkedList<>();
+        LinkedList<TpmPcrEvent> livelogEvents = new LinkedList<>();
+
+        data.put("supportFilename", "Blank");
+        data.put("supportId", "");
+        data.put("tagId", measurements.getTagId());
+        data.put("baseId", "");
+
+        data.put("rimType", measurements.getRimType());
+        TCGEventLog supportLog = null;
+        SupportReferenceManifest support = SupportReferenceManifest
+                .select(referenceManifestManager)
+                .byManufacturer(measurements
+                        .getPlatformManufacturer()).getRIM();
+
+        if (support != null) {
+            supportLog = new TCGEventLog(support.getRimBytes());
+            data.put("supportFilename", support.getFileName());
+            data.put("supportId", support.getId());
+        }
+
+        BaseReferenceManifest base = BaseReferenceManifest
+                .select(referenceManifestManager)
+                .byManufacturer(measurements
+                        .getPlatformManufacturer()).getRIM();
+
+        if (base != null) {
+            data.put("baseId", base.getId());
+        }
+
+        TCGEventLog measurementLog = new TCGEventLog(measurements.getRimBytes());
+        if (supportLog != null) {
+            TpmPcrEvent measurementEvent;
+            for (TpmPcrEvent tpe : supportLog.getEventList()) {
+                measurementEvent = measurementLog.getEventByNumber(tpe.getEventNumber());
+                if (!tpe.eventCompare(measurementEvent)) {
+                    supportEvents.add(tpe);
+                    livelogEvents.add(measurementEvent);
+                }
+            }
+        }
+
+        data.put("supportEvents", supportEvents);
+        data.put("livelogEvents", livelogEvents);
+
+        for (Map.Entry<String, Object> entry : data.entrySet()) {
+            LOGGER.error(String.format("%s -> %s", entry.getKey(),
+                    String.valueOf(entry.getValue())));
+        }
         return data;
     }
 }

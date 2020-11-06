@@ -104,6 +104,7 @@ public class TpmPcrEvent {
     private byte[] eventDataSha256hash;
     private EvPostCode evPostCode;
     private int eventNumber;
+    private boolean error = false;
 
     /**
      * Constructor.
@@ -731,6 +732,22 @@ public class TpmPcrEvent {
             }
         }
         return true;
+    }
+
+    /**
+     * Getter for error.
+     * @return there
+     */
+    public boolean isError() {
+        return error;
+    }
+
+    /**
+     * Setter for error.
+     * @param error parameter
+     */
+    public void setError(final boolean error) {
+        this.error = error;
     }
 
     /**

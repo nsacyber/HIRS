@@ -57,7 +57,14 @@
                                 <c:if test="${not empty initialData.events}">
                                     <c:set var="count" value="1" scope="page"/>
                                     <c:forEach items="${initialData.events}" var="event">
-                                        <tr>
+                                        <c:choose>
+                                            <c:when test="${event.isError()}">
+                                                <tr style="background: tomato">
+                                            </c:when>
+                                            <c:otherwise>
+                                                <tr>
+                                            </c:otherwise>
+                                        </c:choose>
                                             <td style="width: 75px">${count}</td>
                                             <td class="pcrCell">PCR${event.getPcrIndex()}</td>
                                             <td>${event.getEventTypeStr()}</td>
@@ -71,6 +78,76 @@
                         </table>
                     </div>
                     <div class="col-md-a col-md-offset-1"><span class="colHeader">${initialData.events.size()} entries</span></div>
+                </c:when>
+                <c:when test="${initialData.rimType=='Measurement'}">
+                    <div style="display: inline">
+                        <div class="row">
+                            <div class="col-md-1 col-md-offset-1"><span class="colHeader">Base/Support</span></div>
+                            <div id="measurements" class="col col-md-8">
+                                <c:if test="${not empty initialData.tagId}">
+                                    <div>Base:&nbsp;<span><a href="${portal}/rim-details?id=${initialData.baseId}">${initialData.tagId}</a></span>
+                                    </div>
+                                </c:if>
+                                <c:if test="${not empty initialData.supportId}">
+                                    <div>Support:&nbsp;<span><a href="${portal}/rim-details?id=${initialData.supportId}">${initialData.supportFilename}</a></span>
+                                    </div>
+                                </c:if>
+                            </div>
+                        </div>
+                        <br />
+                        <div class="row" style="margin: auto 260px auto 125px">
+                            <div class="panel panel-default" style="flex: 1">
+                                <div class="panel-heading">Support</div>
+                                <c:if test="${not empty initialData.supportEvents}">
+                                    <c:forEach items="${initialData.supportEvents}" var="sEvent">
+                                        <div class="event-element">
+                                            <div class="event-data">
+                                                <div class="data-label">Event#:</div>
+                                                <div class="data-value">${sEvent.getEventNumber()}</div>
+                                            </div>           
+                                            <div class="event-data">
+                                                <div class="data-label">PCR Index:</div>
+                                                <div class="data-value">${sEvent.getPcrIndex()}</div>
+                                            </div>
+                                            <div class="event-data">
+                                                <div class="data-label">Digest:</div>
+                                                <div class="data-value">${sEvent.getEventDigestStr()}</div>
+                                            </div>
+                                            <div class="event-data">
+                                                <div class="data-label">Content:</div>
+                                                <div class="data-value">${sEvent.getEventContentStr()}</div>
+                                            </div>
+                                        </div>
+                                    </c:forEach>
+                                </c:if>
+                            </div>
+                            <div class="panel panel-default" style="flex: 1">
+                                <div class="panel-heading">Client Log</div>
+                                <c:if test="${not empty initialData.livelogEvents}">
+                                    <c:forEach items="${initialData.livelogEvents}" var="lEvent">
+                                        <div class="event-element">
+                                            <div class="event-data">
+                                                <div class="data-label">Event#:</div>
+                                                <div class="data-value">${lEvent.getEventNumber()}</div>
+                                            </div>           
+                                            <div class="event-data">
+                                                <div class="data-label">PCR Index:</div>
+                                                <div class="data-value">${lEvent.getPcrIndex()}</div>
+                                            </div>
+                                            <div class="event-data">
+                                                <div class="data-label">Digest:</div>
+                                                <div class="data-value">${lEvent.getEventDigestStr()}</div>
+                                            </div>
+                                            <div class="event-data">
+                                                <div class="data-label">Content:</div>
+                                                <div class="data-value">${lEvent.getEventContentStr()}</div>
+                                            </div>
+                                        </div>
+                                    </c:forEach>
+                                </c:if>
+                            </div>
+                        </div>
+                    </div>
                 </c:when>
                 <c:otherwise>
                     <div class="row">
@@ -285,7 +362,7 @@
 
         // Loop through all table rows, and hide those who don't match the search query
         for (i = 0; i < tr.length; i++) {
-            txtFound = false;
+            txtFound = true;
             tds = tr[i].getElementsByTagName("td");
             for (j = 0; j < tds.length; j++) {
                 td = tds[j];
@@ -307,7 +384,7 @@
             }
         }
     }
-    window.onload = function() {
+    window.onload = function () {
         // Constant retrieved from server-side via JSP
         var maxRows = 11;
 
