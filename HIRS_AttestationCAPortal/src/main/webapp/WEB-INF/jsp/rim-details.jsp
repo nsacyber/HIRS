@@ -60,11 +60,11 @@
                                         <c:choose>
                                             <c:when test="${event.isError()}">
                                                 <tr style="background: tomato">
-                                                </c:when>
-                                                <c:otherwise>
+                                            </c:when>
+                                            <c:otherwise>
                                                 <tr>
-                                                </c:otherwise>
-                                            </c:choose>
+                                            </c:otherwise>
+                                        </c:choose>
                                             <td style="width: 75px">${count}</td>
                                             <td class="pcrCell">PCR${event.getPcrIndex()}</td>
                                             <td>${event.getEventTypeStr()}</td>
