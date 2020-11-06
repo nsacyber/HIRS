@@ -5,6 +5,9 @@ import hirs.data.persist.EventLogMeasurements;
 import hirs.data.persist.ReferenceManifest;
 import hirs.data.persist.SupportReferenceManifest;
 import hirs.data.persist.SwidResource;
+import hirs.data.persist.certificate.Certificate;
+import hirs.data.persist.certificate.CertificateAuthorityCredential;
+import hirs.persist.CertificateManager;
 import hirs.persist.DBManagerException;
 import hirs.persist.ReferenceManifestManager;
 import hirs.tpm.eventlog.TCGEventLog;
@@ -13,6 +16,7 @@ import hirs.attestationca.portal.page.PageController;
 import hirs.attestationca.portal.page.PageMessages;
 import hirs.attestationca.portal.page.params.ReferenceManifestDetailsPageParams;
 
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.security.NoSuchAlgorithmException;
 import java.security.cert.CertificateException;
@@ -25,6 +29,7 @@ import java.util.Map;
 import java.util.UUID;
 
 import hirs.tpm.eventlog.TpmPcrEvent;
+import hirs.utils.ReferenceManifestValidator;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -42,19 +47,25 @@ public class ReferenceManifestDetailsPageController
         extends PageController<ReferenceManifestDetailsPageParams> {
 
     private final ReferenceManifestManager referenceManifestManager;
+    private final CertificateManager certificateManager;
+    private static final ReferenceManifestValidator RIM_VALIDATOR
+            = new ReferenceManifestValidator();
     private static final Logger LOGGER
             = LogManager.getLogger(ReferenceManifestDetailsPageController.class);
 
     /**
      * Constructor providing the Page's display and routing specification.
      *
-     * @param referenceManifestManager the reference manifest manager
+     * @param referenceManifestManager the reference manifest manager.
+     * @param certificateManager        the certificate manager.
      */
     @Autowired
     public ReferenceManifestDetailsPageController(
-            final ReferenceManifestManager referenceManifestManager) {
+            final ReferenceManifestManager referenceManifestManager,
+            final CertificateManager certificateManager) {
         super(Page.RIM_DETAILS);
         this.referenceManifestManager = referenceManifestManager;
+        this.certificateManager = certificateManager;
     }
 
     /**
@@ -84,7 +95,7 @@ public class ReferenceManifestDetailsPageController
         } else {
             try {
                 UUID uuid = UUID.fromString(params.getId());
-                data.putAll(getRimDetailInfo(uuid, referenceManifestManager));
+                data.putAll(getRimDetailInfo(uuid, referenceManifestManager, certificateManager));
             } catch (IllegalArgumentException iaEx) {
                 String uuidError = "Failed to parse ID from: " + params.getId();
                 messages.addError(uuidError);
@@ -112,14 +123,15 @@ public class ReferenceManifestDetailsPageController
      *
      * @param uuid                     database reference for the requested RIM.
      * @param referenceManifestManager the reference manifest manager.
+     * @param certificateManager        the certificate manager.
      * @return mapping of the RIM information from the database.
      * @throws java.io.IOException      error for reading file bytes.
      * @throws NoSuchAlgorithmException If an unknown Algorithm is encountered.
      * @throws CertificateException     if a certificate doesn't parse.
      */
-    private HashMap<String, Object> getRimDetailInfo(
-            final UUID uuid,
-            final ReferenceManifestManager referenceManifestManager) throws IOException,
+    public static HashMap<String, Object> getRimDetailInfo(final UUID uuid,
+             final ReferenceManifestManager referenceManifestManager,
+             final CertificateManager certificateManager) throws IOException,
             CertificateException, NoSuchAlgorithmException {
         HashMap<String, Object> data = new HashMap<>();
 
@@ -127,7 +139,7 @@ public class ReferenceManifestDetailsPageController
                 .byEntityId(uuid).getRIM();
 
         if (bRim != null) {
-            data.putAll(getBaseRimInfo(bRim, referenceManifestManager));
+            data.putAll(getBaseRimInfo(bRim, referenceManifestManager, certificateManager));
         }
 
         SupportReferenceManifest sRim = SupportReferenceManifest.select(referenceManifestManager)
@@ -153,14 +165,16 @@ public class ReferenceManifestDetailsPageController
      *
      * @param baseRim established ReferenceManifest Type.
      * @param referenceManifestManager the reference manifest manager.
+     * @param certificateManager        the certificate manager.
      * @return mapping of the RIM information from the database.
      * @throws java.io.IOException      error for reading file bytes.
      * @throws NoSuchAlgorithmException If an unknown Algorithm is encountered.
      * @throws CertificateException     if a certificate doesn't parse.
      */
-    private HashMap<String, Object> getBaseRimInfo(
+    private static HashMap<String, Object> getBaseRimInfo(
             final BaseReferenceManifest baseRim,
-            final ReferenceManifestManager referenceManifestManager)
+            final ReferenceManifestManager referenceManifestManager,
+            final CertificateManager certificateManager)
             throws IOException, CertificateException, NoSuchAlgorithmException {
         HashMap<String, Object> data = new HashMap<>();
 
@@ -228,6 +242,13 @@ public class ReferenceManifestDetailsPageController
         for (SwidResource swidRes : resources) {
             if (support != null && swidRes.getName()
                     .equals(support.getFileName())) {
+                RIM_VALIDATOR.validateSupportRimHash(support.getRimBytes(),
+                        swidRes.getHashValue());
+                if (RIM_VALIDATOR.isSupportRimValid()) {
+                    data.put("supportRimHashValid", true);
+                } else {
+                    data.put("supportRimHashValid", false);
+                }
                 swidRes.setPcrValues(Arrays.asList(
                         logProcessor.getExpectedPCRValues()));
                 break;
@@ -239,6 +260,20 @@ public class ReferenceManifestDetailsPageController
         data.put("associatedRim", baseRim.getAssociatedRim());
         data.put("swidFiles", resources);
 
+        RIM_VALIDATOR.validateXmlSignature(new ByteArrayInputStream(baseRim.getRimBytes()));
+        data.put("signatureValid", RIM_VALIDATOR.isSignatureValid());
+        if (RIM_VALIDATOR.isSignatureValid()) {
+            LOGGER.info("Public key: " + RIM_VALIDATOR.getPublicKey().toString());
+            try {
+                Certificate certificate =
+                        CertificateAuthorityCredential.select(certificateManager)
+                                .byEncodedPublicKey(RIM_VALIDATOR.getPublicKey().getEncoded())
+                                .getCertificate();
+                data.put("issuerID", certificate.getId().toString());
+            } catch (NullPointerException e) {
+                LOGGER.info("Unable to get signing certificate link: " + e.getMessage());
+            }
+        }
         return data;
     }
 
@@ -253,7 +288,7 @@ public class ReferenceManifestDetailsPageController
      * @throws NoSuchAlgorithmException If an unknown Algorithm is encountered.
      * @throws CertificateException     if a certificate doesn't parse.
      */
-    private HashMap<String, Object> getSupportRimInfo(
+    private static HashMap<String, Object> getSupportRimInfo(
             final SupportReferenceManifest support,
             final ReferenceManifestManager referenceManifestManager)
             throws IOException, CertificateException, NoSuchAlgorithmException {
@@ -310,7 +345,7 @@ public class ReferenceManifestDetailsPageController
      * @throws NoSuchAlgorithmException If an unknown Algorithm is encountered.
      * @throws CertificateException     if a certificate doesn't parse.
      */
-    private HashMap<String, Object> getMeasurementsRimInfo(
+    private static HashMap<String, Object> getMeasurementsRimInfo(
             final EventLogMeasurements measurements,
             final ReferenceManifestManager referenceManifestManager)
             throws IOException, CertificateException, NoSuchAlgorithmException {
