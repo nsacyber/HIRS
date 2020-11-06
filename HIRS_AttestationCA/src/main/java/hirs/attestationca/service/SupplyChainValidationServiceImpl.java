@@ -1,5 +1,6 @@
 package hirs.attestationca.service;
 
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.security.KeyStore;
 import java.security.KeyStoreException;
@@ -9,11 +10,13 @@ import java.security.cert.CertificateException;
 import hirs.data.persist.BaseReferenceManifest;
 import hirs.data.persist.EventLogMeasurements;
 import hirs.data.persist.SupportReferenceManifest;
+import hirs.data.persist.SwidResource;
 import hirs.data.persist.TPMMeasurementRecord;
 import hirs.data.persist.PCRPolicy;
 import hirs.data.persist.ArchivableEntity;
 import hirs.tpm.eventlog.TCGEventLog;
 import hirs.tpm.eventlog.TpmPcrEvent;
+import hirs.utils.ReferenceManifestValidator;
 import hirs.validation.SupplyChainCredentialValidator;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -351,6 +354,8 @@ public class SupplyChainValidationServiceImpl implements SupplyChainValidationSe
                 .byManufacturer(manufacturer).getRIM();
         supportReferenceManifest = SupportReferenceManifest.select(referenceManifestManager)
                 .byManufacturer(manufacturer).getRIM();
+        List<SwidResource> resources =
+                ((BaseReferenceManifest) baseReferenceManifest).parseResource();
         measurement = EventLogMeasurements.select(referenceManifestManager)
                 .byManufacturer(manufacturer).includeArchived().getRIM();
 
@@ -371,97 +376,126 @@ public class SupplyChainValidationServiceImpl implements SupplyChainValidationSe
         if (passed) {
             fwStatus = new AppraisalStatus(PASS,
                     SupplyChainCredentialValidator.FIRMWARE_VALID);
-            TCGEventLog logProcessor;
-            try {
-                logProcessor = new TCGEventLog(supportReferenceManifest.getRimBytes());
-                baseline = logProcessor.getExpectedPCRValues();
-            } catch (CertificateException cEx) {
-                LOGGER.error(cEx);
-            } catch (NoSuchAlgorithmException noSaEx) {
-                LOGGER.error(noSaEx);
-            } catch (IOException ioEx) {
-                LOGGER.error(ioEx);
+
+            // verify signatures
+            ReferenceManifestValidator referenceManifestValidator =
+                            new ReferenceManifestValidator(
+                                    new ByteArrayInputStream(baseReferenceManifest.getRimBytes()));
+
+            for (SwidResource swidRes : resources) {
+                if (swidRes.getName().equals(supportReferenceManifest.getFileName())) {
+                    referenceManifestValidator.validateSupportRimHash(
+                            supportReferenceManifest.getRimBytes(), swidRes.getHashValue());
+                }
             }
 
-            // part 1 of firmware validation check: PCR baseline match
-            pcrPolicy.setBaselinePcrs(baseline);
+            if (!referenceManifestValidator.isSignatureValid()) {
+                passed = false;
+                fwStatus = new AppraisalStatus(FAIL,
+                        "Firmware validation failed: Signature validation "
+                                + "failed for Base RIM.");
+            }
 
-            if (baseline.length > 0) {
-                String pcrContent = "";
-                pcrContent = new String(device.getDeviceInfo().getTPMInfo().getPcrValues());
+            if (passed && !referenceManifestValidator.isSupportRimValid()) {
+                passed = false;
+                fwStatus = new AppraisalStatus(FAIL,
+                        "Firmware validation failed: Hash validation "
+                                + "failed for Support RIM.");
+            }
 
-                if (pcrContent.isEmpty()) {
-                    fwStatus = new AppraisalStatus(FAIL,
-                            "Firmware validation failed: Client did not "
-                                    + "provide pcr values.");
-                    LOGGER.warn(String.format(
-                            "Firmware validation failed: Client (%s) did not "
-                                    + "provide pcr values.", device.getName()));
-                } else {
-                    // we have a full set of PCR values
-                    int algorithmLength = baseline[0].length();
-                    String[] storedPcrs = buildStoredPcrs(pcrContent, algorithmLength);
+            if (passed) {
+                TCGEventLog logProcessor;
+                try {
+                    logProcessor = new TCGEventLog(supportReferenceManifest.getRimBytes());
+                    baseline = logProcessor.getExpectedPCRValues();
+                } catch (CertificateException cEx) {
+                    LOGGER.error(cEx);
+                } catch (NoSuchAlgorithmException noSaEx) {
+                    LOGGER.error(noSaEx);
+                } catch (IOException ioEx) {
+                    LOGGER.error(ioEx);
+                }
 
-                    if (storedPcrs[0].isEmpty()) {
-                        // validation fail
+                // part 1 of firmware validation check: PCR baseline match
+                pcrPolicy.setBaselinePcrs(baseline);
+
+                if (baseline.length > 0) {
+                    String pcrContent = "";
+                    pcrContent = new String(device.getDeviceInfo().getTPMInfo().getPcrValues());
+
+                    if (pcrContent.isEmpty()) {
                         fwStatus = new AppraisalStatus(FAIL,
-                                "Firmware validation failed: "
-                                        + "Client provided PCR "
-                                        + "values are not the same algorithm "
-                                        + "as associated RIM.");
+                                "Firmware validation failed: Client did not "
+                                        + "provide pcr values.");
+                        LOGGER.warn(String.format(
+                                "Firmware validation failed: Client (%s) did not "
+                                        + "provide pcr values.", device.getName()));
                     } else {
-                        StringBuilder sb = pcrPolicy.validatePcrs(storedPcrs);
-                        if (sb.length() > 0) {
-                            level = Level.ERROR;
-                            fwStatus = new AppraisalStatus(FAIL, sb.toString());
+                        // we have a full set of PCR values
+                        int algorithmLength = baseline[0].length();
+                        String[] storedPcrs = buildStoredPcrs(pcrContent, algorithmLength);
+
+                        if (storedPcrs[0].isEmpty()) {
+                            // validation fail
+                            fwStatus = new AppraisalStatus(FAIL,
+                                    "Firmware validation failed: "
+                                            + "Client provided PCR "
+                                            + "values are not the same algorithm "
+                                            + "as associated RIM.");
                         } else {
-                            level = Level.INFO;
-                        }
-                    }
-                    // part 2 of firmware validation check: bios measurements
-                    // vs baseline tcg event log
-                    // find the measurement
-                    TCGEventLog tcgEventLog;
-                    TCGEventLog tcgMeasurementLog;
-                    LinkedList<TpmPcrEvent> tpmPcrEvents = new LinkedList<>();
-                    try {
-                        if (measurement.getPlatformManufacturer().equals(manufacturer)) {
-                            tcgMeasurementLog = new TCGEventLog(measurement.getRimBytes());
-                            tcgEventLog = new TCGEventLog(
-                                    supportReferenceManifest.getRimBytes());
-                            for (TpmPcrEvent tpe : tcgEventLog.getEventList()) {
-                                if (!tpe.eventCompare(
-                                        tcgMeasurementLog.getEventByNumber(
-                                                tpe.getEventNumber()))) {
-                                    tpmPcrEvents.add(tpe);
-                                }
+                            StringBuilder sb = pcrPolicy.validatePcrs(storedPcrs);
+                            if (sb.length() > 0) {
+                                level = Level.ERROR;
+                                fwStatus = new AppraisalStatus(FAIL, sb.toString());
+                            } else {
+                                level = Level.INFO;
                             }
                         }
-                    } catch (CertificateException cEx) {
-                        LOGGER.error(cEx);
-                    } catch (NoSuchAlgorithmException noSaEx) {
-                        LOGGER.error(noSaEx);
-                    } catch (IOException ioEx) {
-                        LOGGER.error(ioEx);
-                    }
+                        // part 2 of firmware validation check: bios measurements
+                        // vs baseline tcg event log
+                        // find the measurement
+                        TCGEventLog tcgEventLog;
+                        TCGEventLog tcgMeasurementLog;
+                        LinkedList<TpmPcrEvent> tpmPcrEvents = new LinkedList<>();
+                        try {
+                            if (measurement.getPlatformManufacturer().equals(manufacturer)) {
+                                tcgMeasurementLog = new TCGEventLog(measurement.getRimBytes());
+                                tcgEventLog = new TCGEventLog(
+                                        supportReferenceManifest.getRimBytes());
+                                for (TpmPcrEvent tpe : tcgEventLog.getEventList()) {
+                                    if (!tpe.eventCompare(
+                                            tcgMeasurementLog.getEventByNumber(
+                                                    tpe.getEventNumber()))) {
+                                        tpmPcrEvents.add(tpe);
+                                    }
+                                }
+                            }
+                        } catch (CertificateException cEx) {
+                            LOGGER.error(cEx);
+                        } catch (NoSuchAlgorithmException noSaEx) {
+                            LOGGER.error(noSaEx);
+                        } catch (IOException ioEx) {
+                            LOGGER.error(ioEx);
+                        }
 
-                    if (!tpmPcrEvents.isEmpty()) {
-                        StringBuilder sb = new StringBuilder();
-                        for (TpmPcrEvent tpe : tpmPcrEvents) {
-                            sb.append(String.format("Event %s - %s%n",
-                                    tpe.getEventNumber(),
-                                    tpe.getEventTypeStr()));
-                        }
-                        if (fwStatus.getAppStatus().equals(FAIL)) {
-                            fwStatus = new AppraisalStatus(FAIL, String.format("%s%n%s",
-                                    fwStatus.getMessage(), sb.toString()));
-                        } else {
-                            fwStatus = new AppraisalStatus(FAIL, sb.toString());
+                        if (!tpmPcrEvents.isEmpty()) {
+                            StringBuilder sb = new StringBuilder();
+                            for (TpmPcrEvent tpe : tpmPcrEvents) {
+                                sb.append(String.format("Event %s - %s%n",
+                                        tpe.getEventNumber(),
+                                        tpe.getEventTypeStr()));
+                            }
+                            if (fwStatus.getAppStatus().equals(FAIL)) {
+                                fwStatus = new AppraisalStatus(FAIL, String.format("%s%n%s",
+                                        fwStatus.getMessage(), sb.toString()));
+                            } else {
+                                fwStatus = new AppraisalStatus(FAIL, sb.toString());
+                            }
                         }
                     }
+                } else {
+                    fwStatus = new AppraisalStatus(FAIL, "The RIM baseline could not be found.");
                 }
-            } else {
-                fwStatus = new AppraisalStatus(FAIL, "The RIM baseline could not be found.");
             }
         } else {
             fwStatus = new AppraisalStatus(FAIL, String.format("Firmware Validation failed: "

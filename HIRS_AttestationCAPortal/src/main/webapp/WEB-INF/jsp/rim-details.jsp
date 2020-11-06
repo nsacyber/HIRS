@@ -17,7 +17,13 @@
         </a>
     </jsp:attribute>
     <jsp:body>
-        <div id="certificate-details-page" class="container-fluid">
+         <c:set var="passIcon" value="${icons}/ic_checkbox_marked_circle_black_green_24dp.png"/>
+         <c:set var="failIcon" value="${icons}/ic_error_red_24dp.png"/>
+         <c:set var="signatureValidText" value="Signature valid!"/>
+         <c:set var="signatureInvalidText" value="Signature not valid!"/>
+         <c:set var="supportRimHashValidText" value="Support RIM hash valid!"/>
+         <c:set var="supportRimHashInvalidText" value="Support RIM hash not valid!"/>
+       <div id="certificate-details-page" class="container-fluid">
             <c:choose>
                 <c:when test="${initialData.rimType=='Support'}">
                     <div class="row">
@@ -171,6 +177,14 @@
                                                                         <c:choose>
                                                                             <c:when test="${not empty initialData.associatedRim}">
                                                                                 <a href="${portal}/rim-details?id=${initialData.associatedRim}">${resource.getName()}</a>
+                                                                                <c:choose>
+                                                                                    <c:when test="${not empty initialData.supportRimHashValid}">
+                                                                                        <img src="${passIcon}" title="${supportRimHashValidText}"/>
+                                                                                    </c:when>
+                                                                                    <c:otherwise>
+                                                                                        <img src="${failIcon}" title="${supportRimHashInvalidText}"/>
+                                                                                    </c:otherwise>
+                                                                                </c:choose>
                                                                             </c:when>
                                                                             <c:otherwise>
                                                                                 ${resource.getName()}
@@ -235,6 +249,24 @@
                                     </div>
                                 </div>
                             </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-1 col-md-offset-1"><span class="colHeader">Signature</span></div>
+                        <div id="signature" class="col col-md-8">
+                            <div>Validity:&nbsp;<span>
+                                <c:choose>
+                                    <c:when test="${initialData.signatureValid}">
+                                        <img src="${passIcon}" title="${signatureValidText}"/>
+                                        <c:if test="${not empty initialData.issuerID}">
+                                            <div><a href="${portal}/certificate-details?id=${initialData.issuerID}&type=certificateauthority">Signing certificate</a></div>
+                                        </c:if>
+                                    </c:when>
+                                    <c:otherwise>
+                                        <img src="${failIcon}" title="${signatureInvalidText}"/>
+                                    </c:otherwise>
+                                </c:choose>
+                        </span></div>
                         </div>
                     </div>
                 </c:otherwise>
