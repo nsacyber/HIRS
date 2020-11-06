@@ -151,6 +151,7 @@ public class BaseReferenceManifest extends ReferenceManifest {
     public BaseReferenceManifest(final byte[] rimBytes) throws IOException {
         super(rimBytes);
         this.setRimType(BASE_RIM);
+        this.setFileName("");
         SoftwareIdentity si = validateSwidTag(new ByteArrayInputStream(rimBytes));
 
         // begin parsing valid swid tag
