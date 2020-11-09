@@ -12,7 +12,6 @@ import javax.xml.namespace.QName;
  */
 public class SwidTagConstants {
 
-    public static final String DEFAULT_KEYSTORE_PATH = "keystore.jks";
     public static final String DEFAULT_KEYSTORE_PASSWORD = "password";
     public static final String DEFAULT_PRIVATE_KEY_ALIAS = "selfsigned";
     public static final String DEFAULT_ATTRIBUTES_FILE = "rim_fields.json";

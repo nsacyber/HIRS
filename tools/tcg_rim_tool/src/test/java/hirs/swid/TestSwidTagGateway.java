@@ -21,6 +21,7 @@ public class TestSwidTagGateway {
 	private final String DEFAULT_WITH_CERT = "generated_with_cert.swidtag";
 	private final String DEFAULT_NO_CERT = "generated_no_cert.swidtag";
 	private final String ATTRIBUTES_FILE = TestSwidTagGateway.class.getClassLoader().getResource("rim_fields.json").getPath();
+	private final String JKS_KEYSTORE_FILE = TestSwidTagGateway.class.getClassLoader().getResource("keystore.jks").getPath();
 	private final String SIGNING_CERT_FILE = TestSwidTagGateway.class.getClassLoader().getResource("RimSignCert.pem").getPath();
 	private final String PRIVATE_KEY_FILE = TestSwidTagGateway.class.getClassLoader().getResource("privateRimKey.pem").getPath();
 	private final String SUPPORT_RIM_FILE = TestSwidTagGateway.class.getClassLoader().getResource("TpmLog.bin").getPath();
@@ -48,7 +49,7 @@ public class TestSwidTagGateway {
 	 * where RimSignCert.pem has the AIA extension.
 	 */
 	@Test
-	public void testCreateBaseWithCert() throws URISyntaxException {
+	public void testCreateBaseWithCert() {
 		gateway.setDefaultCredentials(false);
 		gateway.setPemCertificateFile(SIGNING_CERT_FILE);
 		gateway.setPemPrivateKeyFile(PRIVATE_KEY_FILE);
@@ -64,6 +65,7 @@ public class TestSwidTagGateway {
 	@Test
 	public void testCreateBaseWithoutCert() {
 		gateway.setDefaultCredentials(true);
+		gateway.setJksKeystoreFile(JKS_KEYSTORE_FILE);
 		gateway.generateSwidTag(DEFAULT_OUTPUT);
 		expectedFile = (InputStream) TestSwidTagGateway.class.getClassLoader().getResourceAsStream(DEFAULT_NO_CERT);
 		Assert.assertTrue(compareFileBytesToExpectedFile(DEFAULT_OUTPUT));
