@@ -6,7 +6,7 @@ apply plugin: 'nebula.ospackage'
 version = '1.0'
 
 repositories {
-	mavenCentral()
+    mavenCentral()
 }
 
 dependencies {
@@ -38,21 +38,21 @@ findbugs {
 }
 
 jar {
-	manifest {
-		attributes("Main-Class": "hirs.tcg_eventlog.Main",
-			   "Class-Path": configurations.runtime.files.collect { "lib/$it.name" }.join(' ')
-			  )
-	}
-	from(configurations.compile.collect { it.isDirectory() ? it : zipTree(it) }) {}
-	exclude 'META-INF/*.RSA', 'META-INF/*.SF', 'META-INF/*.DSA'
+    manifest {
+        attributes("Main-Class": "hirs.tcg_eventlog.Main",
+                "Class-Path": configurations.runtime.files.collect { "lib/$it.name" }.join(' ')
+        )
+    }
+    from(configurations.compile.collect { it.isDirectory() ? it : zipTree(it) }) {}
+    exclude 'META-INF/*.RSA', 'META-INF/*.SF', 'META-INF/*.DSA'
 }
 
 uploadArchives {
-	repositories {
-		flatDir {
-			dirs "${buildDir}"
-		}
-	}
+    repositories {
+        flatDir {
+            dirs "${buildDir}"
+        }
+    }
 }
 
 buildscript {
@@ -66,15 +66,15 @@ buildscript {
 
 // Produce packages
 ospackage {
-    packageName='tcg_eventlog_tool'
-    os=LINUX
-    arch=NOARCH
-    version='1.0.0'
-    release='1'
+    packageName = 'tcg_eventlog_tool'
+    os = LINUX
+    arch = NOARCH
+    version = '1.0.0'
+    release = '1'
 
     into '/opt/hirs/eventlog'
     user 'root'
-    fileMode=0755
+    fileMode = 0755
 
     from(jar.outputs.files) {
         into 'lib'
@@ -88,29 +88,38 @@ ospackage {
     from('scripts') {
         exclude {
             FileTreeElement details ->
-            details.file.name.endsWith('.bat')
+                details.file.name.endsWith('.bat')
         }
         into 'scripts'
     }
     from('docs') {
         exclude {
             FileTreeElement details ->
-            details.file.name.endsWith('.odt')
+                details.file.name.endsWith('.odt')
         }
         into 'docs'
     }
     from('./') {
         include {
             FileTreeElement details ->
-            details.file.name.endsWith('.md')
+                details.file.name.endsWith('.md')
         }
         into './'
-    link("/usr/local/bin/elt","/opt/hirs/eventlog/scripts/eventlog.sh",0x755 ) 
+        link("/usr/local/bin/elt", "/opt/hirs/eventlog/scripts/eventlog.sh", 0x755)
     }
-buildRpm {
-    arch = I386
-}
-buildDeb {
-    arch = I386
-}
+
+    into('/opt/hirs/default-properties/') {
+        fileMode 0664
+        from ('../../HIRS_Utils/src/main/resources/vendor-table.json') {
+            addParentDirs true
+            createDirectoryEntry true
+        }
+    }
+
+    buildRpm {
+        arch = I386
+    }
+    buildDeb {
+        arch = I386
+    }
 }
