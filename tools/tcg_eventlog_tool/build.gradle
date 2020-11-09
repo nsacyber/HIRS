@@ -69,7 +69,7 @@ ospackage {
     packageName = 'tcg_eventlog_tool'
     os = LINUX
     arch = NOARCH
-    version = '1.0.0'
+    version = '2.0.0'
     release = '1'
 
     into '/opt/hirs/eventlog'
