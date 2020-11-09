@@ -852,9 +852,9 @@ public final class SupplyChainCredentialValidator implements CredentialValidator
             LOGGER.error(String.format("Platform Credential contained %d unmatched components:",
                     pcUnmatchedComponents.size()));
 
-            int umatchedComponentCounter = 1;
+            int unmatchedComponentCounter = 1;
             for (ComponentIdentifier unmatchedComponent : pcUnmatchedComponents) {
-                LOGGER.error("Unmatched component " + umatchedComponentCounter++ + ": "
+                LOGGER.error("Unmatched component " + unmatchedComponentCounter++ + ": "
                         + unmatchedComponent);
                 sb.append(String.format("Manufacturer=%s, Model=%s, Serial=%s, Revision=%s%n",
                         unmatchedComponent.getComponentManufacturer(),

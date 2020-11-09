@@ -31,7 +31,7 @@ public final class CertificateStringMapBuilder {
 
     private static final Logger LOGGER =
             LogManager.getLogger(CertificateStringMapBuilder.class);
-    private static final int SERIAL_INDEX = 1;
+    private static final int VALUE_INDEX = 1;
 
     private CertificateStringMapBuilder() {
 
@@ -343,13 +343,13 @@ public final class CertificateStringMapBuilder {
             //component failure
             StringBuilder savedFailures = new StringBuilder();
             String[] serialSplit;
-            for (String s : certificate.getComponentFailures().split(",")) {
-                if (s.contains("Serial")) {
-                    serialSplit = s.split("=");
-                    if (serialSplit.length > SERIAL_INDEX) {
-                        savedFailures.append(serialSplit[SERIAL_INDEX]);
+            for (String str : certificate.getComponentFailures().split(",")) {
+                if (str.contains("Model")) {
+                    serialSplit = str.split("=");
+                    if (serialSplit.length > VALUE_INDEX) {
+                        savedFailures.append(serialSplit[VALUE_INDEX]);
                     } else {
-                        savedFailures.append(s);
+                        savedFailures.append(str);
                     }
                 }
             }
