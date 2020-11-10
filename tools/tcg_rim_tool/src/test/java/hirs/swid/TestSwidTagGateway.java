@@ -54,7 +54,7 @@ public class TestSwidTagGateway {
 		gateway.setPemCertificateFile(SIGNING_CERT_FILE);
 		gateway.setPemPrivateKeyFile(PRIVATE_KEY_FILE);
 		gateway.generateSwidTag(DEFAULT_OUTPUT);
-		expectedFile = (InputStream) TestSwidTagGateway.class.getClassLoader().getResourceAsStream(DEFAULT_WITH_CERT);
+		expectedFile = TestSwidTagGateway.class.getClassLoader().getResourceAsStream(DEFAULT_WITH_CERT);
 		Assert.assertTrue(compareFileBytesToExpectedFile(DEFAULT_OUTPUT));
 	}
 
@@ -67,7 +67,7 @@ public class TestSwidTagGateway {
 		gateway.setDefaultCredentials(true);
 		gateway.setJksKeystoreFile(JKS_KEYSTORE_FILE);
 		gateway.generateSwidTag(DEFAULT_OUTPUT);
-		expectedFile = (InputStream) TestSwidTagGateway.class.getClassLoader().getResourceAsStream(DEFAULT_NO_CERT);
+		expectedFile = TestSwidTagGateway.class.getClassLoader().getResourceAsStream(DEFAULT_NO_CERT);
 		Assert.assertTrue(compareFileBytesToExpectedFile(DEFAULT_OUTPUT));
 	}
 
