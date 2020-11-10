@@ -239,7 +239,8 @@ public class SupplyChainValidationServiceImpl implements SupplyChainValidationSe
                                         String.format("%s%n%s", platformScv.getMessage(),
                                                 attributeScv.getMessage())));
                             }
-                            componentFailures = attributeScv.getMessage();
+                            componentFailures = updateUnmatchedComponents(
+                                    attributeScv.getMessage());
                         }
 
                         pc.setDevice(device);
