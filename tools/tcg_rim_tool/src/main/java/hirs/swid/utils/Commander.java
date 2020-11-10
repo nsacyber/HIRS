@@ -7,6 +7,7 @@ import java.nio.file.InvalidPathException;
 import java.nio.file.Paths;
 
 import com.beust.jcommander.Parameter;
+import hirs.swid.SwidTagConstants;
 
 /**
  * Commander is a class that handles the command line arguments for the SWID
@@ -115,13 +116,21 @@ public class Commander {
     }
     public String toString() {
         StringBuilder sb = new StringBuilder();
-        sb.append("Creating: " + getCreateType() + System.lineSeparator());
-        sb.append("Using attributes file: " + getAttributesFile() + System.lineSeparator());
-        sb.append("Write to: " + getOutFile() + System.lineSeparator());
-        sb.append("Verify file: " + getVerifyFile() + System.lineSeparator());
-        sb.append("Private key file: " + getPrivateKeyFile() + System.lineSeparator());
-        sb.append("Public certificate: " + getPublicCertificate() + System.lineSeparator());
-        sb.append("Event log support RIM: " + getRimEventLog() + System.lineSeparator());
+        sb.append("Creating: " + this.getCreateType() + System.lineSeparator());
+        sb.append("Using attributes file: " + this.getAttributesFile() + System.lineSeparator());
+        sb.append("Write to: " + this.getOutFile() + System.lineSeparator());
+        sb.append("Verify file: " + this.getVerifyFile() + System.lineSeparator());
+        if (!this.getKeystoreFile().isEmpty()) {
+            sb.append("Keystore file: " + this.getKeystoreFile() + System.lineSeparator());
+        } else if (!this.getPrivateKeyFile().isEmpty() &&
+                    !this.getPublicCertificate().isEmpty()) {
+            sb.append("Private key file: " + this.getPrivateKeyFile() + System.lineSeparator());
+            sb.append("Public certificate: " + this.getPublicCertificate() + System.lineSeparator());
+        } else {
+            sb.append("Keystore file: default (" + SwidTagConstants.DEFAULT_KEYSTORE_FILE + ")"
+                    + System.lineSeparator());
+        }
+        sb.append("Event log support RIM: " + this.getRimEventLog() + System.lineSeparator());
 /*
         sb.append("TPM PCRs support RIM: " + getRimPcrs() + System.lineSeparator());
         sb.append("Base RIM to be signed: " + getToBeSigned() + System.lineSeparator());

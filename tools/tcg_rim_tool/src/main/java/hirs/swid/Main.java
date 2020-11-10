@@ -63,6 +63,9 @@ public class Main {
                             gateway.setDefaultCredentials(false);
                             gateway.setPemCertificateFile(certificateFile);
                             gateway.setPemPrivateKeyFile(privateKeyFile);
+                        } else {
+                            gateway.setDefaultCredentials(true);
+                            gateway.setJksKeystoreFile(SwidTagConstants.DEFAULT_KEYSTORE_FILE);
                         }
                         if (rimEventLog.isEmpty()) {
                             System.out.println("Error: a support RIM is required!");
