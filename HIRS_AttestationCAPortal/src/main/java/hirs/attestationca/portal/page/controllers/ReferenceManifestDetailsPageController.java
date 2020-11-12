@@ -293,8 +293,11 @@ public class ReferenceManifestDetailsPageController
             final ReferenceManifestManager referenceManifestManager)
             throws IOException, CertificateException, NoSuchAlgorithmException {
         HashMap<String, Object> data = new HashMap<>();
+        EventLogMeasurements measurements = null;
 
-        if (support.getAssociatedRim() == null) {
+        if (support.getAssociatedRim() == null
+                && (support.getPlatformManufacturer() != null
+                && !support.getPlatformManufacturer().isEmpty())) {
             ReferenceManifest baseRim = BaseReferenceManifest.select(referenceManifestManager)
                     .byManufacturer(support.getPlatformManufacturer()).getRIM();
             if (baseRim != null) {
@@ -305,16 +308,16 @@ public class ReferenceManifestDetailsPageController
                     LOGGER.error("Failed to update Support RIM", ex);
                 }
             }
+            measurements = EventLogMeasurements.select(referenceManifestManager)
+                    .byManufacturer(support.getPlatformManufacturer()).getRIM();
         }
+
         data.put("baseRim", support.getTagId());
         data.put("associatedRim", support.getAssociatedRim());
         data.put("rimType", support.getRimType());
         data.put("tagId", support.getTagId());
 
         TCGEventLog logProcessor = new TCGEventLog(support.getRimBytes());
-        EventLogMeasurements measurements = EventLogMeasurements.select(referenceManifestManager)
-                .byManufacturer(support.getPlatformManufacturer()).getRIM();
-
         LinkedList<TpmPcrEvent> tpmPcrEvents = new LinkedList<>();
         TCGEventLog measurementsProcess;
         if (measurements != null) {
@@ -327,9 +330,10 @@ public class ReferenceManifestDetailsPageController
                 }
                 tpmPcrEvents.add(tpe);
             }
+            data.put("events", tpmPcrEvents);
+        } else {
+            data.put("events", logProcessor.getEventList());
         }
-
-        data.put("events", tpmPcrEvents);
 
         return data;
     }
