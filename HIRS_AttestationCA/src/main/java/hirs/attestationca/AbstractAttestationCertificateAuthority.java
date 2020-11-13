@@ -166,7 +166,7 @@ public abstract class AbstractAttestationCertificateAuthority
      * Container wired application configuration property identifying the number of days that
      * certificates issued by this ACA are valid for.
      */
-    private Integer validDays;
+    private Integer validDays = 1;
 
     private final CertificateManager certificateManager;
     private final ReferenceManifestManager referenceManifestManager;
@@ -362,7 +362,9 @@ public abstract class AbstractAttestationCertificateAuthority
         LOG.debug("generating credential from identity proof");
         // check the policy set valid date
         SupplyChainPolicy scp = this.supplyChainValidationService.getPolicy();
-        this.validDays = Integer.getInteger(scp.getValidityDays());
+        if (scp != null) {
+            this.validDays = Integer.getInteger(scp.getValidityDays());
+        }
         // transform the public key struct into a public key
         PublicKey publicKey = assemblePublicKey(proof.getIdentityKey().getStorePubKey().getKey());
         X509Certificate credential = generateCredential(publicKey, endorsementCredential,
@@ -552,7 +554,9 @@ public abstract class AbstractAttestationCertificateAuthority
             Device device = deviceManager.getDevice(deviceName);
             // check the policy set valid date
             SupplyChainPolicy scp = this.supplyChainValidationService.getPolicy();
-            this.validDays = Integer.parseInt(scp.getValidityDays());
+            if (scp != null) {
+                this.validDays = Integer.parseInt(scp.getValidityDays());
+            }
 
             // Parse through the Provisioner supplied TPM Quote and pcr values
             // these fields are optional
@@ -1663,7 +1667,7 @@ public abstract class AbstractAttestationCertificateAuthority
             IssuedAttestationCertificate attCert = new IssuedAttestationCertificate(
                     derEncodedAttestationCertificate, endorsementCredential, platformCredentials);
 
-            if (!scp.isIssueAttestationCertificate()) {
+            if (scp != null && !scp.isIssueAttestationCertificate()) {
                 issuedAc = IssuedAttestationCertificate.select(certificateManager)
                         .byDeviceId(device.getId()).getCertificate();
                 if (issuedAc != null) {
