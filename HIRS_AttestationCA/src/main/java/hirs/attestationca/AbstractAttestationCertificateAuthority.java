@@ -361,9 +361,13 @@ public abstract class AbstractAttestationCertificateAuthority
         // generate the identity credential
         LOG.debug("generating credential from identity proof");
         // check the policy set valid date
-        SupplyChainPolicy scp = this.supplyChainValidationService.getPolicy();
-        if (scp != null) {
-            this.validDays = Integer.getInteger(scp.getValidityDays());
+        try {
+            SupplyChainPolicy scp = this.supplyChainValidationService.getPolicy();
+            if (scp != null) {
+                this.validDays = Integer.getInteger(scp.getValidityDays());
+            }
+        } catch (Exception ex) {
+            LOG.error("Error");
         }
         // transform the public key struct into a public key
         PublicKey publicKey = assemblePublicKey(proof.getIdentityKey().getStorePubKey().getKey());
