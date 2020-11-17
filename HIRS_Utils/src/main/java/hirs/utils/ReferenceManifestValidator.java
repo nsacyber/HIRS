@@ -23,6 +23,7 @@ import javax.xml.crypto.dsig.XMLSignatureException;
 import javax.xml.crypto.dsig.XMLSignatureFactory;
 import javax.xml.crypto.dsig.dom.DOMValidateContext;
 import javax.xml.crypto.dsig.keyinfo.KeyInfo;
+import javax.xml.crypto.dsig.keyinfo.KeyValue;
 import javax.xml.crypto.dsig.keyinfo.X509Data;
 import javax.xml.transform.Source;
 import javax.xml.transform.Transformer;
@@ -36,6 +37,7 @@ import javax.xml.validation.SchemaFactory;
 import java.io.IOException;
 import java.io.InputStream;
 import java.security.Key;
+import java.security.KeyException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.PublicKey;
@@ -64,6 +66,7 @@ public class ReferenceManifestValidator {
     private Unmarshaller unmarshaller;
     private PublicKey publicKey;
     private Schema schema;
+    private String subjectKeyIdentifier;
     private boolean signatureValid, supportRimValid;
 
     /**
@@ -94,6 +97,14 @@ public class ReferenceManifestValidator {
     }
 
     /**
+     * Getter for subjectKeyIdentifier.
+     * @return subjectKeyIdentifier
+     */
+    public String getSubjectKeyIdentifier() {
+        return subjectKeyIdentifier;
+    }
+
+    /**
      * This default constructor creates the Schema object from SCHEMA_URL immediately to save
      * time during validation calls later.
      */
@@ -106,6 +117,7 @@ public class ReferenceManifestValidator {
             signatureValid = false;
             supportRimValid = false;
             publicKey = null;
+            subjectKeyIdentifier = "";
         } catch (SAXException e) {
             LOGGER.warn("Error setting schema for validation!");
         }
@@ -192,22 +204,21 @@ public class ReferenceManifestValidator {
             if (nodes.getLength() == 0) {
                 throw new Exception("Signature element not found!");
             }
-            NodeList embeddedCert = doc.getElementsByTagName("X509Data");
-            if (embeddedCert.getLength() > 0) {
-                X509KeySelector keySelector = new ReferenceManifestValidator.X509KeySelector();
-                context = new DOMValidateContext(keySelector, nodes.item(0));
-                XMLSignatureFactory sigFactory = XMLSignatureFactory.getInstance("DOM");
-                XMLSignature signature = sigFactory.unmarshalXMLSignature(context);
-                isValid = signature.validate(context);
-                publicKey = keySelector.getPublicKey();
-            } else {
-                LOGGER.info("Signing certificate not found for validation!");
-            }
-        } catch (MarshalException | XMLSignatureException e) {
-            LOGGER.warn(e.getMessage());
+            X509KeySelector keySelector = new ReferenceManifestValidator.X509KeySelector();
+            context = new DOMValidateContext(keySelector, nodes.item(0));
+            XMLSignatureFactory sigFactory = XMLSignatureFactory.getInstance("DOM");
+            XMLSignature signature = sigFactory.unmarshalXMLSignature(context);
+            isValid = signature.validate(context);
+            publicKey = keySelector.getPublicKey();
+            subjectKeyIdentifier = getKeyName(doc);
+        } catch (MarshalException e) {
+            LOGGER.warn("Error while unmarshalling XML signature: " + e.getMessage());
+        } catch (XMLSignatureException e) {
+            LOGGER.warn("Error while validating XML signature: " + e.getMessage());
+        } catch (KeySelectorException e) {
+            LOGGER.warn("Public key not found in XML signature: " + e.getMessage());
         } catch (Exception e) {
             LOGGER.warn(e.getMessage());
-            LOGGER.info(e.getMessage());
         }
 
         return isValid;
@@ -222,7 +233,12 @@ public class ReferenceManifestValidator {
         private PublicKey publicKey;
 
         /**
-         * This method selects an X509 cert based on the provided algorithm.
+         * This method selects a public key for validation.
+         * PKs are parsed preferentially from the following elements:
+         * - X509Data
+         * - KeyValue
+         * The parsed PK is then verified based on the provided algorithm before
+         * being returned in a KeySelectorResult.
          *
          * @param keyinfo object containing the cert.
          * @param purpose purpose.
@@ -246,14 +262,22 @@ public class ReferenceManifestValidator {
                         Object object = dataItr.next();
                         if (object instanceof X509Certificate) {
                             publicKey = ((X509Certificate) object).getPublicKey();
-                            if (areAlgorithmsEqual(algorithm.getAlgorithm(),
-                                                    publicKey.getAlgorithm())) {
-                                return new ReferenceManifestValidator.X509KeySelector
-                                                        .RIMKeySelectorResult(publicKey);
-                            }
+                            break;
                         }
                     }
+                } else if (element instanceof KeyValue) {
+                    try {
+                        publicKey = ((KeyValue) element).getPublicKey();
+                    } catch (KeyException e) {
+                        LOGGER.warn("KeyException thrown while getting PK from KeyValue: "
+                                + e.getMessage());
+                    }
                 }
+            }
+            if (areAlgorithmsEqual(algorithm.getAlgorithm(),
+                    publicKey.getAlgorithm())) {
+                return new ReferenceManifestValidator.X509KeySelector
+                        .RIMKeySelectorResult(publicKey);
             }
 
             throw new KeySelectorException("No key found!");
@@ -292,6 +316,21 @@ public class ReferenceManifestValidator {
             public Key getKey() {
                 return key;
             }
+        }
+    }
+
+    /**
+     * This method parses the subject key identifier from the KeyName element of a signature.
+     *
+     * @param doc
+     * @return SKID if found, or an empty string.
+     */
+    private String getKeyName(final Document doc) {
+        NodeList keyName = doc.getElementsByTagName("KeyName");
+        if (keyName.getLength() > 0) {
+            return keyName.item(0).getTextContent();
+        } else {
+            return null;
         }
     }
 

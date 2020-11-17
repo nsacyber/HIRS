@@ -47,6 +47,7 @@ public class Main {
                 System.out.println(commander.toString());
                 String createType = commander.getCreateType().toUpperCase();
                 String attributesFile = commander.getAttributesFile();
+                String jksKeystoreFile = commander.getKeystoreFile();
                 String certificateFile = commander.getPublicCertificate();
                 String privateKeyFile = commander.getPrivateKeyFile();
                 String rimEventLog = commander.getRimEventLog();
@@ -55,10 +56,16 @@ public class Main {
                         if (!attributesFile.isEmpty()) {
                             gateway.setAttributesFile(attributesFile);
                         }
-                        if (!certificateFile.isEmpty() && !privateKeyFile.isEmpty()) {
+                        if (!jksKeystoreFile.isEmpty()) {
+                            gateway.setDefaultCredentials(true);
+                            gateway.setJksKeystoreFile(jksKeystoreFile);
+                        } else if (!certificateFile.isEmpty() && !privateKeyFile.isEmpty()) {
                             gateway.setDefaultCredentials(false);
                             gateway.setPemCertificateFile(certificateFile);
                             gateway.setPemPrivateKeyFile(privateKeyFile);
+                        } else {
+                            gateway.setDefaultCredentials(true);
+                            gateway.setJksKeystoreFile(SwidTagConstants.DEFAULT_KEYSTORE_FILE);
                         }
                         if (rimEventLog.isEmpty()) {
                             System.out.println("Error: a support RIM is required!");

@@ -11,6 +11,7 @@ import java.security.NoSuchAlgorithmException;
 import java.security.cert.CertificateException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 
 import hirs.tpm.eventlog.TCGEventLog;
 import hirs.tpm.eventlog.TpmPcrEvent;
@@ -135,14 +136,16 @@ final class Main {
                                 || commander.getPcrNumber() == -1) {
                             if (bHexFlag) {
                                 if (bEventFlag || bHexEvent) {
-                                    writeOut(HexUtils.byteArrayToHexString(event.getEvent()) + "\n");
+                                    writeOut(HexUtils.byteArrayToHexString(event.getEvent())
+                                            + "\n");
                                 }
                                 if (bContentFlag) {
                                     writeOut(HexUtils.byteArrayToHexString(event.getEventContent())
                                             + "\n");
                                 }
                             } else {
-                                writeOut(event.toString(bEventFlag, bContentFlag, bHexEvent) + "\n");
+                                writeOut(event.toString(bEventFlag, bContentFlag, bHexEvent)
+                                        + "\n");
                             }
                         }
                     }
@@ -291,8 +294,9 @@ final class Main {
      * @param pcr        used as a filter. Use -1 to check all pcrs.
      * @return array list of strings. Null of no events mismatched.
      */
-    public static ArrayList<TpmPcrEvent> diffEventLogs(final ArrayList<TpmPcrEvent> eventList,
-                                                       final ArrayList<TpmPcrEvent> eventList2, final int pcr) {
+    public static ArrayList<TpmPcrEvent> diffEventLogs(final Collection<TpmPcrEvent> eventList,
+                                                       final Collection<TpmPcrEvent> eventList2,
+                                                       final int pcr) {
         ArrayList<TpmPcrEvent> results = new ArrayList<TpmPcrEvent>();
         for (TpmPcrEvent event2 : eventList2) {
             if (pcr >= 0) {
@@ -317,7 +321,7 @@ final class Main {
      * @param event    single event to match.
      * @return
      */
-    private static boolean digestMatch(final ArrayList<TpmPcrEvent> eventLog,
+    private static boolean digestMatch(final Collection<TpmPcrEvent> eventLog,
                                        final TpmPcrEvent event) {
         boolean matchFound = false;
         for (TpmPcrEvent event2 : eventLog) {

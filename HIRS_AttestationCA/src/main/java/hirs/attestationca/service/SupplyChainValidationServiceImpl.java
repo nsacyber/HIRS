@@ -377,11 +377,11 @@ public class SupplyChainValidationServiceImpl implements SupplyChainValidationSe
         validationObject = baseReferenceManifest;
         String failedString = "";
         if (baseReferenceManifest == null) {
-            failedString = "Base Reference Integrity Manifest%n";
+            failedString = "Base Reference Integrity Manifest\n";
             passed = false;
         }
         if (supportReferenceManifest == null) {
-            failedString += "Support Reference Integrity Manifest%n";
+            failedString += "Support Reference Integrity Manifest\n";
             passed = false;
         }
         if (measurement == null) {
