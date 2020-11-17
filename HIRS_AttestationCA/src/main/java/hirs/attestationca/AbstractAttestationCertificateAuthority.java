@@ -736,7 +736,7 @@ public abstract class AbstractAttestationCertificateAuthority
         String clientName = String.format("%s_%s",
                 dv.getHw().getManufacturer(),
                 dv.getHw().getProductName());
-        ReferenceManifest dbBaseRim;
+        ReferenceManifest dbBaseRim = null;
         ReferenceManifest support;
         String tagId = "";
         String fileName = "";
@@ -798,7 +798,16 @@ public abstract class AbstractAttestationCertificateAuthority
                     support.setTagId(tagId);
                     this.referenceManifestManager.save(support);
                 } else {
-                    LOG.info("Client provided Support RIM already loaded in database.");
+                    LOG.error("Client provided Support RIM already loaded in database.");
+                    if (dbBaseRim != null) {
+                        support.setPlatformManufacturer(dbBaseRim.getPlatformManufacturer());
+                        support.setPlatformModel(dbBaseRim.getPlatformModel());
+                        support.setSwidTagVersion(dbBaseRim.getSwidTagVersion());
+                        support.setAssociatedRim(dbBaseRim.getId());
+                        support.setTagId(dbBaseRim.getTagId());
+                    }
+
+                    this.referenceManifestManager.update(support);
                 }
             } catch (IOException ioEx) {
                 LOG.error(ioEx);
