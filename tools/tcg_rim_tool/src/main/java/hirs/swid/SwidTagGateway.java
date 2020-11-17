@@ -4,7 +4,13 @@ import com.eclipsesource.json.Json;
 import com.eclipsesource.json.JsonObject;
 import com.eclipsesource.json.ParseException;
 import hirs.swid.utils.HashSwid;
-import hirs.swid.xjc.*;
+import hirs.swid.xjc.Directory;
+import hirs.swid.xjc.Entity;
+import hirs.swid.xjc.Link;
+import hirs.swid.xjc.ObjectFactory;
+import hirs.swid.xjc.ResourceCollection;
+import hirs.swid.xjc.SoftwareIdentity;
+import hirs.swid.xjc.SoftwareMeta;
 import org.w3c.dom.Document;
 
 import javax.xml.bind.JAXBContext;
@@ -13,24 +19,47 @@ import javax.xml.bind.JAXBException;
 import javax.xml.bind.Marshaller;
 import javax.xml.crypto.MarshalException;
 import javax.xml.crypto.XMLStructure;
-import javax.xml.crypto.dsig.*;
+import javax.xml.crypto.dsig.CanonicalizationMethod;
+import javax.xml.crypto.dsig.DigestMethod;
+import javax.xml.crypto.dsig.Reference;
+import javax.xml.crypto.dsig.SignedInfo;
+import javax.xml.crypto.dsig.Transform;
+import javax.xml.crypto.dsig.XMLSignature;
+import javax.xml.crypto.dsig.XMLSignatureException;
+import javax.xml.crypto.dsig.XMLSignatureFactory;
 import javax.xml.crypto.dsig.dom.DOMSignContext;
-import javax.xml.crypto.dsig.keyinfo.*;
+import javax.xml.crypto.dsig.keyinfo.KeyInfo;
+import javax.xml.crypto.dsig.keyinfo.KeyInfoFactory;
+import javax.xml.crypto.dsig.keyinfo.KeyName;
+import javax.xml.crypto.dsig.keyinfo.KeyValue;
+import javax.xml.crypto.dsig.keyinfo.X509Data;
 import javax.xml.crypto.dsig.spec.C14NMethodParameterSpec;
 import javax.xml.crypto.dsig.spec.TransformParameterSpec;
 import javax.xml.namespace.QName;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.transform.*;
+import javax.xml.transform.OutputKeys;
+import javax.xml.transform.Source;
+import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerConfigurationException;
+import javax.xml.transform.TransformerException;
+import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
+import java.io.BufferedReader;
 import java.io.File;
-import java.io.*;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.math.BigInteger;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.security.*;
+import java.security.InvalidAlgorithmParameterException;
+import java.security.KeyException;
+import java.security.NoSuchAlgorithmException;
+import java.security.PrivateKey;
+import java.security.PublicKey;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
@@ -51,6 +80,7 @@ public class SwidTagGateway {
     private Marshaller marshaller;
     private String attributesFile;
     private boolean defaultCredentials;
+    private String jksKeystoreFile;
     private String pemPrivateKeyFile;
     private String pemCertificateFile;
     private String rimEventLog;
@@ -87,6 +117,12 @@ public class SwidTagGateway {
     public void setDefaultCredentials(boolean defaultCredentials) {
         this.defaultCredentials = defaultCredentials;
     }
+
+    /**
+     * Setter for JKS keystore file
+     * @param jksKeystoreFile
+     */
+    public void setJksKeystoreFile(String jksKeystoreFile) { this.jksKeystoreFile = jksKeystoreFile; }
 
     /**
      * Setter for private key file in PEM format
@@ -404,7 +440,7 @@ public class SwidTagGateway {
             PublicKey publicKey;
             CredentialParser cp = new CredentialParser();
             if (defaultCredentials) {
-                cp.parseJKSCredentials();
+                cp.parseJKSCredentials(jksKeystoreFile);
                 privateKey = cp.getPrivateKey();
                 publicKey = cp.getPublicKey();
                 KeyName keyName = kiFactory.newKeyName(cp.getCertificateSubjectKeyIdentifier());

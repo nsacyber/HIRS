@@ -5,7 +5,6 @@ import hirs.data.persist.EventLogMeasurements;
 import hirs.data.persist.ReferenceManifest;
 import hirs.data.persist.SupportReferenceManifest;
 import hirs.data.persist.SwidResource;
-import hirs.data.persist.certificate.Certificate;
 import hirs.data.persist.certificate.CertificateAuthorityCredential;
 import hirs.persist.CertificateManager;
 import hirs.persist.DBManagerException;
@@ -26,6 +25,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 
 import hirs.tpm.eventlog.TpmPcrEvent;
@@ -262,17 +262,20 @@ public class ReferenceManifestDetailsPageController
 
         RIM_VALIDATOR.validateXmlSignature(new ByteArrayInputStream(baseRim.getRimBytes()));
         data.put("signatureValid", RIM_VALIDATOR.isSignatureValid());
-        if (RIM_VALIDATOR.isSignatureValid()) {
-            LOGGER.info("Public key: " + RIM_VALIDATOR.getPublicKey().toString());
-            try {
-                Certificate certificate =
-                        CertificateAuthorityCredential.select(certificateManager)
-                                .byEncodedPublicKey(RIM_VALIDATOR.getPublicKey().getEncoded())
-                                .getCertificate();
-                data.put("issuerID", certificate.getId().toString());
-            } catch (NullPointerException e) {
-                LOGGER.info("Unable to get signing certificate link: " + e.getMessage());
+        data.put("skID", RIM_VALIDATOR.getSubjectKeyIdentifier());
+        try {
+            Set<CertificateAuthorityCredential> certificates =
+                    CertificateAuthorityCredential.select(certificateManager)
+                            .getCertificates();
+            for (CertificateAuthorityCredential cert : certificates) {
+                if (Arrays.equals(cert.getEncodedPublicKey(),
+                        RIM_VALIDATOR.getPublicKey().getEncoded())) {
+                    LOGGER.info("Found matching cert!");
+                    data.put("issuerID", cert.getId().toString());
+                }
             }
+        } catch (NullPointerException e) {
+            LOGGER.error("Unable to link signing certificate: " + e.getMessage());
         }
         return data;
     }

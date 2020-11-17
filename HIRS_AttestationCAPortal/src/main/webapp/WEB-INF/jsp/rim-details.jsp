@@ -335,15 +335,27 @@
                                 <c:choose>
                                     <c:when test="${initialData.signatureValid}">
                                         <img src="${passIcon}" title="${signatureValidText}"/>
-                                        <c:if test="${not empty initialData.issuerID}">
-                                            <div><a href="${portal}/certificate-details?id=${initialData.issuerID}&type=certificateauthority">Signing certificate</a></div>
-                                        </c:if>
                                     </c:when>
                                     <c:otherwise>
                                         <img src="${failIcon}" title="${signatureInvalidText}"/>
                                     </c:otherwise>
                                 </c:choose>
-                        </span></div>
+                                </span>
+                            </div>
+                            <div>
+                                <span>
+                                <c:if test="${not empty initialData.issuerID}">
+                                    <div><a href="${portal}/certificate-details?id=${initialData.issuerID}&type=certificateauthority">Signing certificate</a></div>
+                                </c:if>
+                                </span>
+                            </div>
+                            <div>
+                                <span>
+                                <c:if test="${not empty initialData.skID}">
+                                    <div>Subject Key Identifier: ${initialData.skID}</div>
+                                </c:if>
+                                </span>
+                            </div>
                         </div>
                     </div>
                 </c:otherwise>

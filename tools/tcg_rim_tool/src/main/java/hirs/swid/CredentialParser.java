@@ -50,9 +50,9 @@ public class CredentialParser {
         return publicKey;
     }
 
-    public void parseJKSCredentials() {
+    public void parseJKSCredentials(String jksKeystore) {
         KeyStore.PrivateKeyEntry privateKeyEntry =
-                parseKeystorePrivateKey(SwidTagConstants.DEFAULT_KEYSTORE_PATH,
+                parseKeystorePrivateKey(jksKeystore,
                         SwidTagConstants.DEFAULT_PRIVATE_KEY_ALIAS,
                         SwidTagConstants.DEFAULT_KEYSTORE_PASSWORD);
         certificate = (X509Certificate) privateKeyEntry.getCertificate();
