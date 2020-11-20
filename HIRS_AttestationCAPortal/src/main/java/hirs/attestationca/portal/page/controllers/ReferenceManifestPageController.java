@@ -60,6 +60,7 @@ public class ReferenceManifestPageController
 
     private static final String BIOS_RELEASE_DATE_FORMAT = "yyyy-MM-dd";
     private static final String LOG_FILE_PATTERN = "([^\\s]+(\\.(?i)(rimpcr|rimel|bin|log))$)";
+    private static final String SWID_FILE_PATTERN = "([^\\s]+(\\.(?i)(swidtag))$)";
 
     private final BiosDateValidator biosValidator;
     private final ReferenceManifestManager referenceManifestManager;
@@ -188,18 +189,21 @@ public class ReferenceManifestPageController
         Map<String, Object> model = new HashMap<>();
         PageMessages messages = new PageMessages();
         String fileName;
-        Pattern pattern;
+        Pattern logPattern = Pattern.compile(LOG_FILE_PATTERN);
+        Pattern swidPattern = Pattern.compile(SWID_FILE_PATTERN);
         Matcher matcher;
         boolean supportRIM = false;
+        boolean swidtag = false;
         BaseReferenceManifest base;
         SupportReferenceManifest support;
 
         // loop through the files
         for (MultipartFile file : files) {
             fileName = file.getOriginalFilename();
-            pattern = Pattern.compile(LOG_FILE_PATTERN);
-            matcher = pattern.matcher(fileName);
+            matcher = logPattern.matcher(fileName);
             supportRIM = matcher.matches();
+            matcher = swidPattern.matcher(fileName);
+            swidtag = matcher.matches();
 
             //Parse reference manifests
             ReferenceManifest rim = parseRIM(file, supportRIM, messages);
@@ -223,7 +227,7 @@ public class ReferenceManifestPageController
                         }
                     }
                 }
-            } else {
+            } else if (swidtag) {
                 base = (BaseReferenceManifest) rim;
 
                 for (SwidResource swid : base.parseResource()) {
