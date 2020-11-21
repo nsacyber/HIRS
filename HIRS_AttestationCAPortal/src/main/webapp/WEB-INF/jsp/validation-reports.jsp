@@ -93,7 +93,10 @@
                     {
                         // TODO render a link to a device details page,
                         // passing the device.id
-                        data: 'device.name'
+                        data: 'device.name',
+                        render: function (data, type, full, meta) {
+                            return createDownloadLink(full);
+                        }
                     },
                     {
                         data: 'id',
@@ -125,6 +128,16 @@
                 var dataTable = setDataTables("#reportTable", url, columns);
                 dataTable.order([1, 'desc']).draw();    //order by createTime
             });
+
+            /**
+             * This method builds a url to download the device validation report.
+             */
+            function createDownloadLink(full) {
+                return full.device.name + '&nbsp;' +
+                '<a href="${portal}/validation-reports/download?id=' + full.device.name +
+                '"><img src="${icons}/ic_file_download_black_24dp.png" title="Download validation report">' +
+                '</a>';
+            }
 
             /**
              * Gets HTML to display (icon tag) for the specified validation type.
