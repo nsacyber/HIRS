@@ -340,7 +340,11 @@ public final class CertificateStringMapBuilder {
             //CPSuri
             data.put("CPSuri", certificate.getCPSuri());
             //component failure
-            data.put("failures", certificate.getComponentFailures());
+            if (certificate.getComponentFailures().isEmpty()) {
+                data.put("failures", certificate.getComponentFailures());
+            } else {
+                LOGGER.error(certificate.getComponentFailures());
+            }
 
             //Get platform Configuration values and set map with it
             PlatformConfiguration platformConfiguration = certificate.getPlatformConfiguration();

@@ -140,6 +140,43 @@ public final class SupplyChainCredentialValidator implements CredentialValidator
         return componentInfoList;
     }
 
+    /**
+     * Parses the output from PACCOR's allcomponents.sh script into ComponentInfo objects.
+     * @param paccorOutput the output from PACCOR's allcomoponents.sh
+     * @return a list of ComponentInfo objects built from paccorOutput
+     * @throws IOException if something goes wrong parsing the JSON
+     */
+    public static List<ComponentInfo> getV2PaccorOutput(
+            final String paccorOutput) throws IOException {
+        List<ComponentInfo> ciList = new LinkedList<>();
+        String manufacturer, model, serial, revision;
+        String componentClass = Strings.EMPTY;
+
+        if (StringUtils.isNotEmpty(paccorOutput)) {
+            ObjectMapper objectMapper = new ObjectMapper(new JsonFactory());
+            JsonNode rootNode = objectMapper.readTree(paccorOutput);
+            Iterator<JsonNode> jsonComponentNodes
+                    = rootNode.findValue("COMPONENTS").elements();
+            while (jsonComponentNodes.hasNext()) {
+                JsonNode next = jsonComponentNodes.next();
+                manufacturer = getJSONNodeValueAsText(next, "MANUFACTURER");
+                model = getJSONNodeValueAsText(next, "MODEL");
+                serial = getJSONNodeValueAsText(next, "SERIAL");
+                revision = getJSONNodeValueAsText(next, "REVISION");
+                List<JsonNode> compClassNodes = next.findValues("COMPONENTCLASS");
+
+                for (JsonNode subNode : compClassNodes) {
+                    componentClass = getJSONNodeValueAsText(subNode,
+                            "COMPONENTCLASSVALUE");
+                }
+                ciList.add(new ComponentInfo(manufacturer, model,
+                        serial, revision, componentClass));
+            }
+        }
+
+        return ciList;
+    }
+
     private static String getJSONNodeValueAsText(final JsonNode node, final String fieldName) {
         if (node.hasNonNull(fieldName)) {
             return node.findValue(fieldName).asText();
@@ -555,6 +592,7 @@ public final class SupplyChainCredentialValidator implements CredentialValidator
      * base cert for this specific chain
      * @return Appraisal Status of delta being validated.
      */
+    @SuppressWarnings("methodlength")
     static AppraisalStatus validateDeltaAttributesChainV2p0(
             final DeviceInfoReport deviceInfoReport,
             final Map<PlatformCredential, SupplyChainValidation> deltaMapping,
@@ -602,7 +640,10 @@ public final class SupplyChainCredentialValidator implements CredentialValidator
             StringBuilder failureMsg = new StringBuilder();
             certificateList = new ArrayList<>();
             certificateList.add(delta);
-
+            /**
+             * This chainnn maipping may have to change because
+             * the serial number isn't required
+             */
             for (ComponentIdentifier ci : delta.getComponentIdentifiers()) {
                 if (ci.isVersion2()) {
                     ciSerial = ci.getComponentSerial().toString();
@@ -681,10 +722,18 @@ public final class SupplyChainCredentialValidator implements CredentialValidator
         String paccorOutputString = deviceInfoReport.getPaccorOutputString();
         String unmatchedComponents;
         try {
-            List<ComponentInfo> componentInfoList
-                    = getComponentInfoFromPaccorOutput(paccorOutputString);
-            unmatchedComponents = validateV2p0PlatformCredentialComponentsExpectingExactMatch(
-                    new LinkedList<>(chainCiMapping.values()), componentInfoList);
+//            List<ComponentInfo> componentInfoList
+//                    = getComponentInfoFromPaccorOutput(paccorOutputString);
+            // compare based on component class
+            List<ComponentInfo> componentInfoList = getV2PaccorOutput(paccorOutputString);
+//            testComponentMatching(compMapping, chainCiMapping.values());
+            // this is what I want to rewrite
+//            unmatchedComponents = validateV2p0PlatformCredentialComponentsExpectingExactMatch(
+//                    new LinkedList<>(chainCiMapping.values()),
+//                    compMapping.keySet().stream().collect(Collectors.toList()));
+            unmatchedComponents = validateV2PlatformCredentialAttributes(
+                    new LinkedList<>(chainCiMapping.values()),
+                    componentInfoList);
             fieldValidation &= unmatchedComponents.isEmpty();
         } catch (IOException e) {
             final String baseErrorMessage = "Error parsing JSON output from PACCOR: ";
@@ -692,16 +741,82 @@ public final class SupplyChainCredentialValidator implements CredentialValidator
             LOGGER.error("PACCOR output string:\n" + paccorOutputString);
             return new AppraisalStatus(ERROR, baseErrorMessage + e.getMessage());
         }
-
         if (!fieldValidation) {
+            // instead of listing all unmatched, just print the #.  The failure
+            // will link to the platform certificate that'll display them.
+            LOGGER.error(unmatchedComponents);
+            String failureResults = unmatchedComponents.substring(0,
+                    unmatchedComponents.length() - 1);
+            String size = unmatchedComponents.substring(unmatchedComponents.length() - 1);
             resultMessage = new StringBuilder();
-            resultMessage.append("There are unmatched components:\n");
-            resultMessage.append(unmatchedComponents);
+            resultMessage.append(String.format("There are %s unmatched components",
+                    size));
+            return new AppraisalStatus(FAIL, resultMessage.toString(), failureResults);
+        }
+        return new AppraisalStatus(PASS, PLATFORM_ATTRIBUTES_VALID);
+    }
 
-            return new AppraisalStatus(FAIL, resultMessage.toString());
+    private static String validateV2PlatformCredentialAttributes(
+            final List<ComponentIdentifier> fullDeltaChainComponents,
+            final List<ComponentInfo> allDeviceInfoComponents) {
+        ComponentIdentifierV2 ciV2;
+        StringBuilder invalidDeviceInfo = new StringBuilder();
+        StringBuilder invalidPcIds = new StringBuilder();
+        List<ComponentIdentifier> subCompIdList = fullDeltaChainComponents
+                .stream().collect(Collectors.toList());
+        List<ComponentInfo> subCompInfoList = allDeviceInfoComponents
+                .stream().collect(Collectors.toList());
+        LOGGER.error(String.format("fullDeltaChainComponents - %d", fullDeltaChainComponents.size()));
+        LOGGER.error(String.format("subCompIdList - %d", subCompIdList.size()));
+        LOGGER.error(String.format("allDeviceInfoComponents - %d", allDeviceInfoComponents.size()));
+        LOGGER.error(String.format("subCompInfoList - %d", subCompInfoList.size()));
+        // Delta is the baseline
+        for (ComponentInfo cInfo : allDeviceInfoComponents) {
+            for (ComponentIdentifier cId : fullDeltaChainComponents) {
+                ciV2 = (ComponentIdentifierV2) cId;
+                if (cInfo.getComponentClass().equals(
+                        ciV2.getComponentClass().getClassValueString())) {
+                    LOGGER.error(String.format("Testing %s -> %s%n%n", cInfo, ciV2));
+                    if (!isMatch(cId, cInfo)) {
+                        invalidDeviceInfo.append(String.format("%s:%s;",
+                                cInfo.getComponentClass(), cInfo.toString()));
+                        invalidPcIds.append(String.format("%s:%s;",
+                                ciV2.getComponentClass().getClassValueString(),
+                                ciV2.toString()));
+                    } else {
+                        LOGGER.error("TDM - Removed items");
+                        subCompIdList.remove(cId);
+                        subCompInfoList.remove(cInfo);
+                    }
+                }
+            }
         }
 
-        return new AppraisalStatus(PASS, PLATFORM_ATTRIBUTES_VALID);
+        if (subCompIdList.isEmpty() && subCompInfoList.isEmpty()) {
+            return Strings.EMPTY;
+        }
+
+        // now we return everything that was unmatched
+        // what is in the component info/device reported components
+        // is to be displayed as the failure
+        if (!subCompIdList.isEmpty()) {
+            for (ComponentIdentifier ci : subCompIdList) {
+                ciV2 = (ComponentIdentifierV2) ci;
+                invalidPcIds.append(String.format("%s:%s;",
+                        ciV2.getComponentClass().getClassValueString(),
+                        ciV2.getComponentModel()));
+            }
+        }
+
+        if (!subCompInfoList.isEmpty()) {
+            for (ComponentInfo ci : subCompInfoList) {
+                invalidDeviceInfo.append(String.format("%s:%s;",
+                        ci.getComponentClass(), ci.getComponentModel()));
+            }
+        }
+
+        return String.format("DEVICEINFO=%s?COMPID=%s%d",
+                invalidDeviceInfo.toString(), invalidPcIds.toString(), subCompInfoList.size());
     }
 
     /**

@@ -46,6 +46,10 @@ public class ComponentInfo implements Serializable {
     @Column
     private String componentRevision;
 
+    @XmlElement
+    @Column
+    private String componentClass;
+
     /**
      * Get the Component's Manufacturer.
      * @return the Component's Manufacturer
@@ -76,6 +80,14 @@ public class ComponentInfo implements Serializable {
      */
     public String getComponentRevision() {
         return componentRevision;
+    }
+
+    /**
+     * Get the Component's Class Registry.
+     * @return the Component's Class
+     */
+    public String getComponentClass() {
+        return componentClass;
     }
 
     /**
@@ -116,6 +128,45 @@ public class ComponentInfo implements Serializable {
     }
 
     /**
+     * Constructor.
+     * @param componentManufacturer Component Manufacturer (must not be null)
+     * @param componentModel Component Model (must not be null)
+     * @param componentSerial Component Serial Number (can be null)
+     * @param componentRevision Component Revision or Version (can be null)
+     * @param componentClass Component Class (can be null)
+     */
+    public ComponentInfo(final String componentManufacturer,
+                         final String componentModel,
+                         final String componentSerial,
+                         final String componentRevision,
+                         final String componentClass) {
+        Assert.state(isComplete(
+                componentManufacturer,
+                componentModel,
+                componentSerial,
+                componentRevision
+        ));
+        this.componentManufacturer = componentManufacturer.trim();
+        this.componentModel = componentModel.trim();
+        if (componentSerial != null) {
+            this.componentSerial = componentSerial.trim();
+        } else {
+            this.componentSerial = StringUtils.EMPTY;
+        }
+        if (componentRevision != null) {
+            this.componentRevision = componentRevision.trim();
+        } else {
+            this.componentRevision = StringUtils.EMPTY;
+        }
+
+        if (componentClass != null) {
+            this.componentClass = componentClass;
+        } else {
+            this.componentClass = StringUtils.EMPTY;
+        }
+    }
+
+    /**
      * Determines whether the given properties represent a
      * ComponentInfo that will be useful in validation.
      * Currently, only components which have a non-null
@@ -131,9 +182,8 @@ public class ComponentInfo implements Serializable {
                                      final String componentModel,
                                      final String componentSerial,
                                      final String componentRevision) {
-        return !(
-                StringUtils.isEmpty(componentManufacturer)  || StringUtils.isEmpty(componentModel)
-        );
+        return !(StringUtils.isEmpty(componentManufacturer)
+                || StringUtils.isEmpty(componentModel));
     }
 
     @Override
@@ -149,22 +199,26 @@ public class ComponentInfo implements Serializable {
                 && Objects.equals(componentManufacturer, that.componentManufacturer)
                 && Objects.equals(componentModel, that.componentModel)
                 && Objects.equals(componentSerial, that.componentSerial)
-                && Objects.equals(componentRevision, that.componentRevision);
+                && Objects.equals(componentRevision, that.componentRevision)
+                && Objects.equals(componentClass, that.componentClass);
     }
 
     @Override
     public int hashCode() {
         return Objects.hash(id, componentManufacturer, componentModel,
-                componentSerial, componentRevision);
+                componentSerial, componentRevision, componentClass);
     }
 
     @Override
     public String toString() {
-        return "ComponentInfo{"
-                + "componentManufacturer='" + componentManufacturer + '\''
-                + ", componentModel='" + componentModel + '\''
-                + ", componentSerial='" + componentSerial + '\''
-                + ", componentRevision='" + componentRevision + '\''
-                + '}';
+        return String.format("ComponentInfo{"
+                + "componentManufacturer='%s'"
+                + ", componentModel='%s'"
+                + ", componentSerial='%s'"
+                + ", componentRevision='%s'"
+                + ", componentClass='%s'}",
+                componentManufacturer,
+                componentModel, componentSerial,
+                componentRevision, componentClass);
     }
 }

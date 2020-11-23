@@ -132,7 +132,6 @@ public class SupplyChainValidationServiceImpl implements SupplyChainValidationSe
                 supplyChainAppraiser);
         boolean acceptExpiredCerts = policy.isExpiredCertificateValidationEnabled();
         PlatformCredential baseCredential = null;
-        String componentFailures = "";
         List<SupplyChainValidation> validations = new LinkedList<>();
         Map<PlatformCredential, SupplyChainValidation> deltaMapping = new HashMap<>();
         SupplyChainValidation platformScv = null;
@@ -199,15 +198,22 @@ public class SupplyChainValidationServiceImpl implements SupplyChainValidationSe
                 Iterator<PlatformCredential> it = pcs.iterator();
                 while (it.hasNext()) {
                     PlatformCredential pc = it.next();
-                    SupplyChainValidation attributeScv;
+                    SupplyChainValidation attributeScv = null;
 
                     if (pc != null) {
                         if (pc.isDeltaChain()) {
-                            // this check validates the delta changes and recompares
+                            // this check validates the delta changes and re-compares
                             // the modified list to the original.
-                            attributeScv = validateDeltaPlatformCredentialAttributes(
-                                    pc, device.getDeviceInfo(),
-                                    baseCredential, deltaMapping);
+                            try {
+                                attributeScv = validateDeltaPlatformCredentialAttributes(
+                                        pc, device.getDeviceInfo(),
+                                        baseCredential, deltaMapping);
+                            } catch (Exception ex) {
+                                for (StackTraceElement element : ex.getStackTrace()) {
+                                    LOGGER.error(element.toString());
+                                }
+                                LOGGER.error(ex.getMessage());
+                            }
                         } else {
                             attributeScv = validatePlatformCredentialAttributes(
                                     pc, device.getDeviceInfo(), ec);
@@ -239,8 +245,6 @@ public class SupplyChainValidationServiceImpl implements SupplyChainValidationSe
                                         String.format("%s%n%s", platformScv.getMessage(),
                                                 attributeScv.getMessage())));
                             }
-                            componentFailures = updateUnmatchedComponents(
-                                    attributeScv.getMessage());
                         }
 
                         pc.setDevice(device);
@@ -259,10 +263,6 @@ public class SupplyChainValidationServiceImpl implements SupplyChainValidationSe
         // Generate validation summary, save it, and return it.
         SupplyChainValidationSummary summary
                 = new SupplyChainValidationSummary(device, validations);
-        if (baseCredential != null) {
-            baseCredential.setComponentFailures(componentFailures);
-            this.certificateManager.update(baseCredential);
-        }
         try {
             supplyChainValidatorSummaryManager.save(summary);
         } catch (DBManagerException ex) {
@@ -270,29 +270,6 @@ public class SupplyChainValidationServiceImpl implements SupplyChainValidationSe
         }
 
         return summary;
-    }
-
-    private String updateUnmatchedComponents(final String unmatchedString) {
-        StringBuilder updatedFailures = new StringBuilder();
-        String manufacturer = "";
-        String model = "";
-        for (String rows : unmatchedString.split(";")) {
-            for (String str : rows.split(",")) {
-                String[] manufacturerSplit;
-                String[] modelSplit;
-                if (str.contains("Manufacturer")) {
-                    manufacturerSplit = str.split("=");
-                    manufacturer = manufacturerSplit[VALUE_INDEX];
-                }
-                if (str.contains("Model")) {
-                    modelSplit = str.split("=");
-                    model = modelSplit[VALUE_INDEX];
-                }
-            }
-            updatedFailures.append(String.format("%s%s;", manufacturer, model));
-        }
-
-        return updatedFailures.toString();
     }
 
     /**
@@ -724,6 +701,11 @@ public class SupplyChainValidationServiceImpl implements SupplyChainValidationSe
                 return buildValidationRecord(validationType, PASS,
                         result.getMessage(), delta, Level.INFO);
             case FAIL:
+                if (!result.getAdditionalInfo().isEmpty()) {
+                    LOGGER.error(result.getAdditionalInfo());
+                    base.setComponentFailures(result.getAdditionalInfo());
+                    this.certificateManager.update(base);
+                }
                 return buildValidationRecord(validationType, AppraisalStatus.Status.FAIL,
                         result.getMessage(), delta, Level.WARN);
             case ERROR:
