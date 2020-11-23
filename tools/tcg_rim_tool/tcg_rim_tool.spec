@@ -23,7 +23,7 @@ rm -f /opt/hirs/rimtool/%{name}*.jar
 
 %install
 mkdir -p %{buildroot}/opt/hirs/rimtool/ %{buildroot}/usr/local/bin
-cp build/libs/tools/%{name}-%{version}.jar %{buildroot}/opt/hirs/rimtool/
+cp build/libs/%{name}-%{version}.jar %{buildroot}/opt/hirs/rimtool/
 cp ./rim_fields.json %{buildroot}/opt/hirs/rimtool/
 cp ./keystore.jks %{buildroot}/opt/hirs/rimtool/
 cp -r ./scripts/ %{buildroot}/opt/hirs/rimtool/
