@@ -606,12 +606,12 @@ public final class SupplyChainCredentialValidator implements CredentialValidator
         List<PlatformCredential> chainCertificates = new LinkedList<>(deltaMapping.keySet());
 
         // map the components throughout the chain
-        Map<String, ComponentIdentifier> chainCiMapping = new HashMap<>();
         List<ComponentIdentifier> deltaBuildList = new LinkedList<>(validOrigPcComponents);
-        deltaBuildList.stream().forEach((ci) -> {
-            chainCiMapping.put(ci.getComponentSerial().toString(), ci);
-        });
+        List<ComponentIdentifier> builtMatchList = new LinkedList<>(validOrigPcComponents);
 
+        /**
+         * Make sure the certificates are in the correct order.
+         */
         Collections.sort(chainCertificates, new Comparator<PlatformCredential>() {
             @Override
             public int compare(final PlatformCredential obj1,
@@ -629,7 +629,7 @@ public final class SupplyChainCredentialValidator implements CredentialValidator
             }
         });
 
-        String ciSerial;
+        List<String> modifiedClassValues = new LinkedList<>();
         List<ArchivableEntity> certificateList = null;
         SupplyChainValidation scv = null;
         resultMessage.append("There are errors with Delta "
@@ -640,22 +640,39 @@ public final class SupplyChainCredentialValidator implements CredentialValidator
             StringBuilder failureMsg = new StringBuilder();
             certificateList = new ArrayList<>();
             certificateList.add(delta);
-            /**
-             * This chainnn maipping may have to change because
-             * the serial number isn't required
-             */
+            String classValue;
+            ComponentIdentifierV2 ciV2;
+            boolean classFound = false;
+
             for (ComponentIdentifier ci : delta.getComponentIdentifiers()) {
                 if (ci.isVersion2()) {
-                    ciSerial = ci.getComponentSerial().toString();
-                    ComponentIdentifierV2 ciV2 = (ComponentIdentifierV2) ci;
+                    ciV2 = (ComponentIdentifierV2) ci;
+                    classValue = ciV2.getComponentClass().getClassValueString();
                     if (ciV2.isModified())  {
-                        // this won't match
-                        // check it is there
-                        if (!chainCiMapping.containsKey(ciSerial)) {
+                        // A component was modified
+                        // if it exists, update
+                        // if doesn't exist, error
+                        for (ComponentIdentifier subCi : deltaBuildList) {
+                            ComponentIdentifierV2 subCiV2 = (ComponentIdentifierV2) subCi;
+                            classFound = classValue.equals(subCiV2.getComponentClass()
+                                    .getClassValueString());
+                            if (classFound && isMatch(ciV2, subCiV2)) {
+                                if (modifiedClassValues.contains(classValue)) {
+                                    modifiedClassValues.remove(classValue);
+                                } else {
+                                    // we found the class and it is a match
+                                    break;
+                                }
+                            }
+                        }
+                        if (classFound) {
+                            modifiedClassValues.add(classValue);
+                            builtMatchList.add(ci);
+                        } else {
                             fieldValidation = false;
                             failureMsg.append(String.format(
                                     "%s attempted MODIFIED with no prior instance.%n",
-                                    ciSerial));
+                                    classValue));
                             scv = deltaMapping.get(delta);
                             if (scv.getResult() != AppraisalStatus.Status.PASS) {
                                 failureMsg.append(scv.getMessage());
@@ -665,16 +682,27 @@ public final class SupplyChainCredentialValidator implements CredentialValidator
                                     AppraisalStatus.Status.FAIL,
                                     certificateList,
                                     failureMsg.toString()));
-                        } else {
-                            chainCiMapping.put(ciSerial, ci);
                         }
                     } else if (ciV2.isRemoved()) {
-                        if (!chainCiMapping.containsKey(ciSerial)) {
+                        for (ComponentIdentifier subCi : deltaBuildList) {
+                            ComponentIdentifierV2 subCiV2 = (ComponentIdentifierV2) subCi;
+                            classFound = classValue.equals(subCiV2.getComponentClass()
+                                    .getClassValueString());
+                            if (classFound && isMatch(ciV2, subCiV2)) {
+                                break;
+                            } else {
+                                classFound = false;
+                            }
+                        }
+
+                        if (classFound) {
+                            builtMatchList.remove(ci);
+                        } else {
                             // error thrown, can't remove if it doesn't exist
                             fieldValidation = false;
                             failureMsg.append(String.format(
                                     "%s attempted REMOVED with no prior instance.%n",
-                                    ciSerial));
+                                    classValue));
                             scv = deltaMapping.get(delta);
                             if (scv.getResult() != AppraisalStatus.Status.PASS) {
                                 failureMsg.append(scv.getMessage());
@@ -684,17 +712,26 @@ public final class SupplyChainCredentialValidator implements CredentialValidator
                                     AppraisalStatus.Status.FAIL,
                                     certificateList,
                                     failureMsg.toString()));
-                        } else {
-                            chainCiMapping.remove(ciSerial);
                         }
                     } else if (ciV2.isAdded()) {
                         // ADDED
-                        if (chainCiMapping.containsKey(ciSerial)) {
+                        for (ComponentIdentifier subCi : deltaBuildList) {
+                            ComponentIdentifierV2 subCiV2 = (ComponentIdentifierV2) subCi;
+                            classFound = classValue.equals(subCiV2.getComponentClass()
+                                    .getClassValueString());
+                            if (classFound && isMatch(ciV2, subCiV2)) {
+                                break;
+                            } else {
+                                classFound = false;
+                            }
+                        }
+
+                        if (classFound) {
                             // error, shouldn't exist
                             fieldValidation = false;
                             failureMsg.append(String.format(
                                     "%s was ADDED, the serial already exists.%n",
-                                    ciSerial));
+                                    classValue));
                             scv = deltaMapping.get(delta);
                             if (scv.getResult() != AppraisalStatus.Status.PASS) {
                                 failureMsg.append(scv.getMessage());
@@ -705,12 +742,13 @@ public final class SupplyChainCredentialValidator implements CredentialValidator
                                     certificateList,
                                     failureMsg.toString()));
                         } else {
-                            // have to add in case later it is removed
-                            chainCiMapping.put(ciSerial, ci);
+                            builtMatchList.add(ci);
                         }
                     }
                 }
             }
+            // each delta has a change to change or modify what was just modified
+            modifiedClassValues.clear();
 
             resultMessage.append(failureMsg.toString());
         }
@@ -732,7 +770,7 @@ public final class SupplyChainCredentialValidator implements CredentialValidator
 //                    new LinkedList<>(chainCiMapping.values()),
 //                    compMapping.keySet().stream().collect(Collectors.toList()));
             unmatchedComponents = validateV2PlatformCredentialAttributes(
-                    new LinkedList<>(chainCiMapping.values()),
+                    builtMatchList,
                     componentInfoList);
             fieldValidation &= unmatchedComponents.isEmpty();
         } catch (IOException e) {
@@ -766,16 +804,24 @@ public final class SupplyChainCredentialValidator implements CredentialValidator
                 .stream().collect(Collectors.toList());
         List<ComponentInfo> subCompInfoList = allDeviceInfoComponents
                 .stream().collect(Collectors.toList());
-        LOGGER.error(String.format("fullDeltaChainComponents - %d", fullDeltaChainComponents.size()));
+        LOGGER.error(String.format("fullDeltaChainComponents - %d",
+                fullDeltaChainComponents.size()));
         LOGGER.error(String.format("subCompIdList - %d", subCompIdList.size()));
-        LOGGER.error(String.format("allDeviceInfoComponents - %d", allDeviceInfoComponents.size()));
+        LOGGER.error(String.format("allDeviceInfoComponents - %d",
+                allDeviceInfoComponents.size()));
         LOGGER.error(String.format("subCompInfoList - %d", subCompInfoList.size()));
         // Delta is the baseline
         for (ComponentInfo cInfo : allDeviceInfoComponents) {
             for (ComponentIdentifier cId : fullDeltaChainComponents) {
                 ciV2 = (ComponentIdentifierV2) cId;
-                if (cInfo.getComponentClass().equals(
-                        ciV2.getComponentClass().getClassValueString())) {
+                LOGGER.error(String.format("%s -> %s", cInfo.getComponentClass(),
+                        ciV2.getComponentClass().getClassValueString()));
+                if (ciV2.getComponentClass().getClassValueString()
+                        .contains(cInfo.getComponentClass())) {
+                    // TDM RIGHT HERE, you are getting a # from componentclass
+                    /**
+                     * YOU CAN DO IT.  Don't fall asleep -_-
+                     */
                     LOGGER.error(String.format("Testing %s -> %s%n%n", cInfo, ciV2));
                     if (!isMatch(cId, cInfo)) {
                         invalidDeviceInfo.append(String.format("%s:%s;",
@@ -788,6 +834,8 @@ public final class SupplyChainCredentialValidator implements CredentialValidator
                         subCompIdList.remove(cId);
                         subCompInfoList.remove(cInfo);
                     }
+                } else {
+                    LOGGER.error("Didn't match.");
                 }
             }
         }
@@ -1113,6 +1161,28 @@ public final class SupplyChainCredentialValidator implements CredentialValidator
         return matchesSoFar;
     }
 
+    /**
+     * Checks if the fields in the potentialMatch match the fields in the pcComponent,
+     * or if the relevant field in the pcComponent is empty.
+     * @param pcComponent the platform credential component
+     * @param potentialMatch the component info from a device info report
+     * @return true if the fields match exactly (null is considered the same as an empty string)
+     */
+    static boolean isMatch(final ComponentIdentifierV2 pcComponent,
+                           final ComponentIdentifierV2 potentialMatch) {
+        boolean matchesSoFar = true;
+
+        matchesSoFar &= isMatchOrEmptyInPlatformCert(
+                potentialMatch.getComponentManufacturer(),
+                pcComponent.getComponentManufacturer());
+
+        matchesSoFar &= isMatchOrEmptyInPlatformCert(
+                potentialMatch.getComponentModel(),
+                pcComponent.getComponentModel());
+
+        return matchesSoFar;
+    }
+
     private static boolean isMatchOrEmptyInPlatformCert(
             final String evidenceFromDevice,
             final DERUTF8String valueInPlatformCert) {
@@ -1120,6 +1190,12 @@ public final class SupplyChainCredentialValidator implements CredentialValidator
             return true;
         }
         return valueInPlatformCert.getString().equals(evidenceFromDevice);
+    }
+
+    private static boolean isMatchOrEmptyInPlatformCert(
+            final DERUTF8String evidenceFromDevice,
+            final DERUTF8String valueInPlatformCert) {
+        return evidenceFromDevice.equals(valueInPlatformCert);
     }
 
     /**
