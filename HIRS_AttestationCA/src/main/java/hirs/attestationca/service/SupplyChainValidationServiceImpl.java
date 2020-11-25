@@ -702,7 +702,6 @@ public class SupplyChainValidationServiceImpl implements SupplyChainValidationSe
                         result.getMessage(), delta, Level.INFO);
             case FAIL:
                 if (!result.getAdditionalInfo().isEmpty()) {
-                    LOGGER.error(result.getAdditionalInfo());
                     base.setComponentFailures(result.getAdditionalInfo());
                     this.certificateManager.update(base);
                 }

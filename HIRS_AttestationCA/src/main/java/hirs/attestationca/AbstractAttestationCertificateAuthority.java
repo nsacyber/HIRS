@@ -798,7 +798,7 @@ public abstract class AbstractAttestationCertificateAuthority
                     support.setTagId(tagId);
                     this.referenceManifestManager.save(support);
                 } else {
-                    LOG.error("Client provided Support RIM already loaded in database.");
+                    LOG.info("Client provided Support RIM already loaded in database.");
                     if (dbBaseRim != null) {
                         support.setPlatformManufacturer(dbBaseRim.getPlatformManufacturer());
                         support.setPlatformModel(dbBaseRim.getPlatformModel());

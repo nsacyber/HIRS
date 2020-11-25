@@ -782,7 +782,6 @@ public final class SupplyChainCredentialValidator implements CredentialValidator
         if (!fieldValidation) {
             // instead of listing all unmatched, just print the #.  The failure
             // will link to the platform certificate that'll display them.
-            LOGGER.error(unmatchedComponents);
             String failureResults = unmatchedComponents.substring(0,
                     unmatchedComponents.length() - 1);
             String size = unmatchedComponents.substring(unmatchedComponents.length() - 1);
@@ -804,38 +803,25 @@ public final class SupplyChainCredentialValidator implements CredentialValidator
                 .stream().collect(Collectors.toList());
         List<ComponentInfo> subCompInfoList = allDeviceInfoComponents
                 .stream().collect(Collectors.toList());
-        LOGGER.error(String.format("fullDeltaChainComponents - %d",
-                fullDeltaChainComponents.size()));
-        LOGGER.error(String.format("subCompIdList - %d", subCompIdList.size()));
-        LOGGER.error(String.format("allDeviceInfoComponents - %d",
-                allDeviceInfoComponents.size()));
-        LOGGER.error(String.format("subCompInfoList - %d", subCompInfoList.size()));
+
         // Delta is the baseline
         for (ComponentInfo cInfo : allDeviceInfoComponents) {
             for (ComponentIdentifier cId : fullDeltaChainComponents) {
                 ciV2 = (ComponentIdentifierV2) cId;
-                LOGGER.error(String.format("%s -> %s", cInfo.getComponentClass(),
-                        ciV2.getComponentClass().getClassValueString()));
                 if (ciV2.getComponentClass().getClassValueString()
                         .contains(cInfo.getComponentClass())) {
                     // TDM RIGHT HERE, you are getting a # from componentclass
                     /**
                      * YOU CAN DO IT.  Don't fall asleep -_-
                      */
-                    LOGGER.error(String.format("Testing %s -> %s%n%n", cInfo, ciV2));
-                    if (!isMatch(cId, cInfo)) {
-                        invalidDeviceInfo.append(String.format("%s:%s;",
-                                cInfo.getComponentClass(), cInfo.toString()));
-                        invalidPcIds.append(String.format("%s:%s;",
-                                ciV2.getComponentClass().getClassValueString(),
-                                ciV2.toString()));
-                    } else {
+                    if (isMatch(cId, cInfo)) {
                         LOGGER.error("TDM - Removed items");
                         subCompIdList.remove(cId);
                         subCompInfoList.remove(cInfo);
+                    } else {
+                        // FUCK PMD
+                        LOGGER.error("No match");
                     }
-                } else {
-                    LOGGER.error("Didn't match.");
                 }
             }
         }
@@ -850,16 +836,15 @@ public final class SupplyChainCredentialValidator implements CredentialValidator
         if (!subCompIdList.isEmpty()) {
             for (ComponentIdentifier ci : subCompIdList) {
                 ciV2 = (ComponentIdentifierV2) ci;
-                invalidPcIds.append(String.format("%s:%s;",
-                        ciV2.getComponentClass().getClassValueString(),
-                        ciV2.getComponentModel()));
+                invalidPcIds.append(String.format("%s;",
+                        ciV2.getComponentClass().getClassValueString()));
             }
         }
 
         if (!subCompInfoList.isEmpty()) {
             for (ComponentInfo ci : subCompInfoList) {
-                invalidDeviceInfo.append(String.format("%s:%s;",
-                        ci.getComponentClass(), ci.getComponentModel()));
+                invalidDeviceInfo.append(String.format("%s;",
+                        ci.getComponentClass()));
             }
         }
 

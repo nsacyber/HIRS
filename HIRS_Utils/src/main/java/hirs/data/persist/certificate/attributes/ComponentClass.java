@@ -84,7 +84,11 @@ public class ComponentClass {
      */
     public ComponentClass(final Path componentClassPath, final String componentIdentifier) {
         this(componentClassPath, getComponentIntValue(componentIdentifier));
-        this.classValueString = componentIdentifier;
+        if (componentIdentifier.contains("#")) {
+            this.classValueString = componentIdentifier.replaceAll("#", "");
+        } else {
+            this.classValueString = componentIdentifier;
+        }
     }
 
     /**

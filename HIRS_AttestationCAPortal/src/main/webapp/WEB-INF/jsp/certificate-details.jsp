@@ -614,7 +614,7 @@
                                             <div class="panel-body">
                                                 <div id="componentIdentifier" class="row">
                                                     <c:forEach items="${initialData.componentsIdentifier}" var="component">
-                                                        <c:set var="combined" value="${component.getComponentManufacturer()}${component.getComponentModel()}" scope="page"/>
+                                                        <c:set var="combined" value="${component.getComponentClass().getClassValueString()}" scope="page"/>
                                                         <div class="component col col-md-4">
                                                             <div class="panel panel-default">
                                                                 <c:choose>
