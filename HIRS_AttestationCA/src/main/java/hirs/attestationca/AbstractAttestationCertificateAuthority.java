@@ -773,6 +773,8 @@ public abstract class AbstractAttestationCertificateAuthority
                     this.referenceManifestManager.save(dbBaseRim);
                 } else {
                     LOG.info("Client provided Base RIM already loaded in database.");
+                    dbBaseRim.restore();
+                    dbBaseRim.resetCreateTime();
                 }
 
                 tagId = dbBaseRim.getTagId();
@@ -798,7 +800,7 @@ public abstract class AbstractAttestationCertificateAuthority
                     support.setTagId(tagId);
                     this.referenceManifestManager.save(support);
                 } else {
-                    LOG.error("Client provided Support RIM already loaded in database.");
+                    LOG.info("Client provided Support RIM already loaded in database.");
                     if (dbBaseRim != null) {
                         support.setPlatformManufacturer(dbBaseRim.getPlatformManufacturer());
                         support.setPlatformModel(dbBaseRim.getPlatformModel());
@@ -807,6 +809,8 @@ public abstract class AbstractAttestationCertificateAuthority
                         support.setTagId(dbBaseRim.getTagId());
                     }
 
+                    support.restore();
+                    support.resetCreateTime();
                     this.referenceManifestManager.update(support);
                 }
             } catch (IOException ioEx) {
