@@ -134,7 +134,7 @@
              */
             function createDownloadLink(full) {
                 return full.device.name + '&nbsp;' +
-                '<a href="${portal}/validation-reports/download?id=' + full.device.name +
+                '<a href="${portal}/validation-reports/download?id=' + full.device.id +
                 '"><img src="${icons}/ic_file_download_black_24dp.png" title="Download validation report">' +
                 '</a>';
             }

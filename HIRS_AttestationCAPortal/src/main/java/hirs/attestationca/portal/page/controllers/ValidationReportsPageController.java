@@ -6,6 +6,9 @@ import hirs.attestationca.portal.datatables.OrderedListQueryDataTableAdapter;
 import hirs.attestationca.portal.page.PageController;
 import hirs.attestationca.portal.page.params.NoPageParams;
 import hirs.data.persist.certificate.Certificate;
+import hirs.data.persist.certificate.PlatformCredential;
+import hirs.data.persist.certificate.attributes.ComponentIdentifier;
+import hirs.persist.CertificateManager;
 import org.apache.logging.log4j.Logger;
 import static org.apache.logging.log4j.LogManager.getLogger;
 import org.hibernate.Criteria;
@@ -16,6 +19,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.servlet.ModelAndView;
 
@@ -25,6 +29,10 @@ import hirs.data.persist.SupplyChainValidationSummary;
 import hirs.persist.CriteriaModifier;
 import hirs.persist.CrudManager;
 
+import javax.servlet.http.HttpServletResponse;
+import java.util.ArrayList;
+import java.util.UUID;
+
 /**
  * Controller for the Validation Reports page.
  */
@@ -33,6 +41,7 @@ import hirs.persist.CrudManager;
 public class ValidationReportsPageController extends PageController<NoPageParams> {
 
     private final CrudManager<SupplyChainValidationSummary> supplyChainValidatorSummaryManager;
+    private final CertificateManager certificateManager;
 
     private static final Logger LOGGER = getLogger(ValidationReportsPageController.class);
 
@@ -42,9 +51,11 @@ public class ValidationReportsPageController extends PageController<NoPageParams
      */
     @Autowired
     public ValidationReportsPageController(
-            final CrudManager<SupplyChainValidationSummary> supplyChainValidatorSummaryManager) {
+            final CrudManager<SupplyChainValidationSummary> supplyChainValidatorSummaryManager,
+            final CertificateManager certificateManager) {
         super(VALIDATION_REPORTS);
         this.supplyChainValidatorSummaryManager = supplyChainValidatorSummaryManager;
+        this.certificateManager = certificateManager;
     }
 
     /**
@@ -96,5 +107,25 @@ public class ValidationReportsPageController extends PageController<NoPageParams
                         criteriaModifier);
 
         return new DataTableResponse<>(records, input);
+    }
+
+    @RequestMapping(value = "download", method = RequestMethod.GET)
+    public void download(@RequestParam final String id,
+                         final HttpServletResponse response) {
+        LOGGER.info("Downloading validation report for " + id);
+        UUID uuid = UUID.fromString(id);
+        PlatformCredential pc = PlatformCredential.select(certificateManager).byDeviceId(uuid).getCertificate();
+        LOGGER.info("Verified manufacturer: " + pc.getManufacturer());
+        LOGGER.info("Model: " + pc.getModel());
+        LOGGER.info("SN: " + pc.getChassisSerialNumber());
+        LOGGER.info("Verification date: " + pc.getBeginValidity());
+        if (pc.getComponentIdentifiers() != null &&
+                pc.getComponentIdentifiers().size() > 0) {
+            for (ComponentIdentifier ci : pc.getComponentIdentifiers()) {
+                LOGGER.info("Manufacturer ID: " + ci.getComponentManufacturerId().toString() +
+                        "\nModel: " + ci.getComponentModel().getString() +
+                        "\nRevision: " + ci.getComponentRevision().getString());
+            }
+        }
     }
 }
