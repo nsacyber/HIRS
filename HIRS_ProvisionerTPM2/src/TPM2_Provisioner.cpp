@@ -44,6 +44,7 @@ int provision() {
     Logger logger = Logger::getDefaultLogger();
 
     CommandTpm2 tpm2;
+    Properties props("/etc/hirs/tcg_boot.properties");
     tpm2.setAuthData();
 
     // get endorsement credential and endorsement key
@@ -62,14 +63,26 @@ int provision() {
     cout << "----> Collecting platform credential from TPM" << endl;
     string platformCredential = tpm2.getPlatformCredentialDefault();
     std::vector<string> platformCredentials;
-    platformCredentials.push_back(platformCredential);
+
+    // if platformCredential is empty, not in TPM
+    // pull from properties file
+    if (platformCredential.empty()) {
+        const std::string& cert_dir = props.get("tcg.cert.dir", "");
+        try {
+            platformCredentials =
+                    hirs::file_utils::searchDirectory(cert_dir);
+        } catch (HirsRuntimeException& hirsRuntimeException) {
+            logger.error(hirsRuntimeException.what());
+        }
+    } else {
+        platformCredentials.push_back(platformCredential);
+    }
 
     // collect device info
     cout << "----> Collecting device information" << endl;
     hirs::pb::DeviceInfo dv = DeviceInfoCollector::collectDeviceInfo();
     dv.set_pcrslist(tpm2.getPcrList());
     // collect TCG Boot files
-    Properties props("/etc/hirs/tcg_boot.properties");
     const std::string& rim_file = props.get("tcg.rim.file", "");
     const std::string& swid_file = props.get("tcg.swidtag.file", "");
     try {
