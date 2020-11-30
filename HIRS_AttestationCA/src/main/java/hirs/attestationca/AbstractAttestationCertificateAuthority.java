@@ -410,8 +410,12 @@ public abstract class AbstractAttestationCertificateAuthority
         // parse the EK Public key from the IdentityClaim once for use in supply chain validation
         // and later tpm20MakeCredential function
         RSAPublicKey ekPub = parsePublicKey(claim.getEkPublicArea().toByteArray());
-
-        AppraisalStatus.Status validationResult = doSupplyChainValidation(claim, ekPub);
+        AppraisalStatus.Status validationResult = AppraisalStatus.Status.FAIL;
+        try {
+            validationResult = doSupplyChainValidation(claim, ekPub);
+        } catch (Exception ex) {
+            LOG.error(ex);
+        }
         if (validationResult == AppraisalStatus.Status.PASS) {
 
             RSAPublicKey akPub = parsePublicKey(claim.getAkPublicArea().toByteArray());
