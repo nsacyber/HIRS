@@ -89,13 +89,21 @@ int provision() {
     const std::string& swid_dir = props.get("tcg.swidtag.dir", "");
     try {
         rim_files = hirs::file_utils::search_directory(rim_dir);
-        dv.set_logfile(rim_files);
+        for (const auto& rims : rim_files) {
+            if (rims != "") {
+                dv.add_logfile(rims);
+            }
+        }
     } catch (HirsRuntimeException& hirsRuntimeException) {
         logger.error(hirsRuntimeException.what());
     }
     try {
         swidtag_files = hirs::file_utils::search_directory(swid_dir);
-        dv.set_swidfile(swidtag_files);
+        for (const auto& swidtag : swidtag_files) {
+            if (swidtag != "") {
+                dv.add_swidfile(swidtag);
+            }
+        }
     } catch (HirsRuntimeException& hirsRuntimeException) {
         logger.error(hirsRuntimeException.what());
     }

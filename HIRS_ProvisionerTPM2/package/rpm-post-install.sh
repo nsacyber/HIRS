@@ -54,7 +54,7 @@ if [ -d "$RIM_FILE_LOCATION" ]; then
   echo "tcg.rim.dir=$RIM_FILE_LOCATION" > "$TCG_BOOT_FILE"
 fi
 
-if [ -d "$TAG_FILE_LOCATION" ]; then
+if [ -d "$SWIDTAG_FILE_LOCATION" ]; then
   echo "tcg.swidtag.dir=$SWIDTAG_FILE_LOCATION" >> "$TCG_BOOT_FILE"
 fi
 
