@@ -33,7 +33,7 @@ namespace file_utils {
 
     std::string getFileAsOneLineOrEmptyString(const std::string& filename);
 
-    std::vector<std::string> searchDirectory(const std::string& directory);
+    std::vector<std::string> search_directory(const std::string& directory);
 
     void writeBinaryFile(const std::string& bytes,
                          const std::string& filename);

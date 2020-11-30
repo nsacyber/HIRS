@@ -119,9 +119,9 @@ namespace file_utils {
         return string_utils::trimNewLines(fileToString(filename, ""));
     }
 
-    vector<string> searchDirectory(const string& directory) {
+    vector<string> search_directory(const string& directory) {
         DIR *dr;
-        std::vector<string> platform_credentials;
+        std::vector<string> files;
         dr = opendir(directory.c_str());
 
         if (dr) {
@@ -131,7 +131,7 @@ namespace file_utils {
                 ss << directory.c_str();
                 ss << en->d_name;
                 try {
-                    platform_credentials.push_back(fileToString(ss.str()));
+                    files.push_back(fileToString(ss.str()));
                 } catch (HirsRuntimeException& hirsRuntimeException) {
                     std::cout << hirsRuntimeException.what();
                 }
@@ -140,7 +140,7 @@ namespace file_utils {
             closedir(dr);
         }
 
-        return platform_credentials;
+        return files;
     }
 
     /**
