@@ -102,6 +102,7 @@ public class ReferenceManifestDetailsPageController
                 LOGGER.error(uuidError, iaEx);
             } catch (Exception ioEx) {
                 LOGGER.error(ioEx);
+                LOGGER.trace(ioEx);
             }
             if (data.isEmpty()) {
                 String notFoundMessage = "Unable to find RIM with ID: " + params.getId();
@@ -236,6 +237,10 @@ public class ReferenceManifestDetailsPageController
                 baseRim.setAssociatedRim(support.getId());
                 logProcessor = new TCGEventLog(support.getRimBytes());
             }
+        } else {
+            support = SupportReferenceManifest.select(referenceManifestManager)
+                    .byEntityId(baseRim.getAssociatedRim()).getRIM();
+            logProcessor = new TCGEventLog(support.getRimBytes());
         }
         // going to have to pull the filename and grab that from the DB
         // to get the id to make the link
