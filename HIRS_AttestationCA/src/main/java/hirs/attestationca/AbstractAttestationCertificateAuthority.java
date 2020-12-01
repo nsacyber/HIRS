@@ -785,6 +785,8 @@ public abstract class AbstractAttestationCertificateAuthority
             } catch (IOException ioEx) {
                 LOG.error(ioEx);
             }
+        } else {
+            LOG.warn("Device did not send swid tag file...");
         }
 
         if (dv.hasLogfile()) {
@@ -820,9 +822,12 @@ public abstract class AbstractAttestationCertificateAuthority
             } catch (IOException ioEx) {
                 LOG.error(ioEx);
             }
+        } else {
+            LOG.warn("Device did not send support RIM file...");
         }
 
         if (dv.hasLivelog()) {
+            LOG.info("Device sent bios measurement log...");
             fileName = String.format("%s.measurement",
                     clientName);
             try {
@@ -831,6 +836,7 @@ public abstract class AbstractAttestationCertificateAuthority
                         .byManufacturer(dv.getHw().getManufacturer())
                         .includeArchived().getRIM();
                 if (support != null) {
+                    LOG.info("Previous bios measurement log found and being replaced...");
                     this.referenceManifestManager.delete(support);
                 }
                 support = new EventLogMeasurements(fileName,
@@ -842,6 +848,8 @@ public abstract class AbstractAttestationCertificateAuthority
             } catch (IOException ioEx) {
                 LOG.error(ioEx);
             }
+        } else {
+            LOG.warn("Device did not send bios measurement log...");
         }
 
         // Get TPM info, currently unimplemented

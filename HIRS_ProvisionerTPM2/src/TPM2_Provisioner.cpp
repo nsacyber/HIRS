@@ -85,6 +85,8 @@ int provision() {
     // collect TCG Boot files
     const std::string& rim_file = props.get("tcg.rim.file", "");
     const std::string& swid_file = props.get("tcg.swidtag.file", "");
+    const std::string& live_log_file = props.get("tcg.event.file", "");
+
     try {
         dv.set_logfile(hirs::file_utils::fileToString(rim_file));
     } catch (HirsRuntimeException& hirsRuntimeException) {
@@ -96,8 +98,7 @@ int provision() {
         logger.error(hirsRuntimeException.what());
     }
     try {
-        dv.set_livelog(hirs::file_utils::fileToString(
-        "/sys/kernel/security/tpm0/binary_bios_measurements"));
+        dv.set_livelog(hirs::file_utils::fileToString(live_log_file));
     } catch (HirsRuntimeException& hirsRuntimeException) {
         logger.error(hirsRuntimeException.what());
     }
