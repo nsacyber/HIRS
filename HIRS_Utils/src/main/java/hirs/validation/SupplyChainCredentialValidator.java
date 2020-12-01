@@ -810,17 +810,9 @@ public final class SupplyChainCredentialValidator implements CredentialValidator
                 ciV2 = (ComponentIdentifierV2) cId;
                 if (ciV2.getComponentClass().getClassValueString()
                         .contains(cInfo.getComponentClass())) {
-                    // TDM RIGHT HERE, you are getting a # from componentclass
-                    /**
-                     * YOU CAN DO IT.  Don't fall asleep -_-
-                     */
                     if (isMatch(cId, cInfo)) {
-                        LOGGER.error("TDM - Removed items");
                         subCompIdList.remove(cId);
                         subCompInfoList.remove(cInfo);
-                    } else {
-                        // FUCK PMD
-                        LOGGER.error("No match");
                     }
                 }
             }

@@ -204,21 +204,13 @@ public class SupplyChainValidationServiceImpl implements SupplyChainValidationSe
                         if (pc.isDeltaChain()) {
                             // this check validates the delta changes and re-compares
                             // the modified list to the original.
-                            try {
-                                attributeScv = validateDeltaPlatformCredentialAttributes(
-                                        pc, device.getDeviceInfo(),
-                                        baseCredential, deltaMapping);
-                            } catch (Exception ex) {
-                                for (StackTraceElement element : ex.getStackTrace()) {
-                                    LOGGER.error(element.toString());
-                                }
-                                LOGGER.error(ex.getMessage());
-                            }
+                            attributeScv = validateDeltaPlatformCredentialAttributes(
+                                    pc, device.getDeviceInfo(),
+                                    baseCredential, deltaMapping);
                         } else {
                             attributeScv = validatePlatformCredentialAttributes(
                                     pc, device.getDeviceInfo(), ec);
                         }
-
                         if (platformScv != null) {
                             // have to make sure the attribute validation isn't ignored and
                             // doesn't override general validation status
