@@ -87,6 +87,8 @@ int provision() {
     std::vector<string> swidtag_files;
     const std::string& rim_dir = props.get("tcg.rim.dir", "");
     const std::string& swid_dir = props.get("tcg.swidtag.dir", "");
+    const std::string& live_log_file = props.get("tcg.event.file", "");
+
     try {
         rim_files = hirs::file_utils::search_directory(rim_dir);
         for (const auto& rims : rim_files) {
@@ -108,8 +110,7 @@ int provision() {
         logger.error(hirsRuntimeException.what());
     }
     try {
-        dv.set_livelog(hirs::file_utils::fileToString(
-        "/sys/kernel/security/tpm0/binary_bios_measurements"));
+        dv.set_livelog(hirs::file_utils::fileToString(live_log_file));
     } catch (HirsRuntimeException& hirsRuntimeException) {
         logger.error(hirsRuntimeException.what());
     }
