@@ -41,9 +41,11 @@ fi
 ln -s -f /etc/hirs/provisioner/hirs-provisioner.sh /usr/sbin/hirs-provisioner
 
 TCG_BOOT_FILE="/etc/hirs/tcg_boot.properties"
-MAINFEST_DIRECTORY="/boot/tcg/manifest"
-LOG_FILE_LOCATION="$MAINFEST_DIRECTORY/rim/"
-TAG_FILE_LOCATION="$MAINFEST_DIRECTORY/swidtag/"
+TCG_DIRECTORY="/boot/tcg"
+LOG_FILE_LOCATION="$TCG_DIRECTORY/manifest/rim/"
+TAG_FILE_LOCATION="$TCG_DIRECTORY/manifest/swidtag/"
+CREDENTIALS_LOCATION="$TCG_DIRECTORY/cert/platform/"
+BINARY_BIOS_MEASUREMENTS="/sys/kernel/security/tpm0/binary_bios_measurements"
 
 if [ ! -f "$TCG_BOOT_FILE" ]; then
   touch "$TCG_BOOT_FILE"
@@ -57,6 +59,14 @@ fi
 if [ -d "$TAG_FILE_LOCATION" ]; then
   SWID_FILE=$(find "$TAG_FILE_LOCATION" -name '*.swidtag')
   echo "tcg.swidtag.file=$SWID_FILE" >> "$TCG_BOOT_FILE"
+fi
+
+if [ -d "$CREDENTIALS_LOCATION" ]; then
+  echo "tcg.cert.dir=$CREDENTIALS_LOCATION" >> "$TCG_BOOT_FILE"
+fi
+
+if [ -f "$BINARY_BIOS_MEASUREMENTS" ]; then
+  echo "tcg.event.file=$BINARY_BIOS_MEASUREMENTS" >> "$TCG_BOOT_FILE"
 fi
 
 chmod -w "$TCG_BOOT_FILE"

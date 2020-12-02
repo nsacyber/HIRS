@@ -6,6 +6,7 @@
 
 #include <re2/re2.h>
 
+#include <dirent.h>
 #include <sys/stat.h>
 #include <sstream>
 #include <iomanip>
@@ -116,6 +117,30 @@ namespace file_utils {
 
     string getFileAsOneLineOrEmptyString(const string& filename) {
         return string_utils::trimNewLines(fileToString(filename, ""));
+    }
+
+    vector<string> searchDirectory(const string& directory) {
+        DIR *dr;
+        std::vector<string> platform_credentials;
+        dr = opendir(directory.c_str());
+
+        if (dr) {
+            struct dirent *en;
+            while ((en = readdir(dr)) != NULL) {
+                stringstream ss;
+                ss << directory.c_str();
+                ss << en->d_name;
+                try {
+                    platform_credentials.push_back(fileToString(ss.str()));
+                } catch (HirsRuntimeException& hirsRuntimeException) {
+                    std::cout << hirsRuntimeException.what();
+                }
+            }
+            // close directory
+            closedir(dr);
+        }
+
+        return platform_credentials;
     }
 
     /**

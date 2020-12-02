@@ -410,8 +410,12 @@ public abstract class AbstractAttestationCertificateAuthority
         // parse the EK Public key from the IdentityClaim once for use in supply chain validation
         // and later tpm20MakeCredential function
         RSAPublicKey ekPub = parsePublicKey(claim.getEkPublicArea().toByteArray());
-
-        AppraisalStatus.Status validationResult = doSupplyChainValidation(claim, ekPub);
+        AppraisalStatus.Status validationResult = AppraisalStatus.Status.FAIL;
+        try {
+            validationResult = doSupplyChainValidation(claim, ekPub);
+        } catch (Exception ex) {
+            LOG.error(ex);
+        }
         if (validationResult == AppraisalStatus.Status.PASS) {
 
             RSAPublicKey akPub = parsePublicKey(claim.getAkPublicArea().toByteArray());
@@ -781,6 +785,8 @@ public abstract class AbstractAttestationCertificateAuthority
             } catch (IOException ioEx) {
                 LOG.error(ioEx);
             }
+        } else {
+            LOG.warn("Device did not send swid tag file...");
         }
 
         if (dv.hasLogfile()) {
@@ -816,9 +822,12 @@ public abstract class AbstractAttestationCertificateAuthority
             } catch (IOException ioEx) {
                 LOG.error(ioEx);
             }
+        } else {
+            LOG.warn("Device did not send support RIM file...");
         }
 
         if (dv.hasLivelog()) {
+            LOG.info("Device sent bios measurement log...");
             fileName = String.format("%s.measurement",
                     clientName);
             try {
@@ -827,6 +836,7 @@ public abstract class AbstractAttestationCertificateAuthority
                         .byManufacturer(dv.getHw().getManufacturer())
                         .includeArchived().getRIM();
                 if (support != null) {
+                    LOG.info("Previous bios measurement log found and being replaced...");
                     this.referenceManifestManager.delete(support);
                 }
                 support = new EventLogMeasurements(fileName,
@@ -838,6 +848,8 @@ public abstract class AbstractAttestationCertificateAuthority
             } catch (IOException ioEx) {
                 LOG.error(ioEx);
             }
+        } else {
+            LOG.warn("Device did not send bios measurement log...");
         }
 
         // Get TPM info, currently unimplemented
