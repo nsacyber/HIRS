@@ -780,6 +780,7 @@ public abstract class AbstractAttestationCertificateAuthority
                         LOG.info("Client provided Base RIM already loaded in database.");
                         dbBaseRim.restore();
                         dbBaseRim.resetCreateTime();
+                        this.referenceManifestManager.update(dbBaseRim);
                     }
 
                     tagId = dbBaseRim.getTagId();
