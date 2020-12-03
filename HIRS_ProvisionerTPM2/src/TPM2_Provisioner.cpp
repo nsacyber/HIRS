@@ -44,6 +44,7 @@ int provision() {
     Logger logger = Logger::getDefaultLogger();
 
     CommandTpm2 tpm2;
+    Properties props("/etc/hirs/tcg_boot.properties");
     tpm2.setAuthData();
 
     // get endorsement credential and endorsement key
@@ -62,21 +63,54 @@ int provision() {
     cout << "----> Collecting platform credential from TPM" << endl;
     string platformCredential = tpm2.getPlatformCredentialDefault();
     std::vector<string> platformCredentials;
-    platformCredentials.push_back(platformCredential);
+
+    // if platformCredential is empty, not in TPM
+    // pull from properties file
+    if (platformCredential.empty()) {
+        const std::string& cert_dir = props.get("tcg.cert.dir", "");
+        try {
+            platformCredentials =
+                    hirs::file_utils::search_directory(cert_dir);
+        } catch (HirsRuntimeException& hirsRuntimeException) {
+            logger.error(hirsRuntimeException.what());
+        }
+    } else {
+        platformCredentials.push_back(platformCredential);
+    }
 
     // collect device info
     cout << "----> Collecting device information" << endl;
     hirs::pb::DeviceInfo dv = DeviceInfoCollector::collectDeviceInfo();
     dv.set_pcrslist(tpm2.getPcrList());
     // collect TCG Boot files
-    Properties props("/etc/hirs/tcg_boot.properties");
-    const std::string& rim_file = props.get("tcg.rim.file", "");
-    const std::string& swid_file = props.get("tcg.swidtag.file", "");
+    std::vector<string> rim_files;
+    std::vector<string> swidtag_files;
+    const std::string& rim_dir = props.get("tcg.rim.dir", "");
+    const std::string& swid_dir = props.get("tcg.swidtag.dir", "");
+    const std::string& live_log_file = props.get("tcg.event.file", "");
+
     try {
-        dv.set_logfile(hirs::file_utils::fileToString(rim_file));
-        dv.set_swidfile(hirs::file_utils::fileToString(swid_file));
-        dv.set_livelog(hirs::file_utils::fileToString(
-        "/sys/kernel/security/tpm0/binary_bios_measurements"));
+        rim_files = hirs::file_utils::search_directory(rim_dir);
+        for (const auto& rims : rim_files) {
+            if (rims != "") {
+                dv.add_logfile(rims);
+            }
+        }
+    } catch (HirsRuntimeException& hirsRuntimeException) {
+        logger.error(hirsRuntimeException.what());
+    }
+    try {
+        swidtag_files = hirs::file_utils::search_directory(swid_dir);
+        for (const auto& swidtag : swidtag_files) {
+            if (swidtag != "") {
+                dv.add_swidfile(swidtag);
+            }
+        }
+    } catch (HirsRuntimeException& hirsRuntimeException) {
+        logger.error(hirsRuntimeException.what());
+    }
+    try {
+        dv.set_livelog(hirs::file_utils::fileToString(live_log_file));
     } catch (HirsRuntimeException& hirsRuntimeException) {
         logger.error(hirsRuntimeException.what());
     }

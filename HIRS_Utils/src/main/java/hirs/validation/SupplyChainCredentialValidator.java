@@ -205,12 +205,12 @@ public final class SupplyChainCredentialValidator implements CredentialValidator
         }
         try {
             if (trustStore == null || trustStore.size() == 0) {
-                message = baseErrorMessage + "a trust store\n";
+                message = baseErrorMessage + "an Issuer Cert in the Trust Store\n";
                 LOGGER.error(message);
                 return new AppraisalStatus(FAIL, message);
             }
         } catch (KeyStoreException e) {
-            message = baseErrorMessage + "an intitialized trust store";
+            message = baseErrorMessage + "an initialized trust store";
             LOGGER.error(message);
             return new AppraisalStatus(FAIL, message);
         }

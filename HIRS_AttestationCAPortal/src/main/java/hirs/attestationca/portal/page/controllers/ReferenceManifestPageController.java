@@ -188,7 +188,7 @@ public class ReferenceManifestPageController
         Map<String, Object> model = new HashMap<>();
         PageMessages messages = new PageMessages();
         String fileName;
-        Pattern pattern;
+        Pattern logPattern = Pattern.compile(LOG_FILE_PATTERN);
         Matcher matcher;
         boolean supportRIM = false;
         BaseReferenceManifest base;
@@ -197,64 +197,63 @@ public class ReferenceManifestPageController
         // loop through the files
         for (MultipartFile file : files) {
             fileName = file.getOriginalFilename();
-            pattern = Pattern.compile(LOG_FILE_PATTERN);
-            matcher = pattern.matcher(fileName);
+            matcher = logPattern.matcher(fileName);
             supportRIM = matcher.matches();
 
             //Parse reference manifests
             ReferenceManifest rim = parseRIM(file, supportRIM, messages);
 
-            if (supportRIM) {
-                // look for associated base/support
-                Set<BaseReferenceManifest> rims = BaseReferenceManifest
-                        .select(referenceManifestManager).getRIMs();
-                support = (SupportReferenceManifest) rim;
-                // update information for associated support rim
-                for (BaseReferenceManifest dbRim : rims) {
-                    for (SwidResource swid : dbRim.parseResource()) {
-                        if (swid.getName().equals(rim.getFileName())) {
-                            support.setSwidTagVersion(dbRim.getSwidTagVersion());
-                            support.setPlatformManufacturer(dbRim.getPlatformManufacturer());
-                            support.setPlatformModel(dbRim.getPlatformModel());
-                            support.setTagId(dbRim.getTagId());
-                            support.setAssociatedRim(dbRim.getId());
-                            support.setUpdated(true);
-                            break;
+            //Store only if it was parsed
+            if (rim != null) {
+                if (supportRIM) {
+                    // look for associated base/support
+                    Set<BaseReferenceManifest> rims = BaseReferenceManifest
+                            .select(referenceManifestManager).getRIMs();
+                    support = (SupportReferenceManifest) rim;
+                    // update information for associated support rim
+                    for (BaseReferenceManifest dbRim : rims) {
+                        for (SwidResource swid : dbRim.parseResource()) {
+                            if (swid.getName().equals(rim.getFileName())) {
+                                support.setSwidTagVersion(dbRim.getSwidTagVersion());
+                                support.setPlatformManufacturer(dbRim.getPlatformManufacturer());
+                                support.setPlatformModel(dbRim.getPlatformModel());
+                                support.setTagId(dbRim.getTagId());
+                                support.setAssociatedRim(dbRim.getId());
+                                support.setUpdated(true);
+                                break;
+                            }
                         }
                     }
-                }
-            } else {
-                base = (BaseReferenceManifest) rim;
+                } else {
+                    base = (BaseReferenceManifest) rim;
 
-                for (SwidResource swid : base.parseResource()) {
-                    support = SupportReferenceManifest.select(referenceManifestManager)
-                            .byFileName(swid.getName()).getRIM();
-                    if (support != null) {
-                        base.setAssociatedRim(support.getId());
-                        if (support.isUpdated()) {
-                            // this is separate because I want to break if we found it
-                            // instead of finding it, it is uptodate but still search
-                            break;
-                        } else {
-                            support.setSwidTagVersion(base.getSwidTagVersion());
-                            support.setPlatformManufacturer(base.getPlatformManufacturer());
-                            support.setPlatformModel(base.getPlatformModel());
-                            support.setTagId(base.getTagId());
-                            support.setUpdated(true);
-                            try {
-                                referenceManifestManager.update(support);
-                            } catch (DBManagerException dbmEx) {
-                                LOGGER.error(String.format("Couldn't update Support RIM "
-                                                + "%s with associated UUID %s", rim.getTagId(),
-                                        support.getId()), dbmEx);
+                    for (SwidResource swid : base.parseResource()) {
+                        support = SupportReferenceManifest.select(referenceManifestManager)
+                                .byFileName(swid.getName()).getRIM();
+                        if (support != null) {
+                            base.setAssociatedRim(support.getId());
+                            if (support.isUpdated()) {
+                                // this is separate because I want to break if we found it
+                                // instead of finding it, it is uptodate but still search
+                                break;
+                            } else {
+                                support.setSwidTagVersion(base.getSwidTagVersion());
+                                support.setPlatformManufacturer(base.getPlatformManufacturer());
+                                support.setPlatformModel(base.getPlatformModel());
+                                support.setTagId(base.getTagId());
+                                support.setUpdated(true);
+                                try {
+                                    referenceManifestManager.update(support);
+                                } catch (DBManagerException dbmEx) {
+                                    LOGGER.error(String.format("Couldn't update Support RIM "
+                                                    + "%s with associated UUID %s", rim.getTagId(),
+                                            support.getId()), dbmEx);
+                                }
                             }
                         }
                     }
                 }
-            }
 
-            //Store only if it was parsed
-            if (rim != null) {
                 storeManifest(file.getOriginalFilename(),
                         messages,
                         rim,

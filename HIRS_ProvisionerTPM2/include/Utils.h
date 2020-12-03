@@ -5,6 +5,7 @@
 #define HIRS_PROVISIONERTPM2_INCLUDE_UTILS_H_
 
 #include <string>
+#include <vector>
 
 namespace hirs {
 
@@ -31,6 +32,8 @@ namespace file_utils {
                              const std::string& defaultVal);
 
     std::string getFileAsOneLineOrEmptyString(const std::string& filename);
+
+    std::vector<std::string> search_directory(const std::string& directory);
 
     void writeBinaryFile(const std::string& bytes,
                          const std::string& filename);

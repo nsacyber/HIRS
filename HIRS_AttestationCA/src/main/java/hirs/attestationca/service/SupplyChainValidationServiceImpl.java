@@ -338,8 +338,6 @@ public class SupplyChainValidationServiceImpl implements SupplyChainValidationSe
                 .byManufacturer(manufacturer).getRIM();
         supportReferenceManifest = SupportReferenceManifest.select(referenceManifestManager)
                 .byManufacturer(manufacturer).getRIM();
-        List<SwidResource> resources =
-                ((BaseReferenceManifest) baseReferenceManifest).parseResource();
         measurement = EventLogMeasurements.select(referenceManifestManager)
                 .byManufacturer(manufacturer).includeArchived().getRIM();
 
@@ -359,6 +357,8 @@ public class SupplyChainValidationServiceImpl implements SupplyChainValidationSe
         }
 
         if (passed) {
+            List<SwidResource> resources =
+                    ((BaseReferenceManifest) baseReferenceManifest).parseResource();
             fwStatus = new AppraisalStatus(PASS,
                     SupplyChainCredentialValidator.FIRMWARE_VALID);
 
