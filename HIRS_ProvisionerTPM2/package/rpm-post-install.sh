@@ -42,8 +42,8 @@ ln -s -f /etc/hirs/provisioner/hirs-provisioner.sh /usr/sbin/hirs-provisioner
 
 TCG_BOOT_FILE="/etc/hirs/tcg_boot.properties"
 TCG_DIRECTORY="/boot/tcg"
-LOG_FILE_LOCATION="$TCG_DIRECTORY/manifest/rim/"
-TAG_FILE_LOCATION="$TCG_DIRECTORY/manifest/swidtag/"
+RIM_FILE_LOCATION="$TCG_DIRECTORY/manifest/rim/"
+SWIDTAG_FILE_LOCATION="$TCG_DIRECTORY/manifest/swidtag/"
 CREDENTIALS_LOCATION="$TCG_DIRECTORY/cert/platform/"
 BINARY_BIOS_MEASUREMENTS="/sys/kernel/security/tpm0/binary_bios_measurements"
 
@@ -51,14 +51,12 @@ if [ ! -f "$TCG_BOOT_FILE" ]; then
   touch "$TCG_BOOT_FILE"
 fi
 
-if [ -d "$LOG_FILE_LOCATION" ]; then
-  RIM_FILE=$(find "$LOG_FILE_LOCATION" -name '*.rimel' -or -name '*.bin' -or -name '*.rimpcr' -or -name '*.log')
-  echo "tcg.rim.file=$RIM_FILE" > "$TCG_BOOT_FILE"
+if [ -d "$RIM_FILE_LOCATION" ]; then
+  echo "tcg.rim.dir=$RIM_FILE_LOCATION" > "$TCG_BOOT_FILE"
 fi
 
-if [ -d "$TAG_FILE_LOCATION" ]; then
-  SWID_FILE=$(find "$TAG_FILE_LOCATION" -name '*.swidtag')
-  echo "tcg.swidtag.file=$SWID_FILE" >> "$TCG_BOOT_FILE"
+if [ -d "$SWIDTAG_FILE_LOCATION" ]; then
+  echo "tcg.swidtag.dir=$SWIDTAG_FILE_LOCATION" >> "$TCG_BOOT_FILE"
 fi
 
 if [ -d "$CREDENTIALS_LOCATION" ]; then

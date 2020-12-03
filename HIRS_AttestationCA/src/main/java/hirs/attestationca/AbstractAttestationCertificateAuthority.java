@@ -747,80 +747,85 @@ public abstract class AbstractAttestationCertificateAuthority
         Pattern pattern = Pattern.compile("([^\\s]+(\\.(?i)(rimpcr|rimel|bin|log))$)");
         Matcher matcher;
 
-        if (dv.hasSwidfile()) {
-            try {
-                dbBaseRim = BaseReferenceManifest.select(referenceManifestManager)
-                        .includeArchived()
-                        .byHashCode(Arrays.hashCode(dv.getSwidfile().toByteArray()))
-                        .getRIM();
+        if (dv.getSwidfileCount() > 0) {
+            for (ByteString swidFile : dv.getSwidfileList()) {
+                try {
+                    dbBaseRim = BaseReferenceManifest.select(referenceManifestManager)
+                            .includeArchived()
+                            .byHashCode(Arrays.hashCode(swidFile.toByteArray()))
+                            .getRIM();
 
-                if (dbBaseRim == null) {
-                    dbBaseRim = new BaseReferenceManifest(
-                            String.format("%s.swidtag",
-                                    clientName),
-                            dv.getSwidfile().toByteArray());
+                    if (dbBaseRim == null) {
+                        dbBaseRim = new BaseReferenceManifest(
+                                String.format("%s.swidtag",
+                                        clientName),
+                                swidFile.toByteArray());
 
-                    BaseReferenceManifest base = (BaseReferenceManifest) dbBaseRim;
-                    for (SwidResource swid : base.parseResource()) {
-                        matcher = pattern.matcher(swid.getName());
-                        if (matcher.matches()) {
-                            //found the file name
-                            int dotIndex = swid.getName().lastIndexOf(".");
-                            clientName = swid.getName().substring(0, dotIndex);
-                            dbBaseRim = new BaseReferenceManifest(
-                                    String.format("%s.swidtag",
-                                            clientName),
-                                    dv.getSwidfile().toByteArray());
-                            break;
+                        BaseReferenceManifest base = (BaseReferenceManifest) dbBaseRim;
+                        for (SwidResource swid : base.parseResource()) {
+                            matcher = pattern.matcher(swid.getName());
+                            if (matcher.matches()) {
+                                //found the file name
+                                int dotIndex = swid.getName().lastIndexOf(".");
+                                clientName = swid.getName().substring(0, dotIndex);
+                                dbBaseRim = new BaseReferenceManifest(
+                                        String.format("%s.swidtag",
+                                                clientName),
+                                        swidFile.toByteArray());
+                                break;
+                            }
                         }
+                        this.referenceManifestManager.save(dbBaseRim);
+                    } else {
+                        LOG.info("Client provided Base RIM already loaded in database.");
+                        dbBaseRim.restore();
+                        dbBaseRim.resetCreateTime();
+                        this.referenceManifestManager.update(dbBaseRim);
                     }
-                    this.referenceManifestManager.save(dbBaseRim);
-                } else {
-                    LOG.info("Client provided Base RIM already loaded in database.");
-                    dbBaseRim.restore();
-                    dbBaseRim.resetCreateTime();
-                }
 
-                tagId = dbBaseRim.getTagId();
-            } catch (IOException ioEx) {
-                LOG.error(ioEx);
+                    tagId = dbBaseRim.getTagId();
+                } catch (IOException ioEx) {
+                    LOG.error(ioEx);
+                }
             }
         } else {
             LOG.warn("Device did not send swid tag file...");
         }
 
-        if (dv.hasLogfile()) {
-            try {
-                support = SupportReferenceManifest.select(referenceManifestManager)
-                        .includeArchived()
-                        .byHashCode(Arrays.hashCode(dv.getLogfile().toByteArray()))
-                        .getRIM();
+        if (dv.getLogfileCount() > 0) {
+            for (ByteString logFile : dv.getLogfileList()) {
+                try {
+                    support = SupportReferenceManifest.select(referenceManifestManager)
+                            .includeArchived()
+                            .byHashCode(Arrays.hashCode(logFile.toByteArray()))
+                            .getRIM();
 
-                if (support == null) {
-                    support = new SupportReferenceManifest(
-                            String.format("%s.rimel",
-                                    clientName),
-                            dv.getLogfile().toByteArray());
-                    support.setPlatformManufacturer(dv.getHw().getManufacturer());
-                    support.setPlatformModel(dv.getHw().getProductName());
-                    support.setTagId(tagId);
-                    this.referenceManifestManager.save(support);
-                } else {
-                    LOG.info("Client provided Support RIM already loaded in database.");
-                    if (dbBaseRim != null) {
-                        support.setPlatformManufacturer(dbBaseRim.getPlatformManufacturer());
-                        support.setPlatformModel(dbBaseRim.getPlatformModel());
-                        support.setSwidTagVersion(dbBaseRim.getSwidTagVersion());
-                        support.setAssociatedRim(dbBaseRim.getId());
-                        support.setTagId(dbBaseRim.getTagId());
+                    if (support == null) {
+                        support = new SupportReferenceManifest(
+                                String.format("%s.rimel",
+                                        clientName),
+                                logFile.toByteArray());
+                        support.setPlatformManufacturer(dv.getHw().getManufacturer());
+                        support.setPlatformModel(dv.getHw().getProductName());
+                        support.setTagId(tagId);
+                        this.referenceManifestManager.save(support);
+                    } else {
+                        LOG.info("Client provided Support RIM already loaded in database.");
+                        if (dbBaseRim != null) {
+                            support.setPlatformManufacturer(dbBaseRim.getPlatformManufacturer());
+                            support.setPlatformModel(dbBaseRim.getPlatformModel());
+                            support.setSwidTagVersion(dbBaseRim.getSwidTagVersion());
+                            support.setAssociatedRim(dbBaseRim.getId());
+                            support.setTagId(dbBaseRim.getTagId());
+                        }
+
+                        support.restore();
+                        support.resetCreateTime();
+                        this.referenceManifestManager.update(support);
                     }
-
-                    support.restore();
-                    support.resetCreateTime();
-                    this.referenceManifestManager.update(support);
+                } catch (IOException ioEx) {
+                    LOG.error(ioEx);
                 }
-            } catch (IOException ioEx) {
-                LOG.error(ioEx);
             }
         } else {
             LOG.warn("Device did not send support RIM file...");

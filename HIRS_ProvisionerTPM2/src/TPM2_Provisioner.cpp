@@ -70,7 +70,7 @@ int provision() {
         const std::string& cert_dir = props.get("tcg.cert.dir", "");
         try {
             platformCredentials =
-                    hirs::file_utils::searchDirectory(cert_dir);
+                    hirs::file_utils::search_directory(cert_dir);
         } catch (HirsRuntimeException& hirsRuntimeException) {
             logger.error(hirsRuntimeException.what());
         }
@@ -83,17 +83,29 @@ int provision() {
     hirs::pb::DeviceInfo dv = DeviceInfoCollector::collectDeviceInfo();
     dv.set_pcrslist(tpm2.getPcrList());
     // collect TCG Boot files
-    const std::string& rim_file = props.get("tcg.rim.file", "");
-    const std::string& swid_file = props.get("tcg.swidtag.file", "");
+    std::vector<string> rim_files;
+    std::vector<string> swidtag_files;
+    const std::string& rim_dir = props.get("tcg.rim.dir", "");
+    const std::string& swid_dir = props.get("tcg.swidtag.dir", "");
     const std::string& live_log_file = props.get("tcg.event.file", "");
 
     try {
-        dv.set_logfile(hirs::file_utils::fileToString(rim_file));
+        rim_files = hirs::file_utils::search_directory(rim_dir);
+        for (const auto& rims : rim_files) {
+            if (rims != "") {
+                dv.add_logfile(rims);
+            }
+        }
     } catch (HirsRuntimeException& hirsRuntimeException) {
         logger.error(hirsRuntimeException.what());
     }
     try {
-        dv.set_swidfile(hirs::file_utils::fileToString(swid_file));
+        swidtag_files = hirs::file_utils::search_directory(swid_dir);
+        for (const auto& swidtag : swidtag_files) {
+            if (swidtag != "") {
+                dv.add_swidfile(swidtag);
+            }
+        }
     } catch (HirsRuntimeException& hirsRuntimeException) {
         logger.error(hirsRuntimeException.what());
     }
