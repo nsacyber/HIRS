@@ -5,7 +5,6 @@ import hirs.data.persist.EventLogMeasurements;
 import hirs.data.persist.ReferenceManifest;
 import hirs.data.persist.SupportReferenceManifest;
 import hirs.data.persist.SwidResource;
-import hirs.data.persist.certificate.Certificate;
 import hirs.data.persist.certificate.CertificateAuthorityCredential;
 import hirs.persist.CertificateManager;
 import hirs.persist.DBManagerException;
@@ -26,6 +25,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 
 import hirs.tpm.eventlog.TpmPcrEvent;
@@ -102,6 +102,7 @@ public class ReferenceManifestDetailsPageController
                 LOGGER.error(uuidError, iaEx);
             } catch (Exception ioEx) {
                 LOGGER.error(ioEx);
+                LOGGER.trace(ioEx);
             }
             if (data.isEmpty()) {
                 String notFoundMessage = "Unable to find RIM with ID: " + params.getId();
@@ -236,6 +237,10 @@ public class ReferenceManifestDetailsPageController
                 baseRim.setAssociatedRim(support.getId());
                 logProcessor = new TCGEventLog(support.getRimBytes());
             }
+        } else {
+            support = SupportReferenceManifest.select(referenceManifestManager)
+                    .byEntityId(baseRim.getAssociatedRim()).getRIM();
+            logProcessor = new TCGEventLog(support.getRimBytes());
         }
         // going to have to pull the filename and grab that from the DB
         // to get the id to make the link
@@ -262,17 +267,20 @@ public class ReferenceManifestDetailsPageController
 
         RIM_VALIDATOR.validateXmlSignature(new ByteArrayInputStream(baseRim.getRimBytes()));
         data.put("signatureValid", RIM_VALIDATOR.isSignatureValid());
-        if (RIM_VALIDATOR.isSignatureValid()) {
-            LOGGER.info("Public key: " + RIM_VALIDATOR.getPublicKey().toString());
-            try {
-                Certificate certificate =
-                        CertificateAuthorityCredential.select(certificateManager)
-                                .byEncodedPublicKey(RIM_VALIDATOR.getPublicKey().getEncoded())
-                                .getCertificate();
-                data.put("issuerID", certificate.getId().toString());
-            } catch (NullPointerException e) {
-                LOGGER.info("Unable to get signing certificate link: " + e.getMessage());
+        data.put("skID", RIM_VALIDATOR.getSubjectKeyIdentifier());
+        try {
+            Set<CertificateAuthorityCredential> certificates =
+                    CertificateAuthorityCredential.select(certificateManager)
+                            .getCertificates();
+            for (CertificateAuthorityCredential cert : certificates) {
+                if (Arrays.equals(cert.getEncodedPublicKey(),
+                        RIM_VALIDATOR.getPublicKey().getEncoded())) {
+                    LOGGER.info("Found matching cert!");
+                    data.put("issuerID", cert.getId().toString());
+                }
             }
+        } catch (NullPointerException e) {
+            LOGGER.error("Unable to link signing certificate: " + e.getMessage());
         }
         return data;
     }
@@ -293,8 +301,11 @@ public class ReferenceManifestDetailsPageController
             final ReferenceManifestManager referenceManifestManager)
             throws IOException, CertificateException, NoSuchAlgorithmException {
         HashMap<String, Object> data = new HashMap<>();
+        EventLogMeasurements measurements = null;
 
-        if (support.getAssociatedRim() == null) {
+        if (support.getAssociatedRim() == null
+                && (support.getPlatformManufacturer() != null
+                && !support.getPlatformManufacturer().isEmpty())) {
             ReferenceManifest baseRim = BaseReferenceManifest.select(referenceManifestManager)
                     .byManufacturer(support.getPlatformManufacturer()).getRIM();
             if (baseRim != null) {
@@ -305,16 +316,16 @@ public class ReferenceManifestDetailsPageController
                     LOGGER.error("Failed to update Support RIM", ex);
                 }
             }
+            measurements = EventLogMeasurements.select(referenceManifestManager)
+                    .byManufacturer(support.getPlatformManufacturer()).getRIM();
         }
+
         data.put("baseRim", support.getTagId());
         data.put("associatedRim", support.getAssociatedRim());
         data.put("rimType", support.getRimType());
         data.put("tagId", support.getTagId());
 
         TCGEventLog logProcessor = new TCGEventLog(support.getRimBytes());
-        EventLogMeasurements measurements = EventLogMeasurements.select(referenceManifestManager)
-                .byManufacturer(support.getPlatformManufacturer()).getRIM();
-
         LinkedList<TpmPcrEvent> tpmPcrEvents = new LinkedList<>();
         TCGEventLog measurementsProcess;
         if (measurements != null) {
@@ -327,9 +338,10 @@ public class ReferenceManifestDetailsPageController
                 }
                 tpmPcrEvents.add(tpe);
             }
+            data.put("events", tpmPcrEvents);
+        } else {
+            data.put("events", logProcessor.getEventList());
         }
-
-        data.put("events", tpmPcrEvents);
 
         return data;
     }

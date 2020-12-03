@@ -84,6 +84,7 @@ public class SupplyChainValidationServiceImpl implements SupplyChainValidationSe
 
     private static final Logger LOGGER
             = LogManager.getLogger(SupplyChainValidationServiceImpl.class);
+    private static final int VALUE_INDEX = 1;
 
     /**
      * Constructor.
@@ -249,7 +250,8 @@ public class SupplyChainValidationServiceImpl implements SupplyChainValidationSe
                                         String.format("%s%n%s", platformScv.getMessage(),
                                                 attributeScv.getMessage())));
                             }
-                            componentFailures = attributeScv.getMessage();
+                            componentFailures = updateUnmatchedComponents(
+                                    attributeScv.getMessage());
                         }
 
                         pc.setDevice(device);
@@ -279,6 +281,29 @@ public class SupplyChainValidationServiceImpl implements SupplyChainValidationSe
         }
 
         return summary;
+    }
+
+    private String updateUnmatchedComponents(final String unmatchedString) {
+        StringBuilder updatedFailures = new StringBuilder();
+        String manufacturer = "";
+        String model = "";
+        for (String rows : unmatchedString.split(";")) {
+            for (String str : rows.split(",")) {
+                String[] manufacturerSplit;
+                String[] modelSplit;
+                if (str.contains("Manufacturer")) {
+                    manufacturerSplit = str.split("=");
+                    manufacturer = manufacturerSplit[VALUE_INDEX];
+                }
+                if (str.contains("Model")) {
+                    modelSplit = str.split("=");
+                    model = modelSplit[VALUE_INDEX];
+                }
+            }
+            updatedFailures.append(String.format("%s%s;", manufacturer, model));
+        }
+
+        return updatedFailures.toString();
     }
 
     /**
@@ -355,19 +380,17 @@ public class SupplyChainValidationServiceImpl implements SupplyChainValidationSe
                 .byManufacturer(manufacturer).getRIM();
         supportReferenceManifest = SupportReferenceManifest.select(referenceManifestManager)
                 .byManufacturer(manufacturer).getRIM();
-        List<SwidResource> resources =
-                ((BaseReferenceManifest) baseReferenceManifest).parseResource();
         measurement = EventLogMeasurements.select(referenceManifestManager)
                 .byManufacturer(manufacturer).includeArchived().getRIM();
 
         validationObject = baseReferenceManifest;
         String failedString = "";
         if (baseReferenceManifest == null) {
-            failedString = "Base Reference Integrity Manifest%n";
+            failedString = "Base Reference Integrity Manifest\n";
             passed = false;
         }
         if (supportReferenceManifest == null) {
-            failedString += "Support Reference Integrity Manifest%n";
+            failedString += "Support Reference Integrity Manifest\n";
             passed = false;
         }
         if (measurement == null) {
@@ -376,6 +399,8 @@ public class SupplyChainValidationServiceImpl implements SupplyChainValidationSe
         }
 
         if (passed) {
+            List<SwidResource> resources =
+                    ((BaseReferenceManifest) baseReferenceManifest).parseResource();
             fwStatus = new AppraisalStatus(PASS,
                     SupplyChainCredentialValidator.FIRMWARE_VALID);
 

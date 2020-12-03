@@ -421,8 +421,12 @@ public abstract class AbstractAttestationCertificateAuthority
         // parse the EK Public key from the IdentityClaim once for use in supply chain validation
         // and later tpm20MakeCredential function
         RSAPublicKey ekPub = parsePublicKey(claim.getEkPublicArea().toByteArray());
-
-        AppraisalStatus.Status validationResult = doSupplyChainValidation(claim, ekPub);
+        AppraisalStatus.Status validationResult = AppraisalStatus.Status.FAIL;
+        try {
+            validationResult = doSupplyChainValidation(claim, ekPub);
+        } catch (Exception ex) {
+            LOG.error(ex);
+        }
         if (validationResult == AppraisalStatus.Status.PASS) {
 
             RSAPublicKey akPub = parsePublicKey(claim.getAkPublicArea().toByteArray());
@@ -752,76 +756,99 @@ public abstract class AbstractAttestationCertificateAuthority
         String clientName = String.format("%s_%s",
                 dv.getHw().getManufacturer(),
                 dv.getHw().getProductName());
-        ReferenceManifest dbBaseRim;
+        ReferenceManifest dbBaseRim = null;
         ReferenceManifest support;
         String tagId = "";
         String fileName = "";
         Pattern pattern = Pattern.compile("([^\\s]+(\\.(?i)(rimpcr|rimel|bin|log))$)");
         Matcher matcher;
 
-        if (dv.hasSwidfile()) {
-            try {
-                dbBaseRim = BaseReferenceManifest.select(referenceManifestManager)
-                        .includeArchived()
-                        .byHashCode(Arrays.hashCode(dv.getSwidfile().toByteArray()))
-                        .getRIM();
+        if (dv.getSwidfileCount() > 0) {
+            for (ByteString swidFile : dv.getSwidfileList()) {
+                try {
+                    dbBaseRim = BaseReferenceManifest.select(referenceManifestManager)
+                            .includeArchived()
+                            .byHashCode(Arrays.hashCode(swidFile.toByteArray()))
+                            .getRIM();
 
-                if (dbBaseRim == null) {
-                    dbBaseRim = new BaseReferenceManifest(
-                            String.format("%s.swidtag",
-                                    clientName),
-                            dv.getSwidfile().toByteArray());
+                    if (dbBaseRim == null) {
+                        dbBaseRim = new BaseReferenceManifest(
+                                String.format("%s.swidtag",
+                                        clientName),
+                                swidFile.toByteArray());
 
-                    BaseReferenceManifest base = (BaseReferenceManifest) dbBaseRim;
-                    for (SwidResource swid : base.parseResource()) {
-                        matcher = pattern.matcher(swid.getName());
-                        if (matcher.matches()) {
-                            //found the file name
-                            int dotIndex = swid.getName().lastIndexOf(".");
-                            clientName = swid.getName().substring(0, dotIndex);
-                            dbBaseRim = new BaseReferenceManifest(
-                                    String.format("%s.swidtag",
-                                            clientName),
-                                    dv.getSwidfile().toByteArray());
-                            break;
+                        BaseReferenceManifest base = (BaseReferenceManifest) dbBaseRim;
+                        for (SwidResource swid : base.parseResource()) {
+                            matcher = pattern.matcher(swid.getName());
+                            if (matcher.matches()) {
+                                //found the file name
+                                int dotIndex = swid.getName().lastIndexOf(".");
+                                clientName = swid.getName().substring(0, dotIndex);
+                                dbBaseRim = new BaseReferenceManifest(
+                                        String.format("%s.swidtag",
+                                                clientName),
+                                        swidFile.toByteArray());
+                                break;
+                            }
                         }
+                        this.referenceManifestManager.save(dbBaseRim);
+                    } else {
+                        LOG.info("Client provided Base RIM already loaded in database.");
+                        dbBaseRim.restore();
+                        dbBaseRim.resetCreateTime();
+                        this.referenceManifestManager.update(dbBaseRim);
                     }
-                    this.referenceManifestManager.save(dbBaseRim);
-                } else {
-                    LOG.info("Client provided Base RIM already loaded in database.");
-                }
 
-                tagId = dbBaseRim.getTagId();
-            } catch (IOException ioEx) {
-                LOG.error(ioEx);
+                    tagId = dbBaseRim.getTagId();
+                } catch (IOException ioEx) {
+                    LOG.error(ioEx);
+                }
             }
+        } else {
+            LOG.warn("Device did not send swid tag file...");
         }
 
-        if (dv.hasLogfile()) {
-            try {
-                support = SupportReferenceManifest.select(referenceManifestManager)
-                        .includeArchived()
-                        .byHashCode(Arrays.hashCode(dv.getLogfile().toByteArray()))
-                        .getRIM();
+        if (dv.getLogfileCount() > 0) {
+            for (ByteString logFile : dv.getLogfileList()) {
+                try {
+                    support = SupportReferenceManifest.select(referenceManifestManager)
+                            .includeArchived()
+                            .byHashCode(Arrays.hashCode(logFile.toByteArray()))
+                            .getRIM();
 
-                if (support == null) {
-                    support = new SupportReferenceManifest(
-                            String.format("%s.rimel",
-                                    clientName),
-                            dv.getLogfile().toByteArray());
-                    support.setPlatformManufacturer(dv.getHw().getManufacturer());
-                    support.setPlatformModel(dv.getHw().getProductName());
-                    support.setTagId(tagId);
-                    this.referenceManifestManager.save(support);
-                } else {
-                    LOG.info("Client provided Support RIM already loaded in database.");
+                    if (support == null) {
+                        support = new SupportReferenceManifest(
+                                String.format("%s.rimel",
+                                        clientName),
+                                logFile.toByteArray());
+                        support.setPlatformManufacturer(dv.getHw().getManufacturer());
+                        support.setPlatformModel(dv.getHw().getProductName());
+                        support.setTagId(tagId);
+                        this.referenceManifestManager.save(support);
+                    } else {
+                        LOG.info("Client provided Support RIM already loaded in database.");
+                        if (dbBaseRim != null) {
+                            support.setPlatformManufacturer(dbBaseRim.getPlatformManufacturer());
+                            support.setPlatformModel(dbBaseRim.getPlatformModel());
+                            support.setSwidTagVersion(dbBaseRim.getSwidTagVersion());
+                            support.setAssociatedRim(dbBaseRim.getId());
+                            support.setTagId(dbBaseRim.getTagId());
+                        }
+
+                        support.restore();
+                        support.resetCreateTime();
+                        this.referenceManifestManager.update(support);
+                    }
+                } catch (IOException ioEx) {
+                    LOG.error(ioEx);
                 }
-            } catch (IOException ioEx) {
-                LOG.error(ioEx);
             }
+        } else {
+            LOG.warn("Device did not send support RIM file...");
         }
 
         if (dv.hasLivelog()) {
+            LOG.info("Device sent bios measurement log...");
             fileName = String.format("%s.measurement",
                     clientName);
             try {
@@ -830,6 +857,7 @@ public abstract class AbstractAttestationCertificateAuthority
                         .byManufacturer(dv.getHw().getManufacturer())
                         .includeArchived().getRIM();
                 if (support != null) {
+                    LOG.info("Previous bios measurement log found and being replaced...");
                     this.referenceManifestManager.delete(support);
                 }
                 support = new EventLogMeasurements(fileName,
@@ -841,6 +869,8 @@ public abstract class AbstractAttestationCertificateAuthority
             } catch (IOException ioEx) {
                 LOG.error(ioEx);
             }
+        } else {
+            LOG.warn("Device did not send bios measurement log...");
         }
 
         // Get TPM info, currently unimplemented

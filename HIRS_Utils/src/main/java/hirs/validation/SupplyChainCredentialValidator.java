@@ -168,12 +168,12 @@ public final class SupplyChainCredentialValidator implements CredentialValidator
         }
         try {
             if (trustStore == null || trustStore.size() == 0) {
-                message = baseErrorMessage + "a trust store\n";
+                message = baseErrorMessage + "an Issuer Cert in the Trust Store\n";
                 LOGGER.error(message);
                 return new AppraisalStatus(FAIL, message);
             }
         } catch (KeyStoreException e) {
-            message = baseErrorMessage + "an intitialized trust store";
+            message = baseErrorMessage + "an initialized trust store";
             LOGGER.error(message);
             return new AppraisalStatus(FAIL, message);
         }
@@ -852,11 +852,11 @@ public final class SupplyChainCredentialValidator implements CredentialValidator
             LOGGER.error(String.format("Platform Credential contained %d unmatched components:",
                     pcUnmatchedComponents.size()));
 
-            int umatchedComponentCounter = 1;
+            int unmatchedComponentCounter = 1;
             for (ComponentIdentifier unmatchedComponent : pcUnmatchedComponents) {
-                LOGGER.error("Unmatched component " + umatchedComponentCounter++ + ": "
+                LOGGER.error("Unmatched component " + unmatchedComponentCounter++ + ": "
                         + unmatchedComponent);
-                sb.append(String.format("Manufacturer=%s, Model=%s, Serial=%s, Revision=%s%n",
+                sb.append(String.format("Manufacturer=%s, Model=%s, Serial=%s, Revision=%s;%n",
                         unmatchedComponent.getComponentManufacturer(),
                         unmatchedComponent.getComponentModel(),
                         unmatchedComponent.getComponentSerial(),

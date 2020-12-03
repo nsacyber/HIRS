@@ -614,10 +614,11 @@
                                             <div class="panel-body">
                                                 <div id="componentIdentifier" class="row">
                                                     <c:forEach items="${initialData.componentsIdentifier}" var="component">
+                                                        <c:set var="combined" value="${component.getComponentManufacturer()}${component.getComponentModel()}" scope="page"/>
                                                         <div class="component col col-md-4">
                                                             <div class="panel panel-default">
                                                                 <c:choose>
-                                                                    <c:when test="${fn:contains(initialData.failures, component.getComponentSerial()) && not empty fn:trim(component.getComponentSerial())}">
+                                                                    <c:when test="${fn:contains(initialData.failures, combined)}">
                                                                         <div class="panel-heading" style="background-color: red; color: white">
                                                                     </c:when>
                                                                     <c:otherwise>
