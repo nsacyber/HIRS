@@ -1714,9 +1714,9 @@ public abstract class AbstractAttestationCertificateAuthority
             }
         } catch (Exception e) {
             LOG.error("Error saving generated Attestation Certificate to database.", e);
-            throw new CertificateProcessingException(
-                    "Encountered error while storing Attestation Certificate: "
-                            + e.getMessage(), e);
+//            throw new CertificateProcessingException(
+//                    "Encountered error while storing Attestation Certificate: "
+//                            + e.getMessage(), e);
         }
     }
 }
