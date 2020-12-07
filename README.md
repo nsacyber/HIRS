@@ -10,11 +10,11 @@ The ACA provides a “provisioner” application to be installed on all devices 
 The ACA is a web based server which processes Attestation Identity Requests.
 ![TPM Provisioning](images/TPM_Provisioning.jpg)
 
-Version 1.1 added support for the [Platform Certificate v1.1 Specification](https://trustedcomputinggroup.org/wp-content/uploads/IWG_Platform_Certificate_Profile_v1p1_r15_pubrev.pdf). This allows entities that are part of the supply chain (System integrators and Value Added Resellers) the ability to create Delta Platform Certificate to compliment the Base Platform Certificate created by the Platform Manufacturer. See the [Article on Base and Delta Platform Certificates](https://github.com/nsacyber/HIRS/wiki/Base-and-Delta-Platform-Certificates) for details.
+Version 1.1 added support for the [Platform Certificate v1.1 Specification](https://trustedcomputinggroup.org/resource/tcg-platform-certificate-profile/). This allows entities that are part of the supply chain (System integrators and Value Added Resellers) the ability to create Delta Platform Certificate to compliment the Base Platform Certificate created by the Platform Manufacturer. See the [Article on Base and Delta Platform Certificates](https://github.com/nsacyber/HIRS/wiki/Base-and-Delta-Platform-Certificates) for details.
 
-Version 2.0 will add support for the [PC Client Reference Integrity Manifest (RIM) Specification](https://trustedcomputinggroup.org/wp-content/uploads/TCG_PC_Client_RIM_r0p15_15june2020.pdf) to provide firmware validation capability to the HIRS ACA. This requires that the manufacturer of a device provide a digitally signed RIM "Bundle" for each device. The HIRS ACA has a new page for uploading and viewing RIM Bundles and a policy setting for requiring Firmware validation.
+Version 2.0 added support for the [PC Client Reference Integrity Manifest (RIM) Specification](https://trustedcomputinggroup.org/resource/tcg-pc-client-reference-integrity-manifest-specification/) to provide firmware validation capability to the HIRS ACA. This requires that the manufacturer of a device provide a digitally signed RIM "Bundle" for each device. The HIRS ACA has a new page for uploading and viewing RIM Bundles and a policy setting for requiring Firmware validation.
 
-To support the TCG RIM concept a new tools folder has been added to the HIRS project which contains a tcg_rim_tool command line application. The tcg_rim_tool can be used to create NISTIR 8060 compatible SWID tags that adhere to the TCG PC Client RIM specification. It also supports the ability to digitally sign the Base RIM file as the HIRS ACA will require a valid signature in order to upload any RIM file. See the [tgc_rim_tool READ.md](https://github.com/nsacyber/HIRS/blob/master/tools/tcg_rim_tool/README.md) for more details.
+To support the TCG RIM concept a new [tools folder](https://github.com/nsacyber/HIRS/tree/master/tools) has been added to the HIRS project which contains a [tcg_rim_tool command line application](https://github.com/nsacyber/HIRS/tree/master/tools/tcg_rim_tool). The tcg_rim_tool can be used to create NISTIR 8060 compatible SWID tags that adhere to the TCG PC Client RIM specification. It also supports the ability to digitally sign the Base RIM file as the HIRS ACA will require a valid signature in order to upload any RIM file. See the [tgc_rim_tool READ.md](https://github.com/nsacyber/HIRS/blob/master/tools/tcg_rim_tool/README.md) for more details.
 
 ## Features
 
@@ -30,8 +30,7 @@ To support the TCG RIM concept a new tools folder has been added to the HIRS pro
   * Performs TCG-based Supply Chain Validation of connecting clients
       * Optionally validates Endorsement and Platform Credentials
 * Endorsement Credential Certificate Chain Validation
-  * Process EK Credentials per [TCG EK Credential Profile For TPM Family 2.0; Level 0
-Revision 14](https://www.trustedcomputinggroup.org/wp-content/uploads/Credential_Profile_EK_V2.0_R14_published.pdf)
+  * Process EK Credentials per [TCG EK Credential Profile For TPM Family 2.0](https://trustedcomputinggroup.org/resource/tcg-ek-credential-profile-for-tpm-family-2-0/)
   * Verifies the endorsement key used by the TPM was placed there by the original equipment manufacturer (OEM)
 * Platform Credential Certificate Chain Validation
   * Process Platform Credentials per [TCG Platform Attribute Credential Profile Specification Version 1.1 Revision 15](https://trustedcomputinggroup.org/wp-content/uploads/IWG_Platform_Certificate_Profile_v1p1_r15_pubrev.pdf)
