@@ -361,13 +361,9 @@ public abstract class AbstractAttestationCertificateAuthority
         // generate the identity credential
         LOG.debug("generating credential from identity proof");
         // check the policy set valid date
-        try {
-            SupplyChainPolicy scp = this.supplyChainValidationService.getPolicy();
-            if (scp != null) {
-                this.validDays = Integer.parseInt(scp.getValidityDays());
-            }
-        } catch (Exception ex) {
-            LOG.error("Error");
+        SupplyChainPolicy scp = this.supplyChainValidationService.getPolicy();
+        if (scp != null) {
+            this.validDays = Integer.parseInt(scp.getValidityDays());
         }
         // transform the public key struct into a public key
         PublicKey publicKey = assemblePublicKey(proof.getIdentityKey().getStorePubKey().getKey());
@@ -1714,9 +1710,9 @@ public abstract class AbstractAttestationCertificateAuthority
             }
         } catch (Exception e) {
             LOG.error("Error saving generated Attestation Certificate to database.", e);
-//            throw new CertificateProcessingException(
-//                    "Encountered error while storing Attestation Certificate: "
-//                            + e.getMessage(), e);
+            throw new CertificateProcessingException(
+                    "Encountered error while storing Attestation Certificate: "
+                            + e.getMessage(), e);
         }
     }
 }

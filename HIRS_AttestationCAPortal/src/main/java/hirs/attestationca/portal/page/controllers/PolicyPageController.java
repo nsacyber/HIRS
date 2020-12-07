@@ -44,7 +44,6 @@ public class PolicyPageController extends PageController<NoPageParams> {
     private static final String ENABLED_EXPIRES_PARAMETER_VALUE = "expires";
 
     private PolicyManager policyManager;
-
     private AppraiserManager appraiserManager;
 
     /**
@@ -69,7 +68,6 @@ public class PolicyPageController extends PageController<NoPageParams> {
     public PolicyPageController(final PolicyManager policyManager,
             final AppraiserManager appraiserManager) {
         super(POLICY);
-
         this.policyManager = policyManager;
         this.appraiserManager = appraiserManager;
     }
@@ -231,7 +229,7 @@ public class PolicyPageController extends PageController<NoPageParams> {
         try {
             SupplyChainPolicy policy = getDefaultPolicyAndSetInModel(ppModel, model);
 
-            if (issuedAttestationOptionEnabled) {
+            if (issuedAttestationOptionEnabled || generateCertificateEnabled) {
                 successMessage = "Attestation Certificate generation enabled.";
             } else {
                 successMessage = "Attestation Certificate generation disabled.";
@@ -302,12 +300,10 @@ public class PolicyPageController extends PageController<NoPageParams> {
             }
 
             savePolicyAndApplySuccessMessage(ppModel, model, messages, successMessage, policy);
-
         } catch (PolicyManagerException e) {
             handlePolicyManagerUpdateError(model, messages, e,
                     "Error changing ACA endorsement validation policy",
                     "Error updating policy. \n" + e.getMessage());
-
         }
 
         // return the redirect
@@ -396,7 +392,7 @@ public class PolicyPageController extends PageController<NoPageParams> {
             if (ignoreImaOptionEnabled && !policy.isFirmwareValidationEnabled()) {
                 handleUserError(model, messages,
                         "Ignore IMA can not be "
-                        + "enabled without Firmware Valdiation policy enabled.");
+                        + "enabled without Firmware Validation policy enabled.");
                 return redirectToSelf(new NoPageParams(), model, attr);
             }
 
@@ -447,7 +443,7 @@ public class PolicyPageController extends PageController<NoPageParams> {
             if (ignoreTbootOptionEnabled && !policy.isFirmwareValidationEnabled()) {
                 handleUserError(model, messages,
                         "Ignore TBoot can not be "
-                        + "enabled without Firmware Valdiation policy enabled.");
+                        + "enabled without Firmware Validation policy enabled.");
                 return redirectToSelf(new NoPageParams(), model, attr);
             }
 
@@ -551,5 +547,4 @@ public class PolicyPageController extends PageController<NoPageParams> {
 
         model.put(MESSAGES_ATTRIBUTE, messages);
     }
-
 }
