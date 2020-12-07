@@ -364,7 +364,7 @@ public abstract class AbstractAttestationCertificateAuthority
         try {
             SupplyChainPolicy scp = this.supplyChainValidationService.getPolicy();
             if (scp != null) {
-                this.validDays = Integer.getInteger(scp.getValidityDays());
+                this.validDays = Integer.parseInt(scp.getValidityDays());
             }
         } catch (Exception ex) {
             LOG.error("Error");
