@@ -133,10 +133,35 @@
              * This method builds a url to download the device validation report.
              */
             function createDownloadLink(full) {
-                return full.device.name + '&nbsp;' +
-                '<a href="${portal}/validation-reports/download?id=' + full.device.id +
-                '"><img src="${icons}/ic_file_download_black_24dp.png" title="Download validation report">' +
-                '</a>';
+                var device = full.device;
+                var html = '<form method="POST" action="${portal}/validation-reports/download?id=' + device.id + '">' +
+                                device.name +
+                                '<a href="#downloadValidationReport" data-toggle="modal" title="Download Validation Report">' +
+                                    '<img src="${icons}/ic_file_download_black_24dp.png"/>' +
+                                '</a>' +
+                                '<div id="downloadValidationReport" class="modal fade" role="dialog" style="top:30%">' +
+                                    '<div class="modal-dialog">' +
+                                        '<div class="modal-content">' +
+                                            '<div class="modal-header">' +
+                                                '<h1 id="modal-title">Download Validation Report</h1>' +
+                                            '</div>' +
+                                            '<div class="modal-body">' +
+                                                '<label>Company<input id="company" type="text" name="company" /></label>' +
+                                                '<label>Contract #<input id="contract" type="text" name="contract" /></label>' +
+                                                '<label>Date range end<input id="date" type="text" name="date" /></label>' +
+                                            '</div>' +
+                                            '<div class="modal-footer">' +
+                                                '<div class="modal-custom-buttons">' +
+
+                                                '</div>' +
+                                                '<button class="btn btn-secondary" data-dismiss="modal">Cancel</button>' +
+                                                '<input class="btn btn-primary" type="submit" value="Save">' +
+                                            '</div>' +
+                                        '</div>' +
+                                    '</div>' +
+                                '</div>' +
+                            '</form>';
+                return html;
             }
 
             /**

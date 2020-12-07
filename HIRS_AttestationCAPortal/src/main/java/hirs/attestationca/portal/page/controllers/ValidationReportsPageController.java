@@ -29,8 +29,9 @@ import hirs.data.persist.SupplyChainValidationSummary;
 import hirs.persist.CriteriaModifier;
 import hirs.persist.CrudManager;
 
+import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.util.ArrayList;
+import java.util.Enumeration;
 import java.util.UUID;
 
 /**
@@ -109,10 +110,17 @@ public class ValidationReportsPageController extends PageController<NoPageParams
         return new DataTableResponse<>(records, input);
     }
 
-    @RequestMapping(value = "download", method = RequestMethod.GET)
+    @RequestMapping(value = "download", method = RequestMethod.POST)
     public void download(@RequestParam final String id,
+                         final HttpServletRequest request,
                          final HttpServletResponse response) {
+
         LOGGER.info("Downloading validation report for " + id);
+        Enumeration parameters = request.getParameterNames();
+        while (parameters.hasMoreElements()) {
+            String parameter = (String) parameters.nextElement();
+            LOGGER.info(parameter + ": " + request.getParameter(parameter));
+        }
         UUID uuid = UUID.fromString(id);
         PlatformCredential pc = PlatformCredential.select(certificateManager).byDeviceId(uuid).getCertificate();
         LOGGER.info("Verified manufacturer: " + pc.getManufacturer());
@@ -122,8 +130,10 @@ public class ValidationReportsPageController extends PageController<NoPageParams
         if (pc.getComponentIdentifiers() != null &&
                 pc.getComponentIdentifiers().size() > 0) {
             for (ComponentIdentifier ci : pc.getComponentIdentifiers()) {
-                LOGGER.info("Manufacturer ID: " + ci.getComponentManufacturerId().toString() +
-                        "\nModel: " + ci.getComponentModel().getString() +
+                if (ci.getComponentManufacturerId() != null) {
+                    LOGGER.info("Manufacturer ID: " + ci.getComponentManufacturerId().toString());
+                }
+                LOGGER.info("\nModel: " + ci.getComponentModel().getString() +
                         "\nRevision: " + ci.getComponentRevision().getString());
             }
         }
