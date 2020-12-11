@@ -344,7 +344,7 @@ public class DBCertificateManagerTest extends SpringPersistenceTest {
 
         Set<CertificateAuthorityCredential> retrievedCerts =
                 CertificateAuthorityCredential.select(certMan)
-                        .bySubjectOrganization(stmEkCert.getIssuerOrganization())
+                        .bySubjectSorted(stmEkCert.getIssuerSorted())
                         .getCertificates();
 
         Assert.assertEquals(
@@ -355,7 +355,7 @@ public class DBCertificateManagerTest extends SpringPersistenceTest {
 
         Set<CertificateAuthorityCredential> secondRetrievedCerts =
                 CertificateAuthorityCredential.select(certMan)
-                        .bySubjectOrganization(stmRootCaCert.getIssuerOrganization())
+                        .bySubjectSorted(stmRootCaCert.getIssuerSorted())
                         .getCertificates();
 
         Assert.assertEquals(
@@ -380,7 +380,7 @@ public class DBCertificateManagerTest extends SpringPersistenceTest {
 
         Set<CertificateAuthorityCredential> retrievedCerts =
                 CertificateAuthorityCredential.select(certMan)
-                        .byIssuerOrganization(stmRootCaCert.getIssuerOrganization())
+                        .byIssuerSorted(stmRootCaCert.getIssuerSorted())
                         .getCertificates();
 
         Assert.assertEquals(
@@ -706,7 +706,7 @@ public class DBCertificateManagerTest extends SpringPersistenceTest {
 
     /**
      * Tests that a {@link CertificateSelector} can be used to retrieve certificates in various
-     * forms, including {@link Certificate}, {@link X509Certificate}, and {@link KeyStore}.
+     * forms, including {@link Certificate}.
      *
      * @throws IOException if there is a problem creating the certificate
      * @throws KeyStoreException if there is a problem constructing the resultant KeyStore

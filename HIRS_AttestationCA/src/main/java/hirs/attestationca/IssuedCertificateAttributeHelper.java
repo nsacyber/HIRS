@@ -4,12 +4,14 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.bouncycastle.asn1.ASN1ObjectIdentifier;
+import org.bouncycastle.asn1.ASN1OctetString;
 import org.bouncycastle.asn1.DEROctetString;
 import org.bouncycastle.asn1.DERUTF8String;
 import org.bouncycastle.asn1.x500.AttributeTypeAndValue;
 import org.bouncycastle.asn1.x500.RDN;
 import org.bouncycastle.asn1.x500.X500Name;
 import org.bouncycastle.asn1.x500.X500NameBuilder;
+import org.bouncycastle.asn1.x509.AuthorityKeyIdentifier;
 import org.bouncycastle.asn1.x509.ExtendedKeyUsage;
 import org.bouncycastle.asn1.x509.Extension;
 import org.bouncycastle.asn1.x509.Extensions;
@@ -19,7 +21,6 @@ import org.bouncycastle.asn1.x509.GeneralNamesBuilder;
 import org.bouncycastle.asn1.x509.KeyPurposeId;
 import org.bouncycastle.asn1.x509.TBSCertificate;
 import org.bouncycastle.asn1.x509.AttributeCertificateInfo;
-import org.springframework.util.CollectionUtils;
 
 import java.io.IOException;
 import java.security.cert.CertificateEncodingException;
@@ -67,6 +68,28 @@ public final class IssuedCertificateAttributeHelper {
     }
 
     /**
+     * This method builds the AKI extension that will be stored in the generated
+     * Attestation Issued Certificate.
+     * @param endorsementCredential EK object to pull AKI from.
+     * @return the AKI extension.
+     * @throws IOException on bad get instance for AKI.
+     */
+    public static Extension buildAuthorityKeyIdentifier(
+            final EndorsementCredential endorsementCredential) throws IOException {
+        byte[] extValue = endorsementCredential.getX509Certificate()
+                    .getExtensionValue(Extension.authorityKeyIdentifier.getId());
+
+        if (extValue == null) {
+            return null;
+        }
+
+        byte[] authExtension = ASN1OctetString.getInstance(extValue).getOctets();
+        AuthorityKeyIdentifier aki = AuthorityKeyIdentifier.getInstance(authExtension);
+
+        return new Extension(Extension.authorityKeyIdentifier, true, aki.getEncoded());
+    }
+
+    /**
      * Builds the subject alternative name based on the supplied certificates.
      * @param endorsementCredential the endorsement credential
      * @param platformCredentials the platform credentials
@@ -88,10 +111,8 @@ public final class IssuedCertificateAttributeHelper {
         // assemble AIK cert SAN, using info from EC and PC
         X500NameBuilder nameBuilder = new X500NameBuilder();
         populateEndorsementCredentialAttributes(endorsementCredential, nameBuilder);
-        if (!CollectionUtils.isEmpty(platformCredentials)) {
-            for (PlatformCredential platformCredential : platformCredentials) {
-                populatePlatformCredentialAttributes(platformCredential, nameBuilder);
-            }
+        for (PlatformCredential platformCredential : platformCredentials) {
+            populatePlatformCredentialAttributes(platformCredential, nameBuilder);
         }
 
         // add the OID for the TCG-required TPM ID label
@@ -112,7 +133,7 @@ public final class IssuedCertificateAttributeHelper {
     private static void populatePlatformCredentialAttributes(
             final PlatformCredential platformCredential,
             final X500NameBuilder nameBuilder) throws IOException {
-        if (null == platformCredential) {
+        if (platformCredential == null) {
             return;
         }
 
@@ -134,7 +155,7 @@ public final class IssuedCertificateAttributeHelper {
 
     private static void populateEndorsementCredentialAttributes(
             final EndorsementCredential endorsementCredential, final X500NameBuilder nameBuilder) {
-        if (null == endorsementCredential) {
+        if (endorsementCredential == null) {
             return;
         }
 

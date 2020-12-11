@@ -2,6 +2,7 @@ package hirs.data.persist.certificate;
 
 import hirs.persist.CertificateManager;
 import hirs.persist.CertificateSelector;
+import org.apache.commons.codec.binary.Hex;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -15,7 +16,8 @@ import java.util.Arrays;
  */
 @Entity
 public class CertificateAuthorityCredential extends Certificate {
-    @SuppressWarnings("PMD.AvoidUsingHardCodedIP") // this is not an IP address; PMD thinks it is
+
+    @SuppressWarnings("PMD.AvoidUsingHardCodedIP")
     private static final String SUBJECT_KEY_IDENTIFIER_EXTENSION = "2.5.29.14";
 
     /**
@@ -26,9 +28,12 @@ public class CertificateAuthorityCredential extends Certificate {
     @Column
     private final byte[] subjectKeyIdentifier;
 
-    /*
+    @Column
+    private String subjectKeyIdString;
+
+    /**
      * this field is part of the TCG CA specification, but has not yet been found in
-     * manufacturer-provided CAs, and is therefore not currently parsed
+     * manufacturer-provided CAs, and is therefore not currently parsed.
      */
     @Column
     private String credentialType = "TCPA Trusted Platform Module Endorsement";
@@ -82,6 +87,9 @@ public class CertificateAuthorityCredential extends Certificate {
         super(certificateBytes);
         this.subjectKeyIdentifier =
                 getX509Certificate().getExtensionValue(SUBJECT_KEY_IDENTIFIER_EXTENSION);
+        if (this.subjectKeyIdentifier != null) {
+            this.subjectKeyIdString = Hex.encodeHexString(this.subjectKeyIdentifier);
+        }
     }
 
     /**
@@ -119,10 +127,18 @@ public class CertificateAuthorityCredential extends Certificate {
      * @return this certificate's subject key identifier.
      */
     public byte[] getSubjectKeyIdentifier() {
-        if (null != subjectKeyIdentifier) {
+        if (subjectKeyIdentifier != null) {
             return subjectKeyIdentifier.clone();
         }
         return null;
+    }
+
+    /**
+     * Getter for the string rep of the ID.
+     * @return a string
+     */
+    public String getSubjectKeyIdString() {
+        return this.subjectKeyIdString;
     }
 
     @Override

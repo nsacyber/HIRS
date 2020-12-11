@@ -62,8 +62,10 @@ import java.security.cert.X509Certificate;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
+import java.util.ListIterator;
 import java.util.Objects;
 import org.bouncycastle.asn1.x509.CRLDistPoint;
 import org.bouncycastle.asn1.x509.DistributionPoint;
@@ -163,6 +165,12 @@ public abstract class Certificate extends ArchivableEntity {
     public static final String ISSUER_FIELD = "issuer";
     @Column(nullable = false)
     private final String issuer;
+    /**
+     * Holds the name of the 'issuerSorted' field.
+     */
+    public static final String ISSUER_SORTED_FIELD = "issuerSorted";
+    @Column
+    private final String issuerSorted;
 
     /**
      * Holds the name of the 'subject' field.
@@ -170,20 +178,12 @@ public abstract class Certificate extends ArchivableEntity {
     public static final String SUBJECT_FIELD = "subject";
     @Column(nullable = true)
     private final String subject;
-
     /**
-     * Holds the name of the 'issuerOrganization' field.
+     * Holds the name of the 'subjectSorted' field.
      */
-    public static final String ISSUER_ORGANIZATION_FIELD = "issuerOrganization";
+    public static final String SUBJECT_SORTED_FIELD = "subjectSorted";
     @Column
-    private String issuerOrganization = null;
-
-    /**
-     * Holds the name of the 'subjectOrganization' field.
-     */
-    public static final String SUBJECT_ORGANIZATION_FIELD = "subjectOrganization";
-    @Column
-    private String subjectOrganization = null;
+    private final String subjectSorted;
 
     /**
      * Holds the name of the 'encodedPublicKey' field.
@@ -255,11 +255,14 @@ public abstract class Certificate extends ArchivableEntity {
     private String keyUsage;
     private String extendedKeyUsage;
     private byte[] policyConstraints;
+    /**
+     * Holds the name of the 'authorityKeyIdentifier' field.
+     */
+    public static final String AUTHORITY_KEY_ID_FIELD = "authorityKeyIdentifier";
     private String authorityKeyIdentifier;
     private String authorityInfoAccess;
     private String crlPoints;
     private int publicKeySize;
-
 
     /**
      * Default constructor necessary for Hibernate.
@@ -269,6 +272,8 @@ public abstract class Certificate extends ArchivableEntity {
         this.serialNumber = BigInteger.ZERO;
         this.issuer = null;
         this.subject = null;
+        this.issuerSorted = null;
+        this.subjectSorted = null;
 
         this.encodedPublicKey = null;
         this.publicKeyModulusHexValue = null;
@@ -359,8 +364,8 @@ public abstract class Certificate extends ArchivableEntity {
                 this.beginValidity = x509Certificate.getNotBefore();
                 this.endValidity = x509Certificate.getNotAfter();
                 this.holderSerialNumber = BigInteger.ZERO;
-                this.issuerOrganization = getOrganization(this.issuer);
-                this.subjectOrganization = getOrganization(this.subject);
+                this.issuerSorted = parseSortDNs(this.issuer);
+                this.subjectSorted = parseSortDNs(this.subject);
                 this.policyConstraints = x509Certificate
                         .getExtensionValue(POLICY_CONSTRAINTS);
                 authKeyIdentifier = AuthorityKeyIdentifier
@@ -395,7 +400,7 @@ public abstract class Certificate extends ArchivableEntity {
 
                 // Set null values (Attribute certificates do not have this values)
                 this.subject = null;
-                this.subjectOrganization = null;
+                this.subjectSorted = null;
                 this.encodedPublicKey = null;
                 this.publicKeyModulusHexValue = null;
                 this.publicKeySize = 0;
@@ -434,7 +439,7 @@ public abstract class Certificate extends ArchivableEntity {
                 this.signature = attCert.getSignatureValue().getBytes();
                 this.issuer = getAttributeCertificateIssuerNames(
                                         attCertInfo.getIssuer())[0].toString();
-                this.issuerOrganization = getOrganization(this.issuer);
+                this.issuerSorted = parseSortDNs(this.issuer);
 
                 // Parse notBefore and notAfter dates
                 this.beginValidity = recoverDate(attCertInfo
@@ -534,39 +539,6 @@ public abstract class Certificate extends ArchivableEntity {
         }
 
         return CertificateType.INVALID_CERTIFICATE;
-    }
-
-    /**
-     * Extracts the organization field out of a distinguished name. Returns null if
-     * no organization field exists.
-     * @param distinguishedName distinguished name to extract the organization from
-     * @return the value of the organization field
-     */
-    protected static String getOrganization(final String distinguishedName) {
-        String organization = null;
-
-        // Return null for empty strings
-        if (distinguishedName.isEmpty()) {
-            return null;
-        }
-
-        // Parse string to X500Name
-        X500Name name = new X500Name(distinguishedName);
-        if (name.getRDNs(RFC4519Style.o).length > 0) {
-            RDN rdn = name.getRDNs(RFC4519Style.o)[0];
-            // For multivalue check the RDNs Attributes
-            if (rdn.isMultiValued()) {
-                for (AttributeTypeAndValue att: rdn.getTypesAndValues()) {
-                    if (RFC4519Style.o.equals(att.getType())) {
-                        organization = att.getValue().toString();
-                    }
-                }
-            } else {
-                organization = rdn.getFirst().getValue().toString();
-            }
-        }
-
-        return organization;
     }
 
     private boolean isPEM(final String possiblePEM) {
@@ -785,41 +757,39 @@ public abstract class Certificate extends ArchivableEntity {
      * @throws IOException if there is an issue deserializing either certificate
      */
     public boolean isIssuer(final Certificate issuer) throws IOException {
-        CertificateType cType = issuer.getCertificateType();
-        if (cType != CertificateType.X509_CERTIFICATE) {
-            throw new IllegalArgumentException("issuer cert must be X509Certificate");
-        }
-
         boolean isIssuer = false;
-        X509Certificate issuerX509 = issuer.getX509Certificate();
-
-        // Validate if it's the issuer
-        switch (getCertificateType()) {
-            case X509_CERTIFICATE:
-                X509Certificate certX509 = getX509Certificate();
-                try {
-                    certX509.verify(issuerX509.getPublicKey());
-                    isIssuer = true;
-                } catch (CertificateException | NoSuchAlgorithmException | InvalidKeyException
-                        | NoSuchProviderException | SignatureException e) {
-                    LOGGER.error(e);
-                }
-                break;
-
-            case ATTRIBUTE_CERTIFICATE:
-                AttributeCertificate attCert = getAttributeCertificate();
-                String algorith = "SHA256withRSA";
-                try {
-                    Signature sig = Signature.getInstance(algorith);
-                    sig.initVerify(issuerX509.getPublicKey());
-                    sig.update(attCert.getAcinfo().getEncoded());
-                    isIssuer = sig.verify(attCert.getSignatureValue().getBytes());
-                } catch (NoSuchAlgorithmException | InvalidKeyException | SignatureException e) {
-                    LOGGER.error(e);
-                }
-                break;
-            default:
-                break;
+        // only run if of the correct type, otherwise false
+        if (issuer.getCertificateType() == CertificateType.X509_CERTIFICATE) {
+            X509Certificate issuerX509 = issuer.getX509Certificate();
+            // Validate if it's the issuer
+            switch (getCertificateType()) {
+                case X509_CERTIFICATE:
+                    X509Certificate certX509 = getX509Certificate();
+                    try {
+                        certX509.verify(issuerX509.getPublicKey());
+                        isIssuer = true;
+                    } catch (CertificateException | NoSuchAlgorithmException | InvalidKeyException
+                            | NoSuchProviderException | SignatureException e) {
+                        LOGGER.error(e);
+                    }
+                    break;
+                case ATTRIBUTE_CERTIFICATE:
+                    AttributeCertificate attCert = getAttributeCertificate();
+                    String algorithm = "SHA256withRSA";
+                    try {
+                        Signature sig = Signature.getInstance(algorithm);
+                        sig.initVerify(issuerX509.getPublicKey());
+                        sig.update(attCert.getAcinfo().getEncoded());
+                        isIssuer = sig.verify(attCert.getSignatureValue().getBytes());
+                    } catch (NoSuchAlgorithmException
+                            | InvalidKeyException
+                            | SignatureException e) {
+                        LOGGER.error(e);
+                    }
+                    break;
+                default:
+                    break;
+            }
         }
 
         return isIssuer;
@@ -1055,17 +1025,17 @@ public abstract class Certificate extends ArchivableEntity {
     }
 
     /**
-     * @return this certificate's associated issuer organization
+     * @return this certificate's associated issuer sorted
      */
-    public String getIssuerOrganization() {
-        return issuerOrganization;
+    public String getIssuerSorted() {
+        return issuerSorted;
     }
 
     /**
-     * @return this certificate's associated subject organization
+     * @return this certificate's associated subject sorted
      */
-    public String getSubjectOrganization() {
-        return subjectOrganization;
+    public String getSubjectSorted() {
+        return subjectSorted;
     }
 
     /**
@@ -1185,6 +1155,36 @@ public abstract class Certificate extends ArchivableEntity {
         } else {
             throw new IOException("Could not parse public key information as an ASN1Sequence");
         }
+    }
+
+    /**
+     * This method is to take the DNs from certificates and sort them in an order
+     * that will be used to lookup issuer certificates.  This will not be stored in
+     * the certificate, just the DB for lookup.
+     * @param distinguishedName the original DN string.
+     * @return a modified string of sorted DNs
+     */
+    public static String parseSortDNs(final String distinguishedName) {
+        StringBuilder sb = new StringBuilder();
+        String dnsString;
+
+        if (distinguishedName == null || distinguishedName.isEmpty()) {
+            sb.append("BLANK");
+        } else {
+            dnsString = distinguishedName.trim();
+            dnsString = dnsString.toLowerCase();
+            List<String> dnValArray = Arrays.asList(dnsString.split(","));
+            Collections.sort(dnValArray);
+            ListIterator<String> dnListIter = dnValArray.listIterator();
+            while (dnListIter.hasNext()) {
+                sb.append(dnListIter.next());
+                if (dnListIter.hasNext()) {
+                    sb.append(",");
+                }
+            }
+        }
+
+        return sb.toString();
     }
 
     /**
