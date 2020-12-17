@@ -90,7 +90,9 @@ import java.security.spec.RSAPublicKeySpec;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -101,7 +103,6 @@ import java.util.regex.Pattern;
  */
 public abstract class AbstractAttestationCertificateAuthority
                                                     implements AttestationCertificateAuthority {
-
     /**
      * Logger instance for for subclass instances.
      */
@@ -122,7 +123,6 @@ public abstract class AbstractAttestationCertificateAuthority
      * Number of bytes to include in the TPM2.0 nonce.
      */
     public static final int NONCE_LENGTH = 20;
-
     private static final int SEED_LENGTH = 32;
     private static final int MAX_SECRET_LENGTH = 32;
     private static final int RSA_MODULUS_LENGTH = 256;
@@ -130,13 +130,11 @@ public abstract class AbstractAttestationCertificateAuthority
     private static final int HMAC_KEY_LENGTH_BYTES = 32;
     private static final int HMAC_SIZE_LENGTH_BYTES = 2;
     private static final int TPM2_CREDENTIAL_BLOB_SIZE = 392;
-
     // Constants used to parse out the ak name from the ak public data. Used in generateAkName
     private static final String AK_NAME_PREFIX = "000b";
     private static final String AK_NAME_HASH_PREFIX =
             "0001000b00050072000000100014000b0800000000000100";
     private static final String TPM_SIGNATURE_ALG = "sha";
-
     private static final int MAC_BYTES = 6;
 
     /**
@@ -165,7 +163,6 @@ public abstract class AbstractAttestationCertificateAuthority
      * certificates issued by this ACA are valid for.
      */
     private final Integer validDays;
-
     private final CertificateManager certificateManager;
     private final ReferenceManifestManager referenceManifestManager;
     private final DeviceRegister deviceRegister;
@@ -456,6 +453,12 @@ public abstract class AbstractAttestationCertificateAuthority
         // attempt to find platform credentials to validate
         Set<PlatformCredential> platformCredentials = parsePcsFromIdentityClaim(claim,
                 endorsementCredential);
+        Map<BigInteger, PlatformCredential> correctedMap = new HashMap<>();
+        for (PlatformCredential pc : platformCredentials) {
+            correctedMap.put(pc.getSerialNumber(), pc);
+        }
+        platformCredentials.clear();
+        platformCredentials.addAll(correctedMap.values());
 
         // Parse and save device info
         Device device = processDeviceInfo(claim);

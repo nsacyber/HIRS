@@ -236,6 +236,14 @@ public class ComponentIdentifierV2 extends ComponentIdentifier {
     }
 
     /**
+     * @return true if the component status wasn't set.
+     */
+    public final boolean isEmpty() {
+        return (getAttributeStatus() == AttributeStatus.EMPTY_STATUS)
+                || (getAttributeStatus() == null);
+    }
+
+    /**
      * @return indicates the type of platform certificate.
      */
     @Override

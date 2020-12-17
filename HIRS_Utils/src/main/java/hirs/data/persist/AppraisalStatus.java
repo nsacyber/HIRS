@@ -40,8 +40,7 @@ public class AppraisalStatus {
      * @param message description of result
      */
     public AppraisalStatus(final Status appStatus, final String message) {
-        this.appStatus = appStatus;
-        this.message = message;
+        this(appStatus, message, "");
     }
 
     /**

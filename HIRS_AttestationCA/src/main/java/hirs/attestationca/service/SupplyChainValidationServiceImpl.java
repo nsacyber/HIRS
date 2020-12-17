@@ -135,6 +135,12 @@ public class SupplyChainValidationServiceImpl implements SupplyChainValidationSe
         List<SupplyChainValidation> validations = new LinkedList<>();
         Map<PlatformCredential, SupplyChainValidation> deltaMapping = new HashMap<>();
         SupplyChainValidation platformScv = null;
+        SupplyChainValidation.ValidationType platformType = SupplyChainValidation
+                .ValidationType.PLATFORM_CREDENTIAL;
+        SupplyChainValidation.ValidationType platformAttrType = SupplyChainValidation
+                .ValidationType.PLATFORM_CREDENTIAL_ATTRIBUTES;
+        Map<SupplyChainValidation.ValidationType, SupplyChainValidation> validationTypeMap
+                = new HashMap<>();
         LOGGER.info("Validating supply chain.");
 
         // Validate the Endorsement Credential
@@ -153,7 +159,7 @@ public class SupplyChainValidationServiceImpl implements SupplyChainValidationSe
             if (pcs == null || pcs.isEmpty()) {
                 LOGGER.error("There were no Platform Credentials to validate.");
                 validations.add(buildValidationRecord(
-                        SupplyChainValidation.ValidationType.PLATFORM_CREDENTIAL,
+                        platformType,
                         AppraisalStatus.Status.FAIL,
                         "Platform credential(s) missing", null, Level.ERROR));
             } else {
@@ -170,16 +176,63 @@ public class SupplyChainValidationServiceImpl implements SupplyChainValidationSe
                         platformScv = validatePcPolicy(pc, platformScv,
                                 deltaMapping, acceptExpiredCerts);
 
-                        validations.add(platformScv);
-                        validations.addAll(deltaMapping.values());
+                        /**
+                         * Alright, this should work but because the test material is bad
+                         * I can't finish it.  Currently the delta certificate has the same
+                         * serial number as the base, the same validity and so on.  I will
+                         * attempt to generate my own but for right now, I'm going to move
+                         * on to something else.
+                         */
+                        if (validationTypeMap.containsKey(
+                                platformType)) {
+                            SupplyChainValidation tmpScv = validationTypeMap.get(platformType);
+                            if (tmpScv.getResult() == PASS && platformScv.getResult() == FAIL) {
+                                validationTypeMap.put(platformType, platformScv);
+                            }
+                        } else {
+                            validationTypeMap.put(platformType, platformScv);
+                        }
 
                         if (pc.isBase()) {
                             baseCredential = pc;
+                            LOGGER.error("Found the base Certificate");
                         }
                         pc.setDevice(device);
                         this.certificateManager.update(pc);
                     }
                 }
+
+                // check that the delta certificates validity date is after
+                // the base
+                if (baseCredential != null) {
+                    for (PlatformCredential pc : pcs) {
+                        int result = pc.getBeginValidity()
+                                .compareTo(baseCredential.getBeginValidity());
+                        if (!pc.isBase() && (result <= 0)) {
+                            LOGGER.error("You are not crazy");
+                            validationTypeMap.put(platformType,
+                                    buildValidationRecord(
+                                            platformType,
+                                            AppraisalStatus.Status.FAIL,
+                                            "Delta Certificate's validity "
+                                                    + "date is not after Base",
+                                            null, Level.ERROR));
+                            break;
+                        }
+                    }
+                } else {
+                    // we don't have a base cert, fail
+                    validationTypeMap.put(platformType,
+                            buildValidationRecord(
+                                    platformType,
+                            AppraisalStatus.Status.FAIL,
+                            "Base Platform credential missing",
+                                    null,
+                                    Level.ERROR));
+                }
+
+                validations.add(validationTypeMap.get(
+                        platformType));
             }
         }
 
@@ -189,17 +242,23 @@ public class SupplyChainValidationServiceImpl implements SupplyChainValidationSe
             if (pcs == null || pcs.isEmpty()) {
                 LOGGER.error("There were no Platform Credentials to validate attributes.");
                 validations.add(buildValidationRecord(
-                        SupplyChainValidation.ValidationType.PLATFORM_CREDENTIAL,
+                        platformAttrType,
                         AppraisalStatus.Status.FAIL,
                         "Platform credential(s) missing."
                                 + " Cannot validate attributes",
                         null, Level.ERROR));
             } else {
+                platformScv = validationTypeMap.get(
+                        platformType);
+                SupplyChainValidation attributeScv = null;
+
+                List<ArchivableEntity> aes = new ArrayList<>();
+                if (platformScv != null) {
+                    aes.addAll(platformScv.getCertificatesUsed());
+                }
                 Iterator<PlatformCredential> it = pcs.iterator();
                 while (it.hasNext()) {
                     PlatformCredential pc = it.next();
-                    SupplyChainValidation attributeScv = null;
-
                     if (pc != null) {
                         if (pc.isDeltaChain()) {
                             // this check validates the delta changes and re-compares
@@ -211,37 +270,68 @@ public class SupplyChainValidationServiceImpl implements SupplyChainValidationSe
                             attributeScv = validatePlatformCredentialAttributes(
                                     pc, device.getDeviceInfo(), ec);
                         }
-                        if (platformScv != null) {
-                            // have to make sure the attribute validation isn't ignored and
-                            // doesn't override general validation status
-                            if (platformScv.getResult() == PASS
-                                    && attributeScv.getResult() != PASS) {
-                                // if the platform trust store validated but the attribute didn't
-                                // replace
-                                validations.remove(platformScv);
-                                validations.add(attributeScv);
-                            } else if ((platformScv.getResult() == PASS
-                                    && attributeScv.getResult() == PASS)
-                                    || (platformScv.getResult() != PASS
-                                    && attributeScv.getResult() != PASS)) {
-                                // if both trust store and attributes validated or failed
-                                // combine messages
-                                validations.remove(platformScv);
-                                List<ArchivableEntity> aes = new ArrayList<>();
-                                for (Certificate cert : platformScv.getCertificatesUsed()) {
-                                    aes.add(cert);
-                                }
-                                validations.add(new SupplyChainValidation(
-                                        platformScv.getValidationType(),
-                                        platformScv.getResult(), aes,
-                                        String.format("%s%n%s", platformScv.getMessage(),
+
+                        // update the attribute SCV
+                        if (validationTypeMap.containsKey(platformAttrType)) {
+                            SupplyChainValidation tmpScv = validationTypeMap.get(
+                                    platformAttrType);
+                            if (tmpScv.getResult() == PASS && attributeScv.getResult() == FAIL) {
+                                validationTypeMap.put(platformAttrType, attributeScv);
+                            } else if (tmpScv.getResult() == FAIL
+                                    && attributeScv.getResult() == FAIL) {
+                                validationTypeMap.put(platformAttrType, new SupplyChainValidation(
+                                        attributeScv.getValidationType(),
+                                        attributeScv.getResult(), aes,
+                                        String.format("%s%n%s", tmpScv.getMessage(),
                                                 attributeScv.getMessage())));
                             }
+                        } else {
+                            validationTypeMap.put(platformAttrType, attributeScv);
                         }
+
+//                        if (platformScv != null) {
+//                            // have to make sure the attribute validation isn't ignored and
+//                            // doesn't override general validation status
+//                            if (platformScv.getResult() == PASS
+//                                    && attributeScv.getResult() != PASS) {
+//                                // if the platform trust store validated but the attribute didn't
+//                                // replace
+//                                validationTypeMap.put(
+//                                        SupplyChainValidation.ValidationType
+//                                                .PLATFORM_CREDENTIAL_ATTRIBUTES,
+//                                        attributeScv);
+//                            } else if ((platformScv.getResult() == PASS
+//                                    && attributeScv.getResult() == PASS)
+//                                    || (platformScv.getResult() != PASS
+//                                    && attributeScv.getResult() != PASS)) {
+//                                // if both trust store and attributes validated or failed
+//                                // combine messages
+//                                validations.add(new SupplyChainValidation(
+//                                        platformScv.getValidationType(),
+//                                        platformScv.getResult(), aes,
+//                                        String.format("%s%n%s", platformScv.getMessage(),
+//                                                attributeScv.getMessage())));
+//                            }
+//                        }
 
                         pc.setDevice(device);
                         this.certificateManager.update(pc);
                     }
+                }
+                //combine platform and platform attributes
+                validations.remove(platformScv);
+                attributeScv = validationTypeMap.get(
+                        platformAttrType);
+                if (platformScv.getResult() == PASS && attributeScv.getResult() == FAIL) {
+                    validations.add(new SupplyChainValidation(
+                            platformScv.getValidationType(),
+                            attributeScv.getResult(), aes, attributeScv.getMessage()));
+                } else if (platformScv.getResult() == FAIL && attributeScv.getResult() == FAIL) {
+                    validations.add(new SupplyChainValidation(
+                            platformScv.getValidationType(),
+                            platformScv.getResult(), aes,
+                            String.format("%s%n%s", platformScv.getMessage(),
+                                    attributeScv.getMessage())));
                 }
             }
         }
@@ -645,7 +735,7 @@ public class SupplyChainValidationServiceImpl implements SupplyChainValidationSe
             final PlatformCredential pc, final DeviceInfoReport deviceInfoReport,
             final EndorsementCredential ec) {
         final SupplyChainValidation.ValidationType validationType
-                = SupplyChainValidation.ValidationType.PLATFORM_CREDENTIAL;
+                = SupplyChainValidation.ValidationType.PLATFORM_CREDENTIAL_ATTRIBUTES;
 
         if (pc == null) {
             LOGGER.error("No platform credential to validate");
@@ -676,7 +766,7 @@ public class SupplyChainValidationServiceImpl implements SupplyChainValidationSe
             final PlatformCredential base,
             final Map<PlatformCredential, SupplyChainValidation> deltaMapping) {
         final SupplyChainValidation.ValidationType validationType
-                = SupplyChainValidation.ValidationType.PLATFORM_CREDENTIAL;
+                = SupplyChainValidation.ValidationType.PLATFORM_CREDENTIAL_ATTRIBUTES;
 
         if (delta == null) {
             LOGGER.error("No delta certificate to validate");

@@ -633,7 +633,7 @@ public final class SupplyChainCredentialValidator implements CredentialValidator
         List<ArchivableEntity> certificateList = null;
         SupplyChainValidation scv = null;
         resultMessage.append("There are errors with Delta "
-                    + "Component Statuses components:\n");
+                    + "Component Statuses:\n");
         // go through the leaf and check the changes against the valid components
         // forget modifying validOrigPcComponents
         for (PlatformCredential delta : chainCertificates) {
@@ -744,12 +744,24 @@ public final class SupplyChainCredentialValidator implements CredentialValidator
                         } else {
                             builtMatchList.add(ci);
                         }
+                    } else if (ciV2.isEmpty()) {
+                        fieldValidation = false;
+                        LOGGER.warn(String.format("%s for delta %s has empty status",
+                                ciV2.getComponentClass().toString(),
+                                delta.getSerialNumber().toString()));
+                        failureMsg.append(String.format("Empty component status "
+                                 + "in delta certificate. (%s)%n",
+                                delta.getSerialNumber().toString()));
+                        deltaMapping.put(delta, new SupplyChainValidation(
+                                SupplyChainValidation.ValidationType.PLATFORM_CREDENTIAL,
+                                FAIL, certificateList,
+                                failureMsg.toString()
+                        ));
                     }
                 }
             }
             // each delta has a change to change or modify what was just modified
             modifiedClassValues.clear();
-
             resultMessage.append(failureMsg.toString());
         }
 
@@ -809,11 +821,10 @@ public final class SupplyChainCredentialValidator implements CredentialValidator
             for (ComponentIdentifier cId : fullDeltaChainComponents) {
                 ciV2 = (ComponentIdentifierV2) cId;
                 if (ciV2.getComponentClass().getClassValueString()
-                        .contains(cInfo.getComponentClass())) {
-                    if (isMatch(cId, cInfo)) {
+                        .contains(cInfo.getComponentClass())
+                        && isMatch(cId, cInfo)) {
                         subCompIdList.remove(cId);
                         subCompInfoList.remove(cInfo);
-                    }
                 }
             }
         }
