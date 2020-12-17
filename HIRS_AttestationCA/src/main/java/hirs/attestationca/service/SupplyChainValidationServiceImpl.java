@@ -176,13 +176,6 @@ public class SupplyChainValidationServiceImpl implements SupplyChainValidationSe
                         platformScv = validatePcPolicy(pc, platformScv,
                                 deltaMapping, acceptExpiredCerts);
 
-                        /**
-                         * Alright, this should work but because the test material is bad
-                         * I can't finish it.  Currently the delta certificate has the same
-                         * serial number as the base, the same validity and so on.  I will
-                         * attempt to generate my own but for right now, I'm going to move
-                         * on to something else.
-                         */
                         if (validationTypeMap.containsKey(
                                 platformType)) {
                             SupplyChainValidation tmpScv = validationTypeMap.get(platformType);
