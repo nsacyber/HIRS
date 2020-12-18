@@ -76,6 +76,9 @@ public final class IssuedCertificateAttributeHelper {
      */
     public static Extension buildAuthorityKeyIdentifier(
             final EndorsementCredential endorsementCredential) throws IOException {
+        if (endorsementCredential == null || endorsementCredential.getX509Certificate() == null) {
+            return null;
+        }
         byte[] extValue = endorsementCredential.getX509Certificate()
                     .getExtensionValue(Extension.authorityKeyIdentifier.getId());
 

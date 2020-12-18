@@ -1263,12 +1263,8 @@ public abstract class AbstractAttestationCertificateAuthority
 
             Extension authKeyIdentifier = null;
 
-            try {
-                authKeyIdentifier = IssuedCertificateAttributeHelper
-                        .buildAuthorityKeyIdentifier(endorsementCredential);
-            } catch (Exception ex) {
-                LOG.error("Test");
-            }
+            authKeyIdentifier = IssuedCertificateAttributeHelper
+                    .buildAuthorityKeyIdentifier(endorsementCredential);
 
             builder.addExtension(subjectAlternativeName);
             if (authKeyIdentifier != null) {
