@@ -134,7 +134,9 @@
              */
             function createDownloadLink(full) {
                 var device = full.device;
-                var html = '<form method="POST" action="${portal}/validation-reports/download?id=' + device.id + '">' +
+                var deviceStatus = full.overallValidationResult;
+                var html = '<form method="POST" action="${portal}/validation-reports/download?id=' + device.id +
+                            '&deviceName=' + device.name + '">' +
                                 device.name +
                                 '<a href="#downloadValidationReport" data-toggle="modal" title="Download Validation Report">' +
                                     '<img src="${icons}/ic_file_download_black_24dp.png"/>' +
@@ -149,6 +151,8 @@
                                                 '<label>Company<input id="company" type="text" name="company" /></label>' +
                                                 '<label>Contract #<input id="contract" type="text" name="contract" /></label>' +
                                                 '<label>Date range end<input id="date" type="text" name="date" /></label>' +
+                                                '<input id="deviceStatus" type="hidden" name="deviceStatus" value="' +
+                                                    deviceStatus + '" />' +
                                             '</div>' +
                                             '<div class="modal-footer">' +
                                                 '<div class="modal-custom-buttons">' +

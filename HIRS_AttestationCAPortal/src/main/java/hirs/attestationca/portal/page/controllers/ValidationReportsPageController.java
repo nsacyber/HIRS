@@ -8,6 +8,7 @@ import hirs.attestationca.portal.page.params.NoPageParams;
 import hirs.data.persist.certificate.Certificate;
 import hirs.data.persist.certificate.PlatformCredential;
 import hirs.data.persist.certificate.attributes.ComponentIdentifier;
+import hirs.data.persist.certificate.attributes.V2.ComponentIdentifierV2;
 import hirs.persist.CertificateManager;
 import org.apache.logging.log4j.Logger;
 import static org.apache.logging.log4j.LogManager.getLogger;
@@ -31,6 +32,9 @@ import hirs.persist.CrudManager;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.io.BufferedWriter;
+import java.io.IOException;
+import java.io.OutputStreamWriter;
 import java.util.Enumeration;
 import java.util.UUID;
 
@@ -49,6 +53,7 @@ public class ValidationReportsPageController extends PageController<NoPageParams
     /**
      * Constructor providing the Page's display and routing specification.
      * @param supplyChainValidatorSummaryManager the manager
+     * @param certificateManager the certificate manager
      */
     @Autowired
     public ValidationReportsPageController(
@@ -110,32 +115,83 @@ public class ValidationReportsPageController extends PageController<NoPageParams
         return new DataTableResponse<>(records, input);
     }
 
+    /**
+     * This method handles downloading a validation report. The report will contain the
+     * following data:
+     * - Company devices where shipped from
+     * - Contract#
+     * - Report for Date range (default to current date)
+     * -Verified Manufacturer is the Platform Vendor
+     * - Model is the Platform Model
+     * - SN is the Chassis SN
+     * - Verification Data is the not before time on the Attestation Certificate
+     * - Component Status column is 8 component classes names listed above
+     * (Component Status data is taken from the pass/fail status of the report summary)
+     * - Device Status is the overall pass/fail of the report summary
+     * @param id of the validated device
+     * @param deviceName name of the validated device
+     * @param request object
+     * @param response object
+     * @throws IOException thrown by BufferedWriter object
+     */
     @RequestMapping(value = "download", method = RequestMethod.POST)
     public void download(@RequestParam final String id,
+                         @RequestParam final String deviceName,
                          final HttpServletRequest request,
-                         final HttpServletResponse response) {
+                         final HttpServletResponse response) throws IOException {
 
         LOGGER.info("Downloading validation report for " + id);
+        response.setHeader("Content-Type", "text/plain");
+        response.setHeader("Content-Disposition",
+                "attachment;filename=\"" + deviceName + "_validation_report.txt\"");
+        BufferedWriter bufferedWriter = new BufferedWriter(
+                new OutputStreamWriter(response.getOutputStream(), "UTF-8"));
         Enumeration parameters = request.getParameterNames();
         while (parameters.hasMoreElements()) {
             String parameter = (String) parameters.nextElement();
+            bufferedWriter.append(parameter + ": " + request.getParameter(parameter) + "\n");
             LOGGER.info(parameter + ": " + request.getParameter(parameter));
         }
+//        String columnHeaders = "Company, Contract Number, Date Range, Verified Manufacturer, "
+//                + "Model, SN, Verification Date, Component Statuses, Device Status";
+//        bufferedWriter.append(columnHeaders + "\n");
+//        LOGGER.info(columnHeaders);
         UUID uuid = UUID.fromString(id);
-        PlatformCredential pc = PlatformCredential.select(certificateManager).byDeviceId(uuid).getCertificate();
+        PlatformCredential pc = PlatformCredential.select(certificateManager)
+                                            .byDeviceId(uuid).getCertificate();
+        bufferedWriter.append("Verified manufacturer: " + pc.getManufacturer() + "\n");
+        bufferedWriter.append("Model: " + pc.getModel() + "\n");
+        bufferedWriter.append("SN: " + pc.getChassisSerialNumber() + "\n");
+        bufferedWriter.append("Verification date: " + pc.getBeginValidity() + "\n");
         LOGGER.info("Verified manufacturer: " + pc.getManufacturer());
         LOGGER.info("Model: " + pc.getModel());
         LOGGER.info("SN: " + pc.getChassisSerialNumber());
         LOGGER.info("Verification date: " + pc.getBeginValidity());
-        if (pc.getComponentIdentifiers() != null &&
-                pc.getComponentIdentifiers().size() > 0) {
+        if (pc.getComponentIdentifiers() != null
+                && pc.getComponentIdentifiers().size() > 0) {
             for (ComponentIdentifier ci : pc.getComponentIdentifiers()) {
-                if (ci.getComponentManufacturerId() != null) {
-                    LOGGER.info("Manufacturer ID: " + ci.getComponentManufacturerId().toString());
+                if (ci instanceof ComponentIdentifierV2) {
+                    bufferedWriter.append(((ComponentIdentifierV2) ci).getComponentClass()
+                            + "\nComponent status: "
+                                + ((ComponentIdentifierV2) ci).getAttributeStatus() + "\n");
+                    LOGGER.info(((ComponentIdentifierV2) ci).getComponentClass()
+                            + "\nComponent status: "
+                                + ((ComponentIdentifierV2) ci).getAttributeStatus());
+                } else {
+                    bufferedWriter.append("Platform Components" + "\n");
+                    LOGGER.info("Platform Components");
                 }
-                LOGGER.info("\nModel: " + ci.getComponentModel().getString() +
-                        "\nRevision: " + ci.getComponentRevision().getString());
+                bufferedWriter.append("Component manufacturer : "
+                            + ci.getComponentManufacturer().getString()
+                        + "\nComponent model: " + ci.getComponentModel().getString()
+                        + "\nComponent revision: " + ci.getComponentRevision().getString() + "\n");
+                LOGGER.info("Component manufacturer : "
+                            + ci.getComponentManufacturer().getString()
+                        + "\nComponent model: " + ci.getComponentModel().getString()
+                        + "\nComponent revision: " + ci.getComponentRevision().getString());
             }
         }
+
+        bufferedWriter.flush();
     }
 }
