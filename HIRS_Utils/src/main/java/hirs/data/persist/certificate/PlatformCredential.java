@@ -380,25 +380,16 @@ public class PlatformCredential extends DeviceAssociatedCertificate {
     /**
      * Get the type of platform certificate.
      *
-     * @return the TCG platform type { base | delta }
+     * @return flag for base certificate
      */
     public boolean isBase() {
         return platformBase;
     }
 
     /**
-     * Flag that indicates this PC has or can have a chain of delta
-     * certificates.
-     * @return status of the chain
-     */
-    public boolean isDeltaChain() {
-        return isDeltaChain;
-    }
-
-    /**
      * Getter for the string representation of the platform type.
      *
-     * @return Delta or Base
+     * @return the TCG platform type { base | delta }
      */
     public String getPlatformType() {
         return platformChainType;

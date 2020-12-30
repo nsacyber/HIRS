@@ -275,7 +275,6 @@ public class ReferenceManifestDetailsPageController
             for (CertificateAuthorityCredential cert : certificates) {
                 if (Arrays.equals(cert.getEncodedPublicKey(),
                         RIM_VALIDATOR.getPublicKey().getEncoded())) {
-                    LOGGER.info("Found matching cert!");
                     data.put("issuerID", cert.getId().toString());
                 }
             }
@@ -407,10 +406,6 @@ public class ReferenceManifestDetailsPageController
         data.put("supportEvents", supportEvents);
         data.put("livelogEvents", livelogEvents);
 
-        for (Map.Entry<String, Object> entry : data.entrySet()) {
-            LOGGER.error(String.format("%s -> %s", entry.getKey(),
-                    String.valueOf(entry.getValue())));
-        }
         return data;
     }
 }

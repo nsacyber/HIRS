@@ -316,34 +316,28 @@ public final class SupplyChainCredentialValidator implements CredentialValidator
             final DeviceInfoReport deviceInfoReport,
             final PlatformCredential basePlatformCredential,
             final Map<PlatformCredential, SupplyChainValidation> deltaMapping) {
-        final String baseErrorMessage = "Can't validate delta platform"
-                + "certificate attributes without ";
         String message;
-        if (deltaPlatformCredential == null) {
-            message = baseErrorMessage + "a delta platform certificate";
-            LOGGER.error(message);
-            return new AppraisalStatus(FAIL, message);
-        }
-        if (deviceInfoReport == null) {
-            message = baseErrorMessage + "a device info report";
-            LOGGER.error(message);
-            return new AppraisalStatus(FAIL, message);
-        }
-        if (basePlatformCredential == null) {
-            message = baseErrorMessage + "a base platform credential";
-            LOGGER.error(message);
-            return new AppraisalStatus(FAIL, message);
-        }
 
-        if (!basePlatformCredential.getPlatformSerial()
-                .equals(deltaPlatformCredential.getPlatformSerial())) {
-            message = String.format("Delta platform certificate "
-                    + "platform serial number (%s) does not match "
-                    + "the base certificate's platform serial number (%s)",
-                    deltaPlatformCredential.getPlatformSerial(),
-                    basePlatformCredential.getPlatformSerial());
-            LOGGER.error(message);
-            return new AppraisalStatus(FAIL, message);
+        // this needs to be a loop for all deltas, link to issue #110
+        // check that they don't have the same serial number
+        for (PlatformCredential delta : deltaMapping.keySet()) {
+            if (!basePlatformCredential.getPlatformSerial()
+                    .equals(delta.getPlatformSerial())) {
+                message = String.format("Base and Delta platform serial "
+                                + "numbers do not match (%s != %s)",
+                        delta.getPlatformSerial(),
+                        basePlatformCredential.getPlatformSerial());
+                LOGGER.error(message);
+                return new AppraisalStatus(FAIL, message);
+            }
+            // none of the deltas should have the serial number of the base
+            if (basePlatformCredential.getSerialNumber()
+                    .equals(delta.getSerialNumber())) {
+                message = String.format("Delta Certificate with same serial number as base. (%s)",
+                        delta.getSerialNumber());
+                LOGGER.error(message);
+                return new AppraisalStatus(FAIL, message);
+            }
         }
 
         // parse out the provided delta and its specific chain.
@@ -501,18 +495,14 @@ public final class SupplyChainCredentialValidator implements CredentialValidator
 
         // check PlatformSerial against both system-serial-number and baseboard-serial-number
         fieldValidation = (
-                (
-                optionalPlatformCredentialFieldNullOrMatches(
+                (optionalPlatformCredentialFieldNullOrMatches(
                     "PlatformSerial",
                     platformCredential.getPlatformSerial(),
-                    hardwareInfo.getSystemSerialNumber())
-                ) || (
-                optionalPlatformCredentialFieldNullOrMatches(
+                    hardwareInfo.getSystemSerialNumber()))
+                        || (optionalPlatformCredentialFieldNullOrMatches(
                         "PlatformSerial",
                         platformCredential.getPlatformSerial(),
-                        hardwareInfo.getBaseboardSerialNumber())
-                )
-        );
+                        hardwareInfo.getBaseboardSerialNumber())));
 
         if (!fieldValidation) {
             resultMessage.append("Platform serial did not match\n");
@@ -755,8 +745,8 @@ public final class SupplyChainCredentialValidator implements CredentialValidator
                         deltaMapping.put(delta, new SupplyChainValidation(
                                 SupplyChainValidation.ValidationType.PLATFORM_CREDENTIAL,
                                 FAIL, certificateList,
-                                failureMsg.toString()
-                        ));
+                                failureMsg.toString()));
+                        builtMatchList.add(ci);
                     }
                 }
             }
@@ -772,24 +762,18 @@ public final class SupplyChainCredentialValidator implements CredentialValidator
         String paccorOutputString = deviceInfoReport.getPaccorOutputString();
         String unmatchedComponents;
         try {
-//            List<ComponentInfo> componentInfoList
-//                    = getComponentInfoFromPaccorOutput(paccorOutputString);
             // compare based on component class
             List<ComponentInfo> componentInfoList = getV2PaccorOutput(paccorOutputString);
-//            testComponentMatching(compMapping, chainCiMapping.values());
             // this is what I want to rewrite
-//            unmatchedComponents = validateV2p0PlatformCredentialComponentsExpectingExactMatch(
-//                    new LinkedList<>(chainCiMapping.values()),
-//                    compMapping.keySet().stream().collect(Collectors.toList()));
             unmatchedComponents = validateV2PlatformCredentialAttributes(
                     builtMatchList,
                     componentInfoList);
             fieldValidation &= unmatchedComponents.isEmpty();
-        } catch (IOException e) {
+        } catch (IOException ioEx) {
             final String baseErrorMessage = "Error parsing JSON output from PACCOR: ";
-            LOGGER.error(baseErrorMessage + e.toString());
+            LOGGER.error(baseErrorMessage + ioEx.toString());
             LOGGER.error("PACCOR output string:\n" + paccorOutputString);
-            return new AppraisalStatus(ERROR, baseErrorMessage + e.getMessage());
+            return new AppraisalStatus(ERROR, baseErrorMessage + ioEx.getMessage());
         }
         if (!fieldValidation) {
             // instead of listing all unmatched, just print the #.  The failure

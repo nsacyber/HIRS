@@ -392,7 +392,6 @@ public abstract class AbstractAttestationCertificateAuthority
      */
     @Override
     public byte[] processIdentityClaimTpm2(final byte[] identityClaim) {
-
         LOG.debug("Got identity claim");
 
         if (ArrayUtils.isEmpty(identityClaim)) {
@@ -414,7 +413,6 @@ public abstract class AbstractAttestationCertificateAuthority
             LOG.error(ex);
         }
         if (validationResult == AppraisalStatus.Status.PASS) {
-
             RSAPublicKey akPub = parsePublicKey(claim.getAkPublicArea().toByteArray());
             byte[] nonce = generateRandomBytes(NONCE_LENGTH);
             ByteString blobStr = tpm20MakeCredential(ekPub, akPub, nonce);
@@ -454,11 +452,6 @@ public abstract class AbstractAttestationCertificateAuthority
         Set<PlatformCredential> platformCredentials = parsePcsFromIdentityClaim(claim,
                 endorsementCredential);
         Map<BigInteger, PlatformCredential> correctedMap = new HashMap<>();
-        for (PlatformCredential pc : platformCredentials) {
-            correctedMap.put(pc.getSerialNumber(), pc);
-        }
-        platformCredentials.clear();
-        platformCredentials.addAll(correctedMap.values());
 
         // Parse and save device info
         Device device = processDeviceInfo(claim);
