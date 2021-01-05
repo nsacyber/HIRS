@@ -339,19 +339,7 @@ public class ReferenceManifestPageController
                 response.sendError(HttpServletResponse.SC_NOT_FOUND);
             } else {
                 StringBuilder fileName = new StringBuilder("filename=\"");
-                if (referenceManifest.getRimType().equals(ReferenceManifest.BASE_RIM)) {
-                    BaseReferenceManifest bRim = (BaseReferenceManifest) referenceManifest;
-                    fileName.append(bRim.getSwidName());
-                    fileName.append("_[");
-                    fileName.append(referenceManifest.getRimHash());
-                    fileName.append("]");
-                    fileName.append(".swidTag\"");
-                } else {
-                    // this needs to be updated for support rims
-                    SupportReferenceManifest bRim = (SupportReferenceManifest) referenceManifest;
-                    fileName.append(bRim.getFileName());
-                }
-
+                fileName.append(referenceManifest.getFileName());
                 // Set filename for download.
                 response.setHeader("Content-Disposition", "attachment;" + fileName);
                 response.setContentType("application/octet-stream");
