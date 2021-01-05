@@ -1261,9 +1261,7 @@ public abstract class AbstractAttestationCertificateAuthority
                 IssuedCertificateAttributeHelper.buildSubjectAlternativeNameFromCerts(
                 endorsementCredential, platformCredentials, deviceName);
 
-            Extension authKeyIdentifier = null;
-
-            authKeyIdentifier = IssuedCertificateAttributeHelper
+            Extension authKeyIdentifier = IssuedCertificateAttributeHelper
                     .buildAuthorityKeyIdentifier(endorsementCredential);
 
             builder.addExtension(subjectAlternativeName);
