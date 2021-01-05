@@ -1,6 +1,6 @@
 package hirs.tpm.eventlog.events;
 
-import java.io.UnsupportedEncodingException;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 
 import hirs.tpm.eventlog.TcgTpmtHa;
@@ -67,13 +67,13 @@ public class EvEfiSpecIdEvent {
     /**
      * EvEfiSpecIdEvent Constructor.
      * @param efiSpecId byte array holding the spec ID Event.
-     * @throws UnsupportedEncodingException if input fails to parse.
      */
-    public EvEfiSpecIdEvent(final byte[] efiSpecId) throws UnsupportedEncodingException {
+    public EvEfiSpecIdEvent(final byte[] efiSpecId) {
         byte[] signatureBytes = new byte[UefiConstants.SIZE_16];
         System.arraycopy(efiSpecId, 0, signatureBytes, 0, UefiConstants.SIZE_16);
         signature = HexUtils.byteArrayToHexString(signatureBytes);
-        signature = new String(signatureBytes, "UTF-8").substring(0, UefiConstants.SIZE_15);
+        signature = new String(signatureBytes, StandardCharsets.UTF_8)
+                .substring(0, UefiConstants.SIZE_15);
 
         byte[] platformClassBytes = new byte[UefiConstants.SIZE_4];
         System.arraycopy(efiSpecId, UefiConstants.OFFSET_16, platformClassBytes, 0,
@@ -167,12 +167,12 @@ public class EvEfiSpecIdEvent {
      */
     public String toString() {
        String specInfo = "";
-       if (signature == "Spec ID Event#")  {
+       if (signature.equals("Spec ID Event#"))  {
            specInfo += "Platform Profile Specification version = " + vMaj + "." + vMin
                                                    + " using errata version" + errata;
        } else {
            specInfo = "EV_NO_ACTION event named " + signature
-        + " ecncountered but support for processing it has not been added to this application";
+        + " encountered but support for processing it has not been added to this application";
        }
       return specInfo;
     }

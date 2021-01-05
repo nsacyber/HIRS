@@ -482,28 +482,6 @@ public class CertificateTest {
     }
 
     /**
-     * Tests that Certificate's getOrganization method can properly parse an organization
-     * from a comma separated RDN.
-     * @throws IOException unable to parse organization
-     */
-    @Test
-    public void testGetSingleOrganization() throws IOException {
-        String parsedOrg = Certificate.getOrganization(RDN_COMMA_SEPARATED);
-        Assert.assertEquals(RDN_COMMA_SEPARATED_ORGANIZATION, parsedOrg);
-    }
-
-    /**
-     * Tests that Certificate's getOrganization method can properly parse an organization
-     * from a multivalue RDN.
-     * @throws IOException unable to parse organization
-     */
-    @Test
-    public void testGetMultiRdnOrganization() throws IOException {
-        String parsedOrg = Certificate.getOrganization(RDN_MULTIVALUE);
-        Assert.assertEquals(RDN_MULTIVALUE_ORGANIZATION, parsedOrg);
-    }
-
-    /**
      * Construct a CertificateAuthorityCredential from the given parameters.
      *
      * @param filename the location of the certificate to be used

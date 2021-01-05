@@ -130,7 +130,7 @@ int provision() {
     RestfulClientProvisioner provisioner;
     string nonceBlob = provisioner.sendIdentityClaim(identityClaim);
     if (nonceBlob == "") {
-        cout << "----> Provisioning failed.";
+        cout << "----> Provisioning failed." << endl;
         cout << "Please refer to the Attestation CA for details." << endl;
         return 0;
     }

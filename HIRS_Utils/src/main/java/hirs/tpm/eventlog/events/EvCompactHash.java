@@ -1,6 +1,7 @@
 package hirs.tpm.eventlog.events;
 
 import java.io.UnsupportedEncodingException;
+import java.nio.charset.StandardCharsets;
 
 import hirs.tpm.eventlog.uefi.UefiConstants;
 import hirs.utils.HexUtils;
@@ -38,7 +39,7 @@ public class EvCompactHash {
       if (event.length == UefiConstants.SIZE_4) {   // older PFP defines as 4 byte ESI pointer.
            eventInfo = "   ESI = " + HexUtils.byteArrayToHexString(event);
       } else {  // otherwise assume the event content is a string
-           eventInfo = "   " + new String(event, "UTF-8");
+           eventInfo = "   " + new String(event, StandardCharsets.UTF_8);
      }
     return eventInfo;
     }

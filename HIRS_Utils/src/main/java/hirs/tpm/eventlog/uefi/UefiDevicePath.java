@@ -1,6 +1,7 @@
 package hirs.tpm.eventlog.uefi;
 
 import java.io.UnsupportedEncodingException;
+import java.nio.charset.StandardCharsets;
 
 import hirs.utils.HexUtils;
 
@@ -276,10 +277,8 @@ private String hardDriveSubType(final byte[] path, final int offset) {
  * @param path
  * @param offset
  * @return file path info.
- * @throws UnsupportedEncodingException
  */
-private String filePathSubType(final byte[] path, final int offset)
-                                      throws UnsupportedEncodingException {
+private String filePathSubType(final byte[] path, final int offset) {
   subType = "File Path = ";
   byte[] lengthBytes = new byte[UefiConstants.SIZE_2];
   System.arraycopy(path, 2 + offset, lengthBytes, 0, UefiConstants.SIZE_2);
@@ -287,7 +286,7 @@ private String filePathSubType(final byte[] path, final int offset)
   byte[] filePath = new byte[subTypeLength];
   System.arraycopy(path, UefiConstants.OFFSET_4 + offset, filePath, 0, subTypeLength);
   byte[] fileName = convertChar16tobyteArray(filePath);
-  subType += new String(fileName, "UTF-8");
+  subType += new String(fileName, StandardCharsets.UTF_8);
   return subType;
 }
 
