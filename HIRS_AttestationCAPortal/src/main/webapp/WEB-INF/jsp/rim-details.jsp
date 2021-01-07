@@ -85,6 +85,9 @@
                                                 <c:if test="${initialData.gptTable}">
                                                 <li>GPT Table</li>
                                                 </c:if>
+                                                <c:if test="${initialData.bootOrder}">
+                                                <li>Boot Order</li>
+                                                </c:if>
                                                 <c:if test="${initialData.defaultBootDevice}">
                                                 <li>Default boot device</li>
                                                 </c:if>
@@ -132,7 +135,7 @@
                                                 </c:if>
                                         </ul>
 
-                                        <c:if test="${not initialData.acpiTables || not initialData.smbiosTables || not initialData.gptTable || not initialData.defaultBootDevice}">
+                                        <c:if test="${not initialData.acpiTables || not initialData.smbiosTables || not initialData.gptTable || not initialData.bootOrder || not initialData.defaultBootDevice}">
                                             <li>Device Configuration</li>
                                             </c:if>
                                         <ul>
@@ -144,6 +147,9 @@
                                                 </c:if>
                                                 <c:if test="${not initialData.gptTable}">
                                                 <li>GPT Table</li>
+                                                </c:if>
+                                                <c:if test="${not initialData.bootOrder}">
+                                                <li>Boot Order</li>
                                                 </c:if>
                                                 <c:if test="${not initialData.defaultBootDevice}">
                                                 <li>Default boot device</li>

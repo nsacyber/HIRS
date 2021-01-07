@@ -382,13 +382,13 @@ public class ReferenceManifestDetailsPageController
                 bootOrder = true;
             } else if (contentStr.contains("Boot0000")) {
                 defaultBootDevice = true;
-            } else if (contentStr.contains("PK")) {
+            } else if (contentStr.contains("variable named PK")) {
                 pk = true;
-            } else if (contentStr.contains("KEK")) {
+            } else if (contentStr.contains("variable named KEK")) {
                 kek = true;
-            } else if (contentStr.contains("DB")) {
+            } else if (contentStr.contains("variable named db")) {
                 sigDb = true;
-            } else if (contentStr.contains("DBX")) {
+            } else if (contentStr.contains("variable named dbx")) {
                 forbiddenDbx = true;
             } else if (contentStr.contains("Secure Boot is Enabled")) {
                 secureBoot = true;
