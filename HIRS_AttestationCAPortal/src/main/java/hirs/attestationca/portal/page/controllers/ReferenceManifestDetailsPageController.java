@@ -387,9 +387,11 @@ public class ReferenceManifestDetailsPageController
             } else if (contentStr.contains("variable named KEK")) {
                 kek = true;
             } else if (contentStr.contains("variable named db")) {
-                sigDb = true;
-            } else if (contentStr.contains("variable named dbx")) {
-                forbiddenDbx = true;
+                if (contentStr.contains("dbx")) {
+                    forbiddenDbx = true;
+                } else {
+                    sigDb = true;
+                }
             } else if (contentStr.contains("Secure Boot is Enabled")) {
                 secureBoot = true;
             }
