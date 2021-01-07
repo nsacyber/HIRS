@@ -186,7 +186,7 @@ public class SupplyChainValidationServiceImpl implements SupplyChainValidationSe
                     for (PlatformCredential pc : pcs) {
                         int result = pc.getBeginValidity()
                                 .compareTo(baseCredential.getBeginValidity());
-                        if (!pc.isBase() && (result <= 0)) {
+                        if (!pc.isBase() && (result > 0)) {
                                 pcErrorMessage = String.format("%s%s%n", pcErrorMessage,
                                         "Delta Certificate's validity "
                                                 + "date is not after Base");
