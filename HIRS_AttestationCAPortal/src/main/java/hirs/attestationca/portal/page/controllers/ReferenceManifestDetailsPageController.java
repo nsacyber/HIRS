@@ -364,13 +364,13 @@ public class ReferenceManifestDetailsPageController
             if (contentStr.contains("CRTM")) {
                 crtm = true;
             } else if (contentStr.contains("shimx64.efi")
-                    && contentStr.contains("bootmgfw.efi")) {
+                    || contentStr.contains("bootmgfw.efi")) {
                 bootManager = true;
             } else if (contentStr.contains("grubx64.efi")
-                    && contentStr.contains("winload.efi")) {
+                    || contentStr.contains("winload.efi")) {
                 osLoader = true;
             } else if (contentStr.contains("vmlinuz")
-                    && contentStr.contains("ntoskrnl.exe")) {
+                    || contentStr.contains("ntoskrnl.exe")) {
                 osKernel = true;
             } else if (contentStr.contains("ACPI")) {
                 acpiTables = true;
@@ -392,7 +392,7 @@ public class ReferenceManifestDetailsPageController
                 } else {
                     sigDb = true;
                 }
-            } else if (contentStr.contains("Secure Boot is Enabled")) {
+            } else if (contentStr.contains("Secure Boot is enabled")) {
                 secureBoot = true;
             }
         }
