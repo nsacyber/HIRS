@@ -792,9 +792,17 @@ public final class SupplyChainCredentialValidator implements CredentialValidator
     private static String validateV2PlatformCredentialAttributes(
             final List<ComponentIdentifier> fullDeltaChainComponents,
             final List<ComponentInfo> allDeviceInfoComponents) {
+        LOGGER.error(String.format("fullDeltaChainComponents %d",
+                fullDeltaChainComponents.size()));
+        LOGGER.error(String.format("allDeviceInfoComponents %d",
+                allDeviceInfoComponents.size()));
         ComponentIdentifierV2 ciV2;
         StringBuilder invalidDeviceInfo = new StringBuilder();
         StringBuilder invalidPcIds = new StringBuilder();
+        LOGGER.error("DELTA CHAIN PRINT");
+        fullDeltaChainComponents.stream().forEach(ci -> LOGGER.error(ci));
+        LOGGER.error("DEVICE INFOs");
+        allDeviceInfoComponents.stream().forEach(dic -> LOGGER.error(dic));
         List<ComponentIdentifier> subCompIdList = fullDeltaChainComponents
                 .stream().collect(Collectors.toList());
         List<ComponentInfo> subCompInfoList = allDeviceInfoComponents

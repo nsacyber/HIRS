@@ -252,6 +252,16 @@ public class ComponentIdentifierV2 extends ComponentIdentifier {
     }
 
     @Override
+    public boolean equals(final Object obj) {
+        return super.equals(obj);
+    }
+
+    @Override
+    public int hashCode() {
+        return super.hashCode();
+    }
+
+    @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
         sb.append("ComponentIdentifierV2{");

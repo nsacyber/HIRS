@@ -3,6 +3,7 @@ package hirs.data.persist.certificate.attributes;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 import org.apache.commons.lang3.StringUtils;
 
@@ -286,6 +287,40 @@ public class ComponentIdentifier {
         }
 
         return Collections.unmodifiableList(addresses);
+    }
+//
+//    @Override
+//    public boolean equals(Object o) {
+//        if (this == o) return true;
+//        if (o == null || getClass() != o.getClass()) return false;
+//        ComponentIdentifier that = (ComponentIdentifier) o;
+//        return componentManufacturer.equals(that.componentManufacturer)
+//        && componentModel.equals(that.componentModel) && Objects.equals
+//        (componentSerial, that.componentSerial) && Objects.equals(componentRevision,
+//        that.componentRevision);
+//    }
+//
+    @Override
+    public int hashCode() {
+        return Objects.hash(componentManufacturer, componentModel,
+        componentSerial, componentRevision);
+    }
+
+    @Override
+    public boolean equals(final Object obj) {
+        if (obj == null) {
+            return false;
+        }
+
+        if (obj instanceof ComponentIdentifier) {
+            ComponentIdentifier testCi = (ComponentIdentifier) obj;
+            return testCi.getComponentManufacturer().equals(this.getComponentManufacturer())
+            && testCi.getComponentModel().equals(this.getComponentModel())
+            && testCi.getComponentSerial().equals(this.getComponentSerial())
+            && testCi.getComponentRevision().equals(this.getComponentRevision());
+        } else {
+            return false;
+        }
     }
 
     @Override
