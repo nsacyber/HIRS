@@ -664,7 +664,7 @@ public final class SupplyChainCredentialValidator implements CredentialValidator
                                     "%s attempted MODIFIED with no prior instance.%n",
                                     classValue));
                             scv = deltaMapping.get(delta);
-                            if (scv.getResult() != AppraisalStatus.Status.PASS) {
+                            if (scv != null && scv.getResult() != AppraisalStatus.Status.PASS) {
                                 failureMsg.append(scv.getMessage());
                             }
                             deltaMapping.put(delta, new SupplyChainValidation(
@@ -694,7 +694,7 @@ public final class SupplyChainCredentialValidator implements CredentialValidator
                                     "%s attempted REMOVED with no prior instance.%n",
                                     classValue));
                             scv = deltaMapping.get(delta);
-                            if (scv.getResult() != AppraisalStatus.Status.PASS) {
+                            if (scv != null && scv.getResult() != AppraisalStatus.Status.PASS) {
                                 failureMsg.append(scv.getMessage());
                             }
                             deltaMapping.put(delta, new SupplyChainValidation(
@@ -723,7 +723,7 @@ public final class SupplyChainCredentialValidator implements CredentialValidator
                                     "%s was ADDED, the serial already exists.%n",
                                     classValue));
                             scv = deltaMapping.get(delta);
-                            if (scv.getResult() != AppraisalStatus.Status.PASS) {
+                            if (scv != null && scv.getResult() != AppraisalStatus.Status.PASS) {
                                 failureMsg.append(scv.getMessage());
                             }
                             deltaMapping.put(delta, new SupplyChainValidation(

@@ -184,8 +184,8 @@ public class SupplyChainValidationServiceImpl implements SupplyChainValidationSe
                 // the base
                 if (baseCredential != null) {
                     for (PlatformCredential pc : pcs) {
-                        int result = pc.getBeginValidity()
-                                .compareTo(baseCredential.getBeginValidity());
+                        int result = baseCredential.getBeginValidity()
+                                .compareTo(pc.getBeginValidity());
                         if (!pc.isBase() && (result > 0)) {
                                 pcErrorMessage = String.format("%s%s%n", pcErrorMessage,
                                         "Delta Certificate's validity "
