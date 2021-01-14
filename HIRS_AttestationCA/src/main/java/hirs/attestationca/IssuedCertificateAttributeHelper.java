@@ -114,8 +114,10 @@ public final class IssuedCertificateAttributeHelper {
         // assemble AIK cert SAN, using info from EC and PC
         X500NameBuilder nameBuilder = new X500NameBuilder();
         populateEndorsementCredentialAttributes(endorsementCredential, nameBuilder);
-        for (PlatformCredential platformCredential : platformCredentials) {
-            populatePlatformCredentialAttributes(platformCredential, nameBuilder);
+        if (platformCredentials != null) {
+            for (PlatformCredential platformCredential : platformCredentials) {
+                populatePlatformCredentialAttributes(platformCredential, nameBuilder);
+            }
         }
 
         // add the OID for the TCG-required TPM ID label
