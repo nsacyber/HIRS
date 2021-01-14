@@ -25,6 +25,17 @@
         <c:set var="errorText" value="Validation Error"/>
         <c:set var="unknownText" value="Unknown Validation Status"/>
 
+        <form:form id="download" method="POST" action="${portal}/validation-reports/download">
+            Download Validation Reports
+            <my:download-info id="validationReportsDownload" label="Download Validation Reports">
+                <label>Company<input id="company" type="text" name="company" /></label>
+                <label>Contract #<input id="contract" type="text" name="contract" /></label>
+                <br>
+                <label>Date range start (mm/dd/yyyy)<input id="dateStart" type="text" name="dateStart" /></label>
+                <label>Date range end (mm/dd/yyyy)<input id="dateEnd" type="text" name="dateEnd" /></label>
+            </my:download-info>
+        </form:form>
+
         <div class="aca-data-table">
             <table id="reportTable" class="display" width="100%">
                 <thead>
@@ -93,10 +104,7 @@
                     {
                         // TODO render a link to a device details page,
                         // passing the device.id
-                        data: 'device.name',
-                        render: function (data, type, full, meta) {
-                            return createDownloadLink(full);
-                        }
+                        data: 'device.name'
                     },
                     {
                         data: 'id',
@@ -129,44 +137,34 @@
                 dataTable.order([1, 'desc']).draw();    //order by createTime
             });
 
-            /**
-             * This method builds a url to download the device validation report.
-             */
-            function createDownloadLink(full) {
-                var device = full.device;
-                var deviceStatus = full.overallValidationResult;
-                var html = '<form method="POST" action="${portal}/validation-reports/download?id=' + device.id +
-                            '&deviceName=' + device.name + '">' +
-                                device.name +
-                                '<a href="#downloadValidationReport" data-toggle="modal" title="Download Validation Report">' +
-                                    '<img src="${icons}/ic_file_download_black_24dp.png"/>' +
-                                '</a>' +
-                                '<div id="downloadValidationReport" class="modal fade" role="dialog" style="top:30%">' +
-                                    '<div class="modal-dialog">' +
-                                        '<div class="modal-content">' +
-                                            '<div class="modal-header">' +
-                                                '<h1 id="modal-title">Download Validation Report</h1>' +
-                                            '</div>' +
-                                            '<div class="modal-body">' +
-                                                '<label>Company<input id="company" type="text" name="company" /></label>' +
-                                                '<label>Contract #<input id="contract" type="text" name="contract" /></label>' +
-                                                '<label>Date range end<input id="date" type="text" name="date" /></label>' +
-                                                '<input id="deviceStatus" type="hidden" name="deviceStatus" value="' +
-                                                    deviceStatus + '" />' +
-                                            '</div>' +
-                                            '<div class="modal-footer">' +
-                                                '<div class="modal-custom-buttons">' +
-
-                                                '</div>' +
-                                                '<button class="btn btn-secondary" data-dismiss="modal">Cancel</button>' +
-                                                '<input class="btn btn-primary" type="submit" value="Save">' +
-                                            '</div>' +
-                                        '</div>' +
-                                    '</div>' +
-                                '</div>' +
-                            '</form>';
-                return html;
-            }
+            $("#download").submit(function(e) {
+                var tableLength = $("#reportTable").rows;
+                var createTimes = "";
+                var deviceNames = "";
+                $('#reportTable tr').not('thead tr').each(function() {
+                    createTimes += $(this).find("td").eq(1).html() + ",";
+                    deviceNames += $(this).find("td").eq(2).html() + ",";
+                });
+                createTimes = createTimes.substring(0, createTimes.length - 1);
+                deviceNames = deviceNames.substring(0, deviceNames.length - 1);
+                var params = [
+                                {
+                                    name: 'createTimes',
+                                    value: createTimes
+                                },
+                                {
+                                    name: 'deviceNames',
+                                    value: deviceNames
+                                }
+                            ];
+                $(this).append($.map(params, function(param) {
+                    return $('<input>', {
+                        type: 'hidden',
+                        name: param.name,
+                        value: param.value
+                    });
+                }));
+            });
 
             /**
              * Gets HTML to display (icon tag) for the specified validation type.
