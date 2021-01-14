@@ -39,7 +39,6 @@ import java.security.Security;
 import java.security.cert.X509Certificate;
 import java.security.interfaces.RSAPublicKey;
 import java.security.spec.MGF1ParameterSpec;
-import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.HashSet;
 
