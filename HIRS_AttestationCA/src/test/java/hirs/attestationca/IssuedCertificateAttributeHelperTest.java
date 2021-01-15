@@ -65,7 +65,7 @@ public class IssuedCertificateAttributeHelperTest {
     public void buildAttributesNoEndorsementNoPlatform() throws IOException {
         Extension subjectAlternativeName =
             IssuedCertificateAttributeHelper.buildSubjectAlternativeNameFromCerts(
-                    null, null, TEST_HOSTNAME);
+                    null, new ArrayList<PlatformCredential>(), TEST_HOSTNAME);
 
         Map<String, String> subjectAlternativeNameAttrMap = getSubjectAlternativeNameAttributes(
                 subjectAlternativeName);
@@ -92,7 +92,7 @@ public class IssuedCertificateAttributeHelperTest {
                 endorsementCredentialPath);
         Extension subjectAlternativeName =
                 IssuedCertificateAttributeHelper.buildSubjectAlternativeNameFromCerts(
-                        endorsementCredential, null, TEST_HOSTNAME);
+                        endorsementCredential, new ArrayList<PlatformCredential>(), TEST_HOSTNAME);
 
         Map<String, String> subjectAlternativeNameAttrMap = getSubjectAlternativeNameAttributes(
                 subjectAlternativeName);
