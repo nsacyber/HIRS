@@ -589,6 +589,7 @@ public final class SupplyChainCredentialValidator implements CredentialValidator
             final List<ComponentIdentifier> origPcComponents) {
         boolean fieldValidation = true;
         StringBuilder resultMessage = new StringBuilder();
+        String tempStringMessage = "";
         List<ComponentIdentifier> validOrigPcComponents = origPcComponents.stream()
                 .filter(identifier -> identifier.getComponentManufacturer() != null
                         && identifier.getComponentModel() != null)
@@ -618,46 +619,72 @@ public final class SupplyChainCredentialValidator implements CredentialValidator
         resultMessage.append("There are errors with Delta "
                 + "Component Statuses:\n");
         List<ComponentIdentifier> leftOverDeltas = new ArrayList<>();
-        resultMessage.append(validateDeltaChain(deltaMapping, baseCompList,
-                leftOverDeltas, chainCertificates));
+        List<ComponentIdentifier> absentSerialNum = new ArrayList<>();
+        tempStringMessage = validateDeltaChain(deltaMapping, baseCompList,
+                leftOverDeltas, absentSerialNum, chainCertificates);
+
+        // check if there were any issues
+        if (!tempStringMessage.isEmpty()) {
+            resultMessage.append(tempStringMessage);
+            fieldValidation = false;
+        }
 
         // finished up
         List<ArchivableEntity> certificateList = null;
         SupplyChainValidation scv = null;
-        // go through the leaf and check the changes against the valid components
-        // forget modifying validOrigPcComponents
-
-        // what wasn't handled by the serial number,
-        // not match by the serial number and the class type
-        // then the matching manufacturer and model
-
+        // Ok, we went through valid non-empty serial values
+        // now do the rest, if there are more deltas and if there are any
+        // non-empty serial values
         for (ComponentIdentifier deltaCi : leftOverDeltas) {
             String classValue;
             ComponentIdentifierV2 ciV2 = (ComponentIdentifierV2) deltaCi;
             ComponentIdentifierV2 baseCiV2;
             boolean classFound;
 
-            for (ComponentIdentifier ci : baseCompList) {
+            for (ComponentIdentifier ci : absentSerialNum) {
                 classValue = ciV2.getComponentClass().getClassValueString();
                 baseCiV2 = (ComponentIdentifierV2) ci;
                 classFound = classValue.equals(baseCiV2.getComponentClass()
                         .getClassValueString());
                 if (classFound) {
                     if (isMatch(ciV2, baseCiV2)) {
-                        LOGGER.error("Not Found and added");
+                        if (ciV2.isAdded()) {
+                            // error
+                            resultMessage.append("ADDED attempted with prior instance\n");
+                        }
+                        if (ciV2.isModified()) {
+                            // since the base list doesn't have this ci
+                            // just add the delta
+                            baseCompList.add(deltaCi);
+                        }
+                        // if it is a remove
+                        // we do nothing because baseCompList doesn't have it
                     } else {
-                        LOGGER.error("Not Found and added");
+                        // it is an add
+                        if (ciV2.isAdded()) {
+                            baseCompList.add(deltaCi);
+                        }
                     }
                 } else {
                     // delta change to a class not there
                     // is it an add?
                     if (ciV2.isAdded()) {
-                        LOGGER.error("Not Found and added");
+                        baseCompList.add(deltaCi);
+                    }
+
+                    if (ciV2.isModified()) {
+                        // error because you can't modify something
+                        // that isn't here
+                        resultMessage.append("MODIFIED attempted without prior instance\n");
+                    }
+
+                    if (ciV2.isRemoved()) {
+                        // error because you can't remove something
+                        // that isn't here
+                        resultMessage.append("REMOVED attempted without prior instance\n");
                     }
                 }
             }
-            // this needs to be removed.
-            baseCompList.add(deltaCi);
         }
 
         if (!fieldValidation) {
@@ -705,13 +732,6 @@ public final class SupplyChainCredentialValidator implements CredentialValidator
         List<ComponentInfo> subCompInfoList = allDeviceInfoComponents
                 .stream().collect(Collectors.toList());
 
-        subCompIdList.stream().forEach((ci) -> {
-            LOGGER.error(ci.toString());
-        });
-
-        subCompInfoList.stream().forEach((ci) -> {
-            LOGGER.error(ci.toString());
-        });
         // Delta is the baseline
         for (ComponentInfo cInfo : allDeviceInfoComponents) {
             for (ComponentIdentifier cId : fullDeltaChainComponents) {
@@ -1379,6 +1399,7 @@ public final class SupplyChainCredentialValidator implements CredentialValidator
             final Map<PlatformCredential, SupplyChainValidation> deltaMapping,
             final List<ComponentIdentifier> baseCompList,
             final List<ComponentIdentifier> leftOvers,
+            final List<ComponentIdentifier> absentSerials,
             final List<PlatformCredential> chainCertificates) {
         StringBuilder resultMessage = new StringBuilder();
         List<String> noneSerialValues = new ArrayList<>();
@@ -1390,7 +1411,11 @@ public final class SupplyChainCredentialValidator implements CredentialValidator
         // map the components throughout the chain
         Map<String, ComponentIdentifier> chainCiMapping = new HashMap<>();
         baseCompList.stream().forEach((ci) -> {
-            chainCiMapping.put(ci.getComponentSerial().toString(), ci);
+            if (!noneSerialValues.contains(ci.getComponentSerial().toString())) {
+                chainCiMapping.put(ci.getComponentSerial().toString(), ci);
+            } else {
+                absentSerials.add(ci);
+            }
         });
 
         String ciSerial;
