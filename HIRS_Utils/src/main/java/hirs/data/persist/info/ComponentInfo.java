@@ -111,8 +111,7 @@ public class ComponentInfo implements Serializable {
                 componentManufacturer,
                 componentModel,
                 componentSerial,
-                componentRevision
-        ));
+                componentRevision));
         this.componentManufacturer = componentManufacturer.trim();
         this.componentModel = componentModel.trim();
         if (componentSerial != null) {

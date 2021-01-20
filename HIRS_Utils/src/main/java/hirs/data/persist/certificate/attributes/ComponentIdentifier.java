@@ -288,18 +288,7 @@ public class ComponentIdentifier {
 
         return Collections.unmodifiableList(addresses);
     }
-//
-//    @Override
-//    public boolean equals(Object o) {
-//        if (this == o) return true;
-//        if (o == null || getClass() != o.getClass()) return false;
-//        ComponentIdentifier that = (ComponentIdentifier) o;
-//        return componentManufacturer.equals(that.componentManufacturer)
-//        && componentModel.equals(that.componentModel) && Objects.equals
-//        (componentSerial, that.componentSerial) && Objects.equals(componentRevision,
-//        that.componentRevision);
-//    }
-//
+
     @Override
     public int hashCode() {
         return Objects.hash(componentManufacturer, componentModel,
