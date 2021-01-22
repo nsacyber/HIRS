@@ -522,8 +522,9 @@ string CommandTpm2::createNvWriteCommandArgs(const string& nvIndex,
 /**
  * Method to get a quote (signed pcr selection) from the TPM 2.0 device.
  *
+ * @param pcr_selection selection of pcrs to sign
  * @param nonce blob provided by the ACA when the Identity Claim Request
- * @param pcr_election selection of pcrs to sign
+ * @return the argument string to be affixed to tpm quote
  */
 string CommandTpm2::getQuote(const string& pcr_selection,
                     const string& nonce) {
