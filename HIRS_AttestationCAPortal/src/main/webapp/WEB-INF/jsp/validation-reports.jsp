@@ -28,11 +28,13 @@
         <form:form id="download" method="POST" action="${portal}/validation-reports/download">
             Download Validation Reports
             <my:download-info id="validationReportsDownload" label="Download Validation Reports">
-                <label>Company<input id="company" type="text" name="company" /></label>
-                <label>Contract #<input id="contract" type="text" name="contract" /></label>
+                <label>Company<input id="company" type="text" pattern="[A-Za-z0-9\s]*"
+                        title="Letters, numbers, and spaces only" name="company" /></label>
+                <label>Contract #<input id="contract" type="text" pattern="[A-Za-z0-9\s]*"
+                        title="Letters, numbers, and spaces only" name="contract" /></label>
                 <br>
-                <label>Date range start (mm/dd/yyyy)<input id="dateStart" type="text" name="dateStart" /></label>
-                <label>Date range end (mm/dd/yyyy)<input id="dateEnd" type="text" name="dateEnd" /></label>
+                <label>Date range start<input id="dateStart" type="date" name="dateStart" /></label>
+                <label>Date range end<input id="dateEnd" type="date" name="dateEnd" /></label>
             </my:download-info>
         </form:form>
 
@@ -164,6 +166,10 @@
                         value: param.value
                     });
                 }));
+            });
+
+            $(".btn-primary").click(function() {
+                $("#validationReportsDownload").modal('hide');
             });
 
             /**

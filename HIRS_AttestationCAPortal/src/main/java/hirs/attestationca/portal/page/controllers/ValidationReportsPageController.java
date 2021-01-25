@@ -41,6 +41,8 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.UUID;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * Controller for the Validation Reports page.
@@ -55,6 +57,7 @@ public class ValidationReportsPageController extends PageController<NoPageParams
 
     private static final Logger LOGGER = getLogger(ValidationReportsPageController.class);
     private static final String DEFAULT_COMPANY = "AllDevices";
+    private static final String UNDEFINED = "undefined";
 
     /**
      * Constructor providing the Page's display and routing specification.
@@ -148,7 +151,8 @@ public class ValidationReportsPageController extends PageController<NoPageParams
         LOGGER.info("Downloading validation report");
         String company = "";
         String contractNumber = "";
-        DateTimeFormatter dateFormat = DateTimeFormatter.ofPattern("MM/dd/uuuu");
+        Pattern pattern = Pattern.compile("[A-Za-z0-9\\s]*");
+        DateTimeFormatter dateFormat = DateTimeFormatter.ofPattern("uuuu-MM-dd");
         DateTimeFormatter dateTimeFormat = DateTimeFormatter.ofPattern("uuuu-MM-dd HH:mm:ss");
         LocalDate startDate = null;
         LocalDate endDate = null;
@@ -158,56 +162,59 @@ public class ValidationReportsPageController extends PageController<NoPageParams
         while (parameters.hasMoreElements()) {
             String parameter = (String) parameters.nextElement();
             String parameterValue = request.getParameter(parameter);
+            LOGGER.info(parameter + ": " + parameterValue);
             switch (parameter) {
                 case "company":
-                    company = parameterValue;
+                    Matcher companyMatcher = pattern.matcher(parameterValue);
+                    if (companyMatcher.matches()) {
+                        company = parameterValue;
+                    } else {
+                        company = DEFAULT_COMPANY;
+                    }
                     break;
                 case "contract":
-                    contractNumber = parameterValue;
+                    Matcher contractMatcher = pattern.matcher(parameterValue);
+                    if (contractMatcher.matches()) {
+                        contractNumber = parameterValue;
+                    } else {
+                        contractNumber = "none";
+                    }
                     break;
                 case "dateStart":
                     if (parameterValue != null && !parameterValue.isEmpty()) {
                         startDate = LocalDate.parse(parameterValue, dateFormat);
+                    } else {
+                        startDate = LocalDate.ofEpochDay(0);
                     }
                     break;
                 case "dateEnd":
                     if (parameterValue != null && !parameterValue.isEmpty()) {
                         endDate = LocalDate.parse(parameterValue, dateFormat);
+                    } else {
+                        endDate = LocalDate.now();
                     }
                     break;
                 case "createTimes":
-                    String[] timestamps = parameterValue.split(",");
-                    for (String timestamp : timestamps) {
-                        createTimes.add(LocalDateTime.parse(timestamp,
-                                dateTimeFormat).toLocalDate());
-                        LOGGER.info("Create time added: "
-                                + createTimes.get(createTimes.size() - 1));
+                    if (!parameterValue.equals(UNDEFINED)) {
+                        String[] timestamps = parameterValue.split(",");
+                        for (String timestamp : timestamps) {
+                            createTimes.add(LocalDateTime.parse(timestamp,
+                                    dateTimeFormat).toLocalDate());
+                        }
                     }
                     break;
                 case "deviceNames":
-                    deviceNames = parameterValue.split(",");
+                    if (!parameterValue.equals(UNDEFINED)) {
+                        deviceNames = parameterValue.split(",");
+                    }
                     break;
                 default:
             }
-            LOGGER.info(parameter + ": " + parameterValue);
         }
-        if (company.equals("")) {
-            company = DEFAULT_COMPANY;
-        }
-        if (contractNumber.equals("")) {
-            contractNumber = "none";
-        }
-        if (startDate == null) {
-            startDate = LocalDate.ofEpochDay(0);
-        }
-        if (endDate == null) {
-            endDate = LocalDate.now();
-        }
-        LOGGER.info("Start date: " + startDate.toString() + ", end date: " + endDate.toString());
 
         response.setHeader("Content-Type", "text/csv");
         response.setHeader("Content-Disposition",
-                "attachment;filename=\"validation_report.csv\"");
+                "attachment;filename=" + company + "_validation_report.csv");
         BufferedWriter bufferedWriter = new BufferedWriter(
                 new OutputStreamWriter(response.getOutputStream(), "UTF-8"));
         String columnHeaders = "Verified Manufacturer, "
@@ -243,13 +250,13 @@ public class ValidationReportsPageController extends PageController<NoPageParams
                                     + "\nComponent status: "
                                     + ((ComponentIdentifierV2) ci).getAttributeStatus());
                         } else {
-                            //("Platform Components" + "\n");
                             LOGGER.info("\nPlatform Components");
                         }
                         LOGGER.info("Component manufacturer : "
                                 + ci.getComponentManufacturer().getString()
                                 + "\nComponent model: " + ci.getComponentModel().getString()
-                                + "\nComponent revision: " + ci.getComponentRevision().getString());
+                                + "\nComponent revision: "
+                                    + ci.getComponentRevision().getString());
                     }
                     attributeStatuses = attributeStatuses.substring(0,
                             attributeStatuses.length() - 1);
