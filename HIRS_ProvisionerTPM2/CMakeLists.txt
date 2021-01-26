@@ -251,6 +251,7 @@ if(STATIC_ANALYSIS)
             --error-exitcode=1
             --verbose
             --suppress=readdirCalled
+            --suppress=passedByValue
             -I include/
             src/
     )
