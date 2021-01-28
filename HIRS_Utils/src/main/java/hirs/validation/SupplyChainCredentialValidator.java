@@ -632,8 +632,7 @@ public final class SupplyChainCredentialValidator implements CredentialValidator
         // finished up
         List<ArchivableEntity> certificateList = null;
         SupplyChainValidation scv = null;
-        // Ok, we went through valid non-empty serial values
-        // now do the rest, if there are more deltas and if there are any
+
         // non-empty serial values
         for (ComponentIdentifier deltaCi : leftOverDeltas) {
             String classValue;
@@ -667,7 +666,6 @@ public final class SupplyChainCredentialValidator implements CredentialValidator
                     }
                 } else {
                     // delta change to a class not there
-                    // is it an add?
                     if (ciV2.isAdded()) {
                         baseCompList.add(deltaCi);
                     }
