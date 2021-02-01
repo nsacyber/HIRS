@@ -97,10 +97,9 @@ public class ComponentInfo implements Serializable {
                          final String componentRevision) {
         Assert.state(isComplete(
                 componentManufacturer,
-                componentModel,
-                componentSerial,
-                componentRevision
-        ));
+                componentModel),
+                "ComponentInfo: manufacturer and/or "
+                        + "model can not be null");
         this.componentManufacturer = componentManufacturer.trim();
         this.componentModel = componentModel.trim();
         if (componentSerial != null) {
@@ -123,17 +122,12 @@ public class ComponentInfo implements Serializable {
      *
      * @param componentManufacturer a String containing a component's manufacturer
      * @param componentModel a String representing a component's model
-     * @param componentSerial a String representing a component's serial number
-     * @param componentRevision a String representing a component's revision
      * @return true if the component is valid, false if not
      */
     public static boolean isComplete(final String componentManufacturer,
-                                     final String componentModel,
-                                     final String componentSerial,
-                                     final String componentRevision) {
-        return !(
-                StringUtils.isEmpty(componentManufacturer)  || StringUtils.isEmpty(componentModel)
-        );
+                                     final String componentModel) {
+        return !(StringUtils.isEmpty(componentManufacturer)
+                || StringUtils.isEmpty(componentModel));
     }
 
     @Override
