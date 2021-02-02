@@ -1427,6 +1427,7 @@ public final class SupplyChainCredentialValidator implements CredentialValidator
             certificateList.add(delta);
 
             for (ComponentIdentifier ci : delta.getComponentIdentifiers()) {
+                LOGGER.error("This is the serial {}", ci.getComponentSerial().toString());
                 if (!noneSerialValues.contains(ci.getComponentSerial().toString())) {
                     if (ci.isVersion2()) {
                         ciSerial = ci.getComponentSerial().toString();
@@ -1501,6 +1502,7 @@ public final class SupplyChainCredentialValidator implements CredentialValidator
         }
         baseCompList.clear();
         baseCompList.addAll(chainCiMapping.values());
+        baseCompList.addAll(absentSerials);
 
         return resultMessage.toString();
     }
