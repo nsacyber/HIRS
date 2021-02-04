@@ -12,7 +12,7 @@ import org.apache.commons.codec.DecoderException;
 import org.apache.commons.codec.binary.Hex;
 import org.apache.logging.log4j.Logger;
 
-import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.security.NoSuchAlgorithmException;
 import java.util.Arrays;
 
@@ -100,8 +100,7 @@ public final class PCRPolicy extends Policy {
         LOGGER.info("Validating quote from associated device.");
         boolean validated = false;
         short localityAtRelease = 0;
-        Charset charset = Charset.forName("UTF-8");
-        String quoteString = new String(tpmQuote, charset);
+        String quoteString = new String(tpmQuote, StandardCharsets.UTF_8);
 
         TPMMeasurementRecord[] measurements = new TPMMeasurementRecord[baselinePcrs.length];
         try {

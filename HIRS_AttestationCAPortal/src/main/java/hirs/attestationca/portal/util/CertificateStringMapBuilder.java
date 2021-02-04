@@ -7,6 +7,7 @@ import java.io.IOException;
 import java.math.BigInteger;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Set;
 import java.util.List;
 import java.util.Comparator;
@@ -21,6 +22,8 @@ import hirs.data.persist.certificate.attributes.ComponentIdentifier;
 import hirs.data.persist.certificate.attributes.PlatformConfiguration;
 import hirs.persist.CertificateManager;
 import hirs.utils.BouncyCastleUtils;
+import org.bouncycastle.util.encoders.Hex;
+
 import java.util.Collections;
 
 /**
@@ -134,20 +137,35 @@ public final class CertificateStringMapBuilder {
     public static Certificate containsAllChain(
             final Certificate certificate,
             final CertificateManager certificateManager) {
-
-        Set<CertificateAuthorityCredential> issuerCertificates;
+        Set<CertificateAuthorityCredential> issuerCertificates = new HashSet<>();
+        CertificateAuthorityCredential skiCA = null;
         //Check if there is a subject organization
-        if (certificate.getIssuerOrganization() == null
-                || certificate.getIssuerOrganization().isEmpty()) {
-            //Get certificates by subject
-            issuerCertificates = CertificateAuthorityCredential.select(certificateManager)
-                                    .bySubject(certificate.getIssuer())
-                                     .getCertificates();
+        if (certificate.getAuthKeyId() != null
+                && !certificate.getAuthKeyId().isEmpty()) {
+            byte[] bytes = Hex.decode(certificate.getAuthKeyId());
+            skiCA = CertificateAuthorityCredential
+                    .select(certificateManager)
+                    .bySubjectKeyIdentifier(bytes).getCertificate();
         } else {
-            //Get certificates by subject organization
-            issuerCertificates = CertificateAuthorityCredential.select(certificateManager)
-                                    .bySubjectOrganization(certificate.getIssuerOrganization())
-                                     .getCertificates();
+            LOGGER.info(String.format("Certificate (%s) for %s has no authority key identifier.",
+                    certificate.getClass().toString(), certificate.getSubject()));
+        }
+
+        if (skiCA == null) {
+            if (certificate.getIssuerSorted() == null
+                    || certificate.getIssuerSorted().isEmpty()) {
+                //Get certificates by subject
+                issuerCertificates = CertificateAuthorityCredential.select(certificateManager)
+                        .bySubject(certificate.getIssuer())
+                        .getCertificates();
+            } else {
+                //Get certificates by subject organization
+                issuerCertificates = CertificateAuthorityCredential.select(certificateManager)
+                        .bySubjectSorted(certificate.getIssuerSorted())
+                        .getCertificates();
+            }
+        } else {
+            issuerCertificates.add(skiCA);
         }
 
         for (Certificate issuerCert : issuerCertificates) {

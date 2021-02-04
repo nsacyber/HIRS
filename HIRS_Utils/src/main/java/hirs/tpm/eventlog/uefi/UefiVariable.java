@@ -3,6 +3,7 @@ package hirs.tpm.eventlog.uefi;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.math.BigInteger;
+import java.nio.charset.StandardCharsets;
 import java.security.NoSuchAlgorithmException;
 import java.security.cert.CertificateException;
 import java.util.ArrayList;
@@ -24,7 +25,7 @@ public class UefiVariable {
   /** UEFI defined variable identifier GUID. */
   private UefiGuid uefiGuid = null;
   /** List of Signature lists. */
-  private ArrayList<UefiSignatureList> certSuperList = new ArrayList<UefiSignatureList>();
+  private ArrayList<UefiSignatureList> certSuperList = new ArrayList<>();
   /** Name of the UEFI variable. */
   private String varName = "";
   /** UEFI defined Boot Variable. */
@@ -70,15 +71,15 @@ public UefiVariable(final byte[] variableData)
   uefiVaribelData = new byte[variableLength];
   System.arraycopy(variableData, UefiConstants.OFFSET_32
                    + nlength * UefiConstants.SIZE_2, uefiVaribelData, 0, variableLength);
-  varName = new String(name, "UTF-8");
+  varName = new String(name, StandardCharsets.UTF_8);
   String tmpName = varName;
   if (varName.contains("Boot00")) {
       tmpName = "Boot00";
   }
   switch (tmpName) {
-      case "PK":          processSigList(uefiVaribelData); break;
-      case "KEK":         processSigList(uefiVaribelData); break;
-      case "db":          processSigList(uefiVaribelData); break;
+      case "PK":
+      case "KEK":
+      case "db":
       case "dbx":         processSigList(uefiVaribelData); break;
       case "Boot00":      bootv = new UefiBootVariable(uefiVaribelData); break;
       case "BootOrder":   booto = new UefiBootOrder(uefiVaribelData); break;
@@ -147,14 +148,15 @@ public String toString() {
       tmpName = varName;
   }
   switch (tmpName) {
-     case "Shim":       efiVariable.append(printCert(uefiVaribelData, 0)); break;
+     case "Shim":
      case "MokList":    efiVariable.append(printCert(uefiVaribelData, 0)); break;
      case "Boot00":     efiVariable.append(bootv.toString()); break;
      case "BootOrder":  efiVariable.append(booto.toString()); break;
      case "SecureBoot": efiVariable.append(sb.toString()); break;
      default:
          if (!tmpName.isEmpty()) {
-             efiVariable.append("Data not provided for UEFI variable named " + tmpName + "   ");
+             efiVariable.append(String.format("Data not provided for UEFI variable named %s   ",
+                     tmpName));
          } else {
              efiVariable.append("Data not provided   ");
          }

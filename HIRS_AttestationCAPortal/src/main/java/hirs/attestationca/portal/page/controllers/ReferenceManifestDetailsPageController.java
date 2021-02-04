@@ -322,6 +322,20 @@ public class ReferenceManifestDetailsPageController
         data.put("associatedRim", support.getAssociatedRim());
         data.put("rimType", support.getRimType());
         data.put("tagId", support.getTagId());
+        boolean crtm = false;
+        boolean bootManager = false;
+        boolean osLoader = false;
+        boolean osKernel = false;
+        boolean acpiTables = false;
+        boolean smbiosTables = false;
+        boolean gptTable = false;
+        boolean bootOrder = false;
+        boolean defaultBootDevice = false;
+        boolean secureBoot = false;
+        boolean pk = false;
+        boolean kek = false;
+        boolean sigDb = false;
+        boolean forbiddenDbx = false;
 
         TCGEventLog logProcessor = new TCGEventLog(support.getRimBytes());
         LinkedList<TpmPcrEvent> tpmPcrEvents = new LinkedList<>();
@@ -340,6 +354,61 @@ public class ReferenceManifestDetailsPageController
         } else {
             data.put("events", logProcessor.getEventList());
         }
+
+        String contentStr;
+        for (TpmPcrEvent tpe : logProcessor.getEventList()) {
+            contentStr = tpe.getEventContentStr();
+            // check for specific events
+            if (contentStr.contains("CRTM")) {
+                crtm = true;
+            } else if (contentStr.contains("shimx64.efi")
+                    || contentStr.contains("bootmgfw.efi")) {
+                bootManager = true;
+            } else if (contentStr.contains("grubx64.efi")
+                    || contentStr.contains("winload.efi")) {
+                osLoader = true;
+            } else if (contentStr.contains("vmlinuz")
+                    || contentStr.contains("ntoskrnl.exe")) {
+                osKernel = true;
+            } else if (contentStr.contains("ACPI")) {
+                acpiTables = true;
+            } else if (contentStr.contains("SMBIOS")) {
+                smbiosTables = true;
+            } else if (contentStr.contains("GPT")) {
+                gptTable = true;
+            } else if (contentStr.contains("BootOrder")) {
+                bootOrder = true;
+            } else if (contentStr.contains("Boot0000")) {
+                defaultBootDevice = true;
+            } else if (contentStr.contains("variable named PK")) {
+                pk = true;
+            } else if (contentStr.contains("variable named KEK")) {
+                kek = true;
+            } else if (contentStr.contains("variable named db")) {
+                if (contentStr.contains("dbx")) {
+                    forbiddenDbx = true;
+                } else {
+                    sigDb = true;
+                }
+            } else if (contentStr.contains("Secure Boot is enabled")) {
+                secureBoot = true;
+            }
+        }
+
+        data.put("crtm", crtm);
+        data.put("bootManager", bootManager);
+        data.put("osLoader", osLoader);
+        data.put("osKernel", osKernel);
+        data.put("acpiTables", acpiTables);
+        data.put("smbiosTables", smbiosTables);
+        data.put("gptTable", gptTable);
+        data.put("bootOrder", bootOrder);
+        data.put("defaultBootDevice", defaultBootDevice);
+        data.put("secureBoot", secureBoot);
+        data.put("pk", pk);
+        data.put("kek", kek);
+        data.put("sigDb", sigDb);
+        data.put("forbiddenDbx", forbiddenDbx);
 
         return data;
     }

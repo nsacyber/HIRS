@@ -1,6 +1,6 @@
 package hirs.tpm.eventlog.uefi;
 
-import java.io.UnsupportedEncodingException;
+import java.nio.charset.StandardCharsets;
 
 import hirs.utils.HexUtils;
 /**
@@ -39,9 +39,8 @@ public class UefiPartition {
 /**
  * Processes a UEFI defined partition entry.
  * @param table byte array holding the partition table.
- * @throws UnsupportedEncodingException if parsing of the data fails.
  */
-  public UefiPartition(final byte[] table) throws UnsupportedEncodingException {
+  public UefiPartition(final byte[] table) {
     byte[] partitionGuidBytes = new byte[UefiConstants.SIZE_16];
     System.arraycopy(table, 0, partitionGuidBytes, 0, UefiConstants.SIZE_16);
     partitionTypeGUID = new UefiGuid(partitionGuidBytes);
@@ -56,7 +55,7 @@ public class UefiPartition {
     System.arraycopy(table, UefiConstants.PART_NAME_LENGTH, partitionNameBytes,
                                                       0, UefiConstants.UEFI_PT_LENGTH);
     byte[] pName = convertChar16tobyteArray(partitionNameBytes);
-    partitionName = new String(pName, "UTF-8").trim();
+    partitionName = new String(pName, StandardCharsets.UTF_8).trim();
    }
 
 /**

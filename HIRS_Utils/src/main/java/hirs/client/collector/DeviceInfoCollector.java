@@ -32,6 +32,7 @@ import java.net.Inet6Address;
 import java.net.InetAddress;
 import java.net.NetworkInterface;
 import java.net.SocketException;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.security.cert.CertificateException;
@@ -362,7 +363,7 @@ public class DeviceInfoCollector extends AbstractCollector {
             if (debianRelease.exists()) {
                 try {
                     reader = new BufferedReader(new InputStreamReader(
-                            new FileInputStream(debianRelease), "UTF-8"));
+                            new FileInputStream(debianRelease), StandardCharsets.UTF_8));
                     while ((line = reader.readLine()) != null) {
                         String[] ubuntuTokens = line.split("=");
                         if (ubuntuTokens.length == 2) {
@@ -394,7 +395,7 @@ public class DeviceInfoCollector extends AbstractCollector {
             } else if (redhatRelease.exists()) {
                 try {
                     reader = new BufferedReader(new InputStreamReader(
-                            new FileInputStream(redhatRelease), "UTF-8"));
+                            new FileInputStream(redhatRelease), StandardCharsets.UTF_8));
                     while ((line = reader.readLine()) != null) {
                         String[] redhatTokens = line.split("release");
                         if (redhatTokens.length == 2) {
@@ -543,7 +544,7 @@ public class DeviceInfoCollector extends AbstractCollector {
             Process quoteProcess = processBuilder.start();
             quoteReader
                     = new BufferedReader(new InputStreamReader(
-                                    quoteProcess.getInputStream(), "utf-8"));
+                                    quoteProcess.getInputStream(), StandardCharsets.UTF_8));
         } catch (IOException e) {
             LOGGER.info("IOException occurred while attempting to read "
                     + "tpm_version command, assume the TPM is not present and "

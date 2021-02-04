@@ -175,7 +175,8 @@ public abstract class CertificateSelector<T extends Certificate> {
     public CertificateSelector<T> byIssuer(final String issuer) {
         Preconditions.checkArgument(
                 StringUtils.isNotEmpty(issuer),
-                "issuer cannot be null or empty."
+                String.format("%s: issuer cannot be null or empty.",
+                        this.certificateClass.toString())
         );
 
         setFieldValue(Certificate.ISSUER_FIELD, issuer);
@@ -192,7 +193,8 @@ public abstract class CertificateSelector<T extends Certificate> {
     public CertificateSelector<T> bySubject(final String subject) {
         Preconditions.checkArgument(
                 StringUtils.isNotEmpty(subject),
-                "subject cannot be null or empty."
+                String.format("%s: subject cannot be null or empty.",
+                        this.certificateClass.toString())
         );
 
         setFieldValue(Certificate.SUBJECT_FIELD, subject);
@@ -200,36 +202,38 @@ public abstract class CertificateSelector<T extends Certificate> {
     }
 
     /**
-     * Specify an issuer organization string that certificates must have to be considered
+     * Specify the sorted issuer string that certificates must have to be considered
      * as matching.
      *
-     * @param organization certificate issuer organization string to query, not empty or null
+     * @param issuerSorted certificate issuer organization string to query, not empty or null
      * @return this instance (for chaining further calls)
      */
-    public CertificateSelector<T> byIssuerOrganization(final String organization) {
+    public CertificateSelector<T> byIssuerSorted(final String issuerSorted) {
         Preconditions.checkArgument(
-                StringUtils.isNotEmpty(organization),
-                "organization cannot be null or empty."
+                StringUtils.isNotEmpty(issuerSorted),
+                String.format("%s: issuerSorted cannot be null or empty.",
+                        this.certificateClass.toString())
         );
 
-        setFieldValue(Certificate.ISSUER_ORGANIZATION_FIELD, organization);
+        setFieldValue(Certificate.ISSUER_SORTED_FIELD, issuerSorted);
         return this;
     }
 
     /**
-     * Specify a subject organization string that certificates must have to be considered
+     * Specify the sorted subject string that certificates must have to be considered
      * as matching.
      *
-     * @param organization certificate subject organization string to query, not empty or null
+     * @param subjectSorted certificate subject organization string to query, not empty or null
      * @return this instance (for chaining further calls)
      */
-    public CertificateSelector<T> bySubjectOrganization(final String organization) {
+    public CertificateSelector<T> bySubjectSorted(final String subjectSorted) {
         Preconditions.checkArgument(
-                StringUtils.isNotEmpty(organization),
-                "organization cannot be null or empty."
+                StringUtils.isNotEmpty(subjectSorted),
+                String.format("%s: subjectSorted cannot be null or empty.",
+                        this.certificateClass.toString())
         );
 
-        setFieldValue(Certificate.SUBJECT_ORGANIZATION_FIELD, organization);
+        setFieldValue(Certificate.SUBJECT_SORTED_FIELD, subjectSorted);
         return this;
     }
 
@@ -243,13 +247,31 @@ public abstract class CertificateSelector<T extends Certificate> {
     public CertificateSelector<T> byEncodedPublicKey(final byte[] encodedPublicKey) {
         Preconditions.checkArgument(
                 ArrayUtils.isNotEmpty(encodedPublicKey),
-                "publicKey cannot be null or empty."
+                String.format("%s: publicKey cannot be null or empty.",
+                        this.certificateClass.toString())
         );
 
         setFieldValue(
                 Certificate.ENCODED_PUBLIC_KEY_FIELD,
                 Arrays.copyOf(encodedPublicKey, encodedPublicKey.length)
         );
+
+        return this;
+    }
+
+    /**
+     * Specify the authority key identifier to find certificate(s).
+     * @param authorityKeyIdentifier the string of the AKI associated with the certificate.
+     * @return this instance
+     */
+    public CertificateSelector<T> byAuthorityKeyIdentifier(final String authorityKeyIdentifier) {
+        Preconditions.checkArgument(
+                StringUtils.isNotEmpty(authorityKeyIdentifier),
+                String.format("%s: authorityKeyIdentifier cannot be null or empty.",
+                        this.certificateClass.toString())
+        );
+
+        setFieldValue(Certificate.AUTHORITY_KEY_ID_FIELD, authorityKeyIdentifier);
 
         return this;
     }
@@ -264,7 +286,8 @@ public abstract class CertificateSelector<T extends Certificate> {
     public CertificateSelector<T> byPublicKeyModulus(final BigInteger publicKeyModulus) {
         Preconditions.checkArgument(
                 publicKeyModulus != null,
-                "Public key modulus cannot be null"
+                String.format("%s: Public key modulus cannot be null",
+                        this.certificateClass.toString())
         );
 
         setFieldValue(
@@ -428,8 +451,7 @@ public abstract class CertificateSelector<T extends Certificate> {
 
     // construct and execute query
     private Set<T> execute() {
-        Set<T> results = certificateManager.get(this);
-        return results;
+        return certificateManager.get(this);
     }
 
     /**

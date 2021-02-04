@@ -67,11 +67,11 @@ import javax.crypto.spec.OAEPParameterSpec;
 import javax.crypto.spec.PSource;
 import javax.crypto.spec.SecretKeySpec;
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
 import java.math.BigInteger;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.nio.ByteBuffer;
+import java.nio.charset.StandardCharsets;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
 import java.security.KeyFactory;
@@ -407,11 +407,8 @@ public abstract class AbstractAttestationCertificateAuthority
         // and later tpm20MakeCredential function
         RSAPublicKey ekPub = parsePublicKey(claim.getEkPublicArea().toByteArray());
         AppraisalStatus.Status validationResult = AppraisalStatus.Status.FAIL;
-        try {
-            validationResult = doSupplyChainValidation(claim, ekPub);
-        } catch (Exception ex) {
-            LOG.error(ex);
-        }
+
+        validationResult = doSupplyChainValidation(claim, ekPub);
         if (validationResult == AppraisalStatus.Status.PASS) {
             RSAPublicKey akPub = parsePublicKey(claim.getAkPublicArea().toByteArray());
             byte[] nonce = generateRandomBytes(NONCE_LENGTH);
@@ -551,19 +548,15 @@ public abstract class AbstractAttestationCertificateAuthority
             if (request.getQuote() != null && !request.getQuote().isEmpty()) {
                 parseTPMQuote(request.getQuote().toStringUtf8());
                 TPMInfo savedInfo = device.getDeviceInfo().getTPMInfo();
-                TPMInfo tpmInfo = null;
-                try {
-                    tpmInfo = new TPMInfo(savedInfo.getTPMMake(),
+                TPMInfo tpmInfo = new TPMInfo(savedInfo.getTPMMake(),
                         savedInfo.getTPMVersionMajor(),
                         savedInfo.getTPMVersionMinor(),
                         savedInfo.getTPMVersionRevMajor(),
                         savedInfo.getTPMVersionRevMinor(),
                         savedInfo.getPcrValues(),
-                        this.tpmQuoteHash.getBytes("UTF-8"),
-                        this.tpmQuoteSignature.getBytes("UTF-8"));
-                } catch (UnsupportedEncodingException e) {
-                    LOG.error(e);
-                }
+                        this.tpmQuoteHash.getBytes(StandardCharsets.UTF_8),
+                        this.tpmQuoteSignature.getBytes(StandardCharsets.UTF_8));
+
                 DeviceInfoReport dvReport = new DeviceInfoReport(
                         device.getDeviceInfo().getNetworkInfo(),
                         device.getDeviceInfo().getOSInfo(),
@@ -855,18 +848,14 @@ public abstract class AbstractAttestationCertificateAuthority
 
         // Get TPM info, currently unimplemented
         TPMInfo tpm;
-        try {
-            tpm = new TPMInfo(DeviceInfoReport.NOT_SPECIFIED,
-                    (short) 0,
-                    (short) 0,
-                    (short) 0,
-                    (short) 0,
-                    this.pcrValues.getBytes("UTF-8"),
-                    this.tpmQuoteHash.getBytes("UTF-8"),
-                    this.tpmQuoteSignature.getBytes("UTF-8"));
-        } catch (UnsupportedEncodingException e) {
-            tpm = new TPMInfo();
-        }
+        tpm = new TPMInfo(DeviceInfoReport.NOT_SPECIFIED,
+                (short) 0,
+                (short) 0,
+                (short) 0,
+                (short) 0,
+                this.pcrValues.getBytes(StandardCharsets.UTF_8),
+                this.tpmQuoteHash.getBytes(StandardCharsets.UTF_8),
+                this.tpmQuoteSignature.getBytes(StandardCharsets.UTF_8));
 
         // Create final report
         DeviceInfoReport dvReport = new DeviceInfoReport(nw, os, fw, hw, tpm,
@@ -1268,7 +1257,13 @@ public abstract class AbstractAttestationCertificateAuthority
                 IssuedCertificateAttributeHelper.buildSubjectAlternativeNameFromCerts(
                 endorsementCredential, platformCredentials, deviceName);
 
+            Extension authKeyIdentifier = IssuedCertificateAttributeHelper
+                    .buildAuthorityKeyIdentifier(endorsementCredential);
+
             builder.addExtension(subjectAlternativeName);
+            if (authKeyIdentifier != null) {
+                builder.addExtension(authKeyIdentifier);
+            }
             // identify cert as an AIK with this extension
             if (IssuedCertificateAttributeHelper.EXTENDED_KEY_USAGE_EXTENSION != null) {
                 builder.addExtension(IssuedCertificateAttributeHelper.EXTENDED_KEY_USAGE_EXTENSION);
