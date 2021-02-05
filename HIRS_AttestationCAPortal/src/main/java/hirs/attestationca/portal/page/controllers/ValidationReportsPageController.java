@@ -39,6 +39,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Enumeration;
 import java.util.UUID;
 import java.util.regex.Matcher;
@@ -55,9 +56,13 @@ public class ValidationReportsPageController extends PageController<NoPageParams
     private final CertificateManager certificateManager;
     private final DeviceManager deviceManager;
 
-    private static final Logger LOGGER = getLogger(ValidationReportsPageController.class);
+    private static String columnHeaders = "Verified Manufacturer,"
+            + "Model,SN,Verification Date,Device Status,"
+            + "Component name,Component manufacturer,Component model,"
+            + "Component SN,Component status";
     private static final String DEFAULT_COMPANY = "AllDevices";
     private static final String UNDEFINED = "undefined";
+    private static final Logger LOGGER = getLogger(ValidationReportsPageController.class);
 
     /**
      * Constructor providing the Page's display and routing specification.
@@ -128,18 +133,7 @@ public class ValidationReportsPageController extends PageController<NoPageParams
     }
 
     /**
-     * This method handles downloading a validation report. The report will contain the
-     * following data:
-     * - Company devices where shipped from
-     * - Contract#
-     * - Report for Date range (default to current date)
-     * -Verified Manufacturer is the Platform Vendor
-     * - Model is the Platform Model
-     * - SN is the Chassis SN
-     * - Verification Data is the not before time on the Attestation Certificate
-     * - Component Status column is 8 component classes names listed above
-     * (Component Status data is taken from the pass/fail status of the report summary)
-     * - Device Status is the overall pass/fail of the report summary
+     * This method handles downloading a validation report.
      * @param request object
      * @param response object
      * @throws IOException thrown by BufferedWriter object
@@ -151,13 +145,14 @@ public class ValidationReportsPageController extends PageController<NoPageParams
         LOGGER.info("Downloading validation report");
         String company = "";
         String contractNumber = "";
-        Pattern pattern = Pattern.compile("[A-Za-z0-9\\s]*");
+        Pattern pattern = Pattern.compile("^\\w*$");
         DateTimeFormatter dateFormat = DateTimeFormatter.ofPattern("uuuu-MM-dd");
         DateTimeFormatter dateTimeFormat = DateTimeFormatter.ofPattern("uuuu-MM-dd HH:mm:ss");
         LocalDate startDate = null;
         LocalDate endDate = null;
         ArrayList<LocalDate> createTimes = new ArrayList<LocalDate>();
         String[] deviceNames = new String[]{};
+
         Enumeration parameters = request.getParameterNames();
         while (parameters.hasMoreElements()) {
             String parameter = (String) parameters.nextElement();
@@ -214,14 +209,12 @@ public class ValidationReportsPageController extends PageController<NoPageParams
 
         response.setHeader("Content-Type", "text/csv");
         response.setHeader("Content-Disposition",
-                "attachment;filename=" + company + "_validation_report.csv");
+                "attachment;filename=validation_report.csv");
         BufferedWriter bufferedWriter = new BufferedWriter(
                 new OutputStreamWriter(response.getOutputStream(), "UTF-8"));
-        String columnHeaders = "Verified Manufacturer, "
-                + "Model, SN, Verification Date, Component Statuses, Device Status";
+        StringBuilder reportData = new StringBuilder();
+        bufferedWriter.append("Company: " + company + "\n");
         bufferedWriter.append("Contract number: " + contractNumber + "\n");
-        bufferedWriter.append(columnHeaders + "\n");
-        LOGGER.info(columnHeaders);
         for (int i = 0; i < deviceNames.length; i++) {
             if ((createTimes.get(i).isAfter(startDate) || createTimes.get(i).isEqual(startDate))
                     && (createTimes.get(i).isBefore(endDate)
@@ -231,40 +224,67 @@ public class ValidationReportsPageController extends PageController<NoPageParams
                 PlatformCredential pc = PlatformCredential.select(certificateManager)
                         .byDeviceId(deviceId).getCertificate();
                 LOGGER.info("Found platform credential: " + pc.toString());
-                bufferedWriter.append(pc.getManufacturer() + ","
+                reportData.append(pc.getManufacturer() + ","
                         + pc.getModel() + ","
-                        + pc.getChassisSerialNumber() + ","
-                        + pc.getBeginValidity() + ",");
-                LOGGER.info("Verified manufacturer: " + pc.getManufacturer());
-                LOGGER.info("Model: " + pc.getModel());
-                LOGGER.info("SN: " + pc.getChassisSerialNumber());
-                LOGGER.info("Verification date: " + pc.getBeginValidity());
-                if (pc.getComponentIdentifiers() != null
-                        && pc.getComponentIdentifiers().size() > 0) {
-                    String attributeStatuses = "";
-                    for (ComponentIdentifier ci : pc.getComponentIdentifiers()) {
-                        if (ci instanceof ComponentIdentifierV2) {
-                            attributeStatuses += ((ComponentIdentifierV2) ci)
-                                    .getAttributeStatus() + ",";
-                            LOGGER.info(((ComponentIdentifierV2) ci).getComponentClass()
-                                    + "\nComponent status: "
-                                    + ((ComponentIdentifierV2) ci).getAttributeStatus());
-                        } else {
-                            LOGGER.info("\nPlatform Components");
-                        }
-                        LOGGER.info("Component manufacturer : "
-                                + ci.getComponentManufacturer().getString()
-                                + "\nComponent model: " + ci.getComponentModel().getString()
-                                + "\nComponent revision: "
-                                    + ci.getComponentRevision().getString());
+                        + pc.getPlatformSerial() + ","
+                        + pc.getBeginValidity() + ","
+                        + pc.getDevice().getSupplyChainStatus() + ",");
+                ArrayList<ArrayList<String>> parsedComponents = parseComponents(pc);
+                for (ArrayList<String> component : parsedComponents) {
+                    for (String data : component) {
+                        reportData.append(data + ",");
                     }
-                    attributeStatuses = attributeStatuses.substring(0,
-                            attributeStatuses.length() - 1);
-                    bufferedWriter.append("(" + attributeStatuses + "),");
+                    reportData.deleteCharAt(reportData.length() - 1);
+                    reportData.append("\n,,,,,");
                 }
-                bufferedWriter.append("" + pc.getDevice().getSupplyChainStatus() + "\n");
+                reportData.delete(reportData.lastIndexOf("\n"), reportData.length());
             }
         }
+        bufferedWriter.append(columnHeaders + "\n");
+        bufferedWriter.append(reportData.toString() + "\n");
+        LOGGER.info(columnHeaders);
+        LOGGER.info(reportData.toString());
         bufferedWriter.flush();
+    }
+
+    /**
+     * This method parses the following ComponentIdentifier fields into an ArrayList of ArrayLists.
+     * - ComponentClass
+     * - Manufacturer
+     * - Model
+     * - Serial number
+     * - Pass/fail status (based on componentFailures string)
+     * @param pc the platform credential.
+     * @return the ArrayList of ArrayLists containing the parsed component data.
+     */
+    private ArrayList<ArrayList<String>> parseComponents(final PlatformCredential pc) {
+        ArrayList<ArrayList<String>> parsedComponents = new ArrayList<ArrayList<String>>();
+        if (pc.getComponentIdentifiers() != null
+                && pc.getComponentIdentifiers().size() > 0) {
+            LOGGER.info("Component failures: " + pc.getComponentFailures());
+            ArrayList<String> componentFailures =
+                    new ArrayList<String>(Arrays.asList(pc.getComponentFailures().split(";")));
+            for (ComponentIdentifier ci : pc.getComponentIdentifiers()) {
+                ArrayList<String> componentData = new ArrayList<String>();
+                if (ci instanceof ComponentIdentifierV2) {
+                    componentData.add(((ComponentIdentifierV2) ci).getComponentClass().toString());
+                } else {
+                    componentData.add("Platform Component");
+                }
+                componentData.add(ci.getComponentManufacturer().getString());
+                componentData.add(ci.getComponentModel().getString());
+                componentData.add(ci.getComponentSerial().getString());
+                //Failing components are identified by manufacturer + model
+                if (componentFailures.contains(componentData.get(1) + componentData.get(2))) {
+                    componentData.add("Fail");
+                } else {
+                    componentData.add("Pass");
+                }
+                parsedComponents.add(componentData);
+                LOGGER.info(String.join(",", componentData));
+            }
+        }
+
+        return parsedComponents;
     }
 }

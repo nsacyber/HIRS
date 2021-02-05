@@ -28,9 +28,9 @@
         <form:form id="download" method="POST" action="${portal}/validation-reports/download">
             Download Validation Reports
             <my:download-info id="validationReportsDownload" label="Download Validation Reports">
-                <label>Company<input id="company" type="text" pattern="[A-Za-z0-9\s]*"
+                <label>Company<input id="company" type="text" pattern="^\w*$"
                         title="Letters, numbers, and spaces only" name="company" /></label>
-                <label>Contract #<input id="contract" type="text" pattern="[A-Za-z0-9\s]*"
+                <label>Contract #<input id="contract" type="text" pattern="^\w*$"
                         title="Letters, numbers, and spaces only" name="contract" /></label>
                 <br>
                 <label>Date range start<input id="dateStart" type="date" name="dateStart" /></label>
