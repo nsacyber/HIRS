@@ -656,6 +656,9 @@ public final class SupplyChainCredentialValidator implements CredentialValidator
                             // just add the delta
                             baseCompList.add(deltaCi);
                         }
+                        if (ciV2.isRemoved()) {
+                            LOGGER.error("Made it to this!");
+                        }
                         // if it is a remove
                         // we do nothing because baseCompList doesn't have it
                     } else {
@@ -753,20 +756,21 @@ public final class SupplyChainCredentialValidator implements CredentialValidator
         if (!subCompIdList.isEmpty()) {
             for (ComponentIdentifier ci : subCompIdList) {
                 ciV2 = (ComponentIdentifierV2) ci;
-                invalidPcIds.append(String.format("%s;",
-                        ciV2.getComponentClass().getClassValueString()));
+                invalidPcIds.append(String.format("%d;",
+                        ciV2.hashCode()));
             }
         }
 
         if (!subCompInfoList.isEmpty()) {
             for (ComponentInfo ci : subCompInfoList) {
-                invalidDeviceInfo.append(String.format("%s;",
-                        ci.getComponentClass()));
+                LOGGER.error("For subComInfoList -> {}", ci.getComponentSerial());
+                invalidDeviceInfo.append(String.format("%d;",
+                        ci.hashCode()));
             }
         }
 
         return String.format("DEVICEINFO=%s?COMPID=%s%d",
-                invalidDeviceInfo.toString(), invalidPcIds.toString(), subCompInfoList.size());
+                invalidDeviceInfo.toString(), invalidPcIds.toString(), subCompIdList.size());
     }
 
     /**
@@ -1422,12 +1426,13 @@ public final class SupplyChainCredentialValidator implements CredentialValidator
         // go through the leaf and check the changes against the valid components
         // forget modifying validOrigPcComponents
         for (PlatformCredential delta : chainCertificates) {
+            LOGGER.error(delta.getSerialNumber());
             StringBuilder failureMsg = new StringBuilder();
             certificateList = new ArrayList<>();
             certificateList.add(delta);
 
             for (ComponentIdentifier ci : delta.getComponentIdentifiers()) {
-                LOGGER.error("This is the serial {}", ci.getComponentSerial().toString());
+                LOGGER.error(ci.getComponentSerial());
                 if (!noneSerialValues.contains(ci.getComponentSerial().toString())) {
                     if (ci.isVersion2()) {
                         ciSerial = ci.getComponentSerial().toString();
@@ -1442,7 +1447,8 @@ public final class SupplyChainCredentialValidator implements CredentialValidator
                                         "%s attempted MODIFIED with no prior instance.%n",
                                         ciSerial));
                                 scv = deltaMapping.get(delta);
-                                if (scv.getResult() != AppraisalStatus.Status.PASS) {
+                                if (scv != null
+                                        && scv.getResult() != AppraisalStatus.Status.PASS) {
                                     failureMsg.append(scv.getMessage());
                                 }
                                 deltaMapping.put(delta, new SupplyChainValidation(
@@ -1458,7 +1464,8 @@ public final class SupplyChainCredentialValidator implements CredentialValidator
                                         "%s attempted REMOVED with no prior instance.%n",
                                         ciSerial));
                                 scv = deltaMapping.get(delta);
-                                if (scv.getResult() != AppraisalStatus.Status.PASS) {
+                                if (scv != null
+                                        && scv.getResult() != AppraisalStatus.Status.PASS) {
                                     failureMsg.append(scv.getMessage());
                                 }
                                 deltaMapping.put(delta, new SupplyChainValidation(
@@ -1477,7 +1484,8 @@ public final class SupplyChainCredentialValidator implements CredentialValidator
                                         "%s was ADDED, the serial already exists.%n",
                                         ciSerial));
                                 scv = deltaMapping.get(delta);
-                                if (scv.getResult() != AppraisalStatus.Status.PASS) {
+                                if (scv != null
+                                        && scv.getResult() != AppraisalStatus.Status.PASS) {
                                     failureMsg.append(scv.getMessage());
                                 }
                                 deltaMapping.put(delta, new SupplyChainValidation(
@@ -1488,6 +1496,7 @@ public final class SupplyChainCredentialValidator implements CredentialValidator
                             } else {
                                 // have to add in case later it is removed
                                 chainCiMapping.put(ciSerial, ci);
+                                LOGGER.error("This should be what happens");
                             }
                         }
                     }

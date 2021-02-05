@@ -408,7 +408,14 @@ public abstract class AbstractAttestationCertificateAuthority
         RSAPublicKey ekPub = parsePublicKey(claim.getEkPublicArea().toByteArray());
         AppraisalStatus.Status validationResult = AppraisalStatus.Status.FAIL;
 
-        validationResult = doSupplyChainValidation(claim, ekPub);
+        try {
+            validationResult = doSupplyChainValidation(claim, ekPub);
+        } catch (Exception ex) {
+            for (StackTraceElement ste : ex.getStackTrace()) {
+                LOG.error(ste.toString());
+            }
+        }
+
         if (validationResult == AppraisalStatus.Status.PASS) {
             RSAPublicKey akPub = parsePublicKey(claim.getAkPublicArea().toByteArray());
             byte[] nonce = generateRandomBytes(NONCE_LENGTH);

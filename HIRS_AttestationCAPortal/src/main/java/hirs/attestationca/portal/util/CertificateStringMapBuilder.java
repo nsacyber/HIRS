@@ -303,6 +303,7 @@ public final class CertificateStringMapBuilder {
                 .select(certificateManager)
                 .byEntityId(uuid)
                 .getCertificate();
+
         if (certificate != null) {
             data.putAll(getGeneralCertificateInfo(certificate, certificateManager));
             data.put("credentialType", certificate.getCredentialType());
@@ -357,6 +358,7 @@ public final class CertificateStringMapBuilder {
             data.put("x509Version", certificate.getX509CredentialVersion());
             //CPSuri
             data.put("CPSuri", certificate.getCPSuri());
+
             if (!certificate.getComponentFailures().isEmpty()) {
                 data.put("failures", certificate.getComponentFailures());
             }
@@ -398,6 +400,17 @@ public final class CertificateStringMapBuilder {
                 });
 
                 data.put("chainCertificates", chainCertificates);
+
+                if (!certificate.isBase()) {
+                    for (PlatformCredential pc : chainCertificates) {
+                        if (pc.isBase()) {
+                            if (!pc.getComponentFailures().isEmpty()) {
+                                data.put("failures", pc.getComponentFailures());
+                            }
+                            break;
+                        }
+                    }
+                }
             }
         } else {
             String notFoundMessage = "Unable to find Platform Certificate "
