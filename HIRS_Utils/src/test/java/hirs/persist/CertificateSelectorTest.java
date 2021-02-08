@@ -27,7 +27,8 @@ public class CertificateSelectorTest extends SpringPersistenceTest {
      */
     @Test
     public void testConstruction() {
-        Assert.notNull(CertificateAuthorityCredential.select(certMan));
+        Assert.notNull(CertificateAuthorityCredential.select(certMan),
+                "testConstruction is not null.");
     }
 
     /**
