@@ -90,9 +90,7 @@ import java.security.spec.RSAPublicKeySpec;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Map;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -411,9 +409,7 @@ public abstract class AbstractAttestationCertificateAuthority
         try {
             validationResult = doSupplyChainValidation(claim, ekPub);
         } catch (Exception ex) {
-            for (StackTraceElement ste : ex.getStackTrace()) {
-                LOG.error(ste.toString());
-            }
+            LOG.error(ex.getMessage());
         }
 
         if (validationResult == AppraisalStatus.Status.PASS) {
@@ -455,7 +451,6 @@ public abstract class AbstractAttestationCertificateAuthority
         // attempt to find platform credentials to validate
         Set<PlatformCredential> platformCredentials = parsePcsFromIdentityClaim(claim,
                 endorsementCredential);
-        Map<BigInteger, PlatformCredential> correctedMap = new HashMap<>();
 
         // Parse and save device info
         Device device = processDeviceInfo(claim);

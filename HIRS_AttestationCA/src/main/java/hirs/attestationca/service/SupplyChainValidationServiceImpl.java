@@ -188,9 +188,9 @@ public class SupplyChainValidationServiceImpl implements SupplyChainValidationSe
                         int result = baseCredential.getBeginValidity()
                                 .compareTo(pc.getBeginValidity());
                         if (!pc.isBase() && (result > 0)) {
-                                pcErrorMessage = String.format("%s%s%n", pcErrorMessage,
-                                        "Delta Certificate's validity "
-                                                + "date is not after Base");
+                            pcErrorMessage = String.format("%s%s%n", pcErrorMessage,
+                                    "Delta Certificate's validity "
+                                            + "date is not after Base");
                             break;
                         }
                     }
@@ -219,39 +219,30 @@ public class SupplyChainValidationServiceImpl implements SupplyChainValidationSe
             if (platformScv != null) {
                 aes.addAll(platformScv.getCertificatesUsed());
             }
-            // ok, still want to validate the base credential attributes
-            attributeScv = validatePlatformCredentialAttributes(
-                    baseCredential, device.getDeviceInfo(), ec);
-
-            if (attributeScv.getResult() != FAIL) {
-                Iterator<PlatformCredential> it = pcs.iterator();
-                String attrErrorMessage = "";
-                while (it.hasNext()) {
-                    PlatformCredential pc = it.next();
-                    if (pc != null) {
-                        if (!pc.isBase() && attributeScv.getResult() != FAIL) {
-                            attributeScv = validateDeltaPlatformCredentialAttributes(
-                                    pc, device.getDeviceInfo(),
-                                    baseCredential, deltaMapping);
-                            if (attributeScv.getResult() == FAIL) {
-                                attrErrorMessage = String.format("%s%s%n", attrErrorMessage,
-                                        attributeScv.getMessage());
-                            }
+            Iterator<PlatformCredential> it = pcs.iterator();
+            String attrErrorMessage = "";
+            while (it.hasNext()) {
+                PlatformCredential pc = it.next();
+                if (pc != null) {
+                    if (!pc.isBase()) {
+                        attributeScv = validateDeltaPlatformCredentialAttributes(
+                                pc, device.getDeviceInfo(),
+                                baseCredential, deltaMapping);
+                        if (attributeScv.getResult() == FAIL) {
+                            attrErrorMessage = String.format("%s%s%n", attrErrorMessage,
+                                    attributeScv.getMessage());
                         }
                     }
                 }
-                if (!attrErrorMessage.isEmpty()) {
-                    //combine platform and platform attributes
-                    validations.remove(platformScv);
+            }
+            if (!attrErrorMessage.isEmpty()) {
+                //combine platform and platform attributes
+                validations.remove(platformScv);
+                if (platformScv != null) {
                     validations.add(new SupplyChainValidation(
                             platformScv.getValidationType(),
                             attributeScv.getResult(), aes, attributeScv.getMessage()));
                 }
-            } else {
-                validations.remove(platformScv);
-                // base platform has errors
-                validations.add(new SupplyChainValidation(platformScv.getValidationType(),
-                        attributeScv.getResult(), aes, attributeScv.getMessage()));
             }
         }
 
@@ -261,6 +252,7 @@ public class SupplyChainValidationServiceImpl implements SupplyChainValidationSe
             validations.add(validateFirmware(device, policy.getPcrPolicy()));
         }
 
+        LOGGER.error("The service finished and now summarizing");
         // Generate validation summary, save it, and return it.
         SupplyChainValidationSummary summary
                 = new SupplyChainValidationSummary(device, validations);
@@ -784,9 +776,9 @@ public class SupplyChainValidationServiceImpl implements SupplyChainValidationSe
      * already queried for that organization (which prevents infinite loops on
      * certs with an identical subject and issuer org)
      *
-     * @param credential                     the credential whose CA chain should be retrieved
+     * @param credential                the credential whose CA chain should be retrieved
      * @param previouslyQueriedSubjects a list of organizations to refrain
-     *                                       from querying
+     *                                  from querying
      * @return a Set containing all relevant CA credentials to the given
      * certificate's organization
      */

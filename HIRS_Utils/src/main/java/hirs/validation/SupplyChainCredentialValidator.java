@@ -318,6 +318,8 @@ public final class SupplyChainCredentialValidator implements CredentialValidator
             final Map<PlatformCredential, SupplyChainValidation> deltaMapping) {
         String message;
 
+        LOGGER.error("Starting the method validateDeltaPlatformCredentialAttributes");
+
         // this needs to be a loop for all deltas, link to issue #110
         // check that they don't have the same serial number
         for (PlatformCredential delta : deltaMapping.keySet()) {
@@ -340,6 +342,7 @@ public final class SupplyChainCredentialValidator implements CredentialValidator
             }
         }
 
+        LOGGER.error("This is before validateDeltaAttributesChainV2p0");
         // parse out the provided delta and its specific chain.
         List<ComponentIdentifier> origPcComponents
                 = new LinkedList<>(basePlatformCredential.getComponentIdentifiers());
@@ -657,7 +660,7 @@ public final class SupplyChainCredentialValidator implements CredentialValidator
                             baseCompList.add(deltaCi);
                         }
                         if (ciV2.isRemoved()) {
-                            LOGGER.error("Made it to this!");
+                            baseCompList.remove(ciV2);
                         }
                         // if it is a remove
                         // we do nothing because baseCompList doesn't have it
@@ -1426,13 +1429,11 @@ public final class SupplyChainCredentialValidator implements CredentialValidator
         // go through the leaf and check the changes against the valid components
         // forget modifying validOrigPcComponents
         for (PlatformCredential delta : chainCertificates) {
-            LOGGER.error(delta.getSerialNumber());
             StringBuilder failureMsg = new StringBuilder();
             certificateList = new ArrayList<>();
             certificateList.add(delta);
 
             for (ComponentIdentifier ci : delta.getComponentIdentifiers()) {
-                LOGGER.error(ci.getComponentSerial());
                 if (!noneSerialValues.contains(ci.getComponentSerial().toString())) {
                     if (ci.isVersion2()) {
                         ciSerial = ci.getComponentSerial().toString();
@@ -1496,7 +1497,6 @@ public final class SupplyChainCredentialValidator implements CredentialValidator
                             } else {
                                 // have to add in case later it is removed
                                 chainCiMapping.put(ciSerial, ci);
-                                LOGGER.error("This should be what happens");
                             }
                         }
                     }
