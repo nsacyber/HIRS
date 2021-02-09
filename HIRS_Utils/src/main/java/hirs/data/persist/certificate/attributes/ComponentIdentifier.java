@@ -74,6 +74,7 @@ public class ComponentIdentifier {
     private ASN1ObjectIdentifier componentManufacturerId;
     private ASN1Boolean fieldReplaceable;
     private List<ComponentAddress> componentAddress;
+    private boolean validationResult = true;
 
     /**
      * Default constructor.
@@ -262,6 +263,24 @@ public class ComponentIdentifier {
      */
     public boolean isVersion2() {
         return false;
+    }
+
+    /**
+     * Holds the status of the validation process for attributes
+     * specific to this instance.
+     * @return true is passed, false if failed.
+     */
+    public boolean isValidationResult() {
+        return validationResult;
+    }
+
+    /**
+     * Sets the flag for the validation status for this instance
+     * of the attribute.
+     * @param validationResult validation flag.
+     */
+    public void setValidationResult(final boolean validationResult) {
+        this.validationResult = validationResult;
     }
 
     /**
