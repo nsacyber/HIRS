@@ -111,7 +111,9 @@ public class ComponentInfo implements Serializable {
                 componentManufacturer,
                 componentModel,
                 componentSerial,
-                componentRevision));
+                componentRevision),
+                "ComponentInfo: manufacturer and/or "
+                        + "model can not be null");
         this.componentManufacturer = componentManufacturer.trim();
         this.componentModel = componentModel.trim();
         if (componentSerial != null) {
@@ -143,8 +145,9 @@ public class ComponentInfo implements Serializable {
                 componentManufacturer,
                 componentModel,
                 componentSerial,
-                componentRevision
-        ));
+                componentRevision),
+                "ComponentInfo: manufacturer and/or "
+                        + "model can not be null");
         this.componentManufacturer = componentManufacturer.trim();
         this.componentModel = componentModel.trim();
         if (componentSerial != null) {
