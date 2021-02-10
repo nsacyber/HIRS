@@ -122,7 +122,7 @@ public final class CredentialManagementHelper {
                     if (!certificates.isEmpty()) {
                         // found associated certificates
                         for (PlatformCredential pc : certificates) {
-                            if (pc.isBase()) {
+                            if (pc.isBase() && platformCredential.isBase()) {
                                 // found a base in the database associated with
                                 // parsed certificate
                                 LOG.error(String.format("Base certificate stored"

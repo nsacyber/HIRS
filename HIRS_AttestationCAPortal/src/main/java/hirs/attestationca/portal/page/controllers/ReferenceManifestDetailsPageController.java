@@ -274,7 +274,6 @@ public class ReferenceManifestDetailsPageController
             for (CertificateAuthorityCredential cert : certificates) {
                 if (Arrays.equals(cert.getEncodedPublicKey(),
                         RIM_VALIDATOR.getPublicKey().getEncoded())) {
-                    LOGGER.info("Found matching cert!");
                     data.put("issuerID", cert.getId().toString());
                 }
             }

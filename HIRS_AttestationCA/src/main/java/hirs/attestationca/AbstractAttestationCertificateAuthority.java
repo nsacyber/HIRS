@@ -101,7 +101,6 @@ import java.util.regex.Pattern;
  */
 public abstract class AbstractAttestationCertificateAuthority
                                                     implements AttestationCertificateAuthority {
-
     /**
      * Logger instance for for subclass instances.
      */
@@ -122,7 +121,6 @@ public abstract class AbstractAttestationCertificateAuthority
      * Number of bytes to include in the TPM2.0 nonce.
      */
     public static final int NONCE_LENGTH = 20;
-
     private static final int SEED_LENGTH = 32;
     private static final int MAX_SECRET_LENGTH = 32;
     private static final int RSA_MODULUS_LENGTH = 256;
@@ -130,13 +128,11 @@ public abstract class AbstractAttestationCertificateAuthority
     private static final int HMAC_KEY_LENGTH_BYTES = 32;
     private static final int HMAC_SIZE_LENGTH_BYTES = 2;
     private static final int TPM2_CREDENTIAL_BLOB_SIZE = 392;
-
     // Constants used to parse out the ak name from the ak public data. Used in generateAkName
     private static final String AK_NAME_PREFIX = "000b";
     private static final String AK_NAME_HASH_PREFIX =
             "0001000b00050072000000100014000b0800000000000100";
     private static final String TPM_SIGNATURE_ALG = "sha";
-
     private static final int MAC_BYTES = 6;
 
     /**
@@ -165,7 +161,6 @@ public abstract class AbstractAttestationCertificateAuthority
      * certificates issued by this ACA are valid for.
      */
     private final Integer validDays;
-
     private final CertificateManager certificateManager;
     private final ReferenceManifestManager referenceManifestManager;
     private final DeviceRegister deviceRegister;
@@ -395,7 +390,6 @@ public abstract class AbstractAttestationCertificateAuthority
      */
     @Override
     public byte[] processIdentityClaimTpm2(final byte[] identityClaim) {
-
         LOG.debug("Got identity claim");
 
         if (ArrayUtils.isEmpty(identityClaim)) {
@@ -412,9 +406,13 @@ public abstract class AbstractAttestationCertificateAuthority
         RSAPublicKey ekPub = parsePublicKey(claim.getEkPublicArea().toByteArray());
         AppraisalStatus.Status validationResult = AppraisalStatus.Status.FAIL;
 
-        validationResult = doSupplyChainValidation(claim, ekPub);
-        if (validationResult == AppraisalStatus.Status.PASS) {
+        try {
+            validationResult = doSupplyChainValidation(claim, ekPub);
+        } catch (Exception ex) {
+            LOG.error(ex.getMessage());
+        }
 
+        if (validationResult == AppraisalStatus.Status.PASS) {
             RSAPublicKey akPub = parsePublicKey(claim.getAkPublicArea().toByteArray());
             byte[] nonce = generateRandomBytes(NONCE_LENGTH);
             ByteString blobStr = tpm20MakeCredential(ekPub, akPub, nonce);
