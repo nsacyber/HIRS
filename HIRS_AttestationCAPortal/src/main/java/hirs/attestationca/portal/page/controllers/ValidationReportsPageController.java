@@ -227,7 +227,7 @@ public class ValidationReportsPageController extends PageController<NoPageParams
                 reportData.append(pc.getManufacturer() + ","
                         + pc.getModel() + ","
                         + pc.getPlatformSerial() + ","
-                        + pc.getBeginValidity() + ","
+                        + LocalDateTime.now().toString() + ","
                         + pc.getDevice().getSupplyChainStatus() + ",");
                 ArrayList<ArrayList<String>> parsedComponents = parseComponents(pc);
                 for (ArrayList<String> component : parsedComponents) {
