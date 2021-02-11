@@ -27,7 +27,8 @@ public class CertificateSelectorTest extends SpringPersistenceTest {
      */
     @Test
     public void testConstruction() {
-        Assert.notNull(CertificateAuthorityCredential.select(certMan));
+        Assert.notNull(CertificateAuthorityCredential.select(certMan),
+                "testConstruction is not null.");
     }
 
     /**
@@ -100,7 +101,7 @@ public class CertificateSelectorTest extends SpringPersistenceTest {
      */
     @Test(expectedExceptions = IllegalArgumentException.class)
     public void testNullByIssuerOrganization() {
-        CertificateAuthorityCredential.select(certMan).byIssuerOrganization(null);
+        CertificateAuthorityCredential.select(certMan).byIssuerSorted(null);
     }
 
     /**
@@ -108,6 +109,6 @@ public class CertificateSelectorTest extends SpringPersistenceTest {
      */
     @Test(expectedExceptions = IllegalArgumentException.class)
     public void testNullBySubjectOrganization() {
-        CertificateAuthorityCredential.select(certMan).bySubjectOrganization(null);
+        CertificateAuthorityCredential.select(certMan).bySubjectSorted(null);
     }
 }

@@ -5,6 +5,7 @@ import org.apache.commons.exec.DefaultExecuteResultHandler;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.nio.charset.StandardCharsets;
 
 /**
  *  An implementation of ExecResult that facilitates working with
@@ -84,7 +85,7 @@ public class AsynchronousExecResult implements ExecResult {
         checkFinished();
 
         if (stdOut != null) {
-            return ((ByteArrayOutputStream) stdOut).toString("UTF-8");
+            return ((ByteArrayOutputStream) stdOut).toString(StandardCharsets.UTF_8.toString());
         } else {
             return null;
         }

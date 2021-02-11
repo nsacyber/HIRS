@@ -1121,7 +1121,7 @@ public class SupplyChainCredentialValidatorTest {
                 + "Platform serial did not match\n"
                 + "There are unmatched components:\n"
                 + "Manufacturer=Intel, Model=platform2018,"
-                + " Serial=BQKP52840678, Revision=1.0\n";
+                + " Serial=BQKP52840678, Revision=1.0;\n";
 
         AppraisalStatus result =
                 supplyChainCredentialValidator.validatePlatformCredentialAttributes(
@@ -1148,7 +1148,7 @@ public class SupplyChainCredentialValidatorTest {
         PlatformCredential pc = new PlatformCredential(certBytes);
 
         String expectedMessage = "Can't validate platform credential without an "
-                + "intitialized trust store";
+                + "initialized trust store";
 
         AppraisalStatus result = supplyChainCredentialValidator.validatePlatformCredential(
                 pc, emptyKeyStore, true);
@@ -1767,7 +1767,7 @@ public class SupplyChainCredentialValidatorTest {
         Assert.assertEquals(result.getMessage(), "Component manufacturer is empty\n"
                 + "There are unmatched components:\n"
                 + "Manufacturer=, Model=Core i7, Serial=Not Specified,"
-                + " Revision=Intel(R) Core(TM) i7-4790 CPU @ 3.60GHz\n");
+                + " Revision=Intel(R) Core(TM) i7-4790 CPU @ 3.60GHz;\n");
 
         platformCredential = setupMatchingPlatformCredential(deviceInfoReport);
         result = SupplyChainCredentialValidator
@@ -1823,7 +1823,7 @@ public class SupplyChainCredentialValidatorTest {
                         deviceInfoReport);
         Assert.assertEquals(result.getAppStatus(), AppraisalStatus.Status.FAIL);
         Assert.assertEquals(result.getMessage(), "There are unmatched components:\n"
-                + "Manufacturer=ACME, Model=TNT, Serial=2, Revision=1.1\n");
+                + "Manufacturer=ACME, Model=TNT, Serial=2, Revision=1.1;\n");
     }
 
     /**
@@ -1887,7 +1887,7 @@ public class SupplyChainCredentialValidatorTest {
         Assert.assertEquals(result.getMessage(), "Component manufacturer is empty\n"
                 + "There are unmatched components:\n"
                 + "Manufacturer=, Model=Core i7, Serial=Not Specified,"
-                + " Revision=Intel(R) Core(TM) i7-4790 CPU @ 3.60GHz\n");
+                + " Revision=Intel(R) Core(TM) i7-4790 CPU @ 3.60GHz;\n");
 
         platformCredential = setupMatchingPlatformCredential(deviceInfoReport);
         result = SupplyChainCredentialValidator
@@ -2222,7 +2222,7 @@ public class SupplyChainCredentialValidatorTest {
                 "There are unmatched components:\n"
                         + "Manufacturer=Intel Corporation, Model=82580 "
                         + "Gigabit Network Connection-faulty, "
-                        + "Serial=90:e2:ba:31:83:10, Revision=\n");
+                        + "Serial=90:e2:ba:31:83:10, Revision=;\n");
     }
 
     /**

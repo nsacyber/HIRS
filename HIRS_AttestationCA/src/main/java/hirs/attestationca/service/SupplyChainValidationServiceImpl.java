@@ -16,10 +16,12 @@ import hirs.data.persist.PCRPolicy;
 import hirs.data.persist.ArchivableEntity;
 import hirs.tpm.eventlog.TCGEventLog;
 import hirs.tpm.eventlog.TpmPcrEvent;
+import hirs.utils.BouncyCastleUtils;
 import hirs.utils.ReferenceManifestValidator;
 import hirs.validation.SupplyChainCredentialValidator;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.bouncycastle.util.encoders.Hex;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Import;
 import org.springframework.stereotype.Service;
@@ -51,7 +53,6 @@ import hirs.data.persist.ReferenceManifest;
 import hirs.persist.AppraiserManager;
 import hirs.persist.CertificateManager;
 import hirs.persist.ReferenceManifestManager;
-import hirs.persist.CertificateSelector;
 import hirs.persist.CrudManager;
 import hirs.persist.DBManagerException;
 import hirs.persist.PersistenceConfiguration;
@@ -814,27 +815,49 @@ public class SupplyChainValidationServiceImpl implements SupplyChainValidationSe
      * certs with an identical subject and issuer org)
      *
      * @param credential                     the credential whose CA chain should be retrieved
-     * @param previouslyQueriedOrganizations a list of organizations to refrain
+     * @param previouslyQueriedSubjects a list of organizations to refrain
      *                                       from querying
      * @return a Set containing all relevant CA credentials to the given
      * certificate's organization
      */
     private Set<CertificateAuthorityCredential> getCaChainRec(
             final Certificate credential,
-            final Set<String> previouslyQueriedOrganizations
-    ) {
-        CertificateSelector<CertificateAuthorityCredential> caSelector
-                = CertificateAuthorityCredential.select(certificateManager)
-                .bySubjectOrganization(credential.getIssuerOrganization());
-        Set<CertificateAuthorityCredential> certAuthsWithMatchingOrg = caSelector.getCertificates();
+            final Set<String> previouslyQueriedSubjects) {
+        CertificateAuthorityCredential skiCA = null;
+        Set<CertificateAuthorityCredential> certAuthsWithMatchingIssuer = new HashSet<>();
+        if (credential.getAuthKeyId() != null
+                && !credential.getAuthKeyId().isEmpty()) {
+            byte[] bytes = Hex.decode(credential.getAuthKeyId());
+            skiCA = CertificateAuthorityCredential
+                    .select(certificateManager)
+                    .bySubjectKeyIdentifier(bytes).getCertificate();
+        }
 
-        Set<String> queriedOrganizations = new HashSet<>(previouslyQueriedOrganizations);
-        queriedOrganizations.add(credential.getIssuerOrganization());
+        if (skiCA == null) {
+            if (credential.getIssuerSorted() == null
+                    || credential.getIssuerSorted().isEmpty()) {
+                certAuthsWithMatchingIssuer = CertificateAuthorityCredential
+                        .select(certificateManager)
+                        .bySubject(credential.getIssuer())
+                        .getCertificates();
+            } else {
+                //Get certificates by subject organization
+                certAuthsWithMatchingIssuer = CertificateAuthorityCredential
+                        .select(certificateManager)
+                        .bySubjectSorted(credential.getIssuerSorted())
+                        .getCertificates();
+            }
+        } else {
+            certAuthsWithMatchingIssuer.add(skiCA);
+        }
+        Set<String> queriedOrganizations = new HashSet<>(previouslyQueriedSubjects);
+        queriedOrganizations.add(credential.getIssuer());
 
         HashSet<CertificateAuthorityCredential> caCreds = new HashSet<>();
-        for (CertificateAuthorityCredential cred : certAuthsWithMatchingOrg) {
+        for (CertificateAuthorityCredential cred : certAuthsWithMatchingIssuer) {
             caCreds.add(cred);
-            if (!queriedOrganizations.contains(cred.getIssuerOrganization())) {
+            if (!BouncyCastleUtils.x500NameCompare(cred.getIssuer(),
+                    cred.getSubject())) {
                 caCreds.addAll(getCaChainRec(cred, queriedOrganizations));
             }
         }

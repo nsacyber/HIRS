@@ -2,8 +2,8 @@ package hirs.tpm.eventlog;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
 import java.math.BigInteger;
+import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.cert.CertificateException;
@@ -350,9 +350,8 @@ public final class TCGEventLog {
      *
      * @param log The Event Log
      * @return true if EfiSpecIDEvent is found and indicates that the format is crypto agile
-     * @throws UnsupportedEncodingException if parsing error occurs.
      */
-    private boolean isLogCrytoAgile(final byte[] log) throws UnsupportedEncodingException {
+    private boolean isLogCrytoAgile(final byte[] log) {
         byte[] eType = new byte[UefiConstants.SIZE_4];
         System.arraycopy(log, UefiConstants.SIZE_4, eType, 0, UefiConstants.SIZE_4);
         byte[] eventType = HexUtils.leReverseByte(eType);
@@ -361,8 +360,10 @@ public final class TCGEventLog {
             return false;
         }  // Event Type should be EV_NO_ACTION
         byte[] signature = new byte[SIG_SIZE];
-        System.arraycopy(log, SIG_OFFSET, signature, 0, SIG_SIZE); // should be "Spec ID Event03"
-        String sig = new String(signature, "UTF-8").substring(0, SIG_SIZE - 1);  // remove null char
+        // should be "Spec ID Event03"
+        System.arraycopy(log, SIG_OFFSET, signature, 0, SIG_SIZE);
+        // remove null char
+        String sig = new String(signature, StandardCharsets.UTF_8).substring(0, SIG_SIZE - 1);
 
         return sig.equals("Spec ID Event03");
     }

@@ -1,6 +1,7 @@
 package hirs.tpm.eventlog.events;
 
 import java.io.UnsupportedEncodingException;
+import java.nio.charset.StandardCharsets;
 
 import hirs.tpm.eventlog.uefi.UefiConstants;
 import hirs.tpm.eventlog.uefi.UefiGuid;
@@ -25,10 +26,9 @@ public class EvSCrtmVersion {
    /**
     * Checks if event data is null and if not it converts to a String.
     * @param data byte array holding the vent content.
-    * @throws UnsupportedEncodingException if parsing issues exist.
     * @return String representation of the version.
     */
-   public String sCrtmVersion(final byte[] data) throws UnsupportedEncodingException {
+   public String sCrtmVersion(final byte[] data) {
        UefiGuid guid = null;
        if (data == null) {
            description = "invalid content event data";
@@ -42,7 +42,7 @@ public class EvSCrtmVersion {
                    } else if (data.length < UefiConstants.SIZE_4) {
                        description = HexUtils.byteArrayToHexString(data);
                    } else if (EvPostCode.isAscii(data)) {
-                       description = new String(data, "UTF-8");
+                       description = new String(data, StandardCharsets.UTF_8);
                    } else {
                        description = "Unknown Version format";
                    }

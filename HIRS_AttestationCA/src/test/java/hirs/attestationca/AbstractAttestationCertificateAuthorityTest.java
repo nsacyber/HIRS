@@ -1,6 +1,7 @@
 package hirs.attestationca;
 
 import com.google.protobuf.ByteString;
+import hirs.data.persist.certificate.PlatformCredential;
 import hirs.utils.HexUtils;
 import org.apache.commons.codec.binary.Hex;
 import org.apache.commons.lang3.ArrayUtils;
@@ -39,6 +40,7 @@ import java.security.cert.X509Certificate;
 import java.security.interfaces.RSAPublicKey;
 import java.security.spec.MGF1ParameterSpec;
 import java.util.Calendar;
+import java.util.HashSet;
 
 import hirs.structs.converters.StructConverter;
 import hirs.structs.elements.aca.SymmetricAttestation;
@@ -606,7 +608,7 @@ public class AbstractAttestationCertificateAuthorityTest {
         // perform the test
         X509Certificate certificate = aca.generateCredential(keyPair.getPublic(),
                 null,
-                null,
+                new HashSet<PlatformCredential>(),
                 "exampleIdLabel");
 
         // grab the modulus from the generate certificate

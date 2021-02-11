@@ -19,8 +19,8 @@ class HirsRuntimeException : public std::runtime_error {
                                     const std::string& origin = "");
 
  public:
-    HirsRuntimeException(const std::string& origin,
-                  const std::string& msg);
+    HirsRuntimeException(const std::string& msg,
+                         const std::string& origin);
 
     virtual ~HirsRuntimeException();
 };
