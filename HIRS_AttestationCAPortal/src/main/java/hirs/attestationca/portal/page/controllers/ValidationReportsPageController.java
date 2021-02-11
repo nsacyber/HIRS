@@ -41,9 +41,11 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Enumeration;
+import java.util.List;
 import java.util.UUID;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 /**
  * Controller for the Validation Reports page.
@@ -259,15 +261,32 @@ public class ValidationReportsPageController extends PageController<NoPageParams
      */
     private ArrayList<ArrayList<String>> parseComponents(final PlatformCredential pc) {
         ArrayList<ArrayList<String>> parsedComponents = new ArrayList<ArrayList<String>>();
+        ArrayList<ComponentIdentifier> chainComponents = new ArrayList<>();
         if (pc.getComponentIdentifiers() != null
                 && pc.getComponentIdentifiers().size() > 0) {
             LOGGER.info("Component failures: " + pc.getComponentFailures());
+            // get all the certificates associated with the platform serial
+            List<PlatformCredential> chainCertificates = PlatformCredential
+                    .select(certificateManager)
+                    .byBoardSerialNumber(pc.getPlatformSerial())
+                    .getCertificates().stream().collect(Collectors.toList());
+            // combine all components in each certificate
+            chainComponents.addAll(pc.getComponentIdentifiers());
+
+            for (PlatformCredential delta : chainCertificates) {
+                if (!delta.isBase()) {
+                    for (ComponentIdentifier ci : delta.getComponentIdentifiers()) {
+                        chainComponents.add(ci);
+                    }
+                }
+            }
             ArrayList<String> componentFailures =
                     new ArrayList<String>(Arrays.asList(pc.getComponentFailures().split(";")));
-            for (ComponentIdentifier ci : pc.getComponentIdentifiers()) {
+            for (ComponentIdentifier ci : chainComponents) {
                 ArrayList<String> componentData = new ArrayList<String>();
                 if (ci instanceof ComponentIdentifierV2) {
-                    componentData.add(((ComponentIdentifierV2) ci).getComponentClass().toString());
+                    componentData.add(((ComponentIdentifierV2) ci)
+                            .getComponentClass().toString());
                 } else {
                     componentData.add("Platform Component");
                 }
