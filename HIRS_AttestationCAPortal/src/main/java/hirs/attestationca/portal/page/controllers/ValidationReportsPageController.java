@@ -275,7 +275,7 @@ public class ValidationReportsPageController extends PageController<NoPageParams
                 componentData.add(ci.getComponentModel().getString());
                 componentData.add(ci.getComponentSerial().getString());
                 //Failing components are identified by manufacturer + model
-                if (componentFailures.contains(componentData.get(1) + componentData.get(2))) {
+                if (componentFailures.contains(String.valueOf(ci.hashCode()))) {
                     componentData.add("Fail");
                 } else {
                     componentData.add("Pass");
