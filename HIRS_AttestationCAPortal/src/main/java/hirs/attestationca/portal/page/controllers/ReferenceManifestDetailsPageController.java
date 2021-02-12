@@ -315,9 +315,10 @@ public class ReferenceManifestDetailsPageController
                     LOGGER.error("Failed to update Support RIM", ex);
                 }
             }
-            measurements = EventLogMeasurements.select(referenceManifestManager)
-                    .byManufacturer(support.getPlatformManufacturer()).getRIM();
         }
+
+        measurements = EventLogMeasurements.select(referenceManifestManager)
+                .byManufacturer(support.getPlatformManufacturer()).getRIM();
 
         data.put("baseRim", support.getTagId());
         data.put("associatedRim", support.getAssociatedRim());
