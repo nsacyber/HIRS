@@ -61,7 +61,7 @@ public class ValidationReportsPageController extends PageController<NoPageParams
     private static String columnHeaders = "Verified Manufacturer,"
             + "Model,SN,Verification Date,Device Status,"
             + "Component name,Component manufacturer,Component model,"
-            + "Component SN,Component status";
+            + "Component SN,Issuer,Component status";
     private static final String DEFAULT_COMPANY = "AllDevices";
     private static final String UNDEFINED = "undefined";
     private static final Logger LOGGER = getLogger(ValidationReportsPageController.class);
@@ -261,7 +261,7 @@ public class ValidationReportsPageController extends PageController<NoPageParams
      */
     private ArrayList<ArrayList<String>> parseComponents(final PlatformCredential pc) {
         ArrayList<ArrayList<String>> parsedComponents = new ArrayList<ArrayList<String>>();
-        ArrayList<ComponentIdentifier> chainComponents = new ArrayList<>();
+        ArrayList<ArrayList<Object>> chainComponents = new ArrayList<>();
         if (pc.getComponentIdentifiers() != null
                 && pc.getComponentIdentifiers().size() > 0) {
             LOGGER.info("Component failures: " + pc.getComponentFailures());
@@ -271,19 +271,30 @@ public class ValidationReportsPageController extends PageController<NoPageParams
                     .byBoardSerialNumber(pc.getPlatformSerial())
                     .getCertificates().stream().collect(Collectors.toList());
             // combine all components in each certificate
-            chainComponents.addAll(pc.getComponentIdentifiers());
+            for (ComponentIdentifier ci : pc.getComponentIdentifiers()) {
+                ArrayList<Object> issuerAndComponent = new ArrayList<Object>();
+                issuerAndComponent.add(pc.getIssuer());
+                issuerAndComponent.add(ci);
+                chainComponents.add(issuerAndComponent);
+            }
 
             for (PlatformCredential delta : chainCertificates) {
                 if (!delta.isBase()) {
                     for (ComponentIdentifier ci : delta.getComponentIdentifiers()) {
-                        chainComponents.add(ci);
+                        ArrayList<Object> issuerAndComponent = new ArrayList<Object>();
+                        issuerAndComponent.add(delta.getIssuer());
+                        issuerAndComponent.add(ci);
+                        chainComponents.add(issuerAndComponent);
                     }
                 }
             }
             ArrayList<String> componentFailures =
                     new ArrayList<String>(Arrays.asList(pc.getComponentFailures().split(";")));
-            for (ComponentIdentifier ci : chainComponents) {
+            for (ArrayList<Object> issuerAndComponent : chainComponents) {
                 ArrayList<String> componentData = new ArrayList<String>();
+                String issuer = (String) issuerAndComponent.get(0);
+                issuer = issuer.replaceAll(",", " ");
+                ComponentIdentifier ci = (ComponentIdentifier) issuerAndComponent.get(1);
                 if (ci instanceof ComponentIdentifierV2) {
                     componentData.add(((ComponentIdentifierV2) ci)
                             .getComponentClass().toString());
@@ -293,6 +304,7 @@ public class ValidationReportsPageController extends PageController<NoPageParams
                 componentData.add(ci.getComponentManufacturer().getString());
                 componentData.add(ci.getComponentModel().getString());
                 componentData.add(ci.getComponentSerial().getString());
+                componentData.add(issuer);
                 //Failing components are identified by manufacturer + model
                 if (componentFailures.contains(String.valueOf(ci.hashCode()))) {
                     componentData.add("Fail");
