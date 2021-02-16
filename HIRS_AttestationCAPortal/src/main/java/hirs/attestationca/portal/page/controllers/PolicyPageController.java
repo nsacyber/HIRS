@@ -218,34 +218,85 @@ public class PolicyPageController extends PageController<NoPageParams> {
         Map<String, Object> model = new HashMap<>();
         PageMessages messages = new PageMessages();
         String successMessage;
-        String numOfDays;
         boolean issuedAttestationOptionEnabled
                 = ppModel.getAttestationCertificateIssued()
                 .equalsIgnoreCase(ENABLED_CHECKED_PARAMETER_VALUE);
-        boolean generateCertificateEnabled
-                = ppModel.getAttestationCertificateIssued()
-                .equalsIgnoreCase(ENABLED_EXPIRES_PARAMETER_VALUE);
 
         try {
             SupplyChainPolicy policy = getDefaultPolicyAndSetInModel(ppModel, model);
 
-            if (issuedAttestationOptionEnabled || generateCertificateEnabled) {
+            if (issuedAttestationOptionEnabled) {
                 successMessage = "Attestation Certificate generation enabled.";
             } else {
                 successMessage = "Attestation Certificate generation disabled.";
+                policy.setGenerateOnExpiration(false);
             }
 
-            if (generateCertificateEnabled) {
-                numOfDays = ppModel.getNumOfValidDays();
-                if (numOfDays == null) {
-                    numOfDays = SupplyChainPolicy.TEN_YEARS;
-                }
-            } else {
-                numOfDays = policy.getValidityDays();
-            }
-
-            policy.setValidityDays(numOfDays);
             policy.setIssueAttestationCertificate(issuedAttestationOptionEnabled);
+            savePolicyAndApplySuccessMessage(ppModel, model, messages, successMessage, policy);
+        } catch (PolicyManagerException e) {
+            handlePolicyManagerUpdateError(model, messages, e,
+                    "Error changing ACA Attestation Certificate generation policy",
+                    "Error updating policy. \n" + e.getMessage());
+        }
+
+        // return the redirect
+        return redirectToSelf(new NoPageParams(), model, attr);
+    }
+
+    /**
+     * Updates the state of the policy setting that indicates that the generation
+     * will occur in a set time frame and redirects
+     * back to the original page.
+     *
+     * @param ppModel The data posted by the form mapped into an object.
+     * @param attr RedirectAttributes used to forward data back to the original page.
+     * @return View containing the url and parameters
+     * @throws URISyntaxException if malformed URI
+     */
+    @RequestMapping(value = "update-expire-on", method = RequestMethod.POST)
+    public RedirectView updateExpireOnVal(@ModelAttribute final PolicyPageModel ppModel,
+                                             final RedirectAttributes attr)
+            throws URISyntaxException {
+
+        // set the data received to be populated back into the form
+        Map<String, Object> model = new HashMap<>();
+        PageMessages messages = new PageMessages();
+        String successMessage;
+        String numOfDays;
+        LOGGER.error("We got this value -> {}", ppModel.getGenerationExpiration());
+        boolean generateCertificateEnabled
+                = ppModel.getGenerationExpiration()
+                .equalsIgnoreCase(ENABLED_CHECKED_PARAMETER_VALUE);
+
+        try {
+            SupplyChainPolicy policy = getDefaultPolicyAndSetInModel(ppModel, model);
+            boolean issuedAttestationOptionEnabled
+                    = policy.isIssueAttestationCertificate();
+
+            if (issuedAttestationOptionEnabled) {
+                if (generateCertificateEnabled) {
+                    successMessage = "Attestation Certificate generation expiration time enabled.";
+                } else {
+                    successMessage = "Attestation Certificate generation expiration time disabled.";
+                }
+
+                if (generateCertificateEnabled) {
+                    numOfDays = ppModel.getNumOfValidDays();
+                    if (numOfDays == null) {
+                        numOfDays = SupplyChainPolicy.TEN_YEARS;
+                    }
+                } else {
+                    numOfDays = policy.getValidityDays();
+                }
+
+                policy.setValidityDays(numOfDays);
+            } else {
+                generateCertificateEnabled = false;
+                successMessage = "Attestation Certificate generation is disabled, "
+                        + "can not set time expiration";
+            }
+
             policy.setGenerateOnExpiration(generateCertificateEnabled);
             savePolicyAndApplySuccessMessage(ppModel, model, messages, successMessage, policy);
         } catch (PolicyManagerException e) {

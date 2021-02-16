@@ -24,6 +24,7 @@ public class PolicyPageModel {
     private String ecValidate;
     private String fmValidate;
     private String attestationCertificateIssued;
+    private String generationExpiration;
     private String numOfValidDays;
     private String ignoreIma;
     private String ignoretBoot;
@@ -164,6 +165,15 @@ public class PolicyPageModel {
      */
     public String getAttestationCertificateIssued() {
         return attestationCertificateIssued;
+    }
+
+    /**
+     * Gets the attestation certificate issued state.
+     *
+     * @return the model string representation of this field.
+     */
+    public String getGenerationExpiration() {
+        return generationExpiration;
     }
 
     /**
@@ -311,6 +321,16 @@ public class PolicyPageModel {
     public void setAttestationCertificateIssued(
             final String attestationCertificateIssued) {
         this.attestationCertificateIssued = attestationCertificateIssued;
+    }
+
+    /**
+     * Sets the generation expiration state.
+     *
+     * @param generationExpiration "checked" if generating expiration is on.
+     */
+    public void setGenerationExpiration(
+            final String generationExpiration) {
+        this.generationExpiration = generationExpiration;
     }
 
     /**

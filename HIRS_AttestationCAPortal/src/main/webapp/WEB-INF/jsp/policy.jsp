@@ -107,7 +107,7 @@
             <%-- Generate Attestation Certificate--%>
             <div class="aca-input-box">
                 <form:form method="POST" modelAttribute="initialData" action="policy/update-issue-attestation">
-                    <li>Generate Attestation Certificate: ${(initialData.issueAttestationCertificate || initialData.generateOnExpiration) ? 'Enabled' : 'Disabled'}
+                    <li>Generate Attestation Certificate: ${initialData.issueAttestationCertificate ? 'Enabled' : 'Disabled'}
                         <my:editor id="issuedCertificatePolicyEditor" label="Edit Settings">
                             <div class="radio">
                                 <label><input id="aicTop" type="radio" name="attestationCertificateIssued" ${initialData.issueAttestationCertificate ? '' : 'checked'} value="unchecked"/> Never generate an Attestation Certificate</label>
@@ -115,14 +115,23 @@
                             <div class="radio">
                                 <label><input id="aicMid" type="radio" name="attestationCertificateIssued" ${initialData.issueAttestationCertificate ? 'checked' : ''} value="checked"/> Always generate an Attestation Certificate</label>
                             </div>
-                            <div class="radio">
-                                <label>
-                                    <input id="aicBot" type="radio" name="attestationCertificateIssued" ${initialData.generateOnExpiration ? 'checked' : ''} value="expires"/> Only Generate when current Attestation Certificate expires<br />
-                                    ** Validity period for the Attestation Certificate
-                                    <input id="validLen" type="text" name="numOfValidDays" value="3650" size="6" maxlength="6" ${(initialData.generateOnExpiration) ? '' : 'disabled'} />
-                                </label>
-                            </div>
                         </my:editor>
+                </form:form>
+                <form:form method="POST" modelAttribute="initialData" action="policy/update-expire-on">
+                        <ul>
+                            <li> Set generate on expire time frame: ${initialData.generationExpiration ? 'Enabled' : 'Disabled'}
+                                <my:editor id="issuedCertificatePolicyExpirationEditor" label="Edit Settings">
+                                    <div class="radio">
+                                        <label>
+                                            <input id="aicBot" type="checkbox" name="generationExpiration" ${initialData.generationExpiration ? 'checked' : ''} value="checked"/>
+                                                Only Generate when current Attestation Certificate expires<br />
+                                                ** Validity period for the Attestation Certificate
+                                            <input id="validLen" type="text" name="numOfValidDays" value="3651" size="6" maxlength="6" enabled />
+                                        </label>
+                                    </div>
+                                </my:editor>
+                            </li>
+                        </ul>
                     </li>
                 </form:form>
             </div>
