@@ -40,7 +40,6 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Enumeration;
 import java.util.List;
 import java.util.UUID;
@@ -264,9 +263,11 @@ public class ValidationReportsPageController extends PageController<NoPageParams
     private ArrayList<ArrayList<String>> parseComponents(final PlatformCredential pc) {
         ArrayList<ArrayList<String>> parsedComponents = new ArrayList<ArrayList<String>>();
         ArrayList<ArrayList<Object>> chainComponents = new ArrayList<>();
+
+        StringBuilder componentFailureString = new StringBuilder();
         if (pc.getComponentIdentifiers() != null
                 && pc.getComponentIdentifiers().size() > 0) {
-            LOGGER.info("Component failures: " + pc.getComponentFailures());
+            componentFailureString.append(pc.getComponentFailures());
             // get all the certificates associated with the platform serial
             List<PlatformCredential> chainCertificates = PlatformCredential
                     .select(certificateManager)
@@ -280,18 +281,18 @@ public class ValidationReportsPageController extends PageController<NoPageParams
                 chainComponents.add(issuerAndComponent);
             }
 
-            for (PlatformCredential delta : chainCertificates) {
-                if (!delta.isBase()) {
-                    for (ComponentIdentifier ci : delta.getComponentIdentifiers()) {
+            for (PlatformCredential cert : chainCertificates) {
+                componentFailureString.append(cert.getComponentFailures());
+                if (!cert.isBase()) {
+                    for (ComponentIdentifier ci : cert.getComponentIdentifiers()) {
                         ArrayList<Object> issuerAndComponent = new ArrayList<Object>();
-                        issuerAndComponent.add(delta.getIssuer());
+                        issuerAndComponent.add(cert.getIssuer());
                         issuerAndComponent.add(ci);
                         chainComponents.add(issuerAndComponent);
                     }
                 }
             }
-            ArrayList<String> componentFailures =
-                    new ArrayList<String>(Arrays.asList(pc.getComponentFailures().split(";")));
+            LOGGER.info("Component failures: " + componentFailureString.toString());
             for (ArrayList<Object> issuerAndComponent : chainComponents) {
                 ArrayList<String> componentData = new ArrayList<String>();
                 String issuer = (String) issuerAndComponent.get(0);
@@ -306,8 +307,8 @@ public class ValidationReportsPageController extends PageController<NoPageParams
                 componentData.add(ci.getComponentModel().getString());
                 componentData.add(ci.getComponentSerial().getString());
                 componentData.add(issuer);
-                //Failing components are identified by manufacturer + model
-                if (componentFailures.contains(componentData.get(1) + componentData.get(2))) {
+                //Failing components are identified by hashcode
+                if (componentFailureString.toString().contains(String.valueOf(ci.hashCode()))) {
                     componentData.add("Fail");
                 } else {
                     componentData.add("Pass");
