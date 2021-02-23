@@ -1685,21 +1685,34 @@ public abstract class AbstractAttestationCertificateAuthority
                                             final Set<PlatformCredential> platformCredentials,
                                             final Device device) {
         IssuedAttestationCertificate issuedAc;
-        boolean validDate = false;
+        boolean generateCertificate = true;
         SupplyChainPolicy scp = this.supplyChainValidationService.getPolicy();
+        Date currentDate = new Date();
+        int days;
         try {
             // save issued certificate
             IssuedAttestationCertificate attCert = new IssuedAttestationCertificate(
                     derEncodedAttestationCertificate, endorsementCredential, platformCredentials);
 
-            if (scp != null && !scp.isIssueAttestationCertificate()) {
+            if (scp != null) {
                 issuedAc = IssuedAttestationCertificate.select(certificateManager)
                         .byDeviceId(device.getId()).getCertificate();
-                if (issuedAc != null) {
-                    validDate = issuedAc.isValidOn(attCert.getBeginValidity());
+
+                generateCertificate = scp.isIssueAttestationCertificate();
+                if (issuedAc != null && scp.isGenerateOnExpiration()) {
+                    if (issuedAc.getEndValidity().after(currentDate)) {
+                        // so the issued AC is expired
+                        // however are we within the threshold
+                        days = daysBetween(currentDate, issuedAc.getEndValidity());
+                        if (days < Integer.parseInt(scp.getReissueThreshold())) {
+                            generateCertificate = true;
+                        } else {
+                            generateCertificate = false;
+                        }
+                    }
                 }
             }
-            if (!validDate) {
+            if (generateCertificate) {
                 attCert.setDevice(device);
                 certificateManager.save(attCert);
             }
@@ -1709,5 +1722,10 @@ public abstract class AbstractAttestationCertificateAuthority
                     "Encountered error while storing Attestation Certificate: "
                             + e.getMessage(), e);
         }
+    }
+
+    @SuppressWarnings("magicnumber")
+    private int daysBetween(final Date date1, final Date date2) {
+        return (int) ((date2.getTime() - date1.getTime()) / (1000 * 60 * 60 * 24));
     }
 }

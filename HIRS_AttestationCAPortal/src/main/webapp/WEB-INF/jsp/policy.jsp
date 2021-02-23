@@ -107,7 +107,7 @@
             <%-- Generate Attestation Certificate--%>
             <div class="aca-input-box">
                 <form:form method="POST" modelAttribute="initialData" action="policy/update-issue-attestation">
-                    <li>Generate Attestation Certificate: ${initialData.issueAttestationCertificate ? 'Enabled' : 'Disabled'}
+                    <li>Conditionally generate Attestation Certificate: ${initialData.issueAttestationCertificate ? 'Enabled' : 'Disabled'}
                         <my:editor id="issuedCertificatePolicyEditor" label="Edit Settings">
                             <div class="radio">
                                 <label><input id="aicTop" type="radio" name="attestationCertificateIssued" ${initialData.issueAttestationCertificate ? '' : 'checked'} value="unchecked"/> Never generate an Attestation Certificate</label>
@@ -117,23 +117,35 @@
                             </div>
                         </my:editor>
                 </form:form>
-                <form:form method="POST" modelAttribute="initialData" action="policy/update-expire-on">
                         <ul>
-                            <li> Set generate on expire time frame: ${initialData.generationExpiration ? 'Enabled' : 'Disabled'}
+                <form:form method="POST" modelAttribute="initialData" action="policy/update-expire-on">
+                            <li>Attestation Certificate Validity: ${initialData.generateOnExpiration ? 'Enabled' : 'Disabled'}
                                 <my:editor id="issuedCertificatePolicyExpirationEditor" label="Edit Settings">
                                     <div class="radio">
                                         <label>
-                                            <input id="aicBot" type="checkbox" name="generationExpiration" ${initialData.generationExpiration ? 'checked' : ''} value="checked"/>
-                                                Only Generate when current Attestation Certificate expires<br />
-                                                ** Validity period for the Attestation Certificate
-                                            <input id="validLen" type="text" name="numOfValidDays" value="3651" size="6" maxlength="6" enabled />
+                                            <input id="aicBot" type="checkbox" name="generationExpirationOn" ${initialData.generateOnExpiration ? 'checked' : ''} value="checked" />
+                                                Attestation Certificate validity time frame (Default 3651 days)<br />
+                                                Select time frame in days: <input id="expirationValue" type="text" name="expirationValue" value="${initialData.expirationValue}" />
                                         </label>
                                     </div>
                                 </my:editor>
                             </li>
+                </form:form>
+                <form:form method="POST" modelAttribute="initialData" action="policy/update-threshold">
+                            <li>Attestation Renewal time: ${initialData.generateOnExpiration ? 'Enabled' : 'Disabled'}
+                                <my:editor id="issuedCertificatePolicyGenerateEditor" label="Edit Settings">
+                                    <div class="radio">
+                                        <label>
+                                            <input id="aicBot" type="checkbox" name="generationExpirationOn" ${initialData.generateOnExpiration ? 'checked' : ''} value="checked" />
+                                                Renew Attestation Certificate before expiration time frame (Default 365 days)<br />
+                                                Select time frame in days: <input id="thresholdValue" type="text" name="thresholdValue" value="${initialData.thresholdValue}" />
+                                        </label>
+                                    </div>
+                                </my:editor>
+                            </li>
+                </form:form>
                         </ul>
                     </li>
-                </form:form>
             </div>
         </ul>
     </jsp:body>

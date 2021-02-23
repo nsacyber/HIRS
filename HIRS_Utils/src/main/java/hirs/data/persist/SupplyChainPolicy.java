@@ -18,7 +18,11 @@ public class SupplyChainPolicy extends Policy {
     /**
      * Number of days in 10 years.
      */
-    public static final String TEN_YEARS = "3650";
+    public static final String TEN_YEARS = "3651";
+    /**
+     * Number of days in 1 year.
+     */
+    public static final String YEAR = "365";
 
     @Column(nullable = false)
     private boolean enableEcValidation = false;
@@ -46,6 +50,9 @@ public class SupplyChainPolicy extends Policy {
 
     @Column(nullable = false)
     private String validityDays = TEN_YEARS;
+
+    @Column(nullable = false)
+    private String reissueThreshold = YEAR;
 
     @Column(nullable = false)
     private boolean generateOnExpiration = false;
@@ -291,6 +298,25 @@ public class SupplyChainPolicy extends Policy {
     public void setValidityDays(final String validityDays) {
         this.validityDays = validityDays;
     }
+
+    /**
+     * Getter for the number of days before the expiration to reissue
+     * a certificate.
+     * @return number of days
+     */
+    public String getReissueThreshold() {
+        return reissueThreshold;
+    }
+
+    /**
+     * Setter for the number of days before the expiration to reissue
+     * a certificate.
+     * @param reissueThreshold validity.
+     */
+    public void setReissueThreshold(final String reissueThreshold) {
+        this.reissueThreshold = reissueThreshold;
+    }
+
     /**
      * Getter for the state of when to generate a certificate.
      * @return true or false

@@ -264,10 +264,15 @@ public class PolicyPageController extends PageController<NoPageParams> {
         PageMessages messages = new PageMessages();
         String successMessage;
         String numOfDays;
-        LOGGER.error("We got this value -> {}", ppModel.getGenerationExpiration());
-        boolean generateCertificateEnabled
-                = ppModel.getGenerationExpiration()
-                .equalsIgnoreCase(ENABLED_CHECKED_PARAMETER_VALUE);
+
+        boolean generateCertificateEnabled = false;
+        // because this is just one option, there is not 'unchecked' value, so it is either
+        // 'checked' or null
+        if (ppModel.getGenerationExpirationOn() != null) {
+            generateCertificateEnabled
+                    = ppModel.getGenerationExpirationOn()
+                    .equalsIgnoreCase(ENABLED_CHECKED_PARAMETER_VALUE);
+        }
 
         try {
             SupplyChainPolicy policy = getDefaultPolicyAndSetInModel(ppModel, model);
@@ -282,7 +287,7 @@ public class PolicyPageController extends PageController<NoPageParams> {
                 }
 
                 if (generateCertificateEnabled) {
-                    numOfDays = ppModel.getNumOfValidDays();
+                    numOfDays = ppModel.getExpirationValue();
                     if (numOfDays == null) {
                         numOfDays = SupplyChainPolicy.TEN_YEARS;
                     }
@@ -291,6 +296,76 @@ public class PolicyPageController extends PageController<NoPageParams> {
                 }
 
                 policy.setValidityDays(numOfDays);
+            } else {
+                generateCertificateEnabled = false;
+                successMessage = "Attestation Certificate generation is disabled, "
+                        + "can not set time expiration";
+            }
+
+            policy.setGenerateOnExpiration(generateCertificateEnabled);
+            savePolicyAndApplySuccessMessage(ppModel, model, messages, successMessage, policy);
+        } catch (PolicyManagerException e) {
+            handlePolicyManagerUpdateError(model, messages, e,
+                    "Error changing ACA Attestation Certificate generation policy",
+                    "Error updating policy. \n" + e.getMessage());
+        }
+
+        // return the redirect
+        return redirectToSelf(new NoPageParams(), model, attr);
+    }
+
+    /**
+     * Updates the state of the policy setting that indicates that the generation
+     * will occur in a set time frame from the end validity date and redirects
+     * back to the original page.
+     *
+     * @param ppModel The data posted by the form mapped into an object.
+     * @param attr RedirectAttributes used to forward data back to the original page.
+     * @return View containing the url and parameters
+     * @throws URISyntaxException if malformed URI
+     */
+    @RequestMapping(value = "update-threshold", method = RequestMethod.POST)
+    public RedirectView updateThresholdVal(@ModelAttribute final PolicyPageModel ppModel,
+                                          final RedirectAttributes attr)
+            throws URISyntaxException {
+
+        // set the data received to be populated back into the form
+        Map<String, Object> model = new HashMap<>();
+        PageMessages messages = new PageMessages();
+        String successMessage;
+        String threshold;
+
+        boolean generateCertificateEnabled = false;
+        // because this is just one option, there is not 'unchecked' value, so it is either
+        // 'checked' or null
+        if (ppModel.getGenerationExpirationOn() != null) {
+            generateCertificateEnabled
+                    = ppModel.getGenerationExpirationOn()
+                    .equalsIgnoreCase(ENABLED_CHECKED_PARAMETER_VALUE);
+        }
+
+        try {
+            SupplyChainPolicy policy = getDefaultPolicyAndSetInModel(ppModel, model);
+            boolean issuedAttestationOptionEnabled
+                    = policy.isIssueAttestationCertificate();
+
+            if (issuedAttestationOptionEnabled) {
+                if (generateCertificateEnabled) {
+                    successMessage = "Attestation Certificate generation threshold time enabled.";
+                } else {
+                    successMessage = "Attestation Certificate generation threshold time disabled.";
+                }
+
+                if (generateCertificateEnabled) {
+                    threshold = ppModel.getThresholdValue();
+                    if (threshold == null) {
+                        threshold = SupplyChainPolicy.YEAR;
+                    }
+                } else {
+                    threshold = ppModel.getReissueThreshold();
+                }
+
+                policy.setReissueThreshold(threshold);
             } else {
                 generateCertificateEnabled = false;
                 successMessage = "Attestation Certificate generation is disabled, "

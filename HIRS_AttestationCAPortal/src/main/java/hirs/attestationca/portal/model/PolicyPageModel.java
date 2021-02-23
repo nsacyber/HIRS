@@ -24,10 +24,13 @@ public class PolicyPageModel {
     private String ecValidate;
     private String fmValidate;
     private String attestationCertificateIssued;
-    private String generationExpiration;
+    private String generationExpirationOn;
     private String numOfValidDays;
+    private String reissueThreshold;
     private String ignoreIma;
     private String ignoretBoot;
+    private String expirationValue;
+    private String thresholdValue;
 
     /**
      * Constructor. Sets fields from policy.
@@ -42,8 +45,11 @@ public class PolicyPageModel {
         this.issueAttestationCertificate = policy.isIssueAttestationCertificate();
         this.generateOnExpiration = policy.isGenerateOnExpiration();
         this.numOfValidDays = policy.getValidityDays();
+        this.reissueThreshold = policy.getReissueThreshold();
         this.enableIgnoreIma = policy.isIgnoreImaEnabled();
         this.enableIgnoreTboot = policy.isIgnoreTbootEnabled();
+        this.expirationValue = policy.getValidityDays();
+        this.thresholdValue = policy.getReissueThreshold();
     }
 
     /**
@@ -172,8 +178,8 @@ public class PolicyPageModel {
      *
      * @return the model string representation of this field.
      */
-    public String getGenerationExpiration() {
-        return generationExpiration;
+    public String getGenerationExpirationOn() {
+        return generationExpirationOn;
     }
 
     /**
@@ -183,6 +189,15 @@ public class PolicyPageModel {
      */
     public String getNumOfValidDays() {
         return numOfValidDays;
+    }
+
+    /**
+     * Gets the number of selected threshold days.
+     *
+     * @return the number of the days for reissue
+     */
+    public String getReissueThreshold() {
+        return reissueThreshold;
     }
 
     /**
@@ -326,11 +341,11 @@ public class PolicyPageModel {
     /**
      * Sets the generation expiration state.
      *
-     * @param generationExpiration "checked" if generating expiration is on.
+     * @param generationExpirationOn "checked" if generating expiration is on.
      */
-    public void setGenerationExpiration(
-            final String generationExpiration) {
-        this.generationExpiration = generationExpiration;
+    public void setGenerationExpirationOn(
+            final String generationExpirationOn) {
+        this.generationExpirationOn = generationExpirationOn;
     }
 
     /**
@@ -349,6 +364,38 @@ public class PolicyPageModel {
      */
     public void setIgnoretBoot(final String ignoretBoot) {
         this.ignoretBoot = ignoretBoot;
+    }
+
+    /**
+     * Getter for the expiration value.
+     * @return the value
+     */
+    public String getExpirationValue() {
+        return expirationValue;
+    }
+
+    /**
+     * Setter for the expiration value.
+     * @param expirationValue string value
+     */
+    public void setExpirationValue(final String expirationValue) {
+        this.expirationValue = expirationValue;
+    }
+
+    /**
+     * Getter for the expiration value.
+     * @return the thresholdValue
+     */
+    public String getThresholdValue() {
+        return thresholdValue;
+    }
+
+    /**
+     * Setter for the expiration value.
+     * @param thresholdValue string value
+     */
+    public void setThresholdValue(final String thresholdValue) {
+        this.thresholdValue = thresholdValue;
     }
 
     @Override
