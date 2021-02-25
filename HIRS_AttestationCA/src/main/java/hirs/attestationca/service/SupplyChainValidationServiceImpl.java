@@ -720,6 +720,8 @@ public class SupplyChainValidationServiceImpl implements SupplyChainValidationSe
                     base.setComponentFailures(result.getAdditionalInfo());
                     this.certificateManager.update(base);
                 }
+                // we are adding things to componentFailures
+                this.certificateManager.update(delta);
                 return buildValidationRecord(validationType, AppraisalStatus.Status.FAIL,
                         result.getMessage(), delta, Level.WARN);
             case ERROR:

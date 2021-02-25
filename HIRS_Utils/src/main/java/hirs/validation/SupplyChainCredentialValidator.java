@@ -696,7 +696,7 @@ public final class SupplyChainCredentialValidator implements CredentialValidator
             }
         }
 
-        if (!fieldValidation) {
+        if (!fieldValidation || !deltaSb.toString().isEmpty()) {
             return new AppraisalStatus(FAIL, resultMessage.toString(), deltaSb.toString());
         }
 
@@ -1452,6 +1452,8 @@ public final class SupplyChainCredentialValidator implements CredentialValidator
                                 failureMsg.append(String.format(
                                         "%s attempted MODIFIED with no prior instance.%n",
                                         ciSerial));
+                                delta.setComponentFailures(String.format("%s,%d",
+                                        delta.getComponentFailures(), ciV2.hashCode()));
                                 scv = deltaMapping.get(delta);
                                 if (scv != null
                                         && scv.getResult() != AppraisalStatus.Status.PASS) {
@@ -1469,6 +1471,8 @@ public final class SupplyChainCredentialValidator implements CredentialValidator
                                 failureMsg.append(String.format(
                                         "%s attempted REMOVED with no prior instance.%n",
                                         ciSerial));
+                                delta.setComponentFailures(String.format("%s,%d",
+                                        delta.getComponentFailures(), ciV2.hashCode()));
                                 scv = deltaMapping.get(delta);
                                 if (scv != null
                                         && scv.getResult() != AppraisalStatus.Status.PASS) {
@@ -1489,6 +1493,8 @@ public final class SupplyChainCredentialValidator implements CredentialValidator
                                 failureMsg.append(String.format(
                                         "%s was ADDED, the serial already exists.%n",
                                         ciSerial));
+                                delta.setComponentFailures(String.format("%s,%d",
+                                        delta.getComponentFailures(), ciV2.hashCode()));
                                 scv = deltaMapping.get(delta);
                                 if (scv != null
                                         && scv.getResult() != AppraisalStatus.Status.PASS) {
