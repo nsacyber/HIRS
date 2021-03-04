@@ -35,6 +35,7 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
+import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -139,6 +140,7 @@ public class ValidationReportsPageController extends PageController<NoPageParams
      * @param response object
      * @throws IOException thrown by BufferedWriter object
      */
+    @SuppressWarnings("checkstyle:magicnumber")
     @RequestMapping(value = "download", method = RequestMethod.POST)
     public void download(final HttpServletRequest request,
                          final HttpServletResponse response) throws IOException {
@@ -212,7 +214,7 @@ public class ValidationReportsPageController extends PageController<NoPageParams
         response.setHeader("Content-Disposition",
                 "attachment;filename=validation_report.csv");
         BufferedWriter bufferedWriter = new BufferedWriter(
-                new OutputStreamWriter(response.getOutputStream(), "UTF-8"));
+                new OutputStreamWriter(response.getOutputStream(), StandardCharsets.UTF_8));
         StringBuilder reportData = new StringBuilder();
         bufferedWriter.append("Company: " + company + "\n");
         bufferedWriter.append("Contract number: " + contractNumber + "\n");
@@ -238,8 +240,8 @@ public class ValidationReportsPageController extends PageController<NoPageParams
                     reportData.deleteCharAt(reportData.length() - 1);
                     reportData.append("\n,,,,,");
                 }
-                reportData.delete(reportData.lastIndexOf("\n"), reportData.length());
             }
+            reportData.delete(reportData.lastIndexOf(",") - 4, reportData.length());
         }
         bufferedWriter.append(columnHeaders + "\n");
         bufferedWriter.append(reportData.toString() + "\n");
