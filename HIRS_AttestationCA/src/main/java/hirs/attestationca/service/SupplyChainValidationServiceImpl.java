@@ -231,15 +231,13 @@ public class SupplyChainValidationServiceImpl implements SupplyChainValidationSe
                     Iterator<PlatformCredential> it = pcs.iterator();
                     while (it.hasNext()) {
                         PlatformCredential pc = it.next();
-                        if (pc != null) {
-                            if (!pc.isBase()) {
-                                attributeScv = validateDeltaPlatformCredentialAttributes(
-                                        pc, device.getDeviceInfo(),
-                                        baseCredential, deltaMapping);
-                                if (attributeScv.getResult() == FAIL) {
-                                    attrErrorMessage = String.format("%s%s%n", attrErrorMessage,
-                                            attributeScv.getMessage());
-                                }
+                        if (pc != null && pc.isBase()) {
+                            attributeScv = validateDeltaPlatformCredentialAttributes(
+                                    pc, device.getDeviceInfo(),
+                                    baseCredential, deltaMapping);
+                            if (attributeScv.getResult() == FAIL) {
+                                attrErrorMessage = String.format("%s%s%n", attrErrorMessage,
+                                        attributeScv.getMessage());
                             }
                         }
                     }

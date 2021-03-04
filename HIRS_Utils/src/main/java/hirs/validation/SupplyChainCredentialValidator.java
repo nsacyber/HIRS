@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.JsonFactory;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import hirs.data.persist.AppraisalStatus;
+import hirs.data.persist.certificate.attributes.ComponentClass;
 import hirs.data.persist.info.ComponentInfo;
 import hirs.data.persist.DeviceInfoReport;
 import hirs.data.persist.info.HardwareInfo;
@@ -721,10 +722,39 @@ public final class SupplyChainCredentialValidator implements CredentialValidator
             // will link to the platform certificate that'll display them.
             String failureResults = unmatchedComponents.substring(0,
                     unmatchedComponents.length() - 1);
-            String size = unmatchedComponents.substring(unmatchedComponents.length() - 1);
+            int size = 0;
             resultMessage = new StringBuilder();
-            resultMessage.append(String.format("There are %s unmatched components",
-                    size));
+            // UPDATED: need to account for device info still having components
+            String[] componentSplit = unmatchedComponents.split("\\?");
+
+            if (componentSplit[1].indexOf('=') < (componentSplit[1].length() - 1)) {
+                String subCertComps = componentSplit[1].split("=")[1];
+                if (subCertComps.isEmpty()) {
+                    size = subCertComps.split(";").length;
+                }
+            }
+
+            if (size == 0) {
+                // the platform certificate components have been accounted for
+                // therefore there are additional components in the device info report
+                // not accounted for
+                String subDeviceComps = componentSplit[0].split("=")[1];
+                if (subDeviceComps != null && !subDeviceComps.isEmpty()) {
+                    size = subDeviceComps.split(";").length;
+                    resultMessage.append(String.format("The device is reporting %d"
+                            + " unmatched components:", size));
+                    for (String comp : subDeviceComps.split(";")) {
+                        resultMessage.append(String.format("%n%s", comp));
+                    }
+                } else {
+                    // we can assume this is ever true
+                    LOGGER.warn("Validation failed comparing components.  However there was"
+                            + "no print out of the failed components.");
+                }
+            } else {
+                resultMessage.append(String.format("There are %d unmatched components "
+                                + "on the Platform Certificate.", size));
+            }
             return new AppraisalStatus(FAIL, resultMessage.toString(), failureResults);
         }
         return new AppraisalStatus(PASS, PLATFORM_ATTRIBUTES_VALID);
@@ -770,14 +800,16 @@ public final class SupplyChainCredentialValidator implements CredentialValidator
         }
 
         if (!subCompInfoList.isEmpty()) {
+            ComponentClass cc;
             for (ComponentInfo ci : subCompInfoList) {
-                invalidDeviceInfo.append(String.format("%d;",
-                        ci.hashCode()));
+                cc = new ComponentClass(ci.getComponentClass());
+                invalidDeviceInfo.append(String.format("%s;",
+                        cc.toString()));
             }
         }
 
-        return String.format("DEVICEINFO=%s?COMPID=%s%d",
-                invalidDeviceInfo.toString(), invalidPcIds.toString(), subCompIdList.size());
+        return String.format("DEVICEINFO=%s?COMPID=%s",
+                invalidDeviceInfo.toString(), invalidPcIds.toString());
     }
 
     /**

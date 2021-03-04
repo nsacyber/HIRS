@@ -455,6 +455,15 @@ public abstract class AbstractAttestationCertificateAuthority
         // Parse and save device info
         Device device = processDeviceInfo(claim);
 
+        // There are situations in which the claim is sent with no PCs
+        // or a PC from the tpm which will be deprecated
+        // this is to check what is in the platform object and pull
+        // additional information from the DB if information exists
+        if (platformCredentials.size() == 1) {
+            String serial = platformCredentials.iterator().next().getPlatformSerial();
+            platformCredentials.addAll(PlatformCredential.select(this.certificateManager)
+                    .byBoardSerialNumber(serial).getCertificates());
+        }
         // perform supply chain validation
         SupplyChainValidationSummary summary = supplyChainValidationService.validateSupplyChain(
                 endorsementCredential, platformCredentials, device);
@@ -1278,9 +1287,8 @@ public abstract class AbstractAttestationCertificateAuthority
             ContentSigner signer = new JcaContentSignerBuilder("SHA1WithRSA")
                 .setProvider("BC").build(privateKey);
             X509CertificateHolder holder = builder.build(signer);
-            X509Certificate certificate = new JcaX509CertificateConverter()
-                .setProvider("BC").getCertificate(holder);
-            return certificate;
+            return new JcaX509CertificateConverter()
+                    .setProvider("BC").getCertificate(holder);
         } catch (IOException | OperatorCreationException | CertificateException e) {
             throw new CertificateProcessingException("Encountered error while generating "
                     + "identity credential: " + e.getMessage(), e);

@@ -436,7 +436,7 @@ public final class CertificateStringMapBuilder {
         String data = str.trim().substring(str.trim().indexOf('{') + 1,
                 str.trim().length() - 1);
         // Separate key and value and parse the key
-        for (String pair: data.split(",")) {
+        for (String pair : data.split(",")) {
             String[] keyValue = pair.split("=");
             // Remove white space and change first character in the key to uppercase
             keyValue[0] = Character.toUpperCase(
