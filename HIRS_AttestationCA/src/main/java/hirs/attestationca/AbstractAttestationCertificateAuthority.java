@@ -460,9 +460,12 @@ public abstract class AbstractAttestationCertificateAuthority
         // this is to check what is in the platform object and pull
         // additional information from the DB if information exists
         if (platformCredentials.size() == 1) {
-            String serial = platformCredentials.iterator().next().getPlatformSerial();
-            platformCredentials.addAll(PlatformCredential.select(this.certificateManager)
-                    .byBoardSerialNumber(serial).getCertificates());
+            for (PlatformCredential pc : platformCredentials) {
+                if (pc != null && pc.getPlatformSerial() != null) {
+                    platformCredentials.addAll(PlatformCredential.select(this.certificateManager)
+                            .byBoardSerialNumber(pc.getPlatformSerial()).getCertificates());
+                }
+            }
         }
         // perform supply chain validation
         SupplyChainValidationSummary summary = supplyChainValidationService.validateSupplyChain(
