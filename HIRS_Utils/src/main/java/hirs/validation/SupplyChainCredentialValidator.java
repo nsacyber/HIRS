@@ -737,7 +737,6 @@ public final class SupplyChainCredentialValidator implements CredentialValidator
             final List<ComponentIdentifier> fullDeltaChainComponents,
             final List<ComponentInfo> allDeviceInfoComponents) {
         ComponentIdentifierV2 ciV2;
-        StringBuilder invalidDeviceInfo = new StringBuilder();
         StringBuilder invalidPcIds = new StringBuilder();
         List<ComponentIdentifier> subCompIdList = fullDeltaChainComponents
                 .stream().collect(Collectors.toList());
