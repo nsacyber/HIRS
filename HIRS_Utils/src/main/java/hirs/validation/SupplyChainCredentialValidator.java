@@ -4,7 +4,6 @@ import com.fasterxml.jackson.core.JsonFactory;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import hirs.data.persist.AppraisalStatus;
-import hirs.data.persist.certificate.attributes.ComponentClass;
 import hirs.data.persist.info.ComponentInfo;
 import hirs.data.persist.DeviceInfoReport;
 import hirs.data.persist.info.HardwareInfo;
