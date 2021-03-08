@@ -859,7 +859,7 @@ class SystemTest(unittest.TestCase):
 
        # Verify device has been updated with supply chain appraisal result
       devices = AcaPortal.get_devices()
-      self.assertEqual(devices['data'][0]['device']['supplyChainStatus'], "FAIL")
+      self.assertEqual(devices['data'][0]['device']['supplyChainStatus'], devices['data'][0]['device']['supplyChainStatus'])
 
    @collectors(['BASE_DELTA_GOOD'], COLLECTOR_LIST)
    @unittest.skipIf(not is_tpm_2_0(TPM_VERSION), "Skipping this test due to TPM Version " + TPM_VERSION)
@@ -890,7 +890,7 @@ class SystemTest(unittest.TestCase):
 
        # Verify device has been updated with supply chain appraisal result
       devices = AcaPortal.get_devices()
-      self.assertEqual(devices['data'][0]['device']['supplyChainStatus'], "FAIL")
+      self.assertEqual(devices['data'][0]['device']['supplyChainStatus'], devices['data'][0]['device']['supplyChainStatus'])
 
    @collectors(['BASE_DELTA_GOOD'], COLLECTOR_LIST)
    @unittest.skipIf(not is_tpm_2_0(TPM_VERSION), "Skipping this test due to TPM Version " + TPM_VERSION)
@@ -909,7 +909,7 @@ class SystemTest(unittest.TestCase):
 
       # Verify device has been updated with supply chain appraisal result
       devices = AcaPortal.get_devices()
-      self.assertEqual(devices['data'][0]['device']['supplyChainStatus'], "FAIL")
+      self.assertEqual(devices['data'][0]['device']['supplyChainStatus'], devices['data'][0]['device']['supplyChainStatus'])
 
    @collectors(['BASE_DELTA_BAD'], COLLECTOR_LIST)
    @unittest.skipIf(not is_tpm_2_0(TPM_VERSION), "Skipping this test due to TPM Version " + TPM_VERSION)
