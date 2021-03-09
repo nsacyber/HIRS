@@ -92,6 +92,7 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.Stack;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -409,7 +410,9 @@ public abstract class AbstractAttestationCertificateAuthority
         try {
             validationResult = doSupplyChainValidation(claim, ekPub);
         } catch (Exception ex) {
-            LOG.error(ex.getMessage());
+            for (StackTraceElement ste : ex.getStackTrace()) {
+                LOG.error(ste.toString());
+            }
         }
 
         if (validationResult == AppraisalStatus.Status.PASS) {
