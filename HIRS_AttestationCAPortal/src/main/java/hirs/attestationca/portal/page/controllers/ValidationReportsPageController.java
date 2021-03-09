@@ -35,11 +35,11 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
+import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Enumeration;
 import java.util.List;
 import java.util.UUID;
@@ -140,6 +140,7 @@ public class ValidationReportsPageController extends PageController<NoPageParams
      * @param response object
      * @throws IOException thrown by BufferedWriter object
      */
+    @SuppressWarnings("checkstyle:magicnumber")
     @RequestMapping(value = "download", method = RequestMethod.POST)
     public void download(final HttpServletRequest request,
                          final HttpServletResponse response) throws IOException {
@@ -213,7 +214,7 @@ public class ValidationReportsPageController extends PageController<NoPageParams
         response.setHeader("Content-Disposition",
                 "attachment;filename=validation_report.csv");
         BufferedWriter bufferedWriter = new BufferedWriter(
-                new OutputStreamWriter(response.getOutputStream(), "UTF-8"));
+                new OutputStreamWriter(response.getOutputStream(), StandardCharsets.UTF_8));
         StringBuilder reportData = new StringBuilder();
         bufferedWriter.append("Company: " + company + "\n");
         bufferedWriter.append("Contract number: " + contractNumber + "\n");
@@ -239,8 +240,8 @@ public class ValidationReportsPageController extends PageController<NoPageParams
                     reportData.deleteCharAt(reportData.length() - 1);
                     reportData.append("\n,,,,,");
                 }
-                reportData.delete(reportData.lastIndexOf("\n"), reportData.length());
             }
+            reportData.delete(reportData.lastIndexOf(",") - 4, reportData.length());
         }
         bufferedWriter.append(columnHeaders + "\n");
         bufferedWriter.append(reportData.toString() + "\n");
@@ -262,10 +263,10 @@ public class ValidationReportsPageController extends PageController<NoPageParams
     private ArrayList<ArrayList<String>> parseComponents(final PlatformCredential pc) {
         ArrayList<ArrayList<String>> parsedComponents = new ArrayList<ArrayList<String>>();
         ArrayList<ArrayList<Object>> chainComponents = new ArrayList<>();
-        String componentFailureString = "";
+        StringBuilder componentFailureString = new StringBuilder();
         if (pc.getComponentIdentifiers() != null
                 && pc.getComponentIdentifiers().size() > 0) {
-            componentFailureString += pc.getComponentFailures();
+            componentFailureString.append(pc.getComponentFailures());
             // get all the certificates associated with the platform serial
             List<PlatformCredential> chainCertificates = PlatformCredential
                     .select(certificateManager)
@@ -280,7 +281,7 @@ public class ValidationReportsPageController extends PageController<NoPageParams
             }
 
             for (PlatformCredential cert : chainCertificates) {
-                componentFailureString += cert.getComponentFailures();
+                componentFailureString.append(cert.getComponentFailures());
                 if (!cert.isBase()) {
                     for (ComponentIdentifier ci : cert.getComponentIdentifiers()) {
                         ArrayList<Object> issuerAndComponent = new ArrayList<Object>();
@@ -290,7 +291,7 @@ public class ValidationReportsPageController extends PageController<NoPageParams
                     }
                 }
             }
-            LOGGER.info("Component failures: " + componentFailureString);
+            LOGGER.info("Component failures: " + componentFailureString.toString());
             for (ArrayList<Object> issuerAndComponent : chainComponents) {
                 ArrayList<String> componentData = new ArrayList<String>();
                 String issuer = (String) issuerAndComponent.get(0);
@@ -307,7 +308,7 @@ public class ValidationReportsPageController extends PageController<NoPageParams
                 componentData.add(ci.getComponentSerial().getString());
                 componentData.add(issuer);
                 //Failing components are identified by hashcode
-                if (componentFailureString.contains(String.valueOf(ci.hashCode()))) {
+                if (componentFailureString.toString().contains(String.valueOf(ci.hashCode()))) {
                     componentData.add("Fail");
                 } else {
                     componentData.add("Pass");
