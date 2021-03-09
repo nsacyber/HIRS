@@ -13,6 +13,7 @@ import hirs.data.persist.EventLogMeasurements;
 import hirs.data.persist.Device;
 import hirs.data.persist.DeviceInfoReport;
 import hirs.data.persist.ReferenceManifest;
+import hirs.data.persist.SupplyChainPolicy;
 import hirs.data.persist.SupportReferenceManifest;
 import hirs.data.persist.SwidResource;
 import hirs.data.persist.info.FirmwareInfo;
@@ -107,7 +108,8 @@ public abstract class AbstractAttestationCertificateAuthority
     protected static final Logger LOG = LogManager.getLogger(AttestationCertificateAuthority.class);
 
     /**
-     * Defines the well known exponent. https://en.wikipedia.org/wiki/65537_(number)#Applications
+     * Defines the well known exponent.
+     * https://en.wikipedia.org/wiki/65537_(number)#Applications
      */
     private static final BigInteger EXPONENT = new BigInteger("010001",
             AttestationCertificateAuthority.DEFAULT_IV_SIZE);
@@ -146,8 +148,8 @@ public abstract class AbstractAttestationCertificateAuthority
     private final X509Certificate acaCertificate;
 
     /**
-     * Container wired {@link StructConverter} to be used in serialization / deserialization of TPM
-     * data structures.
+     * Container wired {@link StructConverter} to be used in
+     * serialization / deserialization of TPM data structures.
      */
     private final StructConverter structConverter;
 
@@ -160,7 +162,8 @@ public abstract class AbstractAttestationCertificateAuthority
      * Container wired application configuration property identifying the number of days that
      * certificates issued by this ACA are valid for.
      */
-    private final Integer validDays;
+    private Integer validDays = 1;
+
     private final CertificateManager certificateManager;
     private final ReferenceManifestManager referenceManifestManager;
     private final DeviceRegister deviceRegister;
@@ -353,6 +356,11 @@ public abstract class AbstractAttestationCertificateAuthority
 
         // generate the identity credential
         LOG.debug("generating credential from identity proof");
+        // check the policy set valid date
+        SupplyChainPolicy scp = this.supplyChainValidationService.getPolicy();
+        if (scp != null) {
+            this.validDays = Integer.parseInt(scp.getValidityDays());
+        }
         // transform the public key struct into a public key
         PublicKey publicKey = assemblePublicKey(proof.getIdentityKey().getStorePubKey().getKey());
         X509Certificate credential = generateCredential(publicKey, endorsementCredential,
@@ -558,6 +566,11 @@ public abstract class AbstractAttestationCertificateAuthority
             // Get device name and device
             String deviceName = claim.getDv().getNw().getHostname();
             Device device = deviceManager.getDevice(deviceName);
+            // check the policy set valid date
+            SupplyChainPolicy scp = this.supplyChainValidationService.getPolicy();
+            if (scp != null) {
+                this.validDays = Integer.parseInt(scp.getValidityDays());
+            }
 
             // Parse through the Provisioner supplied TPM Quote and pcr values
             // these fields are optional
@@ -1683,17 +1696,48 @@ public abstract class AbstractAttestationCertificateAuthority
                                             final EndorsementCredential endorsementCredential,
                                             final Set<PlatformCredential> platformCredentials,
                                             final Device device) {
+        IssuedAttestationCertificate issuedAc;
+        boolean generateCertificate = true;
+        SupplyChainPolicy scp = this.supplyChainValidationService.getPolicy();
+        Date currentDate = new Date();
+        int days;
         try {
             // save issued certificate
             IssuedAttestationCertificate attCert = new IssuedAttestationCertificate(
                     derEncodedAttestationCertificate, endorsementCredential, platformCredentials);
-            attCert.setDevice(device);
-            certificateManager.save(attCert);
+
+            if (scp != null) {
+                issuedAc = IssuedAttestationCertificate.select(certificateManager)
+                        .byDeviceId(device.getId()).getCertificate();
+
+                generateCertificate = scp.isIssueAttestationCertificate();
+                if (issuedAc != null && scp.isGenerateOnExpiration()) {
+                    if (issuedAc.getEndValidity().after(currentDate)) {
+                        // so the issued AC is expired
+                        // however are we within the threshold
+                        days = daysBetween(currentDate, issuedAc.getEndValidity());
+                        if (days < Integer.parseInt(scp.getReissueThreshold())) {
+                            generateCertificate = true;
+                        } else {
+                            generateCertificate = false;
+                        }
+                    }
+                }
+            }
+            if (generateCertificate) {
+                attCert.setDevice(device);
+                certificateManager.save(attCert);
+            }
         } catch (Exception e) {
             LOG.error("Error saving generated Attestation Certificate to database.", e);
             throw new CertificateProcessingException(
                     "Encountered error while storing Attestation Certificate: "
                             + e.getMessage(), e);
         }
+    }
+
+    @SuppressWarnings("magicnumber")
+    private int daysBetween(final Date date1, final Date date2) {
+        return (int) ((date2.getTime() - date1.getTime()) / (1000 * 60 * 60 * 24));
     }
 }
