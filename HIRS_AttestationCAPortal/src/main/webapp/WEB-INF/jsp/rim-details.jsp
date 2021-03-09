@@ -200,11 +200,11 @@
                                     <c:choose>
                                         <c:when test="${event.isError()}">
                                             <tr style="background: tomato">
-                                            </c:when>
-                                            <c:otherwise>
+                                        </c:when>
+                                        <c:otherwise>
                                             <tr>
-                                            </c:otherwise>
-                                        </c:choose>
+                                        </c:otherwise>
+                                    </c:choose>
                                         <td style="width: 75px">${count}</td>
                                         <td class="pcrCell">PCR${event.getPcrIndex()}</td>
                                         <td>${event.getEventTypeStr()}</td>
@@ -243,7 +243,7 @@
                                     <div class="event-element">
                                         <div class="event-data">
                                             <div class="data-label">Event#:</div>
-                                            <div class="data-value">${sEvent.getEventNumber()}</div>
+                                            <div class="data-value">${sEvent.getEventNumber()+1}</div>
                                         </div>           
                                         <div class="event-data">
                                             <div class="data-label">PCR Index:</div>
@@ -268,7 +268,7 @@
                                     <div class="event-element">
                                         <div class="event-data">
                                             <div class="data-label">Event#:</div>
-                                            <div class="data-value">${lEvent.getEventNumber()}</div>
+                                            <div class="data-value">${lEvent.getEventNumber()+1}</div>
                                         </div>           
                                         <div class="event-data">
                                             <div class="data-label">PCR Index:</div>
