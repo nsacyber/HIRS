@@ -133,16 +133,13 @@ public class SupplyChainValidationServiceImpl implements SupplyChainValidationSe
         boolean acceptExpiredCerts = policy.isExpiredCertificateValidationEnabled();
         PlatformCredential baseCredential = null;
         SupplyChainValidation platformScv = null;
+        SupplyChainValidation basePlatformScv = null;
         boolean chkDeltas = false;
         String pcErrorMessage = "";
         List<SupplyChainValidation> validations = new LinkedList<>();
         Map<PlatformCredential, SupplyChainValidation> deltaMapping = new HashMap<>();
         SupplyChainValidation.ValidationType platformType = SupplyChainValidation
                 .ValidationType.PLATFORM_CREDENTIAL;
-        SupplyChainValidation.ValidationType platformAttrType = SupplyChainValidation
-                .ValidationType.PLATFORM_CREDENTIAL_ATTRIBUTES;
-        Map<SupplyChainValidation.ValidationType, SupplyChainValidation> validationTypeMap
-                = new HashMap<>();
         LOGGER.info("Validating supply chain.");
 
         // Validate the Endorsement Credential
@@ -174,6 +171,7 @@ public class SupplyChainValidationServiceImpl implements SupplyChainValidationSe
                     // set the base credential
                     if (pc.isBase()) {
                         baseCredential = pc;
+                        basePlatformScv = platformScv;
                     } else {
                         chkDeltas = true;
                         deltaMapping.put(pc, null);
@@ -229,21 +227,17 @@ public class SupplyChainValidationServiceImpl implements SupplyChainValidationSe
                         null, Level.ERROR));
             } else {
                 if (chkDeltas) {
-                    if (platformScv != null) {
-                        aes.addAll(platformScv.getCertificatesUsed());
-                    }
+                    aes.addAll(basePlatformScv.getCertificatesUsed());
                     Iterator<PlatformCredential> it = pcs.iterator();
                     while (it.hasNext()) {
                         PlatformCredential pc = it.next();
-                        if (pc != null) {
-                            if (!pc.isBase()) {
-                                attributeScv = validateDeltaPlatformCredentialAttributes(
-                                        pc, device.getDeviceInfo(),
-                                        baseCredential, deltaMapping);
-                                if (attributeScv.getResult() == FAIL) {
-                                    attrErrorMessage = String.format("%s%s%n", attrErrorMessage,
-                                            attributeScv.getMessage());
-                                }
+                        if (pc != null && pc.isBase()) {
+                            attributeScv = validateDeltaPlatformCredentialAttributes(
+                                    pc, device.getDeviceInfo(),
+                                    baseCredential, deltaMapping);
+                            if (attributeScv.getResult() == FAIL) {
+                                attrErrorMessage = String.format("%s%s%n", attrErrorMessage,
+                                        attributeScv.getMessage());
                             }
                         }
                     }
@@ -261,11 +255,10 @@ public class SupplyChainValidationServiceImpl implements SupplyChainValidationSe
             if (!attrErrorMessage.isEmpty()) {
                 //combine platform and platform attributes
                 validations.remove(platformScv);
-                if (platformScv != null) {
-                    validations.add(new SupplyChainValidation(
-                            SupplyChainValidation.ValidationType.PLATFORM_CREDENTIAL,
-                            attributeScv.getResult(), aes, attributeScv.getMessage()));
-                }
+                validations.add(new SupplyChainValidation(
+                        SupplyChainValidation.ValidationType.PLATFORM_CREDENTIAL,
+                        attributeScv.getResult(), aes, attributeScv.getMessage()));
+
             }
         }
 
@@ -725,6 +718,8 @@ public class SupplyChainValidationServiceImpl implements SupplyChainValidationSe
                     base.setComponentFailures(result.getAdditionalInfo());
                     this.certificateManager.update(base);
                 }
+                // we are adding things to componentFailures
+                this.certificateManager.update(delta);
                 return buildValidationRecord(validationType, AppraisalStatus.Status.FAIL,
                         result.getMessage(), delta, Level.WARN);
             case ERROR:

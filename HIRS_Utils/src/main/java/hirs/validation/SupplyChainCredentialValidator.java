@@ -696,7 +696,7 @@ public final class SupplyChainCredentialValidator implements CredentialValidator
             }
         }
 
-        if (!fieldValidation) {
+        if (!fieldValidation || !deltaSb.toString().isEmpty()) {
             return new AppraisalStatus(FAIL, resultMessage.toString(), deltaSb.toString());
         }
 
@@ -723,8 +723,11 @@ public final class SupplyChainCredentialValidator implements CredentialValidator
                     unmatchedComponents.length() - 1);
             String size = unmatchedComponents.substring(unmatchedComponents.length() - 1);
             resultMessage = new StringBuilder();
-            resultMessage.append(String.format("There are %s unmatched components",
-                    size));
+
+            resultMessage.append(String.format("There are %s unmatched components "
+                                + "on the Platform Certificate:%n", size));
+            resultMessage.append(unmatchedComponents);
+
             return new AppraisalStatus(FAIL, resultMessage.toString(), failureResults);
         }
         return new AppraisalStatus(PASS, PLATFORM_ATTRIBUTES_VALID);
@@ -734,7 +737,6 @@ public final class SupplyChainCredentialValidator implements CredentialValidator
             final List<ComponentIdentifier> fullDeltaChainComponents,
             final List<ComponentInfo> allDeviceInfoComponents) {
         ComponentIdentifierV2 ciV2;
-        StringBuilder invalidDeviceInfo = new StringBuilder();
         StringBuilder invalidPcIds = new StringBuilder();
         List<ComponentIdentifier> subCompIdList = fullDeltaChainComponents
                 .stream().collect(Collectors.toList());
@@ -754,14 +756,12 @@ public final class SupplyChainCredentialValidator implements CredentialValidator
             }
         }
 
-        if (subCompIdList.isEmpty() && subCompInfoList.isEmpty()) {
+        if (subCompIdList.isEmpty()) {
             return Strings.EMPTY;
-        }
-
+        } else {
         // now we return everything that was unmatched
         // what is in the component info/device reported components
         // is to be displayed as the failure
-        if (!subCompIdList.isEmpty()) {
             for (ComponentIdentifier ci : subCompIdList) {
                 ciV2 = (ComponentIdentifierV2) ci;
                 invalidPcIds.append(String.format("%d;",
@@ -769,15 +769,7 @@ public final class SupplyChainCredentialValidator implements CredentialValidator
             }
         }
 
-        if (!subCompInfoList.isEmpty()) {
-            for (ComponentInfo ci : subCompInfoList) {
-                invalidDeviceInfo.append(String.format("%d;",
-                        ci.hashCode()));
-            }
-        }
-
-        return String.format("DEVICEINFO=%s?COMPID=%s%d",
-                invalidDeviceInfo.toString(), invalidPcIds.toString(), subCompIdList.size());
+        return String.format("COMPID=%s%d", invalidPcIds.toString(), subCompIdList.size());
     }
 
     /**
@@ -1452,6 +1444,8 @@ public final class SupplyChainCredentialValidator implements CredentialValidator
                                 failureMsg.append(String.format(
                                         "%s attempted MODIFIED with no prior instance.%n",
                                         ciSerial));
+                                delta.setComponentFailures(String.format("%s,%d",
+                                        delta.getComponentFailures(), ciV2.hashCode()));
                                 scv = deltaMapping.get(delta);
                                 if (scv != null
                                         && scv.getResult() != AppraisalStatus.Status.PASS) {
@@ -1469,6 +1463,8 @@ public final class SupplyChainCredentialValidator implements CredentialValidator
                                 failureMsg.append(String.format(
                                         "%s attempted REMOVED with no prior instance.%n",
                                         ciSerial));
+                                delta.setComponentFailures(String.format("%s,%d",
+                                        delta.getComponentFailures(), ciV2.hashCode()));
                                 scv = deltaMapping.get(delta);
                                 if (scv != null
                                         && scv.getResult() != AppraisalStatus.Status.PASS) {
@@ -1489,6 +1485,8 @@ public final class SupplyChainCredentialValidator implements CredentialValidator
                                 failureMsg.append(String.format(
                                         "%s was ADDED, the serial already exists.%n",
                                         ciSerial));
+                                delta.setComponentFailures(String.format("%s,%d",
+                                        delta.getComponentFailures(), ciV2.hashCode()));
                                 scv = deltaMapping.get(delta);
                                 if (scv != null
                                         && scv.getResult() != AppraisalStatus.Status.PASS) {
