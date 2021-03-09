@@ -16,7 +16,7 @@
             <div class="aca-input-box">
                 <form:form method="POST" modelAttribute="initialData" action="policy/update-ec-validation">
                     <li>Endorsement Credential Validation: ${initialData.enableEcValidation ? 'Enabled' : 'Disabled'}
-                        <my:editor id="ecPolicyEditor" label="Edit Settings ">
+                        <my:editor id="ecPolicyEditor" label="Edit Settings">
                             <div class="radio">
                                 <label><input id="ecTop" type="radio" name="ecValidate" ${initialData.enableEcValidation ? 'checked' : ''}  value="checked"/> Endorsement Credentials will be validated</label>
                             </div>
@@ -102,6 +102,50 @@
                         </form:form>
                     </ul>
                 </li>
+            </div>
+            <br />
+            <%-- Generate Attestation Certificate--%>
+            <div class="aca-input-box">
+                <form:form method="POST" modelAttribute="initialData" action="policy/update-issue-attestation">
+                    <li>Generate Attestation Certificate: ${initialData.issueAttestationCertificate ? 'Enabled' : 'Disabled'}
+                        <my:editor id="issuedCertificatePolicyEditor" label="Edit Settings">
+                            <div class="radio">
+                                <label><input id="aicTop" type="radio" name="attestationCertificateIssued" ${initialData.issueAttestationCertificate ? '' : 'checked'} value="unchecked"/> Never generate an Attestation Certificate</label>
+                            </div>
+                            <div class="radio">
+                                <label><input id="aicMid" type="radio" name="attestationCertificateIssued" ${initialData.issueAttestationCertificate ? 'checked' : ''} value="checked"/> Conditionally generate an Attestation Certificate before 'Not After' expiration date</label>
+                            </div>
+                        </my:editor>
+                </form:form>
+                        <ul>
+                <form:form method="POST" modelAttribute="initialData" action="policy/update-expire-on">
+                            <li>Attestation Certificate Validity period: ${initialData.generateOnExpiration ? 'Enabled' : 'Disabled'}
+                                <my:editor id="issuedCertificatePolicyExpirationEditor" label="Edit Settings">
+                                    <div class="radio">
+                                        <label>
+                                            <input id="aicBot" type="checkbox" name="generationExpirationOn" ${initialData.generateOnExpiration ? 'checked' : ''} value="checked" />
+                                                Attestation Certificate validity period (Default 3651 days)<br />
+                                                Select period in days: <input id="expirationValue" type="text" name="expirationValue" value="${initialData.expirationValue}" />
+                                        </label>
+                                    </div>
+                                </my:editor>
+                            </li>
+                </form:form>
+                <form:form method="POST" modelAttribute="initialData" action="policy/update-threshold">
+                            <li>Attestation Certificate Renewal period: ${initialData.generateOnExpiration ? 'Enabled' : 'Disabled'}
+                                <my:editor id="issuedCertificatePolicyGenerateEditor" label="Edit Settings">
+                                    <div class="radio">
+                                        <label>
+                                            <input id="aicBot" type="checkbox" name="generationExpirationOn" ${initialData.generateOnExpiration ? 'checked' : ''} value="checked" />
+                                                Renew 'n' days before Attestation Certificate's  'Not After' Validity date (Default 365 days)<br />
+                                                Select 'n' period in days: <input id="thresholdValue" type="text" name="thresholdValue" value="${initialData.thresholdValue}" />
+                                        </label>
+                                    </div>
+                                </my:editor>
+                            </li>
+                </form:form>
+                        </ul>
+                    </li>
             </div>
         </ul>
     </jsp:body>

@@ -3,6 +3,7 @@ package hirs.attestationca.service;
 import java.util.Set;
 
 import hirs.data.persist.Device;
+import hirs.data.persist.SupplyChainPolicy;
 import hirs.data.persist.SupplyChainValidationSummary;
 import hirs.data.persist.certificate.EndorsementCredential;
 import hirs.data.persist.certificate.PlatformCredential;
@@ -34,4 +35,10 @@ public interface SupplyChainValidationService {
      * @return True if validation is successful, false otherwise.
      */
     SupplyChainValidationSummary validateQuote(Device device);
+
+    /**
+     * Allows other service access to the policy information.
+     * @return supply chain policy
+     */
+    SupplyChainPolicy getPolicy();
 }

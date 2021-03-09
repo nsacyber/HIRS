@@ -13,6 +13,8 @@ public class PolicyPageModel {
     private boolean enablePcCertificateValidation;
     private boolean enablePcCertificateAttributeValidation;
     private boolean enableFirmwareValidation;
+    private boolean issueAttestationCertificate;
+    private boolean generateOnExpiration;
     private boolean enableIgnoreIma;
     private boolean enableIgnoreTboot;
 
@@ -21,8 +23,14 @@ public class PolicyPageModel {
     private String pcAttributeValidate;
     private String ecValidate;
     private String fmValidate;
+    private String attestationCertificateIssued;
+    private String generationExpirationOn;
+    private String numOfValidDays;
+    private String reissueThreshold;
     private String ignoreIma;
     private String ignoretBoot;
+    private String expirationValue;
+    private String thresholdValue;
 
     /**
      * Constructor. Sets fields from policy.
@@ -34,8 +42,14 @@ public class PolicyPageModel {
         this.enablePcCertificateValidation = policy.isPcValidationEnabled();
         this.enablePcCertificateAttributeValidation = policy.isPcAttributeValidationEnabled();
         this.enableFirmwareValidation = policy.isFirmwareValidationEnabled();
+        this.issueAttestationCertificate = policy.isIssueAttestationCertificate();
+        this.generateOnExpiration = policy.isGenerateOnExpiration();
+        this.numOfValidDays = policy.getValidityDays();
+        this.reissueThreshold = policy.getReissueThreshold();
         this.enableIgnoreIma = policy.isIgnoreImaEnabled();
         this.enableIgnoreTboot = policy.isIgnoreTbootEnabled();
+        this.expirationValue = policy.getValidityDays();
+        this.thresholdValue = policy.getReissueThreshold();
     }
 
     /**
@@ -78,6 +92,24 @@ public class PolicyPageModel {
      */
     public boolean getEnableFirmwareValidation() {
         return enableFirmwareValidation;
+    }
+
+    /**
+     * Gets the Attestation Certificate issued State.
+     *
+     * @return the issued state.
+     */
+    public boolean isIssueAttestationCertificate() {
+        return issueAttestationCertificate;
+    }
+
+    /**
+     * Gets the state of generating a certificate.
+     *
+     * @return true or false
+     */
+    public boolean isGenerateOnExpiration() {
+        return generateOnExpiration;
     }
 
     /**
@@ -130,6 +162,42 @@ public class PolicyPageModel {
      */
     public String getFmValidate() {
         return fmValidate;
+    }
+
+    /**
+     * Gets the attestation certificate issued state.
+     *
+     * @return the model string representation of this field.
+     */
+    public String getAttestationCertificateIssued() {
+        return attestationCertificateIssued;
+    }
+
+    /**
+     * Gets the attestation certificate issued state.
+     *
+     * @return the model string representation of this field.
+     */
+    public String getGenerationExpirationOn() {
+        return generationExpirationOn;
+    }
+
+    /**
+     * Gets the number of selected valid days.
+     *
+     * @return the number of the days for validity
+     */
+    public String getNumOfValidDays() {
+        return numOfValidDays;
+    }
+
+    /**
+     * Gets the number of selected threshold days.
+     *
+     * @return the number of the days for reissue
+     */
+    public String getReissueThreshold() {
+        return reissueThreshold;
     }
 
     /**
@@ -188,6 +256,25 @@ public class PolicyPageModel {
     }
 
     /**
+     * Sets the Attestation Certificate Issued state.
+     *
+     * @param issueAttestationCertificate true if generating Certificates.
+     */
+    public void setIssueAttestationCertificate(
+            final boolean issueAttestationCertificate) {
+        this.issueAttestationCertificate = issueAttestationCertificate;
+    }
+
+    /**
+     * Setter for the state of generating a certificate.
+     *
+     * @param generateOnExpiration true or false
+     */
+    public void setGenerateOnExpiration(final boolean generateOnExpiration) {
+        this.generateOnExpiration = generateOnExpiration;
+    }
+
+    /**
      * Sets the Enable Ignore IMA state.
      *
      * @param enableIgnoreIma true if performing validation, false otherwise
@@ -242,6 +329,26 @@ public class PolicyPageModel {
     }
 
     /**
+     * Sets the Issued Attestation Certificate state.
+     *
+     * @param attestationCertificateIssued "checked" if generating certificates.
+     */
+    public void setAttestationCertificateIssued(
+            final String attestationCertificateIssued) {
+        this.attestationCertificateIssued = attestationCertificateIssued;
+    }
+
+    /**
+     * Sets the generation expiration state.
+     *
+     * @param generationExpirationOn "checked" if generating expiration is on.
+     */
+    public void setGenerationExpirationOn(
+            final String generationExpirationOn) {
+        this.generationExpirationOn = generationExpirationOn;
+    }
+
+    /**
      * Sets the Ignore IMA state.
      *
      * @param ignoreIma "checked" if enabling validation, false otherwise
@@ -259,6 +366,38 @@ public class PolicyPageModel {
         this.ignoretBoot = ignoretBoot;
     }
 
+    /**
+     * Getter for the expiration value.
+     * @return the value
+     */
+    public String getExpirationValue() {
+        return expirationValue;
+    }
+
+    /**
+     * Setter for the expiration value.
+     * @param expirationValue string value
+     */
+    public void setExpirationValue(final String expirationValue) {
+        this.expirationValue = expirationValue;
+    }
+
+    /**
+     * Getter for the expiration value.
+     * @return the thresholdValue
+     */
+    public String getThresholdValue() {
+        return thresholdValue;
+    }
+
+    /**
+     * Setter for the expiration value.
+     * @param thresholdValue string value
+     */
+    public void setThresholdValue(final String thresholdValue) {
+        this.thresholdValue = thresholdValue;
+    }
+
     @Override
     public String toString() {
         return "PolicyPageModel{"
@@ -266,6 +405,9 @@ public class PolicyPageModel {
                 + ", enablePcCertificateValidation=" + enablePcCertificateValidation
                 + ", enablePcCertificateAttributeValidation="
                 + enablePcCertificateAttributeValidation
-                + ", enableFirmwareValidation=" + enableFirmwareValidation + '}';
+                + ", enableFirmwareValidation=" + enableFirmwareValidation
+                + ", issueAttestationCertificate=" + issueAttestationCertificate
+                + ", generateOnExpiration=" + generateOnExpiration
+                + ", numOfValidDays=" + numOfValidDays + "}";
     }
 }

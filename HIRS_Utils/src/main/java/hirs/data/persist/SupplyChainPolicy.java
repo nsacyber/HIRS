@@ -15,6 +15,14 @@ public class SupplyChainPolicy extends Policy {
      * Name of the default Supply Chain Policy.
      */
     public static final String DEFAULT_POLICY = "Default Supply Chain Policy";
+    /**
+     * Number of days in 10 years.
+     */
+    public static final String TEN_YEARS = "3651";
+    /**
+     * Number of days in 1 year.
+     */
+    public static final String YEAR = "365";
 
     @Column(nullable = false)
     private boolean enableEcValidation = false;
@@ -36,6 +44,18 @@ public class SupplyChainPolicy extends Policy {
 
     @Column(nullable = false)
     private boolean replaceEC = false;
+
+    @Column(nullable = false)
+    private boolean issueAttestationCertificate = true;
+
+    @Column(nullable = false)
+    private String validityDays = TEN_YEARS;
+
+    @Column(nullable = false)
+    private String reissueThreshold = YEAR;
+
+    @Column(nullable = false)
+    private boolean generateOnExpiration = false;
 
     @Embedded
     private PCRPolicy pcrPolicy = new PCRPolicy();
@@ -232,6 +252,7 @@ public class SupplyChainPolicy extends Policy {
     }
 
     /**
+     * Getter for the current PCR Policy.
      * @return the PCR Policy
      */
     public PCRPolicy getPcrPolicy() {
@@ -239,9 +260,76 @@ public class SupplyChainPolicy extends Policy {
     }
 
     /**
+     * Setter to update the current PCR Policy.
      * @param pcrPolicy to apply
      */
     public void setPcrPolicy(final PCRPolicy pcrPolicy) {
         this.pcrPolicy = pcrPolicy;
+    }
+
+    /**
+     * Returns whether or not to generate an Attestation Issued Certificate.
+     * @return current state for generation.
+     */
+    public boolean isIssueAttestationCertificate() {
+        return issueAttestationCertificate;
+    }
+
+    /**
+     * Sets whether or not to generate an Attestation Issued Certificate.
+     * @param issueAttestationCertificate the flag for generation.
+     */
+    public void setIssueAttestationCertificate(final boolean issueAttestationCertificate) {
+        this.issueAttestationCertificate = issueAttestationCertificate;
+    }
+
+    /**
+     * Getter for the number of days for the certificates validity.
+     * @return number of days
+     */
+    public String getValidityDays() {
+        return validityDays;
+    }
+
+    /**
+     * Setter for the number of days for validity.
+     * @param validityDays validity.
+     */
+    public void setValidityDays(final String validityDays) {
+        this.validityDays = validityDays;
+    }
+
+    /**
+     * Getter for the number of days before the expiration to reissue
+     * a certificate.
+     * @return number of days
+     */
+    public String getReissueThreshold() {
+        return reissueThreshold;
+    }
+
+    /**
+     * Setter for the number of days before the expiration to reissue
+     * a certificate.
+     * @param reissueThreshold validity.
+     */
+    public void setReissueThreshold(final String reissueThreshold) {
+        this.reissueThreshold = reissueThreshold;
+    }
+
+    /**
+     * Getter for the state of when to generate a certificate.
+     * @return true or false
+     */
+    public boolean isGenerateOnExpiration() {
+        return generateOnExpiration;
+    }
+
+    /**
+     * Setter for the state of when to generate a certificate.
+     * @param generateOnExpiration sets true or false
+     */
+    public void setGenerateOnExpiration(final boolean generateOnExpiration) {
+        this.generateOnExpiration = generateOnExpiration;
     }
 }
