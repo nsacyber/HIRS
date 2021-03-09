@@ -153,17 +153,6 @@ public class CertificateRequestPageController extends PageController<NoPageParam
 
         return mav;
     }
-    /**
-     * TODO
-     * 1. add flag for rim validation dependent on pc attribute flag DONE
-     * 2. create tpmbaseline on upload of rimel file (DONE?)
-     *    a. add device id?  though one won't exist yet
-     * 3. validation
-     *    a. looks for baseline
-     *    b. if it doesn't find one, looks for rim
-     *          a. creates baseline if it exists
-     *    c. validates after reading rimel, if it finds one.
-     */
 
     /**
      * Queries for the list of Certificates and returns a data table response
