@@ -6,6 +6,11 @@ import hirs.attestationca.portal.datatables.OrderedListQueryDataTableAdapter;
 import hirs.attestationca.portal.page.PageController;
 import hirs.attestationca.portal.page.params.NoPageParams;
 import hirs.data.persist.certificate.Certificate;
+import hirs.data.persist.certificate.PlatformCredential;
+import hirs.data.persist.certificate.attributes.ComponentIdentifier;
+import hirs.data.persist.certificate.attributes.V2.ComponentIdentifierV2;
+import hirs.persist.CertificateManager;
+import hirs.persist.DeviceManager;
 import org.apache.logging.log4j.Logger;
 import static org.apache.logging.log4j.LogManager.getLogger;
 import org.hibernate.Criteria;
@@ -25,6 +30,21 @@ import hirs.data.persist.SupplyChainValidationSummary;
 import hirs.persist.CriteriaModifier;
 import hirs.persist.CrudManager;
 
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.io.BufferedWriter;
+import java.io.IOException;
+import java.io.OutputStreamWriter;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Enumeration;
+import java.util.UUID;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
 /**
  * Controller for the Validation Reports page.
  */
@@ -33,18 +53,32 @@ import hirs.persist.CrudManager;
 public class ValidationReportsPageController extends PageController<NoPageParams> {
 
     private final CrudManager<SupplyChainValidationSummary> supplyChainValidatorSummaryManager;
+    private final CertificateManager certificateManager;
+    private final DeviceManager deviceManager;
 
+    private static String columnHeaders = "Verified Manufacturer,"
+            + "Model,SN,Verification Date,Device Status,"
+            + "Component name,Component manufacturer,Component model,"
+            + "Component SN,Component status";
+    private static final String DEFAULT_COMPANY = "AllDevices";
+    private static final String UNDEFINED = "undefined";
     private static final Logger LOGGER = getLogger(ValidationReportsPageController.class);
 
     /**
      * Constructor providing the Page's display and routing specification.
      * @param supplyChainValidatorSummaryManager the manager
+     * @param certificateManager the certificate manager
+     * @param deviceManager the device manager
      */
     @Autowired
     public ValidationReportsPageController(
-            final CrudManager<SupplyChainValidationSummary> supplyChainValidatorSummaryManager) {
+            final CrudManager<SupplyChainValidationSummary> supplyChainValidatorSummaryManager,
+            final CertificateManager certificateManager,
+            final DeviceManager deviceManager) {
         super(VALIDATION_REPORTS);
         this.supplyChainValidatorSummaryManager = supplyChainValidatorSummaryManager;
+        this.certificateManager = certificateManager;
+        this.deviceManager = deviceManager;
     }
 
     /**
@@ -96,5 +130,161 @@ public class ValidationReportsPageController extends PageController<NoPageParams
                         criteriaModifier);
 
         return new DataTableResponse<>(records, input);
+    }
+
+    /**
+     * This method handles downloading a validation report.
+     * @param request object
+     * @param response object
+     * @throws IOException thrown by BufferedWriter object
+     */
+    @RequestMapping(value = "download", method = RequestMethod.POST)
+    public void download(final HttpServletRequest request,
+                         final HttpServletResponse response) throws IOException {
+
+        LOGGER.info("Downloading validation report");
+        String company = "";
+        String contractNumber = "";
+        Pattern pattern = Pattern.compile("^\\w*$");
+        DateTimeFormatter dateFormat = DateTimeFormatter.ofPattern("uuuu-MM-dd");
+        DateTimeFormatter dateTimeFormat = DateTimeFormatter.ofPattern("uuuu-MM-dd HH:mm:ss");
+        LocalDate startDate = null;
+        LocalDate endDate = null;
+        ArrayList<LocalDate> createTimes = new ArrayList<LocalDate>();
+        String[] deviceNames = new String[]{};
+
+        Enumeration parameters = request.getParameterNames();
+        while (parameters.hasMoreElements()) {
+            String parameter = (String) parameters.nextElement();
+            String parameterValue = request.getParameter(parameter);
+            LOGGER.info(parameter + ": " + parameterValue);
+            switch (parameter) {
+                case "company":
+                    Matcher companyMatcher = pattern.matcher(parameterValue);
+                    if (companyMatcher.matches()) {
+                        company = parameterValue;
+                    } else {
+                        company = DEFAULT_COMPANY;
+                    }
+                    break;
+                case "contract":
+                    Matcher contractMatcher = pattern.matcher(parameterValue);
+                    if (contractMatcher.matches()) {
+                        contractNumber = parameterValue;
+                    } else {
+                        contractNumber = "none";
+                    }
+                    break;
+                case "dateStart":
+                    if (parameterValue != null && !parameterValue.isEmpty()) {
+                        startDate = LocalDate.parse(parameterValue, dateFormat);
+                    } else {
+                        startDate = LocalDate.ofEpochDay(0);
+                    }
+                    break;
+                case "dateEnd":
+                    if (parameterValue != null && !parameterValue.isEmpty()) {
+                        endDate = LocalDate.parse(parameterValue, dateFormat);
+                    } else {
+                        endDate = LocalDate.now();
+                    }
+                    break;
+                case "createTimes":
+                    if (!parameterValue.equals(UNDEFINED)) {
+                        String[] timestamps = parameterValue.split(",");
+                        for (String timestamp : timestamps) {
+                            createTimes.add(LocalDateTime.parse(timestamp,
+                                    dateTimeFormat).toLocalDate());
+                        }
+                    }
+                    break;
+                case "deviceNames":
+                    if (!parameterValue.equals(UNDEFINED)) {
+                        deviceNames = parameterValue.split(",");
+                    }
+                    break;
+                default:
+            }
+        }
+
+        response.setHeader("Content-Type", "text/csv");
+        response.setHeader("Content-Disposition",
+                "attachment;filename=validation_report.csv");
+        BufferedWriter bufferedWriter = new BufferedWriter(
+                new OutputStreamWriter(response.getOutputStream(), "UTF-8"));
+        StringBuilder reportData = new StringBuilder();
+        bufferedWriter.append("Company: " + company + "\n");
+        bufferedWriter.append("Contract number: " + contractNumber + "\n");
+        for (int i = 0; i < deviceNames.length; i++) {
+            if ((createTimes.get(i).isAfter(startDate) || createTimes.get(i).isEqual(startDate))
+                    && (createTimes.get(i).isBefore(endDate)
+                        || createTimes.get(i).isEqual(endDate))) {
+                UUID deviceId = deviceManager.getDevice(deviceNames[i]).getId();
+                LOGGER.info(deviceId);
+                PlatformCredential pc = PlatformCredential.select(certificateManager)
+                        .byDeviceId(deviceId).getCertificate();
+                LOGGER.info("Found platform credential: " + pc.toString());
+                reportData.append(pc.getManufacturer() + ","
+                        + pc.getModel() + ","
+                        + pc.getPlatformSerial() + ","
+                        + LocalDateTime.now().toString() + ","
+                        + pc.getDevice().getSupplyChainStatus() + ",");
+                ArrayList<ArrayList<String>> parsedComponents = parseComponents(pc);
+                for (ArrayList<String> component : parsedComponents) {
+                    for (String data : component) {
+                        reportData.append(data + ",");
+                    }
+                    reportData.deleteCharAt(reportData.length() - 1);
+                    reportData.append("\n,,,,,");
+                }
+                reportData.delete(reportData.lastIndexOf("\n"), reportData.length());
+            }
+        }
+        bufferedWriter.append(columnHeaders + "\n");
+        bufferedWriter.append(reportData.toString() + "\n");
+        LOGGER.info(columnHeaders);
+        LOGGER.info(reportData.toString());
+        bufferedWriter.flush();
+    }
+
+    /**
+     * This method parses the following ComponentIdentifier fields into an ArrayList of ArrayLists.
+     * - ComponentClass
+     * - Manufacturer
+     * - Model
+     * - Serial number
+     * - Pass/fail status (based on componentFailures string)
+     * @param pc the platform credential.
+     * @return the ArrayList of ArrayLists containing the parsed component data.
+     */
+    private ArrayList<ArrayList<String>> parseComponents(final PlatformCredential pc) {
+        ArrayList<ArrayList<String>> parsedComponents = new ArrayList<ArrayList<String>>();
+        if (pc.getComponentIdentifiers() != null
+                && pc.getComponentIdentifiers().size() > 0) {
+            LOGGER.info("Component failures: " + pc.getComponentFailures());
+            ArrayList<String> componentFailures =
+                    new ArrayList<String>(Arrays.asList(pc.getComponentFailures().split(";")));
+            for (ComponentIdentifier ci : pc.getComponentIdentifiers()) {
+                ArrayList<String> componentData = new ArrayList<String>();
+                if (ci instanceof ComponentIdentifierV2) {
+                    componentData.add(((ComponentIdentifierV2) ci).getComponentClass().toString());
+                } else {
+                    componentData.add("Platform Component");
+                }
+                componentData.add(ci.getComponentManufacturer().getString());
+                componentData.add(ci.getComponentModel().getString());
+                componentData.add(ci.getComponentSerial().getString());
+                //Failing components are identified by manufacturer + model
+                if (componentFailures.contains(componentData.get(1) + componentData.get(2))) {
+                    componentData.add("Fail");
+                } else {
+                    componentData.add("Pass");
+                }
+                parsedComponents.add(componentData);
+                LOGGER.info(String.join(",", componentData));
+            }
+        }
+
+        return parsedComponents;
     }
 }
