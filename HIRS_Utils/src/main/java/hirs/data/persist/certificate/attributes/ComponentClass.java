@@ -47,6 +47,7 @@ public class ComponentClass {
     private String category;
     private String component;
     private int componentIdentifier;
+    private String classValueString;
 
     /**
      * Default class constructor.
@@ -83,6 +84,11 @@ public class ComponentClass {
      */
     public ComponentClass(final Path componentClassPath, final String componentIdentifier) {
         this(componentClassPath, getComponentIntValue(componentIdentifier));
+        if (componentIdentifier != null && componentIdentifier.contains("#")) {
+            this.classValueString = componentIdentifier.replaceAll("#", "");
+        } else {
+            this.classValueString = componentIdentifier;
+        }
     }
 
     /**
@@ -140,6 +146,14 @@ public class ComponentClass {
      */
     public final int getValue() {
         return componentIdentifier;
+    }
+
+    /**
+     * Getter for the Component Class Value as a string.
+     * @return String representation of the class.
+     */
+    public final String getClassValueString() {
+        return classValueString;
     }
 
     /**

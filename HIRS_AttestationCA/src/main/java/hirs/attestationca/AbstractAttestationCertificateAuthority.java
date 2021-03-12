@@ -102,7 +102,6 @@ import java.util.regex.Pattern;
  */
 public abstract class AbstractAttestationCertificateAuthority
                                                     implements AttestationCertificateAuthority {
-
     /**
      * Logger instance for for subclass instances.
      */
@@ -124,7 +123,6 @@ public abstract class AbstractAttestationCertificateAuthority
      * Number of bytes to include in the TPM2.0 nonce.
      */
     public static final int NONCE_LENGTH = 20;
-
     private static final int SEED_LENGTH = 32;
     private static final int MAX_SECRET_LENGTH = 32;
     private static final int RSA_MODULUS_LENGTH = 256;
@@ -132,13 +130,11 @@ public abstract class AbstractAttestationCertificateAuthority
     private static final int HMAC_KEY_LENGTH_BYTES = 32;
     private static final int HMAC_SIZE_LENGTH_BYTES = 2;
     private static final int TPM2_CREDENTIAL_BLOB_SIZE = 392;
-
     // Constants used to parse out the ak name from the ak public data. Used in generateAkName
     private static final String AK_NAME_PREFIX = "000b";
     private static final String AK_NAME_HASH_PREFIX =
             "0001000b00050072000000100014000b0800000000000100";
     private static final String TPM_SIGNATURE_ALG = "sha";
-
     private static final int MAC_BYTES = 6;
 
     /**
@@ -402,7 +398,6 @@ public abstract class AbstractAttestationCertificateAuthority
      */
     @Override
     public byte[] processIdentityClaimTpm2(final byte[] identityClaim) {
-
         LOG.debug("Got identity claim");
 
         if (ArrayUtils.isEmpty(identityClaim)) {
@@ -419,9 +414,15 @@ public abstract class AbstractAttestationCertificateAuthority
         RSAPublicKey ekPub = parsePublicKey(claim.getEkPublicArea().toByteArray());
         AppraisalStatus.Status validationResult = AppraisalStatus.Status.FAIL;
 
-        validationResult = doSupplyChainValidation(claim, ekPub);
-        if (validationResult == AppraisalStatus.Status.PASS) {
+        try {
+            validationResult = doSupplyChainValidation(claim, ekPub);
+        } catch (Exception ex) {
+            for (StackTraceElement ste : ex.getStackTrace()) {
+                LOG.error(ste.toString());
+            }
+        }
 
+        if (validationResult == AppraisalStatus.Status.PASS) {
             RSAPublicKey akPub = parsePublicKey(claim.getAkPublicArea().toByteArray());
             byte[] nonce = generateRandomBytes(NONCE_LENGTH);
             ByteString blobStr = tpm20MakeCredential(ekPub, akPub, nonce);
@@ -464,6 +465,18 @@ public abstract class AbstractAttestationCertificateAuthority
         // Parse and save device info
         Device device = processDeviceInfo(claim);
 
+        // There are situations in which the claim is sent with no PCs
+        // or a PC from the tpm which will be deprecated
+        // this is to check what is in the platform object and pull
+        // additional information from the DB if information exists
+        if (platformCredentials.size() == 1) {
+            for (PlatformCredential pc : platformCredentials) {
+                if (pc != null && pc.getPlatformSerial() != null) {
+                    platformCredentials.addAll(PlatformCredential.select(this.certificateManager)
+                            .byBoardSerialNumber(pc.getPlatformSerial()).getCertificates());
+                }
+            }
+        }
         // perform supply chain validation
         SupplyChainValidationSummary summary = supplyChainValidationService.validateSupplyChain(
                 endorsementCredential, platformCredentials, device);
@@ -1292,9 +1305,8 @@ public abstract class AbstractAttestationCertificateAuthority
             ContentSigner signer = new JcaContentSignerBuilder("SHA1WithRSA")
                 .setProvider("BC").build(privateKey);
             X509CertificateHolder holder = builder.build(signer);
-            X509Certificate certificate = new JcaX509CertificateConverter()
-                .setProvider("BC").getCertificate(holder);
-            return certificate;
+            return new JcaX509CertificateConverter()
+                    .setProvider("BC").getCertificate(holder);
         } catch (IOException | OperatorCreationException | CertificateException e) {
             throw new CertificateProcessingException("Encountered error while generating "
                     + "identity credential: " + e.getMessage(), e);

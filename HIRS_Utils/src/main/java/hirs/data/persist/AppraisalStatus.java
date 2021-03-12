@@ -32,6 +32,7 @@ public class AppraisalStatus {
     private Status appStatus;
 
     private String message;
+    private String additionalInfo;
 
     /**
      * Default constructor. Set appraisal status and description.
@@ -39,8 +40,21 @@ public class AppraisalStatus {
      * @param message description of result
      */
     public AppraisalStatus(final Status appStatus, final String message) {
+        this(appStatus, message, "");
+    }
+
+    /**
+     * Default constructor. Set appraisal status and description.
+     * @param appStatus status of appraisal
+     * @param message description of result
+     * @param additionalInfo any additional information needed to
+     *                       be passed on
+     */
+    public AppraisalStatus(final Status appStatus, final String message,
+                           final String additionalInfo) {
         this.appStatus = appStatus;
         this.message = message;
+        this.additionalInfo = additionalInfo;
     }
 
     /**
@@ -73,5 +87,21 @@ public class AppraisalStatus {
      */
     public void setMessage(final String message) {
         this.message = message;
+    }
+
+    /**
+     * Getter for additional information during validation.
+     * @return string of additional information
+     */
+    public String getAdditionalInfo() {
+        return additionalInfo;
+    }
+
+    /**
+     * Setter for any additional information.
+     * @param additionalInfo the string of additional information
+     */
+    public void setAdditionalInfo(final String additionalInfo) {
+        this.additionalInfo = additionalInfo;
     }
 }

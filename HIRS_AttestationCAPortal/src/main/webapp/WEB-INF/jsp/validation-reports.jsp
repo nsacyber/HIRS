@@ -25,6 +25,19 @@
         <c:set var="errorText" value="Validation Error"/>
         <c:set var="unknownText" value="Unknown Validation Status"/>
 
+        <form:form id="download" method="POST" action="${portal}/validation-reports/download">
+            Download Validation Reports
+            <my:download-info id="validationReportsDownload" label="Download Validation Reports">
+                <label>Company<input id="company" type="text" pattern="^\w*$"
+                        title="Letters, numbers, and spaces only" name="company" /></label>
+                <label>Contract #<input id="contract" type="text" pattern="^\w*$"
+                        title="Letters, numbers, and spaces only" name="contract" /></label>
+                <br>
+                <label>Date range start<input id="dateStart" type="date" name="dateStart" /></label>
+                <label>Date range end<input id="dateEnd" type="date" name="dateEnd" /></label>
+            </my:download-info>
+        </form:form>
+
         <div class="aca-data-table">
             <table id="reportTable" class="display" width="100%">
                 <thead>
@@ -124,6 +137,39 @@
                 //Set data tables
                 var dataTable = setDataTables("#reportTable", url, columns);
                 dataTable.order([1, 'desc']).draw();    //order by createTime
+            });
+
+            $("#download").submit(function(e) {
+                var tableLength = $("#reportTable").rows;
+                var createTimes = "";
+                var deviceNames = "";
+                $('#reportTable tr').not('thead tr').each(function() {
+                    createTimes += $(this).find("td").eq(1).html() + ",";
+                    deviceNames += $(this).find("td").eq(2).html() + ",";
+                });
+                createTimes = createTimes.substring(0, createTimes.length - 1);
+                deviceNames = deviceNames.substring(0, deviceNames.length - 1);
+                var params = [
+                                {
+                                    name: 'createTimes',
+                                    value: createTimes
+                                },
+                                {
+                                    name: 'deviceNames',
+                                    value: deviceNames
+                                }
+                            ];
+                $(this).append($.map(params, function(param) {
+                    return $('<input>', {
+                        type: 'hidden',
+                        name: param.name,
+                        value: param.value
+                    });
+                }));
+            });
+
+            $(".btn-primary").click(function() {
+                $("#validationReportsDownload").modal('hide');
             });
 
             /**

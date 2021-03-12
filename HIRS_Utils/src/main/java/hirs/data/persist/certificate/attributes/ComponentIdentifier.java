@@ -3,6 +3,7 @@ package hirs.data.persist.certificate.attributes;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 import org.apache.commons.lang3.StringUtils;
 
@@ -73,6 +74,7 @@ public class ComponentIdentifier {
     private ASN1ObjectIdentifier componentManufacturerId;
     private ASN1Boolean fieldReplaceable;
     private List<ComponentAddress> componentAddress;
+    private boolean validationResult = true;
 
     /**
      * Default constructor.
@@ -264,6 +266,24 @@ public class ComponentIdentifier {
     }
 
     /**
+     * Holds the status of the validation process for attributes
+     * specific to this instance.
+     * @return true is passed, false if failed.
+     */
+    public boolean isValidationResult() {
+        return validationResult;
+    }
+
+    /**
+     * Sets the flag for the validation status for this instance
+     * of the attribute.
+     * @param validationResult validation flag.
+     */
+    public void setValidationResult(final boolean validationResult) {
+        this.validationResult = validationResult;
+    }
+
+    /**
      * Get all the component addresses inside the sequence.
      *
      * @param sequence that contains the component addresses.
@@ -286,6 +306,29 @@ public class ComponentIdentifier {
         }
 
         return Collections.unmodifiableList(addresses);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(componentManufacturer, componentModel,
+        componentSerial, componentRevision);
+    }
+
+    @Override
+    public boolean equals(final Object obj) {
+        if (obj == null) {
+            return false;
+        }
+
+        if (obj instanceof ComponentIdentifier) {
+            ComponentIdentifier testCi = (ComponentIdentifier) obj;
+            return testCi.getComponentManufacturer().equals(this.getComponentManufacturer())
+            && testCi.getComponentModel().equals(this.getComponentModel())
+            && testCi.getComponentSerial().equals(this.getComponentSerial())
+            && testCi.getComponentRevision().equals(this.getComponentRevision());
+        } else {
+            return false;
+        }
     }
 
     @Override
