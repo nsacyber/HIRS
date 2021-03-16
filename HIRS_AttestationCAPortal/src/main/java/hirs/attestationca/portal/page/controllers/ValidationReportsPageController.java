@@ -193,7 +193,8 @@ public class ValidationReportsPageController extends PageController<NoPageParams
                     }
                     break;
                 case "createTimes":
-                    if (!parameterValue.equals(UNDEFINED)) {
+                    if (!parameterValue.equals(UNDEFINED)
+                        && !parameterValue.isEmpty()) {
                         String[] timestamps = parameterValue.split(",");
                         for (String timestamp : timestamps) {
                             createTimes.add(LocalDateTime.parse(timestamp,
@@ -202,7 +203,8 @@ public class ValidationReportsPageController extends PageController<NoPageParams
                     }
                     break;
                 case "deviceNames":
-                    if (!parameterValue.equals(UNDEFINED)) {
+                    if (!parameterValue.equals(UNDEFINED)
+                        && !parameterValue.isEmpty()) {
                         deviceNames = parameterValue.split(",");
                     }
                     break;
@@ -240,8 +242,10 @@ public class ValidationReportsPageController extends PageController<NoPageParams
                     reportData.deleteCharAt(reportData.length() - 1);
                     reportData.append("\n,,,,,");
                 }
+                if (reportData.lastIndexOf(",") > 4) {
+                    reportData.delete(reportData.lastIndexOf(",") - 4, reportData.length());
+                }
             }
-            reportData.delete(reportData.lastIndexOf(",") - 4, reportData.length());
         }
         bufferedWriter.append(columnHeaders + "\n");
         bufferedWriter.append(reportData.toString() + "\n");

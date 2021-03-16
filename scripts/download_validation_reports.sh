@@ -3,8 +3,15 @@
 #User input parameters:
 #$1 filter start date 'yyyy-mm-dd'
 #$2 filter end date 'yyyy-mm-dd'
+#$3 ACA address, default is localhost if not given
 
-endpoint="https://localhost:8443/HIRS_AttestationCAPortal/portal/validation-reports"
+if [ -z "$3" ]
+ then
+  endpoint="https://localhost:8443/HIRS_AttestationCAPortal/portal/validation-reports"
+ else
+  endpoint="https://$3:8443/HIRS_AttestationCAPortal/portal/validation-reports"
+fi
+echo "$endpoint"
 content=$(curl --insecure $endpoint/list)
 rawTimes=$(jq -r '.data | map(.createTime | tostring) | join(",")' <<< "$content")
 createTimes=""
