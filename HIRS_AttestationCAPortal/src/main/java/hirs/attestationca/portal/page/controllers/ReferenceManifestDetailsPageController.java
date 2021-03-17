@@ -316,8 +316,13 @@ public class ReferenceManifestDetailsPageController
             }
         }
 
-        measurements = EventLogMeasurements.select(referenceManifestManager)
-                .byManufacturer(support.getPlatformManufacturer()).getRIM();
+        // testing this independent of the above if statement because the above
+        // starts off checking if associated rim is null; that is irrelevant for
+        // this statement.
+        if (support.getPlatformManufacturer() != null) {
+            measurements = EventLogMeasurements.select(referenceManifestManager)
+                    .byManufacturer(support.getPlatformManufacturer()).getRIM();
+        }
 
         data.put("baseRim", support.getTagId());
         data.put("associatedRim", support.getAssociatedRim());
@@ -432,32 +437,36 @@ public class ReferenceManifestDetailsPageController
         HashMap<String, Object> data = new HashMap<>();
         LinkedList<TpmPcrEvent> supportEvents = new LinkedList<>();
         LinkedList<TpmPcrEvent> livelogEvents = new LinkedList<>();
+        BaseReferenceManifest base = null;
+        SupportReferenceManifest support = null;
+        TCGEventLog supportLog = null;
 
         data.put("supportFilename", "Blank");
         data.put("supportId", "");
         data.put("tagId", measurements.getTagId());
         data.put("baseId", "");
-
         data.put("rimType", measurements.getRimType());
-        TCGEventLog supportLog = null;
-        SupportReferenceManifest support = SupportReferenceManifest
-                .select(referenceManifestManager)
-                .byManufacturer(measurements
-                        .getPlatformManufacturer()).getRIM();
 
-        if (support != null) {
-            supportLog = new TCGEventLog(support.getRimBytes());
-            data.put("supportFilename", support.getFileName());
-            data.put("supportId", support.getId());
-        }
+        if (measurements.getPlatformManufacturer() != null) {
+            support = SupportReferenceManifest
+                    .select(referenceManifestManager)
+                    .byManufacturer(measurements
+                            .getPlatformManufacturer()).getRIM();
 
-        BaseReferenceManifest base = BaseReferenceManifest
-                .select(referenceManifestManager)
-                .byManufacturer(measurements
-                        .getPlatformManufacturer()).getRIM();
+            if (support != null) {
+                supportLog = new TCGEventLog(support.getRimBytes());
+                data.put("supportFilename", support.getFileName());
+                data.put("supportId", support.getId());
+            }
 
-        if (base != null) {
-            data.put("baseId", base.getId());
+            base = BaseReferenceManifest
+                    .select(referenceManifestManager)
+                    .byManufacturer(measurements
+                            .getPlatformManufacturer()).getRIM();
+
+            if (base != null) {
+                data.put("baseId", base.getId());
+            }
         }
 
         TCGEventLog measurementLog = new TCGEventLog(measurements.getRimBytes());
