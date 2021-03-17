@@ -1,6 +1,7 @@
 package hirs.attestationca.rest;
 
 import hirs.persist.DBManager;
+import hirs.persist.ReferenceDigestManager;
 import hirs.persist.TPM2ProvisionerState;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -42,6 +43,7 @@ public class RestfulAttestationCertificateAuthority
      * @param validDays the number of days issued certs are valid
      * @param deviceManager the device manager
      * @param tpm2ProvisionerStateDBManager the DBManager for persisting provisioner state
+     * @param referenceDigestManager the reference digest manager
      */
     @SuppressWarnings({ "checkstyle:parameternumber" })
     @Autowired
@@ -54,11 +56,12 @@ public class RestfulAttestationCertificateAuthority
             final DeviceRegister deviceRegister,
             final DeviceManager deviceManager,
             final DBManager<TPM2ProvisionerState> tpm2ProvisionerStateDBManager,
+            final ReferenceDigestManager referenceDigestManager,
             @Value("${aca.certificates.validity}") final int validDays) {
         super(supplyChainValidationService, privateKey, acaCertificate, structConverter,
                 certificateManager, referenceManifestManager,
                 deviceRegister, validDays, deviceManager,
-                tpm2ProvisionerStateDBManager);
+                tpm2ProvisionerStateDBManager, referenceDigestManager);
     }
 
     /*

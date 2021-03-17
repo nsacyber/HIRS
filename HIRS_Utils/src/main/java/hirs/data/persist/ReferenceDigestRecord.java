@@ -1,10 +1,11 @@
 package hirs.data.persist;
 
+import org.bouncycastle.util.Arrays;
+
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Table;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.UUID;
 
 /**
  * This class will represent an entry a table that'll be associated
@@ -15,38 +16,89 @@ import java.util.List;
 @Table(name = "ReferenceDigestRecord")
 public class ReferenceDigestRecord extends ArchivableEntity {
 
+    @Column
+    private UUID supportRim;
     @Column(nullable = false)
     private String manufacturer;
     @Column(nullable = false)
     private String model;
-    @Column(columnDefinition = "blob", nullable = false)
+    @Column(columnDefinition = "blob", nullable = true)
     private byte[] valueBlob;
-
-    // NOTE: when this works, and do a show tables to give to Lawrence
-    private List<ReferenceDigestValue> associatedDigests = new ArrayList<>();
+    @Column
+    private boolean supportLoaded;
 
     /**
      * Default Constructor.
      */
     protected ReferenceDigestRecord() {
         super();
-        this.manufacturer = null;
-        this.model = null;
+        // I wonder if this will throw and error
+        this.supportRim = UUID.randomUUID();
+        this.manufacturer = "";
+        this.model = "";
         this.valueBlob = null;
+        this.supportLoaded = false;
     }
 
     /**
      * Default constructor with parameters.
+     * @param supportRim link to the source of data
      * @param manufacturer device manufacturer
      * @param model device model
      * @param valueBlob the data values of the event.
      */
-    public ReferenceDigestRecord(final String manufacturer,
+    public ReferenceDigestRecord(final UUID supportRim,
+                                 final String manufacturer,
                                  final String model,
                                  final byte[] valueBlob) {
+        super();
+        // need to put up nullable entries
+        this.supportRim = supportRim;
         this.manufacturer = manufacturer;
         this.model = model;
-        this.valueBlob = valueBlob.clone();
+        this.valueBlob = Arrays.clone(valueBlob);
+    }
+
+    /**
+     * Default constructor with parameters specitic to a RIM object.
+     * @param referenceManifest rim object to use.
+     * @param manufacturer device manufacturer
+     * @param model device model
+     */
+    public ReferenceDigestRecord(final ReferenceManifest referenceManifest,
+                                 final String manufacturer,
+                                 final String model) {
+        super();
+        if (referenceManifest instanceof SupportReferenceManifest) {
+            this.supportRim = referenceManifest.getId();
+            this.supportLoaded = true;
+            SupportReferenceManifest srm = (SupportReferenceManifest) referenceManifest;
+            this.valueBlob = Arrays.clone(srm.getRimBytes());
+        } else if (referenceManifest != null) {
+            // the assumption is that there is a support RIM.
+            this.supportRim = referenceManifest.getAssociatedRim();
+            // I will just test for loaded and if true but blob is empty, pull
+            // that information later and update the object
+        }
+
+        this.manufacturer = manufacturer;
+        this.model = model;
+    }
+
+    /**
+     * Getter for the linked source for the data.
+     * @return UUID of the source
+     */
+    public UUID getSupportRim() {
+        return supportRim;
+    }
+
+    /**
+     * Setter for the linked source for the data.
+     * @param supportRim UUID of the source
+     */
+    public void setSupportRim(final UUID supportRim) {
+        this.supportRim = supportRim;
     }
 
     /**
@@ -97,5 +149,15 @@ public class ReferenceDigestRecord extends ArchivableEntity {
         if (valueBlob != null) {
             this.valueBlob = valueBlob.clone();
         }
+    }
+
+    /**
+     * The string value representative of this class.
+     * @return  manufacturer and model for this record
+     */
+    @Override
+    public String toString() {
+        return String.format("%s%n%s -> %s",
+                super.toString(), this.manufacturer, this.model);
     }
 }

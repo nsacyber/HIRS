@@ -1,5 +1,7 @@
 package hirs.attestationca.configuration;
 
+import hirs.persist.DBReferenceDigestManager;
+import hirs.persist.ReferenceDigestManager;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
@@ -250,6 +252,16 @@ public class AttestationCertificateAuthorityConfiguration extends WebMvcConfigur
     @Bean
     public ReferenceManifestManager referenceManifestManager() {
         return new DBReferenceManifestManager(sessionFactory.getObject());
+    }
+
+    /**
+     * Creates a {@link ReferenceDigestManager} ready to use.
+     *
+     * @return {@link ReferenceDigestManager}
+     */
+    @Bean
+    public ReferenceDigestManager referenceDigestManager() {
+        return new DBReferenceDigestManager(sessionFactory.getObject());
     }
 
     @Override

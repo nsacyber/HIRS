@@ -3,13 +3,13 @@ package hirs.persist;
 
 import hirs.data.persist.ReferenceDigestRecord;
 
-import java.util.Set;
+import java.util.List;
 
 /**
  * This class facilitates the persistence of {@link hirs.data.persist.ReferenceDigestRecord}s
  * including storage, retrieval, and deletion.
  */
-public interface ReferenceDigestManager extends OrderedListQuerier<ReferenceDigestRecord> {
+public interface ReferenceDigestManager {
 
     /**
      * Persists a new Reference Digest.
@@ -17,28 +17,45 @@ public interface ReferenceDigestManager extends OrderedListQuerier<ReferenceDige
      * @param referenceDigestRecord the ReferenceDigestRecord
      * @return the persisted ReferenceDigestRecord
      */
-    ReferenceDigestRecord save(ReferenceDigestRecord referenceDigestRecord);
+    ReferenceDigestRecord saveRecord(ReferenceDigestRecord referenceDigestRecord);
+
+    /**
+     * Persists a new Reference Digest.
+     *
+     * @param referenceDigestRecord the ReferenceDigestRecord
+     * @return the persisted ReferenceDigestRecord
+     */
+    ReferenceDigestRecord getRecord(ReferenceDigestRecord referenceDigestRecord);
+
+    /**
+     * Persists a new Reference Digest.
+     *
+     * @param referenceDigestRecord the ReferenceDigestRecord
+     * @return the persisted ReferenceDigestRecord
+     */
+    List<ReferenceDigestRecord> getRecordsByManufacturer(
+            ReferenceDigestRecord referenceDigestRecord);
+
+    /**
+     * Persists a new Reference Digest.
+     *
+     * @param referenceDigestRecord the ReferenceDigestRecord
+     * @return the persisted ReferenceDigestRecord
+     */
+    List<ReferenceDigestRecord> getRecordsByModel(ReferenceDigestRecord referenceDigestRecord);
 
     /**
      * Updates an existing ReferenceDigestRecord.
      * @param referenceDigestRecord the Reference Digest update
+     * @return status of successful update
      */
-    void update(ReferenceDigestRecord referenceDigestRecord);
+    boolean updateRecord(ReferenceDigestRecord referenceDigestRecord);
 
     /**
-     * Retrieve Reference Digest according to the given {@link ReferenceDigestSelector}.
+     * Delete the given record.
      *
-     * @param <T> the type of reference digest that will be retrieved
-     *  @param referenceDigestSelector a {@link ReferenceDigestSelector} to use for querying
-     * @return a Set of matching RIMs, which may be empty
-     */
-    <T extends ReferenceDigestRecord> Set<T> get(ReferenceDigestSelector referenceDigestSelector);
-
-    /**
-     * Delete the given RIM.
-     *
-     * @param referenceDigestRecord the RIM to delete
+     * @param referenceDigestRecord the digest record delete
      * @return true if the deletion succeeded, false otherwise.
      */
-    boolean delete(ReferenceDigestRecord referenceDigestRecord);
+    boolean deleteRecord(ReferenceDigestRecord referenceDigestRecord);
 }

@@ -12,6 +12,7 @@ import hirs.data.persist.BaseReferenceManifest;
 import hirs.data.persist.EventLogMeasurements;
 import hirs.data.persist.Device;
 import hirs.data.persist.DeviceInfoReport;
+import hirs.data.persist.ReferenceDigestRecord;
 import hirs.data.persist.ReferenceManifest;
 import hirs.data.persist.SupplyChainPolicy;
 import hirs.data.persist.SupportReferenceManifest;
@@ -28,6 +29,7 @@ import hirs.data.persist.certificate.IssuedAttestationCertificate;
 import hirs.data.persist.certificate.PlatformCredential;
 import hirs.data.service.DeviceRegister;
 import hirs.persist.CertificateManager;
+import hirs.persist.ReferenceDigestManager;
 import hirs.persist.ReferenceManifestManager;
 import hirs.persist.DBManager;
 import hirs.persist.DeviceManager;
@@ -169,6 +171,7 @@ public abstract class AbstractAttestationCertificateAuthority
     private final DeviceRegister deviceRegister;
     private final DeviceManager deviceManager;
     private final DBManager<TPM2ProvisionerState> tpm2ProvisionerStateDBManager;
+    private final ReferenceDigestManager referenceDigestManager;
     private String tpmQuoteHash = "";
     private String tpmQuoteSignature = "";
     private String pcrValues;
@@ -185,6 +188,7 @@ public abstract class AbstractAttestationCertificateAuthority
      * @param validDays the number of days issued certs are valid
      * @param deviceManager the device manager
      * @param tpm2ProvisionerStateDBManager the DBManager for persisting provisioner state
+     * @param referenceDigestManager the reference digest manager
      */
     @SuppressWarnings("checkstyle:parameternumber")
     public AbstractAttestationCertificateAuthority(
@@ -195,7 +199,8 @@ public abstract class AbstractAttestationCertificateAuthority
             final ReferenceManifestManager referenceManifestManager,
             final DeviceRegister deviceRegister, final int validDays,
             final DeviceManager deviceManager,
-            final DBManager<TPM2ProvisionerState> tpm2ProvisionerStateDBManager) {
+            final DBManager<TPM2ProvisionerState> tpm2ProvisionerStateDBManager,
+            final ReferenceDigestManager referenceDigestManager) {
         this.supplyChainValidationService = supplyChainValidationService;
         this.privateKey = privateKey;
         this.acaCertificate = acaCertificate;
@@ -206,6 +211,7 @@ public abstract class AbstractAttestationCertificateAuthority
         this.validDays = validDays;
         this.deviceManager = deviceManager;
         this.tpm2ProvisionerStateDBManager = tpm2ProvisionerStateDBManager;
+        this.referenceDigestManager = referenceDigestManager;
     }
 
     /**
@@ -841,6 +847,15 @@ public abstract class AbstractAttestationCertificateAuthority
                         support.resetCreateTime();
                         this.referenceManifestManager.update(support);
                     }
+
+                    // this is where we update or create the log
+                    ReferenceDigestRecord rdr = new ReferenceDigestRecord(support,
+                            hw.getManufacturer(), hw.getProductName());
+
+
+                    referenceDigestManager.saveRecord(rdr);
+
+
                 } catch (IOException ioEx) {
                     LOG.error(ioEx);
                 }

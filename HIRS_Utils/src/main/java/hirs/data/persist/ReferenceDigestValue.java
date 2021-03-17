@@ -24,6 +24,10 @@ public class ReferenceDigestValue {
     }
 
     /**
+     * Maybe add the match fail status to the device object: eventNumber, digest value
+     */
+
+    /**
      * Default Constructor with a parameter for the data.
      * @param data event data
      */
@@ -31,6 +35,7 @@ public class ReferenceDigestValue {
         this.chunk = data.clone();
         int i = 0;
         this.eventNumber = data[i];
+        // look to using the Digest class
         this.digestValue = String.valueOf(data[++i]);
         this.eventType = String.valueOf(data[++i]);
         this.tagId = String.valueOf(data[++i]);

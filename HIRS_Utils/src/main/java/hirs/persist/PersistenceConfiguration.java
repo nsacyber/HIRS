@@ -155,6 +155,19 @@ public class PersistenceConfiguration {
     }
 
     /**
+     * Creates a {@link ReferenceDigestManager} ready to use.
+     *
+     * @return {@link ReferenceDigestManager}
+     */
+    @Bean
+    public ReferenceDigestManager referenceDigestManager() {
+        DBReferenceDigestManager manager
+                = new DBReferenceDigestManager(sessionFactory.getObject());
+        setDbManagerRetrySettings(manager);
+        return manager;
+    }
+
+    /**
      * Creates a {@link DeviceStateManager} ready to use.
      *
      * @return {@link DeviceStateManager}
