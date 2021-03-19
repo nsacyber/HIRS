@@ -168,6 +168,19 @@ public class PersistenceConfiguration {
     }
 
     /**
+     * Creates a {@link ReferenceEventManager} ready to use.
+     *
+     * @return {@link ReferenceEventManager}
+     */
+    @Bean
+    public ReferenceEventManager referenceEventManager() {
+        DBReferenceEventManager manager
+                = new DBReferenceEventManager(sessionFactory.getObject());
+        setDbManagerRetrySettings(manager);
+        return manager;
+    }
+
+    /**
      * Creates a {@link DeviceStateManager} ready to use.
      *
      * @return {@link DeviceStateManager}

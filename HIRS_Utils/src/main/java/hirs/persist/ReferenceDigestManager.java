@@ -4,6 +4,7 @@ package hirs.persist;
 import hirs.data.persist.ReferenceDigestRecord;
 
 import java.util.List;
+import java.util.UUID;
 
 /**
  * This class facilitates the persistence of {@link hirs.data.persist.ReferenceDigestRecord}s
@@ -33,6 +34,22 @@ public interface ReferenceDigestManager {
      * @param referenceDigestRecord the ReferenceDigestRecord
      * @return the persisted ReferenceDigestRecord
      */
+    ReferenceDigestRecord getRecordById(ReferenceDigestRecord referenceDigestRecord);
+
+    /**
+     * Persists a new Reference Digest.
+     *
+     * @param supportId the support RIM UUID
+     * @return the persisted ReferenceDigestRecord
+     */
+    ReferenceDigestRecord getRecordBySupportId(UUID supportId);
+
+    /**
+     * Persists a new Reference Digest.
+     *
+     * @param referenceDigestRecord the ReferenceDigestRecord
+     * @return the persisted ReferenceDigestRecord
+     */
     List<ReferenceDigestRecord> getRecordsByManufacturer(
             ReferenceDigestRecord referenceDigestRecord);
 
@@ -47,9 +64,8 @@ public interface ReferenceDigestManager {
     /**
      * Updates an existing ReferenceDigestRecord.
      * @param referenceDigestRecord the Reference Digest update
-     * @return status of successful update
      */
-    boolean updateRecord(ReferenceDigestRecord referenceDigestRecord);
+    void updateRecord(ReferenceDigestRecord referenceDigestRecord);
 
     /**
      * Delete the given record.

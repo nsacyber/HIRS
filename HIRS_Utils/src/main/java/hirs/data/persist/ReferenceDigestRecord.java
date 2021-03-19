@@ -1,6 +1,9 @@
 package hirs.data.persist;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.bouncycastle.util.Arrays;
+import org.hibernate.annotations.Type;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -10,12 +13,15 @@ import java.util.UUID;
 /**
  * This class will represent an entry a table that'll be associated
  * with the manufacturer and model with all digest values,
- * Event Type, index, RIM Tagid.
+ * Event Type, index, RIM TagId.
  */
 @Entity
 @Table(name = "ReferenceDigestRecord")
 public class ReferenceDigestRecord extends ArchivableEntity {
 
+    private static final Logger LOGGER = LogManager.getLogger(ReferenceDigestRecord.class);
+
+    @Type(type = "uuid-char")
     @Column
     private UUID supportRim;
     @Column(nullable = false)
@@ -24,20 +30,16 @@ public class ReferenceDigestRecord extends ArchivableEntity {
     private String model;
     @Column(columnDefinition = "blob", nullable = true)
     private byte[] valueBlob;
-    @Column
-    private boolean supportLoaded;
 
     /**
      * Default Constructor.
      */
     protected ReferenceDigestRecord() {
         super();
-        // I wonder if this will throw and error
         this.supportRim = UUID.randomUUID();
         this.manufacturer = "";
         this.model = "";
         this.valueBlob = null;
-        this.supportLoaded = false;
     }
 
     /**
@@ -60,7 +62,7 @@ public class ReferenceDigestRecord extends ArchivableEntity {
     }
 
     /**
-     * Default constructor with parameters specitic to a RIM object.
+     * Default constructor with parameters specific to a RIM object.
      * @param referenceManifest rim object to use.
      * @param manufacturer device manufacturer
      * @param model device model
@@ -71,7 +73,6 @@ public class ReferenceDigestRecord extends ArchivableEntity {
         super();
         if (referenceManifest instanceof SupportReferenceManifest) {
             this.supportRim = referenceManifest.getId();
-            this.supportLoaded = true;
             SupportReferenceManifest srm = (SupportReferenceManifest) referenceManifest;
             this.valueBlob = Arrays.clone(srm.getRimBytes());
         } else if (referenceManifest != null) {
@@ -157,7 +158,7 @@ public class ReferenceDigestRecord extends ArchivableEntity {
      */
     @Override
     public String toString() {
-        return String.format("%s%n%s -> %s",
+        return String.format("ReferenceDigestRecord: %s%n%s -> %s",
                 super.toString(), this.manufacturer, this.model);
     }
 }
