@@ -23,6 +23,8 @@ import hirs.persist.DBDeviceManager;
 import hirs.persist.DeviceGroupManager;
 import hirs.persist.DeviceManager;
 import hirs.persist.PolicyManager;
+import hirs.persist.ReferenceDigestManager;
+import hirs.persist.ReferenceEventManager;
 import hirs.validation.CredentialValidator;
 import hirs.validation.SupplyChainCredentialValidator;
 import org.mockito.ArgumentCaptor;
@@ -86,6 +88,12 @@ public class SupplyChainValidationServiceImplTest extends SpringPersistenceTest 
 
     @Mock
     private CrudManager<SupplyChainValidationSummary> supplyChainValidationSummaryDBManager;
+
+    @Mock
+    private ReferenceDigestManager referenceDigestManager;
+
+    @Mock
+    private ReferenceEventManager referenceEventManager;
 
     @InjectMocks
     private SupplyChainValidationServiceImpl service;
@@ -400,7 +408,9 @@ public class SupplyChainValidationServiceImplTest extends SpringPersistenceTest 
                 realCertMan,
                 null,
                 supplyChainValidationSummaryDBManager,
-                supplyChainCredentialValidator
+                supplyChainCredentialValidator,
+                referenceDigestManager,
+                referenceEventManager
         );
 
         CertificateAuthorityCredential globalSignCaCert = new CertificateAuthorityCredential(
@@ -460,7 +470,9 @@ public class SupplyChainValidationServiceImplTest extends SpringPersistenceTest 
                 realCertMan,
                 null,
                 supplyChainValidationSummaryDBManager,
-                supplyChainCredentialValidator
+                supplyChainCredentialValidator,
+                referenceDigestManager,
+                referenceEventManager
         );
 
         CertificateAuthorityCredential rootCa = new CertificateAuthorityCredential(
@@ -506,7 +518,9 @@ public class SupplyChainValidationServiceImplTest extends SpringPersistenceTest 
                 realCertMan,
                 null,
                 supplyChainValidationSummaryDBManager,
-                supplyChainCredentialValidator
+                supplyChainCredentialValidator,
+                referenceDigestManager,
+                referenceEventManager
         );
 
         EndorsementCredential endorsementCredential = new EndorsementCredential(
@@ -542,7 +556,9 @@ public class SupplyChainValidationServiceImplTest extends SpringPersistenceTest 
                 realCertMan,
                 null,
                 supplyChainValidationSummaryDBManager,
-                supplyChainCredentialValidator
+                supplyChainCredentialValidator,
+                referenceDigestManager,
+                referenceEventManager
         );
 
         CertificateAuthorityCredential globalSignCaCert = new CertificateAuthorityCredential(
@@ -602,7 +618,9 @@ public class SupplyChainValidationServiceImplTest extends SpringPersistenceTest 
                 realCertMan,
                 null,
                 supplyChainValidationSummaryDBManager,
-                supplyChainCredentialValidator
+                supplyChainCredentialValidator,
+                referenceDigestManager,
+                referenceEventManager
         );
 
         CertificateAuthorityCredential intelCa = new CertificateAuthorityCredential(
@@ -648,7 +666,9 @@ public class SupplyChainValidationServiceImplTest extends SpringPersistenceTest 
                 realCertMan,
                 null,
                 supplyChainValidationSummaryDBManager,
-                supplyChainCredentialValidator
+                supplyChainCredentialValidator,
+                referenceDigestManager,
+                referenceEventManager
         );
 
         CertificateAuthorityCredential globalSignCaCert = new CertificateAuthorityCredential(
@@ -699,7 +719,9 @@ public class SupplyChainValidationServiceImplTest extends SpringPersistenceTest 
                 realCertMan,
                 null,
                 supplyChainValidationSummaryDBManager,
-                new SupplyChainCredentialValidator()
+                new SupplyChainCredentialValidator(),
+                referenceDigestManager,
+                referenceEventManager
         );
 
         CertificateAuthorityCredential stmEkRootCa = new CertificateAuthorityCredential(

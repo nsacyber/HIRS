@@ -78,6 +78,37 @@ public class DBReferenceDigestManager extends DBManager<ReferenceDigestRecord>
     }
 
     @Override
+    public ReferenceDigestRecord getRecord(final String manufacturer, final String model) {
+        LOGGER.debug("Getting record for {} ~ {}", manufacturer, model);
+        if (manufacturer == null || model == null) {
+            LOGGER.error("No reference to get record from db {} ~ {}", manufacturer, model);
+            return null;
+        }
+
+        ReferenceDigestRecord dbRecord = null;
+        Transaction tx = null;
+        Session session = getFactory().getCurrentSession();
+        try {
+            LOGGER.debug("retrieving referenceDigestRecord from db");
+            tx = session.beginTransaction();
+            dbRecord = (ReferenceDigestRecord) session.createCriteria(ReferenceDigestRecord.class)
+                    .add(Restrictions.eq("manufacturer",
+                            manufacturer)).add(Restrictions.eq("model",
+                            model)).uniqueResult();
+            tx.commit();
+        } catch (Exception ex) {
+            final String msg = "unable to retrieve object";
+            LOGGER.error(msg, ex);
+            if (tx != null) {
+                LOGGER.debug("rolling back transaction");
+                tx.rollback();
+            }
+            throw new DBManagerException(msg, ex);
+        }
+        return dbRecord;
+    }
+
+    @Override
     public ReferenceDigestRecord getRecordById(final ReferenceDigestRecord referenceDigestRecord) {
         LOGGER.debug("Getting record for {}", referenceDigestRecord);
         if (referenceDigestRecord == null) {
