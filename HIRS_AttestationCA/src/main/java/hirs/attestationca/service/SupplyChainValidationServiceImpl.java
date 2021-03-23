@@ -1,24 +1,39 @@
 package hirs.attestationca.service;
 
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
-import java.security.KeyStore;
-import java.security.KeyStoreException;
-import java.security.NoSuchAlgorithmException;
-import java.security.cert.CertificateException;
-
+import hirs.appraiser.Appraiser;
+import hirs.appraiser.SupplyChainAppraiser;
+import hirs.data.persist.AppraisalStatus;
+import hirs.data.persist.ArchivableEntity;
 import hirs.data.persist.BaseReferenceManifest;
+import hirs.data.persist.Device;
+import hirs.data.persist.DeviceInfoReport;
 import hirs.data.persist.EventLogMeasurements;
+import hirs.data.persist.PCRPolicy;
+import hirs.data.persist.ReferenceManifest;
+import hirs.data.persist.SupplyChainPolicy;
+import hirs.data.persist.SupplyChainValidation;
+import hirs.data.persist.SupplyChainValidationSummary;
 import hirs.data.persist.SupportReferenceManifest;
 import hirs.data.persist.SwidResource;
 import hirs.data.persist.TPMMeasurementRecord;
-import hirs.data.persist.PCRPolicy;
-import hirs.data.persist.ArchivableEntity;
+import hirs.data.persist.certificate.Certificate;
+import hirs.data.persist.certificate.CertificateAuthorityCredential;
+import hirs.data.persist.certificate.EndorsementCredential;
+import hirs.data.persist.certificate.PlatformCredential;
+import hirs.persist.AppraiserManager;
+import hirs.persist.CertificateManager;
+import hirs.persist.CrudManager;
+import hirs.persist.DBManagerException;
+import hirs.persist.PersistenceConfiguration;
+import hirs.persist.PolicyManager;
+import hirs.persist.ReferenceManifestManager;
 import hirs.tpm.eventlog.TCGEventLog;
 import hirs.tpm.eventlog.TpmPcrEvent;
 import hirs.utils.BouncyCastleUtils;
 import hirs.utils.ReferenceManifestValidator;
+import hirs.validation.CredentialValidator;
 import hirs.validation.SupplyChainCredentialValidator;
+import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.bouncycastle.util.encoders.Hex;
@@ -26,41 +41,23 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Import;
 import org.springframework.stereotype.Service;
 
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.security.KeyStore;
+import java.security.KeyStoreException;
+import java.security.NoSuchAlgorithmException;
+import java.security.cert.CertificateException;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
-import java.util.List;
-import java.util.Set;
 import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
-
-import org.apache.logging.log4j.Level;
-import hirs.appraiser.Appraiser;
-import hirs.appraiser.SupplyChainAppraiser;
-import hirs.data.persist.AppraisalStatus;
-import hirs.data.persist.Device;
-import hirs.data.persist.DeviceInfoReport;
-import hirs.data.persist.SupplyChainPolicy;
-import hirs.data.persist.SupplyChainValidation;
-import hirs.data.persist.SupplyChainValidationSummary;
-import hirs.data.persist.certificate.Certificate;
-import hirs.data.persist.certificate.CertificateAuthorityCredential;
-import hirs.data.persist.certificate.EndorsementCredential;
-import hirs.data.persist.certificate.PlatformCredential;
-import hirs.data.persist.ReferenceManifest;
-import hirs.persist.AppraiserManager;
-import hirs.persist.CertificateManager;
-import hirs.persist.ReferenceManifestManager;
-import hirs.persist.CrudManager;
-import hirs.persist.DBManagerException;
-import hirs.persist.PersistenceConfiguration;
-import hirs.persist.PolicyManager;
-import hirs.validation.CredentialValidator;
-
-import java.util.HashMap;
-import java.util.Map;
 
 import static hirs.data.persist.AppraisalStatus.Status.FAIL;
 import static hirs.data.persist.AppraisalStatus.Status.PASS;
@@ -539,6 +536,7 @@ public class SupplyChainValidationServiceImpl implements SupplyChainValidationSe
         AppraisalStatus fwStatus = new AppraisalStatus(FAIL,
                 SupplyChainCredentialValidator.FIRMWARE_VALID);
         SupportReferenceManifest sRim = null;
+        EventLogMeasurements eventLog = null;
 
         // check if the policy is enabled
         if (policy.isFirmwareValidationEnabled()) {
@@ -550,17 +548,25 @@ public class SupplyChainValidationServiceImpl implements SupplyChainValidationSe
                 sRim = SupportReferenceManifest.select(
                         this.referenceManifestManager)
                         .byManufacturer(manufacturer).getRIM();
+                eventLog = EventLogMeasurements
+                        .select(this.referenceManifestManager)
+                        .byManufacturer(manufacturer).getRIM();
 
                 if (sRim == null) {
                     fwStatus = new AppraisalStatus(FAIL,
                             String.format("Firmware Quote validation failed: "
-                                            + "No associated RIM file could be found for %s",
+                                            + "No associated Support RIM file "
+                                            + "could be found for %s",
+                                    manufacturer));
+                } else if (eventLog == null) {
+                    fwStatus = new AppraisalStatus(FAIL,
+                            String.format("Firmware Quote validation failed: "
+                                            + "No associated Client Log file "
+                                            + "could be found for %s",
                                     manufacturer));
                 } else {
                     baseline = sRim.getExpectedPCRList();
-                    String pcrContent = new String(device.getDeviceInfo()
-                            .getTPMInfo().getPcrValues());
-                    String[] storedPcrs = buildStoredPcrs(pcrContent, baseline[0].length());
+                    String[] storedPcrs = eventLog.getExpectedPCRList();
                     PCRPolicy pcrPolicy = policy.getPcrPolicy();
                     pcrPolicy.setBaselinePcrs(baseline);
                     // grab the quote
