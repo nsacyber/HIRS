@@ -1,5 +1,19 @@
 package hirs.attestationca.configuration;
 
+import hirs.persist.DBDeviceGroupManager;
+import hirs.persist.DBDeviceManager;
+import hirs.persist.DBReferenceDigestManager;
+import hirs.persist.DBReferenceEventManager;
+import hirs.persist.DBReferenceManifestManager;
+import hirs.persist.DeviceGroupManager;
+import hirs.persist.DeviceManager;
+import hirs.persist.HibernateConfiguration;
+import hirs.persist.ReferenceDigestManager;
+import hirs.persist.ReferenceEventManager;
+import hirs.persist.ReferenceManifestManager;
+import hirs.structs.converters.SimpleStructConverter;
+import hirs.structs.converters.StructConverter;
+import hirs.utils.LogConfigurationUtil;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
@@ -31,16 +45,6 @@ import java.security.KeyStoreException;
 import java.security.PrivateKey;
 import java.security.Security;
 import java.security.cert.X509Certificate;
-import hirs.persist.DBDeviceGroupManager;
-import hirs.persist.DBDeviceManager;
-import hirs.persist.DeviceGroupManager;
-import hirs.persist.DeviceManager;
-import hirs.persist.ReferenceManifestManager;
-import hirs.persist.DBReferenceManifestManager;
-import hirs.persist.HibernateConfiguration;
-import hirs.structs.converters.SimpleStructConverter;
-import hirs.structs.converters.StructConverter;
-import hirs.utils.LogConfigurationUtil;
 
 /**
  * Provides application context configuration for the Attestation Certificate
@@ -250,6 +254,26 @@ public class AttestationCertificateAuthorityConfiguration extends WebMvcConfigur
     @Bean
     public ReferenceManifestManager referenceManifestManager() {
         return new DBReferenceManifestManager(sessionFactory.getObject());
+    }
+
+    /**
+     * Creates a {@link ReferenceDigestManager} ready to use.
+     *
+     * @return {@link ReferenceDigestManager}
+     */
+    @Bean
+    public ReferenceDigestManager referenceDigestManager() {
+        return new DBReferenceDigestManager(sessionFactory.getObject());
+    }
+
+    /**
+     * Creates a {@link ReferenceEventManager} ready to use.
+     *
+     * @return {@link ReferenceEventManager}
+     */
+    @Bean
+    public ReferenceEventManager referenceEventManager() {
+        return new DBReferenceEventManager(sessionFactory.getObject());
     }
 
     @Override

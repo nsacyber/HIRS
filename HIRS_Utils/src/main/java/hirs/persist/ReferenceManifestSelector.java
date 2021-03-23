@@ -22,7 +22,7 @@ import java.util.UUID;
  * with a {@link ReferenceManifestManager}.  To make use of this object,
  * use (some ReferenceManifest).select(ReferenceManifestManager).
  *
- * @param <T> the type of Reference Integrity Manifest that will be retrived.
+ * @param <T> the type of Reference Integrity Manifest that will be retrieved.
  */
 public abstract class ReferenceManifestSelector<T extends ReferenceManifest> {
     /**
