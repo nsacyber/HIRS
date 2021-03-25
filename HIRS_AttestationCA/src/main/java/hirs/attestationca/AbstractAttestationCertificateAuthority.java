@@ -94,7 +94,6 @@ import java.security.interfaces.RSAPublicKey;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.MGF1ParameterSpec;
 import java.security.spec.RSAPublicKeySpec;
-import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashSet;
@@ -713,7 +712,8 @@ public abstract class AbstractAttestationCertificateAuthority
      * @return a HIRS Utils DeviceInfoReport representation of device info
      */
     @SuppressWarnings("methodlength")
-    private DeviceInfoReport parseDeviceInfo(final ProvisionerTpm2.IdentityClaim claim) {
+    private DeviceInfoReport parseDeviceInfo(final ProvisionerTpm2.IdentityClaim claim)
+            throws NoSuchAlgorithmException {
         ProvisionerTpm2.DeviceInfo dv = claim.getDv();
 
         // Get network info
@@ -778,16 +778,21 @@ public abstract class AbstractAttestationCertificateAuthority
         String fileName = "";
         Pattern pattern = Pattern.compile("([^\\s]+(\\.(?i)(rimpcr|rimel|bin|log))$)");
         Matcher matcher;
+        MessageDigest messageDigest =  MessageDigest.getInstance("SHA-256");
 
         if (dv.getSwidfileCount() > 0) {
             for (ByteString swidFile : dv.getSwidfileList()) {
                 try {
                     dbBaseRim = BaseReferenceManifest.select(referenceManifestManager)
                             .includeArchived()
-                            .byHashCode(Arrays.hashCode(swidFile.toByteArray()))
+                            .byHashCode(Hex.encodeHexString(messageDigest.digest(
+                                    swidFile.toByteArray())))
                             .getRIM();
 
                     if (dbBaseRim == null) {
+                        /**
+                         * This has to change, each log file can't have the same name
+                         */
                         dbBaseRim = new BaseReferenceManifest(
                                 String.format("%s.swidtag",
                                         clientName),
@@ -829,10 +834,14 @@ public abstract class AbstractAttestationCertificateAuthority
                 try {
                     support = SupportReferenceManifest.select(referenceManifestManager)
                             .includeArchived()
-                            .byHashCode(Arrays.hashCode(logFile.toByteArray()))
+                            .byHashCode(Hex.encodeHexString(messageDigest.digest(
+                                    logFile.toByteArray())))
                             .getRIM();
 
                     if (support == null) {
+                        /**
+                         * This has to change, each log file can't have the same name
+                         */
                         support = new SupportReferenceManifest(
                                 String.format("%s.rimel",
                                         clientName),
@@ -856,6 +865,15 @@ public abstract class AbstractAttestationCertificateAuthority
                         this.referenceManifestManager.update(support);
                     }
 
+                    // all of this has to be moved somewhere else
+                    /**
+                     * Because the log file we get isn't promised to be the baseline support rim.
+                     * If it is a patch of supplemental we have to check that the baseline
+                     * has been done
+                     * and those entires can't become the baseline
+                     *
+                     * However, we don't know which log file is what until we link them to a swidtag
+                     */
                     ReferenceDigestRecord dbObj = new ReferenceDigestRecord(support,
                             hw.getManufacturer(), hw.getProductName());
                     // this is where we update or create the log
@@ -937,7 +955,13 @@ public abstract class AbstractAttestationCertificateAuthority
     }
 
     private Device processDeviceInfo(final ProvisionerTpm2.IdentityClaim claim) {
-        DeviceInfoReport deviceInfoReport = parseDeviceInfo(claim);
+        DeviceInfoReport deviceInfoReport = null;
+
+        try {
+            deviceInfoReport = parseDeviceInfo(claim);
+        } catch (NoSuchAlgorithmException noSaEx) {
+            LOG.error(noSaEx);
+        }
 
         if (deviceInfoReport == null) {
             LOG.error("Failed to deserialize Device Info Report");

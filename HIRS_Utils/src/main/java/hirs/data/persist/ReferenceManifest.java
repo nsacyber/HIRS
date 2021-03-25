@@ -1,23 +1,25 @@
 package hirs.data.persist;
 
-import java.util.Arrays;
-import java.util.UUID;
-import javax.persistence.Access;
-import javax.persistence.AccessType;
-import javax.persistence.Column;
-import javax.persistence.Entity;
-
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.common.base.Preconditions;
+import org.apache.commons.codec.binary.Hex;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.hibernate.annotations.Type;
 
+import javax.persistence.Access;
+import javax.persistence.AccessType;
+import javax.persistence.Column;
+import javax.persistence.Entity;
 import javax.persistence.Table;
 import javax.xml.XMLConstants;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlRootElement;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+import java.util.Arrays;
+import java.util.UUID;
 
 /**
  * This class represents the Reference Integrity Manifest object that will be
@@ -68,7 +70,7 @@ public abstract class ReferenceManifest extends ArchivableEntity {
     public static final String RIM_HASH_FIELD = "rimHash";
     @Column(nullable = false)
     @JsonIgnore
-    private final int rimHash;
+    private final String rimHash;
     @Column(columnDefinition = "blob", nullable = false)
     @JsonIgnore
     private byte[] rimBytes;
@@ -76,6 +78,10 @@ public abstract class ReferenceManifest extends ArchivableEntity {
     private String rimType = "Base";
     @Column
     private String tagId = null;
+    @Column
+    private boolean swidPatch = false;
+    @Column
+    private boolean swidSupplemental = false;
     @Column
     private String platformManufacturer = null;
     @Column
@@ -96,7 +102,7 @@ public abstract class ReferenceManifest extends ArchivableEntity {
     protected ReferenceManifest() {
         super();
         this.rimBytes = null;
-        this.rimHash = 0;
+        this.rimHash = "";
         this.rimType = null;
         this.platformManufacturer = null;
         this.platformManufacturerId = null;
@@ -118,7 +124,19 @@ public abstract class ReferenceManifest extends ArchivableEntity {
                 "Cannot construct a RIM from an empty byte array");
 
         this.rimBytes = rimBytes.clone();
-        this.rimHash = Arrays.hashCode(this.rimBytes);
+
+        MessageDigest digest = null;
+        try {
+            digest = MessageDigest.getInstance("SHA-256");
+        } catch (NoSuchAlgorithmException noSaEx) {
+            LOGGER.error(noSaEx);
+        }
+        if (digest == null) {
+            this.rimHash = "";
+        } else {
+            this.rimHash = Hex.encodeHexString(
+                    digest.digest(rimBytes));
+        }
     }
 
     /**
@@ -246,6 +264,42 @@ public abstract class ReferenceManifest extends ArchivableEntity {
     }
 
     /**
+     * Getter for the patch flag.
+     *
+     * @return int flag for the patch flag
+     */
+    public boolean isSwidPatch() {
+        return swidPatch;
+    }
+
+    /**
+     * Setter for the patch flag.
+     *
+     * @param swidPatch int value
+     */
+    public void setSwidPatch(final boolean swidPatch) {
+        this.swidPatch = swidPatch;
+    }
+
+    /**
+     * Getter for the supplemental flag.
+     *
+     * @return int flag for the supplemental flag
+     */
+    public boolean isSwidSupplemental() {
+        return swidSupplemental;
+    }
+
+    /**
+     * Setter for the supplemental flag.
+     *
+     * @param swidSupplemental int value
+     */
+    public void setSwidSupplemental(final boolean swidSupplemental) {
+        this.swidSupplemental = swidSupplemental;
+    }
+
+    /**
      * Getter for the associated RIM DB ID.
      * @return UUID for the rim
      */
@@ -279,13 +333,13 @@ public abstract class ReferenceManifest extends ArchivableEntity {
      *
      * @return int representation of the hash value
      */
-    public int getRimHash() {
+    public String getRimHash() {
         return rimHash;
     }
 
     @Override
     public int hashCode() {
-        return getRimHash();
+        return Arrays.hashCode(this.rimBytes);
     }
 
     @Override

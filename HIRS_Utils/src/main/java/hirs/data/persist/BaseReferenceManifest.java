@@ -45,10 +45,6 @@ public class BaseReferenceManifest extends ReferenceManifest {
     @Column
     private int swidCorpus = 0;
     @Column
-    private int swidPatch = 0;
-    @Column
-    private int swidSupplemental = 0;
-    @Column
     private String colloquialVersion = null;
     @Column
     private String product = null;
@@ -159,8 +155,8 @@ public class BaseReferenceManifest extends ReferenceManifest {
             setTagId(si.getTagId());
             this.swidName = si.getName();
             this.swidCorpus = si.isCorpus() ? 1 : 0;
-            this.swidPatch = si.isPatch() ? 1 : 0;
-            this.swidSupplemental = si.isSupplemental() ? 1 : 0;
+            this.setSwidPatch(si.isPatch());
+            this.setSwidSupplemental(si.isSupplemental());
             this.swidVersion = si.getVersion();
             if (si.getTagVersion() != null) {
                 this.setSwidTagVersion(si.getTagVersion().toString());
@@ -476,42 +472,6 @@ public class BaseReferenceManifest extends ReferenceManifest {
     }
 
     /**
-     * Getter for the patch flag.
-     *
-     * @return int flag for the patch flag
-     */
-    public int isSwidPatch() {
-        return swidPatch;
-    }
-
-    /**
-     * Setter for the patch flag.
-     *
-     * @param swidPatch int value
-     */
-    public void setSwidPatch(final int swidPatch) {
-        this.swidPatch = swidPatch;
-    }
-
-    /**
-     * Getter for the supplemental flag.
-     *
-     * @return int flag for the supplemental flag
-     */
-    public int isSwidSupplemental() {
-        return swidSupplemental;
-    }
-
-    /**
-     * Setter for the supplemental flag.
-     *
-     * @param swidSupplemental int value
-     */
-    public void setSwidSupplemental(final int swidSupplemental) {
-        this.swidSupplemental = swidSupplemental;
-    }
-
-    /**
      * Getter for the Entity Name.
      *
      * @return string of the entity name.
@@ -822,7 +782,7 @@ public class BaseReferenceManifest extends ReferenceManifest {
         return String.format("ReferenceManifest{swidName=%s,"
                         + "platformManufacturer=%s,"
                         + " platformModel=%s,"
-                        + "tagId=%s, rimHash=%d}",
+                        + "tagId=%s, rimHash=%s}",
                 swidName, this.getPlatformManufacturer(),
                 this.getPlatformModel(), getTagId(), this.getRimHash());
     }

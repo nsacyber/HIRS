@@ -78,6 +78,26 @@ public class SupportReferenceManifest extends ReferenceManifest {
             setFieldValue(PLATFORM_MODEL, model);
             return this;
         }
+
+        /**
+         * Specify the file name that rims should have.
+         * @param fileName the name of the file associated with the rim
+         * @return this instance
+         */
+        public Selector byFileName(final String fileName) {
+            setFieldValue(RIM_FILENAME_FIELD, fileName);
+            return this;
+        }
+
+        /**
+         * Specify the RIM hash associated with the support RIM.
+         * @param rimHash the hash of the file associated with the rim
+         * @return this instance
+         */
+        public Selector byRimHash(final String rimHash) {
+            setFieldValue(RIM_HASH_FIELD, rimHash);
+            return this;
+        }
     }
 
     /**

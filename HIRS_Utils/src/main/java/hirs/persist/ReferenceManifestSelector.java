@@ -37,8 +37,11 @@ public abstract class ReferenceManifestSelector<T extends ReferenceManifest> {
      * String representing the database field for the model.
      */
     public static final String PLATFORM_MODEL = "platformModel";
+    /**
+     * String representing the database field for the filename.
+     */
+    public static final String RIM_FILENAME_FIELD = "fileName";
     private static final String RIM_TYPE_FIELD = "rimType";
-    private static final String RIM_FILENAME_FIELD = "fileName";
 
     private final ReferenceManifestManager referenceManifestManager;
     private final Class<T> referenceTypeClass;
@@ -100,7 +103,7 @@ public abstract class ReferenceManifestSelector<T extends ReferenceManifest> {
      * @param rimHash the hash code of the bytes to query for
      * @return this instance (for chaining further calls)
      */
-    public ReferenceManifestSelector<T> byHashCode(final int rimHash) {
+    public ReferenceManifestSelector<T> byHashCode(final String rimHash) {
         setFieldValue(hirs.data.persist.ReferenceManifest.RIM_HASH_FIELD, rimHash);
         return this;
     }
