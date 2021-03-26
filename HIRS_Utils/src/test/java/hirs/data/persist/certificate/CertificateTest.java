@@ -441,8 +441,8 @@ public class CertificateTest {
         Certificate issuerCert = getTestCertificate(FAKE_ROOT_CA_FILE);
         Certificate cert = getTestCertificate(INT_CA_CERT02);
 
-        Assert.assertFalse(issuerCert.isIssuer(cert));
-        Assert.assertTrue(cert.isIssuer(issuerCert));
+        Assert.assertFalse(!issuerCert.isIssuer(cert).isEmpty());
+        Assert.assertTrue(cert.isIssuer(issuerCert).isEmpty());
     }
 
     /**

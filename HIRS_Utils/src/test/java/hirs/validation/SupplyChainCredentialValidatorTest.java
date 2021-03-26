@@ -895,16 +895,17 @@ public class SupplyChainCredentialValidatorTest {
 
         trustedCerts.add(caCert);
         trustedCerts.add(intermediateCert);
+        boolean assertion = SupplyChainCredentialValidator.validateCertChain(attrCert,
+                trustedCerts).isEmpty();
 
-        Assert.assertTrue(SupplyChainCredentialValidator.validateCertChain(attrCert,
-                trustedCerts));
+        Assert.assertTrue(assertion);
 
         try {
             keyStore.setCertificateEntry("CA cert", caCert);
             keyStore.setCertificateEntry("Intermediate Cert", intermediateCert);
-
-            Assert.assertTrue(SupplyChainCredentialValidator.verifyCertificate(attrCert,
-                    keyStore));
+            assertion = SupplyChainCredentialValidator.verifyCertificate(attrCert,
+                    keyStore).isEmpty();
+            Assert.assertTrue(assertion);
         } catch (Exception e) {
             Assert.fail("Unexpected error occurred while verifying certificate", e);
         }
@@ -938,14 +939,16 @@ public class SupplyChainCredentialValidatorTest {
 
         trustedCerts.add(caCert);
 
-        Assert.assertFalse(SupplyChainCredentialValidator.validateCertChain(attrCert,
-                trustedCerts));
+        boolean assertion = SupplyChainCredentialValidator.validateCertChain(attrCert,
+                trustedCerts).isEmpty();
+        Assert.assertFalse(assertion);
 
         try {
             keyStore.setCertificateEntry("CA cert", caCert);
 
-            Assert.assertFalse(SupplyChainCredentialValidator.verifyCertificate(attrCert,
-                    keyStore));
+            assertion = SupplyChainCredentialValidator.verifyCertificate(attrCert,
+                    keyStore).isEmpty();
+            Assert.assertFalse(assertion);
         } catch (Exception e) {
             Assert.fail("Unexpected error occurred while verifying certificate", e);
         }
@@ -971,12 +974,16 @@ public class SupplyChainCredentialValidatorTest {
 
         trustedCerts.add(caCert);
 
-        Assert.assertTrue(SupplyChainCredentialValidator.validateCertChain(attrCert, trustedCerts));
+        boolean assertion = SupplyChainCredentialValidator.validateCertChain(
+                attrCert, trustedCerts).isEmpty();
+        Assert.assertTrue(assertion);
 
         try {
             keyStore.setCertificateEntry("CA cert", caCert);
 
-            Assert.assertTrue(SupplyChainCredentialValidator.verifyCertificate(attrCert, keyStore));
+            assertion = SupplyChainCredentialValidator.verifyCertificate(
+                    attrCert, keyStore).isEmpty();
+            Assert.assertTrue(assertion);
         } catch (Exception e) {
             Assert.fail("Unexpected error occurred while verifying certificate", e);
         }
@@ -1008,8 +1015,9 @@ public class SupplyChainCredentialValidatorTest {
         trustedCerts.add(caCert);
         trustedCerts.add(intermediateCert);
 
-        Assert.assertTrue(SupplyChainCredentialValidator.validateCertChain(targetCert,
-                trustedCerts));
+        boolean assertion = SupplyChainCredentialValidator.validateCertChain(targetCert,
+                trustedCerts).isEmpty();
+        Assert.assertTrue(assertion);
 
         try {
             keyStore.setCertificateEntry("CA cert", caCert);
@@ -1046,8 +1054,9 @@ public class SupplyChainCredentialValidatorTest {
 
         trustedCerts.add(caCert);
 
-        Assert.assertFalse(SupplyChainCredentialValidator.validateCertChain(targetCert,
-                trustedCerts));
+        boolean assertion = SupplyChainCredentialValidator.validateCertChain(targetCert,
+                trustedCerts).isEmpty();
+        Assert.assertFalse(assertion);
 
         try {
             keyStore.setCertificateEntry("CA cert", caCert);
@@ -1076,8 +1085,9 @@ public class SupplyChainCredentialValidatorTest {
 
         trustedCerts.add(caCert);
 
-        Assert.assertTrue(SupplyChainCredentialValidator.validateCertChain(targetCert,
-                trustedCerts));
+        boolean assertion = SupplyChainCredentialValidator.validateCertChain(targetCert,
+                trustedCerts).isEmpty();
+        Assert.assertTrue(assertion);
 
         try {
             keyStore.setCertificateEntry("CA cert", caCert);

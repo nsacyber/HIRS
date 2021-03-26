@@ -88,7 +88,7 @@
                                 </c:when>
                                 <c:otherwise>
                                     <img src="${icons}/ic_error_red_24dp.png"
-                                         title="Missing ${initialData.missingChainIssuer} from the chain.">
+                                         title="${initialData.missingChainIssuer}">
                                 </c:otherwise>
                             </c:choose>
                         </span>
