@@ -367,7 +367,8 @@ public abstract class ReferenceManifest extends ArchivableEntity {
     @Override
     public String toString() {
         return String.format("Filename->%s%nPlatform Manufacturer->%s%n"
-                + "Platform Model->%s%nRIM Type->%s", this.getFileName(),
-                this.platformManufacturer, this.platformModel, this.getRimType());
+                + "Platform Model->%s%nRIM Type->%s%nRIM Hash->%s", this.getFileName(),
+                this.platformManufacturer, this.platformModel, this.getRimType(),
+                this.getRimHash());
     }
 }

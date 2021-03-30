@@ -28,7 +28,6 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.security.NoSuchAlgorithmException;
 import java.security.cert.CertificateException;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -225,12 +224,12 @@ public class ReferenceManifestDetailsPageController
                     .getRIM();
             if (support != null) {
                 baseRim.setAssociatedRim(support.getId());
-                logProcessor = new TCGEventLog(support.getRimBytes());
+//                logProcessor = new TCGEventLog(support.getRimBytes());
             }
         } else {
             support = SupportReferenceManifest.select(referenceManifestManager)
                     .byEntityId(baseRim.getAssociatedRim()).getRIM();
-            logProcessor = new TCGEventLog(support.getRimBytes());
+//            logProcessor = new TCGEventLog(support.getRimBytes());
         }
         // going to have to pull the filename and grab that from the DB
         // to get the id to make the link
@@ -244,11 +243,7 @@ public class ReferenceManifestDetailsPageController
                 } else {
                     data.put("supportRimHashValid", false);
                 }
-                swidRes.setPcrValues(Arrays.asList(
-                        logProcessor.getExpectedPCRValues()));
                 break;
-            } else {
-                swidRes.setPcrValues(new ArrayList<>());
             }
         }
 
