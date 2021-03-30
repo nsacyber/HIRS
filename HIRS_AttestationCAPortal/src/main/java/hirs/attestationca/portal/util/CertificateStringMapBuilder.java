@@ -53,10 +53,10 @@ public final class CertificateStringMapBuilder {
         if (certificate != null) {
             data.put("issuer", certificate.getIssuer());
             //Serial number in hex value
-            data.put("serialNumber", Long.toHexString(certificate.getSerialNumber().longValue()));
+            data.put("serialNumber", Hex.toHexString(certificate.getSerialNumber().toByteArray()));
             if (!certificate.getAuthoritySerialNumber().equals(BigInteger.ZERO)) {
-                data.put("authSerialNumber", Long.toHexString(certificate
-                        .getAuthoritySerialNumber().longValue()));
+                data.put("authSerialNumber", Hex.toHexString(certificate
+                        .getAuthoritySerialNumber().toByteArray()));
             }
             if (certificate.getId() != null) {
                 data.put("certificateId", certificate.getId().toString());
