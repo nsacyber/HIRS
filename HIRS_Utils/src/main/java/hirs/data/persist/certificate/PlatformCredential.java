@@ -4,22 +4,11 @@ import com.google.common.base.Preconditions;
 import hirs.data.persist.certificate.attributes.ComponentIdentifier;
 import hirs.data.persist.certificate.attributes.PlatformConfiguration;
 import hirs.data.persist.certificate.attributes.PlatformConfigurationV1;
-import hirs.data.persist.certificate.attributes.V2.PlatformConfigurationV2;
 import hirs.data.persist.certificate.attributes.TBBSecurityAssertion;
 import hirs.data.persist.certificate.attributes.URIReference;
+import hirs.data.persist.certificate.attributes.V2.PlatformConfigurationV2;
 import hirs.persist.CertificateManager;
 import hirs.persist.CertificateSelector;
-import java.io.IOException;
-import java.nio.file.Path;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.Transient;
-
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -37,14 +26,25 @@ import org.bouncycastle.asn1.x509.Attribute;
 import org.bouncycastle.asn1.x509.AttributeCertificate;
 import org.bouncycastle.asn1.x509.AttributeCertificateInfo;
 import org.bouncycastle.asn1.x509.CertificatePolicies;
-import org.bouncycastle.asn1.x509.PolicyInformation;
-import org.bouncycastle.asn1.x509.PolicyQualifierInfo;
 import org.bouncycastle.asn1.x509.Extension;
 import org.bouncycastle.asn1.x509.GeneralName;
 import org.bouncycastle.asn1.x509.GeneralNames;
+import org.bouncycastle.asn1.x509.PolicyInformation;
+import org.bouncycastle.asn1.x509.PolicyQualifierInfo;
 import org.bouncycastle.asn1.x509.UserNotice;
 import org.bouncycastle.operator.ContentVerifier;
 import org.bouncycastle.operator.ContentVerifierProvider;
+
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.Transient;
+import java.io.IOException;
+import java.nio.file.Path;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
 
 /**
  * This class persists Platform credentials by extending the base Certificate
@@ -89,8 +89,21 @@ public class PlatformCredential extends DeviceAssociatedCertificate {
      * At this time these are placeholder values.
      */
     private static final Map<String, String> TCG_PLATFORM_MAP = new HashMap<String, String>() {{
-        put("#00000000", "Client");
-        put("#00000001", "Server");
+        put("#00000000", "Unclassified");
+        put("#00000001", "PC Client");
+        put("#00000002", "PDA");
+        put("#00000003", "CELLPHONE");
+        put("#00000004", "SERVER");
+        put("#00000005", "PERIPHERAL");
+        put("#00000006", "TSS");
+        put("#00000007", "STORAGE");
+        put("#00000008", "AUTHENTICATION");
+        put("#00000009", "EMBEDDED");
+        put("#00000010", "HARD COPY");
+        put("#00000011", "INFRASTRUCTURE");
+        put("#00000012", "VIRTUALIZATION");
+        put("#00000013", "TNC");
+        put("#00000014", "MULTI-TENANT");
     }};
 
     // number of extra bytes potentially present in a cert header.
