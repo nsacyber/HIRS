@@ -94,11 +94,9 @@ import java.security.interfaces.RSAPublicKey;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.MGF1ParameterSpec;
 import java.security.spec.RSAPublicKeySpec;
-import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -773,10 +771,10 @@ public abstract class AbstractAttestationCertificateAuthority
         }
 
         // check for RIM Base and Support files, if they don't exists in the database, load them
-        String clientName = String.format("%s_%s",
+        String defaultClientName = String.format("%s_%s",
                 dv.getHw().getManufacturer(),
                 dv.getHw().getProductName());
-        ReferenceManifest dbBaseRim = null;
+        BaseReferenceManifest dbBaseRim = null;
         ReferenceManifest support;
         EventLogMeasurements measurements;
         String tagId = "";
@@ -805,19 +803,21 @@ public abstract class AbstractAttestationCertificateAuthority
                     if (support == null) {
                         support = new SupportReferenceManifest(
                                 String.format("%s.rimel",
-                                        clientName),
+                                        defaultClientName),
                                 logFile.toByteArray());
                         support.setPlatformManufacturer(dv.getHw().getManufacturer());
                         support.setPlatformModel(dv.getHw().getProductName());
-                        support.setFileName(String.format("%s_[%s].rimel", clientName,
+                        support.setFileName(String.format("%s_[%s].rimel", defaultClientName,
                                 support.getRimHash().substring(
                                         support.getRimHash().length() - NUM_OF_VARIABLES)));
                         this.referenceManifestManager.save(support);
                     } else {
                         LOG.info("Client provided Support RIM already loaded in database.");
-                        support.restore();
-                        support.resetCreateTime();
-                        this.referenceManifestManager.update(support);
+                        if (support.isArchived()) {
+                            support.restore();
+                            support.resetCreateTime();
+                            this.referenceManifestManager.update(support);
+                        }
                     }
                 } catch (IOException ioEx) {
                     LOG.error(ioEx);
@@ -827,9 +827,9 @@ public abstract class AbstractAttestationCertificateAuthority
             LOG.warn("Device did not send support RIM file...");
         }
 
-        List<String> archie = new ArrayList<>();
         if (dv.getSwidfileCount() > 0) {
             for (ByteString swidFile : dv.getSwidfileList()) {
+                fileName = "";
                 try {
                     dbBaseRim = BaseReferenceManifest.select(referenceManifestManager)
                             .includeArchived()
@@ -838,91 +838,79 @@ public abstract class AbstractAttestationCertificateAuthority
                             .getRIM();
 
                     if (dbBaseRim == null) {
-                        /**
-                         * This has to change, each log file can't have the same name
-                         */
                         dbBaseRim = new BaseReferenceManifest(
                                 String.format("%s.swidtag",
-                                        clientName),
+                                        defaultClientName),
                                 swidFile.toByteArray());
 
-                        BaseReferenceManifest base = (BaseReferenceManifest) dbBaseRim;
-                        for (SwidResource swid : base.parseResource()) {
+                        // get file name to use
+                        for (SwidResource swid : dbBaseRim.parseResource()) {
                             matcher = pattern.matcher(swid.getName());
                             if (matcher.matches()) {
                                 //found the file name
                                 int dotIndex = swid.getName().lastIndexOf(".");
-                                clientName = swid.getName().substring(0, dotIndex);
+                                fileName = swid.getName().substring(0, dotIndex);
                                 dbBaseRim = new BaseReferenceManifest(
                                         String.format("%s.swidtag",
-                                                clientName),
+                                                fileName),
                                         swidFile.toByteArray());
                             }
+
                             // now update support rim
                             SupportReferenceManifest dbSupport = SupportReferenceManifest
                                     .select(referenceManifestManager)
                                     .byRimHash(swid.getHashValue()).getRIM();
-                            if (dbSupport == null) {
-                                LOG.error("Why is this happening?");
-                                // I could do this, and then when the actual
-                                // support comes in just update the byte field
-                            }
                             if (dbSupport != null && !dbSupport.isUpdated()) {
-                                LOG.error("We found the old support");
                                 dbSupport.setFileName(swid.getName());
-                                dbSupport.setSwidTagVersion(base.getSwidTagVersion());
+                                dbSupport.setSwidTagVersion(dbBaseRim.getSwidTagVersion());
                                 // I might create a get for the bytes of the swidtag file
                                 // so that I can set that instead of the rim ID
-                                dbSupport.setTagId(base.getTagId());
+                                dbSupport.setTagId(dbBaseRim.getTagId());
+                                dbSupport.setSwidTagVersion(dbBaseRim.getSwidTagVersion());
+                                dbSupport.setSwidVersion(dbBaseRim.getSwidVersion());
                                 dbSupport.setSwidPatch(dbBaseRim.isSwidPatch());
                                 dbSupport.setSwidSupplemental(dbBaseRim.isSwidSupplemental());
-                                // might want to expand so that the record digest value know
-                                // if it was a patch or supplemental
+                                dbBaseRim.setAssociatedRim(dbSupport.getId());
                                 dbSupport.setUpdated(true);
                                 this.referenceManifestManager.update(dbSupport);
+                                break;
                             }
                         }
                         this.referenceManifestManager.save(dbBaseRim);
                     } else {
-                        LOG.error("Client provided Base RIM already loaded in database.");
-                        dbBaseRim.restore();
-                        dbBaseRim.resetCreateTime();
-                        this.referenceManifestManager.update(dbBaseRim);
+                        LOG.info("Client provided Base RIM already loaded in database.");
+                        /**
+                         * Leaving this as is for now, however can there be a condition
+                         * in which the provisioner sends swidtags without support rims?
+                         */
+                        if (dbBaseRim.isArchived()) {
+                            dbBaseRim.restore();
+                            dbBaseRim.resetCreateTime();
+                            this.referenceManifestManager.update(dbBaseRim);
+                        }
                     }
 
-                    tagId = dbBaseRim.getTagId();
                 } catch (IOException ioEx) {
                     LOG.error(ioEx);
                 }
-            }
-
-            for (ByteString swidFile : dv.getSwidfileList()) {
-
-                String hashStr = swidFile.toString();
-                LOG.error(SupportReferenceManifest.select(referenceManifestManager)
-                        .includeArchived()
-                        .byHashCode(Hex.encodeHexString(messageDigest.digest(
-                                swidFile.toByteArray())))
-                        .getRIM());
             }
         } else {
             LOG.warn("Device did not send swid tag file...");
         }
 
-        if (true) {
-            Set<SupportReferenceManifest> dbSupportRims = SupportReferenceManifest
+        Set<SupportReferenceManifest> dbSupportRims = SupportReferenceManifest
                     .select(referenceManifestManager).getRIMs();
 
-            for (SupportReferenceManifest dbSupport : dbSupportRims) {
-                // all of this has to be moved somewhere else
-                /**
-                 * Because the log file we get isn't promised to be the baseline support rim.
-                 * If it is a patch of supplemental we have to check that the baseline
-                 * has been done
-                 * and those entries can't become the baseline
-                 *
-                 * However, we don't know which log file is what until we link them to a swidtag
-                 */
+        for (SupportReferenceManifest dbSupport : dbSupportRims) {
+            /**
+             * Because the log file we get isn't promised to be the baseline support rim.
+             * If it is a patch of supplemental we have to check that the baseline
+             * has been done
+             * and those entries can't become the baseline
+             *
+             * However, we don't know which log file is what until we link them to a swidtag
+             */
+            if (!dbSupport.isSwidPatch() && !dbSupport.isSwidSupplemental()) {
                 ReferenceDigestRecord dbObj = new ReferenceDigestRecord(dbSupport,
                         hw.getManufacturer(), hw.getProductName());
                 // this is where we update or create the log
@@ -952,13 +940,19 @@ public abstract class AbstractAttestationCertificateAuthority
                         e.printStackTrace();
                     }
                 }
+            } else {
+                // what to do about patch and supplemental
+                LOG.error(String.format("%s is a patch? %b", dbSupport.getFileName(),
+                        dbSupport.isSwidPatch()));
+                LOG.error(String.format("%s is a supplemental? %b", dbSupport.getFileName(),
+                        dbSupport.isSwidSupplemental()));
             }
         }
 
         if (dv.hasLivelog()) {
             LOG.info("Device sent bios measurement log...");
             fileName = String.format("%s.measurement",
-                    clientName);
+                    defaultClientName);
             try {
                 // find previous version.  If it exists, delete it
                 measurements = EventLogMeasurements.select(referenceManifestManager)

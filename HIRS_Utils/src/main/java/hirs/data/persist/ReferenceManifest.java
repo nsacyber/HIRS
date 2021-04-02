@@ -89,6 +89,8 @@ public abstract class ReferenceManifest extends ArchivableEntity {
     @Column
     private String swidTagVersion = null;
     @Column
+    private String swidVersion = null;
+    @Column
     private String platformModel = null;
     @Column(nullable = false)
     private String fileName = null;
@@ -243,6 +245,24 @@ public abstract class ReferenceManifest extends ArchivableEntity {
      */
     public void setSwidTagVersion(final String swidTagVersion) {
         this.swidTagVersion = swidTagVersion;
+    }
+
+    /**
+     * Getter for the SWID version.
+     *
+     * @return string of the version number
+     */
+    public String getSwidVersion() {
+        return swidVersion;
+    }
+
+    /**
+     * Setter for the SWID version.
+     *
+     * @param swidVersion string of the version
+     */
+    public void setSwidVersion(final String swidVersion) {
+        this.swidVersion = swidVersion;
     }
 
     /**

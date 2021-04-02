@@ -326,7 +326,7 @@
                     <div class="col-md-1 col-md-offset-1"><span class="colHeader">Link</span></div>
                     <div id="link" class="col col-md-8">
                         <c:if test="${not empty initialData.linkHref}">
-                            <div><span><a href="${initialData.linkHref}" rel="${initialData.linkRel}">${initialData.linkHref}</a></span>
+                            <div><span><a href="${portal}/rim-details?id=${initialData.linkHrefLink}" rel="${initialData.linkRel}">${initialData.linkHref}</a></span>
                             </div>
                             <div>Rel:&nbsp;<span>${initialData.linkRel}</span>
                             </div>
@@ -410,7 +410,7 @@
                                                                 </span>
                                                             </div>
                                                             <c:choose>
-                                                                <c:when test="${not empty resource.getPcrValues()}">
+                                                                <c:when test="${not empty initialData.pcrList}">
                                                                     <div class="component col col-md-10">
                                                                         <span class="fieldHeader">File Size:</span>
                                                                         <span class="fieldValue">${resource.getSize()}</span><br/>
@@ -428,7 +428,7 @@
                                                                             <span class="fieldHeader">URI Global:</span>
                                                                             <span class="fieldValue">${resource.getRimUriGlobal()}</span><br/>
                                                                         </c:if>
-                                                                        <c:if test="${not empty resource.getPcrValues()}"> 
+                                                                        <c:if test="${not empty initialData.pcrList}">
                                                                             <div class="panel-body">
                                                                                 <div class="component" role="tab" id="pcrValues">
                                                                                     <a role="button" data-toggle="collapse" data-parent="#directorycollapse" class="collapsed"
@@ -438,13 +438,15 @@
                                                                                 </div>
                                                                                 <div id="pcrscollapse" class="panel-collapse collapse" role="tabpanel" aria-labelledby="headingThree" aria-expanded="true">
                                                                                     <div>
-                                                                                        <c:forEach items="${resource.getPcrMap()}" var="pcrValue">
+                                                                                        <c:set var="count" value="0" scope="page"/>
+                                                                                        <c:forEach items="${initialData.pcrList}" var="pcrValue">
                                                                                             <div id="componentIdentifier" class="row">
-                                                                                                <div>                                                                                    
-                                                                                                    <span>${pcrValue.key}</span>
-                                                                                                    <span style="overflow-wrap: break-word">${pcrValue.value}</span>
+                                                                                                <div>
+                                                                                                    <span>PCR ${count} - </span>
+                                                                                                    <span style="overflow-wrap: break-word">${pcrValue}</span>
                                                                                                 </div>
                                                                                             </div>
+                                                                                            <c:set var="count" value="${count + 1}" scope="page"/>
                                                                                         </c:forEach>
                                                                                     </div>
                                                                                 </div>

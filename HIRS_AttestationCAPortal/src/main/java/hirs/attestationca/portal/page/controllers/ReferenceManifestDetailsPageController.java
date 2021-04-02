@@ -99,7 +99,9 @@ public class ReferenceManifestDetailsPageController
                 LOGGER.error(uuidError, iaEx);
             } catch (Exception ioEx) {
                 LOGGER.error(ioEx);
-                LOGGER.trace(ioEx);
+                for (StackTraceElement ste : ioEx.getStackTrace()) {
+                    LOGGER.debug(ste.toString());
+                }
             }
             if (data.isEmpty()) {
                 String notFoundMessage = "Unable to find RIM with ID: " + params.getId();
@@ -185,8 +187,16 @@ public class ReferenceManifestDetailsPageController
         } else {
             data.put("swidCorpus", "False");
         }
-        data.put("swidPatch", baseRim.isSwidPatch());
-        data.put("swidSupplemental", baseRim.isSwidSupplemental());
+        if (baseRim.isSwidPatch()) {
+            data.put("swidPatch", "True");
+        } else {
+            data.put("swidPatch", "False");
+        }
+        if (baseRim.isSwidSupplemental()) {
+            data.put("swidSupplemental", "True");
+        } else {
+            data.put("swidSupplemental", "False");
+        }
         data.put("swidTagId", baseRim.getTagId());
         // Entity
         data.put("entityName", baseRim.getEntityName());
@@ -195,9 +205,16 @@ public class ReferenceManifestDetailsPageController
         data.put("entityThumbprint", baseRim.getEntityThumbprint());
         // Link
         data.put("linkHref", baseRim.getLinkHref());
+        for (BaseReferenceManifest bRim : BaseReferenceManifest
+                .select(referenceManifestManager).getRIMs()) {
+            if (baseRim.getLinkHref().contains(bRim.getTagId())) {
+                data.put("linkHrefLink", bRim.getId().toString());
+                break;
+            } else {
+                data.put("linkHrefLink", "");
+            }
+        }
         data.put("linkRel", baseRim.getLinkRel());
-        data.put("supportRimId", "");
-        data.put("supportRimTagId", "");
         data.put("platformManufacturer", baseRim.getPlatformManufacturer());
         data.put("platformManufacturerId", baseRim.getPlatformManufacturerId());
         data.put("platformModel", baseRim.getPlatformModel());
@@ -216,7 +233,7 @@ public class ReferenceManifestDetailsPageController
 
         List<SwidResource> resources = baseRim.parseResource();
         TCGEventLog logProcessor = null;
-        ReferenceManifest support = null;
+        SupportReferenceManifest support = null;
 
         if (baseRim.getAssociatedRim() == null) {
             support = SupportReferenceManifest.select(referenceManifestManager)
@@ -249,6 +266,10 @@ public class ReferenceManifestDetailsPageController
 
         data.put("associatedRim", baseRim.getAssociatedRim());
         data.put("swidFiles", resources);
+        if (support != null && (!baseRim.isSwidSupplemental()
+                && !baseRim.isSwidPatch())) {
+            data.put("pcrList", support.getExpectedPCRList());
+        }
 
         RIM_VALIDATOR.validateXmlSignature(new ByteArrayInputStream(baseRim.getRimBytes()));
         data.put("signatureValid", RIM_VALIDATOR.isSignatureValid());

@@ -41,8 +41,6 @@ public class BaseReferenceManifest extends ReferenceManifest {
     @Column
     private String swidName = null;
     @Column
-    private String swidVersion = null;
-    @Column
     private int swidCorpus = 0;
     @Column
     private String colloquialVersion = null;
@@ -157,7 +155,7 @@ public class BaseReferenceManifest extends ReferenceManifest {
             this.swidCorpus = si.isCorpus() ? 1 : 0;
             this.setSwidPatch(si.isPatch());
             this.setSwidSupplemental(si.isSupplemental());
-            this.swidVersion = si.getVersion();
+            this.setSwidVersion(si.getVersion());
             if (si.getTagVersion() != null) {
                 this.setSwidTagVersion(si.getTagVersion().toString());
             }
@@ -433,24 +431,6 @@ public class BaseReferenceManifest extends ReferenceManifest {
      */
     public void setSwidName(final String swidName) {
         this.swidName = swidName;
-    }
-
-    /**
-     * Getter for the SWID version.
-     *
-     * @return string of the version number
-     */
-    public String getSwidVersion() {
-        return swidVersion;
-    }
-
-    /**
-     * Setter for the SWID version.
-     *
-     * @param swidVersion string of the version
-     */
-    public void setSwidVersion(final String swidVersion) {
-        this.swidVersion = swidVersion;
     }
 
     /**
