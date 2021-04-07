@@ -790,7 +790,6 @@ public abstract class AbstractAttestationCertificateAuthority
          * 3. Update the support rim with swid tag information
          */
 
-
         if (dv.getLogfileCount() > 0) {
             for (ByteString logFile : dv.getLogfileList()) {
                 try {
@@ -805,6 +804,9 @@ public abstract class AbstractAttestationCertificateAuthority
                                 String.format("%s.rimel",
                                         defaultClientName),
                                 logFile.toByteArray());
+                        // this is a validity check
+                        new TCGEventLog(support.getRimBytes());
+                        // no issues, continue
                         support.setPlatformManufacturer(dv.getHw().getManufacturer());
                         support.setPlatformModel(dv.getHw().getProductName());
                         support.setFileName(String.format("%s_[%s].rimel", defaultClientName,
@@ -821,6 +823,9 @@ public abstract class AbstractAttestationCertificateAuthority
                     }
                 } catch (IOException ioEx) {
                     LOG.error(ioEx);
+                } catch (Exception ex) {
+                    LOG.error(String.format("Failed to load support rim: ", messageDigest.digest(
+                            logFile.toByteArray()))));
                 }
             }
         } else {

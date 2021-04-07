@@ -160,7 +160,7 @@ int provision() {
             = provisioner.sendAttestationCertificateRequest(certificateRequest);
 
     if (akCertificateByteString == "") {
-        cout << "----> Provisioning failed.";
+        cout << "----> Provisioning the quote failed.";
         cout << "Please refer to the Attestation CA for details." << endl;
         return 0;
     }
