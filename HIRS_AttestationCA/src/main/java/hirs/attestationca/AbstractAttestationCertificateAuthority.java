@@ -825,7 +825,7 @@ public abstract class AbstractAttestationCertificateAuthority
                     LOG.error(ioEx);
                 } catch (Exception ex) {
                     LOG.error(String.format("Failed to load support rim: ", messageDigest.digest(
-                            logFile.toByteArray()))));
+                            logFile.toByteArray())));
                 }
             }
         } else {
