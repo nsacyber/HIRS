@@ -8,31 +8,34 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.bouncycastle.asn1.ASN1BitString;
 import org.bouncycastle.asn1.ASN1Encodable;
+import org.bouncycastle.asn1.ASN1GeneralizedTime;
+import org.bouncycastle.asn1.ASN1InputStream;
 import org.bouncycastle.asn1.ASN1Integer;
+import org.bouncycastle.asn1.ASN1Object;
 import org.bouncycastle.asn1.ASN1Primitive;
 import org.bouncycastle.asn1.ASN1Sequence;
-import org.bouncycastle.asn1.x500.X500Name;
-import org.bouncycastle.asn1.x509.AttributeCertificate;
-import org.bouncycastle.asn1.x509.AttributeCertificateInfo;
-import org.bouncycastle.asn1.x509.AttCertIssuer;
-import org.bouncycastle.asn1.x509.Extensions;
-import org.bouncycastle.asn1.x509.V2Form;
-import org.bouncycastle.asn1.x509.GeneralNames;
-import org.bouncycastle.cert.X509AttributeCertificateHolder;
-import org.bouncycastle.cert.X509CertificateHolder;
-import org.bouncycastle.asn1.x509.GeneralName;
-import org.bouncycastle.util.encoders.Base64;
-import org.bouncycastle.asn1.ASN1GeneralizedTime;
-import org.bouncycastle.asn1.ASN1Object;
-import org.bouncycastle.asn1.DERTaggedObject;
-import org.bouncycastle.asn1.ASN1InputStream;
 import org.bouncycastle.asn1.DERIA5String;
 import org.bouncycastle.asn1.DEROctetString;
+import org.bouncycastle.asn1.DERTaggedObject;
 import org.bouncycastle.asn1.DLSequence;
-import org.bouncycastle.asn1.x509.AuthorityKeyIdentifier;
+import org.bouncycastle.asn1.x500.X500Name;
 import org.bouncycastle.asn1.x509.AccessDescription;
+import org.bouncycastle.asn1.x509.AttCertIssuer;
+import org.bouncycastle.asn1.x509.AttributeCertificate;
+import org.bouncycastle.asn1.x509.AttributeCertificateInfo;
 import org.bouncycastle.asn1.x509.AuthorityInformationAccess;
+import org.bouncycastle.asn1.x509.AuthorityKeyIdentifier;
+import org.bouncycastle.asn1.x509.CRLDistPoint;
+import org.bouncycastle.asn1.x509.DistributionPoint;
+import org.bouncycastle.asn1.x509.DistributionPointName;
 import org.bouncycastle.asn1.x509.Extension;
+import org.bouncycastle.asn1.x509.Extensions;
+import org.bouncycastle.asn1.x509.GeneralName;
+import org.bouncycastle.asn1.x509.GeneralNames;
+import org.bouncycastle.asn1.x509.V2Form;
+import org.bouncycastle.cert.X509AttributeCertificateHolder;
+import org.bouncycastle.cert.X509CertificateHolder;
+import org.bouncycastle.util.encoders.Base64;
 import org.bouncycastle.x509.extension.X509ExtensionUtil;
 
 import javax.persistence.Column;
@@ -64,9 +67,6 @@ import java.util.Date;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.Objects;
-import org.bouncycastle.asn1.x509.CRLDistPoint;
-import org.bouncycastle.asn1.x509.DistributionPoint;
-import org.bouncycastle.asn1.x509.DistributionPointName;
 
 
 /**
@@ -753,8 +753,8 @@ public abstract class Certificate extends ArchivableEntity {
      * @return whether or not the other certificate is the issuer for this certificate
      * @throws IOException if there is an issue deserializing either certificate
      */
-    public boolean isIssuer(final Certificate issuer) throws IOException {
-        boolean isIssuer = false;
+    public String isIssuer(final Certificate issuer) throws IOException {
+        String isIssuer = "Certificate signature failed to verify";
         // only run if of the correct type, otherwise false
         if (issuer.getCertificateType() == CertificateType.X509_CERTIFICATE) {
             X509Certificate issuerX509 = issuer.getX509Certificate();
@@ -764,7 +764,7 @@ public abstract class Certificate extends ArchivableEntity {
                     X509Certificate certX509 = getX509Certificate();
                     try {
                         certX509.verify(issuerX509.getPublicKey());
-                        isIssuer = true;
+                        isIssuer = "";
                     } catch (CertificateException | NoSuchAlgorithmException | InvalidKeyException
                             | NoSuchProviderException | SignatureException e) {
                         LOGGER.error(e);
@@ -777,7 +777,9 @@ public abstract class Certificate extends ArchivableEntity {
                         Signature sig = Signature.getInstance(algorithm);
                         sig.initVerify(issuerX509.getPublicKey());
                         sig.update(attCert.getAcinfo().getEncoded());
-                        isIssuer = sig.verify(attCert.getSignatureValue().getBytes());
+                        if (sig.verify(attCert.getSignatureValue().getBytes())) {
+                            isIssuer = "";
+                        }
                     } catch (NoSuchAlgorithmException
                             | InvalidKeyException
                             | SignatureException e) {

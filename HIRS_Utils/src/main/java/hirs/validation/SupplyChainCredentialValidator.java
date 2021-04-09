@@ -4,17 +4,21 @@ import com.fasterxml.jackson.core.JsonFactory;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import hirs.data.persist.AppraisalStatus;
-import hirs.data.persist.info.ComponentInfo;
+import hirs.data.persist.ArchivableEntity;
 import hirs.data.persist.DeviceInfoReport;
-import hirs.data.persist.info.HardwareInfo;
+import hirs.data.persist.SupplyChainValidation;
 import hirs.data.persist.certificate.EndorsementCredential;
 import hirs.data.persist.certificate.PlatformCredential;
 import hirs.data.persist.certificate.attributes.ComponentIdentifier;
+import hirs.data.persist.certificate.attributes.V2.ComponentIdentifierV2;
+import hirs.data.persist.info.ComponentInfo;
+import hirs.data.persist.info.HardwareInfo;
 import org.apache.commons.codec.Charsets;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.util.Strings;
 import org.bouncycastle.asn1.DERUTF8String;
 import org.bouncycastle.asn1.x500.X500Name;
 import org.bouncycastle.cert.CertException;
@@ -41,11 +45,14 @@ import java.security.cert.CertificateExpiredException;
 import java.security.cert.CertificateNotYetValidException;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -55,13 +62,6 @@ import java.util.stream.Collectors;
 import static hirs.data.persist.AppraisalStatus.Status.ERROR;
 import static hirs.data.persist.AppraisalStatus.Status.FAIL;
 import static hirs.data.persist.AppraisalStatus.Status.PASS;
-import hirs.data.persist.ArchivableEntity;
-import hirs.data.persist.SupplyChainValidation;
-import hirs.data.persist.certificate.attributes.V2.ComponentIdentifierV2;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.LinkedList;
-import org.apache.logging.log4j.util.Strings;
 
 
 /**
@@ -196,6 +196,7 @@ public final class SupplyChainCredentialValidator implements CredentialValidator
                                                      final boolean acceptExpired) {
         final String baseErrorMessage = "Can't validate platform credential without ";
         String message;
+        String certVerifyMsg;
         if (pc == null) {
             message = baseErrorMessage + "a platform credential\n";
             LOGGER.error(message);
@@ -233,19 +234,21 @@ public final class SupplyChainCredentialValidator implements CredentialValidator
 
         // verify cert against truststore
         try {
-            if (verifyCertificate(attributeCert, trustStore)) {
+            certVerifyMsg = verifyCertificate(attributeCert, trustStore);
+            if (certVerifyMsg.isEmpty()) {
                 message = PLATFORM_VALID;
                 LOGGER.info(message);
                 return new AppraisalStatus(PASS, message);
             } else {
-                message = "Platform credential failed verification";
+                message = String.format("Platform credential failed verification%n%s",
+                        certVerifyMsg);
                 LOGGER.error(message);
                 return new AppraisalStatus(FAIL, message);
             }
-        } catch (SupplyChainValidatorException e) {
+        } catch (SupplyChainValidatorException scvEx) {
             message = "An error occurred indicating the credential is not valid";
-            LOGGER.warn(message, e);
-            return new AppraisalStatus(FAIL, message + " " + e.getMessage());
+            LOGGER.warn(message, scvEx);
+            return new AppraisalStatus(FAIL, message + " " + scvEx.getMessage());
         }
     }
 
@@ -1244,14 +1247,14 @@ public final class SupplyChainCredentialValidator implements CredentialValidator
      * @throws SupplyChainValidatorException
      *             if the verification is not successful
      */
-    public static boolean verifyCertificate(final X509AttributeCertificateHolder cert,
+    public static String verifyCertificate(final X509AttributeCertificateHolder cert,
             final KeyStore trustStore) throws SupplyChainValidatorException {
         if (cert == null || trustStore == null) {
             throw new SupplyChainValidatorException("Certificate or trust store is null");
         }
 
         try {
-            Set<X509Certificate> trustedCerts = new HashSet<X509Certificate>();
+            Set<X509Certificate> trustedCerts = new HashSet<>();
 
             Enumeration<String> alias = trustStore.aliases();
 
@@ -1259,15 +1262,14 @@ public final class SupplyChainCredentialValidator implements CredentialValidator
                 trustedCerts.add((X509Certificate) trustStore.getCertificate(alias.nextElement()));
             }
 
-            boolean certChainValidated = validateCertChain(cert, trustedCerts);
-            if (!certChainValidated) {
+            String certChainValidated = validateCertChain(cert, trustedCerts);
+            if (!certChainValidated.isEmpty()) {
                 LOGGER.error("Cert chain could not be validated");
             }
             return certChainValidated;
         } catch (KeyStoreException e) {
             throw new SupplyChainValidatorException("Error with the trust store", e);
         }
-
     }
 
     /**
@@ -1291,7 +1293,7 @@ public final class SupplyChainCredentialValidator implements CredentialValidator
             throw new SupplyChainValidatorException("Certificate or trust store is null");
         }
         try {
-            Set<X509Certificate> trustedCerts = new HashSet<X509Certificate>();
+            Set<X509Certificate> trustedCerts = new HashSet<>();
 
             Enumeration<String> alias = trustStore.aliases();
 
@@ -1299,7 +1301,7 @@ public final class SupplyChainCredentialValidator implements CredentialValidator
                 trustedCerts.add((X509Certificate) trustStore.getCertificate(alias.nextElement()));
             }
 
-            return validateCertChain(cert, trustedCerts);
+            return validateCertChain(cert, trustedCerts).isEmpty();
         } catch (KeyStoreException e) {
             LOGGER.error("Error accessing keystore", e);
             throw new SupplyChainValidatorException("Error with the trust store", e);
@@ -1321,30 +1323,39 @@ public final class SupplyChainCredentialValidator implements CredentialValidator
      * @return boolean indicating if the validation was successful
      * @throws SupplyChainValidatorException tried to validate using null certificates
      */
-    public static boolean validateCertChain(final X509AttributeCertificateHolder cert,
+    public static String validateCertChain(final X509AttributeCertificateHolder cert,
             final Set<X509Certificate> additionalCerts) throws SupplyChainValidatorException {
         if (cert == null || additionalCerts == null) {
             throw new SupplyChainValidatorException(
                     "Certificate or validation certificates are null");
         }
-        boolean foundRootOfCertChain = false;
+        String foundRootOfCertChain = "";
         Iterator<X509Certificate> certIterator = additionalCerts.iterator();
         X509Certificate trustedCert;
+        boolean issuerMatchesSubject = false;
+        boolean signatureMatchesPublicKey = false;
 
-        while (!foundRootOfCertChain && certIterator.hasNext()) {
+        while (foundRootOfCertChain.isEmpty() && certIterator.hasNext()) {
             trustedCert = certIterator.next();
-            if (issuerMatchesSubjectDN(cert, trustedCert)
-                    && signatureMatchesPublicKey(cert, trustedCert)) {
+            issuerMatchesSubject = issuerMatchesSubjectDN(cert, trustedCert);
+            signatureMatchesPublicKey = signatureMatchesPublicKey(cert, trustedCert);
+            if (issuerMatchesSubject && signatureMatchesPublicKey) {
                 if (isSelfSigned(trustedCert)) {
                     LOGGER.info("CA Root found.");
-                    foundRootOfCertChain = true;
                 } else {
                     foundRootOfCertChain = validateCertChain(trustedCert, additionalCerts);
 
-                    if (!foundRootOfCertChain) {
+                    if (!foundRootOfCertChain.isEmpty()) {
                         LOGGER.error("Root of certificate chain not found. Check for CA Cert: "
                                 + cert.getIssuer().getNames()[0]);
                     }
+                }
+            } else {
+                if (!issuerMatchesSubject) {
+                    foundRootOfCertChain = "Issuer DN does not match Subject DN";
+                }
+                if (!signatureMatchesPublicKey) {
+                    foundRootOfCertChain = "Certificate signature failed to verify";
                 }
             }
         }
@@ -1366,30 +1377,39 @@ public final class SupplyChainCredentialValidator implements CredentialValidator
      * @return boolean indicating if the validation was successful
      * @throws SupplyChainValidatorException tried to validate using null certificates
      */
-    public static boolean validateCertChain(final X509Certificate cert,
+    public static String validateCertChain(final X509Certificate cert,
             final Set<X509Certificate> additionalCerts) throws SupplyChainValidatorException {
         if (cert == null || additionalCerts == null) {
             throw new SupplyChainValidatorException(
                     "Certificate or validation certificates are null");
         }
-        boolean foundRootOfCertChain = false;
+        String foundRootOfCertChain = "";
         Iterator<X509Certificate> certIterator = additionalCerts.iterator();
         X509Certificate trustedCert;
+        boolean issuerMatchesSubject = false;
+        boolean signatureMatchesPublicKey = false;
 
-        while (!foundRootOfCertChain && certIterator.hasNext()) {
+        while (foundRootOfCertChain.isEmpty() && certIterator.hasNext()) {
             trustedCert = certIterator.next();
-            if (issuerMatchesSubjectDN(cert, trustedCert)
-                    && signatureMatchesPublicKey(cert, trustedCert)) {
+            issuerMatchesSubject = issuerMatchesSubjectDN(cert, trustedCert);
+            signatureMatchesPublicKey = signatureMatchesPublicKey(cert, trustedCert);
+            if (issuerMatchesSubject && signatureMatchesPublicKey) {
                 if (isSelfSigned(trustedCert)) {
                     LOGGER.info("CA Root found.");
-                    foundRootOfCertChain = true;
                 } else if (!cert.equals(trustedCert)) {
                     foundRootOfCertChain = validateCertChain(trustedCert, additionalCerts);
 
-                    if (!foundRootOfCertChain) {
+                    if (!foundRootOfCertChain.isEmpty()) {
                         LOGGER.error("Root of certificate chain not found. Check for CA Cert: "
                                 + cert.getIssuerDN().getName());
                     }
+                }
+            } else {
+                if (!issuerMatchesSubject) {
+                    foundRootOfCertChain = "Issuer DN does not match Subject DN";
+                }
+                if (!signatureMatchesPublicKey) {
+                    foundRootOfCertChain = "Certificate signature failed to verify";
                 }
             }
         }
@@ -1611,8 +1631,8 @@ public final class SupplyChainCredentialValidator implements CredentialValidator
      */
     public static boolean signatureMatchesPublicKey(final X509AttributeCertificateHolder cert,
             final X509Certificate signingCert) throws SupplyChainValidatorException {
-        if (cert == null || signingCert == null) {
-            throw new SupplyChainValidatorException("Certificate or signing certificate is null");
+        if (signingCert == null) {
+            throw new SupplyChainValidatorException("Signing certificate is null");
         }
         return signatureMatchesPublicKey(cert, signingCert.getPublicKey());
     }

@@ -103,19 +103,29 @@ public final class CertificateStringMapBuilder {
             if (data.get("isSelfSigned").equals("false")) {
                 //Get the missing certificate chain for not self sign
                 Certificate missingCert = containsAllChain(certificate, certificateManager);
+                String issuerResult;
+
                 if (missingCert != null) {
-                    data.put("missingChainIssuer", missingCert.getIssuer());
+                    data.put("missingChainIssuer", String.format("Missing %s from the chain.",
+                            missingCert.getIssuer()));
                 }
                 //Find all certificates that could be the issuer certificate based on subject name
                 for (Certificate issuerCert : CertificateAuthorityCredential
                         .select(certificateManager)
-                        .bySubject(certificate.getIssuer())
+                        .bySubjectSorted(certificate.getIssuerSorted())
                         .getCertificates()) {
 
                     try {
                         //Find the certificate that actually signed this cert
-                        if (certificate.isIssuer(issuerCert)) {
+                        issuerResult = certificate.isIssuer(issuerCert);
+                        if (issuerResult.isEmpty()) {
                             data.put("issuerID", issuerCert.getId().toString());
+                            break;
+                        } else {
+                            data.put("issuerID", issuerCert.getId().toString());
+                            issuerResult = String.format("%s: %s", issuerResult,
+                                    issuerCert.getSubject());
+                            data.put("missingChainIssuer", issuerResult);
                             break;
                         }
                     } catch (IOException e) {
@@ -139,6 +149,7 @@ public final class CertificateStringMapBuilder {
             final CertificateManager certificateManager) {
         Set<CertificateAuthorityCredential> issuerCertificates = new HashSet<>();
         CertificateAuthorityCredential skiCA = null;
+        String issuerResult;
         //Check if there is a subject organization
         if (certificate.getAuthKeyId() != null
                 && !certificate.getAuthKeyId().isEmpty()) {
@@ -147,7 +158,7 @@ public final class CertificateStringMapBuilder {
                     .select(certificateManager)
                     .bySubjectKeyIdentifier(bytes).getCertificate();
         } else {
-            LOGGER.info(String.format("Certificate (%s) for %s has no authority key identifier.",
+            LOGGER.error(String.format("Certificate (%s) for %s has no authority key identifier.",
                     certificate.getClass().toString(), certificate.getSubject()));
         }
 
@@ -171,7 +182,8 @@ public final class CertificateStringMapBuilder {
         for (Certificate issuerCert : issuerCertificates) {
             try {
                 // Find the certificate that actually signed this cert
-                if (certificate.isIssuer(issuerCert)) {
+                issuerResult = certificate.isIssuer(issuerCert);
+                if (issuerResult.isEmpty()) {
                     //Check if it's root certificate
                     if (BouncyCastleUtils.x500NameCompare(issuerCert.getIssuer(),
                             issuerCert.getSubject())) {
