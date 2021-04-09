@@ -241,12 +241,10 @@ public class ReferenceManifestDetailsPageController
                     .getRIM();
             if (support != null) {
                 baseRim.setAssociatedRim(support.getId());
-//                logProcessor = new TCGEventLog(support.getRimBytes());
             }
         } else {
             support = SupportReferenceManifest.select(referenceManifestManager)
                     .byEntityId(baseRim.getAssociatedRim()).getRIM();
-//            logProcessor = new TCGEventLog(support.getRimBytes());
         }
         // going to have to pull the filename and grab that from the DB
         // to get the id to make the link

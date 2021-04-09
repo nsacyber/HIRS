@@ -409,26 +409,27 @@
                                                                     </c:choose>
                                                                 </span>
                                                             </div>
+                                                            <div class="component col col-md-10">
+                                                                <span class="fieldHeader">File Size:</span>
+                                                                                                                                    <span class="fieldValue">${resource.getSize()}</span><br/>
+                                                                                                                                    <span class="fieldHeader">Hash:</span>
+                                                                                                                                    <span class="fieldValue" style="overflow-wrap: break-word">${resource.getHashValue()}</span><br/>
+                                                                                                                                    <c:if test="${not empty resource.getRimFormat()}">
+                                                                                                                                        <span class="fieldHeader">RIM Format:</span>
+                                                                                                                                        <span class="fieldValue">${resource.getRimFormat()}</span><br/>
+                                                                                                                                    </c:if>
+                                                                                                                                    <c:if test="${not empty resource.getRimType()}">
+                                                                                                                                        <span class="fieldHeader">RIM Type:</span>
+                                                                                                                                        <span class="fieldValue">${resource.getRimType()}</span><br/>
+                                                                                                                                    </c:if>
+                                                                                                                                    <c:if test="${not empty resource.getRimUriGlobal()}">
+                                                                                                                                        <span class="fieldHeader">URI Global:</span>
+                                                                                                                                        <span class="fieldValue">${resource.getRimUriGlobal()}</span><br/>
+                                                                </c:if>
+                                                            </div>
                                                             <c:choose>
                                                                 <c:when test="${not empty initialData.pcrList}">
                                                                     <div class="component col col-md-10">
-                                                                        <span class="fieldHeader">File Size:</span>
-                                                                        <span class="fieldValue">${resource.getSize()}</span><br/>
-                                                                        <span class="fieldHeader">Hash:</span>
-                                                                        <span class="fieldValue" style="overflow-wrap: break-word">${resource.getHashValue()}</span><br/>
-                                                                        <c:if test="${not empty resource.getRimFormat()}">
-                                                                            <span class="fieldHeader">RIM Format:</span>
-                                                                            <span class="fieldValue">${resource.getRimFormat()}</span><br/>
-                                                                        </c:if>
-                                                                        <c:if test="${not empty resource.getRimType()}">
-                                                                            <span class="fieldHeader">RIM Type:</span>
-                                                                            <span class="fieldValue">${resource.getRimType()}</span><br/>
-                                                                        </c:if>
-                                                                        <c:if test="${not empty resource.getRimUriGlobal()}">
-                                                                            <span class="fieldHeader">URI Global:</span>
-                                                                            <span class="fieldValue">${resource.getRimUriGlobal()}</span><br/>
-                                                                        </c:if>
-                                                                        <c:if test="${not empty initialData.pcrList}">
                                                                             <div class="panel-body">
                                                                                 <div class="component" role="tab" id="pcrValues">
                                                                                     <a role="button" data-toggle="collapse" data-parent="#directorycollapse" class="collapsed"
@@ -451,13 +452,13 @@
                                                                                     </div>
                                                                                 </div>
                                                                             </div>
-                                                                        </c:if>
                                                                     </div>
                                                                 </c:when>
                                                                 <c:otherwise>
                                                                     <div class="component col col-md-10" style="color: red; padding-left: 20px">Support RIM file named ${resource.getName()} was not imported via the Reference Integrity Manifest page.</div>
                                                                 </c:otherwise>
                                                             </c:choose>
+                                                            </div>
                                                         </div>                                                    
                                                     </div>
                                                 </c:forEach>
