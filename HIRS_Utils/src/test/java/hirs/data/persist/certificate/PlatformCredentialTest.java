@@ -7,6 +7,7 @@ import hirs.data.persist.certificate.attributes.TBBSecurityAssertion;
 import hirs.data.persist.certificate.attributes.URIReference;
 import hirs.data.persist.certificate.attributes.V2.PlatformConfigurationV2;
 import org.apache.commons.codec.binary.Hex;
+import org.bouncycastle.util.encoders.Base64;
 import org.testng.Assert;
 import org.testng.annotations.Test;
 
@@ -18,8 +19,6 @@ import java.nio.file.Paths;
 import java.util.Calendar;
 import java.util.List;
 import java.util.TimeZone;
-
-import org.bouncycastle.util.encoders.Base64;
 
 import static org.testng.Assert.fail;
 
@@ -405,7 +404,7 @@ public class PlatformCredentialTest {
                                     Base64.decode(EXPECTED_CERT_SIGNATURE_FOR_CERT2_1));
 
         //Check if issuer certificate issued the platform credential
-        Assert.assertTrue(platformCert.isIssuer(issuer));
+        Assert.assertTrue(platformCert.isIssuer(issuer).isEmpty());
     }
 
     /**

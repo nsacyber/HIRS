@@ -461,7 +461,7 @@ public class SupplyChainValidationServiceImpl implements SupplyChainValidationSe
                         int algorithmLength = baseline[0].length();
                         String[] storedPcrs = buildStoredPcrs(pcrContent, algorithmLength);
 
-                        if (storedPcrs[0].isEmpty()) {
+                        if (storedPcrs[0] == null || storedPcrs[0].isEmpty()) {
                             // validation fail
                             fwStatus = new AppraisalStatus(FAIL,
                                     "Firmware validation failed: "
