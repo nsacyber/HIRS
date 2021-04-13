@@ -2,6 +2,17 @@ package hirs.attestationca;
 
 import com.google.protobuf.ByteString;
 import hirs.data.persist.certificate.PlatformCredential;
+import hirs.structs.converters.StructConverter;
+import hirs.structs.elements.aca.SymmetricAttestation;
+import hirs.structs.elements.tpm.AsymmetricKeyParams;
+import hirs.structs.elements.tpm.AsymmetricPublicKey;
+import hirs.structs.elements.tpm.EncryptionScheme;
+import hirs.structs.elements.tpm.IdentityProof;
+import hirs.structs.elements.tpm.IdentityRequest;
+import hirs.structs.elements.tpm.StorePubKey;
+import hirs.structs.elements.tpm.SymmetricKey;
+import hirs.structs.elements.tpm.SymmetricKeyParams;
+import hirs.structs.elements.tpm.SymmetricSubParams;
 import hirs.utils.HexUtils;
 import org.apache.commons.codec.binary.Hex;
 import org.apache.commons.lang3.ArrayUtils;
@@ -41,18 +52,6 @@ import java.security.interfaces.RSAPublicKey;
 import java.security.spec.MGF1ParameterSpec;
 import java.util.Calendar;
 import java.util.HashSet;
-
-import hirs.structs.converters.StructConverter;
-import hirs.structs.elements.aca.SymmetricAttestation;
-import hirs.structs.elements.tpm.AsymmetricKeyParams;
-import hirs.structs.elements.tpm.AsymmetricPublicKey;
-import hirs.structs.elements.tpm.EncryptionScheme;
-import hirs.structs.elements.tpm.IdentityProof;
-import hirs.structs.elements.tpm.IdentityRequest;
-import hirs.structs.elements.tpm.StorePubKey;
-import hirs.structs.elements.tpm.SymmetricKey;
-import hirs.structs.elements.tpm.SymmetricKeyParams;
-import hirs.structs.elements.tpm.SymmetricSubParams;
 
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
@@ -133,7 +132,7 @@ public class AbstractAttestationCertificateAuthorityTest {
     public void setup() {
         aca = new AbstractAttestationCertificateAuthority(null, keyPair.getPrivate(),
                 null, null, null, null, null, 1,
-                null, null) {
+                null, null, null, null) {
         };
     }
 
