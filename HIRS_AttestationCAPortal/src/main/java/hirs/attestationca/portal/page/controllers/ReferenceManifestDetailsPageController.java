@@ -306,17 +306,19 @@ public class ReferenceManifestDetailsPageController
         HashMap<String, Object> data = new HashMap<>();
         EventLogMeasurements measurements = null;
 
-        if (support.getAssociatedRim() == null
-                && (support.getPlatformManufacturer() != null
-                && !support.getPlatformManufacturer().isEmpty())) {
-            ReferenceManifest baseRim = BaseReferenceManifest.select(referenceManifestManager)
-                    .byManufacturer(support.getPlatformManufacturer()).getRIM();
-            if (baseRim != null) {
-                support.setAssociatedRim(baseRim.getId());
-                try {
-                    referenceManifestManager.update(support);
-                } catch (DBManagerException ex) {
-                    LOGGER.error("Failed to update Support RIM", ex);
+        if (support.getAssociatedRim() == null) {
+            Set<BaseReferenceManifest> baseRims = BaseReferenceManifest
+                    .select(referenceManifestManager)
+                    .byRimType(ReferenceManifest.BASE_RIM).getRIMs();
+            for (BaseReferenceManifest baseRim : baseRims) {
+                if (baseRim != null && baseRim.getAssociatedRim().equals(support.getId())) {
+                    support.setAssociatedRim(baseRim.getId());
+                    try {
+                        referenceManifestManager.update(support);
+                    } catch (DBManagerException ex) {
+                        LOGGER.error("Failed to update Support RIM", ex);
+                    }
+                    break;
                 }
             }
         }

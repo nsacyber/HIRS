@@ -411,20 +411,20 @@
                                                             </div>
                                                             <div class="component col col-md-10">
                                                                 <span class="fieldHeader">File Size:</span>
-                                                                                                                                    <span class="fieldValue">${resource.getSize()}</span><br/>
-                                                                                                                                    <span class="fieldHeader">Hash:</span>
-                                                                                                                                    <span class="fieldValue" style="overflow-wrap: break-word">${resource.getHashValue()}</span><br/>
-                                                                                                                                    <c:if test="${not empty resource.getRimFormat()}">
-                                                                                                                                        <span class="fieldHeader">RIM Format:</span>
-                                                                                                                                        <span class="fieldValue">${resource.getRimFormat()}</span><br/>
-                                                                                                                                    </c:if>
-                                                                                                                                    <c:if test="${not empty resource.getRimType()}">
-                                                                                                                                        <span class="fieldHeader">RIM Type:</span>
-                                                                                                                                        <span class="fieldValue">${resource.getRimType()}</span><br/>
-                                                                                                                                    </c:if>
-                                                                                                                                    <c:if test="${not empty resource.getRimUriGlobal()}">
-                                                                                                                                        <span class="fieldHeader">URI Global:</span>
-                                                                                                                                        <span class="fieldValue">${resource.getRimUriGlobal()}</span><br/>
+                                                                <span class="fieldValue">${resource.getSize()}</span><br/>
+                                                                <span class="fieldHeader">Hash:</span>
+                                                                <span class="fieldValue" style="overflow-wrap: break-word">${resource.getHashValue()}</span><br/>
+                                                                <c:if test="${not empty resource.getRimFormat()}">
+                                                                    <span class="fieldHeader">RIM Format:</span>
+                                                                    <span class="fieldValue">${resource.getRimFormat()}</span><br/>
+                                                                </c:if>
+                                                                <c:if test="${not empty resource.getRimType()}">
+                                                                    <span class="fieldHeader">RIM Type:</span>
+                                                                    <span class="fieldValue">${resource.getRimType()}</span><br/>
+                                                                </c:if>
+                                                                <c:if test="${not empty resource.getRimUriGlobal()}">
+                                                                    <span class="fieldHeader">URI Global:</span>
+                                                                    <span class="fieldValue">${resource.getRimUriGlobal()}</span><br/>
                                                                 </c:if>
                                                             </div>
                                                             <c:choose>
@@ -455,7 +455,9 @@
                                                                     </div>
                                                                 </c:when>
                                                                 <c:otherwise>
+                                                                <c:if test="${not initialData.swidPatch and not initialData.swidSupplemental}">
                                                                     <div class="component col col-md-10" style="color: red; padding-left: 20px">Support RIM file named ${resource.getName()} was not imported via the Reference Integrity Manifest page.</div>
+                                                                </c:if>
                                                                 </c:otherwise>
                                                             </c:choose>
                                                             </div>

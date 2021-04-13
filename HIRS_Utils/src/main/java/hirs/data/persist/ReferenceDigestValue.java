@@ -21,13 +21,15 @@ public class ReferenceDigestValue extends AbstractEntity {
     @Column
     private UUID digestRecordId;
     @Column(nullable = false)
-    private int eventNumber;
+    private int pcrIndex;
     @Column(nullable = false)
     private String digestValue;
     @Column(nullable = false)
     private String eventType;
     @Column(nullable = false)
     private boolean matchFail;
+    @Column(nullable = false)
+    private boolean patched = false;
 
     /**
      * Default Constructor.
@@ -35,28 +37,31 @@ public class ReferenceDigestValue extends AbstractEntity {
     public ReferenceDigestValue() {
         super();
         this.digestRecordId = UUID.randomUUID();
-        this.eventNumber = -1;
+        this.pcrIndex = -1;
         this.digestValue = "";
         this.eventType = "";
         this.matchFail = false;
+        this.patched = false;
     }
 
     /**
      * Default Constructor with parameters for all associated data.
      * @param digestRecordId the UUID of the associated record
-     * @param eventNumber the event number
+     * @param pcrIndex the event number
      * @param digestValue the key digest value
      * @param eventType the event type to store
      * @param matchFail the status of the baseline check
+     * @param patched the status of the value being updated to to patch
      */
-    public ReferenceDigestValue(final UUID digestRecordId, final int eventNumber,
+    public ReferenceDigestValue(final UUID digestRecordId, final int pcrIndex,
                                 final String digestValue, final String eventType,
-                                final boolean matchFail) {
+                                final boolean matchFail, final boolean patched) {
         this.digestRecordId = digestRecordId;
-        this.eventNumber = eventNumber;
+        this.pcrIndex = pcrIndex;
         this.digestValue = digestValue;
         this.eventType = eventType;
         this.matchFail = matchFail;
+        this.patched = patched;
     }
 
     /**
@@ -79,16 +84,16 @@ public class ReferenceDigestValue extends AbstractEntity {
      * Getter for the event number.
      * @return the stored value
      */
-    public int getEventNumber() {
-        return eventNumber;
+    public int getPcrIndex() {
+        return pcrIndex;
     }
 
     /**
      * Setter for the event number.
-     * @param eventNumber the value to store
+     * @param pcrIndex the value to store
      */
-    public void setEventNumber(final int eventNumber) {
-        this.eventNumber = eventNumber;
+    public void setPcrIndex(final int pcrIndex) {
+        this.pcrIndex = pcrIndex;
     }
 
     /**
@@ -139,6 +144,22 @@ public class ReferenceDigestValue extends AbstractEntity {
         this.matchFail = matchFail;
     }
 
+    /**
+     * Getter for the status of the patched state.
+     * @return patched flag
+     */
+    public boolean isPatched() {
+        return patched;
+    }
+
+    /**
+     * Setter for the status of the patched state.
+     * @param patched the flag to set
+     */
+    public void setPatched(final boolean patched) {
+        this.patched = patched;
+    }
+
     @Override
     public boolean equals(final Object obj) {
         if (this == obj) {
@@ -148,7 +169,7 @@ public class ReferenceDigestValue extends AbstractEntity {
             return false;
         }
         ReferenceDigestValue that = (ReferenceDigestValue) obj;
-        return eventNumber == that.eventNumber && matchFail == that.matchFail
+        return pcrIndex == that.pcrIndex && matchFail == that.matchFail
                 && Objects.equals(digestValue, that.digestValue)
                 && Objects.equals(digestRecordId, that.digestRecordId)
                 && Objects.equals(eventType, that.eventType);
@@ -156,7 +177,8 @@ public class ReferenceDigestValue extends AbstractEntity {
 
     @Override
     public int hashCode() {
-        int result = Objects.hash(eventNumber, digestValue, digestRecordId, eventType, matchFail);
+        int result = Objects.hash(pcrIndex, digestValue, digestRecordId,
+                eventType, matchFail, patched);
         return result;
     }
 
@@ -165,6 +187,7 @@ public class ReferenceDigestValue extends AbstractEntity {
      * @return a string
      */
     public String toString() {
-        return String.format("ReferenceDigestValue: {%d, %b}", eventNumber, matchFail);
+        return String.format("ReferenceDigestValue: {%d, %s, %s, %b}",
+                pcrIndex, digestValue, eventType, matchFail);
     }
 }

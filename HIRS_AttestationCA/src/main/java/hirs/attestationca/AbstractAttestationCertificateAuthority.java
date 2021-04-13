@@ -97,6 +97,7 @@ import java.security.spec.RSAPublicKeySpec;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -824,8 +825,8 @@ public abstract class AbstractAttestationCertificateAuthority
                 } catch (IOException ioEx) {
                     LOG.error(ioEx);
                 } catch (Exception ex) {
-                    LOG.error(String.format("Failed to load support rim: ", messageDigest.digest(
-                            logFile.toByteArray())));
+                    LOG.error(String.format("Failed to load support rim: %s", messageDigest.digest(
+                            logFile.toByteArray()).toString()));
                 }
             }
         } else {
@@ -903,56 +904,7 @@ public abstract class AbstractAttestationCertificateAuthority
             LOG.warn("Device did not send swid tag file...");
         }
 
-        Set<SupportReferenceManifest> dbSupportRims = SupportReferenceManifest
-                    .select(referenceManifestManager).getRIMs();
-
-        for (SupportReferenceManifest dbSupport : dbSupportRims) {
-            /**
-             * Because the log file we get isn't promised to be the baseline support rim.
-             * If it is a patch of supplemental we have to check that the baseline
-             * has been done
-             * and those entries can't become the baseline
-             *
-             * However, we don't know which log file is what until we link them to a swidtag
-             */
-            if (!dbSupport.isSwidPatch() && !dbSupport.isSwidSupplemental()) {
-                ReferenceDigestRecord dbObj = new ReferenceDigestRecord(dbSupport,
-                        hw.getManufacturer(), hw.getProductName());
-                // this is where we update or create the log
-                ReferenceDigestRecord rdr = this.referenceDigestManager.getRecord(dbObj);
-
-                // Handle baseline digest records
-                // is there already a baseline?
-                if (rdr == null) {
-                    // doesn't exist, store
-                    rdr = referenceDigestManager.saveRecord(dbObj);
-                }  // right now this will not deal with updating
-
-                if (this.referenceEventManager.getValuesByRecordId(rdr).isEmpty()) {
-                    try {
-                        TCGEventLog logProcessor = new TCGEventLog(dbSupport.getRimBytes());
-                        ReferenceDigestValue rdv;
-                        for (TpmPcrEvent tpe : logProcessor.getEventList()) {
-                            rdv = new ReferenceDigestValue(rdr.getId(), tpe.getEventNumber(),
-                                    tpe.getEventDigestStr(), tpe.getEventTypeStr(), false);
-                            this.referenceEventManager.saveValue(rdv);
-                        }
-                    } catch (CertificateException cEx) {
-                        LOG.error(cEx);
-                    } catch (NoSuchAlgorithmException noSaEx) {
-                        LOG.error(noSaEx);
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }
-                }
-            } else {
-                // what to do about patch and supplemental
-                LOG.error(String.format("%s is a patch? %b", dbSupport.getFileName(),
-                        dbSupport.isSwidPatch()));
-                LOG.error(String.format("%s is a supplemental? %b", dbSupport.getFileName(),
-                        dbSupport.isSwidSupplemental()));
-            }
-        }
+        generateDigestRecords(hw.getManufacturer(), hw.getProductName());
 
         if (dv.hasLivelog()) {
             LOG.info("Device sent bios measurement log...");
@@ -997,6 +949,96 @@ public abstract class AbstractAttestationCertificateAuthority
         dvReport.setPaccorOutputString(claim.getPaccorOutput());
 
         return dvReport;
+    }
+
+    private boolean generateDigestRecords(final String manufacturer, final String model) {
+        List<ReferenceDigestValue> rdValues;
+        Set<SupportReferenceManifest> dbSupportRims = SupportReferenceManifest
+                .select(referenceManifestManager).byManufacturer(manufacturer).getRIMs();
+
+        for (SupportReferenceManifest dbSupport : dbSupportRims) {
+            /**
+             * Because the log file we get isn't promised to be the baseline support rim.
+             * If it is a patch of supplemental we have to check that the baseline
+             * has been done
+             * and those entries can't become the baseline
+             *
+             * However, we don't know which log file is what until we link them to a swidtag
+             */
+            if (dbSupport.getPlatformModel().equals(model)) {
+                ReferenceDigestRecord dbObj = new ReferenceDigestRecord(dbSupport,
+                        manufacturer, model);
+                // this is where we update or create the log
+                ReferenceDigestRecord rdr = this.referenceDigestManager.getRecord(dbObj);
+                if (dbSupport.isBaseSupport()) {
+                    // Handle baseline digest records
+                    if (rdr == null) {
+                        // doesn't exist, store
+                        rdr = referenceDigestManager.saveRecord(dbObj);
+                    }  // right now this will not deal with updating
+
+                    if (this.referenceEventManager.getValuesByRecordId(rdr).isEmpty()) {
+                        try {
+                            TCGEventLog logProcessor = new TCGEventLog(dbSupport.getRimBytes());
+                            ReferenceDigestValue rdv;
+                            for (TpmPcrEvent tpe : logProcessor.getEventList()) {
+                                rdv = new ReferenceDigestValue(rdr.getId(), tpe.getPcrIndex(),
+                                        tpe.getEventDigestStr(), tpe.getEventTypeStr(),
+                                        false, false);
+                                this.referenceEventManager.saveValue(rdv);
+                            }
+                        } catch (CertificateException cEx) {
+                            LOG.error(cEx);
+                        } catch (NoSuchAlgorithmException noSaEx) {
+                            LOG.error(noSaEx);
+                        } catch (IOException ioEx) {
+                           LOG.error(ioEx);
+                        }
+                    }
+                } else if (dbSupport.isSwidPatch()) {
+                    if (rdr != null) {
+                        // have to have something to patch
+                        try {
+                            rdValues =  this.referenceEventManager.getValuesByRecordId(rdr);
+                            TCGEventLog logProcessor = new TCGEventLog(dbSupport.getRimBytes());
+                            for (TpmPcrEvent tpe : logProcessor.getEventList()) {
+                                LOG.error(tpe);
+                            }
+                            for (ReferenceDigestValue rdv : rdValues) {
+                                LOG.error(rdv);
+                            }
+                        } catch (CertificateException cEx) {
+                            LOG.error(cEx);
+                        } catch (NoSuchAlgorithmException noSaEx) {
+                            LOG.error(noSaEx);
+                        } catch (IOException ioEx) {
+                            LOG.error(ioEx);
+                        }
+                    }
+                } else if (dbSupport.isSwidSupplemental() && !dbSupport.isProcessed()) {
+                    try {
+                        TCGEventLog logProcessor = new TCGEventLog(dbSupport.getRimBytes());
+                        ReferenceDigestValue rdv;
+                        for (TpmPcrEvent tpe : logProcessor.getEventList()) {
+                            rdv = new ReferenceDigestValue(rdr.getId(), tpe.getPcrIndex(),
+                                    tpe.getEventDigestStr(), tpe.getEventTypeStr(),
+                                    false, false);
+                            this.referenceEventManager.saveValue(rdv);
+                        }
+                        dbSupport.setProcessed(true);
+                        this.referenceManifestManager.update(dbSupport);
+                    } catch (CertificateException cEx) {
+                        LOG.error(cEx);
+                    } catch (NoSuchAlgorithmException noSaEx) {
+                        LOG.error(noSaEx);
+                    } catch (IOException ioEx) {
+                        LOG.error(ioEx);
+                    }
+                }
+            }
+        }
+
+        return true;
     }
 
     private Device processDeviceInfo(final ProvisionerTpm2.IdentityClaim claim) {

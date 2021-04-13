@@ -29,6 +29,8 @@ public class SupportReferenceManifest extends ReferenceManifest {
     private int pcrHash = 0;
     @Column
     private boolean updated = false;
+    @Column
+    private boolean processed = false;
 
     /**
      * This class enables the retrieval of SupportReferenceManifest by their attributes.
@@ -218,5 +220,30 @@ public class SupportReferenceManifest extends ReferenceManifest {
      */
     public void setUpdated(final boolean updated) {
         this.updated = updated;
+    }
+
+    /**
+     * Flag method on the status of supplemental processed.
+     * @return status of the flag
+     */
+    public boolean isProcessed() {
+        return processed;
+    }
+
+    /**
+     * Setter for the processed flag.
+     * @param processed status flag
+     */
+    public void setProcessed(final boolean processed) {
+        this.processed = processed;
+    }
+
+    /**
+     * This is a method to indicate whether or not this support
+     * rim is a base log file.
+     * @return flag for base.
+     */
+    public boolean isBaseSupport() {
+        return !this.isSwidSupplemental() && !this.isSwidPatch();
     }
 }

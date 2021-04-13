@@ -50,7 +50,7 @@ public class DBReferenceEventManager  extends DBManager<ReferenceDigestValue>
 
         if (referenceDigestValue.getDigestRecordId() == null
                 || referenceDigestValue.getDigestValue() == null
-                || referenceDigestValue.getEventNumber() == -1) {
+                || referenceDigestValue.getPcrIndex() == -1) {
             LOGGER.error("No reference to get record from db {}", referenceDigestValue);
             return null;
         }
@@ -67,7 +67,7 @@ public class DBReferenceEventManager  extends DBManager<ReferenceDigestValue>
                     .add(Restrictions.eq("digestValue",
                             referenceDigestValue.getDigestValue()))
                     .add(Restrictions.eq("eventNumber",
-                            referenceDigestValue.getEventNumber()))
+                            referenceDigestValue.getPcrIndex()))
                     .uniqueResult();
             tx.commit();
         } catch (Exception ex) {
