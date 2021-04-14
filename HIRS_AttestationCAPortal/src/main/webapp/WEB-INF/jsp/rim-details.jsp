@@ -41,6 +41,24 @@
                             </c:choose>
                         </div>
                     </div>
+                    <c:if test="${not initialData.swidBase}">
+                        <div class="row">
+                            <div class="col-md-1 col-md-offset-1">
+                                <span class="colHeader">RIM Type</span>
+                            </div>
+                            <div id="baseRim" class="col col-md-8">
+                                <c:if test="${initialData.swidCorpus}">
+                                    <div>SWID Corpus</div>
+                                </c:if>
+                                <c:if test="${initialData.swidPatch}">
+                                    <div>SWID Patch</div>
+                                </c:if>
+                                <c:if test="${initialData.swidSupplemental}">
+                                    <div>SWID Supplemental</div>
+                                </c:if>
+                            </div>
+                        </div>
+                    </c:if>
                     <div class="row">
                         <div class="col-md-1 col-md-offset-1">
                             <span class="colRimHeader">
@@ -57,7 +75,7 @@
                                     <ul>
                                         <c:if test="${initialData.crtm || initialData.bootManager || initialData.osLoader || initialData.osKernel}">
                                             <li>PC Client Boot path</li>
-                                            </c:if>
+                                        </c:if>
                                         <ul>
                                             <c:if test="${initialData.crtm}">
                                                 <li>Software Core Root of Trust for Measurement (SRTM)</li>
@@ -70,7 +88,7 @@
                                                 </c:if>
                                                 <c:if test="${initialData.osKernel}">
                                                 <li>OS Kernel</li>
-                                                </c:if>
+                                            </c:if>
                                         </ul>
                                         <c:if test="${initialData.acpiTables || initialData.smbiosTables || initialData.gptTable || initialData.defaultBootDevice}">
                                             <li>Device Configuration</li>
@@ -90,7 +108,7 @@
                                                 </c:if>
                                                 <c:if test="${initialData.defaultBootDevice}">
                                                 <li>Default boot device</li>
-                                                </c:if>
+                                            </c:if>
                                         </ul>
                                         <c:if test="${initialData.secureBoot || initialData.pk || initialData.kek || initialData.sigDb || initialData.forbiddenDbx}">
                                             <li>Secure Boot Variables</li>
@@ -110,7 +128,7 @@
                                                 </c:if>
                                                 <c:if test="${initialData.forbiddenDbx}">
                                                 <li>Forbidden Signatures Database (dbx)</li>
-                                                </c:if>
+                                            </c:if>
                                         </ul>
                                     </ul>
                                 </ul>
@@ -134,7 +152,6 @@
                                                 <li>OS Kernel</li>
                                                 </c:if>
                                         </ul>
-
                                         <c:if test="${not initialData.acpiTables || not initialData.smbiosTables || not initialData.gptTable || not initialData.bootOrder || not initialData.defaultBootDevice}">
                                             <li>Device Configuration</li>
                                             </c:if>
@@ -173,7 +190,7 @@
                                                 </c:if>
                                                 <c:if test="${not initialData.forbiddenDbx}">
                                                 <li>Forbidden Signatures Database (dbx)</li>
-                                                </c:if>
+                                            </c:if>
                                         </ul>
                                     </ul>
                                 </ul>
@@ -352,13 +369,24 @@
                         </c:if>
                         <div>Binding Spec:&nbsp;<span>${initialData.bindingSpec}</span></div>
                         <div>Binding Spec Version:&nbsp;<span>${initialData.bindingSpecVersion}</span></div>
-                        <c:if test="${not empty initiaData.pcUriGlobal}">
+                        <c:if test="${not empty initialData.pcUriGlobal}">
                             <div>PC URI Global:&nbsp;<span>${initialData.pcUriGlobal}</span></div>
                         </c:if>
-                        <c:if test="${not empty initiaData.pcUriLocal}">
+                        <c:if test="${not empty initialData.pcUriLocal}">
                             <div>PC URI Local:&nbsp;<span>${initialData.pcUriLocal}</span></div>
                         </c:if>
-                        <div>Rim Link Hash:&nbsp;<span>${initialData.rimLinkHash}</span></div>
+                        <div>Rim Link Hash:&nbsp;<span>${initialData.rimLinkHash}</span>
+                            <span>
+                                <c:choose>
+                                <c:when test="${initialData.linkHashValid}">
+                                    <img src="${passIcon}" title="SWID Tag exist.">
+                                </c:when>
+                                <c:otherwise>
+                                    <img src="${failIcon}" title="SWID Tag doesn't exist.">
+                                </c:otherwise>
+                                </c:choose>
+                            </span>
+                        </div>
                     </div>
                 </div>
                 <div class="row">

@@ -229,6 +229,13 @@ public class ReferenceManifestDetailsPageController
         data.put("pcUriGlobal", baseRim.getPcURIGlobal());
         data.put("pcUriLocal", baseRim.getPcURILocal());
         data.put("rimLinkHash", baseRim.getRimLinkHash());
+        boolean hashLinked = false;
+        if (baseRim.getRimLinkHash() != null) {
+            ReferenceManifest rim = BaseReferenceManifest.select(referenceManifestManager)
+                    .byHashCode(baseRim.getRimLinkHash()).getRIM();
+            hashLinked = (rim != null);
+        }
+        data.put("linkHashValid", hashLinked);
         data.put("rimType", baseRim.getRimType());
 
         List<SwidResource> resources = baseRim.parseResource();
@@ -331,6 +338,18 @@ public class ReferenceManifestDetailsPageController
                     .byManufacturer(support.getPlatformManufacturer()).getRIM();
         }
 
+        if (support.isSwidPatch()) {
+            data.put("swidPatch", "True");
+        } else {
+            data.put("swidPatch", "False");
+        }
+        if (support.isSwidSupplemental()) {
+            data.put("swidSupplemental", "True");
+        } else {
+            data.put("swidSupplemental", "False");
+        }
+        data.put("swidBase", (!support.isSwidPatch()
+                && !support.isSwidSupplemental()));
         data.put("baseRim", support.getTagId());
         data.put("associatedRim", support.getAssociatedRim());
         data.put("rimType", support.getRimType());
@@ -355,13 +374,20 @@ public class ReferenceManifestDetailsPageController
         TCGEventLog measurementsProcess;
         if (measurements != null) {
             measurementsProcess = new TCGEventLog((measurements.getRimBytes()));
+            HashMap<String, TpmPcrEvent> digestMap = new HashMap<>();
             for (TpmPcrEvent tpe : logProcessor.getEventList()) {
-                if (!tpe.eventCompare(
-                        measurementsProcess.getEventByNumber(
-                                tpe.getEventNumber()))) {
-                    tpe.setError(true);
+                digestMap.put(tpe.getEventDigestStr(), tpe);
+                if (!support.isSwidSupplemental()) {
+                    if (!tpe.eventCompare(
+                            measurementsProcess.getEventByNumber(
+                                    tpe.getEventNumber()))) {
+                        tpe.setError(true);
+                    }
                 }
                 tpmPcrEvents.add(tpe);
+            }
+            for (TpmPcrEvent tpe : logProcessor.getEventList()) {
+                tpe.setError(!digestMap.containsKey(tpe.getEventDigestStr()));
             }
             data.put("events", tpmPcrEvents);
         } else {
