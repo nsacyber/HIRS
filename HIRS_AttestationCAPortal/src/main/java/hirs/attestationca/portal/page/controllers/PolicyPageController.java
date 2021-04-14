@@ -596,6 +596,16 @@ public class PolicyPageController extends PageController<NoPageParams> {
         return redirectToSelf(new NoPageParams(), model, attr);
     }
 
+    /**
+     * Updates the ignore GPT policy setting and
+     * redirects back to the original page.
+     *
+     * @param ppModel The data posted by the form mapped into an object.
+     * @param attr RedirectAttributes used to forward data back to the original
+     * page.
+     * @return View containing the url and parameters
+     * @throws URISyntaxException if malformed URI
+     */
     @RequestMapping(value = "update-gpt-ignore", method = RequestMethod.POST)
     public RedirectView updateIgnoreGptEvents(@ModelAttribute final PolicyPageModel ppModel,
              final RedirectAttributes attr) throws URISyntaxException {
