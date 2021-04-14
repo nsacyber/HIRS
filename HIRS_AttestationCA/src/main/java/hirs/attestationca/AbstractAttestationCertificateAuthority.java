@@ -783,13 +783,6 @@ public abstract class AbstractAttestationCertificateAuthority
         Pattern pattern = Pattern.compile("([^\\s]+(\\.(?i)(rimpcr|rimel|bin|log))$)");
         Matcher matcher;
         MessageDigest messageDigest =  MessageDigest.getInstance("SHA-256");
-        /**
-         * We need to do a series of things when getting swid/log files from client
-         * 1. Store what is sent if, it doesn't exist
-         *       and if it does exist, update if needed
-         * 2. take the file name from the swid file and update the support RIMs
-         * 3. Update the support rim with swid tag information
-         */
 
         if (dv.getLogfileCount() > 0) {
             for (ByteString logFile : dv.getLogfileList()) {
@@ -957,14 +950,6 @@ public abstract class AbstractAttestationCertificateAuthority
                 .select(referenceManifestManager).byManufacturer(manufacturer).getRIMs();
 
         for (SupportReferenceManifest dbSupport : dbSupportRims) {
-            /**
-             * Because the log file we get isn't promised to be the baseline support rim.
-             * If it is a patch of supplemental we have to check that the baseline
-             * has been done
-             * and those entries can't become the baseline
-             *
-             * However, we don't know which log file is what until we link them to a swidtag
-             */
             if (dbSupport.getPlatformModel().equals(model)) {
                 ReferenceDigestRecord dbObj = new ReferenceDigestRecord(dbSupport,
                         manufacturer, model);
