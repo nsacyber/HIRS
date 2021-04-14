@@ -377,12 +377,11 @@ public class ReferenceManifestDetailsPageController
             HashMap<String, TpmPcrEvent> digestMap = new HashMap<>();
             for (TpmPcrEvent tpe : logProcessor.getEventList()) {
                 digestMap.put(tpe.getEventDigestStr(), tpe);
-                if (!support.isSwidSupplemental()) {
-                    if (!tpe.eventCompare(
+                if (!support.isSwidSupplemental()
+                        && !tpe.eventCompare(
                             measurementsProcess.getEventByNumber(
                                     tpe.getEventNumber()))) {
-                        tpe.setError(true);
-                    }
+                    tpe.setError(true);
                 }
                 tpmPcrEvents.add(tpe);
             }
