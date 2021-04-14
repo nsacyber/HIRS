@@ -473,6 +473,7 @@ public class PolicyPageController extends PageController<NoPageParams> {
             // set the policy option and create success message
             if (firmwareValidationOptionEnabled) {
                 policy.setFirmwareValidationEnabled(true);
+                policy.setIgnoreGptEnabled(true);
                 successMessage = "Firmware validation enabled";
             } else {
                 policy.setFirmwareValidationEnabled(false);

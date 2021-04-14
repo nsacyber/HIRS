@@ -39,7 +39,7 @@ public final class PCRPolicy extends Policy {
     @Column(nullable = false)
     private boolean linuxOs = false;
     @Column(nullable = false)
-    private boolean enableIgnoreGpt = false;
+    private boolean enableIgnoreGpt = true;
 
     private String[] baselinePcrs;
 
