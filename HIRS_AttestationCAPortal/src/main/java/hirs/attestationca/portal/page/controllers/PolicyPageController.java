@@ -1,21 +1,16 @@
 package hirs.attestationca.portal.page.controllers;
 
+import hirs.appraiser.Appraiser;
+import hirs.appraiser.SupplyChainAppraiser;
 import hirs.attestationca.portal.model.PolicyPageModel;
-import static hirs.attestationca.portal.page.Page.POLICY;
 import hirs.attestationca.portal.page.PageController;
 import hirs.attestationca.portal.page.PageMessages;
 import hirs.attestationca.portal.page.params.NoPageParams;
-import java.net.URISyntaxException;
-import java.util.HashMap;
-import java.util.Map;
-import static org.apache.logging.log4j.LogManager.getLogger;
-import org.apache.logging.log4j.Logger;
-import hirs.appraiser.Appraiser;
-import hirs.appraiser.SupplyChainAppraiser;
 import hirs.data.persist.SupplyChainPolicy;
 import hirs.persist.AppraiserManager;
 import hirs.persist.PolicyManager;
 import hirs.persist.PolicyManagerException;
+import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -25,6 +20,13 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import org.springframework.web.servlet.view.RedirectView;
+
+import java.net.URISyntaxException;
+import java.util.HashMap;
+import java.util.Map;
+
+import static hirs.attestationca.portal.page.Page.POLICY;
+import static org.apache.logging.log4j.LogManager.getLogger;
 
 /**
  * Controller for the Policy page.
@@ -586,6 +588,47 @@ public class PolicyPageController extends PageController<NoPageParams> {
         } catch (PolicyManagerException e) {
             handlePolicyManagerUpdateError(model, messages, e,
                     "Error changing ACA TBoot ignore policy",
+                    "Error updating policy. \n" + e.getMessage());
+        }
+
+        // return the redirect
+        return redirectToSelf(new NoPageParams(), model, attr);
+    }
+
+    @RequestMapping(value = "update-gpt-ignore", method = RequestMethod.POST)
+    public RedirectView updateIgnoreGptEvents(@ModelAttribute final PolicyPageModel ppModel,
+             final RedirectAttributes attr) throws URISyntaxException {
+        // set the data received to be populated back into the form
+        Map<String, Object> model = new HashMap<>();
+        PageMessages messages = new PageMessages();
+        String successMessage;
+        boolean ignoreGptOptionEnabled = ppModel.getIgnoreGpt()
+                .equalsIgnoreCase(ENABLED_CHECKED_PARAMETER_VALUE);
+
+        try {
+            SupplyChainPolicy policy = getDefaultPolicyAndSetInModel(ppModel, model);
+
+            //If Ignore TBoot is enabled without firmware, disallow change
+            if (ignoreGptOptionEnabled && !policy.isFirmwareValidationEnabled()) {
+                handleUserError(model, messages,
+                        "Ignore TBoot can not be "
+                                + "enabled without Firmware Validation policy enabled.");
+                return redirectToSelf(new NoPageParams(), model, attr);
+            }
+
+            // set the policy option and create success message
+            if (ignoreGptOptionEnabled) {
+                policy.getPcrPolicy().setEnableIgnoreGpt(true);
+                successMessage = "Ignore GPT enabled";
+            } else {
+                policy.getPcrPolicy().setEnableIgnoreGpt(false);
+                successMessage = "Ignore GPT disabled";
+            }
+
+            savePolicyAndApplySuccessMessage(ppModel, model, messages, successMessage, policy);
+        } catch (PolicyManagerException e) {
+            handlePolicyManagerUpdateError(model, messages, e,
+                    "Error changing ACA GPT ignore policy",
                     "Error updating policy. \n" + e.getMessage());
         }
 

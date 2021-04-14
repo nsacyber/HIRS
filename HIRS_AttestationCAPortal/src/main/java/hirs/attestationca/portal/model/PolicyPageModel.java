@@ -17,6 +17,7 @@ public class PolicyPageModel {
     private boolean generateOnExpiration;
     private boolean enableIgnoreIma;
     private boolean enableIgnoreTboot;
+    private boolean enableIgnoreGpt;
 
     // Variables to get policy settings from page
     private String pcValidate;
@@ -29,6 +30,7 @@ public class PolicyPageModel {
     private String reissueThreshold;
     private String ignoreIma;
     private String ignoretBoot;
+    private String ignoreGpt;
     private String expirationValue;
     private String thresholdValue;
 
@@ -48,6 +50,7 @@ public class PolicyPageModel {
         this.reissueThreshold = policy.getReissueThreshold();
         this.enableIgnoreIma = policy.isIgnoreImaEnabled();
         this.enableIgnoreTboot = policy.isIgnoreTbootEnabled();
+        this.enableIgnoreGpt = policy.isIgnoreGptEnabled();
         this.expirationValue = policy.getValidityDays();
         this.thresholdValue = policy.getReissueThreshold();
     }
@@ -126,6 +129,14 @@ public class PolicyPageModel {
      */
     public boolean getEnableIgnoreTboot() {
         return enableIgnoreTboot;
+    }
+
+    /**
+     * Gets the Enable Ignore GPT state.
+     * @return the validation state.
+     */
+    public boolean getEnableIgnoreGpt() {
+        return enableIgnoreGpt;
     }
 
     /**
@@ -219,6 +230,15 @@ public class PolicyPageModel {
     }
 
     /**
+     * Gets the Ignore GPT validation value.
+     *
+     * @return the model string representation of this field (checked or unchecked)
+     */
+    public String getIgnoreGpt() {
+        return ignoreGpt;
+    }
+
+    /**
      * Sets the EC Validation state.
      *
      * @param enableEcValidation true if performing validation, false otherwise
@@ -293,6 +313,15 @@ public class PolicyPageModel {
     }
 
     /**
+     * Sets the Enable Ignore GPT state.
+     *
+     * @param enableIgnoreGpt true if performing validation, false otherwise
+     */
+    public void setEnableIgnoreGpt(final boolean enableIgnoreGpt) {
+        this.enableIgnoreGpt = enableIgnoreGpt;
+    }
+
+    /**
      * Sets the Platform Certificate Validation state.
      *
      * @param pcValidate "checked" if enabling validation, false otherwise
@@ -364,6 +393,15 @@ public class PolicyPageModel {
      */
     public void setIgnoretBoot(final String ignoretBoot) {
         this.ignoretBoot = ignoretBoot;
+    }
+
+    /**
+     * Sets the Ignore GPT state.
+     *
+     * @param ignoreGpt "checked" if enabling validation, false otherwise
+     */
+    public void setIgnoreGpt(final String ignoreGpt) {
+        this.ignoreGpt = ignoreGpt;
     }
 
     /**
