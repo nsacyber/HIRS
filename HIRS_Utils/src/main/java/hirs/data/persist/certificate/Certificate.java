@@ -103,12 +103,21 @@ public abstract class Certificate extends ArchivableEntity {
     private static final String KEY_USAGE_EO = "ENCIPHER ONLY";
     private static final String KEY_USAGE_DO = "DECIPHER ONLY";
     private static final String ECDSA_OID = "1.2.840.10045.4.3.2";
+    private static final String ECDSA_SHA224_OID = "1.2.840.10045.4.1";
     private static final String RSA256_OID = "1.2.840.113549.1.1.11";
     private static final String RSA384_OID = "1.2.840.113549.1.1.12";
     private static final String RSA512_OID = "1.2.840.113549.1.1.13";
     private static final String RSA224_OID = "1.2.840.113549.1.1.14";
+    private static final String RSA512_224_OID = "1.2.840.113549.1.1.15";
+    private static final String RSA512_256_OID = "1.2.840.113549.1.1.16";
     private static final String RSA256_STRING = "SHA256WithRSA";
+    private static final String RSA384_STRING = "SHA384WithRSA";
+    private static final String RSA224_STRING = "SHA224WithRSA";
+    private static final String RSA512_STRING = "SHA512WithRSA";
+    private static final String RSA512_224_STRING = "SHA512-224WithRSA";
+    private static final String RSA512_256_STRING = "SHA512-256WithRSA";
     private static final String ECDSA_STRING = "SHA256WithECDSA";
+    private static final String ECDSA_SHA224_STRING = "SHA224WithECDSA";
 
     private static final Logger LOGGER = LogManager.getLogger(Certificate.class);
 
@@ -416,8 +425,26 @@ public abstract class Certificate extends ArchivableEntity {
                     case RSA256_OID:
                         this.signatureAlgorithm = RSA256_STRING;
                         break;
+                    case RSA384_OID:
+                        this.signatureAlgorithm = RSA384_STRING;
+                        break;
+                    case RSA224_OID:
+                        this.signatureAlgorithm = RSA224_STRING;
+                        break;
+                    case RSA512_OID:
+                        this.signatureAlgorithm = RSA512_STRING;
+                        break;
+                    case RSA512_224_OID:
+                        this.signatureAlgorithm = RSA512_224_STRING;
+                        break;
+                    case RSA512_256_OID:
+                        this.signatureAlgorithm = RSA512_256_STRING;
+                        break;
                     case ECDSA_OID:
                         this.signatureAlgorithm = ECDSA_STRING;
+                        break;
+                    case ECDSA_SHA224_OID:
+                        this.signatureAlgorithm = ECDSA_SHA224_STRING;
                         break;
                     default:
                         break;
@@ -772,9 +799,8 @@ public abstract class Certificate extends ArchivableEntity {
                     break;
                 case ATTRIBUTE_CERTIFICATE:
                     AttributeCertificate attCert = getAttributeCertificate();
-                    String algorithm = "SHA256withRSA";
                     try {
-                        Signature sig = Signature.getInstance(algorithm);
+                        Signature sig = Signature.getInstance(this.getSignatureAlgorithm());
                         sig.initVerify(issuerX509.getPublicKey());
                         sig.update(attCert.getAcinfo().getEncoded());
                         if (sig.verify(attCert.getSignatureValue().getBytes())) {
@@ -782,8 +808,8 @@ public abstract class Certificate extends ArchivableEntity {
                         }
                     } catch (NoSuchAlgorithmException
                             | InvalidKeyException
-                            | SignatureException e) {
-                        LOGGER.error(e);
+                            | SignatureException sigEx) {
+                        LOGGER.error(sigEx);
                     }
                     break;
                 default:
