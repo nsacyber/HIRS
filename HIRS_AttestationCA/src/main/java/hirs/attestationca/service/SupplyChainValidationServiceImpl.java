@@ -48,6 +48,7 @@ import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.security.cert.CertificateException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -398,8 +399,56 @@ public class SupplyChainValidationServiceImpl implements SupplyChainValidationSe
                             supportReferenceManifest.getRimBytes(), swidRes.getHashValue());
                 }
             }
+            //check the signing certificate first
+            Set<CertificateAuthorityCredential> certificates =
+                    CertificateAuthorityCredential.select(certificateManager)
+                            .getCertificates();
+            // does one exist
+            passed = false;
+            CertificateAuthorityCredential signingCert = null;
+            for (CertificateAuthorityCredential caCert : certificates) {
+                if (Arrays.equals(caCert.getEncodedPublicKey(),
+                        referenceManifestValidator.getPublicKey().getEncoded())) {
+                    passed = true;
+                    signingCert = caCert;
+                }
+            }
+            // does the one that exist validate
+            if (passed) {
+                // need to find the issuer certificate
+                CertificateAuthorityCredential signer = CertificateAuthorityCredential
+                        .select(certificateManager)
+                        .bySubjectSorted(signingCert.getSubjectSorted())
+                        .getCertificate();
+                if (signer != null) {
+                    try {
+                        passed = signingCert.isIssuer(signer).isEmpty();
 
-            if (!referenceManifestValidator.isSignatureValid()) {
+                        if (!passed) {
+                            fwStatus = new AppraisalStatus(FAIL,
+                                    String.format("Firmware validation failed: RIM Signer "
+                                                    + "Certificate failed to validate against "
+                                                    + "the issuer (%s)",
+                                            signingCert.getIssuer()));
+                        }
+                    } catch (IOException ioEx) {
+                        LOGGER.error(ioEx);
+                    }
+                } else {
+                    fwStatus = new AppraisalStatus(FAIL,
+                            String.format("Firmware validation failed: Signer CA Cert for the"
+                                            + " RIM certificate can not be found (%s)",
+                                    signingCert.getIssuer()));
+                }
+            } else {
+                // didn't find signer
+                fwStatus = new AppraisalStatus(FAIL,
+                        String.format("Firmware validation failed: either RIM Signer can "
+                                + "not be found or public key match failed. (%s)",
+                                referenceManifestValidator.getSubjectKeyIdentifier()));
+            }
+
+            if (passed && !referenceManifestValidator.isSignatureValid()) {
                 passed = false;
                 fwStatus = new AppraisalStatus(FAIL,
                         "Firmware validation failed: Signature validation "
