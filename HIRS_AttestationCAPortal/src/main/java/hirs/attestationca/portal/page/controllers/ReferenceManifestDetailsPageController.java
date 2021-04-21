@@ -1,32 +1,21 @@
 package hirs.attestationca.portal.page.controllers;
 
+import hirs.attestationca.portal.page.Page;
+import hirs.attestationca.portal.page.PageController;
+import hirs.attestationca.portal.page.PageMessages;
+import hirs.attestationca.portal.page.params.ReferenceManifestDetailsPageParams;
+import hirs.attestationca.portal.util.CertificateStringMapBuilder;
 import hirs.data.persist.BaseReferenceManifest;
 import hirs.data.persist.EventLogMeasurements;
 import hirs.data.persist.ReferenceManifest;
 import hirs.data.persist.SupportReferenceManifest;
 import hirs.data.persist.SwidResource;
+import hirs.data.persist.certificate.Certificate;
 import hirs.data.persist.certificate.CertificateAuthorityCredential;
 import hirs.persist.CertificateManager;
 import hirs.persist.DBManagerException;
 import hirs.persist.ReferenceManifestManager;
 import hirs.tpm.eventlog.TCGEventLog;
-import hirs.attestationca.portal.page.Page;
-import hirs.attestationca.portal.page.PageController;
-import hirs.attestationca.portal.page.PageMessages;
-import hirs.attestationca.portal.page.params.ReferenceManifestDetailsPageParams;
-
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
-import java.security.NoSuchAlgorithmException;
-import java.security.cert.CertificateException;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.ArrayList;
-import java.util.Set;
-import java.util.UUID;
-
 import hirs.tpm.eventlog.TpmPcrEvent;
 import hirs.utils.ReferenceManifestValidator;
 import org.apache.logging.log4j.LogManager;
@@ -36,6 +25,18 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.servlet.ModelAndView;
+
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.security.NoSuchAlgorithmException;
+import java.security.cert.CertificateException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Set;
+import java.util.UUID;
 
 /**
  * Controller for the Reference Manifest Details page.
@@ -267,6 +268,7 @@ public class ReferenceManifestDetailsPageController
         RIM_VALIDATOR.validateXmlSignature(new ByteArrayInputStream(baseRim.getRimBytes()));
         data.put("signatureValid", RIM_VALIDATOR.isSignatureValid());
         data.put("skID", RIM_VALIDATOR.getSubjectKeyIdentifier());
+        CertificateAuthorityCredential rimSigner = null;
         try {
             Set<CertificateAuthorityCredential> certificates =
                     CertificateAuthorityCredential.select(certificateManager)
@@ -275,7 +277,14 @@ public class ReferenceManifestDetailsPageController
                 if (Arrays.equals(cert.getEncodedPublicKey(),
                         RIM_VALIDATOR.getPublicKey().getEncoded())) {
                     data.put("issuerID", cert.getId().toString());
+                    rimSigner = cert;
                 }
+            }
+
+            Certificate certificate = CertificateStringMapBuilder
+                    .containsAllChain(rimSigner, certificateManager);
+            if (certificate == null) {
+                data.put("signatureValid", false);
             }
         } catch (NullPointerException e) {
             LOGGER.error("Unable to link signing certificate: " + e.getMessage());
