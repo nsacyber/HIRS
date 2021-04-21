@@ -4,7 +4,6 @@ import hirs.attestationca.portal.page.Page;
 import hirs.attestationca.portal.page.PageController;
 import hirs.attestationca.portal.page.PageMessages;
 import hirs.attestationca.portal.page.params.ReferenceManifestDetailsPageParams;
-import hirs.attestationca.portal.util.CertificateStringMapBuilder;
 import hirs.data.persist.BaseReferenceManifest;
 import hirs.data.persist.EventLogMeasurements;
 import hirs.data.persist.ReferenceManifest;
@@ -17,6 +16,7 @@ import hirs.persist.DBManagerException;
 import hirs.persist.ReferenceManifestManager;
 import hirs.tpm.eventlog.TCGEventLog;
 import hirs.tpm.eventlog.TpmPcrEvent;
+import hirs.utils.BouncyCastleUtils;
 import hirs.utils.ReferenceManifestValidator;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -281,10 +281,31 @@ public class ReferenceManifestDetailsPageController
                 }
             }
 
-            Certificate certificate = CertificateStringMapBuilder
-                    .containsAllChain(rimSigner, certificateManager);
-            if (certificate == null) {
-                data.put("signatureValid", false);
+            if (rimSigner != null) {
+                boolean selfCert;
+                boolean valid = true;
+                Certificate tempCert = rimSigner;
+                CertificateAuthorityCredential cac;
+                do {
+
+                    cac = CertificateAuthorityCredential.select(certificateManager)
+                            .bySubjectSorted(tempCert.getIssuerSorted())
+                            .getCertificate();
+
+                    if (cac != null) {
+                        // check if self certificate
+                        selfCert = BouncyCastleUtils.x500NameCompare(cac.getIssuer(),
+                                cac.getSubject());
+                        valid = tempCert.isIssuer(cac).isEmpty();
+                        if (!selfCert) {
+                            tempCert = cac;
+                        }
+                    } else {
+                        selfCert = true;
+                    }
+                } while(!selfCert);
+
+                data.put("signatureValid", valid);
             }
         } catch (NullPointerException e) {
             LOGGER.error("Unable to link signing certificate: " + e.getMessage());

@@ -189,12 +189,10 @@ public final class CertificateStringMapBuilder {
                         return null;
                     }
                     return containsAllChain(issuerCert, certificateManager);
-                } else {
-                    return null;
                 }
             } catch (IOException e) {
                 LOGGER.error(e);
-                return null;
+                return certificate;
             }
         }
 
