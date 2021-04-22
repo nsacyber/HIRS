@@ -301,6 +301,7 @@ public class ReferenceManifestDetailsPageController
                             tempCert = cac;
                         }
                     } else {
+                        valid = false;
                         selfCert = true;
                     }
                 } while(!selfCert);
