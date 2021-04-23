@@ -94,10 +94,10 @@ import java.security.interfaces.RSAPublicKey;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.MGF1ParameterSpec;
 import java.security.spec.RSAPublicKeySpec;
-import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -707,13 +707,16 @@ public abstract class AbstractAttestationCertificateAuthority
         return (RSAPublicKey) assemblePublicKey(modulus);
     }
 
+    private static final int NUM_OF_VARIABLES = 5;
+
     /**
      * Converts a protobuf DeviceInfo object to a HIRS Utils DeviceInfoReport object.
      * @param claim the protobuf serialized identity claim containing the device info
      * @return a HIRS Utils DeviceInfoReport representation of device info
      */
     @SuppressWarnings("methodlength")
-    private DeviceInfoReport parseDeviceInfo(final ProvisionerTpm2.IdentityClaim claim) {
+    private DeviceInfoReport parseDeviceInfo(final ProvisionerTpm2.IdentityClaim claim)
+            throws NoSuchAlgorithmException {
         ProvisionerTpm2.DeviceInfo dv = claim.getDv();
 
         // Get network info
@@ -769,53 +772,123 @@ public abstract class AbstractAttestationCertificateAuthority
         }
 
         // check for RIM Base and Support files, if they don't exists in the database, load them
-        String clientName = String.format("%s_%s",
+        String defaultClientName = String.format("%s_%s",
                 dv.getHw().getManufacturer(),
                 dv.getHw().getProductName());
-        ReferenceManifest dbBaseRim = null;
+        BaseReferenceManifest dbBaseRim = null;
         ReferenceManifest support;
+        EventLogMeasurements measurements;
         String tagId = "";
         String fileName = "";
         Pattern pattern = Pattern.compile("([^\\s]+(\\.(?i)(rimpcr|rimel|bin|log))$)");
         Matcher matcher;
+        MessageDigest messageDigest =  MessageDigest.getInstance("SHA-256");
+
+        if (dv.getLogfileCount() > 0) {
+            for (ByteString logFile : dv.getLogfileList()) {
+                try {
+                    support = SupportReferenceManifest.select(referenceManifestManager)
+                            .includeArchived()
+                            .byHashCode(Hex.encodeHexString(messageDigest.digest(
+                                    logFile.toByteArray())))
+                            .getRIM();
+
+                    if (support == null) {
+                        support = new SupportReferenceManifest(
+                                String.format("%s.rimel",
+                                        defaultClientName),
+                                logFile.toByteArray());
+                        // this is a validity check
+                        new TCGEventLog(support.getRimBytes());
+                        // no issues, continue
+                        support.setPlatformManufacturer(dv.getHw().getManufacturer());
+                        support.setPlatformModel(dv.getHw().getProductName());
+                        support.setFileName(String.format("%s_[%s].rimel", defaultClientName,
+                                support.getRimHash().substring(
+                                        support.getRimHash().length() - NUM_OF_VARIABLES)));
+                        this.referenceManifestManager.save(support);
+                    } else {
+                        LOG.info("Client provided Support RIM already loaded in database.");
+                        if (support.isArchived()) {
+                            support.restore();
+                            support.resetCreateTime();
+                            this.referenceManifestManager.update(support);
+                        }
+                    }
+                } catch (IOException ioEx) {
+                    LOG.error(ioEx);
+                } catch (Exception ex) {
+                    LOG.error(String.format("Failed to load support rim: %s", messageDigest.digest(
+                            logFile.toByteArray()).toString()));
+                }
+            }
+        } else {
+            LOG.warn("Device did not send support RIM file...");
+        }
 
         if (dv.getSwidfileCount() > 0) {
             for (ByteString swidFile : dv.getSwidfileList()) {
+                fileName = "";
                 try {
                     dbBaseRim = BaseReferenceManifest.select(referenceManifestManager)
                             .includeArchived()
-                            .byHashCode(Arrays.hashCode(swidFile.toByteArray()))
+                            .byHashCode(Hex.encodeHexString(messageDigest.digest(
+                                    swidFile.toByteArray())))
                             .getRIM();
 
                     if (dbBaseRim == null) {
                         dbBaseRim = new BaseReferenceManifest(
                                 String.format("%s.swidtag",
-                                        clientName),
+                                        defaultClientName),
                                 swidFile.toByteArray());
 
-                        BaseReferenceManifest base = (BaseReferenceManifest) dbBaseRim;
-                        for (SwidResource swid : base.parseResource()) {
+                        // get file name to use
+                        for (SwidResource swid : dbBaseRim.parseResource()) {
                             matcher = pattern.matcher(swid.getName());
                             if (matcher.matches()) {
                                 //found the file name
                                 int dotIndex = swid.getName().lastIndexOf(".");
-                                clientName = swid.getName().substring(0, dotIndex);
+                                fileName = swid.getName().substring(0, dotIndex);
                                 dbBaseRim = new BaseReferenceManifest(
                                         String.format("%s.swidtag",
-                                                clientName),
+                                                fileName),
                                         swidFile.toByteArray());
+                            }
+
+                            // now update support rim
+                            SupportReferenceManifest dbSupport = SupportReferenceManifest
+                                    .select(referenceManifestManager)
+                                    .byRimHash(swid.getHashValue()).getRIM();
+                            if (dbSupport != null && !dbSupport.isUpdated()) {
+                                dbSupport.setFileName(swid.getName());
+                                dbSupport.setSwidTagVersion(dbBaseRim.getSwidTagVersion());
+                                // I might create a get for the bytes of the swidtag file
+                                // so that I can set that instead of the rim ID
+                                dbSupport.setTagId(dbBaseRim.getTagId());
+                                dbSupport.setSwidTagVersion(dbBaseRim.getSwidTagVersion());
+                                dbSupport.setSwidVersion(dbBaseRim.getSwidVersion());
+                                dbSupport.setSwidPatch(dbBaseRim.isSwidPatch());
+                                dbSupport.setSwidSupplemental(dbBaseRim.isSwidSupplemental());
+                                dbBaseRim.setAssociatedRim(dbSupport.getId());
+                                dbSupport.setUpdated(true);
+                                this.referenceManifestManager.update(dbSupport);
                                 break;
                             }
                         }
                         this.referenceManifestManager.save(dbBaseRim);
                     } else {
                         LOG.info("Client provided Base RIM already loaded in database.");
-                        dbBaseRim.restore();
-                        dbBaseRim.resetCreateTime();
-                        this.referenceManifestManager.update(dbBaseRim);
+                        /**
+                         * Leaving this as is for now, however can there be a condition
+                         * in which the provisioner sends swidtags without support rims?
+                         */
+                        if (dbBaseRim.isArchived()) {
+                            dbBaseRim.restore();
+                            dbBaseRim.resetCreateTime();
+                            this.referenceManifestManager.update(dbBaseRim);
+                        }
                     }
 
-                    tagId = dbBaseRim.getTagId();
                 } catch (IOException ioEx) {
                     LOG.error(ioEx);
                 }
@@ -824,92 +897,27 @@ public abstract class AbstractAttestationCertificateAuthority
             LOG.warn("Device did not send swid tag file...");
         }
 
-        if (dv.getLogfileCount() > 0) {
-            for (ByteString logFile : dv.getLogfileList()) {
-                try {
-                    support = SupportReferenceManifest.select(referenceManifestManager)
-                            .includeArchived()
-                            .byHashCode(Arrays.hashCode(logFile.toByteArray()))
-                            .getRIM();
-
-                    if (support == null) {
-                        support = new SupportReferenceManifest(
-                                String.format("%s.rimel",
-                                        clientName),
-                                logFile.toByteArray());
-                        support.setPlatformManufacturer(dv.getHw().getManufacturer());
-                        support.setPlatformModel(dv.getHw().getProductName());
-                        support.setTagId(tagId);
-                        this.referenceManifestManager.save(support);
-                    } else {
-                        LOG.info("Client provided Support RIM already loaded in database.");
-                        if (dbBaseRim != null) {
-                            support.setPlatformManufacturer(dbBaseRim.getPlatformManufacturer());
-                            support.setPlatformModel(dbBaseRim.getPlatformModel());
-                            support.setSwidTagVersion(dbBaseRim.getSwidTagVersion());
-                            support.setAssociatedRim(dbBaseRim.getId());
-                            support.setTagId(dbBaseRim.getTagId());
-                        }
-
-                        support.restore();
-                        support.resetCreateTime();
-                        this.referenceManifestManager.update(support);
-                    }
-
-                    ReferenceDigestRecord dbObj = new ReferenceDigestRecord(support,
-                            hw.getManufacturer(), hw.getProductName());
-                    // this is where we update or create the log
-                    ReferenceDigestRecord rdr = this.referenceDigestManager.getRecord(dbObj);
-
-                    // Handle baseline digest records
-                    // is there already a baseline?
-                    if (rdr == null) {
-                        // doesn't exist, store
-                        rdr = referenceDigestManager.saveRecord(dbObj);
-                    }  // right now this will not deal with updating
-
-                    if (this.referenceEventManager.getValuesByRecordId(rdr).isEmpty()) {
-                        try {
-                            TCGEventLog logProcessor = new TCGEventLog(support.getRimBytes());
-                            ReferenceDigestValue rdv;
-                            for (TpmPcrEvent tpe : logProcessor.getEventList()) {
-                                rdv = new ReferenceDigestValue(rdr.getId(), tpe.getEventNumber(),
-                                        tpe.getEventDigestStr(), tpe.getEventTypeStr(), false);
-                                this.referenceEventManager.saveValue(rdv);
-                            }
-                        } catch (CertificateException cEx) {
-                            LOG.error(cEx);
-                        } catch (NoSuchAlgorithmException noSaEx) {
-                            LOG.error(noSaEx);
-                        }
-                    }
-                } catch (IOException ioEx) {
-                    LOG.error(ioEx);
-                }
-            }
-        } else {
-            LOG.warn("Device did not send support RIM file...");
-        }
+        generateDigestRecords(hw.getManufacturer(), hw.getProductName());
 
         if (dv.hasLivelog()) {
             LOG.info("Device sent bios measurement log...");
             fileName = String.format("%s.measurement",
-                    clientName);
+                    defaultClientName);
             try {
                 // find previous version.  If it exists, delete it
-                support = EventLogMeasurements.select(referenceManifestManager)
+                measurements = EventLogMeasurements.select(referenceManifestManager)
                         .byManufacturer(dv.getHw().getManufacturer())
                         .includeArchived().getRIM();
-                if (support != null) {
+                if (measurements != null) {
                     LOG.info("Previous bios measurement log found and being replaced...");
-                    this.referenceManifestManager.delete(support);
+                    this.referenceManifestManager.delete(measurements);
                 }
-                support = new EventLogMeasurements(fileName,
+                measurements = new EventLogMeasurements(fileName,
                         dv.getLivelog().toByteArray());
-                support.setPlatformManufacturer(dv.getHw().getManufacturer());
-                support.setPlatformModel(dv.getHw().getProductName());
-                support.setTagId(tagId);
-                this.referenceManifestManager.save(support);
+                measurements.setPlatformManufacturer(dv.getHw().getManufacturer());
+                measurements.setPlatformModel(dv.getHw().getProductName());
+                measurements.setTagId(tagId);
+                this.referenceManifestManager.save(measurements);
             } catch (IOException ioEx) {
                 LOG.error(ioEx);
             }
@@ -936,8 +944,96 @@ public abstract class AbstractAttestationCertificateAuthority
         return dvReport;
     }
 
+    private boolean generateDigestRecords(final String manufacturer, final String model) {
+        List<ReferenceDigestValue> rdValues;
+        Set<SupportReferenceManifest> dbSupportRims = SupportReferenceManifest
+                .select(referenceManifestManager).byManufacturer(manufacturer).getRIMs();
+
+        for (SupportReferenceManifest dbSupport : dbSupportRims) {
+            if (dbSupport.getPlatformModel().equals(model)) {
+                ReferenceDigestRecord dbObj = new ReferenceDigestRecord(dbSupport,
+                        manufacturer, model);
+                // this is where we update or create the log
+                ReferenceDigestRecord rdr = this.referenceDigestManager.getRecord(dbObj);
+                if (dbSupport.isBaseSupport()) {
+                    // Handle baseline digest records
+                    if (rdr == null) {
+                        // doesn't exist, store
+                        rdr = referenceDigestManager.saveRecord(dbObj);
+                    }  // right now this will not deal with updating
+
+                    if (this.referenceEventManager.getValuesByRecordId(rdr).isEmpty()) {
+                        try {
+                            TCGEventLog logProcessor = new TCGEventLog(dbSupport.getRimBytes());
+                            ReferenceDigestValue rdv;
+                            for (TpmPcrEvent tpe : logProcessor.getEventList()) {
+                                rdv = new ReferenceDigestValue(rdr.getId(), tpe.getPcrIndex(),
+                                        tpe.getEventDigestStr(), tpe.getEventTypeStr(),
+                                        false, false);
+                                this.referenceEventManager.saveValue(rdv);
+                            }
+                        } catch (CertificateException cEx) {
+                            LOG.error(cEx);
+                        } catch (NoSuchAlgorithmException noSaEx) {
+                            LOG.error(noSaEx);
+                        } catch (IOException ioEx) {
+                           LOG.error(ioEx);
+                        }
+                    }
+                } else if (dbSupport.isSwidPatch()) {
+                    if (rdr != null) {
+                        // have to have something to patch
+                        try {
+                            rdValues =  this.referenceEventManager.getValuesByRecordId(rdr);
+                            TCGEventLog logProcessor = new TCGEventLog(dbSupport.getRimBytes());
+                            for (TpmPcrEvent tpe : logProcessor.getEventList()) {
+                                LOG.error(tpe);
+                            }
+                            for (ReferenceDigestValue rdv : rdValues) {
+                                LOG.error(rdv);
+                            }
+                        } catch (CertificateException cEx) {
+                            LOG.error(cEx);
+                        } catch (NoSuchAlgorithmException noSaEx) {
+                            LOG.error(noSaEx);
+                        } catch (IOException ioEx) {
+                            LOG.error(ioEx);
+                        }
+                    }
+                } else if (dbSupport.isSwidSupplemental() && !dbSupport.isProcessed()) {
+                    try {
+                        TCGEventLog logProcessor = new TCGEventLog(dbSupport.getRimBytes());
+                        ReferenceDigestValue rdv;
+                        for (TpmPcrEvent tpe : logProcessor.getEventList()) {
+                            rdv = new ReferenceDigestValue(rdr.getId(), tpe.getPcrIndex(),
+                                    tpe.getEventDigestStr(), tpe.getEventTypeStr(),
+                                    false, false);
+                            this.referenceEventManager.saveValue(rdv);
+                        }
+                        dbSupport.setProcessed(true);
+                        this.referenceManifestManager.update(dbSupport);
+                    } catch (CertificateException cEx) {
+                        LOG.error(cEx);
+                    } catch (NoSuchAlgorithmException noSaEx) {
+                        LOG.error(noSaEx);
+                    } catch (IOException ioEx) {
+                        LOG.error(ioEx);
+                    }
+                }
+            }
+        }
+
+        return true;
+    }
+
     private Device processDeviceInfo(final ProvisionerTpm2.IdentityClaim claim) {
-        DeviceInfoReport deviceInfoReport = parseDeviceInfo(claim);
+        DeviceInfoReport deviceInfoReport = null;
+
+        try {
+            deviceInfoReport = parseDeviceInfo(claim);
+        } catch (NoSuchAlgorithmException noSaEx) {
+            LOG.error(noSaEx);
+        }
 
         if (deviceInfoReport == null) {
             LOG.error("Failed to deserialize Device Info Report");

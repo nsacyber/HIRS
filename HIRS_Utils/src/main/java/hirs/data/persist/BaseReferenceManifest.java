@@ -41,13 +41,7 @@ public class BaseReferenceManifest extends ReferenceManifest {
     @Column
     private String swidName = null;
     @Column
-    private String swidVersion = null;
-    @Column
     private int swidCorpus = 0;
-    @Column
-    private int swidPatch = 0;
-    @Column
-    private int swidSupplemental = 0;
     @Column
     private String colloquialVersion = null;
     @Column
@@ -159,9 +153,9 @@ public class BaseReferenceManifest extends ReferenceManifest {
             setTagId(si.getTagId());
             this.swidName = si.getName();
             this.swidCorpus = si.isCorpus() ? 1 : 0;
-            this.swidPatch = si.isPatch() ? 1 : 0;
-            this.swidSupplemental = si.isSupplemental() ? 1 : 0;
-            this.swidVersion = si.getVersion();
+            this.setSwidPatch(si.isPatch());
+            this.setSwidSupplemental(si.isSupplemental());
+            this.setSwidVersion(si.getVersion());
             if (si.getTagVersion() != null) {
                 this.setSwidTagVersion(si.getTagVersion().toString());
             }
@@ -440,24 +434,6 @@ public class BaseReferenceManifest extends ReferenceManifest {
     }
 
     /**
-     * Getter for the SWID version.
-     *
-     * @return string of the version number
-     */
-    public String getSwidVersion() {
-        return swidVersion;
-    }
-
-    /**
-     * Setter for the SWID version.
-     *
-     * @param swidVersion string of the version
-     */
-    public void setSwidVersion(final String swidVersion) {
-        this.swidVersion = swidVersion;
-    }
-
-    /**
      * Getter for the corpus flag.
      *
      * @return int flag for corpus
@@ -473,42 +449,6 @@ public class BaseReferenceManifest extends ReferenceManifest {
      */
     public void setSwidCorpus(final int swidCorpus) {
         this.swidCorpus = swidCorpus;
-    }
-
-    /**
-     * Getter for the patch flag.
-     *
-     * @return int flag for the patch flag
-     */
-    public int isSwidPatch() {
-        return swidPatch;
-    }
-
-    /**
-     * Setter for the patch flag.
-     *
-     * @param swidPatch int value
-     */
-    public void setSwidPatch(final int swidPatch) {
-        this.swidPatch = swidPatch;
-    }
-
-    /**
-     * Getter for the supplemental flag.
-     *
-     * @return int flag for the supplemental flag
-     */
-    public int isSwidSupplemental() {
-        return swidSupplemental;
-    }
-
-    /**
-     * Setter for the supplemental flag.
-     *
-     * @param swidSupplemental int value
-     */
-    public void setSwidSupplemental(final int swidSupplemental) {
-        this.swidSupplemental = swidSupplemental;
     }
 
     /**
@@ -822,7 +762,7 @@ public class BaseReferenceManifest extends ReferenceManifest {
         return String.format("ReferenceManifest{swidName=%s,"
                         + "platformManufacturer=%s,"
                         + " platformModel=%s,"
-                        + "tagId=%s, rimHash=%d}",
+                        + "tagId=%s, rimHash=%s}",
                 swidName, this.getPlatformManufacturer(),
                 this.getPlatformModel(), getTagId(), this.getRimHash());
     }

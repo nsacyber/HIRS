@@ -9,6 +9,8 @@ import hirs.data.persist.Device;
 import hirs.data.persist.DeviceInfoReport;
 import hirs.data.persist.EventLogMeasurements;
 import hirs.data.persist.PCRPolicy;
+import hirs.data.persist.ReferenceDigestRecord;
+import hirs.data.persist.ReferenceDigestValue;
 import hirs.data.persist.ReferenceManifest;
 import hirs.data.persist.SupplyChainPolicy;
 import hirs.data.persist.SupplyChainValidation;
@@ -26,6 +28,8 @@ import hirs.persist.CrudManager;
 import hirs.persist.DBManagerException;
 import hirs.persist.PersistenceConfiguration;
 import hirs.persist.PolicyManager;
+import hirs.persist.ReferenceDigestManager;
+import hirs.persist.ReferenceEventManager;
 import hirs.persist.ReferenceManifestManager;
 import hirs.tpm.eventlog.TCGEventLog;
 import hirs.tpm.eventlog.TpmPcrEvent;
@@ -76,6 +80,8 @@ public class SupplyChainValidationServiceImpl implements SupplyChainValidationSe
     private PolicyManager policyManager;
     private AppraiserManager appraiserManager;
     private ReferenceManifestManager referenceManifestManager;
+    private ReferenceDigestManager referenceDigestManager;
+    private ReferenceEventManager referenceEventManager;
     private CertificateManager certificateManager;
     private CredentialValidator supplyChainCredentialValidator;
     private CrudManager<SupplyChainValidationSummary> supplyChainValidatorSummaryManager;
@@ -92,20 +98,27 @@ public class SupplyChainValidationServiceImpl implements SupplyChainValidationSe
      * @param referenceManifestManager           the RIM manager
      * @param supplyChainValidatorSummaryManager the summary manager
      * @param supplyChainCredentialValidator     the credential validator
+     * @param referenceDigestManager             the digest manager
+     * @param referenceEventManager              the even manager
      */
     @Autowired
+    @SuppressWarnings("ParameterNumberCheck")
     public SupplyChainValidationServiceImpl(
             final PolicyManager policyManager, final AppraiserManager appraiserManager,
             final CertificateManager certificateManager,
             final ReferenceManifestManager referenceManifestManager,
             final CrudManager<SupplyChainValidationSummary> supplyChainValidatorSummaryManager,
-            final CredentialValidator supplyChainCredentialValidator) {
+            final CredentialValidator supplyChainCredentialValidator,
+            final ReferenceDigestManager referenceDigestManager,
+            final ReferenceEventManager referenceEventManager) {
         this.policyManager = policyManager;
         this.appraiserManager = appraiserManager;
         this.certificateManager = certificateManager;
         this.referenceManifestManager = referenceManifestManager;
         this.supplyChainValidatorSummaryManager = supplyChainValidatorSummaryManager;
         this.supplyChainCredentialValidator = supplyChainCredentialValidator;
+        this.referenceDigestManager = referenceDigestManager;
+        this.referenceEventManager = referenceEventManager;
     }
 
     /**
@@ -354,10 +367,13 @@ public class SupplyChainValidationServiceImpl implements SupplyChainValidationSe
         AppraisalStatus fwStatus = null;
         String manufacturer = device.getDeviceInfo()
                 .getHardwareInfo().getManufacturer();
+        String model = device.getDeviceInfo()
+                .getHardwareInfo().getProductName();
         ReferenceManifest validationObject = null;
         ReferenceManifest baseReferenceManifest = null;
         ReferenceManifest supportReferenceManifest = null;
         ReferenceManifest measurement = null;
+        ReferenceDigestRecord digestRecord = null;
 
         baseReferenceManifest = BaseReferenceManifest.select(referenceManifestManager)
                 .byManufacturer(manufacturer).getRIM();
@@ -465,18 +481,22 @@ public class SupplyChainValidationServiceImpl implements SupplyChainValidationSe
                         // part 2 of firmware validation check: bios measurements
                         // vs baseline tcg event log
                         // find the measurement
-                        TCGEventLog tcgEventLog;
                         TCGEventLog tcgMeasurementLog;
+                        digestRecord = this.referenceDigestManager.getRecord(manufacturer, model);
                         LinkedList<TpmPcrEvent> tpmPcrEvents = new LinkedList<>();
+                        List<ReferenceDigestValue> eventValue;
+                        HashMap<String, ReferenceDigestValue> eventValueMap = new HashMap<>();
                         try {
                             if (measurement.getPlatformManufacturer().equals(manufacturer)) {
                                 tcgMeasurementLog = new TCGEventLog(measurement.getRimBytes());
-                                tcgEventLog = new TCGEventLog(
-                                        supportReferenceManifest.getRimBytes());
-                                for (TpmPcrEvent tpe : tcgEventLog.getEventList()) {
-                                    if (!tpe.eventCompare(
-                                            tcgMeasurementLog.getEventByNumber(
-                                                    tpe.getEventNumber()))) {
+                                eventValue = this.referenceEventManager
+                                        .getValuesByRecordId(digestRecord);
+                                for (ReferenceDigestValue rdv : eventValue) {
+                                    eventValueMap.put(rdv.getDigestValue(), rdv);
+                                }
+
+                                for (TpmPcrEvent tpe : tcgMeasurementLog.getEventList()) {
+                                    if (!eventValueMap.containsKey(tpe.getEventDigestStr())) {
                                         tpmPcrEvents.add(tpe);
                                     }
                                 }
@@ -536,6 +556,7 @@ public class SupplyChainValidationServiceImpl implements SupplyChainValidationSe
         AppraisalStatus fwStatus = new AppraisalStatus(FAIL,
                 SupplyChainCredentialValidator.FIRMWARE_VALID);
         SupportReferenceManifest sRim = null;
+        EventLogMeasurements eventLog = null;
 
         // check if the policy is enabled
         if (policy.isFirmwareValidationEnabled()) {
@@ -547,17 +568,25 @@ public class SupplyChainValidationServiceImpl implements SupplyChainValidationSe
                 sRim = SupportReferenceManifest.select(
                         this.referenceManifestManager)
                         .byManufacturer(manufacturer).getRIM();
+                eventLog = EventLogMeasurements
+                        .select(this.referenceManifestManager)
+                        .byManufacturer(manufacturer).getRIM();
 
                 if (sRim == null) {
                     fwStatus = new AppraisalStatus(FAIL,
                             String.format("Firmware Quote validation failed: "
-                                            + "No associated RIM file could be found for %s",
+                                            + "No associated Support RIM file "
+                                            + "could be found for %s",
+                                    manufacturer));
+                } else if (eventLog == null) {
+                    fwStatus = new AppraisalStatus(FAIL,
+                            String.format("Firmware Quote validation failed: "
+                                            + "No associated Client Log file "
+                                            + "could be found for %s",
                                     manufacturer));
                 } else {
                     baseline = sRim.getExpectedPCRList();
-                    String pcrContent = new String(device.getDeviceInfo()
-                            .getTPMInfo().getPcrValues());
-                    String[] storedPcrs = buildStoredPcrs(pcrContent, baseline[0].length());
+                    String[] storedPcrs = eventLog.getExpectedPCRList();
                     PCRPolicy pcrPolicy = policy.getPcrPolicy();
                     pcrPolicy.setBaselinePcrs(baseline);
                     // grab the quote

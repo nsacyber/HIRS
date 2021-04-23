@@ -1,5 +1,9 @@
 package hirs.attestationca.portal.page.controllers;
 
+import hirs.attestationca.portal.page.Page;
+import hirs.attestationca.portal.page.PageController;
+import hirs.attestationca.portal.page.PageMessages;
+import hirs.attestationca.portal.page.params.ReferenceManifestDetailsPageParams;
 import hirs.data.persist.BaseReferenceManifest;
 import hirs.data.persist.EventLogMeasurements;
 import hirs.data.persist.ReferenceManifest;
@@ -10,23 +14,6 @@ import hirs.persist.CertificateManager;
 import hirs.persist.DBManagerException;
 import hirs.persist.ReferenceManifestManager;
 import hirs.tpm.eventlog.TCGEventLog;
-import hirs.attestationca.portal.page.Page;
-import hirs.attestationca.portal.page.PageController;
-import hirs.attestationca.portal.page.PageMessages;
-import hirs.attestationca.portal.page.params.ReferenceManifestDetailsPageParams;
-
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
-import java.security.NoSuchAlgorithmException;
-import java.security.cert.CertificateException;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.ArrayList;
-import java.util.Set;
-import java.util.UUID;
-
 import hirs.tpm.eventlog.TpmPcrEvent;
 import hirs.utils.ReferenceManifestValidator;
 import org.apache.logging.log4j.LogManager;
@@ -36,6 +23,17 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.servlet.ModelAndView;
+
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.security.NoSuchAlgorithmException;
+import java.security.cert.CertificateException;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Set;
+import java.util.UUID;
 
 /**
  * Controller for the Reference Manifest Details page.
@@ -101,7 +99,9 @@ public class ReferenceManifestDetailsPageController
                 LOGGER.error(uuidError, iaEx);
             } catch (Exception ioEx) {
                 LOGGER.error(ioEx);
-                LOGGER.trace(ioEx);
+                for (StackTraceElement ste : ioEx.getStackTrace()) {
+                    LOGGER.debug(ste.toString());
+                }
             }
             if (data.isEmpty()) {
                 String notFoundMessage = "Unable to find RIM with ID: " + params.getId();
@@ -187,12 +187,12 @@ public class ReferenceManifestDetailsPageController
         } else {
             data.put("swidCorpus", "False");
         }
-        if (baseRim.isSwidPatch() == 1) {
+        if (baseRim.isSwidPatch()) {
             data.put("swidPatch", "True");
         } else {
             data.put("swidPatch", "False");
         }
-        if (baseRim.isSwidSupplemental() == 1) {
+        if (baseRim.isSwidSupplemental()) {
             data.put("swidSupplemental", "True");
         } else {
             data.put("swidSupplemental", "False");
@@ -205,9 +205,16 @@ public class ReferenceManifestDetailsPageController
         data.put("entityThumbprint", baseRim.getEntityThumbprint());
         // Link
         data.put("linkHref", baseRim.getLinkHref());
+        for (BaseReferenceManifest bRim : BaseReferenceManifest
+                .select(referenceManifestManager).getRIMs()) {
+            if (baseRim.getLinkHref().contains(bRim.getTagId())) {
+                data.put("linkHrefLink", bRim.getId().toString());
+                break;
+            } else {
+                data.put("linkHrefLink", "");
+            }
+        }
         data.put("linkRel", baseRim.getLinkRel());
-        data.put("supportRimId", "");
-        data.put("supportRimTagId", "");
         data.put("platformManufacturer", baseRim.getPlatformManufacturer());
         data.put("platformManufacturerId", baseRim.getPlatformManufacturerId());
         data.put("platformModel", baseRim.getPlatformModel());
@@ -222,11 +229,18 @@ public class ReferenceManifestDetailsPageController
         data.put("pcUriGlobal", baseRim.getPcURIGlobal());
         data.put("pcUriLocal", baseRim.getPcURILocal());
         data.put("rimLinkHash", baseRim.getRimLinkHash());
+        boolean hashLinked = false;
+        if (baseRim.getRimLinkHash() != null) {
+            ReferenceManifest rim = BaseReferenceManifest.select(referenceManifestManager)
+                    .byHashCode(baseRim.getRimLinkHash()).getRIM();
+            hashLinked = (rim != null);
+        }
+        data.put("linkHashValid", hashLinked);
         data.put("rimType", baseRim.getRimType());
 
         List<SwidResource> resources = baseRim.parseResource();
         TCGEventLog logProcessor = null;
-        ReferenceManifest support = null;
+        SupportReferenceManifest support = null;
 
         if (baseRim.getAssociatedRim() == null) {
             support = SupportReferenceManifest.select(referenceManifestManager)
@@ -234,12 +248,10 @@ public class ReferenceManifestDetailsPageController
                     .getRIM();
             if (support != null) {
                 baseRim.setAssociatedRim(support.getId());
-                logProcessor = new TCGEventLog(support.getRimBytes());
             }
         } else {
             support = SupportReferenceManifest.select(referenceManifestManager)
                     .byEntityId(baseRim.getAssociatedRim()).getRIM();
-            logProcessor = new TCGEventLog(support.getRimBytes());
         }
         // going to have to pull the filename and grab that from the DB
         // to get the id to make the link
@@ -253,16 +265,16 @@ public class ReferenceManifestDetailsPageController
                 } else {
                     data.put("supportRimHashValid", false);
                 }
-                swidRes.setPcrValues(Arrays.asList(
-                        logProcessor.getExpectedPCRValues()));
                 break;
-            } else {
-                swidRes.setPcrValues(new ArrayList<>());
             }
         }
 
         data.put("associatedRim", baseRim.getAssociatedRim());
         data.put("swidFiles", resources);
+        if (support != null && (!baseRim.isSwidSupplemental()
+                && !baseRim.isSwidPatch())) {
+            data.put("pcrList", support.getExpectedPCRList());
+        }
 
         RIM_VALIDATOR.validateXmlSignature(new ByteArrayInputStream(baseRim.getRimBytes()));
         data.put("signatureValid", RIM_VALIDATOR.isSignatureValid());
@@ -301,17 +313,19 @@ public class ReferenceManifestDetailsPageController
         HashMap<String, Object> data = new HashMap<>();
         EventLogMeasurements measurements = null;
 
-        if (support.getAssociatedRim() == null
-                && (support.getPlatformManufacturer() != null
-                && !support.getPlatformManufacturer().isEmpty())) {
-            ReferenceManifest baseRim = BaseReferenceManifest.select(referenceManifestManager)
-                    .byManufacturer(support.getPlatformManufacturer()).getRIM();
-            if (baseRim != null) {
-                support.setAssociatedRim(baseRim.getId());
-                try {
-                    referenceManifestManager.update(support);
-                } catch (DBManagerException ex) {
-                    LOGGER.error("Failed to update Support RIM", ex);
+        if (support.getAssociatedRim() == null) {
+            Set<BaseReferenceManifest> baseRims = BaseReferenceManifest
+                    .select(referenceManifestManager)
+                    .byRimType(ReferenceManifest.BASE_RIM).getRIMs();
+            for (BaseReferenceManifest baseRim : baseRims) {
+                if (baseRim != null && baseRim.getAssociatedRim().equals(support.getId())) {
+                    support.setAssociatedRim(baseRim.getId());
+                    try {
+                        referenceManifestManager.update(support);
+                    } catch (DBManagerException ex) {
+                        LOGGER.error("Failed to update Support RIM", ex);
+                    }
+                    break;
                 }
             }
         }
@@ -324,6 +338,18 @@ public class ReferenceManifestDetailsPageController
                     .byManufacturer(support.getPlatformManufacturer()).getRIM();
         }
 
+        if (support.isSwidPatch()) {
+            data.put("swidPatch", "True");
+        } else {
+            data.put("swidPatch", "False");
+        }
+        if (support.isSwidSupplemental()) {
+            data.put("swidSupplemental", "True");
+        } else {
+            data.put("swidSupplemental", "False");
+        }
+        data.put("swidBase", (!support.isSwidPatch()
+                && !support.isSwidSupplemental()));
         data.put("baseRim", support.getTagId());
         data.put("associatedRim", support.getAssociatedRim());
         data.put("rimType", support.getRimType());
@@ -348,13 +374,19 @@ public class ReferenceManifestDetailsPageController
         TCGEventLog measurementsProcess;
         if (measurements != null) {
             measurementsProcess = new TCGEventLog((measurements.getRimBytes()));
+            HashMap<String, TpmPcrEvent> digestMap = new HashMap<>();
             for (TpmPcrEvent tpe : logProcessor.getEventList()) {
-                if (!tpe.eventCompare(
-                        measurementsProcess.getEventByNumber(
-                                tpe.getEventNumber()))) {
+                digestMap.put(tpe.getEventDigestStr(), tpe);
+                if (!support.isSwidSupplemental()
+                        && !tpe.eventCompare(
+                            measurementsProcess.getEventByNumber(
+                                    tpe.getEventNumber()))) {
                     tpe.setError(true);
                 }
                 tpmPcrEvents.add(tpe);
+            }
+            for (TpmPcrEvent tpe : logProcessor.getEventList()) {
+                tpe.setError(!digestMap.containsKey(tpe.getEventDigestStr()));
             }
             data.put("events", tpmPcrEvents);
         } else {

@@ -41,6 +41,24 @@
                             </c:choose>
                         </div>
                     </div>
+                    <c:if test="${not initialData.swidBase}">
+                        <div class="row">
+                            <div class="col-md-1 col-md-offset-1">
+                                <span class="colHeader">RIM Type</span>
+                            </div>
+                            <div id="baseRim" class="col col-md-8">
+                                <c:if test="${initialData.swidCorpus}">
+                                    <div>SWID Corpus</div>
+                                </c:if>
+                                <c:if test="${initialData.swidPatch}">
+                                    <div>SWID Patch</div>
+                                </c:if>
+                                <c:if test="${initialData.swidSupplemental}">
+                                    <div>SWID Supplemental</div>
+                                </c:if>
+                            </div>
+                        </div>
+                    </c:if>
                     <div class="row">
                         <div class="col-md-1 col-md-offset-1">
                             <span class="colRimHeader">
@@ -57,7 +75,7 @@
                                     <ul>
                                         <c:if test="${initialData.crtm || initialData.bootManager || initialData.osLoader || initialData.osKernel}">
                                             <li>PC Client Boot path</li>
-                                            </c:if>
+                                        </c:if>
                                         <ul>
                                             <c:if test="${initialData.crtm}">
                                                 <li>Software Core Root of Trust for Measurement (SRTM)</li>
@@ -70,7 +88,7 @@
                                                 </c:if>
                                                 <c:if test="${initialData.osKernel}">
                                                 <li>OS Kernel</li>
-                                                </c:if>
+                                            </c:if>
                                         </ul>
                                         <c:if test="${initialData.acpiTables || initialData.smbiosTables || initialData.gptTable || initialData.defaultBootDevice}">
                                             <li>Device Configuration</li>
@@ -90,7 +108,7 @@
                                                 </c:if>
                                                 <c:if test="${initialData.defaultBootDevice}">
                                                 <li>Default boot device</li>
-                                                </c:if>
+                                            </c:if>
                                         </ul>
                                         <c:if test="${initialData.secureBoot || initialData.pk || initialData.kek || initialData.sigDb || initialData.forbiddenDbx}">
                                             <li>Secure Boot Variables</li>
@@ -110,7 +128,7 @@
                                                 </c:if>
                                                 <c:if test="${initialData.forbiddenDbx}">
                                                 <li>Forbidden Signatures Database (dbx)</li>
-                                                </c:if>
+                                            </c:if>
                                         </ul>
                                     </ul>
                                 </ul>
@@ -134,7 +152,6 @@
                                                 <li>OS Kernel</li>
                                                 </c:if>
                                         </ul>
-
                                         <c:if test="${not initialData.acpiTables || not initialData.smbiosTables || not initialData.gptTable || not initialData.bootOrder || not initialData.defaultBootDevice}">
                                             <li>Device Configuration</li>
                                             </c:if>
@@ -173,7 +190,7 @@
                                                 </c:if>
                                                 <c:if test="${not initialData.forbiddenDbx}">
                                                 <li>Forbidden Signatures Database (dbx)</li>
-                                                </c:if>
+                                            </c:if>
                                         </ul>
                                     </ul>
                                 </ul>
@@ -326,7 +343,7 @@
                     <div class="col-md-1 col-md-offset-1"><span class="colHeader">Link</span></div>
                     <div id="link" class="col col-md-8">
                         <c:if test="${not empty initialData.linkHref}">
-                            <div><span><a href="${initialData.linkHref}" rel="${initialData.linkRel}">${initialData.linkHref}</a></span>
+                            <div><span><a href="${portal}/rim-details?id=${initialData.linkHrefLink}" rel="${initialData.linkRel}">${initialData.linkHref}</a></span>
                             </div>
                             <div>Rel:&nbsp;<span>${initialData.linkRel}</span>
                             </div>
@@ -352,13 +369,24 @@
                         </c:if>
                         <div>Binding Spec:&nbsp;<span>${initialData.bindingSpec}</span></div>
                         <div>Binding Spec Version:&nbsp;<span>${initialData.bindingSpecVersion}</span></div>
-                        <c:if test="${not empty initiaData.pcUriGlobal}">
+                        <c:if test="${not empty initialData.pcUriGlobal}">
                             <div>PC URI Global:&nbsp;<span>${initialData.pcUriGlobal}</span></div>
                         </c:if>
-                        <c:if test="${not empty initiaData.pcUriLocal}">
+                        <c:if test="${not empty initialData.pcUriLocal}">
                             <div>PC URI Local:&nbsp;<span>${initialData.pcUriLocal}</span></div>
                         </c:if>
-                        <div>Rim Link Hash:&nbsp;<span>${initialData.rimLinkHash}</span></div>
+                        <div>Rim Link Hash:&nbsp;<span>${initialData.rimLinkHash}</span>
+                            <span>
+                                <c:choose>
+                                <c:when test="${initialData.linkHashValid}">
+                                    <img src="${passIcon}" title="SWID Tag exist.">
+                                </c:when>
+                                <c:otherwise>
+                                    <img src="${failIcon}" title="SWID Tag doesn't exist.">
+                                </c:otherwise>
+                                </c:choose>
+                            </span>
+                        </div>
                     </div>
                 </div>
                 <div class="row">
@@ -409,26 +437,27 @@
                                                                     </c:choose>
                                                                 </span>
                                                             </div>
+                                                            <div class="component col col-md-10">
+                                                                <span class="fieldHeader">File Size:</span>
+                                                                <span class="fieldValue">${resource.getSize()}</span><br/>
+                                                                <span class="fieldHeader">Hash:</span>
+                                                                <span class="fieldValue" style="overflow-wrap: break-word">${resource.getHashValue()}</span><br/>
+                                                                <c:if test="${not empty resource.getRimFormat()}">
+                                                                    <span class="fieldHeader">RIM Format:</span>
+                                                                    <span class="fieldValue">${resource.getRimFormat()}</span><br/>
+                                                                </c:if>
+                                                                <c:if test="${not empty resource.getRimType()}">
+                                                                    <span class="fieldHeader">RIM Type:</span>
+                                                                    <span class="fieldValue">${resource.getRimType()}</span><br/>
+                                                                </c:if>
+                                                                <c:if test="${not empty resource.getRimUriGlobal()}">
+                                                                    <span class="fieldHeader">URI Global:</span>
+                                                                    <span class="fieldValue">${resource.getRimUriGlobal()}</span><br/>
+                                                                </c:if>
+                                                            </div>
                                                             <c:choose>
-                                                                <c:when test="${not empty resource.getPcrValues()}">
+                                                                <c:when test="${not empty initialData.pcrList}">
                                                                     <div class="component col col-md-10">
-                                                                        <span class="fieldHeader">File Size:</span>
-                                                                        <span class="fieldValue">${resource.getSize()}</span><br/>
-                                                                        <span class="fieldHeader">Hash:</span>
-                                                                        <span class="fieldValue" style="overflow-wrap: break-word">${resource.getHashValue()}</span><br/>
-                                                                        <c:if test="${not empty resource.getRimFormat()}">
-                                                                            <span class="fieldHeader">RIM Format:</span>
-                                                                            <span class="fieldValue">${resource.getRimFormat()}</span><br/>
-                                                                        </c:if>
-                                                                        <c:if test="${not empty resource.getRimType()}">
-                                                                            <span class="fieldHeader">RIM Type:</span>
-                                                                            <span class="fieldValue">${resource.getRimType()}</span><br/>
-                                                                        </c:if>
-                                                                        <c:if test="${not empty resource.getRimUriGlobal()}">
-                                                                            <span class="fieldHeader">URI Global:</span>
-                                                                            <span class="fieldValue">${resource.getRimUriGlobal()}</span><br/>
-                                                                        </c:if>
-                                                                        <c:if test="${not empty resource.getPcrValues()}"> 
                                                                             <div class="panel-body">
                                                                                 <div class="component" role="tab" id="pcrValues">
                                                                                     <a role="button" data-toggle="collapse" data-parent="#directorycollapse" class="collapsed"
@@ -438,24 +467,28 @@
                                                                                 </div>
                                                                                 <div id="pcrscollapse" class="panel-collapse collapse" role="tabpanel" aria-labelledby="headingThree" aria-expanded="true">
                                                                                     <div>
-                                                                                        <c:forEach items="${resource.getPcrMap()}" var="pcrValue">
+                                                                                        <c:set var="count" value="0" scope="page"/>
+                                                                                        <c:forEach items="${initialData.pcrList}" var="pcrValue">
                                                                                             <div id="componentIdentifier" class="row">
-                                                                                                <div>                                                                                    
-                                                                                                    <span>${pcrValue.key}</span>
-                                                                                                    <span style="overflow-wrap: break-word">${pcrValue.value}</span>
+                                                                                                <div>
+                                                                                                    <span>PCR ${count} - </span>
+                                                                                                    <span style="overflow-wrap: break-word">${pcrValue}</span>
                                                                                                 </div>
                                                                                             </div>
+                                                                                            <c:set var="count" value="${count + 1}" scope="page"/>
                                                                                         </c:forEach>
                                                                                     </div>
                                                                                 </div>
                                                                             </div>
-                                                                        </c:if>
                                                                     </div>
                                                                 </c:when>
                                                                 <c:otherwise>
+                                                                <c:if test="${not initialData.swidPatch and not initialData.swidSupplemental}">
                                                                     <div class="component col col-md-10" style="color: red; padding-left: 20px">Support RIM file named ${resource.getName()} was not imported via the Reference Integrity Manifest page.</div>
+                                                                </c:if>
                                                                 </c:otherwise>
                                                             </c:choose>
+                                                            </div>
                                                         </div>                                                    
                                                     </div>
                                                 </c:forEach>

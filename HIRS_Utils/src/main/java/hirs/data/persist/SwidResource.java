@@ -3,26 +3,13 @@ package hirs.data.persist;
 import com.google.common.base.Preconditions;
 import hirs.data.persist.baseline.TpmWhiteListBaseline;
 import hirs.data.persist.enums.DigestAlgorithm;
-import hirs.tpm.eventlog.TCGEventLog;
 import hirs.utils.xjc.File;
-import java.io.IOException;
-import java.util.Map;
-import java.util.List;
-import java.util.LinkedHashMap;
-import java.util.Collections;
-import java.math.BigInteger;
-import java.nio.file.Files;
-import java.nio.file.NoSuchFileException;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.security.NoSuchAlgorithmException;
-import java.security.cert.CertificateException;
-import java.text.DecimalFormat;
-import java.util.Arrays;
-import javax.xml.namespace.QName;
-import org.apache.commons.codec.DecoderException;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+
+import javax.xml.namespace.QName;
+import java.math.BigInteger;
+import java.util.Map;
 
 /**
  * This object is used to represent the content of a Swid Tags Directory
@@ -32,20 +19,8 @@ public class SwidResource {
 
     private static final Logger LOGGER = LogManager.getLogger(SwidResource.class);
 
-    private static final String CATALINA_HOME = System.getProperty("catalina.base");
-    private static final String TOMCAT_UPLOAD_DIRECTORY
-            = "/webapps/HIRS_AttestationCAPortal/upload/";
-
-    /**
-     * String holder for location for storing binaries.
-     */
-    public static final String RESOURCE_UPLOAD_FOLDER
-            = CATALINA_HOME + TOMCAT_UPLOAD_DIRECTORY;
-
     private String name, size;
-
     private String rimFormat, rimType, rimUriGlobal, hashValue;
-    private List<String> pcrValues;
     private TpmWhiteListBaseline tpmWhiteList;
     private DigestAlgorithm digest = DigestAlgorithm.SHA1;
     private boolean validFileSize = false;
@@ -60,7 +35,6 @@ public class SwidResource {
         rimType = null;
         rimUriGlobal = null;
         hashValue = null;
-        pcrValues = null;
     }
 
     /**
@@ -102,23 +76,7 @@ public class SwidResource {
         }
 
         this.digest = digest;
-        parsePcrValues();
         tpmWhiteList = new TpmWhiteListBaseline(this.name);
-        if (!pcrValues.isEmpty()) {
-            int i = 0;
-            for (String pcr : pcrValues) {
-                if (this.digest == null) {
-                    // determine by length of pcr value
-                    this.digest = AbstractDigest.getDigestAlgorithm(pcr);
-                }
-                try {
-                    tpmWhiteList.addToBaseline(
-                            new TPMMeasurementRecord(i++, pcr));
-                } catch (DecoderException deEx) {
-                    LOGGER.error(deEx);
-                }
-            }
-        }
     }
 
     /**
@@ -176,75 +134,10 @@ public class SwidResource {
     }
 
     /**
-     * Getter for the list of PCR Values.
-     *
-     * @return an unmodifiable list
-     */
-    public List<String> getPcrValues() {
-        return Collections.unmodifiableList(pcrValues);
-    }
-
-    /**
-     * Setter for the list of associated PCR Values.
-     *
-     * @param pcrValues a collection of PCRs
-     */
-    public void setPcrValues(final List<String> pcrValues) {
-        this.pcrValues = pcrValues;
-    }
-
-    /**
      * flag for if the file sizes match with the swidtag.
      * @return true if they match
      */
     public boolean isValidFileSize() {
         return validFileSize;
-    }
-
-    /**
-     * Getter for a generated map of the PCR values.
-     *
-     * @return mapping of PCR# to the actual value.
-     */
-    public LinkedHashMap<String, String> getPcrMap() {
-        LinkedHashMap<String, String> innerMap = new LinkedHashMap<>();
-        DecimalFormat df = new DecimalFormat("00");
-
-        if (!this.pcrValues.isEmpty()) {
-            long iterate = 0;
-            String pcrNum;
-            for (String string : this.pcrValues) {
-                pcrNum = df.format(iterate++);
-                innerMap.put(String.format("PCR%s:", pcrNum), string);
-            }
-        }
-
-        return innerMap;
-    }
-
-    private void parsePcrValues() {
-        TCGEventLog logProcessor = new TCGEventLog();
-
-        try {
-            Path logPath = Paths.get(String.format("%s/%s",
-                    SwidResource.RESOURCE_UPLOAD_FOLDER,
-                    this.getName()));
-            if (Files.exists(logPath)) {
-                logProcessor = new TCGEventLog(
-                        Files.readAllBytes(logPath));
-            }
-            this.setPcrValues(Arrays.asList(
-                        logProcessor.getExpectedPCRValues()));
-        } catch (NoSuchFileException nsfEx) {
-            LOGGER.error(String.format("File Not found!: %s",
-                    this.getName()));
-            LOGGER.error(nsfEx);
-        } catch (IOException ioEx) {
-            LOGGER.error(ioEx);
-        } catch (CertificateException cEx) {
-            LOGGER.error(cEx);
-        } catch (NoSuchAlgorithmException naEx) {
-            LOGGER.error(naEx);
-        }
     }
 }

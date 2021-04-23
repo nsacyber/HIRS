@@ -31,6 +31,15 @@ public interface ReferenceDigestManager {
     /**
      * Persists a new Reference Digest.
      *
+     * @param manufacturer the string of the manufacturer
+     * @param model the string of the model
+     * @return the persisted ReferenceDigestRecord
+     */
+    ReferenceDigestRecord getRecord(String manufacturer, String model);
+
+    /**
+     * Persists a new Reference Digest.
+     *
      * @param referenceDigestRecord the ReferenceDigestRecord
      * @return the persisted ReferenceDigestRecord
      */
