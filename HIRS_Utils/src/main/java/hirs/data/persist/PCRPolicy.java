@@ -1,10 +1,5 @@
 package hirs.data.persist;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-
-import static org.apache.logging.log4j.LogManager.getLogger;
-
 import hirs.data.persist.tpm.PcrComposite;
 import hirs.data.persist.tpm.PcrInfoShort;
 import hirs.data.persist.tpm.PcrSelection;
@@ -12,9 +7,13 @@ import org.apache.commons.codec.DecoderException;
 import org.apache.commons.codec.binary.Hex;
 import org.apache.logging.log4j.Logger;
 
+import javax.persistence.Column;
+import javax.persistence.Entity;
 import java.nio.charset.StandardCharsets;
 import java.security.NoSuchAlgorithmException;
 import java.util.Arrays;
+
+import static org.apache.logging.log4j.LogManager.getLogger;
 
 /**
  * The class handles the flags that ignore certain PCRs for validation.
@@ -24,12 +23,14 @@ public final class PCRPolicy extends Policy {
 
     private static final Logger LOGGER = getLogger(PCRPolicy.class);
 
+    private static final int NUM_TO_SKIP = 1;
     // PCR 10
     private static final int IMA_PCR = 10;
     // PCR 17-19
     private static final int TBOOT_PCR = 17;
-    private static final int NUM_OF_IMA_PCR = 1;
     private static final int NUM_OF_TBOOT_PCR = 3;
+    // PCR 5
+    private static final int GPT_PCR = 5;
 
     @Column(nullable = false)
     private boolean enableIgnoreIma = false;
@@ -37,6 +38,8 @@ public final class PCRPolicy extends Policy {
     private boolean enableIgnoretBoot = false;
     @Column(nullable = false)
     private boolean linuxOs = false;
+    @Column(nullable = false)
+    private boolean enableIgnoreGpt = true;
 
     private String[] baselinePcrs;
 
@@ -73,12 +76,17 @@ public final class PCRPolicy extends Policy {
         for (int i = 0; i <= TPMMeasurementRecord.MAX_PCR_ID; i++) {
             if (enableIgnoreIma && i == IMA_PCR) {
                 LOGGER.info("PCR Policy IMA Ignore enabled.");
-                i += NUM_OF_IMA_PCR;
+                i += NUM_TO_SKIP;
             }
 
             if (enableIgnoretBoot && i == TBOOT_PCR) {
                 LOGGER.info("PCR Policy TBoot Ignore enabled.");
                 i += NUM_OF_TBOOT_PCR;
+            }
+
+            if (enableIgnoreGpt && i == GPT_PCR) {
+                LOGGER.info("PCR Policy GPT Ignore enabled.");
+                i += NUM_TO_SKIP;
             }
 
             if (!baselinePcrs[i].equals(storedPcrs[i])) {
@@ -181,6 +189,22 @@ public final class PCRPolicy extends Policy {
      */
     public void setEnableIgnoretBoot(final boolean enableIgnoretBoot) {
         this.enableIgnoretBoot = enableIgnoretBoot;
+    }
+
+    /**
+     * Getter for the GPT ignore flag.
+     * @return true if GPT is to be ignored.
+     */
+    public boolean isEnableIgnoreGpt() {
+        return enableIgnoreGpt;
+    }
+
+    /**
+     * Setter for the GPT ignore flag.
+     * @param enableIgnoreGpt true if GPT is to be ignored.
+     */
+    public void setEnableIgnoreGpt(final boolean enableIgnoreGpt) {
+        this.enableIgnoreGpt = enableIgnoreGpt;
     }
 
     /**

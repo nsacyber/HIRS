@@ -100,6 +100,18 @@
                                 </my:editor>
                             </li>
                         </form:form>
+                        <form:form method="POST" modelAttribute="initialData" action="policy/update-gpt-ignore">
+                            <li>Ignore GPT PCRs Entry: ${initialData.enableIgnoreGpt ? 'Enabled' : 'Disabled'}
+                                <my:editor id="ignoreGptPolicyEditor" label="Edit Settings">
+                                    <div class="radio">
+                                        <label><input id="gptTop" type="radio" name="ignoreGpt" ${initialData.enableIgnoreGpt ? 'checked' : ''} value="checked"/> Ignore GPT enabled</label>
+                                    </div>
+                                    <div class="radio">
+                                        <label><input id="gptBot" type="radio" name="ignoreGpt" ${initialData.enableIgnoreGpt ? '' : 'checked'}  value="unchecked"/> Ignore GPT disabled</label>
+                                    </div>
+                                </my:editor>
+                            </li>
+                        </form:form>
                     </ul>
                 </li>
             </div>

@@ -206,6 +206,23 @@ public class SupplyChainPolicy extends Policy {
     }
 
     /**
+     * Returns whether or not to validate the ignore GPT on the device.
+     *
+     * @return whether or not to validate the ignore GPT
+     */
+    public boolean isIgnoreGptEnabled() {
+        return this.pcrPolicy.isEnableIgnoreGpt();
+    }
+
+    /**
+     * Sets whether or not validate the ignore GPT on the device.
+     * @param enableIgnoreGpt whether or not to validate the ignore GPT
+     */
+    public void setIgnoreGptEnabled(final boolean enableIgnoreGpt) {
+        this.pcrPolicy.setEnableIgnoreGpt(enableIgnoreGpt);
+    }
+
+    /**
      * Returns whether or not to allow expired credentials and certificates to be considered
      * valid if their supply chain is otherwise verified.
      *
