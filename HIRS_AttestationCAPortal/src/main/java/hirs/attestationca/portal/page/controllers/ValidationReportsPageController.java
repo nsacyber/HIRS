@@ -58,12 +58,13 @@ public class ValidationReportsPageController extends PageController<NoPageParams
     private final CertificateManager certificateManager;
     private final DeviceManager deviceManager;
 
-    private static String columnHeaders = "Verified Manufacturer,"
-            + "Model,SN,Verification Date,Device Status,"
-            + "Component name,Component manufacturer,Component model,"
-            + "Component SN,Issuer,Component status";
+    private static String systemColumnHeaders = "Verified Manufacturer,"
+            + "Model,SN,Verification Date,Device Status";
+    private static String componentColumnHeaders = "Component name,Component manufacturer,"
+            + "Component model,Component SN,Issuer,Component status";
     private static final String DEFAULT_COMPANY = "AllDevices";
     private static final String UNDEFINED = "undefined";
+    private static final String TRUE = "true";
     private static final Logger LOGGER = getLogger(ValidationReportsPageController.class);
 
     /**
@@ -155,6 +156,9 @@ public class ValidationReportsPageController extends PageController<NoPageParams
         LocalDate endDate = null;
         ArrayList<LocalDate> createTimes = new ArrayList<LocalDate>();
         String[] deviceNames = new String[]{};
+        String columnHeaders = "";
+        boolean systemOnly = false;
+        boolean componentOnly = false;
 
         Enumeration parameters = request.getParameterNames();
         while (parameters.hasMoreElements()) {
@@ -208,6 +212,29 @@ public class ValidationReportsPageController extends PageController<NoPageParams
                         deviceNames = parameterValue.split(",");
                     }
                     break;
+                case "system":
+                    if (parameterValue.equals(TRUE)) {
+                        systemOnly = true;
+                        columnHeaders = systemColumnHeaders + columnHeaders;
+                    }
+                    break;
+                case "component":
+                    if (parameterValue.equals(TRUE)) {
+                        componentOnly = true;
+                        columnHeaders += componentColumnHeaders;
+                    }
+                    break;
+/*                case "manufacturer":
+                    if (!parameterValue.isEmpty()) {
+
+                    }
+                    break;
+                case "serial":
+                    if (!parameterValue.isEmpty()) {
+
+                    }
+                    break;
+*/
                 default:
             }
         }
@@ -220,6 +247,10 @@ public class ValidationReportsPageController extends PageController<NoPageParams
         StringBuilder reportData = new StringBuilder();
         bufferedWriter.append("Company: " + company + "\n");
         bufferedWriter.append("Contract number: " + contractNumber + "\n");
+        if (systemOnly && componentOnly) {
+            systemOnly = false;
+            componentOnly = false;
+        }
         for (int i = 0; i < deviceNames.length; i++) {
             if ((createTimes.get(i).isAfter(startDate) || createTimes.get(i).isEqual(startDate))
                     && (createTimes.get(i).isBefore(endDate)
@@ -229,23 +260,27 @@ public class ValidationReportsPageController extends PageController<NoPageParams
                 PlatformCredential pc = PlatformCredential.select(certificateManager)
                         .byDeviceId(deviceId).getCertificate();
                 LOGGER.info("Found platform credential: " + pc.toString());
-                reportData.append(pc.getManufacturer() + ","
-                        + pc.getModel() + ","
-                        + pc.getPlatformSerial() + ","
-                        + LocalDateTime.now().toString() + ","
-                        + pc.getDevice().getSupplyChainStatus() + ",");
-                ArrayList<ArrayList<String>> parsedComponents = parseComponents(pc);
-                for (ArrayList<String> component : parsedComponents) {
-                    for (String data : component) {
-                        reportData.append(data + ",");
-                    }
-                    reportData.deleteCharAt(reportData.length() - 1);
-                    reportData.append("\n,,,,,");
+                if (!componentOnly) {
+                    reportData.append(pc.getManufacturer() + ","
+                            + pc.getModel() + ","
+                            + pc.getPlatformSerial() + ","
+                            + LocalDateTime.now().toString() + ","
+                            + pc.getDevice().getSupplyChainStatus() + ",");
                 }
-                if (reportData.lastIndexOf(",") > 4) {
-                    reportData.delete(reportData.lastIndexOf(",") - 4, reportData.length());
+                if (!systemOnly) {
+                    ArrayList<ArrayList<String>> parsedComponents = parseComponents(pc);
+                    for (ArrayList<String> component : parsedComponents) {
+                        for (String data : component) {
+                            reportData.append(data + ",");
+                        }
+                        reportData.deleteCharAt(reportData.length() - 1);
+                        reportData.append("\n,,,,,");
+                    }
                 }
             }
+        }
+        if (columnHeaders.isEmpty()) {
+            columnHeaders = systemColumnHeaders + componentColumnHeaders;
         }
         bufferedWriter.append(columnHeaders + "\n");
         bufferedWriter.append(reportData.toString() + "\n");
