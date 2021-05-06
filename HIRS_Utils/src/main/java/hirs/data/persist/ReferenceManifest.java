@@ -97,6 +97,9 @@ public abstract class ReferenceManifest extends ArchivableEntity {
     @Type(type = "uuid-char")
     @Column
     private UUID associatedRim;
+    @Column
+    @JsonIgnore
+    private String deviceName;
 
     /**
      * Default constructor necessary for Hibernate.
@@ -333,6 +336,22 @@ public abstract class ReferenceManifest extends ArchivableEntity {
      */
     public void setAssociatedRim(final UUID associatedRim) {
         this.associatedRim = associatedRim;
+    }
+
+    /**
+     * Getter for the Device Name.
+     * @return string value of the device associated with this log.
+     */
+    public String getDeviceName() {
+        return deviceName;
+    }
+
+    /**
+     * Setter for the Device Name.
+     * @param deviceName new value to assign.
+     */
+    public void setDeviceName(final String deviceName) {
+        this.deviceName = deviceName;
     }
 
     /**

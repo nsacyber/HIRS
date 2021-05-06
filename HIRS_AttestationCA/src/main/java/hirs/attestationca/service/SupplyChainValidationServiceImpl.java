@@ -512,9 +512,11 @@ public class SupplyChainValidationServiceImpl implements SupplyChainValidationSe
                         if (!tpmPcrEvents.isEmpty()) {
                             StringBuilder sb = new StringBuilder();
                             validationObject = measurement;
+                            sb.append(String.format("%d digest(s) were not found:%n",
+                                    tpmPcrEvents.size()));
                             for (TpmPcrEvent tpe : tpmPcrEvents) {
-                                sb.append(String.format("Event %s - %s%n",
-                                        tpe.getEventNumber(),
+                                sb.append(String.format("PCR Index %d - %s%n",
+                                        tpe.getPcrIndex(),
                                         tpe.getEventTypeStr()));
                             }
                             if (fwStatus.getAppStatus().equals(FAIL)) {

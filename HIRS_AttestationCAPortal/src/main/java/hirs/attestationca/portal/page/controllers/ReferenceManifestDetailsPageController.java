@@ -6,12 +6,16 @@ import hirs.attestationca.portal.page.PageMessages;
 import hirs.attestationca.portal.page.params.ReferenceManifestDetailsPageParams;
 import hirs.data.persist.BaseReferenceManifest;
 import hirs.data.persist.EventLogMeasurements;
+import hirs.data.persist.ReferenceDigestRecord;
+import hirs.data.persist.ReferenceDigestValue;
 import hirs.data.persist.ReferenceManifest;
 import hirs.data.persist.SupportReferenceManifest;
 import hirs.data.persist.SwidResource;
 import hirs.data.persist.certificate.CertificateAuthorityCredential;
 import hirs.persist.CertificateManager;
 import hirs.persist.DBManagerException;
+import hirs.persist.ReferenceDigestManager;
+import hirs.persist.ReferenceEventManager;
 import hirs.persist.ReferenceManifestManager;
 import hirs.tpm.eventlog.TCGEventLog;
 import hirs.tpm.eventlog.TpmPcrEvent;
@@ -32,6 +36,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 
@@ -44,6 +49,8 @@ public class ReferenceManifestDetailsPageController
         extends PageController<ReferenceManifestDetailsPageParams> {
 
     private final ReferenceManifestManager referenceManifestManager;
+    private final ReferenceDigestManager referenceDigestManager;
+    private final ReferenceEventManager referenceEventManager;
     private final CertificateManager certificateManager;
     private static final ReferenceManifestValidator RIM_VALIDATOR
             = new ReferenceManifestValidator();
@@ -54,14 +61,20 @@ public class ReferenceManifestDetailsPageController
      * Constructor providing the Page's display and routing specification.
      *
      * @param referenceManifestManager the reference manifest manager.
+     * @param referenceDigestManager the reference digest manager.
+     * @param referenceEventManager the reference event manager.
      * @param certificateManager        the certificate manager.
      */
     @Autowired
     public ReferenceManifestDetailsPageController(
             final ReferenceManifestManager referenceManifestManager,
+            final ReferenceDigestManager referenceDigestManager,
+            final ReferenceEventManager referenceEventManager,
             final CertificateManager certificateManager) {
         super(Page.RIM_DETAILS);
         this.referenceManifestManager = referenceManifestManager;
+        this.referenceDigestManager = referenceDigestManager;
+        this.referenceEventManager = referenceEventManager;
         this.certificateManager = certificateManager;
     }
 
@@ -92,7 +105,8 @@ public class ReferenceManifestDetailsPageController
         } else {
             try {
                 UUID uuid = UUID.fromString(params.getId());
-                data.putAll(getRimDetailInfo(uuid, referenceManifestManager, certificateManager));
+                data.putAll(getRimDetailInfo(uuid, referenceManifestManager,
+                        referenceDigestManager, referenceEventManager, certificateManager));
             } catch (IllegalArgumentException iaEx) {
                 String uuidError = "Failed to parse ID from: " + params.getId();
                 messages.addError(uuidError);
@@ -123,6 +137,8 @@ public class ReferenceManifestDetailsPageController
      *
      * @param uuid                     database reference for the requested RIM.
      * @param referenceManifestManager the reference manifest manager.
+     * @param referenceDigestManager the reference digest manager.
+     * @param referenceEventManager the reference event manager.
      * @param certificateManager        the certificate manager.
      * @return mapping of the RIM information from the database.
      * @throws java.io.IOException      error for reading file bytes.
@@ -131,6 +147,8 @@ public class ReferenceManifestDetailsPageController
      */
     public static HashMap<String, Object> getRimDetailInfo(final UUID uuid,
              final ReferenceManifestManager referenceManifestManager,
+             final ReferenceDigestManager referenceDigestManager,
+             final ReferenceEventManager referenceEventManager,
              final CertificateManager certificateManager) throws IOException,
             CertificateException, NoSuchAlgorithmException {
         HashMap<String, Object> data = new HashMap<>();
@@ -153,7 +171,8 @@ public class ReferenceManifestDetailsPageController
                 .byEntityId(uuid).getRIM();
 
         if (bios != null) {
-            data.putAll(getMeasurementsRimInfo(bios, referenceManifestManager));
+            data.putAll(getMeasurementsRimInfo(bios, referenceManifestManager,
+                    referenceDigestManager, referenceEventManager));
         }
 
         return data;
@@ -457,6 +476,8 @@ public class ReferenceManifestDetailsPageController
      *
      * @param measurements established ReferenceManifest Type.
      * @param referenceManifestManager the reference manifest manager.
+     * @param referenceDigestManager the reference digest manager.
+     * @param referenceEventManager the reference event manager.
      * @return mapping of the RIM information from the database.
      * @throws java.io.IOException      error for reading file bytes.
      * @throws NoSuchAlgorithmException If an unknown Algorithm is encountered.
@@ -464,56 +485,65 @@ public class ReferenceManifestDetailsPageController
      */
     private static HashMap<String, Object> getMeasurementsRimInfo(
             final EventLogMeasurements measurements,
-            final ReferenceManifestManager referenceManifestManager)
+            final ReferenceManifestManager referenceManifestManager,
+            final ReferenceDigestManager referenceDigestManager,
+            final ReferenceEventManager referenceEventManager)
             throws IOException, CertificateException, NoSuchAlgorithmException {
         HashMap<String, Object> data = new HashMap<>();
-        LinkedList<TpmPcrEvent> supportEvents = new LinkedList<>();
         LinkedList<TpmPcrEvent> livelogEvents = new LinkedList<>();
         BaseReferenceManifest base = null;
         SupportReferenceManifest support = null;
         TCGEventLog supportLog = null;
+        ReferenceDigestRecord digestRecord = null;
 
         data.put("supportFilename", "Blank");
         data.put("supportId", "");
-        data.put("tagId", measurements.getTagId());
         data.put("baseId", "");
         data.put("rimType", measurements.getRimType());
+        data.put("hostName", measurements.getDeviceName());
 
         if (measurements.getPlatformManufacturer() != null) {
+            digestRecord = referenceDigestManager.getRecord(measurements
+                    .getPlatformManufacturer(),
+                    measurements.getPlatformModel());
             support = SupportReferenceManifest
                     .select(referenceManifestManager)
                     .byManufacturer(measurements
                             .getPlatformManufacturer()).getRIM();
 
             if (support != null) {
-                supportLog = new TCGEventLog(support.getRimBytes());
                 data.put("supportFilename", support.getFileName());
                 data.put("supportId", support.getId());
-            }
 
-            base = BaseReferenceManifest
-                    .select(referenceManifestManager)
-                    .byManufacturer(measurements
-                            .getPlatformManufacturer()).getRIM();
 
-            if (base != null) {
-                data.put("baseId", base.getId());
+                base = BaseReferenceManifest
+                        .select(referenceManifestManager)
+                        .byEntityId(support.getAssociatedRim())
+                        .getRIM();
+                data.put("tagId", support.getTagId());
+
+                if (base != null) {
+                    data.put("baseId", base.getId());
+                }
             }
         }
 
         TCGEventLog measurementLog = new TCGEventLog(measurements.getRimBytes());
-        if (supportLog != null) {
-            TpmPcrEvent measurementEvent;
-            for (TpmPcrEvent tpe : supportLog.getEventList()) {
-                measurementEvent = measurementLog.getEventByNumber(tpe.getEventNumber());
-                if (!tpe.eventCompare(measurementEvent)) {
-                    supportEvents.add(tpe);
+        List<ReferenceDigestValue> eventValue;
+        Map<String, ReferenceDigestValue> eventValueMap = new HashMap<>();
+        if (digestRecord != null) {
+            eventValue = referenceEventManager
+                    .getValuesByRecordId(digestRecord);
+            for (ReferenceDigestValue rdv : eventValue) {
+                eventValueMap.put(rdv.getDigestValue(), rdv);
+            }
+            for (TpmPcrEvent measurementEvent : measurementLog.getEventList()) {
+                if (!eventValueMap.containsKey(measurementEvent.getEventDigestStr())) {
                     livelogEvents.add(measurementEvent);
                 }
             }
         }
 
-        data.put("supportEvents", supportEvents);
         data.put("livelogEvents", livelogEvents);
 
         return data;

@@ -241,6 +241,10 @@
                     <div class="row">
                         <div class="col-md-1 col-md-offset-1"><span class="colHeader">Base/Support</span></div>
                         <div id="measurements" class="col col-md-8">
+                            <c:if test="${not empty initialData.hostName}">
+                                <div><span>${initialData.hostName}</span>
+                                </div>
+                            </c:if>
                             <c:if test="${not empty initialData.tagId}">
                                 <div>Base:&nbsp;<span><a href="${portal}/rim-details?id=${initialData.baseId}">${initialData.tagId}</a></span>
                                 </div>
@@ -253,31 +257,6 @@
                     </div>
                     <br />
                     <div class="row" style="margin: auto 260px auto 125px">
-                        <div class="panel panel-default" style="flex: 1">
-                            <div class="panel-heading">Support</div>
-                            <c:if test="${not empty initialData.supportEvents}">
-                                <c:forEach items="${initialData.supportEvents}" var="sEvent">
-                                    <div class="event-element">
-                                        <div class="event-data">
-                                            <div class="data-label">Event#:</div>
-                                            <div class="data-value">${sEvent.getEventNumber()+1}</div>
-                                        </div>           
-                                        <div class="event-data">
-                                            <div class="data-label">PCR Index:</div>
-                                            <div class="data-value">${sEvent.getPcrIndex()}</div>
-                                        </div>
-                                        <div class="event-data">
-                                            <div class="data-label">Digest:</div>
-                                            <div class="data-value">${sEvent.getEventDigestStr()}</div>
-                                        </div>
-                                        <div class="event-data">
-                                            <div class="data-label">Content:</div>
-                                            <div class="data-value">${sEvent.getEventContentStr()}</div>
-                                        </div>
-                                    </div>
-                                </c:forEach>
-                            </c:if>
-                        </div>
                         <div class="panel panel-default" style="flex: 1">
                             <div class="panel-heading">Client Log</div>
                             <c:if test="${not empty initialData.livelogEvents}">

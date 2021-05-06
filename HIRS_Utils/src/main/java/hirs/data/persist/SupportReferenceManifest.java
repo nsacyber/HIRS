@@ -60,24 +60,13 @@ public class SupportReferenceManifest extends ReferenceManifest {
         }
 
         /**
-         * Specify the platform manufacturer id that rims must have to be considered
+         * Specify the device name that rims must have to be considered
          * as matching.
-         * @param manufacturerId string for the id of the manufacturer
+         * @param deviceName string for the deviceName
          * @return this instance
          */
-        public Selector byManufacturerId(final String manufacturerId) {
-            setFieldValue(PLATFORM_MANUFACTURER_ID, manufacturerId);
-            return this;
-        }
-
-        /**
-         * Specify the platform model that rims must have to be considered
-         * as matching.
-         * @param model string for the model
-         * @return this instance
-         */
-        public Selector byModel(final String model) {
-            setFieldValue(PLATFORM_MODEL, model);
+        public Selector byDeviceName(final String deviceName) {
+            setFieldValue("deviceName", deviceName);
             return this;
         }
 

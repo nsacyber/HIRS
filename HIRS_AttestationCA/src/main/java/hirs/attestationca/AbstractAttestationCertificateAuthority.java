@@ -99,6 +99,7 @@ import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.UUID;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -806,6 +807,7 @@ public abstract class AbstractAttestationCertificateAuthority
                         support.setFileName(String.format("%s_[%s].rimel", defaultClientName,
                                 support.getRimHash().substring(
                                         support.getRimHash().length() - NUM_OF_VARIABLES)));
+                        support.setDeviceName(dv.getNw().getHostname());
                         this.referenceManifestManager.save(support);
                     } else {
                         LOG.info("Client provided Support RIM already loaded in database.");
@@ -828,6 +830,7 @@ public abstract class AbstractAttestationCertificateAuthority
 
         if (dv.getSwidfileCount() > 0) {
             for (ByteString swidFile : dv.getSwidfileList()) {
+                UUID baseId = null;
                 fileName = "";
                 try {
                     dbBaseRim = BaseReferenceManifest.select(referenceManifestManager)
@@ -841,6 +844,7 @@ public abstract class AbstractAttestationCertificateAuthority
                                 String.format("%s.swidtag",
                                         defaultClientName),
                                 swidFile.toByteArray());
+                        dbBaseRim.setDeviceName(dv.getNw().getHostname());
 
                         // get file name to use
                         for (SwidResource swid : dbBaseRim.parseResource()) {
@@ -849,10 +853,8 @@ public abstract class AbstractAttestationCertificateAuthority
                                 //found the file name
                                 int dotIndex = swid.getName().lastIndexOf(".");
                                 fileName = swid.getName().substring(0, dotIndex);
-                                dbBaseRim = new BaseReferenceManifest(
-                                        String.format("%s.swidtag",
-                                                fileName),
-                                        swidFile.toByteArray());
+                                dbBaseRim.setFileName(String.format("%s.swidtag",
+                                        fileName));
                             }
 
                             // now update support rim
@@ -862,8 +864,6 @@ public abstract class AbstractAttestationCertificateAuthority
                             if (dbSupport != null && !dbSupport.isUpdated()) {
                                 dbSupport.setFileName(swid.getName());
                                 dbSupport.setSwidTagVersion(dbBaseRim.getSwidTagVersion());
-                                // I might create a get for the bytes of the swidtag file
-                                // so that I can set that instead of the rim ID
                                 dbSupport.setTagId(dbBaseRim.getTagId());
                                 dbSupport.setSwidTagVersion(dbBaseRim.getSwidTagVersion());
                                 dbSupport.setSwidVersion(dbBaseRim.getSwidVersion());
@@ -875,7 +875,8 @@ public abstract class AbstractAttestationCertificateAuthority
                                 break;
                             }
                         }
-                        this.referenceManifestManager.save(dbBaseRim);
+                        baseId = this.referenceManifestManager.save(dbBaseRim).getId();
+                        LOG.error(baseId);
                     } else {
                         LOG.info("Client provided Base RIM already loaded in database.");
                         /**
@@ -889,6 +890,17 @@ public abstract class AbstractAttestationCertificateAuthority
                         }
                     }
 
+                    // sync up associated IDs
+                    if (dbBaseRim.getAssociatedRim() != null) {
+                        SupportReferenceManifest dbSupport = SupportReferenceManifest
+                                .select(referenceManifestManager)
+                                .byEntityId(dbBaseRim.getAssociatedRim()).getRIM();
+
+                        if (dbSupport != null && dbSupport.getAssociatedRim() == null) {
+                            dbSupport.setAssociatedRim(baseId);
+                            this.referenceManifestManager.update(dbSupport);
+                        }
+                    }
                 } catch (IOException ioEx) {
                     LOG.error(ioEx);
                 }
@@ -906,7 +918,7 @@ public abstract class AbstractAttestationCertificateAuthority
             try {
                 // find previous version.  If it exists, delete it
                 measurements = EventLogMeasurements.select(referenceManifestManager)
-                        .byManufacturer(dv.getHw().getManufacturer())
+                        .byDeviceName(dv.getNw().getHostname())
                         .includeArchived().getRIM();
                 if (measurements != null) {
                     LOG.info("Previous bios measurement log found and being replaced...");
@@ -917,6 +929,7 @@ public abstract class AbstractAttestationCertificateAuthority
                 measurements.setPlatformManufacturer(dv.getHw().getManufacturer());
                 measurements.setPlatformModel(dv.getHw().getProductName());
                 measurements.setTagId(tagId);
+                measurements.setDeviceName(dv.getNw().getHostname());
                 this.referenceManifestManager.save(measurements);
             } catch (IOException ioEx) {
                 LOG.error(ioEx);
