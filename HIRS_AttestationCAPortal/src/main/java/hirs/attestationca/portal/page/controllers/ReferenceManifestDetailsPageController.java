@@ -114,7 +114,7 @@ public class ReferenceManifestDetailsPageController
             } catch (Exception ioEx) {
                 LOGGER.error(ioEx);
                 for (StackTraceElement ste : ioEx.getStackTrace()) {
-                    LOGGER.debug(ste.toString());
+                    LOGGER.error(ste.toString());
                 }
             }
             if (data.isEmpty()) {

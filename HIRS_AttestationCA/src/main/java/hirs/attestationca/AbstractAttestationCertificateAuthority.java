@@ -94,12 +94,12 @@ import java.security.interfaces.RSAPublicKey;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.MGF1ParameterSpec;
 import java.security.spec.RSAPublicKeySpec;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.UUID;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -784,6 +784,7 @@ public abstract class AbstractAttestationCertificateAuthority
         Pattern pattern = Pattern.compile("([^\\s]+(\\.(?i)(rimpcr|rimel|bin|log))$)");
         Matcher matcher;
         MessageDigest messageDigest =  MessageDigest.getInstance("SHA-256");
+        List<ByteString> baseLogFiles = new ArrayList<>();
 
         if (dv.getLogfileCount() > 0) {
             for (ByteString logFile : dv.getLogfileList()) {
@@ -830,8 +831,6 @@ public abstract class AbstractAttestationCertificateAuthority
 
         if (dv.getSwidfileCount() > 0) {
             for (ByteString swidFile : dv.getSwidfileList()) {
-                UUID baseId = null;
-                fileName = "";
                 try {
                     dbBaseRim = BaseReferenceManifest.select(referenceManifestManager)
                             .includeArchived()
@@ -845,38 +844,7 @@ public abstract class AbstractAttestationCertificateAuthority
                                         defaultClientName),
                                 swidFile.toByteArray());
                         dbBaseRim.setDeviceName(dv.getNw().getHostname());
-
-                        // get file name to use
-                        for (SwidResource swid : dbBaseRim.parseResource()) {
-                            matcher = pattern.matcher(swid.getName());
-                            if (matcher.matches()) {
-                                //found the file name
-                                int dotIndex = swid.getName().lastIndexOf(".");
-                                fileName = swid.getName().substring(0, dotIndex);
-                                dbBaseRim.setFileName(String.format("%s.swidtag",
-                                        fileName));
-                            }
-
-                            // now update support rim
-                            SupportReferenceManifest dbSupport = SupportReferenceManifest
-                                    .select(referenceManifestManager)
-                                    .byRimHash(swid.getHashValue()).getRIM();
-                            if (dbSupport != null && !dbSupport.isUpdated()) {
-                                dbSupport.setFileName(swid.getName());
-                                dbSupport.setSwidTagVersion(dbBaseRim.getSwidTagVersion());
-                                dbSupport.setTagId(dbBaseRim.getTagId());
-                                dbSupport.setSwidTagVersion(dbBaseRim.getSwidTagVersion());
-                                dbSupport.setSwidVersion(dbBaseRim.getSwidVersion());
-                                dbSupport.setSwidPatch(dbBaseRim.isSwidPatch());
-                                dbSupport.setSwidSupplemental(dbBaseRim.isSwidSupplemental());
-                                dbBaseRim.setAssociatedRim(dbSupport.getId());
-                                dbSupport.setUpdated(true);
-                                this.referenceManifestManager.update(dbSupport);
-                                break;
-                            }
-                        }
-                        baseId = this.referenceManifestManager.save(dbBaseRim).getId();
-                        LOG.error(baseId);
+                        this.referenceManifestManager.save(dbBaseRim);
                     } else {
                         LOG.info("Client provided Base RIM already loaded in database.");
                         /**
@@ -889,24 +857,53 @@ public abstract class AbstractAttestationCertificateAuthority
                             this.referenceManifestManager.update(dbBaseRim);
                         }
                     }
-
-                    // sync up associated IDs
-                    if (dbBaseRim.getAssociatedRim() != null) {
-                        SupportReferenceManifest dbSupport = SupportReferenceManifest
-                                .select(referenceManifestManager)
-                                .byEntityId(dbBaseRim.getAssociatedRim()).getRIM();
-
-                        if (dbSupport != null && dbSupport.getAssociatedRim() == null) {
-                            dbSupport.setAssociatedRim(baseId);
-                            this.referenceManifestManager.update(dbSupport);
-                        }
-                    }
                 } catch (IOException ioEx) {
                     LOG.error(ioEx);
                 }
             }
+            baseLogFiles.addAll(dv.getSwidfileList());
         } else {
             LOG.warn("Device did not send swid tag file...");
+        }
+
+        //update Support RIMs and Base RIMs.
+        for (ByteString swidFile : dv.getSwidfileList()) {
+            dbBaseRim = BaseReferenceManifest.select(referenceManifestManager)
+                    .includeArchived()
+                    .byHashCode(Hex.encodeHexString(messageDigest.digest(
+                            swidFile.toByteArray())))
+                    .getRIM();
+
+            // get file name to use
+            for (SwidResource swid : dbBaseRim.parseResource()) {
+                matcher = pattern.matcher(swid.getName());
+                if (matcher.matches()) {
+                    //found the file name
+                    int dotIndex = swid.getName().lastIndexOf(".");
+                    fileName = swid.getName().substring(0, dotIndex);
+                    dbBaseRim.setFileName(String.format("%s.swidtag",
+                            fileName));
+                }
+
+                // now update support rim
+                SupportReferenceManifest dbSupport = SupportReferenceManifest
+                        .select(referenceManifestManager)
+                        .byRimHash(swid.getHashValue()).getRIM();
+                if (dbSupport != null) {
+                    dbSupport.setFileName(swid.getName());
+                    dbSupport.setSwidTagVersion(dbBaseRim.getSwidTagVersion());
+                    dbSupport.setTagId(dbBaseRim.getTagId());
+                    dbSupport.setSwidTagVersion(dbBaseRim.getSwidTagVersion());
+                    dbSupport.setSwidVersion(dbBaseRim.getSwidVersion());
+                    dbSupport.setSwidPatch(dbBaseRim.isSwidPatch());
+                    dbSupport.setSwidSupplemental(dbBaseRim.isSwidSupplemental());
+                    dbBaseRim.setAssociatedRim(dbSupport.getId());
+                    dbSupport.setUpdated(true);
+                    dbSupport.setAssociatedRim(dbBaseRim.getId());
+                    this.referenceManifestManager.update(dbSupport);
+                }
+            }
+            this.referenceManifestManager.update(dbBaseRim);
         }
 
         generateDigestRecords(hw.getManufacturer(), hw.getProductName());
