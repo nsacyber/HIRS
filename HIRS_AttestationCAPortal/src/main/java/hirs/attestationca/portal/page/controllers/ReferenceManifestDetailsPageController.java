@@ -288,6 +288,8 @@ public class ReferenceManifestDetailsPageController
             }
         }
 
+        // Let's pull the supply chain validation
+
         data.put("associatedRim", baseRim.getAssociatedRim());
         data.put("swidFiles", resources);
         if (support != null && (!baseRim.isSwidSupplemental()
@@ -337,7 +339,8 @@ public class ReferenceManifestDetailsPageController
                     .select(referenceManifestManager)
                     .byRimType(ReferenceManifest.BASE_RIM).getRIMs();
             for (BaseReferenceManifest baseRim : baseRims) {
-                if (baseRim != null && baseRim.getAssociatedRim().equals(support.getId())) {
+                if (baseRim != null && baseRim.getAssociatedRim() != null
+                        && baseRim.getAssociatedRim().equals(support.getId())) {
                     support.setAssociatedRim(baseRim.getId());
                     try {
                         referenceManifestManager.update(support);

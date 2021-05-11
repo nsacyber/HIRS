@@ -794,7 +794,6 @@ public abstract class AbstractAttestationCertificateAuthority
                             .byHashCode(Hex.encodeHexString(messageDigest.digest(
                                     logFile.toByteArray())))
                             .getRIM();
-
                     if (support == null) {
                         support = new SupportReferenceManifest(
                                 String.format("%s.rimel",
@@ -837,7 +836,6 @@ public abstract class AbstractAttestationCertificateAuthority
                             .byHashCode(Hex.encodeHexString(messageDigest.digest(
                                     swidFile.toByteArray())))
                             .getRIM();
-
                     if (dbBaseRim == null) {
                         dbBaseRim = new BaseReferenceManifest(
                                 String.format("%s.swidtag",

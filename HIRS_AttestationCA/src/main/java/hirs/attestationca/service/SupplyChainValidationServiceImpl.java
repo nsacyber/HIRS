@@ -370,26 +370,28 @@ public class SupplyChainValidationServiceImpl implements SupplyChainValidationSe
         String model = device.getDeviceInfo()
                 .getHardwareInfo().getProductName();
         ReferenceManifest validationObject = null;
-        ReferenceManifest baseReferenceManifest = null;
+        Set<BaseReferenceManifest> baseReferenceManifests = null;
+        BaseReferenceManifest baseReferenceManifest = null;
         ReferenceManifest supportReferenceManifest = null;
         ReferenceManifest measurement = null;
         ReferenceDigestRecord digestRecord = null;
 
-        baseReferenceManifest = BaseReferenceManifest.select(referenceManifestManager)
-                .byManufacturer(manufacturer).getRIM();
-        supportReferenceManifest = SupportReferenceManifest.select(referenceManifestManager)
-                .byManufacturer(manufacturer).getRIM();
+        baseReferenceManifests = BaseReferenceManifest.select(referenceManifestManager)
+                .byDeviceName(device.getDeviceInfo().getNetworkInfo().getHostname()).getRIMs();
+
         measurement = EventLogMeasurements.select(referenceManifestManager)
                 .byManufacturer(manufacturer).includeArchived().getRIM();
+
+        for (BaseReferenceManifest bRim : baseReferenceManifests) {
+            if (!bRim.isSwidSupplemental() && !bRim.isSwidPatch()) {
+                baseReferenceManifest = bRim;
+            }
+        }
 
         validationObject = baseReferenceManifest;
         String failedString = "";
         if (baseReferenceManifest == null) {
             failedString = "Base Reference Integrity Manifest\n";
-            passed = false;
-        }
-        if (supportReferenceManifest == null) {
-            failedString += "Support Reference Integrity Manifest\n";
             passed = false;
         }
         if (measurement == null) {
@@ -409,13 +411,22 @@ public class SupplyChainValidationServiceImpl implements SupplyChainValidationSe
                             new ByteArrayInputStream(baseReferenceManifest.getRimBytes()));
 
             for (SwidResource swidRes : resources) {
+                supportReferenceManifest = SupportReferenceManifest.select(referenceManifestManager)
+                        .byRimHash(swidRes.getHashValue()).getRIM();
                 if (swidRes.getName().equals(supportReferenceManifest.getFileName())) {
                     referenceManifestValidator.validateSupportRimHash(
                             supportReferenceManifest.getRimBytes(), swidRes.getHashValue());
+                } else {
+                    supportReferenceManifest = null;
                 }
             }
+            if (supportReferenceManifest == null) {
+                fwStatus = new AppraisalStatus(FAIL,
+                        "Support Reference Integrity Manifest\n");
+                passed = false;
+            }
 
-            if (!referenceManifestValidator.isSignatureValid()) {
+            if (passed && !referenceManifestValidator.isSignatureValid()) {
                 passed = false;
                 fwStatus = new AppraisalStatus(FAIL,
                         "Firmware validation failed: Signature validation "
@@ -471,7 +482,7 @@ public class SupplyChainValidationServiceImpl implements SupplyChainValidationSe
                         } else {
                             StringBuilder sb = pcrPolicy.validatePcrs(storedPcrs);
                             if (sb.length() > 0) {
-                                validationObject = supportReferenceManifest;
+                                validationObject = baseReferenceManifest;
                                 level = Level.ERROR;
                                 fwStatus = new AppraisalStatus(FAIL, sb.toString());
                             } else {
