@@ -85,7 +85,7 @@ do
 	esac
 done
 
-echo "start date: $startDate, end date: $endDate, ip: $ip, system: $system, component: $component, manufacturer: $manufacturer, serial: $serial"
+#echo "start date: $startDate, end date: $endDate, ip: $ip, system: $system, component: $component, manufacturer: $manufacturer, serial: $serial"
 
 #call ACA for validation report
 endpoint="https://$ip:8443/HIRS_AttestationCAPortal/portal/validation-reports"

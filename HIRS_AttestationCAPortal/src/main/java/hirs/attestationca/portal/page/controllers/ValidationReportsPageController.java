@@ -159,6 +159,8 @@ public class ValidationReportsPageController extends PageController<NoPageParams
         String columnHeaders = "";
         boolean systemOnly = false;
         boolean componentOnly = false;
+        String filterManufacturer = "";
+        String filterSerial = "";
 
         Enumeration parameters = request.getParameterNames();
         while (parameters.hasMoreElements()) {
@@ -224,17 +226,17 @@ public class ValidationReportsPageController extends PageController<NoPageParams
                         columnHeaders += componentColumnHeaders;
                     }
                     break;
-/*                case "manufacturer":
-                    if (!parameterValue.isEmpty()) {
-
+                case "manufacturer":
+                    if (parameterValue != null && !parameterValue.isEmpty()) {
+                        filterManufacturer = parameterValue;
                     }
                     break;
                 case "serial":
-                    if (!parameterValue.isEmpty()) {
-
+                    if (parameterValue != null && !parameterValue.isEmpty()) {
+                        filterSerial = parameterValue;
                     }
                     break;
-*/
+
                 default:
             }
         }
@@ -256,25 +258,28 @@ public class ValidationReportsPageController extends PageController<NoPageParams
                     && (createTimes.get(i).isBefore(endDate)
                         || createTimes.get(i).isEqual(endDate))) {
                 UUID deviceId = deviceManager.getDevice(deviceNames[i]).getId();
-                LOGGER.info(deviceId);
                 PlatformCredential pc = PlatformCredential.select(certificateManager)
                         .byDeviceId(deviceId).getCertificate();
-                LOGGER.info("Found platform credential: " + pc.toString());
-                if (!componentOnly) {
-                    reportData.append(pc.getManufacturer() + ","
-                            + pc.getModel() + ","
-                            + pc.getPlatformSerial() + ","
-                            + LocalDateTime.now().toString() + ","
-                            + pc.getDevice().getSupplyChainStatus() + ",");
-                }
-                if (!systemOnly) {
-                    ArrayList<ArrayList<String>> parsedComponents = parseComponents(pc);
-                    for (ArrayList<String> component : parsedComponents) {
-                        for (String data : component) {
-                            reportData.append(data + ",");
+                if ((filterManufacturer.isEmpty() || filterManufacturer.equals(
+                                                        pc.getManufacturer()))
+                        && (filterSerial.isEmpty() || filterSerial.equals(
+                                                    pc.getPlatformSerial()))) {
+                    if (!componentOnly) {
+                        reportData.append(pc.getManufacturer() + ","
+                                + pc.getModel() + ","
+                                + pc.getPlatformSerial() + ","
+                                + LocalDateTime.now().toString() + ","
+                                + pc.getDevice().getSupplyChainStatus() + ",");
+                    }
+                    if (!systemOnly) {
+                        ArrayList<ArrayList<String>> parsedComponents = parseComponents(pc);
+                        for (ArrayList<String> component : parsedComponents) {
+                            for (String data : component) {
+                                reportData.append(data + ",");
+                            }
+                            reportData.deleteCharAt(reportData.length() - 1);
+                            reportData.append("\n,,,,,");
                         }
-                        reportData.deleteCharAt(reportData.length() - 1);
-                        reportData.append("\n,,,,,");
                     }
                 }
             }
@@ -284,8 +289,6 @@ public class ValidationReportsPageController extends PageController<NoPageParams
         }
         bufferedWriter.append(columnHeaders + "\n");
         bufferedWriter.append(reportData.toString() + "\n");
-        LOGGER.info(columnHeaders);
-        LOGGER.info(reportData.toString());
         bufferedWriter.flush();
     }
 
