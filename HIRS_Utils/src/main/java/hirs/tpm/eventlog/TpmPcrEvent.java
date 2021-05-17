@@ -1,17 +1,7 @@
 package hirs.tpm.eventlog;
 
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
-import java.io.UnsupportedEncodingException;
-import java.math.BigInteger;
-import java.nio.charset.StandardCharsets;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
-import java.security.cert.CertificateException;
-import java.util.Arrays;
-
-import hirs.tpm.eventlog.events.EvConstants;
 import hirs.tpm.eventlog.events.EvCompactHash;
+import hirs.tpm.eventlog.events.EvConstants;
 import hirs.tpm.eventlog.events.EvEfiBootServicesApp;
 import hirs.tpm.eventlog.events.EvEfiGptPartition;
 import hirs.tpm.eventlog.events.EvEfiHandoffTable;
@@ -29,6 +19,16 @@ import hirs.utils.HexUtils;
 import org.apache.commons.codec.binary.Hex;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.UnsupportedEncodingException;
+import java.math.BigInteger;
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+import java.security.cert.CertificateException;
+import java.util.Arrays;
 
 /**
  * Class to process a TCG_PCR_EVENT.
@@ -209,6 +209,14 @@ public class TpmPcrEvent {
      */
     public String getEventTypeStr() {
         return String.format("0x%s %s", Long.toHexString(eventType), eventString((int) eventType));
+    }
+
+    /**
+     * Returns a formatted string of the type for the event minus the byte code
+     * @return a string formatted to be human readable
+     */
+    public String getEventTypeString() {
+        return eventString((int) eventType);
     }
 
     /**

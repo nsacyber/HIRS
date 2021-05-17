@@ -94,7 +94,6 @@ import java.security.interfaces.RSAPublicKey;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.MGF1ParameterSpec;
 import java.security.spec.RSAPublicKeySpec;
-import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashSet;
@@ -681,7 +680,6 @@ public abstract class AbstractAttestationCertificateAuthority
             for (String line : lines) {
                 if (!line.isEmpty()
                         && !line.contains(TPM_SIGNATURE_ALG)) {
-                    LOG.error(line);
                     pcrs[counter++] = line.split(":")[1].trim();
                 }
             }
@@ -784,7 +782,6 @@ public abstract class AbstractAttestationCertificateAuthority
         Pattern pattern = Pattern.compile("([^\\s]+(\\.(?i)(rimpcr|rimel|bin|log))$)");
         Matcher matcher;
         MessageDigest messageDigest =  MessageDigest.getInstance("SHA-256");
-        List<ByteString> baseLogFiles = new ArrayList<>();
 
         if (dv.getLogfileCount() > 0) {
             for (ByteString logFile : dv.getLogfileList()) {
@@ -859,7 +856,6 @@ public abstract class AbstractAttestationCertificateAuthority
                     LOG.error(ioEx);
                 }
             }
-            baseLogFiles.addAll(dv.getSwidfileList());
         } else {
             LOG.warn("Device did not send swid tag file...");
         }

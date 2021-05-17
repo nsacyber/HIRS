@@ -260,25 +260,37 @@
                         <div class="panel panel-default" style="flex: 1">
                             <div class="panel-heading">Client Log</div>
                             <c:if test="${not empty initialData.livelogEvents}">
+                                <c:set var="iterator" value="0" scope="page"/>
                                 <c:forEach items="${initialData.livelogEvents}" var="lEvent">
-                                    <div class="event-element">
-                                        <div class="event-data">
-                                            <div class="data-label">Event#:</div>
-                                            <div class="data-value">${lEvent.getEventNumber()+1}</div>
-                                        </div>           
-                                        <div class="event-data">
-                                            <div class="data-label">PCR Index:</div>
-                                            <div class="data-value">${lEvent.getPcrIndex()}</div>
-                                        </div>
-                                        <div class="event-data">
-                                            <div class="data-label">Digest:</div>
-                                            <div class="data-value">${lEvent.getEventDigestStr()}</div>
-                                        </div>
-                                        <div class="event-data">
-                                            <div class="data-label">Content:</div>
-                                            <div class="data-value">${lEvent.getEventContentStr()}</div>
+                                    <div>
+                                        <div style="display: flex; background: lightgray;">
+                                            <div style="display: flex 1; margin: auto 1rem auto 1rem">Failed<br />Digest:</div>
+                                            <div style="display: flex 2; margin: 2px auto 2px 25px">
+                                                 ${lEvent.getEventDigestStr()}<br />${lEvent.getEventContentStr()}
+                                            </div>
                                         </div>
                                     </div>
+                                    <div style="display: flex;">
+                                        <div class="mappedButton">
+                                            Baseline Events of Type:<br />
+                                            <a role="button" data-toggle="collapse" href="#eventContent${iterator}">${lEvent.getEventTypeString()}</a>
+                                        </div>
+                                        <div id="eventContent${iterator}" class="panel-collapse collapse in" style="flex: 2">
+                                            <c:forEach items="${initialData.eventTypeMap}" var="mappedDigest">
+                                                <c:if test="${mappedDigest.key == lEvent.getEventDigestStr()}">
+                                                    <c:set var="event" value="${mappedDigest.value}" scope="page"/>
+                                                    <c:forEach items="${mappedDigest.value}" var="event">
+                                                        <div class="mappedOverhead">
+                                                            <div><span class="mappedData">PCR Index:</span> ${event.getPcrIndex()}</div>
+                                                            <div><span class="mappedData">Digest:</span> ${event.getEventDigestStr()}</div>
+                                                            <div><span class="mappedData">Event Content:</span> ${event.getEventContentStr()}</div>
+                                                        </div>
+                                                    </c:forEach>
+                                                </c:if>
+                                            </c:forEach>
+                                        </div>
+                                    </div>
+                                    <c:set var="iterator" value="${iterator+1}" scope="page"/>
                                 </c:forEach>
                             </c:if>
                         </div>

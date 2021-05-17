@@ -32,6 +32,7 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.security.NoSuchAlgorithmException;
 import java.security.cert.CertificateException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -288,8 +289,6 @@ public class ReferenceManifestDetailsPageController
             }
         }
 
-        // Let's pull the supply chain validation
-
         data.put("associatedRim", baseRim.getAssociatedRim());
         data.put("swidFiles", resources);
         if (support != null && (!baseRim.isSwidSupplemental()
@@ -545,6 +544,21 @@ public class ReferenceManifestDetailsPageController
                     livelogEvents.add(measurementEvent);
                 }
             }
+        }
+
+        if (support != null) {
+            Map<String, List<TpmPcrEvent>> baselineLogEvents = new HashMap<>();
+            List<TpmPcrEvent> baselines = null;
+            for (TpmPcrEvent tpe : livelogEvents) {
+                baselines = new ArrayList<>();
+                for (TpmPcrEvent supports : support.getEventLog()) {
+                    if (supports.getEventType() == tpe.getEventType()) {
+                        baselines.add(supports);
+                    }
+                }
+                baselineLogEvents.put(tpe.getEventDigestStr(), baselines);
+            }
+            data.put("eventTypeMap", baselineLogEvents);
         }
 
         data.put("livelogEvents", livelogEvents);
