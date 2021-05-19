@@ -15,8 +15,8 @@ else
 fi
 
 #set parameter names and call getopts on inputsi, then parse/assign arguments
-SHORTOPTS=m:s:h
-LONGOPTS=start-date:,end-date:,ip:,system-only,component-only,manufacturer:,serial:,help
+SHORTOPTS=d:e:i:ypm:s:jh
+LONGOPTS=start-date:,end-date:,ip:,system-only,component-only,manufacturer:,serial:,json,help
 PARSED=$(getopt --options=$SHORTOPTS --longoptions=$LONGOPTS --name "$0" -- "$@")
 if [[ ${PIPESTATUS[0]} -ne 0 ]]
 then 
@@ -30,35 +30,37 @@ system=
 component=
 manufacturer=
 serial=
+json=
 
-helpText="\n\n\nHELP MENU\n\nThe following options are available:\n--start-date\t\t<yyyy-mm-dd>\tDefault: 1970-01-01\tThe earliest date to return validation reports from.\n"
-helpText+="--end-date\t\t<yyyy-mm-dd>\tDefault: current time\tThe latest date to return validation reports from.\n"
-helpText+="--ip\t\t\t<ACA address>\tDefault: localhost\tThe IP address where the ACA is located.\n"
-helpText+="--system-only\t\t\t\t\t\t\tReturn only system information from validation reports.\n"
-helpText+="--component-only\t\t\t\t\t\tReturn only component information from validation reports.\n"
+helpText="\n\n\nHELP MENU\n\nThe following options are available:\n-d|--start-date\t\t<yyyy-mm-dd>\tDefault: 1970-01-01\tThe earliest date to return validation reports from.\n"
+helpText+="-e|--end-date\t\t<yyyy-mm-dd>\tDefault: current time\tThe latest date to return validation reports from.\n"
+helpText+="-i|--ip\t\t\t<ACA address>\tDefault: localhost\tThe IP address where the ACA is located.\n"
+helpText+="-y|--system-only\t\t\t\t\t\tReturn only system information from validation reports.\n"
+helpText+="-p|--component-only\t\t\t\t\t\tReturn only component information from validation reports.\n"
 helpText+="-m|--manufacturer\t<manufacturer's name>\t\t\tReturn only the validation report of the device from this manufacturer.\n"
 helpText+="-s|--serial\t\t<serial number>\t\t\t\tReturn only the validation report of the device with this serial number.\n"
+helpText+="-j|--json\t\t\t\t\t\t\tReturn output in JSON format. Only --start-date, --end-date,\n\t\t\t\t\t\t\t\tand --ip parameters are read with this option, all others are ignored.\n"
 
 while true
 do
 	case "$1" in
-		--start-date)
+		-d|--start-date)
 			startDate="$2"
 			shift 2
 			;;
-		--end-date)
+		-e|--end-date)
 			endDate="$2"
 			shift 2
 			;;
-		--ip)
+		-i|--ip)
 			ip="$2"
 			shift 2
 			;;
-		--system-only)
+		-y|--system-only)
 			system=true
 			shift
 			;;
-		--component-only)
+		-p|--component-only)
 			component=true
 			shift
 			;;
@@ -69,6 +71,10 @@ do
 		-s|--serial)
 			serial="$2"
 			shift 2
+			;;
+		-j|--json)
+			json=true
+			shift
 			;;
 		-h|--help)
 			printf "$helpText"
@@ -84,8 +90,6 @@ do
 			;;
 	esac
 done
-
-#echo "start date: $startDate, end date: $endDate, ip: $ip, system: $system, component: $component, manufacturer: $manufacturer, serial: $serial"
 
 #call ACA for validation report
 endpoint="https://$ip:8443/HIRS_AttestationCAPortal/portal/validation-reports"
@@ -103,4 +107,11 @@ deviceNames=$(jq -r '.data | map(.device.name) | join(",")' <<< "$content")
 
 echo "Create times: $createTimes"
 echo "Device names: $deviceNames"
-curl --data "dateStart=$startDate&dateEnd=$endDate&createTimes=$createTimes&deviceNames=$deviceNames&system=$system&component=$component&manufacturer=$manufacturer&serial=$serial" --insecure $endpoint/download
+curlData="dateStart=$startDate&dateEnd=$endDate&createTimes=$createTimes&deviceNames=$deviceNames"
+if [[ "$json" = true  ]]
+then
+	curlData+="&json=true"
+else
+	curlData+="&system=$system&component=$component&manufacturer=$manufacturer&serial=$serial"
+fi
+curl --data "$curlData" --insecure $endpoint/download

@@ -1,18 +1,23 @@
 package hirs.attestationca.portal.page.controllers;
 
+import com.google.gson.JsonArray;
+import com.google.gson.JsonObject;
+import hirs.FilteredRecordsList;
 import hirs.attestationca.portal.datatables.DataTableInput;
 import hirs.attestationca.portal.datatables.DataTableResponse;
 import hirs.attestationca.portal.datatables.OrderedListQueryDataTableAdapter;
 import hirs.attestationca.portal.page.PageController;
 import hirs.attestationca.portal.page.params.NoPageParams;
+import hirs.data.persist.SupplyChainValidationSummary;
 import hirs.data.persist.certificate.Certificate;
 import hirs.data.persist.certificate.PlatformCredential;
 import hirs.data.persist.certificate.attributes.ComponentIdentifier;
 import hirs.data.persist.certificate.attributes.V2.ComponentIdentifierV2;
 import hirs.persist.CertificateManager;
+import hirs.persist.CriteriaModifier;
+import hirs.persist.CrudManager;
 import hirs.persist.DeviceManager;
 import org.apache.logging.log4j.Logger;
-import static org.apache.logging.log4j.LogManager.getLogger;
 import org.hibernate.Criteria;
 import org.hibernate.criterion.Restrictions;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,12 +28,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.servlet.ModelAndView;
-
-import static hirs.attestationca.portal.page.Page.VALIDATION_REPORTS;
-import hirs.FilteredRecordsList;
-import hirs.data.persist.SupplyChainValidationSummary;
-import hirs.persist.CriteriaModifier;
-import hirs.persist.CrudManager;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -46,6 +45,9 @@ import java.util.UUID;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
+
+import static hirs.attestationca.portal.page.Page.VALIDATION_REPORTS;
+import static org.apache.logging.log4j.LogManager.getLogger;
 
 /**
  * Controller for the Validation Reports page.
@@ -141,7 +143,7 @@ public class ValidationReportsPageController extends PageController<NoPageParams
      * @param response object
      * @throws IOException thrown by BufferedWriter object
      */
-    @SuppressWarnings("checkstyle:magicnumber")
+    @SuppressWarnings({"checkstyle:magicnumber", "checkstyle:methodlength" })
     @RequestMapping(value = "download", method = RequestMethod.POST)
     public void download(final HttpServletRequest request,
                          final HttpServletResponse response) throws IOException {
@@ -161,6 +163,7 @@ public class ValidationReportsPageController extends PageController<NoPageParams
         boolean componentOnly = false;
         String filterManufacturer = "";
         String filterSerial = "";
+        boolean jsonVersion = false;
 
         Enumeration parameters = request.getParameterNames();
         while (parameters.hasMoreElements()) {
@@ -236,23 +239,23 @@ public class ValidationReportsPageController extends PageController<NoPageParams
                         filterSerial = parameterValue;
                     }
                     break;
-
+                case "json":
+                    response.setHeader("Content-Type", "application/json");
+                    jsonVersion = true;
+                    break;
                 default:
             }
         }
 
-        response.setHeader("Content-Type", "text/csv");
-        response.setHeader("Content-Disposition",
-                "attachment;filename=validation_report.csv");
+        if (!jsonVersion) {
+            response.setHeader("Content-Type", "text/csv");
+            response.setHeader("Content-Disposition",
+                    "attachment;filename=validation_report.csv");
+        }
         BufferedWriter bufferedWriter = new BufferedWriter(
                 new OutputStreamWriter(response.getOutputStream(), StandardCharsets.UTF_8));
         StringBuilder reportData = new StringBuilder();
-        bufferedWriter.append("Company: " + company + "\n");
-        bufferedWriter.append("Contract number: " + contractNumber + "\n");
-        if (systemOnly && componentOnly) {
-            systemOnly = false;
-            componentOnly = false;
-        }
+        JsonArray jsonReportData = new JsonArray();
         for (int i = 0; i < deviceNames.length; i++) {
             if ((createTimes.get(i).isAfter(startDate) || createTimes.get(i).isEqual(startDate))
                     && (createTimes.get(i).isBefore(endDate)
@@ -260,36 +263,97 @@ public class ValidationReportsPageController extends PageController<NoPageParams
                 UUID deviceId = deviceManager.getDevice(deviceNames[i]).getId();
                 PlatformCredential pc = PlatformCredential.select(certificateManager)
                         .byDeviceId(deviceId).getCertificate();
-                if ((filterManufacturer.isEmpty() || filterManufacturer.equals(
-                                                        pc.getManufacturer()))
-                        && (filterSerial.isEmpty() || filterSerial.equals(
-                                                    pc.getPlatformSerial()))) {
-                    if (!componentOnly) {
-                        reportData.append(pc.getManufacturer() + ","
-                                + pc.getModel() + ","
-                                + pc.getPlatformSerial() + ","
-                                + LocalDateTime.now().toString() + ","
-                                + pc.getDevice().getSupplyChainStatus() + ",");
+                if (jsonVersion) {
+                    jsonReportData.add(assembleJsonContent(pc, parseComponents(pc),
+                            company, contractNumber));
+                } else {
+                    if (i == 0) {
+                        bufferedWriter.append("Company: " + company + "\n");
+                        bufferedWriter.append("Contract number: " + contractNumber + "\n");
                     }
-                    if (!systemOnly) {
-                        ArrayList<ArrayList<String>> parsedComponents = parseComponents(pc);
-                        for (ArrayList<String> component : parsedComponents) {
-                            for (String data : component) {
-                                reportData.append(data + ",");
+                    if (systemOnly && componentOnly) {
+                        systemOnly = false;
+                        componentOnly = false;
+                    }
+                    if ((filterManufacturer.isEmpty() || filterManufacturer.equals(
+                            pc.getManufacturer()))
+                            && (filterSerial.isEmpty() || filterSerial.equals(
+                            pc.getPlatformSerial()))) {
+                        if (!componentOnly) {
+                            reportData.append(pc.getManufacturer() + ","
+                                    + pc.getModel() + ","
+                                    + pc.getPlatformSerial() + ","
+                                    + LocalDateTime.now().toString() + ","
+                                    + pc.getDevice().getSupplyChainStatus() + ",");
+                        }
+                        if (!systemOnly) {
+                            ArrayList<ArrayList<String>> parsedComponents = parseComponents(pc);
+                            for (ArrayList<String> component : parsedComponents) {
+                                for (String data : component) {
+                                    reportData.append(data + ",");
+                                }
+                                reportData.deleteCharAt(reportData.length() - 1);
+                                reportData.append("\n");
+                                if (!componentOnly) {
+                                    reportData.append(",,,,,");
+                                }
                             }
-                            reportData.deleteCharAt(reportData.length() - 1);
-                            reportData.append("\n,,,,,");
                         }
                     }
+                    reportData.append("\n");
                 }
             }
         }
-        if (columnHeaders.isEmpty()) {
-            columnHeaders = systemColumnHeaders + componentColumnHeaders;
+        if (!jsonVersion) {
+            if (columnHeaders.isEmpty()) {
+                columnHeaders = systemColumnHeaders + componentColumnHeaders;
+            }
+            bufferedWriter.append(columnHeaders + "\n");
+            bufferedWriter.append(reportData.toString());
+        } else {
+            bufferedWriter.append(jsonReportData.toString());
         }
-        bufferedWriter.append(columnHeaders + "\n");
-        bufferedWriter.append(reportData.toString() + "\n");
         bufferedWriter.flush();
+    }
+
+    /**
+     * This method builds a JSON object from the system and component data in a
+     * validation report.
+     * @param pc the platform credential used to validate.
+     * @param parsedComponents component data parsed from the platform credential.
+     * @param company company name.
+     * @param contractNumber contract number.
+     * @return the JSON object in String format.
+     */
+    @SuppressWarnings({"checkstyle:magicnumber" })
+    private JsonObject assembleJsonContent(final PlatformCredential pc,
+                                       final ArrayList<ArrayList<String>> parsedComponents,
+                                       final String company,
+                                       final String contractNumber) {
+        JsonObject systemData = new JsonObject();
+
+        systemData.addProperty("Company", company);
+        systemData.addProperty("Contract number", contractNumber);
+        systemData.addProperty("Verified Manufacturer", pc.getManufacturer());
+        systemData.addProperty("Model", pc.getModel());
+        systemData.addProperty("SN", pc.getPlatformSerial());
+        systemData.addProperty("Verification Date", LocalDateTime.now().toString());
+        systemData.addProperty("Device Status", pc.getDevice().getSupplyChainStatus().toString());
+
+        JsonArray components = new JsonArray();
+        for (ArrayList<String> componentData : parsedComponents) {
+            JsonObject component = new JsonObject();
+            component.addProperty("Component name", componentData.get(0));
+            component.addProperty("Component manufacturer", componentData.get(1));
+            component.addProperty("Component model", componentData.get(2));
+            component.addProperty("Component SN", componentData.get(3));
+            component.addProperty("Issuer", componentData.get(4));
+            component.addProperty("Component status", componentData.get(5));
+            components.add(component);
+        }
+        systemData.add("Components", components);
+
+        return systemData;
     }
 
     /**
