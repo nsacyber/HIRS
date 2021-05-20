@@ -443,7 +443,7 @@ public class SupplyChainValidationServiceImpl implements SupplyChainValidationSe
             if (passed) {
                 TCGEventLog logProcessor;
                 try {
-                    logProcessor = new TCGEventLog(supportReferenceManifest.getRimBytes());
+                    logProcessor = new TCGEventLog(measurement.getRimBytes());
                     baseline = logProcessor.getExpectedPCRValues();
                 } catch (CertificateException cEx) {
                     LOGGER.error(cEx);
