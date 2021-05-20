@@ -212,7 +212,7 @@ public class TpmPcrEvent {
     }
 
     /**
-     * Returns a formatted string of the type for the event minus the byte code
+     * Returns a formatted string of the type for the event minus the byte code.
      * @return a string formatted to be human readable
      */
     public String getEventTypeString() {

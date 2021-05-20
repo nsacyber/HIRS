@@ -900,12 +900,13 @@ public abstract class AbstractAttestationCertificateAuthority
             this.referenceManifestManager.update(dbBaseRim);
         }
 
-        generateDigestRecords(hw.getManufacturer(), hw.getProductName());
+        generateDigestRecords(hw.getManufacturer(), hw.getProductName(),
+                dv.getNw().getHostname());
 
         if (dv.hasLivelog()) {
             LOG.info("Device sent bios measurement log...");
             fileName = String.format("%s.measurement",
-                    defaultClientName);
+                    dv.getNw().getHostname());
             try {
                 // find previous version.  If it exists, delete it
                 measurements = EventLogMeasurements.select(referenceManifestManager)
@@ -948,7 +949,8 @@ public abstract class AbstractAttestationCertificateAuthority
         return dvReport;
     }
 
-    private boolean generateDigestRecords(final String manufacturer, final String model) {
+    private boolean generateDigestRecords(final String manufacturer, final String model,
+                                          final String deviceName) {
         List<ReferenceDigestValue> rdValues;
         Set<SupportReferenceManifest> dbSupportRims = SupportReferenceManifest
                 .select(referenceManifestManager).byManufacturer(manufacturer).getRIMs();
@@ -957,6 +959,7 @@ public abstract class AbstractAttestationCertificateAuthority
             if (dbSupport.getPlatformModel().equals(model)) {
                 ReferenceDigestRecord dbObj = new ReferenceDigestRecord(dbSupport,
                         manufacturer, model);
+                dbObj.setDeviceName(deviceName);
                 // this is where we update or create the log
                 ReferenceDigestRecord rdr = this.referenceDigestManager.getRecord(dbObj);
                 if (dbSupport.isBaseSupport()) {

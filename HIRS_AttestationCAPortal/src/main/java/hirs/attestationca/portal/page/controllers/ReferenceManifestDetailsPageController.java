@@ -101,7 +101,7 @@ public class ReferenceManifestDetailsPageController
         if (params.getId() == null) {
             String typeError = "ID was not provided";
             messages.addError(typeError);
-            LOGGER.error(typeError);
+            LOGGER.debug(typeError);
             mav.addObject(MESSAGES_ATTRIBUTE, messages);
         } else {
             try {
@@ -494,9 +494,9 @@ public class ReferenceManifestDetailsPageController
         HashMap<String, Object> data = new HashMap<>();
         LinkedList<TpmPcrEvent> livelogEvents = new LinkedList<>();
         BaseReferenceManifest base = null;
-        SupportReferenceManifest support = null;
-        TCGEventLog supportLog = null;
-        ReferenceDigestRecord digestRecord = null;
+        List<SupportReferenceManifest> supports = new ArrayList<>();
+        SupportReferenceManifest baseSupport = null;
+        List<ReferenceDigestRecord> digestRecords = new LinkedList<>();
 
         data.put("supportFilename", "Blank");
         data.put("supportId", "");
@@ -504,25 +504,28 @@ public class ReferenceManifestDetailsPageController
         data.put("rimType", measurements.getRimType());
         data.put("hostName", measurements.getDeviceName());
 
-        if (measurements.getPlatformManufacturer() != null) {
-            digestRecord = referenceDigestManager.getRecord(measurements
-                    .getPlatformManufacturer(),
-                    measurements.getPlatformModel());
-            support = SupportReferenceManifest
+        if (measurements.getDeviceName() != null) {
+            digestRecords = referenceDigestManager
+                    .getRecordsByDeviceName(measurements.getDeviceName());
+            supports.addAll(SupportReferenceManifest
                     .select(referenceManifestManager)
-                    .byManufacturer(measurements
-                            .getPlatformManufacturer()).getRIM();
+                    .byDeviceName(measurements
+                            .getDeviceName()).getRIMs());
+            for (SupportReferenceManifest support : supports) {
+                if (support.isBaseSupport()) {
+                    baseSupport = support;
+                }
+            }
 
-            if (support != null) {
-                data.put("supportFilename", support.getFileName());
-                data.put("supportId", support.getId());
-
+            if (baseSupport != null) {
+                data.put("supportFilename", baseSupport.getFileName());
+                data.put("supportId", baseSupport.getId());
 
                 base = BaseReferenceManifest
                         .select(referenceManifestManager)
-                        .byEntityId(support.getAssociatedRim())
+                        .byEntityId(baseSupport.getAssociatedRim())
                         .getRIM();
-                data.put("tagId", support.getTagId());
+                data.put("tagId", baseSupport.getTagId());
 
                 if (base != null) {
                     data.put("baseId", base.getId());
@@ -531,11 +534,13 @@ public class ReferenceManifestDetailsPageController
         }
 
         TCGEventLog measurementLog = new TCGEventLog(measurements.getRimBytes());
-        List<ReferenceDigestValue> eventValue;
+        List<ReferenceDigestValue> eventValue = new ArrayList<>();
         Map<String, ReferenceDigestValue> eventValueMap = new HashMap<>();
-        if (digestRecord != null) {
-            eventValue = referenceEventManager
-                    .getValuesByRecordId(digestRecord);
+        if (!digestRecords.isEmpty()) {
+            for (ReferenceDigestRecord rdr : digestRecords) {
+                eventValue.addAll(referenceEventManager
+                        .getValuesByRecordId(rdr));
+            }
             for (ReferenceDigestValue rdv : eventValue) {
                 eventValueMap.put(rdv.getDigestValue(), rdv);
             }
@@ -546,17 +551,34 @@ public class ReferenceManifestDetailsPageController
             }
         }
 
-        if (support != null) {
+        if (!supports.isEmpty()) {
             Map<String, List<TpmPcrEvent>> baselineLogEvents = new HashMap<>();
-            List<TpmPcrEvent> baselines = null;
+            List<TpmPcrEvent> matchedEvents = null;
+            List<TpmPcrEvent> combinedBaselines = new LinkedList<>();
+            for (SupportReferenceManifest support : supports) {
+                combinedBaselines.addAll(support.getEventLog());
+            }
+            String bootVariable;
+            String variablePrefix = "Variable Name:";
+            String variableSuffix = "UEFI_GUID";
             for (TpmPcrEvent tpe : livelogEvents) {
-                baselines = new ArrayList<>();
-                for (TpmPcrEvent supports : support.getEventLog()) {
-                    if (supports.getEventType() == tpe.getEventType()) {
-                        baselines.add(supports);
+                matchedEvents = new ArrayList<>();
+                for (TpmPcrEvent tpmPcrEvent : combinedBaselines) {
+                    if (tpmPcrEvent.getEventType() == tpe.getEventType()) {
+                        if (tpe.getEventContentStr().contains(variablePrefix)) {
+                            bootVariable = tpe.getEventContentStr().substring((
+                                            tpe.getEventContentStr().indexOf(variablePrefix)
+                                                    + variablePrefix.length()),
+                                    tpe.getEventContentStr().indexOf(variableSuffix));
+                            if (tpmPcrEvent.getEventContentStr().contains(bootVariable)) {
+                                matchedEvents.add(tpmPcrEvent);
+                            }
+                        } else {
+                            matchedEvents.add(tpmPcrEvent);
+                        }
                     }
                 }
-                baselineLogEvents.put(tpe.getEventDigestStr(), baselines);
+                baselineLogEvents.put(tpe.getEventDigestStr(), matchedEvents);
             }
             data.put("eventTypeMap", baselineLogEvents);
         }
