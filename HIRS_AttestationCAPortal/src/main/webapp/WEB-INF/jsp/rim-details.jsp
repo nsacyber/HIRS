@@ -367,6 +367,7 @@
                             <div>PC URI Local:&nbsp;<span>${initialData.pcUriLocal}</span></div>
                         </c:if>
                         <div>Rim Link Hash:&nbsp;<span>${initialData.rimLinkHash}</span>
+                        <c:if test="${not empty initialData.rimLinkHash}">
                             <span>
                                 <c:choose>
                                 <c:when test="${initialData.linkHashValid}">
@@ -377,6 +378,7 @@
                                 </c:otherwise>
                                 </c:choose>
                             </span>
+                            </c:if>
                         </div>
                     </div>
                 </div>
