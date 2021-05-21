@@ -334,7 +334,17 @@
                     <div class="col-md-1 col-md-offset-1"><span class="colHeader">Link</span></div>
                     <div id="link" class="col col-md-8">
                         <c:if test="${not empty initialData.linkHref}">
-                            <div><span><a href="${portal}/rim-details?id=${initialData.linkHrefLink}" rel="${initialData.linkRel}">${initialData.linkHref}</a></span>
+                            <div>
+                                <span>
+                                    <c:choose>
+                                        <c:when test="${initialData.linkRel=='requires'}">
+                                            <a href="${portal}/rim-details?id=${initialData.linkHrefLink}" rel="${initialData.linkRel}">${initialData.linkHref}</a>
+                                        </c:when>
+                                        <c:otherwise>
+                                            <a href="${initialData.linkHref}" rel="${initialData.linkRel}">${initialData.linkHref}</a>
+                                        </c:otherwise>
+                                    </c:choose>
+                                </span>
                             </div>
                             <div>Rel:&nbsp;<span>${initialData.linkRel}</span>
                             </div>
