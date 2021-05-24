@@ -23,7 +23,7 @@ public class HashSwid {
 
     /**
      * Getter method for the hash that uses 256 bit hash
-     * @param value
+     * @param filepath the file to hash.
      * @return 
      */
     public static String get256Hash(String filepath) {
@@ -32,7 +32,7 @@ public class HashSwid {
 
     /**
      * Getter method for the hash that uses 384 bit hash
-     * @param value
+     * @param filepath the file to hash.
      * @return 
      */
     public String get384Hash(String filepath) {
@@ -41,7 +41,7 @@ public class HashSwid {
 
     /**
      * Getter method for the hash that uses 512 bit hash
-     * @param value
+     * @param filepath the file to hash.
      * @return 
      */
     public String get512Hash(String filepath) {
@@ -65,19 +65,14 @@ public class HashSwid {
         try {
             MessageDigest md = MessageDigest.getInstance(sha);            
             byte[] bytes = md.digest(Files.readAllBytes(Paths.get(filepath)));
-            StringBuilder sb = new StringBuilder();
-
-            for (int i = 0; i < bytes.length; i++) {
-                sb.append(Integer.toString((bytes[i] & 0xff) + 0x100, 16).substring(1));
-            }
-            resultString = sb.toString();
+            return Base64.getEncoder().encodeToString(bytes);
         } catch (UnsupportedEncodingException | NoSuchAlgorithmException grex) {
             System.out.println(grex.getMessage());
         } catch (IOException e) {
             System.out.println("Error reading in file to hash: " + e.getMessage());
         }
-
-        return resultString;
+        System.exit(1);
+        return null;
     }
 
     /**
