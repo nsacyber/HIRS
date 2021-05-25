@@ -2,7 +2,6 @@ package hirs.data.persist;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.common.base.Preconditions;
-import org.apache.commons.codec.binary.Hex;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.hibernate.annotations.Type;
@@ -19,6 +18,7 @@ import javax.xml.bind.annotation.XmlRootElement;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Arrays;
+import java.util.Base64;
 import java.util.UUID;
 
 /**
@@ -139,7 +139,7 @@ public abstract class ReferenceManifest extends ArchivableEntity {
         if (digest == null) {
             this.rimHash = "";
         } else {
-            this.rimHash = Hex.encodeHexString(
+            this.rimHash = Base64.getEncoder().encodeToString(
                     digest.digest(rimBytes));
         }
     }

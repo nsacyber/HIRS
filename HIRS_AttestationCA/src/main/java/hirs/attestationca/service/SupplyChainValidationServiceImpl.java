@@ -413,7 +413,8 @@ public class SupplyChainValidationServiceImpl implements SupplyChainValidationSe
             for (SwidResource swidRes : resources) {
                 supportReferenceManifest = SupportReferenceManifest.select(referenceManifestManager)
                         .byRimHash(swidRes.getHashValue()).getRIM();
-                if (swidRes.getName().equals(supportReferenceManifest.getFileName())) {
+                if (supportReferenceManifest !=null
+                        && swidRes.getName().equals(supportReferenceManifest.getFileName())) {
                     referenceManifestValidator.validateSupportRimHash(
                             supportReferenceManifest.getRimBytes(), swidRes.getHashValue());
                 } else {
@@ -422,7 +423,7 @@ public class SupplyChainValidationServiceImpl implements SupplyChainValidationSe
             }
             if (supportReferenceManifest == null) {
                 fwStatus = new AppraisalStatus(FAIL,
-                        "Support Reference Integrity Manifest\n");
+                        "Support Reference Integrity Manifest can not be found\n");
                 passed = false;
             }
 

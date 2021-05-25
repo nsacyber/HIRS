@@ -94,6 +94,7 @@ import java.security.interfaces.RSAPublicKey;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.MGF1ParameterSpec;
 import java.security.spec.RSAPublicKeySpec;
+import java.util.Base64;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashSet;
@@ -788,7 +789,7 @@ public abstract class AbstractAttestationCertificateAuthority
                 try {
                     support = SupportReferenceManifest.select(referenceManifestManager)
                             .includeArchived()
-                            .byHashCode(Hex.encodeHexString(messageDigest.digest(
+                            .byHashCode(Base64.getEncoder().encodeToString(messageDigest.digest(
                                     logFile.toByteArray())))
                             .getRIM();
                     if (support == null) {
@@ -830,7 +831,7 @@ public abstract class AbstractAttestationCertificateAuthority
                 try {
                     dbBaseRim = BaseReferenceManifest.select(referenceManifestManager)
                             .includeArchived()
-                            .byHashCode(Hex.encodeHexString(messageDigest.digest(
+                            .byHashCode(Base64.getEncoder().encodeToString(messageDigest.digest(
                                     swidFile.toByteArray())))
                             .getRIM();
                     if (dbBaseRim == null) {
@@ -864,7 +865,7 @@ public abstract class AbstractAttestationCertificateAuthority
         for (ByteString swidFile : dv.getSwidfileList()) {
             dbBaseRim = BaseReferenceManifest.select(referenceManifestManager)
                     .includeArchived()
-                    .byHashCode(Hex.encodeHexString(messageDigest.digest(
+                    .byHashCode(Base64.getEncoder().encodeToString(messageDigest.digest(
                             swidFile.toByteArray())))
                     .getRIM();
 
