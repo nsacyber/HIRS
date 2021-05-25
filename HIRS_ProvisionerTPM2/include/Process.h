@@ -44,6 +44,11 @@ class Process {
                            const std::string& sourceFileName,
                            int sourceLineNumber);
 
+    static std::string runData(const std::string& executable,
+                           const std::string& arguments,
+                           const std::string& sourceFileName,
+                           int sourceLineNumber);
+
     static bool isRunning(const std::string& executable);
 };
 
