@@ -376,7 +376,14 @@
                         <c:if test="${not empty initialData.pcUriLocal}">
                             <div>PC URI Local:&nbsp;<span>${initialData.pcUriLocal}</span></div>
                         </c:if>
-                        <div>Rim Link Hash:&nbsp;<span>${initialData.rimLinkHash}</span>
+                        <c:choose>
+                            <c:when test="${not empty initialData.rimLinkId}">
+                                <div>Rim Link Hash:&nbsp;<span><a href="${portal}/rim-details?id=${initialData.rimLinkId}">${initialData.rimLinkHash}</a></span>
+                            </c:when>
+                            <c:otherwise>
+                                <div>Rim Link Hash:&nbsp;<span>${initialData.rimLinkHash}</span>
+                            </c:otherwise>
+                        </c:choose>
                         <c:if test="${not empty initialData.rimLinkHash}">
                             <span>
                                 <c:choose>

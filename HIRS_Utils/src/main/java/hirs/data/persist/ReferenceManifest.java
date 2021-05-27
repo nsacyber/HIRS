@@ -15,10 +15,7 @@ import javax.xml.XMLConstants;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlRootElement;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
 import java.util.Arrays;
-import java.util.Base64;
 import java.util.UUID;
 
 /**
@@ -64,13 +61,6 @@ public abstract class ReferenceManifest extends ArchivableEntity {
 
     private static final Logger LOGGER = LogManager.getLogger(ReferenceManifest.class);
 
-    /**
-     * Holds the name of the 'rimHash' field.
-     */
-    public static final String RIM_HASH_FIELD = "rimHash";
-    @Column(nullable = false)
-    @JsonIgnore
-    private final String rimHash;
     @Column(columnDefinition = "blob", nullable = false)
     @JsonIgnore
     private byte[] rimBytes;
@@ -107,7 +97,6 @@ public abstract class ReferenceManifest extends ArchivableEntity {
     protected ReferenceManifest() {
         super();
         this.rimBytes = null;
-        this.rimHash = "";
         this.rimType = null;
         this.platformManufacturer = null;
         this.platformManufacturerId = null;
@@ -129,19 +118,6 @@ public abstract class ReferenceManifest extends ArchivableEntity {
                 "Cannot construct a RIM from an empty byte array");
 
         this.rimBytes = rimBytes.clone();
-
-        MessageDigest digest = null;
-        try {
-            digest = MessageDigest.getInstance("SHA-256");
-        } catch (NoSuchAlgorithmException noSaEx) {
-            LOGGER.error(noSaEx);
-        }
-        if (digest == null) {
-            this.rimHash = "";
-        } else {
-            this.rimHash = Base64.getEncoder().encodeToString(
-                    digest.digest(rimBytes));
-        }
     }
 
     /**
@@ -367,15 +343,6 @@ public abstract class ReferenceManifest extends ArchivableEntity {
         return null;
     }
 
-    /**
-     * Getter for the Reference Integrity Manifest hash value.
-     *
-     * @return int representation of the hash value
-     */
-    public String getRimHash() {
-        return rimHash;
-    }
-
     @Override
     public int hashCode() {
         return Arrays.hashCode(this.rimBytes);
@@ -393,8 +360,7 @@ public abstract class ReferenceManifest extends ArchivableEntity {
             return false;
         }
         ReferenceManifest that = (ReferenceManifest) object;
-        return rimHash == that.rimHash
-                && Arrays.equals(rimBytes, that.rimBytes)
+        return Arrays.equals(rimBytes, that.rimBytes)
                 && rimType.equals(that.rimType)
                 && tagId.equals(that.tagId)
                 && platformManufacturer.equals(that.platformManufacturer)
@@ -406,8 +372,7 @@ public abstract class ReferenceManifest extends ArchivableEntity {
     @Override
     public String toString() {
         return String.format("Filename->%s%nPlatform Manufacturer->%s%n"
-                + "Platform Model->%s%nRIM Type->%s%nRIM Hash->%s", this.getFileName(),
-                this.platformManufacturer, this.platformModel, this.getRimType(),
-                this.getRimHash());
+                + "Platform Model->%s%nRIM Type->%s%nRIM", this.getFileName(),
+                this.platformManufacturer, this.platformModel, this.getRimType());
     }
 }

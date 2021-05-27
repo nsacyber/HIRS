@@ -252,8 +252,11 @@ public class ReferenceManifestDetailsPageController
         boolean hashLinked = false;
         if (baseRim.getRimLinkHash() != null) {
             ReferenceManifest rim = BaseReferenceManifest.select(referenceManifestManager)
-                    .byHashCode(baseRim.getRimLinkHash()).getRIM();
+                    .byBase64Hash(baseRim.getRimLinkHash()).getRIM();
             hashLinked = (rim != null);
+            if (hashLinked) {
+                data.put("rimLinkId", rim.getId());
+            }
         }
         data.put("linkHashValid", hashLinked);
         data.put("rimType", baseRim.getRimType());

@@ -14,7 +14,6 @@ import hirs.data.persist.DeviceInfoReport;
 import hirs.data.persist.EventLogMeasurements;
 import hirs.data.persist.ReferenceDigestRecord;
 import hirs.data.persist.ReferenceDigestValue;
-import hirs.data.persist.ReferenceManifest;
 import hirs.data.persist.SupplyChainPolicy;
 import hirs.data.persist.SupplyChainValidationSummary;
 import hirs.data.persist.SupportReferenceManifest;
@@ -776,7 +775,7 @@ public abstract class AbstractAttestationCertificateAuthority
                 dv.getHw().getManufacturer(),
                 dv.getHw().getProductName());
         BaseReferenceManifest dbBaseRim = null;
-        ReferenceManifest support;
+        SupportReferenceManifest support;
         EventLogMeasurements measurements;
         String tagId = "";
         String fileName = "";
@@ -788,9 +787,8 @@ public abstract class AbstractAttestationCertificateAuthority
             for (ByteString logFile : dv.getLogfileList()) {
                 try {
                     support = SupportReferenceManifest.select(referenceManifestManager)
-                            .includeArchived()
-                            .byHashCode(Base64.getEncoder().encodeToString(messageDigest.digest(
-                                    logFile.toByteArray())))
+                            .byHexDecHash(Hex.encodeHexString(messageDigest.digest(
+                                    logFile.toByteArray()))).includeArchived()
                             .getRIM();
                     if (support == null) {
                         support = new SupportReferenceManifest(
@@ -803,8 +801,8 @@ public abstract class AbstractAttestationCertificateAuthority
                         support.setPlatformManufacturer(dv.getHw().getManufacturer());
                         support.setPlatformModel(dv.getHw().getProductName());
                         support.setFileName(String.format("%s_[%s].rimel", defaultClientName,
-                                support.getRimHash().substring(
-                                        support.getRimHash().length() - NUM_OF_VARIABLES)));
+                                support.getHexDecHash().substring(
+                                        support.getHexDecHash().length() - NUM_OF_VARIABLES)));
                         support.setDeviceName(dv.getNw().getHostname());
                         this.referenceManifestManager.save(support);
                     } else {
@@ -830,9 +828,10 @@ public abstract class AbstractAttestationCertificateAuthority
             for (ByteString swidFile : dv.getSwidfileList()) {
                 try {
                     dbBaseRim = BaseReferenceManifest.select(referenceManifestManager)
+                            .byBase64Hash(Base64.getEncoder()
+                                    .encodeToString(messageDigest
+                                            .digest(swidFile.toByteArray())))
                             .includeArchived()
-                            .byHashCode(Base64.getEncoder().encodeToString(messageDigest.digest(
-                                    swidFile.toByteArray())))
                             .getRIM();
                     if (dbBaseRim == null) {
                         dbBaseRim = new BaseReferenceManifest(
@@ -864,9 +863,8 @@ public abstract class AbstractAttestationCertificateAuthority
         //update Support RIMs and Base RIMs.
         for (ByteString swidFile : dv.getSwidfileList()) {
             dbBaseRim = BaseReferenceManifest.select(referenceManifestManager)
-                    .includeArchived()
-                    .byHashCode(Base64.getEncoder().encodeToString(messageDigest.digest(
-                            swidFile.toByteArray())))
+                    .byBase64Hash(Base64.getEncoder().encodeToString(messageDigest.digest(
+                            swidFile.toByteArray()))).includeArchived()
                     .getRIM();
 
             // get file name to use
@@ -883,7 +881,7 @@ public abstract class AbstractAttestationCertificateAuthority
                 // now update support rim
                 SupportReferenceManifest dbSupport = SupportReferenceManifest
                         .select(referenceManifestManager)
-                        .byRimHash(swid.getHashValue()).getRIM();
+                        .byHexDecHash(swid.getHashValue()).getRIM();
                 if (dbSupport != null) {
                     dbSupport.setFileName(swid.getName());
                     dbSupport.setSwidTagVersion(dbBaseRim.getSwidTagVersion());
