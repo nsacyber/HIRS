@@ -816,10 +816,10 @@ string CommandTpm2::runTpm2CommandWithRetry(const string& command,
         try {
             if (command.compare(kTpm2ToolsNvReadCommand) == 0) {
                 return hirs::utils::Process::runData(command, args,
-                                                 "CommandTpm2.cpp", sourceCodeLineNumber);
+                            "CommandTpm2.cpp", sourceCodeLineNumber);
             } else {
                 return hirs::utils::Process::run(command, args,
-                                                 "CommandTpm2.cpp", sourceCodeLineNumber);
+                             "CommandTpm2.cpp", sourceCodeLineNumber);
             }
         } catch (HirsRuntimeException& ex) {
             tpmErrorCode = Tpm2ToolsOutputParser::parseTpmErrorCode(ex.what());
