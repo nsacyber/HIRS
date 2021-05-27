@@ -40,31 +40,31 @@ jobs:
   include:
     - stage: Packaging and System Tests
       script:
-	    - echo $DOCKER_PWD | docker login -u "$DOCKER_USER" --password-stdin 
+            - echo $DOCKER_PWD | docker login -u "$DOCKER_USER" --password-stdin 
             - docker run --rm -v $(pwd):/HIRS hirs/hirs-ci:ubuntu18 /bin/bash -c "cd /HIRS; ./package/package.ubuntu.sh"
       env: null
       name: "Package Ubuntu"
     - stage: Packaging and System Tests
       script: 
-	    - echo $DOCKER_PWD | docker login -u "$DOCKER_USER" --password-stdin 
+            - echo $DOCKER_PWD | docker login -u "$DOCKER_USER" --password-stdin 
             - .ci/system-tests/./run-system-tests.sh
       env: null
       name: "System Tests TPM 1.2"
     - stage: Packaging and System Tests
       script: 
-	    - echo $DOCKER_PWD | docker login -u "$DOCKER_USER" --password-stdin 
+            - echo $DOCKER_PWD | docker login -u "$DOCKER_USER" --password-stdin 
             - .ci/system-tests/./run-system-tests-tpm2.sh
       env: null
       name: "System Tests TPM 2.0"
     - stage: Packaging and System Tests
       script: 
-	    - echo $DOCKER_PWD | docker login -u "$DOCKER_USER" --password-stdin 
+            - echo $DOCKER_PWD | docker login -u "$DOCKER_USER" --password-stdin 
             - .ci/system-tests/./run-system-tests-tpm2-base-delta-bad.sh
       env: null
       name: "System Tests TPM 2.0 Base/Delta(Bad)"
     - stage: Packaging and System Tests
       script: 
-	    - echo $DOCKER_PWD | docker login -u "$DOCKER_USER" --password-stdin 
+            - echo $DOCKER_PWD | docker login -u "$DOCKER_USER" --password-stdin 
             - .ci/system-tests/./run-system-tests-tpm2-base-delta-good.sh
       env: null
       name: "System Tests TPM 2.0 Base/Delta(Good)"
