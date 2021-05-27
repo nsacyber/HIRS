@@ -36,6 +36,7 @@ script:
         - echo "$DOCKER_HUB_ACCESS_TOKEN" | docker login -u "$DOCKER_HUB_USERNAME" --password-stdin
         - docker run --rm -v $(pwd):/HIRS hirs/hirs-ci:centos7 /bin/bash -c "cd /HIRS; ./gradlew :$SUBPROJECT:build -x test :$TCG_RIM_TOOL:build"
 
+
 jobs:
   include:
     - stage: Packaging and System Tests
