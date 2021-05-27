@@ -33,7 +33,7 @@ cache:
 install: true
 
 script:
-        - echo "docker login -u "$DOCKER_USER" -p "$DOCKER_PWD" 
+        - docker login -u "$DOCKER_USER" -p "$DOCKER_PWD" 
         - docker run --rm -v $(pwd):/HIRS hirs/hirs-ci:centos7 /bin/bash -c "cd /HIRS; ./gradlew :$SUBPROJECT:build -x test :$TCG_RIM_TOOL:build"
 
 
