@@ -297,7 +297,7 @@
                     </div>
                 </div>
             </c:when>
-            <c:otherwise>
+            <c:when test="${initialData.rimType=='Base'}">
                 <div class="row">
                     <div class="col-md-1 col-md-offset-1"><span class="colHeader">Software Identity</span></div>
                     <div id="softwareIdentity" class="col col-md-8">
@@ -541,6 +541,8 @@
                         </div>
                     </div>
                 </div>
+            </c:when>
+            <c:otherwise>
             </c:otherwise>
         </c:choose>
     </div>

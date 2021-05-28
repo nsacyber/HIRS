@@ -191,7 +191,7 @@ public abstract class ReferenceManifest extends ArchivableEntity {
     }
 
     /**
-     * Getter for the RIM Type (Primary, Supplemental, Patch).
+     * Getter for the RIM Type (Base, Support, Measurement).
      *
      * @return string for the RIM Type
      */
