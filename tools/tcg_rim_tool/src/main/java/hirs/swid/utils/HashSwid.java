@@ -65,14 +65,19 @@ public class HashSwid {
         try {
             MessageDigest md = MessageDigest.getInstance(sha);            
             byte[] bytes = md.digest(Files.readAllBytes(Paths.get(filepath)));
-            return Base64.getEncoder().encodeToString(bytes);
+            StringBuilder sb = new StringBuilder();
+
+            for (int i = 0; i < bytes.length; i++) {
+                sb.append(Integer.toString((bytes[i] & 0xff) + 0x100, 16).substring(1));
+            }
+            resultString = sb.toString();
         } catch (UnsupportedEncodingException | NoSuchAlgorithmException grex) {
             System.out.println(grex.getMessage());
         } catch (IOException e) {
             System.out.println("Error reading in file to hash: " + e.getMessage());
         }
-        System.exit(1);
-        return null;
+
+        return resultString;
     }
 
     /**

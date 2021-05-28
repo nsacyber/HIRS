@@ -5,7 +5,7 @@
   <Meta xmlns:n8060="http://csrc.nist.gov/ns/swid/2015-extensions/1.0" xmlns:rim="https://trustedcomputinggroup.org/wp-content/uploads/TCG_RIM_Model" n8060:colloquialVersion="Firmware_2019" n8060:edition="12" n8060:product="ProductA" n8060:revision="r2" rim:BindingSpec="PC Client RIM" rim:BindingSpecVersion="1.2" rim:PayloadType="direct" rim:firmwareManufacturerId="00213022" rim:firmwareManufacturerStr="BIOSVendorA" rim:firmwareModel="A0" rim:firmwareVersion="12" rim:pcURIGlobal="https://Example.com/support/ProductA/" rim:pcURILocal="/boot/tcg/manifest/switag/" rim:platformManufacturerId="00201234" rim:platformManufacturerStr="Example.com" rim:platformModel="ProductA" rim:platformVersion="01"/>
   <Payload xmlns:rim="https://trustedcomputinggroup.org/wp-content/uploads/TCG_RIM_Model" rim:supportRIMFormat="TCG_EventLog_Assertion" rim:supportRIMURIGlobal="https://Example.com/support/ProductA/firmware/rims/">
     <Directory name="rim">
-      <File xmlns:SHA256="http://www.w3.org/2001/04/xmlenc#sha256" SHA256:hash="RHnKciYj+MR7cDmWztPL2YGwaxroqJfbcBN+C3xUaEg=" name="Example.com.BIOS.01.rimel" size="7549"/>
+      <File xmlns:SHA256="http://www.w3.org/2001/04/xmlenc#sha256" SHA256:hash="4479ca722623f8c47b703996ced3cbd981b06b1ae8a897db70137e0b7c546848" name="Example.com.BIOS.01.rimel" size="7549"/>
     </Directory>
   </Payload>
   <Signature xmlns="http://www.w3.org/2000/09/xmldsig#">
@@ -17,42 +17,42 @@
           <Transform Algorithm="http://www.w3.org/2000/09/xmldsig#enveloped-signature"/>
         </Transforms>
         <DigestMethod Algorithm="http://www.w3.org/2001/04/xmlenc#sha256"/>
-        <DigestValue>GBtQbA1XZAGH/bC98WIr3JAt1vpzUwNZgGtynRd8Iik=</DigestValue>
+        <DigestValue>97uWB7zSsO5WaGbrcQrlKd1Bju0aDTjK1/ktUYBje8A=</DigestValue>
       </Reference>
     </SignedInfo>
-    <SignatureValue>eLaPYRkRbs91JOPUS4d9lkFGGCJ50GbPunVEe+W+h3jIC49ltSK8//7vTh+VYA7PwbWgS7e19K8Q&#13;
-gnwqtuBeUZpkfIXozkVN2afTAcOCRC+4hbQnVyRsWpLen0BLuKHrYrwfGR2oeGcFpsO8c28NKfT3&#13;
-rBrkG5Adj/jqe/LR7iNDhMbwEJ86/WqsL7Vw8rM/ENe5I74aUMvpryDHYwehubkGLbYffeAc8bIR&#13;
-ANEBzwlxepnQV6qGEMzzAi9Gs9tzynbXm1y+GeC2edLwaa2PKCpbmH5WnwSWem1qSi6upj75wiY1&#13;
-vPScrd9aB22cO4e+dNRpglQe6rUENgpaIrnq1A==</SignatureValue>
+    <SignatureValue>N1YtTeo2Ryuj+CtlXIpICEay+ni7vt8+4J7tAsYpa3efnLwtea69PIqEylPWm9LdA8Eo8XDdpgxV
+7h3hi2LTOU+Wxq3bLiLamo99T1EtIwl+ZPcOv8bsfEkmShHdMC0dlfcj6r7x4tc0XkNAhhJgfRNz
+FsmPWKJb6FYcsHFbHO/Uw1hSokbAGcWWTshEOqvKHMa8UVkrFMUPnrnMtdyJqZlhDBrZHNi4rWth
+8TjlUnQVSCF9s9I04FxJ1cUAdeVMHtXKM8Pvjv68PaJMJK73dW5Yd3SbcgoKLesf/HPWeeZL0rr4
+TNjlqJ/wq61Ons45MFG9bIscVbnd+XxFHx8Skw==</SignatureValue>
     <KeyInfo>
       <X509Data>
         <X509SubjectName>CN=example.RIM.signer,OU=PCClient,O=Example,ST=VA,C=US</X509SubjectName>
-        <X509Certificate>MIID2jCCAsKgAwIBAgIJAP0uwoNdwZDFMA0GCSqGSIb3DQEBCwUAMFMxCzAJBgNVBAYTAlVTMQsw&#13;
-CQYDVQQIDAJWQTEQMA4GA1UECgwHRXhhbXBsZTERMA8GA1UECwwIUENDbGllbnQxEjAQBgNVBAMM&#13;
-CUV4YW1wbGVDQTAeFw0yMDA3MjEyMTQ1MDBaFw0zMDA1MzAyMTQ1MDBaMFwxCzAJBgNVBAYTAlVT&#13;
-MQswCQYDVQQIDAJWQTEQMA4GA1UECgwHRXhhbXBsZTERMA8GA1UECwwIUENDbGllbnQxGzAZBgNV&#13;
-BAMMEmV4YW1wbGUuUklNLnNpZ25lcjCCASIwDQYJKoZIhvcNAQEBBQADggEPADCCAQoCggEBAKd1&#13;
-lWGkSRuxAAY2wHag2GVxUk1dZx2PTpfQOflvLeccAVwa8mQhlsRERq+QK8ilj8Xfqs44/nBaccZD&#13;
-OjdfIxIUCMfwhGXjxCaqZbgTucNsExDnu4arTGraoAwzHg0cVLiKT/Cxj9NL4dcMgxRXsPdHfXb0&#13;
-923C7xYd2t2qfW05umgaj7qeQl6c68CFNsGX4JA8rWFQZvvGx5DGlK4KTcjPuQQINs5fxasNKqLY&#13;
-2hq+z82x/rqwr2hmyizD6FpFSyIABPEMPfB036GEhRwu1WEMkq8yIp2jgRUoFYke9pB3ph9pVow0&#13;
-Hh4mNFSKD4pP41VSKY1nus83mdkuukPy5o0CAwEAAaOBpzCBpDAdBgNVHQ4EFgQUL96459AwoiCd&#13;
-qgGGGpZP7ezyvMEwHwYDVR0jBBgwFoAURqG47dumcV/Q0ud6ijxdbprDljgwCQYDVR0TBAIwADAL&#13;
-BgNVHQ8EBAMCBsAwEwYDVR0lBAwwCgYIKwYBBQUHAwMwNQYIKwYBBQUHAQEEKTAnMCUGCCsGAQUF&#13;
-BzAChhlodHRwczovL2V4YW1wbGUuY29tL2NlcnRzMA0GCSqGSIb3DQEBCwUAA4IBAQDpKx5oQlkS&#13;
-11cg7Qp58BmCvjCzFpof+qYePooJsD3i5SwKfRTa2CkDMww9qrwBK7G60y7jhe5InKTdqIlVqaji&#13;
-5ZImR0QMKTtk7zt9AJ9EaEzKxfDiE/qX34KxNe4ZmbvLH8N+BSujQXMMi56zGjW469Y/rbDMG8uU&#13;
-1dq3zqhO5b+dUr1ecdkYLgzxu6O+oWy5JpVibmcjvNezJsUtjc+km2FYm24vU3/fCNzZ2z0EHQES&#13;
-cIEQ5OqfpdFrV3De238RhMH6J4xePSidnFpfBc6FrdyDI1A8eRFz36I4xfVL3ZnJP/+j+NE4q6yz&#13;
+        <X509Certificate>MIID2jCCAsKgAwIBAgIJAP0uwoNdwZDFMA0GCSqGSIb3DQEBCwUAMFMxCzAJBgNVBAYTAlVTMQsw
+CQYDVQQIDAJWQTEQMA4GA1UECgwHRXhhbXBsZTERMA8GA1UECwwIUENDbGllbnQxEjAQBgNVBAMM
+CUV4YW1wbGVDQTAeFw0yMDA3MjEyMTQ1MDBaFw0zMDA1MzAyMTQ1MDBaMFwxCzAJBgNVBAYTAlVT
+MQswCQYDVQQIDAJWQTEQMA4GA1UECgwHRXhhbXBsZTERMA8GA1UECwwIUENDbGllbnQxGzAZBgNV
+BAMMEmV4YW1wbGUuUklNLnNpZ25lcjCCASIwDQYJKoZIhvcNAQEBBQADggEPADCCAQoCggEBAKd1
+lWGkSRuxAAY2wHag2GVxUk1dZx2PTpfQOflvLeccAVwa8mQhlsRERq+QK8ilj8Xfqs44/nBaccZD
+OjdfIxIUCMfwhGXjxCaqZbgTucNsExDnu4arTGraoAwzHg0cVLiKT/Cxj9NL4dcMgxRXsPdHfXb0
+923C7xYd2t2qfW05umgaj7qeQl6c68CFNsGX4JA8rWFQZvvGx5DGlK4KTcjPuQQINs5fxasNKqLY
+2hq+z82x/rqwr2hmyizD6FpFSyIABPEMPfB036GEhRwu1WEMkq8yIp2jgRUoFYke9pB3ph9pVow0
+Hh4mNFSKD4pP41VSKY1nus83mdkuukPy5o0CAwEAAaOBpzCBpDAdBgNVHQ4EFgQUL96459AwoiCd
+qgGGGpZP7ezyvMEwHwYDVR0jBBgwFoAURqG47dumcV/Q0ud6ijxdbprDljgwCQYDVR0TBAIwADAL
+BgNVHQ8EBAMCBsAwEwYDVR0lBAwwCgYIKwYBBQUHAwMwNQYIKwYBBQUHAQEEKTAnMCUGCCsGAQUF
+BzAChhlodHRwczovL2V4YW1wbGUuY29tL2NlcnRzMA0GCSqGSIb3DQEBCwUAA4IBAQDpKx5oQlkS
+11cg7Qp58BmCvjCzFpof+qYePooJsD3i5SwKfRTa2CkDMww9qrwBK7G60y7jhe5InKTdqIlVqaji
+5ZImR0QMKTtk7zt9AJ9EaEzKxfDiE/qX34KxNe4ZmbvLH8N+BSujQXMMi56zGjW469Y/rbDMG8uU
+1dq3zqhO5b+dUr1ecdkYLgzxu6O+oWy5JpVibmcjvNezJsUtjc+km2FYm24vU3/fCNzZ2z0EHQES
+cIEQ5OqfpdFrV3De238RhMH6J4xePSidnFpfBc6FrdyDI1A8eRFz36I4xfVL3ZnJP/+j+NE4q6yz
 5VGvm0npLO394ZihtsI1sRAR8ORJ</X509Certificate>
       </X509Data>
       <KeyValue>
         <RSAKeyValue>
-          <Modulus>p3WVYaRJG7EABjbAdqDYZXFSTV1nHY9Ol9A5+W8t5xwBXBryZCGWxERGr5AryKWPxd+qzjj+cFpx&#13;
-xkM6N18jEhQIx/CEZePEJqpluBO5w2wTEOe7hqtMatqgDDMeDRxUuIpP8LGP00vh1wyDFFew90d9&#13;
-dvT3bcLvFh3a3ap9bTm6aBqPup5CXpzrwIU2wZfgkDytYVBm+8bHkMaUrgpNyM+5BAg2zl/Fqw0q&#13;
-otjaGr7PzbH+urCvaGbKLMPoWkVLIgAE8Qw98HTfoYSFHC7VYQySrzIinaOBFSgViR72kHemH2lW&#13;
+          <Modulus>p3WVYaRJG7EABjbAdqDYZXFSTV1nHY9Ol9A5+W8t5xwBXBryZCGWxERGr5AryKWPxd+qzjj+cFpx
+xkM6N18jEhQIx/CEZePEJqpluBO5w2wTEOe7hqtMatqgDDMeDRxUuIpP8LGP00vh1wyDFFew90d9
+dvT3bcLvFh3a3ap9bTm6aBqPup5CXpzrwIU2wZfgkDytYVBm+8bHkMaUrgpNyM+5BAg2zl/Fqw0q
+otjaGr7PzbH+urCvaGbKLMPoWkVLIgAE8Qw98HTfoYSFHC7VYQySrzIinaOBFSgViR72kHemH2lW
 jDQeHiY0VIoPik/jVVIpjWe6zzeZ2S66Q/LmjQ==</Modulus>
           <Exponent>AQAB</Exponent>
         </RSAKeyValue>
