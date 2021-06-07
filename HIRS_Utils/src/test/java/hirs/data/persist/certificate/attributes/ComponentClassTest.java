@@ -20,7 +20,7 @@ public class ComponentClassTest {
     @Test
     public void testGetComponentNoneUNK() throws URISyntaxException {
         int componentIdentifier = 1;
-        ComponentClass instance = new ComponentClass(Paths.get(this.getClass()
+        ComponentClass instance = new ComponentClass("TCG", Paths.get(this.getClass()
                 .getResource(JSON_FILE).toURI()), componentIdentifier);
         String resultCategory = instance.getCategory();
         String resultComponent = instance.getComponent();
@@ -35,7 +35,7 @@ public class ComponentClassTest {
     @Test
     public void testGetComponentNoneOther() throws URISyntaxException {
         int componentIdentifier = 0;
-        ComponentClass instance = new ComponentClass(Paths.get(this.getClass()
+        ComponentClass instance = new ComponentClass("TCG", Paths.get(this.getClass()
                 .getResource(JSON_FILE).toURI()), componentIdentifier);
         String resultCategory = instance.getCategory();
         String resultComponent = instance.getComponent();
@@ -92,7 +92,7 @@ public class ComponentClassTest {
      * @throws URISyntaxException if there is a problem constructing the URI
      */
     @Test
-    public void testGetComponentStandardQuery() throws URISyntaxException {
+    public void testGetComponentStandardQueryTCG() throws URISyntaxException {
         String componentIdentifier = "0x00040002";
         ComponentClass instance = new ComponentClass(Paths.get(this.getClass()
                 .getResource(JSON_FILE).toURI()), componentIdentifier);
@@ -107,9 +107,24 @@ public class ComponentClassTest {
      * @throws URISyntaxException if there is a problem constructing the URI
      */
     @Test
-    public void testGetComponentStandardQueryInt() throws URISyntaxException {
+    public void testGetComponentStandardQuerySMBIOS() throws URISyntaxException {
+        String componentIdentifier = "0x00040002";
+        ComponentClass instance = new ComponentClass("2.23.133.18.3.3", Paths.get(this.getClass()
+                .getResource(JSON_FILE).toURI()), componentIdentifier);
+        String resultCategory = instance.getCategory();
+        String resultComponent = instance.getComponent();
+        Assert.assertEquals("Video Controller", resultComponent);
+        Assert.assertEquals("Processor", resultCategory);
+    }
+
+    /**
+     * Test of getComponent method, of class ComponentClass.
+     * @throws URISyntaxException if there is a problem constructing the URI
+     */
+    @Test
+    public void testGetComponentStandardQueryIntTCG() throws URISyntaxException {
         int componentIdentifier = 0x00040002;
-        ComponentClass instance = new ComponentClass(Paths.get(this.getClass()
+        ComponentClass instance = new ComponentClass("2.23.133.18.3.1", Paths.get(this.getClass()
                 .getResource(JSON_FILE).toURI()), componentIdentifier);
         String resultCategory = instance.getCategory();
         String resultComponent = instance.getComponent();
@@ -122,9 +137,24 @@ public class ComponentClassTest {
      * @throws URISyntaxException if there is a problem constructing the URI
      */
     @Test
+    public void testGetComponentStandardQueryIntSMBIOS() throws URISyntaxException {
+        int componentIdentifier = 0x00040002;
+        ComponentClass instance = new ComponentClass("2.23.133.18.3.3", Paths.get(this.getClass()
+                .getResource(JSON_FILE).toURI()), componentIdentifier);
+        String resultCategory = instance.getCategory();
+        String resultComponent = instance.getComponent();
+        Assert.assertEquals("Video Controller", resultComponent);
+        Assert.assertEquals("Processor", resultCategory);
+    }
+
+    /**
+     * Test of getComponent method, of class ComponentClass.
+     * @throws URISyntaxException if there is a problem constructing the URI
+     */
+    @Test
     public void testGetComponentStandardQueryIntOther() throws URISyntaxException {
         int componentIdentifier = 0x00040000;
-        ComponentClass instance = new ComponentClass(Paths.get(this.getClass()
+        ComponentClass instance = new ComponentClass("2.23.133.18.3.1", Paths.get(this.getClass()
                 .getResource(JSON_FILE).toURI()), componentIdentifier);
         String resultCategory = instance.getCategory();
         String resultComponent = instance.getComponent();
@@ -139,7 +169,7 @@ public class ComponentClassTest {
     @Test
     public void testGetComponentStandardQueryIntUnk() throws URISyntaxException {
         int componentIdentifier = 0x00040001;
-        ComponentClass instance = new ComponentClass(Paths.get(this.getClass()
+        ComponentClass instance = new ComponentClass("2.23.133.18.3.1", Paths.get(this.getClass()
                 .getResource(JSON_FILE).toURI()), componentIdentifier);
         String resultCategory = instance.getCategory();
         String resultComponent = instance.getComponent();
@@ -153,27 +183,12 @@ public class ComponentClassTest {
      */
     @Test
     public void testGetComponentStandardQuery2() throws URISyntaxException {
-        String componentIdentifier = "0x00060012";
+        String componentIdentifier = "0x00060015";
         ComponentClass instance = new ComponentClass(Paths.get(this.getClass()
                 .getResource(JSON_FILE).toURI()), componentIdentifier);
         String resultCategory = instance.getCategory();
         String resultComponent = instance.getComponent();
         Assert.assertEquals("DDR3 Memory", resultComponent);
-        Assert.assertEquals("Memory", resultCategory);
-    }
-
-    /**
-     * Test of getComponent method, of class ComponentClass.
-     * @throws URISyntaxException if there is a problem constructing the URI
-     */
-    @Test
-    public void testGetComponentStandardQueryOther() throws URISyntaxException {
-        String componentIdentifier = "0x00060000";
-        ComponentClass instance = new ComponentClass(Paths.get(this.getClass()
-                .getResource(JSON_FILE).toURI()), componentIdentifier);
-        String resultCategory = instance.getCategory();
-        String resultComponent = instance.getComponent();
-        Assert.assertEquals("Other", resultComponent);
         Assert.assertEquals("Memory", resultCategory);
     }
 

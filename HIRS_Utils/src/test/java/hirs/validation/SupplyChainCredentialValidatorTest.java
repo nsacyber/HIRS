@@ -1196,8 +1196,8 @@ public class SupplyChainCredentialValidatorTest {
 
         PlatformCredential pc = new PlatformCredential(certBytes);
 
-        String expectedMessage = "Can't validate platform credential without a "
-                + "trust store\n";
+        String expectedMessage = "Can't validate platform credential without an "
+                + "Issuer Cert in the Trust Store\n";
 
         AppraisalStatus result = supplyChainCredentialValidator.validatePlatformCredential(pc, null,
                 true);

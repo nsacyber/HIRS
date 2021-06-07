@@ -1,5 +1,5 @@
 {
-  "Components": {
+  "TCG": {
     "Processors": {
       "ID": "0x00010000",
       "Types": {
@@ -331,6 +331,61 @@
         "0x00000004": "Drive BIOS",
         "0x00000005": "Bootloader",
         "0x00000006": "System Management Module"
+      }
+    }
+  },
+  "SMBIOS": {
+    "BIOS": {
+      "ID": "0x00000000",
+      "Types": {
+        "0x00000002": "CPU"
+      }
+    },
+    "System": {
+      "ID": "0x00010000",
+      "Types": {
+        "0x00000002": "Desktop"
+      }
+    },
+    "Baseboard": {
+      "ID": "0x00020000",
+      "Types": {
+        "0x00000002": "Daughter Board"
+      }
+    },
+    "Chassis": {
+      "ID": "0x00030000",
+      "Types": {
+        "0x00000002": "SAS Bridgeboard",
+        "0x00000003": "Processor Module"
+      }
+    },
+    "Processor": {
+      "ID": "0x00040000",
+      "Types": {
+        "0x00000002": "Video Controller",
+        "0x00000003": "SCSI Controller"
+      }
+    },
+    "RAM": {
+      "ID": "0x00110000",
+      "Types": {
+        "0x00000002": "Port Controller",
+        "0x00000003": "Baseboard Management Controller"
+      }
+    },
+    "Power Supply": {
+      "ID": "0x00270000",
+      "Types": {
+        "0x00000002": "Storage Drive",
+        "0x00000003": "SSD Drive"
+      }
+    },
+    "TPM": {
+      "ID": "0x002B0000",
+      "Types": {
+        "0x00000002": "Floppy Drive",
+        "0x00000003": "Tape Drive"
       }
     }
   }

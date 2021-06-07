@@ -1,5 +1,5 @@
 {
-  "Components": {
+  "TCG": {
     "Processors": {
       "ID": "0x00010000",
       "Types": {
@@ -13,18 +13,48 @@
     "Containers": {
       "ID": "0x00020000",
       "Types": {
-        "0x00000002": "Chassis",
-        "0x00000003": "Backplane",
-        "0x00000004": "Server Blade",
-        "0x00000005": "Stack (Rack)",
-        "0x00000006": "Stack (Rack)",
-        "0x00000007": "Stack (Rack)",
-        "0x00000008": "Stack (Rack)",
-        "0x00000009": "Stack (Rack)",
-        "0x0000000A": "Stack (Rack)",
-        "0x0000000B": "Stack (Rack)",
-        "0x0000000C": "Stack (Rack)",
-        "0x0000000D": "Stack (Rack)"
+        "0x00000002": "Desktop",
+        "0x00000003": "Low Profile Desktop",
+        "0x00000004": "Pizza Box",
+        "0x00000005": "Mini Tower",
+        "0x00000006": "Tower",
+        "0x00000007": "Portable",
+        "0x00000008": "Laptop",
+        "0x00000009": "Notebook",
+        "0x0000000A": "Hand Held",
+        "0x0000000B": "Docking Station",
+        "0x0000000C": "All in One",
+        "0x0000000D": "Sub Notebook",
+        "0x0000000E": "Space-saving",
+        "0x0000000F": "Lunch Box",
+        "0x00000010": "Main Server Chassis",
+        "0x00000011": "Expansion Chassis",
+        "0x00000012": "Sub Chassis",
+        "0x00000013": "Bus Expansion Chassis",
+        "0x00000014": "Peripheral Chassis",
+        "0x00000015": "RAID Chassis",
+        "0x00000016": "Rack Mount Chassis",
+        "0x00000017": "Sealed-case PC",
+        "0x00000018": "Multi-system Chassis",
+        "0x00000019": "Compact PCI",
+        "0x0000001A": "Advanced TCA",
+        "0x0000001B": "Blade",
+        "0x0000001C": "Blade Enclosure",
+        "0x0000001D": "Tablet",
+        "0x0000001E": "Convertible",
+        "0x0000001F": "Detachable",
+        "0x00000020": "IoT Gateway",
+        "0x00000021": "Embedded PC",
+        "0x00000022": "MiniPC",
+        "0x00000023": "Stick PC",
+        "0x00000024": "1U Rack Mount Chassis",
+        "0x00000025": "2U Rack Mount Chassis",
+        "0x00000026": "3U Rack Mount Chassis",
+        "0x00000027": "4U Rack Mount Chassis",
+        "0x00000028": "5U Rack Mount Chassis",
+        "0x00000029": "6U Rack Mount Chassis",
+        "0x0000002A": "7U Rack Mount Chassis",
+        "0x0000002B": "8U Rack Mount Chassis"
       }
     },
     "IC Boards": {
@@ -44,7 +74,8 @@
         "0x00000005": "Memory Module",
         "0x00000006": "Power Module",
         "0x00000007": "Processor/Memory Module",
-        "0x00000008": "Processor/IO Module"
+        "0x00000008": "Processor/IO Module",
+        "0x00000009": "TPM"
       }
     },
     "Controllers": {
@@ -61,37 +92,42 @@
         "0x0000000A": "LED Display Controller",
         "0x0000000B": "RAID Controller",
         "0x0000000C": "Remote Access Controller",
-        "0x0000000D": "USB Controller"
+        "0x0000000E": "USB Controller",
+        "0x0000000F": "Multi-function Storage Controller",
+        "0x00000010": "Multi-function Network Controller",
+        "0x00000011": "Smart IO Controller"
       }
     },
     "Memory": {
       "ID": "0x00060000",
       "Types": {
-        "0x0000000": "",
-        "0x00000001": "DRAM Memory",
-        "0x00000002": "EDRAM Memory",
-        "0x00000003": "VRAM Memory",
-        "0x00000004": "SRAM Memory",
-        "0x00000005": "RAM Memory",
-        "0x00000006": "ROM Memory",
-        "0x00000007": "FLASH Memory",
-        "0x00000008": "EEPROM Memory",
-        "0x00000009": "FEPROM Memory",
-        "0x0000000A": "EPROM Memory",
-        "0x0000000B": "CDRAM Memory",
-        "0x0000000C": "3DRAM Memory",
-        "0x0000000D": "SDRAM Memory",
-        "0x0000000E": "SGRAM Memory",
-        "0x0000000F": "RDRAM Memory",
-        "0x00000010": "DDR Memory",
-        "0x00000011": "DDR2 Memory",
-        "0x00000012": "DDR3 Memory",
-        "0x00000013": "DDR4 Memory",
-        "0x00000014": "LPDDR Memory",
-        "0x00000015": "LPDDR2 Memory",
-        "0x00000016": "LPDDR3 Memory",
-        "0x00000017": "LPDDR4 Memory",
-        "0x00000018": "NVRAM Memory"
+        "0x00000002": "Port Controller",
+        "0x00000003": "Baseboard Management Controller",
+        "0x00000004": "DRAM Memory",
+        "0x00000005": "EDRAM Memory",
+        "0x00000006": "VRAM Memory",
+        "0x00000007": "SRAM Memory",
+        "0x00000008": "RAM Memory",
+        "0x00000009": "ROM Memory",
+        "0x0000000A": "FLASH Memory",
+        "0x0000000B": "EEPROM Memory",
+        "0x0000000C": "FEPROM Memory",
+        "0x0000000D": "EPROM Memory",
+        "0x0000000E": "CDRAM Memory",
+        "0x0000000F": "3DRAM Memory",
+        "0x00000010": "SDRAM Memory",
+        "0x00000011": "SGRAM Memory",
+        "0x00000012": "RDRAM Memory",
+        "0x00000013": "DDR Memory",
+        "0x00000014": "DDR2 Memory",
+        "0x00000015": "DDR3 Memory",
+        "0x00000016": "DDR4 Memory",
+        "0x00000017": "LPDDR Memory",
+        "0x00000018": "LPDDR2 Memory",
+        "0x00000019": "LPDDR3 Memory",
+        "0x0000001A": "LPDDR4 Memory",
+        "0x0000001B": "NVRAM Memory",
+        "0x0000001C": "3D Xpoint Memory"
       }
     },
     "Storage": {
@@ -156,10 +192,10 @@
     "Display Devices": {
       "ID": "0x000C0000",
       "Types": {
-        "0x00000001": "LCD Display Panel",
-        "0x00000002": "LED Display Panel",
-        "0x00000003": "OLED Display Panel",
-        "0x00000004": "CRT Display Panel"
+        "0x00000002": "LCD Display Panel",
+        "0x00000003": "LED Display Panel",
+        "0x00000004": "OLED Display Panel",
+        "0x00000005": "CRT Display Panel"
       }
     },
     "Cooling": {
@@ -183,7 +219,7 @@
         "0x00000006": "Touch Pad",
         "0x00000007": "Touch Screen",
         "0x00000008": "Camera",
-        "0x00000009": "Fingerpoint Reader",
+        "0x00000009": "Fingerprint Reader",
         "0x0000000A": "Keyboard",
         "0x0000000B": "Smartcard Reader",
         "0x0000000C": "Biometric Reader",
@@ -284,7 +320,72 @@
         "0x00000008": "IDE Cable",
         "0x00000009": "Molex Cable",
         "0x0000000A": "Ribbon Cable",
-        "0x0000000B": "PCI Express"
+        "0x0000000B": "PCI Express Cable"
+      }
+    },
+    "Firmware": {
+      "ID": "0x00130000",
+      "Types": {
+        "0x00000002": "UEFI",
+        "0x00000003": "System BIOS",
+        "0x00000004": "Drive BIOS",
+        "0x00000005": "Bootloader",
+        "0x00000006": "System Management Module"
+      }
+    }
+  },
+  "SMBIOS": {
+    "BIOS": {
+      "ID": "0x00000000",
+      "Types": {
+        "0x00000002": "CPU"
+      }
+    },
+    "System": {
+      "ID": "0x00010000",
+      "Types": {
+        "0x00000002": "Desktop"
+      }
+    },
+    "Baseboard": {
+      "ID": "0x00020000",
+      "Types": {
+        "0x00000002": "Daughter Board"
+      }
+    },
+    "Chassis": {
+      "ID": "0x00030000",
+      "Types": {
+        "0x00000002": "SAS Bridgeboard",
+        "0x00000003": "Processor Module"
+      }
+    },
+    "Processor": {
+      "ID": "0x00040000",
+      "Types": {
+        "0x00000002": "Video Controller",
+        "0x00000003": "SCSI Controller"
+      }
+    },
+    "RAM": {
+      "ID": "0x00110000",
+      "Types": {
+        "0x00000002": "Port Controller",
+        "0x00000003": "Baseboard Management Controller"
+      }
+    },
+    "Power Supply": {
+      "ID": "0x00270000",
+      "Types": {
+        "0x00000002": "Storage Drive",
+        "0x00000003": "SSD Drive"
+      }
+    },
+    "TPM": {
+      "ID": "0x002B0000",
+      "Types": {
+        "0x00000002": "Floppy Drive",
+        "0x00000003": "Tape Drive"
       }
     }
   }

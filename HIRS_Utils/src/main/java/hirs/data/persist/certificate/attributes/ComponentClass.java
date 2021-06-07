@@ -24,6 +24,8 @@ import java.nio.file.Path;
  * </pre>
  */
 public class ComponentClass {
+    private static final String TCG_COMPONENT_REGISTRY = "2.23.133.18.3.1";
+    private static final String SMBIOS_COMPONENT_REGISTRY = "2.23.133.18.3.3";
 
     private static final Path JSON_PATH = FileSystems.getDefault()
             .getPath("/opt", "hirs", "default-properties", "component-class.json");
@@ -46,6 +48,7 @@ public class ComponentClass {
 
     private String category;
     private String component;
+    private String registryType;
     private int componentIdentifier;
     private String classValueString;
 
@@ -53,7 +56,7 @@ public class ComponentClass {
      * Default class constructor.
      */
     public ComponentClass() {
-        this(JSON_PATH, UNKNOWN);
+        this("TCG", JSON_PATH, UNKNOWN);
     }
 
     /**
@@ -62,17 +65,32 @@ public class ComponentClass {
      * @param componentIdentifier component value
      */
     public ComponentClass(final int componentIdentifier) {
-        this(JSON_PATH, componentIdentifier);
+        this(TCG_COMPONENT_REGISTRY, JSON_PATH, componentIdentifier);
     }
 
     /**
      * Class Constructor that takes a String representation of the component
      * value.
      *
+     * @param registryOid the decimal notation for the type of registry
      * @param componentIdentifier component value
      */
-    public ComponentClass(final String componentIdentifier) {
-        this(JSON_PATH, componentIdentifier);
+    public ComponentClass(final String registryOid, final String componentIdentifier) {
+        this(registryOid, JSON_PATH, getComponentIntValue(componentIdentifier));
+    }
+
+    /**
+     * Class Constructor that takes a String representation of the component
+     * value.
+     *
+     * @param registryOid the decimal notation for the type of registry
+     * @param componentClassPath file path for the json
+     * @param componentIdentifier component value
+     */
+    public ComponentClass(final String registryOid,
+                          final Path componentClassPath,
+                          final String componentIdentifier) {
+        this(registryOid, componentClassPath, getComponentIntValue(componentIdentifier));
     }
 
     /**
@@ -83,7 +101,7 @@ public class ComponentClass {
      * @param componentIdentifier component value
      */
     public ComponentClass(final Path componentClassPath, final String componentIdentifier) {
-        this(componentClassPath, getComponentIntValue(componentIdentifier));
+        this(TCG_COMPONENT_REGISTRY, componentClassPath, getComponentIntValue(componentIdentifier));
         if (componentIdentifier != null && componentIdentifier.contains("#")) {
             this.classValueString = componentIdentifier.replaceAll("#", "");
         } else {
@@ -96,13 +114,27 @@ public class ComponentClass {
      * component value. Sets main class variables to default values and then
      * matches the value against defined values in the associated JSON file.
      *
+     * @param registryOid the decimal notation for the type of registry
      * @param componentClassPath file path for the json
      * @param componentIdentifier component value
      */
-    public ComponentClass(final Path componentClassPath, final int componentIdentifier) {
+    public ComponentClass(final String registryOid,
+                          final Path componentClassPath,
+                          final int componentIdentifier) {
         this.category = UNKNOWN_STRING;
         this.component = NONE_STRING;
         this.componentIdentifier = componentIdentifier;
+
+        switch (registryOid) {
+            case TCG_COMPONENT_REGISTRY:
+                registryType = "TCG";
+                break;
+            case SMBIOS_COMPONENT_REGISTRY:
+                registryType = "SMBIOS";
+                break;
+            default:
+                registryType = UNKNOWN_STRING;
+        }
 
         switch (componentIdentifier) {
             case OTHER:
@@ -117,7 +149,7 @@ public class ComponentClass {
                 // Number Format Exception
                 break;
             default:
-                getCategory(JsonUtils.getSpecificJsonObject(componentClassPath, "Components"));
+                getCategory(JsonUtils.getSpecificJsonObject(componentClassPath, registryType));
                 break;
         }
     }
@@ -163,7 +195,7 @@ public class ComponentClass {
      */
     @Override
     public String toString() {
-        return String.format("%s - %s", category, component);
+        return String.format("%s%n%s - %s", registryType, category, component);
     }
 
     /**
