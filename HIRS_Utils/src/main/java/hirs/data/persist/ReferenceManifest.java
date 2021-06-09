@@ -2,7 +2,6 @@ package hirs.data.persist;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.common.base.Preconditions;
-import org.apache.commons.codec.binary.Hex;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.hibernate.annotations.Type;
@@ -16,8 +15,6 @@ import javax.xml.XMLConstants;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlRootElement;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
 import java.util.Arrays;
 import java.util.UUID;
 
@@ -64,13 +61,6 @@ public abstract class ReferenceManifest extends ArchivableEntity {
 
     private static final Logger LOGGER = LogManager.getLogger(ReferenceManifest.class);
 
-    /**
-     * Holds the name of the 'rimHash' field.
-     */
-    public static final String RIM_HASH_FIELD = "rimHash";
-    @Column(nullable = false)
-    @JsonIgnore
-    private final String rimHash;
     @Column(columnDefinition = "blob", nullable = false)
     @JsonIgnore
     private byte[] rimBytes;
@@ -97,6 +87,9 @@ public abstract class ReferenceManifest extends ArchivableEntity {
     @Type(type = "uuid-char")
     @Column
     private UUID associatedRim;
+    @Column
+    @JsonIgnore
+    private String deviceName;
 
     /**
      * Default constructor necessary for Hibernate.
@@ -104,7 +97,6 @@ public abstract class ReferenceManifest extends ArchivableEntity {
     protected ReferenceManifest() {
         super();
         this.rimBytes = null;
-        this.rimHash = "";
         this.rimType = null;
         this.platformManufacturer = null;
         this.platformManufacturerId = null;
@@ -126,19 +118,6 @@ public abstract class ReferenceManifest extends ArchivableEntity {
                 "Cannot construct a RIM from an empty byte array");
 
         this.rimBytes = rimBytes.clone();
-
-        MessageDigest digest = null;
-        try {
-            digest = MessageDigest.getInstance("SHA-256");
-        } catch (NoSuchAlgorithmException noSaEx) {
-            LOGGER.error(noSaEx);
-        }
-        if (digest == null) {
-            this.rimHash = "";
-        } else {
-            this.rimHash = Hex.encodeHexString(
-                    digest.digest(rimBytes));
-        }
     }
 
     /**
@@ -212,7 +191,7 @@ public abstract class ReferenceManifest extends ArchivableEntity {
     }
 
     /**
-     * Getter for the RIM Type (Primary, Supplemental, Patch).
+     * Getter for the RIM Type (Base, Support, Measurement).
      *
      * @return string for the RIM Type
      */
@@ -336,6 +315,22 @@ public abstract class ReferenceManifest extends ArchivableEntity {
     }
 
     /**
+     * Getter for the Device Name.
+     * @return string value of the device associated with this log.
+     */
+    public String getDeviceName() {
+        return deviceName;
+    }
+
+    /**
+     * Setter for the Device Name.
+     * @param deviceName new value to assign.
+     */
+    public void setDeviceName(final String deviceName) {
+        this.deviceName = deviceName;
+    }
+
+    /**
      * Getter for the Reference Integrity Manifest as a byte array.
      *
      * @return array of bytes
@@ -346,15 +341,6 @@ public abstract class ReferenceManifest extends ArchivableEntity {
             return this.rimBytes.clone();
         }
         return null;
-    }
-
-    /**
-     * Getter for the Reference Integrity Manifest hash value.
-     *
-     * @return int representation of the hash value
-     */
-    public String getRimHash() {
-        return rimHash;
     }
 
     @Override
@@ -374,8 +360,7 @@ public abstract class ReferenceManifest extends ArchivableEntity {
             return false;
         }
         ReferenceManifest that = (ReferenceManifest) object;
-        return rimHash == that.rimHash
-                && Arrays.equals(rimBytes, that.rimBytes)
+        return Arrays.equals(rimBytes, that.rimBytes)
                 && rimType.equals(that.rimType)
                 && tagId.equals(that.tagId)
                 && platformManufacturer.equals(that.platformManufacturer)
@@ -387,8 +372,7 @@ public abstract class ReferenceManifest extends ArchivableEntity {
     @Override
     public String toString() {
         return String.format("Filename->%s%nPlatform Manufacturer->%s%n"
-                + "Platform Model->%s%nRIM Type->%s%nRIM Hash->%s", this.getFileName(),
-                this.platformManufacturer, this.platformModel, this.getRimType(),
-                this.getRimHash());
+                + "Platform Model->%s%nRIM Type->%s%nRIM", this.getFileName(),
+                this.platformManufacturer, this.platformModel, this.getRimType());
     }
 }

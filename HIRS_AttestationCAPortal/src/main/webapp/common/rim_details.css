@@ -82,3 +82,27 @@
 .data-value {
     flex: 5
 }
+
+.mappedType {
+    display: flex 1;
+    padding: 1rem;
+    width: 20rem;
+    font-weight: bold
+}
+
+.mappedOverhead {
+    display: flex;
+    flex-direction: column;
+    padding: 1rem;
+}
+
+.mappedData {
+    font-weight: bold;
+}
+
+.mappedButton {
+    display: flex 1;
+    padding: 1rem;
+    width: 20rem;
+    font-weight: bold;
+}

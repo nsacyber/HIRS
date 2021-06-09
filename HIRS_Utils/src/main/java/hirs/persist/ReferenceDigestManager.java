@@ -40,6 +40,14 @@ public interface ReferenceDigestManager {
     /**
      * Persists a new Reference Digest.
      *
+     * @param deviceName the string of the network hostname
+     * @return the persisted ReferenceDigestRecord list
+     */
+    List<ReferenceDigestRecord> getRecordsByDeviceName(String deviceName);
+
+    /**
+     * Persists a new Reference Digest.
+     *
      * @param referenceDigestRecord the ReferenceDigestRecord
      * @return the persisted ReferenceDigestRecord
      */

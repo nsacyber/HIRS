@@ -5,12 +5,14 @@ import hirs.persist.ReferenceManifestManager;
 import hirs.persist.ReferenceManifestSelector;
 import hirs.tpm.eventlog.TCGEventLog;
 import hirs.tpm.eventlog.TpmPcrEvent;
+import org.apache.commons.codec.binary.Hex;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import java.io.IOException;
+import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.cert.CertificateException;
 import java.util.ArrayList;
@@ -23,7 +25,14 @@ import java.util.Collection;
 @Entity
 public class SupportReferenceManifest extends ReferenceManifest {
     private static final Logger LOGGER = LogManager.getLogger(SupportReferenceManifest.class);
+    /**
+     * Holds the name of the 'hexDecHash' field.
+     */
+    public static final String HEX_DEC_HASH_FIELD = "hexDecHash";
 
+    @Column
+    @JsonIgnore
+    private String hexDecHash = "";
     @Column
     @JsonIgnore
     private int pcrHash = 0;
@@ -60,24 +69,13 @@ public class SupportReferenceManifest extends ReferenceManifest {
         }
 
         /**
-         * Specify the platform manufacturer id that rims must have to be considered
+         * Specify the device name that rims must have to be considered
          * as matching.
-         * @param manufacturerId string for the id of the manufacturer
+         * @param deviceName string for the deviceName
          * @return this instance
          */
-        public Selector byManufacturerId(final String manufacturerId) {
-            setFieldValue(PLATFORM_MANUFACTURER_ID, manufacturerId);
-            return this;
-        }
-
-        /**
-         * Specify the platform model that rims must have to be considered
-         * as matching.
-         * @param model string for the model
-         * @return this instance
-         */
-        public Selector byModel(final String model) {
-            setFieldValue(PLATFORM_MODEL, model);
+        public Selector byDeviceName(final String deviceName) {
+            setFieldValue("deviceName", deviceName);
             return this;
         }
 
@@ -93,11 +91,11 @@ public class SupportReferenceManifest extends ReferenceManifest {
 
         /**
          * Specify the RIM hash associated with the support RIM.
-         * @param rimHash the hash of the file associated with the rim
+         * @param hexDecHash the hash of the file associated with the rim
          * @return this instance
          */
-        public Selector byRimHash(final String rimHash) {
-            setFieldValue(RIM_HASH_FIELD, rimHash);
+        public Selector byHexDecHash(final String hexDecHash) {
+            setFieldValue(HEX_DEC_HASH_FIELD, hexDecHash);
             return this;
         }
     }
@@ -116,6 +114,15 @@ public class SupportReferenceManifest extends ReferenceManifest {
         this.setFileName(fileName);
         this.setRimType(SUPPORT_RIM);
         this.pcrHash = 0;
+        MessageDigest digest = null;
+        this.hexDecHash = "";
+        try {
+            digest = MessageDigest.getInstance("SHA-256");
+            this.hexDecHash = Hex.encodeHexString(
+                    digest.digest(rimBytes));
+        } catch (NoSuchAlgorithmException noSaEx) {
+            LOGGER.error(noSaEx);
+        }
     }
 
     /**
@@ -245,5 +252,14 @@ public class SupportReferenceManifest extends ReferenceManifest {
      */
     public boolean isBaseSupport() {
         return !this.isSwidSupplemental() && !this.isSwidPatch();
+    }
+
+    /**
+     * Getter for the Reference Integrity Manifest hash value.
+     *
+     * @return int representation of the hash value
+     */
+    public String getHexDecHash() {
+        return hexDecHash;
     }
 }

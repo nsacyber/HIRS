@@ -1,40 +1,26 @@
 
 package hirs.attestationca.portal.page.controllers;
 
+import hirs.FilteredRecordsList;
 import hirs.attestationca.portal.datatables.DataTableInput;
 import hirs.attestationca.portal.datatables.DataTableResponse;
+import hirs.attestationca.portal.datatables.OrderedListQueryDataTableAdapter;
 import hirs.attestationca.portal.page.Page;
 import hirs.attestationca.portal.page.PageController;
-
-import hirs.FilteredRecordsList;
-import hirs.attestationca.portal.datatables.OrderedListQueryDataTableAdapter;
 import hirs.attestationca.portal.page.PageMessages;
 import hirs.attestationca.portal.page.params.NoPageParams;
 import hirs.data.persist.BaseReferenceManifest;
-import hirs.data.persist.SupportReferenceManifest;
-import hirs.persist.DBManagerException;
-import hirs.persist.ReferenceManifestManager;
-import hirs.persist.CriteriaModifier;
 import hirs.data.persist.ReferenceManifest;
+import hirs.data.persist.SupportReferenceManifest;
 import hirs.data.persist.SwidResource;
 import hirs.data.persist.certificate.Certificate;
-import java.io.IOException;
-import java.net.URISyntaxException;
-
-import java.text.DateFormat;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Set;
-import java.util.UUID;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-import javax.servlet.http.HttpServletResponse;
-
+import hirs.persist.CriteriaModifier;
+import hirs.persist.DBManagerException;
+import hirs.persist.ReferenceManifestManager;
+import org.apache.commons.codec.binary.Base64;
+import org.apache.commons.codec.binary.Hex;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-
 import org.hibernate.Criteria;
 import org.hibernate.criterion.Restrictions;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -49,6 +35,21 @@ import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import org.springframework.web.servlet.view.RedirectView;
+
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
+import java.net.URISyntaxException;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+import java.text.DateFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Set;
+import java.util.UUID;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * Controller for the Reference Manifest page.
@@ -437,19 +438,34 @@ public class ReferenceManifestPageController
 
         ReferenceManifest existingManifest;
 
+        MessageDigest digest = null;
+        String rimHash = "";
+        try {
+            digest = MessageDigest.getInstance("SHA-256");
+        } catch (NoSuchAlgorithmException noSaEx) {
+            LOGGER.error(noSaEx);
+        }
+
         // look for existing manifest in the database
         try {
             if (supportRim) {
+                if (digest != null) {
+                    rimHash = Hex.encodeHexString(
+                            digest.digest(referenceManifest.getRimBytes()));
+                }
                 existingManifest = SupportReferenceManifest
                         .select(referenceManifestManager)
+                        .byHexDecHash(rimHash)
                         .includeArchived()
-                        .byHashCode(referenceManifest.getRimHash())
                         .getRIM();
             } else {
+                if (digest != null) {
+                    rimHash = Base64.encodeBase64String(
+                            digest.digest(referenceManifest.getRimBytes()));
+                }
                 existingManifest = BaseReferenceManifest
-                        .select(referenceManifestManager)
+                        .select(referenceManifestManager).byBase64Hash(rimHash)
                         .includeArchived()
-                        .byHashCode(referenceManifest.getRimHash())
                         .getRIM();
             }
         } catch (DBManagerException e) {

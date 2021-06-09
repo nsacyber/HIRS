@@ -14,7 +14,6 @@ import hirs.data.persist.DeviceInfoReport;
 import hirs.data.persist.EventLogMeasurements;
 import hirs.data.persist.ReferenceDigestRecord;
 import hirs.data.persist.ReferenceDigestValue;
-import hirs.data.persist.ReferenceManifest;
 import hirs.data.persist.SupplyChainPolicy;
 import hirs.data.persist.SupplyChainValidationSummary;
 import hirs.data.persist.SupportReferenceManifest;
@@ -94,6 +93,7 @@ import java.security.interfaces.RSAPublicKey;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.MGF1ParameterSpec;
 import java.security.spec.RSAPublicKeySpec;
+import java.util.Base64;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashSet;
@@ -680,7 +680,6 @@ public abstract class AbstractAttestationCertificateAuthority
             for (String line : lines) {
                 if (!line.isEmpty()
                         && !line.contains(TPM_SIGNATURE_ALG)) {
-                    LOG.error(line);
                     pcrs[counter++] = line.split(":")[1].trim();
                 }
             }
@@ -776,7 +775,7 @@ public abstract class AbstractAttestationCertificateAuthority
                 dv.getHw().getManufacturer(),
                 dv.getHw().getProductName());
         BaseReferenceManifest dbBaseRim = null;
-        ReferenceManifest support;
+        SupportReferenceManifest support;
         EventLogMeasurements measurements;
         String tagId = "";
         String fileName = "";
@@ -788,11 +787,9 @@ public abstract class AbstractAttestationCertificateAuthority
             for (ByteString logFile : dv.getLogfileList()) {
                 try {
                     support = SupportReferenceManifest.select(referenceManifestManager)
-                            .includeArchived()
-                            .byHashCode(Hex.encodeHexString(messageDigest.digest(
-                                    logFile.toByteArray())))
+                            .byHexDecHash(Hex.encodeHexString(messageDigest.digest(
+                                    logFile.toByteArray()))).includeArchived()
                             .getRIM();
-
                     if (support == null) {
                         support = new SupportReferenceManifest(
                                 String.format("%s.rimel",
@@ -804,8 +801,9 @@ public abstract class AbstractAttestationCertificateAuthority
                         support.setPlatformManufacturer(dv.getHw().getManufacturer());
                         support.setPlatformModel(dv.getHw().getProductName());
                         support.setFileName(String.format("%s_[%s].rimel", defaultClientName,
-                                support.getRimHash().substring(
-                                        support.getRimHash().length() - NUM_OF_VARIABLES)));
+                                support.getHexDecHash().substring(
+                                        support.getHexDecHash().length() - NUM_OF_VARIABLES)));
+                        support.setDeviceName(dv.getNw().getHostname());
                         this.referenceManifestManager.save(support);
                     } else {
                         LOG.info("Client provided Support RIM already loaded in database.");
@@ -828,53 +826,19 @@ public abstract class AbstractAttestationCertificateAuthority
 
         if (dv.getSwidfileCount() > 0) {
             for (ByteString swidFile : dv.getSwidfileList()) {
-                fileName = "";
                 try {
                     dbBaseRim = BaseReferenceManifest.select(referenceManifestManager)
+                            .byBase64Hash(Base64.getEncoder()
+                                    .encodeToString(messageDigest
+                                            .digest(swidFile.toByteArray())))
                             .includeArchived()
-                            .byHashCode(Hex.encodeHexString(messageDigest.digest(
-                                    swidFile.toByteArray())))
                             .getRIM();
-
                     if (dbBaseRim == null) {
                         dbBaseRim = new BaseReferenceManifest(
                                 String.format("%s.swidtag",
                                         defaultClientName),
                                 swidFile.toByteArray());
-
-                        // get file name to use
-                        for (SwidResource swid : dbBaseRim.parseResource()) {
-                            matcher = pattern.matcher(swid.getName());
-                            if (matcher.matches()) {
-                                //found the file name
-                                int dotIndex = swid.getName().lastIndexOf(".");
-                                fileName = swid.getName().substring(0, dotIndex);
-                                dbBaseRim = new BaseReferenceManifest(
-                                        String.format("%s.swidtag",
-                                                fileName),
-                                        swidFile.toByteArray());
-                            }
-
-                            // now update support rim
-                            SupportReferenceManifest dbSupport = SupportReferenceManifest
-                                    .select(referenceManifestManager)
-                                    .byRimHash(swid.getHashValue()).getRIM();
-                            if (dbSupport != null && !dbSupport.isUpdated()) {
-                                dbSupport.setFileName(swid.getName());
-                                dbSupport.setSwidTagVersion(dbBaseRim.getSwidTagVersion());
-                                // I might create a get for the bytes of the swidtag file
-                                // so that I can set that instead of the rim ID
-                                dbSupport.setTagId(dbBaseRim.getTagId());
-                                dbSupport.setSwidTagVersion(dbBaseRim.getSwidTagVersion());
-                                dbSupport.setSwidVersion(dbBaseRim.getSwidVersion());
-                                dbSupport.setSwidPatch(dbBaseRim.isSwidPatch());
-                                dbSupport.setSwidSupplemental(dbBaseRim.isSwidSupplemental());
-                                dbBaseRim.setAssociatedRim(dbSupport.getId());
-                                dbSupport.setUpdated(true);
-                                this.referenceManifestManager.update(dbSupport);
-                                break;
-                            }
-                        }
+                        dbBaseRim.setDeviceName(dv.getNw().getHostname());
                         this.referenceManifestManager.save(dbBaseRim);
                     } else {
                         LOG.info("Client provided Base RIM already loaded in database.");
@@ -888,7 +852,6 @@ public abstract class AbstractAttestationCertificateAuthority
                             this.referenceManifestManager.update(dbBaseRim);
                         }
                     }
-
                 } catch (IOException ioEx) {
                     LOG.error(ioEx);
                 }
@@ -897,16 +860,56 @@ public abstract class AbstractAttestationCertificateAuthority
             LOG.warn("Device did not send swid tag file...");
         }
 
-        generateDigestRecords(hw.getManufacturer(), hw.getProductName());
+        //update Support RIMs and Base RIMs.
+        for (ByteString swidFile : dv.getSwidfileList()) {
+            dbBaseRim = BaseReferenceManifest.select(referenceManifestManager)
+                    .byBase64Hash(Base64.getEncoder().encodeToString(messageDigest.digest(
+                            swidFile.toByteArray()))).includeArchived()
+                    .getRIM();
+
+            // get file name to use
+            for (SwidResource swid : dbBaseRim.parseResource()) {
+                matcher = pattern.matcher(swid.getName());
+                if (matcher.matches()) {
+                    //found the file name
+                    int dotIndex = swid.getName().lastIndexOf(".");
+                    fileName = swid.getName().substring(0, dotIndex);
+                    dbBaseRim.setFileName(String.format("%s.swidtag",
+                            fileName));
+                }
+
+                // now update support rim
+                SupportReferenceManifest dbSupport = SupportReferenceManifest
+                        .select(referenceManifestManager)
+                        .byHexDecHash(swid.getHashValue()).getRIM();
+                if (dbSupport != null) {
+                    dbSupport.setFileName(swid.getName());
+                    dbSupport.setSwidTagVersion(dbBaseRim.getSwidTagVersion());
+                    dbSupport.setTagId(dbBaseRim.getTagId());
+                    dbSupport.setSwidTagVersion(dbBaseRim.getSwidTagVersion());
+                    dbSupport.setSwidVersion(dbBaseRim.getSwidVersion());
+                    dbSupport.setSwidPatch(dbBaseRim.isSwidPatch());
+                    dbSupport.setSwidSupplemental(dbBaseRim.isSwidSupplemental());
+                    dbBaseRim.setAssociatedRim(dbSupport.getId());
+                    dbSupport.setUpdated(true);
+                    dbSupport.setAssociatedRim(dbBaseRim.getId());
+                    this.referenceManifestManager.update(dbSupport);
+                }
+            }
+            this.referenceManifestManager.update(dbBaseRim);
+        }
+
+        generateDigestRecords(hw.getManufacturer(), hw.getProductName(),
+                dv.getNw().getHostname());
 
         if (dv.hasLivelog()) {
             LOG.info("Device sent bios measurement log...");
             fileName = String.format("%s.measurement",
-                    defaultClientName);
+                    dv.getNw().getHostname());
             try {
                 // find previous version.  If it exists, delete it
                 measurements = EventLogMeasurements.select(referenceManifestManager)
-                        .byManufacturer(dv.getHw().getManufacturer())
+                        .byDeviceName(dv.getNw().getHostname())
                         .includeArchived().getRIM();
                 if (measurements != null) {
                     LOG.info("Previous bios measurement log found and being replaced...");
@@ -917,6 +920,7 @@ public abstract class AbstractAttestationCertificateAuthority
                 measurements.setPlatformManufacturer(dv.getHw().getManufacturer());
                 measurements.setPlatformModel(dv.getHw().getProductName());
                 measurements.setTagId(tagId);
+                measurements.setDeviceName(dv.getNw().getHostname());
                 this.referenceManifestManager.save(measurements);
             } catch (IOException ioEx) {
                 LOG.error(ioEx);
@@ -944,7 +948,8 @@ public abstract class AbstractAttestationCertificateAuthority
         return dvReport;
     }
 
-    private boolean generateDigestRecords(final String manufacturer, final String model) {
+    private boolean generateDigestRecords(final String manufacturer, final String model,
+                                          final String deviceName) {
         List<ReferenceDigestValue> rdValues;
         Set<SupportReferenceManifest> dbSupportRims = SupportReferenceManifest
                 .select(referenceManifestManager).byManufacturer(manufacturer).getRIMs();
@@ -953,6 +958,7 @@ public abstract class AbstractAttestationCertificateAuthority
             if (dbSupport.getPlatformModel().equals(model)) {
                 ReferenceDigestRecord dbObj = new ReferenceDigestRecord(dbSupport,
                         manufacturer, model);
+                dbObj.setDeviceName(deviceName);
                 // this is where we update or create the log
                 ReferenceDigestRecord rdr = this.referenceDigestManager.getRecord(dbObj);
                 if (dbSupport.isBaseSupport()) {
