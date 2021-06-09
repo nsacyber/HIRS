@@ -10,6 +10,8 @@ import org.apache.logging.log4j.Logger;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
 import java.io.IOException;
 import java.security.NoSuchAlgorithmException;
 import java.security.cert.CertificateException;
@@ -29,6 +31,8 @@ public class EventLogMeasurements extends ReferenceManifest {
     @Column
     @JsonIgnore
     private int pcrHash = 0;
+    @Enumerated(EnumType.STRING)
+    private AppraisalStatus.Status overallValidationResult = AppraisalStatus.Status.FAIL;
 
     /**
      * This class enables the retrieval of SupportReferenceManifest by their attributes.
@@ -170,5 +174,21 @@ public class EventLogMeasurements extends ReferenceManifest {
      */
     public void setPcrHash(final int pcrHash) {
         this.pcrHash = pcrHash;
+    }
+
+    /**
+     * Getter for the overall validation result for display purposes.
+     * @return the result status
+     */
+    public AppraisalStatus.Status getOverallValidationResult() {
+        return overallValidationResult;
+    }
+
+    /**
+     * Setter for the overall validation result for display purposes.
+     * @param overallValidationResult the current status for this validation.
+     */
+    public void setOverallValidationResult(final AppraisalStatus.Status overallValidationResult) {
+        this.overallValidationResult = overallValidationResult;
     }
 }

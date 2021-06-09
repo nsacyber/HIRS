@@ -25,7 +25,7 @@
         <c:set var="supportRimHashInvalidText" value="Support RIM hash not valid!"/>
         <div id="certificate-details-page" class="container-fluid">
             <c:choose>
-                <c:when test="${initialData.rimType=='Support'}">
+                <c:when test="${initialData.rimType=='Support' || (initialData.rimType=='Measurement' && initialData.validationResult=='PASS')}">
                     <div class="row">
                         <div class="col-md-1 col-md-offset-1"><span class="colHeader">Base RIM</span></div>
                         <div id="baseRim" class="col col-md-8">
@@ -236,7 +236,7 @@
                 </div>
                 <div class="col-md-a col-md-offset-1"><span class="colHeader">${initialData.events.size()} entries</span></div>
             </c:when>
-            <c:when test="${initialData.rimType=='Measurement'}">
+            <c:when test="${initialData.rimType=='Measurement' && initialData.validationResult=='FAIL'}">
                 <div style="display: inline">
                     <div class="row">
                         <div class="col-md-1 col-md-offset-1"><span class="colHeader">Base/Support</span></div>

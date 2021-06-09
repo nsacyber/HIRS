@@ -52,7 +52,7 @@
                         {
                             data: 'id',
                             orderable: false,
-                            searchable:false,
+                            searchable: false,
                             render: function(data, type, full, meta) {
                                 // Set up a delete icon with link to handleDeleteRequest().
                                 // sets up a hidden input field containing the ID which is

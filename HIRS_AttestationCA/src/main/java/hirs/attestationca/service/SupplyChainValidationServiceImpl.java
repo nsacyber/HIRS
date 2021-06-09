@@ -369,7 +369,7 @@ public class SupplyChainValidationServiceImpl implements SupplyChainValidationSe
                 .getHardwareInfo().getManufacturer();
         String model = device.getDeviceInfo()
                 .getHardwareInfo().getProductName();
-        ReferenceManifest validationObject = null;
+        ReferenceManifest validationObject;
         Set<BaseReferenceManifest> baseReferenceManifests = null;
         BaseReferenceManifest baseReferenceManifest = null;
         ReferenceManifest supportReferenceManifest = null;
@@ -388,7 +388,7 @@ public class SupplyChainValidationServiceImpl implements SupplyChainValidationSe
             }
         }
 
-        validationObject = baseReferenceManifest;
+        validationObject = measurement;
         String failedString = "";
         if (baseReferenceManifest == null) {
             failedString = "Base Reference Integrity Manifest\n";
@@ -548,6 +548,9 @@ public class SupplyChainValidationServiceImpl implements SupplyChainValidationSe
                     + "%s for %s can not be found", failedString, manufacturer));
         }
 
+        EventLogMeasurements eventLog = (EventLogMeasurements) measurement;
+        eventLog.setOverallValidationResult(fwStatus.getAppStatus());
+        this.referenceManifestManager.update(eventLog);
         return buildValidationRecord(SupplyChainValidation.ValidationType.FIRMWARE,
                 fwStatus.getAppStatus(), fwStatus.getMessage(), validationObject, level);
     }
@@ -620,9 +623,11 @@ public class SupplyChainValidationServiceImpl implements SupplyChainValidationSe
                 LOGGER.error(ex);
             }
 
+            eventLog.setOverallValidationResult(fwStatus.getAppStatus());
+            this.referenceManifestManager.update(eventLog);
             quoteScv = buildValidationRecord(SupplyChainValidation
                             .ValidationType.FIRMWARE,
-                    fwStatus.getAppStatus(), fwStatus.getMessage(), sRim, level);
+                    fwStatus.getAppStatus(), fwStatus.getMessage(), eventLog, level);
 
             // Generate validation summary, save it, and return it.
             List<SupplyChainValidation> validations = new ArrayList<>();

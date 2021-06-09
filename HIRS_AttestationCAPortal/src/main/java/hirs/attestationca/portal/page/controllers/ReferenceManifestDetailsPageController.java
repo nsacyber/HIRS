@@ -506,6 +506,7 @@ public class ReferenceManifestDetailsPageController
         data.put("baseId", "");
         data.put("rimType", measurements.getRimType());
         data.put("hostName", measurements.getDeviceName());
+        data.put("validationResult", measurements.getOverallValidationResult());
 
         if (measurements.getDeviceName() != null) {
             digestRecords = referenceDigestManager
