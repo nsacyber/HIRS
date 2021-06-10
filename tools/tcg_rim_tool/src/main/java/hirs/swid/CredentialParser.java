@@ -10,6 +10,7 @@ import org.bouncycastle.openssl.PEMKeyPair;
 import org.bouncycastle.openssl.PEMParser;
 import org.bouncycastle.openssl.jcajce.JcaPEMKeyConverter;
 import org.bouncycastle.util.encoders.Base64;
+import org.bouncycastle.util.encoders.DecoderException;
 
 import java.io.*;
 import java.security.*;
@@ -154,6 +155,8 @@ public class CredentialParser {
             }
         } catch (FileNotFoundException e) {
             System.out.println("Unable to locate private key file: " + filename);
+        } catch (DecoderException e) {
+            System.out.println("Failed to parse uploaded pem file: " + e.getMessage());
         } catch (NoSuchAlgorithmException e) {
             System.out.println("Unable to instantiate KeyFactory with algorithm: " + algorithm);
         } catch (IOException e) {
