@@ -578,29 +578,34 @@ public class SupplyChainValidationServiceImpl implements SupplyChainValidationSe
         // check if the policy is enabled
         if (policy.isFirmwareValidationEnabled()) {
             String[] baseline = new String[Integer.SIZE];
-            String manufacturer = device.getDeviceInfo()
-                    .getHardwareInfo().getManufacturer();
+            String deviceName = device.getDeviceInfo()
+                    .getNetworkInfo().getHostname();
 
             try {
-                sRim = SupportReferenceManifest.select(
-                        this.referenceManifestManager)
-                        .byManufacturer(manufacturer).getRIM();
+                Set<SupportReferenceManifest> supportRims = SupportReferenceManifest
+                        .select(this.referenceManifestManager)
+                        .byDeviceName(deviceName).getRIMs();
+                for (SupportReferenceManifest support : supportRims) {
+                    if (support.isBaseSupport()) {
+                        sRim = support;
+                    }
+                }
                 eventLog = EventLogMeasurements
                         .select(this.referenceManifestManager)
-                        .byManufacturer(manufacturer).getRIM();
+                        .byDeviceName(deviceName).getRIM();
 
                 if (sRim == null) {
                     fwStatus = new AppraisalStatus(FAIL,
                             String.format("Firmware Quote validation failed: "
                                             + "No associated Support RIM file "
                                             + "could be found for %s",
-                                    manufacturer));
+                                    deviceName));
                 } else if (eventLog == null) {
                     fwStatus = new AppraisalStatus(FAIL,
                             String.format("Firmware Quote validation failed: "
                                             + "No associated Client Log file "
                                             + "could be found for %s",
-                                    manufacturer));
+                                    deviceName));
                 } else {
                     baseline = sRim.getExpectedPCRList();
                     String[] storedPcrs = eventLog.getExpectedPCRList();
@@ -618,13 +623,13 @@ public class SupplyChainValidationServiceImpl implements SupplyChainValidationSe
                         fwStatus.setMessage("Firmware validation of TPM Quote failed."
                                 + "\nPCR hash and Quote hash do not match.");
                     }
+                    eventLog.setOverallValidationResult(fwStatus.getAppStatus());
+                    this.referenceManifestManager.update(eventLog);
                 }
             } catch (Exception ex) {
                 LOGGER.error(ex);
             }
 
-            eventLog.setOverallValidationResult(fwStatus.getAppStatus());
-            this.referenceManifestManager.update(eventLog);
             quoteScv = buildValidationRecord(SupplyChainValidation
                             .ValidationType.FIRMWARE,
                     fwStatus.getAppStatus(), fwStatus.getMessage(), eventLog, level);
@@ -639,6 +644,10 @@ public class SupplyChainValidationServiceImpl implements SupplyChainValidationSe
                     validations.add(buildValidationRecord(scv.getValidationType(),
                             scv.getResult(), scv.getMessage(),
                             scv.getCertificatesUsed().get(0), Level.INFO));
+                } else {
+                    validations.add(buildValidationRecord(scv.getValidationType(),
+                            scv.getResult(), scv.getMessage(),
+                            quoteScv.getCertificatesUsed().get(0), Level.INFO));
                 }
             }
             validations.add(quoteScv);

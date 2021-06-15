@@ -27,16 +27,23 @@
             <c:choose>
                 <c:when test="${initialData.rimType=='Support' || (initialData.rimType=='Measurement' && initialData.validationResult=='PASS')}">
                     <div class="row">
-                        <div class="col-md-1 col-md-offset-1"><span class="colHeader">Base RIM</span></div>
+                        <div class="col-md-1 col-md-offset-1"><span class="colHeader">Additional<br />RIM Info</span></div>
                         <div id="baseRim" class="col col-md-8">
                             <c:choose>
                                 <c:when test="${not empty initialData.associatedRim}">
                                     <a href="${portal}/rim-details?id=${initialData.associatedRim}">
                                         ${initialData.tagId}
                                     </a>
+                            <c:if test="${not empty initialData.hostName}">
+                                <div>Device:&nbsp;<span>${initialData.hostName}</span></div>
+                            </c:if>
+                            <c:if test="${not empty initialData.supportId}">
+                                <div>Support:&nbsp;<span><a href="${portal}/rim-details?id=${initialData.supportId}">${initialData.supportFilename}</a></span>
+                                </div>
+                            </c:if>
                                 </c:when>
                                 <c:otherwise>
-                                    <div class="component col col-md-10" style="color: red; padding-left: 20px">Base RIM not uploaded from the ACA RIM Page</div>
+                                    <div class="component col col-md-10" style="color: red; padding-left: 20px">RIM not uploaded from the ACA RIM Page</div>
                                 </c:otherwise>
                             </c:choose>
                         </div>
@@ -242,11 +249,11 @@
                         <div class="col-md-1 col-md-offset-1"><span class="colHeader">Base/Support</span></div>
                         <div id="measurements" class="col col-md-8">
                             <c:if test="${not empty initialData.hostName}">
-                                <div><span>${initialData.hostName}</span>
+                                <div>Device:&nbsp;<span>${initialData.hostName}</span>
                                 </div>
                             </c:if>
                             <c:if test="${not empty initialData.tagId}">
-                                <div>Base:&nbsp;<span><a href="${portal}/rim-details?id=${initialData.baseId}">${initialData.tagId}</a></span>
+                                <div>Base:&nbsp;<span><a href="${portal}/rim-details?id=${initialData.associatedRim}">${initialData.tagId}</a></span>
                                 </div>
                             </c:if>
                             <c:if test="${not empty initialData.supportId}">
@@ -273,7 +280,7 @@
                                     <div style="display: flex;">
                                         <div class="mappedButton">
                                             Baseline Events of Type:<br />
-                                            <a role="button" data-toggle="collapse" href="#eventContent${iterator}">${lEvent.getEventTypeString()}</a>
+                                            <span style="word-wrap: break-word"><a role="button" data-toggle="collapse" href="#eventContent${iterator}">${lEvent.getEventTypeString()}</a></span>
                                         </div>
                                         <div id="eventContent${iterator}" class="panel-collapse collapse in" style="flex: 2">
                                             <c:forEach items="${initialData.eventTypeMap}" var="mappedDigest">

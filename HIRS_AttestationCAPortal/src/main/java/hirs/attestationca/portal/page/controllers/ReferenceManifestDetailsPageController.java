@@ -34,6 +34,7 @@ import java.security.NoSuchAlgorithmException;
 import java.security.cert.CertificateException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -378,20 +379,6 @@ public class ReferenceManifestDetailsPageController
         data.put("associatedRim", support.getAssociatedRim());
         data.put("rimType", support.getRimType());
         data.put("tagId", support.getTagId());
-        boolean crtm = false;
-        boolean bootManager = false;
-        boolean osLoader = false;
-        boolean osKernel = false;
-        boolean acpiTables = false;
-        boolean smbiosTables = false;
-        boolean gptTable = false;
-        boolean bootOrder = false;
-        boolean defaultBootDevice = false;
-        boolean secureBoot = false;
-        boolean pk = false;
-        boolean kek = false;
-        boolean sigDb = false;
-        boolean forbiddenDbx = false;
 
         TCGEventLog logProcessor = new TCGEventLog(support.getRimBytes());
         LinkedList<TpmPcrEvent> tpmPcrEvents = new LinkedList<>();
@@ -417,8 +404,29 @@ public class ReferenceManifestDetailsPageController
             data.put("events", logProcessor.getEventList());
         }
 
+        getEventSummary(data, logProcessor.getEventList());
+        return data;
+    }
+
+    private static void getEventSummary(final HashMap<String, Object> data,
+                                        final Collection<TpmPcrEvent> eventList) {
+        boolean crtm = false;
+        boolean bootManager = false;
+        boolean osLoader = false;
+        boolean osKernel = false;
+        boolean acpiTables = false;
+        boolean smbiosTables = false;
+        boolean gptTable = false;
+        boolean bootOrder = false;
+        boolean defaultBootDevice = false;
+        boolean secureBoot = false;
+        boolean pk = false;
+        boolean kek = false;
+        boolean sigDb = false;
+        boolean forbiddenDbx = false;
+
         String contentStr;
-        for (TpmPcrEvent tpe : logProcessor.getEventList()) {
+        for (TpmPcrEvent tpe : eventList) {
             contentStr = tpe.getEventContentStr();
             // check for specific events
             if (contentStr.contains("CRTM")) {
@@ -471,8 +479,6 @@ public class ReferenceManifestDetailsPageController
         data.put("kek", kek);
         data.put("sigDb", sigDb);
         data.put("forbiddenDbx", forbiddenDbx);
-
-        return data;
     }
 
     /**
@@ -503,10 +509,11 @@ public class ReferenceManifestDetailsPageController
 
         data.put("supportFilename", "Blank");
         data.put("supportId", "");
-        data.put("baseId", "");
+        data.put("associatedRim", "");
         data.put("rimType", measurements.getRimType());
         data.put("hostName", measurements.getDeviceName());
         data.put("validationResult", measurements.getOverallValidationResult());
+        data.put("swidBase", true);
 
         if (measurements.getDeviceName() != null) {
             digestRecords = referenceDigestManager
@@ -532,7 +539,7 @@ public class ReferenceManifestDetailsPageController
                 data.put("tagId", baseSupport.getTagId());
 
                 if (base != null) {
-                    data.put("baseId", base.getId());
+                    data.put("associatedRim", base.getId());
                 }
             }
         }
@@ -587,7 +594,10 @@ public class ReferenceManifestDetailsPageController
             data.put("eventTypeMap", baselineLogEvents);
         }
 
+        TCGEventLog logProcessor = new TCGEventLog(measurements.getRimBytes());
         data.put("livelogEvents", livelogEvents);
+        data.put("events", logProcessor.getEventList());
+        getEventSummary(data, logProcessor.getEventList());
 
         return data;
     }
