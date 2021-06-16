@@ -909,11 +909,10 @@ public abstract class AbstractAttestationCertificateAuthority
             try {
                 // find previous version.  If it exists, delete it
                 measurements = EventLogMeasurements.select(referenceManifestManager)
-                        .byDeviceName(dv.getNw().getHostname())
-                        .includeArchived().getRIM();
+                        .byDeviceName(dv.getNw().getHostname()).getRIM();
                 if (measurements != null) {
-                    LOG.info("Previous bios measurement log found and being replaced...");
-                    this.referenceManifestManager.delete(measurements);
+                    LOG.info("Previous bios measurement log found and being archived...");
+                    this.referenceManifestManager.update(measurements);
                 }
                 measurements = new EventLogMeasurements(fileName,
                         dv.getLivelog().toByteArray());

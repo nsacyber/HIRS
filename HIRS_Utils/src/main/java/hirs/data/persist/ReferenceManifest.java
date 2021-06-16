@@ -2,6 +2,7 @@ package hirs.data.persist;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.common.base.Preconditions;
+import org.apache.commons.codec.binary.Hex;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.hibernate.annotations.Type;
@@ -15,6 +16,8 @@ import javax.xml.XMLConstants;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlRootElement;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.util.Arrays;
 import java.util.UUID;
 
@@ -28,6 +31,10 @@ import java.util.UUID;
 @XmlAccessorType(XmlAccessType.FIELD)
 @Access(AccessType.FIELD)
 public abstract class ReferenceManifest extends ArchivableEntity {
+    /**
+     * Holds the name of the 'hexDecHash' field.
+     */
+    public static final String HEX_DEC_HASH_FIELD = "hexDecHash";
     /**
      * String for display of a Base RIM.
      */
@@ -90,6 +97,9 @@ public abstract class ReferenceManifest extends ArchivableEntity {
     @Column
     @JsonIgnore
     private String deviceName;
+    @Column
+    @JsonIgnore
+    private String hexDecHash = "";
 
     /**
      * Default constructor necessary for Hibernate.
@@ -118,6 +128,15 @@ public abstract class ReferenceManifest extends ArchivableEntity {
                 "Cannot construct a RIM from an empty byte array");
 
         this.rimBytes = rimBytes.clone();
+        MessageDigest digest = null;
+        this.hexDecHash = "";
+        try {
+            digest = MessageDigest.getInstance("SHA-256");
+            this.hexDecHash = Hex.encodeHexString(
+                    digest.digest(rimBytes));
+        } catch (NoSuchAlgorithmException noSaEx) {
+            LOGGER.error(noSaEx);
+        }
     }
 
     /**
@@ -328,6 +347,15 @@ public abstract class ReferenceManifest extends ArchivableEntity {
      */
     public void setDeviceName(final String deviceName) {
         this.deviceName = deviceName;
+    }
+
+    /**
+     * Getter for the Reference Integrity Manifest hash value.
+     *
+     * @return int representation of the hash value
+     */
+    public String getHexDecHash() {
+        return hexDecHash;
     }
 
     /**

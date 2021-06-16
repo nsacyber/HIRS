@@ -380,7 +380,7 @@ public class SupplyChainValidationServiceImpl implements SupplyChainValidationSe
                 .byDeviceName(device.getDeviceInfo().getNetworkInfo().getHostname()).getRIMs();
 
         measurement = EventLogMeasurements.select(referenceManifestManager)
-                .byManufacturer(manufacturer).includeArchived().getRIM();
+                .byManufacturer(manufacturer).getRIM();
 
         for (BaseReferenceManifest bRim : baseReferenceManifests) {
             if (!bRim.isSwidSupplemental() && !bRim.isSwidPatch()) {
@@ -444,7 +444,7 @@ public class SupplyChainValidationServiceImpl implements SupplyChainValidationSe
             if (passed) {
                 TCGEventLog logProcessor;
                 try {
-                    logProcessor = new TCGEventLog(measurement.getRimBytes());
+                    logProcessor = new TCGEventLog(supportReferenceManifest.getRimBytes());
                     baseline = logProcessor.getExpectedPCRValues();
                 } catch (CertificateException cEx) {
                     LOGGER.error(cEx);
@@ -644,10 +644,6 @@ public class SupplyChainValidationServiceImpl implements SupplyChainValidationSe
                     validations.add(buildValidationRecord(scv.getValidationType(),
                             scv.getResult(), scv.getMessage(),
                             scv.getCertificatesUsed().get(0), Level.INFO));
-                } else {
-                    validations.add(buildValidationRecord(scv.getValidationType(),
-                            scv.getResult(), scv.getMessage(),
-                            quoteScv.getCertificatesUsed().get(0), Level.INFO));
                 }
             }
             validations.add(quoteScv);

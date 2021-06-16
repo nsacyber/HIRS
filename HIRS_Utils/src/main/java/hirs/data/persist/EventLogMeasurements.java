@@ -95,7 +95,6 @@ public class EventLogMeasurements extends ReferenceManifest {
         super(rimBytes);
         this.setFileName(fileName);
         this.setRimType(MEASUREMENT_RIM);
-        this.archive("Measurement event log");
         this.pcrHash = 0;
     }
 
