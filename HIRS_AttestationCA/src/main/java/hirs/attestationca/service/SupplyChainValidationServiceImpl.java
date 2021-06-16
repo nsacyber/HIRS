@@ -93,6 +93,14 @@ public class SupplyChainValidationServiceImpl implements SupplyChainValidationSe
             = LogManager.getLogger(SupplyChainValidationServiceImpl.class);
 
     /**
+     * Constructor to set just the CertificateManager, so that cert chain validating
+     * methods can be called from outside classes.
+     */
+    public SupplyChainValidationServiceImpl(final CertificateManager certificateManager) {
+        this.certificateManager = certificateManager;
+    }
+
+    /**
      * Constructor.
      *
      * @param policyManager                      the policy manager
@@ -426,25 +434,27 @@ public class SupplyChainValidationServiceImpl implements SupplyChainValidationSe
                 if (Arrays.equals(cert.getEncodedPublicKey(),
                         referenceManifestValidator.getPublicKey().getEncoded())) {
                     signingCert = cert;
+                    KeyStore keyStore = getCaChain(signingCert);
+                    try {
+                        X509Certificate x509Cert = signingCert.getX509Certificate();
+                        if (!SupplyChainCredentialValidator.verifyCertificate(x509Cert, keyStore)) {
+                            passed = false;
+                            fwStatus = new AppraisalStatus(FAIL,
+                                    "Firmware validation failed: invalid certificate path.");
+                        }
+                    } catch (IOException e) {
+                        LOGGER.error("Error getting X509 cert from manager: " + e.getMessage());
+                    } catch (SupplyChainValidatorException e) {
+                        LOGGER.error("Error validating cert against keystore: " + e.getMessage());
+                    }
                     break;
                 }
             }
-            KeyStore keyStore = getCaChain(signingCert);
-            try {
-                X509Certificate x509Cert = CertificateAuthorityCredential.select(certificateManager)
-                        .bySubjectKeyIdentifier(signingCert.getSubjectKeyIdentifier())
-                        .getX509Certificate();
-                if (!SupplyChainCredentialValidator.verifyCertificate(x509Cert, keyStore)) {
-                    passed = false;
-                    fwStatus = new AppraisalStatus(FAIL,
-                            "Firmware validation failed: invalid certificate path.");
-                }
-            } catch (IOException e) {
-                LOGGER.error("Error getting X509 cert from manager: " + e.getMessage());
-            } catch (SupplyChainValidatorException e) {
-                LOGGER.error("Error validating cert against keystore: " + e.getMessage());
+            if (signingCert == null) {
+                passed = false;
+                fwStatus = new AppraisalStatus(FAIL,
+                        "Firmware validation failed: signing cert not found.");
             }
-
 
             if (!referenceManifestValidator.isSignatureValid()) {
                 passed = false;
