@@ -195,7 +195,13 @@ public class ComponentClass {
      */
     @Override
     public String toString() {
-        return String.format("%s%n%s - %s", registryType, category, component);
+        String resultString;
+        if (component.equals(UNKNOWN_STRING) || component.equals(OTHER_STRING)) {
+            resultString = String.format("%s%n%s", registryType, category);
+        } else {
+            resultString = String.format("%s%n%s - %s", registryType, category, component);
+        }
+        return resultString;
     }
 
     /**
