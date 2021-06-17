@@ -379,25 +379,26 @@ public class SupplyChainValidationServiceImpl implements SupplyChainValidationSe
         baseReferenceManifests = BaseReferenceManifest.select(referenceManifestManager)
                 .byDeviceName(device.getDeviceInfo().getNetworkInfo().getHostname()).getRIMs();
 
-        measurement = EventLogMeasurements.select(referenceManifestManager)
-                .byManufacturer(manufacturer).getRIM();
-
         for (BaseReferenceManifest bRim : baseReferenceManifests) {
             if (!bRim.isSwidSupplemental() && !bRim.isSwidPatch()) {
                 baseReferenceManifest = bRim;
             }
         }
 
-        validationObject = measurement;
         String failedString = "";
         if (baseReferenceManifest == null) {
             failedString = "Base Reference Integrity Manifest\n";
             passed = false;
+        } else {
+            measurement = EventLogMeasurements.select(referenceManifestManager)
+                    .byHexDecHash(baseReferenceManifest.getEventLogHash()).getRIM();
         }
+
         if (measurement == null) {
             failedString += "Bios measurement";
             passed = false;
         }
+        validationObject = measurement;
 
         if (passed) {
             List<SwidResource> resources =
@@ -592,7 +593,7 @@ public class SupplyChainValidationServiceImpl implements SupplyChainValidationSe
                 }
                 eventLog = EventLogMeasurements
                         .select(this.referenceManifestManager)
-                        .byDeviceName(deviceName).getRIM();
+                        .byHexDecHash(sRim.getEventLogHash()).getRIM();
 
                 if (sRim == null) {
                     fwStatus = new AppraisalStatus(FAIL,

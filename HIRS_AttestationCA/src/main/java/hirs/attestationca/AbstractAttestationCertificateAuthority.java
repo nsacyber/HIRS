@@ -14,6 +14,7 @@ import hirs.data.persist.DeviceInfoReport;
 import hirs.data.persist.EventLogMeasurements;
 import hirs.data.persist.ReferenceDigestRecord;
 import hirs.data.persist.ReferenceDigestValue;
+import hirs.data.persist.ReferenceManifest;
 import hirs.data.persist.SupplyChainPolicy;
 import hirs.data.persist.SupplyChainValidationSummary;
 import hirs.data.persist.SupportReferenceManifest;
@@ -97,6 +98,7 @@ import java.util.Base64;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 import java.util.regex.Matcher;
@@ -782,6 +784,7 @@ public abstract class AbstractAttestationCertificateAuthority
         Pattern pattern = Pattern.compile("([^\\s]+(\\.(?i)(rimpcr|rimel|bin|log))$)");
         Matcher matcher;
         MessageDigest messageDigest =  MessageDigest.getInstance("SHA-256");
+        List<ReferenceManifest> listOfSavedRims = new LinkedList<>();
 
         if (dv.getLogfileCount() > 0) {
             for (ByteString logFile : dv.getLogfileList()) {
@@ -894,9 +897,11 @@ public abstract class AbstractAttestationCertificateAuthority
                     dbSupport.setUpdated(true);
                     dbSupport.setAssociatedRim(dbBaseRim.getId());
                     this.referenceManifestManager.update(dbSupport);
+                    listOfSavedRims.add(dbSupport);
                 }
             }
             this.referenceManifestManager.update(dbBaseRim);
+            listOfSavedRims.add(dbBaseRim);
         }
 
         generateDigestRecords(hw.getManufacturer(), hw.getProductName(),
@@ -907,20 +912,26 @@ public abstract class AbstractAttestationCertificateAuthority
             fileName = String.format("%s.measurement",
                     dv.getNw().getHostname());
             try {
-                // find previous version.  If it exists, delete it
-                measurements = EventLogMeasurements.select(referenceManifestManager)
-                        .byDeviceName(dv.getNw().getHostname()).getRIM();
-                if (measurements != null) {
-                    LOG.info("Previous bios measurement log found and being archived...");
-                    this.referenceManifestManager.update(measurements);
-                }
-                measurements = new EventLogMeasurements(fileName,
+                EventLogMeasurements temp = new EventLogMeasurements(fileName,
                         dv.getLivelog().toByteArray());
-                measurements.setPlatformManufacturer(dv.getHw().getManufacturer());
-                measurements.setPlatformModel(dv.getHw().getProductName());
-                measurements.setTagId(tagId);
-                measurements.setDeviceName(dv.getNw().getHostname());
-                this.referenceManifestManager.save(measurements);
+                // find previous version.
+                measurements = EventLogMeasurements.select(referenceManifestManager)
+                        .byHexDecHash(temp.getHexDecHash()).includeArchived().getRIM();
+                if (measurements == null) {
+                    measurements = temp;
+                    measurements.setPlatformManufacturer(dv.getHw().getManufacturer());
+                    measurements.setPlatformModel(dv.getHw().getProductName());
+                    measurements.setTagId(tagId);
+                    measurements.setDeviceName(dv.getNw().getHostname());
+                    this.referenceManifestManager.save(measurements);
+                }
+                // now save the hash to the base and support rims associated
+                for (ReferenceManifest rim : listOfSavedRims) {
+                    if (rim != null) {
+                        rim.setEventLogHash(temp.getHexDecHash());
+                        this.referenceManifestManager.update(rim);
+                    }
+                }
             } catch (IOException ioEx) {
                 LOG.error(ioEx);
             }

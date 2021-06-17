@@ -358,10 +358,8 @@ public class ReferenceManifestDetailsPageController
         // testing this independent of the above if statement because the above
         // starts off checking if associated rim is null; that is irrelevant for
         // this statement.
-        if (support.getPlatformManufacturer() != null) {
-            measurements = EventLogMeasurements.select(referenceManifestManager)
-                    .byManufacturer(support.getPlatformManufacturer()).getRIM();
-        }
+        measurements = EventLogMeasurements.select(referenceManifestManager)
+                .byHexDecHash(support.getEventLogHash()).getRIM();
 
         if (support.isSwidPatch()) {
             data.put("swidPatch", "True");

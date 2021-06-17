@@ -71,6 +71,16 @@ public class EventLogMeasurements extends ReferenceManifest {
             setFieldValue("deviceName", deviceName);
             return this;
         }
+
+        /**
+         * Specify the RIM hash associated with the Event Log.
+         * @param hexDecHash the hash of the file associated with the rim
+         * @return this instance
+         */
+        public Selector byHexDecHash(final String hexDecHash) {
+            setFieldValue(HEX_DEC_HASH_FIELD, hexDecHash);
+            return this;
+        }
     }
 
     /**
@@ -94,6 +104,7 @@ public class EventLogMeasurements extends ReferenceManifest {
                             ) throws IOException {
         super(rimBytes);
         this.setFileName(fileName);
+        this.archive("Event Log Measurement");
         this.setRimType(MEASUREMENT_RIM);
         this.pcrHash = 0;
     }
@@ -189,5 +200,23 @@ public class EventLogMeasurements extends ReferenceManifest {
      */
     public void setOverallValidationResult(final AppraisalStatus.Status overallValidationResult) {
         this.overallValidationResult = overallValidationResult;
+    }
+
+    @Override
+    public boolean equals(final Object object) {
+        if (this == object) {
+            return true;
+        }
+        if (object == null || getClass() != object.getClass()) {
+            return false;
+        }
+        EventLogMeasurements that = (EventLogMeasurements) object;
+
+        return this.getHexDecHash().equals(that.getHexDecHash());
+    }
+
+    @Override
+    public int hashCode() {
+        return super.hashCode();
     }
 }

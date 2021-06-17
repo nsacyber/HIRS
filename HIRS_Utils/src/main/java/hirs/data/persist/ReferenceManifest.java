@@ -100,6 +100,9 @@ public abstract class ReferenceManifest extends ArchivableEntity {
     @Column
     @JsonIgnore
     private String hexDecHash = "";
+    @Column
+    @JsonIgnore
+    private String eventLogHash = "";
 
     /**
      * Default constructor necessary for Hibernate.
@@ -356,6 +359,23 @@ public abstract class ReferenceManifest extends ArchivableEntity {
      */
     public String getHexDecHash() {
         return hexDecHash;
+    }
+
+    /**
+     * Getter for the event log hash.
+     * @param eventLogHash hash value to store
+     */
+    public void setEventLogHash(final String eventLogHash) {
+        this.eventLogHash = eventLogHash;
+    }
+
+    /**
+     * Getter for the event log hash.
+     *
+     * @return int representation of the hash value
+     */
+    public String getEventLogHash() {
+        return eventLogHash;
     }
 
     /**
