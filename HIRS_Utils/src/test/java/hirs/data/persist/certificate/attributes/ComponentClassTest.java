@@ -108,12 +108,12 @@ public class ComponentClassTest {
      */
     @Test
     public void testGetComponentStandardQuerySMBIOS() throws URISyntaxException {
-        String componentIdentifier = "0x00040002";
+        String componentIdentifier = "0x00040003";
         ComponentClass instance = new ComponentClass("2.23.133.18.3.3", Paths.get(this.getClass()
                 .getResource(JSON_FILE).toURI()), componentIdentifier);
         String resultCategory = instance.getCategory();
         String resultComponent = instance.getComponent();
-        Assert.assertEquals("Video Controller", resultComponent);
+        Assert.assertEquals("Central Processor", resultComponent);
         Assert.assertEquals("Processor", resultCategory);
     }
 
@@ -138,12 +138,12 @@ public class ComponentClassTest {
      */
     @Test
     public void testGetComponentStandardQueryIntSMBIOS() throws URISyntaxException {
-        int componentIdentifier = 0x00040002;
+        int componentIdentifier = 0x00040003;
         ComponentClass instance = new ComponentClass("2.23.133.18.3.3", Paths.get(this.getClass()
                 .getResource(JSON_FILE).toURI()), componentIdentifier);
         String resultCategory = instance.getCategory();
         String resultComponent = instance.getComponent();
-        Assert.assertEquals("Video Controller", resultComponent);
+        Assert.assertEquals("Central Processor", resultComponent);
         Assert.assertEquals("Processor", resultCategory);
     }
 
