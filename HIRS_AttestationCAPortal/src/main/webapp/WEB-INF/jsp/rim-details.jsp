@@ -11,10 +11,20 @@
         <link type="text/css" rel="stylesheet" href="${common}/rim_details.css"/>
     </jsp:attribute>
     <jsp:attribute name="pageHeaderTitle">
-        ${initialData.rimType} Reference Integrity Manifest
-        <a href="${portal}/reference-manifests/download?id=${param.id}">
-            <img src="${icons}/ic_file_download_black_24dp.png" title="Download ${initialData.rimType} RIM">
-        </a>
+    <c:choose>
+        <c:when test="${initialData.rimType=='Measurement'}">
+            TCG Event Log
+            <a href="${portal}/reference-manifests/download?id=${param.id}">
+                <img src="${icons}/ic_file_download_black_24dp.png" title="Download ${initialData.rimType} RIM">
+            </a>
+        </c:when>
+        <c:otherwise>
+            ${initialData.rimType} Reference Integrity Manifest
+            <a href="${portal}/reference-manifests/download?id=${param.id}">
+                <img src="${icons}/ic_file_download_black_24dp.png" title="Download ${initialData.rimType} RIM">
+            </a>
+        </c:otherwise>
+    </c:choose>
     </jsp:attribute>
     <jsp:body>
         <c:set var="passIcon" value="${icons}/ic_checkbox_marked_circle_black_green_24dp.png"/>
