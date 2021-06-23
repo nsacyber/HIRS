@@ -695,7 +695,6 @@ public class SupplyChainValidationServiceImpl implements SupplyChainValidationSe
         }
     }
 
-    
     private SupplyChainValidation validatePlatformCredentialAttributes(
             final PlatformCredential pc, final DeviceInfoReport deviceInfoReport,
             final EndorsementCredential ec) {
