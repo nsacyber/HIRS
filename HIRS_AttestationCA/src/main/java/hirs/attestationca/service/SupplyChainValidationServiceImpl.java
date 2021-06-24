@@ -473,24 +473,8 @@ public class SupplyChainValidationServiceImpl implements SupplyChainValidationSe
                         // we have a full set of PCR values
                         int algorithmLength = baseline[0].length();
                         String[] storedPcrs = buildStoredPcrs(pcrContent, algorithmLength);
+                        pcrPolicy.validatePcrs(storedPcrs);
 
-                        if (storedPcrs[0] == null || storedPcrs[0].isEmpty()) {
-                            // validation fail
-                            fwStatus = new AppraisalStatus(FAIL,
-                                    "Firmware validation failed: "
-                                            + "Client provided PCR "
-                                            + "values are not the same algorithm "
-                                            + "as associated RIM.");
-                        } else {
-                            StringBuilder sb = pcrPolicy.validatePcrs(storedPcrs);
-                            if (sb.length() > 0) {
-                                validationObject = baseReferenceManifest;
-                                level = Level.ERROR;
-                                fwStatus = new AppraisalStatus(FAIL, sb.toString());
-                            } else {
-                                level = Level.INFO;
-                            }
-                        }
                         // part 2 of firmware validation check: bios measurements
                         // vs baseline tcg event log
                         // find the measurement
@@ -619,7 +603,6 @@ public class SupplyChainValidationServiceImpl implements SupplyChainValidationSe
                         fwStatus = new AppraisalStatus(PASS,
                                 SupplyChainCredentialValidator.FIRMWARE_VALID);
                         fwStatus.setMessage("Firmware validation of TPM Quote successful.");
-
                     } else {
                         fwStatus.setMessage("Firmware validation of TPM Quote failed."
                                 + "\nPCR hash and Quote hash do not match.");
