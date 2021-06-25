@@ -1,5 +1,6 @@
 package hirs.attestationca.portal.page.controllers;
 
+import hirs.FilteredRecordsList;
 import hirs.attestationca.portal.datatables.DataTableInput;
 import hirs.attestationca.portal.datatables.DataTableResponse;
 import hirs.attestationca.portal.datatables.OrderedListQueryDataTableAdapter;
@@ -8,26 +9,6 @@ import hirs.attestationca.portal.page.PageController;
 import hirs.attestationca.portal.page.PageMessages;
 import hirs.attestationca.portal.page.params.NoPageParams;
 import hirs.attestationca.portal.util.CertificateStringMapBuilder;
-import java.io.IOException;
-import java.net.URISyntaxException;
-import java.security.cert.CertificateEncodingException;
-import java.security.cert.X509Certificate;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.UUID;
-import javax.servlet.http.HttpServletResponse;
-import org.apache.logging.log4j.Logger;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Controller;
-import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.servlet.ModelAndView;
-
-import static org.apache.logging.log4j.LogManager.getLogger;
-import org.hibernate.Criteria;
-import org.hibernate.criterion.Restrictions;
-import org.hibernate.sql.JoinType;
-import hirs.FilteredRecordsList;
 import hirs.data.persist.certificate.Certificate;
 import hirs.data.persist.certificate.CertificateAuthorityCredential;
 import hirs.data.persist.certificate.EndorsementCredential;
@@ -38,16 +19,37 @@ import hirs.persist.CriteriaModifier;
 import hirs.persist.CrudManager;
 import hirs.persist.DBManagerException;
 import hirs.persist.OrderedListQuerier;
-import java.util.List;
-import java.util.stream.Collectors;
+import org.apache.logging.log4j.Logger;
+import org.bouncycastle.util.encoders.DecoderException;
+import org.hibernate.Criteria;
+import org.hibernate.criterion.Restrictions;
+import org.hibernate.sql.JoinType;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import org.springframework.web.servlet.view.RedirectView;
+
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
+import java.net.URISyntaxException;
+import java.security.cert.CertificateEncodingException;
+import java.security.cert.X509Certificate;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
+import java.util.stream.Collectors;
+
+import static org.apache.logging.log4j.LogManager.getLogger;
 
 /**
  * Controller for the Device page.
@@ -626,6 +628,12 @@ public class CertificateRequestPageController extends PageController<NoPageParam
                     "Failed to parse uploaded file (%s): ", fileName);
             LOGGER.error(failMessage, e);
             messages.addError(failMessage + e.getMessage());
+            return null;
+        } catch (DecoderException dEx) {
+            final String failMessage = String.format(
+                    "Failed to parse uploaded pem file (%s): ", fileName);
+            LOGGER.error(failMessage, dEx);
+            messages.addError(failMessage + dEx.getMessage());
             return null;
         } catch (IllegalArgumentException e) {
             final String failMessage = String.format(
