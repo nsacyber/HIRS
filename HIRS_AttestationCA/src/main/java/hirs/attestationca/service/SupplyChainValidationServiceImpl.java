@@ -95,6 +95,7 @@ public class SupplyChainValidationServiceImpl implements SupplyChainValidationSe
     /**
      * Constructor to set just the CertificateManager, so that cert chain validating
      * methods can be called from outside classes.
+     * @param certificateManager    the cert manager
      */
     public SupplyChainValidationServiceImpl(final CertificateManager certificateManager) {
         this.certificateManager = certificateManager;
@@ -446,6 +447,8 @@ public class SupplyChainValidationServiceImpl implements SupplyChainValidationSe
                         LOGGER.error("Error getting X509 cert from manager: " + e.getMessage());
                     } catch (SupplyChainValidatorException e) {
                         LOGGER.error("Error validating cert against keystore: " + e.getMessage());
+                        fwStatus = new AppraisalStatus(FAIL,
+                                "Firmware validation failed: invalid certificate path.");
                     }
                     break;
                 }
