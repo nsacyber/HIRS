@@ -88,7 +88,14 @@
                         <div id="eventsCol" class="col col-md-8">
                             <div id="eventOptions" class="collapse" class="collapsed" aria-expanded="false">
                                 <ul>
-                                    <li>This Support RIM file covers the following critical items:</li>
+                                <c:choose>
+                                    <c:when test="${initialData.rimType=='Support'}">
+                                        <li>This Support RIM file covers the following critical items:</li>
+                                    </c:when>
+                                    <c:otherwise>
+                                        <li>This Event Log file covers the following critical items:</li>
+                                    </c:otherwise>
+                                </c:choose>
                                     <ul>
                                         <c:if test="${initialData.crtm || initialData.bootManager || initialData.osLoader || initialData.osKernel}">
                                             <li>PC Client Boot path</li>
@@ -150,7 +157,14 @@
                                     </ul>
                                 </ul>
                                 <ul>
-                                    <li>The Support RIM file does NOT covers the following critical items:</li>
+                                <c:choose>
+                                    <c:when test="${initialData.rimType=='Support'}">
+                                        <li>This Support RIM file covers the following critical items:</li>
+                                    </c:when>
+                                    <c:otherwise>
+                                        <li>This Event Log file covers the following critical items:</li>
+                                    </c:otherwise>
+                                </c:choose>
                                     <ul>
                                         <c:if test="${not initialData.crtm || not initialData.bootManager || not initialData.osLoader || not initialData.osKernel}">
                                             <li>PC Client Boot path</li>
@@ -281,7 +295,7 @@
                                 <c:forEach items="${initialData.livelogEvents}" var="lEvent">
                                     <div>
                                         <div style="display: flex; background: lightgray;">
-                                            <div style="display: flex 1; margin: auto 1rem auto 1rem">Failed<br />Digest:</div>
+                                            <div style="display: flex 1; font-weight: bold; margin: auto 1rem auto 1rem">Failed Event Digest:</div>
                                             <div style="display: flex 2; margin: 2px auto 2px 25px">
                                                  ${lEvent.getEventDigestStr()}<br />${lEvent.getEventContentStr()}
                                             </div>
