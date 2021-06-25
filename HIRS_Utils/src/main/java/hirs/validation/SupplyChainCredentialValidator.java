@@ -95,7 +95,7 @@ public final class SupplyChainCredentialValidator implements CredentialValidator
      */
     public static final String FIRMWARE_VALID = "Firmware validated";
 
-    /*
+    /**
      * Ensure that BouncyCastle is configured as a javax.security.Security provider, as this
      * class expects it to be available.
      */
