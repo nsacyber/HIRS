@@ -28,6 +28,8 @@ public class ReferenceDigestRecord extends ArchivableEntity {
     private String manufacturer;
     @Column(nullable = false)
     private String model;
+    @Column(nullable = false)
+    private String deviceName;
     @Column(columnDefinition = "blob", nullable = true)
     private byte[] valueBlob;
 
@@ -135,6 +137,22 @@ public class ReferenceDigestRecord extends ArchivableEntity {
     }
 
     /**
+     * Getter for the deviceName associated.
+     * @return the string of the deviceName
+     */
+    public String getDeviceName() {
+        return deviceName;
+    }
+
+    /**
+     * Setter for the deviceName associated.
+     * @param deviceName the string of the model
+     */
+    public void setDeviceName(final String deviceName) {
+        this.deviceName = deviceName;
+    }
+
+    /**
      * Getter for the byte array of event values.
      * @return a clone of the byte array
      */
@@ -158,7 +176,7 @@ public class ReferenceDigestRecord extends ArchivableEntity {
      */
     @Override
     public String toString() {
-        return String.format("ReferenceDigestRecord: %s%n%s -> %s",
-                super.toString(), this.manufacturer, this.model);
+        return String.format("ReferenceDigestRecord: %s%n%s::%s::%s",
+                super.toString(), this.manufacturer, this.model, this.deviceName);
     }
 }

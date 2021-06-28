@@ -11,10 +11,20 @@
         <link type="text/css" rel="stylesheet" href="${common}/rim_details.css"/>
     </jsp:attribute>
     <jsp:attribute name="pageHeaderTitle">
-        ${initialData.rimType} Reference Integrity Manifest
-        <a href="${portal}/reference-manifests/download?id=${param.id}">
-            <img src="${icons}/ic_file_download_black_24dp.png" title="Download ${initialData.rimType} RIM">
-        </a>
+    <c:choose>
+        <c:when test="${initialData.rimType=='Measurement'}">
+            TCG Event Log
+            <a href="${portal}/reference-manifests/download?id=${param.id}">
+                <img src="${icons}/ic_file_download_black_24dp.png" title="Download ${initialData.rimType} RIM">
+            </a>
+        </c:when>
+        <c:otherwise>
+            ${initialData.rimType} Reference Integrity Manifest
+            <a href="${portal}/reference-manifests/download?id=${param.id}">
+                <img src="${icons}/ic_file_download_black_24dp.png" title="Download ${initialData.rimType} RIM">
+            </a>
+        </c:otherwise>
+    </c:choose>
     </jsp:attribute>
     <jsp:body>
         <c:set var="passIcon" value="${icons}/ic_checkbox_marked_circle_black_green_24dp.png"/>
@@ -25,18 +35,25 @@
         <c:set var="supportRimHashInvalidText" value="Support RIM hash not valid!"/>
         <div id="certificate-details-page" class="container-fluid">
             <c:choose>
-                <c:when test="${initialData.rimType=='Support'}">
+                <c:when test="${initialData.rimType=='Support' || (initialData.rimType=='Measurement' && initialData.validationResult=='PASS')}">
                     <div class="row">
-                        <div class="col-md-1 col-md-offset-1"><span class="colHeader">Base RIM</span></div>
+                        <div class="col-md-1 col-md-offset-1"><span class="colHeader">Additional<br />RIM Info</span></div>
                         <div id="baseRim" class="col col-md-8">
                             <c:choose>
                                 <c:when test="${not empty initialData.associatedRim}">
                                     <a href="${portal}/rim-details?id=${initialData.associatedRim}">
                                         ${initialData.tagId}
                                     </a>
+                            <c:if test="${not empty initialData.hostName}">
+                                <div>Device:&nbsp;<span>${initialData.hostName}</span></div>
+                            </c:if>
+                            <c:if test="${not empty initialData.supportId}">
+                                <div>Support:&nbsp;<span><a href="${portal}/rim-details?id=${initialData.supportId}">${initialData.supportFilename}</a></span>
+                                </div>
+                            </c:if>
                                 </c:when>
                                 <c:otherwise>
-                                    <div class="component col col-md-10" style="color: red; padding-left: 20px">Base RIM not uploaded from the ACA RIM Page</div>
+                                    <div class="component col col-md-10" style="color: red; padding-left: 20px">RIM not uploaded from the ACA RIM Page</div>
                                 </c:otherwise>
                             </c:choose>
                         </div>
@@ -71,7 +88,14 @@
                         <div id="eventsCol" class="col col-md-8">
                             <div id="eventOptions" class="collapse" class="collapsed" aria-expanded="false">
                                 <ul>
-                                    <li>This Support RIM file covers the following critical items:</li>
+                                <c:choose>
+                                    <c:when test="${initialData.rimType=='Support'}">
+                                        <li>This Support RIM file covers the following critical items:</li>
+                                    </c:when>
+                                    <c:otherwise>
+                                        <li>This Event Log file covers the following critical items:</li>
+                                    </c:otherwise>
+                                </c:choose>
                                     <ul>
                                         <c:if test="${initialData.crtm || initialData.bootManager || initialData.osLoader || initialData.osKernel}">
                                             <li>PC Client Boot path</li>
@@ -133,7 +157,14 @@
                                     </ul>
                                 </ul>
                                 <ul>
-                                    <li>The Support RIM file does NOT covers the following critical items:</li>
+                                <c:choose>
+                                    <c:when test="${initialData.rimType=='Support'}">
+                                        <li>This Support RIM file covers the following critical items:</li>
+                                    </c:when>
+                                    <c:otherwise>
+                                        <li>This Event Log file covers the following critical items:</li>
+                                    </c:otherwise>
+                                </c:choose>
                                     <ul>
                                         <c:if test="${not initialData.crtm || not initialData.bootManager || not initialData.osLoader || not initialData.osKernel}">
                                             <li>PC Client Boot path</li>
@@ -236,13 +267,17 @@
                 </div>
                 <div class="col-md-a col-md-offset-1"><span class="colHeader">${initialData.events.size()} entries</span></div>
             </c:when>
-            <c:when test="${initialData.rimType=='Measurement'}">
+            <c:when test="${initialData.rimType=='Measurement' && initialData.validationResult=='FAIL'}">
                 <div style="display: inline">
                     <div class="row">
                         <div class="col-md-1 col-md-offset-1"><span class="colHeader">Base/Support</span></div>
                         <div id="measurements" class="col col-md-8">
+                            <c:if test="${not empty initialData.hostName}">
+                                <div>Device:&nbsp;<span>${initialData.hostName}</span>
+                                </div>
+                            </c:if>
                             <c:if test="${not empty initialData.tagId}">
-                                <div>Base:&nbsp;<span><a href="${portal}/rim-details?id=${initialData.baseId}">${initialData.tagId}</a></span>
+                                <div>Base:&nbsp;<span><a href="${portal}/rim-details?id=${initialData.associatedRim}">${initialData.tagId}</a></span>
                                 </div>
                             </c:if>
                             <c:if test="${not empty initialData.supportId}">
@@ -254,59 +289,49 @@
                     <br />
                     <div class="row" style="margin: auto 260px auto 125px">
                         <div class="panel panel-default" style="flex: 1">
-                            <div class="panel-heading">Support</div>
-                            <c:if test="${not empty initialData.supportEvents}">
-                                <c:forEach items="${initialData.supportEvents}" var="sEvent">
-                                    <div class="event-element">
-                                        <div class="event-data">
-                                            <div class="data-label">Event#:</div>
-                                            <div class="data-value">${sEvent.getEventNumber()+1}</div>
-                                        </div>           
-                                        <div class="event-data">
-                                            <div class="data-label">PCR Index:</div>
-                                            <div class="data-value">${sEvent.getPcrIndex()}</div>
-                                        </div>
-                                        <div class="event-data">
-                                            <div class="data-label">Digest:</div>
-                                            <div class="data-value">${sEvent.getEventDigestStr()}</div>
-                                        </div>
-                                        <div class="event-data">
-                                            <div class="data-label">Content:</div>
-                                            <div class="data-value">${sEvent.getEventContentStr()}</div>
-                                        </div>
-                                    </div>
-                                </c:forEach>
-                            </c:if>
-                        </div>
-                        <div class="panel panel-default" style="flex: 1">
                             <div class="panel-heading">Client Log</div>
                             <c:if test="${not empty initialData.livelogEvents}">
+                                <c:set var="iterator" value="0" scope="page"/>
                                 <c:forEach items="${initialData.livelogEvents}" var="lEvent">
-                                    <div class="event-element">
-                                        <div class="event-data">
-                                            <div class="data-label">Event#:</div>
-                                            <div class="data-value">${lEvent.getEventNumber()+1}</div>
-                                        </div>           
-                                        <div class="event-data">
-                                            <div class="data-label">PCR Index:</div>
-                                            <div class="data-value">${lEvent.getPcrIndex()}</div>
-                                        </div>
-                                        <div class="event-data">
-                                            <div class="data-label">Digest:</div>
-                                            <div class="data-value">${lEvent.getEventDigestStr()}</div>
-                                        </div>
-                                        <div class="event-data">
-                                            <div class="data-label">Content:</div>
-                                            <div class="data-value">${lEvent.getEventContentStr()}</div>
+                                    <div>
+                                        <div style="display: flex; background: lightgray;">
+                                            <div style="display: flex 1; font-weight: bold; margin: auto 1rem auto 1rem">Failed Event Digest:<br />
+                                            </div>
+                                            <div style="display: flex 2; margin: 2px auto 2px 25px">
+                                                <span class="mappedData">PCR Index:</span> ${lEvent.getPcrIndex()}<br />
+                                                <span class="mappedData">Digest:</span> ${lEvent.getEventDigestStr()}<br />
+                                                <span class="mappedData">Event Content:</span> ${lEvent.getEventContentStr()}
+                                            </div>
                                         </div>
                                     </div>
+                                    <div style="display: flex;">
+                                        <div class="mappedButton">
+                                            Baseline Events of Type:<br />
+                                            <span style="word-wrap: break-word"><a role="button" data-toggle="collapse" href="#eventContent${iterator}">${lEvent.getEventTypeString()}</a></span>
+                                        </div>
+                                        <div id="eventContent${iterator}" class="panel-collapse collapse in" style="flex: 2">
+                                            <c:forEach items="${initialData.eventTypeMap}" var="mappedDigest">
+                                                <c:if test="${mappedDigest.key == lEvent.getEventDigestStr()}">
+                                                    <c:set var="event" value="${mappedDigest.value}" scope="page"/>
+                                                    <c:forEach items="${mappedDigest.value}" var="event">
+                                                        <div class="mappedOverhead">
+                                                            <div><span class="mappedData">PCR Index:</span> ${event.getPcrIndex()}</div>
+                                                            <div><span class="mappedData">Digest:</span> ${event.getEventDigestStr()}</div>
+                                                            <div><span class="mappedData">Event Content:</span> ${event.getEventContentStr()}</div>
+                                                        </div>
+                                                    </c:forEach>
+                                                </c:if>
+                                            </c:forEach>
+                                        </div>
+                                    </div>
+                                    <c:set var="iterator" value="${iterator+1}" scope="page"/>
                                 </c:forEach>
                             </c:if>
                         </div>
                     </div>
                 </div>
             </c:when>
-            <c:otherwise>
+            <c:when test="${initialData.rimType=='Base'}">
                 <div class="row">
                     <div class="col-md-1 col-md-offset-1"><span class="colHeader">Software Identity</span></div>
                     <div id="softwareIdentity" class="col col-md-8">
@@ -343,7 +368,17 @@
                     <div class="col-md-1 col-md-offset-1"><span class="colHeader">Link</span></div>
                     <div id="link" class="col col-md-8">
                         <c:if test="${not empty initialData.linkHref}">
-                            <div><span><a href="${portal}/rim-details?id=${initialData.linkHrefLink}" rel="${initialData.linkRel}">${initialData.linkHref}</a></span>
+                            <div>
+                                <span>
+                                    <c:choose>
+                                        <c:when test="${initialData.linkRel=='requires'}">
+                                            <a href="${portal}/rim-details?id=${initialData.linkHrefLink}" rel="${initialData.linkRel}">${initialData.linkHref}</a>
+                                        </c:when>
+                                        <c:otherwise>
+                                            <a href="${initialData.linkHref}" rel="${initialData.linkRel}">${initialData.linkHref}</a>
+                                        </c:otherwise>
+                                    </c:choose>
+                                </span>
                             </div>
                             <div>Rel:&nbsp;<span>${initialData.linkRel}</span>
                             </div>
@@ -375,7 +410,15 @@
                         <c:if test="${not empty initialData.pcUriLocal}">
                             <div>PC URI Local:&nbsp;<span>${initialData.pcUriLocal}</span></div>
                         </c:if>
-                        <div>Rim Link Hash:&nbsp;<span>${initialData.rimLinkHash}</span>
+                        <c:choose>
+                            <c:when test="${not empty initialData.rimLinkId}">
+                                <div>Rim Link Hash:&nbsp;<span><a href="${portal}/rim-details?id=${initialData.rimLinkId}">${initialData.rimLinkHash}</a></span>
+                            </c:when>
+                            <c:otherwise>
+                                <div>Rim Link Hash:&nbsp;<span>${initialData.rimLinkHash}</span>
+                            </c:otherwise>
+                        </c:choose>
+                        <c:if test="${not empty initialData.rimLinkHash}">
                             <span>
                                 <c:choose>
                                 <c:when test="${initialData.linkHashValid}">
@@ -386,6 +429,7 @@
                                 </c:otherwise>
                                 </c:choose>
                             </span>
+                            </c:if>
                         </div>
                     </div>
                 </div>
@@ -531,6 +575,8 @@
                         </div>
                     </div>
                 </div>
+            </c:when>
+            <c:otherwise>
             </c:otherwise>
         </c:choose>
     </div>

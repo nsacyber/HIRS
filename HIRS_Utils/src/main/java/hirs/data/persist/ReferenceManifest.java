@@ -32,6 +32,10 @@ import java.util.UUID;
 @Access(AccessType.FIELD)
 public abstract class ReferenceManifest extends ArchivableEntity {
     /**
+     * Holds the name of the 'hexDecHash' field.
+     */
+    public static final String HEX_DEC_HASH_FIELD = "hexDecHash";
+    /**
      * String for display of a Base RIM.
      */
     public static final String BASE_RIM = "Base";
@@ -64,13 +68,6 @@ public abstract class ReferenceManifest extends ArchivableEntity {
 
     private static final Logger LOGGER = LogManager.getLogger(ReferenceManifest.class);
 
-    /**
-     * Holds the name of the 'rimHash' field.
-     */
-    public static final String RIM_HASH_FIELD = "rimHash";
-    @Column(nullable = false)
-    @JsonIgnore
-    private final String rimHash;
     @Column(columnDefinition = "blob", nullable = false)
     @JsonIgnore
     private byte[] rimBytes;
@@ -97,6 +94,15 @@ public abstract class ReferenceManifest extends ArchivableEntity {
     @Type(type = "uuid-char")
     @Column
     private UUID associatedRim;
+    @Column
+    @JsonIgnore
+    private String deviceName;
+    @Column
+    @JsonIgnore
+    private String hexDecHash = "";
+    @Column
+    @JsonIgnore
+    private String eventLogHash = "";
 
     /**
      * Default constructor necessary for Hibernate.
@@ -104,7 +110,6 @@ public abstract class ReferenceManifest extends ArchivableEntity {
     protected ReferenceManifest() {
         super();
         this.rimBytes = null;
-        this.rimHash = "";
         this.rimType = null;
         this.platformManufacturer = null;
         this.platformManufacturerId = null;
@@ -126,18 +131,14 @@ public abstract class ReferenceManifest extends ArchivableEntity {
                 "Cannot construct a RIM from an empty byte array");
 
         this.rimBytes = rimBytes.clone();
-
         MessageDigest digest = null;
+        this.hexDecHash = "";
         try {
             digest = MessageDigest.getInstance("SHA-256");
+            this.hexDecHash = Hex.encodeHexString(
+                    digest.digest(rimBytes));
         } catch (NoSuchAlgorithmException noSaEx) {
             LOGGER.error(noSaEx);
-        }
-        if (digest == null) {
-            this.rimHash = "";
-        } else {
-            this.rimHash = Hex.encodeHexString(
-                    digest.digest(rimBytes));
         }
     }
 
@@ -212,7 +213,7 @@ public abstract class ReferenceManifest extends ArchivableEntity {
     }
 
     /**
-     * Getter for the RIM Type (Primary, Supplemental, Patch).
+     * Getter for the RIM Type (Base, Support, Measurement).
      *
      * @return string for the RIM Type
      */
@@ -336,6 +337,48 @@ public abstract class ReferenceManifest extends ArchivableEntity {
     }
 
     /**
+     * Getter for the Device Name.
+     * @return string value of the device associated with this log.
+     */
+    public String getDeviceName() {
+        return deviceName;
+    }
+
+    /**
+     * Setter for the Device Name.
+     * @param deviceName new value to assign.
+     */
+    public void setDeviceName(final String deviceName) {
+        this.deviceName = deviceName;
+    }
+
+    /**
+     * Getter for the Reference Integrity Manifest hash value.
+     *
+     * @return int representation of the hash value
+     */
+    public String getHexDecHash() {
+        return hexDecHash;
+    }
+
+    /**
+     * Getter for the event log hash.
+     * @param eventLogHash hash value to store
+     */
+    public void setEventLogHash(final String eventLogHash) {
+        this.eventLogHash = eventLogHash;
+    }
+
+    /**
+     * Getter for the event log hash.
+     *
+     * @return int representation of the hash value
+     */
+    public String getEventLogHash() {
+        return eventLogHash;
+    }
+
+    /**
      * Getter for the Reference Integrity Manifest as a byte array.
      *
      * @return array of bytes
@@ -346,15 +389,6 @@ public abstract class ReferenceManifest extends ArchivableEntity {
             return this.rimBytes.clone();
         }
         return null;
-    }
-
-    /**
-     * Getter for the Reference Integrity Manifest hash value.
-     *
-     * @return int representation of the hash value
-     */
-    public String getRimHash() {
-        return rimHash;
     }
 
     @Override
@@ -374,8 +408,7 @@ public abstract class ReferenceManifest extends ArchivableEntity {
             return false;
         }
         ReferenceManifest that = (ReferenceManifest) object;
-        return rimHash == that.rimHash
-                && Arrays.equals(rimBytes, that.rimBytes)
+        return Arrays.equals(rimBytes, that.rimBytes)
                 && rimType.equals(that.rimType)
                 && tagId.equals(that.tagId)
                 && platformManufacturer.equals(that.platformManufacturer)
@@ -387,8 +420,7 @@ public abstract class ReferenceManifest extends ArchivableEntity {
     @Override
     public String toString() {
         return String.format("Filename->%s%nPlatform Manufacturer->%s%n"
-                + "Platform Model->%s%nRIM Type->%s%nRIM Hash->%s", this.getFileName(),
-                this.platformManufacturer, this.platformModel, this.getRimType(),
-                this.getRimHash());
+                + "Platform Model->%s%nRIM Type->%s%nRIM", this.getFileName(),
+                this.platformManufacturer, this.platformModel, this.getRimType());
     }
 }

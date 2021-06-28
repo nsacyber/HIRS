@@ -7,12 +7,16 @@ import hirs.attestationca.portal.page.params.ReferenceManifestDetailsPageParams;
 import hirs.attestationca.service.SupplyChainValidationServiceImpl;
 import hirs.data.persist.BaseReferenceManifest;
 import hirs.data.persist.EventLogMeasurements;
+import hirs.data.persist.ReferenceDigestRecord;
+import hirs.data.persist.ReferenceDigestValue;
 import hirs.data.persist.ReferenceManifest;
 import hirs.data.persist.SupportReferenceManifest;
 import hirs.data.persist.SwidResource;
 import hirs.data.persist.certificate.CertificateAuthorityCredential;
 import hirs.persist.CertificateManager;
 import hirs.persist.DBManagerException;
+import hirs.persist.ReferenceDigestManager;
+import hirs.persist.ReferenceEventManager;
 import hirs.persist.ReferenceManifestManager;
 import hirs.tpm.eventlog.TCGEventLog;
 import hirs.tpm.eventlog.TpmPcrEvent;
@@ -33,10 +37,13 @@ import java.security.KeyStore;
 import java.security.NoSuchAlgorithmException;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 
@@ -49,6 +56,8 @@ public class ReferenceManifestDetailsPageController
         extends PageController<ReferenceManifestDetailsPageParams> {
 
     private final ReferenceManifestManager referenceManifestManager;
+    private final ReferenceDigestManager referenceDigestManager;
+    private final ReferenceEventManager referenceEventManager;
     private final CertificateManager certificateManager;
     private static final ReferenceManifestValidator RIM_VALIDATOR
             = new ReferenceManifestValidator();
@@ -59,14 +68,20 @@ public class ReferenceManifestDetailsPageController
      * Constructor providing the Page's display and routing specification.
      *
      * @param referenceManifestManager the reference manifest manager.
+     * @param referenceDigestManager the reference digest manager.
+     * @param referenceEventManager the reference event manager.
      * @param certificateManager        the certificate manager.
      */
     @Autowired
     public ReferenceManifestDetailsPageController(
             final ReferenceManifestManager referenceManifestManager,
+            final ReferenceDigestManager referenceDigestManager,
+            final ReferenceEventManager referenceEventManager,
             final CertificateManager certificateManager) {
         super(Page.RIM_DETAILS);
         this.referenceManifestManager = referenceManifestManager;
+        this.referenceDigestManager = referenceDigestManager;
+        this.referenceEventManager = referenceEventManager;
         this.certificateManager = certificateManager;
     }
 
@@ -92,12 +107,13 @@ public class ReferenceManifestDetailsPageController
         if (params.getId() == null) {
             String typeError = "ID was not provided";
             messages.addError(typeError);
-            LOGGER.error(typeError);
+            LOGGER.debug(typeError);
             mav.addObject(MESSAGES_ATTRIBUTE, messages);
         } else {
             try {
                 UUID uuid = UUID.fromString(params.getId());
-                data.putAll(getRimDetailInfo(uuid, referenceManifestManager, certificateManager));
+                data.putAll(getRimDetailInfo(uuid, referenceManifestManager,
+                        referenceDigestManager, referenceEventManager, certificateManager));
             } catch (IllegalArgumentException iaEx) {
                 String uuidError = "Failed to parse ID from: " + params.getId();
                 messages.addError(uuidError);
@@ -105,7 +121,7 @@ public class ReferenceManifestDetailsPageController
             } catch (Exception ioEx) {
                 LOGGER.error(ioEx);
                 for (StackTraceElement ste : ioEx.getStackTrace()) {
-                    LOGGER.debug(ste.toString());
+                    LOGGER.error(ste.toString());
                 }
             }
             if (data.isEmpty()) {
@@ -128,6 +144,8 @@ public class ReferenceManifestDetailsPageController
      *
      * @param uuid                     database reference for the requested RIM.
      * @param referenceManifestManager the reference manifest manager.
+     * @param referenceDigestManager the reference digest manager.
+     * @param referenceEventManager the reference event manager.
      * @param certificateManager        the certificate manager.
      * @return mapping of the RIM information from the database.
      * @throws java.io.IOException      error for reading file bytes.
@@ -136,6 +154,8 @@ public class ReferenceManifestDetailsPageController
      */
     public static HashMap<String, Object> getRimDetailInfo(final UUID uuid,
              final ReferenceManifestManager referenceManifestManager,
+             final ReferenceDigestManager referenceDigestManager,
+             final ReferenceEventManager referenceEventManager,
              final CertificateManager certificateManager) throws IOException,
             CertificateException, NoSuchAlgorithmException {
         HashMap<String, Object> data = new HashMap<>();
@@ -158,7 +178,8 @@ public class ReferenceManifestDetailsPageController
                 .byEntityId(uuid).getRIM();
 
         if (bios != null) {
-            data.putAll(getMeasurementsRimInfo(bios, referenceManifestManager));
+            data.putAll(getMeasurementsRimInfo(bios, referenceManifestManager,
+                    referenceDigestManager, referenceEventManager));
         }
 
         return data;
@@ -237,8 +258,11 @@ public class ReferenceManifestDetailsPageController
         boolean hashLinked = false;
         if (baseRim.getRimLinkHash() != null) {
             ReferenceManifest rim = BaseReferenceManifest.select(referenceManifestManager)
-                    .byHashCode(baseRim.getRimLinkHash()).getRIM();
+                    .byBase64Hash(baseRim.getRimLinkHash()).getRIM();
             hashLinked = (rim != null);
+            if (hashLinked) {
+                data.put("rimLinkId", rim.getId());
+            }
         }
         data.put("linkHashValid", hashLinked);
         data.put("rimType", baseRim.getRimType());
@@ -297,7 +321,7 @@ public class ReferenceManifestDetailsPageController
                     X509Certificate signingCert = cert.getX509Certificate();
                     try {
                         if (SupplyChainCredentialValidator.verifyCertificate(signingCert,
-                                                                                keystore)) {
+                                keystore)) {
                             data.replace("signatureValid", true);
                         }
                     } catch (SupplyChainValidatorException e) {
@@ -344,7 +368,8 @@ public class ReferenceManifestDetailsPageController
                     .select(referenceManifestManager)
                     .byRimType(ReferenceManifest.BASE_RIM).getRIMs();
             for (BaseReferenceManifest baseRim : baseRims) {
-                if (baseRim != null && baseRim.getAssociatedRim().equals(support.getId())) {
+                if (baseRim != null && baseRim.getAssociatedRim() != null
+                        && baseRim.getAssociatedRim().equals(support.getId())) {
                     support.setAssociatedRim(baseRim.getId());
                     try {
                         referenceManifestManager.update(support);
@@ -359,10 +384,8 @@ public class ReferenceManifestDetailsPageController
         // testing this independent of the above if statement because the above
         // starts off checking if associated rim is null; that is irrelevant for
         // this statement.
-        if (support.getPlatformManufacturer() != null) {
-            measurements = EventLogMeasurements.select(referenceManifestManager)
-                    .byManufacturer(support.getPlatformManufacturer()).getRIM();
-        }
+        measurements = EventLogMeasurements.select(referenceManifestManager)
+                .byHexDecHash(support.getEventLogHash()).getRIM();
 
         if (support.isSwidPatch()) {
             data.put("swidPatch", "True");
@@ -380,20 +403,6 @@ public class ReferenceManifestDetailsPageController
         data.put("associatedRim", support.getAssociatedRim());
         data.put("rimType", support.getRimType());
         data.put("tagId", support.getTagId());
-        boolean crtm = false;
-        boolean bootManager = false;
-        boolean osLoader = false;
-        boolean osKernel = false;
-        boolean acpiTables = false;
-        boolean smbiosTables = false;
-        boolean gptTable = false;
-        boolean bootOrder = false;
-        boolean defaultBootDevice = false;
-        boolean secureBoot = false;
-        boolean pk = false;
-        boolean kek = false;
-        boolean sigDb = false;
-        boolean forbiddenDbx = false;
 
         TCGEventLog logProcessor = new TCGEventLog(support.getRimBytes());
         LinkedList<TpmPcrEvent> tpmPcrEvents = new LinkedList<>();
@@ -419,8 +428,29 @@ public class ReferenceManifestDetailsPageController
             data.put("events", logProcessor.getEventList());
         }
 
+        getEventSummary(data, logProcessor.getEventList());
+        return data;
+    }
+
+    private static void getEventSummary(final HashMap<String, Object> data,
+                                        final Collection<TpmPcrEvent> eventList) {
+        boolean crtm = false;
+        boolean bootManager = false;
+        boolean osLoader = false;
+        boolean osKernel = false;
+        boolean acpiTables = false;
+        boolean smbiosTables = false;
+        boolean gptTable = false;
+        boolean bootOrder = false;
+        boolean defaultBootDevice = false;
+        boolean secureBoot = false;
+        boolean pk = false;
+        boolean kek = false;
+        boolean sigDb = false;
+        boolean forbiddenDbx = false;
+
         String contentStr;
-        for (TpmPcrEvent tpe : logProcessor.getEventList()) {
+        for (TpmPcrEvent tpe : eventList) {
             contentStr = tpe.getEventContentStr();
             // check for specific events
             if (contentStr.contains("CRTM")) {
@@ -473,8 +503,6 @@ public class ReferenceManifestDetailsPageController
         data.put("kek", kek);
         data.put("sigDb", sigDb);
         data.put("forbiddenDbx", forbiddenDbx);
-
-        return data;
     }
 
     /**
@@ -483,6 +511,8 @@ public class ReferenceManifestDetailsPageController
      *
      * @param measurements established ReferenceManifest Type.
      * @param referenceManifestManager the reference manifest manager.
+     * @param referenceDigestManager the reference digest manager.
+     * @param referenceEventManager the reference event manager.
      * @return mapping of the RIM information from the database.
      * @throws java.io.IOException      error for reading file bytes.
      * @throws NoSuchAlgorithmException If an unknown Algorithm is encountered.
@@ -490,57 +520,108 @@ public class ReferenceManifestDetailsPageController
      */
     private static HashMap<String, Object> getMeasurementsRimInfo(
             final EventLogMeasurements measurements,
-            final ReferenceManifestManager referenceManifestManager)
+            final ReferenceManifestManager referenceManifestManager,
+            final ReferenceDigestManager referenceDigestManager,
+            final ReferenceEventManager referenceEventManager)
             throws IOException, CertificateException, NoSuchAlgorithmException {
         HashMap<String, Object> data = new HashMap<>();
-        LinkedList<TpmPcrEvent> supportEvents = new LinkedList<>();
         LinkedList<TpmPcrEvent> livelogEvents = new LinkedList<>();
         BaseReferenceManifest base = null;
-        SupportReferenceManifest support = null;
-        TCGEventLog supportLog = null;
+        List<SupportReferenceManifest> supports = new ArrayList<>();
+        SupportReferenceManifest baseSupport = null;
+        List<ReferenceDigestRecord> digestRecords = new LinkedList<>();
 
         data.put("supportFilename", "Blank");
         data.put("supportId", "");
-        data.put("tagId", measurements.getTagId());
-        data.put("baseId", "");
+        data.put("associatedRim", "");
         data.put("rimType", measurements.getRimType());
+        data.put("hostName", measurements.getDeviceName());
+        data.put("validationResult", measurements.getOverallValidationResult());
+        data.put("swidBase", true);
 
-        if (measurements.getPlatformManufacturer() != null) {
-            support = SupportReferenceManifest
+        if (measurements.getDeviceName() != null) {
+            digestRecords = referenceDigestManager
+                    .getRecordsByDeviceName(measurements.getDeviceName());
+            supports.addAll(SupportReferenceManifest
                     .select(referenceManifestManager)
-                    .byManufacturer(measurements
-                            .getPlatformManufacturer()).getRIM();
-
-            if (support != null) {
-                supportLog = new TCGEventLog(support.getRimBytes());
-                data.put("supportFilename", support.getFileName());
-                data.put("supportId", support.getId());
+                    .byDeviceName(measurements
+                            .getDeviceName()).getRIMs());
+            for (SupportReferenceManifest support : supports) {
+                if (support.isBaseSupport()) {
+                    baseSupport = support;
+                }
             }
 
-            base = BaseReferenceManifest
-                    .select(referenceManifestManager)
-                    .byManufacturer(measurements
-                            .getPlatformManufacturer()).getRIM();
+            if (baseSupport != null) {
+                data.put("supportFilename", baseSupport.getFileName());
+                data.put("supportId", baseSupport.getId());
 
-            if (base != null) {
-                data.put("baseId", base.getId());
+                base = BaseReferenceManifest
+                        .select(referenceManifestManager)
+                        .byEntityId(baseSupport.getAssociatedRim())
+                        .getRIM();
+                data.put("tagId", baseSupport.getTagId());
+
+                if (base != null) {
+                    data.put("associatedRim", base.getId());
+                }
             }
         }
 
         TCGEventLog measurementLog = new TCGEventLog(measurements.getRimBytes());
-        if (supportLog != null) {
-            TpmPcrEvent measurementEvent;
-            for (TpmPcrEvent tpe : supportLog.getEventList()) {
-                measurementEvent = measurementLog.getEventByNumber(tpe.getEventNumber());
-                if (!tpe.eventCompare(measurementEvent)) {
-                    supportEvents.add(tpe);
+        List<ReferenceDigestValue> eventValue = new ArrayList<>();
+        Map<String, ReferenceDigestValue> eventValueMap = new HashMap<>();
+        if (!digestRecords.isEmpty()) {
+            for (ReferenceDigestRecord rdr : digestRecords) {
+                eventValue.addAll(referenceEventManager
+                        .getValuesByRecordId(rdr));
+            }
+            for (ReferenceDigestValue rdv : eventValue) {
+                eventValueMap.put(rdv.getDigestValue(), rdv);
+            }
+            for (TpmPcrEvent measurementEvent : measurementLog.getEventList()) {
+                if (!eventValueMap.containsKey(measurementEvent.getEventDigestStr())) {
                     livelogEvents.add(measurementEvent);
                 }
             }
         }
 
-        data.put("supportEvents", supportEvents);
+        if (!supports.isEmpty()) {
+            Map<String, List<TpmPcrEvent>> baselineLogEvents = new HashMap<>();
+            List<TpmPcrEvent> matchedEvents = null;
+            List<TpmPcrEvent> combinedBaselines = new LinkedList<>();
+            for (SupportReferenceManifest support : supports) {
+                combinedBaselines.addAll(support.getEventLog());
+            }
+            String bootVariable;
+            String variablePrefix = "Variable Name:";
+            String variableSuffix = "UEFI_GUID";
+            for (TpmPcrEvent tpe : livelogEvents) {
+                matchedEvents = new ArrayList<>();
+                for (TpmPcrEvent tpmPcrEvent : combinedBaselines) {
+                    if (tpmPcrEvent.getEventType() == tpe.getEventType()) {
+                        if (tpe.getEventContentStr().contains(variablePrefix)) {
+                            bootVariable = tpe.getEventContentStr().substring((
+                                            tpe.getEventContentStr().indexOf(variablePrefix)
+                                                    + variablePrefix.length()),
+                                    tpe.getEventContentStr().indexOf(variableSuffix));
+                            if (tpmPcrEvent.getEventContentStr().contains(bootVariable)) {
+                                matchedEvents.add(tpmPcrEvent);
+                            }
+                        } else {
+                            matchedEvents.add(tpmPcrEvent);
+                        }
+                    }
+                }
+                baselineLogEvents.put(tpe.getEventDigestStr(), matchedEvents);
+            }
+            data.put("eventTypeMap", baselineLogEvents);
+        }
+
+        TCGEventLog logProcessor = new TCGEventLog(measurements.getRimBytes());
         data.put("livelogEvents", livelogEvents);
+        data.put("events", logProcessor.getEventList());
+        getEventSummary(data, logProcessor.getEventList());
 
         return data;
     }

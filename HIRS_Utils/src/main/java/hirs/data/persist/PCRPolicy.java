@@ -72,25 +72,29 @@ public final class PCRPolicy extends Policy {
     public StringBuilder validatePcrs(final String[] storedPcrs) {
         StringBuilder sb = new StringBuilder();
         String failureMsg = "PCR %d does not match%n";
+        if (storedPcrs[0] == null || storedPcrs[0].isEmpty()) {
+            sb.append("failureMsg");
+        } else {
+            for (int i = 0; i <= TPMMeasurementRecord.MAX_PCR_ID; i++) {
+                if (enableIgnoreIma && i == IMA_PCR) {
+                    LOGGER.info("PCR Policy IMA Ignore enabled.");
+                    i += NUM_TO_SKIP;
+                }
 
-        for (int i = 0; i <= TPMMeasurementRecord.MAX_PCR_ID; i++) {
-            if (enableIgnoreIma && i == IMA_PCR) {
-                LOGGER.info("PCR Policy IMA Ignore enabled.");
-                i += NUM_TO_SKIP;
-            }
+                if (enableIgnoretBoot && i == TBOOT_PCR) {
+                    LOGGER.info("PCR Policy TBoot Ignore enabled.");
+                    i += NUM_OF_TBOOT_PCR;
+                }
 
-            if (enableIgnoretBoot && i == TBOOT_PCR) {
-                LOGGER.info("PCR Policy TBoot Ignore enabled.");
-                i += NUM_OF_TBOOT_PCR;
-            }
+                if (enableIgnoreGpt && i == GPT_PCR) {
+                    LOGGER.info("PCR Policy GPT Ignore enabled.");
+                    i += NUM_TO_SKIP;
+                }
 
-            if (enableIgnoreGpt && i == GPT_PCR) {
-                LOGGER.info("PCR Policy GPT Ignore enabled.");
-                i += NUM_TO_SKIP;
-            }
-
-            if (!baselinePcrs[i].equals(storedPcrs[i])) {
-                sb.append(String.format(failureMsg, i));
+                if (!baselinePcrs[i].equals(storedPcrs[i])) {
+                    LOGGER.error(String.format("%s =/= %s", baselinePcrs[i], storedPcrs[i]));
+                    sb.append(String.format(failureMsg, i));
+                }
             }
         }
 

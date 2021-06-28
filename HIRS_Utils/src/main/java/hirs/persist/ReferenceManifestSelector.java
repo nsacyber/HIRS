@@ -98,17 +98,6 @@ public abstract class ReferenceManifestSelector<T extends ReferenceManifest> {
     }
 
     /**
-     * Specify the hash code of the bytes that rim must match.
-     *
-     * @param rimHash the hash code of the bytes to query for
-     * @return this instance (for chaining further calls)
-     */
-    public ReferenceManifestSelector<T> byHashCode(final String rimHash) {
-        setFieldValue(hirs.data.persist.ReferenceManifest.RIM_HASH_FIELD, rimHash);
-        return this;
-    }
-
-    /**
      * Specify the file name of the object to grab.
      * @param fileName the name of the file associated with the rim
      * @return instance of the manifest in relation to the filename.
