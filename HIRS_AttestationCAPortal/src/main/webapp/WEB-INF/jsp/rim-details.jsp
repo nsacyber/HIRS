@@ -295,9 +295,12 @@
                                 <c:forEach items="${initialData.livelogEvents}" var="lEvent">
                                     <div>
                                         <div style="display: flex; background: lightgray;">
-                                            <div style="display: flex 1; font-weight: bold; margin: auto 1rem auto 1rem">Failed Event Digest:</div>
+                                            <div style="display: flex 1; font-weight: bold; margin: auto 1rem auto 1rem">Failed Event Digest:<br />
+                                            </div>
                                             <div style="display: flex 2; margin: 2px auto 2px 25px">
-                                                 ${lEvent.getEventDigestStr()}<br />${lEvent.getEventContentStr()}
+                                                <span class="mappedData">PCR Index:</span> ${lEvent.getPcrIndex()}<br />
+                                                <span class="mappedData">Digest:</span> ${lEvent.getEventDigestStr()}<br />
+                                                <span class="mappedData">Event Content:</span> ${lEvent.getEventContentStr()}
                                             </div>
                                         </div>
                                     </div>
