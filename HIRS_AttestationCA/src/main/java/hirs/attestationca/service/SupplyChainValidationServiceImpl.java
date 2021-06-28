@@ -38,6 +38,7 @@ import hirs.utils.ReferenceManifestValidator;
 import hirs.validation.CredentialValidator;
 import hirs.validation.SupplyChainCredentialValidator;
 import org.apache.logging.log4j.Level;
+import hirs.validation.SupplyChainValidatorException;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.bouncycastle.util.encoders.Hex;
@@ -51,7 +52,9 @@ import java.security.KeyStore;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.security.cert.CertificateException;
+import java.security.cert.X509Certificate;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -88,6 +91,15 @@ public class SupplyChainValidationServiceImpl implements SupplyChainValidationSe
 
     private static final Logger LOGGER
             = LogManager.getLogger(SupplyChainValidationServiceImpl.class);
+
+    /**
+     * Constructor to set just the CertificateManager, so that cert chain validating
+     * methods can be called from outside classes.
+     * @param certificateManager    the cert manager
+     */
+    public SupplyChainValidationServiceImpl(final CertificateManager certificateManager) {
+        this.certificateManager = certificateManager;
+    }
 
     /**
      * Constructor.
@@ -413,6 +425,38 @@ public class SupplyChainValidationServiceImpl implements SupplyChainValidationSe
                     referenceManifestValidator.validateSupportRimHash(
                             supportReferenceManifest.getRimBytes(), swidRes.getHashValue());
                 }
+            }
+
+            //Validate signing cert
+            Set<CertificateAuthorityCredential> allCerts =
+                    CertificateAuthorityCredential.select(certificateManager).getCertificates();
+            CertificateAuthorityCredential signingCert = null;
+            for (CertificateAuthorityCredential cert : allCerts) {
+                if (Arrays.equals(cert.getEncodedPublicKey(),
+                        referenceManifestValidator.getPublicKey().getEncoded())) {
+                    signingCert = cert;
+                    KeyStore keyStore = getCaChain(signingCert);
+                    try {
+                        X509Certificate x509Cert = signingCert.getX509Certificate();
+                        if (!SupplyChainCredentialValidator.verifyCertificate(x509Cert, keyStore)) {
+                            passed = false;
+                            fwStatus = new AppraisalStatus(FAIL,
+                                    "Firmware validation failed: invalid certificate path.");
+                        }
+                    } catch (IOException e) {
+                        LOGGER.error("Error getting X509 cert from manager: " + e.getMessage());
+                    } catch (SupplyChainValidatorException e) {
+                        LOGGER.error("Error validating cert against keystore: " + e.getMessage());
+                        fwStatus = new AppraisalStatus(FAIL,
+                                "Firmware validation failed: invalid certificate path.");
+                    }
+                    break;
+                }
+            }
+            if (signingCert == null) {
+                passed = false;
+                fwStatus = new AppraisalStatus(FAIL,
+                        "Firmware validation failed: signing cert not found.");
             }
 
             if (!referenceManifestValidator.isSignatureValid()) {
