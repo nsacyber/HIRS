@@ -95,7 +95,7 @@ public final class SupplyChainCredentialValidator implements CredentialValidator
      */
     public static final String FIRMWARE_VALID = "Firmware validated";
 
-    /*
+    /**
      * Ensure that BouncyCastle is configured as a javax.security.Security provider, as this
      * class expects it to be available.
      */
@@ -1249,8 +1249,14 @@ public final class SupplyChainCredentialValidator implements CredentialValidator
      */
     public static String verifyCertificate(final X509AttributeCertificateHolder cert,
             final KeyStore trustStore) throws SupplyChainValidatorException {
-        if (cert == null || trustStore == null) {
-            throw new SupplyChainValidatorException("Certificate or trust store is null");
+        try {
+            if (cert == null || trustStore == null) {
+                throw new SupplyChainValidatorException("Certificate or trust store is null");
+            } else if (trustStore.size() == 0) {
+                throw new SupplyChainValidatorException("Truststore is empty");
+            }
+        } catch (KeyStoreException e) {
+            LOGGER.error("Error accessing trust store: " + e.getMessage());
         }
 
         try {
@@ -1289,9 +1295,16 @@ public final class SupplyChainCredentialValidator implements CredentialValidator
      */
     public static boolean verifyCertificate(final X509Certificate cert,
             final KeyStore trustStore) throws SupplyChainValidatorException {
-        if (cert == null || trustStore == null) {
-            throw new SupplyChainValidatorException("Certificate or trust store is null");
+        try {
+            if (cert == null || trustStore == null) {
+                throw new SupplyChainValidatorException("Certificate or trust store is null");
+            } else if (trustStore.size() == 0) {
+                throw new SupplyChainValidatorException("Truststore is empty");
+            }
+        } catch (KeyStoreException e) {
+            LOGGER.error("Error accessing trust store: " + e.getMessage());
         }
+
         try {
             Set<X509Certificate> trustedCerts = new HashSet<>();
 
@@ -1320,7 +1333,8 @@ public final class SupplyChainCredentialValidator implements CredentialValidator
      *            certificate to validate
      * @param additionalCerts
      *            Set of certs to validate against
-     * @return boolean indicating if the validation was successful
+     * @return String status of the cert chain validation -
+     *  blank if successful, error message otherwise
      * @throws SupplyChainValidatorException tried to validate using null certificates
      */
     public static String validateCertChain(final X509AttributeCertificateHolder cert,
@@ -1341,14 +1355,12 @@ public final class SupplyChainCredentialValidator implements CredentialValidator
             signatureMatchesPublicKey = signatureMatchesPublicKey(cert, trustedCert);
             if (issuerMatchesSubject && signatureMatchesPublicKey) {
                 if (isSelfSigned(trustedCert)) {
+                    foundRootOfCertChain = "";
                     LOGGER.info("CA Root found.");
+                    break;
                 } else {
-                    foundRootOfCertChain = validateCertChain(trustedCert, additionalCerts);
-
-                    if (!foundRootOfCertChain.isEmpty()) {
-                        LOGGER.error("Root of certificate chain not found. Check for CA Cert: "
-                                + cert.getIssuer().getNames()[0]);
-                    }
+                    foundRootOfCertChain = "Intermediate signing cert found. Check for CA Cert: "
+                            + cert.getIssuer().getNames()[0];
                 }
             } else {
                 if (!issuerMatchesSubject) {
@@ -1360,6 +1372,9 @@ public final class SupplyChainCredentialValidator implements CredentialValidator
             }
         }
 
+        if (!foundRootOfCertChain.isEmpty()) {
+            LOGGER.error(foundRootOfCertChain);
+        }
         return foundRootOfCertChain;
     }
 
@@ -1374,7 +1389,8 @@ public final class SupplyChainCredentialValidator implements CredentialValidator
      *            certificate to validate
      * @param additionalCerts
      *            Set of certs to validate against
-     * @return boolean indicating if the validation was successful
+     * @return String status of the cert chain validation -
+     *  blank if successful, error message otherwise
      * @throws SupplyChainValidatorException tried to validate using null certificates
      */
     public static String validateCertChain(final X509Certificate cert,
@@ -1395,14 +1411,12 @@ public final class SupplyChainCredentialValidator implements CredentialValidator
             signatureMatchesPublicKey = signatureMatchesPublicKey(cert, trustedCert);
             if (issuerMatchesSubject && signatureMatchesPublicKey) {
                 if (isSelfSigned(trustedCert)) {
+                    foundRootOfCertChain = "";
                     LOGGER.info("CA Root found.");
+                    break;
                 } else if (!cert.equals(trustedCert)) {
-                    foundRootOfCertChain = validateCertChain(trustedCert, additionalCerts);
-
-                    if (!foundRootOfCertChain.isEmpty()) {
-                        LOGGER.error("Root of certificate chain not found. Check for CA Cert: "
-                                + cert.getIssuerDN().getName());
-                    }
+                    foundRootOfCertChain = "Intermediate signing cert found, check for CA cert "
+                            + cert.getIssuerDN().getName();
                 }
             } else {
                 if (!issuerMatchesSubject) {
@@ -1414,6 +1428,9 @@ public final class SupplyChainCredentialValidator implements CredentialValidator
             }
         }
 
+        if (!foundRootOfCertChain.isEmpty()) {
+            LOGGER.error(foundRootOfCertChain);
+        }
         return foundRootOfCertChain;
     }
 

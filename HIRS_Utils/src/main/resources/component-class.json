@@ -1,5 +1,5 @@
 {
-  "Components": {
+  "TCG": {
     "Processors": {
       "ID": "0x00010000",
       "Types": {
@@ -331,6 +331,146 @@
         "0x00000004": "Drive BIOS",
         "0x00000005": "Bootloader",
         "0x00000006": "System Management Module"
+      }
+    }
+  },
+  "SMBIOS": {
+    "BIOS": {
+      "ID": "0x00000000",
+      "Types": {
+        "0x00000001": "Other",
+        "0x00000002": "Unknown"
+      }
+    },
+    "System": {
+      "ID": "0x00010000",
+      "Types": {
+        "0x00000001": "Other",
+        "0x00000002": "Unknown"
+      }
+    },
+    "Baseboard": {
+      "ID": "0x00020000",
+      "Types": {
+        "0x00000001": "Other",
+        "0x00000002": "Unknown",
+        "0x00000003": "Server Blade",
+        "0x00000004": "Connectivity Switch",
+        "0x00000005": "System Management Module",
+        "0x00000006": "Processor Module",
+        "0x00000007": "I/O Module",
+        "0x00000008": "Memory Module",
+        "0x00000009": "Daughter board",
+        "0x0000000A": "Motherboard (includes processor, memory, and I/O)",
+        "0x0000000B": "Processor/Memory Module",
+        "0x0000000C": "Processor/IO Module",
+        "0x0000000D": "Interconnect board"
+      }
+    },
+    "Chassis": {
+      "ID": "0x00030000",
+      "Types": {
+        "0x00000001": "Other",
+        "0x00000002": "Unknown",
+        "0x00000003": "Desktop",
+        "0x00000004": "Low Profile Desktop",
+        "0x00000005": "Pizza Box",
+        "0x00000006": "Mini Tower",
+        "0x00000007": "Tower",
+        "0x00000008": "Portable",
+        "0x00000009": "Laptop",
+        "0x0000000A": "Notebook",
+        "0x0000000B": "Hand Held",
+        "0x0000000C": "Docking Station",
+        "0x0000000D": "All in One",
+        "0x0000000E": "Sub Notebook",
+        "0x0000000F": "Space-saving",
+        "0x00000010": "Lunch Box",
+        "0x00000011": "Main Server Chassis",
+        "0x00000012": "Expansion Chassis",
+        "0x00000013": "SubChassis",
+        "0x00000014": "Bus Expansion Chassis",
+        "0x00000015": "Peripheral Chassis",
+        "0x00000016": "RAID Chassis",
+        "0x00000017": "Rack Mount Chassis",
+        "0x00000018": "Sealed-case PC",
+        "0x00000019": "Multi-system chassis",
+        "0x0000001A": "Compact PCI",
+        "0x0000001B": "Advanced TCA",
+        "0x0000001C": "Blade",
+        "0x0000001D": "Blade Enclosure",
+        "0x0000001E": "Tablet",
+        "0x0000001F": "Convertible",
+        "0x00000020": "Detachable",
+        "0x00000021": "IoT Gateway",
+        "0x00000022": "Embedded PC",
+        "0x00000023": "Mini PC",
+        "0x00000024": "Stick PC"
+      }
+    },
+    "Processor": {
+      "ID": "0x00040000",
+      "Types": {
+        "0x00000001": "Other",
+        "0x00000002": "Unknown",
+        "0x00000003": "Central Processor",
+        "0x00000004": "Math Processor",
+        "0x00000005": "DSP Processor",
+        "0x00000006": "Video Processor"
+      }
+    },
+    "RAM": {
+      "ID": "0x00110000",
+      "Types": {
+        "0x00000001": "Other",
+        "0x00000002": "Unknown",
+        "0x00000003": "DRAM",
+        "0x00000004": "EDRAM",
+        "0x00000005": "VRAM",
+        "0x00000006": "SRAM",
+        "0x00000007": "RAM",
+        "0x00000008": "ROM",
+        "0x00000009": "FLASH",
+        "0x0000000A": "EEPROM",
+        "0x0000000B": "FEPROM",
+        "0x0000000C": "EPROM",
+        "0x0000000D": "CDRAM",
+        "0x0000000E": "3DRAM",
+        "0x0000000F": "SDRAM",
+        "0x00000010": "SGRAM",
+        "0x00000011": "RDRAM",
+        "0x00000012": "DDR",
+        "0x00000013": "DDR2",
+        "0x00000014": "DDR2 FB-DIMM",
+        "0x00000015": "Reserved",
+        "0x00000016": "Reserved",
+        "0x00000017": "Reserved",
+        "0x00000018": "DDR3",
+        "0x00000019": "FBD2",
+        "0x0000001A": "DDR4",
+        "0x0000001B": "LPDDR",
+        "0x0000001C": "LPDDR2",
+        "0x0000001D": "LPDDR3",
+        "0x0000001E": "LPDDR4",
+        "0x0000001F": "Logical non-volatile device",
+        "0x00000020": "HBM (High Bandwidth Memory)",
+        "0x00000021": "HBM2 (High Bandwidth Memory Generation 2)",
+        "0x00000022": "DDR5",
+        "0x00000023": "LPDDR5"
+      }
+    },
+    "Power Supply": {
+      "ID": "0x00270000",
+      "Types": {
+        "0x00000001": "Other",
+        "0x00000002": "Unknown"
+      }
+    },
+    "TPM": {
+      "ID": "0x002B0000",
+      "Types": {
+        "0x00000001": "Other",
+        "0x00000002": "Unknown"
       }
     }
   }
