@@ -4,6 +4,7 @@ import hirs.attestationca.portal.page.Page;
 import hirs.attestationca.portal.page.PageController;
 import hirs.attestationca.portal.page.PageMessages;
 import hirs.attestationca.portal.page.params.ReferenceManifestDetailsPageParams;
+import hirs.attestationca.service.SupplyChainValidationServiceImpl;
 import hirs.data.persist.BaseReferenceManifest;
 import hirs.data.persist.EventLogMeasurements;
 import hirs.data.persist.ReferenceDigestRecord;
@@ -20,6 +21,8 @@ import hirs.persist.ReferenceManifestManager;
 import hirs.tpm.eventlog.TCGEventLog;
 import hirs.tpm.eventlog.TpmPcrEvent;
 import hirs.utils.ReferenceManifestValidator;
+import hirs.validation.SupplyChainCredentialValidator;
+import hirs.validation.SupplyChainValidatorException;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -30,8 +33,10 @@ import org.springframework.web.servlet.ModelAndView;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.security.KeyStore;
 import java.security.NoSuchAlgorithmException;
 import java.security.cert.CertificateException;
+import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -301,12 +306,33 @@ public class ReferenceManifestDetailsPageController
         }
 
         RIM_VALIDATOR.validateXmlSignature(new ByteArrayInputStream(baseRim.getRimBytes()));
-        data.put("signatureValid", RIM_VALIDATOR.isSignatureValid());
+        Set<CertificateAuthorityCredential> certificates =
+                CertificateAuthorityCredential.select(certificateManager)
+                        .getCertificates();
+        //Report invalid signature unless RIM_VALIDATOR validates it and cert path is valid
+        data.put("signatureValid", false);
+        if (RIM_VALIDATOR.isSignatureValid()) {
+            for (CertificateAuthorityCredential cert : certificates) {
+                if (Arrays.equals(cert.getEncodedPublicKey(),
+                        RIM_VALIDATOR.getPublicKey().getEncoded())) {
+                    SupplyChainValidationServiceImpl scvsImpl =
+                            new SupplyChainValidationServiceImpl(certificateManager);
+                    KeyStore keystore = scvsImpl.getCaChain(cert);
+                    X509Certificate signingCert = cert.getX509Certificate();
+                    try {
+                        if (SupplyChainCredentialValidator.verifyCertificate(signingCert,
+                                keystore)) {
+                            data.replace("signatureValid", true);
+                        }
+                    } catch (SupplyChainValidatorException e) {
+                        LOGGER.error("Error verifying cert chain: " + e.getMessage());
+                    }
+                    break;
+                }
+            }
+        }
         data.put("skID", RIM_VALIDATOR.getSubjectKeyIdentifier());
         try {
-            Set<CertificateAuthorityCredential> certificates =
-                    CertificateAuthorityCredential.select(certificateManager)
-                            .getCertificates();
             for (CertificateAuthorityCredential cert : certificates) {
                 if (Arrays.equals(cert.getEncodedPublicKey(),
                         RIM_VALIDATOR.getPublicKey().getEncoded())) {
