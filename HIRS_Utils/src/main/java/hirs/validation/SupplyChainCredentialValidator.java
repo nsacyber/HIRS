@@ -750,8 +750,8 @@ public final class SupplyChainCredentialValidator implements CredentialValidator
         for (ComponentInfo cInfo : allDeviceInfoComponents) {
             for (ComponentIdentifier cId : fullDeltaChainComponents) {
                 ciV2 = (ComponentIdentifierV2) cId;
-                if (ciV2.getComponentClass().getClassValueString()
-                        .contains(cInfo.getComponentClass())
+                if (cInfo.getComponentClass().contains(
+                        ciV2.getComponentClass().getClassValueString())
                         && isMatch(cId, cInfo)) {
                         subCompIdList.remove(cId);
                         subCompInfoList.remove(cInfo);

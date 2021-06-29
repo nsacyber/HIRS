@@ -102,11 +102,6 @@ public class ComponentClass {
      */
     public ComponentClass(final Path componentClassPath, final String componentIdentifier) {
         this(TCG_COMPONENT_REGISTRY, componentClassPath, getComponentIntValue(componentIdentifier));
-        if (componentIdentifier != null && componentIdentifier.contains("#")) {
-            this.classValueString = componentIdentifier.replaceAll("#", "");
-        } else {
-            this.classValueString = componentIdentifier;
-        }
     }
 
     /**
@@ -152,6 +147,8 @@ public class ComponentClass {
                 getCategory(JsonUtils.getSpecificJsonObject(componentClassPath, registryType));
                 break;
         }
+
+        this.classValueString = String.valueOf(componentIdentifier);
     }
 
     /**
@@ -276,12 +273,11 @@ public class ComponentClass {
                     componentValue = Integer.decode(component);
                 } else {
                     if (component.contains("#")) {
-                        componentValue = Integer.valueOf(
-                                component.replace("#", ""),
-                                Short.SIZE);
+                        componentValue = Integer.parseInt(
+                                component.replace("#", ""));
                     } else {
-                        componentValue = Integer.valueOf(
-                                component, Short.SIZE);
+                        componentValue = Integer.parseInt(
+                                component);
                     }
                 }
             } catch (NumberFormatException nfEx) {
