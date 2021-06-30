@@ -213,8 +213,8 @@ public class ComponentClassTest {
      */
     @Test
     public void testGetComponentNonStandardQuery() throws URISyntaxException {
-        String componentIdentifier = "00040002";
-        ComponentClass instance = new ComponentClass(Paths.get(this.getClass()
+        String componentIdentifier = "0x00040002";
+        ComponentClass instance = new ComponentClass("2.23.133.18.3.1", Paths.get(this.getClass()
                 .getResource(JSON_FILE).toURI()), componentIdentifier);
         String resultCategory = instance.getCategory();
         String resultComponent = instance.getComponent();
@@ -228,8 +228,8 @@ public class ComponentClassTest {
      */
     @Test
     public void testGetComponentNonStandardQuery2() throws URISyntaxException {
-        String componentIdentifier = "#00040002";
-        ComponentClass instance = new ComponentClass(Paths.get(this.getClass()
+        String componentIdentifier = "0x00040002";
+        ComponentClass instance = new ComponentClass("2.23.133.18.3.1", Paths.get(this.getClass()
                 .getResource(JSON_FILE).toURI()), componentIdentifier);
         String resultCategory = instance.getCategory();
         String resultComponent = instance.getComponent();
