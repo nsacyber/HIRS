@@ -1405,7 +1405,7 @@ public final class SupplyChainCredentialValidator implements CredentialValidator
         boolean issuerMatchesSubject = false;
         boolean signatureMatchesPublicKey = false;
 
-        while (foundRootOfCertChain.isEmpty() && certIterator.hasNext()) {
+        while (certIterator.hasNext()) {
             trustedCert = certIterator.next();
             issuerMatchesSubject = issuerMatchesSubjectDN(cert, trustedCert);
             signatureMatchesPublicKey = signatureMatchesPublicKey(cert, trustedCert);
