@@ -22,6 +22,8 @@ import java.nio.file.Path;
  *       componentClassRegistry ComponentClassRegistry,
  *       componentClassValue OCTET STRING SIZE(4) ) }
  * </pre>
+ *
+ * A note for the future.
  */
 public class ComponentClass {
     private static final String TCG_COMPONENT_REGISTRY = "2.23.133.18.3.1";
@@ -33,39 +35,27 @@ public class ComponentClass {
     private static final String UNKNOWN_STRING = "Unknown";
     private static final String NONE_STRING = "None";
 
-    // Used to test bytes associated with just the component
-    private static final int COMPONENT_MASK = 0x0000FFFF;
-    // Used to test bytes associated with just the category
-    private static final int CATEGORY_MASK = 0xFFFF0000;
-
     // Used to indicate that the component string value provided is erroneous
-    private static final int ERROR = -1;
+    private static final String ERROR = "-1";
+    private static final int MID_INDEX = 4;
     /**
-     * All categories have Other and Unknown as the first 2 values.
+     * All TCG categories have Other and Unknown as the first 2 values.
      */
-    private static final int OTHER = 0;
-    private static final int UNKNOWN = 1;
+    private static final String OTHER = "0000";
+    private static final String UNKNOWN = "0001";
 
     private String category;
     private String component;
+    private String categoryStr;
+    private String componentStr;
     private String registryType;
-    private int componentIdentifier;
-    private String classValueString;
+    private String componentIdentifier;
 
     /**
      * Default class constructor.
      */
     public ComponentClass() {
         this("TCG", JSON_PATH, UNKNOWN);
-    }
-
-    /**
-     * Class Constructor that takes a int representation of the component value.
-     *
-     * @param componentIdentifier component value
-     */
-    public ComponentClass(final int componentIdentifier) {
-        this(TCG_COMPONENT_REGISTRY, JSON_PATH, componentIdentifier);
     }
 
     /**
@@ -76,21 +66,7 @@ public class ComponentClass {
      * @param componentIdentifier component value
      */
     public ComponentClass(final String registryOid, final String componentIdentifier) {
-        this(registryOid, JSON_PATH, getComponentIntValue(componentIdentifier));
-    }
-
-    /**
-     * Class Constructor that takes a String representation of the component
-     * value.
-     *
-     * @param registryOid the decimal notation for the type of registry
-     * @param componentClassPath file path for the json
-     * @param componentIdentifier component value
-     */
-    public ComponentClass(final String registryOid,
-                          final Path componentClassPath,
-                          final String componentIdentifier) {
-        this(registryOid, componentClassPath, getComponentIntValue(componentIdentifier));
+        this(registryOid, JSON_PATH, componentIdentifier);
     }
 
     /**
@@ -101,7 +77,7 @@ public class ComponentClass {
      * @param componentIdentifier component value
      */
     public ComponentClass(final Path componentClassPath, final String componentIdentifier) {
-        this(TCG_COMPONENT_REGISTRY, componentClassPath, getComponentIntValue(componentIdentifier));
+        this(TCG_COMPONENT_REGISTRY, componentClassPath, componentIdentifier);
     }
 
     /**
@@ -115,10 +91,14 @@ public class ComponentClass {
      */
     public ComponentClass(final String registryOid,
                           final Path componentClassPath,
-                          final int componentIdentifier) {
-        this.category = UNKNOWN_STRING;
+                          final String componentIdentifier) {
+        this.category = OTHER;
         this.component = NONE_STRING;
-        this.componentIdentifier = componentIdentifier;
+        if (componentIdentifier == null || componentIdentifier.isEmpty()) {
+            this.componentIdentifier = "";
+        } else {
+            this.componentIdentifier = verifyComponentValue(componentIdentifier);
+        }
 
         switch (registryOid) {
             case TCG_COMPONENT_REGISTRY:
@@ -131,24 +111,36 @@ public class ComponentClass {
                 registryType = UNKNOWN_STRING;
         }
 
-        switch (componentIdentifier) {
+        switch (this.componentIdentifier) {
             case OTHER:
-                this.category = NONE_STRING;
-                this.component = OTHER_STRING;
+                this.categoryStr = NONE_STRING;
+                this.component = OTHER;
+                this.componentStr = OTHER_STRING;
                 break;
             case UNKNOWN:
-                this.category = NONE_STRING;
-                this.component = UNKNOWN_STRING;
+            case "":
+                this.categoryStr = NONE_STRING;
+                this.component = UNKNOWN;
+                this.componentStr = UNKNOWN_STRING;
                 break;
             case ERROR:
                 // Number Format Exception
                 break;
             default:
-                getCategory(JsonUtils.getSpecificJsonObject(componentClassPath, registryType));
+                this.category = this.componentIdentifier.substring(0, MID_INDEX) + this.category;
+                this.component = OTHER + this.componentIdentifier.substring(MID_INDEX);
+                findStringValues(JsonUtils.getSpecificJsonObject(componentClassPath, registryType));
                 break;
         }
+    }
 
-        this.classValueString = String.valueOf(componentIdentifier);
+    /**
+     * Getter for the Category complete value.
+     *
+     * @return string value of the category
+     */
+    public final String getCategoryValue() {
+        return category;
     }
 
     /**
@@ -157,7 +149,7 @@ public class ComponentClass {
      * @return string value of the category
      */
     public final String getCategory() {
-        return category;
+        return categoryStr;
     }
 
     /**
@@ -166,23 +158,15 @@ public class ComponentClass {
      * @return string value of the component
      */
     public final String getComponent() {
-        return component;
+        return componentStr;
     }
 
     /**
      * Getter for the Component Class Value.
      * @return int value of the component class.
      */
-    public final int getValue() {
+    public final String getValue() {
         return componentIdentifier;
-    }
-
-    /**
-     * Getter for the Component Class Value as a string.
-     * @return String representation of the class.
-     */
-    public final String getClassValueString() {
-        return classValueString;
     }
 
     /**
@@ -193,10 +177,10 @@ public class ComponentClass {
     @Override
     public String toString() {
         String resultString;
-        if (component.equals(UNKNOWN_STRING) || component.equals(OTHER_STRING)) {
-            resultString = String.format("%s%n%s", registryType, category);
+        if (componentStr.equals(UNKNOWN_STRING) || component.equals(OTHER_STRING)) {
+            resultString = String.format("%s%n%s", registryType, categoryStr);
         } else {
-            resultString = String.format("%s%n%s - %s", registryType, category, component);
+            resultString = String.format("%s%n%s - %s", registryType, categoryStr, componentStr);
         }
         return resultString;
     }
@@ -207,54 +191,72 @@ public class ComponentClass {
      * @param categories a JSON object associated with mapped categories in file
      * {}@link componentIdentifier}.
      */
-    private void getCategory(final JsonObject categories) {
-        int componentID;
+    private void findStringValues(final JsonObject categories) {
+        String categoryID;
+        String componentMask;
+        boolean found = false;
 
         if (categories != null) {
             for (String name : categories.names()) {
-                componentID = Integer.decode(categories.get(name).asObject().get("ID").asString());
+                categoryID = verifyComponentValue(categories.get(name)
+                        .asObject().get("ID").asString());
+                componentMask = componentIdentifier.substring(MID_INDEX);
                 // check for the correct flag
-                if ((componentIdentifier & CATEGORY_MASK) == componentID) {
+                if (categoryMatch(componentIdentifier.substring(0, MID_INDEX),
+                        categoryID.substring(0, MID_INDEX))) {
+                    found = true;
                     JsonObject componentTypes = categories.get(name)
                             .asObject().get("Types").asObject();
-                    category = name;
+                    categoryStr = name;
 
-                    switch (componentIdentifier & COMPONENT_MASK) {
+                    switch (componentMask) {
                         case OTHER:
-                            component = OTHER_STRING;
+                            componentStr = OTHER_STRING;
                             break;
                         case UNKNOWN:
-                            component = UNKNOWN_STRING;
+                            componentStr = UNKNOWN_STRING;
                             break;
                         default:
-                            getComponent(componentID, componentTypes);
+                            getComponent(componentTypes);
                     }
                 }
             }
         }
+
+        if (!found) {
+            this.categoryStr = NONE_STRING;
+            this.componentStr = UNKNOWN_STRING;
+        }
+    }
+
+    /**
+     * Returns the value of the comparison between a category and the what's in the id.
+     * @param category the category to compare
+     * @param componentId the id value to compare
+     * @return true if they match
+     */
+    public boolean categoryMatch(final String category, final String componentId) {
+        return category.equals(componentId);
     }
 
     /**
      * Getter for the component associated with the component JSON Object mapped
      * in the JSON file.
      *
-     * @param componentID the ID associated with the category
      * @param components JSON Object for the categories components
      */
-    private void getComponent(final int componentID, final JsonObject components) {
-        int typeID, testID;
+    private void getComponent(final JsonObject components) {
+        String typeID;
 
         if (components != null) {
             for (Member member : components) {
-                typeID = Integer.decode(member.getName());
-                testID = componentID + typeID;
+                typeID = verifyComponentValue(member.getName());
 
-                if (componentIdentifier == testID) {
-                    component = member.getValue().asString();
+                if (component.equals(typeID)) {
+                    componentStr = member.getValue().asString();
                 }
             }
         }
-
     }
 
     /**
@@ -264,20 +266,18 @@ public class ComponentClass {
      * @param component string representation of the component ID
      * @return the int representation of the component
      */
-    private static int getComponentIntValue(final String component) {
-        int componentValue = ERROR;
+    private static String verifyComponentValue(final String component) {
+        String componentValue = ERROR;
 
         if (component != null) {
             try {
                 if (component.contains("x")) {
-                    componentValue = Integer.decode(component);
+                    componentValue = component.substring(component.indexOf("x") + 1);
                 } else {
                     if (component.contains("#")) {
-                        componentValue = Integer.parseInt(
-                                component.replace("#", ""));
+                        componentValue = component.replace("#", "");
                     } else {
-                        componentValue = Integer.parseInt(
-                                component);
+                        return component;
                     }
                 }
             } catch (NumberFormatException nfEx) {

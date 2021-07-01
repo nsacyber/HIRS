@@ -649,10 +649,10 @@ public final class SupplyChainCredentialValidator implements CredentialValidator
             boolean classFound;
 
             for (ComponentIdentifier ci : absentSerialNum) {
-                classValue = ciV2.getComponentClass().getClassValueString();
+                classValue = ciV2.getComponentClass().getValue();
                 baseCiV2 = (ComponentIdentifierV2) ci;
                 classFound = classValue.equals(baseCiV2.getComponentClass()
-                        .getClassValueString());
+                        .getValue());
                 if (classFound) {
                     if (isMatch(ciV2, baseCiV2)) {
                         if (ciV2.isAdded()) {
@@ -751,7 +751,7 @@ public final class SupplyChainCredentialValidator implements CredentialValidator
             for (ComponentIdentifier cId : fullDeltaChainComponents) {
                 ciV2 = (ComponentIdentifierV2) cId;
                 if (cInfo.getComponentClass().contains(
-                        ciV2.getComponentClass().getClassValueString())
+                        ciV2.getComponentClass().getValue())
                         && isMatch(cId, cInfo)) {
                         subCompIdList.remove(cId);
                         subCompInfoList.remove(cInfo);
