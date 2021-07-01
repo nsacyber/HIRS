@@ -3,7 +3,6 @@ package hirs.swid;
 import hirs.swid.utils.Commander;
 import com.beust.jcommander.JCommander;
 
-import java.io.FileNotFoundException;
 import java.io.IOException;
 
 public class Main {

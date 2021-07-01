@@ -1,11 +1,13 @@
 package hirs.swid;
 
 import hirs.swid.utils.HashSwid;
+import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
+import javax.security.auth.x500.X500Principal;
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.UnmarshalException;
@@ -35,10 +37,16 @@ import javax.xml.validation.SchemaFactory;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.security.InvalidKeyException;
 import java.security.Key;
+import java.security.NoSuchAlgorithmException;
+import java.security.NoSuchProviderException;
 import java.security.PublicKey;
+import java.security.SignatureException;
+import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 import java.util.Iterator;
+import java.util.List;
 
 /**
  * This class handles validating base Reference Integrity Manifest files.
@@ -47,17 +55,30 @@ public class SwidTagValidator {
     private Unmarshaller unmarshaller;
     private String rimEventLog;
     private String certificateFile;
+    private String trustStore;
 
     /**
      * Setter for rimel file path.
-     * @param rimEventLog
+     * @param rimEventLog the rimel file
      */
     public void setRimEventLog(String rimEventLog) {
         this.rimEventLog = rimEventLog;
     }
 
+    /**
+     * Setter for signing cert file.
+     * @param certificateFile the signing cert
+     */
     public void setCertificateFile(String certificateFile) {
         this.certificateFile = certificateFile;
+    }
+
+    /**
+     * Setter for the truststore file path.
+     * @param trustStore the truststore
+     */
+    public void setTrustStore(String trustStore) {
+        this.trustStore = trustStore;
     }
 
     public SwidTagValidator() {
@@ -66,6 +87,7 @@ public class SwidTagValidator {
             unmarshaller = jaxbContext.createUnmarshaller();
             rimEventLog = "";
             certificateFile = "";
+            trustStore = SwidTagConstants.DEFAULT_KEYSTORE_FILE;
         } catch (JAXBException e) {
             System.out.println("Error initializing JAXBContext: " + e.getMessage());
         }
@@ -119,6 +141,8 @@ public class SwidTagValidator {
      */
     private boolean validateSignedXMLDocument(Document doc) {
         DOMValidateContext context = null;
+        CredentialParser cp = new CredentialParser();
+        X509Certificate signingCert = null;
         boolean isValid = false;
         try {
             NodeList nodes = doc.getElementsByTagNameNS(XMLSignature.XMLNS, "Signature");
@@ -127,14 +151,14 @@ public class SwidTagValidator {
             }
             NodeList embeddedCert = doc.getElementsByTagName("X509Data");
             if (embeddedCert.getLength() > 0) {
-                context = new DOMValidateContext(new SwidTagValidator.X509KeySelector(), nodes.item(0));
+                context = new DOMValidateContext(new X509KeySelector(), nodes.item(0));
+                signingCert = cp.parseCertFromPEMString(embeddedCert.item(1).getTextContent());
             } else {
-                CredentialParser cp = new CredentialParser();
                 if (!certificateFile.isEmpty()) {
-                    X509Certificate certificate = cp.parseCertFromPEM(certificateFile);
-                    cp.setCertificate(certificate);
+                    signingCert = cp.parseCertsFromPEM(certificateFile).get(0);
+                    cp.setCertificate(signingCert);
                     System.out.println(cp.getCertificateAuthorityInfoAccess());
-                    context = new DOMValidateContext(certificate.getPublicKey(), nodes.item(0));
+                    context = new DOMValidateContext(signingCert.getPublicKey(), nodes.item(0));
                 } else {
                     System.out.println("Signing certificate not found for validation!");
                     System.exit(1);
@@ -142,7 +166,8 @@ public class SwidTagValidator {
             }
             XMLSignatureFactory sigFactory = XMLSignatureFactory.getInstance("DOM");
             XMLSignature signature = sigFactory.unmarshalXMLSignature(context);
-            isValid = signature.validate(context);
+            isValid = signature.validate(context) && validateCertChain(signingCert,
+                                                    cp.parseCertsFromPEM(trustStore));
         } catch (MarshalException | XMLSignatureException e) {
             System.out.println(e.getMessage());
         } catch (Exception e) {
@@ -150,6 +175,105 @@ public class SwidTagValidator {
         }
 
         return isValid;
+    }
+
+    /**
+     * This method validates the cert chain for a given certificate. The truststore is iterated
+     * over until a root CA is found. If a root CA is not found an error is returned describing
+     * the problem with validation.
+     * @param cert the certificate at the start of the chain
+     * @param trustStore the collection from which to find the chain of intermediate and root CAs
+     * @return true if the chain is valid; the false case throws the exception below
+     * @throws Exception if a valid chain is not found in the truststore
+     */
+    private boolean validateCertChain(final X509Certificate cert,
+                                      final List<X509Certificate> trustStore)
+                                                            throws Exception {
+        if (cert == null || trustStore == null) {
+            throw new Exception("Null certificate or truststore received");
+        } else if (trustStore.size() == 0) {
+            throw new Exception("Truststore is empty");
+        }
+
+        final String INT_CA_ERROR = "Intermediate CA found, searching for root CA";
+        String errorMessage = "";
+        X509Certificate startOfChain = cert;
+        do {
+            for (X509Certificate trustedCert : trustStore) {
+                boolean isIssuer = areYouMyIssuer(startOfChain, trustedCert);
+                boolean isSigner = areYouMySigner(startOfChain, trustedCert);
+                if (isIssuer && isSigner) {
+                    if (isSelfSigned(trustedCert)) {
+                        return true;
+                    } else {
+                        startOfChain = trustedCert;
+                        errorMessage = INT_CA_ERROR;
+                        break;
+                    }
+                } else {
+                    if (!isIssuer) {
+                        errorMessage = "Issuer cert not found";
+                    } else if (!isSigner) {
+                        errorMessage = "Signing cert not found";
+                    }
+                }
+            }
+        } while (errorMessage.equals(INT_CA_ERROR));
+
+        throw new Exception(errorMessage);
+    }
+
+    /**
+     * This method checks if cert's issuerDN matches issuer's subjectDN.
+     * @param cert the signed certificate
+     * @param issuer the signing certificate
+     * @return true if they match, false if not
+     * @throws Exception if either argument is null
+     */
+    private boolean areYouMyIssuer(final X509Certificate cert, final X509Certificate issuer)
+                                                                            throws Exception {
+        if (cert == null || issuer == null) {
+            throw new Exception("Cannot verify issuer, null certificate received");
+        }
+        X500Principal issuerDN = new X500Principal(cert.getIssuerX500Principal().getName());
+        return issuer.getSubjectX500Principal().equals(issuerDN);
+    }
+
+    /**
+     * This method checks if cert's signature matches signer's public key.
+     * @param cert the signed certificate
+     * @param signer the signing certificate
+     * @return true if they match
+     * @throws Exception if an error occurs or there is no match
+     */
+    private boolean areYouMySigner(final X509Certificate cert, final X509Certificate signer)
+                                                                            throws Exception {
+        if (cert == null || signer == null) {
+            throw new Exception("Cannot verify signature, null certificate received");
+        }
+        try {
+            cert.verify(signer.getPublicKey(), BouncyCastleProvider.PROVIDER_NAME);
+            return true;
+        } catch (NoSuchAlgorithmException e) {
+            throw new Exception("Signing algorithm in signing cert not supported");
+        } catch (InvalidKeyException e) {
+            throw new Exception("Signing certificate key does not match signature");
+        } catch (NoSuchProviderException e) {
+            throw new Exception("Error with BouncyCastleProvider: " + e.getMessage());
+        } catch (SignatureException e) {
+            throw new Exception("Error with signature: " + e.getMessage());
+        } catch (CertificateException e) {
+            throw new Exception("Encoding error: " + e.getMessage());
+        }
+    }
+
+    /**
+     * This method checks if a given certificate is self signed or not.
+     * @param cert the cert to check
+     * @return true if self signed, false if not
+     */
+    private boolean isSelfSigned(final X509Certificate cert) {
+        return cert.getIssuerX500Principal().equals(cert.getSubjectX500Principal());
     }
 
     public class X509KeySelector extends KeySelector {
