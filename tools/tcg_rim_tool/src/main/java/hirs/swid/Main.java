@@ -24,12 +24,16 @@ public class Main {
                 String verifyFile = commander.getVerifyFile();
                 String rimel = commander.getRimEventLog();
                 String certificateFile = commander.getPublicCertificate();
+                String trustStore = commander.getTruststoreFile();
                 if (!verifyFile.isEmpty()) {
                     if (!rimel.isEmpty()) {
                         validator.setRimEventLog(rimel);
                     }
                     if (!certificateFile.isEmpty()) {
                         validator.setCertificateFile(certificateFile);
+                    }
+                    if (!trustStore.isEmpty()) {
+                        validator.setTrustStore(trustStore);
                     }
                     try {
                         validator.validateSwidTag(verifyFile);
@@ -46,7 +50,7 @@ public class Main {
                 System.out.println(commander.toString());
                 String createType = commander.getCreateType().toUpperCase();
                 String attributesFile = commander.getAttributesFile();
-                String jksKeystoreFile = commander.getKeystoreFile();
+                String jksTruststoreFile = commander.getTruststoreFile();
                 String certificateFile = commander.getPublicCertificate();
                 String privateKeyFile = commander.getPrivateKeyFile();
                 String rimEventLog = commander.getRimEventLog();
@@ -55,16 +59,16 @@ public class Main {
                         if (!attributesFile.isEmpty()) {
                             gateway.setAttributesFile(attributesFile);
                         }
-                        if (!jksKeystoreFile.isEmpty()) {
+                        if (!jksTruststoreFile.isEmpty()) {
                             gateway.setDefaultCredentials(true);
-                            gateway.setJksKeystoreFile(jksKeystoreFile);
+                            gateway.setJksTruststoreFile(jksTruststoreFile);
                         } else if (!certificateFile.isEmpty() && !privateKeyFile.isEmpty()) {
                             gateway.setDefaultCredentials(false);
                             gateway.setPemCertificateFile(certificateFile);
                             gateway.setPemPrivateKeyFile(privateKeyFile);
                         } else {
                             gateway.setDefaultCredentials(true);
-                            gateway.setJksKeystoreFile(SwidTagConstants.DEFAULT_KEYSTORE_FILE);
+                            gateway.setJksTruststoreFile(SwidTagConstants.DEFAULT_KEYSTORE_FILE);
                         }
                         if (rimEventLog.isEmpty()) {
                             System.out.println("Error: a support RIM is required!");
@@ -74,6 +78,8 @@ public class Main {
                         }
                         gateway.generateSwidTag(commander.getOutFile());
                         break;
+                    default:
+                        System.out.println("No create type given, nothing to do");
                 }
             }
         }

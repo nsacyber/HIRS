@@ -42,6 +42,7 @@ import java.security.Key;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
 import java.security.PublicKey;
+import java.security.Security;
 import java.security.SignatureException;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
@@ -56,6 +57,14 @@ public class SwidTagValidator {
     private String rimEventLog;
     private String certificateFile;
     private String trustStore;
+
+    /**
+     * Ensure that BouncyCastle is configured as a javax.security.Security provider, as this
+     * class expects it to be available.
+     */
+    static {
+        Security.addProvider(new BouncyCastleProvider());
+    }
 
     /**
      * Setter for rimel file path.

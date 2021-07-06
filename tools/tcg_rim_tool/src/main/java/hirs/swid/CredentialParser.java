@@ -107,9 +107,12 @@ public class CredentialParser {
 
     /**
      * This method returns the X509Certificate found in a PEM file.
+     * Unchecked typcase warnings are suppressed because the CertificateFactory
+     * implements X509Certificate objects explicitly.
      * @param filename pem file
      * @return a list containing all X509Certificates extracted
      */
+    @SuppressWarnings("unchecked")
     private List<X509Certificate> parsePEMCertificates(String filename) {
         List<X509Certificate> certificates = null;
         FileInputStream fis = null;

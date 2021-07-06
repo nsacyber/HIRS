@@ -80,7 +80,7 @@ public class SwidTagGateway {
     private Marshaller marshaller;
     private String attributesFile;
     private boolean defaultCredentials;
-    private String jksKeystoreFile;
+    private String jksTruststoreFile;
     private String pemPrivateKeyFile;
     private String pemCertificateFile;
     private String rimEventLog;
@@ -120,9 +120,9 @@ public class SwidTagGateway {
 
     /**
      * Setter for JKS keystore file
-     * @param jksKeystoreFile
+     * @param jksTruststoreFile
      */
-    public void setJksKeystoreFile(String jksKeystoreFile) { this.jksKeystoreFile = jksKeystoreFile; }
+    public void setJksTruststoreFile(String jksTruststoreFile) { this.jksTruststoreFile = jksTruststoreFile; }
 
     /**
      * Setter for private key file in PEM format
@@ -440,7 +440,7 @@ public class SwidTagGateway {
             PublicKey publicKey;
             CredentialParser cp = new CredentialParser();
             if (defaultCredentials) {
-                cp.parseJKSCredentials(jksKeystoreFile);
+                cp.parseJKSCredentials(jksTruststoreFile);
                 privateKey = cp.getPrivateKey();
                 publicKey = cp.getPublicKey();
                 KeyName keyName = kiFactory.newKeyName(cp.getCertificateSubjectKeyIdentifier());

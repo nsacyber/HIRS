@@ -1,11 +1,5 @@
 package hirs.swid.utils;
 
-import java.io.File;
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.InvalidPathException;
-import java.nio.file.Paths;
-
 import com.beust.jcommander.Parameter;
 import hirs.swid.SwidTagConstants;
 
@@ -29,9 +23,9 @@ public class Commander {
     @Parameter(names = {"-v", "--verify <path>"}, order = 3,
             description = "Specify a RIM file to verify.")
     private String verifyFile = "";
-    @Parameter(names = {"--keystore <path>"}, order = 4,
-            description = "JKS keystore containing a private key to sign the base RIM created by the create function.")
-    private String keystoreFile = "";
+    @Parameter(names = {"-t", "--truststore <path>"}, order = 4,
+            description = "PEM truststore to sign the base RIM created.")
+    private String truststoreFile = "";
     @Parameter(names = {"-k", "--privateKeyFile <path>"}, order = 5,
             description = "File containing the private key used to sign the base RIM created by the create function.")
     private String privateKeyFile = "";
@@ -42,17 +36,7 @@ public class Commander {
     @Parameter(names = {"-l", "--rimel <path>"}, order = 7,
             description = "The TCG eventlog file to use as a support RIM. By default the last system eventlog will be used.")
     private String rimEventLog = "";
-/*
-    @Parameter(names = {"-t", "--rimpcr <path>"}, order = 7,
-            description = "The file containing TPM PCR values to use as a support RIM. By default the current platform TPM will be used.")
-    private String rimPcrs = "";
-    //@Parameter(names = {}, order = 8, description = "")
-    private String toBeSigned = "";
-    @Parameter(names = {"-s", "--addSignatureData <originalBaseRIM> <signatureFile> <outputFile>"}, order = 8,
-            description = "The signature data in <signatureFile> will be combined with the data in <originalBaseRIM>" +
-                    "and written to <outputFile>, or will overwrite <originalBaseRIM> if <outputFile> is not given.")
-    private String signatureData = "";
-*/
+
     public boolean isHelp() {
         return help;
     }
@@ -73,7 +57,7 @@ public class Commander {
         return verifyFile;
     }
 
-    public String getKeystoreFile() { return keystoreFile; }
+    public String getTruststoreFile() { return truststoreFile; }
 
     public String getPrivateKeyFile() {
         return privateKeyFile;
@@ -84,19 +68,7 @@ public class Commander {
     }
 
     public String getRimEventLog() { return rimEventLog; }
-/*
-    public String getRimPcrs() {
-        return rimPcrs;
-    }
 
-    public String getToBeSigned() {
-        return toBeSigned;
-    }
-
-    public String getSignatureData() {
-        return signatureData;
-    }
-*/
     public String printHelpExamples() {
         StringBuilder sb = new StringBuilder();
         sb.append("Create a base RIM using the values in attributes.json; " +
@@ -108,8 +80,8 @@ public class Commander {
         sb.append("\t\t-c base -l support_rim.bin -k privateKey.pem -p cert.pem\n\n\n");
         sb.append("Validate a base RIM using an external support RIM to override the payload file:\n\n");
         sb.append("\t\t-v base_rim.swidtag -l support_rim.bin\n\n\n");
-        sb.append("Validate a base RIM with an external cert:\n\n");
-        sb.append("\t\t-v base_rim.swidtag -p signing_cert.pem\n\n\n");
+        sb.append("Validate a base RIM (with an embedded cert) with a PEM truststore:\n\n");
+        sb.append("\t\t-v base_rim.swidtag -t ca.crt\n\n\n");
 
 
         return sb.toString();
@@ -120,8 +92,8 @@ public class Commander {
         sb.append("Using attributes file: " + this.getAttributesFile() + System.lineSeparator());
         sb.append("Write to: " + this.getOutFile() + System.lineSeparator());
         sb.append("Verify file: " + this.getVerifyFile() + System.lineSeparator());
-        if (!this.getKeystoreFile().isEmpty()) {
-            sb.append("Keystore file: " + this.getKeystoreFile() + System.lineSeparator());
+        if (!this.getTruststoreFile().isEmpty()) {
+            sb.append("Truststore file: " + this.getTruststoreFile() + System.lineSeparator());
         } else if (!this.getPrivateKeyFile().isEmpty() &&
                     !this.getPublicCertificate().isEmpty()) {
             sb.append("Private key file: " + this.getPrivateKeyFile() + System.lineSeparator());
@@ -131,11 +103,6 @@ public class Commander {
                     + System.lineSeparator());
         }
         sb.append("Event log support RIM: " + this.getRimEventLog() + System.lineSeparator());
-/*
-        sb.append("TPM PCRs support RIM: " + getRimPcrs() + System.lineSeparator());
-        sb.append("Base RIM to be signed: " + getToBeSigned() + System.lineSeparator());
-        sb.append("External signature file: " + getSignatureData() + System.lineSeparator());
-*/
         return sb.toString();
     }
 }
