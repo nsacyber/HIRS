@@ -86,7 +86,9 @@ public class CredentialParser {
         try {
             CertificateFactory factory = CertificateFactory.getInstance(X509);
             InputStream inputStream = new ByteArrayInputStream((CERTIFICATE_HEADER
+                                                                + System.lineSeparator()
                                                                 + pemString
+                                                                + System.lineSeparator()
                                                                 + CERTIFICATE_FOOTER).getBytes());
             return (X509Certificate) factory.generateCertificate(inputStream);
         } catch (CertificateException e) {

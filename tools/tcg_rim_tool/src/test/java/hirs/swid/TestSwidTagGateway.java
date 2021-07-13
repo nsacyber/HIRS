@@ -75,13 +75,7 @@ public class TestSwidTagGateway {
 	public void testValidateSwidTag() {
 		String filepath = TestSwidTagGateway.class.getClassLoader().getResource(DEFAULT_WITH_CERT).getPath();
 		System.out.println("Validating file at " + filepath);
-	    try {
-	        Assert.assertTrue(validator.validateSwidTag(filepath));
-	    } catch (IOException e) {
-	        Assert.fail("Invalid swidtag!");
-	    } catch (NullPointerException e) {
-	    	Assert.fail("Cannot find file: " + filepath);
-		}
+		Assert.assertTrue(validator.validateSwidTag(filepath));
 	}
 
 	/**

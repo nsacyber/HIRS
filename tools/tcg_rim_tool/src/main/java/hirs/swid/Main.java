@@ -29,18 +29,14 @@ public class Main {
                     if (!rimel.isEmpty()) {
                         validator.setRimEventLog(rimel);
                     }
-                    if (!certificateFile.isEmpty()) {
-                        validator.setCertificateFile(certificateFile);
-                    }
                     if (!trustStore.isEmpty()) {
-                        validator.setTrustStore(trustStore);
+                        validator.setTrustStoreFile(trustStore);
                     }
-                    try {
-                        validator.validateSwidTag(verifyFile);
-                    } catch (IOException e) {
-                        System.out.println("Error validating RIM file: " + e.getMessage());
-                        System.exit(1);
+                    if (!certificateFile.isEmpty()) {
+                        System.out.println("A single cert cannot be used for verification. " +
+                                "The signing cert will be searched for in the trust store.");
                     }
+                    validator.validateSwidTag(verifyFile);
                 } else {
                     System.out.println("Need a RIM file to validate!");
                     System.exit(1);

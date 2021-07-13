@@ -4,6 +4,7 @@ import hirs.swid.utils.HashSwid;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
+import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
@@ -35,10 +36,13 @@ import javax.xml.transform.stream.StreamSource;
 import javax.xml.validation.Schema;
 import javax.xml.validation.SchemaFactory;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.math.BigInteger;
 import java.security.InvalidKeyException;
 import java.security.Key;
+import java.security.KeyFactory;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
 import java.security.PublicKey;
@@ -46,6 +50,10 @@ import java.security.Security;
 import java.security.SignatureException;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
+import java.security.spec.InvalidKeySpecException;
+import java.security.spec.RSAPublicKeySpec;
+import java.util.Arrays;
+import java.util.Base64;
 import java.util.Iterator;
 import java.util.List;
 
@@ -56,7 +64,7 @@ public class SwidTagValidator {
     private Unmarshaller unmarshaller;
     private String rimEventLog;
     private String certificateFile;
-    private String trustStore;
+    private String trustStoreFile;
 
     /**
      * Ensure that BouncyCastle is configured as a javax.security.Security provider, as this
@@ -75,19 +83,11 @@ public class SwidTagValidator {
     }
 
     /**
-     * Setter for signing cert file.
-     * @param certificateFile the signing cert
-     */
-    public void setCertificateFile(String certificateFile) {
-        this.certificateFile = certificateFile;
-    }
-
-    /**
      * Setter for the truststore file path.
-     * @param trustStore the truststore
+     * @param trustStoreFile the truststore
      */
-    public void setTrustStore(String trustStore) {
-        this.trustStore = trustStore;
+    public void setTrustStoreFile(String trustStoreFile) {
+        this.trustStoreFile = trustStoreFile;
     }
 
     public SwidTagValidator() {
@@ -96,7 +96,7 @@ public class SwidTagValidator {
             unmarshaller = jaxbContext.createUnmarshaller();
             rimEventLog = "";
             certificateFile = "";
-            trustStore = SwidTagConstants.DEFAULT_KEYSTORE_FILE;
+            trustStoreFile = SwidTagConstants.DEFAULT_KEYSTORE_FILE;
         } catch (JAXBException e) {
             System.out.println("Error initializing JAXBContext: " + e.getMessage());
         }
@@ -108,7 +108,7 @@ public class SwidTagValidator {
      *
      * @param path the location of the file to be validated
      */
-    public boolean validateSwidTag(String path) throws IOException {
+    public boolean validateSwidTag(String path) {
         Document document = unmarshallSwidTag(path);
         Element softwareIdentity = (Element) document.getElementsByTagName("SoftwareIdentity").item(0);
         StringBuilder si = new StringBuilder("Base RIM detected:\n");
@@ -144,55 +144,94 @@ public class SwidTagValidator {
     }
 
     /**
-     * This method validates a Document with a signature element.
-     *
-     * @param doc
+     * This method validates a signed XML document.
+     * First, the signing certificate is either parsed from the embedded X509Certificate element or
+     * generated from the Modulus and Exponent elements.
+     * Next, the signature is inspected for two things:
+     * 1. valid signature
+     * 2. valid certificate chain
+     * @param doc XML document
+     * @return true if both the signature and cert chain are valid; false otherwise
      */
     private boolean validateSignedXMLDocument(Document doc) {
-        DOMValidateContext context = null;
-        CredentialParser cp = new CredentialParser();
-        X509Certificate signingCert = null;
-        boolean isValid = false;
         try {
+            DOMValidateContext context;
+            CredentialParser cp = new CredentialParser();
+            X509Certificate signingCert = null;
+            List<X509Certificate> trustStore = cp.parseCertsFromPEM(trustStoreFile);
             NodeList nodes = doc.getElementsByTagNameNS(XMLSignature.XMLNS, "Signature");
             if (nodes.getLength() == 0) {
                 throw new Exception("Signature element not found!");
             }
-            NodeList embeddedCert = doc.getElementsByTagName("X509Data");
+            NodeList embeddedCert = doc.getElementsByTagName("X509Certificate");
             if (embeddedCert.getLength() > 0) {
                 context = new DOMValidateContext(new X509KeySelector(), nodes.item(0));
-                signingCert = cp.parseCertFromPEMString(embeddedCert.item(1).getTextContent());
+                signingCert = cp.parseCertFromPEMString(embeddedCert.item(0).getTextContent());
             } else {
-                if (!certificateFile.isEmpty()) {
-                    signingCert = cp.parseCertsFromPEM(certificateFile).get(0);
-                    cp.setCertificate(signingCert);
-                    System.out.println(cp.getCertificateAuthorityInfoAccess());
-                    context = new DOMValidateContext(signingCert.getPublicKey(), nodes.item(0));
-                } else {
+                PublicKey pk = getPKFromKeyValue(doc);
+                for (X509Certificate trustedCert : trustStore) {
+                    if (Arrays.equals(pk.getEncoded(), trustedCert.getPublicKey().getEncoded())) {
+                        signingCert = trustedCert;
+                    }
+                }
+                if (signingCert == null) {
                     System.out.println("Signing certificate not found for validation!");
                     System.exit(1);
                 }
+                context = new DOMValidateContext(signingCert.getPublicKey(), nodes.item(0));
             }
+            cp.setCertificate(signingCert);
+            System.out.println(cp.getCertificateAuthorityInfoAccess());
             XMLSignatureFactory sigFactory = XMLSignatureFactory.getInstance("DOM");
             XMLSignature signature = sigFactory.unmarshalXMLSignature(context);
-            isValid = signature.validate(context) && validateCertChain(signingCert,
-                                                    cp.parseCertsFromPEM(trustStore));
+            boolean signatureIsValid = signature.validate(context);
+            boolean certChainIsValid = validateCertChain(signingCert, trustStore);
+            System.out.println("Signature validity: " + signatureIsValid);
+            System.out.println("Cert chain validity: " + certChainIsValid);
+            return signatureIsValid && certChainIsValid;
+        } catch (FileNotFoundException e) {
+            System.out.println("Error parsing truststore: " + e.getMessage());
+        } catch (NoSuchAlgorithmException e) {
+            System.out.println("Error instantiating a KeyFactory to generate pk: "
+                    + e.getMessage());
+        } catch (InvalidKeySpecException e) {
+            System.out.println("Failed to generate a pk from swidtag: " + e.getMessage());
         } catch (MarshalException | XMLSignatureException e) {
             System.out.println(e.getMessage());
         } catch (Exception e) {
             System.out.println(e.getMessage());
         }
 
-        return isValid;
+        return false;
+    }
+
+    /**
+     * This method generates a public key from the modulus and exponent elements
+     * parsed from a signed swidtag.
+     * @param doc Document object containing the swidtag
+     * @return the generated PublicKey object
+     * @throws NoSuchAlgorithmException if the KeyFactory instance fails to instantiate
+     * @throws InvalidKeySpecException if the KeyFactory fails to generate the public key
+     */
+    private PublicKey getPKFromKeyValue(Document doc)
+            throws NoSuchAlgorithmException, InvalidKeySpecException {
+        Node modulusElement = doc.getElementsByTagName("Modulus").item(0);
+        Node exponentElement = doc.getElementsByTagName("Exponent").item(0);
+        BigInteger modulus = new BigInteger(
+                Base64.getMimeDecoder().decode(modulusElement.getTextContent()));
+        BigInteger exponent = new BigInteger(
+                Base64.getMimeDecoder().decode(exponentElement.getTextContent()));
+        RSAPublicKeySpec keySpec = new RSAPublicKeySpec(modulus, exponent);
+        KeyFactory factory = KeyFactory.getInstance("RSA");
+        return factory.generatePublic(keySpec);
     }
 
     /**
      * This method validates the cert chain for a given certificate. The truststore is iterated
-     * over until a root CA is found. If a root CA is not found an error is returned describing
-     * the problem with validation.
+     * over until a root CA is found, otherwise an error is returned.
      * @param cert the certificate at the start of the chain
-     * @param trustStore the collection from which to find the chain of intermediate and root CAs
-     * @return true if the chain is valid; the false case throws the exception below
+     * @param trustStore from which to find the chain of intermediate and root CAs
+     * @return true if the chain is valid
      * @throws Exception if a valid chain is not found in the truststore
      */
     private boolean validateCertChain(final X509Certificate cert,
@@ -229,7 +268,7 @@ public class SwidTagValidator {
             }
         } while (errorMessage.equals(INT_CA_ERROR));
 
-        throw new Exception(errorMessage);
+        throw new Exception("Error while validating cert chain: " + errorMessage);
     }
 
     /**
@@ -285,11 +324,26 @@ public class SwidTagValidator {
         return cert.getIssuerX500Principal().equals(cert.getSubjectX500Principal());
     }
 
+    /**
+     * This internal class handles parsing the public key from a KeyInfo element.
+     */
     public class X509KeySelector extends KeySelector {
-        public KeySelectorResult select(KeyInfo keyinfo,
-                                        KeySelector.Purpose purpose,
-                                        AlgorithmMethod algorithm,
-                                        XMLCryptoContext context) throws KeySelectorException {
+        /**
+         * This method extracts a public key from either an X509Certificate element
+         * or a KeyValue element.  If the public key's algorithm matches the declared
+         * algorithm it is returned in a KeySelecctorResult.
+         * @param keyinfo the KeyInfo element
+         * @param purpose
+         * @param algorithm the encapsulating signature's declared signing algorithm
+         * @param context
+         * @return a KeySelectorResult if the public key's algorithm matches the declared algorithm
+         * @throws KeySelectorException if the algorithms do not match
+         */
+        public KeySelectorResult select(final KeyInfo keyinfo,
+                                        final KeySelector.Purpose purpose,
+                                        final AlgorithmMethod algorithm,
+                                        final XMLCryptoContext context)
+                                        throws KeySelectorException {
             Iterator keyinfoItr = keyinfo.getContent().iterator();
             while(keyinfoItr.hasNext()) {
                 XMLStructure element = (XMLStructure) keyinfoItr.next();
@@ -307,16 +361,18 @@ public class SwidTagValidator {
                     }
                 }
             }
-
             throw new KeySelectorException("No key found!");
         }
 
+        /**
+         * This method checks that the signature and public key algorithms match.
+         * @param uri to match the signature algorithm
+         * @param name to match the public key algorithm
+         * @return true if both match, false otherwise
+         */
         public boolean areAlgorithmsEqual(String uri, String name) {
-            if (uri.equals(SwidTagConstants.SIGNATURE_ALGORITHM_RSA_SHA256) && name.equalsIgnoreCase("RSA")) {
-                return true;
-            } else {
-                return false;
-            }
+            return uri.equals(SwidTagConstants.SIGNATURE_ALGORITHM_RSA_SHA256)
+                    && name.equalsIgnoreCase("RSA");
         }
 
         private class RIMKeySelectorResult implements KeySelectorResult {
@@ -376,8 +432,8 @@ public class SwidTagValidator {
     /**
      * This method strips all whitespace from an xml file, including indents and spaces
      * added for human-readability.
-     * @param path
-     * @return
+     * @param path to the xml file
+     * @return Document object without whitespace
      */
     private Document removeXMLWhitespace(String path) throws IOException {
         TransformerFactory tf = TransformerFactory.newInstance();
