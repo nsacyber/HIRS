@@ -168,10 +168,12 @@ public class SwidTagValidator {
                 context = new DOMValidateContext(new X509KeySelector(), nodes.item(0));
                 signingCert = cp.parseCertFromPEMString(embeddedCert.item(0).getTextContent());
             } else {
-                PublicKey pk = getPKFromKeyValue(doc);
+                String skId = doc.getElementsByTagName("KeyName").item(0).getTextContent();
                 for (X509Certificate trustedCert : trustStore) {
-                    if (Arrays.equals(pk.getEncoded(), trustedCert.getPublicKey().getEncoded())) {
+                    String trustedSkId = cp.getCertificateSubjectKeyIdentifier(trustedCert);
+                    if (skId.equals(trustedSkId)) {
                         signingCert = trustedCert;
+                        break;
                     }
                 }
                 if (signingCert == null) {
@@ -203,27 +205,6 @@ public class SwidTagValidator {
         }
 
         return false;
-    }
-
-    /**
-     * This method generates a public key from the modulus and exponent elements
-     * parsed from a signed swidtag.
-     * @param doc Document object containing the swidtag
-     * @return the generated PublicKey object
-     * @throws NoSuchAlgorithmException if the KeyFactory instance fails to instantiate
-     * @throws InvalidKeySpecException if the KeyFactory fails to generate the public key
-     */
-    private PublicKey getPKFromKeyValue(Document doc)
-            throws NoSuchAlgorithmException, InvalidKeySpecException {
-        Node modulusElement = doc.getElementsByTagName("Modulus").item(0);
-        Node exponentElement = doc.getElementsByTagName("Exponent").item(0);
-        BigInteger modulus = new BigInteger(
-                Base64.getMimeDecoder().decode(modulusElement.getTextContent()));
-        BigInteger exponent = new BigInteger(
-                Base64.getMimeDecoder().decode(exponentElement.getTextContent()));
-        RSAPublicKeySpec keySpec = new RSAPublicKeySpec(modulus, exponent);
-        KeyFactory factory = KeyFactory.getInstance("RSA");
-        return factory.generatePublic(keySpec);
     }
 
     /**

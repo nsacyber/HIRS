@@ -273,11 +273,26 @@ public class CredentialParser {
     }
 
     /**
-     * This method returns the subjectKeyIdentifier from an X509Certificate.
-     * @return
+     * This method returns the subjectKeyIdentifier from the local X509Certificate.
+     * @return the String representation of the subjectKeyIdentifier
      * @throws IOException
      */
     public String getCertificateSubjectKeyIdentifier() throws IOException {
+        String decodedValue = null;
+        byte[] extension = certificate.getExtensionValue(Extension.subjectKeyIdentifier.getId());
+        if (extension != null && extension.length > 0) {
+            decodedValue = JcaX509ExtensionUtils.parseExtensionValue(extension).toString();
+        }
+        return decodedValue.substring(1);//Drop the # at the beginning of the string
+    }
+
+    /**
+     * This method returns the subjectKeyIdentifier from a given X509Certificate.
+     * @param certificate the cert to pull the subjectKeyIdentifier from
+     * @return the String representation of the subjectKeyIdentifier
+     * @throws IOException
+     */
+    public String getCertificateSubjectKeyIdentifier(X509Certificate certificate) throws IOException {
         String decodedValue = null;
         byte[] extension = certificate.getExtensionValue(Extension.subjectKeyIdentifier.getId());
         if (extension != null && extension.length > 0) {
