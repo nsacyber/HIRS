@@ -28,7 +28,7 @@ public class Commander {
     @Parameter(names = {"-t", "--truststore <path>"}, order = 4,
             description = "The truststore to sign the base RIM created "
             + "or to validate the signed base RIM.")
-    private String truststoreFile = "/opt/hirs/rimtool/keystore.jks";
+    private String truststoreFile = "";
     @Parameter(names = {"-k", "--privateKeyFile <path>"}, order = 5,
             description = "The private key used to sign the base RIM created by this tool.")
     private String privateKeyFile = "";

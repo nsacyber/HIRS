@@ -47,16 +47,6 @@ BzAChhlodHRwczovL2V4YW1wbGUuY29tL2NlcnRzMA0GCSqGSIb3DQEBCwUAA4IBAQDpKx5oQlkS&#13
 cIEQ5OqfpdFrV3De238RhMH6J4xePSidnFpfBc6FrdyDI1A8eRFz36I4xfVL3ZnJP/+j+NE4q6yz&#13;
 5VGvm0npLO394ZihtsI1sRAR8ORJ</X509Certificate>
       </X509Data>
-      <KeyValue>
-        <RSAKeyValue>
-          <Modulus>p3WVYaRJG7EABjbAdqDYZXFSTV1nHY9Ol9A5+W8t5xwBXBryZCGWxERGr5AryKWPxd+qzjj+cFpx&#13;
-xkM6N18jEhQIx/CEZePEJqpluBO5w2wTEOe7hqtMatqgDDMeDRxUuIpP8LGP00vh1wyDFFew90d9&#13;
-dvT3bcLvFh3a3ap9bTm6aBqPup5CXpzrwIU2wZfgkDytYVBm+8bHkMaUrgpNyM+5BAg2zl/Fqw0q&#13;
-otjaGr7PzbH+urCvaGbKLMPoWkVLIgAE8Qw98HTfoYSFHC7VYQySrzIinaOBFSgViR72kHemH2lW&#13;
-jDQeHiY0VIoPik/jVVIpjWe6zzeZ2S66Q/LmjQ==</Modulus>
-          <Exponent>AQAB</Exponent>
-        </RSAKeyValue>
-      </KeyValue>
     </KeyInfo>
   </Signature>
 </SoftwareIdentity>

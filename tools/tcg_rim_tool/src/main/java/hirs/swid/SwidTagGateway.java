@@ -437,27 +437,22 @@ public class SwidTagGateway {
 
             KeyInfoFactory kiFactory = sigFactory.getKeyInfoFactory();
             PrivateKey privateKey;
-            PublicKey publicKey;
             CredentialParser cp = new CredentialParser();
             if (defaultCredentials) {
                 cp.parseJKSCredentials(jksTruststoreFile);
                 privateKey = cp.getPrivateKey();
-                publicKey = cp.getPublicKey();
                 KeyName keyName = kiFactory.newKeyName(cp.getCertificateSubjectKeyIdentifier());
                 keyInfoElements.add(keyName);
             } else {
                 cp.parsePEMCredentials(pemCertificateFile, pemPrivateKeyFile);
                 X509Certificate certificate = cp.getCertificate();
                 privateKey = cp.getPrivateKey();
-                publicKey = cp.getPublicKey();
                 ArrayList<Object> x509Content = new ArrayList<Object>();
                 x509Content.add(certificate.getSubjectX500Principal().getName());
                 x509Content.add(certificate);
                 X509Data data = kiFactory.newX509Data(x509Content);
                 keyInfoElements.add(data);
             }
-            KeyValue keyValue = kiFactory.newKeyValue(publicKey);
-            keyInfoElements.add(keyValue);
             KeyInfo keyinfo = kiFactory.newKeyInfo(keyInfoElements);
 
             doc = DocumentBuilderFactory.newInstance().newDocumentBuilder().newDocument();
@@ -472,8 +467,6 @@ public class SwidTagGateway {
         } catch (NoSuchAlgorithmException | InvalidAlgorithmParameterException |
                         ParserConfigurationException e) {
             System.out.println(e.getMessage());
-        } catch (KeyException e) {
-            System.out.println("Error setting public key in KeyValue: " + e.getMessage());
         } catch (CertificateException e) {
             System.out.println(e.getMessage());
         } catch (JAXBException e) {

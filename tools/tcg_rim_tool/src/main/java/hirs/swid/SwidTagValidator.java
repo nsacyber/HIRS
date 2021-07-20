@@ -177,7 +177,8 @@ public class SwidTagValidator {
                     }
                 }
                 if (signingCert == null) {
-                    System.out.println("Signing certificate not found for validation!");
+                    System.out.println("Issuer certificate with subject key identifier = "
+                                    + skId + " not found");
                     System.exit(1);
                 }
                 context = new DOMValidateContext(signingCert.getPublicKey(), nodes.item(0));
@@ -290,7 +291,11 @@ public class SwidTagValidator {
         } catch (NoSuchProviderException e) {
             throw new Exception("Error with BouncyCastleProvider: " + e.getMessage());
         } catch (SignatureException e) {
-            throw new Exception("Error with signature: " + e.getMessage());
+            String error = "Error with signature: " + e.getMessage()
+                    + System.lineSeparator()
+                    + "Certificate needed for verification is missing: "
+                    + signer.getSubjectX500Principal().getName();
+            throw new Exception(error);
         } catch (CertificateException e) {
             throw new Exception("Encoding error: " + e.getMessage());
         }

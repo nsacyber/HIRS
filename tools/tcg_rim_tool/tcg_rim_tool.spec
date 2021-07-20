@@ -1,5 +1,5 @@
 Name:           tcg_rim_tool
-Version:        2.0.0
+Version:        2.1.0
 Release:        1%{?dist}
 Summary:        A java command-line tool to create PC client root RIM
 
