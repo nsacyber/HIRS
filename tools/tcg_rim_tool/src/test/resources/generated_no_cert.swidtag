@@ -20,23 +20,13 @@
         <DigestValue>97uWB7zSsO5WaGbrcQrlKd1Bju0aDTjK1/ktUYBje8A=</DigestValue>
       </Reference>
     </SignedInfo>
-    <SignatureValue>N1YtTeo2Ryuj+CtlXIpICEay+ni7vt8+4J7tAsYpa3efnLwtea69PIqEylPWm9LdA8Eo8XDdpgxV
-7h3hi2LTOU+Wxq3bLiLamo99T1EtIwl+ZPcOv8bsfEkmShHdMC0dlfcj6r7x4tc0XkNAhhJgfRNz
-FsmPWKJb6FYcsHFbHO/Uw1hSokbAGcWWTshEOqvKHMa8UVkrFMUPnrnMtdyJqZlhDBrZHNi4rWth
-8TjlUnQVSCF9s9I04FxJ1cUAdeVMHtXKM8Pvjv68PaJMJK73dW5Yd3SbcgoKLesf/HPWeeZL0rr4
+    <SignatureValue>N1YtTeo2Ryuj+CtlXIpICEay+ni7vt8+4J7tAsYpa3efnLwtea69PIqEylPWm9LdA8Eo8XDdpgxV&#13;
+7h3hi2LTOU+Wxq3bLiLamo99T1EtIwl+ZPcOv8bsfEkmShHdMC0dlfcj6r7x4tc0XkNAhhJgfRNz&#13;
+FsmPWKJb6FYcsHFbHO/Uw1hSokbAGcWWTshEOqvKHMa8UVkrFMUPnrnMtdyJqZlhDBrZHNi4rWth&#13;
+8TjlUnQVSCF9s9I04FxJ1cUAdeVMHtXKM8Pvjv68PaJMJK73dW5Yd3SbcgoKLesf/HPWeeZL0rr4&#13;
 TNjlqJ/wq61Ons45MFG9bIscVbnd+XxFHx8Skw==</SignatureValue>
     <KeyInfo>
       <KeyName>2fdeb8e7d030a2209daa01861a964fedecf2bcc1</KeyName>
-      <KeyValue>
-        <RSAKeyValue>
-          <Modulus>p3WVYaRJG7EABjbAdqDYZXFSTV1nHY9Ol9A5+W8t5xwBXBryZCGWxERGr5AryKWPxd+qzjj+cFpx
-xkM6N18jEhQIx/CEZePEJqpluBO5w2wTEOe7hqtMatqgDDMeDRxUuIpP8LGP00vh1wyDFFew90d9
-dvT3bcLvFh3a3ap9bTm6aBqPup5CXpzrwIU2wZfgkDytYVBm+8bHkMaUrgpNyM+5BAg2zl/Fqw0q
-otjaGr7PzbH+urCvaGbKLMPoWkVLIgAE8Qw98HTfoYSFHC7VYQySrzIinaOBFSgViR72kHemH2lW
-jDQeHiY0VIoPik/jVVIpjWe6zzeZ2S66Q/LmjQ==</Modulus>
-          <Exponent>AQAB</Exponent>
-        </RSAKeyValue>
-      </KeyValue>
     </KeyInfo>
   </Signature>
 </SoftwareIdentity>

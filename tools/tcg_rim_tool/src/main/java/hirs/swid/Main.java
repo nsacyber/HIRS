@@ -3,7 +3,6 @@ package hirs.swid;
 import hirs.swid.utils.Commander;
 import com.beust.jcommander.JCommander;
 
-import java.io.FileNotFoundException;
 import java.io.IOException;
 
 public class Main {
@@ -25,19 +24,19 @@ public class Main {
                 String verifyFile = commander.getVerifyFile();
                 String rimel = commander.getRimEventLog();
                 String certificateFile = commander.getPublicCertificate();
+                String trustStore = commander.getTruststoreFile();
                 if (!verifyFile.isEmpty()) {
                     if (!rimel.isEmpty()) {
                         validator.setRimEventLog(rimel);
                     }
+                    if (!trustStore.isEmpty()) {
+                        validator.setTrustStoreFile(trustStore);
+                    }
                     if (!certificateFile.isEmpty()) {
-                        validator.setCertificateFile(certificateFile);
+                        System.out.println("A single cert cannot be used for verification. " +
+                                "The signing cert will be searched for in the trust store.");
                     }
-                    try {
-                        validator.validateSwidTag(verifyFile);
-                    } catch (IOException e) {
-                        System.out.println("Error validating RIM file: " + e.getMessage());
-                        System.exit(1);
-                    }
+                    validator.validateSwidTag(verifyFile);
                 } else {
                     System.out.println("Need a RIM file to validate!");
                     System.exit(1);
@@ -47,7 +46,7 @@ public class Main {
                 System.out.println(commander.toString());
                 String createType = commander.getCreateType().toUpperCase();
                 String attributesFile = commander.getAttributesFile();
-                String jksKeystoreFile = commander.getKeystoreFile();
+                String jksTruststoreFile = commander.getTruststoreFile();
                 String certificateFile = commander.getPublicCertificate();
                 String privateKeyFile = commander.getPrivateKeyFile();
                 String rimEventLog = commander.getRimEventLog();
@@ -56,16 +55,16 @@ public class Main {
                         if (!attributesFile.isEmpty()) {
                             gateway.setAttributesFile(attributesFile);
                         }
-                        if (!jksKeystoreFile.isEmpty()) {
+                        if (!jksTruststoreFile.isEmpty()) {
                             gateway.setDefaultCredentials(true);
-                            gateway.setJksKeystoreFile(jksKeystoreFile);
+                            gateway.setJksTruststoreFile(jksTruststoreFile);
                         } else if (!certificateFile.isEmpty() && !privateKeyFile.isEmpty()) {
                             gateway.setDefaultCredentials(false);
                             gateway.setPemCertificateFile(certificateFile);
                             gateway.setPemPrivateKeyFile(privateKeyFile);
                         } else {
                             gateway.setDefaultCredentials(true);
-                            gateway.setJksKeystoreFile(SwidTagConstants.DEFAULT_KEYSTORE_FILE);
+                            gateway.setJksTruststoreFile(SwidTagConstants.DEFAULT_KEYSTORE_FILE);
                         }
                         if (rimEventLog.isEmpty()) {
                             System.out.println("Error: a support RIM is required!");
@@ -75,6 +74,8 @@ public class Main {
                         }
                         gateway.generateSwidTag(commander.getOutFile());
                         break;
+                    default:
+                        System.out.println("No create type given, nothing to do");
                 }
             }
         }

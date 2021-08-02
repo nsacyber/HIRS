@@ -19,6 +19,7 @@ import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.PKCS8EncodedKeySpec;
+import java.util.List;
 
 /**
  * This class parses private key, public key, and certificate for use in their respective java.security objects.
@@ -31,6 +32,8 @@ public class CredentialParser {
     private static final String PKCS1_FOOTER = "-----END RSA PRIVATE KEY-----";
     private static final String PKCS8_HEADER = "-----BEGIN PRIVATE KEY-----";
     private static final String PKCS8_FOOTER = "-----END PRIVATE KEY-----";
+    private static final String CERTIFICATE_HEADER = "-----BEGIN CERTIFICATE-----";
+    private static final String CERTIFICATE_FOOTER = "-----END CERTIFICATE-----";
     private X509Certificate certificate;
     private PrivateKey privateKey;
     private PublicKey publicKey;
@@ -61,8 +64,9 @@ public class CredentialParser {
         publicKey = certificate.getPublicKey();
     }
 
-    public void parsePEMCredentials(String certificateFile, String privateKeyFile) throws CertificateException, FileNotFoundException {
-        certificate = parsePEMCertificate(certificateFile);
+    public void parsePEMCredentials(String certificateFile, String privateKeyFile)
+            throws CertificateException, FileNotFoundException {
+        certificate = parsePEMCertificates(certificateFile).get(0);
         if (certificate.getIssuerX500Principal().equals(certificate.getSubjectX500Principal())) {
             throw new CertificateException("Signing certificate cannot be self-signed!");
         }
@@ -71,23 +75,48 @@ public class CredentialParser {
     }
 
     /**
+     * This method extracts certificate bytes from a string. The bytes are assumed to be
+     * PEM format, and a header and footer are concatenated with the input string to
+     * facilitate proper parsing.
+     * @param pemString the input string
+     * @return an X509Certificate created from the string
+     * @throws CertificateException if instantiating the CertificateFactory errors
+     */
+    public X509Certificate parseCertFromPEMString(String pemString) throws CertificateException {
+        try {
+            CertificateFactory factory = CertificateFactory.getInstance(X509);
+            InputStream inputStream = new ByteArrayInputStream((CERTIFICATE_HEADER
+                                                                + System.lineSeparator()
+                                                                + pemString
+                                                                + System.lineSeparator()
+                                                                + CERTIFICATE_FOOTER).getBytes());
+            return (X509Certificate) factory.generateCertificate(inputStream);
+        } catch (CertificateException e) {
+            throw e;
+        }
+    }
+
+    /**
      * This method returns the X509Certificate object from a PEM certificate file.
      * @param certificateFile
      * @return
      * @throws FileNotFoundException
      */
-    public X509Certificate parseCertFromPEM(String certificateFile) throws FileNotFoundException {
-        return parsePEMCertificate(certificateFile);
+    public List<X509Certificate> parseCertsFromPEM(String certificateFile)
+            throws FileNotFoundException {
+        return parsePEMCertificates(certificateFile);
     }
 
     /**
      * This method returns the X509Certificate found in a PEM file.
-     * @param filename
-     * @return
-     * @throws FileNotFoundException
+     * Unchecked typcase warnings are suppressed because the CertificateFactory
+     * implements X509Certificate objects explicitly.
+     * @param filename pem file
+     * @return a list containing all X509Certificates extracted
      */
-    private X509Certificate parsePEMCertificate(String filename) throws FileNotFoundException {
-        X509Certificate certificate = null;
+    @SuppressWarnings("unchecked")
+    private List<X509Certificate> parsePEMCertificates(String filename) {
+        List<X509Certificate> certificates = null;
         FileInputStream fis = null;
         BufferedInputStream bis = null;
         try {
@@ -96,9 +125,12 @@ public class CredentialParser {
             CertificateFactory certificateFactory = CertificateFactory.getInstance(X509);
 
             while (bis.available() > 0) {
-                certificate = (X509Certificate) certificateFactory.generateCertificate(bis);
+                certificates = (List<X509Certificate>) certificateFactory.generateCertificates(bis);
             }
 
+            if (certificates.size() < 1) {
+                System.out.println("ERROR: No certificates parsed from " + filename);
+            }
             bis.close();
         } catch (CertificateException e) {
             System.out.println("Error in certificate factory: " + e.getMessage());
@@ -117,7 +149,7 @@ public class CredentialParser {
             }
         }
 
-        return certificate;
+        return certificates;
     }
 
     /**
@@ -241,11 +273,26 @@ public class CredentialParser {
     }
 
     /**
-     * This method returns the subjectKeyIdentifier from an X509Certificate.
-     * @return
+     * This method returns the subjectKeyIdentifier from the local X509Certificate.
+     * @return the String representation of the subjectKeyIdentifier
      * @throws IOException
      */
     public String getCertificateSubjectKeyIdentifier() throws IOException {
+        String decodedValue = null;
+        byte[] extension = certificate.getExtensionValue(Extension.subjectKeyIdentifier.getId());
+        if (extension != null && extension.length > 0) {
+            decodedValue = JcaX509ExtensionUtils.parseExtensionValue(extension).toString();
+        }
+        return decodedValue.substring(1);//Drop the # at the beginning of the string
+    }
+
+    /**
+     * This method returns the subjectKeyIdentifier from a given X509Certificate.
+     * @param certificate the cert to pull the subjectKeyIdentifier from
+     * @return the String representation of the subjectKeyIdentifier
+     * @throws IOException
+     */
+    public String getCertificateSubjectKeyIdentifier(X509Certificate certificate) throws IOException {
         String decodedValue = null;
         byte[] extension = certificate.getExtensionValue(Extension.subjectKeyIdentifier.getId());
         if (extension != null && extension.length > 0) {
