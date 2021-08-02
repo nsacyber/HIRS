@@ -69,7 +69,7 @@ ospackage {
     packageName = 'tcg_eventlog_tool'
     os = LINUX
     arch = NOARCH
-    version = '2.0.0'
+    version = '2.1.0'
     release = '1'
 
     into '/opt/hirs/eventlog'
@@ -108,7 +108,7 @@ ospackage {
         link("/usr/local/bin/elt", "/opt/hirs/eventlog/scripts/eventlog.sh", 0x755)
     }
 
-    into('/opt/hirs/default-properties/') {
+    into('/opt/hirs/default-properties/eventlogtool') {
         fileMode 0664
         from ('../../HIRS_Utils/src/main/resources/vendor-table.json') {
             addParentDirs true
