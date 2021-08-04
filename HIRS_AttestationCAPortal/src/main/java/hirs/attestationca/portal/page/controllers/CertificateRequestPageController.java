@@ -611,7 +611,8 @@ public class CertificateRequestPageController extends PageController<NoPageParam
         try {
             switch (certificateType) {
                 case PLATFORMCREDENTIAL:
-                    return new PlatformCredential(fileBytes);
+                    Certificate certificate = new PlatformCredential(fileBytes, false);
+                    return new PlatformCredential(fileBytes, false);
                 case ENDORSEMENTCREDENTIAL:
                     return new EndorsementCredential(fileBytes);
                 case TRUSTCHAIN:
@@ -682,13 +683,13 @@ public class CertificateRequestPageController extends PageController<NoPageParam
             // save the new certificate if no match is found
             if (existingCertificate == null) {
                 if (certificateType.equals(PLATFORMCREDENTIAL)) {
-                    PlatformCredential platformCertificate = (PlatformCredential) certificate;
+                    PlatformCredential platformCertificate = new PlatformCredential(
+                            certificate.getRawBytes());
                     if (platformCertificate.isBase()) {
                         List<PlatformCredential> sharedCertificates = getCertificateByBoardSN(
                                 certificateType,
                                 platformCertificate.getPlatformSerial(),
                                 certificateManager);
-
                         if (sharedCertificates != null) {
                             for (PlatformCredential pc : sharedCertificates) {
                                 if (pc.isBase()) {
@@ -737,6 +738,12 @@ public class CertificateRequestPageController extends PageController<NoPageParam
                     fileName);
             messages.addError(failMessage + e.getMessage());
             LOGGER.error(failMessage, e);
+            return;
+        } catch (IOException ioEx) {
+            final String failMessage = String.format(
+                    "Failed to parse uploaded file (%s): ", fileName);
+            LOGGER.error(failMessage, ioEx);
+            messages.addError(failMessage + ioEx.getMessage());
             return;
         }
 

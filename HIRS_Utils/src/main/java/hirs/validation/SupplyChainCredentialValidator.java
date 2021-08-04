@@ -293,7 +293,7 @@ public final class SupplyChainCredentialValidator implements CredentialValidator
             return new AppraisalStatus(FAIL, message);
         }
 
-        String credentialType = platformCredential.getCredentialType();
+        String credentialType = platformCredential.getCredentialTypeStr();
         if (PlatformCredential.CERTIFICATE_TYPE_2_0.equals(credentialType)) {
             return validatePlatformCredentialAttributesV2p0(platformCredential, deviceInfoReport);
         }

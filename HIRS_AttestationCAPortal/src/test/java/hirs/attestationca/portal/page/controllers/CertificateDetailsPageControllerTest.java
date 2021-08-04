@@ -1,5 +1,8 @@
 package hirs.attestationca.portal.page.controllers;
 
+import hirs.attestationca.portal.page.Page;
+import hirs.attestationca.portal.page.PageController;
+import hirs.attestationca.portal.page.PageControllerTest;
 import hirs.data.persist.Device;
 import hirs.data.persist.DeviceGroup;
 import hirs.data.persist.certificate.Certificate;
@@ -10,34 +13,30 @@ import hirs.data.persist.certificate.PlatformCredential;
 import hirs.persist.CertificateManager;
 import hirs.persist.DeviceGroupManager;
 import hirs.persist.DeviceManager;
-import hirs.attestationca.portal.page.PageControllerTest;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.annotation.DirtiesContext;
+import org.springframework.test.annotation.Rollback;
+import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
+import org.testng.Assert;
+import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.security.Security;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.security.Security;
 
-import static org.hamcrest.Matchers.hasProperty;
 import static org.hamcrest.Matchers.hasItem;
-
-import org.springframework.test.annotation.Rollback;
-import org.springframework.test.web.servlet.MvcResult;
+import static org.hamcrest.Matchers.hasProperty;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.model;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-import org.testng.Assert;
-import org.testng.annotations.BeforeClass;
-import hirs.attestationca.portal.page.Page;
-import hirs.attestationca.portal.page.PageController;
-import java.util.List;
 
 /**
  * Integration tests that test the URL End Points of CertificateDetailsPageController.
@@ -281,7 +280,7 @@ public class CertificateDetailsPageControllerTest extends PageControllerTest {
                                     .get(PolicyPageController.INITIAL_DATA);
         Assert.assertEquals(initialData.get("issuer"), platformCredential.getIssuer());
         Assert.assertEquals(initialData.get("credentialType"),
-                            ((PlatformCredential) platformCredential).getCredentialType());
+                            ((PlatformCredential) platformCredential).getCredentialTypeStr());
 
     }
 
@@ -310,7 +309,7 @@ public class CertificateDetailsPageControllerTest extends PageControllerTest {
                                     .get(PolicyPageController.INITIAL_DATA);
         Assert.assertEquals(initialData.get("issuer"), platformCredential2.getIssuer());
         Assert.assertEquals(initialData.get("credentialType"),
-                            ((PlatformCredential) platformCredential2).getCredentialType());
+                            ((PlatformCredential) platformCredential2).getCredentialTypeStr());
         // Check component identifier
         Assert.assertNotNull(initialData.get("componentsIdentifier"));
         List<?> obj = (List<?>) initialData.get("componentsIdentifier");
@@ -348,7 +347,7 @@ public class CertificateDetailsPageControllerTest extends PageControllerTest {
                                     .get(PolicyPageController.INITIAL_DATA);
         Assert.assertEquals(initialData.get("issuer"), platformCertificatePCI.getIssuer());
         Assert.assertEquals(initialData.get("credentialType"),
-                            ((PlatformCredential) platformCertificatePCI).getCredentialType());
+                            ((PlatformCredential) platformCertificatePCI).getCredentialTypeStr());
         // Check component identifier
         Assert.assertNotNull(initialData.get("componentsIdentifier"));
         List<?> obj = (List<?>) initialData.get("componentsIdentifier");

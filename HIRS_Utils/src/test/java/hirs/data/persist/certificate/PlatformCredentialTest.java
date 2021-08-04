@@ -237,7 +237,7 @@ public class PlatformCredentialTest {
                 "C=US,ST=CA,L=Santa Clara,O=Intel Corporation,"
                         + "OU=Transparent Supply Chain,CN=www.intel.com");
 
-        Assert.assertEquals(credential.getCredentialType(), "TCPA Trusted Platform Endorsement");
+        Assert.assertEquals(credential.getCredentialTypeStr(), "TCPA Trusted Platform Endorsement");
 
         // the platform certificate in this test does not contain the following information
         Assert.assertEquals(credential.getPlatformSerial(), null);
@@ -286,7 +286,7 @@ public class PlatformCredentialTest {
                 "C=US,ST=CA,L=Santa Clara,O=Intel Corporation,"
                         + "OU=Transparent Supply Chain,CN=www.intel.com");
 
-        Assert.assertEquals(credential.getCredentialType(), "TCPA Trusted Platform Endorsement");
+        Assert.assertEquals(credential.getCredentialTypeStr(), "TCPA Trusted Platform Endorsement");
 
         // the platform certificate in this test does not contain the following information
         Assert.assertEquals(credential.getPlatformSerial(), null);
@@ -335,7 +335,7 @@ public class PlatformCredentialTest {
                 "C=US,ST=CA,L=Santa Clara,O=Intel Corporation,"
                         + "OU=Transparent Supply Chain,CN=www.intel.com");
 
-        Assert.assertEquals(credential.getCredentialType(), "TCPA Trusted Platform Endorsement");
+        Assert.assertEquals(credential.getCredentialTypeStr(), "TCPA Trusted Platform Endorsement");
 
         Assert.assertEquals(credential.getChassisSerialNumber(), "G6YK42300C87");
         Assert.assertEquals(credential.getPlatformSerial(), "GETY421001GV");
@@ -380,7 +380,7 @@ public class PlatformCredentialTest {
                 "C=US,ST=CA,L=Santa Clara,O=Intel Corporation,"
                         + "OU=Transparent Supply Chain,CN=www.intel.com");
 
-        Assert.assertEquals(credential.getCredentialType(), "TCPA Trusted Platform Endorsement");
+        Assert.assertEquals(credential.getCredentialTypeStr(), "TCPA Trusted Platform Endorsement");
 
         Assert.assertEquals(credential.getChassisSerialNumber(), "G6YK42300CB6");
         Assert.assertEquals(credential.getPlatformSerial(), "GETY42100160");

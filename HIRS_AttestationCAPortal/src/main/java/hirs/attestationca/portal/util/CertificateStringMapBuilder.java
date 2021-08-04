@@ -318,7 +318,7 @@ public final class CertificateStringMapBuilder {
 
         if (certificate != null) {
             data.putAll(getGeneralCertificateInfo(certificate, certificateManager));
-            data.put("credentialType", certificate.getCredentialType());
+            data.put("credentialType", certificate.getCredentialTypeStr());
             data.put("platformType", certificate.getPlatformType());
             data.put("manufacturer", certificate.getManufacturer());
             data.put("model", certificate.getModel());

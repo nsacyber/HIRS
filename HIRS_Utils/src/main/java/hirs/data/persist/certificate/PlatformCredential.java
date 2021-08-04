@@ -1,11 +1,13 @@
 package hirs.data.persist.certificate;
 
 import com.google.common.base.Preconditions;
+import hirs.data.persist.certificate.attributes.AttributeCertificatePkc;
 import hirs.data.persist.certificate.attributes.ComponentIdentifier;
 import hirs.data.persist.certificate.attributes.PlatformConfiguration;
 import hirs.data.persist.certificate.attributes.PlatformConfigurationV1;
 import hirs.data.persist.certificate.attributes.TBBSecurityAssertion;
 import hirs.data.persist.certificate.attributes.URIReference;
+import hirs.data.persist.certificate.attributes.V2.PlatformConfigurationPkc;
 import hirs.data.persist.certificate.attributes.V2.PlatformConfigurationV2;
 import hirs.persist.CertificateManager;
 import hirs.persist.CertificateSelector;
@@ -82,7 +84,24 @@ public class PlatformCredential extends DeviceAssociatedCertificate {
     private static final String PLATFORM_CONFIGURATION_V2 = "2.23.133.5.1.7.2";
     private static final String PLATFORM_CREDENTIAL_TYPE = "2.23.133.2.25";
     private static final String PLATFORM_BASE_CERT = "2.23.133.8.2";
+    private static final String PLATFORM_PKC_CERT = "2.23.133.8.4";
     private static final String PLATFORM_DELTA_CERT = "2.23.133.8.5";
+
+//    public static void main(String[] args) throws IOException {
+////        String file = "/home/tdmatth/Downloads/certificates_platform_scv.57MHZB3.cer";
+//        String file = "/home/tdmatth/Downloads/PlatformCredential_514.cer";
+//        Path path = Paths.get(file);
+//        X509Certificate parsedX509Cert;
+//        byte[] certificateBytes = Files.readAllBytes(path);
+//
+//        try (ByteArrayInputStream certInputStream = new ByteArrayInputStream(certificateBytes)) {
+//            CertificateFactory cf = CertificateFactory.getInstance("X.509");
+//
+//            PlatformCredential pc = new PlatformCredential(certificateBytes);
+//        } catch (CertificateException e) {
+//            throw new IOException("Cannot construct X509Certificate from the input stream", e);
+//        }
+//    }
 
     /**
      * TCG Platform Specification values
@@ -280,13 +299,22 @@ public class PlatformCredential extends DeviceAssociatedCertificate {
      *
      * @param certificateBytes the contents of a certificate file
      * @param parseFields boolean True to parse fields
-     * @throws IOException if there is a problem extracting information from the certificate\
+     * @throws IOException if there is a problem extracting information from the certificate
      */
     public PlatformCredential(final byte[] certificateBytes,
                               final boolean parseFields) throws IOException {
         super(certificateBytes);
         if (parseFields) {
-            parseFields();
+            switch (getCertificateType()) {
+                case X509_CERTIFICATE:
+                    parsePkcFields();
+                    break;
+                case ATTRIBUTE_CERTIFICATE:
+                    parseFields();
+                    break;
+                default:
+                    LOGGER.error("Certificate Type not valid.");
+            }
         }
     }
 
@@ -328,27 +356,30 @@ public class PlatformCredential extends DeviceAssociatedCertificate {
      * @throws IOException if the signature cannot be processed or is inappropriate.
      */
     public boolean isSignatureValid(final ContentVerifierProvider verifierProvider)
-        throws IOException {
-            AttributeCertificate attCert = getAttributeCertificate();
-            AttributeCertificateInfo acinfo = getAttributeCertificate().getAcinfo();
+            throws IOException {
+        if (isX509()) {
+            return false;
+        }
+        AttributeCertificate attCert = getAttributeCertificate();
+        AttributeCertificateInfo acinfo = getAttributeCertificate().getAcinfo();
 
-            // Check if the algorithm identifier is the same
-            if (!isAlgIdEqual(acinfo.getSignature(), attCert.getSignatureAlgorithm())) {
-                throw new IOException("signature invalid - algorithm identifier mismatch");
-            }
+        // Check if the algorithm identifier is the same
+        if (!isAlgIdEqual(acinfo.getSignature(), attCert.getSignatureAlgorithm())) {
+            throw new IOException("signature invalid - algorithm identifier mismatch");
+        }
 
-            ContentVerifier verifier;
+        ContentVerifier verifier;
+        try {
+            // Set ContentVerifier with the signature that will verify
+            verifier = verifierProvider.get((acinfo.getSignature()));
 
-            try {
-                // Set ContentVerifier with the signature that will verify
-                verifier = verifierProvider.get((acinfo.getSignature()));
+        } catch (Exception e) {
+            throw new IOException("unable to process signature: " + e.getMessage(), e);
+        }
 
-            } catch (Exception e) {
-                throw new IOException("unable to process signature: " + e.getMessage(), e);
-            }
-
-            return verifier.verify(attCert.getSignatureValue().getOctets());
+        return verifier.verify(attCert.getSignatureValue().getOctets());
     }
+
     /**
      * Parses the bytes as an PC. If parsing fails initially, the optionally present header
      * is removed and tried again. The cert header, if present, contains some certificate length
@@ -386,7 +417,7 @@ public class PlatformCredential extends DeviceAssociatedCertificate {
      *
      * @return the credential type
      */
-    public String getCredentialType() {
+    public String getCredentialTypeStr() {
         return credentialType;
     }
 
@@ -535,24 +566,41 @@ public class PlatformCredential extends DeviceAssociatedCertificate {
     }
 
     private void parseFields() throws IOException {
-        AttributeCertificateInfo certificate = getAttributeCertificate().getAcinfo();
-        Map<String, String> policyQualifier = getPolicyQualifier(certificate);
+        AttributeCertificateInfo attrCertificateInfo = getAttributeCertificate().getAcinfo();
+        Map<String, String> policyQualifier = getPolicyQualifier(attrCertificateInfo);
         credentialType = policyQualifier.get("userNotice");
 
         // Parse data based on certificate type (1.2 vs 2.0)
         switch (credentialType) {
             case CERTIFICATE_TYPE_1_2:
-                parseAttributeCert(certificate);
+                parseAttributeCert(attrCertificateInfo);
                 break;
             case CERTIFICATE_TYPE_2_0:
-                parseAttributeCert2(certificate);
+                parseAttributeCert2(attrCertificateInfo);
                 break;
             default:
                 throw new IOException("Invalid Attribute Credential Type: " + credentialType);
         }
 
+        setTcgPlatformSpecifications(attrCertificateInfo.getAttributes().toArray());
+    }
+
+    private void parsePkcFields() throws IOException {
+        AttributeCertificatePkc acPkc = getAttributeCertificatePkc();
+        this.credentialType = CERTIFICATE_TYPE_2_0;
+        parsePkcCert(acPkc.getExtension(Extension.subjectAlternativeName));
+        String oid = acPkc.getCredentialType().getId();
+
+        if (!oid.equals(PLATFORM_PKC_CERT)) {
+            throw new IOException("Invalid Public Key Credential: " + oid);
+        }
+
+//        setTcgPlatformSpecifications(getAttributeCertificatePkc().getAttributes().toArray());
+    }
+
+    private void setTcgPlatformSpecifications(final ASN1Encodable[] attributeList) {
         // Get TCG Platform Specification Information
-        for (ASN1Encodable enc : certificate.getAttributes().toArray()) {
+        for (ASN1Encodable enc : attributeList) {
             Attribute attr = Attribute.getInstance(enc);
             if (attr.getAttrType().toString().equals(TCG_PLATFORM_SPECIFICATION)) {
                 ASN1Sequence tcgPlatformSpecification
@@ -561,11 +609,11 @@ public class PlatformCredential extends DeviceAssociatedCertificate {
                         = ASN1Sequence.getInstance(tcgPlatformSpecification.getObjectAt(0));
 
                 this.majorVersion = Integer.parseInt(
-                                        tcgSpecificationVersion.getObjectAt(0).toString());
+                        tcgSpecificationVersion.getObjectAt(0).toString());
                 this.minorVersion = Integer.parseInt(
-                                        tcgSpecificationVersion.getObjectAt(1).toString());
+                        tcgSpecificationVersion.getObjectAt(1).toString());
                 this.revisionLevel = Integer.parseInt(
-                                        tcgSpecificationVersion.getObjectAt(2).toString());
+                        tcgSpecificationVersion.getObjectAt(2).toString());
 
                 this.platformClass = tcgPlatformSpecification.getObjectAt(1).toString();
             } else if (attr.getAttrType().toString().equals(PLATFORM_CREDENTIAL_TYPE)) {
@@ -641,13 +689,52 @@ public class PlatformCredential extends DeviceAssociatedCertificate {
 
     /**
      * Parse a 2.0 Platform Certificate (Attribute Certificate).
+     * @param subjectAlternativeName values associated with the subject
+     */
+    private void parsePkcCert(final Extension subjectAlternativeName) throws IOException {
+        if (subjectAlternativeName != null) {
+            ASN1Sequence asn1Sequence = ASN1Sequence.getInstance(subjectAlternativeName
+                    .getParsedValue());
+            String oid;
+            for (int i = 0; i < asn1Sequence.size(); i++) {
+                if (asn1Sequence.getObjectAt(i) instanceof ASN1ObjectIdentifier) {
+                    oid = asn1Sequence.getObjectAt(i).toString();
+                    switch (oid) {
+                        case PLATFORM_MANUFACTURER_2_0:
+                            this.manufacturer = asn1Sequence.getObjectAt(i + 1).toString();
+                            break;
+                        case PLATFORM_MODEL_2_0:
+                            this.model = asn1Sequence.getObjectAt(i + 1).toString();
+                            break;
+                        case PLATFORM_VERSION_2_0:
+                            this.version = asn1Sequence.getObjectAt(i + 1).toString();
+                            break;
+                        case PLATFORM_SERIAL_2_0:
+                            this.platformSerial = asn1Sequence.getObjectAt(i + 1).toString();
+                            break;
+                        default:
+                            break;
+                    }
+                }
+            }
+        }
+
+        try {
+            getAllAttributesPkc();
+        } catch (IllegalArgumentException | IOException ioEx) {
+            throw new IOException(ioEx.getMessage());
+        }
+    }
+
+    /**
+     * Parse a 2.0 Platform Certificate (Attribute Certificate).
      * @param certificate Attribute Certificate
      */
     private void parseAttributeCert2(final AttributeCertificateInfo certificate)
             throws IOException {
-        Extension subjectAlternativeNameExtension
-                = certificate.getExtensions().getExtension(Extension.subjectAlternativeName);
-
+        Extension subjectAlternativeNameExtension = certificate
+                .getExtensions()
+                .getExtension(Extension.subjectAlternativeName);
         // It contains a Subject Alternative Name Extension
         if (subjectAlternativeNameExtension != null) {
             GeneralNames gnames = GeneralNames.getInstance(
@@ -694,10 +781,16 @@ public class PlatformCredential extends DeviceAssociatedCertificate {
     @Override
     public int getX509CredentialVersion() {
         try {
-            return getAttributeCertificate()
-                    .getAcinfo()
-                    .getVersion()
-                    .getValue().intValue();
+            if (isX509()) {
+                return getAttributeCertificatePkc()
+                        .getX509CredentialVersion()
+                        .getValue().intValue();
+            } else {
+                return getAttributeCertificate()
+                        .getAcinfo()
+                        .getVersion()
+                        .getValue().intValue();
+            }
         } catch (IOException ex) {
             LOGGER.warn("X509 Credential Version not found.");
             LOGGER.error(ex);
@@ -711,10 +804,12 @@ public class PlatformCredential extends DeviceAssociatedCertificate {
      * @throws IOException when reading the certificate.
      */
     public String getCPSuri() throws IOException {
-        Map<String, String> policyQualifier
-                = getPolicyQualifier(getAttributeCertificate().getAcinfo());
-        if (policyQualifier.get("cpsURI") != null && !policyQualifier.get("cpsURI").isEmpty()) {
-            return policyQualifier.get("cpsURI");
+        if (!isX509()) {
+            Map<String, String> policyQualifier
+                    = getPolicyQualifier(getAttributeCertificate().getAcinfo());
+            if (policyQualifier.get("cpsURI") != null && !policyQualifier.get("cpsURI").isEmpty()) {
+                return policyQualifier.get("cpsURI");
+            }
         }
 
         return null;
@@ -746,8 +841,11 @@ public class PlatformCredential extends DeviceAssociatedCertificate {
             throws IllegalArgumentException, IOException {
         Map<String, Object> attributes = new HashMap<>();
         ASN1Sequence attributeSequence;
+        ASN1Encodable[] asn1Attributes = getAttributeCertificate()
+                .getAcinfo().getAttributes().toArray();
+
         // Check all attributes for Platform Configuration
-        for (ASN1Encodable enc: getAttributeCertificate().getAcinfo().getAttributes().toArray()) {
+        for (ASN1Encodable enc : asn1Attributes) {
             Attribute attr = Attribute.getInstance(enc);
             attributeSequence
                         = ASN1Sequence.getInstance(attr.getAttrValues().getObjectAt(0));
@@ -795,7 +893,25 @@ public class PlatformCredential extends DeviceAssociatedCertificate {
      */
     public Object getAttribute(final String attributeName)
             throws IllegalArgumentException, IOException {
+        LOGGER.error("just getAttribute");
         return getAllAttributes().get(attributeName);
+    }
+
+    /**
+     * Get the Platform Configuration Attribute from the Platform Certificate.
+     * @return a map with all the attributes
+     * @throws IllegalArgumentException when there is a parsing error
+     * @throws IOException when reading the certificate.
+     */
+    public Map<String, Object> getAllAttributesPkc()
+            throws IllegalArgumentException, IOException {
+        Map<String, Object> attributes = new HashMap<>();
+        ASN1Sequence attributeSequence = getAttributeCertificatePkc()
+                .getAttributes();
+
+        attributes.put("platformConfiguration", new PlatformConfigurationPkc(attributeSequence));
+
+        return attributes;
     }
 
     /**

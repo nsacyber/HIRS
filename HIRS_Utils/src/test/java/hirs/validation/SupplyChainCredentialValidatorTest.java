@@ -1478,7 +1478,7 @@ public class SupplyChainCredentialValidatorTest {
             final DeviceInfoReport deviceInfoReport) throws IOException {
         PlatformCredential platformCredential = mock(PlatformCredential.class);
 
-        when(platformCredential.getCredentialType()).thenReturn(
+        when(platformCredential.getCredentialTypeStr()).thenReturn(
                 PlatformCredential.CERTIFICATE_TYPE_2_0);
         when(platformCredential.getManufacturer())
                 .thenReturn(hardwareInfo.getManufacturer());

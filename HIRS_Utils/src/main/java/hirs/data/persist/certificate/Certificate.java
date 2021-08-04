@@ -3,6 +3,7 @@ package hirs.data.persist.certificate;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.common.base.Preconditions;
 import hirs.data.persist.ArchivableEntity;
+import hirs.data.persist.certificate.attributes.AttributeCertificatePkc;
 import hirs.utils.HexUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -199,7 +200,7 @@ public abstract class Certificate extends ArchivableEntity {
     private final byte[] encodedPublicKey;
 
     /**
-     * Holds the name of the 'encodedPublicKey' field.
+     * Holds the name of the 'publicKeyModulusHexValue' field.
      */
     public static final String PUBLIC_KEY_MODULUS_FIELD = "publicKeyModulusHexValue";
 
@@ -228,6 +229,9 @@ public abstract class Certificate extends ArchivableEntity {
     @Column(nullable = false)
     @JsonIgnore
     private final int certificateHash;
+
+    @JsonIgnore
+    private boolean isX509 = false;
 
     /**
      * This field exists to enforce a unique constraint on a hash over the certificate contents
@@ -301,6 +305,7 @@ public abstract class Certificate extends ArchivableEntity {
         this.authoritySerialNumber = BigInteger.ZERO;
         this.crlPoints = null;
         this.publicKeySize = 0;
+        this.isX509 = false;
     }
 
     /**
@@ -351,6 +356,7 @@ public abstract class Certificate extends ArchivableEntity {
         // Extract certificate data
         switch (getCertificateType()) {
             case X509_CERTIFICATE:
+                this.isX509 = true;
                 X509Certificate x509Certificate = getX509Certificate();
                 this.serialNumber = x509Certificate.getSerialNumber();
                 this.issuer = x509Certificate.getIssuerX500Principal().getName();
@@ -395,8 +401,8 @@ public abstract class Certificate extends ArchivableEntity {
                     // do nothing
                 }
                 break;
-
             case ATTRIBUTE_CERTIFICATE:
+                this.isX509 = false;
                 AttributeCertificate attCert = getAttributeCertificate();
                 AttributeCertificateInfo attCertInfo = attCert.getAcinfo();
                 if (attCertInfo == null) {
@@ -474,6 +480,7 @@ public abstract class Certificate extends ArchivableEntity {
                                             .getNotAfterTime());
                 break;
             default:
+                this.isX509 = false;
                 throw new IllegalArgumentException("Cannot recognize certificate type.");
         }
 
@@ -551,13 +558,16 @@ public abstract class Certificate extends ArchivableEntity {
 
         if (testSeq.toArray()[0] instanceof ASN1Integer) {
              if (testSeq.toArray().length >= MIN_ATTR_CERT_LENGTH) {
+                 LOGGER.error("This is an Attribute. Should it?");
                  // Attribute Certificate
                  return CertificateType.ATTRIBUTE_CERTIFICATE;
              } else {
+                 LOGGER.error("This is X509 V1. Should it?");
                  // V1 X509Certificate
                  return CertificateType.X509_CERTIFICATE;
              }
         } else if (testSeq.toArray()[0] instanceof DERTaggedObject) {
+            LOGGER.error("This is X509 V2+. Should it?");
             // V2 or V3 X509Certificate
             return CertificateType.X509_CERTIFICATE;
         }
@@ -878,6 +888,20 @@ public abstract class Certificate extends ArchivableEntity {
     }
 
     /**
+     * Retrieve the original Attribute Certificate.
+     *
+     * @return the original Attribute Certificate
+     * @throws IOException if there is a problem deserializing the certificate as an X509
+     *                     attribute cert
+     */
+    @JsonIgnore
+    public AttributeCertificatePkc getAttributeCertificatePkc() throws IOException {
+        AttributeCertificatePkc certificatePkc = AttributeCertificatePkc
+                .getInstance(ASN1Primitive.fromByteArray(getRawBytes()));
+        return certificatePkc;
+    }
+
+    /**
      * Getter for the Authority Info Access List.
      * @return return a list of Info Access
      */
@@ -1000,6 +1024,14 @@ public abstract class Certificate extends ArchivableEntity {
      */
     public int getPublicKeySize() {
         return publicKeySize;
+    }
+
+    /**
+     * Getter for the type of certificate.
+     * @return boolean for the type of certificate
+     */
+    public boolean isX509() {
+        return isX509;
     }
 
     /**
@@ -1139,8 +1171,8 @@ public abstract class Certificate extends ArchivableEntity {
         }
         try {
             return getPublicKeyModulus(
-                    certificateHolder.getSubjectPublicKeyInfo().parsePublicKey().toASN1Primitive()
-            );
+                    certificateHolder.getSubjectPublicKeyInfo()
+                            .parsePublicKey().toASN1Primitive());
         } catch (IOException e) {
             LOGGER.info("No RSA Key Detected in certificate");
             return null;
