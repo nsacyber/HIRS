@@ -45,6 +45,7 @@ import java.security.KeyStore;
 import java.security.KeyStoreException;
 import java.security.cert.X509Certificate;
 import java.util.Collections;
+import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -53,6 +54,7 @@ import java.util.UUID;
 import static hirs.data.persist.AppraisalStatus.Status.FAIL;
 import static hirs.data.persist.AppraisalStatus.Status.PASS;
 import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.anyMapOf;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.atLeast;
 import static org.mockito.Mockito.doReturn;
@@ -140,7 +142,9 @@ public class SupplyChainValidationServiceImplTest extends SpringPersistenceTest 
         when(pc.getSerialNumber()).thenReturn(BigInteger.ONE);
         when(pc.getPlatformSerial()).thenReturn(String.valueOf(Integer.MIN_VALUE));
         when(pc.getIssuerSorted()).thenReturn("STMicroelectronics NV");
-        when(ec.getSubjectSorted()).thenReturn("STMicroelectronics NV");
+        when(pc.isBase()).thenReturn(true);
+        when(pc.getBeginValidity()).thenReturn(new Date(System.currentTimeMillis()));
+        when(pc.getSubjectSorted()).thenReturn("STMicroelectronics NV");
         pcs = new HashSet<PlatformCredential>();
         pcs.add(pc);
 
@@ -149,13 +153,17 @@ public class SupplyChainValidationServiceImplTest extends SpringPersistenceTest 
         delta = mock(PlatformCredential.class);
         when(delta.getId()).thenReturn(UUID.randomUUID());
         when(delta.getX509Certificate()).thenReturn(deltaCert);
-        //when(delta.getSerialNumber()).thenReturn(BigInteger.ONE);
+        when(delta.getSerialNumber()).thenReturn(BigInteger.valueOf(2));
+        when(delta.getPlatformSerial()).thenReturn(String.valueOf(Integer.MIN_VALUE));
         when(delta.getIssuerSorted()).thenReturn("STMicroelectronics NV");
-        when(delta.getSubjectSorted()).thenReturn("STMicroelectronics NV");
+        when(delta.isBase()).thenReturn(false);
+        when(delta.getBeginValidity()).thenReturn(new Date(System.currentTimeMillis() + 1));
+        when(delta.getSubjectSorted()).thenReturn("STMicroelectronics NV Delta");
+        pcs.add(delta);
 
         Set<Certificate> resultPcs = new HashSet<>();
         resultPcs.add(pc);
-        //resultPcs.add(delta);
+        resultPcs.add(delta);
 
         // mock credential retrieval
         when(certificateManager.get(any(EndorsementCredential.Selector.class)))
@@ -194,8 +202,13 @@ public class SupplyChainValidationServiceImplTest extends SpringPersistenceTest 
         doReturn(new AppraisalStatus(PASS, "")).when(supplyChainCredentialValidator)
                 .validatePlatformCredential(eq(pc), any(KeyStore.class), eq(true));
         doReturn(new AppraisalStatus(PASS, "")).when(supplyChainCredentialValidator)
+                .validatePlatformCredential(eq(delta), any(KeyStore.class), eq(true));
+        doReturn(new AppraisalStatus(PASS, "")).when(supplyChainCredentialValidator)
                 .validatePlatformCredentialAttributes(eq(pc), any(DeviceInfoReport.class),
                         any(EndorsementCredential.class));
+        doReturn(new AppraisalStatus(PASS, "")).when(supplyChainCredentialValidator)
+                .validateDeltaPlatformCredentialAttributes(eq(delta), any(DeviceInfoReport.class),
+                        eq(pc), anyMapOf(PlatformCredential.class, SupplyChainValidation.class));
 
         Assert.assertEquals(service.validateSupplyChain(ec, pcs,
                 device).getOverallValidationResult(), PASS);
@@ -227,8 +240,13 @@ public class SupplyChainValidationServiceImplTest extends SpringPersistenceTest 
         doReturn(new AppraisalStatus(PASS, "")).when(supplyChainCredentialValidator)
                 .validatePlatformCredential(eq(pc), any(KeyStore.class), eq(true));
         doReturn(new AppraisalStatus(PASS, "")).when(supplyChainCredentialValidator)
+                .validatePlatformCredential(eq(delta), any(KeyStore.class), eq(true));
+        doReturn(new AppraisalStatus(PASS, "")).when(supplyChainCredentialValidator)
                 .validatePlatformCredentialAttributes(eq(pc), any(DeviceInfoReport.class),
                         any(EndorsementCredential.class));
+        doReturn(new AppraisalStatus(PASS, "")).when(supplyChainCredentialValidator)
+                .validateDeltaPlatformCredentialAttributes(eq(delta), any(DeviceInfoReport.class),
+                        eq(pc), anyMapOf(PlatformCredential.class, SupplyChainValidation.class));
 
         Assert.assertEquals(service.validateSupplyChain(ec, pcs,
                 device).getOverallValidationResult(), FAIL);
@@ -246,12 +264,17 @@ public class SupplyChainValidationServiceImplTest extends SpringPersistenceTest 
         when(policy.isExpiredCertificateValidationEnabled()).thenReturn(true);
 
         doReturn(new AppraisalStatus(PASS, "")).when(supplyChainCredentialValidator).
-                validateEndorsementCredential(eq(ec), any(KeyStore.class), eq(true));
-        doReturn(new AppraisalStatus(FAIL, "")).when(supplyChainCredentialValidator).
-                validatePlatformCredential(eq(pc), any(KeyStore.class), eq(true));
+                validateEndorsementCredential(eq(ec), any(KeyStore.class), any(Boolean.class));
         doReturn(new AppraisalStatus(FAIL, "")).when(supplyChainCredentialValidator)
+                .validatePlatformCredential(eq(pc), any(KeyStore.class), eq(true));
+        doReturn(new AppraisalStatus(FAIL, "")).when(supplyChainCredentialValidator)
+                .validatePlatformCredential(eq(delta), any(KeyStore.class), eq(true));
+        doReturn(new AppraisalStatus(PASS, "")).when(supplyChainCredentialValidator)
                 .validatePlatformCredentialAttributes(eq(pc), any(DeviceInfoReport.class),
                         any(EndorsementCredential.class));
+        doReturn(new AppraisalStatus(PASS, "")).when(supplyChainCredentialValidator)
+                .validateDeltaPlatformCredentialAttributes(eq(delta), any(DeviceInfoReport.class),
+                        eq(pc), anyMapOf(PlatformCredential.class, SupplyChainValidation.class));
         Assert.assertEquals(service.validateSupplyChain(ec, pcs,
                 device).getOverallValidationResult(), FAIL);
         verify(supplyChainValidationSummaryDBManager).save(any(SupplyChainValidationSummary.class));
@@ -269,11 +292,16 @@ public class SupplyChainValidationServiceImplTest extends SpringPersistenceTest 
 
         doReturn(new AppraisalStatus(PASS, "")).when(supplyChainCredentialValidator).
                 validateEndorsementCredential(eq(ec), any(KeyStore.class), eq(true));
-        doReturn(new AppraisalStatus(PASS, "")).when(supplyChainCredentialValidator).
-                validatePlatformCredential(eq(pc), any(KeyStore.class), eq(true));
-        doReturn(new AppraisalStatus(FAIL, "")).when(supplyChainCredentialValidator).
-                validatePlatformCredentialAttributes(eq(pc), any(DeviceInfoReport.class),
+        doReturn(new AppraisalStatus(PASS, "")).when(supplyChainCredentialValidator)
+                .validatePlatformCredential(eq(pc), any(KeyStore.class), eq(true));
+        doReturn(new AppraisalStatus(PASS, "")).when(supplyChainCredentialValidator)
+                .validatePlatformCredential(eq(delta), any(KeyStore.class), eq(true));
+        doReturn(new AppraisalStatus(FAIL, "")).when(supplyChainCredentialValidator)
+                .validatePlatformCredentialAttributes(eq(pc), any(DeviceInfoReport.class),
                         any(EndorsementCredential.class));
+        doReturn(new AppraisalStatus(FAIL, "")).when(supplyChainCredentialValidator)
+                .validateDeltaPlatformCredentialAttributes(eq(delta), any(DeviceInfoReport.class),
+                        eq(pc), anyMapOf(PlatformCredential.class, SupplyChainValidation.class));
 
         Assert.assertEquals(service.validateSupplyChain(ec, pcs,
                 device).getOverallValidationResult(), FAIL);
@@ -292,11 +320,16 @@ public class SupplyChainValidationServiceImplTest extends SpringPersistenceTest 
 
         doReturn(new AppraisalStatus(FAIL, "")).when(supplyChainCredentialValidator).
                 validateEndorsementCredential(eq(ec), any(KeyStore.class), eq(true));
-        doReturn(new AppraisalStatus(PASS, "")).when(supplyChainCredentialValidator).
-                validatePlatformCredential(eq(pc), any(KeyStore.class), eq(true));
-        doReturn(new AppraisalStatus(PASS, "")).when(supplyChainCredentialValidator).
-                validatePlatformCredentialAttributes(eq(pc), any(DeviceInfoReport.class),
+        doReturn(new AppraisalStatus(PASS, "")).when(supplyChainCredentialValidator)
+                .validatePlatformCredential(eq(pc), any(KeyStore.class), eq(true));
+        doReturn(new AppraisalStatus(PASS, "")).when(supplyChainCredentialValidator)
+                .validatePlatformCredential(eq(delta), any(KeyStore.class), eq(true));
+        doReturn(new AppraisalStatus(PASS, "")).when(supplyChainCredentialValidator)
+                .validatePlatformCredentialAttributes(eq(pc), any(DeviceInfoReport.class),
                         any(EndorsementCredential.class));
+        doReturn(new AppraisalStatus(PASS, "")).when(supplyChainCredentialValidator)
+                .validateDeltaPlatformCredentialAttributes(eq(delta), any(DeviceInfoReport.class),
+                        eq(pc), anyMapOf(PlatformCredential.class, SupplyChainValidation.class));
 
         Assert.assertEquals(service.validateSupplyChain(ec, pcs,
                 device).getOverallValidationResult(), PASS);
@@ -309,17 +342,22 @@ public class SupplyChainValidationServiceImplTest extends SpringPersistenceTest 
     @Test
     public final void testNoPcValidation() {
         when(policy.isEcValidationEnabled()).thenReturn(true);
-        when(policy.isPcValidationEnabled()).thenReturn(true);
+        when(policy.isPcValidationEnabled()).thenReturn(false);
         when(policy.isPcAttributeValidationEnabled()).thenReturn(true);
         when(policy.isExpiredCertificateValidationEnabled()).thenReturn(true);
 
         doReturn(new AppraisalStatus(PASS, "")).when(supplyChainCredentialValidator).
                 validateEndorsementCredential(eq(ec), any(KeyStore.class), eq(true));
-        doReturn(new AppraisalStatus(FAIL, "")).when(supplyChainCredentialValidator).
-                validatePlatformCredential(eq(pc), any(KeyStore.class), eq(true));
-        doReturn(new AppraisalStatus(PASS, "")).when(supplyChainCredentialValidator).
-                validatePlatformCredentialAttributes(eq(pc), any(DeviceInfoReport.class),
+        doReturn(new AppraisalStatus(FAIL, "")).when(supplyChainCredentialValidator)
+                .validatePlatformCredential(eq(pc), any(KeyStore.class), eq(true));
+        doReturn(new AppraisalStatus(FAIL, "")).when(supplyChainCredentialValidator)
+                .validatePlatformCredential(eq(delta), any(KeyStore.class), eq(true));
+        doReturn(new AppraisalStatus(PASS, "")).when(supplyChainCredentialValidator)
+                .validatePlatformCredentialAttributes(eq(pc), any(DeviceInfoReport.class),
                         any(EndorsementCredential.class));
+        doReturn(new AppraisalStatus(PASS, "")).when(supplyChainCredentialValidator)
+                .validateDeltaPlatformCredentialAttributes(eq(delta), any(DeviceInfoReport.class),
+                        eq(pc), anyMapOf(PlatformCredential.class, SupplyChainValidation.class));
 
         Assert.assertEquals(service.validateSupplyChain(ec, pcs,
                 device).getOverallValidationResult(), FAIL);
@@ -338,11 +376,16 @@ public class SupplyChainValidationServiceImplTest extends SpringPersistenceTest 
 
         doReturn(new AppraisalStatus(PASS, "")).when(supplyChainCredentialValidator).
                 validateEndorsementCredential(eq(ec), any(KeyStore.class), eq(true));
-        doReturn(new AppraisalStatus(PASS, "")).when(supplyChainCredentialValidator).
-                validatePlatformCredential(eq(pc), any(KeyStore.class), eq(true));
-        doReturn(new AppraisalStatus(FAIL, "")).when(supplyChainCredentialValidator).
-                validatePlatformCredentialAttributes(eq(pc), any(DeviceInfoReport.class),
+        doReturn(new AppraisalStatus(PASS, "")).when(supplyChainCredentialValidator)
+                .validatePlatformCredential(eq(pc), any(KeyStore.class), eq(true));
+        doReturn(new AppraisalStatus(PASS, "")).when(supplyChainCredentialValidator)
+                .validatePlatformCredential(eq(delta), any(KeyStore.class), eq(true));
+        doReturn(new AppraisalStatus(FAIL, "")).when(supplyChainCredentialValidator)
+                .validatePlatformCredentialAttributes(eq(pc), any(DeviceInfoReport.class),
                         any(EndorsementCredential.class));
+        doReturn(new AppraisalStatus(FAIL, "")).when(supplyChainCredentialValidator)
+                .validateDeltaPlatformCredentialAttributes(eq(delta), any(DeviceInfoReport.class),
+                        eq(pc), anyMapOf(PlatformCredential.class, SupplyChainValidation.class));
 
         Assert.assertEquals(service.validateSupplyChain(ec, pcs,
                 device).getOverallValidationResult(), PASS);
