@@ -175,18 +175,26 @@ public class CertificateTest {
      */
     @Test
     public void testGetCertificateType() throws IOException {
-        Assert.assertEquals(getTestCertificate(FAKE_ROOT_CA_FILE).getCertificateType(),
+        Certificate certificate = getTestCertificate(FAKE_ROOT_CA_FILE);
+        Assert.assertEquals(getTestCertificate(FAKE_ROOT_CA_FILE)
+                        .getCertificateType(certificate.getRawBytes()),
                                 CertificateType.X509_CERTIFICATE);
-        Assert.assertNotEquals(getTestCertificate(FAKE_ROOT_CA_FILE).getCertificateType(),
+        Assert.assertNotEquals(getTestCertificate(FAKE_ROOT_CA_FILE)
+                        .getCertificateType(certificate.getRawBytes()),
                                 CertificateType.ATTRIBUTE_CERTIFICATE);
 
+        certificate = getTestCertificate(
+                PlatformCredential.class,
+                PlatformCredentialTest.TEST_PLATFORM_CERT_3);
         Assert.assertNotEquals(getTestCertificate(
                 PlatformCredential.class,
-                PlatformCredentialTest.TEST_PLATFORM_CERT_3).getCertificateType(),
+                PlatformCredentialTest.TEST_PLATFORM_CERT_3)
+                        .getCertificateType(certificate.getRawBytes()),
                 CertificateType.X509_CERTIFICATE);
         Assert.assertEquals(getTestCertificate(
                 PlatformCredential.class,
-                PlatformCredentialTest.TEST_PLATFORM_CERT_3).getCertificateType(),
+                PlatformCredentialTest.TEST_PLATFORM_CERT_3)
+                        .getCertificateType(certificate.getRawBytes()),
                 CertificateType.ATTRIBUTE_CERTIFICATE);
 
     }
@@ -203,7 +211,8 @@ public class CertificateTest {
                 PlatformCredential.class, PlatformCredentialTest.TEST_PLATFORM_CERT_4
         );
 
-        Assert.assertEquals(platformCredential.getCertificateType(),
+        Assert.assertEquals(platformCredential.getCertificateType(
+                platformCredential.getRawBytes()),
                             CertificateType.ATTRIBUTE_CERTIFICATE);
         Assert.assertEquals(
                 ((PlatformCredential) platformCredential).getPlatformSerial(),
@@ -214,7 +223,8 @@ public class CertificateTest {
                 PlatformCredential.class, PlatformCredentialTest.TEST_PLATFORM_CERT_5
         );
 
-        Assert.assertEquals(platformCredential.getCertificateType(),
+        Assert.assertEquals(platformCredential.getCertificateType(
+                platformCredential.getRawBytes()),
                             CertificateType.ATTRIBUTE_CERTIFICATE);
         Assert.assertEquals(
                 ((PlatformCredential) platformCredential).getPlatformSerial(),

@@ -354,7 +354,7 @@ public abstract class Certificate extends ArchivableEntity {
         this.certificateBytes = trimCertificate(this.certificateBytes);
 
         // Extract certificate data
-        switch (getCertificateType()) {
+        switch (getCertificateType(this.certificateBytes)) {
             case X509_CERTIFICATE:
                 this.isX509 = true;
                 X509Certificate x509Certificate = getX509Certificate();
@@ -548,12 +548,16 @@ public abstract class Certificate extends ArchivableEntity {
     }
 
     /**
+     * Tests the bytes given to determine the type of credential.
+     * @param certificateBytes byte array to test
      * @return the type of certificate.
      * @throws java.io.IOException if there is a problem extracting information from the certificate
      */
-    protected CertificateType getCertificateType() throws IOException {
+    public CertificateType getCertificateType(final byte[] certificateBytes)
+            throws IOException {
         //Parse the certificate into a sequence
-        ASN1Sequence testCred1 = (ASN1Sequence) ASN1Primitive.fromByteArray(this.certificateBytes);
+        ASN1Sequence testCred1 = (ASN1Sequence) ASN1Primitive
+                .fromByteArray(trimCertificate(certificateBytes));
         ASN1Sequence testSeq = (ASN1Sequence) ((ASN1Object) testCred1.toArray()[0]);
 
         if (testSeq.toArray()[0] instanceof ASN1Integer) {
@@ -793,10 +797,10 @@ public abstract class Certificate extends ArchivableEntity {
     public String isIssuer(final Certificate issuer) throws IOException {
         String isIssuer = "Certificate signature failed to verify";
         // only run if of the correct type, otherwise false
-        if (issuer.getCertificateType() == CertificateType.X509_CERTIFICATE) {
+        if (issuer.getCertificateType(this.certificateBytes) == CertificateType.X509_CERTIFICATE) {
             X509Certificate issuerX509 = issuer.getX509Certificate();
             // Validate if it's the issuer
-            switch (getCertificateType()) {
+            switch (getCertificateType(this.certificateBytes)) {
                 case X509_CERTIFICATE:
                     X509Certificate certX509 = getX509Certificate();
                     try {

@@ -14,6 +14,7 @@ import hirs.data.persist.certificate.CertificateAuthorityCredential;
 import hirs.data.persist.certificate.EndorsementCredential;
 import hirs.data.persist.certificate.IssuedAttestationCertificate;
 import hirs.data.persist.certificate.PlatformCredential;
+import hirs.data.persist.certificate.X509AttributeCredential;
 import hirs.persist.CertificateManager;
 import hirs.persist.CriteriaModifier;
 import hirs.persist.CrudManager;
@@ -393,9 +394,11 @@ public class CertificateRequestPageController extends PageController<NoPageParam
         PageMessages messages = new PageMessages();
 
         for (MultipartFile file : files) {
+            LOGGER.error("Parsing the certificate...");
             //Parse certificate
             Certificate certificate = parseCertificate(certificateType, file, messages);
 
+            LOGGER.error("Storing the certificate...");
             //Store only if it was parsed
             if (certificate != null) {
                 storeCertificate(
@@ -568,6 +571,7 @@ public class CertificateRequestPageController extends PageController<NoPageParam
             return null;
         }
 
+        LOGGER.error("Certificate by BD Serial");
         switch (certificateType) {
             case PLATFORMCREDENTIAL:
                 return PlatformCredential
@@ -611,8 +615,8 @@ public class CertificateRequestPageController extends PageController<NoPageParam
         try {
             switch (certificateType) {
                 case PLATFORMCREDENTIAL:
-                    Certificate certificate = new PlatformCredential(fileBytes, false);
-                    return new PlatformCredential(fileBytes, false);
+//                    return new PlatformCredential(fileBytes);
+                    return getPlatformType(fileBytes);
                 case ENDORSEMENTCREDENTIAL:
                     return new EndorsementCredential(fileBytes);
                 case TRUSTCHAIN:
@@ -643,6 +647,31 @@ public class CertificateRequestPageController extends PageController<NoPageParam
             messages.addError(failMessage + e.getMessage());
             return null;
         }
+    }
+
+    private PlatformCredential getPlatformType(final byte[] fileBytes) {
+        PlatformCredential pc;
+
+        try {
+            pc = new PlatformCredential(fileBytes);
+        } catch (IOException ioEx) {
+            pc = getX509AttributeCredential(fileBytes);
+            if (pc == null) {
+
+            }
+        }
+
+        return pc;
+    }
+
+    private PlatformCredential getX509AttributeCredential(final byte[] fileBytes) {
+        PlatformCredential pc = null;
+        try {
+            pc = new X509AttributeCredential(fileBytes);
+        } catch (IOException ioEx) {
+            return null;
+        }
+        return pc;
     }
 
     /**
@@ -683,14 +712,17 @@ public class CertificateRequestPageController extends PageController<NoPageParam
             // save the new certificate if no match is found
             if (existingCertificate == null) {
                 if (certificateType.equals(PLATFORMCREDENTIAL)) {
-                    PlatformCredential platformCertificate = new PlatformCredential(
+                    PlatformCredential platformCertificate = getPlatformType(
                             certificate.getRawBytes());
+//                    X509AttributeCredential x509AttributeCredential = new X509AttributeCredential(
+//                            certificate.getRawBytes());
                     if (platformCertificate.isBase()) {
                         List<PlatformCredential> sharedCertificates = getCertificateByBoardSN(
                                 certificateType,
                                 platformCertificate.getPlatformSerial(),
                                 certificateManager);
                         if (sharedCertificates != null) {
+                            LOGGER.error("Shared Certificates");
                             for (PlatformCredential pc : sharedCertificates) {
                                 if (pc.isBase()) {
                                     final String failMessage = "Storing certificate failed: "
@@ -739,13 +771,14 @@ public class CertificateRequestPageController extends PageController<NoPageParam
             messages.addError(failMessage + e.getMessage());
             LOGGER.error(failMessage, e);
             return;
-        } catch (IOException ioEx) {
-            final String failMessage = String.format(
-                    "Failed to parse uploaded file (%s): ", fileName);
-            LOGGER.error(failMessage, ioEx);
-            messages.addError(failMessage + ioEx.getMessage());
-            return;
         }
+//        catch (IOException ioEx) {
+//            final String failMessage = String.format(
+//                    "Failed to parse uploaded file (%s): ", fileName);
+//            LOGGER.error(failMessage, ioEx);
+//            messages.addError(failMessage + ioEx.getMessage());
+//            return;
+//        }
 
         try {
             // if an identical certificate is archived, update the existing certificate to
