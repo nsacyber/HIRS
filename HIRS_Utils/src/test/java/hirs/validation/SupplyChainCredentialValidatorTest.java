@@ -312,10 +312,11 @@ public class SupplyChainCredentialValidatorTest {
 
             PlatformCredential pc = new PlatformCredential(certBytes);
 
+            // The test certificate has expired. Test will accept expired certs.
             AppraisalStatus result = supplyChainCredentialValidator.validatePlatformCredential(
                     pc, keyStore, true);
-            // Assert.assertEquals(result.getAppStatus(), AppraisalStatus.Status.PASS);
-            Assert.assertEquals(result.getAppStatus(), AppraisalStatus.Status.FAIL);
+
+            Assert.assertEquals(result.getAppStatus(), AppraisalStatus.Status.PASS);
             Assert.assertEquals(result.getMessage(), SupplyChainCredentialValidator.PLATFORM_VALID);
         } finally {
             keyStore.deleteEntry("Intel Intermediate Cert");

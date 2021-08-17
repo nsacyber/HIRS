@@ -40,7 +40,6 @@ import java.security.NoSuchProviderException;
 import java.security.PublicKey;
 import java.security.Security;
 import java.security.SignatureException;
-import java.security.cert.CertificateEncodingException;
 import java.security.cert.CertificateException;
 import java.security.cert.CertificateExpiredException;
 import java.security.cert.CertificateNotYetValidException;
@@ -1348,26 +1347,29 @@ public final class SupplyChainCredentialValidator implements CredentialValidator
         final String intCAError = "Intermediate signing cert found, check for CA cert";
         String foundRootOfCertChain = "";
         X509AttributeCertificateHolder startOfChain = cert;
+        X509Certificate nextInChain = null;
 
         do {
             for (X509Certificate trustedCert : additionalCerts) {
-                boolean issuerMatchesSubject = issuerMatchesSubjectDN(startOfChain, trustedCert);
-                boolean signatureMatchesPublicKey = signatureMatchesPublicKey(startOfChain,
-                                                                                    trustedCert);
+                boolean issuerMatchesSubject = false;
+                boolean signatureMatchesPublicKey = false;
+                if (nextInChain != null) {
+                    issuerMatchesSubject = issuerMatchesSubjectDN(nextInChain, trustedCert);
+                    signatureMatchesPublicKey = signatureMatchesPublicKey(nextInChain,
+                            trustedCert);
+                } else {
+                    issuerMatchesSubject = issuerMatchesSubjectDN(startOfChain, trustedCert);
+                    signatureMatchesPublicKey = signatureMatchesPublicKey(startOfChain,
+                            trustedCert);
+                }
+
                 if (issuerMatchesSubject && signatureMatchesPublicKey) {
                     if (isSelfSigned(trustedCert)) {
                         LOGGER.info("CA Root found.");
                         return "";
                     } else {
                         foundRootOfCertChain = intCAError;
-                        try {
-                            startOfChain = new X509AttributeCertificateHolder(
-                                                            trustedCert.getEncoded());
-                        } catch (IOException | CertificateEncodingException e) {
-                            LOGGER.error("Error checking cert chain: " + e.getMessage());
-                            throw new SupplyChainValidatorException("Error checking cert chain: "
-                                    + e.getMessage());
-                        }
+                        nextInChain = trustedCert;
                         break;
                     }
                 } else {
