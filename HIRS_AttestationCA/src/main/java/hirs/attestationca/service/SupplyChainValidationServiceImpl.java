@@ -237,8 +237,13 @@ public class SupplyChainValidationServiceImpl implements SupplyChainValidationSe
             if (pcErrorMessage.isEmpty()) {
                 validations.add(platformScv);
             } else {
-                validations.add(new SupplyChainValidation(platformType,
-                        AppraisalStatus.Status.FAIL, new ArrayList<>(pcs), pcErrorMessage));
+                if (pcs == null) {
+                    validations.add(new SupplyChainValidation(platformType,
+                            AppraisalStatus.Status.FAIL, new ArrayList<>(), pcErrorMessage));
+                } else {
+                    validations.add(new SupplyChainValidation(platformType,
+                            AppraisalStatus.Status.FAIL, new ArrayList<>(pcs), pcErrorMessage));
+                    }
             }
         }
 
@@ -264,7 +269,7 @@ public class SupplyChainValidationServiceImpl implements SupplyChainValidationSe
                     Iterator<PlatformCredential> it = pcs.iterator();
                     while (it.hasNext()) {
                         PlatformCredential pc = it.next();
-                        if (pc != null && pc.isBase()) {
+                        if (pc != null && !pc.isBase()) {
                             attributeScv = validateDeltaPlatformCredentialAttributes(
                                     pc, device.getDeviceInfo(),
                                     baseCredential, deltaMapping);
