@@ -138,8 +138,8 @@ public final void testHandOffTables() throws IOException {
   byte[] eventBytes = HexUtils.hexStringToByteArray(event);
   EvEfiHandoffTable hTable = new EvEfiHandoffTable(eventBytes);
   Assert.assertEquals(hTable.getNumberOfTables(), 1);
-  String tableINfo = hTable.toString();
-  Assert.assertFalse(tableINfo.toString().
+  String tableInfo = hTable.toString();
+  Assert.assertTrue(tableInfo.toString().
                               contains("UEFI industry standard table type = SMBIOS3_TABLE_GUID"));
 }
 
