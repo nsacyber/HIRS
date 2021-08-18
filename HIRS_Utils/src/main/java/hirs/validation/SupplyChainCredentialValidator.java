@@ -1346,7 +1346,6 @@ public final class SupplyChainCredentialValidator implements CredentialValidator
         }
         final String intCAError = "Intermediate signing cert found, check for CA cert";
         String foundRootOfCertChain = "";
-        X509AttributeCertificateHolder startOfChain = cert;
         X509Certificate nextInChain = null;
 
         do {
@@ -1358,9 +1357,8 @@ public final class SupplyChainCredentialValidator implements CredentialValidator
                     signatureMatchesPublicKey = signatureMatchesPublicKey(nextInChain,
                             trustedCert);
                 } else {
-                    issuerMatchesSubject = issuerMatchesSubjectDN(startOfChain, trustedCert);
-                    signatureMatchesPublicKey = signatureMatchesPublicKey(startOfChain,
-                            trustedCert);
+                    issuerMatchesSubject = issuerMatchesSubjectDN(cert, trustedCert);
+                    signatureMatchesPublicKey = signatureMatchesPublicKey(cert, trustedCert);
                 }
 
                 if (issuerMatchesSubject && signatureMatchesPublicKey) {
