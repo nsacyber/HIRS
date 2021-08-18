@@ -1338,43 +1338,50 @@ public final class SupplyChainCredentialValidator implements CredentialValidator
      * @throws SupplyChainValidatorException tried to validate using null certificates
      */
     public static String validateCertChain(final X509AttributeCertificateHolder cert,
-            final Set<X509Certificate> additionalCerts) throws SupplyChainValidatorException {
+                                           final Set<X509Certificate> additionalCerts)
+                                            throws SupplyChainValidatorException {
         if (cert == null || additionalCerts == null) {
             throw new SupplyChainValidatorException(
                     "Certificate or validation certificates are null");
         }
+        final String intCAError = "Intermediate signing cert found, check for CA cert";
         String foundRootOfCertChain = "";
-        Iterator<X509Certificate> certIterator = additionalCerts.iterator();
-        X509Certificate trustedCert;
-        boolean issuerMatchesSubject = false;
-        boolean signatureMatchesPublicKey = false;
+        X509Certificate nextInChain = null;
 
-        while (foundRootOfCertChain.isEmpty() && certIterator.hasNext()) {
-            trustedCert = certIterator.next();
-            issuerMatchesSubject = issuerMatchesSubjectDN(cert, trustedCert);
-            signatureMatchesPublicKey = signatureMatchesPublicKey(cert, trustedCert);
-            if (issuerMatchesSubject && signatureMatchesPublicKey) {
-                if (isSelfSigned(trustedCert)) {
-                    foundRootOfCertChain = "";
-                    LOGGER.info("CA Root found.");
-                    break;
+        do {
+            for (X509Certificate trustedCert : additionalCerts) {
+                boolean issuerMatchesSubject = false;
+                boolean signatureMatchesPublicKey = false;
+                if (nextInChain != null) {
+                    issuerMatchesSubject = issuerMatchesSubjectDN(nextInChain, trustedCert);
+                    signatureMatchesPublicKey = signatureMatchesPublicKey(nextInChain,
+                            trustedCert);
                 } else {
-                    foundRootOfCertChain = "Intermediate signing cert found. Check for CA Cert: "
-                            + cert.getIssuer().getNames()[0];
+                    issuerMatchesSubject = issuerMatchesSubjectDN(cert, trustedCert);
+                    signatureMatchesPublicKey = signatureMatchesPublicKey(cert, trustedCert);
                 }
-            } else {
-                if (!issuerMatchesSubject) {
-                    foundRootOfCertChain = "Issuer DN does not match Subject DN";
-                }
-                if (!signatureMatchesPublicKey) {
-                    foundRootOfCertChain = "Certificate signature failed to verify";
+
+                if (issuerMatchesSubject && signatureMatchesPublicKey) {
+                    if (isSelfSigned(trustedCert)) {
+                        LOGGER.info("CA Root found.");
+                        return "";
+                    } else {
+                        foundRootOfCertChain = intCAError;
+                        nextInChain = trustedCert;
+                        break;
+                    }
+                } else {
+                    if (!issuerMatchesSubject) {
+                        foundRootOfCertChain = "Issuer DN does not match Subject DN";
+                    }
+                    if (!signatureMatchesPublicKey) {
+                        foundRootOfCertChain = "Certificate signature failed to verify";
+                    }
                 }
             }
-        }
+        } while (foundRootOfCertChain.equals(intCAError));
 
-        if (!foundRootOfCertChain.isEmpty()) {
-            LOGGER.error(foundRootOfCertChain);
-        }
+        LOGGER.error(foundRootOfCertChain);
         return foundRootOfCertChain;
     }
 
