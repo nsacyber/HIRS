@@ -59,6 +59,11 @@ public class CertificateTest {
     public static final String STM_NUC1_EC = "/certificates/nuc-1/tpmcert.pem";
 
     /**
+     * Location of the ST Micro Intermediate 02 CA certificate.
+     */
+    public static final String STM_INT_02_CA = "/certificates/stMicroCaCerts/stmtpmekint02.crt";
+
+    /**
      * Location of the ST Micro Root CA certificate.
      */
     public static final String STM_ROOT_CA = "/certificates/stMicroCaCerts/stmtpmekroot.crt";

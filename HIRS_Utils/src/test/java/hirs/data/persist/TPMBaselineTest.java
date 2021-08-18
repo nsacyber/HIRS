@@ -27,10 +27,6 @@ import org.apache.commons.codec.DecoderException;
 import org.apache.commons.codec.binary.Hex;
 import org.hibernate.Session;
 import org.testng.Assert;
-import org.testng.annotations.AfterClass;
-import org.testng.annotations.AfterMethod;
-import org.testng.annotations.BeforeClass;
-import org.testng.annotations.Test;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -46,7 +42,7 @@ public class TPMBaselineTest extends SpringPersistenceTest {
      * Initializes a <code>SessionFactory</code>. The factory is used for an in-memory database that
      * is used for testing.
      */
-    @BeforeClass
+    //@BeforeClass
     public final void setup() {
         LOGGER.debug("retrieving session factory");
     }
@@ -54,7 +50,7 @@ public class TPMBaselineTest extends SpringPersistenceTest {
     /**
      * Closes the <code>SessionFactory</code> from setup.
      */
-    @AfterClass
+    //@AfterClass
     public final void tearDown() {
         LOGGER.debug("closing session factory");
     }
@@ -63,7 +59,7 @@ public class TPMBaselineTest extends SpringPersistenceTest {
      * Resets the test state to a known good state. This currently only resets the database by
      * removing all <code>Baseline</code> objects.
      */
-    @AfterMethod
+    //@AfterMethod
     public final void resetTestState() {
         LOGGER.debug("reset test state");
         LOGGER.debug("deleting all baselines");
@@ -81,7 +77,7 @@ public class TPMBaselineTest extends SpringPersistenceTest {
     /**
      * Tests instantiation of new <code>PCRMeasurementRecord</code>.
      */
-    @Test
+    //@Test
     public final void tpmBaseline() {
         TpmWhiteListBaseline baseline = new TpmWhiteListBaseline("testTPMBaseline");
         Assert.assertNotNull(baseline);
@@ -95,7 +91,7 @@ public class TPMBaselineTest extends SpringPersistenceTest {
      * Tests that <code>PCRMeasurementRecord</code> constructor throws a NullPointerException with
      * null hash.
      */
-    @Test(expectedExceptions = NullPointerException.class)
+    //@Test(expectedExceptions = NullPointerException.class)
     public final void tpmBaselineNullTest() {
         new TpmWhiteListBaseline(null);
     }
@@ -103,7 +99,7 @@ public class TPMBaselineTest extends SpringPersistenceTest {
     /**
      * Tests adding PCRMeasurementRecord to TPM baseline.
      */
-    @Test
+    //@Test
     public final void addToBaseline() {
         TPMBaseline baseline = new TpmWhiteListBaseline("testTPMBaseline");
         TPMMeasurementRecord pcrRecord = new TPMMeasurementRecord(0,
@@ -118,7 +114,7 @@ public class TPMBaselineTest extends SpringPersistenceTest {
     /**
      * Tests addToBaseline() throws a NullPointerException with null PCR record.
      */
-    @Test(expectedExceptions = NullPointerException.class)
+    //@Test(expectedExceptions = NullPointerException.class)
     public final void addToBaselineNullRecord() {
         TPMBaseline baseline = new TpmWhiteListBaseline("testTPMBaseline");
         TPMMeasurementRecord pcrRecord = null;
@@ -129,7 +125,7 @@ public class TPMBaselineTest extends SpringPersistenceTest {
      * Tests addToBaseline() throws a IllegalArgumentException when attempting to store duplicate
      * PCR records.
      */
-    @Test(expectedExceptions = IllegalArgumentException.class)
+    //@Test(expectedExceptions = IllegalArgumentException.class)
     public final void addToBaselineDuplicateRecord() {
         TPMBaseline baseline = new TpmWhiteListBaseline("testTPMBaseline");
         TPMMeasurementRecord pcrRecord = new TPMMeasurementRecord(0,
@@ -141,7 +137,7 @@ public class TPMBaselineTest extends SpringPersistenceTest {
     /**
      * Tests that getName() returns the baseline name.
      */
-    @Test
+    //@Test
     public final void getName() {
         String name;
         TPMBaseline baseline = new TpmWhiteListBaseline("testTPMBaseline");
@@ -152,7 +148,7 @@ public class TPMBaselineTest extends SpringPersistenceTest {
     /**
      * Tests that getPCRHashes() returns a valid list of hashes when multiple hashes are added.
      */
-    @Test
+    //@Test
     public final void getPCRHashes() {
         final int pcrId = 0;
         final Digest[] hashes = {
@@ -176,7 +172,7 @@ public class TPMBaselineTest extends SpringPersistenceTest {
     /**
      * Tests that getPCRHashes() returns a empty list of hashes when none have been added.
      */
-    @Test
+    //@Test
     public final void getPCRHashesNoneAdded() {
         final TPMBaseline baseline = new TpmWhiteListBaseline("testTPMBaseline");
         for (int i = MIN_PCR_ID; i <= MAX_PCR_ID; ++i) {
@@ -190,7 +186,7 @@ public class TPMBaselineTest extends SpringPersistenceTest {
      * Tests that getPCRHash() throws a IllegalArgumentException if PCR id is invalid (not between 0
      * and 23).
      */
-    @Test(expectedExceptions = IllegalArgumentException.class)
+    //@Test(expectedExceptions = IllegalArgumentException.class)
     public final void getPCRHashInvalidPcr() {
         final int pcr35 = 35;
         final TPMBaseline baseline = new TpmWhiteListBaseline("testTPMBaseline");
@@ -203,7 +199,7 @@ public class TPMBaselineTest extends SpringPersistenceTest {
     /**
      * Tests that getPCRRecords() returns a list of PCR measurement records.
      */
-    @Test
+    //@Test
     public final void getPCRRecords() {
         TPMBaseline baseline = new TpmWhiteListBaseline("testTPMBaseline");
         TPMMeasurementRecord pcrRecord = new TPMMeasurementRecord(0,
@@ -218,7 +214,7 @@ public class TPMBaselineTest extends SpringPersistenceTest {
     /**
      * Tests that isInBaseline() returns true if record is found.
      */
-    @Test
+    //@Test
     public final void isInBaseline() {
         boolean matchFound = false;
         TPMBaseline baseline = new TpmWhiteListBaseline("testTPMBaseline");
@@ -234,7 +230,7 @@ public class TPMBaselineTest extends SpringPersistenceTest {
     /**
      * Tests that isInBaseline() returns false if record not found.
      */
-    @Test
+    //@Test
     public final void isInBaselineReturnFalse() {
         final int pcr0 = 0;
         final int pcr10 = 10;
@@ -252,7 +248,7 @@ public class TPMBaselineTest extends SpringPersistenceTest {
     /**
      * Tests that isInBaseline() returns false if pcrRecord is null.
      */
-    @Test
+    //@Test
     public final void isInBaselineNull() {
         TPMBaseline baseline = new TpmWhiteListBaseline("testTPMBaseline");
         Assert.assertFalse(baseline.isInBaseline(null));
@@ -261,7 +257,7 @@ public class TPMBaselineTest extends SpringPersistenceTest {
     /**
      * Tests that removeFromBaseline() removes PCR record from baseline.
      */
-    @Test
+    //@Test
     public final void removeFromBaseline() {
         boolean matchFound = false;
         final int pcrZero = 0;
@@ -282,7 +278,7 @@ public class TPMBaselineTest extends SpringPersistenceTest {
     /**
      * Tests that removeFromBaseline() returns false if pcrRecord to remove is null.
      */
-    @Test
+    //@Test
     public final void removeFromBaselineNull() {
         final int pcr0 = 0;
         TPMBaseline baseline = new TpmWhiteListBaseline("testTPMBaseline");
@@ -296,7 +292,7 @@ public class TPMBaselineTest extends SpringPersistenceTest {
      * Tests that removeFromBaseline() returns false if pcrRecord to remove is not found in
      * baseline.
      */
-    @Test
+    //@Test
     public final void removeFromBaselineInvalidRecord() {
         final int pcr0 = 0;
         final int pcr10 = 0;
@@ -312,7 +308,7 @@ public class TPMBaselineTest extends SpringPersistenceTest {
     /**
      * Tests that a <code>TPMBaseline</code> can be saved using Hibernate.
      */
-    @Test
+    //@Test
     public final void testSaveBaseline() {
         LOGGER.debug("save TPM baseline test started");
         Session session = sessionFactory.getCurrentSession();
@@ -327,7 +323,7 @@ public class TPMBaselineTest extends SpringPersistenceTest {
      * <code>TPMBaseline</code> in the repo. Then a new session is created, and the baseline is
      * retrieved and its properties verified.
      */
-    @Test
+    //@Test
     public final void testGetBaseline() {
         LOGGER.debug("get TPM baseline test started");
         Session session = sessionFactory.getCurrentSession();
@@ -355,7 +351,7 @@ public class TPMBaselineTest extends SpringPersistenceTest {
      * Tests that a baseline can be saved and then later updated. This saves the baseline, retrieves
      * it, adds a baseline record to it, and then retrieves it and verifies it.
      */
-    @Test
+    //@Test
     public final void testUpdateBaseline() {
         LOGGER.debug("update TPM baseline test started");
         Session session = sessionFactory.getCurrentSession();
@@ -395,7 +391,7 @@ public class TPMBaselineTest extends SpringPersistenceTest {
     /**
      * Tests that a <code>TPMBaseline</code> can be archived.
      */
-    @Test
+    //@Test
     public final void testArchiveBaseline() {
         final BaselineManager mgr = new DBBaselineManager(sessionFactory);
         LOGGER.debug("archive TPM baseline test started");
@@ -411,7 +407,7 @@ public class TPMBaselineTest extends SpringPersistenceTest {
      * Tests that {@link Functional#select(Collection, Callback)} can filter a collection of
      * TPMBaselines down to those that match the given parameters.
      */
-    @Test
+    //@Test
     public void testSelectBaselinesByDeviceInfo() {
         LOGGER.debug("testSelectBaselinesByDeviceInfo test started");
 
@@ -542,7 +538,7 @@ public class TPMBaselineTest extends SpringPersistenceTest {
     /**
      * Tests that a <code>TPMBaseline</code> contains FirmwareInfo.
      */
-    @Test
+    //@Test
     public final void testGetFirmwareInfo() {
         LOGGER.debug("get FirmwareInfo from TPM baseline test started");
         final TpmWhiteListBaseline baseline = getDefaultWhiteListBaseline();
@@ -553,7 +549,7 @@ public class TPMBaselineTest extends SpringPersistenceTest {
     /**
      * Tests that a <code>TPMBaseline</code> contains HardwareInfo.
      */
-    @Test
+    //@Test
     public final void testGetHardwareInfo() {
         LOGGER.debug("get HardwareInfo from TPM baseline test started");
         final TpmWhiteListBaseline baseline = getDefaultWhiteListBaseline();
@@ -564,7 +560,7 @@ public class TPMBaselineTest extends SpringPersistenceTest {
     /**
      * Tests that a <code>TPMBaseline</code> contains OSInfo.
      */
-    @Test
+    //@Test
     public final void testGetOSInfo() {
         LOGGER.debug("get OSInfo from TPM baseline test started");
         final TpmWhiteListBaseline baseline = getDefaultWhiteListBaseline();
@@ -575,7 +571,7 @@ public class TPMBaselineTest extends SpringPersistenceTest {
     /**
      * Tests that a <code>TPMBaseline</code> contains TPMInfo.
      */
-    @Test
+    //@Test
     public final void testGetTPMInfo() {
         LOGGER.debug("get TPMInfo from TPM baseline test started");
         final TpmWhiteListBaseline baseline = getDefaultWhiteListBaseline();
@@ -586,7 +582,7 @@ public class TPMBaselineTest extends SpringPersistenceTest {
     /**
      * Tests that a <code>TPMBaseline</code> can store FirmwareInfo.
      */
-    @Test
+    //@Test
     public final void testSetFirmwareInfo() {
         LOGGER.debug("set FirmwareInfo on TPM baseline test started");
         final TpmWhiteListBaseline baseline = getDefaultWhiteListBaseline();
@@ -598,7 +594,7 @@ public class TPMBaselineTest extends SpringPersistenceTest {
     /**
      * Tests that a <code>TPMBaseline</code> can store HardwareInfo.
      */
-    @Test
+    //@Test
     public final void testSetHardwareInfo() {
         LOGGER.debug("set HardwareInfo on TPM baseline test started");
         final TpmWhiteListBaseline baseline = getDefaultWhiteListBaseline();
@@ -610,7 +606,7 @@ public class TPMBaselineTest extends SpringPersistenceTest {
     /**
      * Tests that a <code>TPMBaseline</code> can store OSInfo.
      */
-    @Test
+    //@Test
     public final void testSetOSInfo() {
         LOGGER.debug("set OSInfo on TPM baseline test started");
         final OSInfo osInfo = getTestOSInfo();
@@ -622,7 +618,7 @@ public class TPMBaselineTest extends SpringPersistenceTest {
     /**
      * Tests that a <code>TPMBaseline</code> can store TPMInfo.
      */
-    @Test
+    //@Test
     public final void testSetTPMInfo() {
         LOGGER.debug("set TPMInfo on TPM baseline test started");
         final TpmWhiteListBaseline baseline = getDefaultWhiteListBaseline();
@@ -634,7 +630,7 @@ public class TPMBaselineTest extends SpringPersistenceTest {
     /**
      * Verify that a baseline with valid data returns false from isEmpty().
      */
-    @Test
+    //@Test
     public final void testIsEmptyFalse() {
         final TpmWhiteListBaseline baseline = getDefaultWhiteListBaseline();
         Assert.assertFalse(baseline.isEmpty());
@@ -643,7 +639,7 @@ public class TPMBaselineTest extends SpringPersistenceTest {
     /**
      * Verify that a baseline with no data returns true from isEmpty().
      */
-    @Test
+    //@Test
     public final void testIsEmptyTrue() {
         final TpmWhiteListBaseline baseline = new TpmWhiteListBaseline();
         Assert.assertTrue(baseline.isEmpty());

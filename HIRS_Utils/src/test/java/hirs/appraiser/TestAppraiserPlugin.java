@@ -8,6 +8,12 @@ import org.springframework.stereotype.Component;
  */
 @Component
 public class TestAppraiserPlugin extends AppraiserPlugin {
+    /**
+     * Appraiser objects must setName.
+     */
+    public TestAppraiserPlugin() {
+        setName("TestAppraiserPlugin");
+    }
 
     @Override
     public Policy getDefaultPolicy() {

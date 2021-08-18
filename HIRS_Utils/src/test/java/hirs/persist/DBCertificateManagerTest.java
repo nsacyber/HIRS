@@ -51,6 +51,7 @@ public class DBCertificateManagerTest extends SpringPersistenceTest {
     private Certificate anotherSelfSignedCert;
     private Certificate intelPlatformCert;
     private Certificate stmEkCert;
+    private Certificate stmInt02CaCert;
     private Certificate stmRootCaCert;
     private Certificate gsTpmRootCaCert;
     private Certificate hirsClientCert;
@@ -101,6 +102,8 @@ public class DBCertificateManagerTest extends SpringPersistenceTest {
 
         stmEkCert = CertificateTest.getTestCertificate(EndorsementCredential.class,
                 CertificateTest.STM_NUC1_EC);
+
+        stmInt02CaCert = CertificateTest.getTestCertificate(CertificateTest.STM_INT_02_CA);
 
         stmRootCaCert = CertificateTest.getTestCertificate(CertificateTest.STM_ROOT_CA);
 
@@ -338,8 +341,9 @@ public class DBCertificateManagerTest extends SpringPersistenceTest {
     public void testGetAllBySubjectOrganization() throws IOException, CertificateException {
         CertificateManager certMan = new DBCertificateManager(sessionFactory);
 
-        Certificate savedStmRootCert = certMan.save(stmRootCaCert);
+        certMan.save(stmRootCaCert);
         certMan.save(stmEkCert);
+        Certificate savedStmInt02Cert = certMan.save(stmInt02CaCert);
         Certificate savedGsRootCa = certMan.save(gsTpmRootCaCert);
 
         Set<CertificateAuthorityCredential> retrievedCerts =
@@ -350,7 +354,7 @@ public class DBCertificateManagerTest extends SpringPersistenceTest {
         Assert.assertEquals(
                 retrievedCerts,
                 new HashSet<>(Arrays.asList(
-                        savedStmRootCert))
+                        savedStmInt02Cert))
         );
 
         Set<CertificateAuthorityCredential> secondRetrievedCerts =
