@@ -441,7 +441,7 @@ public class CertificateTest {
         Certificate issuerCert = getTestCertificate(FAKE_ROOT_CA_FILE);
         Certificate cert = getTestCertificate(INT_CA_CERT02);
 
-        Assert.assertFalse(!issuerCert.isIssuer(cert).isEmpty());
+        Assert.assertEquals(issuerCert.isIssuer(cert), "Certificate signature failed to verify");
         Assert.assertTrue(cert.isIssuer(issuerCert).isEmpty());
     }
 
