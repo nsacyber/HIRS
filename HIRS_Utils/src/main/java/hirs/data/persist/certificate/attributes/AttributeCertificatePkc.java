@@ -77,10 +77,11 @@ public class AttributeCertificatePkc extends ASN1Object {
     }
 
     /**
-     * This is a thing.
+     * This method returns a potential instance of this class based on the type of
+     * object.
      * @param obj base object
      * @return An instance of the class object.
-     * @throws IOException start it up
+     * @throws IOException If there is an issue parsing
      */
     public static AttributeCertificatePkc getInstance(final Object obj) throws IOException {
         if (obj instanceof AttributeCertificatePkc) {
@@ -132,14 +133,12 @@ public class AttributeCertificatePkc extends ASN1Object {
                 .getInstance(attributeArray[0]).getObjectParser(DERTaggedObject
                         .getInstance(attributeArray[0]).getTagNo(), true));
 
-
-
         return asn1Sequence;
     }
 
     /**
      * Getter for the OID that identifies if this is a PKC.
-     * @return an asn1objectidentifier object
+     * @return an ASN1ObjectIdentifier object
      */
     public ASN1ObjectIdentifier getCredentialType() {
         return ASN1ObjectIdentifier.getInstance(credentialOid.getObjectAt(0));

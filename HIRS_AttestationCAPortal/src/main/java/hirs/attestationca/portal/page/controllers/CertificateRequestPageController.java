@@ -571,7 +571,6 @@ public class CertificateRequestPageController extends PageController<NoPageParam
             return null;
         }
 
-        LOGGER.error("Certificate by BD Serial");
         switch (certificateType) {
             case PLATFORMCREDENTIAL:
                 return PlatformCredential
@@ -651,7 +650,7 @@ public class CertificateRequestPageController extends PageController<NoPageParam
 
     /**
      * The purpose of this method is to return the type of sub child object
-     * that has a parent of Platform Certificte dependin on the status of
+     * that has a parent of Platform Certificate depending on the status of
      * the object throwing an error
      * @param fileBytes encoded byte stream
      * @return an object of type PlatformCredential
