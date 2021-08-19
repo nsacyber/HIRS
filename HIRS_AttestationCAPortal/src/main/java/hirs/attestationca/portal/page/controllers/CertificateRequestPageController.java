@@ -649,6 +649,13 @@ public class CertificateRequestPageController extends PageController<NoPageParam
         }
     }
 
+    /**
+     * The purpose of this method is to return the type of sub child object
+     * that has a parent of Platform Certificte dependin on the status of
+     * the object throwing an error
+     * @param fileBytes encoded byte stream
+     * @return an object of type PlatformCredential
+     */
     private PlatformCredential getPlatformType(final byte[] fileBytes) {
         PlatformCredential pc;
 
@@ -656,9 +663,9 @@ public class CertificateRequestPageController extends PageController<NoPageParam
             pc = new PlatformCredential(fileBytes);
         } catch (IOException ioEx) {
             pc = getX509AttributeCredential(fileBytes);
-            if (pc == null) {
-
-            }
+//            if (pc == null) {
+//
+//            }
         }
 
         return pc;

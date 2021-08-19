@@ -148,7 +148,7 @@ public class X509AttributeCredential extends PlatformCredential {
     private ASN1Object getBaseEncoded(final int index) {
         ASN1Sequence topLevelItems = null;
         try {
-            ASN1Sequence.getInstance(ASN1Primitive.fromByteArray(this.getRawBytes()));
+            topLevelItems = ASN1Sequence.getInstance(ASN1Primitive.fromByteArray(getRawBytes()));
 
             switch (index) {
                 case SIGNATURE:
@@ -179,8 +179,6 @@ public class X509AttributeCredential extends PlatformCredential {
         if (!oid.equals(PLATFORM_PKC_CERT)) {
             throw new IOException("Invalid Public Key Credential: " + oid);
         }
-
-//        setTcgPlatformSpecifications(getAttributeCertificatePkc().getAttributes().toArray());
     }
 
     /**
