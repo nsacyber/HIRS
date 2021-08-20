@@ -1,11 +1,8 @@
 package hirs.appraiser;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.testng.AbstractTestNGSpringContextTests;
 import org.testng.Assert;
-import org.testng.annotations.Test;
 
 import java.util.List;
 
@@ -13,9 +10,9 @@ import java.util.List;
  * Unit tests for {@link AppraiserPluginManager}.
  *
  */
-@Test
-@ContextConfiguration(locations = { "classpath:spring-test-config.xml" })
-@TestPropertySource(locations = "classpath:collector.test.properties")
+//@Test
+//@ContextConfiguration(locations = { "classpath:spring-test-config.xml" })
+//@TestPropertySource(locations = "classpath:collector.test.properties")
 public class AppraiserPluginManagerTest extends AbstractTestNGSpringContextTests {
     @Autowired
     private AppraiserPluginManager appraiserPluginManager;
@@ -24,7 +21,7 @@ public class AppraiserPluginManagerTest extends AbstractTestNGSpringContextTests
      * Tests that the plugin manager is populated with plugins using a valid spring configuration.
      * file.
      */
-    @Test
+    //@Test
     public void pluginListPopulatedUsingSpringInjection() {
         Assert.assertNotNull(appraiserPluginManager,
                 "Verify spring is configured to autowire the AppraiserPluginManager");
@@ -40,7 +37,7 @@ public class AppraiserPluginManagerTest extends AbstractTestNGSpringContextTests
      * Test representing when there are no plugins to be injected by spring, that the list
      * of plugins returned is empty.
      */
-    @Test
+    //@Test
     public void pluginListEmptyWithoutInjectedPlugins() {
         AppraiserPluginManager emptyManager = new AppraiserPluginManager();
         Assert.assertTrue(emptyManager.getAppraisers().isEmpty(),
