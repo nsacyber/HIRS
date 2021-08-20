@@ -20,8 +20,9 @@ public class ComponentClassTest {
     @Test
     public void testGetComponentNoneUNK() throws URISyntaxException {
         String componentIdentifier = "00000001";
-        ComponentClass instance = new ComponentClass("TCG", Paths.get(this.getClass()
-                .getResource(JSON_FILE).toURI()), componentIdentifier);
+        ComponentClass instance = new ComponentClass("TCG",
+                Paths.get(this.getClass().getResource(JSON_FILE).toURI()),
+                componentIdentifier);
         String resultCategory = instance.getCategory();
         String resultComponent = instance.getComponent();
         Assert.assertEquals(resultComponent, "Unknown");
