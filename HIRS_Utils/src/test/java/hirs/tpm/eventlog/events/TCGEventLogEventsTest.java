@@ -136,6 +136,7 @@ public class TCGEventLogEventsTest {
      * Tests the processing of a Hand off Table event.
      *
      * @throws IOException when processing the test fails
+     * @throws URISyntaxException when processing the test fails
      */
     @Test
     public final void testHandOffTables() throws IOException, URISyntaxException {
