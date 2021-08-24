@@ -96,22 +96,6 @@ public class PlatformCredential extends DeviceAssociatedCertificate {
     private static final String PLATFORM_BASE_CERT = "2.23.133.8.2";
     private static final String PLATFORM_DELTA_CERT = "2.23.133.8.5";
 
-//    public static void main(String[] args) throws IOException {
-////        String file = "/home/tdmatth/Downloads/certificates_platform_scv.57MHZB3.cer";
-//        String file = "/home/tdmatth/Downloads/PlatformCredential_514.cer";
-//        Path path = Paths.get(file);
-//        X509Certificate parsedX509Cert;
-//        byte[] certificateBytes = Files.readAllBytes(path);
-//
-//        try (ByteArrayInputStream certInputStream = new ByteArrayInputStream(certificateBytes)) {
-//            CertificateFactory cf = CertificateFactory.getInstance("X.509");
-//
-//            PlatformCredential pc = new PlatformCredential(certificateBytes);
-//        } catch (CertificateException e) {
-//            throw new IOException("Cannot construct X509Certificate from the input stream", e);
-//        }
-//    }
-
     /**
      * TCG Platform Specification values
      * At this time these are placeholder values.
@@ -799,12 +783,10 @@ public class PlatformCredential extends DeviceAssociatedCertificate {
      * @throws IOException when reading the certificate.
      */
     public String getCPSuri() throws IOException {
-        if (!isX509()) {
-            Map<String, String> policyQualifier
-                    = getPolicyQualifier(getAttributeCertificate().getAcinfo());
-            if (policyQualifier.get("cpsURI") != null && !policyQualifier.get("cpsURI").isEmpty()) {
-                return policyQualifier.get("cpsURI");
-            }
+        Map<String, String> policyQualifier
+                = getPolicyQualifier(getAttributeCertificate().getAcinfo());
+        if (policyQualifier.get("cpsURI") != null && !policyQualifier.get("cpsURI").isEmpty()) {
+            return policyQualifier.get("cpsURI");
         }
 
         return null;

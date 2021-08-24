@@ -230,9 +230,6 @@ public abstract class Certificate extends ArchivableEntity {
     @JsonIgnore
     private final int certificateHash;
 
-    @JsonIgnore
-    private boolean isX509 = false;
-
     /**
      * This field exists to enforce a unique constraint on a hash over the certificate contents
      * and the certificate type.  This is to ensure the system only allows one copy of a
@@ -305,7 +302,6 @@ public abstract class Certificate extends ArchivableEntity {
         this.authoritySerialNumber = BigInteger.ZERO;
         this.crlPoints = null;
         this.publicKeySize = 0;
-        this.isX509 = false;
     }
 
     /**
@@ -356,7 +352,6 @@ public abstract class Certificate extends ArchivableEntity {
         // Extract certificate data
         switch (getCertificateType(this.certificateBytes)) {
             case X509_CERTIFICATE:
-                this.isX509 = true;
                 X509Certificate x509Certificate = getX509Certificate();
                 this.serialNumber = x509Certificate.getSerialNumber();
                 this.issuer = x509Certificate.getIssuerX500Principal().getName();
@@ -402,7 +397,6 @@ public abstract class Certificate extends ArchivableEntity {
                 }
                 break;
             case ATTRIBUTE_CERTIFICATE:
-                this.isX509 = false;
                 AttributeCertificate attCert = getAttributeCertificate();
                 AttributeCertificateInfo attCertInfo = attCert.getAcinfo();
                 if (attCertInfo == null) {
@@ -480,7 +474,6 @@ public abstract class Certificate extends ArchivableEntity {
                                             .getNotAfterTime());
                 break;
             default:
-                this.isX509 = false;
                 throw new IllegalArgumentException("Cannot recognize certificate type.");
         }
 
@@ -1028,14 +1021,6 @@ public abstract class Certificate extends ArchivableEntity {
      */
     public int getPublicKeySize() {
         return publicKeySize;
-    }
-
-    /**
-     * Getter for the type of certificate.
-     * @return boolean for the type of certificate
-     */
-    public boolean isX509() {
-        return isX509;
     }
 
     /**
