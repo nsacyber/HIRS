@@ -651,7 +651,8 @@ public class CertificateRequestPageController extends PageController<NoPageParam
     /**
      * The purpose of this method is to return the type of sub child object
      * that has a parent of Platform Certificate depending on the status of
-     * the object throwing an error
+     * the object throwing an error.
+     *
      * @param fileBytes encoded byte stream
      * @return an object of type PlatformCredential
      */
@@ -660,7 +661,7 @@ public class CertificateRequestPageController extends PageController<NoPageParam
 
         try {
             pc = new PlatformCredential(fileBytes);
-        } catch (IOException ioEx) {
+        } catch (IOException | IllegalArgumentException ex) {
             pc = getX509AttributeCredential(fileBytes);
 //            if (pc == null) {
 //
@@ -720,8 +721,6 @@ public class CertificateRequestPageController extends PageController<NoPageParam
                 if (certificateType.equals(PLATFORMCREDENTIAL)) {
                     PlatformCredential platformCertificate = getPlatformType(
                             certificate.getRawBytes());
-//                    X509AttributeCredential x509AttributeCredential = new X509AttributeCredential(
-//                            certificate.getRawBytes());
                     if (platformCertificate.isBase()) {
                         List<PlatformCredential> sharedCertificates = getCertificateByBoardSN(
                                 certificateType,
