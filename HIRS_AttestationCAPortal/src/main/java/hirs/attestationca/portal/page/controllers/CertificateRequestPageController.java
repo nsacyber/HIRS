@@ -394,11 +394,9 @@ public class CertificateRequestPageController extends PageController<NoPageParam
         PageMessages messages = new PageMessages();
 
         for (MultipartFile file : files) {
-            LOGGER.error("Parsing the certificate...");
             //Parse certificate
             Certificate certificate = parseCertificate(certificateType, file, messages);
 
-            LOGGER.error("Storing the certificate...");
             //Store only if it was parsed
             if (certificate != null) {
                 storeCertificate(
@@ -663,9 +661,10 @@ public class CertificateRequestPageController extends PageController<NoPageParam
             pc = new PlatformCredential(fileBytes);
         } catch (IOException | IllegalArgumentException ex) {
             pc = getX509AttributeCredential(fileBytes);
-//            if (pc == null) {
-//
-//            }
+            /**
+            if (pc == null) {
+                As we get more formats, this will expand
+            }**/
         }
 
         return pc;
@@ -727,7 +726,6 @@ public class CertificateRequestPageController extends PageController<NoPageParam
                                 platformCertificate.getPlatformSerial(),
                                 certificateManager);
                         if (sharedCertificates != null) {
-                            LOGGER.error("Shared Certificates");
                             for (PlatformCredential pc : sharedCertificates) {
                                 if (pc.isBase()) {
                                     final String failMessage = "Storing certificate failed: "
@@ -777,13 +775,6 @@ public class CertificateRequestPageController extends PageController<NoPageParam
             LOGGER.error(failMessage, e);
             return;
         }
-//        catch (IOException ioEx) {
-//            final String failMessage = String.format(
-//                    "Failed to parse uploaded file (%s): ", fileName);
-//            LOGGER.error(failMessage, ioEx);
-//            messages.addError(failMessage + ioEx.getMessage());
-//            return;
-//        }
 
         try {
             // if an identical certificate is archived, update the existing certificate to
