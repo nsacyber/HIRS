@@ -321,21 +321,21 @@ public final class SupplyChainCredentialValidator implements CredentialValidator
 
         // this needs to be a loop for all deltas, link to issue #110
         // check that they don't have the same serial number
-        for (PlatformCredential delta : deltaMapping.keySet()) {
+        for (PlatformCredential pc : deltaMapping.keySet()) {
             if (!basePlatformCredential.getPlatformSerial()
-                    .equals(delta.getPlatformSerial())) {
+                    .equals(pc.getPlatformSerial())) {
                 message = String.format("Base and Delta platform serial "
                                 + "numbers do not match (%s != %s)",
-                        delta.getPlatformSerial(),
+                        pc.getPlatformSerial(),
                         basePlatformCredential.getPlatformSerial());
                 LOGGER.error(message);
                 return new AppraisalStatus(FAIL, message);
             }
             // none of the deltas should have the serial number of the base
-            if (basePlatformCredential.getSerialNumber()
-                    .equals(delta.getSerialNumber())) {
+            if (!pc.isBase() && basePlatformCredential.getSerialNumber()
+                    .equals(pc.getSerialNumber())) {
                 message = String.format("Delta Certificate with same serial number as base. (%s)",
-                        delta.getSerialNumber());
+                        pc.getSerialNumber());
                 LOGGER.error(message);
                 return new AppraisalStatus(FAIL, message);
             }
