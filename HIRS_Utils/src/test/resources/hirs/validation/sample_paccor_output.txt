@@ -5,13 +5,22 @@
     },
     "COMPONENTS": [
         {
-            "MANUFACTURER": "Intel","MODEL": "Core i7","SERIAL": "Not Specified","REVISION": "Intel(R) Core(TM) i7-4790 CPU @ 3.60GHz"
+            "COMPONENTCLASS": {
+                    "COMPONENTCLASSREGISTRY": "2.23.133.18.3.1",
+                    "COMPONENTCLASSVALUE": "00010002"
+                },"MANUFACTURER": "Intel","MODEL": "Core i7","SERIAL": "Not Specified","REVISION": "Intel(R) Core(TM) i7-4790 CPU @ 3.60GHz"
         },
         {
-            "MANUFACTURER": "Intel Corporation","MODEL": "Ethernet Connection I217-V", "FIELDREPLACEABLE": "false","SERIAL": "23:94:17:ba:86:5e", "REVISION": "00"
+            "COMPONENTCLASS": {
+                    "COMPONENTCLASSREGISTRY": "2.23.133.18.3.1",
+                    "COMPONENTCLASSVALUE": "00050004"
+                },"MANUFACTURER": "Intel Corporation","MODEL": "Ethernet Connection I217-V", "FIELDREPLACEABLE": "false","SERIAL": "23:94:17:ba:86:5e", "REVISION": "00"
         },
         {
-            "MANUFACTURER": "Intel Corporation","MODEL": "82580 Gigabit Network Connection", "FIELDREPLACEABLE": "false", "SERIAL": "90:e2:ba:31:83:10", "REVISION": ""
+            "COMPONENTCLASS": {
+                    "COMPONENTCLASSREGISTRY": "2.23.133.18.3.1",
+                    "COMPONENTCLASSVALUE": "00090002"
+                },"MANUFACTURER": "Intel Corporation","MODEL": "82580 Gigabit Network Connection", "FIELDREPLACEABLE": "false", "SERIAL": "90:e2:ba:31:83:10", "REVISION": ""
         }
     ],
     "PROPERTIES": [
