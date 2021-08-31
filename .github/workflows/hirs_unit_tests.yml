@@ -61,7 +61,7 @@ jobs:
             cp -r /HIRS/HIRS_Utils/build/reports/ /HIRS/artifacts/reports/HIRS_Utils/.; \
             ./gradlew :TPM_Utils:clean :TPM_Utils:build :TPM_Utils:test; \
             echo "Build or Unit tests failed, Reports will be posted."; \
-           else; \
+           else \
             cp /HIRS/HIRS_AttestationCA/build/libs/HIRS_AttestationCA.war /HIRS/artifacts/wars/.; \
             cp /HIRS/HIRS_AttestationCAPortal/build/libs/HIRS_AttestationCAPortal.war /HIRS/artifacts/wars/.; \
             echo "Build Worked"; \
