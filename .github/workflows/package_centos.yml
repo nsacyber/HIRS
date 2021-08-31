@@ -34,7 +34,7 @@ jobs:
        mkdir -p artifacts/rpms
     - name: Create HIRS packages
       run: |
-       echo ${{ secrets.DOCKER_PWD }} | docker login -u ${{ secrets.DOCKER_USER }} --password-stdin
+       echo ${{ secrets.DOCKER_HUB_ACCESS_TOKEN }} | docker login -u ${{ secrets.DOCKER_HUB_USERNAME }} --password-stdin
        docker run --rm \
        -v $(pwd):/HIRS hirs/hirs-ci:centos7 /bin/bash \
        -c 'pushd /HIRS; \
