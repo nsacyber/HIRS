@@ -1,11 +1,10 @@
 # This workflow will build HIRS, run unit tests, and create HIRS artifacts
 
 name: HIRS Build and Unit Test
-  description "Build and run Unit Tests"
 
-on: 
+on:
   push:
-   # Allows you to run this workflow manually from the Actions tab
+   # allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
 
 jobs:
@@ -44,28 +43,37 @@ jobs:
        docker run --rm \
        -v $(pwd):/HIRS hirs/hirs-ci:centos7 /bin/bash \
        -c 'pushd /HIRS; \
-           ./gradlew clean build -x test :tools/tcg_rim_tool:build; \
-           gradle_status=$?; \
-           if (( $gradle_status != "0" )) ; then \
+           gradle_status=0; \
+
             ./gradlew :HIRS_AttestationCA:clean :HIRS_AttestationCA:build :HIRS_AttestationCA:test; \
+            if (( $? != "0" )) ; then gradle_status=1; fi; \
             cp -r /HIRS/HIRS_AttestationCA/build/reports/ /HIRS/artifacts/reports/HIRS_AttestationCA/.; \
             ./gradlew :HIRS_AttestationCAPortal:clean :HIRS_AttestationCAPortal:build :HIRS_AttestationCAPortal:test; \
+            if (( $? != "0" )) ; then gradle_status=1; fi; \
             cp -r /HIRS/HIRS_AttestationCAPortal/build/reports/ /HIRS/artifacts/reports/HIRS_AttestationCAPortal/.; \
             ./gradlew :HIRS_Provisioner:clean :HIRS_Provisioner:build :HIRS_Provisioner:test; \
+            if (( $? != "0" )) ; then gradle_status=1; fi; \
             cp -r /HIRS/HIRS_Provisioner/build/reports/ /HIRS/artifacts/reports/HIRS_Provisioner/.; \
             ./gradlew :HIRS_ProvisionerTPM2:clean :HIRS_ProvisionerTPM2:build :HIRS_ProvisionerTPM2:test; \
+            if (( $? != "0" )) ; then gradle_status=1; fi; \
             cp -r /HIRS/HIRS_ProvisionerTPM2/docs/ /HIRS/artifacts/reports/HIRS_ProvisionerTPM2/.; \
             ./gradlew :HIRS_Structs:clean :HIRS_Structs:build :HIRS_Structs:test; \
+            if (( $? != "0" )) ; then gradle_status=1; fi; \
             cp -r /HIRS/HIRS_Structs/build/reports/ /HIRS/artifacts/reports/HIRS_Structs/.; \
             ./gradlew :HIRS_Utils:clean :HIRS_Utils:build :HIRS_Utils:test; \
+            if (( $? != "0" )) ; then gradle_status=1; fi; \
             cp -r /HIRS/HIRS_Utils/build/reports/ /HIRS/artifacts/reports/HIRS_Utils/.; \
             ./gradlew :TPM_Utils:clean :TPM_Utils:build :TPM_Utils:test; \
-            echo "Build or Unit tests failed, Reports will be posted."; \
-           else \
-            cp /HIRS/HIRS_AttestationCA/build/libs/HIRS_AttestationCA.war /HIRS/artifacts/wars/.; \
-            cp /HIRS/HIRS_AttestationCAPortal/build/libs/HIRS_AttestationCAPortal.war /HIRS/artifacts/wars/.; \
-            echo "Build Worked"; \
-          fi; popd;' \
+            if (( $? != "0" )) ; then gradle_status=1; fi; \
+            
+        # Use the war file archive to fail the Build ACA tests by not placing them in the artifacts folder 
+            if (( $gradle_status == "0" )) ; then \
+                cp /HIRS/HIRS_AttestationCA/build/libs/HIRS_AttestationCA.war /HIRS/artifacts/wars/.; \
+                cp /HIRS/HIRS_AttestationCAPortal/build/libs/HIRS_AttestationCAPortal.war /HIRS/artifacts/wars/.; \
+                echo "Build Worked"; \
+            else \
+             echo "Build Failed"; \
+            fi; popd;' \
     - name: Archive Report files 
       uses: actions/upload-artifact@v2
       with:
