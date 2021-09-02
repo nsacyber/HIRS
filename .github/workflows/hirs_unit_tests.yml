@@ -44,7 +44,7 @@ jobs:
        docker run --rm \
        -v $(pwd):/HIRS hirs/hirs-ci:centos7 /bin/bash \
        -c 'pushd /HIRS; \
-           ./gradlew clean build; \
+           ./gradlew clean build -x test :tools/tcg_rim_tool:build; \
            gradle_status=$?; \
            if (( $gradle_status != "0" )) ; then \
             ./gradlew :HIRS_AttestationCA:clean :HIRS_AttestationCA:build :HIRS_AttestationCA:test; \
