@@ -14,7 +14,9 @@ public class PolicyPageModel {
     private boolean enablePcCertificateAttributeValidation;
     private boolean enableFirmwareValidation;
     private boolean issueAttestationCertificate;
+    private boolean issueDevIdCertificate;
     private boolean generateOnExpiration;
+    private boolean devIdExpirationFlag;
     private boolean enableIgnoreIma;
     private boolean enableIgnoreTboot;
     private boolean enableIgnoreGpt;
@@ -25,14 +27,19 @@ public class PolicyPageModel {
     private String ecValidate;
     private String fmValidate;
     private String attestationCertificateIssued;
+    private String devIdCertificateIssued;
     private String generationExpirationOn;
+    private String devIdExpirationChecked;
     private String numOfValidDays;
     private String reissueThreshold;
+    private String devIdReissueThreshold;
     private String ignoreIma;
     private String ignoretBoot;
     private String ignoreGpt;
     private String expirationValue;
+    private String devIdExpirationValue;
     private String thresholdValue;
+    private String devIdThresholdValue;
 
     /**
      * Constructor. Sets fields from policy.
@@ -45,7 +52,9 @@ public class PolicyPageModel {
         this.enablePcCertificateAttributeValidation = policy.isPcAttributeValidationEnabled();
         this.enableFirmwareValidation = policy.isFirmwareValidationEnabled();
         this.issueAttestationCertificate = policy.isIssueAttestationCertificate();
+        this.issueDevIdCertificate = policy.isIssueDevIdCertificate();
         this.generateOnExpiration = policy.isGenerateOnExpiration();
+        this.devIdExpirationFlag = policy.isDevIdExpirationFlag();
         this.numOfValidDays = policy.getValidityDays();
         this.reissueThreshold = policy.getReissueThreshold();
         this.enableIgnoreIma = policy.isIgnoreImaEnabled();
@@ -53,6 +62,9 @@ public class PolicyPageModel {
         this.enableIgnoreGpt = policy.isIgnoreGptEnabled();
         this.expirationValue = policy.getValidityDays();
         this.thresholdValue = policy.getReissueThreshold();
+        this.devIdExpirationValue = policy.getDevIdValidityDays();
+        this.devIdReissueThreshold = policy.getDevIdReissueThreshold();
+        this.devIdThresholdValue = policy.getDevIdReissueThreshold();
     }
 
     /**
@@ -104,6 +116,15 @@ public class PolicyPageModel {
      */
     public boolean isIssueAttestationCertificate() {
         return issueAttestationCertificate;
+    }
+
+    /**
+     * Gets the Dev ID Certificate issued State.
+     *
+     * @return the issued state.
+     */
+    public boolean isIssueDevIdCertificate() {
+        return issueDevIdCertificate;
     }
 
     /**
@@ -185,12 +206,12 @@ public class PolicyPageModel {
     }
 
     /**
-     * Gets the attestation certificate issued state.
+     * Gets the DevID certificate issued state.
      *
      * @return the model string representation of this field.
      */
-    public String getGenerationExpirationOn() {
-        return generationExpirationOn;
+    public String getDevIdCertificateIssued() {
+        return devIdCertificateIssued;
     }
 
     /**
@@ -209,6 +230,15 @@ public class PolicyPageModel {
      */
     public String getReissueThreshold() {
         return reissueThreshold;
+    }
+
+    /**
+     * Gets the number of selected threshold days.
+     *
+     * @return the number of the days for reissue
+     */
+    public String getDevIdReissueThreshold() {
+        return devIdReissueThreshold;
     }
 
     /**
@@ -280,9 +310,17 @@ public class PolicyPageModel {
      *
      * @param issueAttestationCertificate true if generating Certificates.
      */
-    public void setIssueAttestationCertificate(
-            final boolean issueAttestationCertificate) {
+    public void setIssueAttestationCertificate(final boolean issueAttestationCertificate) {
         this.issueAttestationCertificate = issueAttestationCertificate;
+    }
+
+    /**
+     * Sets the Dev ID Certificate Issued state.
+     *
+     * @param issueDevIdCertificate true if generating Certificates.
+     */
+    public void setIssueDevIdCertificate(final boolean issueDevIdCertificate) {
+        this.issueDevIdCertificate = issueDevIdCertificate;
     }
 
     /**
@@ -368,6 +406,24 @@ public class PolicyPageModel {
     }
 
     /**
+     * Sets the Issued DevID Certificate state.
+     *
+     * @param devIdCertificateIssued "checked" if generating certificates.
+     */
+    public void setDevIdCertificateIssued(final String devIdCertificateIssued) {
+        this.devIdCertificateIssued = devIdCertificateIssued;
+    }
+
+    /**
+     * Gets the attestation certificate issued state.
+     *
+     * @return the model string representation of this field.
+     */
+    public String getGenerationExpirationOn() {
+        return generationExpirationOn;
+    }
+
+    /**
      * Sets the generation expiration state.
      *
      * @param generationExpirationOn "checked" if generating expiration is on.
@@ -375,6 +431,43 @@ public class PolicyPageModel {
     public void setGenerationExpirationOn(
             final String generationExpirationOn) {
         this.generationExpirationOn = generationExpirationOn;
+    }
+
+    /**
+     * Gets the attestation certificate issued state.
+     *
+     * @return the model string representation of this field.
+     */
+    public String getDevIdExpirationChecked() {
+        return devIdExpirationChecked;
+    }
+
+    /**
+     * Sets the generation expiration state.
+     *
+     * @param devIdExpirationChecked "checked" if generating expiration is on.
+     */
+    public void setDevIdExpirationChecked(
+            final String devIdExpirationChecked) {
+        this.devIdExpirationChecked = devIdExpirationChecked;
+    }
+
+    /**
+     * Gets the DevID certificate issued state.
+     *
+     * @return the model string representation of this field.
+     */
+    public boolean getDevIdExpirationFlag() {
+        return devIdExpirationFlag;
+    }
+
+    /**
+     * Sets the generation expiration state.
+     *
+     * @param devIdExpirationFlag "checked" if generating expiration is on.
+     */
+    public void setDevIdExpirationFlag(final boolean devIdExpirationFlag) {
+        this.devIdExpirationFlag = devIdExpirationFlag;
     }
 
     /**
@@ -421,6 +514,22 @@ public class PolicyPageModel {
     }
 
     /**
+     * Getter for the DevID expiration value.
+     * @return the value
+     */
+    public String getDevIdExpirationValue() {
+        return devIdExpirationValue;
+    }
+
+    /**
+     * Setter for the DevID expiration value.
+     * @param devIdExpirationValue string value
+     */
+    public void setDevIdExpirationValue(final String devIdExpirationValue) {
+        this.devIdExpirationValue = devIdExpirationValue;
+    }
+
+    /**
      * Getter for the expiration value.
      * @return the thresholdValue
      */
@@ -436,6 +545,22 @@ public class PolicyPageModel {
         this.thresholdValue = thresholdValue;
     }
 
+    /**
+     * Getter for the expiration value.
+     * @return the devIdThresholdValue
+     */
+    public String getDevIdThresholdValue() {
+        return devIdThresholdValue;
+    }
+
+    /**
+     * Setter for the expiration value.
+     * @param devIdThresholdValue string value
+     */
+    public void setDevIdThresholdValue(final String devIdThresholdValue) {
+        this.devIdThresholdValue = devIdThresholdValue;
+    }
+
     @Override
     public String toString() {
         return "PolicyPageModel{"
@@ -445,7 +570,18 @@ public class PolicyPageModel {
                 + enablePcCertificateAttributeValidation
                 + ", enableFirmwareValidation=" + enableFirmwareValidation
                 + ", issueAttestationCertificate=" + issueAttestationCertificate
+                + ", issueDevIdCertificate=" + issueDevIdCertificate
                 + ", generateOnExpiration=" + generateOnExpiration
-                + ", numOfValidDays=" + numOfValidDays + "}";
+                + ", numOfValidDays=" + numOfValidDays
+                + ", reissueThreshold=" + reissueThreshold
+                + ", enableIgnoreIma=" + enableIgnoreIma
+                + ", enableIgnoreTboot=" + enableIgnoreTboot
+                + ", enableIgnoreGpt=" + enableIgnoreGpt
+                + ", expirationValue=" + expirationValue
+                + ", thresholdValue=" + thresholdValue
+                + ", devIdExpirationValue=" + devIdExpirationValue
+                + ", devIdReissueThreshold=" + devIdReissueThreshold
+                + ", devIdThresholdValue=" + devIdThresholdValue
+                + "}";
     }
 }

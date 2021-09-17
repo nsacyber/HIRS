@@ -116,6 +116,7 @@
                 </li>
             </div>
             <br />
+
             <%-- Generate Attestation Certificate--%>
             <div class="aca-input-box">
                 <form:form method="POST" modelAttribute="initialData" action="policy/update-issue-attestation">
@@ -129,8 +130,8 @@
                             </div>
                         </my:editor>
                 </form:form>
-                        <ul>
-                <form:form method="POST" modelAttribute="initialData" action="policy/update-expire-on">
+                    <ul>
+                        <form:form method="POST" modelAttribute="initialData" action="policy/update-expire-on">
                             <li>Attestation Certificate Validity period: ${initialData.generateOnExpiration ? 'Enabled' : 'Disabled'}
                                 <my:editor id="issuedCertificatePolicyExpirationEditor" label="Edit Settings">
                                     <div class="radio">
@@ -142,8 +143,8 @@
                                     </div>
                                 </my:editor>
                             </li>
-                </form:form>
-                <form:form method="POST" modelAttribute="initialData" action="policy/update-threshold">
+                        </form:form>
+                        <form:form method="POST" modelAttribute="initialData" action="policy/update-threshold">
                             <li>Attestation Certificate Renewal period: ${initialData.generateOnExpiration ? 'Enabled' : 'Disabled'}
                                 <my:editor id="issuedCertificatePolicyGenerateEditor" label="Edit Settings">
                                     <div class="radio">
@@ -155,9 +156,54 @@
                                     </div>
                                 </my:editor>
                             </li>
+                        </form:form>
+                    </ul>
+                </li>
+            </div>
+            <br />
+
+            <%-- Generate DevID Certificate--%>
+            <div class="aca-input-box">
+                <form:form method="POST" modelAttribute="initialData" action="policy/update-issue-devid">
+                    <li>Generate DevID Certificate: ${initialData.issueDevIdCertificate ? 'Enabled' : 'Disabled'}
+                        <my:editor id="issuedDevIdCertificatePolicyEditor" label="Edit Settings">
+                            <div class="radio">
+                                <label><input id="devIdTop" type="radio" name="devIdCertificateIssued" ${initialData.issueDevIdCertificate ? '' : 'checked'} value="unchecked"/> Never generate a DevID Certificate</label>
+                            </div>
+                            <div class="radio">
+                                <label><input id="devIdMid" type="radio" name="devIdCertificateIssued" ${initialData.issueDevIdCertificate ? 'checked' : ''} value="checked"/> Conditionally generate an DevID Certificate before 'Not After' expiration date</label>
+                            </div>
+                        </my:editor>
                 </form:form>
-                        </ul>
-                    </li>
+                    <ul>
+                        <form:form method="POST" modelAttribute="initialData" action="policy/update-devid-expire-on">
+                            <li>DevID Certificate Validity period: ${initialData.devIdExpirationFlag ? 'Enabled' : 'Disabled'}
+                                <my:editor id="issuedDevIdCertificatePolicyExpirationEditor" label="Edit Settings">
+                                    <div class="radio">
+                                        <label>
+                                        <input id="devIdBot" type="checkbox" name="devIdExpirationChecked" ${initialData.devIdExpirationFlag ? 'checked' : ''} value="checked" />
+                                        Attestation Certificate validity period (Default 3651 days)<br />
+                                        Select period in days: <input id="devIdExpirationValue" type="text" name="devIdExpirationValue" value="${initialData.devIdExpirationValue}" />
+                                        </label>
+                                    </div>
+                                </my:editor>
+                            </li>
+                        </form:form>
+                        <form:form method="POST" modelAttribute="initialData" action="policy/update-devid-threshold">
+                            <li>DevID Certificate Renewal period: ${initialData.devIdExpirationFlag ? 'Enabled' : 'Disabled'}
+                                <my:editor id="issuedDevIdCertificatePolicyGenerateEditor" label="Edit Settings">
+                                    <div class="radio">
+                                        <label>
+                                        <input id="devIdBot" type="checkbox" name="devIdExpirationChecked" ${initialData.devIdExpirationFlag ? 'checked' : ''} value="checked" />
+                                        Renew 'n' days before DevID Certificate's  'Not After' Validity date (Default 365 days)<br />
+                                        Select 'n' period in days: <input id="devIdThresholdValue" type="text" name="devIdThresholdValue" value="${initialData.devIdThresholdValue}" />
+                                        </label>
+                                    </div>
+                                </my:editor>
+                            </li>
+                        </form:form>
+                    </ul>
+                </li>
             </div>
         </ul>
     </jsp:body>
