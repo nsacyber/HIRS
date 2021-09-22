@@ -22,6 +22,7 @@ import hirs.data.persist.SwidResource;
 import hirs.data.persist.certificate.Certificate;
 import hirs.data.persist.certificate.EndorsementCredential;
 import hirs.data.persist.certificate.IssuedAttestationCertificate;
+import hirs.data.persist.certificate.IssuedCertificate;
 import hirs.data.persist.certificate.PlatformCredential;
 import hirs.data.persist.info.FirmwareInfo;
 import hirs.data.persist.info.HardwareInfo;
@@ -1850,7 +1851,7 @@ public abstract class AbstractAttestationCertificateAuthority
                                             final EndorsementCredential endorsementCredential,
                                             final Set<PlatformCredential> platformCredentials,
                                             final Device device) {
-        IssuedAttestationCertificate issuedAc;
+        IssuedCertificate issuedAc;
         boolean generateCertificate = true;
         SupplyChainPolicy scp = this.supplyChainValidationService.getPolicy();
         Date currentDate = new Date();
@@ -1861,7 +1862,7 @@ public abstract class AbstractAttestationCertificateAuthority
                     derEncodedAttestationCertificate, endorsementCredential, platformCredentials);
 
             if (scp != null) {
-                issuedAc = IssuedAttestationCertificate.select(certificateManager)
+                issuedAc = IssuedCertificate.select(certificateManager)
                         .byDeviceId(device.getId()).getCertificate();
 
                 generateCertificate = scp.isIssueAttestationCertificate();

@@ -1,6 +1,9 @@
 package hirs.utils;
 
 import java.math.BigInteger;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+import java.security.SecureRandom;
 
 /**
  * Utilities for working with hex strings and byte arrays.
@@ -18,6 +21,33 @@ public final class HexUtils {
     public static final int FF_BYTE = 0xff;
 
     private HexUtils() { }
+
+
+    /**
+     * Computes the sha256 hash of the given blob.
+     * @param blob byte array to take the hash of
+     * @return sha256 hash of blob
+     * @throws java.security.NoSuchAlgorithmException improper algorithm selected
+     */
+    public static byte[] sha256hash(final byte[] blob) throws NoSuchAlgorithmException {
+        MessageDigest md = MessageDigest.getInstance("SHA-256");
+        md.update(blob);
+        return md.digest();
+    }
+
+    /**
+     * Generates a array of random bytes.
+     *
+     * @param numberOfBytes
+     *            to be generated
+     * @return byte array filled with the specified number of bytes.
+     */
+    public static byte[] generateRandomBytes(final int numberOfBytes) {
+        byte[] bytes = new byte[numberOfBytes];
+        SecureRandom random = new SecureRandom();
+        random.nextBytes(bytes);
+        return bytes;
+    }
 
     /**
      * Converts a binary hex string to a byte array.

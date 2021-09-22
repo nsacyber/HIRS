@@ -8,7 +8,7 @@ public interface AttestationCertificateAuthority {
     /**
      * The default size for IV blocks.
      */
-    int DEFAULT_IV_SIZE = 16;
+    public int DEFAULT_IV_SIZE = 16;
 
     /**
      * Processes a given {@link hirs.structs.elements.aca.IdentityRequestEnvelope} and

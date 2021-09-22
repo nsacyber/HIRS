@@ -10,9 +10,9 @@ import hirs.data.persist.certificate.ConformanceCredential;
 import hirs.data.persist.certificate.DeviceAssociatedCertificate;
 import hirs.data.persist.certificate.EndorsementCredential;
 import hirs.data.persist.certificate.IssuedAttestationCertificate;
+import hirs.data.persist.certificate.IssuedCertificate;
 import hirs.data.persist.certificate.PlatformCredential;
 import hirs.data.persist.certificate.PlatformCredentialTest;
-
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.hibernate.Session;
@@ -217,10 +217,10 @@ public class DBCertificateManagerTest extends SpringPersistenceTest {
                 PlatformCredential.select(certMan).getCertificate()
         );
 
-        IssuedAttestationCertificate issuedAttestationCertificate =
-                IssuedAttestationCertificate.select(certMan).getCertificate();
+        IssuedCertificate issuedAttestationCertificate =
+                IssuedCertificate.select(certMan).getCertificate();
         Assert.assertEquals(
-                testCertificates.get(IssuedAttestationCertificate.class),
+                testCertificates.get(IssuedCertificate.class),
                 issuedAttestationCertificate);
 
         // verify issued cert's references
@@ -413,11 +413,11 @@ public class DBCertificateManagerTest extends SpringPersistenceTest {
         ((DeviceAssociatedCertificate) hirsClientCert).setDevice(savedDevice);
         Certificate savedCert = certMan.save(hirsClientCert);
 
-        Set<IssuedAttestationCertificate> retrievedCerts =
-                IssuedAttestationCertificate.select(certMan).byDeviceId(savedDevice.getId()).
+        Set<IssuedCertificate> retrievedCerts =
+                IssuedCertificate.select(certMan).byDeviceId(savedDevice.getId()).
                         getCertificates();
         Assert.assertEquals(retrievedCerts.size(), 1);
-        for (IssuedAttestationCertificate cert: retrievedCerts) {
+        for (IssuedCertificate cert: retrievedCerts) {
             Assert.assertEquals(savedCert.getId(), cert.getId());
         }
     }

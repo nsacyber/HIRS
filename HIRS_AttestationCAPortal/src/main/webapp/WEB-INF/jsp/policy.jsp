@@ -182,7 +182,7 @@
                                     <div class="radio">
                                         <label>
                                         <input id="devIdBot" type="checkbox" name="devIdExpirationChecked" ${initialData.devIdExpirationFlag ? 'checked' : ''} value="checked" />
-                                        Attestation Certificate validity period (Default 3651 days)<br />
+                                        DevID Certificate validity period (Default 3651 days)<br />
                                         Select period in days: <input id="devIdExpirationValue" type="text" name="devIdExpirationValue" value="${initialData.devIdExpirationValue}" />
                                         </label>
                                     </div>

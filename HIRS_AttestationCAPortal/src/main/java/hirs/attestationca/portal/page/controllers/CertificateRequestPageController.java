@@ -12,7 +12,7 @@ import hirs.attestationca.portal.util.CertificateStringMapBuilder;
 import hirs.data.persist.certificate.Certificate;
 import hirs.data.persist.certificate.CertificateAuthorityCredential;
 import hirs.data.persist.certificate.EndorsementCredential;
-import hirs.data.persist.certificate.IssuedAttestationCertificate;
+import hirs.data.persist.certificate.IssuedCertificate;
 import hirs.data.persist.certificate.PlatformCredential;
 import hirs.persist.CertificateManager;
 import hirs.persist.CriteriaModifier;
@@ -446,7 +446,7 @@ public class CertificateRequestPageController extends PageController<NoPageParam
             case ENDORSEMENTCREDENTIAL:
                 return EndorsementCredential.class;
             case ISSUEDCERTIFICATES:
-                return IssuedAttestationCertificate.class;
+                return IssuedCertificate.class;
             case TRUSTCHAIN:
                 return CertificateAuthorityCredential.class;
             default:
@@ -499,7 +499,7 @@ public class CertificateRequestPageController extends PageController<NoPageParam
                         .byEntityId(uuid)
                         .getCertificate();
             case ISSUEDCERTIFICATES:
-                return IssuedAttestationCertificate
+                return IssuedCertificate
                         .select(certificateManager)
                         .byEntityId(uuid)
                         .getCertificate();
