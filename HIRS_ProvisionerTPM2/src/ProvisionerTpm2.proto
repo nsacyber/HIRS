@@ -67,10 +67,11 @@ message IdentityClaim {
   required DeviceInfo dv = 1;
   required bytes ak_public_area = 2;
   required bytes ek_public_area = 3;
-  optional bytes endorsement_credential = 4;
-  repeated bytes platform_credential = 5;
-  optional string client_version = 6;
-  optional string paccorOutput = 7;
+  optional bytes dev_id_public_area = 4;
+  optional bytes endorsement_credential = 5;
+  repeated bytes platform_credential = 6;
+  optional string client_version = 7;
+  optional string paccorOutput = 8;
 }
 
 message TpmQuote {
