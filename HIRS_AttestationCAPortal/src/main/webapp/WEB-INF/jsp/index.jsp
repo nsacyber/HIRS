@@ -55,10 +55,10 @@
                     </div>
                     <h3>
                         <a href="${certificateRequest}/issued-certificates">
-                            <img src="${icons}/ic_library_books_black_24dp.png" /> Issued Attestation Certificates
+                            <img src="${icons}/ic_library_books_black_24dp.png" /> Issued Certificates
                         </a>
                     </h3>        
-                    <h4>View Attestation Certificates issued by this CA</h4>
+                    <h4>View Certificates issued by this CA</h4>
                     <h3>
                         <a href="${portal}/validation-reports"><img src="${icons}/ic_assignment_black_24dp.png" /> Validation Reports</a>
                     </h3> 

@@ -12,7 +12,7 @@
     <jsp:attribute name="script">
         <script type="text/javascript" src="${lib}/jquery.spring-friendly/jquery.spring-friendly.js"></script>
     </jsp:attribute>
-    <jsp:attribute name="pageHeaderTitle">Issued Attestation Certificates</jsp:attribute>
+    <jsp:attribute name="pageHeaderTitle">Issued Certificates</jsp:attribute>
 
     <jsp:body>
         <div class="aca-data-table">

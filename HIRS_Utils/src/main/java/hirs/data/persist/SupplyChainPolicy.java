@@ -49,13 +49,25 @@ public class SupplyChainPolicy extends Policy {
     private boolean issueAttestationCertificate = true;
 
     @Column(nullable = false)
+    private boolean issueDevIdCertificate = true;
+
+    @Column(nullable = false)
     private String validityDays = TEN_YEARS;
+
+    @Column(nullable = false)
+    private String devIdValidityDays = TEN_YEARS;
 
     @Column(nullable = false)
     private String reissueThreshold = YEAR;
 
     @Column(nullable = false)
+    private String devIdReissueThreshold = YEAR;
+
+    @Column(nullable = false)
     private boolean generateOnExpiration = false;
+
+    @Column(nullable = false)
+    private boolean devIdExpirationFlag = false;
 
     @Embedded
     private PCRPolicy pcrPolicy = new PCRPolicy();
@@ -238,8 +250,7 @@ public class SupplyChainPolicy extends Policy {
      * valid if their supply chain is otherwise verified.
      *
      * @param enableExpiredCertificateValidation whether or not to allow expired credentials and
-     *                                           certificates to be considered
-     * valid
+     *                                           certificates to be considered valid
      */
     public void setExpiredCertificateValidationEnabled(
             final boolean enableExpiredCertificateValidation) {
@@ -301,6 +312,22 @@ public class SupplyChainPolicy extends Policy {
     }
 
     /**
+     * Returns whether or not to generate an DevID Issued Certificate.
+     * @return current state for generation.
+     */
+    public boolean isIssueDevIdCertificate() {
+        return issueDevIdCertificate;
+    }
+
+    /**
+     * Sets whether or not to generate an DevID Issued Certificate.
+     * @param issueDevIdCertificate the flag for generation.
+     */
+    public void setIssueDevIdCertificate(final boolean issueDevIdCertificate) {
+        this.issueDevIdCertificate = issueDevIdCertificate;
+    }
+
+    /**
      * Getter for the number of days for the certificates validity.
      * @return number of days
      */
@@ -314,6 +341,22 @@ public class SupplyChainPolicy extends Policy {
      */
     public void setValidityDays(final String validityDays) {
         this.validityDays = validityDays;
+    }
+
+    /**
+     * Getter for the number of days for the certificates validity.
+     * @return number of days
+     */
+    public String getDevIdValidityDays() {
+        return devIdValidityDays;
+    }
+
+    /**
+     * Setter for the number of days for validity.
+     * @param devIdValidityDays validity.
+     */
+    public void setDevIdValidityDays(final String devIdValidityDays) {
+        this.devIdValidityDays = devIdValidityDays;
     }
 
     /**
@@ -335,6 +378,24 @@ public class SupplyChainPolicy extends Policy {
     }
 
     /**
+     * Getter for the number of days before the expiration to reissue
+     * a certificate.
+     * @return number of days
+     */
+    public String getDevIdReissueThreshold() {
+        return devIdReissueThreshold;
+    }
+
+    /**
+     * Setter for the number of days before the expiration to reissue
+     * a certificate.
+     * @param devIdReissueThreshold validity.
+     */
+    public void setDevIdReissueThreshold(final String devIdReissueThreshold) {
+        this.devIdReissueThreshold = devIdReissueThreshold;
+    }
+
+    /**
      * Getter for the state of when to generate a certificate.
      * @return true or false
      */
@@ -348,5 +409,21 @@ public class SupplyChainPolicy extends Policy {
      */
     public void setGenerateOnExpiration(final boolean generateOnExpiration) {
         this.generateOnExpiration = generateOnExpiration;
+    }
+
+    /**
+     * Getter for the state of when to generate a certificate.
+     * @return true or false
+     */
+    public boolean isDevIdExpirationFlag() {
+        return devIdExpirationFlag;
+    }
+
+    /**
+     * Setter for the state of when to generate a certificate.
+     * @param devIdExpirationFlag sets true or false
+     */
+    public void setDevIdExpirationFlag(final boolean devIdExpirationFlag) {
+        this.devIdExpirationFlag = devIdExpirationFlag;
     }
 }

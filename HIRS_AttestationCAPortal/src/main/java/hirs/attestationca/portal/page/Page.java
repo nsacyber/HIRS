@@ -30,7 +30,7 @@ public enum Page {
     /**
      * Page to display issued certificates.
      */
-    ISSUED_CERTIFICATES("Issued Attestation Certificates", "ic_library_books",
+    ISSUED_CERTIFICATES("Issued Certificates", "ic_library_books",
         null, "certificate-request/"),
     /**
      * Page to display certificate validation reports.
