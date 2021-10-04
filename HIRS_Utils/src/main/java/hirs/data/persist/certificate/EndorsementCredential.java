@@ -100,7 +100,7 @@ public class EndorsementCredential extends DeviceAssociatedCertificate {
     private static final String CREDENTIAL_TYPE_LABEL = "1.3.6.1.5.5.7.2.2";
 
     // number of extra bytes potentially present in a cert header.
-    private static final int EK_CERT_HEADER_BYTE_COUNT = 7;
+    private static final int EK_CERT_HEADER_BYTE_COUNT = 8;
 
     private static final Logger LOG = LogManager.getLogger(EndorsementCredential.class);
 
@@ -315,7 +315,6 @@ public class EndorsementCredential extends DeviceAssociatedCertificate {
 
             ASN1Primitive obj = asn1In.readObject();
             ASN1Sequence seq;
-
             while (obj != null) {
                 seq = ASN1Sequence.getInstance(obj);
                 parseSequence(seq, false, null);

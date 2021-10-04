@@ -108,6 +108,7 @@ const char* const CommandTpm2::kDefaultEccEkCredentialHandle = "0x1c0000a";
 const char* const CommandTpm2::kDefaultPlatformCredentialHandle = "0x1c90000";
 const char* const CommandTpm2::kDefaultEkHandle = "0x81010001";
 const char* const CommandTpm2::kDefaultAkHandle = "0x81010002";
+const char* const CommandTpm2::kDefaultDevHandle = "0x81010003";
 
 const char* const CommandTpm2::kAKCertificateHandle = "0x1c0000c";
 
@@ -331,6 +332,27 @@ void CommandTpm2::createAttestationKey() {
     runTpm2CommandWithRetry(kTpm2ToolsGetPubAkCommand, argsStream.str(),
                             __LINE__);
     LOGGER.info("AK created successfully");
+}
+
+void CommandTpm2::createDevIDKey() {
+    if (hasPersistentObject(kDefaultDevHandle)) {
+        LOGGER.info(string("Attestation key already exists at default address")
+                            + "\nFlushing key...");
+        flushPersistentObject(kDefaultDevHandle);
+    }
+
+    stringstream argsStream;
+    argsStream  << " -E " << kDefaultEkHandle
+                << " -k " << kDefaultDevHandle
+                << " -f " << kDefaultAkPubFilename
+                << " -n " << kDefaultAkNameFilename
+                << endl;
+
+    LOGGER.info("Running getpubak with arguments: "
+                    + argsStream.str());
+    runTpm2CommandWithRetry(kTpm2ToolsGetPubAkCommand, argsStream.str(),
+                                __LINE__);
+    LOGGER.info("DevID created successfully");
 }
 
 /**

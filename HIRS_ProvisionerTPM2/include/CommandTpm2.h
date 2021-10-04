@@ -54,6 +54,7 @@ class CommandTpm2 {
     static const char* const kDefaultPlatformCredentialHandle;
     static const char* const kDefaultEkHandle;
     static const char* const kDefaultAkHandle;
+    static const char* const kDefaultDevHandle;
     static const char* const kDefaultAkCertFilename;
     static const char* const kDefaultAkNameFilename;
     static const char* const kDefaultAkPubFilename;
@@ -120,6 +121,7 @@ class CommandTpm2 {
     std::string getEndorsementKeyPublicArea();
 
     void createAttestationKey();
+    void createDevIDKey();
 
     std::string getAttestationKeyPublicArea();
 
