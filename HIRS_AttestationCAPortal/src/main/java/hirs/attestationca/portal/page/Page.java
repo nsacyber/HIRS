@@ -59,6 +59,10 @@ public enum Page {
      */
     POLICY("Policy", "ic_subtitles"),
     /**
+     * Page to display TPM event table.
+     */
+    TPM_EVENTS("TPM Events", null, "first"),
+    /**
      * Help page.
      */
     HELP("Help", "ic_live_help");
