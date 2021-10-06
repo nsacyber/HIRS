@@ -10,7 +10,7 @@ import java.util.UUID;
  * This class facilitates the persistence of {@link hirs.data.persist.ReferenceDigestRecord}s
  * including storage, retrieval, and deletion.
  */
-public interface ReferenceDigestManager {
+public interface ReferenceDigestManager extends OrderedListQuerier<ReferenceDigestRecord>{
 
     /**
      * Persists a new Reference Digest.

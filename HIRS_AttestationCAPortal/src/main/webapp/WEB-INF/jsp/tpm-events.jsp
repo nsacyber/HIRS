@@ -22,11 +22,6 @@
                     <tr>
                         <th>Manufacturer</th>
                         <th>Model</th>
-                        <th>Type</th>
-                        <th>Index</th>
-                        <th>Digest</th>
-                        <th>Details</th>
-                        <th>Base RIM</th>
                         <th>Support RIM</th>
                     </tr>
                 </thead>
@@ -39,19 +34,7 @@
                 var columns = [
                         {data: 'manufacturer'},
                         {data: 'model'},
-                        {data: 'supportRim'},
-                        {
-                            data: 'id',
-                            orderable: false,
-                            searchable: false,
-                            render: function(data, type, full, meta) {
-                                // Set up a delete icon with link to handleDeleteRequest().
-                                // sets up a hidden input field containing the ID which is
-                                // used as a parameter to the REST POST call to delete
-                                var html = '';
-                                return html;
-                            }
-                        }
+                        {data: 'supportRim'}
                     ];
 
                 //Set data tables
