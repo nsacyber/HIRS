@@ -116,6 +116,7 @@ const char* const CommandTpm2::kDefaultAkCertFilename =
         "/etc/hirs/ak.cer";
 const char* const CommandTpm2::kDefaultAkNameFilename = "ak.name";
 const char* const CommandTpm2::kDefaultAkPubFilename = "ak.pub";
+const char* const CommandTpm2::kDefaultDevIdPubFilename = "devId.pub";
 const char* const CommandTpm2::kDefaultEkPubFilename = "ek.pub";
 
 const char* const CommandTpm2::kDefaultIdentityClaimResponseFilename
@@ -344,7 +345,7 @@ void CommandTpm2::createDevIDKey() {
     stringstream argsStream;
     argsStream  << " -E " << kDefaultEkHandle
                 << " -k " << kDefaultDevHandle
-                << " -f " << kDefaultAkPubFilename
+                << " -f " << kDefaultDevIdPubFilename
                 << " -n " << kDefaultAkNameFilename
                 << endl;
 
@@ -373,12 +374,30 @@ string CommandTpm2::getAttestationKeyPublicArea() {
 }
 
 /**
+ * Method to get the byte-encoded public key portion of the AK pair.
+ * Assumes createAk has been called and default filenames were used.
+ * Takes generated public data and name file and packages them into
+ * a protobuf data structure for transmission.
+ *
+ * @return protobuf encoded Attestation Public Key Data
+ */
+string CommandTpm2::getDevIdKeyPublicArea() {
+    LOGGER.info("Attempting to read DevID public area from file: "
+                + string(kDefaultDevIdPubFilename));
+    string binaryEncodedPublicArea = getPublicArea(kDefaultDevIdPubFilename);
+
+    LOGGER.info("Public area successfully read.");
+    return binaryEncodedPublicArea;
+}
+
+/**
  * Method to create identity claim to send to the Attestation Certificate
  * Authority (ACA).
  *
  * @param deviceInfo device specific info that can be verified
  * @param akPublicArea the public key area blob for the AK
  * @param ekPublicArea the public key area blob for the endorsement key
+ * @param devIdPublicArea the public key area blob for the Dev ID key
  * @param endorsementCredential endorsement credential for verification
  * @param platformCredentials platform credentials for verification
  */
@@ -386,12 +405,14 @@ IdentityClaim CommandTpm2::createIdentityClaim(
         const hirs::pb::DeviceInfo& deviceInfo,
         const string& akPublicArea,
         const string& ekPublicArea,
+        const string& devIdPublicArea,
         const string& endorsementCredential,
         const vector<string>& platformCredentials) {
     IdentityClaim identityClaim;
     identityClaim.set_allocated_dv(new hirs::pb::DeviceInfo(deviceInfo));
     identityClaim.set_ak_public_area(akPublicArea);
     identityClaim.set_ek_public_area(ekPublicArea);
+    identityClaim.set_dev_id_public_area(devIdPublicArea);
     if (endorsementCredential != "") {
         identityClaim.set_endorsement_credential(endorsementCredential);
     }

@@ -439,6 +439,8 @@ public abstract class AbstractAttestationCertificateAuthority
             }
         }
 
+        LOG.error(claim.getDevIdPublicArea());
+
         if (validationResult == AppraisalStatus.Status.PASS) {
             RSAPublicKey akPub = parsePublicKey(claim.getAkPublicArea().toByteArray());
             byte[] nonce = generateRandomBytes(NONCE_LENGTH);

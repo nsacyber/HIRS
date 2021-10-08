@@ -59,6 +59,7 @@ int provision() {
     tpm2.createAttestationKey();
     tpm2.createDevIDKey();
     string akPublicArea = tpm2.getAttestationKeyPublicArea();
+    string devPublicArea = tpm2.getDevIdKeyPublicArea();
 
     // get platform credential
     cout << "----> Collecting platform credential from TPM" << endl;
@@ -120,6 +121,7 @@ int provision() {
     cout << "----> Sending identity claim to Attestation CA" << endl;
     hirs::pb::IdentityClaim identityClaim
             = tpm2.createIdentityClaim(dv, akPublicArea, ekPublicArea,
+                                        devPublicArea,
                                        endorsementCredential,
                                        platformCredentials);
     identityClaim.set_client_version(CLIENT_VERSION);

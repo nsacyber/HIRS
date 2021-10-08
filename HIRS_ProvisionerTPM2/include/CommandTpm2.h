@@ -58,6 +58,7 @@ class CommandTpm2 {
     static const char* const kDefaultAkCertFilename;
     static const char* const kDefaultAkNameFilename;
     static const char* const kDefaultAkPubFilename;
+    static const char* const kDefaultDevIdPubFilename;
     static const char* const kDefaultEkPubFilename;
     static const char* const kTpm2ToolsGetQuoteCommand;
     static const char* const kTpm2DefaultQuoteFilename;
@@ -124,11 +125,13 @@ class CommandTpm2 {
     void createDevIDKey();
 
     std::string getAttestationKeyPublicArea();
+    std::string getDevIdKeyPublicArea();
 
     hirs::pb::IdentityClaim createIdentityClaim(
             const hirs::pb::DeviceInfo& deviceInfo,
             const std::string& akPublicArea,
             const std::string& ekPublicArea,
+            const std::string& devIdPublicArea,
             const std::string& endorsementCredential = {},
             const std::vector<std::string>& platformCredentials = {});
 
