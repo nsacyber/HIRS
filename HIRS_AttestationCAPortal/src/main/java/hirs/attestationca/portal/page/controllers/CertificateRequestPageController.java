@@ -398,7 +398,8 @@ public class CertificateRequestPageController extends PageController<NoPageParam
 
         try (ZipOutputStream zipOut = new ZipOutputStream(response.getOutputStream())) {
             // get all files
-            for (CertificateAuthorityCredential ca : CertificateAuthorityCredential.select(certificateManager)
+            for (CertificateAuthorityCredential ca : CertificateAuthorityCredential
+                    .select(certificateManager)
                     .getCertificates()) {
                 zipFileName = String.format("ca-certificate[%s].cer",
                         Integer.toHexString(ca.getCertificateHash()));
