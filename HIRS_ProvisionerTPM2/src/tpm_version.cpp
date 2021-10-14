@@ -158,7 +158,7 @@ int main(void) {
     // We only need to collect the following data from the TPM.
     string manufacturer;
     string majorVersion;
-    float minorVersion;
+    float minorVersion = 0.0f;
 
     for (size_t i = 0; i < capability_data.data.tpmProperties.count; ++i) {
         TPMS_TAGGED_PROPERTY & p
