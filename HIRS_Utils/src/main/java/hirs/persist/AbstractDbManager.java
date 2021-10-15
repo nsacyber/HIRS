@@ -35,6 +35,7 @@ import java.io.Serializable;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
@@ -766,6 +767,10 @@ public abstract class AbstractDbManager<T> implements CrudManager<T> {
             searchClass = this.clazz;
         }
 
+        LOGGER.info(clazz.getName() + " querying for "
+            + Arrays.toString(searchableColumns.entrySet().toArray())
+            + " with search strings \"" + search + "\"");
+
         //Object that will store query values
         FilteredRecordsList<T> aqr = new FilteredRecordsList<>();
 
@@ -786,6 +791,7 @@ public abstract class AbstractDbManager<T> implements CrudManager<T> {
             Long recordsFiltered = totalResultCount;
             Conjunction and = Restrictions.conjunction();
             if (totalResultCount != 0) {
+                LOGGER.info("Total result count greater than 0");
                 //Builds the search criteria from all of the searchable columns
                 if (searchableColumns != null) {
                     // Search for all words in all searchable columns
@@ -804,10 +810,16 @@ public abstract class AbstractDbManager<T> implements CrudManager<T> {
                     }
                 }
 
+                LOGGER.info("Search columns filtered");
                 //Retrieves a count of all the records after being filtered
                 criteria.setProjection(Projections.countDistinct("id"))
                         .add(and);
-                recordsFiltered = (Long) criteria.uniqueResult();
+                try {
+                    LOGGER.info("Get unique result from criteria object");
+                    recordsFiltered = (Long) criteria.uniqueResult();
+                } catch (HibernateException e) {
+                    LOGGER.error(e.getMessage());
+                }
             }
 
             if (recordsFiltered != 0) {
@@ -867,6 +879,7 @@ public abstract class AbstractDbManager<T> implements CrudManager<T> {
             }
             throw e;
         }
+        LOGGER.info(clazz.getName() + " found " + aqr.getRecordsTotal() + " records");
         return aqr;
     }
 
