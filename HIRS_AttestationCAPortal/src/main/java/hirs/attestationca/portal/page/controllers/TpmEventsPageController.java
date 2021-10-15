@@ -10,12 +10,16 @@ import hirs.attestationca.portal.page.PageController;
 import hirs.attestationca.portal.page.params.NoPageParams;
 import hirs.data.persist.ReferenceDigestRecord;
 import hirs.data.persist.ReferenceDigestValue;
+import hirs.data.persist.certificate.Certificate;
+import hirs.persist.CriteriaModifier;
 import hirs.persist.DBReferenceDigestManager;
 import hirs.persist.DBReferenceEventManager;
 import hirs.persist.ReferenceDigestManager;
 import hirs.persist.ReferenceEventManager;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.hibernate.Criteria;
+import org.hibernate.criterion.Restrictions;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Controller;
@@ -135,17 +139,27 @@ public class TpmEventsPageController
             method = RequestMethod.GET)
     public DataTableResponse<ReferenceDigestRecord> getTableData(
             final DataTableInput input) {
-        LOGGER.debug("Handling request for summary list: " + input);
+        LOGGER.info("Handling request for summary list: " + input);
 
         String orderColumnName = input.getOrderColumnName();
-        LOGGER.debug("Ordering on column: " + orderColumnName);
+        LOGGER.info("Ordering on column: " + orderColumnName);
+
+        // check that the alert is not archived and that it is in the specified report
+        CriteriaModifier criteriaModifier = new CriteriaModifier() {
+            @Override
+            public void modify(final Criteria criteria) {
+                criteria.add(Restrictions.isNull(Certificate.ARCHIVE_FIELD));
+            }
+        };
 
         LOGGER.info("Querying with the following datatableinput: " + input.toString());
         FilteredRecordsList<ReferenceDigestRecord> referenceDigestRecords
                 = OrderedListQueryDataTableAdapter.getOrderedList(
                 ReferenceDigestRecord.class,
                 referenceDigestManager,
-                input, orderColumnName);
+                input, orderColumnName, criteriaModifier);
+        LOGGER.info("ReferenceDigestManager returned: "
+                + Arrays.toString(referenceDigestRecords.toArray()));
         FilteredRecordsList<HashMap<ReferenceDigestRecord, ReferenceDigestValue>>
                 mappedRecordValues = mapRecordToValues(referenceDigestRecords);
 
