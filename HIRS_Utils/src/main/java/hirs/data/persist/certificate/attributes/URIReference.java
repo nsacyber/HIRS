@@ -5,6 +5,8 @@ import org.bouncycastle.asn1.DERBitString;
 import org.bouncycastle.asn1.DERIA5String;
 import org.bouncycastle.asn1.x509.AlgorithmIdentifier;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 /**
  *
  * Basic class that handle a URIReference object.
@@ -19,6 +21,7 @@ import org.bouncycastle.asn1.x509.AlgorithmIdentifier;
 public class URIReference {
     private DERIA5String uniformResourceIdentifier;
     private AlgorithmIdentifier hashAlgorithm;
+    @JsonIgnore
     private DERBitString hashValue;
 
     private static final int PLATFORM_PROPERTIES_URI_MAX = 3;
@@ -66,13 +69,15 @@ public class URIReference {
         for (int j = 0; j < sequence.size(); j++) {
             if (sequence.getObjectAt(j) instanceof DERIA5String) {
                 this.uniformResourceIdentifier = DERIA5String.getInstance(sequence.getObjectAt(j));
-            } else if (sequence.getObjectAt(j) instanceof AlgorithmIdentifier) {
+            } else if ((sequence.getObjectAt(j) instanceof AlgorithmIdentifier)
+                    || (sequence.getObjectAt(j) instanceof ASN1Sequence)) {
                 this.hashAlgorithm =
                         AlgorithmIdentifier.getInstance(sequence.getObjectAt(j));
             } else if (sequence.getObjectAt(j) instanceof DERBitString) {
                 this.hashValue = DERBitString.getInstance(sequence.getObjectAt(j));
             } else {
-                throw new IllegalArgumentException("PlatformPropertiesURI contains invalid type.");
+                throw new IllegalArgumentException("Unexpected DER type found. "
+                    + sequence.getObjectAt(j).getClass().getName() + " found at index " + j + ".");
             }
         }
     }
