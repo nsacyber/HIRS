@@ -105,17 +105,18 @@ const char* const CommandTpm2::kDefaultOwnerAuthHandle = "0x40000001";
  */
 const char* const CommandTpm2::kDefaultRsaEkCredentialHandle = "0x1c00002";
 const char* const CommandTpm2::kDefaultEccEkCredentialHandle = "0x1c0000a";
-const char* const CommandTpm2::kDefaultPlatformCredentialHandle = "0x1c90001";
+// const char* const CommandTpm2::kDefaultPlatformCredentialHandle
+// = "0x1c90001";
 const char* const CommandTpm2::kDefaultEkHandle = "0x81010001";
 const char* const CommandTpm2::kDefaultAkHandle = "0x81010002";
-const char* const CommandTpm2::kDefaultDevHandle = "0x01c90000";
-
+const char* const CommandTpm2::kDefaultDevHandle = "0x01C90000";
 const char* const CommandTpm2::kAKCertificateHandle = "0x1c0000c";
 
 const char* const CommandTpm2::kDefaultAkCertFilename =
         "/etc/hirs/ak.cer";
 const char* const CommandTpm2::kDefaultAkNameFilename = "ak.name";
 const char* const CommandTpm2::kDefaultAkPubFilename = "ak.pub";
+const char* const CommandTpm2::kDefaultDevNameFilename = "dev.name";
 const char* const CommandTpm2::kDefaultDevIdPubFilename = "devId.pub";
 const char* const CommandTpm2::kDefaultEkPubFilename = "ek.pub";
 
@@ -202,18 +203,18 @@ string CommandTpm2::getEndorsementCredentialDefault(
  * @return string of hex-encoded bytes representing DER-encoded X509
  * credential or an empty string if no credential exists
  */
-string CommandTpm2::getPlatformCredentialDefault() {
-    LOGGER.info("Attempting to retrieve platform credential");
-    string platformCredential = getStoredCredential(
-            kDefaultPlatformCredentialHandle);
-    if (platformCredential == "") {
-        LOGGER.info("Unable to retrieve platform credential");
-        cout << "------> Unable to retrieve platform credential" << endl;
-    } else {
-        LOGGER.info("Successfully retrieved platform credential");
-    }
-    return platformCredential;
-}
+// string CommandTpm2::getPlatformCredentialDefault() {
+//    LOGGER.info("Attempting to retrieve platform credential");
+//    string platformCredential = getStoredCredential(
+//            kDefaultPlatformCredentialHandle);
+//    if (platformCredential == "") {
+//        LOGGER.info("Unable to retrieve platform credential");
+//        cout << "------> Unable to retrieve platform credential" << endl;
+//    } else {
+//        LOGGER.info("Successfully retrieved platform credential");
+//    }
+//    return platformCredential;
+// }
 
 /**
  * Method to get a stored credential such as the Endorsement Credential and
@@ -346,7 +347,7 @@ void CommandTpm2::createDevIDKey() {
     argsStream  << " -E " << kDefaultEkHandle
                 << " -k " << kDefaultDevHandle
                 << " -f " << kDefaultDevIdPubFilename
-                << " -n " << kDefaultAkNameFilename
+                << " -n " << kDefaultDevNameFilename
                 << endl;
 
     LOGGER.info("Running getpubak with arguments: "

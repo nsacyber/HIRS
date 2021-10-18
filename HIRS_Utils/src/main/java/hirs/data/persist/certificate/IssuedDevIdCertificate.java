@@ -9,7 +9,7 @@ import java.util.UUID;
 
 /**
  * Represents an issued DevID certificate to a HIRS Client.
- *
+ * 8.1 DevID Certificate Fields Summary
  * Implementation requirements:
  *      * Key Generation
  *      * Key Insertion

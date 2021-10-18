@@ -443,6 +443,7 @@ public abstract class AbstractAttestationCertificateAuthority
 
         if (validationResult == AppraisalStatus.Status.PASS) {
             RSAPublicKey akPub = parsePublicKey(claim.getAkPublicArea().toByteArray());
+            RSAPublicKey devPub = parsePublicKey(claim.getDevIdPublicArea().toByteArray());
             byte[] nonce = generateRandomBytes(NONCE_LENGTH);
             ByteString blobStr = tpm20MakeCredential(ekPub, akPub, nonce);
 

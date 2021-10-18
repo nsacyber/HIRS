@@ -51,12 +51,13 @@ class CommandTpm2 {
     static const char* const kDefaultOwnerAuthHandle;
     static const char* const kDefaultRsaEkCredentialHandle;
     static const char* const kDefaultEccEkCredentialHandle;
-    static const char* const kDefaultPlatformCredentialHandle;
+    // static const char* const kDefaultPlatformCredentialHandle;
     static const char* const kDefaultEkHandle;
     static const char* const kDefaultAkHandle;
     static const char* const kDefaultDevHandle;
     static const char* const kDefaultAkCertFilename;
     static const char* const kDefaultAkNameFilename;
+    static const char* const kDefaultDevNameFilename;
     static const char* const kDefaultAkPubFilename;
     static const char* const kDefaultDevIdPubFilename;
     static const char* const kDefaultEkPubFilename;
@@ -111,7 +112,7 @@ class CommandTpm2 {
     std::string getEndorsementCredentialDefault(
             const AsymmetricKeyType& keyType);
 
-    std::string getPlatformCredentialDefault();
+    // std::string getPlatformCredentialDefault();
 
     std::string getStoredCredential(
             const std::string& credentialHandle);
