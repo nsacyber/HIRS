@@ -385,7 +385,7 @@ public class ReferenceManifestDetailsPageController
         // starts off checking if associated rim is null; that is irrelevant for
         // this statement.
         measurements = EventLogMeasurements.select(referenceManifestManager)
-                .byHexDecHash(support.getEventLogHash()).getRIM();
+                .byHexDecHash(support.getHexDecHash()).getRIM();
 
         if (support.isSwidPatch()) {
             data.put("swidPatch", "True");
