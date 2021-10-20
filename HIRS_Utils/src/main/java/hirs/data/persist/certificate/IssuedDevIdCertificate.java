@@ -3,6 +3,7 @@ package hirs.data.persist.certificate;
 import hirs.persist.CertificateManager;
 import hirs.persist.CertificateSelector;
 
+import javax.persistence.Entity;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.UUID;
@@ -22,6 +23,7 @@ import java.util.UUID;
  *
  *      -- RNG entropy?
  */
+@Entity
 public class IssuedDevIdCertificate extends IssuedCertificate {
 
     /**

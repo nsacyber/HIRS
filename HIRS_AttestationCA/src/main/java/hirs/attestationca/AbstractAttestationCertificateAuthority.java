@@ -23,6 +23,7 @@ import hirs.data.persist.certificate.Certificate;
 import hirs.data.persist.certificate.EndorsementCredential;
 import hirs.data.persist.certificate.IssuedAttestationCertificate;
 import hirs.data.persist.certificate.IssuedCertificate;
+import hirs.data.persist.certificate.IssuedDevIdCertificate;
 import hirs.data.persist.certificate.PlatformCredential;
 import hirs.data.persist.info.FirmwareInfo;
 import hirs.data.persist.info.HardwareInfo;
@@ -399,7 +400,7 @@ public abstract class AbstractAttestationCertificateAuthority
         // save new attestation certificate
         byte[] derEncodedAttestationCertificate = getDerEncodedCertificate(credential);
         saveAttestationCertificate(derEncodedAttestationCertificate, endorsementCredential,
-                platformCredentials, device);
+                platformCredentials, device, true);
 
         return identityResponse;
     }
@@ -575,6 +576,7 @@ public abstract class AbstractAttestationCertificateAuthority
 
             // Get attestation public key
             RSAPublicKey akPub = parsePublicKey(claim.getAkPublicArea().toByteArray());
+            RSAPublicKey devPub = parsePublicKey(claim.getDevIdPublicArea().toByteArray());
 
             // Get Endorsement Credential if it exists or was uploaded
             EndorsementCredential endorsementCredential = parseEcFromIdentityClaim(claim, ekPub);
@@ -623,6 +625,11 @@ public abstract class AbstractAttestationCertificateAuthority
                 byte[] derEncodedAttestationCertificate = getDerEncodedCertificate(
                         attestationCertificate);
 
+                X509Certificate devIdCertificate = generateCredential(devPub,
+                        endorsementCredential, platformCredentials, deviceName);
+                byte[] derEncodedDevIdCertificate = getDerEncodedCertificate(
+                        devIdCertificate);
+
                 // We validated the nonce and made use of the identity claim so state can be deleted
                 tpm2ProvisionerStateDBManager.delete(tpm2ProvisionerState);
 
@@ -632,7 +639,10 @@ public abstract class AbstractAttestationCertificateAuthority
                         .newBuilder().setCertificate(certificateBytes).build();
 
                 saveAttestationCertificate(derEncodedAttestationCertificate, endorsementCredential,
-                        platformCredentials, device);
+                        platformCredentials, device, true);
+
+                saveAttestationCertificate(derEncodedDevIdCertificate, endorsementCredential,
+                        platformCredentials, device, false);
 
                 return response.toByteArray();
             } else {
@@ -1847,13 +1857,15 @@ public abstract class AbstractAttestationCertificateAuthority
      * @param endorsementCredential the endorsement credential used to generate the AC
      * @param platformCredentials the platform credentials used to generate the AC
      * @param device the device to which the attestation certificate is tied
+     * @param aikFlag indicates the byte array is associated with Issued Attestation, or DevID
      * @throws {@link CertificateProcessingException} if error occurs in persisting the Attestation
      *                                             Certificate
      */
     private void saveAttestationCertificate(final byte[] derEncodedAttestationCertificate,
                                             final EndorsementCredential endorsementCredential,
                                             final Set<PlatformCredential> platformCredentials,
-                                            final Device device) {
+                                            final Device device,
+                                            final boolean aikFlag) {
         IssuedCertificate issuedAc;
         boolean generateCertificate = true;
         SupplyChainPolicy scp = this.supplyChainValidationService.getPolicy();
@@ -1864,7 +1876,7 @@ public abstract class AbstractAttestationCertificateAuthority
             IssuedAttestationCertificate attCert = new IssuedAttestationCertificate(
                     derEncodedAttestationCertificate, endorsementCredential, platformCredentials);
 
-            if (scp != null) {
+            if (scp != null && aikFlag) {
                 issuedAc = IssuedCertificate.select(certificateManager)
                         .byDeviceId(device.getId()).getCertificate();
 
@@ -1882,9 +1894,16 @@ public abstract class AbstractAttestationCertificateAuthority
                     }
                 }
             }
-            if (generateCertificate) {
+            if (generateCertificate && aikFlag) {
                 attCert.setDevice(device);
                 certificateManager.save(attCert);
+            }
+
+            if (!aikFlag) {
+                IssuedDevIdCertificate devIdCert = new IssuedDevIdCertificate(
+                        derEncodedAttestationCertificate);
+                devIdCert.setDevice(device);
+                certificateManager.save(devIdCert);
             }
         } catch (Exception e) {
             LOG.error("Error saving generated Attestation Certificate to database.", e);

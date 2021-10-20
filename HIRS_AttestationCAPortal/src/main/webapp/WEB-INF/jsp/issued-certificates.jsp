@@ -20,6 +20,7 @@
                 <thead>
                     <tr>
                         <th rowspan="2">Hostname</th>
+                        <th rowspan="2">Type</th>
                         <th rowspan="2">Issuer</th>
                         <th rowspan="2">Valid (begin)</th>
                         <th rowspan="2">Valid (end)</th>
@@ -50,6 +51,7 @@
                                 return '';
                             }
                         },
+                        {data: 'issuedType'},
                         {data: 'issuer'},
                         {
                             data: 'beginValidity',
