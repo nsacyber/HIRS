@@ -160,7 +160,6 @@ public class ReferenceManifestPageController
             @Override
             public void modify(final Criteria criteria) {
                 criteria.add(Restrictions.isNull(Certificate.ARCHIVE_FIELD));
-
             }
         };
         FilteredRecordsList<ReferenceManifest> records

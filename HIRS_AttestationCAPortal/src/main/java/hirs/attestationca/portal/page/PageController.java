@@ -92,7 +92,6 @@ public abstract class PageController<P extends PageParams> {
      * @return A generic ModelAndView containing basic information for the page.
      */
     protected final ModelAndView getBaseModelAndView(final Page newPage) {
-
         ModelMap modelMap = new ExtendedModelMap();
 
         // add page information
@@ -110,7 +109,6 @@ public abstract class PageController<P extends PageParams> {
         }
 
         return new ModelAndView(newPage.getViewName(), modelMap);
-
     }
 
     /**
@@ -170,7 +168,5 @@ public abstract class PageController<P extends PageParams> {
         }
 
         return redirect;
-
     }
-
 }
