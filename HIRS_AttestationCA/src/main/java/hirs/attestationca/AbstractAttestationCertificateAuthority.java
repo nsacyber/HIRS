@@ -181,7 +181,6 @@ public abstract class AbstractAttestationCertificateAuthority
     private final ReferenceEventManager referenceEventManager;
     private String tpmQuoteHash = "";
     private String tpmQuoteSignature = "";
-    private String pcrValues;
 
     /**
      * Constructor.
@@ -719,6 +718,7 @@ public abstract class AbstractAttestationCertificateAuthority
     private DeviceInfoReport parseDeviceInfo(final ProvisionerTpm2.IdentityClaim claim)
             throws NoSuchAlgorithmException {
         ProvisionerTpm2.DeviceInfo dv = claim.getDv();
+        String pcrValues = "";
 
         // Get network info
         ProvisionerTpm2.NetworkInfo nwProto = dv.getNw();
@@ -769,7 +769,7 @@ public abstract class AbstractAttestationCertificateAuthority
                 firstChassisSerialNumber, firstBaseboardSerialNumber);
 
         if (dv.hasPcrslist()) {
-            this.pcrValues = dv.getPcrslist().toStringUtf8();
+            pcrValues = dv.getPcrslist().toStringUtf8();
         }
 
         // check for RIM Base and Support files, if they don't exists in the database, load them
@@ -946,7 +946,7 @@ public abstract class AbstractAttestationCertificateAuthority
                 (short) 0,
                 (short) 0,
                 (short) 0,
-                this.pcrValues.getBytes(StandardCharsets.UTF_8),
+                pcrValues.getBytes(StandardCharsets.UTF_8),
                 this.tpmQuoteHash.getBytes(StandardCharsets.UTF_8),
                 this.tpmQuoteSignature.getBytes(StandardCharsets.UTF_8));
 
