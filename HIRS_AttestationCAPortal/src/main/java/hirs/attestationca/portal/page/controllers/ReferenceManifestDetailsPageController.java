@@ -31,12 +31,10 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.servlet.ModelAndView;
 
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.security.KeyStore;
 import java.security.NoSuchAlgorithmException;
 import java.security.cert.CertificateException;
-import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -68,9 +66,9 @@ public class ReferenceManifestDetailsPageController
      * Constructor providing the Page's display and routing specification.
      *
      * @param referenceManifestManager the reference manifest manager.
-     * @param referenceDigestManager the reference digest manager.
-     * @param referenceEventManager the reference event manager.
-     * @param certificateManager        the certificate manager.
+     * @param referenceDigestManager   the reference digest manager.
+     * @param referenceEventManager    the reference event manager.
+     * @param certificateManager       the certificate manager.
      */
     @Autowired
     public ReferenceManifestDetailsPageController(
@@ -144,19 +142,19 @@ public class ReferenceManifestDetailsPageController
      *
      * @param uuid                     database reference for the requested RIM.
      * @param referenceManifestManager the reference manifest manager.
-     * @param referenceDigestManager the reference digest manager.
-     * @param referenceEventManager the reference event manager.
-     * @param certificateManager        the certificate manager.
+     * @param referenceDigestManager   the reference digest manager.
+     * @param referenceEventManager    the reference event manager.
+     * @param certificateManager       the certificate manager.
      * @return mapping of the RIM information from the database.
      * @throws java.io.IOException      error for reading file bytes.
      * @throws NoSuchAlgorithmException If an unknown Algorithm is encountered.
      * @throws CertificateException     if a certificate doesn't parse.
      */
     public static HashMap<String, Object> getRimDetailInfo(final UUID uuid,
-             final ReferenceManifestManager referenceManifestManager,
-             final ReferenceDigestManager referenceDigestManager,
-             final ReferenceEventManager referenceEventManager,
-             final CertificateManager certificateManager) throws IOException,
+                                                           final ReferenceManifestManager referenceManifestManager,
+                                                           final ReferenceDigestManager referenceDigestManager,
+                                                           final ReferenceEventManager referenceEventManager,
+                                                           final CertificateManager certificateManager) throws IOException,
             CertificateException, NoSuchAlgorithmException {
         HashMap<String, Object> data = new HashMap<>();
 
@@ -189,9 +187,9 @@ public class ReferenceManifestDetailsPageController
      * This method takes the place of an entire class for a string builder.
      * Gathers all information and returns it for displays.
      *
-     * @param baseRim established ReferenceManifest Type.
+     * @param baseRim                  established ReferenceManifest Type.
      * @param referenceManifestManager the reference manifest manager.
-     * @param certificateManager        the certificate manager.
+     * @param certificateManager       the certificate manager.
      * @return mapping of the RIM information from the database.
      * @throws java.io.IOException      error for reading file bytes.
      * @throws NoSuchAlgorithmException If an unknown Algorithm is encountered.
@@ -284,6 +282,7 @@ public class ReferenceManifestDetailsPageController
         }
         // going to have to pull the filename and grab that from the DB
         // to get the id to make the link
+        RIM_VALIDATOR.setRim(baseRim);
         for (SwidResource swidRes : resources) {
             if (support != null && swidRes.getHashValue()
                     .equalsIgnoreCase(support.getHexDecHash())) {
@@ -305,29 +304,25 @@ public class ReferenceManifestDetailsPageController
             data.put("pcrList", support.getExpectedPCRList());
         }
 
-        RIM_VALIDATOR.validateXmlSignature(new ByteArrayInputStream(baseRim.getRimBytes()));
+//        RIM_VALIDATOR.validateXmlSignature(new ByteArrayInputStream(baseRim.getRimBytes()));
         Set<CertificateAuthorityCredential> certificates =
                 CertificateAuthorityCredential.select(certificateManager)
                         .getCertificates();
         //Report invalid signature unless RIM_VALIDATOR validates it and cert path is valid
         data.put("signatureValid", false);
-        if (RIM_VALIDATOR.isSignatureValid()) {
-            for (CertificateAuthorityCredential cert : certificates) {
-                if (Arrays.equals(cert.getEncodedPublicKey(),
-                        RIM_VALIDATOR.getPublicKey().getEncoded())) {
-                    SupplyChainValidationServiceImpl scvsImpl =
-                            new SupplyChainValidationServiceImpl(certificateManager);
-                    KeyStore keystore = scvsImpl.getCaChain(cert);
-                    X509Certificate signingCert = cert.getX509Certificate();
-                    try {
-                        if (SupplyChainCredentialValidator.verifyCertificate(signingCert,
-                                keystore)) {
-                            data.replace("signatureValid", true);
-                        }
-                    } catch (SupplyChainValidatorException e) {
-                        LOGGER.error("Error verifying cert chain: " + e.getMessage());
+        for (CertificateAuthorityCredential cert : certificates) {
+            SupplyChainValidationServiceImpl scvsImpl =
+                    new SupplyChainValidationServiceImpl(certificateManager);
+            KeyStore keystore = scvsImpl.getCaChain(cert);
+            if (RIM_VALIDATOR.validateXmlSignature(cert)) {
+                try {
+                    if (SupplyChainCredentialValidator.verifyCertificate(
+                            cert.getX509Certificate(), keystore)) {
+                        data.replace("signatureValid", true);
+                        break;
                     }
-                    break;
+                } catch (SupplyChainValidatorException e) {
+                    LOGGER.error("Error verifying cert chain: " + e.getMessage());
                 }
             }
         }
@@ -349,7 +344,7 @@ public class ReferenceManifestDetailsPageController
      * This method takes the place of an entire class for a string builder.
      * Gathers all information and returns it for displays.
      *
-     * @param support established ReferenceManifest Type.
+     * @param support                  established ReferenceManifest Type.
      * @param referenceManifestManager the reference manifest manager.
      * @return mapping of the RIM information from the database.
      * @throws java.io.IOException      error for reading file bytes.
@@ -414,8 +409,8 @@ public class ReferenceManifestDetailsPageController
                 digestMap.put(tpe.getEventDigestStr(), tpe);
                 if (!support.isSwidSupplemental()
                         && !tpe.eventCompare(
-                            measurementsProcess.getEventByNumber(
-                                    tpe.getEventNumber()))) {
+                        measurementsProcess.getEventByNumber(
+                                tpe.getEventNumber()))) {
                     tpe.setError(true);
                 }
                 tpmPcrEvents.add(tpe);
@@ -509,10 +504,10 @@ public class ReferenceManifestDetailsPageController
      * This method takes the place of an entire class for a string builder.
      * Gathers all information and returns it for displays.
      *
-     * @param measurements established ReferenceManifest Type.
+     * @param measurements             established ReferenceManifest Type.
      * @param referenceManifestManager the reference manifest manager.
-     * @param referenceDigestManager the reference digest manager.
-     * @param referenceEventManager the reference event manager.
+     * @param referenceDigestManager   the reference digest manager.
+     * @param referenceEventManager    the reference event manager.
      * @return mapping of the RIM information from the database.
      * @throws java.io.IOException      error for reading file bytes.
      * @throws NoSuchAlgorithmException If an unknown Algorithm is encountered.
