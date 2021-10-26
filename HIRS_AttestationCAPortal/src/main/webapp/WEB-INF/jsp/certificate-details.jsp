@@ -1,4 +1,5 @@
 <%@ page contentType="text/html"%>
+<%@ page contentType="text/html"%>
 <%@ page pageEncoding="UTF-8"%><%-- JSP TAGS--%>
 <%@taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core"%>
 <%@taglib prefix="spring" uri="http://www.springframework.org/tags"%>
@@ -791,6 +792,7 @@
                             <div id="serial">Serial Number:&nbsp;<span>${initialData.platformSerial}</span></div>
                         </div>
                     </div>
+                    <c:if test="${empty initialData.devId}">
                     <div class="row">
                         <div class="col-md-1 col-md-offset-1"><span class="colHeader">Policy Reference</span></div>
                         <div id="policyReference" class="col col-md-8 vertical">
@@ -876,6 +878,7 @@
                             </div>
                         </div>
                     </div>
+                    </c:if>
                 </c:when>
             </c:choose>
         </div>

@@ -1,5 +1,7 @@
 package hirs.attestationca.portal.util;
 
+import hirs.data.persist.Device;
+import hirs.data.persist.DeviceInfoReport;
 import hirs.data.persist.certificate.Certificate;
 import hirs.data.persist.certificate.CertificateAuthorityCredential;
 import hirs.data.persist.certificate.EndorsementCredential;
@@ -8,6 +10,7 @@ import hirs.data.persist.certificate.IssuedCertificate;
 import hirs.data.persist.certificate.PlatformCredential;
 import hirs.data.persist.certificate.attributes.ComponentIdentifier;
 import hirs.data.persist.certificate.attributes.PlatformConfiguration;
+import hirs.data.persist.info.HardwareInfo;
 import hirs.persist.CertificateManager;
 import hirs.utils.BouncyCastleUtils;
 import org.apache.logging.log4j.LogManager;
@@ -476,6 +479,7 @@ public final class CertificateStringMapBuilder {
         if (certificate != null) {
             data.putAll(getGeneralCertificateInfo(certificate, certificateManager));
 
+            data.put("devId", "");
             // add endorsement credential ID if not null
             if (certificate.getEndorsementCredential() != null) {
                 EndorsementCredential ek = certificate.getEndorsementCredential();
@@ -519,6 +523,14 @@ public final class CertificateStringMapBuilder {
                 // remove last comma character
                 buf.deleteCharAt(buf.lastIndexOf(","));
                 data.put("platformID", buf.toString());
+            } else if (certificate.getDevice() != null) {
+                HardwareInfo hardwareInfo = certificate.getDevice()
+                        .getDeviceInfo().getHardwareInfo();
+                data.put("manufacturer", hardwareInfo.getManufacturer());
+                data.put("model", hardwareInfo.getProductName());
+                data.put("version", hardwareInfo.getVersion());
+                data.put("platformSerial", hardwareInfo.getSystemSerialNumber());
+                data.put("devId", "devID");
             }
         } else {
             String notFoundMessage = "Unable to find Issued Attestation Certificate "
