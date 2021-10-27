@@ -208,15 +208,18 @@ hirs::pb::OsInfo DeviceInfoCollector::collectOsInfo() {
         while (getline(releaseFile, line)) {
             stringstream ss(line);
             string item;
-            vector<string> tokens;
+            std::vector<string> tokens;
             char* delim = const_cast<char*>("=");
             while (getline(ss, item, *delim)) {
                 tokens.push_back(item);
             }
-            if (tokens.size() > 0 && tokens.at(0) == "ID") {
-                info.set_distribution(tokens.at(1));
-            } else if (tokens.size() > 0 && tokens.at(0) == "VERSION_ID") {
-                info.set_distributionrelease(tokens.at(1));
+            for (int i=0; i < tokens.size(); i++) {
+                if (tokens[i] == "ID") {
+                    info.set_distribution(tokens[i+1]);
+                }
+                if (tokens[i] == "VERSION_ID") {
+                    info.set_distributionrelease(tokens[i+1]);
+                }
             }
         }
         releaseFile.close();
