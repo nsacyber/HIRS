@@ -659,14 +659,17 @@ public final class SupplyChainCredentialValidator implements CredentialValidator
                             // error
                             resultMessage.append("ADDED attempted with prior instance\n");
                             deltaSb.append(String.format("%s;", ci.hashCode()));
+                            break;
                         }
                         if (ciV2.isModified()) {
                             // since the base list doesn't have this ci
                             // just add the delta
                             baseCompList.add(deltaCi);
+                            break;
                         }
                         if (ciV2.isRemoved()) {
                             baseCompList.remove(ciV2);
+                            break;
                         }
                         // if it is a remove
                         // we do nothing because baseCompList doesn't have it
