@@ -285,8 +285,8 @@ public class ReferenceManifestDetailsPageController
         // going to have to pull the filename and grab that from the DB
         // to get the id to make the link
         for (SwidResource swidRes : resources) {
-            if (support != null && swidRes.getName()
-                    .equalsIgnoreCase(support.getFileName())) {
+            if (support != null && swidRes.getHashValue()
+                    .equalsIgnoreCase(support.getHexDecHash())) {
                 RIM_VALIDATOR.validateSupportRimHash(support.getRimBytes(),
                         swidRes.getHashValue());
                 if (RIM_VALIDATOR.isSupportRimValid()) {
