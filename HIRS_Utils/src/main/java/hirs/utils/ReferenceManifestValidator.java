@@ -182,7 +182,7 @@ public class ReferenceManifestValidator {
                 }
             } else {
                 subjectKeyIdentifier = getKeyName(rim);
-                if (subjectKeyIdentifier.equals(cert.getSubjectKeyIdString())) {
+                if (subjectKeyIdentifier.equals(cert.getSubjectKeyIdString().substring(8))) {
                     context = new DOMValidateContext(cert.getX509Certificate().getPublicKey(),
                             nodes.item(0));
                 }
@@ -354,6 +354,7 @@ public class ReferenceManifestValidator {
 
     /**
      * This method returns the subjectKeyIdentifier from a given X509Certificate.
+     *
      * @param certificate the cert to pull the subjectKeyIdentifier from
      * @return the String representation of the subjectKeyIdentifier
      * @throws IOException
