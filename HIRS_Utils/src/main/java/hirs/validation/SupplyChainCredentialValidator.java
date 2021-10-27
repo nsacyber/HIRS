@@ -655,13 +655,7 @@ public final class SupplyChainCredentialValidator implements CredentialValidator
                         .getValue());
                 if (classFound) {
                     if (isMatch(ciV2, baseCiV2)) {
-                        if (ciV2.isAdded()) {
-                            // error
-                            resultMessage.append("ADDED attempted with prior instance\n");
-                            deltaSb.append(String.format("%s;", ci.hashCode()));
-                            break;
-                        }
-                        if (ciV2.isModified()) {
+                        if (ciV2.isAdded() || ciV2.isModified()) {
                             // since the base list doesn't have this ci
                             // just add the delta
                             baseCompList.add(deltaCi);
