@@ -40,6 +40,7 @@ import javax.xml.validation.SchemaFactory;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.UnsupportedEncodingException;
 import java.security.Key;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -82,7 +83,7 @@ public class ReferenceManifestValidator {
      *
      * @param rim ReferenceManifest object
      */
-    public void setRim(ReferenceManifest rim) {
+    public void setRim(final ReferenceManifest rim) {
         try {
             Document doc = validateSwidtagSchema(removeXMLWhitespace(new StreamSource(
                     new ByteArrayInputStream(rim.getRimBytes()))));
@@ -149,20 +150,15 @@ public class ReferenceManifestValidator {
     }
 
     /**
-     * This method validates the xml signature in the stream and stores the
-     * result for public access.
+     * This method attempts to validate the signature element of the instance's RIM
+     * using a given cert.  The cert is compared to either the RIM's embedded certificate
+     * or the RIM's subject key identifier.  If the cert is matched then validation proceeds,
+     * otherwise validation ends.
      *
-     * @param input the xml data stream.
+     * @param cert the cert to be checked against the RIM
+     * @return true if the signature element is validated, false otherwise
      */
-    public void validateXmlSignature(final InputStream input) {
-        try {
-            Document doc = validateSwidtagSchema(removeXMLWhitespace(new StreamSource(input)));
-            //signatureValid = validateSignedXMLDocument(doc);
-        } catch (IOException e) {
-            LOGGER.warn("Error during unmarshal: " + e.getMessage());
-        }
-    }
-
+    @SuppressWarnings("magicnumber")
     public boolean validateXmlSignature(final CertificateAuthorityCredential cert) {
         DOMValidateContext context = null;
         try {
@@ -175,10 +171,12 @@ public class ReferenceManifestValidator {
             if (certElement.getLength() > 0) {
                 X509Certificate embeddedCert = parseCertFromPEMString(
                         certElement.item(0).getTextContent());
-                subjectKeyIdentifier = getCertificateSubjectKeyIdentifier(embeddedCert);
-                if (Arrays.equals(embeddedCert.getPublicKey().getEncoded(),
-                        cert.getEncodedPublicKey())) {
-                    context = new DOMValidateContext(new X509KeySelector(), nodes.item(0));
+                if (embeddedCert != null) {
+                    subjectKeyIdentifier = getCertificateSubjectKeyIdentifier(embeddedCert);
+                    if (Arrays.equals(embeddedCert.getPublicKey().getEncoded(),
+                            cert.getEncodedPublicKey())) {
+                        context = new DOMValidateContext(new X509KeySelector(), nodes.item(0));
+                    }
                 }
             } else {
                 subjectKeyIdentifier = getKeyName(rim);
@@ -191,10 +189,10 @@ public class ReferenceManifestValidator {
                 publicKey = cert.getX509Certificate().getPublicKey();
                 return validateSignedXMLDocument(context);
             }
-        } catch (CertificateException e) {
-            LOGGER.warn("Error parsing embedded certificate from RIM: " + e.getMessage());
         } catch (IOException e) {
             LOGGER.warn("Error while parsing certificate data: " + e.getMessage());
+        } catch (Exception e) {
+            e.printStackTrace();
         }
 
         return false;
@@ -289,7 +287,8 @@ public class ReferenceManifestValidator {
                         Object object = dataItr.next();
                         if (object instanceof X509Certificate) {
                             final PublicKey publicKey = ((X509Certificate) object).getPublicKey();
-                            if (areAlgorithmsEqual(algorithm.getAlgorithm(), publicKey.getAlgorithm())) {
+                            if (areAlgorithmsEqual(algorithm.getAlgorithm(),
+                                                    publicKey.getAlgorithm())) {
                                 return new ReferenceManifestValidator.X509KeySelector
                                         .RIMKeySelectorResult(publicKey);
                             }
@@ -314,7 +313,7 @@ public class ReferenceManifestValidator {
         /**
          * This internal class creates a KeySelectorResult from the public key.
          */
-        private class RIMKeySelectorResult implements KeySelectorResult {
+        private static class RIMKeySelectorResult implements KeySelectorResult {
             private Key key;
 
             RIMKeySelectorResult(final Key key) {
@@ -333,22 +332,26 @@ public class ReferenceManifestValidator {
      * facilitate proper parsing.
      *
      * @param pemString the input string
-     * @return an X509Certificate created from the string
-     * @throws CertificateException if instantiating the CertificateFactory errors
+     * @return an X509Certificate created from the string, or null
+     * @throws Exception if certificate cannot be successfully parsed
      */
-    public X509Certificate parseCertFromPEMString(String pemString) throws CertificateException {
-        String CERTIFICATE_HEADER = "-----BEGIN CERTIFICATE-----";
-        String CERTIFICATE_FOOTER = "-----END CERTIFICATE-----";
+    public X509Certificate parseCertFromPEMString(final String pemString) throws Exception {
+        String certificateHeader = "-----BEGIN CERTIFICATE-----";
+        String certificateFooter = "-----END CERTIFICATE-----";
         try {
             CertificateFactory factory = CertificateFactory.getInstance("X.509");
-            InputStream inputStream = new ByteArrayInputStream((CERTIFICATE_HEADER
+            InputStream inputStream = new ByteArrayInputStream((certificateHeader
                     + System.lineSeparator()
                     + pemString
                     + System.lineSeparator()
-                    + CERTIFICATE_FOOTER).getBytes());
+                    + certificateFooter).getBytes("UTF-8"));
             return (X509Certificate) factory.generateCertificate(inputStream);
         } catch (CertificateException e) {
-            throw e;
+            LOGGER.warn("Error creating CertificateFactory instance: " + e.getMessage());
+        } catch (UnsupportedEncodingException e) {
+            LOGGER.warn("Error while parsing cert from PEM string: " + e.getMessage());
+        } finally {
+            throw new Exception("Error parsing certificate from PEM string!");
         }
     }
 
@@ -359,13 +362,16 @@ public class ReferenceManifestValidator {
      * @return the String representation of the subjectKeyIdentifier
      * @throws IOException
      */
-    private String getCertificateSubjectKeyIdentifier(X509Certificate certificate) throws IOException {
-        String decodedValue = null;
+    private String getCertificateSubjectKeyIdentifier(final X509Certificate certificate)
+                                                                    throws IOException {
+        String decodedValue;
         byte[] extension = certificate.getExtensionValue(Extension.subjectKeyIdentifier.getId());
         if (extension != null && extension.length > 0) {
             decodedValue = JcaX509ExtensionUtils.parseExtensionValue(extension).toString();
+        } else {
+            decodedValue = " "; //Unlikely that a proper X509Certificate does not have a skid
         }
-        return decodedValue.substring(1);//Drop the # at the beginning of the string
+        return decodedValue.substring(1); //Drop the # at the beginning of the string
     }
 
     /**

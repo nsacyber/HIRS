@@ -151,10 +151,11 @@ public class ReferenceManifestDetailsPageController
      * @throws CertificateException     if a certificate doesn't parse.
      */
     public static HashMap<String, Object> getRimDetailInfo(final UUID uuid,
-                                                           final ReferenceManifestManager referenceManifestManager,
-                                                           final ReferenceDigestManager referenceDigestManager,
-                                                           final ReferenceEventManager referenceEventManager,
-                                                           final CertificateManager certificateManager) throws IOException,
+                                           final ReferenceManifestManager referenceManifestManager,
+                                           final ReferenceDigestManager referenceDigestManager,
+                                           final ReferenceEventManager referenceEventManager,
+                                           final CertificateManager certificateManager)
+                                            throws IOException,
             CertificateException, NoSuchAlgorithmException {
         HashMap<String, Object> data = new HashMap<>();
 
