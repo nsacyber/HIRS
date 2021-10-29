@@ -40,6 +40,8 @@ public final class PCRPolicy extends Policy {
     private boolean linuxOs = false;
     @Column(nullable = false)
     private boolean enableIgnoreGpt = true;
+    @Column(nullable = false)
+    private boolean enableIgnoreOsEvt = false;
 
     private String[] baselinePcrs;
 
@@ -209,6 +211,22 @@ public final class PCRPolicy extends Policy {
      */
     public void setEnableIgnoreGpt(final boolean enableIgnoreGpt) {
         this.enableIgnoreGpt = enableIgnoreGpt;
+    }
+
+    /**
+     * Getter for the Os Events ignore flag.
+     * @return true if Os Events is to be ignored.
+     */
+    public boolean isEnableIgnoreOsEvt() {
+        return enableIgnoreOsEvt;
+    }
+
+    /**
+     * Setter for the Os Evt ignore flag.
+     * @param enableIgnoreOsEvt true if Os Evt is to be ignored.
+     */
+    public void setEnableIgnoreOsEvt(final boolean enableIgnoreOsEvt) {
+        this.enableIgnoreOsEvt = enableIgnoreOsEvt;
     }
 
     /**
