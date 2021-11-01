@@ -44,6 +44,7 @@ public final class PCRPolicy extends Policy {
     private static final String EVT_EFI_BOOT = "EV_EFI_BOOT_SERVICES_APPLICATION";
     private static final String EVT_EFI_VAR = "EV_EFI_VARIABLE_BOOT";
     private static final String EVT_EFI_GPT = "EV_EFI_GPT_EVENT";
+    private static final String EVT_EFI_CFG = "EV_EFI_VARIABLE_DRIVER_CONFIG";
 
     @Column(nullable = false)
     private boolean enableIgnoreIma = false;
@@ -142,8 +143,10 @@ public final class PCRPolicy extends Policy {
                 if (enableIgnoreOsEvt && (tpe.getEventTypeStr().contains(EVT_EFI_BOOT)
                         || tpe.getEventTypeStr().contains(EVT_EFI_GPT)
                         || tpe.getEventTypeStr().contains(EVT_EFI_VAR))) {
-                    // need to also look at #3
                     LOGGER.info(String.format("OS Evt Ignored -> %s", tpe));
+                } else if (enableIgnoreOsEvt && (tpe.getEventTypeStr().contains(EVT_EFI_CFG)
+                        && tpe.getEventContentStr().contains("SecureBoot"))) {
+                    LOGGER.info(String.format("OS Evt Config Ignored -> %s", tpe));
                 } else {
                     if (!eventValueMap.containsKey(tpe.getEventDigestStr())) {
                         tpmPcrEvents.add(tpe);
