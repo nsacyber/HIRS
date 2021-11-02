@@ -187,7 +187,8 @@ public class ReferenceManifestValidator {
             }
             if (context != null) {
                 publicKey = cert.getX509Certificate().getPublicKey();
-                return validateSignedXMLDocument(context);
+                signatureValid = validateSignedXMLDocument(context);
+                return signatureValid;
             }
         } catch (IOException e) {
             LOGGER.warn("Error while parsing certificate data: " + e.getMessage());
@@ -207,8 +208,10 @@ public class ReferenceManifestValidator {
      */
     public void validateSupportRimHash(final byte[] input, final String expected) {
         String calculatedHash = getHashValue(input, SHA256);
-        LOGGER.info("Calculated hash: " + calculatedHash + ", actual: " + expected);
         supportRimValid = calculatedHash.equals(expected);
+        if (!supportRimValid) {
+            LOGGER.info("Unmatched support RIM hash! Expected: " + expected + ", actual: " + calculatedHash);
+        }
     }
 
     /**
@@ -335,7 +338,7 @@ public class ReferenceManifestValidator {
      * @return an X509Certificate created from the string, or null
      * @throws Exception if certificate cannot be successfully parsed
      */
-    public X509Certificate parseCertFromPEMString(final String pemString) throws Exception {
+    private X509Certificate parseCertFromPEMString(final String pemString) throws Exception {
         String certificateHeader = "-----BEGIN CERTIFICATE-----";
         String certificateFooter = "-----END CERTIFICATE-----";
         try {
@@ -350,9 +353,9 @@ public class ReferenceManifestValidator {
             LOGGER.warn("Error creating CertificateFactory instance: " + e.getMessage());
         } catch (UnsupportedEncodingException e) {
             LOGGER.warn("Error while parsing cert from PEM string: " + e.getMessage());
-        } finally {
-            throw new Exception("Error parsing certificate from PEM string!");
         }
+
+        return null;
     }
 
     /**

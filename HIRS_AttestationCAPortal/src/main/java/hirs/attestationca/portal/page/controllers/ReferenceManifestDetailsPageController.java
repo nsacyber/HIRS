@@ -305,7 +305,6 @@ public class ReferenceManifestDetailsPageController
             data.put("pcrList", support.getExpectedPCRList());
         }
 
-//        RIM_VALIDATOR.validateXmlSignature(new ByteArrayInputStream(baseRim.getRimBytes()));
         Set<CertificateAuthorityCredential> certificates =
                 CertificateAuthorityCredential.select(certificateManager)
                         .getCertificates();
