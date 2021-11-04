@@ -76,7 +76,7 @@
                         <input id="importFile" type="file" name="file" multiple="multiple" />
                     </my:file-chooser>
                 <a href="${portal}/certificate-request/trust-chain/bulk">
-                    <img src="${icons}/ic_file_download_black_24dp.png" title="Download Certificates">
+                    <img src="${icons}/ic_file_download_black_24dp.png" title="Download All Trust Chain Certificates">
                 </a>
             </form:form>
         </div>

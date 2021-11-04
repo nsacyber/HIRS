@@ -401,7 +401,7 @@ public class CertificateRequestPageController extends PageController<NoPageParam
             for (CertificateAuthorityCredential ca : CertificateAuthorityCredential
                     .select(certificateManager)
                     .getCertificates()) {
-                zipFileName = String.format("ca-certificate[%s].cer",
+                zipFileName = String.format("ca-certificates[%s].cer",
                         Integer.toHexString(ca.getCertificateHash()));
                 // configure the zip entry, the properties of the 'file'
                 ZipEntry zipEntry = new ZipEntry(zipFileName);
@@ -445,7 +445,7 @@ public class CertificateRequestPageController extends PageController<NoPageParam
             // get all files
             for (PlatformCredential pc : PlatformCredential.select(certificateManager)
                     .getCertificates()) {
-                zipFileName = String.format("Platform_Certificate[%s].cer",
+                zipFileName = String.format("Platform_Certificates[%s].cer",
                         Integer.toHexString(pc.getCertificateHash()));
                 // configure the zip entry, the properties of the 'file'
                 ZipEntry zipEntry = new ZipEntry(zipFileName);
@@ -454,6 +454,96 @@ public class CertificateRequestPageController extends PageController<NoPageParam
                 zipOut.putNextEntry(zipEntry);
                 // the content of the resource
                 StreamUtils.copy(pc.getRawBytes(), zipOut);
+                zipOut.closeEntry();
+            }
+            zipOut.finish();
+            // write cert to output stream
+        } catch (IllegalArgumentException ex) {
+            String uuidError = "Failed to parse ID from: ";
+            LOGGER.error(uuidError, ex);
+            // send a 404 error when invalid certificate
+            response.sendError(HttpServletResponse.SC_NOT_FOUND);
+        }
+    }
+
+    /**
+     * Handles request to download the certs by writing it to the response stream
+     * for download in bulk.
+     *
+     * @param response the response object (needed to update the header with the
+     * file name)
+     * @throws java.io.IOException when writing to response output stream
+     */
+    @RequestMapping(value = "/issued-certificates/bulk", method = RequestMethod.GET)
+    public void icBulkDownload(final HttpServletResponse response)
+            throws IOException {
+        LOGGER.info("Handling request to download all issued certificates");
+        String fileName = "issued_certificates.zip";
+        String zipFileName;
+
+        // Set filename for download.
+        response.setHeader("Content-Disposition", "attachment; filename=" + fileName);
+        response.setContentType("application/zip");
+
+        try (ZipOutputStream zipOut = new ZipOutputStream(response.getOutputStream())) {
+            // get all files
+            for (IssuedAttestationCertificate ic : IssuedAttestationCertificate
+                    .select(certificateManager)
+                    .getCertificates()) {
+                zipFileName = String.format("Issued_Certificates[%s].cer",
+                        Integer.toHexString(ic.getCertificateHash()));
+                // configure the zip entry, the properties of the 'file'
+                ZipEntry zipEntry = new ZipEntry(zipFileName);
+                zipEntry.setSize((long) ic.getRawBytes().length * Byte.SIZE);
+                zipEntry.setTime(System.currentTimeMillis());
+                zipOut.putNextEntry(zipEntry);
+                // the content of the resource
+                StreamUtils.copy(ic.getRawBytes(), zipOut);
+                zipOut.closeEntry();
+            }
+            zipOut.finish();
+            // write cert to output stream
+        } catch (IllegalArgumentException ex) {
+            String uuidError = "Failed to parse ID from: ";
+            LOGGER.error(uuidError, ex);
+            // send a 404 error when invalid certificate
+            response.sendError(HttpServletResponse.SC_NOT_FOUND);
+        }
+    }
+
+    /**
+     * Handles request to download the certs by writing it to the response stream
+     * for download in bulk.
+     *
+     * @param response the response object (needed to update the header with the
+     * file name)
+     * @throws java.io.IOException when writing to response output stream
+     */
+    @RequestMapping(value = "/endorsement-key-credentials/bulk", method = RequestMethod.GET)
+    public void ekBulkDownload(final HttpServletResponse response)
+            throws IOException {
+        LOGGER.info("Handling request to download all endorsement certificates");
+        String fileName = "endorsement_certificates.zip";
+        String zipFileName;
+
+        // Set filename for download.
+        response.setHeader("Content-Disposition", "attachment; filename=" + fileName);
+        response.setContentType("application/zip");
+
+        try (ZipOutputStream zipOut = new ZipOutputStream(response.getOutputStream())) {
+            // get all files
+            for (EndorsementCredential ek : EndorsementCredential
+                    .select(certificateManager)
+                    .getCertificates()) {
+                zipFileName = String.format("Endorsement_Certificates[%s].cer",
+                        Integer.toHexString(ek.getCertificateHash()));
+                // configure the zip entry, the properties of the 'file'
+                ZipEntry zipEntry = new ZipEntry(zipFileName);
+                zipEntry.setSize((long) ek.getRawBytes().length * Byte.SIZE);
+                zipEntry.setTime(System.currentTimeMillis());
+                zipOut.putNextEntry(zipEntry);
+                // the content of the resource
+                StreamUtils.copy(ek.getRawBytes(), zipOut);
                 zipOut.closeEntry();
             }
             zipOut.finish();
