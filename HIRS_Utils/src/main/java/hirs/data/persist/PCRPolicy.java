@@ -29,6 +29,7 @@ public final class PCRPolicy extends Policy {
     private static final Logger LOGGER = getLogger(PCRPolicy.class);
 
     private static final int NUM_TO_SKIP = 1;
+    private static final int NUM_OF_TBOOT_PCR = 3;
     // PCR 5-16
     private static final int PXE_PCR_START = 5;
     private static final int PXE_PCR_END = 16;
@@ -97,10 +98,10 @@ public final class PCRPolicy extends Policy {
                     i += NUM_TO_SKIP;
                 }
 
-//                if (enableIgnoretBoot && i == TBOOT_PCR_START) {
-//                    LOGGER.info("PCR Policy TBoot Ignore enabled.");
-//                    i += NUM_OF_TBOOT_PCR;
-//                }
+                if (enableIgnoretBoot && i == TBOOT_PCR_START) {
+                    LOGGER.info("PCR Policy TBoot Ignore enabled.");
+                    i += NUM_OF_TBOOT_PCR;
+                }
 
                 if (enableIgnoreGpt && i == GPT_PCR) {
                     LOGGER.info("PCR Policy GPT Ignore enabled.");
@@ -179,6 +180,7 @@ public final class PCRPolicy extends Policy {
         } catch (DecoderException deEx) {
             LOGGER.error(deEx);
         }
+
         PcrSelection pcrSelection = new PcrSelection(PcrSelection.ALL_PCRS_ON);
         PcrComposite pcrComposite = new PcrComposite(
                 pcrSelection,
