@@ -580,11 +580,11 @@ public class SupplyChainValidationServiceImpl implements SupplyChainValidationSe
         } else {
             fwStatus = new AppraisalStatus(FAIL, String.format("Firmware Validation failed: "
                     + "%s for %s can not be found", failedString, manufacturer));
+            EventLogMeasurements eventLog = (EventLogMeasurements) measurement;
+            eventLog.setOverallValidationResult(fwStatus.getAppStatus());
+            this.referenceManifestManager.update(eventLog);
         }
 
-        EventLogMeasurements eventLog = (EventLogMeasurements) measurement;
-        eventLog.setOverallValidationResult(fwStatus.getAppStatus());
-        this.referenceManifestManager.update(eventLog);
         return buildValidationRecord(SupplyChainValidation.ValidationType.FIRMWARE,
                 fwStatus.getAppStatus(), fwStatus.getMessage(), validationObject, level);
     }
