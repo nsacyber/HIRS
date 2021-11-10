@@ -543,11 +543,6 @@ public class SupplyChainValidationServiceImpl implements SupplyChainValidationSe
                                     eventValueMap.put(rdv.getDigestValue(), rdv);
                                 }
 
-//                                for (TpmPcrEvent tpe : tcgMeasurementLog.getEventList()) {
-//                                    if (!eventValueMap.containsKey(tpe.getEventDigestStr())) {
-//                                        tpmPcrEvents.add(tpe);
-//                                    }
-//                                }
                                 tpmPcrEvents.addAll(pcrPolicy.validateTpmEvents(
                                         tcgMeasurementLog, eventValueMap));
                             }

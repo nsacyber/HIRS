@@ -129,11 +129,8 @@ public final class PCRPolicy extends Policy {
                 final Map<String, ReferenceDigestValue> eventValueMap) {
         List<TpmPcrEvent> tpmPcrEvents = new LinkedList<>();
         for (TpmPcrEvent tpe : tcgMeasurementLog.getEventList()) {
-
             if (enableIgnoreIma && tpe.getPcrIndex() == IMA_PCR) {
                 LOGGER.info(String.format("IMA Ignored -> %s", tpe));
-            } else if (enableIgnoreGpt && tpe.getPcrIndex() == GPT_PCR) {
-                LOGGER.info(String.format("GPT Ignored -> %s", tpe));
             } else if (enableIgnoretBoot && (tpe.getPcrIndex() >= TBOOT_PCR_START
                     && tpe.getPcrIndex() <= TBOOT_PCR_END)) {
                 LOGGER.info(String.format("TBOOT Ignored -> %s", tpe));
@@ -141,8 +138,9 @@ public final class PCRPolicy extends Policy {
                     && tpe.getPcrIndex() <= PXE_PCR_END)) {
                 LOGGER.info(String.format("OS Evt Ignored -> %s", tpe));
             } else {
-                if (enableIgnoreOsEvt && (tpe.getEventTypeStr().contains(EVT_EFI_BOOT)
-                        || tpe.getEventTypeStr().contains(EVT_EFI_GPT)
+                if (enableIgnoreGpt && tpe.getEventTypeStr().contains(EVT_EFI_GPT)) {
+                    LOGGER.info(String.format("GPT Ignored -> %s", tpe));
+                } else if (enableIgnoreOsEvt && (tpe.getEventTypeStr().contains(EVT_EFI_BOOT)
                         || tpe.getEventTypeStr().contains(EVT_EFI_VAR))) {
                     LOGGER.info(String.format("OS Evt Ignored -> %s", tpe));
                 } else if (enableIgnoreOsEvt && (tpe.getEventTypeStr().contains(EVT_EFI_CFG)

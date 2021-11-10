@@ -866,16 +866,17 @@ public class PolicyPageController extends PageController<NoPageParams> {
             // set the policy option and create success message
             if (ignoreOsEvtOptionEnabled) {
                 policy.getPcrPolicy().setEnableIgnoreOsEvt(true);
-                successMessage = "Ignore GPT enabled";
+                policy.getPcrPolicy().setEnableIgnoreGpt(true);
+                successMessage = "Ignore OS Events enabled";
             } else {
                 policy.getPcrPolicy().setEnableIgnoreOsEvt(false);
-                successMessage = "Ignore GPT disabled";
+                successMessage = "Ignore OS Events disabled";
             }
 
             savePolicyAndApplySuccessMessage(ppModel, model, messages, successMessage, policy);
         } catch (PolicyManagerException e) {
             handlePolicyManagerUpdateError(model, messages, e,
-                    "Error changing ACA Os Events ignore policy",
+                    "Error changing ACA OS Events ignore policy",
                     "Error updating policy. \n" + e.getMessage());
         }
 
