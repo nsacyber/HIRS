@@ -227,11 +227,28 @@ public class SupplyChainPolicy extends Policy {
     }
 
     /**
+     * Returns whether or not to validate the ignore Os Events on the device.
+     *
+     * @return whether or not to validate the ignore Os Events
+     */
+    public boolean isIgnoreOsEvtEnabled() {
+        return this.pcrPolicy.isEnableIgnoreOsEvt();
+    }
+
+    /**
      * Sets whether or not validate the ignore GPT on the device.
      * @param enableIgnoreGpt whether or not to validate the ignore GPT
      */
     public void setIgnoreGptEnabled(final boolean enableIgnoreGpt) {
         this.pcrPolicy.setEnableIgnoreGpt(enableIgnoreGpt);
+    }
+
+    /**
+     * Sets whether or not validate the ignore Os Events on the device.
+     * @param enableIgnoreOsEvt whether or not to validate the ignore Os Events
+     */
+    public void setIgnoreOsEvtEnabled(final boolean enableIgnoreOsEvt) {
+        this.pcrPolicy.setEnableIgnoreOsEvt(enableIgnoreOsEvt);
     }
 
     /**

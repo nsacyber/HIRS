@@ -230,13 +230,11 @@ public class ReferenceManifestDetailsPageController
         data.put("entityThumbprint", baseRim.getEntityThumbprint());
         // Link
         data.put("linkHref", baseRim.getLinkHref());
+        data.put("linkHrefLink", "");
         for (BaseReferenceManifest bRim : BaseReferenceManifest
                 .select(referenceManifestManager).getRIMs()) {
             if (baseRim.getLinkHref().contains(bRim.getTagId())) {
-                data.put("linkHrefLink", bRim.getId().toString());
-                break;
-            } else {
-                data.put("linkHrefLink", "");
+                data.put("linkHrefLink", bRim.getId());
             }
         }
         data.put("linkRel", baseRim.getLinkRel());
@@ -254,16 +252,16 @@ public class ReferenceManifestDetailsPageController
         data.put("pcUriGlobal", baseRim.getPcURIGlobal());
         data.put("pcUriLocal", baseRim.getPcURILocal());
         data.put("rimLinkHash", baseRim.getRimLinkHash());
-        boolean hashLinked = false;
         if (baseRim.getRimLinkHash() != null) {
             ReferenceManifest rim = BaseReferenceManifest.select(referenceManifestManager)
-                    .byBase64Hash(baseRim.getRimLinkHash()).getRIM();
-            hashLinked = (rim != null);
-            if (hashLinked) {
+                    .byHexDecHash(baseRim.getRimLinkHash()).getRIM();
+            if (rim != null) {
                 data.put("rimLinkId", rim.getId());
+                data.put("linkHashValid", true);
+            } else {
+                data.put("linkHashValid", false);
             }
         }
-        data.put("linkHashValid", hashLinked);
         data.put("rimType", baseRim.getRimType());
 
         List<SwidResource> resources = baseRim.parseResource();

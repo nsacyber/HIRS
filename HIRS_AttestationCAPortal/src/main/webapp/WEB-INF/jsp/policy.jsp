@@ -107,7 +107,19 @@
                                         <label><input id="gptTop" type="radio" name="ignoreGpt" ${initialData.enableIgnoreGpt ? 'checked' : ''} value="checked"/> Ignore GPT enabled</label>
                                     </div>
                                     <div class="radio">
-                                        <label><input id="gptBot" type="radio" name="ignoreGpt" ${initialData.enableIgnoreGpt ? '' : 'checked'}  value="unchecked"/> Ignore GPT disabled</label>
+                                        <label><input id="gptBot" type="radio" name="ignoreGpt" ${initialData.enableIgnoreGpt ? '' : 'checked'} value="unchecked"/> Ignore GPT disabled</label>
+                                    </div>
+                                </my:editor>
+                            </li>
+                        </form:form>
+                        <form:form method="POST" modelAttribute="initialData" action="policy/update-os-evt-ignore">
+                            <li>Ignore OS Events: ${initialData.enableIgnoreOsEvt ? 'Enabled' : 'Disabled'}
+                                <my:editor id="ignoreOsEvtPolicyEditor" label="Edit Settings">
+                                    <div class="radio">
+                                        <label><input id="osTop" type="radio" name="ignoreOsEvt" ${initialData.enableIgnoreOsEvt ? 'checked' : ''} value="checked"/> Ignore Os Events enabled</label>
+                                    </div>
+                                    <div class="radio">
+                                        <label><input id="osBot" type="radio" name="ignoreOsEvt" ${initialData.enableIgnoreOsEvt ? '' : 'checked'} value="unchecked"/> Ignore Os Events disabled</label>
                                     </div>
                                 </my:editor>
                             </li>
