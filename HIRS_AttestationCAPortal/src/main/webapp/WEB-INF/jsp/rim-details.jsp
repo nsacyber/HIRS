@@ -371,7 +371,7 @@
                             <div>
                                 <span>
                                     <c:choose>
-                                        <c:when test="${initialData.linkRel=='requires'}">
+                                        <c:when test="${not empty initialData.linkHrefLink}">
                                             <a href="${portal}/rim-details?id=${initialData.linkHrefLink}" rel="${initialData.linkRel}">${initialData.linkHref}</a>
                                         </c:when>
                                         <c:otherwise>
