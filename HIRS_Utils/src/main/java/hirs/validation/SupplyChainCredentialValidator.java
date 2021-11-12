@@ -1632,6 +1632,8 @@ public final class SupplyChainCredentialValidator implements CredentialValidator
         } catch (InvalidKeyException | CertificateException | NoSuchAlgorithmException
                 | NoSuchProviderException | SignatureException e) {
             LOGGER.error("Exception thrown while verifying certificate", e);
+            LOGGER.error(String.format("%s.verify(%s)", cert.getSubjectDN(),
+                    signingCert.getSubjectDN()));
             return false;
         }
 
@@ -1678,6 +1680,8 @@ public final class SupplyChainCredentialValidator implements CredentialValidator
             return cert.isSignatureValid(contentVerifierProvider);
         } catch (OperatorCreationException | CertException e) {
             LOGGER.error("Exception thrown while verifying certificate", e);
+            LOGGER.error(String.format("%s.isSignatureValid(%s)", cert.getSerialNumber(),
+                    signingKey.getFormat()));
             return false;
         }
     }
