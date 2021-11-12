@@ -37,7 +37,6 @@ import hirs.utils.BouncyCastleUtils;
 import hirs.utils.ReferenceManifestValidator;
 import hirs.validation.CredentialValidator;
 import hirs.validation.SupplyChainCredentialValidator;
-import hirs.validation.SupplyChainValidatorException;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -431,27 +430,27 @@ public class SupplyChainValidationServiceImpl implements SupplyChainValidationSe
             Set<CertificateAuthorityCredential> allCerts =
                     CertificateAuthorityCredential.select(certificateManager).getCertificates();
             CertificateAuthorityCredential signingCert = null;
-            for (CertificateAuthorityCredential cert : allCerts) {
-                signingCert = cert;
-                KeyStore keyStore = getCaChain(signingCert);
-                if (referenceManifestValidator.validateXmlSignature(signingCert)) {
-                    try {
-                        if (!SupplyChainCredentialValidator.verifyCertificate(
-                                signingCert.getX509Certificate(), keyStore)) {
-                            passed = false;
-                            fwStatus = new AppraisalStatus(FAIL,
-                                    "Firmware validation failed: invalid certificate path.");
-                        }
-                    } catch (IOException e) {
-                        LOGGER.error("Error getting X509 cert from manager: " + e.getMessage());
-                    } catch (SupplyChainValidatorException e) {
-                        LOGGER.error("Error validating cert against keystore: " + e.getMessage());
-                        fwStatus = new AppraisalStatus(FAIL,
-                                "Firmware validation failed: invalid certificate path.");
-                    }
-                    break;
-                }
-            }
+//            for (CertificateAuthorityCredential cert : allCerts) {TODO: undo this
+//                signingCert = cert;
+//                KeyStore keyStore = getCaChain(signingCert);
+//                if (referenceManifestValidator.validateXmlSignature(signingCert)) {
+//                    try {
+////                        if (!SupplyChainCredentialValidator.verifyCertificate(
+////                                signingCert.getX509Certificate(), keyStore)) {
+//                            passed = false;
+//                            fwStatus = new AppraisalStatus(FAIL,
+//                                    "Firmware validation failed: invalid certificate path.");
+//                        }
+//                    } catch (IOException e) {
+//                        LOGGER.error("Error getting X509 cert from manager: " + e.getMessage());
+//                    } catch (SupplyChainValidatorException e) {
+//                        LOGGER.error("Error validating cert against keystore: " + e.getMessage());
+//                        fwStatus = new AppraisalStatus(FAIL,
+//                                "Firmware validation failed: invalid certificate path.");
+//                    }
+//                    break;
+//                }
+//            }
 
             for (SwidResource swidRes : resources) {
                 supportReferenceManifest = SupportReferenceManifest.select(referenceManifestManager)

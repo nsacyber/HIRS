@@ -210,7 +210,8 @@ public class ReferenceManifestValidator {
         String calculatedHash = getHashValue(input, SHA256);
         supportRimValid = calculatedHash.equals(expected);
         if (!supportRimValid) {
-            LOGGER.info("Unmatched support RIM hash! Expected: " + expected + ", actual: " + calculatedHash);
+            LOGGER.info("Unmatched support RIM hash! Expected: " + expected
+                    + ", actual: " + calculatedHash);
         }
     }
 
