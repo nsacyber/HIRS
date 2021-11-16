@@ -1629,11 +1629,18 @@ public final class SupplyChainCredentialValidator implements CredentialValidator
         try {
             cert.verify(signingCert.getPublicKey(), BouncyCastleProvider.PROVIDER_NAME);
             return true;
-        } catch (InvalidKeyException | CertificateException | NoSuchAlgorithmException
-                | NoSuchProviderException | SignatureException e) {
-            LOGGER.error("Exception thrown while verifying certificate", e);
-            return false;
+        } catch (InvalidKeyException e) {
+            LOGGER.warn("Incorrect key given to validate this cert's signature");
+        } catch (CertificateException e) {
+            LOGGER.warn("Encoding error while validating this cert's signature");
+        } catch (NoSuchAlgorithmException e) {
+            LOGGER.warn("Unsupported signature algorithm found during validation");
+        } catch (NoSuchProviderException e) {
+            LOGGER.warn("Incorrect provider for cert signature validation");
+        } catch (SignatureException e) {
+            LOGGER.warn("Exception thrown while verifying certificate", e);
         }
+        return false;
 
     }
 
