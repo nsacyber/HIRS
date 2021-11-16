@@ -28,7 +28,6 @@ jobs:
       shell: bash
       run: |
         sudo apt-get install -y curl
-        #echo "::set-output name=test-result::$TEST_STATUS"
         echo ${{ secrets.DOCKER_HUB_ACCESS_TOKEN }} | docker login -u ${{ secrets.DOCKER_HUB_USERNAME }} --password-stdin
         bash .ci/system-tests/run-system-tests.sh
     - name: Archive System Test Log files
