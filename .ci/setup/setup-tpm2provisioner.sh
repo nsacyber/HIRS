@@ -1,23 +1,20 @@
 #!/bin/bash
-
-# Script to setup the TPM 2.0 Provisioner Docker Image for System Tests
+#########################################################################################
+#  Script to setup the TPM 2.0 Provisioner Docker Image for System Tests
+#
+#########################################################################################
 set -e
+pushd /
+echo "Setting up TPM emulator for the TPM2 Provisioner"
 
-# Wait for ACA to boot
-echo "Waiting for ACA to spin up..."
-until [ "`curl --silent --connect-timeout 1 -I -k https://${HIRS_ACA_PORTAL_IP}:${HIRS_ACA_PORTAL_PORT}/HIRS_AttestationCAPortal | grep '302 Found'`" != "" ]; do
-  :
-done
-echo "ACA is up!"
-
-# Function to install TPM 2.0 Provisioner packages
+# Function to make and install TPM 2.0 Provisioner packages
 function InstallProvisioner {
    echo "===========Installing TPM 2.0 Provisioner Packages...==========="
-
    pushd /HIRS
-   if [ ! -d package/rpm/RPMS ]; then
-       ./package/package.centos.sh
-   fi
+    echo "Building the HIRS Provisioner ..."
+    mkdir -p /HIRS/logs/provisioner/
+    sh package/package.centos.sh &> /HIRS/logs/provisioner/provisioner_build.log
+    echo "Installing the HIRS Provisioner ..."
    yum install -y package/rpm/RPMS/x86_64/HIRS_Provisioner_TPM_2_0*.el7.x86_64.rpm
    popd
 }
@@ -46,35 +43,19 @@ function InitTpm2Emulator {
    echo "TPM Emulator started"
 
    # Give tpm_server time to start and register on the DBus
-   sleep 5
+   sleep 2
 
    tpm2-abrmd -t socket &
    echo "TPM2-Abrmd started"
 
    # Give ABRMD time to start and register on the DBus
-   sleep 5
+   sleep 2
 
    # Certificates
    ek_cert="/HIRS/.ci/setup/certs/ek_cert.der"
    ca_key="/HIRS/.ci/setup/certs/ca.key"
    ca_cert="/HIRS/.ci/setup/certs/ca.crt"
    platform_cert="platformAttributeCertificate.der"
-
-   # PACCOR directory
-   PC_DIR=/var/hirs/pc_generation
-   mkdir -p $PC_DIR
-
-   echo "Running PACCOR to generate local component information..."
-   # Use specific PACCOR script for system testing.
-   # Will provide default component SN#s when needed.
-   cp -f /HIRS/.ci/system-tests/allcomponents_hirs_system_tests.sh /opt/paccor/scripts/allcomponents.sh
-   /opt/paccor/scripts/allcomponents.sh > $PC_DIR/componentsFile
-   /opt/paccor/scripts/referenceoptions.sh > $PC_DIR/optionsFile
-   /opt/paccor/scripts/otherextensions.sh > $PC_DIR/extensionsFile
-
-   echo "Generating $platform_cert..."
-   /opt/paccor/bin/observer -c $PC_DIR/componentsFile -p $PC_DIR/optionsFile -e $ek_cert -f $PC_DIR/observerFile
-   /opt/paccor/bin/signer -o $PC_DIR/observerFile -x $PC_DIR/extensionsFile -b 20180101 -a 20280201 -N $RANDOM -k $ca_key -P $ca_cert -f $PC_DIR/$platform_cert
 
    if tpm2_nvlist | grep -q 0x1c00002; then
      echo "Released NVRAM for EK."
@@ -97,14 +78,6 @@ function InitTpm2Emulator {
      echo "Released NVRAM for PC."
      tpm2_nvrelease -x 0x1c90000 -a 0x40000001
    fi
-
-   # Store the platform certificate in the TPM's NVRAM
-   size=$(cat $PC_DIR/$platform_cert | wc -c)
-   echo "Define NVRAM location for PC cert of size $size."
-   tpm2_nvdefine -x 0x1c90000 -a 0x40000001 -t 0x2000A -s $size
-
-   echo "Loading PC cert $PC_DIR/$platform_cert into NVRAM."
-   tpm2_nvwrite -x 0x1c90000 -a 0x40000001 $PC_DIR/$platform_cert
 
    echo "===========TPM 2.0 Emulator Initialization Complete!==========="
 
@@ -142,6 +115,19 @@ DEFAULT_SITE_CONFIG_FILE
    cat /etc/hirs/hirs-site.config
 }
 
+function WaitForAca {
+# Wait for ACA to boot
+echo "Waiting for ACA to spin up at address ${HIRS_ACA_PORTAL_IP} on port ${HIRS_ACA_PORTAL_PORT} ..."
+until [ "`curl --silent --connect-timeout 1 -I -k https://${HIRS_ACA_PORTAL_IP}:${HIRS_ACA_PORTAL_PORT}/HIRS_AttestationCAPortal | grep '302 Found'`" != "" ]; do
+  sleep 5;
+  #echo "Checking on the ACA..."
+done
+echo "ACA is up!"
+}
+
+#Wait for the ACA to spin up, if it hasnt already
+WaitForAca
+
 # Install packages
 InstallProvisioner
 
@@ -151,15 +137,11 @@ InitTpm2Emulator
 # Update the hirs-site.config file
 UpdateHirsSiteConfigFile
 
-# Set alias to use python3
-echo "===========Python Version==========="
-python3 --version
-alias python='/usr/bin/python3.6'
-alias
 
-echo ""
 echo "TPM 2.0 Emulator NV RAM list"
 tpm2_nvlist
 
 echo ""
 echo "===========HIRS ACA TPM 2.0 Provisioner Setup Complete!==========="
+
+popd
