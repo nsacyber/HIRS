@@ -1432,7 +1432,7 @@ public final class SupplyChainCredentialValidator implements CredentialValidator
             }
         } while (foundRootOfCertChain.equals(intCAError));
 
-        LOGGER.error(foundRootOfCertChain);
+        LOGGER.warn(foundRootOfCertChain);
         return foundRootOfCertChain;
     }
 
@@ -1638,7 +1638,8 @@ public final class SupplyChainCredentialValidator implements CredentialValidator
         } catch (NoSuchProviderException e) {
             LOGGER.warn("Incorrect provider for cert signature validation");
         } catch (SignatureException e) {
-            LOGGER.warn("Exception thrown while verifying certificate", e);
+            LOGGER.warn(String.format("%s.verify(%s)", cert.getSubjectDN(),
+                    signingCert.getSubjectDN()));
         }
         return false;
 
@@ -1685,6 +1686,8 @@ public final class SupplyChainCredentialValidator implements CredentialValidator
             return cert.isSignatureValid(contentVerifierProvider);
         } catch (OperatorCreationException | CertException e) {
             LOGGER.error("Exception thrown while verifying certificate", e);
+            LOGGER.error(String.format("%s.isSignatureValid(%s)", cert.getSerialNumber(),
+                    signingKey.getFormat()));
             return false;
         }
     }
