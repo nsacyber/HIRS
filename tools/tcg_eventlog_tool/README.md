@@ -31,7 +31,7 @@ In both cases the tcg_eventlog_tool-X.X.jar file should have been placed in the 
 Currenty only a install file for Linux RPM is supported.
 
 To create an RPM on a linux device use the following command in the dame directory:
-> ./gradlew builRPM
+> ./gradlew buildRPM
 
 # Installing
 Currenty only a install package for Linux is supported. 
