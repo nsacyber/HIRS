@@ -197,6 +197,9 @@ public final class PCRPolicy extends Policy {
             String calculatedString = Hex.encodeHexString(
                     pcrInfoShort.getCalculatedDigest());
             validated = quoteString.contains(calculatedString);
+            if (!validated) {
+                LOGGER.warn(calculatedString + " not found in " + quoteString);
+            }
         } catch (NoSuchAlgorithmException naEx) {
             LOGGER.error(naEx);
         }
