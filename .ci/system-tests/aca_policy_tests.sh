@@ -14,8 +14,8 @@ echo "ACA POLICY TEST 1: Test ACA default policy "
 provision_tpm2 "pass"
 
 echo "ACA POLICY TEST 2: Test EK cert Only Validation Policy without a EK Issuer Cert in the trust store"
-setPolicyEkOnly 
-provision_tpm2 "pass"
+setPolicyEkOnly
+provision_tpm2 "fail"
 
 echo "ACA POLICY TEST 3: Test EK Only Validation Policy" 
 uploadTrustedCerts

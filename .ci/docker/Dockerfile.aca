@@ -1,0 +1,8 @@
+FROM hirs/hirs-ci:centos7
+
+# Install packages for installing HIRS ACA
+RUN yum -y update && yum clean all
+RUN yum install -y mariadb-server openssl tomcat java-1.8.0 rpmdevtools coreutils initscripts chkconfig sed grep firewalld policycoreutils && yum clean all
+
+# Expose ACA Port
+EXPOSE 8443
