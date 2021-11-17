@@ -1630,15 +1630,15 @@ public final class SupplyChainCredentialValidator implements CredentialValidator
             cert.verify(signingCert.getPublicKey(), BouncyCastleProvider.PROVIDER_NAME);
             return true;
         } catch (InvalidKeyException e) {
-            LOGGER.warn("Incorrect key given to validate this cert's signature");
+            LOGGER.info("Incorrect key given to validate this cert's signature");
         } catch (CertificateException e) {
-            LOGGER.warn("Encoding error while validating this cert's signature");
+            LOGGER.info("Encoding error while validating this cert's signature");
         } catch (NoSuchAlgorithmException e) {
-            LOGGER.warn("Unsupported signature algorithm found during validation");
+            LOGGER.info("Unsupported signature algorithm found during validation");
         } catch (NoSuchProviderException e) {
-            LOGGER.warn("Incorrect provider for cert signature validation");
+            LOGGER.info("Incorrect provider for cert signature validation");
         } catch (SignatureException e) {
-            LOGGER.warn(String.format("%s.verify(%s)", cert.getSubjectDN(),
+            LOGGER.info(String.format("%s.verify(%s)", cert.getSubjectDN(),
                     signingCert.getSubjectDN()));
         }
         return false;
@@ -1685,8 +1685,8 @@ public final class SupplyChainCredentialValidator implements CredentialValidator
                     new JcaContentVerifierProviderBuilder().setProvider("BC").build(signingKey);
             return cert.isSignatureValid(contentVerifierProvider);
         } catch (OperatorCreationException | CertException e) {
-            LOGGER.error("Exception thrown while verifying certificate", e);
-            LOGGER.error(String.format("%s.isSignatureValid(%s)", cert.getSerialNumber(),
+            LOGGER.info("Exception thrown while verifying certificate", e);
+            LOGGER.info(String.format("%s.isSignatureValid(%s)", cert.getSerialNumber(),
                     signingKey.getFormat()));
             return false;
         }
