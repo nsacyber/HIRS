@@ -1491,10 +1491,10 @@ public final class SupplyChainCredentialValidator implements CredentialValidator
                                     failureMsg.append(scv.getMessage());
                                 }
                                 deltaMapping.put(delta, new SupplyChainValidation(
-                                        SupplyChainValidation.ValidationType.PLATFORM_CREDENTIAL,
-                                        AppraisalStatus.Status.FAIL,
-                                        certificateList,
-                                        failureMsg.toString()));
+                                       SupplyChainValidation.ValidationType.PLATFORM_CREDENTIAL,
+                                       AppraisalStatus.Status.FAIL,
+                                       certificateList,
+                                       failureMsg.toString()));
                             }
                         } else if (ciV2.isRemoved()) {
                             if (!chainCiMapping.containsKey(ciSerial)) {
@@ -1543,9 +1543,40 @@ public final class SupplyChainCredentialValidator implements CredentialValidator
                         }
                     }
                 } else {
-                    // found a delta ci with no serial
-                    // add to list
-                    leftOvers.add(ci);
+                    if (ci.isVersion2() && ((ComponentIdentifierV2) ci).isModified()) {
+                        ComponentIdentifierV2 ciV2 = (ComponentIdentifierV2) ci;
+                        // Look for singular component of same make/model/class
+                        ComponentIdentifier candidate = null;
+                        for (ComponentIdentifier search : absentSerials) {
+                            if (!search.isVersion2()) {
+                                continue;
+                            }
+                            ComponentIdentifierV2 noSerialV2 = (ComponentIdentifierV2) search;
+
+                            if (noSerialV2.getComponentClass().getValue().equals(
+                                    ciV2.getComponentClass().getValue())
+                                && isMatch(noSerialV2, ciV2)) {
+                                if (candidate == null) {
+                                    candidate = noSerialV2;
+                                } else {
+                                    // This only works if there is one matching component
+                                    candidate = null;
+                                    break;
+                                }
+                            }
+                        }
+
+                        if (candidate != null) {
+                            absentSerials.remove(candidate);
+                            absentSerials.add(ciV2);
+                        } else {
+                            leftOvers.add(ci);
+                        }
+                    } else {
+                        // found a delta ci with no serial
+                        // add to list
+                        leftOvers.add(ci);
+                    }
                 }
             }
 
