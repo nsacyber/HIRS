@@ -60,6 +60,7 @@ string RestfulClientProvisioner::sendIdentityClaim(
     }
 
     string identityClaimByteString;
+    string result;
     identityClaim.SerializeToString(&identityClaimByteString);
 
     // Send serialized Identity Claim to ACA
@@ -86,13 +87,16 @@ string RestfulClientProvisioner::sendIdentityClaim(
         {
             // Convert the nonce blob to hex for logging
             string blobHex = binaryToHex(response.credential_blob());
+            stringstream responses;
+            responses << response.credential_blob() << ";" << response.mask();
             stringstream logStream;
+            result = responses.str();
             logStream << "Received nonce blob: " << blobHex;
             LOGGER.info(logStream.str());
         }
 
         // Return the wrapped nonce blob
-        return response.credential_blob();
+        return result;
 
     } else {
         stringstream errormsg;

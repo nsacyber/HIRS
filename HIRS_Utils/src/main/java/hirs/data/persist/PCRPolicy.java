@@ -40,6 +40,7 @@ public final class PCRPolicy extends Policy {
     private static final int TBOOT_PCR_END = 19;
     // PCR 5
     private static final int GPT_PCR = 5;
+    private static final int IMA_MASK = 0xfffbff;
 
     // Event Log Event Types
     private static final String EVT_EFI_BOOT = "EV_EFI_BOOT_SERVICES_APPLICATION";
@@ -169,6 +170,7 @@ public final class PCRPolicy extends Policy {
         boolean validated = false;
         short localityAtRelease = 0;
         String quoteString = new String(tpmQuote, StandardCharsets.UTF_8);
+        int pcrMaskSelection = PcrSelection.ALL_PCRS_ON;
 
         TPMMeasurementRecord[] measurements = new TPMMeasurementRecord[baselinePcrs.length];
         try {
@@ -179,7 +181,11 @@ public final class PCRPolicy extends Policy {
             LOGGER.error(deEx);
         }
 
-        PcrSelection pcrSelection = new PcrSelection(PcrSelection.ALL_PCRS_ON);
+        if (this.enableIgnoreIma) {
+            pcrMaskSelection = IMA_MASK;
+        }
+
+        PcrSelection pcrSelection = new PcrSelection(pcrMaskSelection);
         PcrComposite pcrComposite = new PcrComposite(
                 pcrSelection,
                 Arrays.asList(measurements));

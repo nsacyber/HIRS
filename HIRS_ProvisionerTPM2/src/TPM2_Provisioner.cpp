@@ -39,6 +39,7 @@ using std::cerr;
 using std::endl;
 using std::string;
 using std::stringstream;
+using std::vector;
 
 int provision() {
     Logger logger = Logger::getDefaultLogger();
@@ -128,8 +129,12 @@ int provision() {
                     "TPM2_Provisioner.cpp", __LINE__);
     identityClaim.set_paccoroutput(paccorOutputString);
     RestfulClientProvisioner provisioner;
-    string nonceBlob = provisioner.sendIdentityClaim(identityClaim);
-    if (nonceBlob == "") {
+    string response = provisioner.sendIdentityClaim(identityClaim);
+    vector<string> response_vector = hirs::string_utils::split(response, ';');
+
+    string nonceBlob = response_vector.at(0);
+    string mask = response_vector.at(1);
+    if (nonceBlob == "" || mask == "") {
         cout << "----> Provisioning failed." << endl;
         cout << "Please refer to the Attestation CA for details." << endl;
         return 0;
@@ -152,8 +157,7 @@ int provision() {
     hirs::pb::CertificateRequest certificateRequest;
     certificateRequest.set_nonce(decryptedNonce);
     certificateRequest.set_quote(tpm2.getQuote(
-                "0,1,2,3,4,5,6,7,8,9,10,11,12,13,"
-                "14,15,16,17,18,19,20,21,22,23",
+                mask,
                 decryptedNonce));
 
     const string& akCertificateByteString
