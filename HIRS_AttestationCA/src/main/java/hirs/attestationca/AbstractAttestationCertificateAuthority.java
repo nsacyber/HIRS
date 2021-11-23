@@ -598,6 +598,7 @@ public abstract class AbstractAttestationCertificateAuthority
             // Parse through the Provisioner supplied TPM Quote and pcr values
             // these fields are optional
             if (request.getQuote() != null && !request.getQuote().isEmpty()) {
+                LOG.error(String.format("TPM Quote:\n%s", request.getQuote()));
                 parseTPMQuote(request.getQuote().toStringUtf8());
                 TPMInfo savedInfo = device.getDeviceInfo().getTPMInfo();
                 TPMInfo tpmInfo = new TPMInfo(savedInfo.getTPMMake(),
