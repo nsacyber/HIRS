@@ -171,18 +171,24 @@ public final class PCRPolicy extends Policy {
         short localityAtRelease = 0;
         String quoteString = new String(tpmQuote, StandardCharsets.UTF_8);
         int pcrMaskSelection = PcrSelection.ALL_PCRS_ON;
+        int recordLength = baselinePcrs.length;
 
-        TPMMeasurementRecord[] measurements = new TPMMeasurementRecord[baselinePcrs.length];
+        if (enableIgnoreIma) {
+            pcrMaskSelection = IMA_MASK;
+            recordLength--;
+        }
+
+        TPMMeasurementRecord[] measurements = new TPMMeasurementRecord[recordLength];
         try {
             for (int i = 0; i <= TPMMeasurementRecord.MAX_PCR_ID; i++) {
-                measurements[i] = new TPMMeasurementRecord(i, storedPcrs[i]);
+                if (i == 10 && enableIgnoreIma) {
+                    LOGGER.info("Ignore IMA PCR policy is enabled.");
+                } else {
+                    measurements[i] = new TPMMeasurementRecord(i, storedPcrs[i]);
+                }
             }
         } catch (DecoderException deEx) {
             LOGGER.error(deEx);
-        }
-
-        if (this.enableIgnoreIma) {
-            pcrMaskSelection = IMA_MASK;
         }
 
         PcrSelection pcrSelection = new PcrSelection(pcrMaskSelection);
