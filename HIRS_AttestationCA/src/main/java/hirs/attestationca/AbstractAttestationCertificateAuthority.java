@@ -598,7 +598,6 @@ public abstract class AbstractAttestationCertificateAuthority
             // Parse through the Provisioner supplied TPM Quote and pcr values
             // these fields are optional
             if (request.getQuote() != null && !request.getQuote().isEmpty()) {
-                LOG.error(String.format("TPM Quote:\n%s", request.getQuote()));
                 parseTPMQuote(request.getQuote().toStringUtf8());
                 TPMInfo savedInfo = device.getDeviceInfo().getTPMInfo();
                 TPMInfo tpmInfo = new TPMInfo(savedInfo.getTPMMake(),
@@ -1028,23 +1027,25 @@ public abstract class AbstractAttestationCertificateAuthority
                         }
                     }
                 } else if (dbSupport.isSwidSupplemental() && !dbSupport.isProcessed()) {
-                    try {
-                        TCGEventLog logProcessor = new TCGEventLog(dbSupport.getRimBytes());
-                        ReferenceDigestValue rdv;
-                        for (TpmPcrEvent tpe : logProcessor.getEventList()) {
-                            rdv = new ReferenceDigestValue(rdr.getId(), tpe.getPcrIndex(),
-                                    tpe.getEventDigestStr(), tpe.getEventTypeStr(),
-                                    false, false);
-                            this.referenceEventManager.saveValue(rdv);
+                    if (rdr != null) {
+                        try {
+                            TCGEventLog logProcessor = new TCGEventLog(dbSupport.getRimBytes());
+                            ReferenceDigestValue rdv;
+                            for (TpmPcrEvent tpe : logProcessor.getEventList()) {
+                                rdv = new ReferenceDigestValue(rdr.getId(), tpe.getPcrIndex(),
+                                        tpe.getEventDigestStr(), tpe.getEventTypeStr(),
+                                        false, false);
+                                this.referenceEventManager.saveValue(rdv);
+                            }
+                            dbSupport.setProcessed(true);
+                            this.referenceManifestManager.update(dbSupport);
+                        } catch (CertificateException cEx) {
+                            LOG.error(cEx);
+                        } catch (NoSuchAlgorithmException noSaEx) {
+                            LOG.error(noSaEx);
+                        } catch (IOException ioEx) {
+                            LOG.error(ioEx);
                         }
-                        dbSupport.setProcessed(true);
-                        this.referenceManifestManager.update(dbSupport);
-                    } catch (CertificateException cEx) {
-                        LOG.error(cEx);
-                    } catch (NoSuchAlgorithmException noSaEx) {
-                        LOG.error(noSaEx);
-                    } catch (IOException ioEx) {
-                        LOG.error(ioEx);
                     }
                 }
             }
