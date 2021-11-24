@@ -458,7 +458,7 @@ public abstract class AbstractAttestationCertificateAuthority
             // Package response
             ProvisionerTpm2.IdentityClaimResponse response
                     = ProvisionerTpm2.IdentityClaimResponse.newBuilder()
-                    .setCredentialBlob(blobStr).setMask(pcrQuoteMask)
+                    .setCredentialBlob(blobStr).setPcrMask(pcrQuoteMask)
                     .build();
 
             return response.toByteArray();

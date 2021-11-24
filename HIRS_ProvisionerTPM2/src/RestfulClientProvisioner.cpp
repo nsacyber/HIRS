@@ -60,7 +60,6 @@ string RestfulClientProvisioner::sendIdentityClaim(
     }
 
     string identityClaimByteString;
-    string result;
     identityClaim.SerializeToString(&identityClaimByteString);
 
     // Send serialized Identity Claim to ACA
@@ -82,21 +81,25 @@ string RestfulClientProvisioner::sendIdentityClaim(
         }
 
         IdentityClaimResponse response;
-        response.ParseFromString(r.text);
-
-        {
-            // Convert the nonce blob to hex for logging
-            string blobHex = binaryToHex(response.credential_blob());
-            stringstream responses;
-            responses << response.credential_blob() << ";" << response.mask();
-            stringstream logStream;
-            result = responses.str();
-            logStream << "Received nonce blob: " << blobHex;
-            LOGGER.info(logStream.str());
+        try {
+            response.ParseFromString(r.text);
+        } catch (const google::protobuf::FatalException& e) {
+            LOGGER.error(e.what());
+            stringstream errormsg;
+            errormsg << "Provisioning failed. IdentityClaimResponse "
+                     << "did not contain credential_blob.";
+            throw HirsRuntimeException(errormsg.str(),
+                                "RestfulClientProvisioner::sendIdentityClaim");
         }
 
-        // Return the wrapped nonce blob
-        return result;
+        // Convert the nonce blob to hex for logging
+        string blobHex = binaryToHex(response.credential_blob());
+        stringstream logStream;
+        logStream << "Received nonce blob: " << blobHex;
+        LOGGER.info(logStream.str());
+
+        // Return the response
+        return response.SerializeAsString();
 
     } else {
         stringstream errormsg;

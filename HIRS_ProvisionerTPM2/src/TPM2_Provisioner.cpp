@@ -130,15 +130,14 @@ int provision() {
     identityClaim.set_paccoroutput(paccorOutputString);
     RestfulClientProvisioner provisioner;
     string response = provisioner.sendIdentityClaim(identityClaim);
-    vector<string> response_vector = hirs::string_utils::split(response, ';');
-
-    string nonceBlob = response_vector.at(0);
-    string mask = response_vector.at(1);
-    if (nonceBlob == "" || mask == "") {
+    hirs::pb::IdentityClaimResponse icr;
+    if (!icr.ParseFromString(response) || !icr.has_credential_blob()) {
         cout << "----> Provisioning failed." << endl;
-        cout << "Please refer to the Attestation CA for details." << endl;
+        cout << "The ACA did not send make credential information." << endl;
         return 0;
     }
+
+    string nonceBlob = icr.credential_blob();
 
     // activateIdentity requires we read makeCredential output from a file
     cout << "----> Received response. Attempting to decrypt nonce" << endl;
@@ -157,8 +156,10 @@ int provision() {
     hirs::pb::CertificateRequest certificateRequest;
     certificateRequest.set_nonce(decryptedNonce);
     certificateRequest.set_quote(tpm2.getQuote(
-                mask,
-                decryptedNonce));
+          icr.has_pcr_mask()
+            ? icr.pcr_mask()
+            : "0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23",
+          decryptedNonce));
 
     const string& akCertificateByteString
             = provisioner.sendAttestationCertificateRequest(certificateRequest);

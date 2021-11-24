@@ -79,7 +79,7 @@ message TpmQuote {
 
 message IdentityClaimResponse {
   required bytes credential_blob = 1;
-  required string mask = 2;
+  optional string pcr_mask = 2;
 }
 
 message CertificateRequest {

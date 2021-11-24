@@ -13,7 +13,7 @@ import javax.persistence.Column;
 import javax.persistence.Entity;
 import java.nio.charset.StandardCharsets;
 import java.security.NoSuchAlgorithmException;
-import java.util.Arrays;
+import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -171,20 +171,19 @@ public final class PCRPolicy extends Policy {
         short localityAtRelease = 0;
         String quoteString = new String(tpmQuote, StandardCharsets.UTF_8);
         int pcrMaskSelection = PcrSelection.ALL_PCRS_ON;
-        int recordLength = baselinePcrs.length;
 
         if (enableIgnoreIma) {
             pcrMaskSelection = IMA_MASK;
-            recordLength--;
         }
 
-        TPMMeasurementRecord[] measurements = new TPMMeasurementRecord[recordLength];
+        ArrayList<TPMMeasurementRecord> measurements = new ArrayList<>();
+
         try {
-            for (int i = 0; i <= TPMMeasurementRecord.MAX_PCR_ID; i++) {
-                if (i == 10 && enableIgnoreIma) {
+            for (int i = 0; i < storedPcrs.length; i++) {
+                if (i == IMA_PCR && enableIgnoreIma) {
                     LOGGER.info("Ignore IMA PCR policy is enabled.");
                 } else {
-                    measurements[i] = new TPMMeasurementRecord(i, storedPcrs[i]);
+                    measurements.add(new TPMMeasurementRecord(i, storedPcrs[i]));
                 }
             }
         } catch (DecoderException deEx) {
@@ -193,8 +192,7 @@ public final class PCRPolicy extends Policy {
 
         PcrSelection pcrSelection = new PcrSelection(pcrMaskSelection);
         PcrComposite pcrComposite = new PcrComposite(
-                pcrSelection,
-                Arrays.asList(measurements));
+                pcrSelection, measurements);
         PcrInfoShort pcrInfoShort = new PcrInfoShort(pcrSelection,
                 localityAtRelease,
                 tpmQuote, pcrComposite);

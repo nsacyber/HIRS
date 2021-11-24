@@ -520,9 +520,9 @@ public class SupplyChainValidationServiceImpl implements SupplyChainValidationSe
                                         + "provide pcr values.", device.getName()));
                     } else {
                         // we have a full set of PCR values
-                        int algorithmLength = baseline[0].length();
-                        String[] storedPcrs = buildStoredPcrs(pcrContent, algorithmLength);
-                        pcrPolicy.validatePcrs(storedPcrs);
+                        //int algorithmLength = baseline[0].length();
+                        //String[] storedPcrs = buildStoredPcrs(pcrContent, algorithmLength);
+                        //pcrPolicy.validatePcrs(storedPcrs);
 
                         // part 2 of firmware validation check: bios measurements
                         // vs baseline tcg event log
@@ -606,7 +606,7 @@ public class SupplyChainValidationServiceImpl implements SupplyChainValidationSe
         SupplyChainValidationSummary summary = null;
         Level level = Level.ERROR;
         AppraisalStatus fwStatus = new AppraisalStatus(FAIL,
-                SupplyChainCredentialValidator.FIRMWARE_VALID);
+                "Unknown exception caught during quote validation.");
         SupportReferenceManifest sRim = null;
         EventLogMeasurements eventLog = null;
 
