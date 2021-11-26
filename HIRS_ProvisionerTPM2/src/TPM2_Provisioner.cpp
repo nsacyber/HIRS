@@ -181,7 +181,7 @@ void printHelp() {
     cout << helpMessage.str() << endl;
 }
 
-int main(int argc, char** argv) {
+int main(int argc, const char** argv) {
     string log_directory = "/var/log/hirs/provisioner";
 
     // directory should be created by rpm install

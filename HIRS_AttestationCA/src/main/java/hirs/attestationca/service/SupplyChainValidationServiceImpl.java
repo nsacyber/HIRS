@@ -543,11 +543,8 @@ public class SupplyChainValidationServiceImpl implements SupplyChainValidationSe
                                     eventValueMap.put(rdv.getDigestValue(), rdv);
                                 }
 
-                                for (TpmPcrEvent tpe : tcgMeasurementLog.getEventList()) {
-                                    if (!eventValueMap.containsKey(tpe.getEventDigestStr())) {
-                                        tpmPcrEvents.add(tpe);
-                                    }
-                                }
+                                tpmPcrEvents.addAll(pcrPolicy.validateTpmEvents(
+                                        tcgMeasurementLog, eventValueMap));
                             }
                         } catch (CertificateException cEx) {
                             LOGGER.error(cEx);
@@ -579,14 +576,15 @@ public class SupplyChainValidationServiceImpl implements SupplyChainValidationSe
                     fwStatus = new AppraisalStatus(FAIL, "The RIM baseline could not be found.");
                 }
             }
+
+            EventLogMeasurements eventLog = (EventLogMeasurements) measurement;
+            eventLog.setOverallValidationResult(fwStatus.getAppStatus());
+            this.referenceManifestManager.update(eventLog);
         } else {
             fwStatus = new AppraisalStatus(FAIL, String.format("Firmware Validation failed: "
                     + "%s for %s can not be found", failedString, manufacturer));
         }
 
-        EventLogMeasurements eventLog = (EventLogMeasurements) measurement;
-        eventLog.setOverallValidationResult(fwStatus.getAppStatus());
-        this.referenceManifestManager.update(eventLog);
         return buildValidationRecord(SupplyChainValidation.ValidationType.FIRMWARE,
                 fwStatus.getAppStatus(), fwStatus.getMessage(), validationObject, level);
     }

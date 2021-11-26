@@ -108,13 +108,15 @@ ospackage {
         link("/usr/local/bin/elt", "/opt/hirs/eventlog/scripts/eventlog.sh", 0x755)
     }
 
-    into('/opt/hirs/default-properties/eventlogtool') {
+    into('/tmp/') {
         fileMode 0664
         from ('../../HIRS_Utils/src/main/resources/vendor-table.json') {
             addParentDirs true
             createDirectoryEntry true
         }
     }
+
+    postInstall file('scripts/vendor-table.sh')
 
     buildRpm {
         arch = I386

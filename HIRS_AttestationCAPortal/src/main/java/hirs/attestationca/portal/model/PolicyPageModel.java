@@ -20,6 +20,7 @@ public class PolicyPageModel {
     private boolean enableIgnoreIma;
     private boolean enableIgnoreTboot;
     private boolean enableIgnoreGpt;
+    private boolean enableIgnoreOsEvt;
 
     // Variables to get policy settings from page
     private String pcValidate;
@@ -36,6 +37,7 @@ public class PolicyPageModel {
     private String ignoreIma;
     private String ignoretBoot;
     private String ignoreGpt;
+    private String ignoreOsEvt;
     private String expirationValue;
     private String devIdExpirationValue;
     private String thresholdValue;
@@ -60,6 +62,7 @@ public class PolicyPageModel {
         this.enableIgnoreIma = policy.isIgnoreImaEnabled();
         this.enableIgnoreTboot = policy.isIgnoreTbootEnabled();
         this.enableIgnoreGpt = policy.isIgnoreGptEnabled();
+        this.enableIgnoreOsEvt = policy.isIgnoreOsEvtEnabled();
         this.expirationValue = policy.getValidityDays();
         this.thresholdValue = policy.getReissueThreshold();
         this.devIdExpirationValue = policy.getDevIdValidityDays();
@@ -158,6 +161,14 @@ public class PolicyPageModel {
      */
     public boolean getEnableIgnoreGpt() {
         return enableIgnoreGpt;
+    }
+
+    /**
+     * Gets the Enable Ignore Os Events state.
+     * @return the validation state.
+     */
+    public boolean getEnableIgnoreOsEvt() {
+        return enableIgnoreOsEvt;
     }
 
     /**
@@ -269,6 +280,15 @@ public class PolicyPageModel {
     }
 
     /**
+     * Gets the Ignore Os Evt validation value.
+     *
+     * @return the model string representation of this field (checked or unchecked)
+     */
+    public String getIgnoreOsEvt() {
+        return ignoreOsEvt;
+    }
+
+    /**
      * Sets the EC Validation state.
      *
      * @param enableEcValidation true if performing validation, false otherwise
@@ -357,6 +377,15 @@ public class PolicyPageModel {
      */
     public void setEnableIgnoreGpt(final boolean enableIgnoreGpt) {
         this.enableIgnoreGpt = enableIgnoreGpt;
+    }
+
+    /**
+     * Sets the Enable Ignore Os Events state.
+     *
+     * @param enableIgnoreOsEvt true if performing validation, false otherwise
+     */
+    public void setEnableIgnoreOsEvt(final boolean enableIgnoreOsEvt) {
+        this.enableIgnoreOsEvt = enableIgnoreOsEvt;
     }
 
     /**
@@ -498,6 +527,15 @@ public class PolicyPageModel {
     }
 
     /**
+     * Sets the Ignore Os Events state.
+     *
+     * @param ignoreOsEvt "checked" if enabling validation, false otherwise
+     */
+    public void setIgnoreOsEvt(final String ignoreOsEvt) {
+        this.ignoreOsEvt = ignoreOsEvt;
+    }
+
+    /**
      * Getter for the expiration value.
      * @return the value
      */
@@ -577,6 +615,7 @@ public class PolicyPageModel {
                 + ", enableIgnoreIma=" + enableIgnoreIma
                 + ", enableIgnoreTboot=" + enableIgnoreTboot
                 + ", enableIgnoreGpt=" + enableIgnoreGpt
+                + ", enableIgnoreOsEvt=" + enableIgnoreOsEvt
                 + ", expirationValue=" + expirationValue
                 + ", thresholdValue=" + thresholdValue
                 + ", devIdExpirationValue=" + devIdExpirationValue

@@ -231,13 +231,11 @@ public class ReferenceManifestDetailsPageController
         data.put("entityThumbprint", baseRim.getEntityThumbprint());
         // Link
         data.put("linkHref", baseRim.getLinkHref());
+        data.put("linkHrefLink", "");
         for (BaseReferenceManifest bRim : BaseReferenceManifest
                 .select(referenceManifestManager).getRIMs()) {
             if (baseRim.getLinkHref().contains(bRim.getTagId())) {
-                data.put("linkHrefLink", bRim.getId().toString());
-                break;
-            } else {
-                data.put("linkHrefLink", "");
+                data.put("linkHrefLink", bRim.getId());
             }
         }
         data.put("linkRel", baseRim.getLinkRel());
@@ -255,16 +253,16 @@ public class ReferenceManifestDetailsPageController
         data.put("pcUriGlobal", baseRim.getPcURIGlobal());
         data.put("pcUriLocal", baseRim.getPcURILocal());
         data.put("rimLinkHash", baseRim.getRimLinkHash());
-        boolean hashLinked = false;
         if (baseRim.getRimLinkHash() != null) {
             ReferenceManifest rim = BaseReferenceManifest.select(referenceManifestManager)
-                    .byBase64Hash(baseRim.getRimLinkHash()).getRIM();
-            hashLinked = (rim != null);
-            if (hashLinked) {
+                    .byHexDecHash(baseRim.getRimLinkHash()).getRIM();
+            if (rim != null) {
                 data.put("rimLinkId", rim.getId());
+                data.put("linkHashValid", true);
+            } else {
+                data.put("linkHashValid", false);
             }
         }
-        data.put("linkHashValid", hashLinked);
         data.put("rimType", baseRim.getRimType());
 
         List<SwidResource> resources = baseRim.parseResource();
@@ -285,8 +283,8 @@ public class ReferenceManifestDetailsPageController
         // going to have to pull the filename and grab that from the DB
         // to get the id to make the link
         for (SwidResource swidRes : resources) {
-            if (support != null && swidRes.getName()
-                    .equals(support.getFileName())) {
+            if (support != null && swidRes.getHashValue()
+                    .equalsIgnoreCase(support.getHexDecHash())) {
                 RIM_VALIDATOR.validateSupportRimHash(support.getRimBytes(),
                         swidRes.getHashValue());
                 if (RIM_VALIDATOR.isSupportRimValid()) {
@@ -385,7 +383,7 @@ public class ReferenceManifestDetailsPageController
         // starts off checking if associated rim is null; that is irrelevant for
         // this statement.
         measurements = EventLogMeasurements.select(referenceManifestManager)
-                .byHexDecHash(support.getEventLogHash()).getRIM();
+                .byHexDecHash(support.getHexDecHash()).getRIM();
 
         if (support.isSwidPatch()) {
             data.put("swidPatch", "True");
