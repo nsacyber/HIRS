@@ -1,7 +1,5 @@
 package hirs.attestationca.portal.util;
 
-import hirs.data.persist.Device;
-import hirs.data.persist.DeviceInfoReport;
 import hirs.data.persist.certificate.Certificate;
 import hirs.data.persist.certificate.CertificateAuthorityCredential;
 import hirs.data.persist.certificate.EndorsementCredential;
