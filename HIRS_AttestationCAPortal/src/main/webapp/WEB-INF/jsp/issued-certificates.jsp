@@ -13,8 +13,14 @@
         <script type="text/javascript" src="${lib}/jquery.spring-friendly/jquery.spring-friendly.js"></script>
     </jsp:attribute>
     <jsp:attribute name="pageHeaderTitle">Issued Certificates</jsp:attribute>
-
     <jsp:body>
+        <div class="aca-input-box-header">
+            Issued Credentials
+            <a href="${portal}/certificate-request/issued-certificates/bulk">
+                <img src="${icons}/ic_file_download_black_24dp.png" title="Download All Issued Certificates">
+            </a>
+        </div>
+        <br />
         <div class="aca-data-table">
             <table id="issuedTable" class="display" width="100%">
                 <thead>

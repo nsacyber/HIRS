@@ -21,6 +21,9 @@
                 <my:file-chooser id="ek-editor" label="Import Endorsement Key Credentials">
                     <input id="importFile" type="file" name="file" multiple="multiple" />
                 </my:file-chooser>
+                <a href="${portal}/certificate-request/endorsement-key-credentials/bulk">
+                    <img src="${icons}/ic_file_download_black_24dp.png" title="Download All Endorsement Certificates">
+                </a>
             </form:form>
         </div>
         <br/>

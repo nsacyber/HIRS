@@ -27,6 +27,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.util.StreamUtils;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -45,11 +46,15 @@ import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipOutputStream;
 
 /**
  * Controller for the Reference Manifest page.
@@ -349,6 +354,58 @@ public class ReferenceManifestPageController
             }
         } catch (IllegalArgumentException ex) {
             String uuidError = "Failed to parse ID from: " + id;
+            LOGGER.error(uuidError, ex);
+            // send a 404 error when invalid certificate
+            response.sendError(HttpServletResponse.SC_NOT_FOUND);
+        }
+    }
+
+    /**
+     * Handles request to download bulk of RIMs by writing it to the response stream
+     * for download in bulk.
+     *
+     * @param response the response object (needed to update the header with the
+     * file name)
+     * @throws java.io.IOException when writing to response output stream
+     */
+    @RequestMapping(value = "/bulk", method = RequestMethod.GET)
+    public void bulk(final HttpServletResponse response)
+            throws IOException {
+        LOGGER.info("Handling request to download all Reference Integrity Manifests");
+        String fileName = "rims.zip";
+        String zipFileName;
+
+        // Set filename for download.
+        response.setHeader("Content-Disposition", "attachment; filename=" + fileName);
+        response.setContentType("application/zip");
+
+        List<ReferenceManifest> referenceManifestList = new LinkedList<>();
+        referenceManifestList.addAll(BaseReferenceManifest
+                .select(referenceManifestManager).getRIMs());
+        referenceManifestList.addAll(SupportReferenceManifest
+                .select(referenceManifestManager).getRIMs());
+
+        try (ZipOutputStream zipOut = new ZipOutputStream(response.getOutputStream())) {
+            // get all files
+            for (ReferenceManifest rim : referenceManifestList) {
+                if (rim.getFileName().isEmpty()) {
+                    zipFileName = "";
+                } else {
+                    // configure the zip entry, the properties of the 'file'
+                    zipFileName = rim.getFileName();
+                }
+                ZipEntry zipEntry = new ZipEntry(zipFileName);
+                zipEntry.setSize((long) rim.getRimBytes().length * Byte.SIZE);
+                zipEntry.setTime(System.currentTimeMillis());
+                zipOut.putNextEntry(zipEntry);
+                // the content of the resource
+                StreamUtils.copy(rim.getRimBytes(), zipOut);
+                zipOut.closeEntry();
+            }
+            zipOut.finish();
+            // write cert to output stream
+        } catch (IllegalArgumentException ex) {
+            String uuidError = "Failed to parse ID from: ";
             LOGGER.error(uuidError, ex);
             // send a 404 error when invalid certificate
             response.sendError(HttpServletResponse.SC_NOT_FOUND);
