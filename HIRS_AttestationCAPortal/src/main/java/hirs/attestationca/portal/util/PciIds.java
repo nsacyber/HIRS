@@ -30,6 +30,7 @@ public final class PciIds {
                 {
                     add("/usr/share/hwdata/pci.ids");
                     add("/usr/share/misc/pci.ids");
+                    add("/tmp/pci.ids");
                 }
             });
 

@@ -68,7 +68,10 @@ int provision() {
     // if platformCredential is empty, not in TPM
     // pull from properties file
     if (platformCredential.empty()) {
-        const std::string& cert_dir = props.get("tcg.cert.dir", "/boot/tcg/cert/platform/");
+        const std::string& cert_dir =
+                    props.get(
+                        "tcg.cert.dir",
+                        "/boot/tcg/cert/platform/");
         try {
             platformCredentials =
                     hirs::file_utils::search_directory(cert_dir);
@@ -86,9 +89,18 @@ int provision() {
     // collect TCG Boot files
     std::vector<string> rim_files;
     std::vector<string> swidtag_files;
-    const std::string& rim_dir = props.get("tcg.rim.dir", "/boot/tcg/manifest/rim/");
-    const std::string& swid_dir = props.get("tcg.swidtag.dir", "/boot/tcg/manifest/swidtag/");
-    const std::string& live_log_file = props.get("tcg.event.file", "/sys/kernel/security/tpm0/binary_bios_measurements");
+    const std::string& rim_dir =
+                    props.get(
+                        "tcg.rim.dir",
+                         "/boot/tcg/manifest/rim/");
+    const std::string& swid_dir =
+                    props.get(
+                        "tcg.swidtag.dir",
+                        "/boot/tcg/manifest/swidtag/");
+    const std::string& live_log_file =
+                    props.get(
+                        "tcg.event.file",
+                        "/sys/kernel/security/tpm0/binary_bios_measurements");
 
     try {
         rim_files = hirs::file_utils::search_directory(rim_dir);
