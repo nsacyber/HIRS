@@ -13,6 +13,7 @@ import hirs.data.persist.certificate.attributes.ComponentIdentifier;
 import hirs.data.persist.certificate.attributes.V2.ComponentIdentifierV2;
 import hirs.data.persist.info.ComponentInfo;
 import hirs.data.persist.info.HardwareInfo;
+import hirs.utils.PciIds;
 import org.apache.commons.codec.Charsets;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -565,7 +566,11 @@ public final class SupplyChainCredentialValidator implements CredentialValidator
 
             // pass information of which ones failed in additionInfo
             for (ComponentIdentifier ci : validPcComponents) {
-                additionalInfo.append(String.format("%d;", ci.hashCode()));
+                ComponentIdentifierV2 pciCi = (ComponentIdentifierV2) ci;
+                if (PciIds.DB.isReady()) {
+                    pciCi = PciIds.translate((ComponentIdentifierV2) ci);
+                }
+                additionalInfo.append(String.format("%d;", pciCi.hashCode()));
             }
         }
 
