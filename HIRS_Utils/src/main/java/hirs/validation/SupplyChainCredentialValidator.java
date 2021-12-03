@@ -566,11 +566,19 @@ public final class SupplyChainCredentialValidator implements CredentialValidator
 
             // pass information of which ones failed in additionInfo
             for (ComponentIdentifier ci : validPcComponents) {
-                ComponentIdentifierV2 pciCi = (ComponentIdentifierV2) ci;
-                if (PciIds.DB.isReady()) {
-                    pciCi = PciIds.translate((ComponentIdentifierV2) ci);
+                try {
+                    if (ci.isVersion2()) {
+                        ComponentIdentifierV2 pciCi = (ComponentIdentifierV2) ci;
+                        if (PciIds.DB.isReady()) {
+                            pciCi = PciIds.translate((ComponentIdentifierV2) ci);
+                        }
+                        additionalInfo.append(String.format("%d;", pciCi.hashCode()));
+                    } else {
+                        additionalInfo.append(String.format("%d;", ci.hashCode()));
+                    }
+                } catch (Exception ex) {
+                    LOGGER.error(ex.getMessage());
                 }
-                additionalInfo.append(String.format("%d;", pciCi.hashCode()));
             }
         }
 
