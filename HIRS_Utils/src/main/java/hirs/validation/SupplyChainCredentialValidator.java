@@ -565,20 +565,14 @@ public final class SupplyChainCredentialValidator implements CredentialValidator
             resultMessage.append(unmatchedComponents);
 
             // pass information of which ones failed in additionInfo
+            int counter = 0;
             for (ComponentIdentifier ci : validPcComponents) {
-                try {
-                    if (ci.isVersion2()) {
-                        ComponentIdentifierV2 pciCi = (ComponentIdentifierV2) ci;
-                        if (PciIds.DB.isReady()) {
-                            pciCi = PciIds.translate((ComponentIdentifierV2) ci);
-                        }
-                        additionalInfo.append(String.format("%d;", pciCi.hashCode()));
-                    } else {
-                        additionalInfo.append(String.format("%d;", ci.hashCode()));
-                    }
-                } catch (Exception ex) {
-                    LOGGER.error(ex.getMessage());
-                }
+                counter++;
+                additionalInfo.append(String.format("%d;", ci.hashCode()));
+            }
+            if (counter > 0) {
+                additionalInfo.insert(0, "COMPID=");
+                additionalInfo.append(counter);
             }
         }
 
@@ -710,6 +704,7 @@ public final class SupplyChainCredentialValidator implements CredentialValidator
         }
 
         if (!fieldValidation || !deltaSb.toString().isEmpty()) {
+            deltaSb.insert(0, "COMPID=");
             return new AppraisalStatus(FAIL, resultMessage.toString(), deltaSb.toString());
         }
 
@@ -729,21 +724,29 @@ public final class SupplyChainCredentialValidator implements CredentialValidator
             LOGGER.error("PACCOR output string:\n" + paccorOutputString);
             return new AppraisalStatus(ERROR, baseErrorMessage + ioEx.getMessage());
         }
+        StringBuilder additionalInfo = new StringBuilder();
         if (!fieldValidation) {
-            // instead of listing all unmatched, just print the #.  The failure
-            // will link to the platform certificate that'll display them.
-            String failureResults = unmatchedComponents.substring(0,
-                    unmatchedComponents.length() - 1);
-            String size = unmatchedComponents.substring(unmatchedComponents.length() - 1);
             resultMessage = new StringBuilder();
-
-            resultMessage.append(String.format("There are %s unmatched components "
-                                + "on the Platform Certificate:%n", size));
+            resultMessage.append("There are unmatched components:\n");
             resultMessage.append(unmatchedComponents);
 
-            return new AppraisalStatus(FAIL, resultMessage.toString(), failureResults);
+            // pass information of which ones failed in additionInfo
+            int counter = 0;
+            for (ComponentIdentifier ci : baseCompList) {
+                counter++;
+                additionalInfo.append(String.format("%d;", ci.hashCode()));
+            }
+            if (counter > 0) {
+                additionalInfo.insert(0, "COMPID=");
+                additionalInfo.append(counter);
+            }
         }
-        return new AppraisalStatus(PASS, PLATFORM_ATTRIBUTES_VALID);
+
+        if (fieldValidation) {
+            return new AppraisalStatus(PASS, PLATFORM_ATTRIBUTES_VALID);
+        } else {
+            return new AppraisalStatus(FAIL, resultMessage.toString(), additionalInfo.toString());
+        }
     }
 
     private static String validateV2PlatformCredentialAttributes(
@@ -775,14 +778,23 @@ public final class SupplyChainCredentialValidator implements CredentialValidator
         // now we return everything that was unmatched
         // what is in the component info/device reported components
         // is to be displayed as the failure
+            fullDeltaChainComponents.clear();
             for (ComponentIdentifier ci : subCompIdList) {
-                ciV2 = (ComponentIdentifierV2) ci;
-                invalidPcIds.append(String.format("%d;",
-                        ciV2.hashCode()));
+                if (ci.isVersion2() && PciIds.DB.isReady()) {
+                    ci = PciIds.translate((ComponentIdentifierV2) ci);
+                }
+                LOGGER.error("Unmatched component: " + ci);
+                fullDeltaChainComponents.add(ci);
+                invalidPcIds.append(String.format(
+                        "Manufacturer=%s, Model=%s, Serial=%s, Revision=%s;%n",
+                        ci.getComponentManufacturer(),
+                        ci.getComponentModel(),
+                        ci.getComponentSerial(),
+                        ci.getComponentRevision()));
             }
         }
 
-        return String.format("COMPID=%s%d", invalidPcIds.toString(), subCompIdList.size());
+        return invalidPcIds.toString();
     }
 
     /**
@@ -848,7 +860,6 @@ public final class SupplyChainCredentialValidator implements CredentialValidator
                     = allDeviceInfoComponents.stream().filter(componentInfo
                     -> componentInfo.getComponentManufacturer().equals(pcManufacturer))
                     .collect(Collectors.toList());
-
             // For each component listed in the platform credential from this manufacturer
             // find the ones that specify a serial number so we can match the most specific ones
             // first.
@@ -857,7 +868,6 @@ public final class SupplyChainCredentialValidator implements CredentialValidator
                     -> compIdentifier.getComponentSerial() != null
                     && StringUtils.isNotEmpty(compIdentifier.getComponentSerial().getString()))
                     .collect(Collectors.toList());
-
             // Now match up the components from the device info that are from the same
             // manufacturer and have a serial number. As matches are found, remove them from
             // both lists.
@@ -878,7 +888,6 @@ public final class SupplyChainCredentialValidator implements CredentialValidator
                     }
                 }
             }
-
             // For each component listed in the platform credential from this manufacturer
             // find the ones that specify value for the revision field so we can match the most
             // specific ones first.
@@ -887,7 +896,6 @@ public final class SupplyChainCredentialValidator implements CredentialValidator
                     -> compIdentifier.getComponentRevision() != null
                     && StringUtils.isNotEmpty(compIdentifier.getComponentRevision().getString()))
                     .collect(Collectors.toList());
-
             // Now match up the components from the device info that are from the same
             // manufacturer and specify a value for the revision field. As matches are found,
             // remove them from both lists.
@@ -908,7 +916,6 @@ public final class SupplyChainCredentialValidator implements CredentialValidator
                     }
                 }
             }
-
             // The remaining components from the manufacturer have only the 2 required fields so
             // just match them.
             List<ComponentIdentifier> templist = new ArrayList<>(pcComponentsFromManufacturer);
@@ -934,6 +941,10 @@ public final class SupplyChainCredentialValidator implements CredentialValidator
 
             int unmatchedComponentCounter = 1;
             for (ComponentIdentifier unmatchedComponent : pcUnmatchedComponents) {
+                if (unmatchedComponent.isVersion2() && PciIds.DB.isReady()) {
+                        unmatchedComponent =
+                                PciIds.translate((ComponentIdentifierV2) unmatchedComponent);
+                }
                 LOGGER.error("Unmatched component " + unmatchedComponentCounter++ + ": "
                         + unmatchedComponent);
                 sb.append(String.format("Manufacturer=%s, Model=%s, Serial=%s, Revision=%s;%n",
