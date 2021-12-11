@@ -819,24 +819,23 @@ public final class SupplyChainCredentialValidator implements CredentialValidator
         // on the leftovers in the lists and the policy in place.
         final List<ComponentIdentifier> pcComponents = new ArrayList<>();
         for (ComponentIdentifier component : untrimmedPcComponents) {
-            DERUTF8String componentSerial = new DERUTF8String("");
-            DERUTF8String componentRevision = new DERUTF8String("");
+            if (component.getComponentManufacturer() != null) {
+                component.setComponentManufacturer(new DERUTF8String(
+                        component.getComponentManufacturer().getString().trim()));
+            }
+            if (component.getComponentModel() != null) {
+                component.setComponentModel(new DERUTF8String(
+                        component.getComponentModel().getString().trim()));
+            }
             if (component.getComponentSerial() != null) {
-                componentSerial = new DERUTF8String(
-                        component.getComponentSerial().getString().trim());
+                component.setComponentSerial(new DERUTF8String(
+                        component.getComponentSerial().getString().trim()));
             }
             if (component.getComponentRevision() != null) {
-                componentRevision = new DERUTF8String(
-                        component.getComponentRevision().getString().trim());
+                component.setComponentRevision(new DERUTF8String(
+                        component.getComponentRevision().getString().trim()));
             }
-            pcComponents.add(
-                new ComponentIdentifier(
-                        new DERUTF8String(component.getComponentManufacturer().getString().trim()),
-                        new DERUTF8String(component.getComponentModel().getString().trim()),
-                        componentSerial, componentRevision,
-                        component.getComponentManufacturerId(),
-                        component.getFieldReplaceable(),
-                        component.getComponentAddress()));
+            pcComponents.add(component);
         }
 
         LOGGER.info("Validating the following Platform Cert components...");
