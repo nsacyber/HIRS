@@ -126,6 +126,8 @@ public abstract class AbstractAttestationCertificateAuthority
             = "/webapps/HIRS_AttestationCA/upload/";
     private static final String PCR_UPLOAD_FOLDER
             = CATALINA_HOME + TOMCAT_UPLOAD_DIRECTORY;
+    private static final String PCR_QUOTE_MASK = "0,1,2,3,4,5,6,7,8,9,10,11,12,13,"
+            + "14,15,16,17,18,19,20,21,22,23";
 
     /**
      * Number of bytes to include in the TPM2.0 nonce.
@@ -441,6 +443,8 @@ public abstract class AbstractAttestationCertificateAuthority
             RSAPublicKey akPub = parsePublicKey(claim.getAkPublicArea().toByteArray());
             byte[] nonce = generateRandomBytes(NONCE_LENGTH);
             ByteString blobStr = tpm20MakeCredential(ekPub, akPub, nonce);
+            SupplyChainPolicy scp = this.supplyChainValidationService.getPolicy();
+            String pcrQuoteMask = PCR_QUOTE_MASK;
 
             String strNonce = HexUtils.byteArrayToHexString(nonce);
             LOG.info("Sending nonce: " + strNonce);
@@ -448,10 +452,14 @@ public abstract class AbstractAttestationCertificateAuthority
 
             tpm2ProvisionerStateDBManager.save(new TPM2ProvisionerState(nonce, identityClaim));
 
+            if (scp != null && scp.isIgnoreImaEnabled()) {
+                pcrQuoteMask = PCR_QUOTE_MASK.replace("10,", "");
+            }
             // Package response
             ProvisionerTpm2.IdentityClaimResponse response
                     = ProvisionerTpm2.IdentityClaimResponse.newBuilder()
-                    .setCredentialBlob(blobStr).build();
+                    .setCredentialBlob(blobStr).setPcrMask(pcrQuoteMask)
+                    .build();
 
             return response.toByteArray();
         } else {
@@ -622,9 +630,11 @@ public abstract class AbstractAttestationCertificateAuthority
                 tpm2ProvisionerStateDBManager.delete(tpm2ProvisionerState);
 
                 // Package the signed certificate into a response
-                ByteString certificateBytes = ByteString.copyFrom(derEncodedAttestationCertificate);
+                ByteString certificateBytes = ByteString
+                        .copyFrom(derEncodedAttestationCertificate);
                 ProvisionerTpm2.CertificateResponse response = ProvisionerTpm2.CertificateResponse
-                        .newBuilder().setCertificate(certificateBytes).build();
+                        .newBuilder().setCertificate(certificateBytes)
+                        .build();
 
                 saveAttestationCertificate(derEncodedAttestationCertificate, endorsementCredential,
                         platformCredentials, device);
@@ -1017,23 +1027,25 @@ public abstract class AbstractAttestationCertificateAuthority
                         }
                     }
                 } else if (dbSupport.isSwidSupplemental() && !dbSupport.isProcessed()) {
-                    try {
-                        TCGEventLog logProcessor = new TCGEventLog(dbSupport.getRimBytes());
-                        ReferenceDigestValue rdv;
-                        for (TpmPcrEvent tpe : logProcessor.getEventList()) {
-                            rdv = new ReferenceDigestValue(rdr.getId(), tpe.getPcrIndex(),
-                                    tpe.getEventDigestStr(), tpe.getEventTypeStr(),
-                                    false, false);
-                            this.referenceEventManager.saveValue(rdv);
+                    if (rdr != null) {
+                        try {
+                            TCGEventLog logProcessor = new TCGEventLog(dbSupport.getRimBytes());
+                            ReferenceDigestValue rdv;
+                            for (TpmPcrEvent tpe : logProcessor.getEventList()) {
+                                rdv = new ReferenceDigestValue(rdr.getId(), tpe.getPcrIndex(),
+                                        tpe.getEventDigestStr(), tpe.getEventTypeStr(),
+                                        false, false);
+                                this.referenceEventManager.saveValue(rdv);
+                            }
+                            dbSupport.setProcessed(true);
+                            this.referenceManifestManager.update(dbSupport);
+                        } catch (CertificateException cEx) {
+                            LOG.error(cEx);
+                        } catch (NoSuchAlgorithmException noSaEx) {
+                            LOG.error(noSaEx);
+                        } catch (IOException ioEx) {
+                            LOG.error(ioEx);
                         }
-                        dbSupport.setProcessed(true);
-                        this.referenceManifestManager.update(dbSupport);
-                    } catch (CertificateException cEx) {
-                        LOG.error(cEx);
-                    } catch (NoSuchAlgorithmException noSaEx) {
-                        LOG.error(noSaEx);
-                    } catch (IOException ioEx) {
-                        LOG.error(ioEx);
                     }
                 }
             }

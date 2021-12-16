@@ -13,7 +13,7 @@ import javax.persistence.Column;
 import javax.persistence.Entity;
 import java.nio.charset.StandardCharsets;
 import java.security.NoSuchAlgorithmException;
-import java.util.Arrays;
+import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -40,6 +40,7 @@ public final class PCRPolicy extends Policy {
     private static final int TBOOT_PCR_END = 19;
     // PCR 5
     private static final int GPT_PCR = 5;
+    private static final int IMA_MASK = 0xfffbff;
 
     // Event Log Event Types
     private static final String EVT_EFI_BOOT = "EV_EFI_BOOT_SERVICES_APPLICATION";
@@ -169,20 +170,29 @@ public final class PCRPolicy extends Policy {
         boolean validated = false;
         short localityAtRelease = 0;
         String quoteString = new String(tpmQuote, StandardCharsets.UTF_8);
+        int pcrMaskSelection = PcrSelection.ALL_PCRS_ON;
 
-        TPMMeasurementRecord[] measurements = new TPMMeasurementRecord[baselinePcrs.length];
+        if (enableIgnoreIma) {
+            pcrMaskSelection = IMA_MASK;
+        }
+
+        ArrayList<TPMMeasurementRecord> measurements = new ArrayList<>();
+
         try {
-            for (int i = 0; i <= TPMMeasurementRecord.MAX_PCR_ID; i++) {
-                measurements[i] = new TPMMeasurementRecord(i, storedPcrs[i]);
+            for (int i = 0; i < storedPcrs.length; i++) {
+                if (i == IMA_PCR && enableIgnoreIma) {
+                    LOGGER.info("Ignore IMA PCR policy is enabled.");
+                } else {
+                    measurements.add(new TPMMeasurementRecord(i, storedPcrs[i]));
+                }
             }
         } catch (DecoderException deEx) {
             LOGGER.error(deEx);
         }
 
-        PcrSelection pcrSelection = new PcrSelection(PcrSelection.ALL_PCRS_ON);
+        PcrSelection pcrSelection = new PcrSelection(pcrMaskSelection);
         PcrComposite pcrComposite = new PcrComposite(
-                pcrSelection,
-                Arrays.asList(measurements));
+                pcrSelection, measurements);
         PcrInfoShort pcrInfoShort = new PcrInfoShort(pcrSelection,
                 localityAtRelease,
                 tpmQuote, pcrComposite);
@@ -197,6 +207,9 @@ public final class PCRPolicy extends Policy {
             String calculatedString = Hex.encodeHexString(
                     pcrInfoShort.getCalculatedDigest());
             validated = quoteString.contains(calculatedString);
+            if (!validated) {
+                LOGGER.warn(calculatedString + " not found in " + quoteString);
+            }
         } catch (NoSuchAlgorithmException naEx) {
             LOGGER.error(naEx);
         }

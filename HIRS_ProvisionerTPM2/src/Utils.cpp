@@ -293,6 +293,18 @@ namespace string_utils {
         return trimWhitespaceFromRight(trimWhitespaceFromLeft(str));
     }
 
+    vector<string> split(const string &str, char delim) {
+        vector<string> result;
+        stringstream ss(str);
+        string item;
+
+        while (getline(ss, item, delim)) {
+            result.push_back(item);
+        }
+
+        return result;
+    }
+
 }  // namespace string_utils
 
 }  // namespace hirs

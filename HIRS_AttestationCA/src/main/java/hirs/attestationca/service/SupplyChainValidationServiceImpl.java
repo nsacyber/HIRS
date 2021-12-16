@@ -46,15 +46,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Import;
 import org.springframework.stereotype.Service;
 
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.security.KeyStore;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.security.cert.CertificateException;
-import java.security.cert.X509Certificate;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -95,7 +92,8 @@ public class SupplyChainValidationServiceImpl implements SupplyChainValidationSe
     /**
      * Constructor to set just the CertificateManager, so that cert chain validating
      * methods can be called from outside classes.
-     * @param certificateManager    the cert manager
+     *
+     * @param certificateManager the cert manager
      */
     public SupplyChainValidationServiceImpl(final CertificateManager certificateManager) {
         this.certificateManager = certificateManager;
@@ -135,6 +133,7 @@ public class SupplyChainValidationServiceImpl implements SupplyChainValidationSe
 
     /**
      * Allows other service access to the policy information.
+     *
      * @return supply chain policy
      */
     public SupplyChainPolicy getPolicy() {
@@ -243,7 +242,7 @@ public class SupplyChainValidationServiceImpl implements SupplyChainValidationSe
                 } else {
                     validations.add(new SupplyChainValidation(platformType,
                             AppraisalStatus.Status.FAIL, new ArrayList<>(pcs), pcErrorMessage));
-                    }
+                }
             }
         }
 
@@ -425,33 +424,20 @@ public class SupplyChainValidationServiceImpl implements SupplyChainValidationSe
 
             // verify signatures
             ReferenceManifestValidator referenceManifestValidator =
-                    new ReferenceManifestValidator(
-                            new ByteArrayInputStream(baseReferenceManifest.getRimBytes()));
+                    new ReferenceManifestValidator();
+            referenceManifestValidator.setRim(baseReferenceManifest);
 
-
-            for (SwidResource swidRes : resources) {
-                supportReferenceManifest = SupportReferenceManifest.select(referenceManifestManager)
-                        .byHexDecHash(swidRes.getHashValue()).getRIM();
-                if (supportReferenceManifest != null
-                        && swidRes.getName().equals(supportReferenceManifest.getFileName())) {
-                    referenceManifestValidator.validateSupportRimHash(
-                            supportReferenceManifest.getRimBytes(), swidRes.getHashValue());
-                } else {
-                    supportReferenceManifest = null;
-                }
-            }
             //Validate signing cert
             Set<CertificateAuthorityCredential> allCerts =
                     CertificateAuthorityCredential.select(certificateManager).getCertificates();
             CertificateAuthorityCredential signingCert = null;
             for (CertificateAuthorityCredential cert : allCerts) {
-                if (Arrays.equals(cert.getEncodedPublicKey(),
-                        referenceManifestValidator.getPublicKey().getEncoded())) {
-                    signingCert = cert;
-                    KeyStore keyStore = getCaChain(signingCert);
+                signingCert = cert;
+                KeyStore keyStore = getCaChain(signingCert);
+                if (referenceManifestValidator.validateXmlSignature(signingCert)) {
                     try {
-                        X509Certificate x509Cert = signingCert.getX509Certificate();
-                        if (!SupplyChainCredentialValidator.verifyCertificate(x509Cert, keyStore)) {
+                        if (!SupplyChainCredentialValidator.verifyCertificate(
+                                signingCert.getX509Certificate(), keyStore)) {
                             passed = false;
                             fwStatus = new AppraisalStatus(FAIL,
                                     "Firmware validation failed: invalid certificate path.");
@@ -464,6 +450,18 @@ public class SupplyChainValidationServiceImpl implements SupplyChainValidationSe
                                 "Firmware validation failed: invalid certificate path.");
                     }
                     break;
+                }
+            }
+
+            for (SwidResource swidRes : resources) {
+                supportReferenceManifest = SupportReferenceManifest.select(referenceManifestManager)
+                        .byHexDecHash(swidRes.getHashValue()).getRIM();
+                if (supportReferenceManifest != null
+                        && swidRes.getName().equals(supportReferenceManifest.getFileName())) {
+                    referenceManifestValidator.validateSupportRimHash(
+                            supportReferenceManifest.getRimBytes(), swidRes.getHashValue());
+                } else {
+                    supportReferenceManifest = null;
                 }
             }
 
@@ -522,9 +520,9 @@ public class SupplyChainValidationServiceImpl implements SupplyChainValidationSe
                                         + "provide pcr values.", device.getName()));
                     } else {
                         // we have a full set of PCR values
-                        int algorithmLength = baseline[0].length();
-                        String[] storedPcrs = buildStoredPcrs(pcrContent, algorithmLength);
-                        pcrPolicy.validatePcrs(storedPcrs);
+                        //int algorithmLength = baseline[0].length();
+                        //String[] storedPcrs = buildStoredPcrs(pcrContent, algorithmLength);
+                        //pcrPolicy.validatePcrs(storedPcrs);
 
                         // part 2 of firmware validation check: bios measurements
                         // vs baseline tcg event log
@@ -583,6 +581,9 @@ public class SupplyChainValidationServiceImpl implements SupplyChainValidationSe
         } else {
             fwStatus = new AppraisalStatus(FAIL, String.format("Firmware Validation failed: "
                     + "%s for %s can not be found", failedString, manufacturer));
+            EventLogMeasurements eventLog = (EventLogMeasurements) measurement;
+            eventLog.setOverallValidationResult(fwStatus.getAppStatus());
+            this.referenceManifestManager.update(eventLog);
         }
 
         return buildValidationRecord(SupplyChainValidation.ValidationType.FIRMWARE,
@@ -605,7 +606,7 @@ public class SupplyChainValidationServiceImpl implements SupplyChainValidationSe
         SupplyChainValidationSummary summary = null;
         Level level = Level.ERROR;
         AppraisalStatus fwStatus = new AppraisalStatus(FAIL,
-                SupplyChainCredentialValidator.FIRMWARE_VALID);
+                "Unknown exception caught during quote validation.");
         SupportReferenceManifest sRim = null;
         EventLogMeasurements eventLog = null;
 

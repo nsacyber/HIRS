@@ -1,4 +1,4 @@
-package hirs.attestationca.portal.util;
+package hirs.utils;
 
 import com.github.marandus.pciid.model.Device;
 import com.github.marandus.pciid.model.Vendor;
@@ -24,8 +24,7 @@ public final class PciIds {
      * This pci ids file can be in different places on different distributions.
      */
     public static final List<String> PCI_IDS_PATH =
-            Collections.unmodifiableList(new Vector<String>()
-            {
+            Collections.unmodifiableList(new Vector<String>() {
                 private static final long serialVersionUID = 1L;
                 {
                     add("/usr/share/hwdata/pci.ids");
