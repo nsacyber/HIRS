@@ -441,7 +441,7 @@ public abstract class AbstractAttestationCertificateAuthority
 
         if (validationResult == AppraisalStatus.Status.PASS) {
             RSAPublicKey akPub = parsePublicKey(claim.getAkPublicArea().toByteArray());
-            RSAPublicKey devPub = parsePublicKey(claim.getDevIdPublicArea().toByteArray());
+
             byte[] nonce = generateRandomBytes(NONCE_LENGTH);
             ByteString blobStr = tpm20MakeCredential(ekPub, akPub, nonce);
 
@@ -573,7 +573,7 @@ public abstract class AbstractAttestationCertificateAuthority
 
             // Get attestation public key
             RSAPublicKey akPub = parsePublicKey(claim.getAkPublicArea().toByteArray());
-            RSAPublicKey devPub = parsePublicKey(claim.getDevIdPublicArea().toByteArray());
+            //RSAPublicKey devPub = parsePublicKey(claim.getDevIdPublicArea().toByteArray());
 
             // Get Endorsement Credential if it exists or was uploaded
             EndorsementCredential endorsementCredential = parseEcFromIdentityClaim(claim, ekPub);
@@ -622,7 +622,7 @@ public abstract class AbstractAttestationCertificateAuthority
                 byte[] derEncodedAttestationCertificate = getDerEncodedCertificate(
                         attestationCertificate);
 
-                X509Certificate devIdCertificate = generateCredential(devPub,
+                X509Certificate devIdCertificate = generateDevCredential(akPub,
                         endorsementCredential, platformCredentials, deviceName);
                 byte[] derEncodedDevIdCertificate = getDerEncodedCertificate(
                         devIdCertificate);
@@ -1470,6 +1470,67 @@ public abstract class AbstractAttestationCertificateAuthority
 
             ContentSigner signer = new JcaContentSignerBuilder("SHA1WithRSA")
                 .setProvider("BC").build(privateKey);
+            X509CertificateHolder holder = builder.build(signer);
+            return new JcaX509CertificateConverter()
+                    .setProvider("BC").getCertificate(holder);
+        } catch (IOException | OperatorCreationException | CertificateException e) {
+            throw new CertificateProcessingException("Encountered error while generating "
+                    + "identity credential: " + e.getMessage(), e);
+        }
+    }
+
+    /**
+     * Generates a credential using the specified public key.
+     *
+     * @param publicKey
+     *            cannot be null
+     * @param endorsementCredential
+     *            the endorsement credential
+     * @param platformCredentials
+     *            the set of platform credentials
+     * @param deviceName
+     *            The host name used in the subject alternative name
+     * @return identity credential
+     */
+    X509Certificate generateDevCredential(final PublicKey publicKey,
+                                       final EndorsementCredential endorsementCredential,
+                                       final Set<PlatformCredential> platformCredentials,
+                                       final String deviceName) {
+        try {
+            // have the certificate expire in the configured number of days
+            Calendar expiry = Calendar.getInstance();
+            expiry.add(Calendar.DAY_OF_YEAR, validDays);
+
+            X500Name issuer =
+                    new X500Name(acaCertificate.getSubjectX500Principal().getName());
+            Date notBefore = new Date();
+            Date notAfter = expiry.getTime();
+            BigInteger serialNumber = BigInteger.valueOf(System.currentTimeMillis());
+
+            SubjectPublicKeyInfo subjectPublicKeyInfo =
+                    SubjectPublicKeyInfo.getInstance(publicKey.getEncoded());
+
+            // The subject should be left blank, per spec
+            X509v3CertificateBuilder builder =
+                    new X509v3CertificateBuilder(issuer, serialNumber,
+                            notBefore, notAfter, null /* subjectName */, subjectPublicKeyInfo);
+
+            Extension subjectAlternativeName =
+                    IssuedCertificateAttributeHelper.buildSubjectAlternativeNameFromCerts(
+                            endorsementCredential, platformCredentials, deviceName);
+
+            builder.addExtension(subjectAlternativeName);
+            // identify cert as an AIK with this extension
+            if (IssuedCertificateAttributeHelper.EXTENDED_KEY_USAGE_EXTENSION != null) {
+                builder.addExtension(IssuedCertificateAttributeHelper.EXTENDED_KEY_USAGE_EXTENSION);
+            } else {
+                LOG.warn("Failed to build extended key usage extension and add to AIK");
+                throw new IllegalStateException("Extended Key Usage attribute unavailable. "
+                        + "Unable to issue certificates");
+            }
+
+            ContentSigner signer = new JcaContentSignerBuilder("SHA1WithRSA")
+                    .setProvider("BC").build(privateKey);
             X509CertificateHolder holder = builder.build(signer);
             return new JcaX509CertificateConverter()
                     .setProvider("BC").getCertificate(holder);

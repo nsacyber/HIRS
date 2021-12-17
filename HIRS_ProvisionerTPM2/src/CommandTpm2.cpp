@@ -109,8 +109,8 @@ const char* const CommandTpm2::kDefaultEccEkCredentialHandle = "0x1c0000a";
 // = "0x1c90001";
 const char* const CommandTpm2::kDefaultEkHandle = "0x81010001";
 const char* const CommandTpm2::kDefaultAkHandle = "0x81010002";
-const char* const CommandTpm2::kDefaultDevHandle = "0x01C90000";
 const char* const CommandTpm2::kAKCertificateHandle = "0x1c0000c";
+const char* const CommandTpm2::kDefaultDevHandle = "0x81010003";
 
 const char* const CommandTpm2::kDefaultAkCertFilename =
         "/etc/hirs/ak.cer";
