@@ -439,10 +439,11 @@ public abstract class AbstractAttestationCertificateAuthority
             }
         }
 
+        ByteString blobStr = ByteString.copyFrom(new byte[]{});
         if (validationResult == AppraisalStatus.Status.PASS) {
             RSAPublicKey akPub = parsePublicKey(claim.getAkPublicArea().toByteArray());
             byte[] nonce = generateRandomBytes(NONCE_LENGTH);
-            ByteString blobStr = tpm20MakeCredential(ekPub, akPub, nonce);
+            blobStr = tpm20MakeCredential(ekPub, akPub, nonce);
             SupplyChainPolicy scp = this.supplyChainValidationService.getPolicy();
             String pcrQuoteMask = PCR_QUOTE_MASK;
 
@@ -465,7 +466,12 @@ public abstract class AbstractAttestationCertificateAuthority
         } else {
             LOG.error("Supply chain validation did not succeed. Result is: "
                     + validationResult);
-            return new byte[]{};
+            // empty response
+            ProvisionerTpm2.IdentityClaimResponse response
+                    = ProvisionerTpm2.IdentityClaimResponse.newBuilder()
+                    .setCredentialBlob(blobStr)
+                    .build();
+            return response.toByteArray();
         }
     }
 

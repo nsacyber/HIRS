@@ -144,18 +144,19 @@ int provision() {
     string response = provisioner.sendIdentityClaim(identityClaim);
     hirs::pb::IdentityClaimResponse icr;
 
-    try {
-        if (response == "" || !icr.has_credential_blob()) {
-            logger.error("The ACA did not send make credential blob.");
-            cout << "----> Provisioning failed." << endl;
-            cout << "The ACA did not send make credential information." << endl;
-            return 0;
-        }
-    } catch (const google::protobuf::FatalException& e) {
-        logger.error(e.what());
+    if (!icr.ParseFromString(response) || !icr.has_credential_blob()) {
+        logger.error("The ACA did not send make credential blob.");
+        cout << "----> Provisioning failed." << endl;
+        cout << "The ACA did not send make credential information." << endl;
+        return 0;
     }
 
     string nonceBlob = icr.credential_blob();
+    if (nonceBlob == "") {
+        cout << "----> Provisioning failed." << endl;
+        cout << "The ACA did not send make credential information." << endl;
+        return 0;
+    }
 
     // activateIdentity requires we read makeCredential output from a file
     cout << "----> Received response. Attempting to decrypt nonce" << endl;
