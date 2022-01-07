@@ -130,6 +130,16 @@ public class BaseReferenceManifest extends ReferenceManifest {
             setFieldValue(BASE_64_HASH_FIELD, base64Hash);
             return this;
         }
+
+        /**
+         * Specify the RIM hash associated with the base RIM.
+         * @param hexDecHash the hash of the file associated with the rim
+         * @return this instance
+         */
+        public Selector byHexDecHash(final String hexDecHash) {
+            setFieldValue(HEX_DEC_HASH_FIELD, hexDecHash);
+            return this;
+        }
     }
 
     /**

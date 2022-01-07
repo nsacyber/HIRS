@@ -3,6 +3,8 @@ package hirs.data.persist;
 import hirs.data.persist.tpm.PcrComposite;
 import hirs.data.persist.tpm.PcrInfoShort;
 import hirs.data.persist.tpm.PcrSelection;
+import hirs.tpm.eventlog.TCGEventLog;
+import hirs.tpm.eventlog.TpmPcrEvent;
 import org.apache.commons.codec.DecoderException;
 import org.apache.commons.codec.binary.Hex;
 import org.apache.logging.log4j.Logger;
@@ -11,7 +13,10 @@ import javax.persistence.Column;
 import javax.persistence.Entity;
 import java.nio.charset.StandardCharsets;
 import java.security.NoSuchAlgorithmException;
-import java.util.Arrays;
+import java.util.ArrayList;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
 
 import static org.apache.logging.log4j.LogManager.getLogger;
 
@@ -24,13 +29,24 @@ public final class PCRPolicy extends Policy {
     private static final Logger LOGGER = getLogger(PCRPolicy.class);
 
     private static final int NUM_TO_SKIP = 1;
+    private static final int NUM_OF_TBOOT_PCR = 3;
+    // PCR 5-16
+    private static final int PXE_PCR_START = 5;
+    private static final int PXE_PCR_END = 16;
     // PCR 10
     private static final int IMA_PCR = 10;
     // PCR 17-19
-    private static final int TBOOT_PCR = 17;
-    private static final int NUM_OF_TBOOT_PCR = 3;
+    private static final int TBOOT_PCR_START = 17;
+    private static final int TBOOT_PCR_END = 19;
     // PCR 5
     private static final int GPT_PCR = 5;
+    private static final int IMA_MASK = 0xfffbff;
+
+    // Event Log Event Types
+    private static final String EVT_EFI_BOOT = "EV_EFI_BOOT_SERVICES_APPLICATION";
+    private static final String EVT_EFI_VAR = "EV_EFI_VARIABLE_BOOT";
+    private static final String EVT_EFI_GPT = "EV_EFI_GPT_EVENT";
+    private static final String EVT_EFI_CFG = "EV_EFI_VARIABLE_DRIVER_CONFIG";
 
     @Column(nullable = false)
     private boolean enableIgnoreIma = false;
@@ -40,6 +56,8 @@ public final class PCRPolicy extends Policy {
     private boolean linuxOs = false;
     @Column(nullable = false)
     private boolean enableIgnoreGpt = true;
+    @Column(nullable = false)
+    private boolean enableIgnoreOsEvt = false;
 
     private String[] baselinePcrs;
 
@@ -81,7 +99,7 @@ public final class PCRPolicy extends Policy {
                     i += NUM_TO_SKIP;
                 }
 
-                if (enableIgnoretBoot && i == TBOOT_PCR) {
+                if (enableIgnoretBoot && i == TBOOT_PCR_START) {
                     LOGGER.info("PCR Policy TBoot Ignore enabled.");
                     i += NUM_OF_TBOOT_PCR;
                 }
@@ -102,6 +120,45 @@ public final class PCRPolicy extends Policy {
     }
 
     /**
+     * Checks that the expected FM events occurring. There are policy options that
+     * will ignore certin PCRs, Event Types and Event Variables present.
+     * @param tcgMeasurementLog Measurement log from the client
+     * @param eventValueMap The events stored as baseline to compare
+     * @return the events that didn't pass
+     */
+    public List<TpmPcrEvent> validateTpmEvents(final TCGEventLog tcgMeasurementLog,
+                final Map<String, ReferenceDigestValue> eventValueMap) {
+        List<TpmPcrEvent> tpmPcrEvents = new LinkedList<>();
+        for (TpmPcrEvent tpe : tcgMeasurementLog.getEventList()) {
+            if (enableIgnoreIma && tpe.getPcrIndex() == IMA_PCR) {
+                LOGGER.info(String.format("IMA Ignored -> %s", tpe));
+            } else if (enableIgnoretBoot && (tpe.getPcrIndex() >= TBOOT_PCR_START
+                    && tpe.getPcrIndex() <= TBOOT_PCR_END)) {
+                LOGGER.info(String.format("TBOOT Ignored -> %s", tpe));
+            } else if (enableIgnoreOsEvt && (tpe.getPcrIndex() >= PXE_PCR_START
+                    && tpe.getPcrIndex() <= PXE_PCR_END)) {
+                LOGGER.info(String.format("OS Evt Ignored -> %s", tpe));
+            } else {
+                if (enableIgnoreGpt && tpe.getEventTypeStr().contains(EVT_EFI_GPT)) {
+                    LOGGER.info(String.format("GPT Ignored -> %s", tpe));
+                } else if (enableIgnoreOsEvt && (tpe.getEventTypeStr().contains(EVT_EFI_BOOT)
+                        || tpe.getEventTypeStr().contains(EVT_EFI_VAR))) {
+                    LOGGER.info(String.format("OS Evt Ignored -> %s", tpe));
+                } else if (enableIgnoreOsEvt && (tpe.getEventTypeStr().contains(EVT_EFI_CFG)
+                        && tpe.getEventContentStr().contains("SecureBoot"))) {
+                    LOGGER.info(String.format("OS Evt Config Ignored -> %s", tpe));
+                } else {
+                    if (!eventValueMap.containsKey(tpe.getEventDigestStr())) {
+                        tpmPcrEvents.add(tpe);
+                    }
+                }
+            }
+        }
+
+        return tpmPcrEvents;
+    }
+
+    /**
      * Compares hashs to validate the quote from the client.
      *
      * @param tpmQuote the provided quote
@@ -113,19 +170,29 @@ public final class PCRPolicy extends Policy {
         boolean validated = false;
         short localityAtRelease = 0;
         String quoteString = new String(tpmQuote, StandardCharsets.UTF_8);
+        int pcrMaskSelection = PcrSelection.ALL_PCRS_ON;
 
-        TPMMeasurementRecord[] measurements = new TPMMeasurementRecord[baselinePcrs.length];
+        if (enableIgnoreIma) {
+            pcrMaskSelection = IMA_MASK;
+        }
+
+        ArrayList<TPMMeasurementRecord> measurements = new ArrayList<>();
+
         try {
-            for (int i = 0; i <= TPMMeasurementRecord.MAX_PCR_ID; i++) {
-                measurements[i] = new TPMMeasurementRecord(i, storedPcrs[i]);
+            for (int i = 0; i < storedPcrs.length; i++) {
+                if (i == IMA_PCR && enableIgnoreIma) {
+                    LOGGER.info("Ignore IMA PCR policy is enabled.");
+                } else {
+                    measurements.add(new TPMMeasurementRecord(i, storedPcrs[i]));
+                }
             }
         } catch (DecoderException deEx) {
             LOGGER.error(deEx);
         }
-        PcrSelection pcrSelection = new PcrSelection(PcrSelection.ALL_PCRS_ON);
+
+        PcrSelection pcrSelection = new PcrSelection(pcrMaskSelection);
         PcrComposite pcrComposite = new PcrComposite(
-                pcrSelection,
-                Arrays.asList(measurements));
+                pcrSelection, measurements);
         PcrInfoShort pcrInfoShort = new PcrInfoShort(pcrSelection,
                 localityAtRelease,
                 tpmQuote, pcrComposite);
@@ -140,6 +207,9 @@ public final class PCRPolicy extends Policy {
             String calculatedString = Hex.encodeHexString(
                     pcrInfoShort.getCalculatedDigest());
             validated = quoteString.contains(calculatedString);
+            if (!validated) {
+                LOGGER.warn(calculatedString + " not found in " + quoteString);
+            }
         } catch (NoSuchAlgorithmException naEx) {
             LOGGER.error(naEx);
         }
@@ -209,6 +279,22 @@ public final class PCRPolicy extends Policy {
      */
     public void setEnableIgnoreGpt(final boolean enableIgnoreGpt) {
         this.enableIgnoreGpt = enableIgnoreGpt;
+    }
+
+    /**
+     * Getter for the Os Events ignore flag.
+     * @return true if Os Events is to be ignored.
+     */
+    public boolean isEnableIgnoreOsEvt() {
+        return enableIgnoreOsEvt;
+    }
+
+    /**
+     * Setter for the Os Evt ignore flag.
+     * @param enableIgnoreOsEvt true if Os Evt is to be ignored.
+     */
+    public void setEnableIgnoreOsEvt(final boolean enableIgnoreOsEvt) {
+        this.enableIgnoreOsEvt = enableIgnoreOsEvt;
     }
 
     /**

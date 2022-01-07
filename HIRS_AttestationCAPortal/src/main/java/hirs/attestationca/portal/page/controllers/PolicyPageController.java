@@ -90,7 +90,6 @@ public class PolicyPageController extends PageController<NoPageParams> {
         ModelAndView mav = getBaseModelAndView();
 
         SupplyChainPolicy policy = getDefaultPolicy();
-
         PolicyPageModel pageModel = new PolicyPageModel(policy);
         mav.addObject(INITIAL_DATA, pageModel);
 
@@ -662,6 +661,7 @@ public class PolicyPageController extends PageController<NoPageParams> {
                 policy.setFirmwareValidationEnabled(false);
                 policy.getPcrPolicy().setEnableIgnoreIma(false);
                 policy.getPcrPolicy().setEnableIgnoretBoot(false);
+                policy.setIgnoreOsEvtEnabled(false);
                 successMessage = "Firmware validation disabled";
             }
 
@@ -805,7 +805,7 @@ public class PolicyPageController extends PageController<NoPageParams> {
             //If Ignore TBoot is enabled without firmware, disallow change
             if (ignoreGptOptionEnabled && !policy.isFirmwareValidationEnabled()) {
                 handleUserError(model, messages,
-                        "Ignore TBoot can not be "
+                        "Ignore GPT Events can not be "
                                 + "enabled without Firmware Validation policy enabled.");
                 return redirectToSelf(new NoPageParams(), model, attr);
             }
@@ -823,6 +823,60 @@ public class PolicyPageController extends PageController<NoPageParams> {
         } catch (PolicyManagerException e) {
             handlePolicyManagerUpdateError(model, messages, e,
                     "Error changing ACA GPT ignore policy",
+                    "Error updating policy. \n" + e.getMessage());
+        }
+
+        // return the redirect
+        return redirectToSelf(new NoPageParams(), model, attr);
+    }
+
+    /**
+     * Updates the ignore Os Events policy setting and
+     * redirects back to the original page.
+     *
+     * @param ppModel The data posted by the form mapped into an object.
+     * @param attr RedirectAttributes used to forward data back to the original
+     * page.
+     * @return View containing the url and parameters
+     * @throws URISyntaxException if malformed URI
+     */
+    @RequestMapping(value = "update-os-evt-ignore", method = RequestMethod.POST)
+    public RedirectView updateIgnoreOsEvents(
+            @ModelAttribute final PolicyPageModel ppModel,
+            final RedirectAttributes attr)
+            throws URISyntaxException {
+        // set the data received to be populated back into the form
+        Map<String, Object> model = new HashMap<>();
+        PageMessages messages = new PageMessages();
+        String successMessage;
+        boolean ignoreOsEvtOptionEnabled = ppModel.getIgnoreOsEvt()
+                .equalsIgnoreCase(ENABLED_CHECKED_PARAMETER_VALUE);
+
+        try {
+            SupplyChainPolicy policy = getDefaultPolicyAndSetInModel(ppModel, model);
+
+            //If Ignore TBoot is enabled without firmware, disallow change
+            if (ignoreOsEvtOptionEnabled && !policy.isFirmwareValidationEnabled()) {
+                handleUserError(model, messages,
+                        "Ignore Os Events can not be "
+                                + "enabled without Firmware Validation policy enabled.");
+                return redirectToSelf(new NoPageParams(), model, attr);
+            }
+
+            // set the policy option and create success message
+            if (ignoreOsEvtOptionEnabled) {
+                policy.getPcrPolicy().setEnableIgnoreOsEvt(true);
+                policy.getPcrPolicy().setEnableIgnoreGpt(true);
+                successMessage = "Ignore OS Events enabled";
+            } else {
+                policy.getPcrPolicy().setEnableIgnoreOsEvt(false);
+                successMessage = "Ignore OS Events disabled";
+            }
+
+            savePolicyAndApplySuccessMessage(ppModel, model, messages, successMessage, policy);
+        } catch (PolicyManagerException e) {
+            handlePolicyManagerUpdateError(model, messages, e,
+                    "Error changing ACA OS Events ignore policy",
                     "Error updating policy. \n" + e.getMessage());
         }
 

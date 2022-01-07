@@ -151,6 +151,8 @@ namespace string_utils {
     std::string trimWhitespaceFromRight(std::string str);
 
     std::string trimWhitespaceFromBothEnds(std::string str);
+
+    std::vector<std::string> split(const std::string& str, char delim);
 }  // namespace string_utils
 
 }  // namespace hirs

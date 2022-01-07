@@ -12,3 +12,4 @@ RUN mkdir paccor && pushd paccor && wget https://github.com/nsacyber/paccor/rele
 
 # Install Software TPM for Provisioning
 RUN mkdir tpm_emulator && pushd tpm_emulator && wget https://phoenixnap.dl.sourceforge.net/project/ibmswtpm/tpm4769tar.gz && tar -xzvf tpm4769tar.gz && pushd libtpm && ./autogen && ./configure && make && popd && pushd tpm && make -f makefile-tpm && popd && popd
+

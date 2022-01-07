@@ -19,10 +19,13 @@
         <c:set var="endorsementIcon" value="${icons}/ic_vpn_key_black_24dp.png"/>
         <div class="aca-input-box-header">
             <form:form method="POST"  action="${portal}/certificate-request/platform-credentials/upload" enctype="multipart/form-data">
-                Import Platform Credentials
+                Platform Credentials
                 <my:file-chooser id="platformCredentialEditor" label="Import Platform Credentials">
                     <input id="importFile" type="file" name="file" multiple="multiple" />
                 </my:file-chooser>
+                <a href="${portal}/certificate-request/platform-credentials/bulk">
+                    <img src="${icons}/ic_file_download_black_24dp.png" title="Download All Platform Certificates">
+                </a>
             </form:form>
         </div>
         <br/>

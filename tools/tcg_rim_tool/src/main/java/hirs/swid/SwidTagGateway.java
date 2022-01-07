@@ -1,8 +1,5 @@
 package hirs.swid;
 
-import com.eclipsesource.json.Json;
-import com.eclipsesource.json.JsonObject;
-import com.eclipsesource.json.ParseException;
 import hirs.swid.utils.HashSwid;
 import hirs.swid.xjc.Directory;
 import hirs.swid.xjc.Entity;
@@ -13,6 +10,9 @@ import hirs.swid.xjc.SoftwareIdentity;
 import hirs.swid.xjc.SoftwareMeta;
 import org.w3c.dom.Document;
 
+import javax.json.Json;
+import javax.json.JsonObject;
+import javax.json.JsonReader;
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBElement;
 import javax.xml.bind.JAXBException;
@@ -31,7 +31,6 @@ import javax.xml.crypto.dsig.dom.DOMSignContext;
 import javax.xml.crypto.dsig.keyinfo.KeyInfo;
 import javax.xml.crypto.dsig.keyinfo.KeyInfoFactory;
 import javax.xml.crypto.dsig.keyinfo.KeyName;
-import javax.xml.crypto.dsig.keyinfo.KeyValue;
 import javax.xml.crypto.dsig.keyinfo.X509Data;
 import javax.xml.crypto.dsig.spec.C14NMethodParameterSpec;
 import javax.xml.crypto.dsig.spec.TransformParameterSpec;
@@ -46,20 +45,16 @@ import javax.xml.transform.TransformerException;
 import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
-import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.math.BigInteger;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.security.InvalidAlgorithmParameterException;
-import java.security.KeyException;
 import java.security.NoSuchAlgorithmException;
 import java.security.PrivateKey;
-import java.security.PublicKey;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
@@ -68,11 +63,9 @@ import java.util.List;
 import java.util.Map;
 
 
-
 /**
  * This class provides interaction with the SWID Tag schema as defined in
  * http://standards.iso.org/iso/19770/-2/2015/schema.xsd
- *
  */
 public class SwidTagGateway {
 
@@ -103,6 +96,7 @@ public class SwidTagGateway {
 
     /**
      * Setter for String holding attributes file path
+     *
      * @param attributesFile
      */
     public void setAttributesFile(String attributesFile) {
@@ -111,6 +105,7 @@ public class SwidTagGateway {
 
     /**
      * Setter for boolean governing signing credentials
+     *
      * @param defaultCredentials
      * @return
      */
@@ -120,12 +115,16 @@ public class SwidTagGateway {
 
     /**
      * Setter for JKS keystore file
+     *
      * @param jksTruststoreFile
      */
-    public void setJksTruststoreFile(String jksTruststoreFile) { this.jksTruststoreFile = jksTruststoreFile; }
+    public void setJksTruststoreFile(String jksTruststoreFile) {
+        this.jksTruststoreFile = jksTruststoreFile;
+    }
 
     /**
      * Setter for private key file in PEM format
+     *
      * @param pemPrivateKeyFile
      */
     public void setPemPrivateKeyFile(String pemPrivateKeyFile) {
@@ -134,6 +133,7 @@ public class SwidTagGateway {
 
     /**
      * Setter for certificate file in PEM format
+     *
      * @param pemCertificateFile
      */
     public void setPemCertificateFile(String pemCertificateFile) {
@@ -142,6 +142,7 @@ public class SwidTagGateway {
 
     /**
      * Setter for event log support RIM
+     *
      * @param rimEventLog
      */
     public void setRimEventLog(String rimEventLog) {
@@ -156,35 +157,37 @@ public class SwidTagGateway {
     public void generateSwidTag(final String filename) {
         SoftwareIdentity swidTag = null;
         try {
-            BufferedReader jsonIn = Files.newBufferedReader(Paths.get(attributesFile), StandardCharsets.UTF_8);
-            JsonObject configProperties = Json.parse(jsonIn).asObject();
+            InputStream is = new FileInputStream(attributesFile);
+            JsonReader reader = Json.createReader(is);
+            JsonObject configProperties = reader.readObject();
+            reader.close();
             //SoftwareIdentity
-            swidTag = createSwidTag(configProperties.get(SwidTagConstants.SOFTWARE_IDENTITY).asObject());
+            swidTag = createSwidTag(configProperties.getJsonObject(SwidTagConstants.SOFTWARE_IDENTITY));
             //Entity
             JAXBElement<Entity> entity = objectFactory.createSoftwareIdentityEntity(
-                    createEntity(configProperties.get(SwidTagConstants.ENTITY).asObject()));
+                    createEntity(configProperties.getJsonObject(SwidTagConstants.ENTITY)));
             swidTag.getEntityOrEvidenceOrLink().add(entity);
             //Link
             JAXBElement<Link> link = objectFactory.createSoftwareIdentityLink(
-                    createLink(configProperties.get(SwidTagConstants.LINK).asObject()));
+                    createLink(configProperties.getJsonObject(SwidTagConstants.LINK)));
             swidTag.getEntityOrEvidenceOrLink().add(link);
             //Meta
             JAXBElement<SoftwareMeta> meta = objectFactory.createSoftwareIdentityMeta(
-                    createSoftwareMeta(configProperties.get(SwidTagConstants.META).asObject()));
+                    createSoftwareMeta(configProperties.getJsonObject(SwidTagConstants.META)));
             swidTag.getEntityOrEvidenceOrLink().add(meta);
             //File
             hirs.swid.xjc.File file = createFile(
-                                configProperties.get(SwidTagConstants.PAYLOAD).asObject()
-                                                .get(SwidTagConstants.DIRECTORY).asObject()
-                                                .get(SwidTagConstants.FILE).asObject());
+                    configProperties.getJsonObject(SwidTagConstants.PAYLOAD)
+                            .getJsonObject(SwidTagConstants.DIRECTORY)
+                            .getJsonObject(SwidTagConstants.FILE));
             //Directory
             Directory directory = createDirectory(
-                    configProperties.get(SwidTagConstants.PAYLOAD).asObject()
-                                    .get(SwidTagConstants.DIRECTORY).asObject());
+                    configProperties.getJsonObject(SwidTagConstants.PAYLOAD)
+                            .getJsonObject(SwidTagConstants.DIRECTORY));
             directory.getDirectoryOrFile().add(file);
             //Payload
             ResourceCollection payload = createPayload(
-                    configProperties.get(SwidTagConstants.PAYLOAD).asObject());
+                    configProperties.getJsonObject(SwidTagConstants.PAYLOAD));
             payload.getDirectoryOrFileOrProcess().add(directory);
             JAXBElement<ResourceCollection> jaxbPayload =
                     objectFactory.createSoftwareIdentityPayload(payload);
@@ -192,10 +195,6 @@ public class SwidTagGateway {
 
         } catch (FileNotFoundException e) {
             System.out.println("File does not exist or cannot be read: " + e.getMessage());
-        } catch (IOException e) {
-            System.out.println("Error in file reader: " + e.getMessage());
-        } catch (ParseException e) {
-            System.out.println("Invalid JSON detected at " + e.getLocation().toString());
         } catch (Exception e) {
             System.out.println(e.getMessage());
         }
@@ -229,7 +228,7 @@ public class SwidTagGateway {
             System.out.println("Error instantiating Transformer class: " + e.getMessage());
         }
     }
-    
+
     /**
      * This method creates SoftwareIdentity element based on the parameters read in from
      * a properties file.
@@ -302,6 +301,7 @@ public class SwidTagGateway {
     /**
      * Thsi method creates a Link element based on the parameters read in from a properties
      * file.
+     *
      * @param jsonObject the Properties object containing parameters from file
      * @return Link element created from the properties
      */
@@ -322,6 +322,7 @@ public class SwidTagGateway {
     /**
      * This method creates a Meta element based on the parameters read in from a properties
      * file.
+     *
      * @param jsonObject the Properties object containing parameters from file
      * @return the Meta element created from the properties
      */
@@ -403,6 +404,7 @@ public class SwidTagGateway {
 
     /**
      * This utility method checks if an attribute value is empty before adding it to the map.
+     *
      * @param attributes
      * @param key
      * @param value
@@ -465,7 +467,7 @@ public class SwidTagGateway {
         } catch (IOException e) {
             System.out.println("Error loading keystore: " + e.getMessage());
         } catch (NoSuchAlgorithmException | InvalidAlgorithmParameterException |
-                        ParserConfigurationException e) {
+                ParserConfigurationException e) {
             System.out.println(e.getMessage());
         } catch (CertificateException e) {
             System.out.println(e.getMessage());
