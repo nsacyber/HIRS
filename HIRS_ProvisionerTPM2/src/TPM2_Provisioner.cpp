@@ -154,7 +154,7 @@ int provision() {
     string nonceBlob = icr.credential_blob();
     if (nonceBlob == "") {
         cout << "----> Provisioning failed." << endl;
-        cout << "The ACA did not send make credential information." << endl;
+        cout << "The ACA sent empty credential information." << endl;
         return 0;
     }
 
