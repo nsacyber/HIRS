@@ -27,6 +27,8 @@ services:
          - ../system-tests/profiles/laptop/dmi:/sys/class/dmi:ro
       entrypoint: /bin/bash -c
       command: [tail -f /dev/null;]
+      devices:
+        - "/dev/mem:/dev/mem"
       cap_add:
         - sys_rawio
       networks:
