@@ -61,7 +61,7 @@ echo ""
 # Clean up services and network
 popd
 pushd .ci/docker
-docker-compose -f docker-compose-s1-system-test.yml down -v
+docker-compose -f docker-compose-system-test.yml down -v
 popd
 # Clean up dangling containers
 echo "Cleaning up dangling containers..."

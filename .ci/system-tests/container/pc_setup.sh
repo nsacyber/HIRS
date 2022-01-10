@@ -28,9 +28,9 @@ for cert in * ; do
           cp -f $cert /boot/tcg/cert/platform/$cert;
     done
 
-    echo "contents of /boot/tcg/cert/platform/ is $(ls /boot/tcg/cert/platform/)"
+#    echo "contents of /boot/tcg/cert/platform/ is $(ls /boot/tcg/cert/platform/)"
 #    echo "contents of hirs config is $(ls -al /etc/hirs)"
-    echo "contents of tcg config is $(cat /etc/hirs/tcg_boot.properties)"
+#    echo "contents of tcg config is $(cat /etc/hirs/tcg_boot.properties)"
 popd > /dev/null
 
 # Step 4: Make some data available for debugging

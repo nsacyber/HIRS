@@ -11,6 +11,7 @@ failedTests=0;
 # provision_tpm takes 1 parameter (the expected result): "pass" or "fail"
 
 write_to_logs "ACA POLICY TEST 1: Test ACA default policy "
+setPlatformCerts "laptop" "empty"
 provision_tpm2 "pass"
 
 write_to_logs "ACA POLICY TEST 2: Test EK cert Only Validation Policy without a EK Issuer Cert in the trust store"
