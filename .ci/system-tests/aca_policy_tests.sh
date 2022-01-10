@@ -10,24 +10,31 @@ failedTests=0;
 # Start ACA Policy Tests
 # provision_tpm takes 1 parameter (the expected result): "pass" or "fail"
 
-echo "ACA POLICY TEST 1: Test ACA default policy "
+write_to_logs "ACA POLICY TEST 1: Test ACA default policy "
 provision_tpm2 "pass"
 
-echo "ACA POLICY TEST 2: Test EK cert Only Validation Policy without a EK Issuer Cert in the trust store"
+write_to_logs "ACA POLICY TEST 2: Test EK cert Only Validation Policy without a EK Issuer Cert in the trust store"
 setPolicyEkOnly
 provision_tpm2 "fail"
 
-echo "ACA POLICY TEST 3: Test EK Only Validation Policy" 
+write_to_logs "ACA POLICY TEST 3: Test EK Only Validation Policy" 
 uploadTrustedCerts
 provision_tpm2 "pass"
 
-echo "ACA POLICY TEST 4: Test PC Validation Policy with no PC" 
+write_to_logs "ACA POLICY TEST 4: Test PC Validation Policy with no PC" 
 setPolicyEkPc_noAttCheck
 provision_tpm2 "fail"
 
-echo "ACA POLICY TEST 5: Test FW and PC Validation Policy with no PC" 
+write_to_logs "ACA POLICY TEST 5: Test FW and PC Validation Policy with no PC" 
 setPolicyEkPcFw
 provision_tpm2 "fail"
+
+write_to_logs "### ACA POLICY TEST 6: Test PC Validation Policy with valid PC ###"
+clearAcaDb
+setPolicyEkPc
+uploadTrustedCerts
+setPlatformCerts "laptop" "default"
+provision_tpm2 "pass"
 
 #  Process Test Results, any single failure will send back a failed result.
 if [[ $failedTests != 0 ]]; then
