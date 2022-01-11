@@ -767,7 +767,7 @@ public abstract class AbstractDbManager<T> implements CrudManager<T> {
             searchClass = this.clazz;
         }
 
-        LOGGER.info(clazz.getName() + " querying for "
+        LOGGER.info(searchClass.getName() + " querying for "
             + Arrays.toString(searchableColumns.entrySet().toArray())
             + " with search strings \"" + search + "\"");
 
@@ -793,7 +793,7 @@ public abstract class AbstractDbManager<T> implements CrudManager<T> {
             if (totalResultCount != 0) {
                 LOGGER.info("Total result count greater than 0");
                 //Builds the search criteria from all of the searchable columns
-                if (searchableColumns != null) {
+                if (!searchableColumns.isEmpty()) {
                     // Search for all words in all searchable columns
                     String[] searchWords = search.split(" ");
                     for (String word : searchWords) {
@@ -881,7 +881,7 @@ public abstract class AbstractDbManager<T> implements CrudManager<T> {
             }
             throw e;
         }
-        LOGGER.info(clazz.getName() + " found " + aqr.getRecordsTotal() + " records");
+        LOGGER.info(searchClass.getName() + " found " + aqr.getRecordsTotal() + " records");
         return aqr;
     }
 

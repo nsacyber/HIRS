@@ -48,7 +48,7 @@ public class DBReferenceEventManager  extends DBManager<ReferenceDigestValue>
             return null;
         }
 
-        if (referenceDigestValue.getDigestRecordId() == null
+        if (referenceDigestValue.getSupportRimId() == null
                 || referenceDigestValue.getDigestValue() == null
                 || referenceDigestValue.getPcrIndex() == -1) {
             LOGGER.error("No reference to get record from db {}", referenceDigestValue);
@@ -62,8 +62,8 @@ public class DBReferenceEventManager  extends DBManager<ReferenceDigestValue>
             LOGGER.debug("retrieving referenceDigestValue from db");
             tx = session.beginTransaction();
             dbRecord = (ReferenceDigestValue) session.createCriteria(ReferenceDigestValue.class)
-                    .add(Restrictions.eq("digestRecordId",
-                            referenceDigestValue.getDigestRecordId()))
+                    .add(Restrictions.eq("supportRimId",
+                            referenceDigestValue.getSupportRimId()))
                     .add(Restrictions.eq("digestValue",
                             referenceDigestValue.getDigestValue()))
                     .add(Restrictions.eq("eventNumber",
@@ -135,7 +135,7 @@ public class DBReferenceEventManager  extends DBManager<ReferenceDigestValue>
         try {
             List<ReferenceDigestValue> dbTempList = super.getList(ReferenceDigestValue.class);
             for (ReferenceDigestValue rdv : dbTempList) {
-                if (rdv.getDigestRecordId().equals(uuid)) {
+                if (rdv.getSupportRimId().equals(uuid)) {
                     dbDigestValues.add(rdv);
                 }
             }
