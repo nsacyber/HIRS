@@ -983,9 +983,10 @@ public abstract class AbstractAttestationCertificateAuthority
                             TCGEventLog logProcessor = new TCGEventLog(dbSupport.getRimBytes());
                             ReferenceDigestValue rdv;
                             for (TpmPcrEvent tpe : logProcessor.getEventList()) {
-                                rdv = new ReferenceDigestValue(rdr.getId(), tpe.getPcrIndex(),
+                                rdv = new ReferenceDigestValue(dbSupport.getAssociatedRim(),
+                                        dbSupport.getId(), manufacturer, model, tpe.getPcrIndex(),
                                         tpe.getEventDigestStr(), tpe.getEventTypeStr(),
-                                        false, false);
+                                        false, false, tpe.getEventContent());
                                 this.referenceEventManager.saveValue(rdv);
                             }
                         } catch (CertificateException cEx) {
@@ -1021,9 +1022,10 @@ public abstract class AbstractAttestationCertificateAuthority
                         TCGEventLog logProcessor = new TCGEventLog(dbSupport.getRimBytes());
                         ReferenceDigestValue rdv;
                         for (TpmPcrEvent tpe : logProcessor.getEventList()) {
-                            rdv = new ReferenceDigestValue(rdr.getId(), tpe.getPcrIndex(),
+                            rdv = new ReferenceDigestValue(dbSupport.getAssociatedRim(),
+                                    dbSupport.getId(), manufacturer, model, tpe.getPcrIndex(),
                                     tpe.getEventDigestStr(), tpe.getEventTypeStr(),
-                                    false, false);
+                                    false, false, tpe.getEventContent());
                             this.referenceEventManager.saveValue(rdv);
                         }
                         dbSupport.setProcessed(true);

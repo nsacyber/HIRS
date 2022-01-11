@@ -19,13 +19,21 @@ public class ReferenceDigestValue extends AbstractEntity {
     private static final Logger LOGGER = LogManager.getLogger(ReferenceDigestValue.class);
     @Type(type = "uuid-char")
     @Column
-    private UUID digestRecordId;
+    private UUID baseRimId;
+    @Column
+    private UUID supportRimId;
+    @Column
+    private String manufacturer;
+    @Column
+    private String model;
     @Column(nullable = false)
     private int pcrIndex;
     @Column(nullable = false)
     private String digestValue;
     @Column(nullable = false)
     private String eventType;
+    @Column(columnDefinition = "blob", nullable = true)
+    private byte[] contentBlob;
     @Column(nullable = false)
     private boolean matchFail;
     @Column(nullable = false)
@@ -36,48 +44,78 @@ public class ReferenceDigestValue extends AbstractEntity {
      */
     public ReferenceDigestValue() {
         super();
-        this.digestRecordId = UUID.randomUUID();
+        this.baseRimId = UUID.randomUUID();
+        this.supportRimId = UUID.randomUUID();
+        this.manufacturer = "";
+        this.model = "";
         this.pcrIndex = -1;
         this.digestValue = "";
         this.eventType = "";
         this.matchFail = false;
         this.patched = false;
+        this.contentBlob = null;
     }
 
     /**
      * Default Constructor with parameters for all associated data.
-     * @param digestRecordId the UUID of the associated record
+     * @param baseRimId the UUID of the associated record
+     * @param supportRimId the UUID of the associated record
+     * @param manufacturer associated creator for this information
+     * @param model the specific device type
      * @param pcrIndex the event number
      * @param digestValue the key digest value
      * @param eventType the event type to store
      * @param matchFail the status of the baseline check
      * @param patched the status of the value being updated to to patch
+     * @param contentBlob the data value of the content
      */
-    public ReferenceDigestValue(final UUID digestRecordId, final int pcrIndex,
-                                final String digestValue, final String eventType,
-                                final boolean matchFail, final boolean patched) {
-        this.digestRecordId = digestRecordId;
+    public ReferenceDigestValue(final UUID baseRimId, final UUID supportRimId,
+                                final String manufacturer, final String model,
+                                final int pcrIndex, final String digestValue,
+                                final String eventType, final boolean matchFail,
+                                final boolean patched, final byte[] contentBlob) {
+        this.baseRimId = baseRimId;
+        this.supportRimId = supportRimId;
+        this.manufacturer = manufacturer;
+        this.model = model;
         this.pcrIndex = pcrIndex;
         this.digestValue = digestValue;
         this.eventType = eventType;
         this.matchFail = matchFail;
         this.patched = patched;
+        this.contentBlob = contentBlob;
     }
 
     /**
      * Getter for the digest record UUID.
      * @return the string of the UUID
      */
-    public UUID getDigestRecordId() {
-        return digestRecordId;
+    public UUID getBaseRimId() {
+        return baseRimId;
     }
 
     /**
      * Setter for the digest record UUID.
-     * @param digestRecordId the value to store
+     * @param baseRimId the value to store
      */
-    public void setDigestRecordId(final UUID digestRecordId) {
-        this.digestRecordId = digestRecordId;
+    public void setBaseRimId(final UUID baseRimId) {
+        this.baseRimId = baseRimId;
+    }
+
+    /**
+     * Getter for the digest record UUID.
+     * @return the string of the UUID
+     */
+    public UUID getSupportRimId() {
+        return supportRimId;
+    }
+
+    /**
+     * Setter for the digest record UUID.
+     * @param supportRimId the value to store
+     */
+    public void setSupportRimId(final UUID supportRimId) {
+        this.supportRimId = supportRimId;
     }
 
     /**
@@ -171,13 +209,14 @@ public class ReferenceDigestValue extends AbstractEntity {
         ReferenceDigestValue that = (ReferenceDigestValue) obj;
         return pcrIndex == that.pcrIndex && matchFail == that.matchFail
                 && Objects.equals(digestValue, that.digestValue)
-                && Objects.equals(digestRecordId, that.digestRecordId)
+                && Objects.equals(baseRimId, that.baseRimId)
+                && Objects.equals(supportRimId, that.supportRimId)
                 && Objects.equals(eventType, that.eventType);
     }
 
     @Override
     public int hashCode() {
-        int result = Objects.hash(pcrIndex, digestValue, digestRecordId,
+        int result = Objects.hash(pcrIndex, digestValue, baseRimId, supportRimId,
                 eventType, matchFail, patched);
         return result;
     }
