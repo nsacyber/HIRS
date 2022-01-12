@@ -95,7 +95,7 @@ provision_tpm2() {
 # setPlatCert <profile> <test>
 setPlatformCerts() {
   docker exec $tpm2_container sh /HIRS/.ci/system-tests/container/pc_setup.sh $1 $2 
-  docker exec $tpm2_container bash -c "find / -name oem_platform_v1_Base.cer"
+  #docker exec $tpm2_container bash -c "find / -name oem_platform_v1_Base.cer"
 }
 
 # Places platform cert held in the test folder in the provisioners tcg folder
