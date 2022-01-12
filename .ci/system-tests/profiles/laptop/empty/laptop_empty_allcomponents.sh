@@ -5,5 +5,5 @@
 #
 ###############################################################
 pushd /opt/paccor/scripts > /dev/null
-cat "laptop_default_hw.json"
+cat "laptop_empty_hw.json"
 popd > /dev/null
