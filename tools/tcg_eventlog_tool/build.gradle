@@ -13,7 +13,6 @@ dependencies {
     compile project(':HIRS_Utils')
     compile libs.jcommander
     compile libs.commons_io
-    compile libs.log4j2
     compileOnly libs.checkstyle
     compileOnly libs.findbugs
     testCompile libs.testng
