@@ -71,13 +71,15 @@
         </a>
         <div class="aca-input-box-header">
             <form:form method="POST" action="${portal}/certificate-request/trust-chain/upload" enctype="multipart/form-data">
-                Import Trust Chain CA Certificates
+                Trust Chain CA Certificates
                     <my:file-chooser id="tc-editor" label="Import Trust Chain Certificates">
                         <input id="importFile" type="file" name="file" multiple="multiple" />
                     </my:file-chooser>
+                <a href="${portal}/certificate-request/trust-chain/bulk">
+                    <img src="${icons}/ic_file_download_black_24dp.png" title="Download All Trust Chain Certificates">
+                </a>
             </form:form>
         </div>
-        <br/>
         <br/>
         <div class="aca-data-table">
             <table id="trustChainTable" class="display" width="100%">

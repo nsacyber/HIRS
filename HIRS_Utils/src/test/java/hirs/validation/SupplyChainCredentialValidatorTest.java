@@ -2256,9 +2256,7 @@ public class SupplyChainCredentialValidatorTest {
                 .validateDeltaPlatformCredentialAttributes(delta1,
                         deviceInfoReport, base, chainCredentials);
         Assert.assertEquals(result.getAppStatus(), AppraisalStatus.Status.FAIL);
-        Assert.assertEquals(result.getMessage(),
-                "There are 1 unmatched components on the Platform Certificate:\n"
-                        + "COMPID=370101885;1");
+        Assert.assertEquals(result.getAdditionalInfo(), "COMPID=370101885;1");
     }
 
     /**
