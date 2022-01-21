@@ -1,11 +1,16 @@
 package hirs.data.persist;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import org.bouncycastle.util.Arrays;
 import org.hibernate.annotations.Type;
 
+import javax.persistence.Access;
+import javax.persistence.AccessType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.Table;
+import javax.xml.bind.annotation.XmlAccessType;
+import javax.xml.bind.annotation.XmlAccessorType;
+import javax.xml.bind.annotation.XmlRootElement;
 import java.util.Objects;
 import java.util.UUID;
 
@@ -14,17 +19,21 @@ import java.util.UUID;
  * Digest Value, Event Type, index, RIM Tagid
  */
 @Entity
-public class ReferenceDigestValue extends AbstractEntity {
+@Table(name = "ReferenceDigestValue")
+@XmlRootElement(name = "ReferenceDigestValue")
+@XmlAccessorType(XmlAccessType.FIELD)
+@Access(AccessType.FIELD)
+public class ReferenceDigestValue extends ArchivableEntity {
 
-    private static final Logger LOGGER = LogManager.getLogger(ReferenceDigestValue.class);
     @Type(type = "uuid-char")
     @Column
     private UUID baseRimId;
+    @Type(type = "uuid-char")
     @Column
     private UUID supportRimId;
-    @Column
+    @Column(nullable = false)
     private String manufacturer;
-    @Column
+    @Column(nullable = false)
     private String model;
     @Column(nullable = false)
     private int pcrIndex;
@@ -40,12 +49,12 @@ public class ReferenceDigestValue extends AbstractEntity {
     private boolean patched = false;
 
     /**
-     * Default Constructor.
+     * Default constructor necessary for Hibernate.
      */
-    public ReferenceDigestValue() {
+    protected ReferenceDigestValue() {
         super();
-        this.baseRimId = UUID.randomUUID();
-        this.supportRimId = UUID.randomUUID();
+        this.baseRimId = null;
+        this.supportRimId = null;
         this.manufacturer = "";
         this.model = "";
         this.pcrIndex = -1;
@@ -83,7 +92,7 @@ public class ReferenceDigestValue extends AbstractEntity {
         this.eventType = eventType;
         this.matchFail = matchFail;
         this.patched = patched;
-        this.contentBlob = contentBlob;
+        this.contentBlob = Arrays.clone(contentBlob);
     }
 
     /**
@@ -116,6 +125,38 @@ public class ReferenceDigestValue extends AbstractEntity {
      */
     public void setSupportRimId(final UUID supportRimId) {
         this.supportRimId = supportRimId;
+    }
+
+    /**
+     * Getter for the manufacturer value.
+     * @return the stored value
+     */
+    public String getManufacturer() {
+        return manufacturer;
+    }
+
+    /**
+     * Setter for the manufacturer value.
+     * @param manufacturer the value to store
+     */
+    public void setManufacturer(final String manufacturer) {
+        this.manufacturer = manufacturer;
+    }
+
+    /**
+     * Getter for the model value.
+     * @return the stored value
+     */
+    public String getModel() {
+        return model;
+    }
+
+    /**
+     * Setter for the model value.
+     * @param model the value to store
+     */
+    public void setModel(final String model) {
+        this.model = model;
     }
 
     /**
@@ -196,6 +237,24 @@ public class ReferenceDigestValue extends AbstractEntity {
      */
     public void setPatched(final boolean patched) {
         this.patched = patched;
+    }
+
+    /**
+     * Getter for the byte array of event values.
+     * @return a clone of the byte array
+     */
+    public byte[] getContentBlob() {
+        return contentBlob.clone();
+    }
+
+    /**
+     * Setter for the byte array of values.
+     * @param contentBlob non-null array.
+     */
+    public void setContentBlob(final byte[] contentBlob) {
+        if (contentBlob != null) {
+            this.contentBlob = contentBlob.clone();
+        }
     }
 
     @Override

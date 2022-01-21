@@ -1006,7 +1006,7 @@ public abstract class AbstractAttestationCertificateAuthority
                         rdr = referenceDigestManager.saveRecord(dbObj);
                     }  // right now this will not deal with updating
 
-                    if (this.referenceEventManager.getValuesByRecordId(rdr).isEmpty()) {
+                    if (this.referenceEventManager.getValuesByRimId(dbSupport).isEmpty()) {
                         try {
                             TCGEventLog logProcessor = new TCGEventLog(dbSupport.getRimBytes());
                             ReferenceDigestValue rdv;

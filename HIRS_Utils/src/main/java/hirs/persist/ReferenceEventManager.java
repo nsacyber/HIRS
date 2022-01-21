@@ -1,7 +1,9 @@
 package hirs.persist;
 
+import hirs.FilteredRecordsList;
 import hirs.data.persist.ReferenceDigestRecord;
 import hirs.data.persist.ReferenceDigestValue;
+import hirs.data.persist.ReferenceManifest;
 
 import java.util.List;
 
@@ -9,7 +11,7 @@ import java.util.List;
  * This class facilitates the persistence of {@link hirs.data.persist.ReferenceDigestValue}s
  * including storage, retrieval, and deletion.
  */
-public interface ReferenceEventManager {
+public interface ReferenceEventManager extends OrderedListQuerier<ReferenceDigestValue> {
     /**
      * Persists a new Reference Digest value.
      *
@@ -35,6 +37,31 @@ public interface ReferenceEventManager {
     ReferenceDigestValue getValueById(ReferenceDigestValue referenceDigestValue);
 
     /**
+     * Persists a new Reference Digest Value.
+     *
+     * @param manufacturer the string value to search for
+     * @return the persisted ReferenceDigestValue
+     */
+    List<ReferenceDigestValue> getValueByManufacturer(String manufacturer);
+
+    /**
+     * Persists a new Reference Digest.
+     *
+     * @param model the string value to search for
+     * @return the persisted ReferenceDigestValue
+     */
+    List<ReferenceDigestValue> getValueByModel(String model);
+
+    /**
+     * Persists a new Reference Digest.
+     *
+     * @param manufacturer the string value to search for
+     * @param model the string value to search for
+     * @return the persisted ReferenceDigestValue
+     */
+    List<ReferenceDigestValue> getValueByManufacturerModel(String manufacturer, String model);
+
+    /**
      * Persists a new Reference Digest value.
      *
      * @param referenceDigestRecord the ReferenceDigestRecord
@@ -45,10 +72,35 @@ public interface ReferenceEventManager {
     /**
      * Persists a new Reference Digest value.
      *
+     * @param referenceManifest the referenceManifest
+     * @return the persisted list of ReferenceDigestValue
+     */
+    List<ReferenceDigestValue> getValuesByRimId(ReferenceManifest referenceManifest);
+
+    /**
+     * Persists a new Reference Digest value.
+     *
      * @param eventType the event type to look for
      * @return the persisted list of ReferenceDigestValue
      */
     List<ReferenceDigestValue> getValueByEventType(String eventType);
+
+    /**
+     * Returns a list of all <code>ReferenceDigestValue</code>s that are ordered by a column
+     * and direction (ASC, DESC) that is provided by the user.  This method
+     * helps support the server-side processing in the JQuery DataTables.
+     *
+     * @param columnToOrder Column to be ordered
+     * @param ascending direction of sort
+     * @param firstResult starting point of first result in set
+     * @param maxResults total number we want returned for display in table
+     * @param search string of criteria to be matched to visible columns
+     *
+     * @return FilteredRecordsList object with fields for DataTables
+     */
+    FilteredRecordsList<ReferenceDigestValue> getOrderedDigestValueList(
+            String columnToOrder, boolean ascending, int firstResult,
+            int maxResults, String search);
 
     /**
      * Updates an existing ReferenceDigestRecord.

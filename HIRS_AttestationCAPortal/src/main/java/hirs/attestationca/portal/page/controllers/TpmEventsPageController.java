@@ -135,7 +135,7 @@ public class TpmEventsPageController
     @RequestMapping(value = "/list",
             produces = MediaType.APPLICATION_JSON_VALUE,
             method = RequestMethod.GET)
-    public DataTableResponse<ReferenceDigestRecord> getTableData(
+    public DataTableResponse<ReferenceDigestValue> getTableData(
             final DataTableInput input) {
         LOGGER.info("Handling request for summary list: " + input);
 
@@ -151,17 +151,14 @@ public class TpmEventsPageController
         };
 
         LOGGER.info("Querying with the following datatableinput: " + input.toString());
-        FilteredRecordsList<ReferenceDigestRecord> referenceDigestRecords
-                = OrderedListQueryDataTableAdapter.getOrderedList(
-                ReferenceDigestRecord.class,
-                referenceDigestManager,
+
+        FilteredRecordsList<ReferenceDigestValue> referenceDigestValues =
+                OrderedListQueryDataTableAdapter.getOrderedList(
+                ReferenceDigestValue.class,
+                referenceEventManager,
                 input, orderColumnName, criteriaModifier);
 
-//        FilteredRecordsList<HashMap<ReferenceDigestRecord, ReferenceDigestValue>>
-//                mappedRecordValues = mapRecordToValues(referenceDigestRecords);
-
-//        LOGGER.info("Returning list mapping: " + Arrays.toString(mappedRecordValues.toArray()));
-        return new DataTableResponse<>(referenceDigestRecords, input);
+        return new DataTableResponse<>(referenceDigestValues, input);
     }
 
     /**
