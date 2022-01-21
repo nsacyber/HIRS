@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<SoftwareIdentity xmlns="http://standards.iso.org/iso/19770/-2/2015/schema.xsd" xmlns:ns2="http://www.w3.org/2000/09/xmldsig#" corpus="false" name="Dell5580" patch="false" supplemental="false" tagId="hirs.swid.SwidTags.dell5580" tagVersion="1" version="0.1" versionScheme="multipartnumeric" xml:lang="en">
+  <Entity name="HIRS" regid="www.example.com" role="softwareCreator tagCreator"/>
+  <Link href="https://Example.com/support/ProductA/firmware/installfiles" rel="installationmedia"/>
+  <Meta xmlns:n8060="http://csrc.nist.gov/ns/swid/2015-extensions/1.0" xmlns:rim="https://trustedcomputinggroup.org/wp-content/uploads/TCG_RIM_Model" n8060:colloquialVersion="0.1" n8060:edition="0.1" n8060:product="Dell 5580" n8060:revision="0.1" rim:BindingSpec="PC Client RIM" rim:BindingSpecVersion="1.2" rim:platformManufacturerId="00201234" rim:platformManufacturerStr="Dell Inc." rim:platformModel="Latitude 5580" rim:rimLinkHash="88f21d8e44d4271149297404df91caf207130bfa116582408abd04ede6db7f51"/>
+  <Payload>
+    <Directory name="/boot/tcg/rim/support">
+      <File xmlns:SHA256="http://www.w3.org/2001/04/xmlenc#sha256" SHA256:hash="bc120b2d8752bc6eb228b5b433825d766183985cf02d7ab678210901a9730932" name="dell.5580.1.rimel" size="20113"/>
+    </Directory>
+  </Payload>
+  <Signature xmlns="http://www.w3.org/2000/09/xmldsig#">
+    <SignedInfo>
+      <CanonicalizationMethod Algorithm="http://www.w3.org/TR/2001/REC-xml-c14n-20010315"/>
+      <SignatureMethod Algorithm="http://www.w3.org/2001/04/xmldsig-more#rsa-sha256"/>
+      <Reference URI="">
+        <Transforms>
+          <Transform Algorithm="http://www.w3.org/2000/09/xmldsig#enveloped-signature"/>
+        </Transforms>
+        <DigestMethod Algorithm="http://www.w3.org/2001/04/xmlenc#sha256"/>
+        <DigestValue>JVPYXmpDVzZn+mHPqcPR0NaL0oSJ/24WP5Wsq+/22B8=</DigestValue>
+      </Reference>
+    </SignedInfo>
+    <SignatureValue>A1x+c+zbVwvdrmG9/r0LwOLXA0KjxxIgElrfStSX8Uv33vzaG9/S8YIsKlE/6O4dIBlkaKUvqamf
+53YOXtfkD2gzYPhNqIMlPbKXdLMhIrBRRkDzoYHbMRcIcJdGOFEeM/UNS2cxvK5vojPu8ODVde44
+TdyzS/TlTJXvkm7sx/50Xs3O0ZdrHA4mihYRrRCUaR5QCDmTGyzMIYY1aujF0NOYVm3+YssFsMkH
+4K5fEv/IomR5kmK68VEmC71krknIfhSw6K7y0rooWUuPMoiLOpjYT+SvykjBzJPsxPzKMULb1Vgy
+qe7XS9lxgt89U5wiIyNhsu6q4YqVebbO5aLpsQ==</SignatureValue>
+    <KeyInfo>
+      <KeyName>2fdeb8e7d030a2209daa01861a964fedecf2bcc1</KeyName>
+      <KeyValue>
+        <RSAKeyValue>
+          <Modulus>p3WVYaRJG7EABjbAdqDYZXFSTV1nHY9Ol9A5+W8t5xwBXBryZCGWxERGr5AryKWPxd+qzjj+cFpx
+xkM6N18jEhQIx/CEZePEJqpluBO5w2wTEOe7hqtMatqgDDMeDRxUuIpP8LGP00vh1wyDFFew90d9
+dvT3bcLvFh3a3ap9bTm6aBqPup5CXpzrwIU2wZfgkDytYVBm+8bHkMaUrgpNyM+5BAg2zl/Fqw0q
+otjaGr7PzbH+urCvaGbKLMPoWkVLIgAE8Qw98HTfoYSFHC7VYQySrzIinaOBFSgViR72kHemH2lW
+jDQeHiY0VIoPik/jVVIpjWe6zzeZ2S66Q/LmjQ==</Modulus>
+          <Exponent>AQAB</Exponent>
+        </RSAKeyValue>
+      </KeyValue>
+    </KeyInfo>
+  </Signature>
+</SoftwareIdentity>
