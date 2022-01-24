@@ -9,7 +9,6 @@ import hirs.data.persist.Device;
 import hirs.data.persist.DeviceInfoReport;
 import hirs.data.persist.EventLogMeasurements;
 import hirs.data.persist.PCRPolicy;
-import hirs.data.persist.ReferenceDigestRecord;
 import hirs.data.persist.ReferenceDigestValue;
 import hirs.data.persist.ReferenceManifest;
 import hirs.data.persist.SupplyChainPolicy;
@@ -390,7 +389,6 @@ public class SupplyChainValidationServiceImpl implements SupplyChainValidationSe
         BaseReferenceManifest baseReferenceManifest = null;
         ReferenceManifest supportReferenceManifest = null;
         ReferenceManifest measurement = null;
-        ReferenceDigestRecord digestRecord = null;
 
         baseReferenceManifests = BaseReferenceManifest.select(referenceManifestManager)
                 .byDeviceName(device.getDeviceInfo().getNetworkInfo().getHostname()).getRIMs();
@@ -528,7 +526,6 @@ public class SupplyChainValidationServiceImpl implements SupplyChainValidationSe
                         // vs baseline tcg event log
                         // find the measurement
                         TCGEventLog tcgMeasurementLog;
-                        digestRecord = this.referenceDigestManager.getRecord(manufacturer, model);
                         LinkedList<TpmPcrEvent> tpmPcrEvents = new LinkedList<>();
                         List<ReferenceDigestValue> eventValue;
                         HashMap<String, ReferenceDigestValue> eventValueMap = new HashMap<>();
@@ -536,7 +533,7 @@ public class SupplyChainValidationServiceImpl implements SupplyChainValidationSe
                             if (measurement.getPlatformManufacturer().equals(manufacturer)) {
                                 tcgMeasurementLog = new TCGEventLog(measurement.getRimBytes());
                                 eventValue = this.referenceEventManager
-                                        .getValuesByRecordId(digestRecord);
+                                        .getValuesByRimId(supportReferenceManifest);
                                 for (ReferenceDigestValue rdv : eventValue) {
                                     eventValueMap.put(rdv.getDigestValue(), rdv);
                                 }

@@ -17,12 +17,14 @@
     <jsp:body>
         <br/>
         <div class="aca-data-table">
-            <table id="tpmEventTable" class="display" width="100%">
+            <table id="digestValueTable" class="display" width="100%">
                 <thead>
                     <tr>
                         <th>Manufacturer</th>
                         <th>Model</th>
-                        <th>Support RIM</th>
+                        <th>Event Type</th>
+                        <th>PCR Index</th>
+                        <th>Digest Value</th>
                     </tr>
                 </thead>
             </table>
@@ -32,13 +34,25 @@
             $(document).ready(function() {
                 var url = pagePath +'/list';
                 var columns = [
-                        {data: 'manufacturer'},
-                        {data: 'model'},
-                        {data: 'supportRim'}
+                        {data: 'manufacturer',
+                            orderable: true,
+                            searchable:false},
+                        {data: 'model',
+                            orderable: false,
+                            searchable:false},
+                        {data: 'eventType',
+                            orderable: false,
+                            searchable:false,},
+                        {data: 'pcrIndex',
+                            orderable: true,
+                            searchable:false},
+                        {data: 'digestValue',
+                            orderable: false,
+                            searchable:false}
                     ];
 
                 //Set data tables
-                setDataTables("#tpmEventTable", url, columns);
+                setDataTables("#digestValueTable", url, columns);
             });
         </script>
     </jsp:body>

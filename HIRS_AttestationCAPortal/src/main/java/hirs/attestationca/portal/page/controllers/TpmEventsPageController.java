@@ -32,7 +32,6 @@ import org.springframework.web.servlet.ModelAndView;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 
@@ -45,7 +44,6 @@ public class TpmEventsPageController
         extends PageController<NoPageParams> {
 
     private static final String BIOS_RELEASE_DATE_FORMAT = "yyyy-MM-dd";
-    private static final String LOG_FILE_PATTERN = "([^\\s]+(\\.(?i)(rimpcr|rimel|bin|log))$)";
 
     private final BiosDateValidator biosValidator;
     private final ReferenceDigestManager referenceDigestManager;
@@ -137,7 +135,7 @@ public class TpmEventsPageController
     @RequestMapping(value = "/list",
             produces = MediaType.APPLICATION_JSON_VALUE,
             method = RequestMethod.GET)
-    public DataTableResponse<ReferenceDigestRecord> getTableData(
+    public DataTableResponse<ReferenceDigestValue> getTableData(
             final DataTableInput input) {
         LOGGER.info("Handling request for summary list: " + input);
 
@@ -153,18 +151,14 @@ public class TpmEventsPageController
         };
 
         LOGGER.info("Querying with the following datatableinput: " + input.toString());
-        FilteredRecordsList<ReferenceDigestRecord> referenceDigestRecords
-                = OrderedListQueryDataTableAdapter.getOrderedList(
-                ReferenceDigestRecord.class,
-                referenceDigestManager,
-                input, orderColumnName, criteriaModifier);
-        LOGGER.info("ReferenceDigestManager returned: "
-                + Arrays.toString(referenceDigestRecords.toArray()));
-        FilteredRecordsList<HashMap<ReferenceDigestRecord, ReferenceDigestValue>>
-                mappedRecordValues = mapRecordToValues(referenceDigestRecords);
 
-        LOGGER.info("Returning list mapping: " + Arrays.toString(mappedRecordValues.toArray()));
-        return new DataTableResponse<>(referenceDigestRecords, input);
+        FilteredRecordsList<ReferenceDigestValue> referenceDigestValues =
+                OrderedListQueryDataTableAdapter.getOrderedList(
+                ReferenceDigestValue.class,
+                referenceEventManager,
+                input, orderColumnName, criteriaModifier);
+
+        return new DataTableResponse<>(referenceDigestValues, input);
     }
 
     /**
