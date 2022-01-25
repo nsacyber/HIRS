@@ -487,7 +487,7 @@ public class CertificateRequestPageController extends PageController<NoPageParam
 
         try (ZipOutputStream zipOut = new ZipOutputStream(response.getOutputStream())) {
             // get all files
-            for (IssuedAttestationCertificate ic : IssuedAttestationCertificate
+            for (IssuedCertificate ic : IssuedCertificate
                     .select(certificateManager)
                     .getCertificates()) {
                 zipFileName = String.format("Issued_Certificates[%s].cer",

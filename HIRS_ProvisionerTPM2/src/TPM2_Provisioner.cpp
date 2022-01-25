@@ -69,7 +69,7 @@ int provision() {
 
     // if platformCredential is empty, not in TPM
     // pull from properties file
-    if (platformCredential.empty()) {
+//    if (platformCredential.empty()) {
         const std::string& cert_dir =
                     props.get(
                         "tcg.cert.dir",
