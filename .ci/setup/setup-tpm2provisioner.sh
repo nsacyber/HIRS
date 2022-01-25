@@ -19,6 +19,20 @@ function InstallProvisioner {
    popd
 }
 
+# use ibm tss to properly clear tpm pcr values
+function setTpmPcrValues {
+mkdir /ibmtss
+pushd /ibmtss
+  echo "Installing IBM TSS to set the TPM simulator intial values correctly..."
+  wget --no-check-certificate https://downloads.sourceforge.net/project/ibmtpm20tss/ibmtss1.5.0.tar.gz > /dev/null
+  tar -zxvf ibmtss1.5.0.tar.gz > /dev/null
+  cd utils
+   make -f makefiletpmc > /dev/null
+  cd ../utils
+   ./startup 
+popd
+}
+
 # Function to initialize the TPM 2.0 Emulator
 function InitTpm2Emulator {
    echo "===========Initializing TPM 2.0 Emulator...==========="
@@ -42,8 +56,11 @@ function InitTpm2Emulator {
    /ibmtpm/src/./tpm_server &
    echo "TPM Emulator started"
 
+   sleep 1
+   # Use the ibmtss to clear the PCR values (tpm2-abrmd will currupt PCR0)
+   setTpmPcrValues
    # Give tpm_server time to start and register on the DBus
-   sleep 2
+   sleep 1
 
    tpm2-abrmd -t socket &
    echo "TPM2-Abrmd started"
@@ -131,12 +148,15 @@ WaitForAca
 # Install packages
 InstallProvisioner
 
+# Test to see if provisioner config were set up
+echo "TPM2 Provisioner container running:"
+echo "Contents of /etc/hirs is $(ls -al /etc/hirs)";
+
 # Install TPM 2.0 Emulator
 InitTpm2Emulator
 
 # Update the hirs-site.config file
 UpdateHirsSiteConfigFile
-
 
 echo "TPM 2.0 Emulator NV RAM list"
 tpm2_nvlist

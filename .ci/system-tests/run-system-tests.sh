@@ -19,12 +19,12 @@ echo "********  Setting up for HIRS System Tests for TPM 2.0 ******** "
 # expand dmi files for mounting to the provisioner containers
 unzip -q .ci/system-tests/profiles/laptop/laptop_dmi.zip -d .ci/system-tests/profiles/laptop/
 # Start System Testing Docker Environment
-pushd .ci/docker
+pushd .ci/docker > /dev/null
 
 docker-compose -f docker-compose-system-test.yml up -d
 
-popd
-pushd .ci/system-tests
+popd > /dev/null
+pushd .ci/system-tests > /dev/null
 source sys_test_common.sh
 
 echo "ACA Container info: $(checkContainerStatus $aca_container)";
@@ -59,10 +59,10 @@ echo ""
 echo "End of System Tests for TPM 2.0, cleaning up..."
 echo ""
 # Clean up services and network
-popd
+popd > /dev/null
 pushd .ci/docker
 docker-compose -f docker-compose-system-test.yml down -v
-popd
+popd > /dev/null
 # Clean up dangling containers
 echo "Cleaning up dangling containers..."
 echo ""

@@ -61,7 +61,13 @@ docker exec $aca_container mysql -u root -e "use hirs_db; set foreign_key_checks
 
 # Upload Certs to the ACA DB
 uploadTrustedCerts() {
-  curl -k -s -F "file=@$issuerCert" https://${HIRS_ACA_PORTAL_IP}:8443/HIRS_AttestationCAPortal/portal/certificate-request/trust-chain/upload
+pushd ../setup/certs > /dev/null
+
+  curl -k -s -F "file=@ca.crt" https://${HIRS_ACA_PORTAL_IP}:8443/HIRS_AttestationCAPortal/portal/certificate-request/trust-chain/upload
+  curl -k -s -F "file=@RIMCaCert.pem" https://${HIRS_ACA_PORTAL_IP}:8443/HIRS_AttestationCAPortal/portal/certificate-request/trust-chain/upload
+  curl -k -s -F "file=@RimSignCert.pem" https://${HIRS_ACA_PORTAL_IP}:8443/HIRS_AttestationCAPortal/portal/certificate-request/trust-chain/upload
+
+popd > /dev/null
 }
 
 # provision_tpm2 takes one parameter which is the expected result of the provion: "pass" or "fail"
@@ -98,17 +104,11 @@ setPlatformCerts() {
   #docker exec $tpm2_container bash -c "find / -name oem_platform_v1_Base.cer"
 }
 
-# Places platform cert held in the test folder in the provisioners tcg folder
-# setRimBundle <profile> <test>
-setRimBundles() {
-  profile=$1
-  test=$2
-  docker exec $tpm2_container rm /boot/tcg/manifest/rim/*;
-  docker exec $tpm2_container rm /boot/tcg/manifest/swidtag/*;
-  docker exec $tpm2_container cp /HIRS/.ci/system-tests/$profile/$test/rims/* /boot/tcg/manifest/rim; 
-  docker exec $tpm2_container cp /HIRS/.ci/system-tests/$profile/$test/swidtags/* /boot/tcg/manifest/swidtag;
-  docker exec $tpm2_container ls /boot/tcg/manifest/rim/
-  docker exec $tpm2_container ls /boot/tcg/manifest/swidtag/
+# Places RIM files held in the test folder in the provisioners tcg folder
+# setRims <profile> <test>
+setRims() {
+docker exec $tpm2_container sh /HIRS/.ci/system-tests/scripts/rim_setup.sh $1 $2 
+#docker exec $tpm2_container bash -c "find / -name oem_platform_v1_Base.cer"
 }
 
 # Writes to the Action ouput, ACA log, and Provisioner Log
@@ -118,5 +118,5 @@ write_to_logs() {
   line=$1
   echo $line;
   docker exec $aca_container sh -c "echo '$line' >> /var/log/tomcat/HIRS_AttestationCA.log"
-  docker exec $tpm2_container sh -c "echo '$line' >> /var/log/hirs/provisioner/HIRS_provisionerTPM2.log"
+ # docker exec $tpm2_container sh -c "echo '$line' >> /var/log/hirs/provisioner/HIRS_provisionerTPM2.log"
 }
