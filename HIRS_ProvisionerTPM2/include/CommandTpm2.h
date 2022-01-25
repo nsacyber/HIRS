@@ -132,7 +132,6 @@ class CommandTpm2 {
             const hirs::pb::DeviceInfo& deviceInfo,
             const std::string& akPublicArea,
             const std::string& ekPublicArea,
-            const std::string& devIdPublicArea,
             const std::string& endorsementCredential = {},
             const std::vector<std::string>& platformCredentials = {});
 

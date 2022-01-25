@@ -406,14 +406,12 @@ IdentityClaim CommandTpm2::createIdentityClaim(
         const hirs::pb::DeviceInfo& deviceInfo,
         const string& akPublicArea,
         const string& ekPublicArea,
-        const string& devIdPublicArea,
         const string& endorsementCredential,
         const vector<string>& platformCredentials) {
     IdentityClaim identityClaim;
     identityClaim.set_allocated_dv(new hirs::pb::DeviceInfo(deviceInfo));
     identityClaim.set_ak_public_area(akPublicArea);
     identityClaim.set_ek_public_area(ekPublicArea);
-    identityClaim.set_dev_id_public_area(devIdPublicArea);
     if (endorsementCredential != "") {
         identityClaim.set_endorsement_credential(endorsementCredential);
     }
