@@ -336,27 +336,6 @@ void CommandTpm2::createAttestationKey() {
     LOGGER.info("AK created successfully");
 }
 
-void CommandTpm2::createDevIDKey() {
-    if (hasPersistentObject(kDefaultDevHandle)) {
-        LOGGER.info(string("Attestation key already exists at default address")
-                            + "\nFlushing key...");
-        flushPersistentObject(kDefaultDevHandle);
-    }
-
-    stringstream argsStream;
-    argsStream  << " -E " << kDefaultEkHandle
-                << " -k " << kDefaultDevHandle
-                << " -f " << kDefaultDevIdPubFilename
-                << " -n " << kDefaultDevNameFilename
-                << endl;
-
-    LOGGER.info("Running getpubak with arguments: "
-                    + argsStream.str());
-    runTpm2CommandWithRetry(kTpm2ToolsGetPubAkCommand, argsStream.str(),
-                                __LINE__);
-    LOGGER.info("DevID created successfully");
-}
-
 /**
  * Method to get the byte-encoded public key portion of the AK pair.
  * Assumes createAk has been called and default filenames were used.
@@ -375,30 +354,12 @@ string CommandTpm2::getAttestationKeyPublicArea() {
 }
 
 /**
- * Method to get the byte-encoded public key portion of the AK pair.
- * Assumes createAk has been called and default filenames were used.
- * Takes generated public data and name file and packages them into
- * a protobuf data structure for transmission.
- *
- * @return protobuf encoded Attestation Public Key Data
- */
-string CommandTpm2::getDevIdKeyPublicArea() {
-    LOGGER.info("Attempting to read DevID public area from file: "
-                + string(kDefaultDevIdPubFilename));
-    string binaryEncodedPublicArea = getPublicArea(kDefaultDevIdPubFilename);
-
-    LOGGER.info("Public area successfully read.");
-    return binaryEncodedPublicArea;
-}
-
-/**
  * Method to create identity claim to send to the Attestation Certificate
  * Authority (ACA).
  *
  * @param deviceInfo device specific info that can be verified
  * @param akPublicArea the public key area blob for the AK
  * @param ekPublicArea the public key area blob for the endorsement key
- * @param devIdPublicArea the public key area blob for the Dev ID key
  * @param endorsementCredential endorsement credential for verification
  * @param platformCredentials platform credentials for verification
  */

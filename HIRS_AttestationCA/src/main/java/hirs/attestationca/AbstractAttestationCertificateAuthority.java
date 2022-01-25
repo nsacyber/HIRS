@@ -587,7 +587,6 @@ public abstract class AbstractAttestationCertificateAuthority
 
             // Get attestation public key
             RSAPublicKey akPub = parsePublicKey(claim.getAkPublicArea().toByteArray());
-            //RSAPublicKey devPub = parsePublicKey(claim.getDevIdPublicArea().toByteArray());
 
             // Get Endorsement Credential if it exists or was uploaded
             EndorsementCredential endorsementCredential = parseEcFromIdentityClaim(claim, ekPub);

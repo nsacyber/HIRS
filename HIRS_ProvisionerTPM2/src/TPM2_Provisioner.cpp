@@ -58,9 +58,7 @@ int provision() {
     // get attestation key
     cout << "----> Creating attestation key" << endl;
     tpm2.createAttestationKey();
-//    tpm2.createDevIDKey();
     string akPublicArea = tpm2.getAttestationKeyPublicArea();
-    // string devPublicArea = tpm2.getDevIdKeyPublicArea();
 
     // get platform credential
     cout << "----> Collecting platform credential from TPM" << endl;
