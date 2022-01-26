@@ -8,6 +8,8 @@ profile=$1
 test=$2
 tcgDir="/boot/tcg"
 testDir="/HIRS/.ci/system-tests/profiles/$profile/$test"
+propFile="/etc/hirs/tcg_boot.properties";
+eventLog="$testDir"/"$profile"_"$test"_binary_bios_measurements
 
 mkdir -p $tcgDir/manifest/rim/;  # Create the platform cert folder if its not there
 rm -f $tcgDir/manifest/rim/*;   # clear out any previous data
@@ -18,8 +20,6 @@ rm -f $tcgDir/manifest/swidtag/*;   # clear out any previous data
 echo "Test is using RIM files from $profile : $test"
 
 # update tcg_boot.properties to use test specific binary_bios_measurement file
-eventLog="$testDir"/"$profile"_"$test"_binary_bios_measurements
-
 sed -i "s:tcg.event.file=.*:tcg.event.file=$eventLog:g" "$propFile"
 
 #echo "Contents of $propFile after sed is $(cat $propFile)";

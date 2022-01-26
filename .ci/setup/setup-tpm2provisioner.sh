@@ -8,7 +8,7 @@ pushd /  > /dev/null
 echo "Setting up TPM emulator for the TPM2 Provisioner"
 
 # Function to make and install TPM 2.0 Provisioner packages
-function InstallProvisioner {
+function installProvisioner {
    echo "===========Installing TPM 2.0 Provisioner Packages...==========="
    pushd /HIRS  > /dev/null
     echo "Building the HIRS Provisioner ..."
@@ -44,7 +44,7 @@ echo "tcg.event.file=/sys/kernel/security/tpm0/binary_bios_measurements" >> $pro
 }
 
 # Function to initialize the TPM 2.0 Emulator
-function InitTpm2Emulator {
+function initTpm2Emulator {
    echo "===========Initializing TPM 2.0 Emulator...==========="
 
    mkdir -p /var/run/dbus
@@ -113,7 +113,7 @@ function InitTpm2Emulator {
 }
 
 # Function to update the hirs-site.config file
-function UpdateHirsSiteConfigFile {
+function updateHirsSiteConfigFile {
    HIRS_SITE_CONFIG="/etc/hirs/hirs-site.config"
 
    echo ""
@@ -142,7 +142,7 @@ DEFAULT_SITE_CONFIG_FILE
    cat /etc/hirs/hirs-site.config
 }
 
-function WaitForAca {
+function waitForAca {
 # Wait for ACA to boot
 echo "Waiting for ACA to spin up at address ${HIRS_ACA_PORTAL_IP} on port ${HIRS_ACA_PORTAL_PORT} ..."
 until [ "`curl --silent --connect-timeout 1 -I -k https://${HIRS_ACA_PORTAL_IP}:${HIRS_ACA_PORTAL_PORT}/HIRS_AttestationCAPortal | grep '302 Found'`" != "" ]; do
@@ -153,10 +153,10 @@ echo "ACA is up!"
 }
 
 #Wait for the ACA to spin up, if it hasnt already
-WaitForAca
+waitForAca
 
 # Install packages
-InstallProvisioner
+installProvisioner
 
 # Test to see if provisioner config were set up
 echo "TPM2 Provisioner container running:"
@@ -168,10 +168,10 @@ echo "TPM2 Provisioner container running:"
 echo "Contents of /etc/hirs is $(ls -al /etc/hirs)";
 
 # Install TPM 2.0 Emulator
-InitTpm2Emulator
+initTpm2Emulator
 
 # Update the hirs-site.config file
-UpdateHirsSiteConfigFile
+updateHirsSiteConfigFile
 
 echo "TPM 2.0 Emulator NV RAM list"
 tpm2_nvlist
