@@ -25,6 +25,7 @@
                         <th>Event Type</th>
                         <th>PCR Index</th>
                         <th>Digest Value</th>
+                        <th>Base RIM</th>
                     </tr>
                 </thead>
             </table>
@@ -48,7 +49,14 @@
                             searchable:false},
                         {data: 'digestValue',
                             orderable: false,
-                            searchable:false}
+                            searchable:false},
+                        {data: 'baseRimId',
+                            orderable: false,
+                            searchable: false,
+                            render: function(data, type, full, meta) {
+                                return rimDetailsLink(full.baseRimId);
+                            }
+                        }
                     ];
 
                 //Set data tables
