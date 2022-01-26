@@ -114,7 +114,7 @@ docker exec $tpm2_container sh /HIRS/.ci/system-tests/container/rim_setup.sh $1 
 # Writes to the Action ouput, ACA log, and Provisioner Log
 # Used for marking the start of system tests and noting the result
 # write_to_logs <log statement>
-writeTologs() {
+writeToLogs() {
   line=$1
   echo $line;
   docker exec $aca_container sh -c "echo '$line' >> /var/log/tomcat/HIRS_AttestationCA.log"
