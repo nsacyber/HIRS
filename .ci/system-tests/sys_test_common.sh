@@ -73,7 +73,7 @@ popd > /dev/null
 # provision_tpm2 takes one parameter which is the expected result of the provion: "pass" or "fail"
 # updates totalTests and failedTests counts
 # provision_tpm2 <expected_results>
-provision_tpm2() {
+provisionTpm2() {
    expected_result=$1
    ((totalTests++))
    provisionOutput=$(docker exec $tpm2_container tpm_aca_provision);
@@ -114,7 +114,7 @@ docker exec $tpm2_container sh /HIRS/.ci/system-tests/container/rim_setup.sh $1 
 # Writes to the Action ouput, ACA log, and Provisioner Log
 # Used for marking the start of system tests and noting the result
 # write_to_logs <log statement>
-write_to_logs() {
+writeTologs() {
   line=$1
   echo $line;
   docker exec $aca_container sh -c "echo '$line' >> /var/log/tomcat/HIRS_AttestationCA.log"

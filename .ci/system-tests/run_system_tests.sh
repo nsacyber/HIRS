@@ -31,7 +31,7 @@ echo "ACA Container info: $(checkContainerStatus $aca_container)";
 echo "TPM2 Provisioner Container info: $(checkContainerStatus $tpm2_container)";
 
 # Install HIRS provioner and setup tpm2 emulator
-docker exec $tpm2_container /HIRS/.ci/setup/setup-tpm2provisioner.sh
+docker exec $tpm2_container /HIRS/.ci/setup/setup_tpm2provisioner.sh
 
 # ********* Execute system tests here, add tests as needed ************* 
 echo "******** Setup Complete Begin HIRS System Tests ******** "
@@ -53,7 +53,6 @@ docker exec $tpm2_container chmod -R 777 /HIRS/logs/;
 # Display container log
 echo ""
 echo "===========HIRS Tests and Log collection complete ==========="
-#docker logs $tpm2_container_id 
 
 echo ""
 echo "End of System Tests for TPM 2.0, cleaning up..."
