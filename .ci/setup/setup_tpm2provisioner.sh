@@ -4,23 +4,47 @@
 #
 #########################################################################################
 set -e
-pushd /
+pushd /  > /dev/null
 echo "Setting up TPM emulator for the TPM2 Provisioner"
 
 # Function to make and install TPM 2.0 Provisioner packages
-function InstallProvisioner {
+function installProvisioner {
    echo "===========Installing TPM 2.0 Provisioner Packages...==========="
-   pushd /HIRS
+   pushd /HIRS  > /dev/null
     echo "Building the HIRS Provisioner ..."
     mkdir -p /HIRS/logs/provisioner/
     sh package/package.centos.sh &> /HIRS/logs/provisioner/provisioner_build.log
     echo "Installing the HIRS Provisioner ..."
-   yum install -y package/rpm/RPMS/x86_64/HIRS_Provisioner_TPM_2_0*.el7.x86_64.rpm
-   popd
+    yum install -y package/rpm/RPMS/x86_64/HIRS_Provisioner_TPM_2_0*.el7.x86_64.rpm
+  popd  > /dev/null
+}
+
+# use ibm tss to properly clear tpm pcr values
+function setTpmPcrValues {
+  mkdir /ibmtss
+  pushd /ibmtss  > /dev/null
+    echo "Installing IBM TSS to set the TPM simulator intial values correctly..."
+    wget --no-check-certificate https://downloads.sourceforge.net/project/ibmtpm20tss/ibmtss1.5.0.tar.gz > /dev/null
+    tar -zxvf ibmtss1.5.0.tar.gz > /dev/null
+    cd utils
+    make -f makefiletpmc > /dev/null
+    cd ../utils
+    ./startup
+  popd  > /dev/null
+}
+
+# Set default values tcg_boot_properties
+function setTcgProperties {
+  propFile="/etc/hirs/tcg_boot.properties";
+
+  echo "tcg.rim.dir=/boot/tcg/manifest/rim/" > $propFile;
+  echo "tcg.swidtag.dir=/boot/tcg/manifest/swidtag/" >> $propFile;
+  echo "tcg.cert.dir=/boot/tcg/cert/platform/" >> $propFile;
+  echo "tcg.event.file=/sys/kernel/security/tpm0/binary_bios_measurements" >> $propFile;
 }
 
 # Function to initialize the TPM 2.0 Emulator
-function InitTpm2Emulator {
+function initTpm2Emulator {
    echo "===========Initializing TPM 2.0 Emulator...==========="
 
    mkdir -p /var/run/dbus
@@ -42,8 +66,11 @@ function InitTpm2Emulator {
    /ibmtpm/src/./tpm_server &
    echo "TPM Emulator started"
 
+   sleep 1
+   # Use the ibmtss to clear the PCR values (tpm2-abrmd will currupt PCR0)
+   setTpmPcrValues
    # Give tpm_server time to start and register on the DBus
-   sleep 2
+   sleep 1
 
    tpm2-abrmd -t socket &
    echo "TPM2-Abrmd started"
@@ -86,7 +113,7 @@ function InitTpm2Emulator {
 }
 
 # Function to update the hirs-site.config file
-function UpdateHirsSiteConfigFile {
+function updateHirsSiteConfigFile {
    HIRS_SITE_CONFIG="/etc/hirs/hirs-site.config"
 
    echo ""
@@ -115,28 +142,31 @@ DEFAULT_SITE_CONFIG_FILE
    cat /etc/hirs/hirs-site.config
 }
 
-function WaitForAca {
+function waitForAca {
 # Wait for ACA to boot
-echo "Waiting for ACA to spin up at address ${HIRS_ACA_PORTAL_IP} on port ${HIRS_ACA_PORTAL_PORT} ..."
-until [ "`curl --silent --connect-timeout 1 -I -k https://${HIRS_ACA_PORTAL_IP}:${HIRS_ACA_PORTAL_PORT}/HIRS_AttestationCAPortal | grep '302 Found'`" != "" ]; do
-  sleep 5;
+  echo "Waiting for ACA to spin up at address ${HIRS_ACA_PORTAL_IP} on port ${HIRS_ACA_PORTAL_PORT} ..."
+  until [ "`curl --silent --connect-timeout 1 -I -k https://${HIRS_ACA_PORTAL_IP}:${HIRS_ACA_PORTAL_PORT}/HIRS_AttestationCAPortal | grep '302 Found'`" != "" ]; do
+    sleep 1;
   #echo "Checking on the ACA..."
-done
-echo "ACA is up!"
+  done
+  echo "ACA is up!"
 }
 
 #Wait for the ACA to spin up, if it hasnt already
-WaitForAca
+waitForAca
 
 # Install packages
-InstallProvisioner
+installProvisioner
+
+# set location of tcg artifacts
+setTcgProperties
+#echo "Contents of /etc/hirs is $(ls -al /etc/hirs)";
 
 # Install TPM 2.0 Emulator
-InitTpm2Emulator
+initTpm2Emulator
 
 # Update the hirs-site.config file
-UpdateHirsSiteConfigFile
-
+updateHirsSiteConfigFile
 
 echo "TPM 2.0 Emulator NV RAM list"
 tpm2_nvlist
@@ -144,4 +174,4 @@ tpm2_nvlist
 echo ""
 echo "===========HIRS ACA TPM 2.0 Provisioner Setup Complete!==========="
 
-popd
+popd > /dev/null
