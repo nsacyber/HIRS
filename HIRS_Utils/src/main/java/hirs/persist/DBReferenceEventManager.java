@@ -1,6 +1,5 @@
 package hirs.persist;
 
-import hirs.FilteredRecordsList;
 import hirs.data.persist.BaseReferenceManifest;
 import hirs.data.persist.ReferenceDigestRecord;
 import hirs.data.persist.ReferenceDigestValue;
@@ -8,16 +7,15 @@ import hirs.data.persist.ReferenceManifest;
 import hirs.data.persist.SupportReferenceManifest;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.hibernate.Criteria;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.Transaction;
 import org.hibernate.criterion.Restrictions;
 
 import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 
 /**
@@ -88,6 +86,18 @@ public class DBReferenceEventManager  extends DBManager<ReferenceDigestValue>
             throw new DBManagerException(msg, ex);
         }
         return dbRecord;
+    }
+
+    @Override
+    public final Set<ReferenceDigestValue> getEventList() throws DeviceManagerException {
+        LOGGER.debug("getting ReferenceDigestValue list");
+
+        try {
+            final List<ReferenceDigestValue> events = super.getList(ReferenceDigestValue.class);
+            return new HashSet<>(events);
+        } catch (DBManagerException e) {
+            throw new DeviceManagerException(e);
+        }
     }
 
     @Override
@@ -256,53 +266,6 @@ public class DBReferenceEventManager  extends DBManager<ReferenceDigestValue>
             throw new RuntimeException(dbMEx);
         }
         return dbDigestValues;
-    }
-
-    /**
-     * Returns a list of all <code>Device</code>s that are ordered by a column
-     * and direction (ASC, DESC) that is provided by the user.  This method
-     * helps support the server-side processing in the JQuery DataTables.
-     *
-     * @param columnToOrder Column to be ordered
-     * @param ascending direction of sort
-     * @param firstResult starting point of first result in set
-     * @param maxResults total number we want returned for display in table
-     * @param search string of criteria to be matched to visible columns
-     *
-     * @return FilteredRecordsList object with fields for DataTables
-     */
-    @Override
-    public final FilteredRecordsList<ReferenceDigestValue> getOrderedDigestValueList(
-            final String columnToOrder,
-            final boolean ascending, final int firstResult,
-            final int maxResults, final String search) {
-        if (columnToOrder == null) {
-            LOGGER.debug("null object argument");
-            throw new NullPointerException("object");
-        }
-
-        //Maps object types and their ability to be searched by Hibernate
-        //without modification
-        Map<String, Boolean> searchableColumns = new HashMap<>();
-        searchableColumns.put("name", true);
-        searchableColumns.put("group.name", true);
-        searchableColumns.put("last_report_timestamp", false);
-
-        CriteriaModifier modifier = new CriteriaModifier() {
-            @Override
-            public void modify(final Criteria criteria) {
-                criteria.createAlias("valueGroup", "group");
-            }
-        };
-
-        try {
-            LOGGER.debug("Getting baseline list");
-            return super.getOrderedList(ReferenceDigestValue.class, columnToOrder, ascending,
-                    firstResult,
-                    maxResults, search, searchableColumns, modifier);
-        } catch (DBManagerException e) {
-            throw new AlertManagerException(e);
-        }
     }
 
     @Override

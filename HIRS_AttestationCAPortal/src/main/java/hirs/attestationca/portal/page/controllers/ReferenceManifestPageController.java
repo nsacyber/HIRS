@@ -10,14 +10,17 @@ import hirs.attestationca.portal.page.PageController;
 import hirs.attestationca.portal.page.PageMessages;
 import hirs.attestationca.portal.page.params.NoPageParams;
 import hirs.data.persist.BaseReferenceManifest;
-import hirs.data.persist.EventLogMeasurements;
+import hirs.data.persist.ReferenceDigestValue;
 import hirs.data.persist.ReferenceManifest;
 import hirs.data.persist.SupportReferenceManifest;
 import hirs.data.persist.SwidResource;
 import hirs.data.persist.certificate.Certificate;
 import hirs.persist.CriteriaModifier;
 import hirs.persist.DBManagerException;
+import hirs.persist.ReferenceEventManager;
 import hirs.persist.ReferenceManifestManager;
+import hirs.tpm.eventlog.TCGEventLog;
+import hirs.tpm.eventlog.TpmPcrEvent;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.codec.binary.Hex;
 import org.apache.logging.log4j.LogManager;
@@ -43,6 +46,7 @@ import java.io.IOException;
 import java.net.URISyntaxException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.security.cert.CertificateException;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -70,6 +74,7 @@ public class ReferenceManifestPageController
 
     private final BiosDateValidator biosValidator;
     private final ReferenceManifestManager referenceManifestManager;
+    private final ReferenceEventManager referenceEventManager;
     private static final Logger LOGGER
             = LogManager.getLogger(ReferenceManifestPageController.class);
 
@@ -119,12 +124,15 @@ public class ReferenceManifestPageController
      * Constructor providing the Page's display and routing specification.
      *
      * @param referenceManifestManager the reference manifest manager
+     * @param referenceEventManager this is the reference event manager
      */
     @Autowired
     public ReferenceManifestPageController(
-            final ReferenceManifestManager referenceManifestManager) {
+            final ReferenceManifestManager referenceManifestManager,
+            final ReferenceEventManager referenceEventManager) {
         super(Page.REFERENCE_MANIFESTS);
         this.referenceManifestManager = referenceManifestManager;
+        this.referenceEventManager = referenceEventManager;
         this.biosValidator = new BiosDateValidator(BIOS_RELEASE_DATE_FORMAT);
     }
 
@@ -173,6 +181,29 @@ public class ReferenceManifestPageController
                         ReferenceManifest.class,
                         referenceManifestManager,
                         input, orderColumnName, criteriaModifier);
+
+        SupportReferenceManifest support;
+        Set<ReferenceDigestValue> events;
+        for (ReferenceManifest rim : records) {
+            if (rim instanceof SupportReferenceManifest) {
+                support = (SupportReferenceManifest) rim;
+                events = ReferenceDigestValue
+                        .select(referenceEventManager)
+                        .bySupportRim(support.getId()).getDigestValues();
+                for (ReferenceDigestValue rdv : events) {
+                    if (support.getPlatformManufacturer() != null) {
+                        rdv.setManufacturer(support.getPlatformManufacturer());
+                    }
+                    if (support.getPlatformModel() != null) {
+                        rdv.setModel(support.getPlatformModel());
+                    }
+                    if (support.getAssociatedRim() != null) {
+                        rdv.setBaseRimId(support.getAssociatedRim());
+                    }
+                    referenceEventManager.updateRecord(rdv);
+                }
+            }
+        }
 
         LOGGER.debug("Returning list of size: " + records.size());
         return new DataTableResponse<>(records, input);
@@ -248,6 +279,8 @@ public class ReferenceManifestPageController
                                 support.setPlatformModel(base.getPlatformModel());
                                 support.setTagId(base.getTagId());
                                 support.setUpdated(true);
+
+                                // add in update code for the events based on support id
                                 try {
                                     referenceManifestManager.update(support);
                                 } catch (DBManagerException dbmEx) {
@@ -545,7 +578,7 @@ public class ReferenceManifestPageController
         try {
             // save the new certificate if no match is found
             if (existingManifest == null) {
-                referenceManifestManager.save(referenceManifest);
+                saveTpmEvents(referenceManifestManager.save(referenceManifest));
 
                 final String successMsg = String.format("RIM successfully uploaded (%s): ",
                         fileName);
@@ -567,6 +600,7 @@ public class ReferenceManifestPageController
                 existingManifest.restore();
                 existingManifest.resetCreateTime();
                 referenceManifestManager.update(existingManifest);
+                saveTpmEvents(existingManifest);
 
                 final String successMsg
                         = String.format("Pre-existing RIM found and unarchived (%s): ", fileName);
@@ -578,6 +612,47 @@ public class ReferenceManifestPageController
                     + "archive, but failed to unarchive it (%s): ", fileName);
             messages.addError(failMessage + dbmEx.getMessage());
             LOGGER.error(failMessage, dbmEx);
+        }
+    }
+
+    private void saveTpmEvents(final ReferenceManifest referenceManifest) {
+        SupportReferenceManifest dbSupport;
+        String manufacturer;
+        String model;
+        if (referenceManifest instanceof SupportReferenceManifest) {
+            dbSupport = (SupportReferenceManifest) referenceManifest;
+        } else {
+            return;
+        }
+        TCGEventLog logProcessor = null;
+        if (dbSupport.getPlatformManufacturer() == null) {
+            manufacturer = "";
+        } else {
+            manufacturer = dbSupport.getPlatformManufacturer();
+        }
+
+        if (dbSupport.getPlatformModel() == null) {
+            model = "";
+        } else {
+            model = dbSupport.getPlatformModel();
+        }
+        try {
+            logProcessor = new TCGEventLog(dbSupport.getRimBytes());
+            ReferenceDigestValue rdv;
+            for (TpmPcrEvent tpe : logProcessor.getEventList()) {
+                rdv = new ReferenceDigestValue(dbSupport.getAssociatedRim(),
+                        dbSupport.getId(), manufacturer,
+                        model, tpe.getPcrIndex(),
+                        tpe.getEventDigestStr(), tpe.getEventTypeStr(),
+                        false, false, tpe.getEventContent());
+                this.referenceEventManager.saveValue(rdv);
+            }
+        } catch (CertificateException e) {
+            e.printStackTrace();
+        } catch (NoSuchAlgorithmException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
         }
     }
 }

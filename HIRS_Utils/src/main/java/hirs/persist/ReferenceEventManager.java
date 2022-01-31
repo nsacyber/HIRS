@@ -1,11 +1,11 @@
 package hirs.persist;
 
-import hirs.FilteredRecordsList;
 import hirs.data.persist.ReferenceDigestRecord;
 import hirs.data.persist.ReferenceDigestValue;
 import hirs.data.persist.ReferenceManifest;
 
 import java.util.List;
+import java.util.Set;
 
 /**
  * This class facilitates the persistence of {@link hirs.data.persist.ReferenceDigestValue}s
@@ -90,17 +90,9 @@ public interface ReferenceEventManager extends OrderedListQuerier<ReferenceDiges
      * and direction (ASC, DESC) that is provided by the user.  This method
      * helps support the server-side processing in the JQuery DataTables.
      *
-     * @param columnToOrder Column to be ordered
-     * @param ascending direction of sort
-     * @param firstResult starting point of first result in set
-     * @param maxResults total number we want returned for display in table
-     * @param search string of criteria to be matched to visible columns
-     *
      * @return FilteredRecordsList object with fields for DataTables
      */
-    FilteredRecordsList<ReferenceDigestValue> getOrderedDigestValueList(
-            String columnToOrder, boolean ascending, int firstResult,
-            int maxResults, String search);
+    Set<ReferenceDigestValue> getEventList();
 
     /**
      * Updates an existing ReferenceDigestRecord.
