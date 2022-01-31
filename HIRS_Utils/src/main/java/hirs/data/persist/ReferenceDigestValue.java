@@ -1,5 +1,7 @@
 package hirs.data.persist;
 
+import hirs.persist.ReferenceEventManager;
+import hirs.persist.ReferenceEventSelector;
 import org.bouncycastle.util.Arrays;
 import org.hibernate.annotations.Type;
 
@@ -49,6 +51,67 @@ public class ReferenceDigestValue extends ArchivableEntity {
     private boolean patched = false;
 
     /**
+     * This class enables the retrieval of ReferenceDigestValue by their attributes.
+     */
+    public static class Selector extends ReferenceEventSelector<ReferenceDigestValue> {
+        /**
+         * Construct a new ReferenceEventSelector that will
+         * use the given (@link ReferenceEventManager}
+         * to retrieve one or may ReferenceDigestValue.
+         *
+         * @param referenceEventManager the reference event manager to be used to retrieve
+         * reference event.
+         */
+        public Selector(final ReferenceEventManager referenceEventManager) {
+            super(referenceEventManager);
+        }
+
+        /**
+         * Specify the base rim id that rims must have to be considered
+         * as matching.
+         * @param baseRimId identifier for the support rim
+         * @return this instance
+         */
+        public Selector byBaseRim(final UUID baseRimId) {
+            setFieldValue("baseRimId", baseRimId);
+            return this;
+        }
+
+        /**
+         * Specify the support rim id that rims must have to be considered
+         * as matching.
+         * @param supportRimId identifier for the support rim
+         * @return this instance
+         */
+        public Selector bySupportRim(final UUID supportRimId) {
+            setFieldValue("supportRimId", supportRimId);
+            return this;
+        }
+
+        /**
+         * Specify the platform manufacturer that rims must have to be considered
+         * as matching.
+         * @param manufacturer string for the manufacturer
+         * @return this instance
+         */
+        public Selector byManufacturer(final String manufacturer) {
+            setFieldValue("manufacturer", manufacturer);
+            return this;
+        }
+
+        /**
+         * Specify the platform model that rims must have to be considered
+         * as matching.
+         * @param model string for the model
+         * @return this instance
+         */
+        public Selector byModel(final String model) {
+            setFieldValue("model", model);
+            return this;
+        }
+    }
+
+    /**
      * Default constructor necessary for Hibernate.
      */
     protected ReferenceDigestValue() {
@@ -93,6 +156,17 @@ public class ReferenceDigestValue extends ArchivableEntity {
         this.matchFail = matchFail;
         this.patched = patched;
         this.contentBlob = Arrays.clone(contentBlob);
+    }
+
+    /**
+     * Get a Selector for use in retrieving ReferenceDigestValue.
+     *
+     * @param eventManager the ReferenceEventManager to be used to retrieve
+     * persisted tpm events
+     * @return a Selector instance to use for retrieving tpm events
+     */
+    public static Selector select(final ReferenceEventManager eventManager) {
+        return new Selector(eventManager);
     }
 
     /**
@@ -275,7 +349,7 @@ public class ReferenceDigestValue extends ArchivableEntity {
 
     @Override
     public int hashCode() {
-        int result = Objects.hash(pcrIndex, digestValue, baseRimId, supportRimId,
+        int result = Objects.hash(pcrIndex, digestValue, manufacturer, model,
                 eventType, matchFail, patched);
         return result;
     }
@@ -285,7 +359,7 @@ public class ReferenceDigestValue extends ArchivableEntity {
      * @return a string
      */
     public String toString() {
-        return String.format("ReferenceDigestValue: {%d, %s, %s, %b}",
-                pcrIndex, digestValue, eventType, matchFail);
+        return String.format("ReferenceDigestValue: {%s, %d, %s, %s, %b}",
+                model, pcrIndex, digestValue, eventType, matchFail);
     }
 }
