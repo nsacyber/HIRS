@@ -25,7 +25,7 @@ cp -f $allCompScript /opt/paccor/scripts/allcomponents.sh;
 # Step 2: Copy allcomponents json file to the paccor/scripts folder if there is one
 # Use the default if test does not have a test specific file.
 
-allCompJson=/HIRS/.ci/system-tests/profiles/$profile/$test/$hwlist /opt/paccor/scripts/$hwlist ;
+allCompJson=/HIRS/.ci/system-tests/profiles/$profile/$test/$hwlist;
 if [ ! -f "$allCompJson" ]; then
       allCompJson=/HIRS/.ci/system-tests/profiles/"$profile"/default/"$profile"_default_hw.json
 fi
