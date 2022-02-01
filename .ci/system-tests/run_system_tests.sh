@@ -37,6 +37,8 @@ docker exec $tpm2_container /HIRS/.ci/setup/setup_tpm2provisioner.sh
 echo "******** Setup Complete Begin HIRS System Tests ******** "
 
 source aca_policy_tests.sh
+source platform_cert_tests.sh
+
 
 echo "******** HIRS System Tests Complete ******** "
 

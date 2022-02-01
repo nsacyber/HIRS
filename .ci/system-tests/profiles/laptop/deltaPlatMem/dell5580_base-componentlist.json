@@ -1,0 +1,49 @@
+{
+    
+    "PLATFORM": {
+        "PLATFORMMANUFACTURERSTR": "Dell Inc.","PLATFORMMODEL": "Latitude 5580","PLATFORMVERSION": "Not Specified","PLATFORMSERIAL": "56LMWD2"
+    },
+    "COMPONENTS": [
+        {
+             "COMPONENTCLASS": {
+        "COMPONENTCLASSREGISTRY": "2.23.133.18.3.1",
+        "COMPONENTCLASSVALUE": "00020001"
+    },"MANUFACTURER": "Dell Inc.","MODEL": "10","SERIAL": "56LMWD2"
+        },
+        {
+             "COMPONENTCLASS": {
+        "COMPONENTCLASSREGISTRY": "2.23.133.18.3.1",
+        "COMPONENTCLASSVALUE": "00030003"
+    },"MANUFACTURER": "Dell Inc.","MODEL": "08T986","FIELDREPLACEABLE": "true","SERIAL": "/56LMWD2/TW320707A30298/","REVISION": "A00"
+        },
+        {
+             "COMPONENTCLASS": {
+        "COMPONENTCLASSREGISTRY": "2.23.133.18.3.1",
+        "COMPONENTCLASSVALUE": "00130003"
+    },"MANUFACTURER": "Dell Inc.","MODEL": "Not Specified","REVISION": "1.5.3"
+        },
+       {
+            "COMPONENTCLASS": {
+       "COMPONENTCLASSREGISTRY": "2.23.133.18.3.1",
+       "COMPONENTCLASSVALUE": "00010002"
+   },"MANUFACTURER": "Intel(R) Corporation","MODEL": "198","FIELDREPLACEABLE": "true","SERIAL": "To Be Filled By O.E.M.","REVISION": "Intel(R) Core(TM) i7-7820HQ CPU @ 2.90GHz"
+       },
+       {
+            "COMPONENTCLASS": {
+       "COMPONENTCLASSREGISTRY": "2.23.133.18.3.1",
+       "COMPONENTCLASSVALUE": "00060001"
+   },"MANUFACTURER": "80AD000080AD","MODEL": "HMA81GS6AFR8N-UH","FIELDREPLACEABLE": "true","SERIAL": "29AC2764","REVISION": "01172200"
+       }
+    ],
+    "PROPERTIES": [
+        {
+            "NAME": "uname -r",
+            "VALUE": "4.14.165-133.209.amzn2.x86_64"
+        },
+        {
+            "NAME": "OS Release",
+            "VALUE": "CentOS Linux 7 (Core)"
+        }
+    ]
+}
+
