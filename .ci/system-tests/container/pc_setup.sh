@@ -17,7 +17,7 @@ echo "Test is using platform cert(s) from $profile : $test"
 # Use the default if test does not have a test specific file.
 
 allCompScript=/HIRS/.ci/system-tests/profiles/$profile/$test/$compscript
-if [ ! -f "$allCompFile" ]; then
+if [ ! -f "$allCompScript" ]; then
   allCompScript=/HIRS/.ci/system-tests/profiles/"$profile"/default/"$profile"_default_allcomponents.sh
 fi
 cp -f $allCompScript /opt/paccor/scripts/allcomponents.sh;
