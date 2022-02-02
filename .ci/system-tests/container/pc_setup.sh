@@ -1,15 +1,17 @@
 #!/bin/bash
 #########################################################################################
-#   Setup for platform certificate tests
-#
+#   Setup for platform certificates for testing
+#   Copies platform certs (Base and Delta) to the tcg directory
 #########################################################################################
 
 profile=$1
 test=$2
 compscript="$profile"_"$test"_allcomponents.sh
 hwlist="$profile"_"$test"_hw.json
-mkdir -p /boot/tcg/cert/platform/;  # Create the platform cert folder if its not there
-rm -f /boot/tcg/cert/platform/*;   # clear out any previous data
+# Current TCG folder for platform certs, likely to change with release of the next FIM specification
+tcgDir=/boot/tcg/cert/platform/
+mkdir -p $tcgDir;  # Create the platform cert folder if its not there
+rm -f $tcgDir*;    # Clear out any previous data
 
 echo "Test is using platform cert(s) from $profile : $test"
 
@@ -33,10 +35,10 @@ cp  -f $allCompJson /opt/paccor/scripts/$hwlist ;
 
 # Step 3: Copy the platform cert to tcg folder on boot drive
 pushd /HIRS/.ci/system-tests/profiles/$profile/$test/platformcerts/ > /dev/null
-#skip copy of platform cert if .gitigore exists (empty profile)
+# Skip copy of platform cert if .gitigore exists (empty profile)
 if [[ ! -f ".gitignore" ]]; then
     for cert in * ; do
-          cp -f $cert /boot/tcg/cert/platform/$cert;
+          cp -f $cert $tcgDir$cert;
     done
 fi
 
