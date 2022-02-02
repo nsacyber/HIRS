@@ -24,6 +24,12 @@ uploadTrustedCerts
 setPlatformCerts "laptop" "platCertLight"
 provisionTpm2 "pass"
 
+writeToLogs "### ACA PLATFORM CERTIFICATE TEST 3: Test a Delta Platform Certificate that has a wrong a memory component ###"
+clearAcaDb
+uploadTrustedCerts
+setPlatformCerts "laptop" "badDeltaMem"
+provisionTpm2 "fail"
+
 #  Process Test Results, any single failure will send back a failed result.
 if [[ $failedTests != 0 ]]; then
     export TEST_STATUS=1;
