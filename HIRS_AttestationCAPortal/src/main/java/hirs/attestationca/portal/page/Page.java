@@ -59,7 +59,7 @@ public enum Page {
      */
     POLICY("Policy", "ic_subtitles"),
     /**
-     * Page to display TPM event table.
+     * Page to display RIM event digest table.
      */
     RIM_DATABASE("RIM Database", null, "first"),
     /**

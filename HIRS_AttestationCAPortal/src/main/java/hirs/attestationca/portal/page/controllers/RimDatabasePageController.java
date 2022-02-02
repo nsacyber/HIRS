@@ -8,7 +8,6 @@ import hirs.attestationca.portal.datatables.OrderedListQueryDataTableAdapter;
 import hirs.attestationca.portal.page.Page;
 import hirs.attestationca.portal.page.PageController;
 import hirs.attestationca.portal.page.params.NoPageParams;
-import hirs.data.persist.ReferenceDigestRecord;
 import hirs.data.persist.ReferenceDigestValue;
 import hirs.data.persist.certificate.Certificate;
 import hirs.persist.CriteriaModifier;
@@ -32,8 +31,6 @@ import org.springframework.web.servlet.ModelAndView;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.HashMap;
-import java.util.List;
 
 /**
  * Controller for the TPM Events page.
@@ -159,33 +156,5 @@ public class RimDatabasePageController
                 input, orderColumnName, criteriaModifier);
 
         return new DataTableResponse<>(referenceDigestValues, input);
-    }
-
-    /**
-     * This method returns a mapping of ReferenceDigestRecord to ReferenceDigestValue objects.
-     *
-     * @param records the list of ReferenceDigestRecords
-     * @return the collection of HashMap mappings
-     */
-    private FilteredRecordsList<HashMap<ReferenceDigestRecord, ReferenceDigestValue>>
-    mapRecordToValues(final FilteredRecordsList<ReferenceDigestRecord> records) {
-
-        LOGGER.info("Mapping RDRs and RDVs");
-        FilteredRecordsList<HashMap<ReferenceDigestRecord, ReferenceDigestValue>> filteredList =
-                new FilteredRecordsList<>();
-        HashMap<ReferenceDigestRecord, ReferenceDigestValue> mappingRecordToValues =
-                new HashMap<>();
-        for (ReferenceDigestRecord record : records) {
-            List<ReferenceDigestValue> values = referenceEventManager.getValuesByRecordId(record);
-            if (values != null && !values.isEmpty()) {
-                mappingRecordToValues.put(record, values.get(0));
-            } else {
-                mappingRecordToValues.put(record, null);
-            }
-            filteredList.add(new HashMap<>(mappingRecordToValues));
-            mappingRecordToValues.clear();
-        }
-
-        return filteredList;
     }
 }
