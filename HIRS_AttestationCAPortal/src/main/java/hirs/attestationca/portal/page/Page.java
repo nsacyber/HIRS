@@ -61,7 +61,7 @@ public enum Page {
     /**
      * Page to display TPM event table.
      */
-    TPM_EVENTS("TPM Events", null, "first"),
+    RIM_DATABASE("RIM Database", null, "first"),
     /**
      * Help page.
      */

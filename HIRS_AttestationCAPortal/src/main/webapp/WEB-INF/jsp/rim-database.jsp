@@ -12,7 +12,7 @@
     <jsp:attribute name="script">
         <script type="text/javascript" src="${lib}/jquery.spring-friendly/jquery.spring-friendly.js"></script>
     </jsp:attribute>
-    <jsp:attribute name="pageHeaderTitle">TPM Events</jsp:attribute>
+    <jsp:attribute name="pageHeaderTitle">RIM Database</jsp:attribute>
 
     <jsp:body>
         <br/>
