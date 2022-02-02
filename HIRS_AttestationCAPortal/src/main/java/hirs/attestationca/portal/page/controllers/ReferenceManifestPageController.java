@@ -183,14 +183,13 @@ public class ReferenceManifestPageController
                         input, orderColumnName, criteriaModifier);
 
         SupportReferenceManifest support;
-        Set<ReferenceDigestValue> events;
+        List<ReferenceDigestValue> events;
         for (ReferenceManifest rim : records) {
             if (rim instanceof SupportReferenceManifest) {
                 support = (SupportReferenceManifest) rim;
-                events = ReferenceDigestValue
-                        .select(referenceEventManager)
-                        .bySupportRim(support.getId()).getDigestValues();
+                events = referenceEventManager.getValuesByRimId(support);
                 for (ReferenceDigestValue rdv : events) {
+                    // the selector isn't giving me what I want
                     if (support.getPlatformManufacturer() != null) {
                         rdv.setManufacturer(support.getPlatformManufacturer());
                     }
