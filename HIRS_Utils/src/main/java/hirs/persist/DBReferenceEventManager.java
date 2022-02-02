@@ -229,7 +229,8 @@ public class DBReferenceEventManager  extends DBManager<ReferenceDigestValue>
         UUID uuid = referenceManifest.getId();
         UUID rdvUuid = UUID.randomUUID();
         try {
-            List<ReferenceDigestValue> dbTempList = super.getList(ReferenceDigestValue.class);
+            final List<ReferenceDigestValue> dbTempList
+                    = super.getList(ReferenceDigestValue.class);
             for (ReferenceDigestValue rdv : dbTempList) {
                 if (referenceManifest instanceof BaseReferenceManifest) {
                     rdvUuid = rdv.getBaseRimId();
@@ -256,7 +257,8 @@ public class DBReferenceEventManager  extends DBManager<ReferenceDigestValue>
 
         List<ReferenceDigestValue> dbDigestValues = new ArrayList<>();
         try {
-            List<ReferenceDigestValue> dbTempList = super.getList(ReferenceDigestValue.class);
+            final List<ReferenceDigestValue> dbTempList
+                    = super.getList(ReferenceDigestValue.class);
             for (ReferenceDigestValue rdv : dbTempList) {
                 if (rdv.getEventType().equals(eventType)) {
                     dbDigestValues.add(rdv);
