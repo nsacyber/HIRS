@@ -61,7 +61,7 @@ public enum Page {
     /**
      * Page that manages Attestation CA Policy.
      */
-    POLICY("Policy", "ic_subtitles"),
+    RIM_DATABASE("RIM Database", null, "first"),
     /**
      * Help page.
      */

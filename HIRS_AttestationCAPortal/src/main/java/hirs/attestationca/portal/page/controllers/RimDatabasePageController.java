@@ -40,8 +40,8 @@ import java.text.SimpleDateFormat;
  * Controller for the TPM Events page.
  */
 @Controller
-@RequestMapping("/tpm-events")
-public class TpmEventsPageController
+@RequestMapping("/rim-database")
+public class RimDatabasePageController
         extends PageController<NoPageParams> {
 
     private static final String BIOS_RELEASE_DATE_FORMAT = "yyyy-MM-dd";
@@ -51,7 +51,7 @@ public class TpmEventsPageController
     private final ReferenceDigestManager referenceDigestManager;
     private final ReferenceEventManager referenceEventManager;
     private static final Logger LOGGER
-            = LogManager.getLogger(TpmEventsPageController.class);
+            = LogManager.getLogger(RimDatabasePageController.class);
 
     /**
      * This class was created for the purposes of avoiding findbugs message: As
@@ -103,12 +103,10 @@ public class TpmEventsPageController
      * @param referenceEventManager  the referenceEventManager object
      */
     @Autowired
-    public TpmEventsPageController(
-            final DBReferenceManifestManager referenceManifestManager,
+    public RimDatabasePageController(
             final DBReferenceDigestManager referenceDigestManager,
             final DBReferenceEventManager referenceEventManager) {
-        super(Page.TPM_EVENTS);
-        this.referenceManifestManager = referenceManifestManager;
+        super(Page.RIM_DATABASE);
         this.referenceDigestManager = referenceDigestManager;
         this.referenceEventManager = referenceEventManager;
         this.biosValidator = new BiosDateValidator(BIOS_RELEASE_DATE_FORMAT);
