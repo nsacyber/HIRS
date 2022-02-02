@@ -12,11 +12,15 @@ failedTests=0;
 # Note that the aca_policy_tests have already run several Platform Certificate system tests
 
 writeToLogs "### ACA PLATFORM CERTIFICATE TEST 1: Test a delta Platform Certificate that adds a new memory component ###"
+clearAcaDb
+uploadTrustedCerts
 setPolicyEkPc
 setPlatformCerts "laptop" "deltaPlatMem"
 provisionTpm2 "pass"
 
 writeToLogs "### ACA PLATFORM CERTIFICATE TEST 2: Test a Platform Certificate that is missing a memory component ###"
+clearAcaDb
+uploadTrustedCerts
 setPlatformCerts "laptop" "platCertLight"
 provisionTpm2 "pass"
 
