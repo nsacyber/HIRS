@@ -9,7 +9,7 @@ test=$2
 tcgDir="/boot/tcg"
 propFile="/etc/hirs/tcg_boot.properties";
 profileDir="/HIRS/.ci/system-tests/profiles/$profile"
-defaultDir="$profile/default"
+defaultDir="$profileDir/default"
 testDir="/HIRS/.ci/system-tests/profiles/$profile/$test"
 eventLog="$testDir"/"$profile"_"$test"_binary_bios_measurements
 swidDir="$testDir/swidtags"
@@ -33,6 +33,7 @@ if [[ ! -f "$eventLog" ]]; then
     eventLog="$defaultDir"/"$profile"_default_binary_bios_measurements
 fi    
 sed -i "s:tcg.event.file=.*:tcg.event.file=$eventLog:g" "$propFile"
+echo "eventLog was $eventLog"
 
 # Step 2: Copy Base RIM files to the TCG folder
 #      a: See if test specific swidtag folder exists, if not use the defualt folder
@@ -59,15 +60,16 @@ pushd $rimDir > /dev/null
   fi
 popd > /dev/null
 
-#  echo "Contents of tcg swidtag folder $tcgDir/manifest/swidtag/ : $(ls $tcgDir/manifest/swidtag/)"
-#  echo "Contents of tcg rim folder tcgDir/manifest/rim/: $(ls $tcgDir/manifest/rim/)"
+  echo "Contents of tcg swidtag folder $tcgDir/manifest/swidtag/ : $(ls $tcgDir/manifest/swidtag/)"
+  echo "Contents of tcg rim folder tcgDir/manifest/rim/: $(ls $tcgDir/manifest/rim/)"
 
 #Step 4, run the setpcr script to make the TPM emulator hold values that correspond the binary_bios_measurement file
 #     a: Check if a test specific setpcr.sh file exists. If not use the profiles default script
 if [[ ! -f $pcrScript ]]; then
-    pcrScript="$testDir/"$profile"_default_setpcrs.sh"
+    pcrScript="$profileDir/default/"$profile"_default_setpcrs.sh"
 fi
 sh $pcrScript;
+echo "PCR script was $pcrScript"
 #tpm2_pcrlist -g sha256 
 
 # Done with rim_setup
