@@ -57,7 +57,7 @@ public enum Page {
     /**
      * Page to display RIM event digest table.
      */
-    TPM_EVENTS("RIM Database", "ic_important_devices", "first"),
+    RIM_DATABASE("RIM Database", "ic_important_devices", "first"),
     /**
      * Page that manages Attestation CA Policy.
      */
