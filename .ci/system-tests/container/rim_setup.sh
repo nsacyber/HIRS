@@ -7,34 +7,50 @@
 profile=$1
 test=$2
 tcgDir="/boot/tcg"
-testDir="/HIRS/.ci/system-tests/profiles/$profile/$test"
 propFile="/etc/hirs/tcg_boot.properties";
+profileDir="/HIRS/.ci/system-tests/profiles/$profile"
+defaultDir="$profile/default"
+testDir="/HIRS/.ci/system-tests/profiles/$profile/$test"
 eventLog="$testDir"/"$profile"_"$test"_binary_bios_measurements
+swidDir="$testDir/swidtags"
+rimDir="$testDir/rims"
+pcrScript="$testDir/"$profile"_"$test"_setpcrs.sh"
 
+echo "Test is using RIM files from $profile : $test"
+
+# Make sure TCG defined RIM folders exist and are cleared out
 mkdir -p $tcgDir/manifest/rim/;  # Create the platform cert folder if its not there
-rm -f $tcgDir/manifest/rim/*;   # clear out any previous data
+rm -f $tcgDir/manifest/rim/*;    # clear out any previous data
 
 mkdir -p $tcgDir/manifest/swidtag/;  # Create the platform cert folder if its not there
 rm -f $tcgDir/manifest/swidtag/*;   # clear out any previous data
 
-echo "Test is using RIM files from $profile : $test"
+# Step 1: Update the tcg_boot.properties to use test specific binary_bios_measurement file
+#      a: if file does not exist in the test folder then use the default measurement file
+#      b: change the property file to point to the the test file
 
-# update tcg_boot.properties to use test specific binary_bios_measurement file
+if [[ ! -f "$eventLog" ]]; then
+    eventLog="$defaultDir"/"$profile"_default_binary_bios_measurements
+fi    
 sed -i "s:tcg.event.file=.*:tcg.event.file=$eventLog:g" "$propFile"
 
-#echo "Contents of $propFile after sed is $(cat $propFile)";
-
 # Step 2: Copy Base RIM files to the TCG folder
-pushd $testDir/swidtags/ > /dev/null
-
+#      a: See if test specific swidtag folder exists, if not use the defualt folder
+if [[ ! -d $swidDir ]]; then
+    swidDir=$defaultDir/swidtags;
+fi
+pushd $swidDir > /dev/null
   if [[ ! -f ".gitignore" ]]; then
     for swidtag in * ; do
           cp -f $swidtag $tcgDir/manifest/swidtag/$swidtag;
     done
   fi
 popd > /dev/null
-# Step 3: Copy Support RIM files to the TCG folder
-pushd $testDir/rims/ > /dev/null
+# Step 3: Copy Support RIM files to the TCG folder in the same mannor
+if [[ ! -d $rimDir ]]; then 
+    rimDir=$defaultDir/rims;
+fi
+pushd $rimDir > /dev/null
 
   if [[ ! -f ".gitignore" ]]; then
     for rim in * ; do
@@ -43,11 +59,15 @@ pushd $testDir/rims/ > /dev/null
   fi
 popd > /dev/null
 
-#  echo "Contents of tcg swidtag folder $tcgDir/manifest/swidtag/ : $(ls $tcgDir/manifest/swidtag/)"
-#  echo "Contents of tcg rim folder tcgDir/manifest/rim/: $(ls $tcgDir/manifest/rim/)"
+  echo "Contents of tcg swidtag folder $tcgDir/manifest/swidtag/ : $(ls $tcgDir/manifest/swidtag/)"
+  echo "Contents of tcg rim folder tcgDir/manifest/rim/: $(ls $tcgDir/manifest/rim/)"
 
 #Step 4, run the setpcr script to make the TPM emulator hold values that correspond the binary_bios_measurement file
-sh $testDir/"$profile"_"$test"_setpcrs.sh
-#tpm2_pcrlist -g sha256 
+#     a: Check if a test specific setpcr.sh file exists. If not use the profiles default script
+if [[ ! -f $pcrScript ]]; then
+    pcrScript="$testDir/"$profile"_default_setpcrs.sh"
+fi
+sh $pcrScript;
+tpm2_pcrlist -g sha256 
 
-# Done with rim_setup 
+# Done with rim_setup
