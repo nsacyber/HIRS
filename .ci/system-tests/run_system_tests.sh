@@ -38,6 +38,7 @@ echo "******** Setup Complete Begin HIRS System Tests ******** "
 
 source aca_policy_tests.sh
 source platform_cert_tests.sh
+source rim_system_tests.sh
 
 
 echo "******** HIRS System Tests Complete ******** "
