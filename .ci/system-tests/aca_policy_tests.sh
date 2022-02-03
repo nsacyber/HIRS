@@ -8,7 +8,7 @@ totalTests=0;
 failedTests=0;
 
 # Start ACA Policy Tests
-# provision_tpm takes 1 parameter (the expected result): "pass" or "fail"
+# provisionTpm2 takes 1 parameter (the expected result): "pass" or "fail"
 
 writeToLogs "### ACA POLICY TEST 1: Test ACA default policy  ###"
 setPlatformCerts "laptop" "empty"
