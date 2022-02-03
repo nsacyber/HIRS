@@ -9,12 +9,16 @@ import hirs.attestationca.portal.page.Page;
 import hirs.attestationca.portal.page.PageController;
 import hirs.attestationca.portal.page.params.NoPageParams;
 import hirs.data.persist.ReferenceDigestValue;
+import hirs.data.persist.SupportReferenceManifest;
 import hirs.data.persist.certificate.Certificate;
 import hirs.persist.CriteriaModifier;
+import hirs.persist.DBManagerException;
 import hirs.persist.DBReferenceDigestManager;
 import hirs.persist.DBReferenceEventManager;
+import hirs.persist.DBReferenceManifestManager;
 import hirs.persist.ReferenceDigestManager;
 import hirs.persist.ReferenceEventManager;
+import hirs.persist.ReferenceManifestManager;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.hibernate.Criteria;
@@ -43,6 +47,7 @@ public class TpmEventsPageController
     private static final String BIOS_RELEASE_DATE_FORMAT = "yyyy-MM-dd";
 
     private final BiosDateValidator biosValidator;
+    private final ReferenceManifestManager referenceManifestManager;
     private final ReferenceDigestManager referenceDigestManager;
     private final ReferenceEventManager referenceEventManager;
     private static final Logger LOGGER
@@ -93,14 +98,17 @@ public class TpmEventsPageController
     /**
      * Constructor providing the Page's display and routing specification.
      *
+     * @param referenceManifestManager the ReferenceManifestManager object
      * @param referenceDigestManager the ReferenceDigestManager object
      * @param referenceEventManager  the referenceEventManager object
      */
     @Autowired
     public TpmEventsPageController(
+            final DBReferenceManifestManager referenceManifestManager,
             final DBReferenceDigestManager referenceDigestManager,
             final DBReferenceEventManager referenceEventManager) {
         super(Page.TPM_EVENTS);
+        this.referenceManifestManager = referenceManifestManager;
         this.referenceDigestManager = referenceDigestManager;
         this.referenceEventManager = referenceEventManager;
         this.biosValidator = new BiosDateValidator(BIOS_RELEASE_DATE_FORMAT);
@@ -154,6 +162,24 @@ public class TpmEventsPageController
                 ReferenceDigestValue.class,
                 referenceEventManager,
                 input, orderColumnName, criteriaModifier);
+
+        SupportReferenceManifest support;
+        for (ReferenceDigestValue rdv : referenceDigestValues) {
+            // We are updating the base rim ID field if necessary and
+            if (rdv.getBaseRimId() == null) {
+                support = SupportReferenceManifest.select(referenceManifestManager)
+                        .byEntityId(rdv.getSupportRimId()).getRIM();
+                if (support != null) {
+                    rdv.setBaseRimId(support.getAssociatedRim());
+                    try {
+                        referenceEventManager.updateRecord(rdv);
+                    } catch (DBManagerException e) {
+                        LOGGER.error("Failed to update TPM Event with Base RIM ID");
+                        LOGGER.error(rdv);
+                    }
+                }
+            }
+        }
 
         return new DataTableResponse<>(referenceDigestValues, input);
     }
