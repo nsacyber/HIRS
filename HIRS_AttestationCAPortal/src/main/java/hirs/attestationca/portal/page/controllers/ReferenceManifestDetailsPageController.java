@@ -117,9 +117,6 @@ public class ReferenceManifestDetailsPageController
                 LOGGER.error(uuidError, iaEx);
             } catch (Exception ioEx) {
                 LOGGER.error(ioEx);
-                for (StackTraceElement ste : ioEx.getStackTrace()) {
-                    LOGGER.error(ste.toString());
-                }
             }
             if (data.isEmpty()) {
                 String notFoundMessage = "Unable to find RIM with ID: " + params.getId();
