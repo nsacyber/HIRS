@@ -24,8 +24,8 @@ function setTpmPcrValues {
   mkdir /ibmtss
   pushd /ibmtss  > /dev/null
     echo "Installing IBM TSS to set the TPM simulator intial values correctly..."
-    wget --no-check-certificate https://downloads.sourceforge.net/project/ibmtpm20tss/ibmtss1.5.0.tar.gz > /dev/null
-    tar -zxvf ibmtss1.5.0.tar.gz > /dev/null
+    wget --no-check-certificate https://downloads.sourceforge.net/project/ibmtpm20tss/ibmtss1.6.0.tar.gz > /dev/null
+    tar -zxvf ibmtss1.6.0.tar.gz > /dev/null
     cd utils
     make -f makefiletpmc > /dev/null
     cd ../utils

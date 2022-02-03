@@ -64,12 +64,19 @@ popd > /dev/null
   echo "Contents of tcg rim folder tcgDir/manifest/rim/: $(ls $tcgDir/manifest/rim/)"
 
 #Step 4, run the setpcr script to make the TPM emulator hold values that correspond the binary_bios_measurement file
-#     a: Check if a test specific setpcr.sh file exists. If not use the profiles default script
+#     a: Clear the TPM PCR registers vi a call to the tss clear 
+#     b: Check if a test specific setpcr.sh file exists. If not use the profiles default script
+pushd /ibmtss/utils/
+echo "accessing the ibmtss"
+./pcrreset -ha 16
+echo "attemping to clear PCRs"
+popd
+
 if [[ ! -f $pcrScript ]]; then
     pcrScript="$profileDir/default/"$profile"_default_setpcrs.sh"
 fi
 sh $pcrScript;
 echo "PCR script was $pcrScript"
-#tpm2_pcrlist -g sha256 
+tpm2_pcrlist -g sha256 
 
 # Done with rim_setup
