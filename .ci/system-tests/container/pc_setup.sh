@@ -6,8 +6,14 @@
 
 profile=$1
 test=$2
+tcgDir="/boot/tcg"
 compscript="$profile"_"$test"_allcomponents.sh
 hwlist="$profile"_"$test"_hw.json
+testDir="/HIRS/.ci/system-tests/profiles/$profile/$test"
+pcDir=$testDir/platformcerts
+profileDir="/HIRS/.ci/system-tests/profiles/$profile"
+
+
 # Current TCG folder for platform certs, likely to change with release of the next FIM specification
 tcgDir=/boot/tcg/cert/platform/
 mkdir -p $tcgDir;  # Create the platform cert folder if its not there
@@ -34,7 +40,11 @@ fi
 cp  -f $allCompJson /opt/paccor/scripts/$hwlist ;
 
 # Step 3: Copy the platform cert to tcg folder on boot drive
-pushd /HIRS/.ci/system-tests/profiles/$profile/$test/platformcerts/ > /dev/null
+#      a: See if test specific swidtag folder exists, if not use the defualt folder
+if [[ ! -d $pcDir ]]; then
+    pcDir=$profileDir/default/platformcerts;
+fi
+pushd $pcDir > /dev/null
 # Skip copy of platform cert if .gitigore exists (empty profile)
 if [[ ! -f ".gitignore" ]]; then
     for cert in * ; do
