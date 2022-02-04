@@ -16,6 +16,8 @@ swidDir="$testDir/swidtags"
 rimDir="$testDir/rims"
 pcrScript="$testDir/"$profile"_"$test"_setpcrs.sh"
 
+source /HIRS/.ci/setup/tpm2_common.sh
+
 echo "Test is using RIM files from $profile : $test"
 
 # Make sure TCG defined RIM folders exist and are cleared out
@@ -69,9 +71,8 @@ popd > /dev/null
 pushd /ibmtss/utils/
 echo "clearing the PCR values"
 pkill -f "tpm2-abrmd"
-./pcrreset -ha 1 0
-/ibmtpm/src/./tpm_server &
-tpm2-abrmd -t socket &
+initTpm2Emulator >> /dev/null
+
 echo "TPM simulator cleared"
 popd
 
