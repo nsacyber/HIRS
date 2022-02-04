@@ -72,7 +72,7 @@ function initTpm2Emulator {
    # Give tpm_server time to start and register on the DBus
    sleep 1
 
-   tpm2-abrmd -t socket &
+   tpm2-abrmd -t  &
    echo "TPM2-Abrmd started"
 
    # Give ABRMD time to start and register on the DBus
