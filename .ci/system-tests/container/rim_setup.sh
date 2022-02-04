@@ -67,11 +67,12 @@ popd > /dev/null
 #     a: Clear the TPM PCR registers vi a call to the tss clear 
 #     b: Check if a test specific setpcr.sh file exists. If not use the profiles default script
 pushd /ibmtss/utils/
-echo "restarting the TPM simulator to reset the PCR values"
-# ./pcrreset -ha 16
-./shutdown
-./powerup
-echo "TPM simulator restarted"
+echo "clearing the PCR values"
+pkill -f "tpm2-abrmd"
+./pcrreset -ha 1 0
+/ibmtpm/src/./tpm_server &
+tpm2-abrmd -t socket &
+echo "TPM simulator cleared"
 popd
 
 if [[ ! -f $pcrScript ]]; then
