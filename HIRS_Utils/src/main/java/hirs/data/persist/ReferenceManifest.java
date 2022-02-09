@@ -68,7 +68,7 @@ public abstract class ReferenceManifest extends ArchivableEntity {
 
     private static final Logger LOGGER = LogManager.getLogger(ReferenceManifest.class);
 
-    @Column(columnDefinition = "blob", nullable = false)
+    @Column(columnDefinition = "mediumblob", nullable = false)
     @JsonIgnore
     private byte[] rimBytes;
     @Column(nullable = false)
