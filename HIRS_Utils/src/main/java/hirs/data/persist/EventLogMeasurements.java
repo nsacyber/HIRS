@@ -62,6 +62,17 @@ public class EventLogMeasurements extends ReferenceManifest {
         }
 
         /**
+         * Specify the platform model that rims must have to be considered
+         * as matching.
+         * @param model string for the model
+         * @return this instance
+         */
+        public Selector byModel(final String model) {
+            setFieldValue(PLATFORM_MODEL, model);
+            return this;
+        }
+
+        /**
          * Specify the device name that rims must have to be considered
          * as matching.
          * @param deviceName string for the deviceName

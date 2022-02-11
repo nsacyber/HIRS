@@ -393,10 +393,11 @@ public class SupplyChainValidationServiceImpl implements SupplyChainValidationSe
         ReferenceDigestRecord digestRecord = null;
 
         baseReferenceManifests = BaseReferenceManifest.select(referenceManifestManager)
-                .byDeviceName(device.getDeviceInfo().getNetworkInfo().getHostname()).getRIMs();
+                .byModel(model).getRIMs();
 
         for (BaseReferenceManifest bRim : baseReferenceManifests) {
-            if (!bRim.isSwidSupplemental() && !bRim.isSwidPatch()) {
+            if (bRim.getPlatformManufacturer().equals(manufacturer)
+                    && !bRim.isSwidSupplemental() && !bRim.isSwidPatch()) {
                 baseReferenceManifest = bRim;
             }
         }
@@ -408,6 +409,11 @@ public class SupplyChainValidationServiceImpl implements SupplyChainValidationSe
         } else {
             measurement = EventLogMeasurements.select(referenceManifestManager)
                     .byHexDecHash(baseReferenceManifest.getEventLogHash()).getRIM();
+
+            if (measurement == null) {
+                measurement = EventLogMeasurements.select(referenceManifestManager)
+                        .byModel(baseReferenceManifest.getPlatformModel()).getRIM();
+            }
         }
 
         if (measurement == null) {
