@@ -389,7 +389,7 @@ public class SupplyChainValidationServiceImpl implements SupplyChainValidationSe
         Set<BaseReferenceManifest> baseReferenceManifests = null;
         BaseReferenceManifest baseReferenceManifest = null;
         ReferenceManifest supportReferenceManifest = null;
-        ReferenceManifest measurement = null;
+        EventLogMeasurements measurement = null;
         ReferenceDigestRecord digestRecord = null;
 
         baseReferenceManifests = BaseReferenceManifest.select(referenceManifestManager)
@@ -581,9 +581,10 @@ public class SupplyChainValidationServiceImpl implements SupplyChainValidationSe
         } else {
             fwStatus = new AppraisalStatus(FAIL, String.format("Firmware Validation failed: "
                     + "%s for %s can not be found", failedString, manufacturer));
-            EventLogMeasurements eventLog = (EventLogMeasurements) measurement;
-            eventLog.setOverallValidationResult(fwStatus.getAppStatus());
-            this.referenceManifestManager.update(eventLog);
+            if (measurement != null) {
+                measurement.setOverallValidationResult(fwStatus.getAppStatus());
+                this.referenceManifestManager.update(measurement);
+            }
         }
 
         return buildValidationRecord(SupplyChainValidation.ValidationType.FIRMWARE,
