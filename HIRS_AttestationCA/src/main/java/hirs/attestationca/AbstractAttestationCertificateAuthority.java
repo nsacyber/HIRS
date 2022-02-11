@@ -950,11 +950,20 @@ public abstract class AbstractAttestationCertificateAuthority
                         this.referenceManifestManager.update(rim);
                     }
                 }
+
+                for (BaseReferenceManifest baseRim : BaseReferenceManifest
+                        .select(referenceManifestManager).getRIMs()) {
+                    if (baseRim.getPlatformManufacturer().equals(dv.getHw().getManufacturer())
+                            && baseRim.getPlatformModel().equals(dv.getHw().getProductName())) {
+                        baseRim.setEventLogHash(temp.getHexDecHash());
+                        this.referenceManifestManager.update(baseRim);
+                    }
+                }
             } catch (IOException ioEx) {
                 LOG.error(ioEx);
             }
         } else {
-            LOG.warn(String.format("Device did not send bios measurement log...",
+            LOG.warn(String.format("%s did not send bios measurement log...",
                     dv.getNw().getHostname()));
         }
 
