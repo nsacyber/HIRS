@@ -479,7 +479,7 @@ public class SupplyChainValidationServiceImpl implements SupplyChainValidationSe
 
             if (passed && supportReferenceManifest == null) {
                 fwStatus = new AppraisalStatus(FAIL,
-                        "Support Reference Integrity Manifest can not be found\n");
+                        "Support Reference Integrity Manifest can not be found");
                 passed = false;
             }
 
