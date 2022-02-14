@@ -15,6 +15,8 @@
     <jsp:attribute name="pageHeaderTitle">RIM Database</jsp:attribute>
 
     <jsp:body>
+        <my:details-viewer id="content-blob-viewer" label="Event Content">
+        </my:details-viewer>
         <br/>
         <div class="aca-data-table">
             <table id="digestValueTable" class="display" width="100%">
@@ -25,7 +27,9 @@
                         <th>Event Type</th>
                         <th>PCR Index</th>
                         <th>Digest Value</th>
+                        <th>Details</th>
                         <th>Base RIM</th>
+                        <th>Support RIM</th>
                     </tr>
                 </thead>
             </table>
@@ -37,25 +41,35 @@
                 var columns = [
                         {data: 'manufacturer',
                             orderable: true,
-                            searchable:false},
+                            searchable: false},
                         {data: 'model',
                             orderable: false,
-                            searchable:false},
+                            searchable: false},
                         {data: 'eventType',
                             orderable: false,
-                            searchable:false,},
+                            searchable: false,},
                         {data: 'pcrIndex',
                             orderable: true,
-                            searchable:false},
+                            searchable: false},
                         {data: 'digestValue',
                             orderable: false,
-                            searchable:false},
+                            searchable: false},
+                        {data: 'contentString',
+                            orderable: false,
+                            searchable: false},
                         {data: 'baseRimId',
                             orderable: false,
                             searchable: false,
                             render: function(data, type, full, meta) {
                                 return rimDetailsLink(full.baseRimId);
                             }
+                        },
+                        {data: 'supportRimId',
+                             orderable: false,
+                             searchable: false,
+                             render: function(data, type, full, meta) {
+                                 return rimDetailsLink(full.supportRimId);
+                             }
                         }
                     ];
 
