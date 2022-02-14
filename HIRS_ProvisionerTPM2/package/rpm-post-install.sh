@@ -48,15 +48,12 @@ SWIDTAG_FILE_LOCATION="$TCG_DIRECTORY/manifest/swidtag/"
 CREDENTIALS_LOCATION="$TCG_DIRECTORY/cert/platform/"
 BINARY_BIOS_MEASUREMENTS="/sys/kernel/security/tpm0/binary_bios_measurements"
 
-touch "$TCG_TEMP_FILE"
-echo "tcg.rim.dir=$RIM_FILE_LOCATION" > "$TCG_TEMP_FILE"
-echo "tcg.swidtag.dir=$SWIDTAG_FILE_LOCATION" >> "$TCG_TEMP_FILE"
-echo "tcg.cert.dir=$CREDENTIALS_LOCATION" >> "$TCG_TEMP_FILE"
-echo "tcg.event.file=$BINARY_BIOS_MEASUREMENTS" >> "$TCG_TEMP_FILE"
-
 if [ ! -f "$TCG_BOOT_FILE" ]; then
+  touch "$TCG_TEMP_FILE"
+  echo "tcg.rim.dir=$RIM_FILE_LOCATION" > "$TCG_TEMP_FILE"
+  echo "tcg.swidtag.dir=$SWIDTAG_FILE_LOCATION" >> "$TCG_TEMP_FILE"
+  echo "tcg.cert.dir=$CREDENTIALS_LOCATION" >> "$TCG_TEMP_FILE"
+  echo "tcg.event.file=$BINARY_BIOS_MEASUREMENTS" >> "$TCG_TEMP_FILE"
   install -m 644 $TCG_TEMP_FILE $TCG_BOOT_FILE
-else
-  echo $TCG_TEMP_FILE > $TCG_BOOT_FILE
 fi
 
