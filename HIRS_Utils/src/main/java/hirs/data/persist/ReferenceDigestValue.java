@@ -8,6 +8,7 @@ import javax.persistence.AccessType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Table;
+import javax.persistence.Transient;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlRootElement;
@@ -47,6 +48,8 @@ public class ReferenceDigestValue extends ArchivableEntity {
     private boolean matchFail;
     @Column(nullable = false)
     private boolean patched = false;
+    @Transient
+    private String contentString; //used for displaying content blob on frontend
 
     /**
      * Default constructor necessary for Hibernate.
@@ -93,6 +96,7 @@ public class ReferenceDigestValue extends ArchivableEntity {
         this.matchFail = matchFail;
         this.patched = patched;
         this.contentBlob = Arrays.clone(contentBlob);
+        this.contentString = "";
     }
 
     /**
@@ -255,6 +259,22 @@ public class ReferenceDigestValue extends ArchivableEntity {
         if (contentBlob != null) {
             this.contentBlob = contentBlob.clone();
         }
+    }
+
+    /**
+     * Getter for the String representation of the contentBlob property.
+     * @return the content string
+     */
+    public String getContentString() {
+        return contentString;
+    }
+
+    /**
+     * Setter for the String representation of the contentBlob property.
+     * @param contentString the string value
+     */
+    public void setContentString(final String contentString) {
+        this.contentString = contentString;
     }
 
     @Override
