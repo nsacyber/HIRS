@@ -462,12 +462,10 @@ public class SupplyChainValidationServiceImpl implements SupplyChainValidationSe
             for (SwidResource swidRes : resources) {
                 supportReferenceManifest = SupportReferenceManifest.select(referenceManifestManager)
                         .byHexDecHash(swidRes.getHashValue()).getRIM();
-                if (supportReferenceManifest != null
-                        && swidRes.getName().equals(supportReferenceManifest.getFileName())) {
+                if (supportReferenceManifest != null) {
+                    // Removed the filename check from this if statement
                     referenceManifestValidator.validateSupportRimHash(
                             supportReferenceManifest.getRimBytes(), swidRes.getHashValue());
-                } else {
-                    supportReferenceManifest = null;
                 }
             }
 
