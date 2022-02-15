@@ -10,6 +10,7 @@ import hirs.attestationca.portal.page.PageController;
 import hirs.attestationca.portal.page.PageMessages;
 import hirs.attestationca.portal.page.params.NoPageParams;
 import hirs.data.persist.BaseReferenceManifest;
+import hirs.data.persist.EventLogMeasurements;
 import hirs.data.persist.ReferenceManifest;
 import hirs.data.persist.SupportReferenceManifest;
 import hirs.data.persist.SwidResource;
@@ -255,6 +256,15 @@ public class ReferenceManifestPageController
                                             support.getId()), dbmEx);
                                 }
                             }
+                        }
+                    }
+
+                    for (EventLogMeasurements liveLog : EventLogMeasurements
+                            .select(referenceManifestManager).getRIMs()) {
+                        if (liveLog.getPlatformManufacturer().equals(base.getPlatformManufacturer())
+                                && liveLog.getPlatformModel().equals(base.getPlatformModel())) {
+                            rim.setEventLogHash(liveLog.getEventLogHash());
+                            break;
                         }
                     }
                 }

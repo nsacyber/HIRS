@@ -30,7 +30,7 @@ public class ReferenceDigestRecord extends ArchivableEntity {
     private String model;
     @Column(nullable = false)
     private String deviceName;
-    @Column(columnDefinition = "blob", nullable = true)
+    @Column(columnDefinition = "mediumblob", nullable = true)
     private byte[] valueBlob;
 
     /**

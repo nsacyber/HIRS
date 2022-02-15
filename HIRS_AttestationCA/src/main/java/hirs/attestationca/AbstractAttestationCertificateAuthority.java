@@ -840,7 +840,8 @@ public abstract class AbstractAttestationCertificateAuthority
                 }
             }
         } else {
-            LOG.warn("Device did not send support RIM file...");
+            LOG.warn(String.format("%s did not send support RIM file...",
+                    dv.getNw().getHostname()));
         }
 
         if (dv.getSwidfileCount() > 0) {
@@ -876,7 +877,8 @@ public abstract class AbstractAttestationCertificateAuthority
                 }
             }
         } else {
-            LOG.warn("Device did not send swid tag file...");
+            LOG.warn(String.format("%s did not send swid tag file...",
+                    dv.getNw().getHostname()));
         }
 
         //update Support RIMs and Base RIMs.
@@ -948,11 +950,21 @@ public abstract class AbstractAttestationCertificateAuthority
                         this.referenceManifestManager.update(rim);
                     }
                 }
+
+                for (BaseReferenceManifest baseRim : BaseReferenceManifest
+                        .select(referenceManifestManager).getRIMs()) {
+                    if (baseRim.getPlatformManufacturer().equals(dv.getHw().getManufacturer())
+                            && baseRim.getPlatformModel().equals(dv.getHw().getProductName())) {
+                        baseRim.setEventLogHash(temp.getHexDecHash());
+                        this.referenceManifestManager.update(baseRim);
+                    }
+                }
             } catch (IOException ioEx) {
                 LOG.error(ioEx);
             }
         } else {
-            LOG.warn("Device did not send bios measurement log...");
+            LOG.warn(String.format("%s did not send bios measurement log...",
+                    dv.getNw().getHostname()));
         }
 
         // Get TPM info, currently unimplemented
@@ -1885,7 +1897,7 @@ public abstract class AbstractAttestationCertificateAuthority
                 generateCertificate = scp.isIssueAttestationCertificate();
                 if (issuedAc != null && scp.isGenerateOnExpiration()) {
                     if (issuedAc.getEndValidity().after(currentDate)) {
-                        // so the issued AC is expired
+                        // so the issued AC is not expired
                         // however are we within the threshold
                         days = daysBetween(currentDate, issuedAc.getEndValidity());
                         if (days < Integer.parseInt(scp.getReissueThreshold())) {

@@ -389,14 +389,15 @@ public class SupplyChainValidationServiceImpl implements SupplyChainValidationSe
         Set<BaseReferenceManifest> baseReferenceManifests = null;
         BaseReferenceManifest baseReferenceManifest = null;
         ReferenceManifest supportReferenceManifest = null;
-        ReferenceManifest measurement = null;
+        EventLogMeasurements measurement = null;
         ReferenceDigestRecord digestRecord = null;
 
         baseReferenceManifests = BaseReferenceManifest.select(referenceManifestManager)
-                .byDeviceName(device.getDeviceInfo().getNetworkInfo().getHostname()).getRIMs();
+                .byModel(model).getRIMs();
 
         for (BaseReferenceManifest bRim : baseReferenceManifests) {
-            if (!bRim.isSwidSupplemental() && !bRim.isSwidPatch()) {
+            if (bRim.getPlatformManufacturer().equals(manufacturer)
+                    && !bRim.isSwidSupplemental() && !bRim.isSwidPatch()) {
                 baseReferenceManifest = bRim;
             }
         }
@@ -408,6 +409,11 @@ public class SupplyChainValidationServiceImpl implements SupplyChainValidationSe
         } else {
             measurement = EventLogMeasurements.select(referenceManifestManager)
                     .byHexDecHash(baseReferenceManifest.getEventLogHash()).getRIM();
+
+            if (measurement == null) {
+                measurement = EventLogMeasurements.select(referenceManifestManager)
+                        .byModel(baseReferenceManifest.getPlatformModel()).getRIM();
+            }
         }
 
         if (measurement == null) {
@@ -456,12 +462,10 @@ public class SupplyChainValidationServiceImpl implements SupplyChainValidationSe
             for (SwidResource swidRes : resources) {
                 supportReferenceManifest = SupportReferenceManifest.select(referenceManifestManager)
                         .byHexDecHash(swidRes.getHashValue()).getRIM();
-                if (supportReferenceManifest != null
-                        && swidRes.getName().equals(supportReferenceManifest.getFileName())) {
+                if (supportReferenceManifest != null) {
+                    // Removed the filename check from this if statement
                     referenceManifestValidator.validateSupportRimHash(
                             supportReferenceManifest.getRimBytes(), swidRes.getHashValue());
-                } else {
-                    supportReferenceManifest = null;
                 }
             }
 
@@ -473,7 +477,7 @@ public class SupplyChainValidationServiceImpl implements SupplyChainValidationSe
 
             if (passed && supportReferenceManifest == null) {
                 fwStatus = new AppraisalStatus(FAIL,
-                        "Support Reference Integrity Manifest can not be found\n");
+                        "Support Reference Integrity Manifest can not be found");
                 passed = false;
             }
 
@@ -581,9 +585,10 @@ public class SupplyChainValidationServiceImpl implements SupplyChainValidationSe
         } else {
             fwStatus = new AppraisalStatus(FAIL, String.format("Firmware Validation failed: "
                     + "%s for %s can not be found", failedString, manufacturer));
-            EventLogMeasurements eventLog = (EventLogMeasurements) measurement;
-            eventLog.setOverallValidationResult(fwStatus.getAppStatus());
-            this.referenceManifestManager.update(eventLog);
+            if (measurement != null) {
+                measurement.setOverallValidationResult(fwStatus.getAppStatus());
+                this.referenceManifestManager.update(measurement);
+            }
         }
 
         return buildValidationRecord(SupplyChainValidation.ValidationType.FIRMWARE,
