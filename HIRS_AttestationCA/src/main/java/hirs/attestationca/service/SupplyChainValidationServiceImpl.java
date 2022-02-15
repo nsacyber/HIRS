@@ -459,13 +459,18 @@ public class SupplyChainValidationServiceImpl implements SupplyChainValidationSe
                 }
             }
 
+            LOGGER.error(String.format("CYRUS - # of resources (ie support rims) - %d", resources.size());
+
             for (SwidResource swidRes : resources) {
+                LOGGER.error(String.format("CYRUS - Looking for hash %s", swidRes.getHashValue()));
                 supportReferenceManifest = SupportReferenceManifest.select(referenceManifestManager)
                         .byHexDecHash(swidRes.getHashValue()).getRIM();
                 if (supportReferenceManifest != null) {
                     // Removed the filename check from this if statement
                     referenceManifestValidator.validateSupportRimHash(
                             supportReferenceManifest.getRimBytes(), swidRes.getHashValue());
+                } else {
+                    LOGGER.error("CYRUS - Didn't find support rim by hash");
                 }
             }
 
