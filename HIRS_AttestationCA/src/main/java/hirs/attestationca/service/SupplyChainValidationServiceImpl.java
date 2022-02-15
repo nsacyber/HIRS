@@ -459,7 +459,8 @@ public class SupplyChainValidationServiceImpl implements SupplyChainValidationSe
                 }
             }
 
-            LOGGER.error(String.format("CYRUS - # of resources (ie support rims) - %d", resources.size());
+            LOGGER.error(String.format("CYRUS - # of resources (ie support rims) - %d",
+                    resources.size()));
 
             for (SwidResource swidRes : resources) {
                 LOGGER.error(String.format("CYRUS - Looking for hash %s", swidRes.getHashValue()));
