@@ -26,6 +26,7 @@
                         <th>PCR Index</th>
                         <th>Digest Value</th>
                         <th>Base RIM</th>
+                        <th>Support RIM</th>
                     </tr>
                 </thead>
             </table>
@@ -55,6 +56,13 @@
                             searchable: false,
                             render: function(data, type, full, meta) {
                                 return rimDetailsLink(full.baseRimId);
+                            }
+                        },
+                        {data: 'supportRimId',
+                            orderable: false,
+                            searchable: false,
+                            render: function(data, type, full, meta) {
+                                return rimDetailsLink(full.supportRimId);
                             }
                         }
                     ];
