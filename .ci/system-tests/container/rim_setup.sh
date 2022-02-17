@@ -1,7 +1,8 @@
 #!/bin/bash
 #########################################################################################
 #   Setup for PC Client Reference Integrity Manifest (RIM) tests
-#
+#   usage rim_setup.sh <profile> <test> <option>
+#   use "clear" option to clear existing TPM PCR values
 #########################################################################################
 
 profile=$1
@@ -17,7 +18,7 @@ swidDir="$testDir/swidtags"
 rimDir="$testDir/rims"
 pcrScript="$testDir/"$profile"_"$test"_setpcrs.sh"
 
-source /HIRS/.ci/setup/tpm2_common.sh
+source /HIRS/.ci/setup/container/tpm2_common.sh
 
 echo "Test is using RIM files from $profile : $test"
 
@@ -36,7 +37,7 @@ if [[ ! -f "$eventLog" ]]; then
     eventLog="$defaultDir"/"$profile"_default_binary_bios_measurements
 fi    
 sed -i "s:tcg.event.file=.*:tcg.event.file=$eventLog:g" "$propFile"
-echo "eventLog was $eventLog"
+#echo "eventLog used was  $eventLog"
 
 # Step 2: Copy Base RIM files to the TCG folder
 #      a: See if test specific swidtag folder exists, if not use the defualt folder
@@ -63,13 +64,12 @@ pushd $rimDir > /dev/null
   fi
 popd > /dev/null
 
-  echo "Contents of tcg swidtag folder $tcgDir/manifest/swidtag/ : $(ls $tcgDir/manifest/swidtag/)"
-  echo "Contents of tcg rim folder tcgDir/manifest/rim/: $(ls $tcgDir/manifest/rim/)"
+#  echo "Contents of tcg swidtag folder $tcgDir/manifest/swidtag/ : $(ls $tcgDir/manifest/swidtag/)"
+#  echo "Contents of tcg rim folder tcgDir/manifest/rim/: $(ls $tcgDir/manifest/rim/)"
 
 #Step 4, run the setpcr script to make the TPM emulator hold values that correspond the binary_bios_measurement file
 #     a: Clear the TPM PCR registers vi a call to the tss clear 
 #     b: Check if a test specific setpcr.sh file exists. If not use the profiles default script
-echo "Options were $options"
 
 if [[ $options == "clear" ]]; then
    resetTpm2Emulator
@@ -80,6 +80,6 @@ if [[ ! -f $pcrScript ]]; then
 fi
 sh $pcrScript;
 echo "PCR script was $pcrScript"
-tpm2_pcrlist -g sha256 
+#tpm2_pcrlist -g sha256 
 
 # Done with rim_setup

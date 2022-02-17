@@ -31,14 +31,14 @@ echo "ACA Container info: $(checkContainerStatus $aca_container)";
 echo "TPM2 Provisioner Container info: $(checkContainerStatus $tpm2_container)";
 
 # Install HIRS provioner and setup tpm2 emulator
-docker exec $tpm2_container /HIRS/.ci/setup/setup_tpm2provisioner.sh
+docker exec $tpm2_container /HIRS/.ci/setup/container/setup_tpm2provisioner.sh
 
 # ********* Execute system tests here, add tests as needed ************* 
 echo "******** Setup Complete Begin HIRS System Tests ******** "
 
-source aca_policy_tests.sh
-source platform_cert_tests.sh
-source rim_system_tests.sh
+source tests/aca_policy_tests.sh
+source tests/platform_cert_tests.sh
+source tests/rim_system_tests.sh
 
 
 echo "******** HIRS System Tests Complete ******** "

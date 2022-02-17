@@ -9,7 +9,7 @@ services:
       ports:
          - "${HIRS_ACA_PORTAL_PORT}:${HIRS_ACA_PORTAL_CONTAINER_PORT}"
       entrypoint: /bin/bash -c
-      command: [HIRS/.ci/setup/setup_aca.sh]
+      command: [HIRS/.ci/setup/container/setup_aca.sh]
       hostname: ${HIRS_ACA_HOSTNAME}
       networks:
          hirs_aca_system_tests:

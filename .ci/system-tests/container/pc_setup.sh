@@ -2,6 +2,7 @@
 #########################################################################################
 #   Setup for platform certificates for testing
 #   Copies platform certs (Base and Delta) to the tcg directory
+#   usage pc_setup.sh <profile> <test>
 #########################################################################################
 
 profile=$1
