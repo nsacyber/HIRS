@@ -79,7 +79,7 @@ if [[ ! -f $pcrScript ]]; then
     pcrScript="$profileDir/default/"$profile"_default_setpcrs.sh"
 fi
 sh $pcrScript;
-echo "PCR script was $pcrScript"
+#echo "PCR script was $pcrScript"
 #tpm2_pcrlist -g sha256 
 
 # Done with rim_setup

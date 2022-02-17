@@ -27,7 +27,6 @@ function setTpmPcrValues {
     make -f makefiletpmc > /dev/null
     cd ../utils
     ./startup
-    
   popd  > /dev/null
 }
 
@@ -59,7 +58,7 @@ function initTpm2Emulator {
    echo "DBus started"
 
    # Give DBus time to start up
-   sleep 5
+   sleep 3
 
    /ibmtpm/src/./tpm_server &
    echo "TPM Emulator started"
@@ -74,7 +73,7 @@ function initTpm2Emulator {
    echo "TPM2-Abrmd started"
 
    # Give ABRMD time to start and register on the DBus
-   sleep 2
+   sleep 1
 
    # Certificates
    ek_cert="/HIRS/.ci/setup/certs/ek_cert.der"
@@ -113,23 +112,23 @@ function initTpm2Emulator {
 # Clear our existing PCR values by restarting the ibm tpm simulator
 function resetTpm2Emulator {
 
-echo "clearing the TPM PCR values"
+   echo "clearing the TPM PCR values"
 
-pkill -f "tpm2-abrmd"
-pkill -f "tpm_server"
-/ibmtpm/src/./tpm_server &
-sleep 1
- pushd /ibmtss/utils  > /dev/null
-    ./startup
-sleep 1
- popd > /dev/null
-  tpm2-abrmd -t socket &
+   pkill -f "tpm2-abrmd"
+   pkill -f "tpm_server"
+   rm -rf /ibmtpm/tpmvstudio/tpm_server
+   /ibmtpm/src/./tpm_server &
+   sleep 1
+   pushd /ibmtss/utils  > /dev/null
+     ./startup
+     sleep 3
+   popd > /dev/null
+   tpm2-abrmd -t socket &
 }
 
 # Function to update the hirs-site.config file
 function updateHirsSiteConfigFile {
    HIRS_SITE_CONFIG="/etc/hirs/hirs-site.config"
-
    echo ""
    echo "===========Updating ${HIRS_SITE_CONFIG}, using values from /HIRS/.ci/docker/.env file...==========="
    cat /HIRS/.ci/docker/.env
