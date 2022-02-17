@@ -818,9 +818,7 @@ public abstract class AbstractDbManager<T> implements CrudManager<T> {
                     LOGGER.info("Get unique result from criteria object");
                     recordsFiltered = (Long) criteria.uniqueResult();
                 } catch (HibernateException e) {
-                    LOGGER.info(e.getMessage());
-                } catch (Exception e) {
-                    LOGGER.info("Error while getting unique result: " + e.getMessage());
+                    LOGGER.error(e.getMessage());
                 }
             }
 

@@ -1056,6 +1056,12 @@ public abstract class AbstractAttestationCertificateAuthority
                                     false, false, tpe.getEventContent());
                             this.referenceEventManager.saveValue(rdv);
                         }
+                    } catch (CertificateException e) {
+                        e.printStackTrace();
+                    } catch (NoSuchAlgorithmException e) {
+                        e.printStackTrace();
+                    } catch (IOException e) {
+                        e.printStackTrace();
                     }
                 }
             }

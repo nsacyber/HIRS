@@ -104,9 +104,11 @@ public class RimDatabasePageController
      */
     @Autowired
     public RimDatabasePageController(
+            final DBReferenceManifestManager referenceManifestManager,
             final DBReferenceDigestManager referenceDigestManager,
             final DBReferenceEventManager referenceEventManager) {
         super(Page.RIM_DATABASE);
+        this.referenceManifestManager = referenceManifestManager;
         this.referenceDigestManager = referenceDigestManager;
         this.referenceEventManager = referenceEventManager;
         this.biosValidator = new BiosDateValidator(BIOS_RELEASE_DATE_FORMAT);

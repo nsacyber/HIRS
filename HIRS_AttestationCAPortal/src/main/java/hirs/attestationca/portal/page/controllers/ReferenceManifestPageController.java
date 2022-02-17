@@ -286,15 +286,6 @@ public class ReferenceManifestPageController
                             }
                         }
                     }
-
-                    for (EventLogMeasurements liveLog : EventLogMeasurements
-                            .select(referenceManifestManager).getRIMs()) {
-                        if (liveLog.getPlatformManufacturer().equals(base.getPlatformManufacturer())
-                                && liveLog.getPlatformModel().equals(base.getPlatformModel())) {
-                            rim.setEventLogHash(liveLog.getEventLogHash());
-                            break;
-                        }
-                    }
                 }
             }
         }
