@@ -8,8 +8,6 @@ pushd /  > /dev/null
 echo "Setting up TPM emulator for the TPM2 Provisioner"
  
 source /HIRS/.ci/setup/container/tpm2_common.sh
-mkdir -p /etc/hirs
-touch /etc/hirs/tcg_boot.properties   # work around for install issues with tcg default values 
 
 #Wait for the ACA to spin up, if it hasnt already
 waitForAca
@@ -18,7 +16,7 @@ waitForAca
 installProvisioner
 
 # set location of tcg artifacts
-#setTcgProperties
+setTcgProperties
 #echo "Contents of /etc/hirs is $(ls -al /etc/hirs)";
 
 # Install TPM 2.0 Emulator

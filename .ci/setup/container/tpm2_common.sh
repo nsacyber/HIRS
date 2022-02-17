@@ -28,9 +28,6 @@ function setTpmPcrValues {
     cd ../utils
     ./startup
     
-    echo "Looking for ibms nvchip file"
-    find /ibmtss -name nvchip
-    find /ibmtpm -name nvchip
   popd  > /dev/null
 }
 
@@ -121,9 +118,10 @@ echo "clearing the TPM PCR values"
 pkill -f "tpm2-abrmd"
 pkill -f "tpm_server"
 /ibmtpm/src/./tpm_server &
-
+sleep 1
  pushd /ibmtss/utils  > /dev/null
     ./startup
+sleep 1
  popd > /dev/null
   tpm2-abrmd -t socket &
 }
