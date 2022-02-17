@@ -27,6 +27,10 @@ function setTpmPcrValues {
     make -f makefiletpmc > /dev/null
     cd ../utils
     ./startup
+    
+    echo "Looking for ibms nvchip file"
+    find /ibmtss -name nvchip
+    find /ibmtpm -name nvchip
   popd  > /dev/null
 }
 
@@ -107,6 +111,21 @@ function initTpm2Emulator {
 
    # Set Logging to INFO Level
    sed -i "s/WARN/INFO/" /etc/hirs/TPM2_Provisioner/log4cplus_config.ini
+}
+
+# Clear our existing PCR values by restarting the ibm tpm simulator
+function resetTpm2Emulator {
+
+echo "clearing the TPM PCR values"
+
+pkill -f "tpm2-abrmd"
+pkill -f "tpm_server"
+/ibmtpm/src/./tpm_server &
+
+ pushd /ibmtss/utils  > /dev/null
+    ./startup
+ popd
+  tpm2-abrmd -t socket &
 }
 
 # Function to update the hirs-site.config file

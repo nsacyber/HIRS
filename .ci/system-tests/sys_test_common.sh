@@ -107,7 +107,7 @@ setPlatformCerts() {
 # Places RIM files held in the test folder in the provisioners tcg folder
 # setRims <profile> <test>
 setRims() {
-docker exec $tpm2_container sh /HIRS/.ci/system-tests/container/rim_setup.sh $1 $2 
+docker exec $tpm2_container sh /HIRS/.ci/system-tests/container/rim_setup.sh $1 $2 $3
 #docker exec $tpm2_container bash -c "find / -name oem_platform_v1_Base.cer"
 }
 

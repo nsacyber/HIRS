@@ -39,7 +39,7 @@ provisionTpm2 "pass"
 
 writeToLogs "### ACA POLICY TEST 7: Test PC with RIM Validation Policy with valid PC and RIM ###"
 setPolicyEkPcFw
-setRims "laptop" "default"
+setRims "laptop" "default" "none"
 provisionTpm2 "pass"
 
 #  Process Test Results, any single failure will send back a failed result.
