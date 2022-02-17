@@ -6,6 +6,7 @@
 
 profile=$1
 test=$2
+options=$3
 tcgDir="/boot/tcg"
 propFile="/etc/hirs/tcg_boot.properties";
 profileDir="/HIRS/.ci/system-tests/profiles/$profile"
@@ -68,13 +69,11 @@ popd > /dev/null
 #Step 4, run the setpcr script to make the TPM emulator hold values that correspond the binary_bios_measurement file
 #     a: Clear the TPM PCR registers vi a call to the tss clear 
 #     b: Check if a test specific setpcr.sh file exists. If not use the profiles default script
-pushd /ibmtss/utils/
-echo "clearing the PCR values"
-pkill -f "tpm2-abrmd"
-initTpm2Emulator >> /dev/null
+echo "Options were $options"
 
-echo "TPM simulator cleared"
-popd
+if [[ $options == "clear" ]]; then
+   resetTpm2Emulator
+fi
 
 if [[ ! -f $pcrScript ]]; then
     pcrScript="$profileDir/default/"$profile"_default_setpcrs.sh"

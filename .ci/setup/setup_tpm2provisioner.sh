@@ -7,7 +7,6 @@ set -e
 pushd /  > /dev/null
 echo "Setting up TPM emulator for the TPM2 Provisioner"
  
-find / -name nvchip
 source /HIRS/.ci/setup/tpm2_common.sh
 
 #Wait for the ACA to spin up, if it hasnt already
@@ -33,3 +32,5 @@ echo ""
 echo "===========HIRS ACA TPM 2.0 Provisioner Setup Complete!==========="
 
 popd > /dev/null
+
+tpm2_pcrlist -g sha256 
