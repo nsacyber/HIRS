@@ -1,6 +1,6 @@
 #!/bin/bash
 #########################################################################################
-#  Script to setup the TPM 2.0 Provisioner Docker Image for System Tests
+#  Support scripts for the TPM 2.0 Provisioner System Tests
 #
 #########################################################################################
 
@@ -124,7 +124,7 @@ pkill -f "tpm_server"
 
  pushd /ibmtss/utils  > /dev/null
     ./startup
- popd
+ popd > /dev/null
   tpm2-abrmd -t socket &
 }
 
