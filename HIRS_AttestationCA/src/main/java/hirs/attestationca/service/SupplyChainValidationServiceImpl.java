@@ -388,7 +388,7 @@ public class SupplyChainValidationServiceImpl implements SupplyChainValidationSe
         Set<BaseReferenceManifest> baseReferenceManifests = null;
         BaseReferenceManifest baseReferenceManifest = null;
         ReferenceManifest supportReferenceManifest = null;
-        ReferenceManifest measurement = null;
+        EventLogMeasurements measurement = null;
 
         baseReferenceManifests = BaseReferenceManifest.select(referenceManifestManager)
                 .byModel(model).getRIMs();
