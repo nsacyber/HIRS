@@ -128,6 +128,8 @@ public abstract class AbstractAttestationCertificateAuthority
             = CATALINA_HOME + TOMCAT_UPLOAD_DIRECTORY;
     private static final String PCR_QUOTE_MASK = "0,1,2,3,4,5,6,7,8,9,10,11,12,13,"
             + "14,15,16,17,18,19,20,21,22,23";
+    private static final byte STATUS_PASS = 0;
+    private static final byte STATUS_FAIL = 1;
 
     /**
      * Number of bytes to include in the TPM2.0 nonce.
@@ -440,12 +442,14 @@ public abstract class AbstractAttestationCertificateAuthority
         }
 
         ByteString blobStr = ByteString.copyFrom(new byte[]{});
+        byte[] status = new byte[1];
         if (validationResult == AppraisalStatus.Status.PASS) {
             RSAPublicKey akPub = parsePublicKey(claim.getAkPublicArea().toByteArray());
             byte[] nonce = generateRandomBytes(NONCE_LENGTH);
             blobStr = tpm20MakeCredential(ekPub, akPub, nonce);
             SupplyChainPolicy scp = this.supplyChainValidationService.getPolicy();
             String pcrQuoteMask = PCR_QUOTE_MASK;
+            status[0] = STATUS_PASS;
 
             String strNonce = HexUtils.byteArrayToHexString(nonce);
             LOG.info("Sending nonce: " + strNonce);
@@ -460,16 +464,19 @@ public abstract class AbstractAttestationCertificateAuthority
             ProvisionerTpm2.IdentityClaimResponse response
                     = ProvisionerTpm2.IdentityClaimResponse.newBuilder()
                     .setCredentialBlob(blobStr).setPcrMask(pcrQuoteMask)
+                    .setProvisionStatus(ByteString.copyFrom(status))
                     .build();
 
             return response.toByteArray();
         } else {
             LOG.error("Supply chain validation did not succeed. Result is: "
                     + validationResult);
+            status[0] = STATUS_FAIL;
             // empty response
             ProvisionerTpm2.IdentityClaimResponse response
                     = ProvisionerTpm2.IdentityClaimResponse.newBuilder()
                     .setCredentialBlob(blobStr)
+                    .setProvisionStatus(ByteString.copyFrom(status))
                     .build();
             return response.toByteArray();
         }
@@ -624,6 +631,7 @@ public abstract class AbstractAttestationCertificateAuthority
                 device = this.deviceRegister.saveOrUpdateDevice(dvReport);
             }
 
+            byte[] status = new byte[1];
             AppraisalStatus.Status validationResult = doQuoteValidation(device);
             if (validationResult == AppraisalStatus.Status.PASS) {
                 // Create signed, attestation certificate
@@ -631,6 +639,7 @@ public abstract class AbstractAttestationCertificateAuthority
                         endorsementCredential, platformCredentials, deviceName);
                 byte[] derEncodedAttestationCertificate = getDerEncodedCertificate(
                         attestationCertificate);
+                status[0] = STATUS_PASS;
 
                 // We validated the nonce and made use of the identity claim so state can be deleted
                 tpm2ProvisionerStateDBManager.delete(tpm2ProvisionerState);
@@ -640,6 +649,7 @@ public abstract class AbstractAttestationCertificateAuthority
                         .copyFrom(derEncodedAttestationCertificate);
                 ProvisionerTpm2.CertificateResponse response = ProvisionerTpm2.CertificateResponse
                         .newBuilder().setCertificate(certificateBytes)
+                        .setProvisionStatus(ByteString.copyFrom(status))
                         .build();
 
                 saveAttestationCertificate(derEncodedAttestationCertificate, endorsementCredential,
@@ -650,8 +660,10 @@ public abstract class AbstractAttestationCertificateAuthority
                 LOG.error("Supply chain validation did not succeed. "
                         + "Firmware Quote Validation failed. Result is: "
                         + validationResult);
+                status[0] = STATUS_FAIL;
                 ProvisionerTpm2.CertificateResponse response = ProvisionerTpm2.CertificateResponse
-                        .newBuilder().setCertificate(ByteString.EMPTY).build();
+                        .newBuilder().setCertificate(ByteString.EMPTY)
+                        .setProvisionStatus(ByteString.copyFrom(status)).build();
                 return response.toByteArray();
             }
         } else {
