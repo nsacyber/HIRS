@@ -114,16 +114,16 @@ function resetTpm2Emulator {
 
    echo "clearing the TPM PCR values"
 
-   #pkill -f "tpm2-abrmd"
-   #pkill -f "tpm_server"
-   rm /ibmtpm/src/NVChip
-  # /ibmtpm/src/./tpm_server &
-  # sleep 1
-  # pushd /ibmtss/utils  > /dev/null
-  #   ./startup
-  #   sleep 1
-  # popd > /dev/null
-  # tpm2-abrmd -t socket &
+   pkill -f "tpm2-abrmd"
+   pkill -f "tpm_server"
+   rm -f /ibmtpm/src/NVChip
+   /ibmtpm/src/./tpm_server &
+   sleep 1
+   pushd /ibmtss/utils  > /dev/null
+     ./startup
+     sleep 1
+   popd > /dev/null
+   tpm2-abrmd -t socket &
 }
 
 # Function to update the hirs-site.config file
