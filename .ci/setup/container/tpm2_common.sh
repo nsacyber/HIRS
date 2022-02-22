@@ -114,10 +114,7 @@ function resetTpm2Emulator {
 
    echo "clearing the TPM PCR values"
 
-  rm -f /ibmtpm/src/NVChip
-   pushd /ibmtss/utils  > /dev/null
-   ./shutdown  
-   popd > /dev/null
+   rm -f /ibmtpm/src/NVChip
 
    pkill -f "tpm2-abrmd"
    pkill -f "tpm_server"
@@ -129,7 +126,7 @@ function resetTpm2Emulator {
    popd > /dev/null
    
    tpm2-abrmd -t socket &
-#   sleep 1
+   sleep 1
    tpm2_pcrlist -g sha256
 }
 
