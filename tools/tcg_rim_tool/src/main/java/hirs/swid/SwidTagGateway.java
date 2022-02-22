@@ -162,7 +162,8 @@ public class SwidTagGateway {
             JsonObject configProperties = reader.readObject();
             reader.close();
             //SoftwareIdentity
-            swidTag = createSwidTag(configProperties.getJsonObject(SwidTagConstants.SOFTWARE_IDENTITY));
+            swidTag = createSwidTag(
+                    configProperties.getJsonObject(SwidTagConstants.SOFTWARE_IDENTITY));
             //Entity
             JAXBElement<Entity> entity = objectFactory.createSoftwareIdentityEntity(
                     createEntity(configProperties.getJsonObject(SwidTagConstants.ENTITY)));
@@ -199,7 +200,8 @@ public class SwidTagGateway {
             System.out.println(e.getMessage());
         }
 
-        Document signedSoftwareIdentity = signXMLDocument(objectFactory.createSoftwareIdentity(swidTag));
+        Document signedSoftwareIdentity = signXMLDocument(
+                objectFactory.createSoftwareIdentity(swidTag));
         writeSwidTagFile(signedSoftwareIdentity, filename);
     }
 
@@ -247,14 +249,16 @@ public class SwidTagGateway {
         if (!tagId.isEmpty()) {
             swidTag.setTagId(tagId);
         }
-        swidTag.setTagVersion(new BigInteger(jsonObject.getString(SwidTagConstants.TAGVERSION, "0")));
+        swidTag.setTagVersion(new BigInteger(
+                jsonObject.getString(SwidTagConstants.TAGVERSION, "0")));
         swidTag.setVersion(jsonObject.getString(SwidTagConstants.VERSION, "0.0"));
         swidTag.setCorpus(jsonObject.getBoolean(SwidTagConstants.CORPUS, false));
         swidTag.setPatch(jsonObject.getBoolean(SwidTagConstants.PATCH, false));
         swidTag.setSupplemental(jsonObject.getBoolean(SwidTagConstants.SUPPLEMENTAL, false));
         if (!swidTag.isCorpus() && !swidTag.isPatch()
                 && !swidTag.isSupplemental() && swidTag.getVersion() != "0.0") {
-            swidTag.setVersionScheme(jsonObject.getString(SwidTagConstants.VERSION_SCHEME, "multipartnumeric"));
+            swidTag.setVersionScheme(
+                    jsonObject.getString(SwidTagConstants.VERSION_SCHEME, "multipartnumeric"));
         }
 
         return swidTag;
@@ -329,24 +333,42 @@ public class SwidTagGateway {
     private SoftwareMeta createSoftwareMeta(JsonObject jsonObject) {
         SoftwareMeta softwareMeta = objectFactory.createSoftwareMeta();
         Map<QName, String> attributes = softwareMeta.getOtherAttributes();
-        addNonNullAttribute(attributes, SwidTagConstants._COLLOQUIAL_VERSION, jsonObject.getString(SwidTagConstants.COLLOQUIAL_VERSION, ""));
-        addNonNullAttribute(attributes, SwidTagConstants._EDITION, jsonObject.getString(SwidTagConstants.EDITION, ""));
-        addNonNullAttribute(attributes, SwidTagConstants._PRODUCT, jsonObject.getString(SwidTagConstants.PRODUCT, ""));
-        addNonNullAttribute(attributes, SwidTagConstants._REVISION, jsonObject.getString(SwidTagConstants.REVISION, ""));
-        addNonNullAttribute(attributes, SwidTagConstants._PAYLOAD_TYPE, jsonObject.getString(SwidTagConstants.PAYLOAD_TYPE, ""));
-        addNonNullAttribute(attributes, SwidTagConstants._PLATFORM_MANUFACTURER_STR, jsonObject.getString(SwidTagConstants.PLATFORM_MANUFACTURER_STR, ""));
-        addNonNullAttribute(attributes, SwidTagConstants._PLATFORM_MANUFACTURER_ID, jsonObject.getString(SwidTagConstants.PLATFORM_MANUFACTURER_ID, ""));
-        addNonNullAttribute(attributes, SwidTagConstants._PLATFORM_MODEL, jsonObject.getString(SwidTagConstants.PLATFORM_MODEL, ""));
-        addNonNullAttribute(attributes, SwidTagConstants._PLATFORM_VERSION, jsonObject.getString(SwidTagConstants.PLATFORM_VERSION, ""));
-        addNonNullAttribute(attributes, SwidTagConstants._FIRMWARE_MANUFACTURER_STR, jsonObject.getString(SwidTagConstants.FIRMWARE_MANUFACTURER_STR, ""));
-        addNonNullAttribute(attributes, SwidTagConstants._FIRMWARE_MANUFACTURER_ID, jsonObject.getString(SwidTagConstants.FIRMWARE_MANUFACTURER_ID, ""));
-        addNonNullAttribute(attributes, SwidTagConstants._FIRMWARE_MODEL, jsonObject.getString(SwidTagConstants.FIRMWARE_MODEL, ""));
-        addNonNullAttribute(attributes, SwidTagConstants._FIRMWARE_VERSION, jsonObject.getString(SwidTagConstants.FIRMWARE_VERSION, ""));
-        addNonNullAttribute(attributes, SwidTagConstants._BINDING_SPEC, jsonObject.getString(SwidTagConstants.BINDING_SPEC, ""));
-        addNonNullAttribute(attributes, SwidTagConstants._BINDING_SPEC_VERSION, jsonObject.getString(SwidTagConstants.BINDING_SPEC_VERSION, ""));
-        addNonNullAttribute(attributes, SwidTagConstants._PC_URI_LOCAL, jsonObject.getString(SwidTagConstants.PC_URI_LOCAL, ""));
-        addNonNullAttribute(attributes, SwidTagConstants._PC_URI_GLOBAL, jsonObject.getString(SwidTagConstants.PC_URI_GLOBAL, ""));
-        addNonNullAttribute(attributes, SwidTagConstants._RIM_LINK_HASH, jsonObject.getString(SwidTagConstants.RIM_LINK_HASH, ""));
+        addNonNullAttribute(attributes, SwidTagConstants._COLLOQUIAL_VERSION,
+                jsonObject.getString(SwidTagConstants.COLLOQUIAL_VERSION, ""));
+        addNonNullAttribute(attributes, SwidTagConstants._EDITION,
+                jsonObject.getString(SwidTagConstants.EDITION, ""));
+        addNonNullAttribute(attributes, SwidTagConstants._PRODUCT,
+                jsonObject.getString(SwidTagConstants.PRODUCT, ""));
+        addNonNullAttribute(attributes, SwidTagConstants._REVISION,
+                jsonObject.getString(SwidTagConstants.REVISION, ""));
+        addNonNullAttribute(attributes, SwidTagConstants._PAYLOAD_TYPE,
+                jsonObject.getString(SwidTagConstants.PAYLOAD_TYPE, ""));
+        addNonNullAttribute(attributes, SwidTagConstants._PLATFORM_MANUFACTURER_STR,
+                jsonObject.getString(SwidTagConstants.PLATFORM_MANUFACTURER_STR, ""));
+        addNonNullAttribute(attributes, SwidTagConstants._PLATFORM_MANUFACTURER_ID,
+                jsonObject.getString(SwidTagConstants.PLATFORM_MANUFACTURER_ID, ""));
+        addNonNullAttribute(attributes, SwidTagConstants._PLATFORM_MODEL,
+                jsonObject.getString(SwidTagConstants.PLATFORM_MODEL, ""));
+        addNonNullAttribute(attributes, SwidTagConstants._PLATFORM_VERSION,
+                jsonObject.getString(SwidTagConstants.PLATFORM_VERSION, ""));
+        addNonNullAttribute(attributes, SwidTagConstants._FIRMWARE_MANUFACTURER_STR,
+                jsonObject.getString(SwidTagConstants.FIRMWARE_MANUFACTURER_STR, ""));
+        addNonNullAttribute(attributes, SwidTagConstants._FIRMWARE_MANUFACTURER_ID,
+                jsonObject.getString(SwidTagConstants.FIRMWARE_MANUFACTURER_ID, ""));
+        addNonNullAttribute(attributes, SwidTagConstants._FIRMWARE_MODEL,
+                jsonObject.getString(SwidTagConstants.FIRMWARE_MODEL, ""));
+        addNonNullAttribute(attributes, SwidTagConstants._FIRMWARE_VERSION,
+                jsonObject.getString(SwidTagConstants.FIRMWARE_VERSION, ""));
+        addNonNullAttribute(attributes, SwidTagConstants._BINDING_SPEC,
+                jsonObject.getString(SwidTagConstants.BINDING_SPEC, ""));
+        addNonNullAttribute(attributes, SwidTagConstants._BINDING_SPEC_VERSION,
+                jsonObject.getString(SwidTagConstants.BINDING_SPEC_VERSION, ""));
+        addNonNullAttribute(attributes, SwidTagConstants._PC_URI_LOCAL,
+                jsonObject.getString(SwidTagConstants.PC_URI_LOCAL, ""));
+        addNonNullAttribute(attributes, SwidTagConstants._PC_URI_GLOBAL,
+                jsonObject.getString(SwidTagConstants.PC_URI_GLOBAL, ""));
+        addNonNullAttribute(attributes, SwidTagConstants._RIM_LINK_HASH,
+                jsonObject.getString(SwidTagConstants.RIM_LINK_HASH, ""));
 
         return softwareMeta;
     }
@@ -360,12 +382,24 @@ public class SwidTagGateway {
     private ResourceCollection createPayload(JsonObject jsonObject) {
         ResourceCollection payload = objectFactory.createResourceCollection();
         Map<QName, String> attributes = payload.getOtherAttributes();
-        addNonNullAttribute(attributes, SwidTagConstants._N8060_ENVVARPREFIX, jsonObject.getString(SwidTagConstants._N8060_ENVVARPREFIX.getLocalPart(), ""));
-        addNonNullAttribute(attributes, SwidTagConstants._N8060_ENVVARSUFFIX, jsonObject.getString(SwidTagConstants._N8060_ENVVARSUFFIX.getLocalPart(), ""));
-        addNonNullAttribute(attributes, SwidTagConstants._N8060_PATHSEPARATOR, jsonObject.getString(SwidTagConstants._N8060_PATHSEPARATOR.getLocalPart(), ""));
-        addNonNullAttribute(attributes, SwidTagConstants._SUPPORT_RIM_FORMAT, jsonObject.getString(SwidTagConstants.SUPPORT_RIM_FORMAT, ""));
-        addNonNullAttribute(attributes, SwidTagConstants._SUPPORT_RIM_TYPE, jsonObject.getString(SwidTagConstants.SUPPORT_RIM_TYPE, ""));
-        addNonNullAttribute(attributes, SwidTagConstants._SUPPORT_RIM_URI_GLOBAL, jsonObject.getString(SwidTagConstants.SUPPORT_RIM_URI_GLOBAL, ""));
+        addNonNullAttribute(attributes, SwidTagConstants._N8060_ENVVARPREFIX,
+                jsonObject.getString(SwidTagConstants._N8060_ENVVARPREFIX.getLocalPart(), ""));
+        addNonNullAttribute(attributes, SwidTagConstants._N8060_ENVVARSUFFIX,
+                jsonObject.getString(SwidTagConstants._N8060_ENVVARSUFFIX.getLocalPart(), ""));
+        addNonNullAttribute(attributes, SwidTagConstants._N8060_PATHSEPARATOR,
+                jsonObject.getString(SwidTagConstants._N8060_PATHSEPARATOR.getLocalPart(), ""));
+        String supportRimFormat = jsonObject.getString(SwidTagConstants.SUPPORT_RIM_FORMAT,
+                SwidTagConstants.TCG_EVENTLOG_ASSERTION);
+        if (supportRimFormat != null && !supportRimFormat.isEmpty()) {
+            attributes.put(SwidTagConstants._SUPPORT_RIM_FORMAT, supportRimFormat);
+        } else {
+            attributes.put(SwidTagConstants._SUPPORT_RIM_FORMAT,
+                    SwidTagConstants.TCG_EVENTLOG_ASSERTION);
+        }
+        addNonNullAttribute(attributes, SwidTagConstants._SUPPORT_RIM_TYPE,
+                jsonObject.getString(SwidTagConstants.SUPPORT_RIM_TYPE, ""));
+        addNonNullAttribute(attributes, SwidTagConstants._SUPPORT_RIM_URI_GLOBAL,
+                jsonObject.getString(SwidTagConstants.SUPPORT_RIM_URI_GLOBAL, ""));
 
         return payload;
     }

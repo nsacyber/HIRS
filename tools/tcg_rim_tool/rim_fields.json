@@ -29,6 +29,7 @@
 		"rimLinkHash": "88f21d8e44d4271149297404df91caf207130bfa116582408abd04ede6db7f51"
 	},
 	"Payload": {
+                "supportRIMFormat": "TCG_EventLog_Assertion",
 		"Directory": {
 			"name": "iotBase",
 			"File": {
