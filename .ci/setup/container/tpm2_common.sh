@@ -109,14 +109,13 @@ function initTpm2Emulator {
    sed -i "s/WARN/INFO/" /etc/hirs/TPM2_Provisioner/log4cplus_config.ini
 }
 
-# Clear our existing PCR values by restarting the ibm tpm simulator
+# Clear out existing TPM PCR values by restarting the ibm tpm simulator
 function resetTpm2Emulator {
    echo "clearing the TPM PCR values"
- #  rm -f /ibmtpm/src/NVChip   # NVChip can persist some TPM data between starts
    # Stop tpm2-abrmd and the tpm server
    pkill -f "tpm2-abrmd"
    pkill -f "tpm_server"
-   # rstart the tpm server and tpm2-abrmd
+   # restart the tpm server and tpm2-abrmd
    /ibmtpm/src/./tpm_server &
    pushd /ibmtss/utils  > /dev/null
      ./startup
@@ -155,8 +154,8 @@ DEFAULT_SITE_CONFIG_FILE
    cat /etc/hirs/hirs-site.config
 }
 
-function waitForAca {
 # Wait for ACA to boot
+function waitForAca {
   echo "Waiting for ACA to spin up at address ${HIRS_ACA_PORTAL_IP} on port ${HIRS_ACA_PORTAL_PORT} ..."
   until [ "`curl --silent --connect-timeout 1 -I -k https://${HIRS_ACA_PORTAL_IP}:${HIRS_ACA_PORTAL_PORT}/HIRS_AttestationCAPortal | grep '302 Found'`" != "" ]; do
     sleep 1;
