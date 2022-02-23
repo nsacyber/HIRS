@@ -14,7 +14,6 @@ testDir="/HIRS/.ci/system-tests/profiles/$profile/$test"
 pcDir=$testDir/platformcerts
 profileDir="/HIRS/.ci/system-tests/profiles/$profile"
 
-
 # Current TCG folder for platform certs, likely to change with release of the next FIM specification
 tcgDir=/boot/tcg/cert/platform/
 mkdir -p $tcgDir;  # Create the platform cert folder if its not there
