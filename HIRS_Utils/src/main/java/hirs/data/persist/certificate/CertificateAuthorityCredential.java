@@ -26,6 +26,7 @@ public class CertificateAuthorityCredential extends Certificate {
     public static final String SUBJECT_KEY_IDENTIFIER_FIELD = "subjectKeyIdentifier";
 
     private static final int CA_BYTE_SIZE = 20;
+    private static final int PREFIX_BYTE_SIZE = 4;
 
     @Column
     private final byte[] subjectKeyIdentifier;
@@ -163,7 +164,7 @@ public class CertificateAuthorityCredential extends Certificate {
 
     private byte[] truncatePrefixBytes(final byte[] certificateBytes) {
         byte[] temp = new byte[CA_BYTE_SIZE];
-        System.arraycopy(certificateBytes, 4, temp, 0, CA_BYTE_SIZE);
+        System.arraycopy(certificateBytes, PREFIX_BYTE_SIZE, temp, 0, CA_BYTE_SIZE);
 
         return temp;
     }
