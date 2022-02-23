@@ -91,7 +91,7 @@ public class CertificateAuthorityCredential extends Certificate {
         byte[] tempBytes = getX509Certificate()
                 .getExtensionValue(SUBJECT_KEY_IDENTIFIER_EXTENSION);
 
-        if (tempBytes.length > CA_BYTE_SIZE) {
+        if (tempBytes != null && tempBytes.length > CA_BYTE_SIZE) {
             this.subjectKeyIdentifier = truncatePrefixBytes(tempBytes);
         } else {
             this.subjectKeyIdentifier =
