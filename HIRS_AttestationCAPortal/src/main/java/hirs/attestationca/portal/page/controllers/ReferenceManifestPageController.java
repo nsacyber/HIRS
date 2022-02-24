@@ -257,9 +257,15 @@ public class ReferenceManifestPageController
                         for (SwidResource swid : bRim.parseResource()) {
                             if (support.getHexDecHash().equals(swid.getHashValue())) {
                                 updateSupportRimInfo(bRim, support);
+                                referenceManifestManager.update(support);
                             }
                         }
                         if (support.isUpdated()) {
+                            for (ReferenceDigestValue rdv : referenceEventManager
+                                    .getValuesByRimId(support)) {
+                                rdv.updateInfo(support);
+                                referenceEventManager.updateRecord(rdv);
+                            }
                             break;
                         }
                     }

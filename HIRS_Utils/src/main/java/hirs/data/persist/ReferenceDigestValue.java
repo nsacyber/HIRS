@@ -257,6 +257,18 @@ public class ReferenceDigestValue extends ArchivableEntity {
         }
     }
 
+    /**
+     * Helper method to update the attributes of this object.
+     * @param support the associated RIM.
+     */
+    public void updateInfo(final SupportReferenceManifest support) {
+        if (support != null && support.getId().equals(getSupportRimId())) {
+            setBaseRimId(support.getAssociatedRim());
+            setManufacturer(support.getPlatformManufacturer());
+            setModel(support.getPlatformModel());
+        }
+    }
+
     @Override
     public boolean equals(final Object obj) {
         if (this == obj) {
