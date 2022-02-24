@@ -77,7 +77,7 @@ public class CertificateTest {
      * Hex-encoded subject key identifier for the FAKE_ROOT_CA_FILE.
      */
     public static final String FAKE_ROOT_CA_SUBJECT_KEY_IDENTIFIER_HEX =
-            "0416041458ec313a1699f94c1c8c4e2c6412402b258f0177";
+            "58ec313a1699f94c1c8c4e2c6412402b258f0177";
 
     /**
      * Location of a test STM endorsement credential.
