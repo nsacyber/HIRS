@@ -55,6 +55,10 @@ public enum Page {
     RIM_DETAILS("Reference Integrity Manifest Details",
             "", null, true, false, null, null),
     /**
+     * Page to display RIM event digest table.
+     */
+    RIM_DATABASE("RIM Database", "ic_important_devices", "first"),
+    /**
      * Page that manages Attestation CA Policy.
      */
     POLICY("Policy", "ic_subtitles"),

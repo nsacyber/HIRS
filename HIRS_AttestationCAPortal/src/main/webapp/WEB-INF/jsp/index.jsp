@@ -67,6 +67,10 @@
                         <a href="${portal}/devices"><img src="${icons}/ic_devices_black_24dp.png" /> Devices</a>
                     </h3>  
                     <h4>View devices covered by this CA for supply chain validation.</h4>
+                    <h3>
+                        <a href="${portal}/rim-database"><img src="${icons}/ic_devices_black_24dp.png" /> RIM Database</a>
+                    </h3>
+                    <h4>View a list of TPM events </h4>
                 </div>
             </div>
         </div>

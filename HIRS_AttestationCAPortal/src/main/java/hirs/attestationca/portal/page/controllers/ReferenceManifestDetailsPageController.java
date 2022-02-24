@@ -7,7 +7,6 @@ import hirs.attestationca.portal.page.params.ReferenceManifestDetailsPageParams;
 import hirs.attestationca.service.SupplyChainValidationServiceImpl;
 import hirs.data.persist.BaseReferenceManifest;
 import hirs.data.persist.EventLogMeasurements;
-import hirs.data.persist.ReferenceDigestRecord;
 import hirs.data.persist.ReferenceDigestValue;
 import hirs.data.persist.ReferenceManifest;
 import hirs.data.persist.SupportReferenceManifest;
@@ -118,9 +117,6 @@ public class ReferenceManifestDetailsPageController
                 LOGGER.error(uuidError, iaEx);
             } catch (Exception ioEx) {
                 LOGGER.error(ioEx);
-                for (StackTraceElement ste : ioEx.getStackTrace()) {
-                    LOGGER.error(ste.toString());
-                }
             }
             if (data.isEmpty()) {
                 String notFoundMessage = "Unable to find RIM with ID: " + params.getId();
@@ -522,7 +518,6 @@ public class ReferenceManifestDetailsPageController
         BaseReferenceManifest base = null;
         List<SupportReferenceManifest> supports = new ArrayList<>();
         SupportReferenceManifest baseSupport = null;
-        List<ReferenceDigestRecord> digestRecords = new LinkedList<>();
 
         data.put("supportFilename", "Blank");
         data.put("supportId", "");
@@ -532,9 +527,8 @@ public class ReferenceManifestDetailsPageController
         data.put("validationResult", measurements.getOverallValidationResult());
         data.put("swidBase", true);
 
+        List<ReferenceDigestValue> eventValues = new ArrayList<>();
         if (measurements.getDeviceName() != null) {
-            digestRecords = referenceDigestManager
-                    .getRecordsByDeviceName(measurements.getDeviceName());
             supports.addAll(SupportReferenceManifest
                     .select(referenceManifestManager)
                     .byDeviceName(measurements
@@ -558,24 +552,20 @@ public class ReferenceManifestDetailsPageController
                 if (base != null) {
                     data.put("associatedRim", base.getId());
                 }
+
+                eventValues.addAll(referenceEventManager.getValuesByRimId(base));
             }
         }
 
         TCGEventLog measurementLog = new TCGEventLog(measurements.getRimBytes());
-        List<ReferenceDigestValue> eventValue = new ArrayList<>();
         Map<String, ReferenceDigestValue> eventValueMap = new HashMap<>();
-        if (!digestRecords.isEmpty()) {
-            for (ReferenceDigestRecord rdr : digestRecords) {
-                eventValue.addAll(referenceEventManager
-                        .getValuesByRecordId(rdr));
-            }
-            for (ReferenceDigestValue rdv : eventValue) {
-                eventValueMap.put(rdv.getDigestValue(), rdv);
-            }
-            for (TpmPcrEvent measurementEvent : measurementLog.getEventList()) {
-                if (!eventValueMap.containsKey(measurementEvent.getEventDigestStr())) {
-                    livelogEvents.add(measurementEvent);
-                }
+
+        for (ReferenceDigestValue rdv : eventValues) {
+            eventValueMap.put(rdv.getDigestValue(), rdv);
+        }
+        for (TpmPcrEvent measurementEvent : measurementLog.getEventList()) {
+            if (!eventValueMap.containsKey(measurementEvent.getEventDigestStr())) {
+                livelogEvents.add(measurementEvent);
             }
         }
 

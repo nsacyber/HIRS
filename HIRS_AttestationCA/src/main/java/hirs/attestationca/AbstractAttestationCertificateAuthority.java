@@ -1006,14 +1006,15 @@ public abstract class AbstractAttestationCertificateAuthority
                         rdr = referenceDigestManager.saveRecord(dbObj);
                     }  // right now this will not deal with updating
 
-                    if (this.referenceEventManager.getValuesByRecordId(rdr).isEmpty()) {
+                    if (this.referenceEventManager.getValuesByRimId(dbSupport).isEmpty()) {
                         try {
                             TCGEventLog logProcessor = new TCGEventLog(dbSupport.getRimBytes());
                             ReferenceDigestValue rdv;
                             for (TpmPcrEvent tpe : logProcessor.getEventList()) {
-                                rdv = new ReferenceDigestValue(rdr.getId(), tpe.getPcrIndex(),
+                                rdv = new ReferenceDigestValue(dbSupport.getAssociatedRim(),
+                                        dbSupport.getId(), manufacturer, model, tpe.getPcrIndex(),
                                         tpe.getEventDigestStr(), tpe.getEventTypeStr(),
-                                        false, false);
+                                        false, false, tpe.getEventContent());
                                 this.referenceEventManager.saveValue(rdv);
                             }
                         } catch (CertificateException cEx) {
@@ -1045,25 +1046,22 @@ public abstract class AbstractAttestationCertificateAuthority
                         }
                     }
                 } else if (dbSupport.isSwidSupplemental() && !dbSupport.isProcessed()) {
-                    if (rdr != null) {
-                        try {
-                            TCGEventLog logProcessor = new TCGEventLog(dbSupport.getRimBytes());
-                            ReferenceDigestValue rdv;
-                            for (TpmPcrEvent tpe : logProcessor.getEventList()) {
-                                rdv = new ReferenceDigestValue(rdr.getId(), tpe.getPcrIndex(),
-                                        tpe.getEventDigestStr(), tpe.getEventTypeStr(),
-                                        false, false);
-                                this.referenceEventManager.saveValue(rdv);
-                            }
-                            dbSupport.setProcessed(true);
-                            this.referenceManifestManager.update(dbSupport);
-                        } catch (CertificateException cEx) {
-                            LOG.error(cEx);
-                        } catch (NoSuchAlgorithmException noSaEx) {
-                            LOG.error(noSaEx);
-                        } catch (IOException ioEx) {
-                            LOG.error(ioEx);
+                    try {
+                        TCGEventLog logProcessor = new TCGEventLog(dbSupport.getRimBytes());
+                        ReferenceDigestValue rdv;
+                        for (TpmPcrEvent tpe : logProcessor.getEventList()) {
+                            rdv = new ReferenceDigestValue(dbSupport.getAssociatedRim(),
+                                    dbSupport.getId(), manufacturer, model, tpe.getPcrIndex(),
+                                    tpe.getEventDigestStr(), tpe.getEventTypeStr(),
+                                    false, false, tpe.getEventContent());
+                            this.referenceEventManager.saveValue(rdv);
                         }
+                    } catch (CertificateException e) {
+                        e.printStackTrace();
+                    } catch (NoSuchAlgorithmException e) {
+                        e.printStackTrace();
+                    } catch (IOException e) {
+                        e.printStackTrace();
                     }
                 }
             }

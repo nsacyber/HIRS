@@ -1,7 +1,10 @@
 package hirs.persist;
 
+import hirs.data.persist.BaseReferenceManifest;
 import hirs.data.persist.ReferenceDigestRecord;
 import hirs.data.persist.ReferenceDigestValue;
+import hirs.data.persist.ReferenceManifest;
+import hirs.data.persist.SupportReferenceManifest;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.hibernate.Session;
@@ -10,7 +13,9 @@ import org.hibernate.Transaction;
 import org.hibernate.criterion.Restrictions;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 
 /**
@@ -30,6 +35,7 @@ public class DBReferenceEventManager  extends DBManager<ReferenceDigestValue>
     public DBReferenceEventManager(final SessionFactory sessionFactory) {
         super(ReferenceDigestValue.class, sessionFactory);
     }
+
     @Override
     public ReferenceDigestValue saveValue(final ReferenceDigestValue referenceDigestValue) {
         LOGGER.debug("saving event digest value: {}", referenceDigestValue);
@@ -48,7 +54,7 @@ public class DBReferenceEventManager  extends DBManager<ReferenceDigestValue>
             return null;
         }
 
-        if (referenceDigestValue.getDigestRecordId() == null
+        if (referenceDigestValue.getSupportRimId() == null
                 || referenceDigestValue.getDigestValue() == null
                 || referenceDigestValue.getPcrIndex() == -1) {
             LOGGER.error("No reference to get record from db {}", referenceDigestValue);
@@ -62,8 +68,8 @@ public class DBReferenceEventManager  extends DBManager<ReferenceDigestValue>
             LOGGER.debug("retrieving referenceDigestValue from db");
             tx = session.beginTransaction();
             dbRecord = (ReferenceDigestValue) session.createCriteria(ReferenceDigestValue.class)
-                    .add(Restrictions.eq("digestRecordId",
-                            referenceDigestValue.getDigestRecordId()))
+                    .add(Restrictions.eq("supportRimId",
+                            referenceDigestValue.getSupportRimId()))
                     .add(Restrictions.eq("digestValue",
                             referenceDigestValue.getDigestValue()))
                     .add(Restrictions.eq("eventNumber",
@@ -80,6 +86,18 @@ public class DBReferenceEventManager  extends DBManager<ReferenceDigestValue>
             throw new DBManagerException(msg, ex);
         }
         return dbRecord;
+    }
+
+    @Override
+    public final Set<ReferenceDigestValue> getEventList() throws DeviceManagerException {
+        LOGGER.debug("getting ReferenceDigestValue list");
+
+        try {
+            final List<ReferenceDigestValue> events = super.getList(ReferenceDigestValue.class);
+            return new HashSet<>(events);
+        } catch (DBManagerException e) {
+            throw new DeviceManagerException(e);
+        }
     }
 
     @Override
@@ -118,24 +136,108 @@ public class DBReferenceEventManager  extends DBManager<ReferenceDigestValue>
     }
 
     @Override
-    public List<ReferenceDigestValue> getValuesByRecordId(
-            final ReferenceDigestRecord referenceDigestRecord) {
-        LOGGER.debug("Getting digest values for {}", referenceDigestRecord);
-        if (referenceDigestRecord == null) {
-            LOGGER.error("null referenceDigestRecord argument");
-            throw new NullPointerException("null referenceDigestRecord");
-        }
-        if (referenceDigestRecord.getId() == null) {
-            LOGGER.error("null referenceDigestRecord ID argument");
-            throw new NullPointerException("null referenceDigestRecord ID");
+    public List<ReferenceDigestValue> getValueByManufacturer(final String manufacturer) {
+        if (manufacturer == null) {
+            LOGGER.error("null manufacturer argument");
+            throw new NullPointerException("null manufacturer parameter");
         }
 
         List<ReferenceDigestValue> dbDigestValues = new ArrayList<>();
-        UUID uuid = referenceDigestRecord.getId();
         try {
             List<ReferenceDigestValue> dbTempList = super.getList(ReferenceDigestValue.class);
             for (ReferenceDigestValue rdv : dbTempList) {
-                if (rdv.getDigestRecordId().equals(uuid)) {
+                if (rdv.getManufacturer().equals(manufacturer)) {
+                    dbDigestValues.add(rdv);
+                }
+            }
+        } catch (DBManagerException dbMEx) {
+            throw new RuntimeException(dbMEx);
+        }
+        return dbDigestValues;
+    }
+
+    @Override
+    public List<ReferenceDigestValue> getValueByModel(final String model) {
+        if (model == null) {
+            LOGGER.error("null model argument");
+            throw new NullPointerException("null model parameter");
+        }
+
+        List<ReferenceDigestValue> dbDigestValues = new ArrayList<>();
+        try {
+            List<ReferenceDigestValue> dbTempList = super.getList(ReferenceDigestValue.class);
+            for (ReferenceDigestValue rdv : dbTempList) {
+                if (rdv.getModel().equals(model)) {
+                    dbDigestValues.add(rdv);
+                }
+            }
+        } catch (DBManagerException dbMEx) {
+            throw new RuntimeException(dbMEx);
+        }
+        return dbDigestValues;
+    }
+
+    @Override
+    public List<ReferenceDigestValue> getValueByManufacturerModel(
+            final String manufacturer, final String model) {
+        if (model == null) {
+            LOGGER.error("null model argument");
+            throw new NullPointerException("null model parameter");
+        }
+        if (manufacturer == null) {
+            LOGGER.error("null manufacturer argument");
+            throw new NullPointerException("null manufacturer parameter");
+        }
+
+        List<ReferenceDigestValue> dbDigestValues = new ArrayList<>();
+        try {
+            List<ReferenceDigestValue> dbTempList = super.getList(ReferenceDigestValue.class);
+            for (ReferenceDigestValue rdv : dbTempList) {
+                if (rdv.getManufacturer().equals(manufacturer)
+                        && rdv.getModel().equals(model)) {
+                    dbDigestValues.add(rdv);
+                }
+            }
+        } catch (DBManagerException dbMEx) {
+            throw new RuntimeException(dbMEx);
+        }
+        return dbDigestValues;
+    }
+
+    @Override
+    public List<ReferenceDigestValue> getValuesByRecordId(
+            final ReferenceDigestRecord referenceDigestRecord) {
+        List<ReferenceDigestValue> dbDigestValues = new ArrayList<>(0);
+
+        return dbDigestValues;
+    }
+
+    @Override
+    public List<ReferenceDigestValue> getValuesByRimId(
+            final ReferenceManifest referenceManifest) {
+        LOGGER.debug("Getting digest values for {}", referenceManifest);
+        if (referenceManifest == null) {
+            LOGGER.error("null referenceManifest argument");
+            throw new NullPointerException("null referenceManifest");
+        }
+        if (referenceManifest.getId() == null) {
+            LOGGER.error("null referenceManifest ID argument");
+            throw new NullPointerException("null referenceManifest ID");
+        }
+
+        List<ReferenceDigestValue> dbDigestValues = new ArrayList<>();
+        UUID uuid = referenceManifest.getId();
+        UUID rdvUuid = UUID.randomUUID();
+        try {
+            final List<ReferenceDigestValue> dbTempList
+                    = super.getList(ReferenceDigestValue.class);
+            for (ReferenceDigestValue rdv : dbTempList) {
+                if (referenceManifest instanceof BaseReferenceManifest) {
+                    rdvUuid = rdv.getBaseRimId();
+                } else if (referenceManifest instanceof SupportReferenceManifest) {
+                    rdvUuid = rdv.getSupportRimId();
+                }
+                if (rdvUuid.equals(uuid)) {
                     dbDigestValues.add(rdv);
                 }
             }
@@ -155,7 +257,8 @@ public class DBReferenceEventManager  extends DBManager<ReferenceDigestValue>
 
         List<ReferenceDigestValue> dbDigestValues = new ArrayList<>();
         try {
-            List<ReferenceDigestValue> dbTempList = super.getList(ReferenceDigestValue.class);
+            final List<ReferenceDigestValue> dbTempList
+                    = super.getList(ReferenceDigestValue.class);
             for (ReferenceDigestValue rdv : dbTempList) {
                 if (rdv.getEventType().equals(eventType)) {
                     dbDigestValues.add(rdv);
