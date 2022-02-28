@@ -144,7 +144,8 @@ string RestfulClientProvisioner::sendAttestationCertificateRequest(
         }
 
         // Return the public attestation certificate
-        return response.certificate();
+//        return response.certificate();
+        return response.SerializeAsString();
 
     } else {
         stringstream errormsg;
