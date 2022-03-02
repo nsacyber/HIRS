@@ -460,8 +460,8 @@ public abstract class AbstractAttestationCertificateAuthority
             ProvisionerTpm2.IdentityClaimResponse response
                     = ProvisionerTpm2.IdentityClaimResponse.newBuilder()
                     .setCredentialBlob(blobStr).setPcrMask(pcrQuoteMask)
+                    .setStatus(ProvisionerTpm2.ResponseStatus.PASS)
                     .build();
-
             return response.toByteArray();
         } else {
             LOG.error("Supply chain validation did not succeed. Result is: "
@@ -470,6 +470,7 @@ public abstract class AbstractAttestationCertificateAuthority
             ProvisionerTpm2.IdentityClaimResponse response
                     = ProvisionerTpm2.IdentityClaimResponse.newBuilder()
                     .setCredentialBlob(blobStr)
+                    .setStatus(ProvisionerTpm2.ResponseStatus.FAIL)
                     .build();
             return response.toByteArray();
         }
@@ -640,6 +641,7 @@ public abstract class AbstractAttestationCertificateAuthority
                         .copyFrom(derEncodedAttestationCertificate);
                 ProvisionerTpm2.CertificateResponse response = ProvisionerTpm2.CertificateResponse
                         .newBuilder().setCertificate(certificateBytes)
+                        .setStatus(ProvisionerTpm2.ResponseStatus.PASS)
                         .build();
 
                 saveAttestationCertificate(derEncodedAttestationCertificate, endorsementCredential,
@@ -651,7 +653,9 @@ public abstract class AbstractAttestationCertificateAuthority
                         + "Firmware Quote Validation failed. Result is: "
                         + validationResult);
                 ProvisionerTpm2.CertificateResponse response = ProvisionerTpm2.CertificateResponse
-                        .newBuilder().setCertificate(ByteString.EMPTY).build();
+                        .newBuilder()
+                        .setStatus(ProvisionerTpm2.ResponseStatus.FAIL)
+                        .build();
                 return response.toByteArray();
             }
         } else {

@@ -77,9 +77,15 @@ message TpmQuote {
   required string success = 1;
 }
 
+enum ResponseStatus {
+  PASS = 0;
+  FAIL = 1;
+}
+
 message IdentityClaimResponse {
-  required bytes credential_blob = 1;
+  optional bytes credential_blob = 1;
   optional string pcr_mask = 2;
+  optional ResponseStatus status = 3 [default = FAIL];
 }
 
 message CertificateRequest {
@@ -88,6 +94,7 @@ message CertificateRequest {
 }
 
 message CertificateResponse {
-  required bytes certificate = 1;
+  optional bytes certificate = 1;
+  optional ResponseStatus status = 2 [default = FAIL];
 }
 
