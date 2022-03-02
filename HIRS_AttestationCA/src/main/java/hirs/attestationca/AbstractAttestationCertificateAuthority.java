@@ -128,8 +128,6 @@ public abstract class AbstractAttestationCertificateAuthority
             = CATALINA_HOME + TOMCAT_UPLOAD_DIRECTORY;
     private static final String PCR_QUOTE_MASK = "0,1,2,3,4,5,6,7,8,9,10,11,12,13,"
             + "14,15,16,17,18,19,20,21,22,23";
-    private static final byte STATUS_PASS = 0;
-    private static final byte STATUS_FAIL = 1;
 
     /**
      * Number of bytes to include in the TPM2.0 nonce.
