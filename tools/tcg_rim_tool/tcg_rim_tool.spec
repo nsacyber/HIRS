@@ -12,6 +12,8 @@ BuildRequires:  java-headless >= 1:1.8.0
 %description
 This tool will generate a base RIM file for PC clients in accordance with the schema located at http://standards.iso.org/iso/19770/-2/2015/schema.xsd.  The generated RIM can either be empty if no arguments are given, or contain a payload if an input file is provided.  The tool can also verify a given RIMfile against the schema. Use -h or --help to see a list of commands and uses.
 
+%global __os_install_post %{nil}
+
 %prep
 %setup -q -c -n %{name}
 
