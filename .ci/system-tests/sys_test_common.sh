@@ -43,7 +43,7 @@ docker exec $aca_container mysql -u root -D hirs_db -e "Update SupplyChainPolicy
 
 setPolicyEkPcFw() {
 docker exec $aca_container mysql -u root -D hirs_db -e "Update SupplyChainPolicy set enableEcValidation=1, enablePcAttributeValidation=1, enablePcValidation=1,
-           enableUtcValidation=0, enableFirmwareValidation=1, enableExpiredCertificateValidation=0, enableIgnoreGpt=0, enableIgnoreIma=0, enableIgnoretBoot=0;"
+           enableUtcValidation=0, enableFirmwareValidation=1, enableExpiredCertificateValidation=0, enableIgnoreGpt=0, enableIgnoreIma=1, enableIgnoretBoot=0;"
 }
 
 # Clear all ACA DB items including policy
@@ -107,7 +107,7 @@ setPlatformCerts() {
 # Places RIM files held in the test folder in the provisioners tcg folder
 # setRims <profile> <test>
 setRims() {
-docker exec $tpm2_container sh /HIRS/.ci/system-tests/container/rim_setup.sh $1 $2 
+docker exec $tpm2_container sh /HIRS/.ci/system-tests/container/rim_setup.sh $1 $2 $3
 #docker exec $tpm2_container bash -c "find / -name oem_platform_v1_Base.cer"
 }
 
