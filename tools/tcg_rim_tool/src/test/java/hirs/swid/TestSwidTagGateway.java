@@ -14,13 +14,19 @@ public class TestSwidTagGateway {
 	private SwidTagGateway gateway;
 	private SwidTagValidator validator;
 	private final String DEFAULT_OUTPUT = "generated_swidTag.swidtag";
-	private final String DEFAULT_WITH_CERT = "generated_with_cert.swidtag";
-	private final String DEFAULT_NO_CERT = "generated_no_cert.swidtag";
-	private final String ATTRIBUTES_FILE = TestSwidTagGateway.class.getClassLoader().getResource("rim_fields.json").getPath();
-	private final String JKS_KEYSTORE_FILE = TestSwidTagGateway.class.getClassLoader().getResource("keystore.jks").getPath();
-	private final String SIGNING_CERT_FILE = TestSwidTagGateway.class.getClassLoader().getResource("RimSignCert.pem").getPath();
-	private final String PRIVATE_KEY_FILE = TestSwidTagGateway.class.getClassLoader().getResource("privateRimKey.pem").getPath();
-	private final String SUPPORT_RIM_FILE = TestSwidTagGateway.class.getClassLoader().getResource("TpmLog.bin").getPath();
+	private final String BASE_USER_CERT = "generated_user_cert.swidtag";
+	private final String BASE_USER_CERT_EMBED = "generated_user_cert_embed.swidtag";
+	private final String BASE_DEFAULT_CERT = "generated_default_cert.swidtag";
+	private final String ATTRIBUTES_FILE = TestSwidTagGateway.class.getClassLoader()
+			.getResource("rim_fields.json").getPath();
+	private final String JKS_KEYSTORE_FILE = TestSwidTagGateway.class.getClassLoader()
+			.getResource("keystore.jks").getPath();
+	private final String SIGNING_CERT_FILE = TestSwidTagGateway.class.getClassLoader()
+			.getResource("RimSignCert.pem").getPath();
+	private final String PRIVATE_KEY_FILE = TestSwidTagGateway.class.getClassLoader()
+			.getResource("privateRimKey.pem").getPath();
+	private final String SUPPORT_RIM_FILE = TestSwidTagGateway.class.getClassLoader()
+			.getResource("TpmLog.bin").getPath();
 	private InputStream expectedFile;
 
 	@BeforeClass
@@ -45,12 +51,31 @@ public class TestSwidTagGateway {
 	 * where RimSignCert.pem has the AIA extension.
 	 */
 	@Test
-	public void testCreateBaseWithCert() {
+	public void testCreateBaseUserCertNotEmbedded() {
 		gateway.setDefaultCredentials(false);
 		gateway.setPemCertificateFile(SIGNING_CERT_FILE);
 		gateway.setPemPrivateKeyFile(PRIVATE_KEY_FILE);
+		gateway.setEmbeddedCert(false);
 		gateway.generateSwidTag(DEFAULT_OUTPUT);
-		expectedFile = TestSwidTagGateway.class.getClassLoader().getResourceAsStream(DEFAULT_WITH_CERT);
+		expectedFile = TestSwidTagGateway.class.getClassLoader()
+				.getResourceAsStream(BASE_USER_CERT);
+		Assert.assertTrue(compareFileBytesToExpectedFile(DEFAULT_OUTPUT));
+	}
+
+	/**
+	 * This test corresponds to the arguments:
+	 * -c base -l TpmLog.bin -k privateRimKey.pem -p RimSignCert.pem -e
+	 * where RimSignCert.pem has the AIA extension.
+	 */
+	@Test
+	public void testCreateBaseUserCertEmbedded() {
+		gateway.setDefaultCredentials(false);
+		gateway.setPemCertificateFile(SIGNING_CERT_FILE);
+		gateway.setPemPrivateKeyFile(PRIVATE_KEY_FILE);
+		gateway.setEmbeddedCert(true);
+		gateway.generateSwidTag(DEFAULT_OUTPUT);
+		expectedFile = TestSwidTagGateway.class.getClassLoader()
+				.getResourceAsStream(BASE_USER_CERT_EMBED);
 		Assert.assertTrue(compareFileBytesToExpectedFile(DEFAULT_OUTPUT));
 	}
 
@@ -59,11 +84,12 @@ public class TestSwidTagGateway {
 	 * -c base -l TpmLog.bin
 	 */
 	@Test
-	public void testCreateBaseWithoutCert() {
+	public void testCreateBaseDefaultCert() {
 		gateway.setDefaultCredentials(true);
 		gateway.setJksTruststoreFile(JKS_KEYSTORE_FILE);
 		gateway.generateSwidTag(DEFAULT_OUTPUT);
-		expectedFile = TestSwidTagGateway.class.getClassLoader().getResourceAsStream(DEFAULT_NO_CERT);
+		expectedFile = TestSwidTagGateway.class.getClassLoader()
+				.getResourceAsStream(BASE_DEFAULT_CERT);
 		Assert.assertTrue(compareFileBytesToExpectedFile(DEFAULT_OUTPUT));
 	}
 
@@ -73,7 +99,8 @@ public class TestSwidTagGateway {
 	 */
 	@Test
 	public void testValidateSwidTag() {
-		String filepath = TestSwidTagGateway.class.getClassLoader().getResource(DEFAULT_WITH_CERT).getPath();
+		String filepath = TestSwidTagGateway.class.getClassLoader()
+				.getResource(BASE_USER_CERT).getPath();
 		System.out.println("Validating file at " + filepath);
 		Assert.assertTrue(validator.validateSwidTag(filepath));
 	}
