@@ -388,18 +388,6 @@ public class SwidTagGateway {
                 jsonObject.getString(SwidTagConstants._N8060_ENVVARSUFFIX.getLocalPart(), ""));
         addNonNullAttribute(attributes, SwidTagConstants._N8060_PATHSEPARATOR,
                 jsonObject.getString(SwidTagConstants._N8060_PATHSEPARATOR.getLocalPart(), ""));
-        String supportRimFormat = jsonObject.getString(SwidTagConstants.SUPPORT_RIM_FORMAT,
-                SwidTagConstants.TCG_EVENTLOG_ASSERTION);
-        if (supportRimFormat != null && !supportRimFormat.isEmpty()) {
-            attributes.put(SwidTagConstants._SUPPORT_RIM_FORMAT, supportRimFormat);
-        } else {
-            attributes.put(SwidTagConstants._SUPPORT_RIM_FORMAT,
-                    SwidTagConstants.TCG_EVENTLOG_ASSERTION);
-        }
-        addNonNullAttribute(attributes, SwidTagConstants._SUPPORT_RIM_TYPE,
-                jsonObject.getString(SwidTagConstants.SUPPORT_RIM_TYPE, ""));
-        addNonNullAttribute(attributes, SwidTagConstants._SUPPORT_RIM_URI_GLOBAL,
-                jsonObject.getString(SwidTagConstants.SUPPORT_RIM_URI_GLOBAL, ""));
 
         return payload;
     }
@@ -413,6 +401,21 @@ public class SwidTagGateway {
     private Directory createDirectory(JsonObject jsonObject) {
         Directory directory = objectFactory.createDirectory();
         directory.setName(jsonObject.getString(SwidTagConstants.NAME, ""));
+        Map<QName, String> attributes = directory.getOtherAttributes();
+        String supportRimFormat = jsonObject.getString(SwidTagConstants.SUPPORT_RIM_FORMAT,
+                SwidTagConstants.SUPPORT_RIM_FORMAT_MISSING);
+        if (!supportRimFormat.equals(SwidTagConstants.SUPPORT_RIM_FORMAT_MISSING)) {
+            if (supportRimFormat.isEmpty()) {
+                attributes.put(SwidTagConstants._SUPPORT_RIM_FORMAT,
+                        SwidTagConstants.TCG_EVENTLOG_ASSERTION);
+            } else {
+                attributes.put(SwidTagConstants._SUPPORT_RIM_FORMAT, supportRimFormat);
+            }
+        }
+        addNonNullAttribute(attributes, SwidTagConstants._SUPPORT_RIM_TYPE,
+                jsonObject.getString(SwidTagConstants.SUPPORT_RIM_TYPE, ""));
+        addNonNullAttribute(attributes, SwidTagConstants._SUPPORT_RIM_URI_GLOBAL,
+                jsonObject.getString(SwidTagConstants.SUPPORT_RIM_URI_GLOBAL, ""));
 
         return directory;
     }
@@ -428,9 +431,23 @@ public class SwidTagGateway {
     private hirs.swid.xjc.File createFile(JsonObject jsonObject) {
         hirs.swid.xjc.File file = objectFactory.createFile();
         file.setName(jsonObject.getString(SwidTagConstants.NAME, ""));
+        Map<QName, String> attributes = file.getOtherAttributes();
+        String supportRimFormat = jsonObject.getString(SwidTagConstants.SUPPORT_RIM_FORMAT,
+                SwidTagConstants.SUPPORT_RIM_FORMAT_MISSING);
+        if (!supportRimFormat.equals(SwidTagConstants.SUPPORT_RIM_FORMAT_MISSING)) {
+            if (supportRimFormat.isEmpty()) {
+                attributes.put(SwidTagConstants._SUPPORT_RIM_FORMAT,
+                        SwidTagConstants.TCG_EVENTLOG_ASSERTION);
+            } else {
+                attributes.put(SwidTagConstants._SUPPORT_RIM_FORMAT, supportRimFormat);
+            }
+        }
+        addNonNullAttribute(attributes, SwidTagConstants._SUPPORT_RIM_TYPE,
+                jsonObject.getString(SwidTagConstants.SUPPORT_RIM_TYPE, ""));
+        addNonNullAttribute(attributes, SwidTagConstants._SUPPORT_RIM_URI_GLOBAL,
+                jsonObject.getString(SwidTagConstants.SUPPORT_RIM_URI_GLOBAL, ""));
         File rimEventLogFile = new File(rimEventLog);
         file.setSize(new BigInteger(Long.toString(rimEventLogFile.length())));
-        Map<QName, String> attributes = file.getOtherAttributes();
         addNonNullAttribute(attributes, SwidTagConstants._SHA256_HASH, HashSwid.get256Hash(rimEventLog));
 
         return file;

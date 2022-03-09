@@ -69,6 +69,7 @@ public class SwidTagConstants {
     public static final String SUPPORT_RIM_FORMAT = "supportRIMFormat";
     public static final String TCG_EVENTLOG_ASSERTION = "TCG_EventLog_Assertion";
     public static final String TPM_PCR_ASSERTION = "TPM_PCR_Assertion";
+    public static final String SUPPORT_RIM_FORMAT_MISSING = "supportRIMFormat missing";
     public static final String SUPPORT_RIM_URI_GLOBAL = "supportRIMURIGlobal";
 
     public static final QName _SHA256_HASH = new QName(
