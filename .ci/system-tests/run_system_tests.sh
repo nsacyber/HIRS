@@ -16,7 +16,7 @@ set -a
 
 echo "********  Setting up for HIRS System Tests for TPM 2.0 ******** "
 
-# expand dmi files for mounting to the provisioner containers
+# Expand linux dmi files to mount to the provisioner container to simulate device component
 unzip -q .ci/system-tests/profiles/laptop/laptop_dmi.zip -d .ci/system-tests/profiles/laptop/
 # Start System Testing Docker Environment
 pushd .ci/docker > /dev/null
@@ -53,7 +53,6 @@ docker exec $tpm2_container mkdir -p /HIRS/logs/provisioner/;
 docker exec $tpm2_container cp -a /var/log/hirs/provisioner/. /HIRS/logs/provisioner/;
 docker exec $tpm2_container chmod -R 777 /HIRS/logs/;
 
-# Display container log
 echo ""
 echo "===========HIRS Tests and Log collection complete ==========="
 
@@ -62,7 +61,7 @@ echo "End of System Tests for TPM 2.0, cleaning up..."
 echo ""
 # Clean up services and network
 popd > /dev/null
-pushd .ci/docker
+pushd .ci/docker > /dev/null
 docker-compose -f docker-compose-system-test.yml down -v
 popd > /dev/null
 # Clean up dangling containers
