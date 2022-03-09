@@ -1,12 +1,11 @@
 apply plugin: 'java'
-version = '2.1.0'
 
 repositories {
 	mavenCentral()
 }
 
 dependencies {
-	compile 'javax.json:javax.json-api:1.1.4', 'org.glassfish:javax.json:1.1.4',  'com.beust:jcommander:1.72', 'org.bouncycastle:bcmail-jdk15on:1.59'
+	compile 'javax.json:javax.json-api:1.1.4', 'org.glassfish:javax.json:1.1.4', 'com.beust:jcommander:1.72', 'org.bouncycastle:bcmail-jdk15on:1.59'
 	testCompile 'org.testng:testng:6.8.8'
 }
 

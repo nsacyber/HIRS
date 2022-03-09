@@ -144,7 +144,21 @@ int provision() {
     string response = provisioner.sendIdentityClaim(identityClaim);
     hirs::pb::IdentityClaimResponse icr;
 
-    if (!icr.ParseFromString(response) || !icr.has_credential_blob()) {
+    if (!icr.ParseFromString(response) || !icr.has_status()) {
+        logger.error("The ACA did not send a provisioning status.");
+        cout << "----> Provisioning failed." << endl;
+        cout << "Please refer to the Attestation CA for details." << endl;
+        return 0;
+    }
+
+    if (icr.status() == hirs::pb::ResponseStatus::FAIL) {
+        logger.error("The ACA responded with a FAIL status.");
+        cout << "----> Provisioning failed." << endl;
+        cout << "Please refer to the Attestation CA for details." << endl;
+        return 0;
+    }
+
+    if (!icr.has_credential_blob()) {
         logger.error("The ACA did not send make credential blob.");
         cout << "----> Provisioning failed." << endl;
         cout << "The ACA did not send make credential information." << endl;
@@ -182,6 +196,15 @@ int provision() {
 
     const string& akCertificateByteString
             = provisioner.sendAttestationCertificateRequest(certificateRequest);
+
+    hirs::pb::CertificateResponse cr;
+    if (!cr.ParseFromString(akCertificateByteString) && cr.has_status()) {
+        if (cr.status() == hirs::pb::ResponseStatus::FAIL) {
+            cout << "----> Provisioning the quote failed.";
+            cout << "Please refer to the Attestation CA for details." << endl;
+            return 0;
+        }
+    }
 
     if (akCertificateByteString == "") {
         cout << "----> Provisioning the quote failed.";

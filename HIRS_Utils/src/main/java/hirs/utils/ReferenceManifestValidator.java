@@ -180,7 +180,7 @@ public class ReferenceManifestValidator {
                 }
             } else {
                 subjectKeyIdentifier = getKeyName(rim);
-                if (subjectKeyIdentifier.equals(cert.getSubjectKeyIdString().substring(8))) {
+                if (subjectKeyIdentifier.equals(cert.getSubjectKeyIdString())) {
                     context = new DOMValidateContext(cert.getX509Certificate().getPublicKey(),
                             nodes.item(0));
                 }

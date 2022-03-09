@@ -473,11 +473,12 @@ public class PolicyPageController extends PageController<NoPageParams> {
 
                 if (generateCertificateEnabled) {
                     threshold = ppModel.getThresholdValue();
-                    if (threshold == null) {
-                        threshold = SupplyChainPolicy.YEAR;
-                    }
                 } else {
                     threshold = ppModel.getReissueThreshold();
+                }
+
+                if (threshold == null || threshold.isEmpty()) {
+                    threshold = SupplyChainPolicy.YEAR;
                 }
 
                 policy.setReissueThreshold(threshold);
@@ -542,11 +543,12 @@ public class PolicyPageController extends PageController<NoPageParams> {
 
                 if (generateDevIdCertificateEnabled) {
                     threshold = ppModel.getDevIdThresholdValue();
-                    if (threshold == null) {
-                        threshold = SupplyChainPolicy.YEAR;
-                    }
                 } else {
                     threshold = ppModel.getDevIdReissueThreshold();
+                }
+
+                if (threshold == null || threshold.isEmpty()) {
+                    threshold = SupplyChainPolicy.YEAR;
                 }
 
                 policy.setDevIdReissueThreshold(threshold);

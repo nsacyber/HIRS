@@ -10,13 +10,17 @@ import hirs.attestationca.portal.page.PageController;
 import hirs.attestationca.portal.page.PageMessages;
 import hirs.attestationca.portal.page.params.NoPageParams;
 import hirs.data.persist.BaseReferenceManifest;
+import hirs.data.persist.ReferenceDigestValue;
 import hirs.data.persist.ReferenceManifest;
 import hirs.data.persist.SupportReferenceManifest;
 import hirs.data.persist.SwidResource;
 import hirs.data.persist.certificate.Certificate;
 import hirs.persist.CriteriaModifier;
 import hirs.persist.DBManagerException;
+import hirs.persist.ReferenceEventManager;
 import hirs.persist.ReferenceManifestManager;
+import hirs.tpm.eventlog.TCGEventLog;
+import hirs.tpm.eventlog.TpmPcrEvent;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.codec.binary.Hex;
 import org.apache.logging.log4j.LogManager;
@@ -42,6 +46,7 @@ import java.io.IOException;
 import java.net.URISyntaxException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.security.cert.CertificateException;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -69,6 +74,7 @@ public class ReferenceManifestPageController
 
     private final BiosDateValidator biosValidator;
     private final ReferenceManifestManager referenceManifestManager;
+    private final ReferenceEventManager referenceEventManager;
     private static final Logger LOGGER
             = LogManager.getLogger(ReferenceManifestPageController.class);
 
@@ -118,12 +124,15 @@ public class ReferenceManifestPageController
      * Constructor providing the Page's display and routing specification.
      *
      * @param referenceManifestManager the reference manifest manager
+     * @param referenceEventManager this is the reference event manager
      */
     @Autowired
     public ReferenceManifestPageController(
-            final ReferenceManifestManager referenceManifestManager) {
+            final ReferenceManifestManager referenceManifestManager,
+            final ReferenceEventManager referenceEventManager) {
         super(Page.REFERENCE_MANIFESTS);
         this.referenceManifestManager = referenceManifestManager;
+        this.referenceEventManager = referenceEventManager;
         this.biosValidator = new BiosDateValidator(BIOS_RELEASE_DATE_FORMAT);
     }
 
@@ -173,6 +182,29 @@ public class ReferenceManifestPageController
                         referenceManifestManager,
                         input, orderColumnName, criteriaModifier);
 
+        SupportReferenceManifest support;
+//        List<ReferenceDigestValue> events;
+//        for (ReferenceManifest rim : records) {
+//            if (rim instanceof SupportReferenceManifest) {
+//                support = (SupportReferenceManifest) rim;
+//                events = referenceEventManager.getValuesByRimId(support);
+//
+//                for (ReferenceDigestValue rdv : events) {
+//                    // the selector isn't giving me what I want
+//                    if (support.getPlatformManufacturer() != null) {
+//                        rdv.setManufacturer(support.getPlatformManufacturer());
+//                    }
+//                    if (support.getPlatformModel() != null) {
+//                        rdv.setModel(support.getPlatformModel());
+//                    }
+//                    if (support.getAssociatedRim() != null) {
+//                        rdv.setBaseRimId(support.getAssociatedRim());
+//                    }
+//                    referenceEventManager.updateRecord(rdv);
+//                }
+//            }
+//        }
+
         LOGGER.debug("Returning list of size: " + records.size());
         return new DataTableResponse<>(records, input);
     }
@@ -207,34 +239,42 @@ public class ReferenceManifestPageController
 
             //Parse reference manifests
             ReferenceManifest rim = parseRIM(file, supportRIM, messages);
-
+            // store first then update
+            ReferenceManifest  referenceManifest = storeManifest(file.getOriginalFilename(),
+                    messages,
+                    rim,
+                    supportRIM);
             //Store only if it was parsed
             if (rim != null) {
                 if (supportRIM) {
                     // look for associated base/support
+                    // if I am the support rim, my hash is in the meta data of the swidtag
                     Set<BaseReferenceManifest> rims = BaseReferenceManifest
                             .select(referenceManifestManager).getRIMs();
                     support = (SupportReferenceManifest) rim;
                     // update information for associated support rim
-                    for (BaseReferenceManifest dbRim : rims) {
-                        for (SwidResource swid : dbRim.parseResource()) {
-                            if (swid.getName().equals(rim.getFileName())) {
-                                support.setSwidTagVersion(dbRim.getSwidTagVersion());
-                                support.setPlatformManufacturer(dbRim.getPlatformManufacturer());
-                                support.setPlatformModel(dbRim.getPlatformModel());
-                                support.setTagId(dbRim.getTagId());
-                                support.setAssociatedRim(dbRim.getId());
-                                support.setUpdated(true);
-                                break;
+                    for (BaseReferenceManifest bRim : rims) {
+                        for (SwidResource swid : bRim.parseResource()) {
+                            if (support.getHexDecHash().equals(swid.getHashValue())) {
+                                updateSupportRimInfo(bRim, support);
+                                referenceManifestManager.update(support);
                             }
+                        }
+                        if (support.isUpdated()) {
+                            for (ReferenceDigestValue rdv : referenceEventManager
+                                    .getValuesByRimId(support)) {
+                                rdv.updateInfo(support);
+                                referenceEventManager.updateRecord(rdv);
+                            }
+                            break;
                         }
                     }
                 } else {
-                    base = (BaseReferenceManifest) rim;
-
+                    base = (BaseReferenceManifest) referenceManifest;
+                    // the base can find the support rim by the meta data hash
                     for (SwidResource swid : base.parseResource()) {
                         support = SupportReferenceManifest.select(referenceManifestManager)
-                                .byFileName(swid.getName()).getRIM();
+                                .byHexDecHash(swid.getHashValue()).getRIM();
                         if (support != null) {
                             base.setAssociatedRim(support.getId());
                             if (support.isUpdated()) {
@@ -242,27 +282,17 @@ public class ReferenceManifestPageController
                                 // instead of finding it, it is uptodate but still search
                                 break;
                             } else {
-                                support.setSwidTagVersion(base.getSwidTagVersion());
-                                support.setPlatformManufacturer(base.getPlatformManufacturer());
-                                support.setPlatformModel(base.getPlatformModel());
-                                support.setTagId(base.getTagId());
-                                support.setUpdated(true);
+                                updateSupportRimInfo(base, support);
+                                updateTpmEvents(support);
                                 try {
                                     referenceManifestManager.update(support);
                                 } catch (DBManagerException dbmEx) {
-                                    LOGGER.error(String.format("Couldn't update Support RIM "
-                                                    + "%s with associated UUID %s", rim.getTagId(),
-                                            support.getId()), dbmEx);
+                                    LOGGER.warn("Failed to update Support RIM");
                                 }
                             }
                         }
                     }
                 }
-
-                storeManifest(file.getOriginalFilename(),
-                        messages,
-                        rim,
-                        supportRIM);
             }
         }
 
@@ -304,6 +334,17 @@ public class ReferenceManifestPageController
                 String deleteCompletedMessage = "RIM successfully deleted";
                 messages.addInfo(deleteCompletedMessage);
                 LOGGER.info(deleteCompletedMessage);
+
+                // if support rim, update associated events
+                if (referenceManifest instanceof SupportReferenceManifest) {
+                    List<ReferenceDigestValue> rdvs = referenceEventManager
+                            .getValuesByRimId(referenceManifest);
+
+                    for (ReferenceDigestValue rdv : rdvs) {
+                       rdv.archive("Support RIM was deleted");
+                       referenceEventManager.updateRecord(rdv);
+                    }
+                }
             }
         } catch (IllegalArgumentException ex) {
             String uuidError = "Failed to parse ID from: " + id;
@@ -486,7 +527,7 @@ public class ReferenceManifestPageController
      * @param supportRim boolean flag indicating if this is a support RIM
      * process.
      */
-    private void storeManifest(
+    private ReferenceManifest storeManifest(
             final String fileName,
             final PageMessages messages,
             final ReferenceManifest referenceManifest,
@@ -529,25 +570,26 @@ public class ReferenceManifestPageController
                     + "failed (%s): ", fileName);
             messages.addError(failMessage + e.getMessage());
             LOGGER.error(failMessage, e);
-            return;
+            return null;
         }
 
         try {
             // save the new certificate if no match is found
             if (existingManifest == null) {
-                referenceManifestManager.save(referenceManifest);
+                saveTpmEvents(referenceManifestManager.save(referenceManifest));
 
                 final String successMsg = String.format("RIM successfully uploaded (%s): ",
                         fileName);
                 messages.addSuccess(successMsg);
                 LOGGER.info(successMsg);
-                return;
+
+                return referenceManifest;
             }
         } catch (DBManagerException dbmEx) {
             final String failMessage = String.format("Storing RIM failed (%s): ", fileName);
             messages.addError(failMessage + dbmEx.getMessage());
             LOGGER.error(failMessage, dbmEx);
-            return;
+            return null;
         }
 
         try {
@@ -562,12 +604,98 @@ public class ReferenceManifestPageController
                         = String.format("Pre-existing RIM found and unarchived (%s): ", fileName);
                 messages.addSuccess(successMsg);
                 LOGGER.info(successMsg);
+                return existingManifest;
             }
         } catch (DBManagerException dbmEx) {
             final String failMessage = String.format("Found an identical pre-existing RIM in the "
                     + "archive, but failed to unarchive it (%s): ", fileName);
             messages.addError(failMessage + dbmEx.getMessage());
             LOGGER.error(failMessage, dbmEx);
+
+            return null;
+        }
+
+        return referenceManifest;
+    }
+
+    private void updateSupportRimInfo(final BaseReferenceManifest dbBaseRim,
+                                      final SupportReferenceManifest supportRim) {
+        // I have to assume the baseRim is from the database
+        // Updating the id values, manufacturer, model
+        if (supportRim != null) {
+            supportRim.setSwidTagVersion(dbBaseRim.getSwidTagVersion());
+            supportRim.setPlatformManufacturer(dbBaseRim.getPlatformManufacturer());
+            supportRim.setPlatformModel(dbBaseRim.getPlatformModel());
+            supportRim.setTagId(dbBaseRim.getTagId());
+            supportRim.setAssociatedRim(dbBaseRim.getId());
+            supportRim.setUpdated(true);
+        }
+    }
+
+    private void updateTpmEvents(final ReferenceManifest referenceManifest) {
+        String manufacturer;
+        String model;
+        if (referenceManifest.getPlatformManufacturer() == null) {
+            manufacturer = "";
+        } else {
+            manufacturer = referenceManifest.getPlatformManufacturer();
+        }
+
+        if (referenceManifest.getPlatformModel() == null) {
+            model = "";
+        } else {
+            model = referenceManifest.getPlatformModel();
+        }
+
+        List<ReferenceDigestValue> rdvs = referenceEventManager
+                .getValuesByRimId(referenceManifest);
+
+        for (ReferenceDigestValue rdv : rdvs) {
+            rdv.setModel(model);
+            rdv.setManufacturer(manufacturer);
+            rdv.setBaseRimId(referenceManifest.getAssociatedRim());
+            referenceEventManager.updateRecord(rdv);
+        }
+    }
+
+    private void saveTpmEvents(final ReferenceManifest referenceManifest) {
+        SupportReferenceManifest dbSupport;
+        String manufacturer;
+        String model;
+        if (referenceManifest instanceof SupportReferenceManifest) {
+            dbSupport = (SupportReferenceManifest) referenceManifest;
+        } else {
+            return;
+        }
+        TCGEventLog logProcessor = null;
+        if (dbSupport.getPlatformManufacturer() == null) {
+            manufacturer = "";
+        } else {
+            manufacturer = dbSupport.getPlatformManufacturer();
+        }
+
+        if (dbSupport.getPlatformModel() == null) {
+            model = "";
+        } else {
+            model = dbSupport.getPlatformModel();
+        }
+        try {
+            logProcessor = new TCGEventLog(dbSupport.getRimBytes());
+            ReferenceDigestValue rdv;
+            for (TpmPcrEvent tpe : logProcessor.getEventList()) {
+                rdv = new ReferenceDigestValue(dbSupport.getAssociatedRim(),
+                        dbSupport.getId(), manufacturer,
+                        model, tpe.getPcrIndex(),
+                        tpe.getEventDigestStr(), tpe.getEventTypeStr(),
+                        false, false, tpe.getEventContent());
+                this.referenceEventManager.saveValue(rdv);
+            }
+        } catch (CertificateException e) {
+            e.printStackTrace();
+        } catch (NoSuchAlgorithmException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
         }
     }
 }

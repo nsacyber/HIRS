@@ -460,8 +460,8 @@ public abstract class AbstractAttestationCertificateAuthority
             ProvisionerTpm2.IdentityClaimResponse response
                     = ProvisionerTpm2.IdentityClaimResponse.newBuilder()
                     .setCredentialBlob(blobStr).setPcrMask(pcrQuoteMask)
+                    .setStatus(ProvisionerTpm2.ResponseStatus.PASS)
                     .build();
-
             return response.toByteArray();
         } else {
             LOG.error("Supply chain validation did not succeed. Result is: "
@@ -470,6 +470,7 @@ public abstract class AbstractAttestationCertificateAuthority
             ProvisionerTpm2.IdentityClaimResponse response
                     = ProvisionerTpm2.IdentityClaimResponse.newBuilder()
                     .setCredentialBlob(blobStr)
+                    .setStatus(ProvisionerTpm2.ResponseStatus.FAIL)
                     .build();
             return response.toByteArray();
         }
@@ -640,6 +641,7 @@ public abstract class AbstractAttestationCertificateAuthority
                         .copyFrom(derEncodedAttestationCertificate);
                 ProvisionerTpm2.CertificateResponse response = ProvisionerTpm2.CertificateResponse
                         .newBuilder().setCertificate(certificateBytes)
+                        .setStatus(ProvisionerTpm2.ResponseStatus.PASS)
                         .build();
 
                 saveAttestationCertificate(derEncodedAttestationCertificate, endorsementCredential,
@@ -651,7 +653,9 @@ public abstract class AbstractAttestationCertificateAuthority
                         + "Firmware Quote Validation failed. Result is: "
                         + validationResult);
                 ProvisionerTpm2.CertificateResponse response = ProvisionerTpm2.CertificateResponse
-                        .newBuilder().setCertificate(ByteString.EMPTY).build();
+                        .newBuilder()
+                        .setStatus(ProvisionerTpm2.ResponseStatus.FAIL)
+                        .build();
                 return response.toByteArray();
             }
         } else {
@@ -840,7 +844,8 @@ public abstract class AbstractAttestationCertificateAuthority
                 }
             }
         } else {
-            LOG.warn("Device did not send support RIM file...");
+            LOG.warn(String.format("%s did not send support RIM file...",
+                    dv.getNw().getHostname()));
         }
 
         if (dv.getSwidfileCount() > 0) {
@@ -876,7 +881,8 @@ public abstract class AbstractAttestationCertificateAuthority
                 }
             }
         } else {
-            LOG.warn("Device did not send swid tag file...");
+            LOG.warn(String.format("%s did not send swid tag file...",
+                    dv.getNw().getHostname()));
         }
 
         //update Support RIMs and Base RIMs.
@@ -948,11 +954,21 @@ public abstract class AbstractAttestationCertificateAuthority
                         this.referenceManifestManager.update(rim);
                     }
                 }
+
+                for (BaseReferenceManifest baseRim : BaseReferenceManifest
+                        .select(referenceManifestManager).getRIMs()) {
+                    if (baseRim.getPlatformManufacturer().equals(dv.getHw().getManufacturer())
+                            && baseRim.getPlatformModel().equals(dv.getHw().getProductName())) {
+                        baseRim.setEventLogHash(temp.getHexDecHash());
+                        this.referenceManifestManager.update(baseRim);
+                    }
+                }
             } catch (IOException ioEx) {
                 LOG.error(ioEx);
             }
         } else {
-            LOG.warn("Device did not send bios measurement log...");
+            LOG.warn(String.format("%s did not send bios measurement log...",
+                    dv.getNw().getHostname()));
         }
 
         // Get TPM info, currently unimplemented
@@ -994,14 +1010,15 @@ public abstract class AbstractAttestationCertificateAuthority
                         rdr = referenceDigestManager.saveRecord(dbObj);
                     }  // right now this will not deal with updating
 
-                    if (this.referenceEventManager.getValuesByRecordId(rdr).isEmpty()) {
+                    if (this.referenceEventManager.getValuesByRimId(dbSupport).isEmpty()) {
                         try {
                             TCGEventLog logProcessor = new TCGEventLog(dbSupport.getRimBytes());
                             ReferenceDigestValue rdv;
                             for (TpmPcrEvent tpe : logProcessor.getEventList()) {
-                                rdv = new ReferenceDigestValue(rdr.getId(), tpe.getPcrIndex(),
+                                rdv = new ReferenceDigestValue(dbSupport.getAssociatedRim(),
+                                        dbSupport.getId(), manufacturer, model, tpe.getPcrIndex(),
                                         tpe.getEventDigestStr(), tpe.getEventTypeStr(),
-                                        false, false);
+                                        false, false, tpe.getEventContent());
                                 this.referenceEventManager.saveValue(rdv);
                             }
                         } catch (CertificateException cEx) {
@@ -1033,25 +1050,22 @@ public abstract class AbstractAttestationCertificateAuthority
                         }
                     }
                 } else if (dbSupport.isSwidSupplemental() && !dbSupport.isProcessed()) {
-                    if (rdr != null) {
-                        try {
-                            TCGEventLog logProcessor = new TCGEventLog(dbSupport.getRimBytes());
-                            ReferenceDigestValue rdv;
-                            for (TpmPcrEvent tpe : logProcessor.getEventList()) {
-                                rdv = new ReferenceDigestValue(rdr.getId(), tpe.getPcrIndex(),
-                                        tpe.getEventDigestStr(), tpe.getEventTypeStr(),
-                                        false, false);
-                                this.referenceEventManager.saveValue(rdv);
-                            }
-                            dbSupport.setProcessed(true);
-                            this.referenceManifestManager.update(dbSupport);
-                        } catch (CertificateException cEx) {
-                            LOG.error(cEx);
-                        } catch (NoSuchAlgorithmException noSaEx) {
-                            LOG.error(noSaEx);
-                        } catch (IOException ioEx) {
-                            LOG.error(ioEx);
+                    try {
+                        TCGEventLog logProcessor = new TCGEventLog(dbSupport.getRimBytes());
+                        ReferenceDigestValue rdv;
+                        for (TpmPcrEvent tpe : logProcessor.getEventList()) {
+                            rdv = new ReferenceDigestValue(dbSupport.getAssociatedRim(),
+                                    dbSupport.getId(), manufacturer, model, tpe.getPcrIndex(),
+                                    tpe.getEventDigestStr(), tpe.getEventTypeStr(),
+                                    false, false, tpe.getEventContent());
+                            this.referenceEventManager.saveValue(rdv);
                         }
+                    } catch (CertificateException e) {
+                        e.printStackTrace();
+                    } catch (NoSuchAlgorithmException e) {
+                        e.printStackTrace();
+                    } catch (IOException e) {
+                        e.printStackTrace();
                     }
                 }
             }
@@ -1885,7 +1899,7 @@ public abstract class AbstractAttestationCertificateAuthority
                 generateCertificate = scp.isIssueAttestationCertificate();
                 if (issuedAc != null && scp.isGenerateOnExpiration()) {
                     if (issuedAc.getEndValidity().after(currentDate)) {
-                        // so the issued AC is expired
+                        // so the issued AC is not expired
                         // however are we within the threshold
                         days = daysBetween(currentDate, issuedAc.getEndValidity());
                         if (days < Integer.parseInt(scp.getReissueThreshold())) {

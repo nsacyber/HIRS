@@ -49,6 +49,7 @@ public class Main {
                 String jksTruststoreFile = commander.getTruststoreFile();
                 String certificateFile = commander.getPublicCertificate();
                 String privateKeyFile = commander.getPrivateKeyFile();
+                boolean defaultKey = commander.isDefaultKey();
                 String rimEventLog = commander.getRimEventLog();
                 switch (createType) {
                     case "BASE":
@@ -62,9 +63,13 @@ public class Main {
                             gateway.setDefaultCredentials(false);
                             gateway.setPemCertificateFile(certificateFile);
                             gateway.setPemPrivateKeyFile(privateKeyFile);
-                        } else {
+                        } else if (defaultKey){
                             gateway.setDefaultCredentials(true);
                             gateway.setJksTruststoreFile(SwidTagConstants.DEFAULT_KEYSTORE_FILE);
+                        } else {
+                            System.out.println("A private key (-k) and public certificate (-p) " +
+                                    "are required, or the default key (-d) must be indicated.");
+                            System.exit(1);
                         }
                         if (rimEventLog.isEmpty()) {
                             System.out.println("Error: a support RIM is required!");
