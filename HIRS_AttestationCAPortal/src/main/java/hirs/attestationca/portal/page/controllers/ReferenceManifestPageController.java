@@ -10,6 +10,7 @@ import hirs.attestationca.portal.page.PageController;
 import hirs.attestationca.portal.page.PageMessages;
 import hirs.attestationca.portal.page.params.NoPageParams;
 import hirs.data.persist.BaseReferenceManifest;
+import hirs.data.persist.EventLogMeasurements;
 import hirs.data.persist.ReferenceDigestValue;
 import hirs.data.persist.ReferenceManifest;
 import hirs.data.persist.SupportReferenceManifest;
@@ -468,6 +469,11 @@ public class ReferenceManifestPageController
 
         if (rim == null) {
             rim = SupportReferenceManifest.select(referenceManifestManager)
+                    .byEntityId(uuid).getRIM();
+        }
+
+        if (rim == null) {
+            rim = EventLogMeasurements.select(referenceManifestManager)
                     .byEntityId(uuid).getRIM();
         }
 
