@@ -70,7 +70,7 @@ public class RimDatabasePageController
          *
          * @param dateFormat
          */
-        public BiosDateValidator(final String dateFormat) {
+        BiosDateValidator(final String dateFormat) {
             this.dateFormat = dateFormat;
         }
 
@@ -172,7 +172,7 @@ public class RimDatabasePageController
                 if (support != null) {
                     rdv.setBaseRimId(support.getAssociatedRim());
                     try {
-                        referenceEventManager.updateRecord(rdv);
+                        referenceEventManager.updateEvent(rdv);
                     } catch (DBManagerException e) {
                         LOGGER.error("Failed to update TPM Event with Base RIM ID");
                         LOGGER.error(rdv);

@@ -95,7 +95,7 @@ public class ReferenceManifestPageController
          *
          * @param dateFormat
          */
-        public BiosDateValidator(final String dateFormat) {
+        BiosDateValidator(final String dateFormat) {
             this.dateFormat = dateFormat;
         }
 
@@ -264,7 +264,7 @@ public class ReferenceManifestPageController
                             for (ReferenceDigestValue rdv : referenceEventManager
                                     .getValuesByRimId(support)) {
                                 rdv.updateInfo(support);
-                                referenceEventManager.updateRecord(rdv);
+                                referenceEventManager.updateEvent(rdv);
                             }
                             break;
                         }
@@ -342,7 +342,7 @@ public class ReferenceManifestPageController
 
                     for (ReferenceDigestValue rdv : rdvs) {
                        rdv.archive("Support RIM was deleted");
-                       referenceEventManager.updateRecord(rdv);
+                       referenceEventManager.updateEvent(rdv);
                     }
                 }
             }
@@ -654,7 +654,7 @@ public class ReferenceManifestPageController
             rdv.setModel(model);
             rdv.setManufacturer(manufacturer);
             rdv.setBaseRimId(referenceManifest.getAssociatedRim());
-            referenceEventManager.updateRecord(rdv);
+            referenceEventManager.updateEvent(rdv);
         }
     }
 

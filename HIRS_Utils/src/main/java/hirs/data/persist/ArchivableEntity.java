@@ -1,8 +1,8 @@
 package hirs.data.persist;
 
-import java.util.Date;
 import javax.persistence.Column;
 import javax.persistence.MappedSuperclass;
+import java.util.Date;
 
 /**
  * An abstract archivable entity that can be deleted.
@@ -13,7 +13,7 @@ public abstract class ArchivableEntity extends AbstractEntity {
     /**
      * Defining the size of a message field for error display.
      */
-    public static final int MAX_MESSAGE_LENGTH = 1200;
+    public static final int MAX_MESSAGE_LENGTH = 2400;
 
     @Column(name = "archived_time")
     private Date archivedTime;

@@ -71,7 +71,7 @@ public abstract class PageController<P extends PageParams> {
      * @return the path for the view and data model for the page.
      */
     @RequestMapping
-    public abstract ModelAndView initPage(@ModelAttribute final P params, final Model model);
+    public abstract ModelAndView initPage(@ModelAttribute P params, Model model);
 
     /**
      * Creates a generic ModelAndView containing this page's configuration and

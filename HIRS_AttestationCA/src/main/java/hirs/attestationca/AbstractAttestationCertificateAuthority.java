@@ -12,7 +12,6 @@ import hirs.data.persist.BaseReferenceManifest;
 import hirs.data.persist.Device;
 import hirs.data.persist.DeviceInfoReport;
 import hirs.data.persist.EventLogMeasurements;
-import hirs.data.persist.ReferenceDigestRecord;
 import hirs.data.persist.ReferenceDigestValue;
 import hirs.data.persist.ReferenceManifest;
 import hirs.data.persist.SupplyChainPolicy;
@@ -94,12 +93,15 @@ import java.security.interfaces.RSAPublicKey;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.MGF1ParameterSpec;
 import java.security.spec.RSAPublicKeySpec;
+import java.util.ArrayList;
 import java.util.Base64;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -992,82 +994,104 @@ public abstract class AbstractAttestationCertificateAuthority
 
     private boolean generateDigestRecords(final String manufacturer, final String model,
                                           final String deviceName) {
-        List<ReferenceDigestValue> rdValues;
+        List<ReferenceDigestValue> rdValues = new LinkedList<>();
+        SupportReferenceManifest baseSupportRim = null;
+        List<SupportReferenceManifest> supplementalRims = new ArrayList<>();
+        List<SupportReferenceManifest> patchRims = new ArrayList<>();
         Set<SupportReferenceManifest> dbSupportRims = SupportReferenceManifest
                 .select(referenceManifestManager).byManufacturer(manufacturer).getRIMs();
+        List<ReferenceDigestValue> sourcedValues = referenceEventManager
+                .getValueByManufacturerModel(manufacturer, model);
+
+        Map<String, ReferenceDigestValue> digestValueMap = new HashMap<>();
+        sourcedValues.stream().forEach((rdv) -> {
+            digestValueMap.put(rdv.getDigestValue(), rdv);
+        });
 
         for (SupportReferenceManifest dbSupport : dbSupportRims) {
-            if (dbSupport.getPlatformModel().equals(model)) {
-                ReferenceDigestRecord dbObj = new ReferenceDigestRecord(dbSupport,
-                        manufacturer, model);
-                dbObj.setDeviceName(deviceName);
-                // this is where we update or create the log
-                ReferenceDigestRecord rdr = this.referenceDigestManager.getRecord(dbObj);
-                if (dbSupport.isBaseSupport()) {
-                    // Handle baseline digest records
-                    if (rdr == null) {
-                        // doesn't exist, store
-                        rdr = referenceDigestManager.saveRecord(dbObj);
-                    }  // right now this will not deal with updating
+            if (dbSupport.getPlatformModel().equals(model)) { // need to verify model is good enough
+                if (dbSupport.isSwidPatch()) {
+                    patchRims.add(dbSupport);
+                } else if (dbSupport.isSwidSupplemental()) {
+                    supplementalRims.add(dbSupport);
+                } else {
+                    // we have a base support rim (verify this is getting set)
+                    baseSupportRim = dbSupport;
+                }
+            }
+        }
 
-                    if (this.referenceEventManager.getValuesByRimId(dbSupport).isEmpty()) {
-                        try {
-                            TCGEventLog logProcessor = new TCGEventLog(dbSupport.getRimBytes());
-                            ReferenceDigestValue rdv;
-                            for (TpmPcrEvent tpe : logProcessor.getEventList()) {
-                                rdv = new ReferenceDigestValue(dbSupport.getAssociatedRim(),
-                                        dbSupport.getId(), manufacturer, model, tpe.getPcrIndex(),
-                                        tpe.getEventDigestStr(), tpe.getEventTypeStr(),
-                                        false, false, tpe.getEventContent());
-                                this.referenceEventManager.saveValue(rdv);
-                            }
-                        } catch (CertificateException cEx) {
-                            LOG.error(cEx);
-                        } catch (NoSuchAlgorithmException noSaEx) {
-                            LOG.error(noSaEx);
-                        } catch (IOException ioEx) {
-                           LOG.error(ioEx);
-                        }
-                    }
-                } else if (dbSupport.isSwidPatch()) {
-                    if (rdr != null) {
-                        // have to have something to patch
-                        try {
-                            rdValues =  this.referenceEventManager.getValuesByRecordId(rdr);
-                            TCGEventLog logProcessor = new TCGEventLog(dbSupport.getRimBytes());
-                            for (TpmPcrEvent tpe : logProcessor.getEventList()) {
-                                LOG.error(tpe);
-                            }
-                            for (ReferenceDigestValue rdv : rdValues) {
-                                LOG.error(rdv);
-                            }
-                        } catch (CertificateException cEx) {
-                            LOG.error(cEx);
-                        } catch (NoSuchAlgorithmException noSaEx) {
-                            LOG.error(noSaEx);
-                        } catch (IOException ioEx) {
-                            LOG.error(ioEx);
-                        }
-                    }
-                } else if (dbSupport.isSwidSupplemental() && !dbSupport.isProcessed()) {
-                    try {
-                        TCGEventLog logProcessor = new TCGEventLog(dbSupport.getRimBytes());
-                        ReferenceDigestValue rdv;
-                        for (TpmPcrEvent tpe : logProcessor.getEventList()) {
-                            rdv = new ReferenceDigestValue(dbSupport.getAssociatedRim(),
-                                    dbSupport.getId(), manufacturer, model, tpe.getPcrIndex(),
-                                    tpe.getEventDigestStr(), tpe.getEventTypeStr(),
-                                    false, false, tpe.getEventContent());
-                            this.referenceEventManager.saveValue(rdv);
-                        }
-                    } catch (CertificateException e) {
-                        e.printStackTrace();
-                    } catch (NoSuchAlgorithmException e) {
-                        e.printStackTrace();
-                    } catch (IOException e) {
-                        e.printStackTrace();
+        if (referenceEventManager.getValuesByRimId(baseSupportRim).isEmpty()
+                && baseSupportRim != null) {
+            try {
+                TCGEventLog logProcessor = new TCGEventLog(baseSupportRim.getRimBytes());
+                ReferenceDigestValue rdv;
+                for (TpmPcrEvent tpe : logProcessor.getEventList()) {
+                    rdv = new ReferenceDigestValue(baseSupportRim.getAssociatedRim(),
+                            baseSupportRim.getId(), manufacturer, model, tpe.getPcrIndex(),
+                            tpe.getEventDigestStr(), tpe.getEventTypeStr(),
+                            false, false, tpe.getEventContent());
+                    rdValues.add(rdv);
+                }
+
+                // since I have the base already I don't have to care about the backward
+                // linkage
+
+                for (SupportReferenceManifest supplemental : supplementalRims) {
+                    logProcessor = new TCGEventLog(supplemental.getRimBytes());
+                    for (TpmPcrEvent tpe : logProcessor.getEventList()) {
+                        // all RDVs will have the same base rim
+                        rdv = new ReferenceDigestValue(baseSupportRim.getAssociatedRim(),
+                                supplemental.getId(), manufacturer, model, tpe.getPcrIndex(),
+                                tpe.getEventDigestStr(), tpe.getEventTypeStr(),
+                                false, false, tpe.getEventContent());
+                        rdValues.add(rdv);
                     }
                 }
+
+                // Save all supplemental values
+                ReferenceDigestValue tempRdv;
+                for (ReferenceDigestValue subRdv : rdValues) {
+                    // check if the value already exists
+                    if (digestValueMap.containsKey(subRdv.getDigestValue())) {
+                        tempRdv = digestValueMap.get(subRdv.getDigestValue());
+                        if (tempRdv.getPcrIndex() != subRdv.getPcrIndex()
+                                && !tempRdv.getEventType().equals(subRdv.getEventType())) {
+                            referenceEventManager.saveValue(subRdv);
+                        } else {
+                            // will this be a problem down the line?
+                            referenceEventManager.updateEvent(subRdv);
+                        }
+                    } else {
+                        referenceEventManager.saveValue(subRdv);
+                    }
+                    digestValueMap.put(subRdv.getDigestValue(), subRdv);
+                }
+
+                // if a patch value doesn't exist, error?
+                ReferenceDigestValue dbRdv;
+                String patchedValue;
+                for (SupportReferenceManifest patch : patchRims) {
+                    logProcessor = new TCGEventLog(patch.getRimBytes());
+                    for (TpmPcrEvent tpe : logProcessor.getEventList()) {
+                        patchedValue = tpe.getEventDigestStr();
+                        dbRdv = digestValueMap.get(patchedValue);
+
+                        if (dbRdv == null) {
+                            LOG.error(String.format("Patching value does not exist (%s)",
+                                    patchedValue));
+                        } else {
+                            // I need to know what is being patched before I can finish this
+                            dbRdv.setPatched(true);
+                        }
+                    }
+                }
+            } catch (CertificateException cEx) {
+                LOG.error(cEx);
+            } catch (NoSuchAlgorithmException noSaEx) {
+                LOG.error(noSaEx);
+            } catch (IOException ioEx) {
+                LOG.error(ioEx);
             }
         }
 
