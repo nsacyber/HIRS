@@ -928,8 +928,7 @@ public abstract class AbstractAttestationCertificateAuthority
             listOfSavedRims.add(dbBaseRim);
         }
 
-        generateDigestRecords(hw.getManufacturer(), hw.getProductName(),
-                dv.getNw().getHostname());
+        generateDigestRecords(hw.getManufacturer(), hw.getProductName());
 
         if (dv.hasLivelog()) {
             LOG.info("Device sent bios measurement log...");
@@ -999,14 +998,15 @@ public abstract class AbstractAttestationCertificateAuthority
         return dvReport;
     }
 
-    private boolean generateDigestRecords(final String manufacturer, final String model,
-                                          final String deviceName) {
+    private boolean generateDigestRecords(final String manufacturer, final String model) {
+        LOG.error("Manufacturer " + manufacturer + " Model " + model);
         List<ReferenceDigestValue> rdValues = new LinkedList<>();
         SupportReferenceManifest baseSupportRim = null;
         List<SupportReferenceManifest> supplementalRims = new ArrayList<>();
         List<SupportReferenceManifest> patchRims = new ArrayList<>();
         Set<SupportReferenceManifest> dbSupportRims = SupportReferenceManifest
-                .select(referenceManifestManager).byManufacturer(manufacturer).getRIMs();
+                .select(referenceManifestManager)
+                .byManufacturerModel(manufacturer, model).getRIMs();
         List<ReferenceDigestValue> sourcedValues = referenceEventManager
                 .getValueByManufacturerModel(manufacturer, model);
 
@@ -1015,21 +1015,22 @@ public abstract class AbstractAttestationCertificateAuthority
             digestValueMap.put(rdv.getDigestValue(), rdv);
         });
 
+        LOG.error("# of rims - " + dbSupportRims.size());
+        LOG.error("# of RDVs - " + sourcedValues.size());
         for (SupportReferenceManifest dbSupport : dbSupportRims) {
-            if (dbSupport.getPlatformModel().equals(model)) { // need to verify model is good enough
-                if (dbSupport.isSwidPatch()) {
-                    patchRims.add(dbSupport);
-                } else if (dbSupport.isSwidSupplemental()) {
-                    supplementalRims.add(dbSupport);
-                } else {
-                    // we have a base support rim (verify this is getting set)
-                    baseSupportRim = dbSupport;
-                }
+            if (dbSupport.isSwidPatch()) {
+                patchRims.add(dbSupport);
+            } else if (dbSupport.isSwidSupplemental()) {
+                supplementalRims.add(dbSupport);
+            } else {
+                // we have a base support rim (verify this is getting set)
+                baseSupportRim = dbSupport;
             }
         }
 
-        if (referenceEventManager.getValuesByRimId(baseSupportRim).isEmpty()
-                && baseSupportRim != null) {
+        LOG.error("baseSupportRim (" + baseSupportRim + ")");
+        if (baseSupportRim != null
+                && referenceEventManager.getValuesByRimId(baseSupportRim).isEmpty()) {
             try {
                 TCGEventLog logProcessor = new TCGEventLog(baseSupportRim.getRimBytes());
                 ReferenceDigestValue rdv;
@@ -1043,7 +1044,6 @@ public abstract class AbstractAttestationCertificateAuthority
 
                 // since I have the base already I don't have to care about the backward
                 // linkage
-
                 for (SupportReferenceManifest supplemental : supplementalRims) {
                     logProcessor = new TCGEventLog(supplemental.getRimBytes());
                     for (TpmPcrEvent tpe : logProcessor.getEventList()) {
