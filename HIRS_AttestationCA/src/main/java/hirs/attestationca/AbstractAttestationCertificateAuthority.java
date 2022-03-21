@@ -940,31 +940,38 @@ public abstract class AbstractAttestationCertificateAuthority
                         dv.getLivelog().toByteArray());
                 // find previous version.
                 measurements = EventLogMeasurements.select(referenceManifestManager)
-                        .byHexDecHash(temp.getHexDecHash()).includeArchived().getRIM();
-                if (measurements == null) {
-                    measurements = temp;
-                    measurements.setPlatformManufacturer(dv.getHw().getManufacturer());
-                    measurements.setPlatformModel(dv.getHw().getProductName());
-                    measurements.setTagId(tagId);
-                    measurements.setDeviceName(dv.getNw().getHostname());
-                    this.referenceManifestManager.save(measurements);
-                }
-                // now save the hash to the base and support rims associated
-                for (ReferenceManifest rim : listOfSavedRims) {
-                    if (rim != null) {
-                        rim.setEventLogHash(temp.getHexDecHash());
-                        this.referenceManifestManager.update(rim);
-                    }
+                        .byDeviceName(dv.getNw().getHostname())
+                        .includeArchived()
+                        .getRIM();
+
+                if (measurements != null) {
+                    // Find previous log and delete it
+                    referenceManifestManager.deleteReferenceManifest(measurements);
                 }
 
-                for (BaseReferenceManifest baseRim : BaseReferenceManifest
-                        .select(referenceManifestManager).getRIMs()) {
-                    if (baseRim.getPlatformManufacturer().equals(dv.getHw().getManufacturer())
-                            && baseRim.getPlatformModel().equals(dv.getHw().getProductName())) {
-                        baseRim.setEventLogHash(temp.getHexDecHash());
-                        this.referenceManifestManager.update(baseRim);
-                    }
-                }
+                BaseReferenceManifest baseRim = BaseReferenceManifest
+                        .select(referenceManifestManager)
+                        .byManufacturerModelBase(dv.getHw().getManufacturer(),
+                                dv.getHw().getProductName())
+                        .getRIM();
+                measurements = temp;
+                measurements.setPlatformManufacturer(dv.getHw().getManufacturer());
+                measurements.setPlatformModel(dv.getHw().getProductName());
+                measurements.setTagId(tagId);
+                measurements.setDeviceName(dv.getNw().getHostname());
+                measurements.setAssociatedRim(baseRim.getAssociatedRim());
+                this.referenceManifestManager.save(measurements);
+
+                // pull the base versions of the swidtag and rimel and set the
+                // event log hash for use during provision
+                SupportReferenceManifest sBaseRim = SupportReferenceManifest
+                        .select(referenceManifestManager)
+                        .byEntityId(baseRim.getAssociatedRim())
+                        .getRIM();
+                baseRim.setEventLogHash(temp.getHexDecHash());
+                sBaseRim.setEventLogHash(temp.getHexDecHash());
+                referenceManifestManager.update(baseRim);
+                referenceManifestManager.update(sBaseRim);
             } catch (IOException ioEx) {
                 LOG.error(ioEx);
             }
@@ -1030,7 +1037,7 @@ public abstract class AbstractAttestationCertificateAuthority
                     rdv = new ReferenceDigestValue(baseSupportRim.getAssociatedRim(),
                             baseSupportRim.getId(), manufacturer, model, tpe.getPcrIndex(),
                             tpe.getEventDigestStr(), tpe.getEventTypeStr(),
-                            false, false, tpe.getEventContent());
+                            false, false, true, tpe.getEventContent());
                     rdValues.add(rdv);
                 }
 
@@ -1044,7 +1051,7 @@ public abstract class AbstractAttestationCertificateAuthority
                         rdv = new ReferenceDigestValue(baseSupportRim.getAssociatedRim(),
                                 supplemental.getId(), manufacturer, model, tpe.getPcrIndex(),
                                 tpe.getEventDigestStr(), tpe.getEventTypeStr(),
-                                false, false, tpe.getEventContent());
+                                false, false, true, tpe.getEventContent());
                         rdValues.add(rdv);
                     }
                 }

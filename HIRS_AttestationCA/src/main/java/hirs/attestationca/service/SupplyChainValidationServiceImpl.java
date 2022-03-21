@@ -621,7 +621,10 @@ public class SupplyChainValidationServiceImpl implements SupplyChainValidationSe
             try {
                 Set<SupportReferenceManifest> supportRims = SupportReferenceManifest
                         .select(this.referenceManifestManager)
-                        .byDeviceName(deviceName).getRIMs();
+                        .byManufacturerModel(
+                                device.getDeviceInfo().getHardwareInfo().getManufacturer(),
+                                device.getDeviceInfo().getHardwareInfo().getProductName())
+                        .getRIMs();
                 for (SupportReferenceManifest support : supportRims) {
                     if (support.isBaseSupport()) {
                         sRim = support;
