@@ -999,7 +999,6 @@ public abstract class AbstractAttestationCertificateAuthority
     }
 
     private boolean generateDigestRecords(final String manufacturer, final String model) {
-        LOG.error("Manufacturer " + manufacturer + " Model " + model);
         List<ReferenceDigestValue> rdValues = new LinkedList<>();
         SupportReferenceManifest baseSupportRim = null;
         List<SupportReferenceManifest> supplementalRims = new ArrayList<>();
@@ -1015,8 +1014,6 @@ public abstract class AbstractAttestationCertificateAuthority
             digestValueMap.put(rdv.getDigestValue(), rdv);
         });
 
-        LOG.error("# of rims - " + dbSupportRims.size());
-        LOG.error("# of RDVs - " + sourcedValues.size());
         for (SupportReferenceManifest dbSupport : dbSupportRims) {
             if (dbSupport.isSwidPatch()) {
                 patchRims.add(dbSupport);
@@ -1028,7 +1025,6 @@ public abstract class AbstractAttestationCertificateAuthority
             }
         }
 
-        LOG.error("baseSupportRim (" + baseSupportRim + ")");
         if (baseSupportRim != null
                 && referenceEventManager.getValuesByRimId(baseSupportRim).isEmpty()) {
             try {
