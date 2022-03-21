@@ -1088,7 +1088,9 @@ public abstract class AbstractAttestationCertificateAuthority
                             LOG.error(String.format("Patching value does not exist (%s)",
                                     patchedValue));
                         } else {
-                            // I need to know what is being patched before I can finish this
+                            /**
+                             * Until we get patch examples, this is WIP
+                             */
                             dbRdv.setPatched(true);
                         }
                     }

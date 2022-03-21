@@ -183,29 +183,6 @@ public class ReferenceManifestPageController
                         referenceManifestManager,
                         input, orderColumnName, criteriaModifier);
 
-        SupportReferenceManifest support;
-//        List<ReferenceDigestValue> events;
-//        for (ReferenceManifest rim : records) {
-//            if (rim instanceof SupportReferenceManifest) {
-//                support = (SupportReferenceManifest) rim;
-//                events = referenceEventManager.getValuesByRimId(support);
-//
-//                for (ReferenceDigestValue rdv : events) {
-//                    // the selector isn't giving me what I want
-//                    if (support.getPlatformManufacturer() != null) {
-//                        rdv.setManufacturer(support.getPlatformManufacturer());
-//                    }
-//                    if (support.getPlatformModel() != null) {
-//                        rdv.setModel(support.getPlatformModel());
-//                    }
-//                    if (support.getAssociatedRim() != null) {
-//                        rdv.setBaseRimId(support.getAssociatedRim());
-//                    }
-//                    referenceEventManager.updateRecord(rdv);
-//                }
-//            }
-//        }
-
         LOGGER.debug("Returning list of size: " + records.size());
         return new DataTableResponse<>(records, input);
     }
@@ -252,18 +229,6 @@ public class ReferenceManifestPageController
         for (ReferenceManifest rim : baseRims) {
             // store first then update
             storeManifest(messages, rim, false);
-
-
-                            /**
-                             * Ok so another redo.  phased like the provision section
-                             * filter through, find base vs support
-                             * Maybe process base first, create a map of the support digest
-                             * to the base
-                             * go through support and pull the associated base
-                             * save those.  Save the digests
-                             * re pull digests support from the DB and then do the events
-                             */
-
         }
 
         for (ReferenceManifest rim : supportRims) {
@@ -501,7 +466,6 @@ public class ReferenceManifestPageController
                     = String.format("Failed to read uploaded file (%s): ", fileName);
             LOGGER.error(failMessage, e);
             messages.addError(failMessage + e.getMessage());
-//            return null;
         }
 
         try {
@@ -515,7 +479,6 @@ public class ReferenceManifestPageController
                     = String.format("Failed to parse uploaded file (%s): ", fileName);
             LOGGER.error(failMessage, ioEx);
             messages.addError(failMessage + ioEx.getMessage());
-//            return null;
         }
     }
 
@@ -569,7 +532,6 @@ public class ReferenceManifestPageController
                     + "failed (%s): ", fileName);
             messages.addError(failMessage + e.getMessage());
             LOGGER.error(failMessage, e);
-//            return null;
         }
 
         try {
@@ -587,7 +549,6 @@ public class ReferenceManifestPageController
                     fileName);
             messages.addError(failMessage + dbmEx.getMessage());
             LOGGER.error(failMessage, dbmEx);
-//            return null;
         }
 
         try {
@@ -608,11 +569,7 @@ public class ReferenceManifestPageController
                     + "archive, but failed to unarchive it (%s): ", fileName);
             messages.addError(failMessage + dbmEx.getMessage());
             LOGGER.error(failMessage, dbmEx);
-
-//            return null;
         }
-
-//        return referenceManifest;
     }
 
     private Map<String, BaseReferenceManifest> generatePayloadHashMap(
