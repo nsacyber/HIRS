@@ -136,6 +136,35 @@ public class DBReferenceEventManager  extends DBManager<ReferenceDigestValue>
     }
 
     @Override
+    public ReferenceDigestValue getValueByDigest(final String eventDigest) {
+        if (eventDigest == null) {
+            LOGGER.error("null event digest argument");
+            throw new NullPointerException("null event digest argument");
+        }
+
+        ReferenceDigestValue dbRecord;
+        Transaction tx = null;
+        Session session = getFactory().getCurrentSession();
+        try {
+            LOGGER.debug("retrieving referenceDigestValue from db");
+            tx = session.beginTransaction();
+            dbRecord = (ReferenceDigestValue) session.createCriteria(ReferenceDigestValue.class)
+                    .add(Restrictions.eq("digestValue",
+                            eventDigest)).uniqueResult();
+            tx.commit();
+        } catch (Exception ex) {
+            final String msg = "unable to retrieve object";
+            LOGGER.error(msg, ex);
+            if (tx != null) {
+                LOGGER.debug("rolling back transaction");
+                tx.rollback();
+            }
+            throw new DBManagerException(msg, ex);
+        }
+        return dbRecord;
+    }
+
+    @Override
     public List<ReferenceDigestValue> getValueByManufacturer(final String manufacturer) {
         if (manufacturer == null) {
             LOGGER.error("null manufacturer argument");
@@ -271,7 +300,7 @@ public class DBReferenceEventManager  extends DBManager<ReferenceDigestValue>
     }
 
     @Override
-    public void updateRecord(final ReferenceDigestValue referenceDigestValue) {
+    public void updateEvent(final ReferenceDigestValue referenceDigestValue) {
         try {
             super.update(referenceDigestValue);
         } catch (DBManagerException dbMEx) {
@@ -280,7 +309,7 @@ public class DBReferenceEventManager  extends DBManager<ReferenceDigestValue>
     }
 
     @Override
-    public boolean deleteRecord(final ReferenceDigestValue referenceDigestValue) {
+    public boolean deleteEvent(final ReferenceDigestValue referenceDigestValue) {
         boolean result;
         LOGGER.info(String.format("Deleting reference to %s",
                 referenceDigestValue.getId()));

@@ -4,6 +4,7 @@ import hirs.attestationca.portal.page.PageController;
 import hirs.attestationca.portal.page.PageMessages;
 import hirs.attestationca.portal.page.params.CertificateDetailsPageParams;
 import hirs.attestationca.portal.util.CertificateStringMapBuilder;
+import hirs.persist.CertificateManager;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -12,12 +13,11 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.servlet.ModelAndView;
 
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.UUID;
 
 import static hirs.attestationca.portal.page.Page.CERTIFICATE_DETAILS;
-import hirs.persist.CertificateManager;
-import java.io.IOException;
 
 /**
  * Controller for the Certificate Details page.
@@ -76,7 +76,7 @@ public class CertificateDetailsPageController extends PageController<Certificate
             try {
                 String type = params.getType().toLowerCase();
                 UUID uuid = UUID.fromString(params.getId());
-                switch(type) {
+                switch (type) {
                     case "certificateauthority":
                         data.putAll(CertificateStringMapBuilder.getCertificateAuthorityInformation(
                                 uuid, certificateManager));
