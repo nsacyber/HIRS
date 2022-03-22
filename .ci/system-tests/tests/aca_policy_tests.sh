@@ -8,7 +8,7 @@ totalTests=0;
 failedTests=0;
 
 # Start ACA Policy Tests
-# provision_tpm takes 1 parameter (the expected result): "pass" or "fail"
+# provisionTpm2 takes 1 parameter (the expected result): "pass" or "fail"
 
 writeToLogs "### ACA POLICY TEST 1: Test ACA default policy  ###"
 setPlatformCerts "laptop" "empty"
@@ -39,7 +39,7 @@ provisionTpm2 "pass"
 
 writeToLogs "### ACA POLICY TEST 7: Test PC with RIM Validation Policy with valid PC and RIM ###"
 setPolicyEkPcFw
-setRims "laptop" "default"
+setRims "laptop" "default" "none"
 provisionTpm2 "pass"
 
 #  Process Test Results, any single failure will send back a failed result.

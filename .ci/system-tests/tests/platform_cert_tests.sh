@@ -8,7 +8,7 @@ totalTests=0;
 failedTests=0;
 
 # Start ACA Platform Certificate Tests
-# provision_tpm takes 1 parameter (the expected result): "pass" or "fail"
+# provisionTpm2 takes 1 parameter (the expected result): "pass" or "fail"
 # Note that the aca_policy_tests have already run several Platform Certificate system tests
 
 writeToLogs "### ACA PLATFORM CERTIFICATE TEST 1: Test a delta Platform Certificate that adds a new memory component ###"
