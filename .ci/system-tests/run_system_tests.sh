@@ -40,7 +40,6 @@ source tests/aca_policy_tests.sh
 source tests/platform_cert_tests.sh
 source tests/rim_system_tests.sh
 
-
 echo "******** HIRS System Tests Complete ******** "
 
 # collecting ACA logs for archiving
