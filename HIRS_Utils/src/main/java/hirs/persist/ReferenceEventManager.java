@@ -37,6 +37,14 @@ public interface ReferenceEventManager extends OrderedListQuerier<ReferenceDiges
     ReferenceDigestValue getValueById(ReferenceDigestValue referenceDigestValue);
 
     /**
+     * Gets a value associated with the passed in digest.
+     *
+     * @param eventDigest the ReferenceDigestValue
+     * @return the persisted ReferenceDigestValue
+     */
+    ReferenceDigestValue getValueByDigest(String eventDigest);
+
+    /**
      * Persists a new Reference Digest Value.
      *
      * @param manufacturer the string value to search for
@@ -98,7 +106,7 @@ public interface ReferenceEventManager extends OrderedListQuerier<ReferenceDiges
      * Updates an existing ReferenceDigestRecord.
      * @param referenceDigestValue the Reference Event update
      */
-    void updateRecord(ReferenceDigestValue referenceDigestValue);
+    void updateEvent(ReferenceDigestValue referenceDigestValue);
 
     /**
      * Delete the given value.
@@ -106,5 +114,5 @@ public interface ReferenceEventManager extends OrderedListQuerier<ReferenceDiges
      * @param referenceDigestValue the digest record delete
      * @return true if the deletion succeeded, false otherwise.
      */
-    boolean deleteRecord(ReferenceDigestValue referenceDigestValue);
+    boolean deleteEvent(ReferenceDigestValue referenceDigestValue);
 }

@@ -537,7 +537,7 @@ public class SupplyChainValidationServiceImpl implements SupplyChainValidationSe
                             if (measurement.getPlatformManufacturer().equals(manufacturer)) {
                                 tcgMeasurementLog = new TCGEventLog(measurement.getRimBytes());
                                 eventValue = this.referenceEventManager
-                                        .getValuesByRimId(supportReferenceManifest);
+                                        .getValuesByRimId(baseReferenceManifest);
                                 for (ReferenceDigestValue rdv : eventValue) {
                                     eventValueMap.put(rdv.getDigestValue(), rdv);
                                 }
@@ -621,7 +621,10 @@ public class SupplyChainValidationServiceImpl implements SupplyChainValidationSe
             try {
                 Set<SupportReferenceManifest> supportRims = SupportReferenceManifest
                         .select(this.referenceManifestManager)
-                        .byDeviceName(deviceName).getRIMs();
+                        .byManufacturerModel(
+                                device.getDeviceInfo().getHardwareInfo().getManufacturer(),
+                                device.getDeviceInfo().getHardwareInfo().getProductName())
+                        .getRIMs();
                 for (SupportReferenceManifest support : supportRims) {
                     if (support.isBaseSupport()) {
                         sRim = support;

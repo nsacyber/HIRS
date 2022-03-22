@@ -47,6 +47,8 @@ public class ReferenceDigestValue extends ArchivableEntity {
     private boolean matchFail;
     @Column(nullable = false)
     private boolean patched = false;
+    @Column(nullable = false)
+    private boolean updated = false;
 
     /**
      * Default constructor necessary for Hibernate.
@@ -62,6 +64,7 @@ public class ReferenceDigestValue extends ArchivableEntity {
         this.eventType = "";
         this.matchFail = false;
         this.patched = false;
+        this.updated = false;
         this.contentBlob = null;
     }
 
@@ -75,14 +78,16 @@ public class ReferenceDigestValue extends ArchivableEntity {
      * @param digestValue the key digest value
      * @param eventType the event type to store
      * @param matchFail the status of the baseline check
-     * @param patched the status of the value being updated to to patch
+     * @param patched the status of the value being updated to patch
+     * @param updated the status of the value being updated with info
      * @param contentBlob the data value of the content
      */
     public ReferenceDigestValue(final UUID baseRimId, final UUID supportRimId,
                                 final String manufacturer, final String model,
                                 final int pcrIndex, final String digestValue,
                                 final String eventType, final boolean matchFail,
-                                final boolean patched, final byte[] contentBlob) {
+                                final boolean patched, final boolean updated,
+                                final byte[] contentBlob) {
         this.baseRimId = baseRimId;
         this.supportRimId = supportRimId;
         this.manufacturer = manufacturer;
@@ -92,6 +97,7 @@ public class ReferenceDigestValue extends ArchivableEntity {
         this.eventType = eventType;
         this.matchFail = matchFail;
         this.patched = patched;
+        this.updated = updated;
         this.contentBlob = Arrays.clone(contentBlob);
     }
 
@@ -240,6 +246,22 @@ public class ReferenceDigestValue extends ArchivableEntity {
     }
 
     /**
+     * Getter for the status of the updated state.
+     * @return updated flag
+     */
+    public boolean isUpdated() {
+        return updated;
+    }
+
+    /**
+     * Setter for the status of the updated state.
+     * @param updated the flag to set
+     */
+    public void setUpdated(final boolean updated) {
+        this.updated = updated;
+    }
+
+    /**
      * Getter for the byte array of event values.
      * @return a clone of the byte array
      */
@@ -260,12 +282,19 @@ public class ReferenceDigestValue extends ArchivableEntity {
     /**
      * Helper method to update the attributes of this object.
      * @param support the associated RIM.
+     * @param baseRimId the main id to update
      */
-    public void updateInfo(final SupportReferenceManifest support) {
-        if (support != null && support.getId().equals(getSupportRimId())) {
-            setBaseRimId(support.getAssociatedRim());
+    public void updateInfo(final SupportReferenceManifest support, final UUID baseRimId) {
+        if (support != null) {
+            setBaseRimId(baseRimId);
             setManufacturer(support.getPlatformManufacturer());
             setModel(support.getPlatformModel());
+            setUpdated(true);
+            if (support.isSwidPatch()) {
+                // come back to this later, how does this get
+                // identified to be patched
+                setPatched(true);
+            }
         }
     }
 
@@ -288,7 +317,7 @@ public class ReferenceDigestValue extends ArchivableEntity {
     @Override
     public int hashCode() {
         int result = Objects.hash(pcrIndex, digestValue, manufacturer, model,
-                eventType, matchFail, patched);
+                eventType, matchFail, patched, updated);
         return result;
     }
 
@@ -297,7 +326,8 @@ public class ReferenceDigestValue extends ArchivableEntity {
      * @return a string
      */
     public String toString() {
-        return String.format("ReferenceDigestValue: {%s, %d, %s, %s, %b}",
-                model, pcrIndex, digestValue, eventType, matchFail);
+        return String.format("ReferenceDigestValue: {%s, %d, %s, %s, "
+                        + "matchFail - %b, updated - %b, patched - %b}",
+                model, pcrIndex, digestValue, eventType, matchFail, updated, patched);
     }
 }

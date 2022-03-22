@@ -122,6 +122,35 @@ public class BaseReferenceManifest extends ReferenceManifest {
         }
 
         /**
+         * Specify the platform manufacturer/model that rims must have to be considered
+         * as matching.
+         * @param manufacturer string for the manufacturer
+         * @param model string for the model
+         * @return this instance
+         */
+        public Selector byManufacturerModel(final String manufacturer, final String model) {
+            setFieldValue(PLATFORM_MANUFACTURER, manufacturer);
+            setFieldValue(PLATFORM_MODEL, model);
+            return this;
+        }
+
+        /**
+         * Specify the platform manufacturer/model/base flag that rims must have to be considered
+         * as matching.
+         * @param manufacturer string for the manufacturer
+         * @param model string for the model
+         * @return this instance
+         */
+        public Selector byManufacturerModelBase(final String manufacturer, final String model) {
+            setFieldValue(PLATFORM_MANUFACTURER, manufacturer);
+            setFieldValue(PLATFORM_MODEL, model);
+            setFieldValue("swidPatch", false);
+            setFieldValue("swidSupplemental", false);
+            //setFieldValue("", false); //corpus?
+            return this;
+        }
+
+        /**
          * Specify the device name that rims must have to be considered
          * as matching.
          * @param deviceName string for the deviceName
@@ -490,6 +519,15 @@ public class BaseReferenceManifest extends ReferenceManifest {
      */
     public void setSwidCorpus(final int swidCorpus) {
         this.swidCorpus = swidCorpus;
+    }
+
+    /**
+     * The assumed requirement for being the initial swidtag.
+     * @return flag for the status
+     */
+    public boolean isBase() {
+        return !this.isSwidPatch() && !this.isSwidSupplemental()
+                && (this.isSwidCorpus() == 0);
     }
 
     /**

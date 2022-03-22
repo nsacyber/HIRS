@@ -41,4 +41,12 @@ public interface ReferenceManifestManager extends OrderedListQuerier<ReferenceMa
      * @return true if the deletion succeeded, false otherwise.
      */
     boolean delete(ReferenceManifest referenceManifest);
+
+    /**
+     * Remove a ReferenceManifest from the database.
+     *
+     * @param referenceManifest the referenceManifest to delete
+     * @return true if deletion was successful, false otherwise
+     */
+    boolean deleteReferenceManifest(ReferenceManifest referenceManifest);
 }
