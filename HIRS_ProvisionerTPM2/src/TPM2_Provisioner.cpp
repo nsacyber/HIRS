@@ -198,16 +198,18 @@ int provision() {
             = provisioner.sendAttestationCertificateRequest(certificateRequest);
 
     hirs::pb::CertificateResponse cr;
-    if (!cr.ParseFromString(akCertificateByteString) && cr.has_status()) {
+    cr.ParseFromString(akCertificateByteString);
+    if (cr.has_status()) {
         if (cr.status() == hirs::pb::ResponseStatus::FAIL) {
-            cout << "----> Provisioning the quote failed.";
+            cout << "----> Provisioning the quote failed. ";
             cout << "Please refer to the Attestation CA for details." << endl;
             return 0;
         }
     }
 
     if (akCertificateByteString == "") {
-        cout << "----> Provisioning the quote failed.";
+        cout << "----> Provisioning the quote failed. "
+             << "Certificate returned is empty. ";
         cout << "Please refer to the Attestation CA for details." << endl;
         return 0;
     }
