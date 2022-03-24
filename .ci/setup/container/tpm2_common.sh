@@ -1,11 +1,8 @@
 #!/bin/bash
 #########################################################################################
-#  Script to setup the TPM 2.0 Provisioner Docker Image for System Tests
+#  Support scripts for the TPM 2.0 Provisioner System Tests
 #
 #########################################################################################
-set -e
-pushd /  > /dev/null
-echo "Setting up TPM emulator for the TPM2 Provisioner"
 
 # Function to make and install TPM 2.0 Provisioner packages
 function installProvisioner {
@@ -24,8 +21,8 @@ function setTpmPcrValues {
   mkdir /ibmtss
   pushd /ibmtss  > /dev/null
     echo "Installing IBM TSS to set the TPM simulator intial values correctly..."
-    wget --no-check-certificate https://downloads.sourceforge.net/project/ibmtpm20tss/ibmtss1.5.0.tar.gz > /dev/null
-    tar -zxvf ibmtss1.5.0.tar.gz > /dev/null
+    wget --no-check-certificate https://downloads.sourceforge.net/project/ibmtpm20tss/ibmtss1.6.0.tar.gz > /dev/null
+    tar -zxvf ibmtss1.6.0.tar.gz > /dev/null
     cd utils
     make -f makefiletpmc > /dev/null
     cd ../utils
@@ -61,7 +58,7 @@ function initTpm2Emulator {
    echo "DBus started"
 
    # Give DBus time to start up
-   sleep 5
+   sleep 3
 
    /ibmtpm/src/./tpm_server &
    echo "TPM Emulator started"
@@ -76,7 +73,7 @@ function initTpm2Emulator {
    echo "TPM2-Abrmd started"
 
    # Give ABRMD time to start and register on the DBus
-   sleep 2
+   sleep 1
 
    # Certificates
    ek_cert="/HIRS/.ci/setup/certs/ek_cert.der"
@@ -112,10 +109,25 @@ function initTpm2Emulator {
    sed -i "s/WARN/INFO/" /etc/hirs/TPM2_Provisioner/log4cplus_config.ini
 }
 
+# Clear out existing TPM PCR values by restarting the ibm tpm simulator
+function resetTpm2Emulator {
+   echo "clearing the TPM PCR values"
+   # Stop tpm2-abrmd and the tpm server
+   pkill -f "tpm2-abrmd"
+   pkill -f "tpm_server"
+   # restart the tpm server and tpm2-abrmd
+   /ibmtpm/src/./tpm_server &
+   pushd /ibmtss/utils  > /dev/null
+     ./startup
+   popd > /dev/null
+   tpm2-abrmd -t socket &
+   sleep 1
+   # tpm2_pcrlist -g sha256
+}
+
 # Function to update the hirs-site.config file
 function updateHirsSiteConfigFile {
    HIRS_SITE_CONFIG="/etc/hirs/hirs-site.config"
-
    echo ""
    echo "===========Updating ${HIRS_SITE_CONFIG}, using values from /HIRS/.ci/docker/.env file...==========="
    cat /HIRS/.ci/docker/.env
@@ -142,8 +154,8 @@ DEFAULT_SITE_CONFIG_FILE
    cat /etc/hirs/hirs-site.config
 }
 
-function waitForAca {
 # Wait for ACA to boot
+function waitForAca {
   echo "Waiting for ACA to spin up at address ${HIRS_ACA_PORTAL_IP} on port ${HIRS_ACA_PORTAL_PORT} ..."
   until [ "`curl --silent --connect-timeout 1 -I -k https://${HIRS_ACA_PORTAL_IP}:${HIRS_ACA_PORTAL_PORT}/HIRS_AttestationCAPortal | grep '302 Found'`" != "" ]; do
     sleep 1;
@@ -151,27 +163,3 @@ function waitForAca {
   done
   echo "ACA is up!"
 }
-
-#Wait for the ACA to spin up, if it hasnt already
-waitForAca
-
-# Install packages
-installProvisioner
-
-# set location of tcg artifacts
-setTcgProperties
-#echo "Contents of /etc/hirs is $(ls -al /etc/hirs)";
-
-# Install TPM 2.0 Emulator
-initTpm2Emulator
-
-# Update the hirs-site.config file
-updateHirsSiteConfigFile
-
-echo "TPM 2.0 Emulator NV RAM list"
-tpm2_nvlist
-
-echo ""
-echo "===========HIRS ACA TPM 2.0 Provisioner Setup Complete!==========="
-
-popd > /dev/null
