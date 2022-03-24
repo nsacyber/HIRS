@@ -894,38 +894,40 @@ public abstract class AbstractAttestationCertificateAuthority
                             swidFile.toByteArray()))).includeArchived()
                     .getRIM();
 
-            // get file name to use
-            for (SwidResource swid : dbBaseRim.parseResource()) {
-                matcher = pattern.matcher(swid.getName());
-                if (matcher.matches()) {
-                    //found the file name
-                    int dotIndex = swid.getName().lastIndexOf(".");
-                    fileName = swid.getName().substring(0, dotIndex);
-                    dbBaseRim.setFileName(String.format("%s.swidtag",
-                            fileName));
-                }
+            if (dbBaseRim != null) {
+                // get file name to use
+                for (SwidResource swid : dbBaseRim.parseResource()) {
+                    matcher = pattern.matcher(swid.getName());
+                    if (matcher.matches()) {
+                        //found the file name
+                        int dotIndex = swid.getName().lastIndexOf(".");
+                        fileName = swid.getName().substring(0, dotIndex);
+                        dbBaseRim.setFileName(String.format("%s.swidtag",
+                                fileName));
+                    }
 
-                // now update support rim
-                SupportReferenceManifest dbSupport = SupportReferenceManifest
-                        .select(referenceManifestManager)
-                        .byHexDecHash(swid.getHashValue()).getRIM();
-                if (dbSupport != null) {
-                    dbSupport.setFileName(swid.getName());
-                    dbSupport.setSwidTagVersion(dbBaseRim.getSwidTagVersion());
-                    dbSupport.setTagId(dbBaseRim.getTagId());
-                    dbSupport.setSwidTagVersion(dbBaseRim.getSwidTagVersion());
-                    dbSupport.setSwidVersion(dbBaseRim.getSwidVersion());
-                    dbSupport.setSwidPatch(dbBaseRim.isSwidPatch());
-                    dbSupport.setSwidSupplemental(dbBaseRim.isSwidSupplemental());
-                    dbBaseRim.setAssociatedRim(dbSupport.getId());
-                    dbSupport.setUpdated(true);
-                    dbSupport.setAssociatedRim(dbBaseRim.getId());
-                    this.referenceManifestManager.update(dbSupport);
-                    listOfSavedRims.add(dbSupport);
+                    // now update support rim
+                    SupportReferenceManifest dbSupport = SupportReferenceManifest
+                            .select(referenceManifestManager)
+                            .byHexDecHash(swid.getHashValue()).getRIM();
+                    if (dbSupport != null) {
+                        dbSupport.setFileName(swid.getName());
+                        dbSupport.setSwidTagVersion(dbBaseRim.getSwidTagVersion());
+                        dbSupport.setTagId(dbBaseRim.getTagId());
+                        dbSupport.setSwidTagVersion(dbBaseRim.getSwidTagVersion());
+                        dbSupport.setSwidVersion(dbBaseRim.getSwidVersion());
+                        dbSupport.setSwidPatch(dbBaseRim.isSwidPatch());
+                        dbSupport.setSwidSupplemental(dbBaseRim.isSwidSupplemental());
+                        dbBaseRim.setAssociatedRim(dbSupport.getId());
+                        dbSupport.setUpdated(true);
+                        dbSupport.setAssociatedRim(dbBaseRim.getId());
+                        this.referenceManifestManager.update(dbSupport);
+                        listOfSavedRims.add(dbSupport);
+                    }
                 }
+                this.referenceManifestManager.update(dbBaseRim);
+                listOfSavedRims.add(dbBaseRim);
             }
-            this.referenceManifestManager.update(dbBaseRim);
-            listOfSavedRims.add(dbBaseRim);
         }
 
         generateDigestRecords(hw.getManufacturer(), hw.getProductName());
@@ -958,19 +960,23 @@ public abstract class AbstractAttestationCertificateAuthority
                 measurements.setPlatformModel(dv.getHw().getProductName());
                 measurements.setTagId(tagId);
                 measurements.setDeviceName(dv.getNw().getHostname());
-                measurements.setAssociatedRim(baseRim.getAssociatedRim());
+                if (baseRim != null) {
+                    measurements.setAssociatedRim(baseRim.getAssociatedRim());
+                }
                 this.referenceManifestManager.save(measurements);
 
-                // pull the base versions of the swidtag and rimel and set the
-                // event log hash for use during provision
-                SupportReferenceManifest sBaseRim = SupportReferenceManifest
-                        .select(referenceManifestManager)
-                        .byEntityId(baseRim.getAssociatedRim())
-                        .getRIM();
-                baseRim.setEventLogHash(temp.getHexDecHash());
-                sBaseRim.setEventLogHash(temp.getHexDecHash());
-                referenceManifestManager.update(baseRim);
-                referenceManifestManager.update(sBaseRim);
+                if (baseRim != null) {
+                    // pull the base versions of the swidtag and rimel and set the
+                    // event log hash for use during provision
+                    SupportReferenceManifest sBaseRim = SupportReferenceManifest
+                            .select(referenceManifestManager)
+                            .byEntityId(baseRim.getAssociatedRim())
+                            .getRIM();
+                    baseRim.setEventLogHash(temp.getHexDecHash());
+                    sBaseRim.setEventLogHash(temp.getHexDecHash());
+                    referenceManifestManager.update(baseRim);
+                    referenceManifestManager.update(sBaseRim);
+                }
             } catch (IOException ioEx) {
                 LOG.error(ioEx);
             }
