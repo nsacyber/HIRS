@@ -13,7 +13,12 @@
     <jsp:attribute name="pageHeaderTitle">
     <c:choose>
         <c:when test="${initialData.rimType=='Measurement'}">
-            TCG Log event(s) not found in the RIM DB
+            <c:if test="${initialData.validationResult=='PASS'}">
+                TCG Log events
+            </c:if>
+            <c:if test="${initialData.validationResult=='FAIL'}">
+                TCG Log event(s) not found in the RIM DB
+            </c:if>
         </c:when>
         <c:otherwise>
             ${initialData.rimType} Reference Integrity Manifest
