@@ -4,7 +4,6 @@ import hirs.swid.utils.HashSwid;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
-import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
@@ -25,6 +24,7 @@ import javax.xml.crypto.dsig.XMLSignatureException;
 import javax.xml.crypto.dsig.XMLSignatureFactory;
 import javax.xml.crypto.dsig.dom.DOMValidateContext;
 import javax.xml.crypto.dsig.keyinfo.KeyInfo;
+import javax.xml.crypto.dsig.keyinfo.KeyValue;
 import javax.xml.crypto.dsig.keyinfo.X509Data;
 import javax.xml.transform.Source;
 import javax.xml.transform.Transformer;
@@ -42,6 +42,7 @@ import java.io.InputStream;
 import java.math.BigInteger;
 import java.security.InvalidKeyException;
 import java.security.Key;
+import java.security.KeyException;
 import java.security.KeyFactory;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
@@ -117,7 +118,7 @@ public class SwidTagValidator {
         System.out.println(si.toString());
         Element file = (Element) document.getElementsByTagName("File").item(0);
         validateFile(file);
-        System.out.println("Signature core validity: " + validateSignedXMLDocument(document));
+        validateSignedXMLDocument(document);
         return true;
     }
 
@@ -159,29 +160,56 @@ public class SwidTagValidator {
             CredentialParser cp = new CredentialParser();
             X509Certificate signingCert = null;
             List<X509Certificate> trustStore = cp.parseCertsFromPEM(trustStoreFile);
+            X509KeySelector keySelector = new X509KeySelector();
             NodeList nodes = doc.getElementsByTagNameNS(XMLSignature.XMLNS, "Signature");
             if (nodes.getLength() == 0) {
                 throw new Exception("Signature element not found!");
+            } else {
+                context = new DOMValidateContext(keySelector, nodes.item(0));
             }
             NodeList embeddedCert = doc.getElementsByTagName("X509Certificate");
             if (embeddedCert.getLength() > 0) {
-                context = new DOMValidateContext(new X509KeySelector(), nodes.item(0));
                 signingCert = cp.parseCertFromPEMString(embeddedCert.item(0).getTextContent());
             } else {
-                String skId = doc.getElementsByTagName("KeyName").item(0).getTextContent();
-                for (X509Certificate trustedCert : trustStore) {
-                    String trustedSkId = cp.getCertificateSubjectKeyIdentifier(trustedCert);
-                    if (skId.equals(trustedSkId)) {
-                        signingCert = trustedCert;
-                        break;
+                NodeList keyValue = doc.getElementsByTagName("KeyValue");
+                if (keyValue.getLength() > 0) {
+                    String modulus = doc.getElementsByTagName("Modulus").item(0).getTextContent();
+                    String exponent =
+                            doc.getElementsByTagName("Exponent").item(0).getTextContent();
+                    PublicKey signingKey = calculatePublicKey(modulus, exponent);
+                    for (X509Certificate trustedCert : trustStore) {
+                        System.out.println(trustedCert.getPublicKey().toString());
+                        if (Arrays.equals(trustedCert.getPublicKey().getEncoded(),
+                                signingKey.getEncoded())) {
+                            signingCert = trustedCert;
+                            break;
+                        }
                     }
-                }
-                if (signingCert == null) {
-                    System.out.println("Issuer certificate with subject key identifier = "
+                    if (signingCert == null) {
+                        System.out.println("Calculated public key not found: " + signingKey.toString());
+                        System.exit(1);
+                    }
+                } else {
+                    String skId = doc.getElementsByTagName("KeyName").item(0).getTextContent();
+                    if (skId != null && !skId.isEmpty()) {
+                        for (X509Certificate trustedCert : trustStore) {
+                            String trustedSkId = cp.getCertificateSubjectKeyIdentifier(trustedCert);
+                            if (skId.equals(trustedSkId)) {
+                                signingCert = trustedCert;
+                                break;
+                            }
+                        }
+                        if (signingCert == null) {
+                            System.out.println("Issuer certificate with subject key identifier = "
                                     + skId + " not found");
-                    System.exit(1);
+                            System.exit(1);
+                        }
+                    } else {
+                        System.out.println("No credentials found with which to validate this swidtag");
+                        System.exit(1);
+                    }
+                    context = new DOMValidateContext(signingCert.getPublicKey(), nodes.item(0));
                 }
-                context = new DOMValidateContext(signingCert.getPublicKey(), nodes.item(0));
             }
             cp.setCertificate(signingCert);
             System.out.println(cp.getCertificateAuthorityInfoAccess());
@@ -206,6 +234,28 @@ public class SwidTagValidator {
         }
 
         return false;
+    }
+
+    /**
+     * This method calculates an RSA public key from the <KeyValue> element of an XML
+     * signature block.
+     *
+     * @param mod the modulus string
+     * @param exp the exponent string
+     * @return the calculated public key
+     */
+    private PublicKey calculatePublicKey(final String mod, final String exp)
+        throws NoSuchAlgorithmException, InvalidKeySpecException{
+
+        System.out.println("Decoding " + exp);
+        BigInteger exponent = new BigInteger(Base64.getMimeDecoder().decode(exp));
+        System.out.println("MIME: " + exponent);
+        System.out.println("Decoding " + mod);
+        BigInteger modulus = new BigInteger(Base64.getMimeDecoder().decode(mod));
+        System.out.println("MIME: " + modulus);
+
+        KeyFactory keyFactory = KeyFactory.getInstance("RSA");
+        return keyFactory.generatePublic(new RSAPublicKeySpec(modulus, exponent));
     }
 
     /**
@@ -331,6 +381,8 @@ public class SwidTagValidator {
                                         final XMLCryptoContext context)
                                         throws KeySelectorException {
             Iterator keyinfoItr = keyinfo.getContent().iterator();
+            PublicKey publicKey = null;
+            System.out.println("Parsing KeyInfo");
             while(keyinfoItr.hasNext()) {
                 XMLStructure element = (XMLStructure) keyinfoItr.next();
                 if (element instanceof X509Data) {
@@ -339,11 +391,20 @@ public class SwidTagValidator {
                     while (dataItr.hasNext()) {
                         Object object = dataItr.next();
                         if (object instanceof X509Certificate) {
-                            final PublicKey publicKey = ((X509Certificate) object).getPublicKey();
-                            if (areAlgorithmsEqual(algorithm.getAlgorithm(), publicKey.getAlgorithm())) {
-                                return new SwidTagValidator.X509KeySelector.RIMKeySelectorResult(publicKey);
-                            }
+                            publicKey = ((X509Certificate) object).getPublicKey();
                         }
+                    }
+                } else if (element instanceof KeyValue) {
+                    try {
+                        publicKey = ((KeyValue) element).getPublicKey();
+                        System.out.println("PK parsed from KeyValue: " + publicKey.toString());
+                    } catch (KeyException e) {
+                        System.out.println("Unable to convert KeyValue data to PK.");
+                    }
+                }
+                if (publicKey != null) {
+                    if (areAlgorithmsEqual(algorithm.getAlgorithm(), publicKey.getAlgorithm())) {
+                        return new SwidTagValidator.X509KeySelector.RIMKeySelectorResult(publicKey);
                     }
                 }
             }

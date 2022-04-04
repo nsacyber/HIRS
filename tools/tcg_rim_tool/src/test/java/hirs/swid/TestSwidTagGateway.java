@@ -25,6 +25,8 @@ public class TestSwidTagGateway {
 			.getResource("RimSignCert.pem").getPath();
 	private final String PRIVATE_KEY_FILE = TestSwidTagGateway.class.getClassLoader()
 			.getResource("privateRimKey.pem").getPath();
+	private final String CA_CHAIN_FILE = TestSwidTagGateway.class.getClassLoader()
+			.getResource("RimCertChain.pem").getPath();
 	private final String SUPPORT_RIM_FILE = TestSwidTagGateway.class.getClassLoader()
 			.getResource("TpmLog.bin").getPath();
 	private InputStream expectedFile;
@@ -36,6 +38,7 @@ public class TestSwidTagGateway {
 		gateway.setAttributesFile(ATTRIBUTES_FILE);
 		validator = new SwidTagValidator();
 		validator.setRimEventLog(SUPPORT_RIM_FILE);
+		validator.setTrustStoreFile(CA_CHAIN_FILE);
 	}
 
 	@AfterClass
@@ -60,12 +63,14 @@ public class TestSwidTagGateway {
 		expectedFile = TestSwidTagGateway.class.getClassLoader()
 				.getResourceAsStream(BASE_USER_CERT);
 		Assert.assertTrue(compareFileBytesToExpectedFile(DEFAULT_OUTPUT));
+		Assert.assertTrue(validator.validateSwidTag(DEFAULT_OUTPUT));
 	}
 
 	/**
-	 * This test corresponds to the arguments:
+	 * This test creates the following base RIM:
 	 * -c base -l TpmLog.bin -k privateRimKey.pem -p RimSignCert.pem -e
-	 * where RimSignCert.pem has the AIA extension.
+	 * And then validates it:
+	 * -v [base RIM] -l TpmLog.bin -t RimCertChain.pem
 	 */
 	@Test
 	public void testCreateBaseUserCertEmbedded() {
@@ -77,6 +82,7 @@ public class TestSwidTagGateway {
 		expectedFile = TestSwidTagGateway.class.getClassLoader()
 				.getResourceAsStream(BASE_USER_CERT_EMBED);
 		Assert.assertTrue(compareFileBytesToExpectedFile(DEFAULT_OUTPUT));
+		Assert.assertTrue(validator.validateSwidTag(DEFAULT_OUTPUT));
 	}
 
 	/**
@@ -91,13 +97,14 @@ public class TestSwidTagGateway {
 		expectedFile = TestSwidTagGateway.class.getClassLoader()
 				.getResourceAsStream(BASE_DEFAULT_CERT);
 		Assert.assertTrue(compareFileBytesToExpectedFile(DEFAULT_OUTPUT));
+		Assert.assertTrue(validator.validateSwidTag(DEFAULT_OUTPUT));
 	}
 
 	/**
 	 * This test corresponds to the arguments:
 	 * -v <path>
 	 */
-	@Test
+
 	public void testValidateSwidTag() {
 		String filepath = TestSwidTagGateway.class.getClassLoader()
 				.getResource(BASE_USER_CERT).getPath();
