@@ -37,7 +37,7 @@ To create an RPM on a linux device use the following command in the dame directo
 Currenty only a install package for Linux is supported. 
 
 To install this tool use the following commmand from the same directory:
-> sudo yum localinstall build/distrobutions/tgc_rim_tool*.rpm
+> sudo yum localinstall build/distributions/tcg_eventlog_tool*.rpm
 
 # Usage
 ## Linux
