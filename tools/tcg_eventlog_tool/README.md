@@ -37,7 +37,7 @@ To create an RPM on a linux device use the following command in the dame directo
 Currenty only a install package for Linux is supported. 
 
 To install this tool use the following commmand from the same directory:
-> sudo yum localinstall build/distrobutions/tgc_rim_tool.*.rpm
+> sudo yum localinstall build/distrobutions/tgc_rim_tool*.rpm
 
 # Usage
 ## Linux
@@ -70,4 +70,3 @@ invoke using java -jar option to the tcg_eventlog_tool jar file with options:
 another example:
 
 > java -jar build\libs\tools\tcg_eventlog_tool-1.0.jar -f C:\Windows\Logs\MeasuredBoot\0000000059-0000000000.log -e
-
