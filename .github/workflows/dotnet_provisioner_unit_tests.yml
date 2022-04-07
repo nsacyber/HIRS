@@ -47,10 +47,13 @@ jobs:
       continue-on-error: true
       working-directory: HIRS_Provisioner.NET
       run: |
-        cd hirsTest
+
+        $logName = '${{matrix.os}}'' + '-unit-tests.log'
+        echo $logName
+        # cd hirsTest
         $results = dotnet test --no-restore -v m
-        cd ..
-        $logName = "${{matrix.os}}" + "-unit-tests.log"
+        # cd ..
+        
         New-Item $logName
         Set-Content $logName $results
         Get-Content $logName
@@ -65,7 +68,7 @@ jobs:
       continue-on-error: true
       working-directory: HIRS_Provisioner.NET
       run: |
-        $logName="${{matrix.os}}" + "-unit-tests.log"
+        logName="${{matrix.os}}" + "-unit-tests.log"
         dotnet test --no-restore -v m > $logName
         isInFile=$(cat $log-name | grep -c "Passed!")
         if [ $isInFile -eq 0 ]; then
