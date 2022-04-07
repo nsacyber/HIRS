@@ -63,13 +63,28 @@ jobs:
         echo "::set-output name=result::$results"
 
     - name: Run Unit Tests and Save Logs Ubuntu
-      id: ubuntu_result
       if: contains(matrix.os, 'ubuntu')
       continue-on-error: true
       working-directory: HIRS_Provisioner.NET
       run: |
         logName="${{matrix.os}}-unit-tests.log"
         dotnet test --no-restore -v m > $logName
+        # isInFile=$(cat $log-name | grep -c "Passed!")
+        # if [ $isInFile -eq 0 ]; then
+        #   echo "Tests Failed"
+        #   echo "::set-output name=result::'False'"
+        # else
+        #   echo "Tests Passed"
+        #   echo "::set-output name=result::'True'"
+        # fi
+        # cat $logName
+
+    - name: Run Unit Tests and Save Logs Ubuntu
+      id: ubuntu_result
+      if: contains(matrix.os, 'ubuntu')
+      continue-on-error: true
+      working-directory: HIRS_Provisioner.NET
+      run: |
         isInFile=$(cat $log-name | grep -c "Passed!")
         if [ $isInFile -eq 0 ]; then
           echo "Tests Failed"
