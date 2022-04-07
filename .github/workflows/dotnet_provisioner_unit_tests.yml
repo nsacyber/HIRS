@@ -50,10 +50,10 @@ jobs:
         cd hirsTest
         $results = dotnet test --no-restore -v m
         cd ..
-        $log-name = "${{matrix.os}}" + "-unit-tests.log"
-        New-Item $log-name
-        Set-Content $log-name $results
-        Get-Content $log-name
+        $logName = "${{matrix.os}}" + "-unit-tests.log"
+        New-Item $logName
+        Set-Content $logName $results
+        Get-Content $logName
         $results = [string]$results
         $results = $results.Contains("Passed!")
         if($results) { $results = "True" } else { $results = "False"}
@@ -65,8 +65,8 @@ jobs:
       continue-on-error: true
       working-directory: HIRS_Provisioner.NET
       run: |
-        $log-name = "${{matrix.os}}" + "-unit-tests.log"
-        dotnet test --no-restore -v m > $log-name
+        $logName="${{matrix.os}}" + "-unit-tests.log"
+        dotnet test --no-restore -v m > $logName
         isInFile=$(cat $log-name | grep -c "Passed!")
         if [ $isInFile -eq 0 ]; then
           echo "Tests Failed"
@@ -75,7 +75,7 @@ jobs:
           echo "Tests Passed"
           echo "::set-output name=result::'True'"
         fi
-        cat $log-name
+        cat $logName
 
     - name: Upload logs
       uses: actions/upload-artifact@v2
