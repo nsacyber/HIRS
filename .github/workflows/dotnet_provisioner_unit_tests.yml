@@ -4,6 +4,7 @@ env:
   DOTNET_VERSION: '3.1'
 jobs:
   dotnet_provisioner_unit_tests:
+    name: UnitTests
     # continue-on-error: true
     runs-on: ${{ matrix.os }}
     strategy:
@@ -103,10 +104,10 @@ jobs:
         exit 1
 
 
-  # evaluator:
-  #   runs-on: windows-latest
-  #   needs: [(windows-2022), (ubuntu-20.04), (windows-2019), (ubuntu-18.04)]
-  #   steps:
-  #   - name: Set git to use LF
-  #     run: |
-  #       echo "Finished"
+  evaluator:
+    runs-on: windows-latest
+    needs: [UnitTests (windows-2022),UnitTests (ubuntu-20.04),UnitTests (windows-2019),UnitTests (ubuntu-18.04)]
+    steps:
+    - name: Set git to use LF
+      run: |
+        echo "Finished"
