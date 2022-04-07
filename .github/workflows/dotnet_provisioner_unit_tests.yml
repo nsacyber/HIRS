@@ -104,5 +104,6 @@ jobs:
   Evaluator:
       needs: [ubuntu-18.04]
       runs-on: ubuntu-latest
+      steps:
       run: |
         echo "Hello"
