@@ -10,9 +10,9 @@ jobs:
     strategy:
       matrix:
         include:
-         - os: windows-2022
+         # - os: windows-2022
          - os: ubuntu-20.04
-         - os: windows-2019
+         # - os: windows-2019
          - os: ubuntu-18.04
     steps:
     # - name: Set git to use LF
@@ -31,7 +31,6 @@ jobs:
       working-directory: HIRS_Provisioner.NET
       if: contains(matrix.os, 'windows')
       run: |
-        #dotnet publish -r win-x64 -c Release --no-restore
         cd hirs
         dotnet build /p:RuntimeIdentifier=win-x64 --configuration Release --no-restore
         cd ..
@@ -43,7 +42,7 @@ jobs:
           dotnet build --configuration Release --no-restore
 
     - name: Run Unit Tests and Save Logs - Windows
-      id: window_result
+      id: matrix.os
       if: contains(matrix.os, 'windows')
       continue-on-error: true
       working-directory: HIRS_Provisioner.NET
@@ -67,7 +66,7 @@ jobs:
         dotnet test --no-restore -v m > $logName
 
     - name: Extract Ubuntu Unit Test Results
-      id: ubuntu_result
+      id: matrix.os
       if: contains(matrix.os, 'ubuntu')
       working-directory: HIRS_Provisioner.NET
       run: |
@@ -89,13 +88,15 @@ jobs:
         path: HIRS_Provisioner.NET/*.log
 
     - name: Results Passed
-      if: steps.window_result.outputs.result == 'True' || steps.ubuntu_result.outputs.result == 'True'
+      # if: steps.window_result.outputs.result == 'True' || steps.ubuntu_result.outputs.result == 'True'
+      if: steps.&{{matrix.os}}.outputs.result == 'True'
       run: |
         echo "All Tests Passed"
         exit 0
 
     - name: Results Failed
-      if: steps.window_result.outputs.result == 'False' || steps.ubuntu_result.outputs.result == 'False'
+      #if: steps.window_result.outputs.result == 'False' || steps.ubuntu_result.outputs.result == 'False'
+      if: steps.&{{matrix.os}}.outputs.result == 'False'
       run: |
         echo "Unit Tests Failed"
         exit 1
