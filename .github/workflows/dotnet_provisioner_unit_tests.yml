@@ -89,6 +89,7 @@ jobs:
 
         echo "::set-output name=result::$result"
         more $destination
+        echo "END OF STEP"
  
     - name: Upload Logs Ubuntu
       uses: actions/upload-artifact@v2
