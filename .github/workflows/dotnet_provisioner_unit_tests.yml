@@ -42,7 +42,7 @@ jobs:
           dotnet build --configuration Release --no-restore
 
     - name: Run Unit Tests and Save Logs - Windows
-      id: matrix.os
+      id: ${{matrix.os}}
       if: contains(matrix.os, 'windows')
       continue-on-error: true
       working-directory: HIRS_Provisioner.NET
@@ -66,7 +66,7 @@ jobs:
         dotnet test --no-restore -v m > $logName
 
     - name: Extract Ubuntu Unit Test Results
-      id: matrix.os
+      id: ${{matrix.os}}
       if: contains(matrix.os, 'ubuntu')
       working-directory: HIRS_Provisioner.NET
       run: |
