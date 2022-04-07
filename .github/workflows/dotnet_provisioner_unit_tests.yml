@@ -15,10 +15,10 @@ jobs:
          - os: windows-2019
          - os: ubuntu-18.04
     steps:
-    - name: Set git to use LF
-      run: |
-        git config --global core.autocrlf false
-        git config --global core.eol lf
+    # - name: Set git to use LF
+    #   run: |
+    #     git config --global core.autocrlf false
+    #     git config --global core.eol lf
 
     - name: Checkout repo
       uses: actions/checkout@v2
@@ -38,7 +38,7 @@ jobs:
         
     - name: Build on Ubuntu
       working-directory: HIRS_Provisioner.NET
-      if: contains(matrix.os, 'ubuntu') && always()
+      if: contains(matrix.os, 'ubuntu')
       run: |
           dotnet build --configuration Release --no-restore
 
