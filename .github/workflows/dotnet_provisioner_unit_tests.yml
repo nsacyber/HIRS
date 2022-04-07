@@ -51,7 +51,7 @@ jobs:
         $logName = '${{matrix.os}}-unit-tests.log'
         echo $logName
         # cd hirsTest
-        $results = dotnet test --no-restore -v m
+        $results = dotnet test -r win-x64 --no-restore -v m
         # cd ..
         
         New-Item $logName
