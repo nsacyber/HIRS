@@ -79,13 +79,13 @@ jobs:
         # fi
         # cat $logName
 
-    - name: Run Unit Tests and Save Logs Ubuntu
+    - name: Extract Ubuntu Unit Test Results
       id: ubuntu_result
       if: contains(matrix.os, 'ubuntu')
       continue-on-error: true
       working-directory: HIRS_Provisioner.NET
       run: |
-        isInFile=$(cat $log-name | grep -c "Passed!")
+        isInFile=$(cat $logName | grep -c "Passed!")
         if [ $isInFile -eq 0 ]; then
           echo "Tests Failed"
           echo "::set-output name=result::'False'"
