@@ -101,9 +101,10 @@ jobs:
       run: |
         echo "Unit Tests Failed"
         exit 1
-  Evaluator:
-      needs: [ubuntu-18.04]
-      runs-on: ubuntu-latest
-      steps:
+  evaluator:
+    name: Evaluate Jobs
+    needs: [windows-2022]
+    steps:
+    - name: Test
       run: |
-        echo "Hello"
+        echo "Test1"
