@@ -23,12 +23,12 @@ jobs:
     - uses: actions/checkout@v2
     
     - name: Install dependencies
-      working-directory: HIRS_Provisioner
+      working-directory: HIRS_Provisioner.NET
       run: |
         dotnet restore
 
     - name: Build on Windows
-      working-directory: HIRS_Provisioner
+      working-directory: HIRS_Provisioner.NET
       if: contains(matrix.os, 'windows')
       run: |
           dotnet publish -r win-x64 -c Release --no-restore
@@ -37,7 +37,7 @@ jobs:
           #cd ..
         
     - name: Build on Ubuntu
-      working-directory: HIRS_Provisioner
+      working-directory: HIRS_Provisioner.NET
       if: contains(matrix.os, 'ubuntu')
       run: |
           dotnet build --configuration Release --no-restore
@@ -45,7 +45,7 @@ jobs:
     - name: Run Unit Tests and Save Logs Windows
       id: window_result
       if: contains(matrix.os, 'windows')
-      working-directory: HIRS_Provisioner
+      working-directory: HIRS_Provisioner.NET
       run: |
         #cd hirsTest
         $results = dotnet test /p:RuntimeIdentifier=win-x64 --no-restore -v m
@@ -61,7 +61,7 @@ jobs:
     - name: Run Unit Tests and Save Logs Ubuntu
       id: ubuntu_result
       if: contains(matrix.os, 'ubuntu')
-      working-directory: HIRS_Provisioner
+      working-directory: HIRS_Provisioner.NET
       run: |
         dotnet test --no-restore -v m > unit-tests.log
         isInFile=$(cat unit-tests.log | grep -c "Passed!")
@@ -75,7 +75,7 @@ jobs:
       uses: actions/upload-artifact@v2
       with:
         name: unit-tests.log
-        path: HIRS_Provisioner/*.log
+        path: HIRS_Provisioner.NET/*.log
 
     - name: Results Passed
       if: steps.results.outputs.window_result == 'True' || steps.results.outputs.ubuntu_result == 'True'
