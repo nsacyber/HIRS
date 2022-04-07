@@ -1,0 +1,90 @@
+name: Windows Provisioner Unit Tests
+on: push
+env: 
+  DOTNET_VERSION: '3.1'
+jobs:
+  windows_provisioner_unit_tests:
+    name: Restore and run unit tests
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        include:
+         - os: windows-2022
+         - os: ubuntu-20.04
+         - os: windows-2019
+         - os: ubuntu-18.04
+    continue-on-error: true
+    steps:
+    - name: Set git to use LF
+      run: |
+        git config --global core.autocrlf false
+        git config --global core.eol lf
+
+    - uses: actions/checkout@v2
+    
+    - name: Install dependencies
+      working-directory: HIRS_Provisioner
+      run: |
+        dotnet restore
+
+    - name: Build on Windows
+      working-directory: HIRS_Provisioner
+      if: contains(matrix.os, 'windows')
+      run: |
+          dotnet publish -r win-x64 -c Release --no-restore
+          #cd hirs
+          #dotnet build /p:RuntimeIdentifier=win-x64 --configuration Release --no-restore
+          #cd ..
+        
+    - name: Build on Ubuntu
+      working-directory: HIRS_Provisioner
+      if: contains(matrix.os, 'ubuntu')
+      run: |
+          dotnet build --configuration Release --no-restore
+
+    - name: Run Unit Tests and Save Logs Windows
+      id: window_result
+      if: contains(matrix.os, 'windows')
+      working-directory: HIRS_Provisioner
+      run: |
+        #cd hirsTest
+        $results = dotnet test /p:RuntimeIdentifier=win-x64 --no-restore -v m
+        #cd ..
+        New-Item unit-tests.log
+        Set-Content unit-tests.log $results
+        Get-Content .\unit-tests.log
+        $results = [string]$results
+        $results = $results.Contains("Passed!")
+        if($results) { $results = "True" } else { $results = "False"}
+        echo "::set-output name=result::$results"
+
+    - name: Run Unit Tests and Save Logs Ubuntu
+      id: ubuntu_result
+      if: contains(matrix.os, 'ubuntu')
+      working-directory: HIRS_Provisioner
+      run: |
+        dotnet test --no-restore -v m > unit-tests.log
+        isInFile=$(cat unit-tests.log | grep -c "Passed!")
+        if [ $isInFile -eq 0 ]; then
+          echo "::set-output name=result::'False'"
+        else
+          echo "::set-output name=result::'True'"
+        fi
+
+    - name: Upload logs
+      uses: actions/upload-artifact@v2
+      with:
+        name: unit-tests.log
+        path: HIRS_Provisioner/*.log
+
+    - name: Results Passed
+      if: steps.results.outputs.window_result == 'True' || steps.results.outputs.ubuntu_result == 'True'
+      run: |
+        echo "All Tests Passed"
+        exit 0
+
+    - name: Results Failed
+      if: steps.results.outputs.windows_result == 'False' || steps.results.outputs.ubuntu_result == 'False'
+      run: |
+        echo "Unit Tests Failed"
+        exit 1
