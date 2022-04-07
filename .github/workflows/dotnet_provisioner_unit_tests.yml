@@ -103,7 +103,7 @@ jobs:
         exit 1
   evaluator:
     name: Evaluate Jobs
-    needs: [windows-2022]
+    needs: [dotnet_provisioner_unit_tests]
     runs-on: windows-latest
     steps:
     - name: Test
