@@ -96,9 +96,9 @@ jobs:
       #   echo "All Tests Passed"
       #   exit 0
       uses: dflydev/check-runs-action@v1
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-          conclusion: success  
+      with:
+        token: ${{ secrets.GITHUB_TOKEN }}
+        conclusion: success  
 
     - name: Results Failed
       if: (steps.window_result.outputs.result == 'False' || steps.ubuntu_result.outputs.result == 'False') && always()
@@ -106,6 +106,6 @@ jobs:
       #   echo "Unit Tests Failed"
       #   exit 1
       uses: dflydev/check-runs-action@v1
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-          conclusion: failure
+      with:
+        token: ${{ secrets.GITHUB_TOKEN }}
+        conclusion: failure
