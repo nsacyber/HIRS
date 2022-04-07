@@ -100,13 +100,13 @@ jobs:
       #   token: ${{ secrets.GITHUB_TOKEN }}
       #   conclusion: success  
       uses: LouisBrunner/checks-action@v1.1.1
-      if: always()
       with:
         token: ${{ secrets.GITHUB_TOKEN }}
         name: Success
         conclusion: success
         # output: |
         #   {"summary":${{ steps.test.outputs.summary }}}
+
     - name: Results Failed
       if: (steps.window_result.outputs.result == 'False' || steps.ubuntu_result.outputs.result == 'False') && always()
       # run: |
@@ -117,7 +117,6 @@ jobs:
       #   token: ${{ secrets.GITHUB_TOKEN }}
       #   conclusion: failure
       uses: LouisBrunner/checks-action@v1.1.1
-      if: always()
       with:
         token: ${{ secrets.GITHUB_TOKEN }}
         name: Fail
