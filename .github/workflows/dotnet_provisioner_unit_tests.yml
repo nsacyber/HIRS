@@ -57,7 +57,7 @@ jobs:
 
         echo "::set-output name=result::$results"
 
-        $logName = '${{matrix.os}}-unit-tests-" + $results + ".log"
+        $logName = "${{matrix.os}}-unit-tests-" + $results + ".log"
 
         New-Item $logName
         Set-Content $logName $logs
@@ -66,7 +66,7 @@ jobs:
 
     - name: Run Unit Tests and Save Logs - Ubuntu
       id: ubuntu_result
-      if: contains(matrix.os, 'ubuntu') && always()
+      if: always() && contains(matrix.os, 'ubuntu')
       working-directory: HIRS_Provisioner.NET
       run: |
 
@@ -79,7 +79,7 @@ jobs:
           result="Fail"
         fi
 
-        $logs > "${{matrix.os}}-unit-tests$result.log"
+        $logs > "${{matrix.os}}-unit-tests" + $result + ".log"
 
          
 
