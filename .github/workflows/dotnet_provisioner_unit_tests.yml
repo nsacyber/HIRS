@@ -5,6 +5,7 @@ env:
 jobs:
   dotnet_provisioner_unit_tests:
     name: Restore and run unit tests
+    continue-on-error: true
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
@@ -64,35 +65,23 @@ jobs:
       run: |
         logName="${{matrix.os}}-unit-tests.log"
         dotnet test --no-restore -v m > $logName
-        # isInFile=$(cat $logName | grep -c "Passed!")
-        # if [ $isInFile -eq 0 ]; then
-        #   echo "Tests Failed"
-        #   echo "::set-output name=result::'False'"
-        # else
-        #   echo "Tests Passed"
-        #   echo "::set-output name=result::'True'"
-        # fi
-        # cat $logName
 
     - name: Extract Ubuntu Unit Test Results
       id: ubuntu_result
       if: contains(matrix.os, 'ubuntu')
-      continue-on-error: true
       working-directory: HIRS_Provisioner.NET
       run: |
         logName="${{matrix.os}}-unit-tests.log"
-        result="False"
         if grep -Fxq "Passed!" $logName; 
         then 
           echo "Hit pass for ubuntu"
-          $result="True"
+          result="True"
         else
-          echo "Hit fail for ubuntu"
+          result="False"
         fi
         echo "::set-output name=result::$result"
         more $logName
         
-
     - name: Upload logs
       uses: actions/upload-artifact@v2
       with:
