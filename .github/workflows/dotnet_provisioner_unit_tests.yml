@@ -27,7 +27,7 @@ jobs:
       # Remove after testing
       if: contains(matrix.os, 'ubuntu') && always()
       working-directory: HIRS_Provisioner.NET
-      if: always()
+      # if: always()
       run: |
         dotnet restore
 
