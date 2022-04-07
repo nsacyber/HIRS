@@ -54,7 +54,7 @@ jobs:
         Get-Content $logName
         $results = [string]$results
         $results = $results.Contains("Passed!")
-        if($results) { $results = "True" } else { $results = "False"}
+        if($results) { $results = "Pass" } else { $results = "Fail"}
         echo "::set-output name=result::$results"
 
     - name: Run Unit Tests and Save Logs - Ubuntu
@@ -66,18 +66,25 @@ jobs:
         logName="${{matrix.os}}-unit-tests.log"
         if grep -Fxq "Passed!" $logName; 
         then 
-          result="True"
+          result="Pass"
         else
-          result="False"
+          result="Fail"
         fi
         echo "::set-output name=result::$result"
         more $logName
  
-    - name: Upload logs
+    - name: Upload Logs Ubuntu
       uses: actions/upload-artifact@v2
-      if: always()
+      if: contains(matrix.os, 'ubuntu') && always()
       with:
-        name: "${{matrix.os}}-unit-tests-${{}}.log"
+        name: "${{matrix.os}}-unit-tests-${{steps.ubuntu_result.outputs.result}}.log"
+        path: HIRS_Provisioner.NET/*.log
+
+    - name: Upload Logs Windows
+      uses: actions/upload-artifact@v2
+      if: contains(matrix.os, 'windows') && always()
+      with:
+        name: "${{matrix.os}}-unit-tests-${{steps.window_result.outputs.result}}.log"
         path: HIRS_Provisioner.NET/*.log
 
     # - name: Results Passed
