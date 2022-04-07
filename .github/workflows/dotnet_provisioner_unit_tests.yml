@@ -103,10 +103,10 @@ jobs:
         exit 1
 
 
-  evaluator:
-    runs-on: windows-latest
-    needs: [(windows-2022), (ubuntu-20.04), (windows-2019), (ubuntu-18.04)]
-    steps:
-    - name: Set git to use LF
-      run: |
-        echo "Finished"
+  # evaluator:
+  #   runs-on: windows-latest
+  #   needs: [(windows-2022), (ubuntu-20.04), (windows-2019), (ubuntu-18.04)]
+  #   steps:
+  #   - name: Set git to use LF
+  #     run: |
+  #       echo "Finished"
