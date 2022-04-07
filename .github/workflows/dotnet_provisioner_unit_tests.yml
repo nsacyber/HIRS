@@ -1,9 +1,9 @@
-name: Windows Provisioner Unit Tests
+name: Dotnet Provisioner Unit Tests
 on: push
 env: 
   DOTNET_VERSION: '3.1'
 jobs:
-  windows_provisioner_unit_tests:
+  dotnet_provisioner_unit_tests:
     name: Restore and run unit tests
     runs-on: ${{ matrix.os }}
     strategy:
@@ -13,7 +13,6 @@ jobs:
          - os: ubuntu-20.04
          - os: windows-2019
          - os: ubuntu-18.04
-    continue-on-error: true
     steps:
     - name: Set git to use LF
       run: |
@@ -45,6 +44,7 @@ jobs:
     - name: Run Unit Tests and Save Logs Windows
       id: window_result
       if: contains(matrix.os, 'windows')
+      continue-on-error: true
       working-directory: HIRS_Provisioner.NET
       run: |
         #cd hirsTest
@@ -61,6 +61,7 @@ jobs:
     - name: Run Unit Tests and Save Logs Ubuntu
       id: ubuntu_result
       if: contains(matrix.os, 'ubuntu')
+      continue-on-error: true
       working-directory: HIRS_Provisioner.NET
       run: |
         dotnet test --no-restore -v m > unit-tests.log
