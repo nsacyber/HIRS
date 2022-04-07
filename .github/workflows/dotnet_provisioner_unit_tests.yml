@@ -58,6 +58,7 @@ jobs:
         echo "::set-output name=result::$results"
 
     - name: Run Unit Tests and Save Logs - Ubuntu
+      id: ubuntu_result
       if: contains(matrix.os, 'ubuntu') && always()
       working-directory: HIRS_Provisioner.NET
       run: |
