@@ -5,7 +5,7 @@ env:
 jobs:
   dotnet_provisioner_unit_tests:
     name: Restore and run unit tests
-    # continue-on-error: true
+    continue-on-error: true
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
@@ -19,19 +19,18 @@ jobs:
       run: |
         git config --global core.autocrlf false
         git config --global core.eol lf
+
     - name: Checkout repo
-      if: always()
       uses: actions/checkout@v2
     
     - name: Restore Project
       working-directory: HIRS_Provisioner.NET
-      if: always()
       run: |
         dotnet restore
 
     - name: Build on Windows
       working-directory: HIRS_Provisioner.NET
-      if: contains(matrix.os, 'windows') && always()
+      if: contains(matrix.os, 'windows')
       run: |
         cd hirs
         dotnet build /p:RuntimeIdentifier=win-x64 --configuration Release --no-restore
@@ -46,7 +45,6 @@ jobs:
     - name: Run Unit Tests and Save Logs - Windows
       id: window_result
       if: contains(matrix.os, 'windows') && always()
-      # continue-on-error: true
       working-directory: HIRS_Provisioner.NET
       run: |
         $logName = '${{matrix.os}}-unit-tests.log'
@@ -61,17 +59,10 @@ jobs:
 
     - name: Run Unit Tests and Save Logs - Ubuntu
       if: contains(matrix.os, 'ubuntu') && always()
-      # continue-on-error: true
       working-directory: HIRS_Provisioner.NET
       run: |
         logName="${{matrix.os}}-unit-tests.log"
         dotnet test --no-restore -v m > $logName
-
-    - name: Extract Ubuntu Unit Test Results
-      id: ubuntu_result
-      if: contains(matrix.os, 'ubuntu') && always()
-      working-directory: HIRS_Provisioner.NET
-      run: |
         logName="${{matrix.os}}-unit-tests.log"
         if grep -Fxq "Passed!" $logName; 
         then 
@@ -82,7 +73,7 @@ jobs:
         fi
         echo "::set-output name=result::$result"
         more $logName
-        
+ 
     - name: Upload logs
       uses: actions/upload-artifact@v2
       if: always()
@@ -91,21 +82,21 @@ jobs:
         path: HIRS_Provisioner.NET/*.log
 
     - name: Results Passed
-      if: (steps.window_result.outputs.result == 'True' || steps.ubuntu_result.outputs.result == 'True') && always()
+      if: (steps.window_result.outputs.result == 'True' || steps.ubuntu_result.outputs.result == 'True')
       run: |
         echo "All Tests Passed"
         exit 0
 
     - name: Results Failed
-      if: (steps.window_result.outputs.result == 'False' || steps.ubuntu_result.outputs.result == 'False') && always()
+      if: (steps.window_result.outputs.result == 'False' || steps.ubuntu_result.outputs.result == 'False')
       run: |
         echo "Unit Tests Failed"
         exit 1
-  evaluator:
-    name: Evaluate Jobs
-    needs: [dotnet_provisioner_unit_tests]
-    runs-on: windows-latest
-    steps:
-    - name: Test
-      run: |
-        echo "Test1"
+  # evaluator:
+  #   name: Evaluate Jobs
+  #   needs: [dotnet_provisioner_unit_tests]
+  #   runs-on: windows-latest
+  #   steps:
+  #   - name: Test
+  #     run: |
+  #       echo "Test1"
