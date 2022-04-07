@@ -24,12 +24,13 @@ jobs:
     
     - name: Restore Project
       working-directory: HIRS_Provisioner.NET
+      if: always()
       run: |
         dotnet restore
 
     - name: Build on Windows
       working-directory: HIRS_Provisioner.NET
-      if: contains(matrix.os, 'windows')
+      if: contains(matrix.os, 'windows') && always()
       run: |
         cd hirs
         dotnet build /p:RuntimeIdentifier=win-x64 --configuration Release --no-restore
@@ -37,7 +38,7 @@ jobs:
         
     - name: Build on Ubuntu
       working-directory: HIRS_Provisioner.NET
-      if: contains(matrix.os, 'ubuntu')
+      if: contains(matrix.os, 'ubuntu') && always()
       run: |
           dotnet build --configuration Release --no-restore
 
@@ -83,6 +84,7 @@ jobs:
         
     - name: Upload logs
       uses: actions/upload-artifact@v2
+      if: always()
       with:
         name: "${{matrix.os}}-unit-tests.log"
         path: HIRS_Provisioner.NET/*.log
@@ -97,4 +99,4 @@ jobs:
       if: steps.window_result.outputs.result == 'False' || steps.ubuntu_result.outputs.result == 'False'
       run: |
         echo "Unit Tests Failed"
-        # exit 1
+        exit 1
