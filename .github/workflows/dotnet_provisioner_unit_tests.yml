@@ -47,32 +47,48 @@ jobs:
       if: contains(matrix.os, 'windows') && always()
       working-directory: HIRS_Provisioner.NET
       run: |
-        $logName = '${{matrix.os}}-unit-tests.log'
-        $results = dotnet test /p:PublishSingleFile=false --no-restore -v m
-        New-Item $logName
-        Set-Content $logName $results
-        Get-Content $logName
-        $results = [string]$results
+
+        
+        $logs = dotnet test /p:PublishSingleFile=false --no-restore -v m
+        
+        $results = [string]$logs
         $results = $results.Contains("Passed!")
         if($results) { $results = "Pass" } else { $results = "Fail"}
+
         echo "::set-output name=result::$results"
+
+        $logName = '${{matrix.os}}-unit-tests-" + $results + ".log"
+
+        New-Item $logName
+        Set-Content $logName $logs
+        Get-Content $logName
+
 
     - name: Run Unit Tests and Save Logs - Ubuntu
       id: ubuntu_result
       if: contains(matrix.os, 'ubuntu') && always()
       working-directory: HIRS_Provisioner.NET
       run: |
-        logName="${{matrix.os}}-unit-tests.log"
-        dotnet test --no-restore -v m > $logName
-        logName="${{matrix.os}}-unit-tests.log"
-        if grep -Fxq "Passed!" $logName; 
+
+        logs=$(dotnet test --no-restore -v m)
+
+        if grep -Fxq "Passed!" $logs; 
         then 
           result="Pass"
         else
           result="Fail"
         fi
+
+        $logs > "${{matrix.os}}-unit-tests$result.log"
+
+         
+
+        destination="./${{matrix.os}}-unit-tests.log"
+
+
+
         echo "::set-output name=result::$result"
-        more $logName
+        more $destination
  
     - name: Upload Logs Ubuntu
       uses: actions/upload-artifact@v2
