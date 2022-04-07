@@ -48,7 +48,7 @@ jobs:
       working-directory: HIRS_Provisioner.NET
       run: |
 
-        $logName = '${{matrix.os}}' + '-unit-tests.log'
+        $logName = '${{matrix.os}}-unit-tests.log'
         echo $logName
         # cd hirsTest
         $results = dotnet test --no-restore -v m
