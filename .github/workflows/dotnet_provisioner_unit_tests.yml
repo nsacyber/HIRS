@@ -5,20 +5,20 @@ env:
 jobs:
   dotnet_provisioner_unit_tests:
     name: Restore and run unit tests
-    continue-on-error: true
+    # continue-on-error: true
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
         include:
-         # - os: windows-2022
+         - os: windows-2022
          - os: ubuntu-20.04
-         # - os: windows-2019
+         - os: windows-2019
          - os: ubuntu-18.04
     steps:
-    # - name: Set git to use LF
-    #   run: |
-    #     git config --global core.autocrlf false
-    #     git config --global core.eol lf
+    - name: Set git to use LF
+      run: |
+        git config --global core.autocrlf false
+        git config --global core.eol lf
 
     - uses: actions/checkout@v2
     
@@ -42,7 +42,7 @@ jobs:
           dotnet build --configuration Release --no-restore
 
     - name: Run Unit Tests and Save Logs - Windows
-      id: ${{matrix.os}}
+      id: window_result
       if: contains(matrix.os, 'windows')
       continue-on-error: true
       working-directory: HIRS_Provisioner.NET
@@ -66,7 +66,7 @@ jobs:
         dotnet test --no-restore -v m > $logName
 
     - name: Extract Ubuntu Unit Test Results
-      id: ${{matrix.os}}
+      id: ubuntu_result
       if: contains(matrix.os, 'ubuntu')
       working-directory: HIRS_Provisioner.NET
       run: |
@@ -87,16 +87,22 @@ jobs:
         name: "${{matrix.os}}-unit-tests.log"
         path: HIRS_Provisioner.NET/*.log
 
+    - name: Wait for other tests to succeed
+        uses: lewagon/wait-on-check-action@v1.0.0
+        with:
+          ref: ${{ github.ref }}
+          running-workflow-name: 'Publish the package'
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
+
+
     - name: Results Passed
-      # if: steps.window_result.outputs.result == 'True' || steps.ubuntu_result.outputs.result == 'True'
-      if: steps.&{{matrix.os}}.outputs.result == 'True'
+      if: steps.window_result.outputs.result == 'True' || steps.ubuntu_result.outputs.result == 'True'
       run: |
         echo "All Tests Passed"
         exit 0
 
     - name: Results Failed
-      #if: steps.window_result.outputs.result == 'False' || steps.ubuntu_result.outputs.result == 'False'
-      if: steps.&{{matrix.os}}.outputs.result == 'False'
+      if: steps.window_result.outputs.result == 'False' || steps.ubuntu_result.outputs.result == 'False'
       run: |
         echo "Unit Tests Failed"
-        exit 1
+        # exit 1
