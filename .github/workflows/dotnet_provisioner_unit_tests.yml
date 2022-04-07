@@ -85,14 +85,15 @@ jobs:
       continue-on-error: true
       working-directory: HIRS_Provisioner.NET
       run: |
-        isInFile=$(cat $logName | grep -c "Passed!")
-        if [ $isInFile -eq 0 ]; then
-          echo "Tests Failed"
-          echo "::set-output name=result::'False'"
-        else
-          echo "Tests Passed"
-          echo "::set-output name=result::'True'"
-        fi
+        echo #logName
+        # isInFile=$(cat $logName | grep -c "Passed!")
+        # if [ $isInFile -eq 0 ]; then
+        #   echo "Tests Failed"
+        #   echo "::set-output name=result::'False'"
+        # else
+        #   echo "Tests Passed"
+        #   echo "::set-output name=result::'True'"
+        # fi
         cat $logName
 
     - name: Upload logs
