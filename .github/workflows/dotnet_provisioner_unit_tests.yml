@@ -47,13 +47,8 @@ jobs:
       continue-on-error: true
       working-directory: HIRS_Provisioner.NET
       run: |
-
         $logName = '${{matrix.os}}-unit-tests.log'
-        echo $logName
-        # cd hirsTest
         $results = dotnet test /p:PublishSingleFile=false --no-restore -v m
-        # cd ..
-        
         New-Item $logName
         Set-Content $logName $results
         Get-Content $logName
@@ -68,8 +63,6 @@ jobs:
       working-directory: HIRS_Provisioner.NET
       run: |
         logName="${{matrix.os}}-unit-tests.log"
-        echo "Log name = "
-        echo $logName
         dotnet test --no-restore -v m > $logName
         # isInFile=$(cat $logName | grep -c "Passed!")
         # if [ $isInFile -eq 0 ]; then
@@ -88,16 +81,15 @@ jobs:
       working-directory: HIRS_Provisioner.NET
       run: |
         logName="${{matrix.os}}-unit-tests.log"
-
+        result="False"
         if grep -Fxq "Passed!" $logName; 
         then 
           echo "Hit pass for ubuntu"
-          echo "::set-output name=result::'True'"; 
+          $result="True"
         else
           echo "Hit fail for ubuntu"
-          echo "::set-output name=result::'False'"
         fi
-
+        echo "::set-output name=result::$result"
         more $logName
         
 
