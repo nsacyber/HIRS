@@ -86,15 +86,7 @@ jobs:
       with:
         name: "${{matrix.os}}-unit-tests.log"
         path: HIRS_Provisioner.NET/*.log
-
-    - name: Wait for other tests to succeed
-        uses: lewagon/wait-on-check-action@v1.0.0
-        with:
-          ref: ${{ github.ref }}
-          running-workflow-name: 'Publish the package'
-          repo-token: ${{ secrets.GITHUB_TOKEN }}
-
-
+        
     - name: Results Passed
       if: steps.window_result.outputs.result == 'True' || steps.ubuntu_result.outputs.result == 'True'
       run: |
