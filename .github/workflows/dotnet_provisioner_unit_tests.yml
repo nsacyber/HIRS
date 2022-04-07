@@ -121,7 +121,7 @@ jobs:
       if: always()
       uses: andstor/file-existence-action@v1
       with:
-        files: "app-debug.apk"
+        files: "${{matrix.os}}-unit-tests-Pass.log"
     - name: ${{matrix.os}} Unit Tests
       if: steps.check_result.outputs.files_exists == 'false' && always()
       run: |
