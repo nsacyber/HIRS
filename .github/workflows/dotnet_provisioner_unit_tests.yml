@@ -12,7 +12,7 @@ jobs:
         include:
          # - os: windows-2022
          # - os: ubuntu-20.04
-         # - os: windows-2019
+         - os: windows-2019
          - os: ubuntu-18.04
     steps:
     # - name: Set git to use LF
@@ -77,11 +77,11 @@ jobs:
       uses: actions/upload-artifact@v2
       if: always()
       with:
-        name: "${{matrix.os}}-unit-tests.log"
+        name: "${{matrix.os}}-unit-tests-${{}}.log"
         path: HIRS_Provisioner.NET/*.log
 
     # - name: Results Passed
-    #   if: (steps.window_result.outputs.result == 'True' || steps.ubuntu_result.outputs.result == 'True') && always
+    #   if: (steps.window_result.outputs.result == 'True' ||  steps.ubuntu_result.outputs.result == 'True') && always
     #   run: |
     #     echo "All Tests Passed"
     #     exit 0
