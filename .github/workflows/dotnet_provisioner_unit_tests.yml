@@ -106,7 +106,7 @@ jobs:
 
   evaluator:
     runs-on: windows-latest
-    needs: [UnitTests (windows-2022),UnitTests (ubuntu-20.04),UnitTests (windows-2019),UnitTests (ubuntu-18.04)]
+    needs: ["UnitTests windows-2022","UnitTests ubuntu-20.04","UnitTests windows-2019","UnitTests ubuntu-18.04"]
     steps:
     - name: Set git to use LF
       run: |
