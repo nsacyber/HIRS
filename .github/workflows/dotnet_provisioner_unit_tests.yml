@@ -48,7 +48,7 @@ jobs:
       working-directory: HIRS_Provisioner.NET
       run: |
 
-        $logName = '${{matrix.os}}'' + '-unit-tests.log'
+        $logName = '${{matrix.os}}' + '-unit-tests.log'
         echo $logName
         # cd hirsTest
         $results = dotnet test --no-restore -v m
@@ -87,13 +87,13 @@ jobs:
         path: HIRS_Provisioner.NET/*.log
 
     - name: Results Passed
-      if: steps.results.outputs.window_result == 'True' || steps.results.outputs.ubuntu_result == 'True'
+      if: steps.window_result.outputs.result == 'True' || steps.ubuntu_result.outputs.result == 'True'
       run: |
         echo "All Tests Passed"
         exit 0
 
     - name: Results Failed
-      if: steps.results.outputs.windows_result == 'False' || steps.results.outputs.ubuntu_result == 'False'
+      if: steps.window_result.outputs.result == 'False' || steps.ubuntu_result.outputs.result == 'False'
       run: |
         echo "Unit Tests Failed"
         exit 1
