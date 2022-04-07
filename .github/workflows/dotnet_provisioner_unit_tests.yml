@@ -88,13 +88,16 @@ jobs:
       working-directory: HIRS_Provisioner.NET
       run: |
         logName="${{matrix.os}}-unit-tests.log"
-        echo $logName
 
-        echo "::set-output name=result::'False'"
         if grep -Fxq "Passed!" $logName; 
-        then echo "::set-output name=result::'True'"; 
+        then 
+          echo "Hit pass for ubuntu"
+          echo "::set-output name=result::'True'"; 
+        else
+          echo "Hit fail for ubuntu"
+          echo "::set-output name=result::'False'"
         fi
-        
+
         more $logName
         
 
