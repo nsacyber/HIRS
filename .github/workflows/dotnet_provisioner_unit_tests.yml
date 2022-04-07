@@ -22,7 +22,7 @@ jobs:
 
     - uses: actions/checkout@v2
     
-    - name: Install dependencies
+    - name: Restore Project
       working-directory: HIRS_Provisioner.NET
       run: |
         dotnet restore
@@ -42,7 +42,7 @@ jobs:
       run: |
           dotnet build --configuration Release --no-restore
 
-    - name: Run Unit Tests and Save Logs Windows
+    - name: Run Unit Tests and Save Logs - Windows
       id: window_result
       if: contains(matrix.os, 'windows')
       continue-on-error: true
@@ -58,7 +58,7 @@ jobs:
         if($results) { $results = "True" } else { $results = "False"}
         echo "::set-output name=result::$results"
 
-    - name: Run Unit Tests and Save Logs Ubuntu
+    - name: Run Unit Tests and Save Logs - Ubuntu
       if: contains(matrix.os, 'ubuntu')
       continue-on-error: true
       working-directory: HIRS_Provisioner.NET
