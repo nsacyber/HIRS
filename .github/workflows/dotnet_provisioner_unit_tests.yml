@@ -15,10 +15,10 @@ jobs:
          - os: windows-2019
          - os: ubuntu-18.04
     steps:
-    # - name: Set git to use LF
-    #   run: |
-    #     git config --global core.autocrlf false
-    #     git config --global core.eol lf
+    - name: Set git to use LF
+      run: |
+        git config --global core.autocrlf false
+        git config --global core.eol lf
 
     - name: Checkout repo
       uses: actions/checkout@v2
@@ -44,7 +44,7 @@ jobs:
 
     - name: Run Unit Tests and Save Logs - Windows
       id: window_result
-      if: contains(matrix.os, 'windows')
+      if: contains(matrix.os, 'windows') && always()
       working-directory: HIRS_Provisioner.NET
       run: |
         $logName = '${{matrix.os}}-unit-tests.log'
@@ -58,7 +58,7 @@ jobs:
         echo "::set-output name=result::$results"
 
     - name: Run Unit Tests and Save Logs - Ubuntu
-      if: contains(matrix.os, 'ubuntu')
+      if: contains(matrix.os, 'ubuntu') && always()
       working-directory: HIRS_Provisioner.NET
       run: |
         logName="${{matrix.os}}-unit-tests.log"
@@ -75,14 +75,14 @@ jobs:
  
     - name: Upload Logs Ubuntu
       uses: actions/upload-artifact@v2
-      if: contains(matrix.os, 'ubuntu') && always()
+      if: contains(matrix.os, 'ubuntu')
       with:
         name: "${{matrix.os}}-unit-tests-${{steps.ubuntu_result.outputs.result}}.log"
         path: HIRS_Provisioner.NET/*.log
 
     - name: Upload Logs Windows
       uses: actions/upload-artifact@v2
-      if: contains(matrix.os, 'windows') && always()
+      if: contains(matrix.os, 'windows')
       with:
         name: "${{matrix.os}}-unit-tests-${{steps.window_result.outputs.result}}.log"
         path: HIRS_Provisioner.NET/*.log
