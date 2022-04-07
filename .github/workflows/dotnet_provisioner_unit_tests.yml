@@ -4,7 +4,7 @@ env:
   DOTNET_VERSION: '3.1'
 jobs:
   dotnet_provisioner_unit_tests:
-    name: Unit Test
+    name: Restore and run unit tests
     # continue-on-error: true
     runs-on: ${{ matrix.os }}
     strategy:
@@ -24,20 +24,18 @@ jobs:
       uses: actions/checkout@v2
     
     - name: Restore Project
-      # Remove after testing
-      if: contains(matrix.os, 'ubuntu') && always()
       working-directory: HIRS_Provisioner.NET
-      # if: always()
+      if: always()
       run: |
         dotnet restore
 
-    # - name: Build on Windows
-    #   working-directory: HIRS_Provisioner.NET
-    #   if: contains(matrix.os, 'windows') && always()
-    #   run: |
-    #     cd hirs
-    #     dotnet build /p:RuntimeIdentifier=win-x64 --configuration Release --no-restore
-    #     cd ..
+    - name: Build on Windows
+      working-directory: HIRS_Provisioner.NET
+      if: contains(matrix.os, 'windows') && always()
+      run: |
+        cd hirs
+        dotnet build /p:RuntimeIdentifier=win-x64 --configuration Release --no-restore
+        cd ..
         
     - name: Build on Ubuntu
       working-directory: HIRS_Provisioner.NET
@@ -45,21 +43,21 @@ jobs:
       run: |
           dotnet build --configuration Release --no-restore
 
-    # - name: Run Unit Tests and Save Logs - Windows
-    #   id: window_result
-    #   if: contains(matrix.os, 'windows') && always()
-    #   # continue-on-error: true
-    #   working-directory: HIRS_Provisioner.NET
-    #   run: |
-    #     $logName = '${{matrix.os}}-unit-tests.log'
-    #     $results = dotnet test /p:PublishSingleFile=false --no-restore -v m
-    #     New-Item $logName
-    #     Set-Content $logName $results
-    #     Get-Content $logName
-    #     $results = [string]$results
-    #     $results = $results.Contains("Passed!")
-    #     if($results) { $results = "True" } else { $results = "False"}
-    #     echo "::set-output name=result::$results"
+    - name: Run Unit Tests and Save Logs - Windows
+      id: window_result
+      if: contains(matrix.os, 'windows') && always()
+      # continue-on-error: true
+      working-directory: HIRS_Provisioner.NET
+      run: |
+        $logName = '${{matrix.os}}-unit-tests.log'
+        $results = dotnet test /p:PublishSingleFile=false --no-restore -v m
+        New-Item $logName
+        Set-Content $logName $results
+        Get-Content $logName
+        $results = [string]$results
+        $results = $results.Contains("Passed!")
+        if($results) { $results = "True" } else { $results = "False"}
+        echo "::set-output name=result::$results"
 
     - name: Run Unit Tests and Save Logs - Ubuntu
       if: contains(matrix.os, 'ubuntu') && always()
@@ -94,34 +92,17 @@ jobs:
 
     - name: Results Passed
       if: (steps.window_result.outputs.result == 'True' || steps.ubuntu_result.outputs.result == 'True') && always()
-      # run: |
-      #   echo "All Tests Passed"
-      #   exit 0
-      # uses: dflydev/check-runs-action@v1
-      # with:
-      #   token: ${{ secrets.GITHUB_TOKEN }}
-      #   conclusion: success  
-      uses: LouisBrunner/checks-action@v1.1.1
-      with:
-        token: ${{ secrets.GITHUB_TOKEN }}
-        name: Success
-        conclusion: success
-        # output: |
-        #   {"summary":${{ steps.test.outputs.summary }}}
+      run: |
+        echo "All Tests Passed"
+        exit 0
 
     - name: Results Failed
       if: (steps.window_result.outputs.result == 'False' || steps.ubuntu_result.outputs.result == 'False') && always()
-      # run: |
-      #   echo "Unit Tests Failed"
-      #   exit 1
-      # uses: dflydev/check-runs-action@v1
-      # with:
-      #   token: ${{ secrets.GITHUB_TOKEN }}
-      #   conclusion: failure
-      uses: LouisBrunner/checks-action@v1.1.1
-      with:
-        token: ${{ secrets.GITHUB_TOKEN }}
-        name: Fail
-        conclusion: failure
-        # output: |
-        #   {"summary":${{ steps.test.outputs.summary }}}
+      run: |
+        echo "Unit Tests Failed"
+        exit 1
+  Evaluator:
+      needs: [ubuntu-18.04]
+      runs-on: ubuntu-latest
+      run: |
+        echo "Hello"
