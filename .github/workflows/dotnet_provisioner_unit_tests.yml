@@ -43,8 +43,8 @@ jobs:
 
     - name: Run Unit Tests and Save Logs - Windows
       id: window_result
-      if: contains(matrix.os, 'windows')
-      continue-on-error: true
+      if: contains(matrix.os, 'windows') && always()
+      # continue-on-error: true
       working-directory: HIRS_Provisioner.NET
       run: |
         $logName = '${{matrix.os}}-unit-tests.log'
@@ -58,8 +58,8 @@ jobs:
         echo "::set-output name=result::$results"
 
     - name: Run Unit Tests and Save Logs - Ubuntu
-      if: contains(matrix.os, 'ubuntu')
-      continue-on-error: true
+      if: contains(matrix.os, 'ubuntu') && always()
+      # continue-on-error: true
       working-directory: HIRS_Provisioner.NET
       run: |
         logName="${{matrix.os}}-unit-tests.log"
@@ -67,7 +67,7 @@ jobs:
 
     - name: Extract Ubuntu Unit Test Results
       id: ubuntu_result
-      if: contains(matrix.os, 'ubuntu')
+      if: contains(matrix.os, 'ubuntu') && always()
       working-directory: HIRS_Provisioner.NET
       run: |
         logName="${{matrix.os}}-unit-tests.log"
@@ -86,7 +86,7 @@ jobs:
       with:
         name: "${{matrix.os}}-unit-tests.log"
         path: HIRS_Provisioner.NET/*.log
-        
+
     - name: Results Passed
       if: steps.window_result.outputs.result == 'True' || steps.ubuntu_result.outputs.result == 'True'
       run: |
