@@ -69,7 +69,7 @@ jobs:
       run: |
         logName="${{matrix.os}}-unit-tests.log"
         dotnet test --no-restore -v m > $logName
-        # isInFile=$(cat $log-name | grep -c "Passed!")
+        # isInFile=$(cat $logName | grep -c "Passed!")
         # if [ $isInFile -eq 0 ]; then
         #   echo "Tests Failed"
         #   echo "::set-output name=result::'False'"
