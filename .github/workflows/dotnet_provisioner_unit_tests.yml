@@ -51,7 +51,7 @@ jobs:
         $logName = '${{matrix.os}}-unit-tests.log'
         echo $logName
         # cd hirsTest
-        $results = dotnet test -r win-x64 --no-restore -v m
+        $results = dotnet test /p:PublishSingleFile=false --no-restore -v m
         # cd ..
         
         New-Item $logName
@@ -70,7 +70,7 @@ jobs:
         logName="${{matrix.os}}-unit-tests.log"
         echo "Log name = "
         echo $logName
-        dotnet test /p:PublishSingleFile=false --no-restore -v m > $logName
+        dotnet test --no-restore -v m > $logName
         # isInFile=$(cat $logName | grep -c "Passed!")
         # if [ $isInFile -eq 0 ]; then
         #   echo "Tests Failed"
@@ -87,15 +87,16 @@ jobs:
       continue-on-error: true
       working-directory: HIRS_Provisioner.NET
       run: |
+        logName="${{matrix.os}}-unit-tests.log"
         echo $logName
-        # isInFile=$(cat $logName | grep -c "Passed!")
-        # if [ $isInFile -eq 0 ]; then
-        #   echo "Tests Failed"
-        #   echo "::set-output name=result::'False'"
-        # else
-        #   echo "Tests Passed"
-        #   echo "::set-output name=result::'True'"
-        # fi
+        isInFile=$(cat $logName | grep -c "Passed!")
+        if [ $isInFile -eq 0 ]; then
+          echo "Tests Failed"
+          echo "::set-output name=result::'False'"
+        else
+          echo "Tests Passed"
+          echo "::set-output name=result::'True'"
+        fi
         cat $logName
 
     - name: Upload logs
