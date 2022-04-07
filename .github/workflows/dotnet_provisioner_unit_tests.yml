@@ -10,9 +10,9 @@ jobs:
     strategy:
       matrix:
         include:
-         - os: windows-2022
-         - os: ubuntu-20.04
-         - os: windows-2019
+         # - os: windows-2022
+         # - os: ubuntu-20.04
+         # - os: windows-2019
          - os: ubuntu-18.04
     steps:
     # - name: Set git to use LF
@@ -33,7 +33,7 @@ jobs:
       if: contains(matrix.os, 'windows')
       run: |
         cd hirs
-        dotnet build /p:RuntimeIdentifier=win-x64 --configuration Release --no-restore
+        dotnet build -r win-x64 --configuration Release --no-restore
         cd ..
         
     - name: Build on Ubuntu
@@ -68,7 +68,6 @@ jobs:
         logName="${{matrix.os}}-unit-tests.log"
         if grep -Fxq "Passed!" $logName; 
         then 
-          echo "Hit pass for ubuntu"
           result="True"
         else
           result="False"
@@ -83,22 +82,25 @@ jobs:
         name: "${{matrix.os}}-unit-tests.log"
         path: HIRS_Provisioner.NET/*.log
 
-    - name: Results Passed
-      if: (steps.window_result.outputs.result == 'True' || steps.ubuntu_result.outputs.result == 'True') && always
-      run: |
-        echo "All Tests Passed"
-        exit 0
+    # - name: Results Passed
+    #   if: (steps.window_result.outputs.result == 'True' || steps.ubuntu_result.outputs.result == 'True') && always
+    #   run: |
+    #     echo "All Tests Passed"
+    #     exit 0
 
-    - name: Results Failed
-      if: (steps.window_result.outputs.result == 'False' || steps.ubuntu_result.outputs.result == 'False')  && always
+    # - name: Results Failed
+    #   if: (steps.window_result.outputs.result == 'False' || steps.ubuntu_result.outputs.result == 'False')  && always
+    #   run: |
+    #     echo "Unit Tests Failed"
+    #     exit 1
+
+  evaluator:
+    name: Evaluate Tests
+    needs: [dotnet_provisioner_unit_tests]
+    runs-on: windows-latest
+    continue-on-error: false
+    steps:
+    - name: Results Passed
       run: |
-        echo "Unit Tests Failed"
+        echo "fail on purpose"
         exit 1
-  # evaluator:
-  #   name: Evaluate Jobs
-  #   needs: [dotnet_provisioner_unit_tests]
-  #   runs-on: windows-latest
-  #   steps:
-  #   - name: Test
-  #     run: |
-  #       echo "Test1"
