@@ -48,11 +48,12 @@ jobs:
       working-directory: HIRS_Provisioner.NET
       run: |
         cd hirsTest
-        $results = dotnet test /p:RuntimeIdentifier=win-x64 --no-restore -v m
+        $results = dotnet test --no-restore -v m
         cd ..
-        New-Item unit-tests.log
-        Set-Content unit-tests.log $results
-        Get-Content .\unit-tests.log
+        $log-name = "${{matrix.os}}" + "-unit-tests.log"
+        New-Item $log-name
+        Set-Content $log-name $results
+        Get-Content $log-name
         $results = [string]$results
         $results = $results.Contains("Passed!")
         if($results) { $results = "True" } else { $results = "False"}
@@ -64,8 +65,9 @@ jobs:
       continue-on-error: true
       working-directory: HIRS_Provisioner.NET
       run: |
-        dotnet test --no-restore -v m > unit-tests.log
-        isInFile=$(cat unit-tests.log | grep -c "Passed!")
+        $log-name = "${{matrix.os}}" + "-unit-tests.log"
+        dotnet test --no-restore -v m > $log-name
+        isInFile=$(cat $log-name | grep -c "Passed!")
         if [ $isInFile -eq 0 ]; then
           echo "Tests Failed"
           echo "::set-output name=result::'False'"
@@ -73,12 +75,12 @@ jobs:
           echo "Tests Passed"
           echo "::set-output name=result::'True'"
         fi
-        cat unit-tests.log
+        cat $log-name
 
     - name: Upload logs
       uses: actions/upload-artifact@v2
       with:
-        name: unit-tests.log
+        name: "${{matrix.os}}" + -unit-tests.log
         path: HIRS_Provisioner.NET/*.log
 
     - name: Results Passed
