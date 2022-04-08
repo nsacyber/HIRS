@@ -105,27 +105,27 @@ jobs:
       run: |
         echo "Unit Tests Failed"
         exit 1
-        
-  # evaluator:
-  #   name: Evaluate Tests
-  #   needs: [dotnet_provisioner_unit_tests]
-  #   runs-on: ubuntu-latest
-  #   continue-on-error: false
-  #   steps:
 
-  #     uses: actions/checkout@v2
+  Evaluator:
+    name: Evaluate Tests
+    needs: [dotnet_provisioner_unit_tests]
+    runs-on: ubuntu-latest
+    continue-on-error: false
+    steps:
 
-  #   - name: Make artifact directory
-  #     run: |
-  #       mkdir artifacts
+      uses: actions/checkout@v2
 
-  #   - name: Download all artifacts
-  #     working-directory: artifacts
-  #     uses: actions/download-artifact@v3
+    - name: Make artifact directory
+      run: |
+        mkdir artifacts
 
-  #   - name: Determine if a test failed
-  #     working-directory: artifacts
-  #     run: |
-  #       for i in `find . -name 'Fail'`; do
-  #         exit 0
-  #       done
+    - name: Download all artifacts
+      working-directory: artifacts
+      uses: actions/download-artifact@v3
+
+    - name: Determine if a test failed
+      working-directory: artifacts
+      run: |
+        for i in `find . -name 'Fail'`; do
+          exit 0
+        done
