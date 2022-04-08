@@ -66,7 +66,7 @@ jobs:
 
     - name: Extract Ubuntu Unit Test Results
       id: ubuntu_result
-      if: contains(matrix.os, 'ubuntu') && always
+      if: contains(matrix.os, 'ubuntu') && always()
       working-directory: HIRS_Provisioner.NET
       run: |
         logName="${{matrix.os}}-unit-tests.log"
@@ -82,7 +82,7 @@ jobs:
 
     - name: Upload Logs Ubuntu
       uses: actions/upload-artifact@v2
-      if: contains(matrix.os, 'ubuntu') && always
+      if: contains(matrix.os, 'ubuntu') && always()
       with:
         name: "${{matrix.os}}-unit-tests-${{steps.ubuntu_result.outputs.result}}.log"
         path: HIRS_Provisioner.NET/*.log
