@@ -15,10 +15,10 @@ jobs:
          - os: windows-2019
          - os: ubuntu-18.04
     steps:
-    - name: Set git to use LF
-      run: |
-        git config --global core.autocrlf false
-        git config --global core.eol lf
+    # - name: Set git to use LF
+    #   run: |
+    #     git config --global core.autocrlf false
+    #     git config --global core.eol lf
 
     - name: Checkout repo
       uses: actions/checkout@v2
@@ -132,9 +132,8 @@ jobs:
         
   #       # Generate Annotations and Console Output
   #       for file in *"Fail"*.log; do
-  #         echo "FAILED - " + "$file"
   #         title=${file%"$suffix"}
-  #         echo $title
+  #         echo "FAILED - " $title
   #         echo "::error title='$title Unit Tests Failed'::'The $title $msg'"
   #         result="Failed"
   #       done
