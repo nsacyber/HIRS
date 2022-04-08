@@ -127,8 +127,7 @@ jobs:
       working-directory: artifacts
       run: |
         ls -a
-
-        for i in `grep --include=*.{log} "Fail" .` do 
+        for i in `grep --include=*.{log} "Fail" .`
+        do 
           exit 0
         done
-        
