@@ -78,7 +78,8 @@ jobs:
 
     - name: Upload Logs Ubuntu
       uses: actions/upload-artifact@v2
-      if: contains(matrix.os, 'ubuntu') && always()
+      if: contains(matrix.os, 'ubuntu')
+      continue-on-error: true
       with:
         name: "${{matrix.os}}-unit-tests-${{steps.ubuntu_result.outputs.result}}.log"
         path: HIRS_Provisioner.NET/*.log
