@@ -59,7 +59,6 @@ jobs:
 
 
     - name: Run Unit Tests Ubuntu
-      id: ubuntu_result
       if: contains(matrix.os, 'ubuntu')
       working-directory: HIRS_Provisioner.NET
       run: |
