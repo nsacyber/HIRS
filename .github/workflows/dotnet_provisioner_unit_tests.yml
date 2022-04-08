@@ -12,7 +12,7 @@ jobs:
         include:
          # - os: windows-2022
          # - os: ubuntu-20.04
-         - os: windows-2019
+         # - os: windows-2019
          - os: ubuntu-18.04
     steps:
     - name: Set git to use LF
@@ -118,11 +118,10 @@ jobs:
     - name: Make artifact directory
       run: |
         mkdir artifacts
-        cd artifacts
 
-    # - name: Download all artifacts
-    #   working-directory: artifacts
     - uses: actions/download-artifact@v3
+      with:
+        path: artifacts
 
     - name: Determine if a test failed
       working-directory: artifacts
@@ -131,13 +130,3 @@ jobs:
         for i in `find . -name 'Fail'`; do
           exit 0
         done
-
-  # evaluator:
-  #   name: Evaluate Tests
-  #   needs: [dotnet_provisioner_unit_tests]
-  #   runs-on: ubuntu-latest
-  #   continue-on-error: false
-  #   steps:
-  #   - name: Exit ok and turn off continue-on-error
-  #     run: |
-  #       exit 0
