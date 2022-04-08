@@ -106,38 +106,40 @@ jobs:
         echo "Unit Tests Failed"
         exit 1
 
-  # Evaluator:
-  #   name: Evaluate Tests
-  #   needs: [dotnet_provisioner_unit_tests]
-  #   runs-on: ubuntu-latest
-  #   continue-on-error: false
-  #   steps:
+  Evaluator:
+    name: Evaluate Tests
+    needs: [dotnet_provisioner_unit_tests]
+    runs-on: ubuntu-latest
+    continue-on-error: false
+    steps:
 
-  #   - uses: actions/checkout@v2
+    - uses: actions/checkout@v2
 
-  #   - name: Make artifact directory
-  #     run: |
-  #       mkdir artifacts
+    - name: Make artifact directory
+      run: |
+        mkdir artifacts
 
-  #   - uses: actions/download-artifact@v3
-  #     with:
-  #       path: artifacts
+    - uses: actions/download-artifact@v3
+      with:
+        path: artifacts
 
-  #   - name: Determine if a test failed
-  #     working-directory: artifacts
-  #     run: |
-  #       result="Passed" 
-  #       suffix="-unit-tests-Fail.log"
-  #       msg=" did not pass all the unit tests."
+    - name: Determine if a test failed
+      working-directory: artifacts
+      run: |
+        result="Passed" 
+        suffix="-unit-tests-Fail.log"
+        msg=" did not pass all the unit tests."
         
-  #       # Generate Annotations and Console Output
-  #       for file in *"Fail"*.log; do
-  #         echo "FAILED - " + "$file"
-  #         ::error title={${$file/%$suffix} Unit Tests Failed}::{The ${$file/%$suffix} + msg}
-  #         $result="Failed"
-  #       done
+        # Generate Annotations and Console Output
+        for file in *"Fail"*.log; do
+          echo "FAILED - " + "$file"
+          $title=${$file/%$suffix
+          echo $title
+          ::error title={$title} Unit Tests Failed}::{The $title + msg}
+          $result="Failed"
+        done
         
-  #       if [ "$result" = "Failed" ]
-  #       then
-  #           exit 0
-  #       fi
+        if [ "$result" = "Failed" ]
+        then
+            exit 0
+        fi
