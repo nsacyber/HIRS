@@ -113,7 +113,7 @@ jobs:
     continue-on-error: false
     steps:
 
-      uses: actions/checkout@v2
+    - uses: actions/checkout@v2
 
     - name: Make artifact directory
       run: |
@@ -129,3 +129,13 @@ jobs:
         for i in `find . -name 'Fail'`; do
           exit 0
         done
+
+  # evaluator:
+  #   name: Evaluate Tests
+  #   needs: [dotnet_provisioner_unit_tests]
+  #   runs-on: ubuntu-latest
+  #   continue-on-error: false
+  #   steps:
+  #   - name: Exit ok and turn off continue-on-error
+  #     run: |
+  #       exit 0
