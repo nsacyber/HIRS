@@ -112,6 +112,7 @@ jobs:
     runs-on: windows-latest
     continue-on-error: false
     steps:
+    - name: Exit ok and turn off continue-on-error
       run: |
         exit 0
     # runs-on: ${{ matrix.os }}
