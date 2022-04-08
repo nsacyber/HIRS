@@ -137,6 +137,8 @@ jobs:
     #   run: |
     #     echo "fail on purpose"
     #     exit 1
+    - name: Checkout repo
+      uses: actions/checkout@v2
     - name: Check If Passed
       id: check_result
       if: always()
