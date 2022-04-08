@@ -136,7 +136,7 @@ jobs:
           title=${file%"$suffix"}
           echo $title
           echo "::error title={$titleUnit Tests Failed}::{The $title $msg}"
-          $result="Failed"
+          result="Failed"
         done
         
         if [ "$result" = "Failed" ]
