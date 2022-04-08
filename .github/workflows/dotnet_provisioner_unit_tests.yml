@@ -112,20 +112,13 @@ jobs:
     runs-on: ubuntu-latest
     continue-on-error: false
     steps:
-    steps:
-    - name: Checkout repo
-      if: always()
+
       uses: actions/checkout@v2
 
-    # - name: Check If Passed
-    #   id: check_result
-    #   if: always()
-    #   uses: andstor/file-existence-action@v1
-    #   with:
-    #     files: "${{matrix.os}}-unit-tests-Pass.log"
     - name: Make artifact directory
       run: |
         mkdir artifacts
+        
     - name: Download all artifacts
       working-directory: artifacts
       uses: actions/download-artifact@v3
