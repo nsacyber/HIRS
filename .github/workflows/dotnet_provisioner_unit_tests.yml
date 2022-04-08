@@ -133,7 +133,7 @@ jobs:
         # Generate Annotations and Console Output
         for file in *"Fail"*.log; do
           echo "FAILED - " + "$file"
-          $title=${$file/%$suffix
+          $title=${$file/%$suffix}
           echo $title
           echo "::error title={$titleUnit Tests Failed}::{The $title $msg}"
           $result="Failed"
