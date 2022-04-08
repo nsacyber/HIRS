@@ -118,7 +118,7 @@ jobs:
     - name: Make artifact directory
       run: |
         mkdir artifacts
-        
+
     - name: Download all artifacts
       working-directory: artifacts
       uses: actions/download-artifact@v3
