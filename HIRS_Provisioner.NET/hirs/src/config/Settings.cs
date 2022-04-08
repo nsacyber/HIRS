@@ -89,8 +89,12 @@ namespace hirs {
             }
         }
         private string GetBasePath() {
+#if DEBUG
+            return AppContext.BaseDirectory;
+#else
             using var processModule = Process.GetCurrentProcess().MainModule;
             return Path.GetDirectoryName(processModule?.FileName);
+#endif
         }
 
         private IConfiguration readSettingsFile() {

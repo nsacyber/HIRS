@@ -8,7 +8,11 @@ using System.Text;
 namespace hirs {
     public interface IHardwareManifest {
         public static readonly string pluginsPath =
+#if DEBUG
+            AppContext.BaseDirectory;
+#else
             Path.Combine(Path.GetDirectoryName(Process.GetCurrentProcess().MainModule.FileName), "plugins");
+#endif
         string Name {
             get;
         }
