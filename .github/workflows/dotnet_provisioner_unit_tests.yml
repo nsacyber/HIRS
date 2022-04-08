@@ -70,7 +70,7 @@ jobs:
       working-directory: HIRS_Provisioner.NET
       run: |
         logName="${{matrix.os}}-unit-tests.log"
-        if grep -Fxq "Passed!" $logName; 
+        if grep -rnw $logName -e "Passed\!" ; 
         then 
           echo "Hit pass for ubuntu"
           result="Pass"
