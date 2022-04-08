@@ -126,8 +126,6 @@ jobs:
     - name: Determine if a test failed
       working-directory: artifacts
       run: |
-        ls -a
-        for i in `grep --include=*.{log} "Fail" .`
-        do 
-          exit 0
+        for file in *"Fail"*.log; do
+          echo "FAILED - " + "$file" 
         done
