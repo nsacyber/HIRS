@@ -108,14 +108,14 @@ jobs:
 
     - name: Results Passed
       continue-on-error: false
-      if: (steps.window_result.outputs.result == 'True' ||  steps.ubuntu_result.outputs.result == 'True') && always
+      if: (steps.window_result.outputs.result == 'True' ||  steps.ubuntu_result.outputs.result == 'True')
       run: |
         echo "All Tests Passed"
         exit 0
 
     - name: Results Failed
       continue-on-error: false
-      if: (steps.window_result.outputs.result == 'False' || steps.ubuntu_result.outputs.result == 'False')  && always
+      if: (steps.window_result.outputs.result == 'False' || steps.ubuntu_result.outputs.result == 'False')
       run: |
         echo "Unit Tests Failed"
         exit 1
