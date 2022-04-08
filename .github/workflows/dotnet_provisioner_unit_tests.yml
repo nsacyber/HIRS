@@ -4,7 +4,7 @@ env:
   DOTNET_VERSION: '3.1'
 jobs:
   dotnet_provisioner_unit_tests:
-    name: Restore and run unit tests
+    name: Restore and Run Unit Tests
     continue-on-error: true
     runs-on: ${{ matrix.os }}
     strategy:
@@ -93,18 +93,6 @@ jobs:
       with:
         name: "${{matrix.os}}-unit-tests-${{steps.window_result.outputs.result}}.log"
         path: HIRS_Provisioner.NET/*.log
-
-    - name: Results Passed
-      if: (steps.window_result.outputs.result == 'Pass' ||  steps.ubuntu_result.outputs.result == 'Pass') && always()
-      run: |
-        echo "All Tests Passed"
-        exit 0
-
-    - name: Results Failed
-      if: (steps.window_result.outputs.result == 'Fail' || steps.ubuntu_result.outputs.result == 'Fail') && always()
-      run: |
-        echo "Unit Tests Failed"
-        exit 1
 
   Evaluator:
     name: Evaluate Tests
