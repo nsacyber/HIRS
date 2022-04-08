@@ -16,29 +16,26 @@ set -a
 
 echo "********  Setting up for HIRS System Tests for TPM 2.0 ******** "
 
-# Expand linux dmi files to mount to the provisioner container to simulate device component
-unzip -q .ci/system-tests/profiles/laptop/laptop_dmi.zip -d .ci/system-tests/profiles/laptop/
+# expand dmi files for mounting to the provisioner containers
+unzip -qo .ci/system-tests/profiles/laptop/laptop_dmi.zip -d .ci/system-tests/profiles/laptop/
 # Start System Testing Docker Environment
 pushd .ci/docker > /dev/null
 
 docker-compose -f docker-compose-system-test.yml up -d
 
-popd > /dev/null
-pushd .ci/system-tests > /dev/null
-source sys_test_common.sh
+source ${PWD}/../system-tests/sys_test_common.sh
 
 echo "ACA Container info: $(checkContainerStatus $aca_container)";
 echo "TPM2 Provisioner Container info: $(checkContainerStatus $tpm2_container)";
 
 # Install HIRS provioner and setup tpm2 emulator
-docker exec $tpm2_container /HIRS/.ci/setup/container/setup_tpm2provisioner.sh
+docker exec -it $tpm2_container /HIRS/.ci/setup/container/setup_tpm2provisioner.sh
 
 # ********* Execute system tests here, add tests as needed ************* 
 echo "******** Setup Complete Begin HIRS System Tests ******** "
 
-source tests/aca_policy_tests.sh
-source tests/platform_cert_tests.sh
-source tests/rim_system_tests.sh
+source ${PWD}/../system-tests/tests/aca_policy_tests.sh
+source ${PWD}/../system-tests/tests/platform_cert_tests.sh
 
 echo "******** HIRS System Tests Complete ******** "
 

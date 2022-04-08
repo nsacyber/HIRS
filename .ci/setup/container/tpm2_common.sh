@@ -12,7 +12,8 @@ function installProvisioner {
     mkdir -p /HIRS/logs/provisioner/
     sh package/package.centos.sh &> /HIRS/logs/provisioner/provisioner_build.log
     echo "Installing the HIRS Provisioner ..."
-    yum install -y package/rpm/RPMS/x86_64/HIRS_Provisioner_TPM_2_0*.el7.x86_64.rpm
+    # yum install -y package/rpm/RPMS/x86_64/HIRS_Provisioner_TPM_2_0*.el7.x86_64.rpm
+    yum -q list installed HIRS_Provisioner_TPM_2_0* &>/dev/null && yum -y reinstall package/rpm/RPMS/x86_64/HIRS_Provisioner_TPM_2_0*.el7.x86_64.rpm || yum install -y package/rpm/RPMS/x86_64/HIRS_Provisioner_TPM_2_0*.el7.x86_64.rpm
   popd  > /dev/null
 }
 
@@ -22,6 +23,8 @@ function setTpmPcrValues {
   pushd /ibmtss  > /dev/null
     echo "Installing IBM TSS to set the TPM simulator intial values correctly..."
     wget --no-check-certificate https://downloads.sourceforge.net/project/ibmtpm20tss/ibmtss1.6.0.tar.gz > /dev/null
+    # Comment line above and uncomment line below if TSS .tar is placed in root project directory
+    # cp /HIRS/ibmtss1.6.0.tar.gz .
     tar -zxvf ibmtss1.6.0.tar.gz > /dev/null
     cd utils
     make -f makefiletpmc > /dev/null

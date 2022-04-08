@@ -3,6 +3,7 @@ version: "3.1"
 services:
    aca:
       image: hirs/hirs-ci:aca
+      privileged: true
       container_name: hirs-aca1
       volumes:
          - ../../:/HIRS
@@ -19,6 +20,7 @@ services:
 
    tpmprovisioner:
       image: hirs/hirs-ci:tpm2provisioner
+      privileged: true
       container_name: hirs-provisioner1-tpm2
       depends_on:
          - aca

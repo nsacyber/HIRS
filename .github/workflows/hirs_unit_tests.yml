@@ -41,7 +41,7 @@ jobs:
       run: |
        echo ${{ secrets.DOCKER_HUB_ACCESS_TOKEN }} | docker login -u ${{ secrets.DOCKER_HUB_USERNAME }} --password-stdin
        docker run --rm \
-       -v $(pwd):/HIRS hirs/hirs-ci:centos7 /bin/bash \
+       -v $(pwd):/HIRS:z hirs/hirs-ci:centos7 /bin/bash \
        -c 'pushd /HIRS; \
            gradle_status=0; \
 

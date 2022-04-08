@@ -29,6 +29,8 @@ jobs:
       run: |
         sudo apt-get install -y curl
         echo ${{ secrets.DOCKER_HUB_ACCESS_TOKEN }} | docker login -u ${{ secrets.DOCKER_HUB_USERNAME }} --password-stdin
+        sudo curl -L "https://github.com/docker/compose/releases/download/1.29.2/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
+        sudo chmod +x /usr/local/bin/docker-compose
         bash .ci/system-tests/run_system_tests.sh
     - name: Archive System Test Log files
       uses: actions/upload-artifact@v2

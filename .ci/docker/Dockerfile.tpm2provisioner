@@ -10,3 +10,6 @@ RUN mkdir paccor && pushd paccor && wget https://github.com/nsacyber/paccor/rele
 # Install Software TPM for Provisioning
 RUN mkdir ibmtpm && pushd ibmtpm && wget https://downloads.sourceforge.net/project/ibmswtpm2/ibmtpm1332.tar.gz && tar -zxvf ibmtpm1332.tar.gz && cd src && make -j5 && popd
 
+# Comment line above and uncomment both lines below if TPM .tar is placed in root project directory
+# ADD ibmtpm1332.tar.gz
+# RUN mkdir ibmtpm && pushd ibmtpm && tar -zxvf ibmtpm1332.tar.gz && cd src && make -j5 && popd
