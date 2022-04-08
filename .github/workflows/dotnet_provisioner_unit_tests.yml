@@ -117,20 +117,22 @@ jobs:
          # - os: ubuntu-20.04
          - os: windows-2019
          - os: ubuntu-18.04
-    continue-on-error: false
     steps:
     # - name: Results Passed
     #   run: |
     #     echo "fail on purpose"
     #     exit 1
     - name: Checkout repo
+      if: always()
       uses: actions/checkout@v2
+
     - name: Check If Passed
       id: check_result
       if: always()
       uses: andstor/file-existence-action@v1
       with:
         files: "${{matrix.os}}-unit-tests-Pass.log"
+
     - name: ${{matrix.os}} Unit Tests
       if: steps.check_result.outputs.files_exists == 'false' && always()
       run: |
