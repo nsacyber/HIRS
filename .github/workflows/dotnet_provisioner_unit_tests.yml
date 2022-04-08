@@ -118,14 +118,16 @@ jobs:
     - name: Make artifact directory
       run: |
         mkdir artifacts
+        cd artifacts
 
-    - name: Download all artifacts
-      working-directory: artifacts
+    # - name: Download all artifacts
+    #   working-directory: artifacts
       uses: actions/download-artifact@v3
 
     - name: Determine if a test failed
       working-directory: artifacts
       run: |
+        ls -a
         for i in `find . -name 'Fail'`; do
           exit 0
         done
