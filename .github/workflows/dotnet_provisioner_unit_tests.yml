@@ -122,7 +122,7 @@ jobs:
 
     # - name: Download all artifacts
     #   working-directory: artifacts
-      uses: actions/download-artifact@v3
+    - uses: actions/download-artifact@v3
 
     - name: Determine if a test failed
       working-directory: artifacts
