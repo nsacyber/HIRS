@@ -47,18 +47,12 @@ jobs:
       if: contains(matrix.os, 'windows') && always()
       working-directory: HIRS_Provisioner.NET
       run: |
-
-        
         $logs = dotnet test /p:PublishSingleFile=false --no-restore -v m
-        
         $results = [string]$logs
         $results = $results.Contains("Passed!")
         if($results) { $results = "Pass" } else { $results = "Fail"}
-
         echo "::set-output name=result::$results"
-
         $logName = "${{matrix.os}}-unit-tests-" + $results + ".log"
-
         New-Item $logName
         Set-Content $logName $logs
         Get-Content $logName
@@ -66,8 +60,7 @@ jobs:
 
     - name: Run Unit Tests and Save Logs - Ubuntu
       id: ubuntu_result
-      if: contains(matrix.os, 'ubuntu')
-      continue-on-error: true
+      if: contains(matrix.os, 'ubuntu') && always()
       working-directory: HIRS_Provisioner.NET
       run: |
         logName="${{matrix.os}}-unit-tests.log"
@@ -82,30 +75,7 @@ jobs:
         fi
         echo "::set-output name=result::$result"
         more $logName
-        
-      # run: |
 
-      #   logs=$(dotnet test --no-restore -v m)
-
-      #   if grep -Fxq "Passed!" $logs; 
-      #   then 
-      #     result="Pass"
-      #   else
-      #     result="Fail"
-      #   fi
-
-      #   $logs > "${{matrix.os}}-unit-tests" + $result + ".log"
-
-         
-
-      #   destination="./${{matrix.os}}-unit-tests.log"
-
-
-
-      #   echo "::set-output name=result::$result"
-      #   more $destination
-      #   echo "END OF STEP"
- 
     - name: Upload Logs Ubuntu
       uses: actions/upload-artifact@v2
       if: contains(matrix.os, 'ubuntu') && always()
@@ -134,33 +104,33 @@ jobs:
         echo "Unit Tests Failed"
         exit 1
 
-  evaluator:
-    name: Evaluate Tests
-    needs: [dotnet_provisioner_unit_tests]
-    runs-on: ${{ matrix.os }}
-    strategy:
-      matrix:
-        include:
-         # - os: windows-2022
-         # - os: ubuntu-20.04
-         - os: windows-2019
-         - os: ubuntu-18.04
-    continue-on-error: false
-    steps:
-    # - name: Results Passed
-    #   run: |
-    #     echo "fail on purpose"
-    #     exit 1
-    - name: Checkout repo
-      uses: actions/checkout@v2
-    - name: Check If Passed
-      id: check_result
-      if: always()
-      uses: andstor/file-existence-action@v1
-      with:
-        files: "${{matrix.os}}-unit-tests-Pass.log"
-    - name: ${{matrix.os}} Unit Tests
-      if: steps.check_result.outputs.files_exists == 'false' && always()
-      run: |
-        echo "${{matrix.os}} Unit Tests Failed"
-        exit 1
+  # evaluator:
+  #   name: Evaluate Tests
+  #   needs: [dotnet_provisioner_unit_tests]
+  #   runs-on: ${{ matrix.os }}
+  #   strategy:
+  #     matrix:
+  #       include:
+  #        # - os: windows-2022
+  #        # - os: ubuntu-20.04
+  #        - os: windows-2019
+  #        - os: ubuntu-18.04
+  #   continue-on-error: false
+  #   steps:
+  #   # - name: Results Passed
+  #   #   run: |
+  #   #     echo "fail on purpose"
+  #   #     exit 1
+  #   - name: Checkout repo
+  #     uses: actions/checkout@v2
+  #   - name: Check If Passed
+  #     id: check_result
+  #     if: always()
+  #     uses: andstor/file-existence-action@v1
+  #     with:
+  #       files: "${{matrix.os}}-unit-tests-Pass.log"
+  #   - name: ${{matrix.os}} Unit Tests
+  #     if: steps.check_result.outputs.files_exists == 'false' && always()
+  #     run: |
+  #       echo "${{matrix.os}} Unit Tests Failed"
+  #       exit 1
