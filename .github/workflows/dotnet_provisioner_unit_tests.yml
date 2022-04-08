@@ -135,7 +135,7 @@ jobs:
           echo "FAILED - " + "$file"
           title=${file%"$suffix"}
           echo $title
-          echo "::error title={$titleUnit Tests Failed}::{The $title $msg}"
+          echo "::error title='$title Unit Tests Failed'::'The $title $msg'"
           result="Failed"
         done
         
