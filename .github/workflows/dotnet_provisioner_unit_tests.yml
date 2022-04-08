@@ -10,9 +10,9 @@ jobs:
     strategy:
       matrix:
         include:
-         # - os: windows-2022
-         # - os: ubuntu-20.04
-         # - os: windows-2019
+         - os: windows-2022
+         - os: ubuntu-20.04
+         - os: windows-2019
          - os: ubuntu-18.04
     steps:
     - name: Set git to use LF
@@ -128,7 +128,7 @@ jobs:
       run: |
         result="Passed" 
         suffix="-unit-tests-Fail.log"
-        msg=" did not pass all the unit tests."
+        msg=" OS did not pass all the unit tests."
         
         # Generate Annotations and Console Output
         for file in *"Fail"*.log; do
@@ -141,5 +141,5 @@ jobs:
         
         if [ "$result" = "Failed" ]
         then
-            exit 0
+            exit 1
         fi
