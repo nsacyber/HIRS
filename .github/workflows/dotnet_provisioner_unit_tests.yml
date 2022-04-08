@@ -126,6 +126,18 @@ jobs:
     - name: Determine if a test failed
       working-directory: artifacts
       run: |
+        result="Passed" 
+        suffix="-unit-tests-Fail.log"
+        msg=" did not pass all the unit tests."
+        
+        # Generate Annotations and Console Output
         for file in *"Fail"*.log; do
-          echo "FAILED - " + "$file" 
+          echo "FAILED - " + "$file"
+          ::error title={${$file/%$suffix} Unit Tests Failed}::{The ${$file/%$suffix} + msg}
+          $result="Failed"
         done
+        
+        if [ "$result" = "Failed" ]
+        then
+            exit 0
+        fi
