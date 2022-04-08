@@ -121,7 +121,7 @@ jobs:
         # Generate Annotations and Console Output
         for file in *"Fail"*.log; do
           title=${file%"$suffix"}
-          echo "::error title='$title Unit Tests Failed'::'The $title $msg'"
+          echo "::error title=$title Unit Tests Failed::The $title $msg"
           result="Failed"
         done
         
