@@ -57,7 +57,6 @@ jobs:
         Set-Content $logName $logs
         Get-Content $logName
 
-
     - name: Run Unit Tests Ubuntu
       if: contains(matrix.os, 'ubuntu')
       working-directory: HIRS_Provisioner.NET
@@ -67,7 +66,7 @@ jobs:
 
     - name: Extract Ubuntu Unit Test Results
       id: ubuntu_result
-      if: contains(matrix.os, 'ubuntu')
+      if: contains(matrix.os, 'ubuntu') && always
       working-directory: HIRS_Provisioner.NET
       run: |
         logName="${{matrix.os}}-unit-tests.log"
@@ -83,7 +82,7 @@ jobs:
 
     - name: Upload Logs Ubuntu
       uses: actions/upload-artifact@v2
-      if: contains(matrix.os, 'ubuntu')
+      if: contains(matrix.os, 'ubuntu') && always
       with:
         name: "${{matrix.os}}-unit-tests-${{steps.ubuntu_result.outputs.result}}.log"
         path: HIRS_Provisioner.NET/*.log
@@ -96,13 +95,13 @@ jobs:
         path: HIRS_Provisioner.NET/*.log
 
     - name: Results Passed
-      if: (steps.window_result.outputs.result == 'True' ||  steps.ubuntu_result.outputs.result == 'True')
+      if: (steps.window_result.outputs.result == 'True' ||  steps.ubuntu_result.outputs.result == 'True') && always
       run: |
         echo "All Tests Passed"
         exit 0
 
     - name: Results Failed
-      if: (steps.window_result.outputs.result == 'False' || steps.ubuntu_result.outputs.result == 'False')
+      if: (steps.window_result.outputs.result == 'False' || steps.ubuntu_result.outputs.result == 'False') && always
       run: |
         echo "Unit Tests Failed"
         exit 1
