@@ -109,31 +109,30 @@ jobs:
   evaluator:
     name: Evaluate Tests
     needs: [dotnet_provisioner_unit_tests]
-    runs-on: windows-latest
+    runs-on: ubuntu-latest
     continue-on-error: false
     steps:
-    runs-on: ${{ matrix.os }}
-    strategy:
-      matrix:
-        include:
-         # - os: windows-2022
-         # - os: ubuntu-20.04
-         - os: windows-2019
-         - os: ubuntu-18.04
     steps:
     - name: Checkout repo
       if: always()
       uses: actions/checkout@v2
 
-    - name: Check If Passed
-      id: check_result
-      if: always()
-      uses: andstor/file-existence-action@v1
-      with:
-        files: "${{matrix.os}}-unit-tests-Pass.log"
-
-    - name: ${{matrix.os}} Unit Tests
-      if: steps.check_result.outputs.files_exists == 'false' && always()
+    # - name: Check If Passed
+    #   id: check_result
+    #   if: always()
+    #   uses: andstor/file-existence-action@v1
+    #   with:
+    #     files: "${{matrix.os}}-unit-tests-Pass.log"
+    - name: Make artifact directory
       run: |
-        echo "${{matrix.os}} Unit Tests Failed"
-        exit 1
+        mkdir artifacts
+    - name: Download all artifacts
+      working-directory: artifacts
+      uses: actions/download-artifact@v3
+
+    - name: Determine if a test failed
+      working-directory: artifacts
+      run: |
+        for i in `find . -name 'Fail'`; do
+          exit 0
+        done
