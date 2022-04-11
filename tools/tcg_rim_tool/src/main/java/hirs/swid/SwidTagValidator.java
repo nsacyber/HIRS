@@ -4,7 +4,6 @@ import hirs.swid.utils.HashSwid;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
-import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
@@ -39,10 +38,8 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
-import java.math.BigInteger;
 import java.security.InvalidKeyException;
 import java.security.Key;
-import java.security.KeyFactory;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
 import java.security.PublicKey;
@@ -51,9 +48,6 @@ import java.security.SignatureException;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 import java.security.spec.InvalidKeySpecException;
-import java.security.spec.RSAPublicKeySpec;
-import java.util.Arrays;
-import java.util.Base64;
 import java.util.Iterator;
 import java.util.List;
 
@@ -116,7 +110,12 @@ public class SwidTagValidator {
         si.append("SoftwareIdentity tagId: " + softwareIdentity.getAttribute("tagId") + "\n");
         System.out.println(si.toString());
         Element file = (Element) document.getElementsByTagName("File").item(0);
-        validateFile(file);
+        try {
+            validateFile(file);
+        } catch (Exception e) {
+            System.out.println(e.getMessage());
+            return false;
+        }
         System.out.println("Signature core validity: " + validateSignedXMLDocument(document));
         return true;
     }
@@ -124,7 +123,7 @@ public class SwidTagValidator {
     /**
      * This method validates a hirs.swid.xjc.File from an indirect payload
      */
-    private boolean validateFile(Element file) {
+    private boolean validateFile(Element file) throws Exception {
         String filepath;
         if (!rimEventLog.isEmpty()) {
             filepath = rimEventLog;
