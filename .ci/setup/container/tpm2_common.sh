@@ -12,8 +12,7 @@ function installProvisioner {
     mkdir -p /HIRS/logs/provisioner/
     sh package/package.centos.sh &> /HIRS/logs/provisioner/provisioner_build.log
     echo "Installing the HIRS Provisioner ..."
-    # yum install -y package/rpm/RPMS/x86_64/HIRS_Provisioner_TPM_2_0*.el7.x86_64.rpm
-    yum -q list installed HIRS_Provisioner_TPM_2_0* &>/dev/null && yum -y reinstall package/rpm/RPMS/x86_64/HIRS_Provisioner_TPM_2_0*.el7.x86_64.rpm || yum install -y package/rpm/RPMS/x86_64/HIRS_Provisioner_TPM_2_0*.el7.x86_64.rpm
+    yum install -y package/rpm/RPMS/x86_64/HIRS_Provisioner_TPM_2_0*.el7.x86_64.rpm
   popd  > /dev/null
 }
 
