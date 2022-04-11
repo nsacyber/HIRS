@@ -18,14 +18,9 @@ function installProvisioner {
 
 # use ibm tss to properly clear tpm pcr values
 function setTpmPcrValues {
-  mkdir /ibmtss
   pushd /ibmtss  > /dev/null
-    echo "Installing IBM TSS to set the TPM simulator intial values correctly..."
-    wget --no-check-certificate https://downloads.sourceforge.net/project/ibmtpm20tss/ibmtss1.6.0.tar.gz > /dev/null
-    tar -zxvf ibmtss1.6.0.tar.gz > /dev/null
+    echo "starting IBM TSS to set the TPM simulator intial values correctly..."
     cd utils
-    make -f makefiletpmc > /dev/null
-    cd ../utils
     ./startup
   popd  > /dev/null
 }

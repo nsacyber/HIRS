@@ -8,5 +8,7 @@ RUN yum install -y tpm2-tools libcurl procps-ng wget dbus python-requests python
 RUN mkdir paccor && pushd paccor && wget https://github.com/nsacyber/paccor/releases/download/v1.1.4r2/paccor-1.1.4-2.noarch.rpm && yum -y install paccor-*.rpm && popd
 
 # Install Software TPM for Provisioning
-RUN mkdir ibmtpm && pushd ibmtpm && wget https://downloads.sourceforge.net/project/ibmswtpm2/ibmtpm1332.tar.gz && tar -zxvf ibmtpm1332.tar.gz && cd src && make -j5 && popd
+RUN mkdir ibmtpm && pushd ibmtpm && wget --no-check-certificate https://downloads.sourceforge.net/project/ibmswtpm2/ibmtpm1332.tar.gz && tar -zxvf ibmtpm1332.tar.gz && cd src && make -j5 && popd
 
+# Install TSS for TPM setup
+RUN mkdir ibmtss && pushd ibmtss && wget --no-check-certificate https://downloads.sourceforge.net/project/ibmtpm20tss/ibmtss1.6.0.tar.gz && tar -zxvf ibmtss1.6.0.tar.gz && cd utils && make -f makefiletpmc && popd
