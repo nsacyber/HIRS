@@ -109,6 +109,28 @@ public class DBReferenceDigestManager extends DBManager<ReferenceDigestRecord>
     }
 
     @Override
+    public List<ReferenceDigestRecord> getRecordsByDeviceName(final String deviceName) {
+        LOGGER.debug("Getting record for {}", deviceName);
+        if (deviceName == null) {
+            LOGGER.error("No deviceName to get record from db");
+            return null;
+        }
+
+        List<ReferenceDigestRecord> dbRecords = new ArrayList<>();
+        try {
+            List<ReferenceDigestRecord> dbTempList = super.getList(ReferenceDigestRecord.class);
+            for (ReferenceDigestRecord rdr : dbTempList) {
+                if (rdr.getDeviceName().equals(deviceName)) {
+                    dbRecords.add(rdr);
+                }
+            }
+        } catch (DBManagerException dbMEx) {
+            throw new RuntimeException(dbMEx);
+        }
+        return dbRecords;
+    }
+
+    @Override
     public ReferenceDigestRecord getRecordById(final ReferenceDigestRecord referenceDigestRecord) {
         LOGGER.debug("Getting record for {}", referenceDigestRecord);
         if (referenceDigestRecord == null) {

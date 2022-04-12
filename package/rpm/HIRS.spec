@@ -330,7 +330,7 @@ cp HIRS_Utils/src/main/resources/persistence.properties %{buildroot}/opt/hirs/de
 cp HIRS_Utils/src/main/resources/logging.properties %{buildroot}/opt/hirs/default-properties/attestationca/
 cp HIRS_Utils/src/main/resources/banner.properties %{buildroot}/opt/hirs/default-properties/attestationca/
 cp HIRS_Utils/src/main/resources/component-class.json %{buildroot}/opt/hirs/default-properties/
-cp HIRS_Utils/src/main/resources/vendor-table.json %{buildroot}/opt/hirs/default-properties/
+cp -n HIRS_Utils/src/main/resources/vendor-table.json %{buildroot}/opt/hirs/default-properties/
 
 # install extras
 mkdir -p %{buildroot}/opt/hirs/extras

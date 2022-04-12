@@ -9,7 +9,6 @@ import hirs.data.persist.Device;
 import hirs.data.persist.DeviceInfoReport;
 import hirs.data.persist.EventLogMeasurements;
 import hirs.data.persist.PCRPolicy;
-import hirs.data.persist.ReferenceDigestRecord;
 import hirs.data.persist.ReferenceDigestValue;
 import hirs.data.persist.ReferenceManifest;
 import hirs.data.persist.SupplyChainPolicy;
@@ -37,6 +36,7 @@ import hirs.utils.BouncyCastleUtils;
 import hirs.utils.ReferenceManifestValidator;
 import hirs.validation.CredentialValidator;
 import hirs.validation.SupplyChainCredentialValidator;
+import hirs.validation.SupplyChainValidatorException;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -45,7 +45,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Import;
 import org.springframework.stereotype.Service;
 
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.security.KeyStore;
 import java.security.KeyStoreException;
@@ -90,6 +89,16 @@ public class SupplyChainValidationServiceImpl implements SupplyChainValidationSe
             = LogManager.getLogger(SupplyChainValidationServiceImpl.class);
 
     /**
+     * Constructor to set just the CertificateManager, so that cert chain validating
+     * methods can be called from outside classes.
+     *
+     * @param certificateManager the cert manager
+     */
+    public SupplyChainValidationServiceImpl(final CertificateManager certificateManager) {
+        this.certificateManager = certificateManager;
+    }
+
+    /**
      * Constructor.
      *
      * @param policyManager                      the policy manager
@@ -123,6 +132,7 @@ public class SupplyChainValidationServiceImpl implements SupplyChainValidationSe
 
     /**
      * Allows other service access to the policy information.
+     *
      * @return supply chain policy
      */
     public SupplyChainPolicy getPolicy() {
@@ -225,8 +235,13 @@ public class SupplyChainValidationServiceImpl implements SupplyChainValidationSe
             if (pcErrorMessage.isEmpty()) {
                 validations.add(platformScv);
             } else {
-                validations.add(new SupplyChainValidation(platformType,
-                        AppraisalStatus.Status.FAIL, new ArrayList<>(pcs), pcErrorMessage));
+                if (pcs == null) {
+                    validations.add(new SupplyChainValidation(platformType,
+                            AppraisalStatus.Status.FAIL, new ArrayList<>(), pcErrorMessage));
+                } else {
+                    validations.add(new SupplyChainValidation(platformType,
+                            AppraisalStatus.Status.FAIL, new ArrayList<>(pcs), pcErrorMessage));
+                }
             }
         }
 
@@ -252,7 +267,7 @@ public class SupplyChainValidationServiceImpl implements SupplyChainValidationSe
                     Iterator<PlatformCredential> it = pcs.iterator();
                     while (it.hasNext()) {
                         PlatformCredential pc = it.next();
-                        if (pc != null && pc.isBase()) {
+                        if (pc != null && !pc.isBase()) {
                             attributeScv = validateDeltaPlatformCredentialAttributes(
                                     pc, device.getDeviceInfo(),
                                     baseCredential, deltaMapping);
@@ -369,33 +384,41 @@ public class SupplyChainValidationServiceImpl implements SupplyChainValidationSe
                 .getHardwareInfo().getManufacturer();
         String model = device.getDeviceInfo()
                 .getHardwareInfo().getProductName();
-        ReferenceManifest validationObject = null;
-        ReferenceManifest baseReferenceManifest = null;
+        ReferenceManifest validationObject;
+        Set<BaseReferenceManifest> baseReferenceManifests = null;
+        BaseReferenceManifest baseReferenceManifest = null;
         ReferenceManifest supportReferenceManifest = null;
-        ReferenceManifest measurement = null;
-        ReferenceDigestRecord digestRecord = null;
+        EventLogMeasurements measurement = null;
 
-        baseReferenceManifest = BaseReferenceManifest.select(referenceManifestManager)
-                .byManufacturer(manufacturer).getRIM();
-        supportReferenceManifest = SupportReferenceManifest.select(referenceManifestManager)
-                .byManufacturer(manufacturer).getRIM();
-        measurement = EventLogMeasurements.select(referenceManifestManager)
-                .byManufacturer(manufacturer).includeArchived().getRIM();
+        baseReferenceManifests = BaseReferenceManifest.select(referenceManifestManager)
+                .byModel(model).getRIMs();
 
-        validationObject = baseReferenceManifest;
+        for (BaseReferenceManifest bRim : baseReferenceManifests) {
+            if (bRim.getPlatformManufacturer().equals(manufacturer)
+                    && !bRim.isSwidSupplemental() && !bRim.isSwidPatch()) {
+                baseReferenceManifest = bRim;
+            }
+        }
+
         String failedString = "";
         if (baseReferenceManifest == null) {
             failedString = "Base Reference Integrity Manifest\n";
             passed = false;
+        } else {
+            measurement = EventLogMeasurements.select(referenceManifestManager)
+                    .byHexDecHash(baseReferenceManifest.getEventLogHash()).getRIM();
+
+            if (measurement == null) {
+                measurement = EventLogMeasurements.select(referenceManifestManager)
+                        .byModel(baseReferenceManifest.getPlatformModel()).getRIM();
+            }
         }
-        if (supportReferenceManifest == null) {
-            failedString += "Support Reference Integrity Manifest\n";
-            passed = false;
-        }
+
         if (measurement == null) {
             failedString += "Bios measurement";
             passed = false;
         }
+        validationObject = measurement;
 
         if (passed) {
             List<SwidResource> resources =
@@ -405,17 +428,58 @@ public class SupplyChainValidationServiceImpl implements SupplyChainValidationSe
 
             // verify signatures
             ReferenceManifestValidator referenceManifestValidator =
-                    new ReferenceManifestValidator(
-                            new ByteArrayInputStream(baseReferenceManifest.getRimBytes()));
+                    new ReferenceManifestValidator();
+            referenceManifestValidator.setRim(baseReferenceManifest);
+
+            //Validate signing cert
+            Set<CertificateAuthorityCredential> allCerts =
+                    CertificateAuthorityCredential.select(certificateManager).getCertificates();
+            CertificateAuthorityCredential signingCert = null;
+            for (CertificateAuthorityCredential cert : allCerts) {
+                signingCert = cert;
+                KeyStore keyStore = getCaChain(signingCert);
+                if (referenceManifestValidator.validateXmlSignature(signingCert)) {
+                    try {
+                        if (!SupplyChainCredentialValidator.verifyCertificate(
+                                signingCert.getX509Certificate(), keyStore)) {
+                            passed = false;
+                            fwStatus = new AppraisalStatus(FAIL,
+                                    "Firmware validation failed: invalid certificate path.");
+                        }
+                    } catch (IOException e) {
+                        LOGGER.error("Error getting X509 cert from manager: " + e.getMessage());
+                    } catch (SupplyChainValidatorException e) {
+                        LOGGER.error("Error validating cert against keystore: " + e.getMessage());
+                        fwStatus = new AppraisalStatus(FAIL,
+                                "Firmware validation failed: invalid certificate path.");
+                    }
+                    break;
+                }
+            }
 
             for (SwidResource swidRes : resources) {
-                if (swidRes.getName().equals(supportReferenceManifest.getFileName())) {
+                supportReferenceManifest = SupportReferenceManifest.select(referenceManifestManager)
+                        .byHexDecHash(swidRes.getHashValue()).getRIM();
+                if (supportReferenceManifest != null) {
+                    // Removed the filename check from this if statement
                     referenceManifestValidator.validateSupportRimHash(
                             supportReferenceManifest.getRimBytes(), swidRes.getHashValue());
                 }
             }
 
-            if (!referenceManifestValidator.isSignatureValid()) {
+            if (signingCert == null) {
+                passed = false;
+                fwStatus = new AppraisalStatus(FAIL,
+                        "Firmware validation failed: signing cert not found.");
+            }
+
+            if (passed && supportReferenceManifest == null) {
+                fwStatus = new AppraisalStatus(FAIL,
+                        "Support Reference Integrity Manifest can not be found");
+                passed = false;
+            }
+
+            if (passed && !referenceManifestValidator.isSignatureValid()) {
                 passed = false;
                 fwStatus = new AppraisalStatus(FAIL,
                         "Firmware validation failed: Signature validation "
@@ -458,31 +522,14 @@ public class SupplyChainValidationServiceImpl implements SupplyChainValidationSe
                                         + "provide pcr values.", device.getName()));
                     } else {
                         // we have a full set of PCR values
-                        int algorithmLength = baseline[0].length();
-                        String[] storedPcrs = buildStoredPcrs(pcrContent, algorithmLength);
+                        //int algorithmLength = baseline[0].length();
+                        //String[] storedPcrs = buildStoredPcrs(pcrContent, algorithmLength);
+                        //pcrPolicy.validatePcrs(storedPcrs);
 
-                        if (storedPcrs[0] == null || storedPcrs[0].isEmpty()) {
-                            // validation fail
-                            fwStatus = new AppraisalStatus(FAIL,
-                                    "Firmware validation failed: "
-                                            + "Client provided PCR "
-                                            + "values are not the same algorithm "
-                                            + "as associated RIM.");
-                        } else {
-                            StringBuilder sb = pcrPolicy.validatePcrs(storedPcrs);
-                            if (sb.length() > 0) {
-                                validationObject = supportReferenceManifest;
-                                level = Level.ERROR;
-                                fwStatus = new AppraisalStatus(FAIL, sb.toString());
-                            } else {
-                                level = Level.INFO;
-                            }
-                        }
                         // part 2 of firmware validation check: bios measurements
                         // vs baseline tcg event log
                         // find the measurement
                         TCGEventLog tcgMeasurementLog;
-                        digestRecord = this.referenceDigestManager.getRecord(manufacturer, model);
                         LinkedList<TpmPcrEvent> tpmPcrEvents = new LinkedList<>();
                         List<ReferenceDigestValue> eventValue;
                         HashMap<String, ReferenceDigestValue> eventValueMap = new HashMap<>();
@@ -490,16 +537,13 @@ public class SupplyChainValidationServiceImpl implements SupplyChainValidationSe
                             if (measurement.getPlatformManufacturer().equals(manufacturer)) {
                                 tcgMeasurementLog = new TCGEventLog(measurement.getRimBytes());
                                 eventValue = this.referenceEventManager
-                                        .getValuesByRecordId(digestRecord);
+                                        .getValuesByRimId(baseReferenceManifest);
                                 for (ReferenceDigestValue rdv : eventValue) {
                                     eventValueMap.put(rdv.getDigestValue(), rdv);
                                 }
 
-                                for (TpmPcrEvent tpe : tcgMeasurementLog.getEventList()) {
-                                    if (!eventValueMap.containsKey(tpe.getEventDigestStr())) {
-                                        tpmPcrEvents.add(tpe);
-                                    }
-                                }
+                                tpmPcrEvents.addAll(pcrPolicy.validateTpmEvents(
+                                        tcgMeasurementLog, eventValueMap));
                             }
                         } catch (CertificateException cEx) {
                             LOGGER.error(cEx);
@@ -512,9 +556,11 @@ public class SupplyChainValidationServiceImpl implements SupplyChainValidationSe
                         if (!tpmPcrEvents.isEmpty()) {
                             StringBuilder sb = new StringBuilder();
                             validationObject = measurement;
+                            sb.append(String.format("%d digest(s) were not found:%n",
+                                    tpmPcrEvents.size()));
                             for (TpmPcrEvent tpe : tpmPcrEvents) {
-                                sb.append(String.format("Event %s - %s%n",
-                                        tpe.getEventNumber(),
+                                sb.append(String.format("PCR Index %d - %s%n",
+                                        tpe.getPcrIndex(),
                                         tpe.getEventTypeStr()));
                             }
                             if (fwStatus.getAppStatus().equals(FAIL)) {
@@ -529,9 +575,17 @@ public class SupplyChainValidationServiceImpl implements SupplyChainValidationSe
                     fwStatus = new AppraisalStatus(FAIL, "The RIM baseline could not be found.");
                 }
             }
+
+            EventLogMeasurements eventLog = (EventLogMeasurements) measurement;
+            eventLog.setOverallValidationResult(fwStatus.getAppStatus());
+            this.referenceManifestManager.update(eventLog);
         } else {
             fwStatus = new AppraisalStatus(FAIL, String.format("Firmware Validation failed: "
                     + "%s for %s can not be found", failedString, manufacturer));
+            if (measurement != null) {
+                measurement.setOverallValidationResult(fwStatus.getAppStatus());
+                this.referenceManifestManager.update(measurement);
+            }
         }
 
         return buildValidationRecord(SupplyChainValidation.ValidationType.FIRMWARE,
@@ -554,36 +608,44 @@ public class SupplyChainValidationServiceImpl implements SupplyChainValidationSe
         SupplyChainValidationSummary summary = null;
         Level level = Level.ERROR;
         AppraisalStatus fwStatus = new AppraisalStatus(FAIL,
-                SupplyChainCredentialValidator.FIRMWARE_VALID);
+                "Unknown exception caught during quote validation.");
         SupportReferenceManifest sRim = null;
         EventLogMeasurements eventLog = null;
 
         // check if the policy is enabled
         if (policy.isFirmwareValidationEnabled()) {
             String[] baseline = new String[Integer.SIZE];
-            String manufacturer = device.getDeviceInfo()
-                    .getHardwareInfo().getManufacturer();
+            String deviceName = device.getDeviceInfo()
+                    .getNetworkInfo().getHostname();
 
             try {
-                sRim = SupportReferenceManifest.select(
-                        this.referenceManifestManager)
-                        .byManufacturer(manufacturer).getRIM();
+                Set<SupportReferenceManifest> supportRims = SupportReferenceManifest
+                        .select(this.referenceManifestManager)
+                        .byManufacturerModel(
+                                device.getDeviceInfo().getHardwareInfo().getManufacturer(),
+                                device.getDeviceInfo().getHardwareInfo().getProductName())
+                        .getRIMs();
+                for (SupportReferenceManifest support : supportRims) {
+                    if (support.isBaseSupport()) {
+                        sRim = support;
+                    }
+                }
                 eventLog = EventLogMeasurements
                         .select(this.referenceManifestManager)
-                        .byManufacturer(manufacturer).getRIM();
+                        .byHexDecHash(sRim.getEventLogHash()).getRIM();
 
                 if (sRim == null) {
                     fwStatus = new AppraisalStatus(FAIL,
                             String.format("Firmware Quote validation failed: "
                                             + "No associated Support RIM file "
                                             + "could be found for %s",
-                                    manufacturer));
+                                    deviceName));
                 } else if (eventLog == null) {
                     fwStatus = new AppraisalStatus(FAIL,
                             String.format("Firmware Quote validation failed: "
                                             + "No associated Client Log file "
                                             + "could be found for %s",
-                                    manufacturer));
+                                    deviceName));
                 } else {
                     baseline = sRim.getExpectedPCRList();
                     String[] storedPcrs = eventLog.getExpectedPCRList();
@@ -596,11 +658,12 @@ public class SupplyChainValidationServiceImpl implements SupplyChainValidationSe
                         fwStatus = new AppraisalStatus(PASS,
                                 SupplyChainCredentialValidator.FIRMWARE_VALID);
                         fwStatus.setMessage("Firmware validation of TPM Quote successful.");
-
                     } else {
                         fwStatus.setMessage("Firmware validation of TPM Quote failed."
                                 + "\nPCR hash and Quote hash do not match.");
                     }
+                    eventLog.setOverallValidationResult(fwStatus.getAppStatus());
+                    this.referenceManifestManager.update(eventLog);
                 }
             } catch (Exception ex) {
                 LOGGER.error(ex);
@@ -608,7 +671,7 @@ public class SupplyChainValidationServiceImpl implements SupplyChainValidationSe
 
             quoteScv = buildValidationRecord(SupplyChainValidation
                             .ValidationType.FIRMWARE,
-                    fwStatus.getAppStatus(), fwStatus.getMessage(), sRim, level);
+                    fwStatus.getAppStatus(), fwStatus.getMessage(), eventLog, level);
 
             // Generate validation summary, save it, and return it.
             List<SupplyChainValidation> validations = new ArrayList<>();

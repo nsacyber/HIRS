@@ -1,16 +1,18 @@
 Name:           tcg_rim_tool
-Version:        2.0.0
-Release:        1%{?dist}
+Version:        %{?VERSION}
+Release:        %{?RELEASE}
 Summary:        A java command-line tool to create PC client root RIM
 
 License:        ASL 2.0
 URL:            https://github.com/nsacyber/HIRS
-Source0:     	%{name}.tar.gz   
+Source0:     	%{name}-%{version}.%{release}.tar.gz   
 
 BuildRequires:  java-headless >= 1:1.8.0
 
 %description
 This tool will generate a base RIM file for PC clients in accordance with the schema located at http://standards.iso.org/iso/19770/-2/2015/schema.xsd.  The generated RIM can either be empty if no arguments are given, or contain a payload if an input file is provided.  The tool can also verify a given RIMfile against the schema. Use -h or --help to see a list of commands and uses.
+
+%global __os_install_post %{nil}
 
 %prep
 %setup -q -c -n %{name}
@@ -19,7 +21,7 @@ This tool will generate a base RIM file for PC clients in accordance with the sc
 rm -f /opt/hirs/rimtool/%{name}*.jar
 
 %build
-./gradlew build
+./gradlew -Pversion=%{version} build
 
 %install
 mkdir -p %{buildroot}/opt/hirs/rimtool/ %{buildroot}/usr/local/bin

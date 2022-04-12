@@ -114,7 +114,7 @@
                         <div>Not Before:&nbsp;<span>${initialData.beginValidity}</span></div>
                         <div>Not After:&nbsp;<span>${initialData.endValidity}</span></div>
                     </div>
-            </div>
+                </div>
             </c:if>
             <div class="row">
                 <div class="col-md-1 col-md-offset-1"><span class="colHeader">Signature</span></div><div id="signatureSection" class="col col-md-8">
@@ -736,7 +736,7 @@
                                                                     <span class="fieldHeader">Name:</span>
                                                                     <span class="fieldValue">${property.getPropertyName()}</span><br/>
                                                                     <span class="fieldHeader">Value:</span>
-                                                                    <span class="fieldValue">${property.getPropertyValue()}</span><br/>
+                                                                    <span class="fieldValue" style="word-wrap: break-word">${property.getPropertyValue()}</span><br/>
                                                                 </div>
                                                             </div>
                                                         </div>

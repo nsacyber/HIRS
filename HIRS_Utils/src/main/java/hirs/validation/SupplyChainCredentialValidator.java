@@ -13,6 +13,7 @@ import hirs.data.persist.certificate.attributes.ComponentIdentifier;
 import hirs.data.persist.certificate.attributes.V2.ComponentIdentifierV2;
 import hirs.data.persist.info.ComponentInfo;
 import hirs.data.persist.info.HardwareInfo;
+import hirs.utils.PciIds;
 import org.apache.commons.codec.Charsets;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -91,11 +92,11 @@ public final class SupplyChainCredentialValidator implements CredentialValidator
             "Platform credential attributes validated";
 
     /**
-     * AppraisalStatus message for a valid platform credential appraisal.
+     * AppraisalStatus message for a valid firmware appraisal.
      */
     public static final String FIRMWARE_VALID = "Firmware validated";
 
-    /*
+    /**
      * Ensure that BouncyCastle is configured as a javax.security.Security provider, as this
      * class expects it to be available.
      */
@@ -321,21 +322,21 @@ public final class SupplyChainCredentialValidator implements CredentialValidator
 
         // this needs to be a loop for all deltas, link to issue #110
         // check that they don't have the same serial number
-        for (PlatformCredential delta : deltaMapping.keySet()) {
+        for (PlatformCredential pc : deltaMapping.keySet()) {
             if (!basePlatformCredential.getPlatformSerial()
-                    .equals(delta.getPlatformSerial())) {
+                    .equals(pc.getPlatformSerial())) {
                 message = String.format("Base and Delta platform serial "
                                 + "numbers do not match (%s != %s)",
-                        delta.getPlatformSerial(),
+                        pc.getPlatformSerial(),
                         basePlatformCredential.getPlatformSerial());
                 LOGGER.error(message);
                 return new AppraisalStatus(FAIL, message);
             }
             // none of the deltas should have the serial number of the base
-            if (basePlatformCredential.getSerialNumber()
-                    .equals(delta.getSerialNumber())) {
+            if (!pc.isBase() && basePlatformCredential.getSerialNumber()
+                    .equals(pc.getSerialNumber())) {
                 message = String.format("Delta Certificate with same serial number as base. (%s)",
-                        delta.getSerialNumber());
+                        pc.getSerialNumber());
                 LOGGER.error(message);
                 return new AppraisalStatus(FAIL, message);
             }
@@ -564,8 +565,14 @@ public final class SupplyChainCredentialValidator implements CredentialValidator
             resultMessage.append(unmatchedComponents);
 
             // pass information of which ones failed in additionInfo
+            int counter = 0;
             for (ComponentIdentifier ci : validPcComponents) {
+                counter++;
                 additionalInfo.append(String.format("%d;", ci.hashCode()));
+            }
+            if (counter > 0) {
+                additionalInfo.insert(0, "COMPID=");
+                additionalInfo.append(counter);
             }
         }
 
@@ -649,24 +656,21 @@ public final class SupplyChainCredentialValidator implements CredentialValidator
             boolean classFound;
 
             for (ComponentIdentifier ci : absentSerialNum) {
-                classValue = ciV2.getComponentClass().getClassValueString();
+                classValue = ciV2.getComponentClass().getValue();
                 baseCiV2 = (ComponentIdentifierV2) ci;
                 classFound = classValue.equals(baseCiV2.getComponentClass()
-                        .getClassValueString());
+                        .getValue());
                 if (classFound) {
                     if (isMatch(ciV2, baseCiV2)) {
-                        if (ciV2.isAdded()) {
-                            // error
-                            resultMessage.append("ADDED attempted with prior instance\n");
-                            deltaSb.append(String.format("%s;", ci.hashCode()));
-                        }
-                        if (ciV2.isModified()) {
+                        if (ciV2.isAdded() || ciV2.isModified()) {
                             // since the base list doesn't have this ci
                             // just add the delta
                             baseCompList.add(deltaCi);
+                            break;
                         }
                         if (ciV2.isRemoved()) {
                             baseCompList.remove(ciV2);
+                            break;
                         }
                         // if it is a remove
                         // we do nothing because baseCompList doesn't have it
@@ -700,6 +704,7 @@ public final class SupplyChainCredentialValidator implements CredentialValidator
         }
 
         if (!fieldValidation || !deltaSb.toString().isEmpty()) {
+            deltaSb.insert(0, "COMPID=");
             return new AppraisalStatus(FAIL, resultMessage.toString(), deltaSb.toString());
         }
 
@@ -719,21 +724,29 @@ public final class SupplyChainCredentialValidator implements CredentialValidator
             LOGGER.error("PACCOR output string:\n" + paccorOutputString);
             return new AppraisalStatus(ERROR, baseErrorMessage + ioEx.getMessage());
         }
+        StringBuilder additionalInfo = new StringBuilder();
         if (!fieldValidation) {
-            // instead of listing all unmatched, just print the #.  The failure
-            // will link to the platform certificate that'll display them.
-            String failureResults = unmatchedComponents.substring(0,
-                    unmatchedComponents.length() - 1);
-            String size = unmatchedComponents.substring(unmatchedComponents.length() - 1);
             resultMessage = new StringBuilder();
-
-            resultMessage.append(String.format("There are %s unmatched components "
-                                + "on the Platform Certificate:%n", size));
+            resultMessage.append("There are unmatched components:\n");
             resultMessage.append(unmatchedComponents);
 
-            return new AppraisalStatus(FAIL, resultMessage.toString(), failureResults);
+            // pass information of which ones failed in additionInfo
+            int counter = 0;
+            for (ComponentIdentifier ci : baseCompList) {
+                counter++;
+                additionalInfo.append(String.format("%d;", ci.hashCode()));
+            }
+            if (counter > 0) {
+                additionalInfo.insert(0, "COMPID=");
+                additionalInfo.append(counter);
+            }
         }
-        return new AppraisalStatus(PASS, PLATFORM_ATTRIBUTES_VALID);
+
+        if (fieldValidation) {
+            return new AppraisalStatus(PASS, PLATFORM_ATTRIBUTES_VALID);
+        } else {
+            return new AppraisalStatus(FAIL, resultMessage.toString(), additionalInfo.toString());
+        }
     }
 
     private static String validateV2PlatformCredentialAttributes(
@@ -750,8 +763,8 @@ public final class SupplyChainCredentialValidator implements CredentialValidator
         for (ComponentInfo cInfo : allDeviceInfoComponents) {
             for (ComponentIdentifier cId : fullDeltaChainComponents) {
                 ciV2 = (ComponentIdentifierV2) cId;
-                if (ciV2.getComponentClass().getClassValueString()
-                        .contains(cInfo.getComponentClass())
+                if (cInfo.getComponentClass().contains(
+                        ciV2.getComponentClass().getValue())
                         && isMatch(cId, cInfo)) {
                         subCompIdList.remove(cId);
                         subCompInfoList.remove(cInfo);
@@ -765,14 +778,23 @@ public final class SupplyChainCredentialValidator implements CredentialValidator
         // now we return everything that was unmatched
         // what is in the component info/device reported components
         // is to be displayed as the failure
+            fullDeltaChainComponents.clear();
             for (ComponentIdentifier ci : subCompIdList) {
-                ciV2 = (ComponentIdentifierV2) ci;
-                invalidPcIds.append(String.format("%d;",
-                        ciV2.hashCode()));
+                if (ci.isVersion2() && PciIds.DB.isReady()) {
+                    ci = PciIds.translate((ComponentIdentifierV2) ci);
+                }
+                LOGGER.error("Unmatched component: " + ci);
+                fullDeltaChainComponents.add(ci);
+                invalidPcIds.append(String.format(
+                        "Manufacturer=%s, Model=%s, Serial=%s, Revision=%s;%n",
+                        ci.getComponentManufacturer(),
+                        ci.getComponentModel(),
+                        ci.getComponentSerial(),
+                        ci.getComponentRevision()));
             }
         }
 
-        return String.format("COMPID=%s%d", invalidPcIds.toString(), subCompIdList.size());
+        return invalidPcIds.toString();
     }
 
     /**
@@ -797,24 +819,23 @@ public final class SupplyChainCredentialValidator implements CredentialValidator
         // on the leftovers in the lists and the policy in place.
         final List<ComponentIdentifier> pcComponents = new ArrayList<>();
         for (ComponentIdentifier component : untrimmedPcComponents) {
-            DERUTF8String componentSerial = new DERUTF8String("");
-            DERUTF8String componentRevision = new DERUTF8String("");
+            if (component.getComponentManufacturer() != null) {
+                component.setComponentManufacturer(new DERUTF8String(
+                        component.getComponentManufacturer().getString().trim()));
+            }
+            if (component.getComponentModel() != null) {
+                component.setComponentModel(new DERUTF8String(
+                        component.getComponentModel().getString().trim()));
+            }
             if (component.getComponentSerial() != null) {
-                componentSerial = new DERUTF8String(
-                        component.getComponentSerial().getString().trim());
+                component.setComponentSerial(new DERUTF8String(
+                        component.getComponentSerial().getString().trim()));
             }
             if (component.getComponentRevision() != null) {
-                componentRevision = new DERUTF8String(
-                        component.getComponentRevision().getString().trim());
+                component.setComponentRevision(new DERUTF8String(
+                        component.getComponentRevision().getString().trim()));
             }
-            pcComponents.add(
-                new ComponentIdentifier(
-                        new DERUTF8String(component.getComponentManufacturer().getString().trim()),
-                        new DERUTF8String(component.getComponentModel().getString().trim()),
-                        componentSerial, componentRevision,
-                        component.getComponentManufacturerId(),
-                        component.getFieldReplaceable(),
-                        component.getComponentAddress()));
+            pcComponents.add(component);
         }
 
         LOGGER.info("Validating the following Platform Cert components...");
@@ -838,7 +859,6 @@ public final class SupplyChainCredentialValidator implements CredentialValidator
                     = allDeviceInfoComponents.stream().filter(componentInfo
                     -> componentInfo.getComponentManufacturer().equals(pcManufacturer))
                     .collect(Collectors.toList());
-
             // For each component listed in the platform credential from this manufacturer
             // find the ones that specify a serial number so we can match the most specific ones
             // first.
@@ -847,7 +867,6 @@ public final class SupplyChainCredentialValidator implements CredentialValidator
                     -> compIdentifier.getComponentSerial() != null
                     && StringUtils.isNotEmpty(compIdentifier.getComponentSerial().getString()))
                     .collect(Collectors.toList());
-
             // Now match up the components from the device info that are from the same
             // manufacturer and have a serial number. As matches are found, remove them from
             // both lists.
@@ -868,7 +887,6 @@ public final class SupplyChainCredentialValidator implements CredentialValidator
                     }
                 }
             }
-
             // For each component listed in the platform credential from this manufacturer
             // find the ones that specify value for the revision field so we can match the most
             // specific ones first.
@@ -877,7 +895,6 @@ public final class SupplyChainCredentialValidator implements CredentialValidator
                     -> compIdentifier.getComponentRevision() != null
                     && StringUtils.isNotEmpty(compIdentifier.getComponentRevision().getString()))
                     .collect(Collectors.toList());
-
             // Now match up the components from the device info that are from the same
             // manufacturer and specify a value for the revision field. As matches are found,
             // remove them from both lists.
@@ -898,7 +915,6 @@ public final class SupplyChainCredentialValidator implements CredentialValidator
                     }
                 }
             }
-
             // The remaining components from the manufacturer have only the 2 required fields so
             // just match them.
             List<ComponentIdentifier> templist = new ArrayList<>(pcComponentsFromManufacturer);
@@ -924,6 +940,10 @@ public final class SupplyChainCredentialValidator implements CredentialValidator
 
             int unmatchedComponentCounter = 1;
             for (ComponentIdentifier unmatchedComponent : pcUnmatchedComponents) {
+                if (unmatchedComponent.isVersion2() && PciIds.DB.isReady()) {
+                        unmatchedComponent =
+                                PciIds.translate((ComponentIdentifierV2) unmatchedComponent);
+                }
                 LOGGER.error("Unmatched component " + unmatchedComponentCounter++ + ": "
                         + unmatchedComponent);
                 sb.append(String.format("Manufacturer=%s, Model=%s, Serial=%s, Revision=%s;%n",
@@ -1249,8 +1269,14 @@ public final class SupplyChainCredentialValidator implements CredentialValidator
      */
     public static String verifyCertificate(final X509AttributeCertificateHolder cert,
             final KeyStore trustStore) throws SupplyChainValidatorException {
-        if (cert == null || trustStore == null) {
-            throw new SupplyChainValidatorException("Certificate or trust store is null");
+        try {
+            if (cert == null || trustStore == null) {
+                throw new SupplyChainValidatorException("Certificate or trust store is null");
+            } else if (trustStore.size() == 0) {
+                throw new SupplyChainValidatorException("Truststore is empty");
+            }
+        } catch (KeyStoreException e) {
+            LOGGER.error("Error accessing trust store: " + e.getMessage());
         }
 
         try {
@@ -1289,9 +1315,16 @@ public final class SupplyChainCredentialValidator implements CredentialValidator
      */
     public static boolean verifyCertificate(final X509Certificate cert,
             final KeyStore trustStore) throws SupplyChainValidatorException {
-        if (cert == null || trustStore == null) {
-            throw new SupplyChainValidatorException("Certificate or trust store is null");
+        try {
+            if (cert == null || trustStore == null) {
+                throw new SupplyChainValidatorException("Certificate or trust store is null");
+            } else if (trustStore.size() == 0) {
+                throw new SupplyChainValidatorException("Truststore is empty");
+            }
+        } catch (KeyStoreException e) {
+            LOGGER.error("Error accessing trust store: " + e.getMessage());
         }
+
         try {
             Set<X509Certificate> trustedCerts = new HashSet<>();
 
@@ -1320,46 +1353,55 @@ public final class SupplyChainCredentialValidator implements CredentialValidator
      *            certificate to validate
      * @param additionalCerts
      *            Set of certs to validate against
-     * @return boolean indicating if the validation was successful
+     * @return String status of the cert chain validation -
+     *  blank if successful, error message otherwise
      * @throws SupplyChainValidatorException tried to validate using null certificates
      */
     public static String validateCertChain(final X509AttributeCertificateHolder cert,
-            final Set<X509Certificate> additionalCerts) throws SupplyChainValidatorException {
+                                           final Set<X509Certificate> additionalCerts)
+                                            throws SupplyChainValidatorException {
         if (cert == null || additionalCerts == null) {
             throw new SupplyChainValidatorException(
                     "Certificate or validation certificates are null");
         }
+        final String intCAError = "Intermediate signing cert found, check for CA cert";
         String foundRootOfCertChain = "";
-        Iterator<X509Certificate> certIterator = additionalCerts.iterator();
-        X509Certificate trustedCert;
-        boolean issuerMatchesSubject = false;
-        boolean signatureMatchesPublicKey = false;
+        X509Certificate nextInChain = null;
 
-        while (foundRootOfCertChain.isEmpty() && certIterator.hasNext()) {
-            trustedCert = certIterator.next();
-            issuerMatchesSubject = issuerMatchesSubjectDN(cert, trustedCert);
-            signatureMatchesPublicKey = signatureMatchesPublicKey(cert, trustedCert);
-            if (issuerMatchesSubject && signatureMatchesPublicKey) {
-                if (isSelfSigned(trustedCert)) {
-                    LOGGER.info("CA Root found.");
+        do {
+            for (X509Certificate trustedCert : additionalCerts) {
+                boolean issuerMatchesSubject = false;
+                boolean signatureMatchesPublicKey = false;
+                if (nextInChain != null) {
+                    issuerMatchesSubject = issuerMatchesSubjectDN(nextInChain, trustedCert);
+                    signatureMatchesPublicKey = signatureMatchesPublicKey(nextInChain,
+                            trustedCert);
                 } else {
-                    foundRootOfCertChain = validateCertChain(trustedCert, additionalCerts);
+                    issuerMatchesSubject = issuerMatchesSubjectDN(cert, trustedCert);
+                    signatureMatchesPublicKey = signatureMatchesPublicKey(cert, trustedCert);
+                }
 
-                    if (!foundRootOfCertChain.isEmpty()) {
-                        LOGGER.error("Root of certificate chain not found. Check for CA Cert: "
-                                + cert.getIssuer().getNames()[0]);
+                if (issuerMatchesSubject && signatureMatchesPublicKey) {
+                    if (isSelfSigned(trustedCert)) {
+                        LOGGER.info("CA Root found.");
+                        return "";
+                    } else {
+                        foundRootOfCertChain = intCAError;
+                        nextInChain = trustedCert;
+                        break;
+                    }
+                } else {
+                    if (!issuerMatchesSubject) {
+                        foundRootOfCertChain = "Issuer DN does not match Subject DN";
+                    }
+                    if (!signatureMatchesPublicKey) {
+                        foundRootOfCertChain = "Certificate signature failed to verify";
                     }
                 }
-            } else {
-                if (!issuerMatchesSubject) {
-                    foundRootOfCertChain = "Issuer DN does not match Subject DN";
-                }
-                if (!signatureMatchesPublicKey) {
-                    foundRootOfCertChain = "Certificate signature failed to verify";
-                }
             }
-        }
+        } while (foundRootOfCertChain.equals(intCAError));
 
+        LOGGER.error(foundRootOfCertChain);
         return foundRootOfCertChain;
     }
 
@@ -1374,7 +1416,8 @@ public final class SupplyChainCredentialValidator implements CredentialValidator
      *            certificate to validate
      * @param additionalCerts
      *            Set of certs to validate against
-     * @return boolean indicating if the validation was successful
+     * @return String status of the cert chain validation -
+     *  blank if successful, error message otherwise
      * @throws SupplyChainValidatorException tried to validate using null certificates
      */
     public static String validateCertChain(final X509Certificate cert,
@@ -1383,37 +1426,36 @@ public final class SupplyChainCredentialValidator implements CredentialValidator
             throw new SupplyChainValidatorException(
                     "Certificate or validation certificates are null");
         }
+        final String intCAError = "Intermediate signing cert found, check for CA cert";
         String foundRootOfCertChain = "";
-        Iterator<X509Certificate> certIterator = additionalCerts.iterator();
-        X509Certificate trustedCert;
-        boolean issuerMatchesSubject = false;
-        boolean signatureMatchesPublicKey = false;
+        X509Certificate startOfChain = cert;
 
-        while (foundRootOfCertChain.isEmpty() && certIterator.hasNext()) {
-            trustedCert = certIterator.next();
-            issuerMatchesSubject = issuerMatchesSubjectDN(cert, trustedCert);
-            signatureMatchesPublicKey = signatureMatchesPublicKey(cert, trustedCert);
-            if (issuerMatchesSubject && signatureMatchesPublicKey) {
-                if (isSelfSigned(trustedCert)) {
-                    LOGGER.info("CA Root found.");
-                } else if (!cert.equals(trustedCert)) {
-                    foundRootOfCertChain = validateCertChain(trustedCert, additionalCerts);
-
-                    if (!foundRootOfCertChain.isEmpty()) {
-                        LOGGER.error("Root of certificate chain not found. Check for CA Cert: "
-                                + cert.getIssuerDN().getName());
+        do {
+            for (X509Certificate trustedCert : additionalCerts) {
+                boolean issuerMatchesSubject = issuerMatchesSubjectDN(startOfChain, trustedCert);
+                boolean signatureMatchesPublicKey = signatureMatchesPublicKey(startOfChain,
+                                                                                trustedCert);
+                if (issuerMatchesSubject && signatureMatchesPublicKey) {
+                    if (isSelfSigned(trustedCert)) {
+                        LOGGER.info("CA Root found.");
+                        return "";
+                    } else {
+                        foundRootOfCertChain = intCAError;
+                        startOfChain = trustedCert;
+                        break;
+                    }
+                } else {
+                    if (!issuerMatchesSubject) {
+                        foundRootOfCertChain = "Issuer DN does not match Subject DN";
+                    }
+                    if (!signatureMatchesPublicKey) {
+                        foundRootOfCertChain = "Certificate signature failed to verify";
                     }
                 }
-            } else {
-                if (!issuerMatchesSubject) {
-                    foundRootOfCertChain = "Issuer DN does not match Subject DN";
-                }
-                if (!signatureMatchesPublicKey) {
-                    foundRootOfCertChain = "Certificate signature failed to verify";
-                }
             }
-        }
+        } while (foundRootOfCertChain.equals(intCAError));
 
+        LOGGER.warn(foundRootOfCertChain);
         return foundRootOfCertChain;
     }
 
@@ -1472,10 +1514,10 @@ public final class SupplyChainCredentialValidator implements CredentialValidator
                                     failureMsg.append(scv.getMessage());
                                 }
                                 deltaMapping.put(delta, new SupplyChainValidation(
-                                        SupplyChainValidation.ValidationType.PLATFORM_CREDENTIAL,
-                                        AppraisalStatus.Status.FAIL,
-                                        certificateList,
-                                        failureMsg.toString()));
+                                       SupplyChainValidation.ValidationType.PLATFORM_CREDENTIAL,
+                                       AppraisalStatus.Status.FAIL,
+                                       certificateList,
+                                       failureMsg.toString()));
                             }
                         } else if (ciV2.isRemoved()) {
                             if (!chainCiMapping.containsKey(ciSerial)) {
@@ -1524,9 +1566,40 @@ public final class SupplyChainCredentialValidator implements CredentialValidator
                         }
                     }
                 } else {
-                    // found a delta ci with no serial
-                    // add to list
-                    leftOvers.add(ci);
+                    if (ci.isVersion2() && ((ComponentIdentifierV2) ci).isModified()) {
+                        ComponentIdentifierV2 ciV2 = (ComponentIdentifierV2) ci;
+                        // Look for singular component of same make/model/class
+                        ComponentIdentifier candidate = null;
+                        for (ComponentIdentifier search : absentSerials) {
+                            if (!search.isVersion2()) {
+                                continue;
+                            }
+                            ComponentIdentifierV2 noSerialV2 = (ComponentIdentifierV2) search;
+
+                            if (noSerialV2.getComponentClass().getValue().equals(
+                                    ciV2.getComponentClass().getValue())
+                                && isMatch(noSerialV2, ciV2)) {
+                                if (candidate == null) {
+                                    candidate = noSerialV2;
+                                } else {
+                                    // This only works if there is one matching component
+                                    candidate = null;
+                                    break;
+                                }
+                            }
+                        }
+
+                        if (candidate != null) {
+                            absentSerials.remove(candidate);
+                            absentSerials.add(ciV2);
+                        } else {
+                            leftOvers.add(ci);
+                        }
+                    } else {
+                        // found a delta ci with no serial
+                        // add to list
+                        leftOvers.add(ci);
+                    }
                 }
             }
 
@@ -1610,11 +1683,19 @@ public final class SupplyChainCredentialValidator implements CredentialValidator
         try {
             cert.verify(signingCert.getPublicKey(), BouncyCastleProvider.PROVIDER_NAME);
             return true;
-        } catch (InvalidKeyException | CertificateException | NoSuchAlgorithmException
-                | NoSuchProviderException | SignatureException e) {
-            LOGGER.error("Exception thrown while verifying certificate", e);
-            return false;
+        } catch (InvalidKeyException e) {
+            LOGGER.info("Incorrect key given to validate this cert's signature");
+        } catch (CertificateException e) {
+            LOGGER.info("Encoding error while validating this cert's signature");
+        } catch (NoSuchAlgorithmException e) {
+            LOGGER.info("Unsupported signature algorithm found during validation");
+        } catch (NoSuchProviderException e) {
+            LOGGER.info("Incorrect provider for cert signature validation");
+        } catch (SignatureException e) {
+            LOGGER.info(String.format("%s.verify(%s)", cert.getSubjectDN(),
+                    signingCert.getSubjectDN()));
         }
+        return false;
 
     }
 
@@ -1658,7 +1739,9 @@ public final class SupplyChainCredentialValidator implements CredentialValidator
                     new JcaContentVerifierProviderBuilder().setProvider("BC").build(signingKey);
             return cert.isSignatureValid(contentVerifierProvider);
         } catch (OperatorCreationException | CertException e) {
-            LOGGER.error("Exception thrown while verifying certificate", e);
+            LOGGER.info("Exception thrown while verifying certificate", e);
+            LOGGER.info(String.format("%s.isSignatureValid(%s)", cert.getSerialNumber(),
+                    signingKey.getFormat()));
             return false;
         }
     }

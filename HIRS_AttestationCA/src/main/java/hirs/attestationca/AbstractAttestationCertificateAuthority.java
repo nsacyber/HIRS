@@ -12,7 +12,6 @@ import hirs.data.persist.BaseReferenceManifest;
 import hirs.data.persist.Device;
 import hirs.data.persist.DeviceInfoReport;
 import hirs.data.persist.EventLogMeasurements;
-import hirs.data.persist.ReferenceDigestRecord;
 import hirs.data.persist.ReferenceDigestValue;
 import hirs.data.persist.ReferenceManifest;
 import hirs.data.persist.SupplyChainPolicy;
@@ -94,10 +93,15 @@ import java.security.interfaces.RSAPublicKey;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.MGF1ParameterSpec;
 import java.security.spec.RSAPublicKeySpec;
+import java.util.ArrayList;
+import java.util.Base64;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -124,6 +128,8 @@ public abstract class AbstractAttestationCertificateAuthority
             = "/webapps/HIRS_AttestationCA/upload/";
     private static final String PCR_UPLOAD_FOLDER
             = CATALINA_HOME + TOMCAT_UPLOAD_DIRECTORY;
+    private static final String PCR_QUOTE_MASK = "0,1,2,3,4,5,6,7,8,9,10,11,12,13,"
+            + "14,15,16,17,18,19,20,21,22,23";
 
     /**
      * Number of bytes to include in the TPM2.0 nonce.
@@ -179,7 +185,6 @@ public abstract class AbstractAttestationCertificateAuthority
     private final ReferenceEventManager referenceEventManager;
     private String tpmQuoteHash = "";
     private String tpmQuoteSignature = "";
-    private String pcrValues;
 
     /**
      * Constructor.
@@ -436,10 +441,13 @@ public abstract class AbstractAttestationCertificateAuthority
             }
         }
 
+        ByteString blobStr = ByteString.copyFrom(new byte[]{});
         if (validationResult == AppraisalStatus.Status.PASS) {
             RSAPublicKey akPub = parsePublicKey(claim.getAkPublicArea().toByteArray());
             byte[] nonce = generateRandomBytes(NONCE_LENGTH);
-            ByteString blobStr = tpm20MakeCredential(ekPub, akPub, nonce);
+            blobStr = tpm20MakeCredential(ekPub, akPub, nonce);
+            SupplyChainPolicy scp = this.supplyChainValidationService.getPolicy();
+            String pcrQuoteMask = PCR_QUOTE_MASK;
 
             String strNonce = HexUtils.byteArrayToHexString(nonce);
             LOG.info("Sending nonce: " + strNonce);
@@ -447,16 +455,26 @@ public abstract class AbstractAttestationCertificateAuthority
 
             tpm2ProvisionerStateDBManager.save(new TPM2ProvisionerState(nonce, identityClaim));
 
+            if (scp != null && scp.isIgnoreImaEnabled()) {
+                pcrQuoteMask = PCR_QUOTE_MASK.replace("10,", "");
+            }
             // Package response
             ProvisionerTpm2.IdentityClaimResponse response
                     = ProvisionerTpm2.IdentityClaimResponse.newBuilder()
-                    .setCredentialBlob(blobStr).build();
-
+                    .setCredentialBlob(blobStr).setPcrMask(pcrQuoteMask)
+                    .setStatus(ProvisionerTpm2.ResponseStatus.PASS)
+                    .build();
             return response.toByteArray();
         } else {
             LOG.error("Supply chain validation did not succeed. Result is: "
                     + validationResult);
-            return new byte[]{};
+            // empty response
+            ProvisionerTpm2.IdentityClaimResponse response
+                    = ProvisionerTpm2.IdentityClaimResponse.newBuilder()
+                    .setCredentialBlob(blobStr)
+                    .setStatus(ProvisionerTpm2.ResponseStatus.FAIL)
+                    .build();
+            return response.toByteArray();
         }
     }
 
@@ -621,9 +639,12 @@ public abstract class AbstractAttestationCertificateAuthority
                 tpm2ProvisionerStateDBManager.delete(tpm2ProvisionerState);
 
                 // Package the signed certificate into a response
-                ByteString certificateBytes = ByteString.copyFrom(derEncodedAttestationCertificate);
+                ByteString certificateBytes = ByteString
+                        .copyFrom(derEncodedAttestationCertificate);
                 ProvisionerTpm2.CertificateResponse response = ProvisionerTpm2.CertificateResponse
-                        .newBuilder().setCertificate(certificateBytes).build();
+                        .newBuilder().setCertificate(certificateBytes)
+                        .setStatus(ProvisionerTpm2.ResponseStatus.PASS)
+                        .build();
 
                 saveAttestationCertificate(derEncodedAttestationCertificate, endorsementCredential,
                         platformCredentials, device);
@@ -634,7 +655,9 @@ public abstract class AbstractAttestationCertificateAuthority
                         + "Firmware Quote Validation failed. Result is: "
                         + validationResult);
                 ProvisionerTpm2.CertificateResponse response = ProvisionerTpm2.CertificateResponse
-                        .newBuilder().setCertificate(ByteString.EMPTY).build();
+                        .newBuilder()
+                        .setStatus(ProvisionerTpm2.ResponseStatus.FAIL)
+                        .build();
                 return response.toByteArray();
             }
         } else {
@@ -680,7 +703,6 @@ public abstract class AbstractAttestationCertificateAuthority
             for (String line : lines) {
                 if (!line.isEmpty()
                         && !line.contains(TPM_SIGNATURE_ALG)) {
-                    LOG.error(line);
                     pcrs[counter++] = line.split(":")[1].trim();
                 }
             }
@@ -718,6 +740,7 @@ public abstract class AbstractAttestationCertificateAuthority
     private DeviceInfoReport parseDeviceInfo(final ProvisionerTpm2.IdentityClaim claim)
             throws NoSuchAlgorithmException {
         ProvisionerTpm2.DeviceInfo dv = claim.getDv();
+        String pcrValues = "";
 
         // Get network info
         ProvisionerTpm2.NetworkInfo nwProto = dv.getNw();
@@ -768,7 +791,7 @@ public abstract class AbstractAttestationCertificateAuthority
                 firstChassisSerialNumber, firstBaseboardSerialNumber);
 
         if (dv.hasPcrslist()) {
-            this.pcrValues = dv.getPcrslist().toStringUtf8();
+            pcrValues = dv.getPcrslist().toStringUtf8();
         }
 
         // check for RIM Base and Support files, if they don't exists in the database, load them
@@ -776,23 +799,22 @@ public abstract class AbstractAttestationCertificateAuthority
                 dv.getHw().getManufacturer(),
                 dv.getHw().getProductName());
         BaseReferenceManifest dbBaseRim = null;
-        ReferenceManifest support;
+        SupportReferenceManifest support;
         EventLogMeasurements measurements;
         String tagId = "";
         String fileName = "";
         Pattern pattern = Pattern.compile("([^\\s]+(\\.(?i)(rimpcr|rimel|bin|log))$)");
         Matcher matcher;
         MessageDigest messageDigest =  MessageDigest.getInstance("SHA-256");
+        List<ReferenceManifest> listOfSavedRims = new LinkedList<>();
 
         if (dv.getLogfileCount() > 0) {
             for (ByteString logFile : dv.getLogfileList()) {
                 try {
                     support = SupportReferenceManifest.select(referenceManifestManager)
-                            .includeArchived()
-                            .byHashCode(Hex.encodeHexString(messageDigest.digest(
-                                    logFile.toByteArray())))
+                            .byHexDecHash(Hex.encodeHexString(messageDigest.digest(
+                                    logFile.toByteArray()))).includeArchived()
                             .getRIM();
-
                     if (support == null) {
                         support = new SupportReferenceManifest(
                                 String.format("%s.rimel",
@@ -804,8 +826,9 @@ public abstract class AbstractAttestationCertificateAuthority
                         support.setPlatformManufacturer(dv.getHw().getManufacturer());
                         support.setPlatformModel(dv.getHw().getProductName());
                         support.setFileName(String.format("%s_[%s].rimel", defaultClientName,
-                                support.getRimHash().substring(
-                                        support.getRimHash().length() - NUM_OF_VARIABLES)));
+                                support.getHexDecHash().substring(
+                                        support.getHexDecHash().length() - NUM_OF_VARIABLES)));
+                        support.setDeviceName(dv.getNw().getHostname());
                         this.referenceManifestManager.save(support);
                     } else {
                         LOG.info("Client provided Support RIM already loaded in database.");
@@ -823,58 +846,25 @@ public abstract class AbstractAttestationCertificateAuthority
                 }
             }
         } else {
-            LOG.warn("Device did not send support RIM file...");
+            LOG.warn(String.format("%s did not send support RIM file...",
+                    dv.getNw().getHostname()));
         }
 
         if (dv.getSwidfileCount() > 0) {
             for (ByteString swidFile : dv.getSwidfileList()) {
-                fileName = "";
                 try {
                     dbBaseRim = BaseReferenceManifest.select(referenceManifestManager)
+                            .byBase64Hash(Base64.getEncoder()
+                                    .encodeToString(messageDigest
+                                            .digest(swidFile.toByteArray())))
                             .includeArchived()
-                            .byHashCode(Hex.encodeHexString(messageDigest.digest(
-                                    swidFile.toByteArray())))
                             .getRIM();
-
                     if (dbBaseRim == null) {
                         dbBaseRim = new BaseReferenceManifest(
                                 String.format("%s.swidtag",
                                         defaultClientName),
                                 swidFile.toByteArray());
-
-                        // get file name to use
-                        for (SwidResource swid : dbBaseRim.parseResource()) {
-                            matcher = pattern.matcher(swid.getName());
-                            if (matcher.matches()) {
-                                //found the file name
-                                int dotIndex = swid.getName().lastIndexOf(".");
-                                fileName = swid.getName().substring(0, dotIndex);
-                                dbBaseRim = new BaseReferenceManifest(
-                                        String.format("%s.swidtag",
-                                                fileName),
-                                        swidFile.toByteArray());
-                            }
-
-                            // now update support rim
-                            SupportReferenceManifest dbSupport = SupportReferenceManifest
-                                    .select(referenceManifestManager)
-                                    .byRimHash(swid.getHashValue()).getRIM();
-                            if (dbSupport != null && !dbSupport.isUpdated()) {
-                                dbSupport.setFileName(swid.getName());
-                                dbSupport.setSwidTagVersion(dbBaseRim.getSwidTagVersion());
-                                // I might create a get for the bytes of the swidtag file
-                                // so that I can set that instead of the rim ID
-                                dbSupport.setTagId(dbBaseRim.getTagId());
-                                dbSupport.setSwidTagVersion(dbBaseRim.getSwidTagVersion());
-                                dbSupport.setSwidVersion(dbBaseRim.getSwidVersion());
-                                dbSupport.setSwidPatch(dbBaseRim.isSwidPatch());
-                                dbSupport.setSwidSupplemental(dbBaseRim.isSwidSupplemental());
-                                dbBaseRim.setAssociatedRim(dbSupport.getId());
-                                dbSupport.setUpdated(true);
-                                this.referenceManifestManager.update(dbSupport);
-                                break;
-                            }
-                        }
+                        dbBaseRim.setDeviceName(dv.getNw().getHostname());
                         this.referenceManifestManager.save(dbBaseRim);
                     } else {
                         LOG.info("Client provided Base RIM already loaded in database.");
@@ -888,13 +878,56 @@ public abstract class AbstractAttestationCertificateAuthority
                             this.referenceManifestManager.update(dbBaseRim);
                         }
                     }
-
                 } catch (IOException ioEx) {
                     LOG.error(ioEx);
                 }
             }
         } else {
-            LOG.warn("Device did not send swid tag file...");
+            LOG.warn(String.format("%s did not send swid tag file...",
+                    dv.getNw().getHostname()));
+        }
+
+        //update Support RIMs and Base RIMs.
+        for (ByteString swidFile : dv.getSwidfileList()) {
+            dbBaseRim = BaseReferenceManifest.select(referenceManifestManager)
+                    .byBase64Hash(Base64.getEncoder().encodeToString(messageDigest.digest(
+                            swidFile.toByteArray()))).includeArchived()
+                    .getRIM();
+
+            if (dbBaseRim != null) {
+                // get file name to use
+                for (SwidResource swid : dbBaseRim.parseResource()) {
+                    matcher = pattern.matcher(swid.getName());
+                    if (matcher.matches()) {
+                        //found the file name
+                        int dotIndex = swid.getName().lastIndexOf(".");
+                        fileName = swid.getName().substring(0, dotIndex);
+                        dbBaseRim.setFileName(String.format("%s.swidtag",
+                                fileName));
+                    }
+
+                    // now update support rim
+                    SupportReferenceManifest dbSupport = SupportReferenceManifest
+                            .select(referenceManifestManager)
+                            .byHexDecHash(swid.getHashValue()).getRIM();
+                    if (dbSupport != null) {
+                        dbSupport.setFileName(swid.getName());
+                        dbSupport.setSwidTagVersion(dbBaseRim.getSwidTagVersion());
+                        dbSupport.setTagId(dbBaseRim.getTagId());
+                        dbSupport.setSwidTagVersion(dbBaseRim.getSwidTagVersion());
+                        dbSupport.setSwidVersion(dbBaseRim.getSwidVersion());
+                        dbSupport.setSwidPatch(dbBaseRim.isSwidPatch());
+                        dbSupport.setSwidSupplemental(dbBaseRim.isSwidSupplemental());
+                        dbBaseRim.setAssociatedRim(dbSupport.getId());
+                        dbSupport.setUpdated(true);
+                        dbSupport.setAssociatedRim(dbBaseRim.getId());
+                        this.referenceManifestManager.update(dbSupport);
+                        listOfSavedRims.add(dbSupport);
+                    }
+                }
+                this.referenceManifestManager.update(dbBaseRim);
+                listOfSavedRims.add(dbBaseRim);
+            }
         }
 
         generateDigestRecords(hw.getManufacturer(), hw.getProductName());
@@ -902,27 +935,54 @@ public abstract class AbstractAttestationCertificateAuthority
         if (dv.hasLivelog()) {
             LOG.info("Device sent bios measurement log...");
             fileName = String.format("%s.measurement",
-                    defaultClientName);
+                    dv.getNw().getHostname());
             try {
-                // find previous version.  If it exists, delete it
-                measurements = EventLogMeasurements.select(referenceManifestManager)
-                        .byManufacturer(dv.getHw().getManufacturer())
-                        .includeArchived().getRIM();
-                if (measurements != null) {
-                    LOG.info("Previous bios measurement log found and being replaced...");
-                    this.referenceManifestManager.delete(measurements);
-                }
-                measurements = new EventLogMeasurements(fileName,
+                EventLogMeasurements temp = new EventLogMeasurements(fileName,
                         dv.getLivelog().toByteArray());
+                // find previous version.
+                measurements = EventLogMeasurements.select(referenceManifestManager)
+                        .byDeviceName(dv.getNw().getHostname())
+                        .includeArchived()
+                        .getRIM();
+
+                if (measurements != null) {
+                    // Find previous log and delete it
+                    referenceManifestManager.deleteReferenceManifest(measurements);
+                }
+
+                BaseReferenceManifest baseRim = BaseReferenceManifest
+                        .select(referenceManifestManager)
+                        .byManufacturerModelBase(dv.getHw().getManufacturer(),
+                                dv.getHw().getProductName())
+                        .getRIM();
+                measurements = temp;
                 measurements.setPlatformManufacturer(dv.getHw().getManufacturer());
                 measurements.setPlatformModel(dv.getHw().getProductName());
                 measurements.setTagId(tagId);
+                measurements.setDeviceName(dv.getNw().getHostname());
+                if (baseRim != null) {
+                    measurements.setAssociatedRim(baseRim.getAssociatedRim());
+                }
                 this.referenceManifestManager.save(measurements);
+
+                if (baseRim != null) {
+                    // pull the base versions of the swidtag and rimel and set the
+                    // event log hash for use during provision
+                    SupportReferenceManifest sBaseRim = SupportReferenceManifest
+                            .select(referenceManifestManager)
+                            .byEntityId(baseRim.getAssociatedRim())
+                            .getRIM();
+                    baseRim.setEventLogHash(temp.getHexDecHash());
+                    sBaseRim.setEventLogHash(temp.getHexDecHash());
+                    referenceManifestManager.update(baseRim);
+                    referenceManifestManager.update(sBaseRim);
+                }
             } catch (IOException ioEx) {
                 LOG.error(ioEx);
             }
         } else {
-            LOG.warn("Device did not send bios measurement log...");
+            LOG.warn(String.format("%s did not send bios measurement log...",
+                    dv.getNw().getHostname()));
         }
 
         // Get TPM info, currently unimplemented
@@ -932,7 +992,7 @@ public abstract class AbstractAttestationCertificateAuthority
                 (short) 0,
                 (short) 0,
                 (short) 0,
-                this.pcrValues.getBytes(StandardCharsets.UTF_8),
+                pcrValues.getBytes(StandardCharsets.UTF_8),
                 this.tpmQuoteHash.getBytes(StandardCharsets.UTF_8),
                 this.tpmQuoteSignature.getBytes(StandardCharsets.UTF_8));
 
@@ -945,81 +1005,104 @@ public abstract class AbstractAttestationCertificateAuthority
     }
 
     private boolean generateDigestRecords(final String manufacturer, final String model) {
-        List<ReferenceDigestValue> rdValues;
+        List<ReferenceDigestValue> rdValues = new LinkedList<>();
+        SupportReferenceManifest baseSupportRim = null;
+        List<SupportReferenceManifest> supplementalRims = new ArrayList<>();
+        List<SupportReferenceManifest> patchRims = new ArrayList<>();
         Set<SupportReferenceManifest> dbSupportRims = SupportReferenceManifest
-                .select(referenceManifestManager).byManufacturer(manufacturer).getRIMs();
+                .select(referenceManifestManager)
+                .byManufacturerModel(manufacturer, model).getRIMs();
+        List<ReferenceDigestValue> sourcedValues = referenceEventManager
+                .getValueByManufacturerModel(manufacturer, model);
+
+        Map<String, ReferenceDigestValue> digestValueMap = new HashMap<>();
+        sourcedValues.stream().forEach((rdv) -> {
+            digestValueMap.put(rdv.getDigestValue(), rdv);
+        });
 
         for (SupportReferenceManifest dbSupport : dbSupportRims) {
-            if (dbSupport.getPlatformModel().equals(model)) {
-                ReferenceDigestRecord dbObj = new ReferenceDigestRecord(dbSupport,
-                        manufacturer, model);
-                // this is where we update or create the log
-                ReferenceDigestRecord rdr = this.referenceDigestManager.getRecord(dbObj);
-                if (dbSupport.isBaseSupport()) {
-                    // Handle baseline digest records
-                    if (rdr == null) {
-                        // doesn't exist, store
-                        rdr = referenceDigestManager.saveRecord(dbObj);
-                    }  // right now this will not deal with updating
+            if (dbSupport.isSwidPatch()) {
+                patchRims.add(dbSupport);
+            } else if (dbSupport.isSwidSupplemental()) {
+                supplementalRims.add(dbSupport);
+            } else {
+                // we have a base support rim (verify this is getting set)
+                baseSupportRim = dbSupport;
+            }
+        }
 
-                    if (this.referenceEventManager.getValuesByRecordId(rdr).isEmpty()) {
-                        try {
-                            TCGEventLog logProcessor = new TCGEventLog(dbSupport.getRimBytes());
-                            ReferenceDigestValue rdv;
-                            for (TpmPcrEvent tpe : logProcessor.getEventList()) {
-                                rdv = new ReferenceDigestValue(rdr.getId(), tpe.getPcrIndex(),
-                                        tpe.getEventDigestStr(), tpe.getEventTypeStr(),
-                                        false, false);
-                                this.referenceEventManager.saveValue(rdv);
-                            }
-                        } catch (CertificateException cEx) {
-                            LOG.error(cEx);
-                        } catch (NoSuchAlgorithmException noSaEx) {
-                            LOG.error(noSaEx);
-                        } catch (IOException ioEx) {
-                           LOG.error(ioEx);
-                        }
-                    }
-                } else if (dbSupport.isSwidPatch()) {
-                    if (rdr != null) {
-                        // have to have something to patch
-                        try {
-                            rdValues =  this.referenceEventManager.getValuesByRecordId(rdr);
-                            TCGEventLog logProcessor = new TCGEventLog(dbSupport.getRimBytes());
-                            for (TpmPcrEvent tpe : logProcessor.getEventList()) {
-                                LOG.error(tpe);
-                            }
-                            for (ReferenceDigestValue rdv : rdValues) {
-                                LOG.error(rdv);
-                            }
-                        } catch (CertificateException cEx) {
-                            LOG.error(cEx);
-                        } catch (NoSuchAlgorithmException noSaEx) {
-                            LOG.error(noSaEx);
-                        } catch (IOException ioEx) {
-                            LOG.error(ioEx);
-                        }
-                    }
-                } else if (dbSupport.isSwidSupplemental() && !dbSupport.isProcessed()) {
-                    try {
-                        TCGEventLog logProcessor = new TCGEventLog(dbSupport.getRimBytes());
-                        ReferenceDigestValue rdv;
-                        for (TpmPcrEvent tpe : logProcessor.getEventList()) {
-                            rdv = new ReferenceDigestValue(rdr.getId(), tpe.getPcrIndex(),
-                                    tpe.getEventDigestStr(), tpe.getEventTypeStr(),
-                                    false, false);
-                            this.referenceEventManager.saveValue(rdv);
-                        }
-                        dbSupport.setProcessed(true);
-                        this.referenceManifestManager.update(dbSupport);
-                    } catch (CertificateException cEx) {
-                        LOG.error(cEx);
-                    } catch (NoSuchAlgorithmException noSaEx) {
-                        LOG.error(noSaEx);
-                    } catch (IOException ioEx) {
-                        LOG.error(ioEx);
+        if (baseSupportRim != null
+                && referenceEventManager.getValuesByRimId(baseSupportRim).isEmpty()) {
+            try {
+                TCGEventLog logProcessor = new TCGEventLog(baseSupportRim.getRimBytes());
+                ReferenceDigestValue rdv;
+                for (TpmPcrEvent tpe : logProcessor.getEventList()) {
+                    rdv = new ReferenceDigestValue(baseSupportRim.getAssociatedRim(),
+                            baseSupportRim.getId(), manufacturer, model, tpe.getPcrIndex(),
+                            tpe.getEventDigestStr(), tpe.getEventTypeStr(),
+                            false, false, true, tpe.getEventContent());
+                    rdValues.add(rdv);
+                }
+
+                // since I have the base already I don't have to care about the backward
+                // linkage
+                for (SupportReferenceManifest supplemental : supplementalRims) {
+                    logProcessor = new TCGEventLog(supplemental.getRimBytes());
+                    for (TpmPcrEvent tpe : logProcessor.getEventList()) {
+                        // all RDVs will have the same base rim
+                        rdv = new ReferenceDigestValue(baseSupportRim.getAssociatedRim(),
+                                supplemental.getId(), manufacturer, model, tpe.getPcrIndex(),
+                                tpe.getEventDigestStr(), tpe.getEventTypeStr(),
+                                false, false, true, tpe.getEventContent());
+                        rdValues.add(rdv);
                     }
                 }
+
+                // Save all supplemental values
+                ReferenceDigestValue tempRdv;
+                for (ReferenceDigestValue subRdv : rdValues) {
+                    // check if the value already exists
+                    if (digestValueMap.containsKey(subRdv.getDigestValue())) {
+                        tempRdv = digestValueMap.get(subRdv.getDigestValue());
+                        if (tempRdv.getPcrIndex() != subRdv.getPcrIndex()
+                                && !tempRdv.getEventType().equals(subRdv.getEventType())) {
+                            referenceEventManager.saveValue(subRdv);
+                        } else {
+                            // will this be a problem down the line?
+                            referenceEventManager.updateEvent(subRdv);
+                        }
+                    } else {
+                        referenceEventManager.saveValue(subRdv);
+                    }
+                    digestValueMap.put(subRdv.getDigestValue(), subRdv);
+                }
+
+                // if a patch value doesn't exist, error?
+                ReferenceDigestValue dbRdv;
+                String patchedValue;
+                for (SupportReferenceManifest patch : patchRims) {
+                    logProcessor = new TCGEventLog(patch.getRimBytes());
+                    for (TpmPcrEvent tpe : logProcessor.getEventList()) {
+                        patchedValue = tpe.getEventDigestStr();
+                        dbRdv = digestValueMap.get(patchedValue);
+
+                        if (dbRdv == null) {
+                            LOG.error(String.format("Patching value does not exist (%s)",
+                                    patchedValue));
+                        } else {
+                            /**
+                             * Until we get patch examples, this is WIP
+                             */
+                            dbRdv.setPatched(true);
+                        }
+                    }
+                }
+            } catch (CertificateException cEx) {
+                LOG.error(cEx);
+            } catch (NoSuchAlgorithmException noSaEx) {
+                LOG.error(noSaEx);
+            } catch (IOException ioEx) {
+                LOG.error(ioEx);
             }
         }
 
@@ -1851,7 +1934,7 @@ public abstract class AbstractAttestationCertificateAuthority
                 generateCertificate = scp.isIssueAttestationCertificate();
                 if (issuedAc != null && scp.isGenerateOnExpiration()) {
                     if (issuedAc.getEndValidity().after(currentDate)) {
-                        // so the issued AC is expired
+                        // so the issued AC is not expired
                         // however are we within the threshold
                         days = daysBetween(currentDate, issuedAc.getEndValidity());
                         if (days < Integer.parseInt(scp.getReissueThreshold())) {

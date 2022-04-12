@@ -1,46 +1,38 @@
 
 package hirs.attestationca.portal.page.controllers;
 
+import hirs.FilteredRecordsList;
 import hirs.attestationca.portal.datatables.DataTableInput;
 import hirs.attestationca.portal.datatables.DataTableResponse;
+import hirs.attestationca.portal.datatables.OrderedListQueryDataTableAdapter;
 import hirs.attestationca.portal.page.Page;
 import hirs.attestationca.portal.page.PageController;
-
-import hirs.FilteredRecordsList;
-import hirs.attestationca.portal.datatables.OrderedListQueryDataTableAdapter;
 import hirs.attestationca.portal.page.PageMessages;
 import hirs.attestationca.portal.page.params.NoPageParams;
 import hirs.data.persist.BaseReferenceManifest;
-import hirs.data.persist.SupportReferenceManifest;
-import hirs.persist.DBManagerException;
-import hirs.persist.ReferenceManifestManager;
-import hirs.persist.CriteriaModifier;
+import hirs.data.persist.EventLogMeasurements;
+import hirs.data.persist.ReferenceDigestValue;
 import hirs.data.persist.ReferenceManifest;
+import hirs.data.persist.SupportReferenceManifest;
 import hirs.data.persist.SwidResource;
 import hirs.data.persist.certificate.Certificate;
-import java.io.IOException;
-import java.net.URISyntaxException;
-
-import java.text.DateFormat;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Set;
-import java.util.UUID;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-import javax.servlet.http.HttpServletResponse;
-
+import hirs.persist.CriteriaModifier;
+import hirs.persist.DBManagerException;
+import hirs.persist.ReferenceEventManager;
+import hirs.persist.ReferenceManifestManager;
+import hirs.tpm.eventlog.TCGEventLog;
+import hirs.tpm.eventlog.TpmPcrEvent;
+import org.apache.commons.codec.binary.Base64;
+import org.apache.commons.codec.binary.Hex;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-
 import org.hibernate.Criteria;
 import org.hibernate.criterion.Restrictions;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.util.StreamUtils;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -49,6 +41,27 @@ import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import org.springframework.web.servlet.view.RedirectView;
+
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
+import java.net.URISyntaxException;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+import java.security.cert.CertificateException;
+import java.text.DateFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.UUID;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipOutputStream;
 
 /**
  * Controller for the Reference Manifest page.
@@ -63,6 +76,7 @@ public class ReferenceManifestPageController
 
     private final BiosDateValidator biosValidator;
     private final ReferenceManifestManager referenceManifestManager;
+    private final ReferenceEventManager referenceEventManager;
     private static final Logger LOGGER
             = LogManager.getLogger(ReferenceManifestPageController.class);
 
@@ -83,7 +97,7 @@ public class ReferenceManifestPageController
          *
          * @param dateFormat
          */
-        public BiosDateValidator(final String dateFormat) {
+        BiosDateValidator(final String dateFormat) {
             this.dateFormat = dateFormat;
         }
 
@@ -112,12 +126,15 @@ public class ReferenceManifestPageController
      * Constructor providing the Page's display and routing specification.
      *
      * @param referenceManifestManager the reference manifest manager
+     * @param referenceEventManager this is the reference event manager
      */
     @Autowired
     public ReferenceManifestPageController(
-            final ReferenceManifestManager referenceManifestManager) {
+            final ReferenceManifestManager referenceManifestManager,
+            final ReferenceEventManager referenceEventManager) {
         super(Page.REFERENCE_MANIFESTS);
         this.referenceManifestManager = referenceManifestManager;
+        this.referenceEventManager = referenceEventManager;
         this.biosValidator = new BiosDateValidator(BIOS_RELEASE_DATE_FORMAT);
     }
 
@@ -159,7 +176,6 @@ public class ReferenceManifestPageController
             @Override
             public void modify(final Criteria criteria) {
                 criteria.add(Restrictions.isNull(Certificate.ARCHIVE_FIELD));
-
             }
         };
         FilteredRecordsList<ReferenceManifest> records
@@ -191,8 +207,8 @@ public class ReferenceManifestPageController
         Pattern logPattern = Pattern.compile(LOG_FILE_PATTERN);
         Matcher matcher;
         boolean supportRIM = false;
-        BaseReferenceManifest base;
-        SupportReferenceManifest support;
+        List<BaseReferenceManifest> baseRims = new ArrayList<>();
+        List<SupportReferenceManifest> supportRims = new ArrayList<>();
 
         // loop through the files
         for (MultipartFile file : files) {
@@ -201,65 +217,49 @@ public class ReferenceManifestPageController
             supportRIM = matcher.matches();
 
             //Parse reference manifests
-            ReferenceManifest rim = parseRIM(file, supportRIM, messages);
+            parseRIM(file, supportRIM, messages, baseRims, supportRims);
+        }
+        baseRims.stream().forEach((rim) -> {
+            LOGGER.info(String.format("Storing swidtag %s", rim.getFileName()));
+            storeManifest(messages, rim, false);
+        });
+        supportRims.stream().forEach((rim) -> {
+            LOGGER.info(String.format("Storing event log %s", rim.getFileName()));
+            storeManifest(messages, rim, false);
+        });
+        for (ReferenceManifest rim : baseRims) {
+            // store first then update
+            storeManifest(messages, rim, false);
+        }
 
-            //Store only if it was parsed
-            if (rim != null) {
-                if (supportRIM) {
-                    // look for associated base/support
-                    Set<BaseReferenceManifest> rims = BaseReferenceManifest
-                            .select(referenceManifestManager).getRIMs();
-                    support = (SupportReferenceManifest) rim;
-                    // update information for associated support rim
-                    for (BaseReferenceManifest dbRim : rims) {
-                        for (SwidResource swid : dbRim.parseResource()) {
-                            if (swid.getName().equals(rim.getFileName())) {
-                                support.setSwidTagVersion(dbRim.getSwidTagVersion());
-                                support.setPlatformManufacturer(dbRim.getPlatformManufacturer());
-                                support.setPlatformModel(dbRim.getPlatformModel());
-                                support.setTagId(dbRim.getTagId());
-                                support.setAssociatedRim(dbRim.getId());
-                                support.setUpdated(true);
-                                break;
-                            }
-                        }
-                    }
-                } else {
-                    base = (BaseReferenceManifest) rim;
+        for (ReferenceManifest rim : supportRims) {
+            // store the rimels
+            storeManifest(messages, rim, true);
+        }
 
-                    for (SwidResource swid : base.parseResource()) {
-                        support = SupportReferenceManifest.select(referenceManifestManager)
-                                .byFileName(swid.getName()).getRIM();
-                        if (support != null) {
-                            base.setAssociatedRim(support.getId());
-                            if (support.isUpdated()) {
-                                // this is separate because I want to break if we found it
-                                // instead of finding it, it is uptodate but still search
-                                break;
-                            } else {
-                                support.setSwidTagVersion(base.getSwidTagVersion());
-                                support.setPlatformManufacturer(base.getPlatformManufacturer());
-                                support.setPlatformModel(base.getPlatformModel());
-                                support.setTagId(base.getTagId());
-                                support.setUpdated(true);
-                                try {
-                                    referenceManifestManager.update(support);
-                                } catch (DBManagerException dbmEx) {
-                                    LOGGER.error(String.format("Couldn't update Support RIM "
-                                                    + "%s with associated UUID %s", rim.getTagId(),
-                                            support.getId()), dbmEx);
-                                }
-                            }
-                        }
-                    }
-                }
+        // Prep a map to associated the swidtag payload hash to the swidtag.
+        // pass it in to update support rims that either were uploaded
+        // or already exist
+        // create a map of the supports rims in case an uploaded swidtag
+        // isn't one to one with the uploaded support rims.
+        Map<String, SupportReferenceManifest> updatedSupportRims
+                = updateSupportRimInfo(generatePayloadHashMap(baseRims));
 
-                storeManifest(file.getOriginalFilename(),
-                        messages,
-                        rim,
-                        supportRIM);
+        // look for missing uploaded support rims
+        for (SupportReferenceManifest support : supportRims) {
+            if (!updatedSupportRims.containsKey(support.getHexDecHash())) {
+                // Make sure we are getting the db version of the file
+                updatedSupportRims.put(support.getHexDecHash(),
+                        SupportReferenceManifest
+                                .select(referenceManifestManager)
+                                .byHexDecHash(support.getHexDecHash())
+                                .getRIM());
             }
         }
+
+        // pass in the updated support rims
+        // and either update or add the events
+        processTpmEvents(new ArrayList<SupportReferenceManifest>(updatedSupportRims.values()));
 
         //Add messages to the model
         model.put(MESSAGES_ATTRIBUTE, messages);
@@ -299,6 +299,17 @@ public class ReferenceManifestPageController
                 String deleteCompletedMessage = "RIM successfully deleted";
                 messages.addInfo(deleteCompletedMessage);
                 LOGGER.info(deleteCompletedMessage);
+
+                // if support rim, update associated events
+                if (referenceManifest instanceof SupportReferenceManifest) {
+                    List<ReferenceDigestValue> rdvs = referenceEventManager
+                            .getValuesByRimId(referenceManifest);
+
+                    for (ReferenceDigestValue rdv : rdvs) {
+                       rdv.archive("Support RIM was deleted");
+                       referenceEventManager.updateEvent(rdv);
+                    }
+                }
             }
         } catch (IllegalArgumentException ex) {
             String uuidError = "Failed to parse ID from: " + id;
@@ -356,6 +367,58 @@ public class ReferenceManifestPageController
     }
 
     /**
+     * Handles request to download bulk of RIMs by writing it to the response stream
+     * for download in bulk.
+     *
+     * @param response the response object (needed to update the header with the
+     * file name)
+     * @throws java.io.IOException when writing to response output stream
+     */
+    @RequestMapping(value = "/bulk", method = RequestMethod.GET)
+    public void bulk(final HttpServletResponse response)
+            throws IOException {
+        LOGGER.info("Handling request to download all Reference Integrity Manifests");
+        String fileName = "rims.zip";
+        String zipFileName;
+
+        // Set filename for download.
+        response.setHeader("Content-Disposition", "attachment; filename=" + fileName);
+        response.setContentType("application/zip");
+
+        List<ReferenceManifest> referenceManifestList = new LinkedList<>();
+        referenceManifestList.addAll(BaseReferenceManifest
+                .select(referenceManifestManager).getRIMs());
+        referenceManifestList.addAll(SupportReferenceManifest
+                .select(referenceManifestManager).getRIMs());
+
+        try (ZipOutputStream zipOut = new ZipOutputStream(response.getOutputStream())) {
+            // get all files
+            for (ReferenceManifest rim : referenceManifestList) {
+                if (rim.getFileName().isEmpty()) {
+                    zipFileName = "";
+                } else {
+                    // configure the zip entry, the properties of the 'file'
+                    zipFileName = rim.getFileName();
+                }
+                ZipEntry zipEntry = new ZipEntry(zipFileName);
+                zipEntry.setSize((long) rim.getRimBytes().length * Byte.SIZE);
+                zipEntry.setTime(System.currentTimeMillis());
+                zipOut.putNextEntry(zipEntry);
+                // the content of the resource
+                StreamUtils.copy(rim.getRimBytes(), zipOut);
+                zipOut.closeEntry();
+            }
+            zipOut.finish();
+            // write cert to output stream
+        } catch (IllegalArgumentException ex) {
+            String uuidError = "Failed to parse ID from: ";
+            LOGGER.error(uuidError, ex);
+            // send a 404 error when invalid certificate
+            response.sendError(HttpServletResponse.SC_NOT_FOUND);
+        }
+    }
+
+    /**
      * This method takes the parameter and looks for this information in the
      * Database.
      *
@@ -373,6 +436,11 @@ public class ReferenceManifestPageController
                     .byEntityId(uuid).getRIM();
         }
 
+        if (rim == null) {
+            rim = EventLogMeasurements.select(referenceManifestManager)
+                    .byEntityId(uuid).getRIM();
+        }
+
         return rim;
     }
 
@@ -381,15 +449,19 @@ public class ReferenceManifestPageController
      * object.
      *
      * @param file the provide user file via browser.
+     * @param supportRIM matcher result
      * @param messages the object that handles displaying information to the
      * user.
+     * @param baseRims object to store multiple files
+     * @param supportRims object to store multiple files
      * @return a single or collection of reference manifest files.
      */
-    private ReferenceManifest parseRIM(
+    private void parseRIM(
             final MultipartFile file, final boolean supportRIM,
-            final PageMessages messages) {
+            final PageMessages messages, final List<BaseReferenceManifest> baseRims,
+            final List<SupportReferenceManifest> supportRims) {
 
-        byte[] fileBytes;
+        byte[] fileBytes = new byte[0];
         String fileName = file.getOriginalFilename();
 
         // build the manifest from the uploaded bytes
@@ -400,56 +472,65 @@ public class ReferenceManifestPageController
                     = String.format("Failed to read uploaded file (%s): ", fileName);
             LOGGER.error(failMessage, e);
             messages.addError(failMessage + e.getMessage());
-            return null;
         }
 
         try {
             if (supportRIM) {
-                return new SupportReferenceManifest(fileName, fileBytes);
+                supportRims.add(new SupportReferenceManifest(fileName, fileBytes));
             } else {
-                return new BaseReferenceManifest(fileName, fileBytes);
+                baseRims.add(new BaseReferenceManifest(fileName, fileBytes));
             }
-            // the this is a List<Object> is object is a JaxBElement that can
-            // be matched up to the QName
         } catch (IOException ioEx) {
             final String failMessage
                     = String.format("Failed to parse uploaded file (%s): ", fileName);
             LOGGER.error(failMessage, ioEx);
             messages.addError(failMessage + ioEx.getMessage());
-            return null;
         }
     }
 
     /**
      * Stores the {@link ReferenceManifest} objects.
      *
-     * @param fileName name of the file given
      * @param messages message object for user display of statuses
      * @param referenceManifest the object to store
      * @param supportRim boolean flag indicating if this is a support RIM
      * process.
      */
     private void storeManifest(
-            final String fileName,
             final PageMessages messages,
             final ReferenceManifest referenceManifest,
             final boolean supportRim) {
 
-        ReferenceManifest existingManifest;
+        ReferenceManifest existingManifest = null;
+        String fileName = referenceManifest.getFileName();
+        MessageDigest digest = null;
+        String rimHash = "";
+        try {
+            digest = MessageDigest.getInstance("SHA-256");
+        } catch (NoSuchAlgorithmException noSaEx) {
+            LOGGER.error(noSaEx);
+        }
 
         // look for existing manifest in the database
         try {
             if (supportRim) {
+                if (digest != null) {
+                    rimHash = Hex.encodeHexString(
+                            digest.digest(referenceManifest.getRimBytes()));
+                }
                 existingManifest = SupportReferenceManifest
                         .select(referenceManifestManager)
+                        .byHexDecHash(rimHash)
                         .includeArchived()
-                        .byHashCode(referenceManifest.getRimHash())
                         .getRIM();
             } else {
+                if (digest != null) {
+                    rimHash = Base64.encodeBase64String(
+                            digest.digest(referenceManifest.getRimBytes()));
+                }
                 existingManifest = BaseReferenceManifest
-                        .select(referenceManifestManager)
+                        .select(referenceManifestManager).byBase64Hash(rimHash)
                         .includeArchived()
-                        .byHashCode(referenceManifest.getRimHash())
                         .getRIM();
             }
         } catch (DBManagerException e) {
@@ -457,7 +538,6 @@ public class ReferenceManifestPageController
                     + "failed (%s): ", fileName);
             messages.addError(failMessage + e.getMessage());
             LOGGER.error(failMessage, e);
-            return;
         }
 
         try {
@@ -469,19 +549,18 @@ public class ReferenceManifestPageController
                         fileName);
                 messages.addSuccess(successMsg);
                 LOGGER.info(successMsg);
-                return;
             }
         } catch (DBManagerException dbmEx) {
-            final String failMessage = String.format("Storing RIM failed (%s): ", fileName);
+            final String failMessage = String.format("Storing RIM failed (%s): ",
+                    fileName);
             messages.addError(failMessage + dbmEx.getMessage());
             LOGGER.error(failMessage, dbmEx);
-            return;
         }
 
         try {
             // if an identical RIM is archived, update the existing RIM to
             // unarchive it and change the creation date
-            if (existingManifest.isArchived()) {
+            if (existingManifest != null && existingManifest.isArchived()) {
                 existingManifest.restore();
                 existingManifest.resetCreateTime();
                 referenceManifestManager.update(existingManifest);
@@ -496,6 +575,118 @@ public class ReferenceManifestPageController
                     + "archive, but failed to unarchive it (%s): ", fileName);
             messages.addError(failMessage + dbmEx.getMessage());
             LOGGER.error(failMessage, dbmEx);
+        }
+    }
+
+    private Map<String, BaseReferenceManifest> generatePayloadHashMap(
+            final List<BaseReferenceManifest> uploadedBaseRims) {
+        BaseReferenceManifest dbBaseRim;
+        HashMap<String, BaseReferenceManifest> tempMap = new HashMap<>();
+        for (BaseReferenceManifest base : uploadedBaseRims) {
+            // this is done to make sure we have the version with the UUID
+            dbBaseRim = BaseReferenceManifest.select(referenceManifestManager)
+                    .byBase64Hash(base.getBase64Hash()).getRIM();
+            if (dbBaseRim != null) {
+                for (SwidResource swid : dbBaseRim.parseResource()) {
+                    tempMap.put(swid.getHashValue(), dbBaseRim);
+                }
+            }
+        }
+
+        return tempMap;
+    }
+
+    private Map<String, SupportReferenceManifest> updateSupportRimInfo(
+            final Map<String, BaseReferenceManifest> dbBaseRims) {
+        BaseReferenceManifest dbBaseRim;
+        SupportReferenceManifest supportRim;
+        Map<String, SupportReferenceManifest> updatedSupportRims = new HashMap<>();
+        List<String> hashValues = new LinkedList<>(dbBaseRims.keySet());
+        for (String supportHash : hashValues) {
+            supportRim = SupportReferenceManifest.select(referenceManifestManager)
+                    .byHexDecHash(supportHash).getRIM();
+            // I have to assume the baseRim is from the database
+            // Updating the id values, manufacturer, model
+            if (supportRim != null && !supportRim.isUpdated()) {
+                dbBaseRim = dbBaseRims.get(supportHash);
+                supportRim.setSwidTagVersion(dbBaseRim.getSwidTagVersion());
+                supportRim.setPlatformManufacturer(dbBaseRim.getPlatformManufacturer());
+                supportRim.setPlatformModel(dbBaseRim.getPlatformModel());
+                supportRim.setTagId(dbBaseRim.getTagId());
+                supportRim.setAssociatedRim(dbBaseRim.getId());
+                supportRim.setUpdated(true);
+                referenceManifestManager.update(supportRim);
+                updatedSupportRims.put(supportHash, supportRim);
+            }
+        }
+
+        return updatedSupportRims;
+    }
+
+    /**
+     * If the support rim is a supplemental or base, this method looks for the
+     * original oem base rim to associate with each event.
+     * @param supportRim assumed db object
+     * @return reference to the base rim
+     */
+    private ReferenceManifest findBaseRim(final SupportReferenceManifest supportRim) {
+        if (supportRim != null && (supportRim.getId() != null
+                && !supportRim.getId().toString().equals(""))) {
+            Set<BaseReferenceManifest> baseRims = BaseReferenceManifest
+                    .select(referenceManifestManager)
+                    .byManufacturerModel(supportRim.getPlatformManufacturer(),
+                            supportRim.getPlatformModel()).getRIMs();
+
+            for (BaseReferenceManifest base : baseRims) {
+                if (base.isBase()) {
+                    // there should be only one
+                    return base;
+                }
+            }
+        }
+        return null;
+    }
+
+    private void processTpmEvents(final List<SupportReferenceManifest> dbSupportRims) {
+        boolean updated = true;
+        List<ReferenceDigestValue> tpmEvents;
+        TCGEventLog logProcessor = null;
+        ReferenceManifest baseRim;
+
+        for (SupportReferenceManifest dbSupport : dbSupportRims) {
+            // So first we'll have to pull values based on support rim
+            // get by support rim id NEXT
+
+            tpmEvents = referenceEventManager.getValuesByRimId(dbSupport);
+            baseRim = findBaseRim(dbSupport);
+            if (tpmEvents.isEmpty()) {
+                ReferenceDigestValue rdv;
+                try {
+                    logProcessor = new TCGEventLog(dbSupport.getRimBytes());
+                    for (TpmPcrEvent tpe : logProcessor.getEventList()) {
+                        rdv = new ReferenceDigestValue(baseRim.getId(),
+                                dbSupport.getId(), dbSupport.getPlatformManufacturer(),
+                                dbSupport.getPlatformModel(), tpe.getPcrIndex(),
+                                tpe.getEventDigestStr(), tpe.getEventTypeStr(),
+                                false, false, updated, tpe.getEventContent());
+
+                        this.referenceEventManager.saveValue(rdv);
+                    }
+                } catch (CertificateException e) {
+                    e.printStackTrace();
+                } catch (NoSuchAlgorithmException e) {
+                    e.printStackTrace();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            } else {
+                for (ReferenceDigestValue rdv : tpmEvents) {
+                    if (!rdv.isUpdated()) {
+                        rdv.updateInfo(dbSupport, baseRim.getId());
+                        this.referenceEventManager.updateEvent(rdv);
+                    }
+                }
+            }
         }
     }
 }

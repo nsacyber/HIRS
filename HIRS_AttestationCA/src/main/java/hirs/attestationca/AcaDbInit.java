@@ -28,8 +28,7 @@ public final class AcaDbInit {
     public static synchronized void insertDefaultEntries(
             final AppraiserManager appraiserManager,
             final DeviceGroupManager deviceGroupManager,
-            final PolicyManager policyManager
-    ) {
+            final PolicyManager policyManager) {
         LOG.info("Ensuring default ACA database entries are present.");
 
         // Ensure the default group exists.  It may have already been created by the Server RPM
@@ -38,8 +37,7 @@ public final class AcaDbInit {
             LOG.info("Default group not found; saving...");
             defaultGroup = deviceGroupManager.saveDeviceGroup(new DeviceGroup(
                     DeviceGroup.DEFAULT_GROUP,
-                    "This is the default group"
-            ));
+                    "This is the default group"));
             LOG.info("Saved default group.");
         }
 
@@ -61,8 +59,7 @@ public final class AcaDbInit {
         // Create the SupplyChainPolicy
         LOG.info("Saving default supply chain policy...");
         SupplyChainPolicy supplyChainPolicy = new SupplyChainPolicy(
-                SupplyChainPolicy.DEFAULT_POLICY
-        );
+                SupplyChainPolicy.DEFAULT_POLICY);
         policyManager.savePolicy(supplyChainPolicy);
         policyManager.setDefaultPolicy(supplyChainAppraiser, supplyChainPolicy);
         policyManager.setPolicy(supplyChainAppraiser, defaultGroup, supplyChainPolicy);

@@ -40,6 +40,7 @@ DEFAULT_SITE_CONFIG_FILE
 fi
 ln -s -f /etc/hirs/provisioner/hirs-provisioner.sh /usr/sbin/hirs-provisioner
 
+TCG_TEMP_FILE="/tmp/boot_properties"
 TCG_BOOT_FILE="/etc/hirs/tcg_boot.properties"
 TCG_DIRECTORY="/boot/tcg"
 RIM_FILE_LOCATION="$TCG_DIRECTORY/manifest/rim/"
@@ -48,23 +49,11 @@ CREDENTIALS_LOCATION="$TCG_DIRECTORY/cert/platform/"
 BINARY_BIOS_MEASUREMENTS="/sys/kernel/security/tpm0/binary_bios_measurements"
 
 if [ ! -f "$TCG_BOOT_FILE" ]; then
-  touch "$TCG_BOOT_FILE"
+  touch "$TCG_TEMP_FILE"
+  echo "tcg.rim.dir=$RIM_FILE_LOCATION" > "$TCG_TEMP_FILE"
+  echo "tcg.swidtag.dir=$SWIDTAG_FILE_LOCATION" >> "$TCG_TEMP_FILE"
+  echo "tcg.cert.dir=$CREDENTIALS_LOCATION" >> "$TCG_TEMP_FILE"
+  echo "tcg.event.file=$BINARY_BIOS_MEASUREMENTS" >> "$TCG_TEMP_FILE"
+  install -m 644 $TCG_TEMP_FILE $TCG_BOOT_FILE
 fi
 
-if [ -d "$RIM_FILE_LOCATION" ]; then
-  echo "tcg.rim.dir=$RIM_FILE_LOCATION" > "$TCG_BOOT_FILE"
-fi
-
-if [ -d "$SWIDTAG_FILE_LOCATION" ]; then
-  echo "tcg.swidtag.dir=$SWIDTAG_FILE_LOCATION" >> "$TCG_BOOT_FILE"
-fi
-
-if [ -d "$CREDENTIALS_LOCATION" ]; then
-  echo "tcg.cert.dir=$CREDENTIALS_LOCATION" >> "$TCG_BOOT_FILE"
-fi
-
-if [ -f "$BINARY_BIOS_MEASUREMENTS" ]; then
-  echo "tcg.event.file=$BINARY_BIOS_MEASUREMENTS" >> "$TCG_BOOT_FILE"
-fi
-
-chmod -w "$TCG_BOOT_FILE"

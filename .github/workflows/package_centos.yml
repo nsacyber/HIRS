@@ -1,0 +1,61 @@
+name: HIRS packages for centos
+on:
+  push:
+  workflow_dispatch:
+  
+jobs:
+  # run the package script for HIRS ACA, Provisioners, tcg_rim_tool, and tcg_eventlog_tool
+  Package:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: Set up JDK 11
+      uses: actions/setup-java@v2
+      with:
+        java-version: '8'
+        distribution: 'adopt'
+        server-id: github # Value of the distributionManagement/repository/id field of the pom.xml
+        settings-path: ${{ github.workspace }} # location for the settings.xml file
+  package_centos:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    steps:
+    - uses: actions/checkout@v2
+    - name: directory setup
+      run: |
+       mkdir -p artifacts/jars
+       mkdir -p artifacts/wars
+       mkdir -p artifacts/rpms
+    - name: Create HIRS packages
+      run: |
+       echo ${{ secrets.DOCKER_HUB_ACCESS_TOKEN }} | docker login -u ${{ secrets.DOCKER_HUB_USERNAME }} --password-stdin
+       docker run --rm \
+       -v $(pwd):/HIRS hirs/hirs-ci:centos7 /bin/bash \
+       -c 'pushd /HIRS; \
+          sh package/package.centos.sh; \
+          cp /HIRS/package/rpm/RPMS/noarch/* /HIRS/artifacts/rpms/.; \
+          cp /HIRS/package/rpm/RPMS/x86_64/* /HIRS/artifacts/rpms/.; \
+          sh /HIRS/tools/tcg_rim_tool/package.sh; \
+          cp /HIRS/tools/tcg_rim_tool/rpmbuild/BUILD/tcg_rim_tool/build/libs/* /HIRS/artifacts/jars/.; \
+          cp /HIRS/tools/tcg_rim_tool/rpmbuild/RPMS/x86_64/* /HIRS/artifacts/rpms/.; \
+          sh /HIRS/tools/tcg_eventlog_tool/gradlew clean buildRPM; \
+          cp /HIRS/tools/tcg_eventlog_tool/build/libs/tools/* /HIRS/artifacts/jars/.; \
+          cp /HIRS/tools/tcg_eventlog_tool/build/distributions/* /HIRS/artifacts/rpms/.; \
+          popd;'
+    - name: Archive RPM files
+      uses: actions/upload-artifact@v2
+      with:
+        name: RPM_Files
+        path: artifacts/rpms/*
+        if-no-files-found: error
+    - name: Archive Jar files
+      uses: actions/upload-artifact@v2
+      with:
+        name: JAR_Files
+        path: artifacts/jars/

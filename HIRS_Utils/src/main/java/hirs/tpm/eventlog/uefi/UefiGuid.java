@@ -1,13 +1,13 @@
 package hirs.tpm.eventlog.uefi;
 
+import com.eclipsesource.json.JsonObject;
+import hirs.utils.HexUtils;
+import hirs.utils.JsonUtils;
+
 import java.math.BigInteger;
 import java.nio.file.FileSystems;
 import java.nio.file.Path;
 import java.util.UUID;
-
-import com.eclipsesource.json.JsonObject;
-import hirs.utils.HexUtils;
-import hirs.utils.JsonUtils;
 
 /**
  * Class to process GUID per the UEFI specification
@@ -45,6 +45,20 @@ public class UefiGuid {
         System.arraycopy(guidBytes, 0, guid, 0, UefiConstants.SIZE_16);
         uuid = processGuid(guidBytes);
         uefiVendorRef = JsonUtils.getSpecificJsonObject(JSON_PATH, "VendorTable");
+    }
+
+    /**
+     * UefiGUID constructor.
+     *
+     * @param guidBytes byte array holding a valid guid.
+     * @param vendorPathString string path for vendor
+     */
+    public UefiGuid(final byte[] guidBytes, final Path vendorPathString) {
+        guid = new byte[UefiConstants.SIZE_16];
+        System.arraycopy(guidBytes, 0, guid, 0, UefiConstants.SIZE_16);
+        uuid = processGuid(guidBytes);
+        uefiVendorRef = JsonUtils.getSpecificJsonObject(vendorPathString,
+                "VendorTable");
     }
 
     /**

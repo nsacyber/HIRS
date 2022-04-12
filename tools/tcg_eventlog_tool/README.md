@@ -5,7 +5,7 @@ Note that a TCG Event Log will only be populated on a given device if the device
 2. Has a TPM 1.2 or 2.0 that has been activated prior to the current boot.
 3. Has a TCG aware OS (Most flavors of Linux and Windows 10).
 
-The defualt locations for the TCG Event Log are:
+The default locations for the TCG Event Log are:
 * Windows:  C:\Windows\Logs\MeasuredBoot\  
 * Linux:    /sys/kernel/security/tpm0/    with a default name of "binary_bios_measurements"
 
@@ -30,14 +30,14 @@ In both cases the tcg_eventlog_tool-X.X.jar file should have been placed in the 
 # Packaging
 Currenty only a install file for Linux RPM is supported.
 
-To create an RPM on a linux device use the following command in the dame directory:
-> ./gradlew builRPM
+To create an RPM on a linux device use the following command in the same directory:
+> ./gradlew buildRPM
 
 # Installing
 Currenty only a install package for Linux is supported. 
 
 To install this tool use the following commmand from the same directory:
-> sudo yum localinstall build/distrobutions/tgc_rim_tool.*.rpm
+> sudo yum localinstall build/distributions/tcg_eventlog_tool*.rpm
 
 # Usage
 ## Linux
@@ -70,4 +70,3 @@ invoke using java -jar option to the tcg_eventlog_tool jar file with options:
 another example:
 
 > java -jar build\libs\tools\tcg_eventlog_tool-1.0.jar -f C:\Windows\Logs\MeasuredBoot\0000000059-0000000000.log -e
-

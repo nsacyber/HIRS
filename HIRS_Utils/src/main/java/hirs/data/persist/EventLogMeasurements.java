@@ -10,6 +10,8 @@ import org.apache.logging.log4j.Logger;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
 import java.io.IOException;
 import java.security.NoSuchAlgorithmException;
 import java.security.cert.CertificateException;
@@ -29,6 +31,8 @@ public class EventLogMeasurements extends ReferenceManifest {
     @Column
     @JsonIgnore
     private int pcrHash = 0;
+    @Enumerated(EnumType.STRING)
+    private AppraisalStatus.Status overallValidationResult = AppraisalStatus.Status.FAIL;
 
     /**
      * This class enables the retrieval of SupportReferenceManifest by their attributes.
@@ -58,17 +62,6 @@ public class EventLogMeasurements extends ReferenceManifest {
         }
 
         /**
-         * Specify the platform manufacturer id that rims must have to be considered
-         * as matching.
-         * @param manufacturerId string for the id of the manufacturer
-         * @return this instance
-         */
-        public Selector byManufacturerId(final String manufacturerId) {
-            setFieldValue(PLATFORM_MANUFACTURER_ID, manufacturerId);
-            return this;
-        }
-
-        /**
          * Specify the platform model that rims must have to be considered
          * as matching.
          * @param model string for the model
@@ -76,6 +69,27 @@ public class EventLogMeasurements extends ReferenceManifest {
          */
         public Selector byModel(final String model) {
             setFieldValue(PLATFORM_MODEL, model);
+            return this;
+        }
+
+        /**
+         * Specify the device name that rims must have to be considered
+         * as matching.
+         * @param deviceName string for the deviceName
+         * @return this instance
+         */
+        public Selector byDeviceName(final String deviceName) {
+            setFieldValue("deviceName", deviceName);
+            return this;
+        }
+
+        /**
+         * Specify the RIM hash associated with the Event Log.
+         * @param hexDecHash the hash of the file associated with the rim
+         * @return this instance
+         */
+        public Selector byHexDecHash(final String hexDecHash) {
+            setFieldValue(HEX_DEC_HASH_FIELD, hexDecHash);
             return this;
         }
     }
@@ -101,8 +115,8 @@ public class EventLogMeasurements extends ReferenceManifest {
                             ) throws IOException {
         super(rimBytes);
         this.setFileName(fileName);
+        this.archive("Event Log Measurement");
         this.setRimType(MEASUREMENT_RIM);
-        this.archive("Measurement event log");
         this.pcrHash = 0;
     }
 
@@ -181,5 +195,39 @@ public class EventLogMeasurements extends ReferenceManifest {
      */
     public void setPcrHash(final int pcrHash) {
         this.pcrHash = pcrHash;
+    }
+
+    /**
+     * Getter for the overall validation result for display purposes.
+     * @return the result status
+     */
+    public AppraisalStatus.Status getOverallValidationResult() {
+        return overallValidationResult;
+    }
+
+    /**
+     * Setter for the overall validation result for display purposes.
+     * @param overallValidationResult the current status for this validation.
+     */
+    public void setOverallValidationResult(final AppraisalStatus.Status overallValidationResult) {
+        this.overallValidationResult = overallValidationResult;
+    }
+
+    @Override
+    public boolean equals(final Object object) {
+        if (this == object) {
+            return true;
+        }
+        if (object == null || getClass() != object.getClass()) {
+            return false;
+        }
+        EventLogMeasurements that = (EventLogMeasurements) object;
+
+        return this.getHexDecHash().equals(that.getHexDecHash());
+    }
+
+    @Override
+    public int hashCode() {
+        return super.hashCode();
     }
 }

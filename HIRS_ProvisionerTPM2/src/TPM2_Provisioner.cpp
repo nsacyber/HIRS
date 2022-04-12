@@ -39,6 +39,7 @@ using std::cerr;
 using std::endl;
 using std::string;
 using std::stringstream;
+using std::vector;
 
 int provision() {
     Logger logger = Logger::getDefaultLogger();
@@ -67,7 +68,10 @@ int provision() {
     // if platformCredential is empty, not in TPM
     // pull from properties file
     if (platformCredential.empty()) {
-        const std::string& cert_dir = props.get("tcg.cert.dir", "");
+        const std::string& cert_dir =
+                    props.get(
+                        "tcg.cert.dir",
+                        "/boot/tcg/cert/platform/");
         try {
             platformCredentials =
                     hirs::file_utils::search_directory(cert_dir);
@@ -85,9 +89,18 @@ int provision() {
     // collect TCG Boot files
     std::vector<string> rim_files;
     std::vector<string> swidtag_files;
-    const std::string& rim_dir = props.get("tcg.rim.dir", "");
-    const std::string& swid_dir = props.get("tcg.swidtag.dir", "");
-    const std::string& live_log_file = props.get("tcg.event.file", "");
+    const std::string& rim_dir =
+                    props.get(
+                        "tcg.rim.dir",
+                         "/boot/tcg/manifest/rim/");
+    const std::string& swid_dir =
+                    props.get(
+                        "tcg.swidtag.dir",
+                        "/boot/tcg/manifest/swidtag/");
+    const std::string& live_log_file =
+                    props.get(
+                        "tcg.event.file",
+                        "/sys/kernel/security/tpm0/binary_bios_measurements");
 
     try {
         rim_files = hirs::file_utils::search_directory(rim_dir);
@@ -128,10 +141,34 @@ int provision() {
                     "TPM2_Provisioner.cpp", __LINE__);
     identityClaim.set_paccoroutput(paccorOutputString);
     RestfulClientProvisioner provisioner;
-    string nonceBlob = provisioner.sendIdentityClaim(identityClaim);
-    if (nonceBlob == "") {
+    string response = provisioner.sendIdentityClaim(identityClaim);
+    hirs::pb::IdentityClaimResponse icr;
+
+    if (!icr.ParseFromString(response) || !icr.has_status()) {
+        logger.error("The ACA did not send a provisioning status.");
         cout << "----> Provisioning failed." << endl;
         cout << "Please refer to the Attestation CA for details." << endl;
+        return 0;
+    }
+
+    if (icr.status() == hirs::pb::ResponseStatus::FAIL) {
+        logger.error("The ACA responded with a FAIL status.");
+        cout << "----> Provisioning failed." << endl;
+        cout << "Please refer to the Attestation CA for details." << endl;
+        return 0;
+    }
+
+    if (!icr.has_credential_blob()) {
+        logger.error("The ACA did not send make credential blob.");
+        cout << "----> Provisioning failed." << endl;
+        cout << "The ACA did not send make credential information." << endl;
+        return 0;
+    }
+
+    string nonceBlob = icr.credential_blob();
+    if (nonceBlob == "") {
+        cout << "----> Provisioning failed." << endl;
+        cout << "The ACA sent empty credential information." << endl;
         return 0;
     }
 
@@ -152,15 +189,27 @@ int provision() {
     hirs::pb::CertificateRequest certificateRequest;
     certificateRequest.set_nonce(decryptedNonce);
     certificateRequest.set_quote(tpm2.getQuote(
-                "0,1,2,3,4,5,6,7,8,9,10,11,12,13,"
-                "14,15,16,17,18,19,20,21,22,23",
-                decryptedNonce));
+          icr.has_pcr_mask()
+            ? icr.pcr_mask()
+            : "0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23",
+          decryptedNonce));
 
     const string& akCertificateByteString
             = provisioner.sendAttestationCertificateRequest(certificateRequest);
 
+    hirs::pb::CertificateResponse cr;
+    cr.ParseFromString(akCertificateByteString);
+    if (cr.has_status()) {
+        if (cr.status() == hirs::pb::ResponseStatus::FAIL) {
+            cout << "----> Provisioning the quote failed. ";
+            cout << "Please refer to the Attestation CA for details." << endl;
+            return 0;
+        }
+    }
+
     if (akCertificateByteString == "") {
-        cout << "----> Provisioning the quote failed.";
+        cout << "----> Provisioning the quote failed. "
+             << "Certificate returned is empty. ";
         cout << "Please refer to the Attestation CA for details." << endl;
         return 0;
     }
@@ -178,7 +227,7 @@ void printHelp() {
     cout << helpMessage.str() << endl;
 }
 
-int main(int argc, char** argv) {
+int main(int argc, const char** argv) {
     string log_directory = "/var/log/hirs/provisioner";
 
     // directory should be created by rpm install

@@ -1,5 +1,6 @@
 package hirs.data.persist;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import hirs.persist.DBReferenceManifestManager;
 import hirs.persist.ReferenceManifestManager;
 import hirs.persist.ReferenceManifestSelector;
@@ -25,7 +26,10 @@ import javax.xml.validation.Schema;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
+import java.util.Base64;
 import java.util.List;
 import java.util.Map;
 
@@ -35,9 +39,16 @@ import java.util.Map;
 @Entity
 public class BaseReferenceManifest extends ReferenceManifest {
     private static final Logger LOGGER = LogManager.getLogger(BaseReferenceManifest.class);
+    /**
+     * Holds the name of the 'base64Hash' field.
+     */
+    public static final String BASE_64_HASH_FIELD = "base64Hash";
 
     private static JAXBContext jaxbContext;
 
+    @Column
+    @JsonIgnore
+    private String base64Hash = "";
     @Column
     private String swidName = null;
     @Column
@@ -100,17 +111,6 @@ public class BaseReferenceManifest extends ReferenceManifest {
         }
 
         /**
-         * Specify the platform manufacturer id that rims must have to be considered
-         * as matching.
-         * @param manufacturerId string for the id of the manufacturer
-         * @return this instance
-         */
-        public Selector byManufacturerId(final String manufacturerId) {
-            setFieldValue(PLATFORM_MANUFACTURER_ID, manufacturerId);
-            return this;
-        }
-
-        /**
          * Specify the platform model that rims must have to be considered
          * as matching.
          * @param model string for the model
@@ -118,6 +118,66 @@ public class BaseReferenceManifest extends ReferenceManifest {
          */
         public Selector byModel(final String model) {
             setFieldValue(PLATFORM_MODEL, model);
+            return this;
+        }
+
+        /**
+         * Specify the platform manufacturer/model that rims must have to be considered
+         * as matching.
+         * @param manufacturer string for the manufacturer
+         * @param model string for the model
+         * @return this instance
+         */
+        public Selector byManufacturerModel(final String manufacturer, final String model) {
+            setFieldValue(PLATFORM_MANUFACTURER, manufacturer);
+            setFieldValue(PLATFORM_MODEL, model);
+            return this;
+        }
+
+        /**
+         * Specify the platform manufacturer/model/base flag that rims must have to be considered
+         * as matching.
+         * @param manufacturer string for the manufacturer
+         * @param model string for the model
+         * @return this instance
+         */
+        public Selector byManufacturerModelBase(final String manufacturer, final String model) {
+            setFieldValue(PLATFORM_MANUFACTURER, manufacturer);
+            setFieldValue(PLATFORM_MODEL, model);
+            setFieldValue("swidPatch", false);
+            setFieldValue("swidSupplemental", false);
+            //setFieldValue("", false); //corpus?
+            return this;
+        }
+
+        /**
+         * Specify the device name that rims must have to be considered
+         * as matching.
+         * @param deviceName string for the deviceName
+         * @return this instance
+         */
+        public Selector byDeviceName(final String deviceName) {
+            setFieldValue("deviceName", deviceName);
+            return this;
+        }
+
+        /**
+         * Specify the RIM hash associated with the base RIM.
+         * @param base64Hash the hash of the file associated with the rim
+         * @return this instance
+         */
+        public Selector byBase64Hash(final String base64Hash) {
+            setFieldValue(BASE_64_HASH_FIELD, base64Hash);
+            return this;
+        }
+
+        /**
+         * Specify the RIM hash associated with the base RIM.
+         * @param hexDecHash the hash of the file associated with the rim
+         * @return this instance
+         */
+        public Selector byHexDecHash(final String hexDecHash) {
+            setFieldValue(HEX_DEC_HASH_FIELD, hexDecHash);
             return this;
         }
     }
@@ -147,6 +207,16 @@ public class BaseReferenceManifest extends ReferenceManifest {
         this.setRimType(BASE_RIM);
         this.setFileName("");
         SoftwareIdentity si = validateSwidTag(new ByteArrayInputStream(rimBytes));
+
+        MessageDigest digest = null;
+        this.base64Hash = "";
+        try {
+            digest = MessageDigest.getInstance("SHA-256");
+            this.base64Hash = Base64.getEncoder().encodeToString(
+                    digest.digest(rimBytes));
+        } catch (NoSuchAlgorithmException noSaEx) {
+            LOGGER.error(noSaEx);
+        }
 
         // begin parsing valid swid tag
         if (si != null) {
@@ -449,6 +519,15 @@ public class BaseReferenceManifest extends ReferenceManifest {
      */
     public void setSwidCorpus(final int swidCorpus) {
         this.swidCorpus = swidCorpus;
+    }
+
+    /**
+     * The assumed requirement for being the initial swidtag.
+     * @return flag for the status
+     */
+    public boolean isBase() {
+        return !this.isSwidPatch() && !this.isSwidSupplemental()
+                && (this.isSwidCorpus() == 0);
     }
 
     /**
@@ -757,6 +836,15 @@ public class BaseReferenceManifest extends ReferenceManifest {
         this.pcURILocal = pcURILocal;
     }
 
+    /**
+     * Getter for the Reference Integrity Manifest hash value.
+     *
+     * @return int representation of the hash value
+     */
+    public String getBase64Hash() {
+        return base64Hash;
+    }
+
     @Override
     public String toString() {
         return String.format("ReferenceManifest{swidName=%s,"
@@ -764,6 +852,6 @@ public class BaseReferenceManifest extends ReferenceManifest {
                         + " platformModel=%s,"
                         + "tagId=%s, rimHash=%s}",
                 swidName, this.getPlatformManufacturer(),
-                this.getPlatformModel(), getTagId(), this.getRimHash());
+                this.getPlatformModel(), getTagId(), this.getBase64Hash());
     }
 }

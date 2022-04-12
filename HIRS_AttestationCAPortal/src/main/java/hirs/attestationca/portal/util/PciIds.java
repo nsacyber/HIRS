@@ -6,6 +6,8 @@ import com.github.marandus.pciid.service.PciIdsDatabase;
 import com.google.common.base.Strings;
 import hirs.data.persist.certificate.attributes.ComponentIdentifier;
 import hirs.data.persist.certificate.attributes.V2.ComponentIdentifierV2;
+import org.bouncycastle.asn1.DERUTF8String;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -13,7 +15,6 @@ import java.io.InputStream;
 import java.util.Collections;
 import java.util.List;
 import java.util.Vector;
-import org.bouncycastle.asn1.DERUTF8String;
 
 /**
  * Provide Java access to PCI IDs.
@@ -23,12 +24,12 @@ public final class PciIds {
      * This pci ids file can be in different places on different distributions.
      */
     public static final List<String> PCI_IDS_PATH =
-            Collections.unmodifiableList(new Vector<String>()
-            {
+            Collections.unmodifiableList(new Vector<String>() {
                 private static final long serialVersionUID = 1L;
                 {
                     add("/usr/share/hwdata/pci.ids");
                     add("/usr/share/misc/pci.ids");
+                    add("/tmp/pci.ids");
                 }
             });
 
@@ -84,11 +85,11 @@ public final class PciIds {
     /**
      * The Component Class Value mask for NICs.
      */
-    public static final int COMPCLASS_TCG_CAT_NIC = 0x00090000;
+    public static final String COMPCLASS_TCG_CAT_NIC = "00090000";
     /**
      * The Component Class Value mask for GFX cards.
      */
-    public static final int COMPCLASS_TCG_CAT_GFX = 0x00050000;
+    public static final String COMPCLASS_TCG_CAT_GFX = "00050000";
 
     /**
      * Iterate through all components and translate PCI hardware IDs as necessary.  It will only
@@ -125,9 +126,9 @@ public final class PciIds {
             newComponent = component;
             // This can be updated as we get more accurate component class registries and values
             // Component Class Registry not accessible: TCG assumed
-            final int compClassValue = component.getComponentClass().getValue();
-            if (((compClassValue & COMPCLASS_TCG_CAT_NIC)
-                 | (compClassValue & COMPCLASS_TCG_CAT_GFX)) > 0) {
+            final String compClassValue = component.getComponentClass().getCategoryValue();
+            if (compClassValue.equals(COMPCLASS_TCG_CAT_NIC)
+                    || compClassValue.equals(COMPCLASS_TCG_CAT_GFX)) {
                 DERUTF8String manufacturer = translateVendor(component.getComponentManufacturer());
                 DERUTF8String model = translateDevice(component.getComponentManufacturer(),
                                                         component.getComponentModel());

@@ -84,7 +84,7 @@ public final class JsonUtils {
         JsonObject jsonObject = new JsonObject();
 
         if (Files.notExists(jsonPath)) {
-            LOGGER.error(String.format("No file found at %s.", jsonPath.toString()));
+            LOGGER.warn(String.format("No file found at %s.", jsonPath.toString()));
         } else {
             try {
                 InputStream inputStream = new FileInputStream(jsonPath.toString());

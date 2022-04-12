@@ -145,6 +145,37 @@ string Process::run(const string& executable,
 }
 
 /**
+ *  * Static function for calling a process that must succeed or throw
+ *   * a HirsRuntimeException. This function is meant to be used with the
+ *    * RUN_PROCESS_OR_THROW macro in order to capture the source file name
+ *     * and source file line number for use in the exception message. Does not
+ *      * drop any characters.
+ *       * @param executable the executable to be run
+ *        * @param arguments the arguments including options to be passed to the
+ *         * @param sourceFileName source file from which this method was called
+ *          * @param sourceLineNumber line number of source file from which this method
+ *           *                         was called
+ *            * executable (defaults to empty string)
+ *             */
+string Process::runData(const string& executable,
+                    const string& arguments,
+                    const string& sourceFileName,
+                    int sourceLineNumber) {
+    stringstream errorStream;
+    Process p(executable, arguments);
+    if (p.run(errorStream) != 0) {
+        errorStream << "\n\n"
+                    << "Process Output: "
+                    << p.getOutputString();
+        throw HirsRuntimeException(errorStream.str(),
+                    sourceFileName + ": " + to_string(sourceLineNumber));
+    }
+
+    string str = p.getOutputString();
+    return str;
+}
+
+/**
  * Static function to check if a specified process is currently running in the
  * local environment.
  *

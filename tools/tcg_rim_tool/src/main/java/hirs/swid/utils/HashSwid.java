@@ -23,7 +23,7 @@ public class HashSwid {
 
     /**
      * Getter method for the hash that uses 256 bit hash
-     * @param value
+     * @param filepath the file to hash.
      * @return 
      */
     public static String get256Hash(String filepath) {
@@ -32,7 +32,7 @@ public class HashSwid {
 
     /**
      * Getter method for the hash that uses 384 bit hash
-     * @param value
+     * @param filepath the file to hash.
      * @return 
      */
     public String get384Hash(String filepath) {
@@ -41,7 +41,7 @@ public class HashSwid {
 
     /**
      * Getter method for the hash that uses 512 bit hash
-     * @param value
+     * @param filepath the file to hash.
      * @return 
      */
     public String get512Hash(String filepath) {

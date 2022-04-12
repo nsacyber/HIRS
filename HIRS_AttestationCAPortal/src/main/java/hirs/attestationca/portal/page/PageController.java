@@ -71,7 +71,7 @@ public abstract class PageController<P extends PageParams> {
      * @return the path for the view and data model for the page.
      */
     @RequestMapping
-    public abstract ModelAndView initPage(@ModelAttribute final P params, final Model model);
+    public abstract ModelAndView initPage(@ModelAttribute P params, Model model);
 
     /**
      * Creates a generic ModelAndView containing this page's configuration and
@@ -92,7 +92,6 @@ public abstract class PageController<P extends PageParams> {
      * @return A generic ModelAndView containing basic information for the page.
      */
     protected final ModelAndView getBaseModelAndView(final Page newPage) {
-
         ModelMap modelMap = new ExtendedModelMap();
 
         // add page information
@@ -110,7 +109,6 @@ public abstract class PageController<P extends PageParams> {
         }
 
         return new ModelAndView(newPage.getViewName(), modelMap);
-
     }
 
     /**
@@ -170,7 +168,5 @@ public abstract class PageController<P extends PageParams> {
         }
 
         return redirect;
-
     }
-
 }

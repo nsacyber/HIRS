@@ -99,6 +99,7 @@ import static org.powermock.api.mockito.PowerMockito.when;
         "javax.security.auth.*" })
 public class SupplyChainCredentialValidatorTest {
 
+    private static final String JSON_FILE = "/config/component-class.json";
     private static final String SAMPLE_PACCOR_OUTPUT_TXT = "sample_paccor_output.txt";
     private static final String SAMPLE_PACCOR_OUTPUT_NOT_SPECIFIED_TXT
             = "sample_paccor_output_not_specified_values.txt";
@@ -312,8 +313,10 @@ public class SupplyChainCredentialValidatorTest {
 
             PlatformCredential pc = new PlatformCredential(certBytes);
 
+            // The test certificate has expired. Test will accept expired certs.
             AppraisalStatus result = supplyChainCredentialValidator.validatePlatformCredential(
                     pc, keyStore, true);
+
             Assert.assertEquals(result.getAppStatus(), AppraisalStatus.Status.PASS);
             Assert.assertEquals(result.getMessage(), SupplyChainCredentialValidator.PLATFORM_VALID);
         } finally {
@@ -1196,8 +1199,8 @@ public class SupplyChainCredentialValidatorTest {
 
         PlatformCredential pc = new PlatformCredential(certBytes);
 
-        String expectedMessage = "Can't validate platform credential without a "
-                + "trust store\n";
+        String expectedMessage = "Can't validate platform credential without an "
+                + "Issuer Cert in the Trust Store\n";
 
         AppraisalStatus result = supplyChainCredentialValidator.validatePlatformCredential(pc, null,
                 true);
@@ -2026,29 +2029,41 @@ public class SupplyChainCredentialValidatorTest {
         PlatformCredential delta1 = mock(PlatformCredential.class);
         PlatformCredential delta2 = mock(PlatformCredential.class);
 
-        ComponentIdentifier compId1 = new ComponentIdentifier(new DERUTF8String("Intel"),
+        ComponentIdentifierV2 compId1 = new ComponentIdentifierV2(
+                new ComponentClass(Paths.get(this.getClass()
+                        .getResource(JSON_FILE).toURI()), "0x00010002"),
+                new DERUTF8String("Intel"),
                 new DERUTF8String("Core i7"), new DERUTF8String("Not Specified"),
                 new DERUTF8String("Intel(R) Core(TM) i7-4790 CPU @ 3.60GHz"), null,
-                ASN1Boolean.TRUE, new ArrayList<>(0));
-        ComponentIdentifier compId2 = new ComponentIdentifier(
+                ASN1Boolean.TRUE, new ArrayList<>(0), null, null,
+                null);
+        ComponentIdentifierV2 compId2 = new ComponentIdentifierV2(
+                new ComponentClass(Paths.get(this.getClass()
+                        .getResource(JSON_FILE).toURI()), "0x00050004"),
                 new DERUTF8String("Intel Corporation"),
                 new DERUTF8String("Ethernet Connection I217-V-faulty"),
                 new DERUTF8String("23:94:17:ba:86:5e"), new DERUTF8String("00"), null,
-                ASN1Boolean.FALSE, new ArrayList<>(0));
-        ComponentIdentifier compId3 = new ComponentIdentifier(
+                ASN1Boolean.FALSE, new ArrayList<>(0), null, null,
+                null);
+        ComponentIdentifierV2 compId3 = new ComponentIdentifierV2(
+                new ComponentClass(Paths.get(this.getClass()
+                        .getResource(JSON_FILE).toURI()), "0x00090002"),
                 new DERUTF8String("Intel Corporation"),
                 new DERUTF8String("82580 Gigabit Network Connection-faulty"),
                 new DERUTF8String("90:e2:ba:31:83:10"), new DERUTF8String(""), null,
-                ASN1Boolean.FALSE, new ArrayList<>(0));
+                ASN1Boolean.FALSE, new ArrayList<>(0), null, null,
+                null);
         ComponentIdentifierV2 deltaCompId2 = new ComponentIdentifierV2(
-                new ComponentClass(),
+                new ComponentClass(Paths.get(this.getClass()
+                        .getResource(JSON_FILE).toURI()), "0x00050004"),
                 new DERUTF8String("Intel Corporation"),
                 new DERUTF8String("Ethernet Connection I217-V"),
                 new DERUTF8String("23:94:17:ba:86:5e"), new DERUTF8String("00"), null,
                 ASN1Boolean.FALSE, new ArrayList<>(0), null, null,
                 AttributeStatus.ADDED);
         ComponentIdentifierV2 deltaCompId3 = new ComponentIdentifierV2(
-                new ComponentClass(),
+                new ComponentClass(Paths.get(this.getClass()
+                        .getResource(JSON_FILE).toURI()), "0x00090002"),
                 new DERUTF8String("Intel Corporation"),
                 new DERUTF8String("82580 Gigabit Network Connection"),
                 new DERUTF8String("90:e2:ba:31:83:10"), new DERUTF8String(""), null,
@@ -2058,6 +2073,7 @@ public class SupplyChainCredentialValidatorTest {
         ComponentIdentifierV2 ciV21Faulty = new ComponentIdentifierV2();
         ComponentIdentifierV2 ciV22Faulty = new ComponentIdentifierV2();
         ciV21Faulty.setComponentManufacturer(compId2.getComponentManufacturer());
+        ciV21Faulty.setComponentClass(compId2.getComponentClass());
         ciV21Faulty.setComponentModel(compId2.getComponentModel());
         ciV21Faulty.setComponentSerial(compId2.getComponentSerial());
         ciV21Faulty.setComponentRevision(compId2.getComponentRevision());
@@ -2066,6 +2082,7 @@ public class SupplyChainCredentialValidatorTest {
         ciV21Faulty.setComponentAddress(compId2.getComponentAddress());
         ciV21Faulty.setAttributeStatus(AttributeStatus.REMOVED);
         ciV22Faulty.setComponentManufacturer(compId3.getComponentManufacturer());
+        ciV22Faulty.setComponentClass(compId3.getComponentClass());
         ciV22Faulty.setComponentModel(compId3.getComponentModel());
         ciV22Faulty.setComponentSerial(compId3.getComponentSerial());
         ciV22Faulty.setComponentRevision(compId3.getComponentRevision());
@@ -2092,17 +2109,17 @@ public class SupplyChainCredentialValidatorTest {
         when(base.getManufacturer()).thenReturn("innotek GmbH");
         when(base.getModel()).thenReturn("VirtualBox");
         when(base.getVersion()).thenReturn("1.2");
-        when(base.getPlatformSerial()).thenReturn("0");
-        when(delta1.getPlatformSerial()).thenReturn("0");
-        when(delta2.getPlatformSerial()).thenReturn("0");
+        when(base.getPlatformSerial()).thenReturn("62UIAE5");
+        when(delta1.getPlatformSerial()).thenReturn("62UIAE5");
+        when(delta2.getPlatformSerial()).thenReturn("62UIAE5");
         when(base.getPlatformType()).thenReturn("base");
         when(delta1.getPlatformType()).thenReturn("delta");
         when(delta2.getPlatformType()).thenReturn("delta");
-        when(base.getSerialNumber()).thenReturn(BigInteger.ZERO);
-        when(delta1.getSerialNumber()).thenReturn(BigInteger.ONE);
-        when(delta2.getSerialNumber()).thenReturn(BigInteger.TEN);
-        when(delta1.getHolderSerialNumber()).thenReturn(BigInteger.ZERO);
-        when(delta2.getHolderSerialNumber()).thenReturn(BigInteger.ONE);
+        when(base.getSerialNumber()).thenReturn(BigInteger.valueOf(01));
+        when(delta1.getSerialNumber()).thenReturn(BigInteger.valueOf(39821));
+        when(delta2.getSerialNumber()).thenReturn(BigInteger.valueOf(39822));
+        when(delta1.getHolderSerialNumber()).thenReturn(BigInteger.valueOf(02));
+        when(delta2.getHolderSerialNumber()).thenReturn(BigInteger.valueOf(39821));
         when(base.getComponentIdentifiers()).thenReturn(compList);
         when(delta1.getComponentIdentifiers()).thenReturn(delta1List);
         when(delta2.getComponentIdentifiers()).thenReturn(delta2List);
@@ -2127,9 +2144,9 @@ public class SupplyChainCredentialValidatorTest {
         AppraisalStatus result = supplyChainCredentialValidator
                 .validateDeltaPlatformCredentialAttributes(delta2,
                         deviceInfoReport, base, chainCredentials);
-        Assert.assertEquals(result.getAppStatus(), AppraisalStatus.Status.PASS);
         Assert.assertEquals(result.getMessage(),
                 SupplyChainCredentialValidator.PLATFORM_ATTRIBUTES_VALID);
+        Assert.assertEquals(result.getAppStatus(), AppraisalStatus.Status.PASS);
     }
 
     /**
@@ -2147,22 +2164,33 @@ public class SupplyChainCredentialValidatorTest {
         PlatformCredential base = mock(PlatformCredential.class);
         PlatformCredential delta1 = mock(PlatformCredential.class);
 
-        ComponentIdentifier compId1 = new ComponentIdentifier(new DERUTF8String("Intel"),
+        ComponentIdentifierV2 compId1 = new ComponentIdentifierV2(
+                new ComponentClass(Paths.get(this.getClass()
+                        .getResource(JSON_FILE).toURI()), "0x00010002"),
+                new DERUTF8String("Intel"),
                 new DERUTF8String("Core i7"), new DERUTF8String("Not Specified"),
                 new DERUTF8String("Intel(R) Core(TM) i7-4790 CPU @ 3.60GHz"), null,
-                ASN1Boolean.TRUE, new ArrayList<>(0));
-        ComponentIdentifier compId2 = new ComponentIdentifier(
+                ASN1Boolean.TRUE, new ArrayList<>(0), null, null,
+                null);
+        ComponentIdentifierV2 compId2 = new ComponentIdentifierV2(
+                new ComponentClass(Paths.get(this.getClass()
+                        .getResource(JSON_FILE).toURI()), "0x00050004"),
                 new DERUTF8String("Intel Corporation"),
                 new DERUTF8String("Ethernet Connection I217-V-faulty"),
                 new DERUTF8String("23:94:17:ba:86:5e"), new DERUTF8String("00"), null,
-                ASN1Boolean.FALSE, new ArrayList<>(0));
-        ComponentIdentifier compId3 = new ComponentIdentifier(
+                ASN1Boolean.FALSE, new ArrayList<>(0), null, null,
+                null);
+        ComponentIdentifierV2 compId3 = new ComponentIdentifierV2(
+                new ComponentClass(Paths.get(this.getClass()
+                        .getResource(JSON_FILE).toURI()), "0x00090002"),
                 new DERUTF8String("Intel Corporation"),
                 new DERUTF8String("82580 Gigabit Network Connection-faulty"),
                 new DERUTF8String("90:e2:ba:31:83:10"), new DERUTF8String(""), null,
-                ASN1Boolean.FALSE, new ArrayList<>(0));
+                ASN1Boolean.FALSE, new ArrayList<>(0), null, null,
+                null);
         ComponentIdentifierV2 deltaCompId2 = new ComponentIdentifierV2(
-                new ComponentClass(),
+                new ComponentClass(Paths.get(this.getClass()
+                        .getResource(JSON_FILE).toURI()), "0x00050004"),
                 new DERUTF8String("Intel Corporation"),
                 new DERUTF8String("Ethernet Connection I217-V"),
                 new DERUTF8String("23:94:17:ba:86:5e"), new DERUTF8String("00"), null,
@@ -2228,11 +2256,7 @@ public class SupplyChainCredentialValidatorTest {
                 .validateDeltaPlatformCredentialAttributes(delta1,
                         deviceInfoReport, base, chainCredentials);
         Assert.assertEquals(result.getAppStatus(), AppraisalStatus.Status.FAIL);
-        Assert.assertEquals(result.getMessage(),
-                "There are unmatched components:\n"
-                        + "Manufacturer=Intel Corporation, Model=82580 "
-                        + "Gigabit Network Connection-faulty, "
-                        + "Serial=90:e2:ba:31:83:10, Revision=;\n");
+        Assert.assertEquals(result.getAdditionalInfo(), "COMPID=370101885;1");
     }
 
     /**

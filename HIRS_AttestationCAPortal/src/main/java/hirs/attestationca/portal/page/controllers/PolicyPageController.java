@@ -90,7 +90,6 @@ public class PolicyPageController extends PageController<NoPageParams> {
         ModelAndView mav = getBaseModelAndView();
 
         SupplyChainPolicy policy = getDefaultPolicy();
-
         PolicyPageModel pageModel = new PolicyPageModel(policy);
         mav.addObject(INITIAL_DATA, pageModel);
 
@@ -247,6 +246,50 @@ public class PolicyPageController extends PageController<NoPageParams> {
     }
 
     /**
+     * Updates the DevID Certificate generation policy setting and redirects
+     * back to the original page.
+     *
+     * @param ppModel The data posted by the form mapped into an object.
+     * @param attr RedirectAttributes used to forward data back to the original page.
+     * @return View containing the url and parameters
+     * @throws URISyntaxException if malformed URI
+     */
+    @RequestMapping(value = "update-issue-devid", method = RequestMethod.POST)
+    public RedirectView updateDevIdVal(@ModelAttribute final PolicyPageModel ppModel,
+                                             final RedirectAttributes attr)
+            throws URISyntaxException {
+
+        // set the data received to be populated back into the form
+        Map<String, Object> model = new HashMap<>();
+        PageMessages messages = new PageMessages();
+        String successMessage;
+        boolean issuedDevIdOptionEnabled
+                = ppModel.getDevIdCertificateIssued()
+                .equalsIgnoreCase(ENABLED_CHECKED_PARAMETER_VALUE);
+
+        try {
+            SupplyChainPolicy policy = getDefaultPolicyAndSetInModel(ppModel, model);
+
+            if (issuedDevIdOptionEnabled) {
+                successMessage = "DevID Certificate generation enabled.";
+            } else {
+                successMessage = "DevID Certificate generation disabled.";
+                policy.setDevIdExpirationFlag(false);
+            }
+
+            policy.setIssueDevIdCertificate(issuedDevIdOptionEnabled);
+            savePolicyAndApplySuccessMessage(ppModel, model, messages, successMessage, policy);
+        } catch (PolicyManagerException e) {
+            handlePolicyManagerUpdateError(model, messages, e,
+                    "Error changing ACA DevID Certificate generation policy",
+                    "Error updating policy. \n" + e.getMessage());
+        }
+
+        // return the redirect
+        return redirectToSelf(new NoPageParams(), model, attr);
+    }
+
+    /**
      * Updates the state of the policy setting that indicates that the generation
      * will occur in a set time frame and redirects
      * back to the original page.
@@ -318,6 +361,76 @@ public class PolicyPageController extends PageController<NoPageParams> {
 
     /**
      * Updates the state of the policy setting that indicates that the generation
+     * will occur in a set time frame and redirects
+     * back to the original page.
+     *
+     * @param ppModel The data posted by the form mapped into an object.
+     * @param attr RedirectAttributes used to forward data back to the original page.
+     * @return View containing the url and parameters
+     * @throws URISyntaxException if malformed URI
+     */
+    @RequestMapping(value = "update-devid-expire-on", method = RequestMethod.POST)
+    public RedirectView updateDevIdExpireOnVal(@ModelAttribute final PolicyPageModel ppModel,
+                                          final RedirectAttributes attr)
+            throws URISyntaxException {
+
+        // set the data received to be populated back into the form
+        Map<String, Object> model = new HashMap<>();
+        PageMessages messages = new PageMessages();
+        String successMessage;
+        String numOfDays;
+
+        boolean generateDevIdCertificateEnabled = false;
+        // because this is just one option, there is not 'unchecked' value, so it is either
+        // 'checked' or null
+        if (ppModel.getDevIdExpirationChecked() != null) {
+            generateDevIdCertificateEnabled
+                    = ppModel.getDevIdExpirationChecked()
+                    .equalsIgnoreCase(ENABLED_CHECKED_PARAMETER_VALUE);
+        }
+
+        try {
+            SupplyChainPolicy policy = getDefaultPolicyAndSetInModel(ppModel, model);
+            boolean issuedDevIdOptionEnabled
+                    = policy.isIssueDevIdCertificate();
+
+            if (issuedDevIdOptionEnabled) {
+                if (generateDevIdCertificateEnabled) {
+                    successMessage = "DevID Certificate generation expiration time enabled.";
+                } else {
+                    successMessage = "DevID Certificate generation expiration time disabled.";
+                }
+
+                if (generateDevIdCertificateEnabled) {
+                    numOfDays = ppModel.getDevIdExpirationValue();
+                    if (numOfDays == null) {
+                        numOfDays = SupplyChainPolicy.TEN_YEARS;
+                    }
+                } else {
+                    numOfDays = policy.getDevIdValidityDays();
+                }
+
+                policy.setDevIdValidityDays(numOfDays);
+            } else {
+                generateDevIdCertificateEnabled = false;
+                successMessage = "DevID Certificate generation is disabled, "
+                        + "can not set time expiration";
+            }
+
+            policy.setDevIdExpirationFlag(generateDevIdCertificateEnabled);
+            savePolicyAndApplySuccessMessage(ppModel, model, messages, successMessage, policy);
+        } catch (PolicyManagerException e) {
+            handlePolicyManagerUpdateError(model, messages, e,
+                    "Error changing ACA DevID Certificate generation policy",
+                    "Error updating policy. \n" + e.getMessage());
+        }
+
+        // return the redirect
+        return redirectToSelf(new NoPageParams(), model, attr);
+    }
+
+    /**
+     * Updates the state of the policy setting that indicates that the generation
      * will occur in a set time frame from the end validity date and redirects
      * back to the original page.
      *
@@ -360,11 +473,12 @@ public class PolicyPageController extends PageController<NoPageParams> {
 
                 if (generateCertificateEnabled) {
                     threshold = ppModel.getThresholdValue();
-                    if (threshold == null) {
-                        threshold = SupplyChainPolicy.YEAR;
-                    }
                 } else {
                     threshold = ppModel.getReissueThreshold();
+                }
+
+                if (threshold == null || threshold.isEmpty()) {
+                    threshold = SupplyChainPolicy.YEAR;
                 }
 
                 policy.setReissueThreshold(threshold);
@@ -379,6 +493,76 @@ public class PolicyPageController extends PageController<NoPageParams> {
         } catch (PolicyManagerException e) {
             handlePolicyManagerUpdateError(model, messages, e,
                     "Error changing ACA Attestation Certificate generation policy",
+                    "Error updating policy. \n" + e.getMessage());
+        }
+
+        // return the redirect
+        return redirectToSelf(new NoPageParams(), model, attr);
+    }
+
+    /**
+     * Updates the state of the policy setting that indicates that the generation
+     * will occur in a set time frame from the end validity date and redirects
+     * back to the original page.
+     *
+     * @param ppModel The data posted by the form mapped into an object.
+     * @param attr RedirectAttributes used to forward data back to the original page.
+     * @return View containing the url and parameters
+     * @throws URISyntaxException if malformed URI
+     */
+    @RequestMapping(value = "update-devid-threshold", method = RequestMethod.POST)
+    public RedirectView updateDevIdThresholdVal(@ModelAttribute final PolicyPageModel ppModel,
+                                           final RedirectAttributes attr)
+            throws URISyntaxException {
+        // set the data received to be populated back into the form
+        Map<String, Object> model = new HashMap<>();
+        PageMessages messages = new PageMessages();
+        String successMessage;
+        String threshold;
+
+        boolean generateDevIdCertificateEnabled = false;
+        // because this is just one option, there is not 'unchecked' value, so it is either
+        // 'checked' or null
+        if (ppModel.getDevIdExpirationChecked() != null) {
+            generateDevIdCertificateEnabled
+                    = ppModel.getDevIdExpirationChecked()
+                    .equalsIgnoreCase(ENABLED_CHECKED_PARAMETER_VALUE);
+        }
+
+        try {
+            SupplyChainPolicy policy = getDefaultPolicyAndSetInModel(ppModel, model);
+            boolean issuedDevIdOptionEnabled
+                    = policy.isIssueDevIdCertificate();
+
+            if (issuedDevIdOptionEnabled) {
+                if (generateDevIdCertificateEnabled) {
+                    successMessage = "DevID Certificate generation threshold time enabled.";
+                } else {
+                    successMessage = "DevID Certificate generation threshold time disabled.";
+                }
+
+                if (generateDevIdCertificateEnabled) {
+                    threshold = ppModel.getDevIdThresholdValue();
+                } else {
+                    threshold = ppModel.getDevIdReissueThreshold();
+                }
+
+                if (threshold == null || threshold.isEmpty()) {
+                    threshold = SupplyChainPolicy.YEAR;
+                }
+
+                policy.setDevIdReissueThreshold(threshold);
+            } else {
+                generateDevIdCertificateEnabled = false;
+                successMessage = "DevID Certificate generation is disabled, "
+                        + "can not set time expiration";
+            }
+
+            policy.setDevIdExpirationFlag(generateDevIdCertificateEnabled);
+            savePolicyAndApplySuccessMessage(ppModel, model, messages, successMessage, policy);
+        } catch (PolicyManagerException e) {
+            handlePolicyManagerUpdateError(model, messages, e,
+                    "Error changing ACA DevID Certificate generation policy",
                     "Error updating policy. \n" + e.getMessage());
         }
 
@@ -479,6 +663,7 @@ public class PolicyPageController extends PageController<NoPageParams> {
                 policy.setFirmwareValidationEnabled(false);
                 policy.getPcrPolicy().setEnableIgnoreIma(false);
                 policy.getPcrPolicy().setEnableIgnoretBoot(false);
+                policy.setIgnoreOsEvtEnabled(false);
                 successMessage = "Firmware validation disabled";
             }
 
@@ -622,7 +807,7 @@ public class PolicyPageController extends PageController<NoPageParams> {
             //If Ignore TBoot is enabled without firmware, disallow change
             if (ignoreGptOptionEnabled && !policy.isFirmwareValidationEnabled()) {
                 handleUserError(model, messages,
-                        "Ignore TBoot can not be "
+                        "Ignore GPT Events can not be "
                                 + "enabled without Firmware Validation policy enabled.");
                 return redirectToSelf(new NoPageParams(), model, attr);
             }
@@ -640,6 +825,60 @@ public class PolicyPageController extends PageController<NoPageParams> {
         } catch (PolicyManagerException e) {
             handlePolicyManagerUpdateError(model, messages, e,
                     "Error changing ACA GPT ignore policy",
+                    "Error updating policy. \n" + e.getMessage());
+        }
+
+        // return the redirect
+        return redirectToSelf(new NoPageParams(), model, attr);
+    }
+
+    /**
+     * Updates the ignore Os Events policy setting and
+     * redirects back to the original page.
+     *
+     * @param ppModel The data posted by the form mapped into an object.
+     * @param attr RedirectAttributes used to forward data back to the original
+     * page.
+     * @return View containing the url and parameters
+     * @throws URISyntaxException if malformed URI
+     */
+    @RequestMapping(value = "update-os-evt-ignore", method = RequestMethod.POST)
+    public RedirectView updateIgnoreOsEvents(
+            @ModelAttribute final PolicyPageModel ppModel,
+            final RedirectAttributes attr)
+            throws URISyntaxException {
+        // set the data received to be populated back into the form
+        Map<String, Object> model = new HashMap<>();
+        PageMessages messages = new PageMessages();
+        String successMessage;
+        boolean ignoreOsEvtOptionEnabled = ppModel.getIgnoreOsEvt()
+                .equalsIgnoreCase(ENABLED_CHECKED_PARAMETER_VALUE);
+
+        try {
+            SupplyChainPolicy policy = getDefaultPolicyAndSetInModel(ppModel, model);
+
+            //If Ignore TBoot is enabled without firmware, disallow change
+            if (ignoreOsEvtOptionEnabled && !policy.isFirmwareValidationEnabled()) {
+                handleUserError(model, messages,
+                        "Ignore Os Events can not be "
+                                + "enabled without Firmware Validation policy enabled.");
+                return redirectToSelf(new NoPageParams(), model, attr);
+            }
+
+            // set the policy option and create success message
+            if (ignoreOsEvtOptionEnabled) {
+                policy.getPcrPolicy().setEnableIgnoreOsEvt(true);
+                policy.getPcrPolicy().setEnableIgnoreGpt(true);
+                successMessage = "Ignore OS Events enabled";
+            } else {
+                policy.getPcrPolicy().setEnableIgnoreOsEvt(false);
+                successMessage = "Ignore OS Events disabled";
+            }
+
+            savePolicyAndApplySuccessMessage(ppModel, model, messages, successMessage, policy);
+        } catch (PolicyManagerException e) {
+            handlePolicyManagerUpdateError(model, messages, e,
+                    "Error changing ACA OS Events ignore policy",
                     "Error updating policy. \n" + e.getMessage());
         }
 

@@ -18,10 +18,13 @@
         <!-- text and icon resource variables -->
         <div class="aca-input-box-header">
             <form:form method="POST"  action="${portal}/reference-manifests/upload" enctype="multipart/form-data">
-                Import RIMs
+                Reference Integrity Manifests
                 <my:file-chooser id="referenceManifestsEditor" label="Import RIMs">
                     <input id="importFile" type="file" name="file" multiple="multiple" />
                 </my:file-chooser>
+                <a href="${portal}/reference-manifests/bulk">
+                    <img src="${icons}/ic_file_download_black_24dp.png" title="Download All RIMs">
+                </a>
             </form:form>
         </div>
         <br/>
@@ -52,7 +55,7 @@
                         {
                             data: 'id',
                             orderable: false,
-                            searchable:false,
+                            searchable: false,
                             render: function(data, type, full, meta) {
                                 // Set up a delete icon with link to handleDeleteRequest().
                                 // sets up a hidden input field containing the ID which is

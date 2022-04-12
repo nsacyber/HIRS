@@ -10,7 +10,7 @@ import java.util.UUID;
  * This class facilitates the persistence of {@link hirs.data.persist.ReferenceDigestRecord}s
  * including storage, retrieval, and deletion.
  */
-public interface ReferenceDigestManager {
+public interface ReferenceDigestManager extends OrderedListQuerier<ReferenceDigestRecord> {
 
     /**
      * Persists a new Reference Digest.
@@ -36,6 +36,14 @@ public interface ReferenceDigestManager {
      * @return the persisted ReferenceDigestRecord
      */
     ReferenceDigestRecord getRecord(String manufacturer, String model);
+
+    /**
+     * Persists a new Reference Digest.
+     *
+     * @param deviceName the string of the network hostname
+     * @return the persisted ReferenceDigestRecord list
+     */
+    List<ReferenceDigestRecord> getRecordsByDeviceName(String deviceName);
 
     /**
      * Persists a new Reference Digest.

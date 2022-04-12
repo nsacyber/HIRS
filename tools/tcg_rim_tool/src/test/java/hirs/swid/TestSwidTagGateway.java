@@ -1,13 +1,9 @@
 package hirs.swid;
 
-import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
-import java.nio.file.Paths;
-import java.util.Scanner;
-import java.net.URISyntaxException;
 
 import org.testng.Assert;
 import org.testng.annotations.BeforeClass;
@@ -65,7 +61,7 @@ public class TestSwidTagGateway {
 	@Test
 	public void testCreateBaseWithoutCert() {
 		gateway.setDefaultCredentials(true);
-		gateway.setJksKeystoreFile(JKS_KEYSTORE_FILE);
+		gateway.setJksTruststoreFile(JKS_KEYSTORE_FILE);
 		gateway.generateSwidTag(DEFAULT_OUTPUT);
 		expectedFile = TestSwidTagGateway.class.getClassLoader().getResourceAsStream(DEFAULT_NO_CERT);
 		Assert.assertTrue(compareFileBytesToExpectedFile(DEFAULT_OUTPUT));
@@ -79,13 +75,7 @@ public class TestSwidTagGateway {
 	public void testValidateSwidTag() {
 		String filepath = TestSwidTagGateway.class.getClassLoader().getResource(DEFAULT_WITH_CERT).getPath();
 		System.out.println("Validating file at " + filepath);
-	    try {
-	        Assert.assertTrue(validator.validateSwidTag(filepath));
-	    } catch (IOException e) {
-	        Assert.fail("Invalid swidtag!");
-	    } catch (NullPointerException e) {
-	    	Assert.fail("Cannot find file: " + filepath);
-		}
+		Assert.assertTrue(validator.validateSwidTag(filepath));
 	}
 
 	/**
