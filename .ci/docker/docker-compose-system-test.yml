@@ -2,7 +2,7 @@ version: "3.1"
 
 services:
    aca:
-      image: ghcr.io/nsacyber/hirs/aca:latest
+      image: ghcr.io/nsacyber/hirs/aca-ci:latest
       container_name: hirs-aca1
       volumes:
          - ../../:/HIRS
@@ -18,7 +18,7 @@ services:
               - ${HIRS_ACA_HOSTNAME}
 
    tpmprovisioner:
-      image: ghcr.io/nsacyber/hirs/tpm2provisioner:latest
+      image: ghcr.io/nsacyber/hirs/tpm2provisioner-ci:latest
       container_name: hirs-provisioner1-tpm2
       depends_on:
          - aca

@@ -23,18 +23,12 @@ jobs:
         distribution: 'adopt'
         server-id: github # Value of the distributionManagement/repository/id field of the pom.xml
         settings-path: ${{ github.workspace }} # location for the settings.xml file  
-    - name: Login to the Github Container Registry
-      uses: docker/login-action@v1
-      with:
-        registry: ghcr.io
-        username: ${{ github.actor }}
-        password: ${{ secrets.GITHUB_TOKEN }}
     - name: ACA TPM2 Tests
       continue-on-error: true
       shell: bash
       run: |
         sudo apt-get install -y curl
-        echo ${{ secrets.DOCKER_HUB_ACCESS_TOKEN }} | docker login -u ${{ secrets.DOCKER_HUB_USERNAME }} --password-stdin
+        echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u $ --password-stdin
         bash .ci/system-tests/run_system_tests.sh
     - name: Archive System Test Log files
       uses: actions/upload-artifact@v2
