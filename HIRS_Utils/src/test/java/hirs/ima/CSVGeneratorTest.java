@@ -2,31 +2,30 @@ package hirs.ima;
 
 import hirs.data.persist.DeviceInfoReport;
 import hirs.data.persist.Digest;
+import hirs.data.persist.ImaBlacklistRecord;
+import hirs.data.persist.ImaBlacklistRecordTest;
+import hirs.data.persist.TPMMeasurementRecord;
+import hirs.data.persist.baseline.IMABaselineRecord;
+import hirs.data.persist.baseline.ImaBlacklistBaseline;
+import hirs.data.persist.baseline.SimpleImaBaseline;
+import hirs.data.persist.baseline.TpmWhiteListBaseline;
 import hirs.data.persist.enums.DigestAlgorithm;
 import hirs.data.persist.info.FirmwareInfo;
 import hirs.data.persist.info.HardwareInfo;
-import hirs.data.persist.baseline.IMABaselineRecord;
-import hirs.data.persist.baseline.ImaBlacklistBaseline;
-import hirs.data.persist.ImaBlacklistRecord;
 import hirs.data.persist.info.OSInfo;
-import hirs.data.persist.baseline.SimpleImaBaseline;
 import hirs.data.persist.info.TPMInfo;
-import hirs.data.persist.TPMMeasurementRecord;
-import hirs.data.persist.baseline.TpmWhiteListBaseline;
 import hirs.tpm.TPMBaselineGenerator;
 import hirs.tpm.TPMBaselineGeneratorException;
-
-import org.apache.commons.codec.Charsets;
 import org.apache.commons.codec.DecoderException;
 import org.apache.commons.codec.binary.Hex;
 import org.apache.commons.io.IOUtils;
 import org.testng.Assert;
-import hirs.data.persist.ImaBlacklistRecordTest;
 
 import javax.xml.bind.DatatypeConverter;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 import java.text.ParseException;
 import java.util.Set;
 
@@ -96,7 +95,8 @@ public final class CSVGeneratorTest {
     public void testImaBlacklistBaselineWithDescriptionsToCsv() throws IOException {
         Assert.assertEquals(
                 CSVGenerator.blacklistToCsv(getTestImaBlacklistBaselineWithDescriptions()),
-                IOUtils.toString(getClass().getResource("/ima/IMABlacklistBaseline.csv"))
+                IOUtils.toString(getClass().getResource("/ima/IMABlacklistBaseline.csv"),
+                        StandardCharsets.UTF_8)
         );
     }
 
@@ -111,7 +111,8 @@ public final class CSVGeneratorTest {
         Assert.assertEquals(
                 CSVGenerator.blacklistToCsv(getTestImaBlacklistBaselineWithoutDescriptions()),
                 IOUtils.toString(
-                        getClass().getResource("/ima/IMABlacklistBaselineNoDescriptions.csv")
+                        getClass().getResource("/ima/IMABlacklistBaselineNoDescriptions.csv"),
+                        StandardCharsets.UTF_8
                 )
         );
     }
@@ -198,7 +199,8 @@ public final class CSVGeneratorTest {
         final String csv = CSVGenerator.tpmRecordsToCsv(tpmBaseline);
 
         final TPMBaselineGenerator tbg = new TPMBaselineGenerator();
-        final InputStream istream = new ByteArrayInputStream(Charsets.UTF_8.encode(csv).array());
+        final InputStream istream = new ByteArrayInputStream(
+                StandardCharsets.UTF_8.encode(csv).array());
         final TpmWhiteListBaseline baselineFromCSV =
                 tbg.generateWhiteListBaselineFromCSVFile("Copied Baseline", istream);
         istream.close();

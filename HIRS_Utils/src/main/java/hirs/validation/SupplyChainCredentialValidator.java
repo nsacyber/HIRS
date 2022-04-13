@@ -14,7 +14,6 @@ import hirs.data.persist.certificate.attributes.V2.ComponentIdentifierV2;
 import hirs.data.persist.info.ComponentInfo;
 import hirs.data.persist.info.HardwareInfo;
 import hirs.utils.PciIds;
-import org.apache.commons.codec.Charsets;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
@@ -33,6 +32,7 @@ import org.springframework.stereotype.Service;
 import javax.security.auth.x500.X500Principal;
 import java.io.IOException;
 import java.math.BigInteger;
+import java.nio.charset.StandardCharsets;
 import java.security.InvalidKeyException;
 import java.security.KeyStore;
 import java.security.KeyStoreException;
@@ -417,7 +417,8 @@ public final class SupplyChainCredentialValidator implements CredentialValidator
             } else {
                 // Calculate the SHA1 hash of the UTF8 encoded baseboard serial number
                 BigInteger baseboardSha1 = new BigInteger(1,
-                        DigestUtils.sha1(deviceBaseboardSerialNumber.getBytes(Charsets.UTF_8)));
+                        DigestUtils.sha1(deviceBaseboardSerialNumber
+                                .getBytes(StandardCharsets.UTF_8)));
                 BigInteger certificateSerialNumber = platformCredential.getSerialNumber();
 
                 // compare the SHA1 hash of the baseboard serial number to the certificate SN

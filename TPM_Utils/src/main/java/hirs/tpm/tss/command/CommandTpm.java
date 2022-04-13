@@ -4,7 +4,6 @@ import hirs.tpm.tss.Tpm;
 import org.apache.commons.codec.DecoderException;
 import org.apache.commons.codec.binary.Hex;
 import org.apache.commons.io.FileUtils;
-import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.util.Assert;
@@ -222,7 +221,7 @@ public class CommandTpm implements Tpm {
 
             try (InputStream processInputStream = process.getInputStream()) {
                 // grab the command output
-                String output = IOUtils.toString(processInputStream);
+                String output = processInputStream.toString();
 
                 // construct the command result
                 CommandResult result = new CommandResult(output, returnCode);
