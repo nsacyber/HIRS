@@ -36,6 +36,7 @@ import org.bouncycastle.asn1.x509.V2Form;
 import org.bouncycastle.cert.X509AttributeCertificateHolder;
 import org.bouncycastle.cert.X509CertificateHolder;
 import org.bouncycastle.util.encoders.Base64;
+import org.bouncycastle.x509.extension.X509ExtensionUtil;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -680,9 +681,13 @@ public abstract class Certificate extends ArchivableEntity {
     private String getAuthorityInfoAccess(final byte[] authoInfoAccess) {
         StringBuilder sb = new StringBuilder();
 
-        if (authoInfoAccess != null && authoInfoAccess.length > 0) {
-            sb.append(getAuthorityInfoAccess(AuthorityInformationAccess
-                    .getInstance(authoInfoAccess)));
+        try {
+            if (authoInfoAccess != null && authoInfoAccess.length > 0) {
+                sb.append(getAuthorityInfoAccess(AuthorityInformationAccess
+                        .getInstance(X509ExtensionUtil.fromExtensionValue(authoInfoAccess))));
+            }
+        } catch (IOException ioEx) {
+            LOGGER.error(ioEx);
         }
 
         return sb.toString();
