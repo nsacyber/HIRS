@@ -225,17 +225,8 @@ public class ReferenceManifestPageController
         });
         supportRims.stream().forEach((rim) -> {
             LOGGER.info(String.format("Storing event log %s", rim.getFileName()));
-            storeManifest(messages, rim, false);
-        });
-        for (ReferenceManifest rim : baseRims) {
-            // store first then update
-            storeManifest(messages, rim, false);
-        }
-
-        for (ReferenceManifest rim : supportRims) {
-            // store the rimels
             storeManifest(messages, rim, true);
-        }
+        });
 
         // Prep a map to associated the swidtag payload hash to the swidtag.
         // pass it in to update support rims that either were uploaded
@@ -657,33 +648,35 @@ public class ReferenceManifestPageController
             // So first we'll have to pull values based on support rim
             // get by support rim id NEXT
 
-            tpmEvents = referenceEventManager.getValuesByRimId(dbSupport);
-            baseRim = findBaseRim(dbSupport);
-            if (tpmEvents.isEmpty()) {
-                ReferenceDigestValue rdv;
-                try {
-                    logProcessor = new TCGEventLog(dbSupport.getRimBytes());
-                    for (TpmPcrEvent tpe : logProcessor.getEventList()) {
-                        rdv = new ReferenceDigestValue(baseRim.getId(),
-                                dbSupport.getId(), dbSupport.getPlatformManufacturer(),
-                                dbSupport.getPlatformModel(), tpe.getPcrIndex(),
-                                tpe.getEventDigestStr(), tpe.getEventTypeStr(),
-                                false, false, updated, tpe.getEventContent());
+            if (dbSupport.getPlatformManufacturer() != null) {
+                tpmEvents = referenceEventManager.getValuesByRimId(dbSupport);
+                baseRim = findBaseRim(dbSupport);
+                if (tpmEvents.isEmpty()) {
+                    ReferenceDigestValue rdv;
+                    try {
+                        logProcessor = new TCGEventLog(dbSupport.getRimBytes());
+                        for (TpmPcrEvent tpe : logProcessor.getEventList()) {
+                            rdv = new ReferenceDigestValue(baseRim.getId(),
+                                    dbSupport.getId(), dbSupport.getPlatformManufacturer(),
+                                    dbSupport.getPlatformModel(), tpe.getPcrIndex(),
+                                    tpe.getEventDigestStr(), tpe.getEventTypeStr(),
+                                    false, false, updated, tpe.getEventContent());
 
-                        this.referenceEventManager.saveValue(rdv);
+                            this.referenceEventManager.saveValue(rdv);
+                        }
+                    } catch (CertificateException e) {
+                        e.printStackTrace();
+                    } catch (NoSuchAlgorithmException e) {
+                        e.printStackTrace();
+                    } catch (IOException e) {
+                        e.printStackTrace();
                     }
-                } catch (CertificateException e) {
-                    e.printStackTrace();
-                } catch (NoSuchAlgorithmException e) {
-                    e.printStackTrace();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            } else {
-                for (ReferenceDigestValue rdv : tpmEvents) {
-                    if (!rdv.isUpdated()) {
-                        rdv.updateInfo(dbSupport, baseRim.getId());
-                        this.referenceEventManager.updateEvent(rdv);
+                } else {
+                    for (ReferenceDigestValue rdv : tpmEvents) {
+                        if (!rdv.isUpdated()) {
+                            rdv.updateInfo(dbSupport, baseRim.getId());
+                            this.referenceEventManager.updateEvent(rdv);
+                        }
                     }
                 }
             }
