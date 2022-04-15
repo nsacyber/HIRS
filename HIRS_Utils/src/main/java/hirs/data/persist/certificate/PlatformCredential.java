@@ -14,9 +14,9 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.util.Strings;
 import org.bouncycastle.asn1.ASN1Encodable;
+import org.bouncycastle.asn1.ASN1IA5String;
 import org.bouncycastle.asn1.ASN1ObjectIdentifier;
 import org.bouncycastle.asn1.ASN1Sequence;
-import org.bouncycastle.asn1.DERIA5String;
 import org.bouncycastle.asn1.DERNull;
 import org.bouncycastle.asn1.x500.AttributeTypeAndValue;
 import org.bouncycastle.asn1.x500.RDN;
@@ -997,7 +997,7 @@ public class PlatformCredential extends DeviceAssociatedCertificate {
                     // Subtract the data based on the OID
                     switch (info.getPolicyQualifierId().getId()) {
                         case POLICY_QUALIFIER_CPSURI:
-                            cpsURI = DERIA5String.getInstance(info.getQualifier()).getString();
+                            cpsURI = ASN1IA5String.getInstance(info.getQualifier()).getString();
                             break;
                         case POLICY_QUALIFIER_USER_NOTICE:
                             UserNotice userNotice = UserNotice.getInstance(info.getQualifier());

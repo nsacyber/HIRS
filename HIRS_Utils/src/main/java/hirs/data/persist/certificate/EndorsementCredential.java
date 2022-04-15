@@ -419,27 +419,29 @@ public class EndorsementCredential extends DeviceAssociatedCertificate {
             LOGGER.debug("Found TPM Assertions: " + tpmSecurityAssertions.toString());
             // Iterate through remaining fields to set optional attributes
             int tag;
-            DERTaggedObject obj;
+            ASN1TaggedObject obj;
             for (int i = seqPosition; i < seq.size(); i++) {
                 if (seq.getObjectAt(i) instanceof DERTaggedObject) {
                     obj = (DERTaggedObject) seq.getObjectAt(i);
                     tag = obj.getTagNo();
                     if (tag == EK_TYPE_TAG) {
-                        int ekGenTypeVal = ((ASN1Enumerated) obj.getObject()).getValue().intValue();
+                        int ekGenTypeVal = ((ASN1Enumerated) obj.getLoadedObject())
+                                .getValue().intValue();
                         if (ekGenTypeVal >= EK_TYPE_VAL_MIN && ekGenTypeVal <= EK_TYPE_VAL_MAX) {
                             TPMSecurityAssertions.EkGenerationType ekGenType
                                     = TPMSecurityAssertions.EkGenerationType.values()[ekGenTypeVal];
                             tpmSecurityAssertions.setEkGenType(ekGenType);
                         }
                     } else if (tag == EK_LOC_TAG) {
-                        int ekGenLocVal = ((ASN1Enumerated) obj.getObject()).getValue().intValue();
+                        int ekGenLocVal = ((ASN1Enumerated) obj.getLoadedObject())
+                                .getValue().intValue();
                         if (ekGenLocVal >= EK_LOC_VAL_MIN && ekGenLocVal <= EK_LOC_VAL_MAX) {
                             TPMSecurityAssertions.EkGenerationLocation ekGenLocation
                                 = TPMSecurityAssertions.EkGenerationLocation.values()[ekGenLocVal];
                             tpmSecurityAssertions.setEkGenLoc(ekGenLocation);
                         }
                     } else if (tag == EK_CERT_LOC_TAG) {
-                        int ekCertGenLocVal = ((ASN1Enumerated) obj.getObject())
+                        int ekCertGenLocVal = ((ASN1Enumerated) obj.getLoadedObject())
                                 .getValue().intValue();
                         if (ekCertGenLocVal >= EK_LOC_VAL_MIN
                                 && ekCertGenLocVal <= EK_LOC_VAL_MAX) {
@@ -498,7 +500,7 @@ public class EndorsementCredential extends DeviceAssociatedCertificate {
 
         } else if (component instanceof ASN1TaggedObject) {
             ASN1TaggedObject taggedObj = (ASN1TaggedObject) component;
-            parseSingle(taggedObj.getObject(), addToMapping, key);
+            parseSingle(taggedObj.getLoadedObject(), addToMapping, key);
 
         } else if (component instanceof ASN1OctetString) {
             // this may contain parseable data or may just be a OID key-pair value
@@ -605,7 +607,7 @@ public class EndorsementCredential extends DeviceAssociatedCertificate {
             }
 
         } else if (component instanceof ASN1ApplicationSpecific) {
-            parseSingle(((ASN1ApplicationSpecific) component).getObject(), addToMapping, key);
+            parseSingle(((ASN1ApplicationSpecific) component).getLoadedObject(), addToMapping, key);
 
         } else if (component instanceof DERBMPString) {
             if (addToMapping) {

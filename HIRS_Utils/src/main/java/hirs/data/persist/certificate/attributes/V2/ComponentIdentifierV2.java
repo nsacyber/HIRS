@@ -9,8 +9,8 @@ import org.bouncycastle.asn1.ASN1Enumerated;
 import org.bouncycastle.asn1.ASN1ObjectIdentifier;
 import org.bouncycastle.asn1.ASN1Sequence;
 import org.bouncycastle.asn1.ASN1TaggedObject;
+import org.bouncycastle.asn1.ASN1UTF8String;
 import org.bouncycastle.asn1.DEROctetString;
-import org.bouncycastle.asn1.DERUTF8String;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -75,10 +75,10 @@ public class ComponentIdentifierV2 extends ComponentIdentifier {
      */
     @SuppressWarnings("checkstyle:parameternumber")
     public ComponentIdentifierV2(final ComponentClass componentClass,
-            final DERUTF8String componentManufacturer,
-            final DERUTF8String componentModel,
-            final DERUTF8String componentSerial,
-            final DERUTF8String componentRevision,
+            final ASN1UTF8String componentManufacturer,
+            final ASN1UTF8String componentModel,
+            final ASN1UTF8String componentSerial,
+            final ASN1UTF8String componentRevision,
             final ASN1ObjectIdentifier componentManufacturerId,
             final ASN1Boolean fieldReplaceable,
             final List<ComponentAddress> componentAddress,
@@ -114,18 +114,18 @@ public class ComponentIdentifierV2 extends ComponentIdentifier {
                 DEROctetString.getInstance(componentIdSeq.getObjectAt(tag)).toString());
 
         // Mandatory values
-        this.setComponentManufacturer(DERUTF8String.getInstance(sequence.getObjectAt(tag++)));
-        this.setComponentModel(DERUTF8String.getInstance(sequence.getObjectAt(tag++)));
+        this.setComponentManufacturer(ASN1UTF8String.getInstance(sequence.getObjectAt(tag++)));
+        this.setComponentModel(ASN1UTF8String.getInstance(sequence.getObjectAt(tag++)));
 
         // Continue reading the sequence if it does contain more than 2 values
         for (int i = tag; i < sequence.size(); i++) {
             ASN1TaggedObject taggedObj = ASN1TaggedObject.getInstance(sequence.getObjectAt(i));
             switch (taggedObj.getTagNo()) {
                 case COMPONENT_SERIAL:
-                    this.setComponentSerial(DERUTF8String.getInstance(taggedObj, false));
+                    this.setComponentSerial(ASN1UTF8String.getInstance(taggedObj, false));
                     break;
                 case COMPONENT_REVISION:
-                    this.setComponentRevision(DERUTF8String.getInstance(taggedObj, false));
+                    this.setComponentRevision(ASN1UTF8String.getInstance(taggedObj, false));
                     break;
                 case COMPONENT_MANUFACTURER_ID:
                     this.setComponentManufacturerId(ASN1ObjectIdentifier

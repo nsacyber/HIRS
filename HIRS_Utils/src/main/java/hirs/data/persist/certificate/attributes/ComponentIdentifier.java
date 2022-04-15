@@ -1,17 +1,17 @@
 package hirs.data.persist.certificate.attributes;
 
+import org.apache.commons.lang3.StringUtils;
+import org.bouncycastle.asn1.ASN1Boolean;
+import org.bouncycastle.asn1.ASN1ObjectIdentifier;
+import org.bouncycastle.asn1.ASN1Sequence;
+import org.bouncycastle.asn1.ASN1TaggedObject;
+import org.bouncycastle.asn1.ASN1UTF8String;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
-import org.apache.commons.lang3.StringUtils;
-
-import org.bouncycastle.asn1.ASN1Boolean;
-import org.bouncycastle.asn1.ASN1ObjectIdentifier;
-import org.bouncycastle.asn1.ASN1Sequence;
-import org.bouncycastle.asn1.ASN1TaggedObject;
-import org.bouncycastle.asn1.DERUTF8String;
 
 /**
  * Basic class that handle component identifiers from the Platform Configuration
@@ -67,10 +67,10 @@ public class ComponentIdentifier {
      */
     protected static final int COMPONENT_ADDRESS = 4;
 
-    private DERUTF8String componentManufacturer;
-    private DERUTF8String componentModel;
-    private DERUTF8String componentSerial;
-    private DERUTF8String componentRevision;
+    private ASN1UTF8String componentManufacturer;
+    private ASN1UTF8String componentModel;
+    private ASN1UTF8String componentSerial;
+    private ASN1UTF8String componentRevision;
     private ASN1ObjectIdentifier componentManufacturerId;
     private ASN1Boolean fieldReplaceable;
     private List<ComponentAddress> componentAddress;
@@ -80,10 +80,10 @@ public class ComponentIdentifier {
      * Default constructor.
      */
     public ComponentIdentifier() {
-        componentManufacturer = new DERUTF8String(NOT_SPECFIED_COMPONENT);
-        componentModel = new DERUTF8String(NOT_SPECFIED_COMPONENT);
-        componentSerial = new DERUTF8String(StringUtils.EMPTY);
-        componentRevision = new DERUTF8String(StringUtils.EMPTY);
+        componentManufacturer = ASN1UTF8String.getInstance(NOT_SPECFIED_COMPONENT);
+        componentModel = ASN1UTF8String.getInstance(NOT_SPECFIED_COMPONENT);
+        componentSerial = ASN1UTF8String.getInstance(StringUtils.EMPTY);
+        componentRevision = ASN1UTF8String.getInstance(StringUtils.EMPTY);
         componentManufacturerId = null;
         fieldReplaceable = null;
         componentAddress = new ArrayList<>();
@@ -100,10 +100,10 @@ public class ComponentIdentifier {
      * @param fieldReplaceable represents if the component is replaceable
      * @param componentAddress represents a list of addresses
      */
-    public ComponentIdentifier(final DERUTF8String componentManufacturer,
-            final DERUTF8String componentModel,
-            final DERUTF8String componentSerial,
-            final DERUTF8String componentRevision,
+    public ComponentIdentifier(final ASN1UTF8String componentManufacturer,
+            final ASN1UTF8String componentModel,
+            final ASN1UTF8String componentSerial,
+            final ASN1UTF8String componentRevision,
             final ASN1ObjectIdentifier componentManufacturerId,
             final ASN1Boolean fieldReplaceable,
             final List<ComponentAddress> componentAddress) {
@@ -130,18 +130,18 @@ public class ComponentIdentifier {
         }
 
         //Mandatory values
-        componentManufacturer = DERUTF8String.getInstance(sequence.getObjectAt(0));
-        componentModel = DERUTF8String.getInstance(sequence.getObjectAt(1));
+        componentManufacturer = ASN1UTF8String.getInstance(sequence.getObjectAt(0));
+        componentModel = ASN1UTF8String.getInstance(sequence.getObjectAt(1));
 
         //Continue reading the sequence if it does contain more than 2 values
         for (int i = 2; i < sequence.size(); i++) {
             ASN1TaggedObject taggedObj = ASN1TaggedObject.getInstance(sequence.getObjectAt(i));
             switch (taggedObj.getTagNo()) {
                 case COMPONENT_SERIAL:
-                    componentSerial = DERUTF8String.getInstance(taggedObj, false);
+                    componentSerial = ASN1UTF8String.getInstance(taggedObj, false);
                     break;
                 case COMPONENT_REVISION:
-                    componentRevision = DERUTF8String.getInstance(taggedObj, false);
+                    componentRevision = ASN1UTF8String.getInstance(taggedObj, false);
                     break;
                 case COMPONENT_MANUFACTURER_ID:
                     componentManufacturerId = ASN1ObjectIdentifier.getInstance(taggedObj, false);
@@ -163,56 +163,56 @@ public class ComponentIdentifier {
     /**
      * @return the componentManufacturer
      */
-    public DERUTF8String getComponentManufacturer() {
+    public ASN1UTF8String getComponentManufacturer() {
         return componentManufacturer;
     }
 
     /**
      * @param componentManufacturer the componentManufacturer to set
      */
-    public void setComponentManufacturer(final DERUTF8String componentManufacturer) {
+    public void setComponentManufacturer(final ASN1UTF8String componentManufacturer) {
         this.componentManufacturer = componentManufacturer;
     }
 
     /**
      * @return the componentModel
      */
-    public DERUTF8String getComponentModel() {
+    public ASN1UTF8String getComponentModel() {
         return componentModel;
     }
 
     /**
      * @param componentModel the componentModel to set
      */
-    public void setComponentModel(final DERUTF8String componentModel) {
+    public void setComponentModel(final ASN1UTF8String componentModel) {
         this.componentModel = componentModel;
     }
 
     /**
      * @return the componentSerial
      */
-    public DERUTF8String getComponentSerial() {
+    public ASN1UTF8String getComponentSerial() {
         return componentSerial;
     }
 
     /**
      * @param componentSerial the componentSerial to set
      */
-    public void setComponentSerial(final DERUTF8String componentSerial) {
+    public void setComponentSerial(final ASN1UTF8String componentSerial) {
         this.componentSerial = componentSerial;
     }
 
     /**
      * @return the componentRevision
      */
-    public DERUTF8String getComponentRevision() {
+    public ASN1UTF8String getComponentRevision() {
         return componentRevision;
     }
 
     /**
      * @param componentRevision the componentRevision to set
      */
-    public void setComponentRevision(final DERUTF8String componentRevision) {
+    public void setComponentRevision(final ASN1UTF8String componentRevision) {
         this.componentRevision = componentRevision;
     }
 

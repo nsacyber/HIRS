@@ -92,7 +92,7 @@ subprojects {
     // here to ensure that all projects are using the same versions of common
     // dependencies:
     ext.libs = [
-      bouncy_castle: 'org.bouncycastle:bcmail-jdk15on:1.59',
+      bouncy_castle: 'org.bouncycastle:bcmail-jdk15on:1.70',
       checkstyle:    'com.puppycrawl.tools:checkstyle:10.0',
       commons_cli:   'commons-cli:commons-cli:1.4',
       commons_codec: 'commons-codec:commons-codec:1.15',

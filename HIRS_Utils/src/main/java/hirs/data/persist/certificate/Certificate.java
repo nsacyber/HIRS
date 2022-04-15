@@ -9,6 +9,7 @@ import org.apache.logging.log4j.Logger;
 import org.bouncycastle.asn1.ASN1BitString;
 import org.bouncycastle.asn1.ASN1Encodable;
 import org.bouncycastle.asn1.ASN1GeneralizedTime;
+import org.bouncycastle.asn1.ASN1IA5String;
 import org.bouncycastle.asn1.ASN1InputStream;
 import org.bouncycastle.asn1.ASN1Integer;
 import org.bouncycastle.asn1.ASN1Object;
@@ -735,7 +736,7 @@ public abstract class Certificate extends ArchivableEntity {
                             .getNames();
                     for (GeneralName genName : genNames) {
                         if (genName.getTagNo() == GeneralName.uniformResourceIdentifier) {
-                            String url = DERIA5String.getInstance(genName.getName())
+                            String url = ASN1IA5String.getInstance(genName.getName())
                                     .getString();
                             crlUrls.add(url);
                         }

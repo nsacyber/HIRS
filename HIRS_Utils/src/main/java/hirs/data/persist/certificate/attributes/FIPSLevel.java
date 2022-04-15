@@ -2,8 +2,8 @@ package hirs.data.persist.certificate.attributes;
 
 import org.bouncycastle.asn1.ASN1Boolean;
 import org.bouncycastle.asn1.ASN1Enumerated;
+import org.bouncycastle.asn1.ASN1IA5String;
 import org.bouncycastle.asn1.ASN1Sequence;
-import org.bouncycastle.asn1.DERIA5String;
 
 /**
  * Basic class that handle FIPS Level.
@@ -66,7 +66,7 @@ public class FIPSLevel {
         }
     }
 
-    private DERIA5String version;
+    private ASN1IA5String version;
     private SecurityLevel level;
     private ASN1Boolean plus;
 
@@ -85,7 +85,7 @@ public class FIPSLevel {
      * @param level of the FIPS.
      * @param plus boolean value.
      */
-    public FIPSLevel(final DERIA5String version,
+    public FIPSLevel(final ASN1IA5String version,
                 final SecurityLevel level,
                 final ASN1Boolean plus) {
         this.version = version;
@@ -101,7 +101,7 @@ public class FIPSLevel {
      */
     public FIPSLevel(final ASN1Sequence sequence) throws IllegalArgumentException {
         //Get version
-        version = DERIA5String.getInstance(sequence.getObjectAt(0));
+        version = ASN1IA5String.getInstance(sequence.getObjectAt(0));
         //Get and validate level
         ASN1Enumerated enumarated = ASN1Enumerated.getInstance(sequence.getObjectAt(1));
         //Throw exception when is not between 1 and 7
@@ -121,14 +121,14 @@ public class FIPSLevel {
     /**
      * @return the version
      */
-    public DERIA5String getVersion() {
+    public ASN1IA5String getVersion() {
         return version;
     }
 
     /**
      * @param version the version to set
      */
-    public void setVersion(final DERIA5String version) {
+    public void setVersion(final ASN1IA5String version) {
         this.version = version;
     }
 

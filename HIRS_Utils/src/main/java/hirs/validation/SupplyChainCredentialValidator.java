@@ -19,7 +19,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.util.Strings;
-import org.bouncycastle.asn1.DERUTF8String;
+import org.bouncycastle.asn1.ASN1UTF8String;
 import org.bouncycastle.asn1.x500.X500Name;
 import org.bouncycastle.cert.CertException;
 import org.bouncycastle.cert.X509AttributeCertificateHolder;
@@ -821,19 +821,19 @@ public final class SupplyChainCredentialValidator implements CredentialValidator
         final List<ComponentIdentifier> pcComponents = new ArrayList<>();
         for (ComponentIdentifier component : untrimmedPcComponents) {
             if (component.getComponentManufacturer() != null) {
-                component.setComponentManufacturer(new DERUTF8String(
+                component.setComponentManufacturer(ASN1UTF8String.getInstance(
                         component.getComponentManufacturer().getString().trim()));
             }
             if (component.getComponentModel() != null) {
-                component.setComponentModel(new DERUTF8String(
+                component.setComponentModel(ASN1UTF8String.getInstance(
                         component.getComponentModel().getString().trim()));
             }
             if (component.getComponentSerial() != null) {
-                component.setComponentSerial(new DERUTF8String(
+                component.setComponentSerial(ASN1UTF8String.getInstance(
                         component.getComponentSerial().getString().trim()));
             }
             if (component.getComponentRevision() != null) {
-                component.setComponentRevision(new DERUTF8String(
+                component.setComponentRevision(ASN1UTF8String.getInstance(
                         component.getComponentRevision().getString().trim()));
             }
             pcComponents.add(component);
@@ -843,13 +843,13 @@ public final class SupplyChainCredentialValidator implements CredentialValidator
         pcComponents.forEach(component -> LOGGER.info(component.toString()));
         LOGGER.info("...against the the following DeviceInfoReport components:");
         allDeviceInfoComponents.forEach(component -> LOGGER.info(component.toString()));
-        Set<DERUTF8String> manufacturerSet = new HashSet<>();
+        Set<ASN1UTF8String> manufacturerSet = new HashSet<>();
         pcComponents.forEach(pcComp -> manufacturerSet.add(pcComp.getComponentManufacturer()));
 
         // Create a list for unmatched components across all manufacturers to display at the end.
         List<ComponentIdentifier> pcUnmatchedComponents = new ArrayList<>();
 
-        for (DERUTF8String derUtf8Manufacturer : manufacturerSet) {
+        for (ASN1UTF8String derUtf8Manufacturer : manufacturerSet) {
             List<ComponentIdentifier> pcComponentsFromManufacturer
                     = pcComponents.stream().filter(compIdentifier
                     -> compIdentifier.getComponentManufacturer().equals(derUtf8Manufacturer))
@@ -983,7 +983,7 @@ public final class SupplyChainCredentialValidator implements CredentialValidator
      * @return true if fieldValue is null or empty; false otherwise
      */
     private static boolean hasEmptyValueForRequiredField(final String description,
-                                                  final DERUTF8String fieldValue) {
+                                                  final ASN1UTF8String fieldValue) {
         if (fieldValue == null || StringUtils.isEmpty(fieldValue.getString().trim())) {
             LOGGER.error("Required field was empty or null in Platform Credential: "
                     + description);
@@ -1115,7 +1115,7 @@ public final class SupplyChainCredentialValidator implements CredentialValidator
 
     private static boolean isMatchOrEmptyInPlatformCert(
             final String evidenceFromDevice,
-            final DERUTF8String valueInPlatformCert) {
+            final ASN1UTF8String valueInPlatformCert) {
         if (valueInPlatformCert == null || StringUtils.isEmpty(valueInPlatformCert.getString())) {
             return true;
         }
@@ -1123,8 +1123,8 @@ public final class SupplyChainCredentialValidator implements CredentialValidator
     }
 
     private static boolean isMatchOrEmptyInPlatformCert(
-            final DERUTF8String evidenceFromDevice,
-            final DERUTF8String valueInPlatformCert) {
+            final ASN1UTF8String evidenceFromDevice,
+            final ASN1UTF8String valueInPlatformCert) {
         return evidenceFromDevice.equals(valueInPlatformCert);
     }
 

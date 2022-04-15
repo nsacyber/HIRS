@@ -2,7 +2,7 @@ package hirs.data.persist.certificate.attributes;
 
 import org.bouncycastle.asn1.ASN1ObjectIdentifier;
 import org.bouncycastle.asn1.ASN1Sequence;
-import org.bouncycastle.asn1.DERUTF8String;
+import org.bouncycastle.asn1.ASN1UTF8String;
 
 /**
  * Basic class that handle component addresses from the component identifier.
@@ -25,7 +25,7 @@ public class ComponentAddress {
     private static final String BLUETOOTH_MAC = "2.23.133.17.3";
 
     private ASN1ObjectIdentifier addressType;
-    private DERUTF8String addressValue;
+    private ASN1UTF8String addressValue;
 
     /**
      * Default constructor.
@@ -41,7 +41,7 @@ public class ComponentAddress {
      * @param addressValue string containing the address value
      */
     public ComponentAddress(final ASN1ObjectIdentifier addressType,
-                            final DERUTF8String addressValue) {
+                            final ASN1UTF8String addressValue) {
         this.addressType = addressType;
         this.addressValue = addressValue;
     }
@@ -60,7 +60,7 @@ public class ComponentAddress {
                     + "all the required fields.");
         }
         addressType = ASN1ObjectIdentifier.getInstance(sequence.getObjectAt(0));
-        addressValue = DERUTF8String.getInstance(sequence.getObjectAt(1));
+        addressValue = ASN1UTF8String.getInstance(sequence.getObjectAt(1));
     }
 
     /**
@@ -103,14 +103,14 @@ public class ComponentAddress {
     /**
      * @return the addressValue
      */
-    public DERUTF8String getAddressValue() {
+    public ASN1UTF8String getAddressValue() {
         return addressValue;
     }
 
     /**
      * @param addressValue the addressValue to set
      */
-    public void setAddressValue(final DERUTF8String addressValue) {
+    public void setAddressValue(final ASN1UTF8String addressValue) {
         this.addressValue = addressValue;
     }
 

@@ -2,7 +2,7 @@ package hirs.data.persist.certificate.attributes;
 
 import hirs.data.persist.DeviceInfoReport;
 import org.bouncycastle.asn1.ASN1Sequence;
-import org.bouncycastle.asn1.DERUTF8String;
+import org.bouncycastle.asn1.ASN1UTF8String;
 
 /**
  *
@@ -21,15 +21,15 @@ public class PlatformProperty {
      */
     protected static final int IDENTIFIER_NUMBER = 2;
 
-    private DERUTF8String propertyName;
-    private DERUTF8String propertyValue;
+    private ASN1UTF8String propertyName;
+    private ASN1UTF8String propertyValue;
 
     /**
      * Default constructor.
      */
     public PlatformProperty() {
-        this.propertyName = new DERUTF8String(DeviceInfoReport.NOT_SPECIFIED);
-        this.propertyValue = new DERUTF8String(DeviceInfoReport.NOT_SPECIFIED);
+        this.propertyName = ASN1UTF8String.getInstance(DeviceInfoReport.NOT_SPECIFIED);
+        this.propertyValue = ASN1UTF8String.getInstance(DeviceInfoReport.NOT_SPECIFIED);
     }
 
     /**
@@ -38,7 +38,7 @@ public class PlatformProperty {
      * @param propertyName string containing the property name
      * @param propertyValue string containing the property value
      */
-    public PlatformProperty(final DERUTF8String propertyName, final DERUTF8String propertyValue) {
+    public PlatformProperty(final ASN1UTF8String propertyName, final ASN1UTF8String propertyValue) {
         this.propertyName = propertyName;
         this.propertyValue = propertyValue;
     }
@@ -57,35 +57,35 @@ public class PlatformProperty {
                     + "the required fields.");
         }
 
-        this.propertyName = DERUTF8String.getInstance(sequence.getObjectAt(0));
-        this.propertyValue = DERUTF8String.getInstance(sequence.getObjectAt(1));
+        this.propertyName = ASN1UTF8String.getInstance(sequence.getObjectAt(0));
+        this.propertyValue = ASN1UTF8String.getInstance(sequence.getObjectAt(1));
     }
 
     /**
      * @return the propertyName
      */
-    public DERUTF8String getPropertyName() {
+    public ASN1UTF8String getPropertyName() {
         return propertyName;
     }
 
     /**
      * @param propertyName the propertyName to set
      */
-    public void setPropertyName(final DERUTF8String propertyName) {
+    public void setPropertyName(final ASN1UTF8String propertyName) {
         this.propertyName = propertyName;
     }
 
     /**
      * @return the propertyValue
      */
-    public DERUTF8String getPropertyValue() {
+    public ASN1UTF8String getPropertyValue() {
         return propertyValue;
     }
 
     /**
      * @param propertyValue the propertyValue to set
      */
-    public void setPropertyValue(final DERUTF8String propertyValue) {
+    public void setPropertyValue(final ASN1UTF8String propertyValue) {
         this.propertyValue = propertyValue;
     }
 
