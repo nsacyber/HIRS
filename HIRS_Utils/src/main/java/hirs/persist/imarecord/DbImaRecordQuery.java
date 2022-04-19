@@ -2,7 +2,7 @@ package hirs.persist.imarecord;
 
 import hirs.FilteredRecordsList;
 import hirs.data.persist.IMAMeasurementRecord;
-import org.hibernate.Query;
+import org.hibernate.query.Query;
 import org.hibernate.Session;
 
 import java.util.List;

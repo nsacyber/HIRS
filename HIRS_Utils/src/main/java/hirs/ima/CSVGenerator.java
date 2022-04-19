@@ -100,7 +100,9 @@ public final class CSVGenerator {
         StringBuilder sb = new StringBuilder();
         CSVPrinter csvPrinter;
         try {
-            csvPrinter = CSVFormat.DEFAULT.withRecordSeparator(System.lineSeparator()).print(sb);
+            csvPrinter = CSVFormat.DEFAULT.builder()
+                    .setRecordSeparator(System.lineSeparator())
+                    .build().print(sb);
             for (ImaBlacklistRecord record : blacklistBaseline.getRecords()) {
                 String digest = "";
                 Digest hash = record.getHash();

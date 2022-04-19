@@ -22,7 +22,7 @@ import org.hibernate.criterion.MatchMode;
 import org.hibernate.criterion.Order;
 import org.hibernate.criterion.Projections;
 import org.hibernate.criterion.Restrictions;
-import org.hibernate.internal.SessionFactoryImpl;
+import org.hibernate.service.spi.ServiceRegistryImplementor;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -31,6 +31,9 @@ import javax.persistence.ManyToMany;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.OneToOne;
+import javax.persistence.criteria.CriteriaBuilder;
+import javax.persistence.criteria.CriteriaQuery;
+import javax.persistence.criteria.Root;
 import java.io.Serializable;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
@@ -162,7 +165,8 @@ public abstract class AbstractDbManager<T> implements CrudManager<T> {
      * @return the configured database implementation
      */
     protected DBManager.DBImpl getConfiguredImplementation() {
-        String dialect = ((SessionFactoryImpl) factory).getDialect().toString().toLowerCase();
+        String dialect = ((ServiceRegistryImplementor) factory).getParentServiceRegistry()
+                .getParentServiceRegistry().toString().toLowerCase();
         if (dialect.contains("hsql")) {
             return DBManager.DBImpl.HSQL;
         } else if (dialect.contains("mysql")) {
@@ -243,10 +247,14 @@ public abstract class AbstractDbManager<T> implements CrudManager<T> {
         boolean deleted = false;
         Transaction tx = null;
         Session session = factory.getCurrentSession();
+        CriteriaBuilder builder = session.getCriteriaBuilder();
+        CriteriaQuery<T> criteria = builder.createQuery(clazz);
         try {
             LOGGER.debug("retrieving object from db");
             tx = session.beginTransaction();
-            Object object = session.createCriteria(clazz)
+            Root<T> myObjectRoot = criteria.from(clazz);
+            Join<T, JoinObject> joinObject = myObjectRoot.join("joinObject");
+            Object object = session.getSessionFactory().getCurrentSession().createCriteria(clazz)
                     .add(Restrictions.eq("name", name)).uniqueResult();
             if (object != null && clazz.isInstance(object)) {
                 T objectOfTypeT = clazz.cast(object);

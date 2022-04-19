@@ -33,7 +33,7 @@ dependencies {
     compile libs.commons_http
     compile libs.commons_valid
     compile libs.hibernate
-    compile libs.hikari
+//    compile libs.hikari
     compile libs.jackson
     compile libs.jadira_usertype
     compile libs.joda_time

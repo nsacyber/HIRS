@@ -1,16 +1,16 @@
 package hirs.attestationca;
 
-import org.hibernate.SessionFactory;
-import org.springframework.context.annotation.AnnotationConfigApplicationContext;
-import org.springframework.orm.hibernate4.LocalSessionFactoryBean;
-
-import javax.servlet.ServletContextEvent;
-import javax.servlet.ServletContextListener;
 import hirs.persist.DBAppraiserManager;
 import hirs.persist.DBDeviceGroupManager;
 import hirs.persist.DBPolicyManager;
 import hirs.persist.PersistenceConfiguration;
 import hirs.utils.HIRSProfiles;
+import org.hibernate.SessionFactory;
+import org.springframework.context.annotation.AnnotationConfigApplicationContext;
+import org.springframework.orm.hibernate5.LocalSessionFactoryBean;
+
+import javax.servlet.ServletContextEvent;
+import javax.servlet.ServletContextListener;
 
 /**
  * Simply holds a contextInitialized method which will be called when the web app starts.
