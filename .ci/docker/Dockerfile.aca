@@ -2,12 +2,11 @@ FROM centos:7
 
 # Install packages for installing HIRS ACA
 RUN yum -y update && yum clean all
-RUN yum install -y mariadb-server openssl java-1.8.0 rpmdevtools coreutils initscripts chkconfig sed grep firewalld policycoreutils && yum clean all
+RUN yum install -y mariadb-server openssl tomcat java-1.8.0 rpmdevtools coreutils initscripts chkconfig sed grep wget firewalld policycoreutils net-tools && yum clean all
 
 # Remove TLSv1, TLSv1.1, references to prevent java security from stopping tomcat launch
 RUN sed -i 's/TLSv1,//' /usr/lib/jvm/java-1.8.0-openjdk-1.8.0.*/jre/lib/security/java.security
 RUN sed -i 's/TLSv1.1,//' /usr/lib/jvm/java-1.8.0-openjdk-1.8.0.*/jre/lib/security/java.security
 
-RUN yum install -y tomcat
 # Expose ACA Port
 EXPOSE 8443

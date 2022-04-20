@@ -30,6 +30,9 @@ source sys_test_common.sh
 echo "ACA Container info: $(checkContainerStatus $aca_container)";
 echo "TPM2 Provisioner Container info: $(checkContainerStatus $tpm2_container)";
 
+# Build, Package, and Install HIRS ACA (2+ minutes) then wait for systems tests...
+docker exec $tpm2_container /HIRS/.ci/setup/container/setup_aca.sh
+sleep 120
 # Install HIRS provioner and setup tpm2 emulator
 docker exec $tpm2_container /HIRS/.ci/setup/container/setup_tpm2provisioner.sh
 
