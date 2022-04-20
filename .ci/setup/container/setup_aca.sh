@@ -12,5 +12,3 @@ if [ ! -d package/rpm/RPMS ]; then
 fi
 echo "installing the ACA"
 yum install -y package/rpm/RPMS/noarch/HIRS_AttestationCA*.el7.noarch.rpm
-
-echo "ACA Loaded!"
