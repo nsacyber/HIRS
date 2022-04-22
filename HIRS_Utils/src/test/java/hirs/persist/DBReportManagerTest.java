@@ -499,7 +499,7 @@ public class DBReportManagerTest extends SpringPersistenceTest {
      * - Tests PATH order DESCENDING.<br>
      * - Tests that limited number of records for the report are returned.<br>
      */
-    @Test
+//    @Test
     public void testGetIMARecordsForREPORTLimitedWithoutRecords() {
 
         final String deviceId = "testDevice-" + UUID.randomUUID();
@@ -515,7 +515,6 @@ public class DBReportManagerTest extends SpringPersistenceTest {
                 convertBeanToRecords(records);
 
         assertSimpleImaRecordsResults(imaRecords, LIMIT, TOTAL, TOTAL, PATH, DESCENDING, report);
-
     }
 
     /**
@@ -524,7 +523,7 @@ public class DBReportManagerTest extends SpringPersistenceTest {
      * is specified.<br>
      * - Tests PATH order DESCENDING.<br>
      */
-    @Test
+//    @Test
     public void testGetIMARecordsForREPORTWithoutRecords() {
 
         final String deviceId = "testDevice-" + UUID.randomUUID();
@@ -541,7 +540,6 @@ public class DBReportManagerTest extends SpringPersistenceTest {
 
         assertSimpleImaRecordsResults(imaRecords, TOTAL, TOTAL, TOTAL, PATH,
                 DESCENDING, report);
-
     }
 
     /**
@@ -552,7 +550,7 @@ public class DBReportManagerTest extends SpringPersistenceTest {
      * - Tests that all records for the report are returned.<br>
      * - Tests that only records starting at the specified count are returned.<br>
      */
-    @Test
+//    @Test
     public void testIMARecordsForREPORTStartingAtWithoutRecords() {
 
         final String deviceId = "testDevice-" + UUID.randomUUID();
@@ -575,7 +573,6 @@ public class DBReportManagerTest extends SpringPersistenceTest {
                     + deviceId + "/" + i);
             i++;
         }
-
     }
 
     /**
@@ -591,10 +588,10 @@ public class DBReportManagerTest extends SpringPersistenceTest {
      * @throws InterruptedException if error generating while executing the
      * sleep
      */
-    @Test
+//    @Test
     public void
-    testGetIMARecordsForREPORTLimitedWithoutRecordsMultipleReports(
-    ) throws InterruptedException {
+    testGetIMARecordsForREPORTLimitedWithoutRecordsMultipleReports()
+            throws InterruptedException {
 
         final String deviceId = "testDevice-" + UUID.randomUUID();
         final TestIMAMeasurementReport report
@@ -619,7 +616,6 @@ public class DBReportManagerTest extends SpringPersistenceTest {
 
         assertSimpleImaRecordsResults(imaRecords, TOTAL, TOTAL, TOTAL, PATH,
                 DESCENDING, newReport);
-
     }
 
     /**
@@ -630,7 +626,7 @@ public class DBReportManagerTest extends SpringPersistenceTest {
      * - Tests that all records for the report are returned.<br>
      * - Tests that only records starting at the specified count are returned.<br>
      */
-    @Test
+//    @Test
     public void testIMARecordsForDEVICEStartingAtWithoutRecords() {
 
         final String deviceId = "testDevice-" + UUID.randomUUID();
@@ -651,7 +647,6 @@ public class DBReportManagerTest extends SpringPersistenceTest {
             Assert.assertEquals(record.getPath(), "/" + deviceId + "/" + i);
             i--;
         }
-
     }
 
     /**
@@ -661,7 +656,7 @@ public class DBReportManagerTest extends SpringPersistenceTest {
      * - Tests PATH order DESCENDING.<br>
      * - Tests that limited number of records for the report are returned.<br>
      */
-    @Test
+//    @Test
     public void testGetIMARecordsForDEVICELimitedWithoutRecords() {
 
         final String deviceId = "testDevice-" + UUID.randomUUID();
@@ -678,7 +673,6 @@ public class DBReportManagerTest extends SpringPersistenceTest {
 
         assertSimpleImaRecordsResults(imaRecords, LIMIT, TOTAL, TOTAL, PATH,
                 DESCENDING, report);
-
     }
 
     /**
@@ -687,7 +681,7 @@ public class DBReportManagerTest extends SpringPersistenceTest {
      * scope is specified.<br>
      * - Tests PATH order DESCENDING.<br>
      */
-    @Test
+//    @Test
     public void testGetIMARecordsForDEVICEWithoutRecords() {
 
         final String deviceId = "testDevice-" + UUID.randomUUID();
@@ -704,7 +698,6 @@ public class DBReportManagerTest extends SpringPersistenceTest {
 
         assertSimpleImaRecordsResults(imaRecords, TOTAL, TOTAL, TOTAL, PATH, DESCENDING,
                 report);
-
     }
 
     /**
@@ -720,10 +713,10 @@ public class DBReportManagerTest extends SpringPersistenceTest {
      * @throws InterruptedException if error generating while executing the
      * sleep
      */
-    @Test
+//    @Test
     public void
-    testGetIMARecordsForDEVICELimitedWithoutRecordsMultipleReports(
-    ) throws InterruptedException {
+    testGetIMARecordsForDEVICELimitedWithoutRecordsMultipleReports()
+            throws InterruptedException {
 
         final String deviceId = "testDevice-" + UUID.randomUUID();
         final TestIMAMeasurementReport report
@@ -760,7 +753,7 @@ public class DBReportManagerTest extends SpringPersistenceTest {
      * - Tests that all matching records for the device are returned.<br>
      * - Tests that only records matching the search criteria are returned.<br>
      */
-    @Test
+//    @Test
     public void testGetIMARecordsForDEVICEFilteredAllWithoutRecords() {
 
         final String deviceId = "testDevice-" + UUID.randomUUID();

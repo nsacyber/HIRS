@@ -2,24 +2,26 @@ package hirs.persist;
 
 import com.google.common.base.Preconditions;
 import hirs.appraiser.Appraiser;
-import hirs.data.persist.baseline.Baseline;
 import hirs.data.persist.Device;
 import hirs.data.persist.DeviceGroup;
-import hirs.data.persist.baseline.HasBaselines;
 import hirs.data.persist.Policy;
-
-import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.List;
-
+import hirs.data.persist.baseline.Baseline;
+import hirs.data.persist.baseline.HasBaselines;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.hibernate.Criteria;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.Transaction;
-import org.hibernate.criterion.Projections;
 import org.hibernate.criterion.Restrictions;
+import org.hibernate.query.Query;
+
+import javax.persistence.criteria.CriteriaBuilder;
+import javax.persistence.criteria.CriteriaQuery;
+import javax.persistence.criteria.Predicate;
+import javax.persistence.criteria.Root;
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * This class defines a <code>PolicyManager</code> that stores policies in a
@@ -195,16 +197,44 @@ public class DBPolicyManager extends DBManager<Policy> implements PolicyManager 
         Session session = factory.getCurrentSession();
         Transaction tx = session.beginTransaction();
         try {
-            final Criteria criteria = session.createCriteria(DeviceGroup.class)
-                    .add(Restrictions.eq("name", DeviceGroup.DEFAULT_GROUP));
-            DeviceGroup group = (DeviceGroup) criteria.uniqueResult();
+            CriteriaBuilder criteriaBuilder = session.getCriteriaBuilder();
+            CriteriaQuery<DeviceGroup> deviceGroupCriteriaQuery = criteriaBuilder.createQuery(DeviceGroup.class);
+            CriteriaQuery<PolicyMapper> policyMapperCriteriaQuery = criteriaBuilder.createQuery(PolicyMapper.class);
+            Root<DeviceGroup> deviceGroupRoot = deviceGroupCriteriaQuery.from(DeviceGroup.class);
+            Root<PolicyMapper> policyMapperRoot = policyMapperCriteriaQuery.from(PolicyMapper.class);
+            Predicate deviceGroupPredicate = criteriaBuilder.and(
+                    criteriaBuilder.equal(deviceGroupRoot.get("name"), DeviceGroup.DEFAULT_GROUP));
+            Predicate policyPredicate = criteriaBuilder.and(
+                    criteriaBuilder.equal(policyMapperRoot.get("appraiser"), appraiser),
+                    criteriaBuilder.equal(policyMapperRoot.get("group.name"), DeviceGroup.DEFAULT_GROUP));
+            deviceGroupCriteriaQuery.select(deviceGroupRoot).where(deviceGroupPredicate);
+            policyMapperCriteriaQuery.select(policyMapperRoot).where(policyPredicate);
+
             LOGGER.debug("finding existing policy mapper from db where "
                     + "appraiser = {}", appraiser);
-            final Criteria cr = session.createCriteria(PolicyMapper.class)
-                    .createAlias("deviceGroup", "group")
-                    .add(Restrictions.eq("appraiser", appraiser))
-                    .add(Restrictions.eq("group.name", DeviceGroup.DEFAULT_GROUP));
-            final PolicyMapper mapper = (PolicyMapper) cr.uniqueResult();
+            DeviceGroup group = null;
+            Query<DeviceGroup> deviceGroupQuery = session.createQuery(deviceGroupCriteriaQuery);
+            List<DeviceGroup> deviceGroups = deviceGroupQuery.getResultList();
+            if (deviceGroups != null && !deviceGroups.isEmpty()) {
+                group = deviceGroups.get(0);
+            }
+
+            LOGGER.debug("finding existing policy mapper from db where "
+                    + "appraiser = {}", appraiser);
+            PolicyMapper mapper = null;
+            Query<PolicyMapper> policyMapperQuery = session.createQuery(policyMapperCriteriaQuery);
+            List<PolicyMapper> policyMappers = policyMapperQuery.getResultList();
+            if (policyMappers != null && !policyMappers.isEmpty()) {
+                mapper = policyMappers.get(0);
+            }
+//            final Criteria criteria = session.createCriteria(DeviceGroup.class)
+//                    .add(Restrictions.eq("name", DeviceGroup.DEFAULT_GROUP));
+//            DeviceGroup group = (DeviceGroup) criteria.uniqueResult();
+//            final Criteria cr = session.createCriteria(PolicyMapper.class)
+//                    .createAlias("deviceGroup", "group")
+//                    .add(Restrictions.eq("appraiser", appraiser))
+//                    .add(Restrictions.eq("group.name", DeviceGroup.DEFAULT_GROUP));
+//            final PolicyMapper mapper = (PolicyMapper) cr.uniqueResult();
             if (policy == null) {
                 LOGGER.debug("policy is null so removing policy");
                 if (mapper != null) {
@@ -266,11 +296,24 @@ public class DBPolicyManager extends DBManager<Policy> implements PolicyManager 
             tx = session.beginTransaction();
             LOGGER.debug("retrieving policy mapper from db where appraiser = {}",
                     appraiser);
-            final Criteria cr = session.createCriteria(PolicyMapper.class)
-                    .createAlias("deviceGroup", "group")
-                    .add(Restrictions.eq("appraiser", appraiser))
-                    .add(Restrictions.eq("group.name", DeviceGroup.DEFAULT_GROUP));
-            final PolicyMapper mapper = (PolicyMapper) cr.uniqueResult();
+            CriteriaBuilder criteriaBuilder = session.getCriteriaBuilder();
+            CriteriaQuery<PolicyMapper> criteriaQuery = criteriaBuilder.createQuery(PolicyMapper.class);
+            Root<PolicyMapper> root = criteriaQuery.from(PolicyMapper.class);
+            Predicate recordPredicate = criteriaBuilder.and(
+                    criteriaBuilder.equal(root.get("appraiser"), appraiser),
+                    criteriaBuilder.equal(root.get("group.name"), DeviceGroup.DEFAULT_GROUP));
+            criteriaQuery.select(root).where(recordPredicate);
+            Query<PolicyMapper> query = session.createQuery(criteriaQuery);
+            List<PolicyMapper> results = query.getResultList();
+            PolicyMapper mapper = null;
+            if (results != null && !results.isEmpty()) {
+                mapper = results.get(0);
+            }
+//            final Criteria cr = session.createCriteria(PolicyMapper.class)
+//                    .createAlias("deviceGroup", "group")
+//                    .add(Restrictions.eq("appraiser", appraiser))
+//                    .add(Restrictions.eq("group.name", DeviceGroup.DEFAULT_GROUP));
+//            final PolicyMapper mapper = (PolicyMapper) cr.uniqueResult();
             if (mapper == null) {
                 LOGGER.debug("no policy mapper found for appraiser {}",
                         appraiser);
@@ -308,9 +351,7 @@ public class DBPolicyManager extends DBManager<Policy> implements PolicyManager 
      *         there is none
      */
     @Override
-    public final Policy getPolicy(
-            final Appraiser appraiser,
-            final Device device) {
+    public final Policy getPolicy(final Appraiser appraiser, final Device device) {
         Preconditions.checkArgument(appraiser != null, "Appraiser must not be null");
         Preconditions.checkArgument(device != null, "Device must not be null");
 
@@ -322,22 +363,43 @@ public class DBPolicyManager extends DBManager<Policy> implements PolicyManager 
             tx = session.beginTransaction();
             LOGGER.debug("retrieving policy mapper from db where appraiser = "
                     + "{} and device= {}", appraiser, device);
-            final Criteria deviceCr = session.createCriteria(Device.class)
-                    .add(Restrictions.eq("name", device.getName()));
-            final Device retrievedDevice = (Device) deviceCr.uniqueResult();
+            final CriteriaBuilder deviceCriteriaBuilder = session.getCriteriaBuilder();
+            CriteriaQuery<Device> criteriaQuery = deviceCriteriaBuilder.createQuery(Device.class);
+            Root<Device> root = criteriaQuery.from(Device.class);
+            Predicate recordPredicate = deviceCriteriaBuilder.and(
+                    deviceCriteriaBuilder.equal(root.get("name"), device.getName()));
+            criteriaQuery.select(root).where(recordPredicate);
+            Query<Device> query = session.createQuery(criteriaQuery);
+            List<Device> results = query.getResultList();
+            Device retrievedDevice = null;
+            if (results != null && !results.isEmpty()) {
+                retrievedDevice = results.get(0);
+            }
+//            final Criteria deviceCr = session.createCriteria(Device.class)
+//                    .add(Restrictions.eq("name", device.getName()));
+//            final Device retrievedDevice = (Device) deviceCr.uniqueResult();
             DeviceGroup deviceGroup = null;
             if (retrievedDevice != null) {
                 deviceGroup = retrievedDevice.getDeviceGroup();
             }
-            final Criteria cr = session.createCriteria(PolicyMapper.class)
-                    .add(Restrictions.eq("appraiser", appraiser))
-                    .add(Restrictions.eq("deviceGroup", deviceGroup));
-            final PolicyMapper mapper = (PolicyMapper) cr.uniqueResult();
-            if (mapper == null) {
+            final CriteriaBuilder policyCriteriaBuilder = session.getCriteriaBuilder();
+            CriteriaQuery<PolicyMapper> policyCriteriaQuery = policyCriteriaBuilder.createQuery(PolicyMapper.class);
+            Root<PolicyMapper> policyRoot = policyCriteriaQuery.from(PolicyMapper.class);
+            Predicate policyPredicate = policyCriteriaBuilder.and(
+                    policyCriteriaBuilder.equal(policyRoot.get("appraiser"), appraiser),
+                    policyCriteriaBuilder.equal(policyRoot.get("deviceGroup"), deviceGroup));
+            policyCriteriaQuery.select(policyRoot).where(policyPredicate);
+            Query<PolicyMapper> policyQuery = session.createQuery(policyCriteriaQuery);
+            List<PolicyMapper> policyResults = policyQuery.getResultList();
+//            final Criteria cr = session.createCriteria(PolicyMapper.class)
+//                    .add(Restrictions.eq("appraiser", appraiser))
+//                    .add(Restrictions.eq("deviceGroup", deviceGroup));
+//            final PolicyMapper mapper = (PolicyMapper) cr.uniqueResult();
+            if (policyResults == null) {
                 LOGGER.debug("no policy mapper found for appraiser {} and "
                         + "device group {}", appraiser, deviceGroup);
             } else {
-                ret = mapper.getPolicy();
+                ret = policyResults.get(0).getPolicy();
             }
             session.getTransaction().commit();
         } catch (Exception e) {
@@ -383,10 +445,20 @@ public class DBPolicyManager extends DBManager<Policy> implements PolicyManager 
             tx = session.beginTransaction();
             LOGGER.debug("retrieving policy mapper from db where appraiser = "
                     + "{} and device group = {}", appraiser, deviceGroup);
-            final Criteria cr = session.createCriteria(PolicyMapper.class)
-                    .add(Restrictions.eq("appraiser", appraiser))
-                    .add(Restrictions.eq("deviceGroup", deviceGroup));
-            final PolicyMapper mapper = (PolicyMapper) cr.uniqueResult();
+            CriteriaBuilder criteriaBuilder = session.getCriteriaBuilder();
+            CriteriaQuery<PolicyMapper> criteriaQuery = criteriaBuilder.createQuery(PolicyMapper.class);
+            Root<PolicyMapper> root = criteriaQuery.from(PolicyMapper.class);
+            Predicate recordPredicate = criteriaBuilder.and(
+                    criteriaBuilder.equal(root.get("appraiser"), appraiser),
+                    criteriaBuilder.equal(root.get("deviceGroup"), deviceGroup));
+            criteriaQuery.select(root).where(recordPredicate);
+            Query<PolicyMapper> query = session.createQuery(criteriaQuery);
+            List<PolicyMapper> results = query.getResultList();
+            PolicyMapper mapper = null;
+            if (results != null && !results.isEmpty()) {
+                mapper = results.get(0);
+            }
+
             if (mapper == null) {
                 LOGGER.debug("no policy mapper found for appraiser {} and "
                     + "device group {}", appraiser, deviceGroup);
@@ -443,10 +515,23 @@ public class DBPolicyManager extends DBManager<Policy> implements PolicyManager 
             LOGGER.debug("Finding existing policy mapper from db where "
                     + "appraiser = {} and device group = {}", appraiser,
                     deviceGroup);
-            final Criteria cr = session.createCriteria(PolicyMapper.class)
-                    .add(Restrictions.eq("appraiser", appraiser))
-                    .add(Restrictions.eq("deviceGroup", deviceGroup));
-            final PolicyMapper mapper = (PolicyMapper) cr.uniqueResult();
+            CriteriaBuilder criteriaBuilder = session.getCriteriaBuilder();
+            CriteriaQuery<PolicyMapper> criteriaQuery = criteriaBuilder.createQuery(PolicyMapper.class);
+            Root<PolicyMapper> root = criteriaQuery.from(PolicyMapper.class);
+            Predicate recordPredicate = criteriaBuilder.and(
+                    criteriaBuilder.equal(root.get("appraiser"), appraiser),
+                    criteriaBuilder.equal(root.get("deviceGroup"), deviceGroup));
+            criteriaQuery.select(root).where(recordPredicate);
+            Query<PolicyMapper> query = session.createQuery(criteriaQuery);
+            List<PolicyMapper> results = query.getResultList();
+            PolicyMapper mapper = null;
+            if (results != null && !results.isEmpty()) {
+                mapper = results.get(0);
+            }
+//            final Criteria cr = session.createCriteria(PolicyMapper.class)
+//                    .add(Restrictions.eq("appraiser", appraiser))
+//                    .add(Restrictions.eq("deviceGroup", deviceGroup));
+//            final PolicyMapper mapper = (PolicyMapper) cr.uniqueResult();
             if (policy == null) {
                 LOGGER.info("Policy is null, so removing policy from device group {}");
                 if (mapper != null) {
@@ -492,15 +577,15 @@ public class DBPolicyManager extends DBManager<Policy> implements PolicyManager 
             try {
                 tx = session.beginTransaction();
                 LOGGER.debug("retrieving group use count for policy {}", policy);
-                final Criteria cr = session.createCriteria(PolicyMapper.class)
-                        .add(Restrictions.eq("policy", policy))
-                        .setProjection(Projections.projectionList()
-                                        .add(Projections.count("policy")));
+//                final Criteria cr = session.createCriteria(PolicyMapper.class)
+//                        .add(Restrictions.eq("policy", policy))
+//                        .setProjection(Projections.projectionList()
+//                                        .add(Projections.count("policy")));
 
-                final Object result = cr.uniqueResult();
-                if (result != null && result instanceof Long) {
-                    count = ((Long) result).intValue();
-                }
+//                final Object result = cr.uniqueResult();
+//                if (result != null && result instanceof Long) {
+//                    count = ((Long) result).intValue();
+//                }
             } catch (Exception e) {
                 // Log the error and return -1 to enable error handling.
                 count = -1;

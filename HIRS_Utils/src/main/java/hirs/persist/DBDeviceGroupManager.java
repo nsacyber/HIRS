@@ -1,22 +1,25 @@
 package hirs.persist;
 
 import hirs.FilteredRecordsList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-import org.hibernate.SessionFactory;
-
 import hirs.data.persist.DeviceGroup;
 import hirs.data.persist.Policy;
-import java.util.HashMap;
-import java.util.Map;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.hibernate.Criteria;
 import org.hibernate.Session;
+import org.hibernate.SessionFactory;
 import org.hibernate.Transaction;
-import org.hibernate.criterion.Restrictions;
+import org.hibernate.query.Query;
+
+import javax.persistence.criteria.CriteriaBuilder;
+import javax.persistence.criteria.CriteriaQuery;
+import javax.persistence.criteria.Predicate;
+import javax.persistence.criteria.Root;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * This class defines the <code>DBDeviceGroupManager</code> that is used to
@@ -152,21 +155,27 @@ public class DBDeviceGroupManager extends DBManager<DeviceGroup> implements Devi
 
         try {
             LOGGER.debug("retrieving policy mapper from db where policy = {}", policy);
+            CriteriaBuilder criteriaBuilder = session.getCriteriaBuilder();
+            CriteriaQuery<PolicyMapper> criteriaQuery = criteriaBuilder.createQuery(PolicyMapper.class);
+            Root<PolicyMapper> root = criteriaQuery.from(PolicyMapper.class);
+            Predicate recordPredicate = criteriaBuilder.and(
+                    criteriaBuilder.equal(root.get("policy"), policy));
+            criteriaQuery.select(root).where(recordPredicate);
+            Query<PolicyMapper> query = session.createQuery(criteriaQuery);
+            List<PolicyMapper> results = query.getResultList();
 
             //Retrieves a list of PolicyMapper objects that are unique per group
-            List policyMapperList = session.createCriteria(PolicyMapper.class)
-                    .add(Restrictions.eq("policy", policy)).list();
+//            List policyMapperList = session.createCriteria(PolicyMapper.class)
+//                    .add(Restrictions.eq("policy", policy)).list();
 
             session.getTransaction().commit();
 
-            if (policyMapperList == null) {
+            if (results == null) {
                 LOGGER.debug("no policy mapper found for policy {}", policy);
 
             } else {
-                for (Object o : policyMapperList) {
-                    if (o instanceof PolicyMapper) {
-                        groups.add(((PolicyMapper) o).getDeviceGroup());
-                    }
+                for (PolicyMapper policyMapper : results) {
+                    groups.add(policyMapper.getDeviceGroup());
                 }
             }
         } catch (Exception e) {

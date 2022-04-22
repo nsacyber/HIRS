@@ -10,8 +10,12 @@ import org.apache.logging.log4j.Logger;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.Transaction;
-import org.hibernate.criterion.Restrictions;
+import org.hibernate.query.Query;
 
+import javax.persistence.criteria.CriteriaBuilder;
+import javax.persistence.criteria.CriteriaQuery;
+import javax.persistence.criteria.Predicate;
+import javax.persistence.criteria.Root;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -61,20 +65,34 @@ public class DBReferenceEventManager  extends DBManager<ReferenceDigestValue>
             return null;
         }
 
-        ReferenceDigestValue dbRecord;
+        ReferenceDigestValue dbRecord = null;
         Transaction tx = null;
         Session session = getFactory().getCurrentSession();
         try {
             LOGGER.debug("retrieving referenceDigestValue from db");
             tx = session.beginTransaction();
-            dbRecord = (ReferenceDigestValue) session.createCriteria(ReferenceDigestValue.class)
-                    .add(Restrictions.eq("supportRimId",
-                            referenceDigestValue.getSupportRimId()))
-                    .add(Restrictions.eq("digestValue",
-                            referenceDigestValue.getDigestValue()))
-                    .add(Restrictions.eq("eventNumber",
-                            referenceDigestValue.getPcrIndex()))
-                    .uniqueResult();
+            CriteriaBuilder criteriaBuilder = session.getCriteriaBuilder();
+            CriteriaQuery<ReferenceDigestValue> criteriaQuery = criteriaBuilder.createQuery(ReferenceDigestValue.class);
+            Root<ReferenceDigestValue> root = criteriaQuery.from(ReferenceDigestValue.class);
+            Predicate recordPredicate = criteriaBuilder.and(
+                    criteriaBuilder.equal(root.get("supportRimId"), referenceDigestValue.getSupportRimId()),
+                    criteriaBuilder.equal(root.get("digestValue"), referenceDigestValue.getDigestValue()),
+                    criteriaBuilder.equal(root.get("eventNumber"), referenceDigestValue.getPcrIndex()));
+            criteriaQuery.select(root).where(recordPredicate);
+            Query<ReferenceDigestValue> query = session.createQuery(criteriaQuery);
+            List<ReferenceDigestValue> results = query.getResultList();
+
+            if (results != null && !results.isEmpty()) {
+                dbRecord = results.get(0);
+            }
+//            dbRecord = (ReferenceDigestValue) session.createCriteria(ReferenceDigestValue.class)
+//                    .add(Restrictions.eq("supportRimId",
+//                            referenceDigestValue.getSupportRimId()))
+//                    .add(Restrictions.eq("digestValue",
+//                            referenceDigestValue.getDigestValue()))
+//                    .add(Restrictions.eq("eventNumber",
+//                            referenceDigestValue.getPcrIndex()))
+//                    .uniqueResult();
             tx.commit();
         } catch (Exception ex) {
             final String msg = "unable to retrieve object";
@@ -113,15 +131,27 @@ public class DBReferenceEventManager  extends DBManager<ReferenceDigestValue>
             return null;
         }
 
-        ReferenceDigestValue dbRecord;
+        ReferenceDigestValue dbRecord = null;
         Transaction tx = null;
         Session session = getFactory().getCurrentSession();
         try {
             LOGGER.debug("retrieving referenceDigestValue from db");
             tx = session.beginTransaction();
-            dbRecord = (ReferenceDigestValue) session.createCriteria(ReferenceDigestValue.class)
-                    .add(Restrictions.eq("id",
-                            referenceDigestValue.getId())).uniqueResult();
+            CriteriaBuilder criteriaBuilder = session.getCriteriaBuilder();
+            CriteriaQuery<ReferenceDigestValue> criteriaQuery = criteriaBuilder.createQuery(ReferenceDigestValue.class);
+            Root<ReferenceDigestValue> root = criteriaQuery.from(ReferenceDigestValue.class);
+            Predicate recordPredicate = criteriaBuilder.and(
+                    criteriaBuilder.equal(root.get("id"), referenceDigestValue.getId()));
+            criteriaQuery.select(root).where(recordPredicate);
+            Query<ReferenceDigestValue> query = session.createQuery(criteriaQuery);
+            List<ReferenceDigestValue> results = query.getResultList();
+
+            if (results != null && !results.isEmpty()) {
+                dbRecord = results.get(0);
+            }
+//            dbRecord = (ReferenceDigestValue) session.createCriteria(ReferenceDigestValue.class)
+//                    .add(Restrictions.eq("id",
+//                            referenceDigestValue.getId())).uniqueResult();
             tx.commit();
         } catch (Exception ex) {
             final String msg = "unable to retrieve object";
@@ -142,15 +172,27 @@ public class DBReferenceEventManager  extends DBManager<ReferenceDigestValue>
             throw new NullPointerException("null event digest argument");
         }
 
-        ReferenceDigestValue dbRecord;
+        ReferenceDigestValue dbRecord = null;
         Transaction tx = null;
         Session session = getFactory().getCurrentSession();
         try {
             LOGGER.debug("retrieving referenceDigestValue from db");
             tx = session.beginTransaction();
-            dbRecord = (ReferenceDigestValue) session.createCriteria(ReferenceDigestValue.class)
-                    .add(Restrictions.eq("digestValue",
-                            eventDigest)).uniqueResult();
+            CriteriaBuilder criteriaBuilder = session.getCriteriaBuilder();
+            CriteriaQuery<ReferenceDigestValue> criteriaQuery = criteriaBuilder.createQuery(ReferenceDigestValue.class);
+            Root<ReferenceDigestValue> root = criteriaQuery.from(ReferenceDigestValue.class);
+            Predicate recordPredicate = criteriaBuilder.and(
+                    criteriaBuilder.equal(root.get("digestValue"), eventDigest));
+            criteriaQuery.select(root).where(recordPredicate);
+            Query<ReferenceDigestValue> query = session.createQuery(criteriaQuery);
+            List<ReferenceDigestValue> results = query.getResultList();
+
+            if (results != null && !results.isEmpty()) {
+                dbRecord = results.get(0);
+            }
+//            dbRecord = (ReferenceDigestValue) session.createCriteria(ReferenceDigestValue.class)
+//                    .add(Restrictions.eq("digestValue",
+//                            eventDigest)).uniqueResult();
             tx.commit();
         } catch (Exception ex) {
             final String msg = "unable to retrieve object";

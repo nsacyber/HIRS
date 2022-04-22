@@ -14,18 +14,13 @@ import hirs.persist.imarecord.DbImaRecordQueryForReport;
 import hirs.persist.imarecord.DbImaRecordQueryParameters;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
-import org.hibernate.Criteria;
-import org.hibernate.HibernateException;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.Transaction;
 import org.hibernate.criterion.Conjunction;
 import org.hibernate.criterion.Disjunction;
 import org.hibernate.criterion.MatchMode;
-import org.hibernate.criterion.Order;
-import org.hibernate.criterion.Projections;
 import org.hibernate.criterion.Restrictions;
-import org.hibernate.transform.Transformers;
 
 import java.util.ArrayList;
 import java.util.Date;
@@ -157,13 +152,13 @@ public class DBReportManager extends DBManager<Report> implements ReportManager 
                 // display "No Data".
                 return new FilteredRecordsList<>();
             case REPORT:
-                return getImaRecordsForReport(id, columnToOrder, ascending,
-                        firstResult,
-                        maxResults, search, searchableColumns);
+//                return getImaRecordsForReport(id, columnToOrder, ascending,
+//                        firstResult,
+//                        maxResults, search, searchableColumns);
             case DEVICE:
-                return getImaRecordsForDevice(id, sinceLastFullReport,
-                        columnToOrder, ascending, firstResult,
-                        maxResults, search, searchableColumns);
+//                return getImaRecordsForDevice(id, sinceLastFullReport,
+//                        columnToOrder, ascending, firstResult,
+//                        maxResults, search, searchableColumns);
             default:
                 throw new UnsupportedOperationException(
                         "IMARecordScope " + scope + " is not supported");
@@ -333,208 +328,6 @@ public class DBReportManager extends DBManager<Report> implements ReportManager 
         } catch (DBManagerException e) {
             throw new ReportManagerException(e);
         }
-    }
-
-    private FilteredRecordsList<SimpleImaRecordBean>
-    getImaRecordsForReport(
-            final String id,
-            final IMARecordField columnToOrder,
-            final boolean ascending,
-            final int firstResult,
-            final int maxResults,
-            final String search,
-            final Map<String, Boolean> searchableColumns) {
-        IntegrityReport report = (IntegrityReport)
-                getReport(UUID.fromString(id));
-        IMAReport imaReport = report.extractReport(IMAReport.class);
-
-        Transaction tx = null;
-        Session session = getFactory().getCurrentSession();
-        final FilteredRecordsList<SimpleImaRecordBean> imaRecords =
-                new FilteredRecordsList<SimpleImaRecordBean>();
-
-        Long filteredResultCount = Long.valueOf(0);
-
-        try {
-            tx = session.beginTransaction();
-            LOGGER.debug("retrieving ima record list without records for "
-                    + "report with id {}", id);
-            // The first query gets the total number of IMA
-            // measurement records associated with report id.
-            Criteria cr = session.createCriteria(
-                    IMAMeasurementRecord.class)
-                    .add(Restrictions.eq("report.id", imaReport.getId()))
-                    .setProjection(Projections.countDistinct("id"));
-            Long totalResultCount = (Long) cr.uniqueResult();
-
-            // This second query finds the number of IMA
-            // measurement records matching the filter
-            cr = session.createCriteria(IMAMeasurementRecord.class)
-                    .add(Restrictions.eq("report.id", imaReport.getId()))
-                    .setProjection(Projections.countDistinct("id"));
-
-            // Filter using the search terms provided by the user
-            Conjunction and = Restrictions.conjunction();
-            if (totalResultCount != 0) {
-                and = buildImaRecordSearchFilter(search, searchableColumns);
-                cr.add(and);
-                filteredResultCount = (Long) cr.uniqueResult();
-            }
-
-            if (filteredResultCount != 0) {
-                // The third query builds a list from the filters,
-                // limits, and sorting options and retrieves all ima measurement
-                // records associated with a particular report id.
-                cr = session.createCriteria(IMAMeasurementRecord.class)
-                        .add(and)
-                        .add(Restrictions.eq("report.id", imaReport.getId()))
-                        .setProjection(Projections.projectionList()
-                                .add(Projections.property("hash"), "hash")
-                                .add(Projections.property("path"), "path")
-                        )
-                        .setResultTransformer(Transformers.aliasToBean(
-                                SimpleImaRecordBean.class))
-                        .setFirstResult(firstResult)
-                        .setMaxResults(maxResults);
-
-                if (ascending) {
-                    cr.addOrder(Order.asc(columnToOrder.getHQL()));
-                } else {
-                    cr.addOrder(Order.desc(columnToOrder.getHQL()));
-                }
-
-                // Perform the query and add all baselines to the list
-                List list = cr.list();
-                for (Object o : list) {
-                    if (o instanceof SimpleImaRecordBean) {
-                        imaRecords.add((SimpleImaRecordBean) o);
-                    }
-                }
-            }
-
-            // Update meta data for the Data Table.
-            imaRecords.setRecordsTotal(totalResultCount);
-            imaRecords.setRecordsFiltered(filteredResultCount);
-            tx.commit();
-        } catch (HibernateException e) {
-            final String msg = "Error getting the SimpleBaselineBean list";
-            LOGGER.error(msg, e);
-            if (tx != null) {
-                LOGGER.debug("rolling back transaction");
-                tx.rollback();
-            }
-            throw e;
-        } finally {
-            if (session != null && session.isConnected()) {
-                session.close();
-            }
-        }
-        return imaRecords;
-    }
-
-    @SuppressWarnings("checkstyle:parameternumber")
-    private FilteredRecordsList<SimpleImaRecordBean>
-    getImaRecordsForDevice(final String id,
-             final boolean sinceLastFullReport,
-             final IMARecordField columnToOrder,
-             final boolean ascending,
-             final int firstResult,
-             final int maxResults,
-             final String search,
-             final Map<String, Boolean> searchableColumns) {
-        List<UUID> imaReportIds;
-
-        if (sinceLastFullReport) {
-            imaReportIds = getImaIdsOfRecentBootCycle(id);
-        } else {
-            imaReportIds = getImaIdsOfDevice(id);
-        }
-
-        Transaction tx = null;
-        Session session = getFactory().getCurrentSession();
-        final FilteredRecordsList<SimpleImaRecordBean> imaRecords =
-                new FilteredRecordsList<SimpleImaRecordBean>();
-
-        Long totalResultCount = Long.valueOf(0);
-        Long filteredResultCount = Long.valueOf(0);
-
-        try {
-            tx = session.beginTransaction();
-            LOGGER.debug("retrieving ima record list without records for "
-                    + "device with id {}", id);
-            // The first query gets the total number of IMA
-            // measurement records associated with ima report ids.
-            Criteria cr = session.createCriteria(
-                    IMAMeasurementRecord.class)
-                    .add(Restrictions.in("report.id", imaReportIds))
-                    .setProjection(Projections.countDistinct("id"));
-            totalResultCount = (Long) cr.uniqueResult();
-
-            // This second query finds the number of IMA
-            // measurement records matching the filter
-            cr = session.createCriteria(IMAMeasurementRecord.class)
-                    .add(Restrictions.in("report.id", imaReportIds))
-                    .setProjection(Projections.countDistinct("id"));
-
-            // Filter using the search terms provided by the user
-            Conjunction and = Restrictions.conjunction();
-            if (totalResultCount != 0) {
-                and = buildImaRecordSearchFilter(search, searchableColumns);
-                cr.add(and);
-                filteredResultCount = (Long) cr.uniqueResult();
-            }
-
-            if (filteredResultCount != 0) {
-                // The third query builds a list from the filters,
-                // limits, and sorting options
-
-
-                cr = session.createCriteria(IMAMeasurementRecord.class)
-                        .add(and)
-                        .add(Restrictions.in("report.id", imaReportIds))
-                        .setProjection(Projections.projectionList()
-                                .add(Projections.property("hash"), "hash")
-                                .add(Projections.property("path"), "path")
-                        )
-                        .setResultTransformer(Transformers.aliasToBean(
-                                SimpleImaRecordBean.class))
-                        .setFirstResult(firstResult)
-                        .setMaxResults(maxResults);
-
-                if (ascending) {
-                    cr.addOrder(Order.asc(columnToOrder.getHQL()));
-                } else {
-                    cr.addOrder(Order.desc(columnToOrder.getHQL()));
-                }
-
-                // Perform the query and add all baselines to the list
-                List list = cr.list();
-                for (Object o : list) {
-                    if (o instanceof SimpleImaRecordBean) {
-                        imaRecords.add((SimpleImaRecordBean) o);
-                    }
-                }
-            }
-
-            // Update meta data for the Data Table.
-            imaRecords.setRecordsTotal(totalResultCount);
-            imaRecords.setRecordsFiltered(filteredResultCount);
-            tx.commit();
-        } catch (HibernateException e) {
-            final String msg = "Error getting the " + SimpleImaRecordBean.class.getSimpleName()
-                    + " list";
-            LOGGER.error(msg, e);
-            if (tx != null) {
-                LOGGER.debug("rolling back transaction");
-                tx.rollback();
-            }
-            throw e;
-        } finally {
-            if (session != null && session.isConnected()) {
-                session.close();
-            }
-        }
-        return imaRecords;
     }
 
     /**

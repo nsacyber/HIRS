@@ -4,6 +4,7 @@ import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
 import hirs.FilteredRecordsList;
+import hirs.data.persist.ReferenceDigestValue;
 import org.apache.commons.lang3.reflect.FieldUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -22,6 +23,7 @@ import org.hibernate.criterion.MatchMode;
 import org.hibernate.criterion.Order;
 import org.hibernate.criterion.Projections;
 import org.hibernate.criterion.Restrictions;
+import org.hibernate.query.Query;
 import org.hibernate.service.spi.ServiceRegistryImplementor;
 
 import javax.persistence.Column;
@@ -33,6 +35,7 @@ import javax.persistence.OneToMany;
 import javax.persistence.OneToOne;
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
+import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Root;
 import java.io.Serializable;
 import java.lang.reflect.Field;
@@ -326,6 +329,19 @@ public abstract class AbstractDbManager<T> implements CrudManager<T> {
         try {
             LOGGER.debug("Deleting instances of class: {}", clazz);
             tx = session.beginTransaction();
+            CriteriaBuilder builder = session.getCriteriaBuilder();
+            CriteriaQuery<T> criteriaQuery = builder.createQuery(clazz);
+            Root<T> root = criteriaQuery.from(clazz);
+            Predicate recordPredicate = builder.and(
+                    );
+            criteriaQuery.select(root).where(recordPredicate);
+            Query<T> query = session.createQuery(criteriaQuery);
+            List<T> results = query.getResultList();
+            T ret = null;
+            if (results != null && !results.isEmpty()) {
+                ret = results.get(0);
+            }
+
             List instances = session.createCriteria(clazz)
                     .setResultTransformer(Criteria.DISTINCT_ROOT_ENTITY).list();
             for (Object instance : instances) {
@@ -505,8 +521,20 @@ public abstract class AbstractDbManager<T> implements CrudManager<T> {
         try {
             LOGGER.debug("retrieving " + clazz.toString() + " from db");
             tx = session.beginTransaction();
-            T ret = clazz.cast(session.createCriteria(clazz)
-                    .add(Restrictions.eq("name", name)).uniqueResult());
+            CriteriaBuilder builder = session.getCriteriaBuilder();
+            CriteriaQuery<T> criteriaQuery = builder.createQuery(clazz);
+            Root<T> root = criteriaQuery.from(clazz);
+            Predicate recordPredicate = builder.and(
+                    builder.equal(root.get("name"), name));
+            criteriaQuery.select(root).where(recordPredicate);
+            Query<T> query = session.createQuery(criteriaQuery);
+            List<T> results = query.getResultList();
+            T ret = null;
+            if (results != null && !results.isEmpty()) {
+                ret = results.get(0);
+            }
+//            T ret = clazz.cast(session.createCriteria(clazz)
+//                    .add(Restrictions.eq("name", name)).uniqueResult());
             tx.commit();
             return ret;
         } catch (Exception e) {
@@ -631,8 +659,21 @@ public abstract class AbstractDbManager<T> implements CrudManager<T> {
         try {
             LOGGER.debug("retrieving " + clazz.toString() + " from db");
             tx = session.beginTransaction();
-            T ret = clazz.cast(session.createCriteria(clazz)
-                    .add(Restrictions.eq("name", name)).uniqueResult());
+            CriteriaBuilder builder = session.getCriteriaBuilder();
+            CriteriaQuery<T> criteriaQuery = builder.createQuery(clazz);
+            Root<T> root = criteriaQuery.from(clazz);
+            Predicate recordPredicate = builder.and(
+                    builder.equal(root.get("name"), name));
+            criteriaQuery.select(root).where(recordPredicate);
+            Query<T> query = session.createQuery(criteriaQuery);
+            List<T> results = query.getResultList();
+            T ret = null;
+            if (results != null && !results.isEmpty()) {
+                ret = results.get(0);
+            }
+
+//            T ret = clazz.cast(session.createCriteria(clazz)
+//                    .add(Restrictions.eq("name", name)).uniqueResult());
             doLoadLazyFields(ret, recurse);
             tx.commit();
             return ret;
@@ -720,12 +761,22 @@ public abstract class AbstractDbManager<T> implements CrudManager<T> {
         try {
             LOGGER.debug("Retrieving objects from db of class {}", searchClass.getName());
             tx = session.beginTransaction();
-            Criteria criteria = session.createCriteria(searchClass);
+            CriteriaBuilder builder = session.getCriteriaBuilder();
+            CriteriaQuery<T> criteriaQuery = builder.createQuery(searchClass);
+            Root<T> root = criteriaQuery.from(searchClass);
+            Predicate recordPredicate = builder.and(
+
+            );
+            criteriaQuery.select(root).where(recordPredicate).distinct(true);
+            Query<?> query = session.createQuery(criteriaQuery);
+            List<?> results = query.getResultList();
+
+//            Criteria criteria = session.createCriteria(searchClass);
             if (additionalRestriction != null) {
                 criteria.add(additionalRestriction);
             }
-            List list = criteria.setResultTransformer(Criteria.DISTINCT_ROOT_ENTITY).list();
-            for (Object o : list) {
+//            List list = criteria.setResultTransformer(Criteria.DISTINCT_ROOT_ENTITY).list();
+            for (Object o : results) {
                 if (searchClass.isInstance(o)) {
                     objects.add(searchClass.cast(o));
                 }

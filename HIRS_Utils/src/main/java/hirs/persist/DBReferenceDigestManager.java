@@ -6,8 +6,12 @@ import org.apache.logging.log4j.Logger;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.Transaction;
-import org.hibernate.criterion.Restrictions;
+import org.hibernate.query.Query;
 
+import javax.persistence.criteria.CriteriaBuilder;
+import javax.persistence.criteria.CriteriaQuery;
+import javax.persistence.criteria.Predicate;
+import javax.persistence.criteria.Root;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -55,22 +59,34 @@ public class DBReferenceDigestManager extends DBManager<ReferenceDigestRecord>
         }
 
         ReferenceDigestRecord dbRecord = null;
-        Transaction tx = null;
+        Transaction transaction = null;
         Session session = getFactory().getCurrentSession();
         try {
             LOGGER.debug("retrieving referenceDigestRecord from db");
-            tx = session.beginTransaction();
-            dbRecord = (ReferenceDigestRecord) session.createCriteria(ReferenceDigestRecord.class)
-                    .add(Restrictions.eq("manufacturer",
-                            referenceDigestRecord.getManufacturer())).add(Restrictions.eq("model",
-                            referenceDigestRecord.getModel())).uniqueResult();
-            tx.commit();
+            transaction = session.beginTransaction();
+            CriteriaBuilder criteriaBuilder = session.getCriteriaBuilder();
+            CriteriaQuery<ReferenceDigestRecord> criteriaQuery = criteriaBuilder.createQuery(ReferenceDigestRecord.class);
+            Root<ReferenceDigestRecord> root = criteriaQuery.from(ReferenceDigestRecord.class);
+            Predicate recordPredicate = criteriaBuilder
+                    .and(criteriaBuilder.equal(root.get("manufacturer"), referenceDigestRecord.getManufacturer()),
+            criteriaBuilder.equal(root.get("model"), referenceDigestRecord.getModel()));
+            criteriaQuery.select(root).where(recordPredicate);
+            Query<ReferenceDigestRecord> query = session.createQuery(criteriaQuery);
+            List<ReferenceDigestRecord> results = query.getResultList();
+            if (results != null && !results.isEmpty()) {
+                dbRecord = results.get(0);
+            }
+//            dbRecord = (ReferenceDigestRecord) session.createCriteria(ReferenceDigestRecord.class)
+//                    .add(Restrictions.eq("manufacturer",
+//                            referenceDigestRecord.getManufacturer())).add(Restrictions.eq("model",
+//                            referenceDigestRecord.getModel())).uniqueResult();
+            transaction.commit();
         } catch (Exception ex) {
             final String msg = "unable to retrieve object";
             LOGGER.error(msg, ex);
-            if (tx != null) {
+            if (transaction != null) {
                 LOGGER.debug("rolling back transaction");
-                tx.rollback();
+                transaction.rollback();
             }
             throw new DBManagerException(msg, ex);
         }
@@ -91,10 +107,22 @@ public class DBReferenceDigestManager extends DBManager<ReferenceDigestRecord>
         try {
             LOGGER.debug("retrieving referenceDigestRecord from db");
             tx = session.beginTransaction();
-            dbRecord = (ReferenceDigestRecord) session.createCriteria(ReferenceDigestRecord.class)
-                    .add(Restrictions.eq("manufacturer",
-                            manufacturer)).add(Restrictions.eq("model",
-                            model)).uniqueResult();
+            CriteriaBuilder criteriaBuilder = session.getCriteriaBuilder();
+            CriteriaQuery<ReferenceDigestRecord> criteriaQuery = criteriaBuilder.createQuery(ReferenceDigestRecord.class);
+            Root<ReferenceDigestRecord> root = criteriaQuery.from(ReferenceDigestRecord.class);
+            Predicate recordPredicate = criteriaBuilder
+                    .and(criteriaBuilder.equal(root.get("manufacturer"), manufacturer),
+                            criteriaBuilder.equal(root.get("model"), model));
+            criteriaQuery.select(root).where(recordPredicate);
+            Query<ReferenceDigestRecord> query = session.createQuery(criteriaQuery);
+            List<ReferenceDigestRecord> results = query.getResultList();
+            if (results != null && !results.isEmpty()) {
+                dbRecord = results.get(0);
+            }
+//            dbRecord = (ReferenceDigestRecord) session.createCriteria(ReferenceDigestRecord.class)
+//                    .add(Restrictions.eq("manufacturer",
+//                            manufacturer)).add(Restrictions.eq("model",
+//                            model)).uniqueResult();
             tx.commit();
         } catch (Exception ex) {
             final String msg = "unable to retrieve object";
@@ -143,15 +171,26 @@ public class DBReferenceDigestManager extends DBManager<ReferenceDigestRecord>
             return null;
         }
 
-        ReferenceDigestRecord dbRecord;
+        ReferenceDigestRecord dbRecord = null;
         Transaction tx = null;
         Session session = getFactory().getCurrentSession();
         try {
             LOGGER.debug("retrieving referenceDigestRecord from db");
             tx = session.beginTransaction();
-            dbRecord = (ReferenceDigestRecord) session.createCriteria(ReferenceDigestRecord.class)
-                    .add(Restrictions.eq("id",
-                            referenceDigestRecord.getId())).uniqueResult();
+            CriteriaBuilder criteriaBuilder = session.getCriteriaBuilder();
+            CriteriaQuery<ReferenceDigestRecord> criteriaQuery = criteriaBuilder.createQuery(ReferenceDigestRecord.class);
+            Root<ReferenceDigestRecord> root = criteriaQuery.from(ReferenceDigestRecord.class);
+            Predicate recordPredicate = criteriaBuilder
+                    .and(criteriaBuilder.equal(root.get("id"), referenceDigestRecord.getId()));
+            criteriaQuery.select(root).where(recordPredicate);
+            Query<ReferenceDigestRecord> query = session.createQuery(criteriaQuery);
+            List<ReferenceDigestRecord> results = query.getResultList();
+            if (results != null && !results.isEmpty()) {
+                dbRecord = results.get(0);
+            }
+//            dbRecord = (ReferenceDigestRecord) session.createCriteria(ReferenceDigestRecord.class)
+//                    .add(Restrictions.eq("id",
+//                            referenceDigestRecord.getId())).uniqueResult();
             tx.commit();
         } catch (Exception ex) {
             final String msg = "unable to retrieve object";
@@ -173,14 +212,25 @@ public class DBReferenceDigestManager extends DBManager<ReferenceDigestRecord>
             return null;
         }
 
-        ReferenceDigestRecord dbRecord;
+        ReferenceDigestRecord dbRecord = null;
         Transaction tx = null;
         Session session = getFactory().getCurrentSession();
         try {
             LOGGER.debug("retrieving referenceDigestRecord from db");
             tx = session.beginTransaction();
-            dbRecord = (ReferenceDigestRecord) session.createCriteria(ReferenceDigestRecord.class)
-                    .add(Restrictions.eq("supportRim", supportId)).uniqueResult();
+            CriteriaBuilder criteriaBuilder = session.getCriteriaBuilder();
+            CriteriaQuery<ReferenceDigestRecord> criteriaQuery = criteriaBuilder.createQuery(ReferenceDigestRecord.class);
+            Root<ReferenceDigestRecord> root = criteriaQuery.from(ReferenceDigestRecord.class);
+            Predicate recordPredicate = criteriaBuilder
+                    .and(criteriaBuilder.equal(root.get("supportRim"), supportId));
+            criteriaQuery.select(root).where(recordPredicate);
+            Query<ReferenceDigestRecord> query = session.createQuery(criteriaQuery);
+            List<ReferenceDigestRecord> results = query.getResultList();
+            if (results != null && !results.isEmpty()) {
+                dbRecord = results.get(0);
+            }
+//            dbRecord = (ReferenceDigestRecord) session.createCriteria(ReferenceDigestRecord.class)
+//                    .add(Restrictions.eq("supportRim", supportId)).uniqueResult();
             tx.commit();
         } catch (Exception ex) {
             final String msg = "unable to retrieve object";

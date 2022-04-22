@@ -1,15 +1,18 @@
 package hirs.persist;
 
-import java.util.List;
-
-import org.hibernate.SessionFactory;
-import org.apache.logging.log4j.Logger;
-import org.apache.logging.log4j.LogManager;
-
 import hirs.data.persist.alert.AlertServiceConfig;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.hibernate.Session;
+import org.hibernate.SessionFactory;
 import org.hibernate.Transaction;
-import org.hibernate.criterion.Restrictions;
+import org.hibernate.query.Query;
+
+import javax.persistence.criteria.CriteriaBuilder;
+import javax.persistence.criteria.CriteriaQuery;
+import javax.persistence.criteria.Predicate;
+import javax.persistence.criteria.Root;
+import java.util.List;
 
 /**
  * A <code>DBAlertServiceManager</code> is a service (extends <code>DBManager</code>) that
@@ -118,8 +121,19 @@ public class DBAlertServiceManager
         try {
             LOGGER.debug("retrieving AlertServiceConfig from db");
             tx = session.beginTransaction();
-            ret = (AlertServiceConfig) session.createCriteria(AlertServiceConfig.class)
-                    .add(Restrictions.eq("type", type)).uniqueResult();
+            CriteriaBuilder criteriaBuilder = session.getCriteriaBuilder();
+            CriteriaQuery<AlertServiceConfig> criteriaQuery = criteriaBuilder.createQuery(AlertServiceConfig.class);
+            Root<AlertServiceConfig> root = criteriaQuery.from(AlertServiceConfig.class);
+            Predicate recordPredicate = criteriaBuilder
+                    .and(criteriaBuilder.equal(root.get("type"), type));
+            criteriaQuery.select(root).where(recordPredicate);
+            Query<AlertServiceConfig> query = session.createQuery(criteriaQuery);
+            List<AlertServiceConfig> results = query.getResultList();
+            if (results != null && !results.isEmpty()) {
+                ret = results.get(0);
+            }
+//            ret = (AlertServiceConfig) session.createCriteria(AlertServiceConfig.class)
+//                    .add(Restrictions.eq("type", type)).uniqueResult();
             tx.commit();
         } catch (Exception e) {
             final String msg = "unable to retrieve object";
@@ -161,8 +175,19 @@ public class DBAlertServiceManager
         try {
             LOGGER.debug("retrieving object from db");
             tx = session.beginTransaction();
-            object = (AlertServiceConfig) session.createCriteria(AlertServiceConfig.class)
-                    .add(Restrictions.eq("type", type)).uniqueResult();
+            CriteriaBuilder criteriaBuilder = session.getCriteriaBuilder();
+            CriteriaQuery<AlertServiceConfig> criteriaQuery = criteriaBuilder.createQuery(AlertServiceConfig.class);
+            Root<AlertServiceConfig> root = criteriaQuery.from(AlertServiceConfig.class);
+            Predicate recordPredicate = criteriaBuilder
+                    .and(criteriaBuilder.equal(root.get("type"), type));
+            criteriaQuery.select(root).where(recordPredicate);
+            Query<AlertServiceConfig> query = session.createQuery(criteriaQuery);
+            List<AlertServiceConfig> results = query.getResultList();
+            if (results != null && !results.isEmpty()) {
+                object = results.get(0);
+            }
+//            object = (AlertServiceConfig) session.createCriteria(AlertServiceConfig.class)
+//                    .add(Restrictions.eq("type", type)).uniqueResult();
             if (object != null) {
                 LOGGER.debug("found object, deleting it");
                 session.delete(object);

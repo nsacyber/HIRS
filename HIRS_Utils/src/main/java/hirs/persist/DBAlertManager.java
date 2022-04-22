@@ -1,22 +1,12 @@
 package hirs.persist;
 
 import hirs.FilteredRecordsList;
-import static org.apache.logging.log4j.LogManager.getLogger;
-
 import hirs.data.persist.Alert;
-import hirs.data.persist.baseline.Baseline;
 import hirs.data.persist.Device;
 import hirs.data.persist.DeviceGroup;
 import hirs.data.persist.Policy;
-
-import java.util.ArrayList;
-
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
-
 import hirs.data.persist.Report;
+import hirs.data.persist.baseline.Baseline;
 import hirs.data.persist.enums.AlertSource;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
@@ -26,11 +16,20 @@ import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.Transaction;
 import org.hibernate.criterion.Criterion;
-import org.hibernate.criterion.DetachedCriteria;
-import org.hibernate.criterion.Projections;
-import org.hibernate.criterion.Property;
 import org.hibernate.criterion.Restrictions;
-import org.hibernate.criterion.Subqueries;
+import org.hibernate.query.Query;
+
+import javax.persistence.criteria.CriteriaBuilder;
+import javax.persistence.criteria.CriteriaQuery;
+import javax.persistence.criteria.Predicate;
+import javax.persistence.criteria.Root;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
+
+import static org.apache.logging.log4j.LogManager.getLogger;
 
 /**
  * This class defines a <code>AlertManager</code> that stores policies in a
@@ -261,18 +260,24 @@ public class DBAlertManager extends DBManager<Alert> implements AlertManager {
         Session session = getFactory().getCurrentSession();
         try {
             tx = session.beginTransaction();
-
             // query hibernate to count alerts with the given deviceName and null archivedTime
-            Criteria criteria = session.createCriteria(Alert.class);
-            criteria.add(Restrictions.eq("policyId", policy.getId()));
-            criteria.setResultTransformer(Criteria.DISTINCT_ROOT_ENTITY);
+            CriteriaBuilder criteriaBuilder = session.getCriteriaBuilder();
+            CriteriaQuery<Alert> criteriaQuery = criteriaBuilder.createQuery(Alert.class);
+            Root<Alert> root = criteriaQuery.from(Alert.class);
+            Predicate recordPredicate = criteriaBuilder
+                    .and(criteriaBuilder.equal(root.get("policyId"), policy.getId()));
+            criteriaQuery.select(root).where(recordPredicate);
+            Query<Alert> query = session.createQuery(criteriaQuery);
+            List<Alert> results = query.getResultList();
 
-            List list = criteria.list();
-            for (Object o : list) {
-                if (o instanceof Alert) {
-                    alerts.add((Alert) o);
+//            criteria.setResultTransformer(Criteria.DISTINCT_ROOT_ENTITY);
+
+                for (Object o : results) {
+                    if (o instanceof Alert) {
+                        alerts.add((Alert) o);
+                    }
                 }
-            }
+
             tx.commit();
 
         } catch (HibernateException e) {
@@ -312,17 +317,24 @@ public class DBAlertManager extends DBManager<Alert> implements AlertManager {
             tx = session.beginTransaction();
 
             // query hibernate to retrieve alerts with the given baseline id
-            Criteria criteria = session.createCriteria(Alert.class);
-            criteria.add(Restrictions.eq("baselineId", baseline.getId()));
-            criteria.setResultTransformer(Criteria.DISTINCT_ROOT_ENTITY);
-            List list = criteria.list();
-            for (Object o : list) {
+            CriteriaBuilder criteriaBuilder = session.getCriteriaBuilder();
+            CriteriaQuery<Alert> criteriaQuery = criteriaBuilder.createQuery(Alert.class);
+            Root<Alert> root = criteriaQuery.from(Alert.class);
+            Predicate recordPredicate = criteriaBuilder
+                    .and(criteriaBuilder.equal(root.get("baselineId"), baseline.getId()));
+            criteriaQuery.select(root).where(recordPredicate);
+            Query<Alert> query = session.createQuery(criteriaQuery);
+            List<Alert> results = query.getResultList();
+
+//            criteria.setResultTransformer(Criteria.DISTINCT_ROOT_ENTITY);
+
+            for (Object o : results) {
                 if (o instanceof Alert) {
                     alerts.add((Alert) o);
                 }
             }
-            tx.commit();
 
+            tx.commit();
         } catch (HibernateException e) {
             final String msg = "unable to query alerts table";
             LOGGER.error(msg, e);
@@ -360,18 +372,22 @@ public class DBAlertManager extends DBManager<Alert> implements AlertManager {
             tx = session.beginTransaction();
 
             // query hibernate to count alerts with the given deviceName and null archivedTime
-            Criteria criteria = session.createCriteria(Alert.class);
-            criteria.add(Restrictions.isNull("archivedTime"));
-            criteria.add(Restrictions.eq("baselineId", baseline.getId()));
-            criteria.setProjection(Projections.rowCount()).uniqueResult();
-            Long result = (Long) criteria.uniqueResult();
+            CriteriaBuilder criteriaBuilder = session.getCriteriaBuilder();
+            CriteriaQuery<Alert> criteriaQuery = criteriaBuilder.createQuery(Alert.class);
+            Root<Alert> root = criteriaQuery.from(Alert.class);
+            Predicate recordPredicate = criteriaBuilder
+                    .and(criteriaBuilder.equal(root.get("baselineId"), baseline.getId()),
+                            criteriaBuilder.isNull(root.get("archivedTime")));
+            criteriaQuery.select(root).where(recordPredicate);
+            Query<Alert> query = session.createQuery(criteriaQuery);
+            List<Alert> results = query.getResultList();
+            Long result = results.stream().count();
             tx.commit();
             if (result == null) {
                 throw new AlertManagerException("failed to query unresolved alert count");
             } else {
                 return result;
             }
-
         } catch (HibernateException e) {
             final String msg = "unable to query alerts table";
             LOGGER.error(msg, e);
@@ -383,41 +399,49 @@ public class DBAlertManager extends DBManager<Alert> implements AlertManager {
         }
     }
 
-    private Criteria getCriteriaForTrustAlertsForDevice(final Device device,
+    private Query<Alert> getCriteriaForTrustAlertsForDevice(final Device device,
                                                         final Report integrityReport,
                                                         final Criterion optionalCriterion,
                                                         final Session session) {
-        if (null == device) {
+        if (device == null) {
             throw new NullPointerException("device was null");
         }
 
-        if (null == integrityReport) {
+        if (integrityReport == null) {
             throw new NullPointerException("integrityReport was null");
         }
 
-        if (null == session) {
+        if (session == null) {
             throw new NullPointerException("session was null");
         }
 
         // query hibernate to count alerts with the given deviceName and null archivedTime
-        Criteria criteria = session.createCriteria(Alert.class);
-        criteria.add(Restrictions.isNull("archivedTime"));
-        criteria.add(Restrictions.eq("deviceName", device.getName()));
-
         // alerts for this report, or alerts not associated with any report (case 1 and 2)
-        Criterion reportEqualsCriterion = Restrictions.eq("report", integrityReport);
-        Criterion reportNullCriterion = Restrictions.isNull("report");
+        CriteriaBuilder criteriaBuilder = session.getCriteriaBuilder();
+        CriteriaQuery<Alert> criteriaQuery = criteriaBuilder.createQuery(Alert.class);
+        Root<Alert> root = criteriaQuery.from(Alert.class);
+        Predicate recordPredicate = criteriaBuilder.and(
+                criteriaBuilder.isNull(root.get("archivedTime")),
+                criteriaBuilder.equal(root.get("deviceName"), device.getName()));
+
+        Predicate reportEqualsDisjunction = criteriaBuilder.disjunction();
+        Predicate reportNullDisjunction = criteriaBuilder.disjunction();
+        // alerts for this report, or alerts not associated with any report (case 1 and 2)
+//        Criterion reportEqualsCriterion = Restrictions.eq("report", integrityReport);
+//        Criterion reportNullCriterion = Restrictions.isNull("report");
+        reportEqualsDisjunction = criteriaBuilder.equal(root.get("report"), integrityReport);
+        reportNullDisjunction = criteriaBuilder.isNull(root.get("report"));
+        criteriaBuilder.or(reportEqualsDisjunction, reportNullDisjunction);
 
         // only apply the optional criterion to the disjunction if there is one.
-        if (null != optionalCriterion) {
-            criteria.add(Restrictions.disjunction(
-                    reportEqualsCriterion, reportNullCriterion, optionalCriterion));
-
-        } else {
-            criteria.add(Restrictions.disjunction(
-                    reportEqualsCriterion, reportNullCriterion));
+        if (optionalCriterion != null) {
+            LOGGER.error("optional criterion needs to be updated");
         }
-        return criteria;
+
+        criteriaQuery.select(root).where(recordPredicate,
+                reportEqualsDisjunction,
+                reportNullDisjunction);
+        return session.createQuery(criteriaQuery);
     }
 
     /**
@@ -446,7 +470,7 @@ public class DBAlertManager extends DBManager<Alert> implements AlertManager {
         try {
             tx = session.beginTransaction();
 
-            Criteria criteria = getCriteriaForTrustAlertsForDevice(device, integrityReport,
+            Query<Alert> criteria = getCriteriaForTrustAlertsForDevice(device, integrityReport,
                     optionalCriterion, session);
 
             List<Alert> alerts = new ArrayList<>();
@@ -488,11 +512,9 @@ public class DBAlertManager extends DBManager<Alert> implements AlertManager {
         try {
             tx = session.beginTransaction();
 
-            Criteria criteria = getCriteriaForTrustAlertsForDevice(device, integrityReport,
+            Query<Alert> criteria = getCriteriaForTrustAlertsForDevice(device, integrityReport,
                     optionalCriterion, session);
-
-            criteria.setProjection(Projections.rowCount()).uniqueResult();
-            Long result = (Long) criteria.uniqueResult();
+            Long result = criteria.stream().count();
 
             tx.commit();
             return result.intValue();
@@ -576,6 +598,7 @@ public class DBAlertManager extends DBManager<Alert> implements AlertManager {
             return 0;
         }
 
+        Long result = null;
         Transaction tx = null;
         Session session = getFactory().getCurrentSession();
         try {
@@ -583,11 +606,24 @@ public class DBAlertManager extends DBManager<Alert> implements AlertManager {
             tx = session.beginTransaction();
 
             // query hibernate to count alerts with the given deviceName and null archivedTime
-            Criteria criteria = session.createCriteria(Alert.class);
-            criteria.add(Restrictions.isNull("archivedTime"));
-            criteria.add(Restrictions.eq("deviceName", device.getName()));
-            criteria.setProjection(Projections.rowCount()).uniqueResult();
-            Long result = (Long) criteria.uniqueResult();
+            CriteriaBuilder criteriaBuilder = session.getCriteriaBuilder();
+            CriteriaQuery<Alert> criteriaQuery = criteriaBuilder.createQuery(Alert.class);
+            Root<Alert> root = criteriaQuery.from(Alert.class);
+            Predicate recordPredicate = criteriaBuilder
+                    .and(criteriaBuilder.equal(root.get("deviceName"), device.getName()),
+                            criteriaBuilder.isNull(root.get("archivedTime")));
+            criteriaQuery.select(root).where(recordPredicate);
+            Query<Alert> query = session.createQuery(criteriaQuery);
+            List<Alert> results = query.getResultList();
+            if (results != null && !results.isEmpty()) {
+                result = results.stream().count();
+            }
+
+//            Criteria criteria = session.createCriteria(Alert.class);
+//            criteria.add(Restrictions.isNull("archivedTime"));
+//            criteria.add(Restrictions.eq("deviceName", device.getName()));
+//            criteria.setProjection(Projections.rowCount()).uniqueResult();
+//            Long result = (Long) criteria.uniqueResult();
             tx.commit();
             if (result == null) {
                 throw new AlertManagerException("failed to query unresolved alert count");
@@ -626,18 +662,32 @@ public class DBAlertManager extends DBManager<Alert> implements AlertManager {
             throw new IllegalArgumentException(msg);
         }
 
+        Long result = null;
         Transaction tx = null;
         Session session = getFactory().getCurrentSession();
         try {
             LOGGER.debug("querying alerts table for unresolved alerts");
             tx = session.beginTransaction();
+            CriteriaBuilder criteriaBuilder = session.getCriteriaBuilder();
+            CriteriaQuery<Alert> criteriaQuery = criteriaBuilder.createQuery(Alert.class);
+            Root<Alert> root = criteriaQuery.from(Alert.class);
+            Predicate recordPredicate = criteriaBuilder
+                    .and(criteriaBuilder.equal(root.get("deviceName"), device.getName()),
+                            criteriaBuilder.equal(root.get("source"), source),
+                            criteriaBuilder.isNull(root.get("archivedTime")));
+            criteriaQuery.select(root).where(recordPredicate);
+            Query<Alert> query = session.createQuery(criteriaQuery);
+            List<Alert> results = query.getResultList();
+            if (results != null && !results.isEmpty()) {
+                result = results.stream().count();
+            }
 
-            Criteria criteria = session.createCriteria(Alert.class);
-            criteria.add(Restrictions.isNull("archivedTime"));
-            criteria.add(Restrictions.eq("deviceName", device.getName()));
-            criteria.add(Restrictions.eq("source", source));
-            criteria.setProjection(Projections.rowCount()).uniqueResult();
-            Long result = (Long) criteria.uniqueResult();
+//            Criteria criteria = session.createCriteria(Alert.class);
+//            criteria.add(Restrictions.isNull("archivedTime"));
+//            criteria.add(Restrictions.eq("deviceName", device.getName()));
+//            criteria.add(Restrictions.eq("source", source));
+//            criteria.setProjection(Projections.rowCount()).uniqueResult();
+//            result = (Long) criteria.uniqueResult();
             tx.commit();
             if (result == null) {
                 throw new AlertManagerException("failed to query unresolved alert count");
@@ -663,7 +713,6 @@ public class DBAlertManager extends DBManager<Alert> implements AlertManager {
      * @return count of devices with unresolved alerts
      */
     public final int countUnresolvedDevices(final DeviceGroup deviceGroup) {
-
         if (deviceGroup == null) {
             String msg = "invalid argument - null value for device group";
             LOGGER.error(msg);
@@ -674,27 +723,41 @@ public class DBAlertManager extends DBManager<Alert> implements AlertManager {
         Session session = getFactory().getCurrentSession();
         try {
             LOGGER.debug("querying alerts table for unresolved devices");
-            tx = session.beginTransaction();
+//            tx = session.beginTransaction();
 
             // first use a subquery to list the devices in the given group
-            DetachedCriteria deviceQuery = DetachedCriteria.forClass(Device.class);
-            deviceQuery.createAlias("deviceGroup", "g");
-            deviceQuery.add(Restrictions.eq("g.name", deviceGroup.getName()));
-            deviceQuery.setProjection(Property.forName("name"));
+//            DetachedCriteria deviceQuery = DetachedCriteria.forClass(Device.class);
+//            deviceQuery.createAlias("deviceGroup", "g");
+//            deviceQuery.add(Restrictions.eq("g.name", deviceGroup.getName()));
+//            deviceQuery.setProjection(Property.forName("name"));
 
             // now query within that group for unique device names among unresolved alerts
-            Criteria criteria = session.createCriteria(Alert.class);
-            criteria.add(Restrictions.isNull("archivedTime"));
-            criteria.add(Subqueries.propertyIn("deviceName", deviceQuery));
-            criteria.setProjection(Projections.countDistinct("deviceName"));
-            Long result = (Long) criteria.uniqueResult();
-            tx.commit();
-            if (result == null) {
-                throw new AlertManagerException("failed to query unresolved alert count");
-            } else {
-                return result.intValue();
-            }
+//            Criteria criteria = session.createCriteria(Alert.class);
+//            criteria.add(Restrictions.isNull("archivedTime"));
+//            criteria.add(Subqueries.propertyIn("deviceName", deviceQuery));
+//            criteria.setProjection(Projections.countDistinct("deviceName"));
+//            Long result = (Long) criteria.uniqueResult();
 
+//            CriteriaBuilder criteriaBuilder = session.getCriteriaBuilder();
+//            CriteriaQuery<Alert> criteriaQuery = criteriaBuilder.createQuery(Alert.class);
+//            Root<Alert> root = criteriaQuery.from(Alert.class);
+//            Predicate recordPredicate = criteriaBuilder.and(
+//                    criteriaBuilder.equal(criteriaBuilder.Subqueries.propertiesIn("deviceName", deviceQuery)),
+//                    criteriaBuilder.isNull(root.get("archivedTime"))
+//
+//                            );
+//            criteriaQuery.select(root).where(recordPredicate);
+//            Query<Alert> query = session.createQuery(criteriaQuery);
+//            List<Alert> results = query.getResultList();
+//            if (results != null && !results.isEmpty()) {
+//                result = results.stream().count();
+//            }
+//            tx.commit();
+//            if (result == null) {
+//                throw new AlertManagerException("failed to query unresolved alert count");
+//            } else {
+//                return result.intValue();
+//            }
         } catch (HibernateException e) {
             final String msg = "unable to query alerts table";
             LOGGER.error(msg, e);
@@ -704,6 +767,7 @@ public class DBAlertManager extends DBManager<Alert> implements AlertManager {
             }
             throw e;
         }
+        return 0;
     }
 }
 
