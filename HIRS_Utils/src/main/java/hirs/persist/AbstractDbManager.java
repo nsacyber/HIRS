@@ -4,7 +4,6 @@ import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
 import hirs.FilteredRecordsList;
-import hirs.data.persist.ReferenceDigestValue;
 import org.apache.commons.lang3.reflect.FieldUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -762,8 +761,8 @@ public abstract class AbstractDbManager<T> implements CrudManager<T> {
             LOGGER.debug("Retrieving objects from db of class {}", searchClass.getName());
             tx = session.beginTransaction();
             CriteriaBuilder builder = session.getCriteriaBuilder();
-            CriteriaQuery<T> criteriaQuery = builder.createQuery(searchClass);
-            Root<T> root = criteriaQuery.from(searchClass);
+            CriteriaQuery<?> criteriaQuery = builder.createQuery(searchClass);
+            Root<?> root = criteriaQuery.from(criteriaQuery.getResultType());
             Predicate recordPredicate = builder.and(
 
             );

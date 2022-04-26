@@ -1,15 +1,8 @@
 package hirs.persist;
 
 import hirs.FilteredRecordsList;
-import static org.apache.logging.log4j.LogManager.getLogger;
 import hirs.data.persist.ReportSummary;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
 import org.apache.commons.lang3.StringUtils;
-
 import org.apache.logging.log4j.Logger;
 import org.hibernate.Criteria;
 import org.hibernate.Session;
@@ -21,6 +14,19 @@ import org.hibernate.criterion.ProjectionList;
 import org.hibernate.criterion.Projections;
 import org.hibernate.criterion.Restrictions;
 import org.hibernate.criterion.Subqueries;
+import org.hibernate.query.Query;
+
+import javax.persistence.criteria.CriteriaBuilder;
+import javax.persistence.criteria.CriteriaQuery;
+import javax.persistence.criteria.Predicate;
+import javax.persistence.criteria.Root;
+import javax.persistence.criteria.Subquery;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
+
+import static org.apache.logging.log4j.LogManager.getLogger;
 
 /**
  * This class defines a <code>DBReportSummaryManager</code> that stores the
@@ -139,15 +145,16 @@ public class DBReportSummaryManager extends DBManager<ReportSummary>
         try {
             LOGGER.debug("retrieving objects from db");
             tx = session.beginTransaction();
-            List list = session.createCriteria(ReportSummary.class)
-                    .add(Restrictions.eq("clientHostname", hostname))
-                    .setResultTransformer(Criteria.DISTINCT_ROOT_ENTITY)
-                    .list();
-
-            for (Object o : list) {
-                if (o instanceof ReportSummary) {
-                    reportSummaryList.add((ReportSummary) o);
-                }
+            CriteriaBuilder criteriaBuilder = session.getCriteriaBuilder();
+            CriteriaQuery<ReportSummary> criteriaQuery = criteriaBuilder.createQuery(ReportSummary.class);
+            Root<ReportSummary> root = criteriaQuery.from(ReportSummary.class);
+            Predicate recordPredicate = criteriaBuilder
+                    .and(criteriaBuilder.equal(root.get("clientHostname"), hostname));
+            criteriaQuery.select(root).where(recordPredicate).distinct(true);
+            Query<ReportSummary> query = session.createQuery(criteriaQuery);
+            List<ReportSummary> results = query.getResultList();
+            if (results != null) {
+                reportSummaryList.addAll(results);
             }
 
             tx.commit();
@@ -264,10 +271,14 @@ public class DBReportSummaryManager extends DBManager<ReportSummary>
         try {
             LOGGER.debug("retrieving objects from db");
             tx = session.beginTransaction();
-            object = (ReportSummary) session
-                    .createCriteria(ReportSummary.class)
-                    .add(Restrictions.eq("report.id", id))
-                    .uniqueResult();
+            CriteriaBuilder criteriaBuilder = session.getCriteriaBuilder();
+            CriteriaQuery<ReportSummary> criteriaQuery = criteriaBuilder.createQuery(ReportSummary.class);
+            Root<ReportSummary> root = criteriaQuery.from(ReportSummary.class);
+            Predicate recordPredicate = criteriaBuilder
+                    .and(criteriaBuilder.equal(root.get("report.id"), id));
+            criteriaQuery.select(root).where(recordPredicate);
+            Query<ReportSummary> query = session.createQuery(criteriaQuery);
+            object = query.uniqueResult();
             tx.commit();
         } catch (Exception e) {
             final String msg = "unable to retrieve query list";
@@ -347,6 +358,19 @@ public class DBReportSummaryManager extends DBManager<ReportSummary>
                     reportSummaryList.add((ReportSummary) o);
                 }
             }
+
+            CriteriaBuilder criteriaBuilder = session.getCriteriaBuilder();
+            CriteriaQuery<ReportSummary> criteriaQuery = criteriaBuilder.createQuery(ReportSummary.class);
+            Root<ReportSummary> root = criteriaQuery.from(ReportSummary.class);
+            Predicate recordPredicate = criteriaBuilder
+                    .exists();
+
+            criteriaQuery.select(root).where(recordPredicate);
+            Query<ReportSummary> query = session.createQuery(criteriaQuery);
+            List<ReportSummary> results = query.getResultList();
+            if (results != null) {
+                reportSummaryList.addAll(results);
+            }
             tx.commit();
         } catch (Exception e) {
             final String msg = "unable to retrieve query list";
@@ -422,12 +446,23 @@ public class DBReportSummaryManager extends DBManager<ReportSummary>
             LOGGER.debug("retrieving objects from db");
             tx = session.beginTransaction();
             //Returns a ReportSummary based on the timestamp and hostname
-            object = (ReportSummary) session.createCriteria(ReportSummary.class)
-                    .addOrder(order)
-                    .add(Restrictions.eq("clientHostname", hostname))
-                    .setFirstResult(firstResult)
-                    .setMaxResults(uniqueResult)
-                    .uniqueResult();
+            CriteriaBuilder criteriaBuilder = session.getCriteriaBuilder();
+            CriteriaQuery<ReportSummary> criteriaQuery = criteriaBuilder.createQuery(ReportSummary.class);
+            Root<ReportSummary> root = criteriaQuery.from(ReportSummary.class);
+            Predicate recordPredicate = criteriaBuilder
+                    .and(criteriaBuilder.equal(root.get("clientHostname"), hostname));
+            criteriaQuery.select(root).where(recordPredicate);
+            Query<ReportSummary> query = session.createQuery(criteriaQuery);
+            query.setFirstResult(firstResult);
+            query.setMaxResults(uniqueResult);
+            object = query.getSingleResult();
+
+//            object = (ReportSummary) session.createCriteria(ReportSummary.class)
+//                    .addOrder(order)
+//                    .add(Restrictions.eq("clientHostname", hostname))
+//                    .setFirstResult(firstResult)
+//                    .setMaxResults(uniqueResult)
+//                    .uniqueResult();
             tx.commit();
         } catch (Exception e) {
             final String msg = "unable to retrieve query list";

@@ -8,7 +8,12 @@ import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.Transaction;
 import org.hibernate.criterion.Restrictions;
+import org.hibernate.query.Query;
 
+import javax.persistence.criteria.CriteriaBuilder;
+import javax.persistence.criteria.CriteriaQuery;
+import javax.persistence.criteria.Predicate;
+import javax.persistence.criteria.Root;
 import java.util.List;
 
 
@@ -77,6 +82,16 @@ public class DBDeviceStateManager extends DBManager<DeviceState> implements Devi
         try {
             LOGGER.debug("retrieving state from db");
             tx = session.beginTransaction();
+            CriteriaBuilder builder = session.getCriteriaBuilder();
+            CriteriaQuery<?> criteriaQuery = builder.createQuery(DeviceState.class);
+            Root<?> root = criteriaQuery.from();
+            Predicate recordPredicate = builder.and(
+
+            );
+            criteriaQuery.select(root).where(recordPredicate).distinct(true);
+            Query<?> query = session.createQuery(criteriaQuery);
+            List<?> results = query.getResultList();
+
             ret = (DeviceState) session.createCriteria(clazz)
                     .add(Restrictions.eq("device", device)).uniqueResult();
             tx.commit();

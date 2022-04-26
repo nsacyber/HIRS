@@ -3,16 +3,6 @@ package hirs.persist;
 import hirs.FilteredRecordsList;
 import hirs.data.persist.Device;
 import hirs.data.persist.DeviceGroup;
-
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.hibernate.Criteria;
@@ -20,7 +10,20 @@ import org.hibernate.HibernateException;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.Transaction;
-import org.hibernate.criterion.Restrictions;
+import org.hibernate.query.Query;
+
+import javax.persistence.criteria.CriteriaBuilder;
+import javax.persistence.criteria.CriteriaQuery;
+import javax.persistence.criteria.JoinType;
+import javax.persistence.criteria.Predicate;
+import javax.persistence.criteria.Root;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * This class defines a <code>DeviceManager</code> that stores the devices
@@ -251,15 +254,23 @@ public class DBDeviceManager extends DBManager<Device> implements
             LOGGER.debug("retrieving defaults devices from db");
             tx = session.beginTransaction();
 
-            List list = session.createCriteria(Device.class).createAlias("deviceGroup", "group")
-                    .add(Restrictions.eq("group.name", DeviceGroup.DEFAULT_GROUP))
-                    .setResultTransformer(Criteria.DISTINCT_ROOT_ENTITY)
-                    .list();
-            for (Object o : list) {
-                if (o instanceof Device) {
-                    devices.add((Device) o);
-                }
+            CriteriaBuilder criteriaBuilder = session.getCriteriaBuilder();
+            CriteriaQuery<Device> criteriaQuery = criteriaBuilder.createQuery(Device.class);
+            Root<Device> root = criteriaQuery.from(Device.class);
+            root.join("group.name", JoinType.LEFT).alias("group");
+            Predicate recordPredicate = criteriaBuilder
+                    .and(criteriaBuilder.equal(root.get("group.name"), DeviceGroup.DEFAULT_GROUP));
+            criteriaQuery.select(root).where(recordPredicate).distinct(true);
+            Query<Device> query = session.createQuery(criteriaQuery);
+            List<Device> results = query.getResultList();
+            if (results != null) {
+                devices.addAll(results);
             }
+//            List list = session.createCriteria(Device.class).createAlias("deviceGroup", "group")
+//                    .add(Restrictions.eq("group.name", DeviceGroup.DEFAULT_GROUP))
+//                    .setResultTransformer(Criteria.DISTINCT_ROOT_ENTITY)
+//                    .list();
+
             tx.commit();
         } catch (HibernateException e) {
             final String msg = "unable to retrieve default devices";
