@@ -21,6 +21,8 @@ namespace hirs {
         }
 
         private static readonly string DEFAULT_SETTINGS_FILE = "appsettings.json";
+        private static readonly string EFI_ARTIFACT_PATH_COMPAT = "/boot/tcg/";
+        private static readonly string EFI_ARTIFACT_PATH = "/EFI/tcg/";
 
 
         private string settingsFile;
@@ -202,10 +204,16 @@ namespace hirs {
                 List<FileInfo> files = new List<FileInfo>();
                 string[] paths = { "cert", "pccert", "platform" };
                 foreach (string subdir in paths) {
-                    string path = efi_prefix + "/boot/tcg/" + subdir;
+                    string path = efi_prefix + EFI_ARTIFACT_PATH + subdir;
                     if (Directory.Exists(path)) {
                         files.AddRange(new DirectoryInfo(path).GetFiles("*base*", enumOpts));
                         files.AddRange(new DirectoryInfo(path).GetFiles("*delta*", enumOpts));
+                    } else {
+                        path = efi_prefix + EFI_ARTIFACT_PATH_COMPAT + subdir;
+                        if (Directory.Exists(path)) {
+                            files.AddRange(new DirectoryInfo(path).GetFiles("*base*", enumOpts));
+                            files.AddRange(new DirectoryInfo(path).GetFiles("*delta*", enumOpts));
+                        }
                     }
                 }
                 if (files.Count() > 0) { // if none found, don't initialize platformCerts
@@ -236,10 +244,16 @@ namespace hirs {
                 List<FileInfo> files = new List<FileInfo>();
 
                 string[] paths = { "manifest", "swidtag" };
+                string ext = "*swidtag";
                 foreach (string subdir in paths) {
-                    string path = efi_prefix + "/boot/tcg/" + subdir;
+                    string path = efi_prefix + EFI_ARTIFACT_PATH + subdir;
                     if (Directory.Exists(path)) {
-                        files.AddRange(new DirectoryInfo(path).GetFiles("*swidtag", enumOpts));
+                        files.AddRange(new DirectoryInfo(path).GetFiles(ext, enumOpts));
+                    } else {
+                        path = efi_prefix + EFI_ARTIFACT_PATH_COMPAT + subdir;
+                        if (Directory.Exists(path)) {
+                            files.AddRange(new DirectoryInfo(path).GetFiles(ext, enumOpts));
+                        }
                     }
                 }
                 if (files.Count() > 0) { // if none found, don't initialize baseRims
@@ -269,10 +283,16 @@ namespace hirs {
                 List<FileInfo> files = new List<FileInfo>();
 
                 string[] paths = { "manifest", "rim" };
+                string ext = "*rimel";
                 foreach (string subdir in paths) {
-                    string path = efi_prefix + "/boot/tcg/" + subdir;
+                    string path = efi_prefix + EFI_ARTIFACT_PATH + subdir;
                     if (Directory.Exists(path)) {
-                        files.AddRange(new DirectoryInfo(path).GetFiles("*rimel", enumOpts));
+                        files.AddRange(new DirectoryInfo(path).GetFiles(ext, enumOpts));
+                    } else {
+                        path = efi_prefix + EFI_ARTIFACT_PATH_COMPAT + subdir;
+                        if (Directory.Exists(path)) {
+                            files.AddRange(new DirectoryInfo(path).GetFiles(ext, enumOpts));
+                        }
                     }
                 }
                 if (files.Count() > 0) { // if none found, don't initialize baseRims
@@ -302,10 +322,16 @@ namespace hirs {
                 List<FileInfo> files = new List<FileInfo>();
 
                 string[] paths = { "manifest", "rim" };
+                string ext = "*rimpcr";
                 foreach (string subdir in paths) {
-                    string path = efi_prefix + "/boot/tcg/" + subdir;
+                    string path = efi_prefix + EFI_ARTIFACT_PATH + subdir;
                     if (Directory.Exists(path)) {
-                        files.AddRange(new DirectoryInfo(path).GetFiles("*rimpcr", enumOpts));
+                        files.AddRange(new DirectoryInfo(path).GetFiles(ext, enumOpts));
+                    } else {
+                        path = efi_prefix + EFI_ARTIFACT_PATH_COMPAT + subdir;
+                        if (Directory.Exists(path)) {
+                            files.AddRange(new DirectoryInfo(path).GetFiles(ext, enumOpts));
+                        }
                     }
                 }
                 if (files.Count() > 0) { // if none found, don't initialize baseRims

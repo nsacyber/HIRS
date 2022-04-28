@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace hirs {
     class Program {
-        public static readonly string VERSION = "14";
+        public static readonly string VERSION = "15";
 
         static async Task<int> Main(string[] args) {
             int result = 0;
