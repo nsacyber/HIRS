@@ -68,7 +68,7 @@ public final class ProvisionerApplication {
         }
 
         // enable TLS 1.1 and 1.2
-        System.setProperty("https.protocols", "TLSv1.2,TLSv1.1");
+        System.setProperty("https.protocols", "TLSv1.2");
 
         // initialize the context
         new AnnotationConfigApplicationContext(ProvisionerConfiguration.class);

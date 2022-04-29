@@ -37,4 +37,5 @@ else
     exit 1
 fi
 
-mysql -u root < $DB_CREATE_SCRIPT
+mysql -fu root < $DB_CREATE_SCRIPT
+mysql -fu root < /opt/hirs/scripts/common/secure_mysql.sql
