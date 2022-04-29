@@ -445,6 +445,7 @@ public class SupplyChainValidationServiceImpl implements SupplyChainValidationSe
                             passed = false;
                             fwStatus = new AppraisalStatus(FAIL,
                                     "Firmware validation failed: invalid certificate path.");
+                            validationObject = baseReferenceManifest;
                         }
                     } catch (IOException e) {
                         LOGGER.error("Error getting X509 cert from manager: " + e.getMessage());
@@ -467,7 +468,7 @@ public class SupplyChainValidationServiceImpl implements SupplyChainValidationSe
                 }
             }
 
-            if (signingCert == null) {
+            if (passed && signingCert == null) {
                 passed = false;
                 fwStatus = new AppraisalStatus(FAIL,
                         "Firmware validation failed: signing cert not found.");
