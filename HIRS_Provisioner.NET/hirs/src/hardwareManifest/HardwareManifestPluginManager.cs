@@ -52,7 +52,7 @@ namespace hirs {
             if (count == 0) {
                 string availableTypes = string.Join(",", assembly.GetTypes().Select(t => t.FullName));
                 Log.Warning(
-                    $"Can't find any type which implements IHardwareManifest in {assembly} from {assembly.Location}.\n" +
+                    $"Can't find any type which implements IHardwareManifest in {assembly}.\n" +
                     $"Available types: {availableTypes}");
             }
             return null;

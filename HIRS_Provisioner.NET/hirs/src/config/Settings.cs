@@ -31,8 +31,8 @@ namespace hirs {
         private string efi_prefix;
         private bool auto_detect_tpm;
         private string event_log_path;
-        private List<IHardwareManifest> hardwareManifests;
-        private string hardware_manifest_name;
+        private readonly List<IHardwareManifest> hardwareManifests;
+        private readonly string hardware_manifest_name;
 
         public Settings() : this(Settings.DEFAULT_SETTINGS_FILE) { }
         public Settings(string file) {
@@ -42,7 +42,8 @@ namespace hirs {
                 Log.Logger = new LoggerConfiguration().ReadFrom.Configuration(configuration).CreateLogger();
 
                 if (!string.IsNullOrWhiteSpace(configuration[Options.hardware_manifest_name.ToString()])) {
-                    List<string> names = Regex.Replace(configuration[Options.hardware_manifest_name.ToString()], @"\s", "").Split(',').ToList();
+                    hardware_manifest_name = $"{ configuration[Options.hardware_manifest_name.ToString()] }";
+                    List<string> names = Regex.Replace(hardware_manifest_name, @"\s", "").Split(',').ToList();
                     HardwareManifestPluginManager plugins = new HardwareManifestPluginManager();
                     hardwareManifests = plugins.LoadPlugins(names);
                 }
@@ -87,16 +88,13 @@ namespace hirs {
                     Console.WriteLine("Could not set up logging.");
                 }
                 Log.Error(e, "Error reading the settings file.");
-                throw e;
+                throw;
             }
         }
         private string GetBasePath() {
-#if DEBUG
             return AppContext.BaseDirectory;
-#else
-            using var processModule = Process.GetCurrentProcess().MainModule;
-            return Path.GetDirectoryName(processModule?.FileName);
-#endif
+            //using var processModule = Process.GetCurrentProcess().MainModule;
+            //return Path.GetDirectoryName(processModule?.FileName);
         }
 
         private IConfiguration readSettingsFile() {
@@ -188,7 +186,7 @@ namespace hirs {
             try {
                 auto_detect_tpm = Boolean.Parse(autoDetectTpmStr);
                 Log.Debug(Options.auto_detect_tpm.ToString() + ": " + (auto_detect_tpm ? "true" : "false"));
-            } catch (FormatException e) {
+            } catch (FormatException) {
                 auto_detect_tpm = false;
                 Log.Warning(Options.auto_detect_tpm.ToString() + " did not contain what the .NET API considers a TrueString nor a FalseString. Setting to default of false.");
             }

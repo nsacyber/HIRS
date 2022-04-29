@@ -65,14 +65,14 @@ namespace hirs {
                     try {
                         tpm = new CommandTpm(CommandTpm.Devices.WIN);
                         Log.Warning("Auto Detect found a WIN TPM Device.");
-                    } catch (Exception e) {
+                    } catch (Exception) {
                         Log.Warning("No WIN TPM Device found by auto detect.");
                     }
                 } else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux)) {
                     try {
                         tpm = new CommandTpm(CommandTpm.Devices.NIX);
                         Log.Warning("Auto Detect found a Linux TPM Device.");
-                    } catch (Exception e) {
+                    } catch (Exception) {
                         Log.Warning("No Linux TPM Device found by auto detect.");
                     }
                 }
@@ -83,7 +83,7 @@ namespace hirs {
                         string[] split = CommandTpm.DefaultSimulatorNamePort.Split(":");
                         tpm = new CommandTpm(true, split[0], Int32.Parse(split[1]));
                         Log.Warning("Auto Detect found a TPM simulator at " + CommandTpm.DefaultSimulatorNamePort + ".");
-                    } catch (Exception e) {
+                    } catch (Exception) {
                         Log.Warning("No TPM simulator found by auto detect.");
                     }
                 }
@@ -240,7 +240,7 @@ namespace hirs {
                         // For now, the ACA will send a comma separated selection of PCRs as a string
                         try {
                             selectPcrs = (uint[])icr.PcrMask.Split(',').Select(uint.Parse).ToList().ToArray();
-                        } catch (Exception e) {
+                        } catch (Exception) {
                             Log.Warning("PcrMask was included in the IdentityClaimResponse, but could not be parsed." +
                                         "Collecting quote over default PCR selection.");
                             Log.Debug("This PcrMask could not be parsed: " + icr.PcrMask);

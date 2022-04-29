@@ -7,12 +7,8 @@ using System.Text;
 
 namespace hirs {
     public interface IHardwareManifest {
-        public static readonly string pluginsPath =
-#if DEBUG
-            AppContext.BaseDirectory;
-#else
-            Path.Combine(Path.GetDirectoryName(Process.GetCurrentProcess().MainModule.FileName), "plugins");
-#endif
+        public static readonly string pluginsPath = //AppContext.BaseDirectory;
+            Path.Combine(Path.GetDirectoryName(Environment.ProcessPath), "plugins");
         string Name {
             get;
         }

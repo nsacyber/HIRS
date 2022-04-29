@@ -15,8 +15,8 @@ namespace hirs {
             signature1 = signature;
             pcrValues1 = pcrValues != null ? (Tpm2bDigest[])pcrValues.Clone() : null;
         }
-        public Attest quoted => quoted1;
-        public ISignatureUnion signature => signature1;
+        public new Attest quoted => quoted1;
+        public new ISignatureUnion signature => signature1;
         public Tpm2bDigest[] pcrValues => pcrValues1;
 
         //TODO Fix ACA so that I don't have to re-format data in this way

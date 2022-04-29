@@ -202,7 +202,7 @@ namespace hirs {
                 existingObject = tpm.ReadPublic(ekHandle, out name, out qualifiedName);
                 Log.Debug("EK already exists.");
                 return;
-            } catch (TpmException e) {
+            } catch (TpmException) {
                 Log.Debug("Verified EK does not exist at expected handle. Creating EK.");
             }
 

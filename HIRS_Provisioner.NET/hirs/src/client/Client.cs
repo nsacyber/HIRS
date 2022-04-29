@@ -63,7 +63,7 @@ namespace hirs {
                 }
             } catch (Exception e) {
                 Log.Debug(e, "Unknown error");
-                throw e;
+                throw;
             }
             return icr;
         }
@@ -113,7 +113,7 @@ namespace hirs {
                 }
             } catch (Exception e) {
                 Log.Debug(e, "Unknown error");
-                throw e;
+                throw;
             }
             return cr;
         }
@@ -121,7 +121,7 @@ namespace hirs {
         public CertificateRequest createAkCertificateRequest(byte[] secret, CommandTpmQuoteResponse ctqr) {
             CertificateRequest akCertReq = new CertificateRequest();
             akCertReq.Nonce = ByteString.CopyFrom(secret);
-            string quoteInfoSigStr, pcrValuesStr;
+            string quoteInfoSigStr;//, pcrValuesStr;
             CommandTpmQuoteResponse.formatQuoteInfoSigForAca(ctqr.quoted, ctqr.signature, out quoteInfoSigStr);
             akCertReq.Quote = ByteString.CopyFromUtf8(quoteInfoSigStr);
             //formatPcrValuesForAca(pcrValues, out pcrValuesStr);
