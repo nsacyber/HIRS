@@ -2,11 +2,17 @@ FROM centos:7
 
 # Install packages for installing HIRS ACA
 RUN yum -y update && yum clean all
-RUN yum install -y mariadb-server openssl tomcat java-1.8.0 rpmdevtools coreutils initscripts chkconfig sed grep wget firewalld policycoreutils net-tools && yum clean all
+# install build tools for TPM2 provisioner
+RUN yum install -y epel-release cmake make git gcc-c++ doxygen graphviz protobuf-compiler cppcheck python libssh2-devel openssl libcurl-devel log4cplus-devel protobuf-devel re2-devel tpm2-tss-devel tpm2-abrmd-devel  && yum clean all
+
+# install build tools for ACA
+RUN yum install -y sudo yum install java-1.8.0-openjdk-devel protobuf-compiler rpm-build epel-release cmake make git gcc-c++ doxygen graphviz cppcheck python libssh2-devel openssl libcurl-devel log4cplus-devel protobuf-devel re2-devel tpm2-tss-devel tpm2-abrmd-devel trousers-devel && yum clean all
+# install run time dependencies
+RUN yum install -y mariadb-server openssl tomcat java-1.8.0-openjdk-headless rpmdevtools coreutils initscripts chkconfig sed grep wget which firewalld policycoreutils net-tools git  rpm-build && yum clean all
 
 # Remove TLSv1, TLSv1.1, references to prevent java security from stopping tomcat launch
-RUN sed -i 's/TLSv1,//' /usr/lib/jvm/java-1.8.0-openjdk-1.8.0.*/jre/lib/security/java.security
-RUN sed -i 's/TLSv1.1,//' /usr/lib/jvm/java-1.8.0-openjdk-1.8.0.*/jre/lib/security/java.security
+RUN sed -i 's/TLSv1,//' /usr/lib/jvm/java-1.8.0-openjdk-1.8.0*/jre/lib/security/java.security
+RUN sed -i 's/TLSv1.1,//' /usr/lib/jvm/java-1.8.0-openjdk-1.8.0*/jre/lib/security/java.security
 
 # Expose ACA Port
 EXPOSE 8443
