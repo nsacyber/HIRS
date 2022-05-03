@@ -31,7 +31,6 @@ source sys_test_common.sh
 docker exec $aca_container sh -c "/HIRS/.ci/setup/container/setup_aca.sh"
 echo "ACA Loaded!"
 echo "ACA Container info: $(checkContainerStatus $aca_container)";
-echo "TPM2 Provisioner Container info: $(checkContainerStatus $tpm2_container)";
 
 # Install HIRS provioner and setup tpm2 emulator
 docker exec $tpm2_container /HIRS/.ci/setup/container/setup_tpm2provisioner.sh
