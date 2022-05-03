@@ -1,4 +1,4 @@
-ROM hirs/hirs-ci:centos7
+FROM centos:7
 
 # Install packages for installing HIRS TPM2 Provisioner
 RUN yum -y update && yum clean all
