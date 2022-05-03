@@ -23,7 +23,7 @@ public class Commander {
     private static final String PCR_STRING = "pcr";
     private static final String VERIFY_STRING = "Verify";
     private static final String VERSION_STRING = "version";
-    private static final String VERSION_NUMBER = "1.0";
+    private static final String VERSION_NUMBER = "2.1";
     private static final String REGEX = "[0-9]+";
 
     private boolean hasArguments = false;
@@ -63,7 +63,6 @@ public class Commander {
             defualtArgs[0] = "-e";
             hasArguments = true;
             parseArguments(defualtArgs);
- //           printHelp("");
         }
     }
 
@@ -79,6 +78,9 @@ public class Commander {
         for (int i = 0; i < args.length; i++) {
             tempValue = args[i];
 
+            if (bDone) {
+                  break;
+            }
         if (args.length == 0) {    // Process default params if none were given
             bEventIds = true;
         } else {
@@ -92,7 +94,10 @@ public class Commander {
                             if (eventFilter.matches(REGEX)) {
                                 eventNumber = Integer.parseInt(eventFilter);
                             } else {
-                              System.out.println("invalid parameter following -e: " + eventFilter);
+                              printHelp("Invalid parameter following -e: " + eventFilter
+                                 + "\n");
+                              bValidArgs = false;
+                              bDone = true;
                             }
                         }
                     }
@@ -109,10 +114,10 @@ public class Commander {
                 case COMMAND_PREFIX + "d":
                     if ((args.length < i + 2 + 1) || (args[i + 1].charAt(0) == '-')
                                               || (args[i + 2].charAt(0) == '-')) {
-                        System.out.print("tcg_eventlog_tool command line error:"
-                                        +  " 2 or 3 parameters needed for -diff.\n");
-                        System.out.print("usage: elt -d logFile1 logFile2 pcr#");
+                        printHelp("tcg_eventlog_tool command line error:"
+                                        +  " 2 parameters needed for -diff." + "\n");
                         bValidArgs = false;
+                        bDone = true;
                     } else {
                         inFile = args[i++  + 1];
                         inFile2 = args[i++ + 1];
@@ -121,18 +126,36 @@ public class Commander {
                     break;
                 case FULL_COMMAND_PREFIX + FILE_STRING:
                 case COMMAND_PREFIX + "f":
-                    bFile = true;
-                    inFile = args[++i];
+                   if (i == args.length - 1) {
+                        printHelp("No output file specified with the " + tempValue
+                        + " option" + "\n");
+                        bValidArgs = false;
+                        bDone = true;
+                    } else if (args[i + 1].charAt(0) == '-') {
+                        printHelp("No output file specified with the " + tempValue
+                        + "option" + "\n");
+                        bValidArgs = false;
+                        bDone = true;
+                    } else {
+                        bFile = true;
+                        inFile = args[++i];
+                    }
                     break;
                 case FULL_COMMAND_PREFIX + OUTPUT_STRING:
                 case COMMAND_PREFIX + "o":
-                    if (i < args.length - 1) {  // Check for a filter following the -o
-                        if (!args[i + 1].startsWith("-")) {
-                            outFile = args[i++ + 1];
-                        } else {
-                            System.out.print("no output file specified with -o option");
-                            bValidArgs = false;
-                        }
+                    if (i == args.length - 1) {
+                        printHelp("No output file specified with the " + tempValue
+                        + " option" + "\n");
+                        bValidArgs = false;
+                        bDone = true;
+                    } else {
+                       outFile = args[i++ + 1];
+                       if (outFile.isEmpty()) {
+                           printHelp("No output file specified with the " + tempValue
+                            + "option" + "\n");
+                           bValidArgs = false;
+                           bDone = true;
+                         }
                     }
                     bOutput = true;
                     break;
@@ -144,7 +167,10 @@ public class Commander {
                             if (pcrFilter.matches(REGEX)) {
                                 pcrNumber = Integer.parseInt(pcrFilter);
                             } else {
-                              System.out.println("invalid parameter following -p: " + pcrFilter);
+                              printHelp("Invalid parameter following -p: "
+                              + pcrFilter + "\n");
+                              bValidArgs = false;
+                              bDone = true;
                             }
                         }
                     }
@@ -168,11 +194,15 @@ public class Commander {
                     bHelp = true;
                     break;
                 default:
-                    printHelp("");
+                    //System.out.print("Unknown option: " + tempValue + "\n");
                     bValidArgs = false;
+                    bDone = true;
+                    printHelp("Unknown option: " + tempValue + "\n");
             }
           }
         }
+        checkForInvalidOptions();
+        checkDefaults();
     }
 
     /**
@@ -317,6 +347,42 @@ public class Commander {
         return pcrNumber;
     }
     /**
+     * Setter for the input associated with the EventIds flag.
+     */
+    public final void setEventIdsFlag() {
+        bEventIds = true;
+    }
+    /**
+     * Check for invalid option combinations.
+     * @return false is an invalid combination was found
+     */
+    public final boolean checkForInvalidOptions() {
+        bValidArgs = false;
+        if (!bEventIds && (bEventHex || bContentHex)) {
+            return false;
+        }
+        if (bHex && (bEventHex || bContentHex)) {
+            return false;
+        }
+        bValidArgs = true;
+        return true;
+    }
+    /**
+     * Check for situations where default values need to be set.
+     */
+    public final void checkDefaults() {
+      if (bFile) {
+             if (!bHex && !bEventIds && !bContentHex && !bPCRs) {
+                 bEventIds = true;
+             }
+         }
+      if (bOutput) {
+          if (!bHex && !bEventIds && !bContentHex && !bPCRs) {
+              bEventIds = true;
+          }
+      }
+    }
+    /**
      * This method is used to inform the user of the allowed functionality of the program.
      * @param message message caller specific message to print before listing the help.
      */
@@ -324,70 +390,55 @@ public class Commander {
         StringBuilder sb = new StringBuilder();
         String os = System.getProperty("os.name").toLowerCase();
         if ((message != null) && (!message.isEmpty())) {
-            sb.append("\n\n" + message);
+            sb.append("\n" + message);
         }
         sb.append("\nTCG Log Parser ");
         if (os.compareToIgnoreCase("linux") == 0) {
-            sb.append("Usage: sh elt.sh [OPTION]...-f [FILE]...\n");
+            sb.append("Usage: elt [OPTION]... [OPTION]...\n");
         } else {
-            sb.append("Usage: ./elt.ps1 [OPTION]...-f [FILE]...\n");
+            sb.append("Usage: ./elt.ps1 [OPTION]... [OPTION]...\n");
         }
-        sb.append("Options:\n"
+        sb.append("\nOptions:\n"
                 + "  -f\t--file\t\t Use specific Event Log file. "
-                + "\n\t\t\t Following parameter MUST be a path and file name."
-                + "\n\t\t\t The local Event Log file will be used if this option is not present."
-                + "\n\t\t\t Note: Access to the local Event Log may require admin privileges.\n"
-                + "  -e\t--event\t Display event descriptions (including event content) in "
-                + "human readable form."
-                + "\n\t\t\t Following optional parameter is a single event number used to filter"
-                + " the output."
-                + "\n\t\t\t All events will be displayed if the optional parameter is not +"
-                + "provided.\n"
-                + "  -ec\t--contenthex\t Displays event content"
-                + " in eventhex format when -event is used.\n"
-                + "  -ex\t--eventhex\t Displays event in hex format when -event is used.\n"
-                + "  -d\t--diff\t\t Compares two TCG Event Logs and outputs a list of events"
-                + " of the second log that differred.\n"
-                + "  -o\t--output\t Output to a file. "
-                + "\n\t\t\t Following parameter MUST be a relative path and file name.\n"
-                + "  -p\t--pcr\t\t Output expected PCR value calculated from the "
-                + "TCG Log (for PCR Replay)."
-                + "\n\t\t\t Following parameter MAY be a PCR number used to specify a single pcr."
-                + "\n\t\t\t No following parameters will display all PCRs.\n"
-                + "  -v\t--version\t Parser Version.\n"
-//                + "  -V\t--Verify\t Attempts to verify the log file against values."
-                + "  -x\t--hex\t\t Displays event in hex format. Use with -ec to get content."
-                + "\n\t\t\t Use -e -ec and -ex options to filter output."
-                + "\n\t\t\t All output will be human readble form if not present."
+                + "\n\t\t\t example: elt [-f|--file] /path/to/eventlogfile\n"
+                + "  -e\t--event\t\t Display all event detials for a specific event"
+                + "\n\t\t\t example: elt [-e|--event] 30"
+                + "\n\t\t\t no event specified will default to all events"
+                + "\n\t\t\t example: elt [-e|--event]\n"
+                + "  -ec\t--contenthex\t Include event content in hex format."
+                + " Only valid with -e option.\n"
+                + "  -ex\t--eventhex\t Include event only (no content) in hex format."
+                + " Only valid with -e option.\n"
+                + "  -d\t--diff\t\t Compares two TCG Event Logs and displays events from second"
+                + " file that do not match."
+                + "\n\t\t\t example: elt [-d|--diff] /path/to/eventlogfile1 "
+                + "/path/to/eventlogfile2\n"
+                + "  -o\t--output\t Redirect to a file in the current working directory unless a"
+                + " path is specified. "
+                + "\n\t\t\t example: elt [-o|--output] /path/to/outputfile\n"
+                + "  -p\t--pcr\t\t Display all expected PCR values calculated from the TCG Log"
+                + "(for PCR Replay)."
+                + "\n\t\t\t Specify a PCR number to filter on a single PCR."
+                + "\n\t\t\t example: elt [-p|--pcr] 5\n"
+                + "  -v\t--version\t Version info.\n"
+                + "  -x\t--hex\t\t Event only (no content) in hex format."
                 + "\n\n");
         if (os.compareToIgnoreCase("linux") == 0) {
-        sb.append("\nIf no FILE parameter is provided then the standard Linux TCGEventLog path "
+        sb.append("\nIf no file parameter is provided then the standard Linux TCGEventLog path "
                 + "\n(/sys/kernel/security/tpm0/binary_bios_measurements) is used."
+                + "\nIf no parameter is given then the -e option will be used as default."
                 + "\n Note admin privileges may be required (e.g. use sudo when running the "
                 + " script).\n"
                 + "All OPTIONS must be seperated by a space delimiter, no concatenation"
                 + " of OPTIONS is currently supported.\n"
-                + "\nExamples: (run from the script directory)\n"
-                + "1. Display all events from the binary_bios_measurements.bin test pattern:\n"
-                + "    sh elt.sh -f ../test/testdata/binary_bios_measurements_Dell_Fedora30.bin "
-                + " -e\n"
-                + "2. Display only the event with an index of 0 (e.g event that extend PCR 0):\n"
-                + "    sh scripts/elt.sh -f "
-                + "../test/testdata/binary_bios_measurements_Dell_Fedora30.bin -p 0\n"
                 );
         } else { //windows
-            sb.append("\nIf no FILE parameter is provided then the "
-                    + "standard Windows TCGEventLog path (C:\\Windows\\Logs\\MeasuredBoot) is used"
+            sb.append("\nIf no file parameter is provided then the "
+                + "standard Windows TCGEventLog path (C:\\Windows\\Logs\\MeasuredBoot) is used"
+                + "\nIf no parameter is given then the -e option will be used as default."
                 + "\n Note admin privileges may be required (e.g. run as Administrator).\n"
                 + "All OPTIONS must be seperated by a space delimiter, "
                 +  "no concatenation of OPTIONS is currently supported.\n"
-                + "\nExamples:(run from the script directory)\n"
-                + "1. Display all events from the binary_bios_measurements.bin test pattern:\n"
-                + "    ./elt.ps1 -f "
-                + "..\\test\\testdata\\binary_bios_measurements_Dell_Fedora30.bin -e\n"
-                + "2. Display only the event with an index of 0 (e.g event that extend PCR 0):\n"
-                + "    ./elt.ps1 -f "
-                + "..\\test\\testdata\\binary_bios_measurements_Dell_Fedora30.bin -p 0\n"
                 );
         }
         System.out.println(sb.toString());

@@ -1,6 +1,5 @@
 package hirs.tcg_eventlog;
 
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.charset.Charset;
@@ -12,7 +11,6 @@ import java.security.cert.CertificateException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-
 import hirs.tpm.eventlog.TCGEventLog;
 import hirs.tpm.eventlog.TpmPcrEvent;
 import hirs.utils.HexUtils;
@@ -35,9 +33,10 @@ final class Main {
     public static void main(final String[] args) {
         commander = new Commander(args);
         if (!commander.getValidityFlag()) {
-            System.out.print("Program exiting without processs due to issues with"
-                    + " parameters provided.");
-            System.exit(1);
+            System.out.print("\nProgram exiting without processs due to issues with"
+                    + " parameters provided.\n");
+            commander.printHelp("");
+            System.exit(0);
         }
         if (commander.hasArguments()) {
             if (commander.getDoneFlag()) {
@@ -50,14 +49,13 @@ final class Main {
             if (commander.getOutputFlag()) {
                 try {
                     outputStream = new FileOutputStream(commander.getOutputFileName());
-                } catch (FileNotFoundException e) {
+                    System.out.print("Writing to output file: " + commander.getOutputFileName()
+                     + "\n");
+                } catch (Exception e) {
                     System.out.print("Error opening output file" + commander.getOutputFileName()
                             + "\nError was " + e.getMessage());
                     System.exit(1);
                 }
-            }
-            if (commander.getFileFlag()) {
-                eventLog = openLog(commander.getInFileName());
             }
             if (commander.getContentFlag()) {
                 bContentFlag = true;
@@ -91,10 +89,8 @@ final class Main {
         }   // End commander processing
 
         try {
-            if (eventLog == null) {
-                eventLog = openLog("");
-            }
-            // Main Event processing
+           eventLog = openLog(commander.getInFileName());
+           // Main Event processing
             TCGEventLog evLog = new TCGEventLog(eventLog, bEventFlag, bContentFlag, bHexEvent);
             if (bPcrFlag) {
                 String[] pcrs = evLog.getExpectedPCRValues();
@@ -116,9 +112,8 @@ final class Main {
                     writeOut("\n----------------- End PCR Values ----------------- \n\n");
                 }
             }
-
             // General event log output
-            if (bEventFlag) {
+            if ((bEventFlag || bHexFlag) && !bPcrFlag) {
                 if (!bHexFlag) {
                     if (evLog.isCryptoAgile()) {
                         writeOut("\nEvent Log follows the \"Crypto Agile\" format and has "
@@ -135,7 +130,7 @@ final class Main {
                         if ((commander.getPcrNumber() == event.getPcrIndex())
                                 || commander.getPcrNumber() == -1) {
                             if (bHexFlag) {
-                                if (bEventFlag || bHexEvent) {
+                                if (bHexFlag || bHexEvent) {
                                     writeOut(HexUtils.byteArrayToHexString(event.getEvent())
                                             + "\n");
                                 }
@@ -178,7 +173,6 @@ final class Main {
         boolean bDefault = false;
         bHexFlag = commander.getHexFlag();
         try {
-
             if (fileName.isEmpty()) {
                 if (os.compareToIgnoreCase("linux") == 0) { // need to find Windows path
                     fName = "/sys/kernel/security/tpm0/binary_bios_measurements";
@@ -196,9 +190,9 @@ final class Main {
         } catch (Exception e) {
             String error = "Error reading event Log File: " + e.toString();
             if (bDefault) {
-                error += "\nTry using the -f option to specify an Event Log File";
+                error += "\nTry using the -f option to specify an Event Log File\n";
             }
-            writeOut(error);
+            System.out.print(error);
             System.exit(1);
         }
         return rawLog;
@@ -218,6 +212,8 @@ final class Main {
                 System.out.print(dataNoNull);                // output to the console
             }
         } catch (IOException e) {
+            System.out.print("Error writing to output file: " + commander.getOutputFileName()
+           + "\n  error was: " + e.toString() + "\n");
             e.printStackTrace();
         }
     }
@@ -331,5 +327,16 @@ final class Main {
             }
         }
         return matchFound;
+    }
+    /**
+     * Diagnostic method for detecting flag settings.
+     */
+    public static void dumpFlags() {
+        System.out.print("Event Flag is " + commander.getEventIdsFlag() + "\n");
+        System.out.print("Hex Flag is " + commander.getEventHexFlag() + "\n");
+        System.out.print("Context Flag is " + commander.getContentFlag() + "\n");
+        System.out.print("PCR Flag is " + commander.getPCRFlag() + "\n");
+        System.out.print("Output File Flag is " + commander.getFileFlag() + "\n");
+        System.out.print("Output Flag is " + commander.getOutputFlag() + "\n");
     }
 }
