@@ -9,13 +9,7 @@ import hirs.appraiser.IMAAppraiser;
 import hirs.appraiser.TPMAppraiser;
 import hirs.data.persist.DeviceGroup;
 import hirs.data.persist.HIRSPolicy;
-import hirs.data.persist.IMAPolicy;
-import hirs.data.persist.baseline.ImaAcceptableRecordBaseline;
-import hirs.data.persist.baseline.ImaIgnoreSetBaseline;
 import hirs.data.persist.Policy;
-import hirs.data.persist.baseline.SimpleImaBaseline;
-import hirs.data.persist.TPMPolicy;
-import hirs.data.persist.baseline.TpmWhiteListBaseline;
 import hirs.utils.HIRSProfiles;
 import hirs.utils.SpringContextProvider;
 import org.apache.logging.log4j.LogManager;
@@ -25,7 +19,6 @@ import org.springframework.context.annotation.AnnotationConfigApplicationContext
 import org.springframework.context.annotation.ClassPathBeanDefinitionScanner;
 import org.springframework.core.type.filter.AssignableTypeFilter;
 import org.springframework.orm.hibernate5.LocalSessionFactoryBean;
-import hirs.alert.ManagedAlertService;
 
 import java.util.Collection;
 import java.util.HashSet;
@@ -72,7 +65,6 @@ public final class SystemInit {
         scanner.addIncludeFilter(new AssignableTypeFilter(AppraiserPlugin.class));
         scanner.addIncludeFilter(new AssignableTypeFilter(SpringContextProvider.class));
         scanner.addIncludeFilter(new AssignableTypeFilter(AppraiserPluginManager.class));
-        scanner.addIncludeFilter(new AssignableTypeFilter(ManagedAlertService.class));
 
         // scan for appraiser plugins
         int registeredBeanCount = scanner.scan("hirs");
@@ -90,8 +82,6 @@ public final class SystemInit {
         final DeviceGroupManager deviceGroupManager = new DBDeviceGroupManager(sessionFactory);
         final AppraiserManager appraiserManager = new DBAppraiserManager(sessionFactory);
         final PolicyManager policyManager = new DBPolicyManager(sessionFactory);
-        final BaselineManager baselineManager = new DBBaselineManager(sessionFactory);
-        final DBAlertServiceManager alertServiceManager = new DBAlertServiceManager(sessionFactory);
 
         // save the default group
         LOGGER.info("Checking for default device group...");
@@ -196,62 +186,6 @@ public final class SystemInit {
             policyManager.setDefaultPolicy(hirsApp, hirsPolicy);
         } else {
             LOGGER.info("HIRS policy found.");
-        }
-
-        // initiate the default ima policy
-        LOGGER.info("Checking for IMA policy...");
-        IMAPolicy imaPolicy = (IMAPolicy) policyManager.getPolicy(IMA_POLICY_NAME);
-        if (imaPolicy == null) {
-            LOGGER.info("IMA policy not found, creating...");
-            imaPolicy = new IMAPolicy(IMA_POLICY_NAME);
-            imaPolicy.setFailOnUnknowns(false);
-            imaPolicy.setWhitelist((ImaAcceptableRecordBaseline) baselineManager.saveBaseline(
-                    new SimpleImaBaseline("Test Policy Baseline")));
-            imaPolicy.setRequiredSet((ImaAcceptableRecordBaseline) baselineManager.saveBaseline(
-                    new SimpleImaBaseline("Test Policy Required Set")));
-            imaPolicy.setImaIgnoreSetBaseline((ImaIgnoreSetBaseline) baselineManager.saveBaseline(
-                    new ImaIgnoreSetBaseline("Test Policy Ignore Set")));
-            imaPolicy = (IMAPolicy) policyManager.savePolicy(imaPolicy);
-            policyManager.setDefaultPolicy(imaApp, imaPolicy);
-        } else {
-            LOGGER.info("IMA policy found.");
-        }
-
-        // initiate the default tpm policy
-        LOGGER.info("Checking for TPM policy...");
-        TPMPolicy tpmPolicy = (TPMPolicy) policyManager.getPolicy(TPM_POLICY_NAME);
-        if (tpmPolicy == null) {
-            LOGGER.info("TPM policy not found, creating...");
-            tpmPolicy = new TPMPolicy(TPM_POLICY_NAME);
-            tpmPolicy.setAppraiseFullReport(true);
-            tpmPolicy.setAppraisePcrMask(NONE_MASK);
-            tpmPolicy.setDefaultPcrAppraisalValues();
-            tpmPolicy.setReportPcrMask(ALL_MASK);
-            tpmPolicy.setTpmWhiteListBaseline((TpmWhiteListBaseline) baselineManager.saveBaseline(
-                    new TpmWhiteListBaseline("Test TPM White List Baseline")));
-            tpmPolicy = (TPMPolicy) policyManager.savePolicy(tpmPolicy);
-            policyManager.setDefaultPolicy(tpmApp, tpmPolicy);
-        } else {
-            LOGGER.info("TPM policy found.");
-        }
-
-        // ensure all alert services are created
-        LOGGER.info("Checking for alert services...");
-        LOGGER.info(String.format("Checking for presence of %d alert services.",
-                context.getBeansOfType(ManagedAlertService.class).size())
-        );
-
-        for (ManagedAlertService alertService
-                : context.getBeansOfType(ManagedAlertService.class).values()) {
-            String alertServiceName = alertService.getName();
-            if (alertServiceManager.getAlertServiceConfig(alertServiceName) == null) {
-                LOGGER.info(
-                        String.format("%s alert services not found; creating.", alertServiceName)
-                );
-                alertService.persist(alertServiceManager);
-            } else {
-                LOGGER.info(String.format("%s alert service found.", alertServiceName));
-            }
         }
 
         LOGGER.info("Complete.");

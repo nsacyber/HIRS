@@ -222,7 +222,7 @@ public final class YumRepositoryTest extends SpringPersistenceTest {
         Assert.assertEquals(remotePackages.size(), PACKAGE_COUNT);
 
         // measure each of the packages and collect all of the records from them
-        Set<IMABaselineRecord> foundRecords = new HashSet<IMABaselineRecord>();
+        Set<Object> foundRecords = new HashSet<Object>();
         for (RPMRepoPackage remotePackage : remotePackages) {
             repo.measurePackage(remotePackage);
             Assert.assertNotNull(remotePackage.getPackageRecords());
@@ -295,7 +295,7 @@ public final class YumRepositoryTest extends SpringPersistenceTest {
         Set<RPMRepoPackage> loadedPackages = loadedRepo.getPackages();
 
         // load the fully measured packages and collect all the records from them
-        Set<IMABaselineRecord> foundRecords = new HashSet<IMABaselineRecord>();
+        Set<Object> foundRecords = new HashSet<Object>();
         for (RepoPackage loadedPackage : loadedPackages) {
             RepoPackage fullPackage = repoMan.getRepoPackage(loadedPackage.getId());
             foundRecords.addAll(fullPackage.getPackageRecords());

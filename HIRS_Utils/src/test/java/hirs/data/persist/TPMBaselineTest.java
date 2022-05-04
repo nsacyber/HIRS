@@ -12,9 +12,6 @@ import static hirs.data.persist.TPMMeasurementRecord.MAX_PCR_ID;
 import static hirs.data.persist.TPMMeasurementRecord.MIN_PCR_ID;
 import static hirs.data.persist.DeviceInfoReport.NOT_SPECIFIED;
 
-import hirs.persist.BaselineManager;
-import hirs.persist.DBBaselineManager;
-
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;

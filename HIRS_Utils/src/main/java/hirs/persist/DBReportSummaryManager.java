@@ -8,19 +8,14 @@ import org.hibernate.Criteria;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.Transaction;
-import org.hibernate.criterion.DetachedCriteria;
 import org.hibernate.criterion.Order;
-import org.hibernate.criterion.ProjectionList;
-import org.hibernate.criterion.Projections;
 import org.hibernate.criterion.Restrictions;
-import org.hibernate.criterion.Subqueries;
 import org.hibernate.query.Query;
 
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Root;
-import javax.persistence.criteria.Subquery;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -171,57 +166,6 @@ public class DBReportSummaryManager extends DBManager<ReportSummary>
     }
 
     /**
-     * Returns a list of all <code>ReportSummary</code> objects that are ordered
-     * by a column and direction (ASC, DESC) that is provided by the user.  This
-     * method helps support the server-side processing in the JQuery DataTables.
-     *
-     * @param columnToOrder Column to be ordered
-     * @param ascending direction of sort
-     * @param firstResult starting point of first result in set
-     * @param maxResults total number we want returned for display in table
-     * @param search string of criteria to be matched to visible columns
-     * @param searchableColumns Map of String and boolean values with column
-     *      headers and whether they are to.  Boolean is true if field provides
-     *      a typical String that can be searched by Hibernate without
-     *      transformation.
-     * @param hostname name of the device to filter on
-     * @return FilteredRecordsList object with fields for DataTables
-     * @throws ReportSummaryManagerException
-     *          if unable to create the list
-     */
-    @Override
-    public final FilteredRecordsList<ReportSummary> getOrderedReportSummaryList(
-            final String columnToOrder, final boolean ascending, final int firstResult,
-            final int maxResults, final String search,
-            final Map<String, Boolean> searchableColumns,
-            final String hostname) throws ReportSummaryManagerException {
-        if (columnToOrder == null) {
-            LOGGER.debug("null object argument");
-            throw new NullPointerException("object");
-        }
-
-        // allows filtering by specific hostname.  If no hostname specified, always match.
-        CriteriaModifier modifier = new CriteriaModifier() {
-            @Override
-            public void modify(final Criteria criteria) {
-                criteria.add(Restrictions.ilike("clientHostname",
-                        StringUtils.defaultIfBlank(hostname, "%")));
-            }
-        };
-
-        LOGGER.debug("Getting report summary list");
-        final FilteredRecordsList<ReportSummary> summaries;
-        try {
-            summaries = super.getOrderedList(ReportSummary.class, columnToOrder,
-                    ascending, firstResult, maxResults, search,
-                    searchableColumns, modifier);
-        } catch (DBManagerException e) {
-            throw new BaselineManagerException(e);
-        }
-        LOGGER.debug("Got {} report summaries", summaries.size());
-        return summaries;
-    }
-    /**
      * Retrieves the <code>ReportSummary</code> from the database. This
      * searches the database for an entry whose id matches <code>id</code>.
      * It then reconstructs a <code>ReportSummary</code> object from the
@@ -339,33 +283,30 @@ public class DBReportSummaryManager extends DBManager<ReportSummary>
         try {
             LOGGER.debug("retrieving objects from db");
             tx = session.beginTransaction();
-            DetachedCriteria uniqueHosts = DetachedCriteria.forClass(
-                    ReportSummary.class);
+//            DetachedCriteria uniqueHosts = DetachedCriteria.forClass(
+//                    ReportSummary.class);
 
-            ProjectionList properties = Projections.projectionList();
-            properties.add(Projections.groupProperty("clientHostname"));
-            properties.add(Projections.max("timestamp"), "timestamp");
-
-            uniqueHosts.setProjection(properties);
-
-            List list = session.createCriteria(ReportSummary.class)
-                    .add(Subqueries.propertiesIn(
-                            new String[]{"clientHostname", "timestamp"},
-                            uniqueHosts))
-                    .list();
-            for (Object o : list) {
-                if (o instanceof ReportSummary) {
-                    reportSummaryList.add((ReportSummary) o);
-                }
-            }
+//            ProjectionList properties = Projections.projectionList();
+//            properties.add(Projections.groupProperty("clientHostname"));
+//            properties.add(Projections.max("timestamp"), "timestamp");
+//
+//            uniqueHosts.setProjection(properties);
+//
+//            List list = session.createCriteria(ReportSummary.class)
+//                    .add(Subqueries.propertiesIn(
+//                            new String[]{"clientHostname", "timestamp"},
+//                            uniqueHosts))
+//                    .list();
+//            for (Object o : list) {
+//                if (o instanceof ReportSummary) {
+//                    reportSummaryList.add((ReportSummary) o);
+//                }
+//            }
 
             CriteriaBuilder criteriaBuilder = session.getCriteriaBuilder();
             CriteriaQuery<ReportSummary> criteriaQuery = criteriaBuilder.createQuery(ReportSummary.class);
             Root<ReportSummary> root = criteriaQuery.from(ReportSummary.class);
-            Predicate recordPredicate = criteriaBuilder
-                    .exists();
-
-            criteriaQuery.select(root).where(recordPredicate);
+            criteriaQuery.multiselect(root.get("clientHostname"), root.get("timestamp"));
             Query<ReportSummary> query = session.createQuery(criteriaQuery);
             List<ReportSummary> results = query.getResultList();
             if (results != null) {

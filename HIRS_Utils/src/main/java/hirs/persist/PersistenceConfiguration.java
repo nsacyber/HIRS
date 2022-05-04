@@ -20,7 +20,7 @@ import org.springframework.orm.hibernate5.LocalSessionFactoryBean;
 public class PersistenceConfiguration {
 
     /**
-     * The bean name to retrieve the default/general implementation of {@link DeviceStateManager}.
+     * The bean name to retrieve the default/general implementation of {@link }.
      */
     public static final String DEVICE_STATE_MANAGER_BEAN_NAME = "general_db_man_bean";
 
@@ -41,30 +41,6 @@ public class PersistenceConfiguration {
     @Bean
     public AppraiserManager appraiserManager() {
         DBAppraiserManager manager = new DBAppraiserManager(sessionFactory.getObject());
-        setDbManagerRetrySettings(manager);
-        return manager;
-    }
-
-    /**
-     * Creates a {@link AlertManager} ready to use.
-     *
-     * @return {@link AlertManager}
-     */
-    @Bean
-    public AlertManager alertManager() {
-        DBAlertManager manager = new DBAlertManager(sessionFactory.getObject());
-        setDbManagerRetrySettings(manager);
-        return manager;
-    }
-
-    /**
-     * Creates a {@link BaselineManager} ready to use.
-     *
-     * @return {@link BaselineManager}
-     */
-    @Bean
-    public BaselineManager baselineManager() {
-        DBBaselineManager manager = new DBBaselineManager(sessionFactory.getObject());
         setDbManagerRetrySettings(manager);
         return manager;
     }
@@ -181,41 +157,6 @@ public class PersistenceConfiguration {
     }
 
     /**
-     * Creates a {@link DeviceStateManager} ready to use.
-     *
-     * @return {@link DeviceStateManager}
-     */
-    @Bean(name = DEVICE_STATE_MANAGER_BEAN_NAME)
-    public DeviceStateManager generalDeviceStateManager() {
-        DBDeviceStateManager manager = new DBDeviceStateManager(sessionFactory.getObject());
-        setDbManagerRetrySettings(manager);
-        return manager;
-    }
-    /**
-     * Creates a {@link IMADeviceStateManager} ready to use.
-     *
-     * @return {@link IMADeviceStateManager}
-     */
-    @Bean
-    public IMADeviceStateManager imaDeviceStateManager() {
-        DBIMADeviceStateManager manager = new DBIMADeviceStateManager(sessionFactory.getObject());
-        setDbManagerRetrySettings(manager);
-        return manager;
-    }
-
-    /**
-     * Creates a {@link TPMDeviceStateManager} ready to use.
-     *
-     * @return {@link TPMDeviceStateManager}
-     */
-    @Bean
-    public TPMDeviceStateManager tpmDeviceStateManager() {
-        DBTPMDeviceStateManager manager = new DBTPMDeviceStateManager(sessionFactory.getObject());
-        setDbManagerRetrySettings(manager);
-        return manager;
-    }
-
-    /**
      * Creates a {@link ReportRequestStateManager} ready to use.
      *
      * @return {@link ReportRequestStateManager}
@@ -241,65 +182,6 @@ public class PersistenceConfiguration {
     }
 
     /**
-     * Creates a {@link ImaBaselineRecordManager} ready to use.
-     *
-     * @return {@link ImaBaselineRecordManager}
-     */
-    @Bean
-    public ImaBaselineRecordManager imaBaselineRecordManager() {
-        DbImaBaselineRecordManager manager =
-                new DbImaBaselineRecordManager(sessionFactory.getObject());
-        setDbManagerRetrySettings(manager);
-        return manager;
-    }
-
-    /**
-     * Creates a {@link ImaBlacklistBaselineRecordManager} ready to use.
-     *
-     * @return {@link ImaBlacklistBaselineRecordManager}
-     */
-    @Bean
-    public ImaBlacklistBaselineRecordManager imaBlacklistBaselineRecordManager() {
-        DbImaBlacklistBaselineRecordManager manager =
-                new DbImaBlacklistBaselineRecordManager(sessionFactory.getObject());
-        setDbManagerRetrySettings(manager);
-        return manager;
-    }
-
-    /**
-     * Creates a {@link AlertMonitorManager} ready to use.
-     *
-     * @return {@link AlertMonitorManager}
-     */
-    @Bean
-    public AlertMonitorManager alertMonitorManager() {
-        DBAlertMonitorManager manager = new DBAlertMonitorManager(sessionFactory.getObject());
-        setDbManagerRetrySettings(manager);
-        return manager;
-    }
-
-    /**
-     * Creates a {@link AlertServiceConfigManager} ready to use.
-     *
-     * @return {@link AlertServiceConfigManager}
-     */
-    @Bean
-    public AlertServiceConfigManager alertServiceConfigManager() {
-        DBAlertServiceManager manager = new DBAlertServiceManager(sessionFactory.getObject());
-        setDbManagerRetrySettings(manager);
-        return manager;
-    }
-
-    /**
-     * Creates a {@link DeviceHealthManager} ready to use.
-     * @return {@link DeviceHealthManager}
-     */
-    @Bean
-    public DeviceHealthManager deviceHealthManager() {
-        return new DeviceHealthManagerImpl();
-    }
-
-    /**
      * Creates a {@link PortalInfoManager} ready to use.
      *
      * @return {@link PortalInfoManager}
@@ -318,23 +200,8 @@ public class PersistenceConfiguration {
      */
     @Bean
     public CrudManager<SupplyChainValidationSummary> supplyChainValidationSummaryManager() {
-        DBManager<SupplyChainValidationSummary> manager = new DBManager<>(
+        DBManager<SupplyChainValidationSummary> manager = new DBManager<SupplyChainValidationSummary>(
                 SupplyChainValidationSummary.class,
-                sessionFactory.getObject()
-        );
-        setDbManagerRetrySettings(manager);
-        return manager;
-    }
-
-    /**
-     * Creates a {@link DBManager} for TPM2ProvisionerState persistence, ready for use.
-     *
-     * @return {@link DBManager} for TPM2ProvisionerState
-     */
-    @Bean
-    public DBManager<TPM2ProvisionerState> tpm2ProvisionerStateDBManager() {
-        DBManager<TPM2ProvisionerState> manager = new DBManager<>(
-                TPM2ProvisionerState.class,
                 sessionFactory.getObject()
         );
         setDbManagerRetrySettings(manager);

@@ -20,8 +20,6 @@ import hirs.data.persist.ReportSummary;
 import hirs.data.persist.alert.AlertMonitor;
 import hirs.data.persist.alert.AlertServiceConfig;
 import hirs.data.persist.alert.JsonAlertMonitor;
-import hirs.persist.AlertMonitorManager;
-import hirs.persist.AlertServiceConfigManager;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;

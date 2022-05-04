@@ -8,10 +8,6 @@ import hirs.data.persist.baseline.Baseline;
 import hirs.data.persist.enums.ReportMatchStatus;
 import hirs.ima.matching.BatchImaMatchStatus;
 import hirs.ima.matching.IMAMatchStatus;
-import hirs.persist.BaselineManager;
-import hirs.persist.DBBaselineManager;
-import hirs.persist.DbImaBaselineRecordManager;
-import hirs.persist.ImaBaselineRecordManager;
 
 import org.apache.commons.codec.binary.Hex;
 import org.apache.logging.log4j.LogManager;

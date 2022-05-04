@@ -4,7 +4,6 @@ import hirs.data.persist.Digest;
 import hirs.data.persist.enums.DigestAlgorithm;
 import hirs.data.persist.baseline.IMABaselineRecord;
 import hirs.data.persist.IMAMeasurementRecord;
-import hirs.data.persist.IMAPolicy;
 import hirs.data.persist.IMAReport;
 import hirs.data.persist.baseline.ImaIgnoreSetBaseline;
 import hirs.data.persist.baseline.SimpleImaBaseline;

@@ -5,8 +5,6 @@ import hirs.data.persist.baseline.ImaBlacklistBaseline;
 import hirs.data.persist.enums.ReportMatchStatus;
 import hirs.ima.matching.BatchImaMatchStatus;
 import hirs.ima.matching.IMAMatchStatus;
-import hirs.persist.BaselineManager;
-import hirs.persist.DBBaselineManager;
 
 import org.testng.Assert;
 import org.testng.annotations.BeforeClass;

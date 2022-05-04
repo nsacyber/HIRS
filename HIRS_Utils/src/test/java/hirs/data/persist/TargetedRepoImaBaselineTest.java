@@ -14,10 +14,7 @@ import java.util.Set;
 
 import hirs.ima.matching.BatchImaMatchStatus;
 import hirs.ima.matching.IMAMatchStatus;
-import hirs.persist.BaselineManager;
-import hirs.persist.DBBaselineManager;
 import hirs.persist.DBRepositoryManager;
-import hirs.persist.DbImaBaselineRecordManager;
 import hirs.persist.RepositoryManager;
 import hirs.repository.RPMRepoPackage;
 import hirs.repository.RepoPackage;

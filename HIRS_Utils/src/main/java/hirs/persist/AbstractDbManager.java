@@ -56,14 +56,14 @@ import static org.hibernate.criterion.Restrictions.sqlRestriction;
  * This class exists primarily to reduce code in {@link DBManager} which retries these methods
  * using a RetryTemplate.
  *
- * @param <T> type of objects to manage by this manager
+ * @param <AbstractEntity> type of objects to manage by this manager
  */
-public abstract class AbstractDbManager<T> implements CrudManager<T> {
+public abstract class AbstractDbManager<AbstractEntity> implements CrudManager<AbstractEntity> {
 
     private static final Logger LOGGER = LogManager.getLogger(AbstractDbManager.class);
     private static final int MAX_CLASS_CACHE_ENTRIES = 500;
 
-    private final Class<T> clazz;
+    private final AbstractEntity entity;
 
     private SessionFactory factory;
 
@@ -74,8 +74,8 @@ public abstract class AbstractDbManager<T> implements CrudManager<T> {
      * unfortunately class type of T cannot be determined using only T
      * @param sessionFactory the session factory to use to interact with the database
      */
-    public AbstractDbManager(final Class<T> clazz, final SessionFactory sessionFactory) {
-        if (clazz == null) {
+    public AbstractDbManager(final AbstractEntity entity, final SessionFactory sessionFactory) {
+        if (entity == null) {
             LOGGER.error("AbstractDbManager cannot be instantiated with a null class");
             throw new IllegalArgumentException(
                     "AbstractDbManager cannot be instantiated with a null class"
@@ -87,26 +87,24 @@ public abstract class AbstractDbManager<T> implements CrudManager<T> {
                     "AbstractDbManager cannot be instantiated with a null SessionFactory"
             );
         }
-        this.clazz = clazz;
+        this.entity = entity;
         this.factory = sessionFactory;
     }
 
-    private static final LoadingCache<Class, Set<Field>> PERSISTED_FIELDS =
+    private static final LoadingCache<AbstractEntity, Set<Field>> PERSISTED_FIELDS =
             CacheBuilder.newBuilder()
                     .maximumSize(MAX_CLASS_CACHE_ENTRIES)
-                    .build(
-                            new CacheLoader<Class, Set<Field>>() {
+                    .build(new CacheLoader<AbstractEntity, Set<Field>>() {
                                 @Override
-                                public Set<Field> load(final Class clazz) throws Exception {
-                                    return getPersistedFields(clazz);
+                                public Set<Field> load(final AbstractEntity entity) throws Exception {
+                                    return getPersistedFields(entity);
                                 }
-                            }
-                    );
+                            });
 
-    private static Set<Field> getPersistedFields(final Class clazz) {
+    private static Set<Field> getPersistedFields(final AbstractEntity entity) {
         Set<Field> fields = new HashSet<>();
 
-        for (Field f : clazz.getDeclaredFields()) {
+        for (Field f : entity.getDeclaredFields()) {
             if (f.isAnnotationPresent(OneToMany.class)
                     || f.isAnnotationPresent(ManyToMany.class)
                     || f.isAnnotationPresent(ManyToOne.class)
@@ -116,8 +114,8 @@ public abstract class AbstractDbManager<T> implements CrudManager<T> {
             }
         }
 
-        if (clazz.getSuperclass() != Object.class) {
-            fields.addAll(getPersistedFields(clazz.getSuperclass()));
+        if (entity.getSuperclass() != Object.class) {
+            fields.addAll(getPersistedFields(entity.getSuperclass()));
         }
 
         return fields;
@@ -205,9 +203,9 @@ public abstract class AbstractDbManager<T> implements CrudManager<T> {
         try {
             LOGGER.debug("retrieving object from db");
             tx = session.beginTransaction();
-            Object o = session.get(clazz, id);
-            if (o != null && clazz.isInstance(o)) {
-                T objectOfTypeT = clazz.cast(o);
+            Object obj = session.get(entity, id);
+            if (obj instanceof AbstractEntity) {
+                AbstractEntity objectOfTypeT = (AbstractEntity) obj;
                 LOGGER.debug("found object, deleting it");
                 session.delete(objectOfTypeT);
                 deleted = true;
@@ -250,16 +248,16 @@ public abstract class AbstractDbManager<T> implements CrudManager<T> {
         Transaction tx = null;
         Session session = factory.getCurrentSession();
         CriteriaBuilder builder = session.getCriteriaBuilder();
-        CriteriaQuery<T> criteria = builder.createQuery(clazz);
+        CriteriaQuery<AbstractEntity> criteria = builder.createQuery(entity);
         try {
             LOGGER.debug("retrieving object from db");
             tx = session.beginTransaction();
-            Root<T> myObjectRoot = criteria.from(clazz);
-            Join<T, JoinObject> joinObject = myObjectRoot.join("joinObject");
+            Root<AbstractEntity> myObjectRoot = criteria.from(clazz);
+            Join<AbstractEntity, JoinObject> joinObject = myObjectRoot.join("joinObject");
             Object object = session.getSessionFactory().getCurrentSession().createCriteria(clazz)
                     .add(Restrictions.eq("name", name)).uniqueResult();
-            if (object != null && clazz.isInstance(object)) {
-                T objectOfTypeT = clazz.cast(object);
+            if (object instanceof AbstractEntity) {
+                AbstractEntity objectOfTypeT = (AbstractEntity) object;
                 LOGGER.debug("found object, deleting it");
                 session.delete(objectOfTypeT);
                 deleted = true;
@@ -289,7 +287,7 @@ public abstract class AbstractDbManager<T> implements CrudManager<T> {
      * @throws DBManagerException if unable to find the baseline or delete it
      * from the database
      */
-    protected boolean doDelete(final T object) throws DBManagerException {
+    protected boolean doDelete(final AbstractEntity object) throws DBManagerException {
         LOGGER.debug("deleting object: {}", object);
         if (object == null) {
             LOGGER.debug("null object argument");
@@ -329,14 +327,14 @@ public abstract class AbstractDbManager<T> implements CrudManager<T> {
             LOGGER.debug("Deleting instances of class: {}", clazz);
             tx = session.beginTransaction();
             CriteriaBuilder builder = session.getCriteriaBuilder();
-            CriteriaQuery<T> criteriaQuery = builder.createQuery(clazz);
-            Root<T> root = criteriaQuery.from(clazz);
+            CriteriaQuery<AbstractEntity> criteriaQuery = builder.createQuery(clazz);
+            Root<AbstractEntity> root = criteriaQuery.from(clazz);
             Predicate recordPredicate = builder.and(
                     );
             criteriaQuery.select(root).where(recordPredicate);
-            Query<T> query = session.createQuery(criteriaQuery);
-            List<T> results = query.getResultList();
-            T ret = null;
+            Query<AbstractEntity> query = session.createQuery(criteriaQuery);
+            List<AbstractEntity> results = query.getResultList();
+            AbstractEntity ret = null;
             if (results != null && !results.isEmpty()) {
                 ret = results.get(0);
             }
@@ -344,8 +342,8 @@ public abstract class AbstractDbManager<T> implements CrudManager<T> {
             List instances = session.createCriteria(clazz)
                     .setResultTransformer(Criteria.DISTINCT_ROOT_ENTITY).list();
             for (Object instance : instances) {
-                if (instance != null && clazz.isInstance(instance)) {
-                    session.delete(clazz.cast(instance));
+                if (instance instanceof AbstractEntity) {
+                    session.delete((AbstractEntity) instance);
                     numEntitiesDeleted++;
                 }
             }
@@ -372,16 +370,16 @@ public abstract class AbstractDbManager<T> implements CrudManager<T> {
      * @throws DBManagerException if an error is encountered while performing the query or creating
      * the result objects
      */
-    protected List<T> doGetWithCriteria(final Collection<Criterion> criteriaCollection)
+    protected List<AbstractEntity> doGetWithCriteria(final Collection<Criterion> criteriaCollection)
             throws DBManagerException {
-        return doGetWithCriteria(clazz, criteriaCollection);
+        return doGetWithCriteria(entity, criteriaCollection);
     }
 
     /**
      * Runs a Criteria query using the given collection of Criterion over the
      * associated class.
      *
-     * @param <U> the specific type of class to retrieve
+     * @param <AbstractEntity> the specific type of class to retrieve
      *            (should extend this class' &lt;T&gt; parameter)
      * @param clazzToGet the class of object to retrieve
      * @param criteriaCollection the collection of Criterion to apply
@@ -390,8 +388,8 @@ public abstract class AbstractDbManager<T> implements CrudManager<T> {
      * @throws DBManagerException if an error is encountered while performing the query or creating
      * the result objects
      */
-    protected final <U extends T> List<U> doGetWithCriteria(
-            final Class<U> clazzToGet,
+    protected final List<AbstractEntity> doGetWithCriteria(
+            final Class<AbstractEntity> clazzToGet,
             final Collection<Criterion> criteriaCollection
     ) throws DBManagerException {
         LOGGER.debug("running criteria query over: {}", clazzToGet);
@@ -399,7 +397,7 @@ public abstract class AbstractDbManager<T> implements CrudManager<T> {
             LOGGER.debug("null object argument");
             throw new NullPointerException("criteria or restrictions");
         }
-        List<U> ret = new ArrayList<>();
+        List<AbstractEntity> ret = new ArrayList<>();
         Transaction tx = null;
         Session session = factory.getCurrentSession();
         try {
@@ -439,7 +437,7 @@ public abstract class AbstractDbManager<T> implements CrudManager<T> {
      * @throws DBManagerException if object has previously been saved or an
      * error occurs while trying to save it to the database
      */
-    protected T doSave(final T object) throws DBManagerException {
+    protected AbstractEntity doSave(final AbstractEntity object) throws DBManagerException {
         LOGGER.debug("saving object: {}", object);
         if (object == null) {
             LOGGER.debug("null object argument");
@@ -454,7 +452,7 @@ public abstract class AbstractDbManager<T> implements CrudManager<T> {
             final Serializable id = session.save(object);
             Object o = session.get(object.getClass(), id);
             session.getTransaction().commit();
-            return clazz.cast(o);
+            return (AbstractEntity) o;
         } catch (Exception e) {
             final String msg = "unable to save object";
             LOGGER.error(msg, e);
@@ -473,7 +471,7 @@ public abstract class AbstractDbManager<T> implements CrudManager<T> {
      * @param object object to update
      * @throws DBManagerException if unable to update the record
      */
-    protected void doUpdate(final T object) throws DBManagerException {
+    protected void doUpdate(final AbstractEntity object) throws DBManagerException {
         LOGGER.debug("updating object");
         if (object == null) {
             LOGGER.debug("null object argument");
@@ -508,7 +506,7 @@ public abstract class AbstractDbManager<T> implements CrudManager<T> {
      * @throws DBManagerException if unable to search the database or recreate
      * the <code>Object</code>
      */
-    protected T doGet(final String name) throws DBManagerException {
+    protected AbstractEntity doGet(final String name) throws DBManagerException {
         LOGGER.debug("getting object: {}", name);
         if (name == null) {
             LOGGER.debug("null name argument");
@@ -518,17 +516,17 @@ public abstract class AbstractDbManager<T> implements CrudManager<T> {
         Transaction tx = null;
         Session session = factory.getCurrentSession();
         try {
-            LOGGER.debug("retrieving " + clazz.toString() + " from db");
+            LOGGER.debug("retrieving " + entity.toString() + " from db");
             tx = session.beginTransaction();
             CriteriaBuilder builder = session.getCriteriaBuilder();
-            CriteriaQuery<T> criteriaQuery = builder.createQuery(clazz);
-            Root<T> root = criteriaQuery.from(clazz);
+            CriteriaQuery<AbstractEntity> criteriaQuery = builder.createQuery(entity);
+            Root<AbstractEntity> root = criteriaQuery.from(entity);
             Predicate recordPredicate = builder.and(
                     builder.equal(root.get("name"), name));
             criteriaQuery.select(root).where(recordPredicate);
-            Query<T> query = session.createQuery(criteriaQuery);
-            List<T> results = query.getResultList();
-            T ret = null;
+            Query<AbstractEntity> query = session.createQuery(criteriaQuery);
+            List<AbstractEntity> results = query.getResultList();
+            AbstractEntity ret = null;
             if (results != null && !results.isEmpty()) {
                 ret = results.get(0);
             }
@@ -557,7 +555,7 @@ public abstract class AbstractDbManager<T> implements CrudManager<T> {
      * @throws DBManagerException if unable to search the database or recreate
      * the <code>Object</code>
      */
-    protected T doGet(final Serializable id) throws DBManagerException {
+    protected AbstractEntity doGet(final Serializable id) throws DBManagerException {
         LOGGER.debug("getting object: {}", id);
         if (id == null) {
             LOGGER.debug("null id argument");
@@ -568,7 +566,7 @@ public abstract class AbstractDbManager<T> implements CrudManager<T> {
         try {
             LOGGER.debug("retrieving object from db");
             tx = session.beginTransaction();
-            T ret = clazz.cast(session.get(clazz, id));
+            AbstractEntity ret = (AbstractEntity) session.get(entity, id);
             tx.commit();
             return ret;
         } catch (Exception e) {
@@ -645,7 +643,7 @@ public abstract class AbstractDbManager<T> implements CrudManager<T> {
      * @throws DBManagerException if unable to search the database or recreate
      * the <code>Object</code>
      */
-    protected T doGetAndLoadLazyFields(final String name, final boolean recurse)
+    protected AbstractEntity doGetAndLoadLazyFields(final String name, final boolean recurse)
             throws DBManagerException {
         LOGGER.debug("getting object: {}", name);
         if (name == null) {
@@ -656,17 +654,17 @@ public abstract class AbstractDbManager<T> implements CrudManager<T> {
         Transaction tx = null;
         Session session = factory.getCurrentSession();
         try {
-            LOGGER.debug("retrieving " + clazz.toString() + " from db");
+            LOGGER.debug("retrieving " + entity.toString() + " from db");
             tx = session.beginTransaction();
             CriteriaBuilder builder = session.getCriteriaBuilder();
-            CriteriaQuery<T> criteriaQuery = builder.createQuery(clazz);
-            Root<T> root = criteriaQuery.from(clazz);
+            CriteriaQuery<AbstractEntity> criteriaQuery = builder.createQuery(entity);
+            Root<AbstractEntity> root = criteriaQuery.from(entity);
             Predicate recordPredicate = builder.and(
                     builder.equal(root.get("name"), name));
             criteriaQuery.select(root).where(recordPredicate);
-            Query<T> query = session.createQuery(criteriaQuery);
-            List<T> results = query.getResultList();
-            T ret = null;
+            Query<AbstractEntity> query = session.createQuery(criteriaQuery);
+            List<AbstractEntity> results = query.getResultList();
+            AbstractEntity ret = null;
             if (results != null && !results.isEmpty()) {
                 ret = results.get(0);
             }
@@ -702,7 +700,7 @@ public abstract class AbstractDbManager<T> implements CrudManager<T> {
      * @throws DBManagerException if unable to search the database or recreate
      * the <code>Object</code>
      */
-    protected T doGetAndLoadLazyFields(final Serializable id, final boolean recurse)
+    protected AbstractEntity doGetAndLoadLazyFields(final Serializable id, final boolean recurse)
             throws DBManagerException {
         LOGGER.debug("getting object: {}", id);
         if (id == null) {
@@ -715,7 +713,7 @@ public abstract class AbstractDbManager<T> implements CrudManager<T> {
         try {
             LOGGER.debug("retrieving object from db");
             tx = session.beginTransaction();
-            T ret = clazz.cast(session.get(clazz, id));
+            AbstractEntity ret = (AbstractEntity) session.get(entity, id);
             doLoadLazyFields(ret, recurse);
             tx.commit();
             return ret;
@@ -744,17 +742,17 @@ public abstract class AbstractDbManager<T> implements CrudManager<T> {
      * @return list of <code>T</code> names
      * @throws DBManagerException if unable to search the database
      */
-    protected List<T> doGetList(final Class<? extends T> clazz,
+    protected List<AbstractEntity> doGetList(final AbstractEntity entity,
                                 final Criterion additionalRestriction)
             throws DBManagerException {
         LOGGER.debug("Getting object list");
-        Class<? extends T> searchClass = clazz;
-        if (clazz == null) {
-            LOGGER.debug("clazz is null");
-            searchClass = this.clazz;
+        AbstractEntity searchClass = entity;
+        if (entity == null) {
+            LOGGER.debug("entity is null");
+            searchClass = this.entity;
         }
 
-        List<T> objects = new ArrayList<>();
+        List<AbstractEntity> objects = new ArrayList<>();
         Transaction tx = null;
         Session session = factory.getCurrentSession();
         try {
@@ -776,8 +774,8 @@ public abstract class AbstractDbManager<T> implements CrudManager<T> {
             }
 //            List list = criteria.setResultTransformer(Criteria.DISTINCT_ROOT_ENTITY).list();
             for (Object o : results) {
-                if (searchClass.isInstance(o)) {
-                    objects.add(searchClass.cast(o));
+                if (o instanceof AbstractEntity) {
+                    objects.add((AbstractEntity) o);
                 }
             }
             tx.commit();
@@ -814,12 +812,12 @@ public abstract class AbstractDbManager<T> implements CrudManager<T> {
      * @throws DBManagerException if unable to create the list
      */
     @SuppressWarnings("checkstyle:parameternumber")
-    protected FilteredRecordsList<T> doGetOrderedList(final Class<? extends T> clazz,
+    protected FilteredRecordsList<AbstractEntity> doGetOrderedList(final AbstractEntity clazz,
             final String columnToOrder, final boolean ascending, final int firstResult,
             final int maxResults, final String search, final Map<String, Boolean> searchableColumns,
             final CriteriaModifier criteriaModifier) throws DBManagerException {
         LOGGER.debug("Getting object list");
-        Class<? extends T> searchClass = clazz;
+        AbstractEntity searchClass = clazz;
         if (clazz == null) {
             LOGGER.debug("clazz is null");
             searchClass = this.clazz;
@@ -832,9 +830,9 @@ public abstract class AbstractDbManager<T> implements CrudManager<T> {
         }
 
         //Object that will store query values
-        FilteredRecordsList<T> aqr = new FilteredRecordsList<>();
+        FilteredRecordsList<AbstractEntity> aqr = new FilteredRecordsList<>();
 
-        List<T> objects = new ArrayList<>();
+        List<AbstractEntity> objects = new ArrayList<>();
         Transaction tx = null;
         Session session = factory.getCurrentSession();
         try {

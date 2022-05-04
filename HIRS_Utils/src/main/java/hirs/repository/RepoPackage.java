@@ -2,7 +2,6 @@ package hirs.repository;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import hirs.data.persist.Digest;
-import hirs.data.persist.baseline.IMABaselineRecord;
 import org.hibernate.annotations.Type;
 
 import javax.persistence.CascadeType;
@@ -25,7 +24,7 @@ import java.util.UUID;
  * This class represents a software package found in a repository.  It is identified by its name,
  * version, and target architecture, and can store measurements of its contents.  These measurements
  * are the listing of the package's files (referenced by absolute path) and their hashes, stored
- * as {@link IMABaselineRecord}s.
+ * as {@link Object}s.
  */
 @Entity
 @Table(uniqueConstraints = @UniqueConstraint(columnNames =
@@ -65,7 +64,7 @@ public abstract class RepoPackage {
     @Column(name = PACKAGE_RECORDS_FIELD)
     @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
     @JsonIgnore
-    private Set<IMABaselineRecord> packageRecords = null;
+    private Set<Object> packageRecords = null;
 
     @Embedded
     private Digest packageMeasurement = null;
@@ -171,7 +170,7 @@ public abstract class RepoPackage {
      * @param packageRecords the measurements of the contents of the package
      * @param packageMeasurement the measurement of the package itself
      */
-    public final void setAllMeasurements(final Set<IMABaselineRecord> packageRecords,
+    public final void setAllMeasurements(final Set<Object> packageRecords,
                                          final Digest packageMeasurement) {
         if (packageRecords == null) {
             throw new IllegalArgumentException("Measurements cannot be null.");
@@ -194,10 +193,10 @@ public abstract class RepoPackage {
     /**
      * Gets the package's measurements.
      *
-     * @return a set of {@link IMABaselineRecord}s representing the measurements of the files in
+     * @return a set of {@link Object}s representing the measurements of the files in
      * this package
      */
-    public final Set<IMABaselineRecord> getPackageRecords() {
+    public final Set<Object> getPackageRecords() {
         if (!measured) {
             throw new IllegalStateException("Package measurements not yet set.");
         }

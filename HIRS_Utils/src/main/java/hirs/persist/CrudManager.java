@@ -9,7 +9,7 @@ import java.util.List;
  * Interface defining database CRUD operations (Create, Read, Update, Delete).
  * @param <T> the object type, T.
  */
-public interface CrudManager<T> extends OrderedListQuerier<T> {
+public interface CrudManager<AbstractEntity> extends OrderedListQuerier<AbstractEntity> {
 
     /**
      * Deletes all instances of the associated class.
@@ -27,7 +27,7 @@ public interface CrudManager<T> extends OrderedListQuerier<T> {
      * @throws DBManagerException if object has previously been saved or an
      * error occurs while trying to save it to the database
      */
-    T save(T object) throws DBManagerException;
+    AbstractEntity save(AbstractEntity object) throws DBManagerException;
 
     /**
      * Updates an object stored in the database. This updates the database
@@ -36,7 +36,7 @@ public interface CrudManager<T> extends OrderedListQuerier<T> {
      * @param object object to update
      * @throws DBManagerException if an error occurs while trying to save it to the database
      */
-    void update(T object) throws DBManagerException;
+    void update(AbstractEntity object) throws DBManagerException;
 
     /**
      * Retrieves the <code>Object</code> from the database. This searches the
@@ -48,7 +48,7 @@ public interface CrudManager<T> extends OrderedListQuerier<T> {
      * @throws DBManagerException if unable to search the database or recreate
      * the <code>Object</code>
      */
-    T get(String name) throws DBManagerException;
+    AbstractEntity get(String name) throws DBManagerException;
 
     /**
      * Retrieves the <code>Object</code> from the database. This searches the
@@ -65,7 +65,7 @@ public interface CrudManager<T> extends OrderedListQuerier<T> {
      * @throws DBManagerException if unable to search the database or recreate
      * the <code>Object</code>
      */
-    T getAndLoadLazyFields(String name, boolean recurse)
+    AbstractEntity getAndLoadLazyFields(String name, boolean recurse)
             throws DBManagerException;
 
     /**
@@ -78,7 +78,7 @@ public interface CrudManager<T> extends OrderedListQuerier<T> {
      * @throws DBManagerException if unable to search the database or recreate
      * the <code>Object</code>
      */
-    T get(Serializable id) throws DBManagerException;
+    AbstractEntity get(Serializable id) throws DBManagerException;
 
     /**
      * Retrieves the <code>Object</code> from the database. This searches the
@@ -95,7 +95,7 @@ public interface CrudManager<T> extends OrderedListQuerier<T> {
      * @throws DBManagerException if unable to search the database or recreate
      * the <code>Object</code>
      */
-    T getAndLoadLazyFields(Serializable id, boolean recurse)
+    AbstractEntity getAndLoadLazyFields(Serializable id, boolean recurse)
             throws DBManagerException;
 
     /**
@@ -111,7 +111,7 @@ public interface CrudManager<T> extends OrderedListQuerier<T> {
      * @return list of <code>T</code> names
      * @throws DBManagerException if unable to search the database
      */
-    List<T> getList(Class<? extends T> clazz)
+    List<AbstractEntity> getList(AbstractEntity entity)
                     throws DBManagerException;
 
     /**
@@ -128,7 +128,7 @@ public interface CrudManager<T> extends OrderedListQuerier<T> {
      * @return list of <code>T</code> names
      * @throws DBManagerException if unable to search the database
      */
-    List<T> getList(Class<? extends T> clazz, Criterion additionalRestriction)
+    List<AbstractEntity> getList(AbstractEntity entity, Criterion additionalRestriction)
                             throws DBManagerException;
 
     /**
@@ -171,7 +171,7 @@ public interface CrudManager<T> extends OrderedListQuerier<T> {
      * @return true if successfully found and deleted the object
      * @throws DBManagerException if unable to delete the object from the database
      */
-    boolean delete(T object) throws DBManagerException;
+    boolean delete(AbstractEntity object) throws DBManagerException;
 
     /**
      * Archives the named object and updates it in the database.

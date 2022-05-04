@@ -7,16 +7,16 @@ import java.util.Map;
 /**
  * Interface defining methods for getting ordered lists from a data source. Includes
  * properties for sorting, paging, and searching.
- * @param <T> the record type, T.
+ * @param <AbstractEntity> the record type, AbstractEntity.
  */
-public interface OrderedListQuerier<T> {
+public interface OrderedListQuerier<AbstractEntity> {
 
     /**
      * Returns a list of all <code>T</code>s that are ordered by a column and
      * direction (ASC, DESC) that is provided by the user. This method helps
      * support the server-side processing in the JQuery DataTables.
      *
-     * @param clazz class type of <code>T</code>s to search for (may be null to
+     * @param entity class type of <code>T</code>s to search for (may be null to
      * use Class&lt;T&gt;)
      * @param columnToOrder Column to be ordered
      * @param ascending direction of sort
@@ -30,7 +30,7 @@ public interface OrderedListQuerier<T> {
      * @throws DBManagerException if unable to create the list
      */
     FilteredRecordsList getOrderedList(
-            Class<? extends T> clazz, String columnToOrder,
+            AbstractEntity entity, String columnToOrder,
             boolean ascending, int firstResult,
             int maxResults, String search,
             Map<String, Boolean> searchableColumns)
@@ -43,7 +43,7 @@ public interface OrderedListQuerier<T> {
      * support the server-side processing in the JQuery DataTables. For entities that support
      * soft-deletes, the returned list does not contain <code>T</code>s that have been soft-deleted.
      *
-     * @param clazz class type of <code>T</code>s to search for (may be null to
+     * @param entity class type of <code>T</code>s to search for (may be null to
      * use Class&lt;T&gt;)
      * @param columnToOrder Column to be ordered
      * @param ascending direction of sort
@@ -58,8 +58,8 @@ public interface OrderedListQuerier<T> {
      * @throws DBManagerException if unable to create the list
      */
     @SuppressWarnings("checkstyle:parameternumber")
-    FilteredRecordsList<T> getOrderedList(
-            Class<? extends T> clazz, String columnToOrder,
+    FilteredRecordsList<AbstractEntity> getOrderedList(
+            AbstractEntity entity, String columnToOrder,
             boolean ascending, int firstResult,
             int maxResults, String search,
             Map<String, Boolean> searchableColumns, CriteriaModifier criteriaModifier)

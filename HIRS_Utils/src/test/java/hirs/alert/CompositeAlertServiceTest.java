@@ -3,7 +3,6 @@ package hirs.alert;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hirs.data.persist.Alert;
 import hirs.data.persist.ReportSummary;
-import hirs.persist.AlertManager;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;

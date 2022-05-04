@@ -9,7 +9,6 @@ import hirs.persist.DeviceManager;
 import hirs.persist.ReferenceDigestManager;
 import hirs.persist.ReferenceEventManager;
 import hirs.persist.ReferenceManifestManager;
-import hirs.persist.TPM2ProvisionerState;
 import hirs.structs.converters.StructConverter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;

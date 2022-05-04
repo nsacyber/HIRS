@@ -1,7 +1,6 @@
 package hirs.persist;
 
 import hirs.appraiser.Appraiser;
-import hirs.data.persist.baseline.Baseline;
 import hirs.data.persist.Device;
 import hirs.data.persist.DeviceGroup;
 import hirs.data.persist.Policy;
@@ -58,18 +57,6 @@ public interface PolicyManager {
      */
     List<Policy> getPolicyList(Class<? extends Policy> clazz)
             throws PolicyManagerException;
-
-    /**
-     * Return a list of all the policies that contain the given baseline.
-     *
-     * @param clazz the class of Policy to search
-     * @param baseline the baseline that should be a member of returned Policies
-     * @return the list of matching Policies
-     */
-    List<Policy> getPoliciesContainingBaseline(
-            Class<? extends Policy> clazz,
-            Baseline baseline
-    );
 
     /**
      * Retrieves the <code>Policy</code> identified by <code>name</code>. If
