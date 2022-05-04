@@ -19,7 +19,7 @@ function installProvisioner {
 # use ibm tss to properly clear tpm pcr values
 function setTpmPcrValues {
   pushd /ibmtss  > /dev/null
-    echo "starting IBM TSS to set the TPM simulator intial values correctly..."
+    echo "Starting IBM TSS to set the TPM simulator initial values correctly..."
     cd utils
     ./startup
   popd  > /dev/null
