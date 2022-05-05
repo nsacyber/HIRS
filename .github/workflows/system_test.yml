@@ -16,19 +16,15 @@ jobs:
       packages: write
     steps:
     - uses: actions/checkout@v2
-    - name: Set up JDK 8
-      uses: actions/setup-java@v2
-      with:
-        java-version: '8'
-        distribution: 'adopt'
-        server-id: github # Value of the distributionManagement/repository/id field of the pom.xml
-        settings-path: ${{ github.workspace }} # location for the settings.xml file  
     - name: ACA TPM2 Tests
       continue-on-error: true
       shell: bash
       run: |
         sudo apt-get install -y curl
-        echo ${{ secrets.DOCKER_HUB_ACCESS_TOKEN }} | docker login -u ${{ secrets.DOCKER_HUB_USERNAME }} --password-stdin
+        export JAVA_HOME="/usr/lib/jvm/java-1.8.0-openjdk-1.8.0*/jre/bin"
+        echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u $ --password-stdin
+        # comment out the line above and uncomment the line below to run in a forked repo.
+        #echo "${{ secrets.PKG_PWD }}" | docker login ghcr.io -u $ --password-stdin
         bash .ci/system-tests/run_system_tests.sh
     - name: Archive System Test Log files
       uses: actions/upload-artifact@v2
