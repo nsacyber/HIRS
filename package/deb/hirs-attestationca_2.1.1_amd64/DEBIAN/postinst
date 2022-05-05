@@ -1,0 +1,27 @@
+#!/bin/bash
+
+# copy default property files into /etc/hirs if not present
+mkdir -p /etc/hirs
+cp -n /opt/hirs/default-properties/attestationca/* /etc/hirs/
+
+# loop over common scripts and place into /opt/hirs/scripts/common
+mkdir -p /opt/hirs/scripts/common/
+cp -f /opt/hirs/scripts/common/aca/* /opt/hirs/scripts/common/
+
+sh /opt/hirs/scripts/common/firewall_configure_tomcat.sh
+
+# create trust stores, configure tomcat and db
+echo "Starting ssl_configure"
+sh /opt/hirs/scripts/common/ssl_configure.sh server
+
+# create the database
+echo "Starting  db_create"
+sh /opt/hirs/scripts/common/db_create.sh
+
+echo "Starting cert generation"
+sh /opt/hirs/scripts/aca/certificate_generate.sh
+
+# For debugging purposes until final solution found...
+cd /usr/share/tomcat
+chown -R tomcat webapps temp logs work conf
+chmod -R 777 webapps temp logs work conf

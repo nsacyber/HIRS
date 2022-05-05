@@ -1,0 +1,16 @@
+#!/bin/bash
+
+# don't run these during an upgrade
+# if [ $1 == 0 ]; then
+
+# if the Server isn't installed, deconfigure Tomcat and MySQL SSL and drop the database
+if [[ -z `rpm -qa HIRS_Server` ]] || [[ $(dpkg -l | grep hirs) ]]; then
+    echo 'Restoring Tomcat and MySQL configuration'
+    sh /opt/hirs/scripts/common/ssl_deconfigure.sh server
+
+    echo 'Dropping local HIRS database'
+    sh /opt/hirs/scripts/common/db_drop.sh
+fi
+
+# fi
+

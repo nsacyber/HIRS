@@ -1,0 +1,241 @@
+name: .NET Provisioner ACA System Test
+on: push
+  # TODO: Tests workflow dependency to run system tests after unit tests on main repo
+  # workflow_run:
+  #   workflows: ["Dotnet Provisioner Unit Tests"]
+  #   branches: [dotnet-provisioner-workflow-dev]
+  #   types:
+  #     - completed
+
+env: 
+  DOTNET_VERSION: '3.1'
+
+jobs:
+  dotnet-provisioner-aca-test-windows:
+    name: Setup ACA and Test Provisioner Windows
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        include:
+         - os: windows-2022
+         - os: windows-2019
+    continue-on-error: true
+    steps:
+      - name: Set git to use LF
+        run: |
+          git config --global core.autocrlf false
+          git config --global core.eol lf
+      
+      - uses: actions/checkout@v2
+
+      - name: "Sets up WSL"
+        if: contains(matrix.os, 'windows') && always()
+        uses: Vampire/setup-wsl@v1
+        with:
+            distribution: Ubuntu-18.04
+
+      # TODO: Remove once ACA/Tomcat is updated
+      - name: " Strip SSL Parameters From JDBC String"
+        run: |
+          # Strip ssl from connection  string
+          $file1 = 'HIRS_Utils/src/main/resources/persistence.properties'
+          $file2 = 'package/deb/hirs-attestationca_2.1.1_amd64/opt/hirs/default-properties/attestationca/persistence.properties'
+          $regex = 'persistence.db.url[^"]*'
+          $replacement = "persistence.db.url                  = jdbc:mariadb://localhost/hirs_db?autoReconnect=true"
+          (Get-Content $file1) -replace $regex, $replacement | Set-Content $file1
+          (Get-Content $file2) -replace $regex, $replacement | Set-Content $file2
+
+      - name: " Setup ACA/TPM and Run Provisioner"
+        id: window_result
+        run: |
+          # Start simulator outside of shell
+          wsl sudo apt-get -y install zip unzip
+          wsl curl -L -o sim.zip https://download.microsoft.com/download/2/8/C/28C3917F-EC5B-464E-B229-1DD1FA299316/TSS.MSR%20v2.0%20TPM2%20Simulator.zip
+          wsl unzip ./sim
+          wsl sudo chmod +x ./Simulator.exe
+          wsl ./Simulator.exe &
+
+          Start-Process -NoNewWindow wsl "sh /mnt/d/a/HIRS/HIRS/package/deb/wsl-aca-setup.sh"
+
+          # Wait for ACA Setup
+          wsl sh package/deb/wait-aca.sh
+
+          # Provisioner exits on error because directory does not exist on windows-2022 runner
+          mkdir C:\Windows\Logs\MeasuredBoot  
+
+          # Run provisioner
+          echo "Running Provisioner"
+          cd HIRS_Provisioner.NET/hirs
+          $logs = dotnet run -r win-x64 --configuration Release --sim
+
+          # Determine pass or fail
+          $results = [string]$logs
+          $results = $results.Contains("Certificate delivery succeeded")
+          if($results) { $results = "Pass" } else { $results = "Fail"}
+          echo "::set-output name=result::$results"
+          $logName = "${{matrix.os}}-system-tests-" + $results + ".log"
+          New-Item $logName
+          Set-Content $logName $logs
+          Get-Content $logName
+
+      - name: Upload Logs Windows
+        uses: actions/upload-artifact@v2
+        with:
+          name: "${{matrix.os}}-system-tests-${{steps.window_result.outputs.result}}.log"
+          path: HIRS_Provisioner.NET/hirs/*.log
+
+  dotnet-provisioner-aca-test-ubuntu:
+    name: Setup ACA and Test Provisioner Ubuntu
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        include:
+         - os: ubuntu-20.04
+         - os: ubuntu-18.04
+    continue-on-error: true
+    steps:
+      - uses: actions/checkout@v2
+      
+      - name: "Setup ACA/TPM and Run Provisioner"
+        run: |
+          # Change dash to bash
+          sudo echo "dash dash/sh boolean false" | sudo debconf-set-selections
+          sudo DEBIAN_FRONTEND=noninteractive dpkg-reconfigure dash
+          
+          # ACA Dependencies
+          export RUNLEVEL=1
+          sudo apt-get -y update 
+          sudo DEBIAN_FRONTEND=noninteractive apt-get -y install openjdk-8-jdk protobuf-compiler build-essential devscripts lintian debhelper
+          
+          # Strip SSL for db connection string
+          DB_URL="persistence.db.url"
+          NO_SSL_DB_URL="persistence.db.url                  = jdbc:mariadb://localhost/hirs_db?autoReconnect=true"
+          sed -i "\@${DB_URL}@c${NO_SSL_DB_URL}" HIRS_Utils/src/main/resources/persistence.properties
+          sed -i "\@${DB_URL}@c${NO_SSL_DB_URL}" package/deb/hirs-attestationca_2.1.1_amd64/opt/hirs/default-properties/attestationca/persistence.properties
+          cd ./package/deb
+
+          # Set up java 1.8 and mariadb.
+          sudo sh ./java-mariadb-setup.sh
+
+          # Set permissions for debian files
+          sudo chmod -R 755 ./hirs-attestationca_2.1.1_amd64
+      
+          # Install tomcat 7
+          sudo sh ./install-tomcat7.sh
+          sudo systemctl daemon-reload
+
+          # Fix random generation issue
+          # Comment out RANDFILE
+          sudo sed -i '13 s/^/#/' /etc/ssl/openssl.cnf
+
+          # Build WAR Files, complete deb package and build.
+          sudo sh ./package-aca-ubuntu.sh
+
+          # Install .deb
+          sudo apt-get install ./hirs-attestationca_2.1.1_amd64.deb
+
+          # Verify tomcat is up
+          sudo /usr/share/tomcat/bin/catalina.sh start   
+          sleep 5
+
+          # Waiting for ACA Response
+          sudo sh wait-aca.sh
+
+          # Setup tpm2 tools and simulator
+          sudo apt install -y tpm2-tools
+          curl -L -o sim.tar.gz https://downloads.sourceforge.net/project/ibmswtpm2/ibmtpm1332.tar.gz
+          mkdir ibm-tpm
+          tar -xvzf sim.tar.gz -C ./ibm-tpm
+          cd ./ibm-tpm
+          cd src
+          sudo make
+          sudo ./tpm_server & 
+          sleep 5
+
+      - name: Setup tpm simulator for ubuntu 20.04
+        if: contains(matrix.os, 'ubuntu-20.04')
+        run: |
+          sudo tpm2_startup -c &
+          sleep 5
+          ek_cert=/home/runner/work/HIRS/HIRS/.ci/setup/certs/ek_cert.der
+          echo "Writing Endorsement Key to Simulator"
+          if tpm2_nvreadpublic | grep -q 0x1c00002; then      echo "Released NVRAM for EK.";      tpm2_nvundefine 0x1c00002 -C o;    fi
+          size=$(cat $ek_cert | wc -c)
+          tpm2_nvdefine -C o -a 0x2000A -s $size 0x1c00002 
+          tpm2_nvwrite -C o -i $ek_cert 0x1c00002 
+          if tpm2_nvreadpublic | grep -q 0x1c90000; then      echo "Released NVRAM for PC.";      tpm2_nvundefine 0x1c90000 -C o;    fi
+     
+      - name: Setup tpm simulator for ubuntu 18.04
+        if: contains(matrix.os, 'ubuntu-18.04')
+        run: |
+          tpm2_startup --clear &
+          sleep 5
+          ek_cert=/home/runner/work/HIRS/HIRS/.ci/setup/certs/ek_cert.der
+          echo "Writing Endorsement Key to Simulator"
+          if tpm2_nvlist | grep -q 0x1c00002; then      echo "Released NVRAM for EK.";      tpm2_nvrelease -x 0x1c00002 -a 0x40000001;    fi
+          size=$(cat $ek_cert | wc -c)
+          tpm2_nvdefine -x 0x1c00002 -a 0x40000001 -t 0x2000A -s $size
+          tpm2_nvwrite -x 0x1c00002 -a 0x40000001 -f $ek_cert
+          if tpm2_nvlist | grep -q 0x1c90000; then      echo "Released NVRAM for PC.";      tpm2_nvrelease -x 0x1c90000 -a 0x40000001;    fi
+
+      - name: Run Provisioner and Extract Ubuntu System Test Results
+        id: ubuntu_result
+        run: |
+          echo "Running provisioner"
+          cd HIRS_Provisioner.NET/hirs
+          logName="${{matrix.os}}-system-tests.log"
+          sudo dotnet run --configuration Release --sim > $logName
+          cat $logName
+
+          if grep -rnw $logName -e "Certificate delivery succeeded"; 
+          then 
+            result="Pass"
+          else
+            result="Fail"
+          fi
+          echo "::set-output name=result::$result"
+
+      - name: Upload Logs Ubuntu
+        uses: actions/upload-artifact@v2
+        if: contains(matrix.os, 'ubuntu') && always()
+        with:
+          name: "${{matrix.os}}-system-tests-${{steps.ubuntu_result.outputs.result}}.log"
+          path: HIRS_Provisioner.NET/hirs/*.log
+
+  Evaluator:
+    name: Evaluate Tests
+    needs: [dotnet-provisioner-aca-test-windows, dotnet-provisioner-aca-test-ubuntu]
+    runs-on: ubuntu-latest
+    continue-on-error: false
+    steps:
+
+    - uses: actions/checkout@v2
+
+    - name: Make artifact directory
+      run: |
+        mkdir artifacts
+
+    - uses: actions/download-artifact@v3
+      with:
+        path: artifacts
+
+    - name: Determine if a test failed
+      working-directory: artifacts
+      run: |
+        result="" 
+        suffix="-system-tests-Fail.log"
+        msg=" OS did not pass all the system tests."
+        
+        # Generate Annotations and Console Output
+        for file in *.log; do
+            if [[ "$file" == *"Fail"* ]]; then
+              title=${file%"$suffix"}
+              echo "::error title=$title System Tests Failed::The $title $msg"
+              result="Failed"
+            fi
+        done
+        
+        if [ -n "$result" ]
+        then
+            exit 1
+        fi
