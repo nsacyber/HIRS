@@ -72,7 +72,6 @@ jobs:
         logName="${{matrix.os}}-unit-tests.log"
         if grep -rnw $logName -e "Passed\!" ; 
         then 
-          echo "Hit pass for ubuntu"
           result="Pass"
         else
           result="Fail"
