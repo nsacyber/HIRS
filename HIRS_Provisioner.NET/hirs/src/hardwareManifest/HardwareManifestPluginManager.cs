@@ -1,4 +1,5 @@
-﻿using Serilog;
+﻿using HardwareManifestPlugin;
+using Serilog;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -9,11 +10,12 @@ using System.Text;
 
 namespace hirs {
     public class HardwareManifestPluginManager {
+        public static readonly string pluginsPath = Path.Combine(Path.GetDirectoryName(Environment.ProcessPath), "plugins");
         public HardwareManifestPluginManager() {
         }
         
         public List<IHardwareManifest> LoadPlugins(List<string> names) {
-            string[] pluginDlls = Directory.GetFiles(IHardwareManifest.pluginsPath, "*.dll");
+            string[] pluginDlls = Directory.GetFiles(pluginsPath, "*.dll");
             List<IHardwareManifest> manifests = new List<IHardwareManifest>();
             foreach(string dllPath in pluginDlls) {
                 Assembly pluginAssembly = LoadHardwareManifest(dllPath);

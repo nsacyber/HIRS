@@ -1,0 +1,93 @@
+syntax = "proto3";
+
+package Paccor.PlatformCertificate;
+
+/* tcg OBJECT IDENTIFIER ::= { 
+            joint-iso-itu-t(2) international-organizations(23) tcg(133) } */
+
+enum ComponentClassRegistry {
+  COMPONENTCLASSREGISTRY_UNSPECIFIED = 0;
+  /* tcg-registry OBJECT IDENTIFIER ::= {tcg 18} */
+  /* tcg-registry-componentClass OBJECT IDENTIFIER ::= {tcg-registry 3} */
+  // 2.23.133.18.3. 
+  TCG = 1;
+  IETF = 2;
+  DMTF = 3;
+  PCIE = 4;
+}
+
+message ComponentClass {
+  string componentClassRegistry = 1;
+  string componentClassValue = 2;
+}
+
+message PrivateEnterpriseNumber {
+  /* enterprise OBJECT IDENTIFIER :: = { 
+              iso(1) identified-organization(3) dod(6) internet(1) private(4) enterprise(1)} */
+  /* PrivateEnterpriseNumber OBJECT IDENTIFIER :: = { enterprise private-enterprise-number } */
+  // 1.3.6.1.4.1.
+  string pen = 1;
+}
+
+enum AddressType {
+  ADDRESSTYPE_UNSPECIFIED = 0;
+  /* tcg-address OBJECT IDENTIFIER ::= {tcg 17} */
+  // 2.23.133.17.
+  ETHERNETMAC = 1;
+  WLANMAC = 2;
+  BLUETOOTHMAC = 3;
+}
+
+message ComponentAddress {
+  string addressType = 1;
+  string addressValue = 2;
+}
+
+message AttributeCertificateIdentifier {
+  int32 hashAlgorithm = 1;
+  bytes hashOverSignatureValue = 2;
+}
+
+message CertificateIdentifier {
+  AttributeCertificateIdentifier attributeCertIdentifier = 1;
+  string genericCertIdentifier = 2;
+}
+
+message URIReference {
+  string uniformResourceIdentifier = 1;
+  int32 hashAlgorithm = 2;
+  bytes hashValue = 3;
+}
+
+enum AttributeStatus {
+  ADDED = 0;
+  MODIFIED = 1;
+  REMOVED = 2;
+}
+
+message ComponentIdentifierV2 {
+  ComponentClass componentClass = 1;
+  string componentManufacturer = 2;
+  string componentModel = 3;
+  string componentSerial = 4;
+  string componentRevision = 5;
+  PrivateEnterpriseNumber componentManufacturerId = 6;
+  bool fieldReplaceable = 7;
+  repeated ComponentAddress componentAddresses = 8;
+  CertificateIdentifier componentPlatformCert = 9;
+  URIReference componentPlatformCertUri = 10;
+  AttributeStatus status = 11;
+}
+
+message PropertiesV2 {
+  string propertyName = 1;
+  string propertyValue = 2;
+  AttributeStatus status = 3;
+}
+
+message PlatformConfigurationV2 {
+  repeated ComponentIdentifierV2 componentIdentifiers = 1;
+  URIReference componentIdentifiersUri = 2;
+  repeated PropertiesV2 platformProperties = 3;
+  URIReference platformPropertiesUri = 4;
+}

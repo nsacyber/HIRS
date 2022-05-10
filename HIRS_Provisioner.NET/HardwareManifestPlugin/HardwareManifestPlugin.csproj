@@ -1,0 +1,36 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net6.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+  <ItemGroup>
+    <Protobuf Include="**/*.proto" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Google.Protobuf" Version="3.20.1" />
+    <PackageReference Include="Google.Protobuf.Tools" Version="3.20.1" />
+  </ItemGroup>
+
+  <Target Name="BuildProto" BeforeTargets="PreBuildEvent">
+    <PropertyGroup>
+        <FOLDER_PROTO>$(ProjectDir)Resources</FOLDER_PROTO>
+        <FOLDER_OUT>$(ProjectDir)generated</FOLDER_OUT>
+    </PropertyGroup>
+    <PropertyGroup>
+        <protoc Condition="'$([System.Runtime.InteropServices.RuntimeInformation]::IsOSPlatform($([System.Runtime.InteropServices.OSPlatform]::Linux)))' And '$([System.Runtime.InteropServices.RuntimeInformation]::OSArchitecture)'=='X64'">$(protoc_linux64)</protoc>
+        <protoc Condition="'$([System.Runtime.InteropServices.RuntimeInformation]::IsOSPlatform($([System.Runtime.InteropServices.OSPlatform]::Linux)))' And '$([System.Runtime.InteropServices.RuntimeInformation]::OSArchitecture)'=='X86'">$(protoc_linux86)</protoc>
+        <protoc Condition="'$([System.Runtime.InteropServices.RuntimeInformation]::IsOSPlatform($([System.Runtime.InteropServices.OSPlatform]::OSX)))' And '$([System.Runtime.InteropServices.RuntimeInformation]::OSArchitecture)'=='X64'">$(protoc_macosx64)</protoc>
+        <protoc Condition="'$([System.Runtime.InteropServices.RuntimeInformation]::IsOSPlatform($([System.Runtime.InteropServices.OSPlatform]::OSX)))' And '$([System.Runtime.InteropServices.RuntimeInformation]::OSArchitecture)'=='X86'">$(protoc_macosx86)</protoc>
+        <protoc Condition="'$([System.Runtime.InteropServices.RuntimeInformation]::IsOSPlatform($([System.Runtime.InteropServices.OSPlatform]::Windows)))' And '$([System.Runtime.InteropServices.RuntimeInformation]::OSArchitecture)'=='X64'">$(protoc_windows64)</protoc>
+        <protoc Condition="'$([System.Runtime.InteropServices.RuntimeInformation]::IsOSPlatform($([System.Runtime.InteropServices.OSPlatform]::Windows)))' And '$([System.Runtime.InteropServices.RuntimeInformation]::OSArchitecture)'=='X86'">$(protoc_windows86)</protoc>
+    </PropertyGroup>
+   <ItemGroup>
+    <Compile Condition="!Exists('$(FOLDER_OUT)')" Include="generated/PlatformConfiguration.cs" /> <!-- Necessary to include the proto file(s) compiled during this prebuild phase, if they didn't exist before. CANNOT use wildcards! -->
+  </ItemGroup>   
+    <Exec Condition="!Exists('$(FOLDER_OUT)')" Command="mkdir $(FOLDER_OUT)" />
+    <Exec Condition="'$([System.Runtime.InteropServices.RuntimeInformation]::IsOSPlatform($([System.Runtime.InteropServices.OSPlatform]::Windows)))'" Command="for /f %%i in ('dir /s /b $(FOLDER_PROTO)\*.proto') do (  $(protoc) -I=$(FOLDER_PROTO) --csharp_out=$(FOLDER_OUT) %%i )" />
+    <Exec Condition="'$([System.Runtime.InteropServices.RuntimeInformation]::IsOSPlatform($([System.Runtime.InteropServices.OSPlatform]::Linux)))'" Command="for file in `ls -1R $(FOLDER_PROTO)/*.proto` ; do $(protoc) -I=$(FOLDER_PROTO) --csharp_out=$(FOLDER_OUT) $file; done " />
+  </Target>
+</Project>
