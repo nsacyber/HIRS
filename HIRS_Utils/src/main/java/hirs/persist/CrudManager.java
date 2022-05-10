@@ -1,5 +1,6 @@
 package hirs.persist;
 
+import hirs.data.persist.AbstractEntity;
 import org.hibernate.criterion.Criterion;
 
 import java.io.Serializable;
@@ -9,7 +10,7 @@ import java.util.List;
  * Interface defining database CRUD operations (Create, Read, Update, Delete).
  * @param <T> the object type, T.
  */
-public interface CrudManager<AbstractEntity> extends OrderedListQuerier<AbstractEntity> {
+public interface CrudManager<T> extends OrderedListQuerier<AbstractEntity> {
 
     /**
      * Deletes all instances of the associated class.
@@ -80,39 +81,39 @@ public interface CrudManager<AbstractEntity> extends OrderedListQuerier<Abstract
      */
     AbstractEntity get(Serializable id) throws DBManagerException;
 
-    /**
-     * Retrieves the <code>Object</code> from the database. This searches the
-     * database for an entry whose id matches <code>id</code>. It then
-     * reconstructs the <code>Object</code> from the database entry.  It will also
-     * load all the lazy fields in the given class.  If the parameter <code>recurse</code>
-     * is set to true, this method will recursively descend into each of the object's fields
-     * to load all the lazily-loaded entities.  If false, only the fields belonging to the object
-     * itself will be loaded.
-     *
-     * @param id id of the object
-     * @param recurse whether to recursively load lazy data throughout the object's structures
-     * @return object if found, otherwise null.
-     * @throws DBManagerException if unable to search the database or recreate
-     * the <code>Object</code>
-     */
-    AbstractEntity getAndLoadLazyFields(Serializable id, boolean recurse)
-            throws DBManagerException;
-
-    /**
-     * Returns a list of all <code>T</code>s of type <code>clazz</code> in the database, with no
-     * additional restrictions.
-     * <p>
-     * This would be useful if <code>T</code> has several subclasses being
-     * managed. This class argument allows the caller to limit which types of
-     * <code>T</code> should be returned.
-     *
-     * @param clazz class type of <code>T</code>s to search for (may be null to
-     * use Class&lt;T&gt;)
-     * @return list of <code>T</code> names
-     * @throws DBManagerException if unable to search the database
-     */
-    List<AbstractEntity> getList(AbstractEntity entity)
-                    throws DBManagerException;
+//    /**
+//     * Retrieves the <code>Object</code> from the database. This searches the
+//     * database for an entry whose id matches <code>id</code>. It then
+//     * reconstructs the <code>Object</code> from the database entry.  It will also
+//     * load all the lazy fields in the given class.  If the parameter <code>recurse</code>
+//     * is set to true, this method will recursively descend into each of the object's fields
+//     * to load all the lazily-loaded entities.  If false, only the fields belonging to the object
+//     * itself will be loaded.
+//     *
+//     * @param id id of the object
+//     * @param recurse whether to recursively load lazy data throughout the object's structures
+//     * @return object if found, otherwise null.
+//     * @throws DBManagerException if unable to search the database or recreate
+//     * the <code>Object</code>
+//     */
+//    AbstractEntity getAndLoadLazyFields(Serializable id, boolean recurse)
+//            throws DBManagerException;
+//
+//    /**
+//     * Returns a list of all <code>T</code>s of type <code>clazz</code> in the database, with no
+//     * additional restrictions.
+//     * <p>
+//     * This would be useful if <code>T</code> has several subclasses being
+//     * managed. This class argument allows the caller to limit which types of
+//     * <code>T</code> should be returned.
+//     *
+//     * @param AbstractEntity class type of <code>T</code>s to search for (may be null to
+//     * use Class&lt;T&gt;)
+//     * @return list of <code>T</code> names
+//     * @throws DBManagerException if unable to search the database
+//     */
+//    List<AbstractEntity> getList(AbstractEntity entity)
+//                    throws DBManagerException;
 
     /**
      * Returns a list of all <code>T</code>s of type <code>clazz</code> in the database, with an
@@ -122,7 +123,7 @@ public interface CrudManager<AbstractEntity> extends OrderedListQuerier<Abstract
      * managed. This class argument allows the caller to limit which types of
      * <code>T</code> should be returned.
      *
-     * @param clazz class type of <code>T</code>s to search for (may be null to
+     * @param AbstractEntity class type of <code>T</code>s to search for (may be null to
      * use Class&lt;T&gt;)
      * @param additionalRestriction - an added Criterion to use in the query, null for none
      * @return list of <code>T</code> names

@@ -1,29 +1,16 @@
 package hirs.persist;
 
-import hirs.FilteredRecordsList;
-import hirs.data.bean.SimpleImaRecordBean;
-import hirs.data.persist.IMAMeasurementRecord;
-import hirs.data.persist.IMAReport;
-import hirs.data.persist.IntegrityReport;
 import hirs.data.persist.Report;
 import hirs.data.persist.ReportSummary;
-import hirs.persist.imarecord.DbImaRecordQueryForDevice;
-import hirs.persist.imarecord.DbImaRecordQueryForDeviceSinceLastFullReport;
-import hirs.persist.imarecord.DbImaRecordQueryForNone;
-import hirs.persist.imarecord.DbImaRecordQueryForReport;
-import hirs.persist.imarecord.DbImaRecordQueryParameters;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
-import org.hibernate.Session;
 import org.hibernate.SessionFactory;
-import org.hibernate.Transaction;
 import org.hibernate.criterion.Conjunction;
 import org.hibernate.criterion.Disjunction;
 import org.hibernate.criterion.MatchMode;
 import org.hibernate.criterion.Restrictions;
 
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -90,163 +77,10 @@ public class DBReportManager extends DBManager<Report> implements ReportManager 
             throws ReportManagerException {
         LOGGER.debug("getting report list");
         try {
-            return super.getList(clazz);
+            return super.getList(Report);
         } catch (DBManagerException e) {
             throw new ReportManagerException(e);
         }
-    }
-
-    /**
-     * Returns a list of all Report Records that are ordered by a column
-     * and direction (ASC, DESC) that is provided by the user.  This
-     * method contains database interactions designed to extract specific
-     * fields from the database to avoid retrieving full records in order
-     * to improve query performance and reduce the size of teh data set
-     * returned to the caller. This method helps support the server-side
-     * processing in the JQuery DataTables.
-     *
-     * @param scope the scope of the search: NONE, ALL, REPORT, or DEVICE
-     * @param id the id or name of the REPORT or DEVICE to search
-     * @param sinceLastFullReport limits the records to those since the last full report for the
-     * device
-     * @param columnToOrder Column to be ordered
-     * @param ascending direction of sort
-     * @param firstResult starting point of first result in set
-     * @param maxResults total number we want returned for display in table
-     * @param search string of criteria to be matched to visible columns
-     * @param searchableColumns map containing columns that search string can
-     *                          be applied to
-     * @return FilteredRecordsList object with fields for DataTables
-     * @throws ReportManagerException if unable to create the list
-     */
-    @Override
-    @SuppressWarnings("checkstyle:parameternumber")
-    public final FilteredRecordsList<SimpleImaRecordBean>
-    getOrderedRecordListWithoutRecords(
-            final IMARecordScope scope,
-            final String id,
-            final boolean sinceLastFullReport,
-            final IMARecordField columnToOrder,
-            final boolean ascending,
-            final int firstResult,
-            final int maxResults,
-            final String search,
-            final Map<String, Boolean> searchableColumns)
-            throws ReportManagerException {
-
-        // check columnToOrder
-        if (columnToOrder == null) {
-            final String msg = "columnToOrder cannot be null";
-            LOGGER.error(msg);
-            throw new IllegalArgumentException(msg);
-        }
-
-        // check scope
-        if (scope == null) {
-            throw new IllegalArgumentException("IMARecordScope cannot be null");
-        }
-
-        switch (scope) {
-            case NONE:
-                // Returns an empty FilteredRecordsList to make DataTables
-                // display "No Data".
-                return new FilteredRecordsList<>();
-            case REPORT:
-//                return getImaRecordsForReport(id, columnToOrder, ascending,
-//                        firstResult,
-//                        maxResults, search, searchableColumns);
-            case DEVICE:
-//                return getImaRecordsForDevice(id, sinceLastFullReport,
-//                        columnToOrder, ascending, firstResult,
-//                        maxResults, search, searchableColumns);
-            default:
-                throw new UnsupportedOperationException(
-                        "IMARecordScope " + scope + " is not supported");
-        }
-    }
-
-    /**
-     * Returns a list of all Report Records that are ordered by a column
-     * and direction (ASC, DESC) that is provided by the user.  This method
-     * helps support the server-side processing in the JQuery DataTables.
-     *
-     * @param scope               the scope of the search: NONE, ALL, REPORT, or DEVICE
-     * @param id                  the id or name of the REPORT or DEVICE to search
-     * @param sinceLastFullReport limits the records to those since the last full report for the
-     *                            device
-     * @param columnToOrder       Column to be ordered
-     * @param ascending           direction of sort
-     * @param firstResult         starting point of first result in set
-     * @param maxResults          total number we want returned for display in table
-     * @param search              string of criteria to be matched to visible columns
-     * @return FilteredRecordsList object with fields for DataTables
-     * @throws ReportManagerException if unable to create the list
-     */
-    @Override
-    @SuppressWarnings("checkstyle:parameternumber")
-    public final FilteredRecordsList<IMAMeasurementRecord> getOrderedRecordList(
-            final IMARecordScope scope,
-            final String id,
-            final boolean sinceLastFullReport,
-            final IMARecordField columnToOrder,
-            final boolean ascending,
-            final int firstResult,
-            final int maxResults,
-            final String search)
-            throws ReportManagerException {
-
-        // check columnToOrder
-        if (columnToOrder == null) {
-            final String msg = "columnToOrder cannot be null";
-            LOGGER.error(msg);
-            throw new IllegalArgumentException(msg);
-        }
-
-        // check scope
-        if (scope == null) {
-            throw new IllegalArgumentException("IMARecordScope cannot be null");
-        }
-
-        Transaction tx = null;
-        Session session = getFactory().getCurrentSession();
-        try {
-            tx = session.beginTransaction();
-
-            final DbImaRecordQueryParameters params
-                    = new DbImaRecordQueryParameters(id, columnToOrder, ascending,
-                            firstResult, maxResults, search);
-
-            switch (scope) {
-                case NONE:
-                    return new DbImaRecordQueryForNone().query();
-                case REPORT:
-                    return new DbImaRecordQueryForReport(session, params).query();
-                case DEVICE:
-                    if (sinceLastFullReport) {
-                        DbImaRecordQueryForDeviceSinceLastFullReport q
-                                = new DbImaRecordQueryForDeviceSinceLastFullReport(session, params);
-                        return q.query();
-                    } else {
-                        return new DbImaRecordQueryForDevice(session, params).query();
-                    }
-                default:
-                    throw new UnsupportedOperationException(
-                            "IMARecordScope " + scope + " is not supported");
-            }
-
-        } catch (Exception ex) {
-            String msg = "Error executing IMA Record query for " + scope + " scope.";
-            if (scope == IMARecordScope.DEVICE) {
-                msg += "Since last full report = " + sinceLastFullReport;
-            }
-            LOGGER.error(msg, ex);
-            throw ex;
-        } finally {
-            if (tx != null) {
-                tx.rollback();
-            }
-        }
-
     }
 
     /**
@@ -331,52 +165,6 @@ public class DBReportManager extends DBManager<Report> implements ReportManager 
     }
 
     /**
-     * Method retrieves all ima report ids associated with the latest full ima
-     * report (as determined by a starting index of 0 and the most recent
-     * report create time) of provided device id.
-     * @param id of device
-     * @return list of IMA report ids
-     */
-    private List<UUID> getImaIdsOfRecentBootCycle(final String id) {
-
-        ReportSummaryManager reportSummaryManager =
-                new DBReportSummaryManager(getFactory());
-        List<ReportSummary> reportSummary = reportSummaryManager
-                .getReportSummaryListByHostname(id);
-
-        List<IMAReport> imaReports = new ArrayList<>();
-        for (ReportSummary summary : reportSummary) {
-            IntegrityReport integrityReport = (IntegrityReport) summary
-                    .getReport();
-            imaReports.add(integrityReport.extractReport(IMAReport.class));
-        }
-
-        String bootCycleId = "";
-        Date createTime = null;
-        List<UUID> imaReportIds = new ArrayList<>();
-
-        // Retrieve most recent IMAReport where index is 0.
-        for (IMAReport report : imaReports) {
-            if (createTime == null) {
-                createTime = report.getCreateTime();
-                bootCycleId = report.getBootcycleId();
-            } else if (createTime.before(report.getCreateTime())
-                    && report.getIndex() == 0) {
-                createTime = report.getCreateTime();
-                bootCycleId = report.getBootcycleId();
-            }
-        }
-
-        // Retrieve all IMAReports corresponding to bootCycleID.
-        for (IMAReport report : imaReports) {
-            if (report.getBootcycleId().equals(bootCycleId)) {
-                imaReportIds.add(report.getId());
-            }
-        }
-        return imaReportIds;
-    }
-
-    /**
      * Method retrieves all ima report ids corresponding to provided
      * device id.
      * device.
@@ -391,12 +179,7 @@ public class DBReportManager extends DBManager<Report> implements ReportManager 
                 .getReportSummaryListByHostname(id);
 
         List<UUID> imaReportIds = new ArrayList<>();
-        for (ReportSummary summary : reportSummary) {
-            IntegrityReport integrityReport = (IntegrityReport) summary
-                    .getReport();
-            imaReportIds.add(integrityReport.extractReport(IMAReport.class)
-                    .getId());
-        }
+
         return imaReportIds;
     }
 

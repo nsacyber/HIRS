@@ -2,11 +2,8 @@ package hirs.repository.measurement;
 
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
-
 import hirs.data.persist.Digest;
 import hirs.data.persist.enums.DigestAlgorithm;
-import hirs.data.persist.baseline.IMABaselineRecord;
-
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -20,12 +17,8 @@ import java.nio.file.Path;
 import java.nio.file.SimpleFileVisitor;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
-import java.util.Set;
 
 /**
  * This abstract class implements the basic functionality for measuring a software package.  It
@@ -215,23 +208,5 @@ public abstract class PackageMeasurer {
         }
 
         return new Digest(digestAlgorithm, value);
-    }
-
-    /**
-     * Measures the files at the specified file path.
-     * @param filePath the file path root to measure files
-     * @return set of IMA Baseline Records
-     * @throws IOException if an IO error occurrs processing files at the file path
-     */
-    public Set<IMABaselineRecord> measureAndGetRecords(final Path filePath) throws IOException {
-        Set<IMABaselineRecord> records = new HashSet<>();
-        Multimap<Path, Digest> map = measure(filePath);
-
-        for (Map.Entry<Path, Collection<Digest>> e : map.asMap().entrySet()) {
-            for (Digest digest : e.getValue()) {
-                records.add(new IMABaselineRecord(e.getKey().toString(), digest));
-            }
-        }
-        return records;
     }
 }

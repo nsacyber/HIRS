@@ -1,6 +1,5 @@
 package hirs.ima;
 
-import hirs.data.persist.IMAReport;
 import hirs.data.persist.baseline.SimpleImaBaseline;
 import hirs.data.persist.DeviceInfoReport;
 import hirs.data.persist.Digest;

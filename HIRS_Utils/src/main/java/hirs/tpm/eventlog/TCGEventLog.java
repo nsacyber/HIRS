@@ -1,5 +1,17 @@
 package hirs.tpm.eventlog;
 
+import hirs.data.persist.AbstractDigest;
+import hirs.data.persist.Digest;
+import hirs.data.persist.TPMMeasurementRecord;
+import hirs.data.persist.enums.DigestAlgorithm;
+import hirs.tpm.eventlog.events.EvConstants;
+import hirs.tpm.eventlog.uefi.UefiConstants;
+import hirs.utils.HexUtils;
+import org.apache.commons.codec.DecoderException;
+import org.apache.commons.codec.binary.Hex;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.math.BigInteger;
@@ -9,20 +21,6 @@ import java.security.NoSuchAlgorithmException;
 import java.security.cert.CertificateException;
 import java.util.Collection;
 import java.util.LinkedHashMap;
-
-import org.apache.commons.codec.DecoderException;
-import org.apache.commons.codec.binary.Hex;
-
-import hirs.data.persist.AbstractDigest;
-import hirs.data.persist.Digest;
-import hirs.data.persist.TPMMeasurementRecord;
-import hirs.data.persist.baseline.TpmWhiteListBaseline;
-import hirs.data.persist.enums.DigestAlgorithm;
-import hirs.tpm.eventlog.events.EvConstants;
-import hirs.tpm.eventlog.uefi.UefiConstants;
-import hirs.utils.HexUtils;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 
 /**
  * Class for handling different formats of TCG Event logs.
@@ -178,8 +176,8 @@ public final class TCGEventLog {
      * @param name name to call the TPM Baseline
      * @return whitelist baseline
      */
-    public TpmWhiteListBaseline createTPMBaseline(final String name) {
-        TpmWhiteListBaseline baseline = new TpmWhiteListBaseline(name);
+    public void createTPMBaseline(final String name) {
+//        TpmWhiteListBaseline baseline = new TpmWhiteListBaseline(name);
         TPMMeasurementRecord record;
         String pcrValue;
         for (int i = 0; i < PCR_COUNT; i++) {
@@ -194,9 +192,9 @@ public final class TCGEventLog {
                 final Digest hash = new Digest(DigestAlgorithm.SHA256, hexValue);
                 record = new TPMMeasurementRecord(i, hash);
             }
-            baseline.addToBaseline(record);
+//            baseline.addToBaseline(record);
         }
-        return baseline;
+//        return baseline;
     }
 
     /**

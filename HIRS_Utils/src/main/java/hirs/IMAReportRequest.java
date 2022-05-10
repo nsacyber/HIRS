@@ -1,7 +1,7 @@
 package hirs;
 
 import static org.apache.logging.log4j.LogManager.getLogger;
-import hirs.data.persist.IMAReport;
+
 import hirs.data.persist.Report;
 
 import javax.xml.bind.annotation.XmlElement;

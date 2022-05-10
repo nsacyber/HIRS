@@ -7,11 +7,6 @@ import hirs.persist.AppraiserManager;
 import hirs.persist.DeviceGroupManager;
 import hirs.persist.PolicyManager;
 
-import java.io.BufferedInputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-
 import static hirs.attestationca.AbstractAttestationCertificateAuthority.LOG;
 
 /**
@@ -70,20 +65,5 @@ public final class AcaDbInit {
         policyManager.setPolicy(supplyChainAppraiser, defaultGroup, supplyChainPolicy);
 
         LOG.info("ACA database initialization complete.");
-    }
-
-    public static void main(String[] args) throws IOException {
-        File file = new File("/home/tdmatth/Downloads/HP_CND12774J0_pxe.1.swidtag");
-        FileInputStream fis = new FileInputStream(file);
-
-        BufferedInputStream bis = new BufferedInputStream(fis);
-        byte[] buffer = new byte[1024];
-        int length = 0;
-        String output = "";
-        while ((length = bis.read(buffer)) != -1) {
-            output += new String(buffer, 0, length);
-        }
-
-        System.out.println(output);
     }
 }

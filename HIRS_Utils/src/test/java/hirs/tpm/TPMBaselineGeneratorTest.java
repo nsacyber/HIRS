@@ -20,7 +20,6 @@ import hirs.data.persist.Digest;
 import hirs.data.persist.enums.DigestAlgorithm;
 import hirs.data.persist.info.FirmwareInfo;
 import hirs.data.persist.info.HardwareInfo;
-import hirs.data.persist.IMAReport;
 import hirs.data.persist.IntegrityReport;
 import hirs.data.persist.info.OSInfo;
 import hirs.data.persist.TPMReport;

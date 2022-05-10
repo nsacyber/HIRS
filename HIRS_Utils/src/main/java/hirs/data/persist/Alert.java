@@ -1,9 +1,9 @@
 package hirs.data.persist;
 
-import hirs.data.persist.baseline.Baseline;
 import hirs.data.persist.enums.AlertSeverity;
 import hirs.data.persist.enums.AlertSource;
 import hirs.data.persist.enums.AlertType;
+
 import javax.persistence.Access;
 import javax.persistence.AccessType;
 import javax.persistence.CollectionTable;
@@ -241,7 +241,7 @@ public class Alert extends ArchivableEntity {
      * Returns the source of this <code>Alert</code>.
      *
      * @return source of this <code>Alert</code>
-     * @see Source
+     *
      */
     @XmlAttribute(name = "source")
     public final AlertSource getSource() {
@@ -317,39 +317,6 @@ public class Alert extends ArchivableEntity {
     }
 
     /**
-     * Sets the id of baselines associated with the alert as well as the severity of the
-     * <code>Baseline</code> that was in use, if any, when the <code>Alert</code> was generated.
-     * Should only be used when initially generating an <code>Alert</code>.
-     *
-     * @param baselines - a collection of <code>Baseline</code>s related to this alert
-     */
-    public final void setBaselineIdsAndSeverity(final Set<Baseline> baselines) {
-        if (baselines != null) {
-            for (Baseline baseline : baselines) {
-                if (baseline != null) {
-                    this.baselineIds.add(baseline.getId());
-
-                    /**
-                     * This is a temporary solution to resolve any failures in
-                     * live code or unit tests.  BaselineId is used to count the number
-                     * of alerts associated with a baseline.  The <code>AlertManager</code>
-                     * class uses baselineId for this count.
-                     *
-                     */
-                    this.baselineId = baseline.getId();
-
-                    // only overwrite severity if the new one is non-null
-                    if (baseline.getSeverity() != null) {
-                        // Assign the most critical severity level of the collection of baselines to
-                        // the alert
-                        this.severity = getPrioritizedSeverityLevel(baseline.getSeverity());
-                    }
-                }
-            }
-        }
-    }
-
-    /**
      * Set the severity of the alert regardless of baseline.
      * @param severity Alert.Severity.
      */
@@ -378,7 +345,7 @@ public class Alert extends ArchivableEntity {
      * Returns the <code>Severity</code> of this <code>Alert</code>.
      *
      * @return severity of this <code>Alert</code>
-     * @see Severity
+     *
      */
     @XmlAttribute(name = "severity")
     public final AlertSeverity getSeverity() {

@@ -2,7 +2,6 @@ package hirs.persist;
 
 import hirs.data.persist.Device;
 import hirs.data.persist.DeviceGroup;
-import hirs.data.persist.IMADeviceState;
 
 import hirs.data.persist.SpringPersistenceTest;
 import org.testng.Assert;

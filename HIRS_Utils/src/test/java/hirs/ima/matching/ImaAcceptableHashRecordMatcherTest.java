@@ -2,7 +2,6 @@ package hirs.ima.matching;
 
 import hirs.data.persist.Digest;
 import hirs.data.persist.baseline.IMABaselineRecord;
-import hirs.data.persist.IMAMeasurementRecord;
 import hirs.data.persist.enums.ReportMatchStatus;
 import hirs.data.persist.baseline.SimpleImaBaseline;
 import hirs.data.persist.SimpleImaBaselineTest;

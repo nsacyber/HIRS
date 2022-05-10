@@ -3,7 +3,6 @@ package hirs.persist;
 import hirs.data.persist.Device;
 import hirs.data.persist.DeviceGroup;
 import hirs.data.persist.DeviceState;
-import hirs.data.persist.IMADeviceState;
 import hirs.data.persist.SpringPersistenceTest;
 import hirs.data.persist.TPMDeviceState;
 import hirs.data.persist.TPMReport;

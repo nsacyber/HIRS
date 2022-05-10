@@ -1,6 +1,7 @@
 package hirs.persist;
 
 import hirs.FilteredRecordsList;
+import hirs.data.persist.AbstractEntity;
 import hirs.data.persist.ArchivableEntity;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -27,7 +28,7 @@ import java.util.Map;
  * archive, and delete operations for managing objects in a database.
  *
  */
-public class DBManager<AbstractEntity> extends AbstractDbManager<AbstractEntity> {
+public class DBManager<T> extends AbstractDbManager<AbstractEntity> {
     private static final Logger LOGGER = LogManager.getLogger(DBManager.class);
 
     /**
@@ -114,7 +115,7 @@ public class DBManager<AbstractEntity> extends AbstractDbManager<AbstractEntity>
      * @throws DBManagerException if an error is encountered while performing the query or creating
      * the result objects
      */
-    public final List<AbstractEntity> getWithCriteria(final Collection<Criterion> criteriaCollection)
+    public final List<hirs.data.persist.ArchivableEntity> getWithCriteria(final Collection<Criterion> criteriaCollection)
             throws DBManagerException {
         return retryTemplate.execute(
             new RetryCallback<List<AbstractEntity>, DBManagerException>() {
@@ -137,13 +138,13 @@ public class DBManager<AbstractEntity> extends AbstractDbManager<AbstractEntity>
      * @throws DBManagerException if an error is encountered while performing the query or creating
      * the result objects
      */
-    protected final List<AbstractEntity> getWithCriteria(
-            final Class<AbstractEntity> clazzToGet,
+    protected final List<hirs.data.persist.ArchivableEntity> getWithCriteria(
+            final Class<hirs.data.persist.ArchivableEntity> clazzToGet,
             final Collection<Criterion> criteriaCollection) throws DBManagerException {
         return retryTemplate.execute(
                 new RetryCallback<List<AbstractEntity>, DBManagerException>() {
                     @Override
-                    public List<AbstractEntity> doWithRetry(final RetryContext context)
+                    public List<hirs.data.persist.ArchivableEntity> doWithRetry(final RetryContext context)
                             throws DBManagerException {
                         return doGetWithCriteria(clazzToGet, criteriaCollection);
                     }
@@ -213,10 +214,10 @@ public class DBManager<AbstractEntity> extends AbstractDbManager<AbstractEntity>
      * @throws DBManagerException if unable to search the database or recreate
      * the <code>Object</code>
      */
-    public final AbstractEntity get(final String name) throws DBManagerException {
-        return retryTemplate.execute(new RetryCallback<AbstractEntity, DBManagerException>() {
+    public final ArchivableEntity get(final String name) throws DBManagerException {
+        return retryTemplate.execute(new RetryCallback<ArchivableEntity, DBManagerException>() {
             @Override
-            public AbstractEntity doWithRetry(final RetryContext context) throws DBManagerException {
+            public ArchivableEntity doWithRetry(final RetryContext context) throws DBManagerException {
                 return doGet(name);
             }
         });
@@ -488,7 +489,7 @@ public class DBManager<AbstractEntity> extends AbstractDbManager<AbstractEntity>
             return false;
         }
 
-        AbstractEntity target = get(name);
+        ArchivableEntity target = get(name);
         if (target == null) {
             return false;
         }

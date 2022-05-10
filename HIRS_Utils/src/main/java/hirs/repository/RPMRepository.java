@@ -1,12 +1,18 @@
 package hirs.repository;
 
+import com.google.common.collect.Multimap;
 import hirs.data.persist.Digest;
 import hirs.data.persist.enums.DigestAlgorithm;
-import hirs.data.persist.baseline.IMABaselineRecord;
 import hirs.repository.measurement.PackageMeasurer;
 import hirs.repository.measurement.RPMMeasurer;
 import hirs.utils.exec.ExecBuilder;
+import org.apache.commons.io.FileUtils;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
+import javax.persistence.Column;
+import javax.persistence.MappedSuperclass;
+import javax.persistence.Transient;
 import java.io.IOException;
 import java.net.URL;
 import java.nio.file.FileSystems;
@@ -16,17 +22,6 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
-
-import javax.persistence.Column;
-import javax.persistence.Transient;
-
-import org.apache.commons.io.FileUtils;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-
-import com.google.common.collect.Multimap;
-
-import javax.persistence.MappedSuperclass;
 
 /**
  * Abstract base class representing a repository that deals with RPM packages.
@@ -124,12 +119,10 @@ public abstract class RPMRepository<T extends RPMRepoPackage> extends Repository
             throws RepositoryException {
         try {
             Multimap<Path, Digest> measurements = rpmMeasurer.measure(rpmPath);
-            Set<IMABaselineRecord> packageRecords = new HashSet<>();
+            Set<Object> packageRecords = new HashSet<>();
             for (Map.Entry<Path, Collection<Digest>> e : measurements.asMap().entrySet()) {
                 for (Digest digest : e.getValue()) {
-                    packageRecords.add(new IMABaselineRecord(
-                            e.getKey().toAbsolutePath().toString(), digest
-                    ));
+                    packageRecords.add(digest);
                 }
             }
 

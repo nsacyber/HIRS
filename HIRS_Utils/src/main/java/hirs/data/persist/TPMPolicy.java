@@ -1,18 +1,10 @@
 package hirs.data.persist;
 
-import hirs.data.persist.baseline.TpmBlackListBaseline;
-import hirs.data.persist.baseline.TpmWhiteListBaseline;
-import hirs.data.persist.baseline.HasBaselines;
-import hirs.data.persist.baseline.Baseline;
 import hirs.data.persist.enums.AlertSeverity;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Set;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import javax.persistence.CollectionTable;
 import javax.persistence.Column;
 import javax.persistence.ElementCollection;
@@ -21,13 +13,12 @@ import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
 import javax.persistence.FetchType;
 import javax.persistence.JoinColumn;
-import javax.persistence.JoinTable;
-import javax.persistence.ManyToMany;
-import javax.persistence.OrderColumn;
-
-import org.apache.commons.lang3.StringUtils;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 /**
  * Class represents TPM policy. TPM Policy identifies the TPMBaseline instance that the TPM
@@ -38,7 +29,7 @@ import org.apache.logging.log4j.Logger;
  * maintains a set of the PCRs that should be appraised on a device-specific basis.
  */
 @Entity
-public final class TPMPolicy extends Policy implements HasBaselines {
+public final class TPMPolicy extends Policy {
 
     /**
      * Identifies all valid TPM PCRs bits (i.e. PCR 0-23) in any TPM PCR mask.
@@ -80,18 +71,6 @@ public final class TPMPolicy extends Policy implements HasBaselines {
     @Enumerated(EnumType.STRING)
     private AlertSeverity kernelUpdateAlertSeverity = AlertSeverity.UNSPECIFIED;
 
-    @ManyToMany(fetch = FetchType.EAGER)
-    @JoinTable(name = "TPMWhiteListBaselines",
-            joinColumns = { @JoinColumn(name = "PolicyID", nullable = false) })
-    @OrderColumn(name = "TPMWhiteListBaselineIndex")
-    private final List<TpmWhiteListBaseline> tpmWhiteListBaselines = new LinkedList<>();
-
-    @ManyToMany(fetch = FetchType.EAGER)
-    @JoinTable(name = "TPMBlackListBaselines",
-            joinColumns = { @JoinColumn(name = "PolicyID", nullable = false) })
-    @OrderColumn(name = "TPMBlackListBaselineIndex")
-    private final List<TpmBlackListBaseline> tpmBlackListBaselines = new LinkedList<>();
-
     @ElementCollection(fetch = FetchType.EAGER)
     @CollectionTable(name = "TPMPolicyDeviceSpecificPCRs",
             joinColumns = { @JoinColumn(name = "PolicyID", nullable = false) })
@@ -124,98 +103,6 @@ public final class TPMPolicy extends Policy implements HasBaselines {
      */
     protected TPMPolicy() {
         super();
-    }
-
-    /**
-     * Configures the policy such that it contains only the given TPM WhiteList
-     * baseline, which identifies
-     * trusted PCR values for appraising a device.  The trusted values are the expected or
-     * acceptable values for PCRs. The report's PCR values will be compared against these values
-     * to determine if the device is in a trusted state.
-     *
-     * @param baseline
-     *            The TPM white list baseline to be used by this policy.
-     */
-    public void setTpmWhiteListBaseline(final TpmWhiteListBaseline baseline) {
-        LOGGER.debug("setting TpmWhiteListBaseline {} for the {} policy", baseline, getName());
-        if (baseline == null) {
-            throw new PolicyException("Cannot set TPM baseline to null");
-        }
-        this.tpmWhiteListBaselines.clear();
-        this.tpmWhiteListBaselines.add(baseline);
-    }
-
-    /**
-     * Configures the policy such that it contains only the given TPM BlackList baseline,
-     * which identifies PCR values that are not permitted.
-     * Reports containing values that are not permitted result in the generation of an alert.
-     *
-     * @param baseline
-     *            The TPM black list baseline to be used by this policy.
-     */
-    public void setTpmBlackListBaseline(final TpmBlackListBaseline baseline) {
-        LOGGER.debug("setting TpmBlackListBaseline {} for the {} policy", baseline, getName());
-        if (baseline == null) {
-            throw new PolicyException("Cannot set TPM baseline to null");
-        }
-        this.tpmBlackListBaselines.clear();
-        this.tpmBlackListBaselines.add(baseline);
-    }
-
-    /**
-     * Configures the policy such that it contains the given TPM white list baselines,
-     * which together identify trusted PCR values for appraising a device.  These trusted
-     * values are the expected or acceptable values for PCRs. The report's PCR
-     * values will be compared against these values to determine if the device
-     * is in a trusted state.
-     *
-     * @param baselines
-     *            The TPM white list baselines to be used by this policy.
-     */
-    public void setTpmWhiteListBaselines(final Collection<TpmWhiteListBaseline> baselines) {
-        LOGGER.debug("setting TpmWhiteListBaseline {} for the {} policy", baselines, getName());
-        if (baselines == null) {
-            throw new PolicyException("Cannot set TPM baselines to null");
-        }
-        this.tpmWhiteListBaselines.clear();
-        this.tpmWhiteListBaselines.addAll(baselines);
-    }
-
-    /**
-     * Configures the policy such that it contains multiple TPM BlackList baselines,
-     * which identifies PCR values that are not permitted.
-     * Reports containing values that are not permitted result in the generation of an alert.
-     *
-     * @param blackListBaselines
-     *            The TPM black list baselines to be used by this policy.
-     */
-    public void setTpmBlackListBaselines(
-            final Collection<TpmBlackListBaseline> blackListBaselines) {
-        LOGGER.debug("setting TpmBlackListBaseline {} for the {} policy",
-                blackListBaselines, getName());
-        if (blackListBaselines == null) {
-            throw new PolicyException("Cannot set TPM baselines to null");
-        }
-        this.tpmBlackListBaselines.clear();
-        this.tpmBlackListBaselines.addAll(blackListBaselines);
-    }
-
-    /**
-     * Returns the TPM whitelist baselines associated with this policy.
-     *
-     * @return the TPM whitelist baselines for this policy
-     */
-    public Collection<TpmWhiteListBaseline> getTpmWhiteListBaselines() {
-        return Collections.unmodifiableCollection(this.tpmWhiteListBaselines);
-    }
-
-    /**
-     * Returns the TPM blacklist baselines associated with this policy.
-     *
-     * @return the TPM blacklist baselines for this policy
-     */
-    public List<TpmBlackListBaseline> getTpmBlackListBaselines() {
-        return Collections.unmodifiableList(tpmBlackListBaselines);
     }
 
     /**
@@ -565,13 +452,6 @@ public final class TPMPolicy extends Policy implements HasBaselines {
      */
     public void setKernelUpdateAlertSeverity(final AlertSeverity severity) {
         kernelUpdateAlertSeverity = severity;
-    }
-
-    @Override
-    public List<Baseline> getBaselines() {
-        List<Baseline> baselines = new ArrayList<>();
-        baselines.addAll(tpmWhiteListBaselines);
-        return Collections.unmodifiableList(baselines);
     }
 
     /**

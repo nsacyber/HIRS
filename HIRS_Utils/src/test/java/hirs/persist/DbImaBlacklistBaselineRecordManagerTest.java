@@ -3,7 +3,6 @@ package hirs.persist;
 import hirs.data.persist.baseline.Baseline;
 import hirs.data.persist.Digest;
 import hirs.data.persist.enums.DigestAlgorithm;
-import hirs.data.persist.ImaBlacklistRecord;
 import hirs.data.persist.baseline.ImaBlacklistBaseline;
 
 import java.io.UnsupportedEncodingException;

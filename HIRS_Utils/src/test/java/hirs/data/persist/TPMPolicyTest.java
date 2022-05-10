@@ -13,7 +13,6 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.HashSet;
 
-import hirs.tpm.TPMBaselineGenerator;
 import org.hibernate.Session;
 import org.testng.Assert;
 

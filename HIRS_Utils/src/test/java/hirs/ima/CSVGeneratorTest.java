@@ -2,7 +2,6 @@ package hirs.ima;
 
 import hirs.data.persist.DeviceInfoReport;
 import hirs.data.persist.Digest;
-import hirs.data.persist.ImaBlacklistRecord;
 import hirs.data.persist.ImaBlacklistRecordTest;
 import hirs.data.persist.TPMMeasurementRecord;
 import hirs.data.persist.baseline.IMABaselineRecord;
@@ -14,8 +13,6 @@ import hirs.data.persist.info.FirmwareInfo;
 import hirs.data.persist.info.HardwareInfo;
 import hirs.data.persist.info.OSInfo;
 import hirs.data.persist.info.TPMInfo;
-import hirs.tpm.TPMBaselineGenerator;
-import hirs.tpm.TPMBaselineGeneratorException;
 import org.apache.commons.codec.DecoderException;
 import org.apache.commons.codec.binary.Hex;
 import org.apache.commons.io.IOUtils;

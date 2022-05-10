@@ -5,14 +5,11 @@ import hirs.appraiser.Appraiser;
 import hirs.data.persist.Device;
 import hirs.data.persist.DeviceGroup;
 import hirs.data.persist.Policy;
-import hirs.data.persist.baseline.Baseline;
-import hirs.data.persist.baseline.HasBaselines;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.Transaction;
-import org.hibernate.criterion.Restrictions;
 import org.hibernate.query.Query;
 
 import javax.persistence.criteria.CriteriaBuilder;
@@ -20,7 +17,6 @@ import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Root;
 import java.io.Serializable;
-import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -97,36 +93,7 @@ public class DBPolicyManager extends DBManager<Policy> implements PolicyManager 
     public final List<Policy> getPolicyList(final Class<? extends Policy> clazz)
             throws PolicyManagerException {
         LOGGER.debug("getting policy list");
-        try {
-            return super.getList(clazz, Restrictions.isNull("archivedTime"));
-        } catch (DBManagerException e) {
-            throw new PolicyManagerException(e);
-        }
-    }
-
-    /**
-     * Return a list of all the policies that contain the given baseline.
-     *
-     * @param clazz the class of Policy to search
-     * @param baseline the baseline that should be a member of returned Policies
-     * @return the list of matching Policies
-     */
-    @Override
-    public List<Policy> getPoliciesContainingBaseline(
-            final Class<? extends Policy> clazz,
-            final Baseline baseline
-    ) {
-        List<Policy> matchingPolicies = new ArrayList<>();
-        List<Policy> policies = getPolicyList(clazz);
-        for (Policy policy : policies) {
-            if (policy instanceof HasBaselines) {
-                HasBaselines policyWithBaselines = (HasBaselines) policy;
-                if (policyWithBaselines.getBaselines().contains(baseline)) {
-                    matchingPolicies.add(policy);
-                }
-            }
-        }
-        return matchingPolicies;
+        return null;
     }
 
     /**
