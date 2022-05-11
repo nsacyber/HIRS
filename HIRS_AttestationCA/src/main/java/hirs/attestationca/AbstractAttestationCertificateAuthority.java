@@ -34,6 +34,7 @@ import hirs.persist.DeviceManager;
 import hirs.persist.ReferenceDigestManager;
 import hirs.persist.ReferenceEventManager;
 import hirs.persist.ReferenceManifestManager;
+import hirs.persist.TPM2ProvisionerState;
 import hirs.structs.converters.SimpleStructBuilder;
 import hirs.structs.converters.StructConverter;
 import hirs.structs.elements.aca.IdentityRequestEnvelope;

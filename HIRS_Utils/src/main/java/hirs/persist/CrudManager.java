@@ -10,7 +10,7 @@ import java.util.List;
  * Interface defining database CRUD operations (Create, Read, Update, Delete).
  * @param <T> the object type, T.
  */
-public interface CrudManager<T> extends OrderedListQuerier<AbstractEntity> {
+public interface CrudManager<T> extends OrderedListQuerier<T> {
 
     /**
      * Deletes all instances of the associated class.
@@ -79,7 +79,7 @@ public interface CrudManager<T> extends OrderedListQuerier<AbstractEntity> {
      * @throws DBManagerException if unable to search the database or recreate
      * the <code>Object</code>
      */
-    AbstractEntity get(Serializable id) throws DBManagerException;
+    T get(Serializable id) throws DBManagerException;
 
 //    /**
 //     * Retrieves the <code>Object</code> from the database. This searches the
