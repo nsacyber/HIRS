@@ -865,6 +865,8 @@ public abstract class AbstractAttestationCertificateAuthority
                                         defaultClientName),
                                 swidFile.toByteArray());
                         dbBaseRim.setDeviceName(dv.getNw().getHostname());
+                        dbBaseRim.setPlatformManufacturer(dv.getHw().getManufacturer());
+                        dbBaseRim.setPlatformModel(dv.getHw().getProductName());
                         this.referenceManifestManager.save(dbBaseRim);
                     } else {
                         LOG.info("Client provided Base RIM already loaded in database.");
