@@ -828,7 +828,6 @@ public abstract class AbstractAttestationCertificateAuthority
                         support.setFileName(String.format("%s_[%s].rimel", defaultClientName,
                                 support.getHexDecHash().substring(
                                         support.getHexDecHash().length() - NUM_OF_VARIABLES)));
-                        support.setDeviceName(dv.getNw().getHostname());
                         this.referenceManifestManager.save(support);
                     } else {
                         LOG.info("Client provided Support RIM already loaded in database.");
@@ -864,7 +863,6 @@ public abstract class AbstractAttestationCertificateAuthority
                                 String.format("%s.swidtag",
                                         defaultClientName),
                                 swidFile.toByteArray());
-                        dbBaseRim.setDeviceName(dv.getNw().getHostname());
                         dbBaseRim.setPlatformManufacturer(dv.getHw().getManufacturer());
                         dbBaseRim.setPlatformModel(dv.getHw().getProductName());
                         this.referenceManifestManager.save(dbBaseRim);
@@ -880,6 +878,7 @@ public abstract class AbstractAttestationCertificateAuthority
                             this.referenceManifestManager.update(dbBaseRim);
                         }
                     }
+                    tagId = dbBaseRim.getTagId();
                 } catch (IOException ioEx) {
                     LOG.error(ioEx);
                 }
@@ -916,6 +915,7 @@ public abstract class AbstractAttestationCertificateAuthority
                         dbSupport.setFileName(swid.getName());
                         dbSupport.setSwidTagVersion(dbBaseRim.getSwidTagVersion());
                         dbSupport.setTagId(dbBaseRim.getTagId());
+                        tagId = dbBaseRim.getTagId();
                         dbSupport.setSwidTagVersion(dbBaseRim.getSwidTagVersion());
                         dbSupport.setSwidVersion(dbBaseRim.getSwidVersion());
                         dbSupport.setSwidPatch(dbBaseRim.isSwidPatch());
@@ -962,23 +962,11 @@ public abstract class AbstractAttestationCertificateAuthority
                 measurements.setPlatformModel(dv.getHw().getProductName());
                 measurements.setTagId(tagId);
                 measurements.setDeviceName(dv.getNw().getHostname());
+                measurements.setDeviceSerialNumber(dv.getHw().getSystemSerialNumber());
                 if (baseRim != null) {
                     measurements.setAssociatedRim(baseRim.getAssociatedRim());
                 }
                 this.referenceManifestManager.save(measurements);
-
-                if (baseRim != null) {
-                    // pull the base versions of the swidtag and rimel and set the
-                    // event log hash for use during provision
-                    SupportReferenceManifest sBaseRim = SupportReferenceManifest
-                            .select(referenceManifestManager)
-                            .byEntityId(baseRim.getAssociatedRim())
-                            .getRIM();
-                    baseRim.setEventLogHash(temp.getHexDecHash());
-                    sBaseRim.setEventLogHash(temp.getHexDecHash());
-                    referenceManifestManager.update(baseRim);
-                    referenceManifestManager.update(sBaseRim);
-                }
             } catch (IOException ioEx) {
                 LOG.error(ioEx);
             }

@@ -72,13 +72,13 @@ public class SupportReferenceManifest extends ReferenceManifest {
         }
 
         /**
-         * Specify the device name that rims must have to be considered
+         * Specify the tag id that rims must have to be considered
          * as matching.
-         * @param deviceName string for the deviceName
+         * @param tagId string for the tag id
          * @return this instance
          */
-        public Selector byDeviceName(final String deviceName) {
-            setFieldValue("deviceName", deviceName);
+        public Selector byTagId(final String tagId) {
+            setFieldValue(TAG_ID, tagId);
             return this;
         }
 

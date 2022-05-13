@@ -96,13 +96,7 @@ public abstract class ReferenceManifest extends ArchivableEntity {
     private UUID associatedRim;
     @Column
     @JsonIgnore
-    private String deviceName;
-    @Column
-    @JsonIgnore
     private String hexDecHash = "";
-    @Column
-    @JsonIgnore
-    private String eventLogHash = "";
 
     /**
      * Default constructor necessary for Hibernate.
@@ -337,45 +331,12 @@ public abstract class ReferenceManifest extends ArchivableEntity {
     }
 
     /**
-     * Getter for the Device Name.
-     * @return string value of the device associated with this log.
-     */
-    public String getDeviceName() {
-        return deviceName;
-    }
-
-    /**
-     * Setter for the Device Name.
-     * @param deviceName new value to assign.
-     */
-    public void setDeviceName(final String deviceName) {
-        this.deviceName = deviceName;
-    }
-
-    /**
      * Getter for the Reference Integrity Manifest hash value.
      *
      * @return int representation of the hash value
      */
     public String getHexDecHash() {
         return hexDecHash;
-    }
-
-    /**
-     * Getter for the event log hash.
-     * @param eventLogHash hash value to store
-     */
-    public void setEventLogHash(final String eventLogHash) {
-        this.eventLogHash = eventLogHash;
-    }
-
-    /**
-     * Getter for the event log hash.
-     *
-     * @return int representation of the hash value
-     */
-    public String getEventLogHash() {
-        return eventLogHash;
     }
 
     /**

@@ -38,6 +38,10 @@ public abstract class ReferenceManifestSelector<T extends ReferenceManifest> {
      */
     public static final String PLATFORM_MODEL = "platformModel";
     /**
+     * String representing the database field for the model.
+     */
+    public static final String TAG_ID = "tagId";
+    /**
      * String representing the database field for the filename.
      */
     public static final String RIM_FILENAME_FIELD = "fileName";

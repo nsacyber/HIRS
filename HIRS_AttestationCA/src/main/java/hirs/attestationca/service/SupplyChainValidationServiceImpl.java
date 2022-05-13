@@ -384,7 +384,7 @@ public class SupplyChainValidationServiceImpl implements SupplyChainValidationSe
                 .getHardwareInfo().getManufacturer();
         String model = device.getDeviceInfo()
                 .getHardwareInfo().getProductName();
-        ReferenceManifest validationObject;
+        ArchivableEntity validationObject;
         Set<BaseReferenceManifest> baseReferenceManifests = null;
         BaseReferenceManifest baseReferenceManifest = null;
         ReferenceManifest supportReferenceManifest = null;
@@ -406,7 +406,9 @@ public class SupplyChainValidationServiceImpl implements SupplyChainValidationSe
             passed = false;
         } else {
             measurement = EventLogMeasurements.select(referenceManifestManager)
-                    .byHexDecHash(baseReferenceManifest.getEventLogHash()).getRIM();
+                    .byDeviceName(device.getDeviceInfo()
+                            .getNetworkInfo().getHostname())
+                    .getRIM();
 
             if (measurement == null) {
                 measurement = EventLogMeasurements.select(referenceManifestManager)
@@ -577,9 +579,8 @@ public class SupplyChainValidationServiceImpl implements SupplyChainValidationSe
                 }
             }
 
-            EventLogMeasurements eventLog = (EventLogMeasurements) measurement;
-            eventLog.setOverallValidationResult(fwStatus.getAppStatus());
-            this.referenceManifestManager.update(eventLog);
+            measurement.setOverallValidationResult(fwStatus.getAppStatus());
+            this.referenceManifestManager.update(measurement);
         } else {
             fwStatus = new AppraisalStatus(FAIL, String.format("Firmware Validation failed: "
                     + "%s for %s can not be found", failedString, manufacturer));
@@ -589,8 +590,14 @@ public class SupplyChainValidationServiceImpl implements SupplyChainValidationSe
             }
         }
 
-        return buildValidationRecord(SupplyChainValidation.ValidationType.FIRMWARE,
-                fwStatus.getAppStatus(), fwStatus.getMessage(), validationObject, level);
+        if (validationObject instanceof EventLogMeasurements) {
+            LOGGER.log(level, fwStatus.getMessage());
+            return new SupplyChainValidation(SupplyChainValidation.ValidationType.FIRMWARE,
+                    fwStatus.getAppStatus(), device, fwStatus.getMessage());
+        } else {
+            return buildValidationRecord(SupplyChainValidation.ValidationType.FIRMWARE,
+                    fwStatus.getAppStatus(), fwStatus.getMessage(), validationObject, level);
+        }
     }
 
     /**
@@ -633,7 +640,7 @@ public class SupplyChainValidationServiceImpl implements SupplyChainValidationSe
                 }
                 eventLog = EventLogMeasurements
                         .select(this.referenceManifestManager)
-                        .byHexDecHash(sRim.getEventLogHash()).getRIM();
+                        .byDeviceName(deviceName).getRIM();
 
                 if (sRim == null) {
                     fwStatus = new AppraisalStatus(FAIL,

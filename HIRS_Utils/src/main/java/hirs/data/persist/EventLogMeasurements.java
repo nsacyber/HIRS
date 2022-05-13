@@ -31,6 +31,12 @@ public class EventLogMeasurements extends ReferenceManifest {
     @Column
     @JsonIgnore
     private int pcrHash = 0;
+    @Column
+    @JsonIgnore
+    private String deviceName;
+    @Column
+    @JsonIgnore
+    private String deviceSerialNumber;
     @Enumerated(EnumType.STRING)
     private AppraisalStatus.Status overallValidationResult = AppraisalStatus.Status.FAIL;
 
@@ -211,6 +217,38 @@ public class EventLogMeasurements extends ReferenceManifest {
      */
     public void setOverallValidationResult(final AppraisalStatus.Status overallValidationResult) {
         this.overallValidationResult = overallValidationResult;
+    }
+
+    /**
+     * Getter for the Device Name.
+     * @return string value of the device associated with this log.
+     */
+    public String getDeviceName() {
+        return deviceName;
+    }
+
+    /**
+     * Setter for the Device Name.
+     * @param deviceName new value to assign.
+     */
+    public void setDeviceName(final String deviceName) {
+        this.deviceName = deviceName;
+    }
+
+    /**
+     * Getter for the Device Serial Number.
+     * @return string value of the device associated with this log.
+     */
+    public String getDeviceSerialNumber() {
+        return deviceSerialNumber;
+    }
+
+    /**
+     * Setter for the Device Serial Number.
+     * @param deviceSerialNumber new value to assign.
+     */
+    public void setDeviceSerialNumber(final String deviceSerialNumber) {
+        this.deviceSerialNumber = deviceName;
     }
 
     @Override
