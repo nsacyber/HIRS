@@ -14,7 +14,6 @@ import hirs.data.persist.SwidResource;
 import hirs.data.persist.certificate.CertificateAuthorityCredential;
 import hirs.persist.CertificateManager;
 import hirs.persist.DBManagerException;
-import hirs.persist.DeviceManager;
 import hirs.persist.ReferenceDigestManager;
 import hirs.persist.ReferenceEventManager;
 import hirs.persist.ReferenceManifestManager;
@@ -57,7 +56,6 @@ public class ReferenceManifestDetailsPageController
     private final ReferenceDigestManager referenceDigestManager;
     private final ReferenceEventManager referenceEventManager;
     private final CertificateManager certificateManager;
-    private final DeviceManager deviceManager;
     private static final ReferenceManifestValidator RIM_VALIDATOR
             = new ReferenceManifestValidator();
     private static final Logger LOGGER
@@ -76,14 +74,12 @@ public class ReferenceManifestDetailsPageController
             final ReferenceManifestManager referenceManifestManager,
             final ReferenceDigestManager referenceDigestManager,
             final ReferenceEventManager referenceEventManager,
-            final CertificateManager certificateManager,
-            final DeviceManager deviceManager) {
+            final CertificateManager certificateManager) {
         super(Page.RIM_DETAILS);
         this.referenceManifestManager = referenceManifestManager;
         this.referenceDigestManager = referenceDigestManager;
         this.referenceEventManager = referenceEventManager;
         this.certificateManager = certificateManager;
-        this.deviceManager = deviceManager;
     }
 
     /**
@@ -114,8 +110,7 @@ public class ReferenceManifestDetailsPageController
             try {
                 UUID uuid = UUID.fromString(params.getId());
                 data.putAll(getRimDetailInfo(uuid, referenceManifestManager,
-                        referenceDigestManager, referenceEventManager, certificateManager,
-                        deviceManager));
+                        referenceDigestManager, referenceEventManager, certificateManager));
             } catch (IllegalArgumentException iaEx) {
                 String uuidError = "Failed to parse ID from: " + params.getId();
                 messages.addError(uuidError);
@@ -146,7 +141,6 @@ public class ReferenceManifestDetailsPageController
      * @param referenceDigestManager   the reference digest manager.
      * @param referenceEventManager    the reference event manager.
      * @param certificateManager       the certificate manager.
-     * @param deviceManager            the device manager.
      * @return mapping of the RIM information from the database.
      * @throws java.io.IOException      error for reading file bytes.
      * @throws NoSuchAlgorithmException If an unknown Algorithm is encountered.
@@ -156,8 +150,7 @@ public class ReferenceManifestDetailsPageController
                                            final ReferenceManifestManager referenceManifestManager,
                                            final ReferenceDigestManager referenceDigestManager,
                                            final ReferenceEventManager referenceEventManager,
-                                           final CertificateManager certificateManager,
-                                           final DeviceManager deviceManager)
+                                           final CertificateManager certificateManager)
                                             throws IOException,
             CertificateException, NoSuchAlgorithmException {
         HashMap<String, Object> data = new HashMap<>();
@@ -182,9 +175,6 @@ public class ReferenceManifestDetailsPageController
         if (bios != null) {
             data.putAll(getMeasurementsRimInfo(bios, referenceManifestManager,
                     referenceDigestManager, referenceEventManager));
-        } else {
-            data.putAll(getMeasurementsRimInfo(bios, referenceManifestManager,
-                    referenceDigestManager, referenceEventManager));
         }
 
         return data;
@@ -199,14 +189,12 @@ public class ReferenceManifestDetailsPageController
      * @param certificateManager       the certificate manager.
      * @return mapping of the RIM information from the database.
      * @throws java.io.IOException      error for reading file bytes.
-     * @throws NoSuchAlgorithmException If an unknown Algorithm is encountered.
-     * @throws CertificateException     if a certificate doesn't parse.
      */
     private static HashMap<String, Object> getBaseRimInfo(
             final BaseReferenceManifest baseRim,
             final ReferenceManifestManager referenceManifestManager,
             final CertificateManager certificateManager)
-            throws IOException, CertificateException, NoSuchAlgorithmException {
+            throws IOException {
         HashMap<String, Object> data = new HashMap<>();
 
         // Software Identity
@@ -360,7 +348,6 @@ public class ReferenceManifestDetailsPageController
             final ReferenceManifestManager referenceManifestManager)
             throws IOException, CertificateException, NoSuchAlgorithmException {
         HashMap<String, Object> data = new HashMap<>();
-        EventLogMeasurements measurements = null;
 
         if (support.getAssociatedRim() == null) {
             Set<BaseReferenceManifest> baseRims = BaseReferenceManifest
@@ -383,10 +370,6 @@ public class ReferenceManifestDetailsPageController
         // testing this independent of the above if statement because the above
         // starts off checking if associated rim is null; that is irrelevant for
         // this statement.
-        // PROBLEM - the support rimel can't link to a specific measurement for this
-//        measurements = EventLogMeasurements.select(referenceManifestManager)
-//                .byDeviceName().getRIM();
-        measurements = null;
 
         if (support.isSwidPatch()) {
             data.put("swidPatch", "True");
@@ -406,28 +389,7 @@ public class ReferenceManifestDetailsPageController
         data.put("tagId", support.getTagId());
 
         TCGEventLog logProcessor = new TCGEventLog(support.getRimBytes());
-        LinkedList<TpmPcrEvent> tpmPcrEvents = new LinkedList<>();
-        TCGEventLog measurementsProcess;
-        if (measurements != null) {
-            measurementsProcess = new TCGEventLog((measurements.getRimBytes()));
-            HashMap<String, TpmPcrEvent> digestMap = new HashMap<>();
-            for (TpmPcrEvent tpe : logProcessor.getEventList()) {
-                digestMap.put(tpe.getEventDigestStr(), tpe);
-                if (!support.isSwidSupplemental()
-                        && !tpe.eventCompare(
-                        measurementsProcess.getEventByNumber(
-                                tpe.getEventNumber()))) {
-                    tpe.setError(true);
-                }
-                tpmPcrEvents.add(tpe);
-            }
-            for (TpmPcrEvent tpe : logProcessor.getEventList()) {
-                tpe.setError(!digestMap.containsKey(tpe.getEventDigestStr()));
-            }
-            data.put("events", tpmPcrEvents);
-        } else {
-            data.put("events", logProcessor.getEventList());
-        }
+        data.put("events", logProcessor.getEventList());
 
         getEventSummary(data, logProcessor.getEventList());
         return data;

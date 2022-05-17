@@ -593,7 +593,8 @@ public class SupplyChainValidationServiceImpl implements SupplyChainValidationSe
         if (validationObject instanceof EventLogMeasurements) {
             LOGGER.log(level, fwStatus.getMessage());
             return new SupplyChainValidation(SupplyChainValidation.ValidationType.FIRMWARE,
-                    fwStatus.getAppStatus(), device, fwStatus.getMessage());
+                    fwStatus.getAppStatus(), (ReferenceManifest) validationObject,
+                    fwStatus.getMessage());
         } else {
             return buildValidationRecord(SupplyChainValidation.ValidationType.FIRMWARE,
                     fwStatus.getAppStatus(), fwStatus.getMessage(), validationObject, level);

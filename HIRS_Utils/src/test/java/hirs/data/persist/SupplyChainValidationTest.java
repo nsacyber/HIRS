@@ -1,8 +1,8 @@
 package hirs.data.persist;
 
+import hirs.data.persist.certificate.CertificateTest;
 import org.testng.Assert;
 import org.testng.annotations.Test;
-import hirs.data.persist.certificate.CertificateTest;
 
 import java.io.IOException;
 import java.util.List;
@@ -55,10 +55,11 @@ public class SupplyChainValidationTest {
      */
     @Test(expectedExceptions = IllegalArgumentException.class)
     public void testNullCertificates() throws IOException {
+        ReferenceManifest entity = null;
         new SupplyChainValidation(
                 SupplyChainValidation.ValidationType.ENDORSEMENT_CREDENTIAL,
                 AppraisalStatus.Status.PASS,
-                null,
+                entity,
                 MESSAGE
         );
     }

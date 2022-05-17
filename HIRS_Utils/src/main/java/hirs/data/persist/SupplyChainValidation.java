@@ -107,17 +107,19 @@ public class SupplyChainValidation extends ArchivableEntity {
         }
 
         this.message = message;
-    }/**
+    }
+
+    /**
      * Construct a new SupplyChainValidation instance.
      *
      * @param validationType the type of validation this instance will represent; not null
      * @param validationResult whether the validation was successful or not
-     * @param device device associated with this SCV
+     * @param referenceManifest device associated with this SCV
      * @param message a related information or error message; may be null
      */
     public SupplyChainValidation(final ValidationType validationType,
                                  final AppraisalStatus.Status validationResult,
-                                 final Device device,
+                                 final ReferenceManifest referenceManifest,
                                  final String message) {
         Preconditions.checkArgument(
                 validationType != null,
@@ -125,14 +127,14 @@ public class SupplyChainValidation extends ArchivableEntity {
         );
 
         Preconditions.checkArgument(
-                device != null,
-                "Cannot construct a SupplyChainValidation with a null device"
+                referenceManifest != null,
+                "Cannot construct a SupplyChainValidation with a null referenceManifest"
         );
 
         this.validationType = validationType;
         this.validationResult = validationResult;
         this.certificatesUsed = new ArrayList<>();
-        this.rimId = device.getId().toString();
+        this.rimId = referenceManifest.getId().toString();
         this.message = message;
     }
 
