@@ -85,7 +85,6 @@ public class Commander {
             bEventIds = true;
         } else {
             switch (tempValue) {
-                case FULL_COMMAND_PREFIX + CONTENT_STRING:
                 case FULL_COMMAND_PREFIX + EVENTIDS_STRING:
                 case COMMAND_PREFIX + "e":
                     if (i < args.length - 1) {  // Check for a filter following the -e
@@ -103,6 +102,7 @@ public class Commander {
                     }
                     bEventIds = true;
                     break;
+                case FULL_COMMAND_PREFIX + CONTENT_STRING:
                 case COMMAND_PREFIX + "ec":
                     bContentHex = true;
                     break;
@@ -394,16 +394,16 @@ public class Commander {
         }
         sb.append("\nTCG Log Parser ");
         if (os.compareToIgnoreCase("linux") == 0) {
-            sb.append("Usage: elt [OPTION]... [OPTION]...\n");
+            sb.append("Usage: elt [OPTION]... [OPTION]... and Options\n");
         } else {
             sb.append("Usage: ./elt.ps1 [OPTION]... [OPTION]...\n");
         }
         sb.append("\nOptions:\n"
-                + "  -f\t--file\t\t Use specific Event Log file. "
+                + "  -f\t--file\t\t Use a specific Event Log file. "
                 + "\n\t\t\t example: elt [-f|--file] /path/to/eventlogfile\n"
-                + "  -e\t--event\t\t Display all event detials for a specific event"
+                + "  -e\t--event\t\t Display all event details for a specific event"
                 + "\n\t\t\t example: elt [-e|--event] 30"
-                + "\n\t\t\t no event specified will default to all events"
+                + "\n\t\t\t No event specified will default to all events"
                 + "\n\t\t\t example: elt [-e|--event]\n"
                 + "  -ec\t--contenthex\t Include event content in hex format."
                 + " Only valid with -e option.\n"
@@ -413,10 +413,9 @@ public class Commander {
                 + " file that do not match."
                 + "\n\t\t\t example: elt [-d|--diff] /path/to/eventlogfile1 "
                 + "/path/to/eventlogfile2\n"
-                + "  -o\t--output\t Redirect to a file in the current working directory unless a"
-                + " path is specified. "
+                + "  -o\t--output\t Redirect output to a specified path/file."
                 + "\n\t\t\t example: elt [-o|--output] /path/to/outputfile\n"
-                + "  -p\t--pcr\t\t Display all expected PCR values calculated from the TCG Log"
+                + "  -p\t--pcr\t\t Display all expected PCR values calculated from the TCG Log "
                 + "(for PCR Replay)."
                 + "\n\t\t\t Specify a PCR number to filter on a single PCR."
                 + "\n\t\t\t example: elt [-p|--pcr] 5\n"
@@ -424,13 +423,11 @@ public class Commander {
                 + "  -x\t--hex\t\t Event only (no content) in hex format."
                 + "\n\n");
         if (os.compareToIgnoreCase("linux") == 0) {
-        sb.append("\nIf no file parameter is provided then the standard Linux TCGEventLog path "
-                + "\n(/sys/kernel/security/tpm0/binary_bios_measurements) is used."
-                + "\nIf no parameter is given then the -e option will be used as default."
-                + "\n Note admin privileges may be required (e.g. use sudo when running the "
-                + " script).\n"
-                + "All OPTIONS must be seperated by a space delimiter, no concatenation"
-                + " of OPTIONS is currently supported.\n"
+        sb.append("\nTo run this tool it may require root privileges due to the permissions set "
+                + "on the event log file. \nRun without options to display all event details for "
+                + "/sys/kernel/security/tpm0/binary_bios_measurements. "
+                + "\nAll options must be separated by a space delimiter as concatenation of "
+                + "options is currently not supported.\n"
                 );
         } else { //windows
             sb.append("\nIf no file parameter is provided then the "
@@ -438,7 +435,7 @@ public class Commander {
                 + "\nIf no parameter is given then the -e option will be used as default."
                 + "\n Note admin privileges may be required (e.g. run as Administrator).\n"
                 + "All OPTIONS must be seperated by a space delimiter, "
-                +  "no concatenation of OPTIONS is currently supported.\n"
+                +  "no concatenation of options is not supported.\n"
                 );
         }
         System.out.println(sb.toString());

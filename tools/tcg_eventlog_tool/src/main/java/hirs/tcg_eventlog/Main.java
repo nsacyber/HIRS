@@ -243,7 +243,8 @@ final class Main {
             ArrayList<TpmPcrEvent> errors = diffEventLogs(eventLog1.getEventList(),
                     eventLog2.getEventList(), commander.getPcrNumber());
             if (errors.isEmpty() && !bHexFlag) {
-                sb.append("\nEvent Log " + logFileName1 + " MATCHED EventLog " + logFileName2);
+                sb.append("\nEvent Log " + logFileName1 + " MATCHED EventLog " + logFileName2
+                    + "\n");
             } else {
                 if (!errors.isEmpty() && !bHexFlag) {
                     sb.append("\nEvent Log " + logFileName1
