@@ -28,7 +28,7 @@ import java.util.Map;
  * archive, and delete operations for managing objects in a database.
  *
  */
-public class DBManager<T> extends AbstractDbManager<AbstractEntity> {
+public class DBManager<T> extends AbstractDbManager<T> {
     private static final Logger LOGGER = LogManager.getLogger(DBManager.class);
 
     /**
@@ -442,7 +442,7 @@ public class DBManager<T> extends AbstractDbManager<AbstractEntity> {
      * @throws DBManagerException if unable to find the baseline or delete it
      * from the database
      */
-    public final boolean delete(final Serializable id)
+    public final boolean deleteById(final Serializable id)
             throws DBManagerException {
         return retryTemplate.execute(new RetryCallback<Boolean, DBManagerException>() {
             @Override

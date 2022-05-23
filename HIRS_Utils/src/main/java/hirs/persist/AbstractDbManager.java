@@ -42,7 +42,7 @@ import static org.hibernate.criterion.Restrictions.sqlRestriction;
  *
  * @param <T> type of objects to manage by this manager
  */
-public abstract class AbstractDbManager<T> implements CrudManager<ArchivableEntity> {
+public abstract class AbstractDbManager<T> implements CrudManager<T> {
 
     private static final Logger LOGGER = LogManager.getLogger(AbstractDbManager.class);
     private static final int MAX_CLASS_CACHE_ENTRIES = 500;
