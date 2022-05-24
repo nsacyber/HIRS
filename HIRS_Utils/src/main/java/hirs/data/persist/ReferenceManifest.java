@@ -126,13 +126,13 @@ public abstract class ReferenceManifest extends ArchivableEntity {
 
         this.rimBytes = rimBytes.clone();
         MessageDigest digest = null;
-        this.hexDecHash = "";
         try {
             digest = MessageDigest.getInstance("SHA-256");
-            this.hexDecHash = Hex.encodeHexString(
-                    digest.digest(rimBytes));
+            setHexDecHash(Hex.encodeHexString(
+                    digest.digest(rimBytes)));
         } catch (NoSuchAlgorithmException noSaEx) {
             LOGGER.error(noSaEx);
+            setHexDecHash("");
         }
     }
 
@@ -337,6 +337,15 @@ public abstract class ReferenceManifest extends ArchivableEntity {
      */
     public String getHexDecHash() {
         return hexDecHash;
+    }
+
+    /**
+     * Setter for the Reference Integrity Manifest hash value.
+     *
+     * @param hexDecHash String for the hex
+     */
+    public void setHexDecHash(final String hexDecHash) {
+        this.hexDecHash = hexDecHash;
     }
 
     /**

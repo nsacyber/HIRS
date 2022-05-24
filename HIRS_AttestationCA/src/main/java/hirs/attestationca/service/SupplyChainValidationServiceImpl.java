@@ -425,6 +425,7 @@ public class SupplyChainValidationServiceImpl implements SupplyChainValidationSe
         if (passed) {
             List<SwidResource> resources =
                     ((BaseReferenceManifest) baseReferenceManifest).parseResource();
+            LOGGER.error("resources size = " + resources.size()); // TODO
             fwStatus = new AppraisalStatus(PASS,
                     SupplyChainCredentialValidator.FIRMWARE_VALID);
 
@@ -463,6 +464,7 @@ public class SupplyChainValidationServiceImpl implements SupplyChainValidationSe
             for (SwidResource swidRes : resources) {
                 supportReferenceManifest = SupportReferenceManifest.select(referenceManifestManager)
                         .byHexDecHash(swidRes.getHashValue()).getRIM();
+                LOGGER.error(swidRes.getHashValue()); //TDOD
                 if (supportReferenceManifest != null) {
                     // Removed the filename check from this if statement
                     referenceManifestValidator.validateSupportRimHash(
