@@ -1,22 +1,36 @@
 package hirs.persist;
 
+import hirs.FilteredRecordsList;
 import hirs.data.persist.certificate.Certificate;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.hibernate.SessionFactory;
+import org.hibernate.StaleObjectStateException;
+import org.hibernate.criterion.Criterion;
+import org.hibernate.exception.LockAcquisitionException;
+import org.springframework.retry.RetryCallback;
+import org.springframework.retry.RetryContext;
+import org.springframework.retry.backoff.FixedBackOffPolicy;
+import org.springframework.retry.policy.SimpleRetryPolicy;
+import org.springframework.retry.support.RetryTemplate;
 
-import java.util.Collections;
+import java.io.Serializable;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 /**
  * This class is used to persist and retrieve {@link Certificate}s into and from a database.
  */
-public class DBCertificateManager extends DBManager<Certificate>
+public class DBCertificateManager extends AbstractDbManager<Certificate>
         implements CertificateManager {
 
     private static final Logger LOGGER = LogManager.getLogger(DBCertificateManager.class);
+
+    // structure for retrying methods in the database
+    private RetryTemplate retryTemplate;
 
     /**
      * Creates a new {@link DBCertificateManager} that uses the default
@@ -51,11 +65,11 @@ public class DBCertificateManager extends DBManager<Certificate>
     @Override
     @SuppressWarnings("unchecked")
     public <T extends Certificate> Set<T> get(final CertificateSelector certificateSelector) {
-        return new HashSet<>(
-                (List<T>) getWithCriteria(
-                    certificateSelector.getCertificateClass(),
-                    Collections.singleton(certificateSelector.getCriterion())
-                )
+        return new HashSet<>(0
+//                (List<T>) getWithCriteria(
+//                    certificateSelector.getCertificateClass(),
+//                    Collections.singleton(certificateSelector.getCriterion())
+//                )
         );
     }
 
@@ -67,5 +81,165 @@ public class DBCertificateManager extends DBManager<Certificate>
      */
     public boolean deleteCertificate(final Certificate certificate) {
         return delete(certificate);
+    }
+
+    /**
+     * Saves the <code>Object</code> in the database. This creates a new
+     * database session and saves the object. If the <code>Object</code> had
+     * previously been saved then a <code>DBManagerException</code> is thrown.
+     *
+     * @param object object to save
+     * @return reference to saved object
+     * @throws DBManagerException if object has previously been saved or an
+     * error occurs while trying to save it to the database
+     */
+    @Override
+    public Certificate save(final Certificate object) throws DBManagerException {
+        return retryTemplate.execute(new RetryCallback<Certificate, DBManagerException>() {
+            @Override
+            public Certificate doWithRetry(final RetryContext context) throws DBManagerException {
+                return doSave(object);
+            }
+        });
+    }
+
+    /**
+     * Deletes the object from the database. This removes all of the database
+     * entries that stored information with regards to the this object.
+     * <p>
+     * If the object is referenced by any other tables then this will throw a
+     * <code>DBManagerException</code>.
+     *
+     * @param object instance of the object to delete
+     * @return true if successfully found and deleted the object
+     * @throws DBManagerException if unable to find the baseline or delete it
+     * from the database
+     */
+    public final boolean delete(final Certificate object) throws DBManagerException {
+        return retryTemplate.execute(new RetryCallback<Boolean, DBManagerException>() {
+            @Override
+            public Boolean doWithRetry(final RetryContext context) throws DBManagerException {
+                return doDelete(object);
+            }
+        });
+    }
+
+    /**
+     * Updates an object stored in the database. This updates the database
+     * entries to reflect the new values that should be set.
+     *
+     * @param object object to update
+     * @throws DBManagerException if an error occurs while trying to save it to the database
+     */
+    public final void update(final Certificate object) throws DBManagerException {
+        retryTemplate.execute(new RetryCallback<Void, DBManagerException>() {
+            @Override
+            public Void doWithRetry(final RetryContext context) throws DBManagerException {
+                doUpdate(object);
+                return null;
+            }
+        });
+    }
+
+    @Override
+    public Certificate get(String name) throws DBManagerException {
+        return null;
+    }
+
+    /**
+     * Retrieves the <code>Object</code> from the database. This searches the
+     * database for an entry whose name matches <code>name</code>. It then
+     * reconstructs the <code>Object</code> from the database entry.
+     *
+     * @param id id of the object
+     * @return object if found, otherwise null.
+     * @throws DBManagerException if unable to search the database or recreate
+     * the <code>Object</code>
+     */
+    public final Certificate get(final Serializable id) throws DBManagerException {
+        return retryTemplate.execute(new RetryCallback<Certificate, DBManagerException>() {
+            @Override
+            public Certificate doWithRetry(final RetryContext context) throws DBManagerException {
+                return doGet(id);
+            }
+        });
+    }
+
+    @Override
+    public List<Certificate> getList(Certificate object) throws DBManagerException {
+        return null;
+    }
+
+    @Override
+    public List<Certificate> getList(Certificate object, Criterion additionalRestriction) throws DBManagerException {
+        return null;
+    }
+
+    @Override
+    public boolean deleteById(Serializable id) throws DBManagerException {
+        return false;
+    }
+
+    @Override
+    public boolean delete(Class<Certificate> entity) throws DBManagerException {
+        return false;
+    }
+
+    @Override
+    public int deleteAll() {
+        return 0;
+    }
+
+    @Override
+    public boolean archive(String name) throws DBManagerException {
+        return false;
+    }
+
+    @Override
+    public FilteredRecordsList getOrderedList(
+            Class<Certificate> clazz,
+            String columnToOrder,
+            boolean ascending,
+            int firstResult,
+            int maxResults,
+            String search,
+            Map<String, Boolean> searchableColumns) throws DBManagerException {
+        return null;
+    }
+
+    @Override
+    public FilteredRecordsList<Certificate> getOrderedList(
+            Class<Certificate> clazz,
+            String columnToOrder,
+            boolean ascending, int firstResult,
+            int maxResults, String search,
+            Map<String, Boolean> searchableColumns, CriteriaModifier criteriaModifier) throws DBManagerException {
+        return null;
+    }
+
+    /**
+     * Set the parameters used to retry database transactions.  The retry template will
+     * retry transactions that throw a LockAcquisitionException or StaleObjectStateException.
+     * @param  maxTransactionRetryAttempts the maximum number of database transaction attempts
+     * @param retryWaitTimeMilliseconds the transaction retry wait time in milliseconds
+     */
+    public final void setRetryTemplate(final int maxTransactionRetryAttempts,
+                                       final long retryWaitTimeMilliseconds) {
+        Map<Class<? extends Throwable>, Boolean> exceptionsToRetry = new HashMap<>();
+        exceptionsToRetry.put(LockAcquisitionException.class, true);
+        exceptionsToRetry.put(StaleObjectStateException.class, true);
+
+        SimpleRetryPolicy retryPolicy = new SimpleRetryPolicy(
+                maxTransactionRetryAttempts,
+                exceptionsToRetry,
+                true,
+                false
+        );
+
+        FixedBackOffPolicy backoffPolicy = new FixedBackOffPolicy();
+        backoffPolicy.setBackOffPeriod(retryWaitTimeMilliseconds);
+        this.retryTemplate = new RetryTemplate();
+        this.retryTemplate.setRetryPolicy(retryPolicy);
+        this.retryTemplate.setBackOffPolicy(backoffPolicy);
     }
 }

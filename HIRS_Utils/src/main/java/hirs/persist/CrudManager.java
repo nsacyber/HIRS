@@ -1,6 +1,5 @@
 package hirs.persist;
 
-import hirs.data.persist.AbstractEntity;
 import org.hibernate.criterion.Criterion;
 
 import java.io.Serializable;
@@ -10,7 +9,7 @@ import java.util.List;
  * Interface defining database CRUD operations (Create, Read, Update, Delete).
  * @param <T> the object type, T.
  */
-public interface CrudManager<T extends Serializable> extends OrderedListQuerier<T> {
+public interface CrudManager<T> extends OrderedListQuerier<T> {
 
     /**
      *
@@ -27,7 +26,7 @@ public interface CrudManager<T extends Serializable> extends OrderedListQuerier<
      * @throws DBManagerException if object has previously been saved or an
      * error occurs while trying to save it to the database
      */
-    AbstractEntity save(AbstractEntity object) throws DBManagerException;
+    T save(T object) throws DBManagerException;
 
     /**
      * Updates an object stored in the database. This updates the database
@@ -36,7 +35,7 @@ public interface CrudManager<T extends Serializable> extends OrderedListQuerier<
      * @param object object to update
      * @throws DBManagerException if an error occurs while trying to save it to the database
      */
-    void update(AbstractEntity object) throws DBManagerException;
+    void update(T object) throws DBManagerException;
 
     /**
      * Retrieves the <code>Object</code> from the database. This searches the
@@ -48,7 +47,7 @@ public interface CrudManager<T extends Serializable> extends OrderedListQuerier<
      * @throws DBManagerException if unable to search the database or recreate
      * the <code>Object</code>
      */
-    AbstractEntity get(String name) throws DBManagerException;
+    T get(String name) throws DBManagerException;
 
 
     /**
@@ -72,11 +71,12 @@ public interface CrudManager<T extends Serializable> extends OrderedListQuerier<
      * managed. This class argument allows the caller to limit which types of
      * <code>T</code> should be returned.
      *
+     * @param object class type of <code>T</code>s to search for (may be null to
+     * use Class<T>)
      * @return list of <code>T</code> names
      * @throws DBManagerException if unable to search the database
      */
-    List<T> getList()
-                    throws DBManagerException;
+    List<T> getList(T object) throws DBManagerException;
 
     /**
      * Returns a list of all <code>T</code>s of type <code>clazz</code> in the database, with an
@@ -86,11 +86,13 @@ public interface CrudManager<T extends Serializable> extends OrderedListQuerier<
      * managed. This class argument allows the caller to limit which types of
      * <code>T</code> should be returned.
      *
+     * @param object class type of <code>T</code>s to search for (may be null to
+     * use Class<T>)
      * @param additionalRestriction - an added Criterion to use in the query, null for none
      * @return list of <code>T</code> names
      * @throws DBManagerException if unable to search the database
      */
-    List<AbstractEntity> getList(Criterion additionalRestriction)
+    List<T> getList(T object, Criterion additionalRestriction)
                             throws DBManagerException;
 
     /**
@@ -119,7 +121,7 @@ public interface CrudManager<T extends Serializable> extends OrderedListQuerier<
      * @return true if successfully found and deleted the object
      * @throws DBManagerException if unable to delete the object from the database
      */
-    boolean delete(T entity) throws DBManagerException;
+    boolean delete(Class<T> entity) throws DBManagerException;
 
     /**
      * Deletes all instances of the associated class.

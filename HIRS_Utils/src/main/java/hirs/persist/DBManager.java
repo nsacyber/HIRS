@@ -1,7 +1,6 @@
 package hirs.persist;
 
 import hirs.FilteredRecordsList;
-import hirs.data.persist.AbstractEntity;
 import hirs.data.persist.ArchivableEntity;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -66,7 +65,7 @@ public class DBManager<T> extends AbstractDbManager<T> {
      * @param sessionFactory the session factory to use to connect to the database
      * unfortunately class type of T cannot be determined using only T
      */
-    public DBManager(final AbstractEntity clazz, final SessionFactory sessionFactory) {
+    public DBManager(final Class<T> clazz, final SessionFactory sessionFactory) {
         super(clazz, sessionFactory);
         setRetryTemplate(DEFAULT_MAX_RETRY_ATTEMPTS, DEFAULT_RETRY_WAIT_TIME_MS);
     }
@@ -115,12 +114,12 @@ public class DBManager<T> extends AbstractDbManager<T> {
      * @throws DBManagerException if an error is encountered while performing the query or creating
      * the result objects
      */
-    public final List<hirs.data.persist.ArchivableEntity> getWithCriteria(final Collection<Criterion> criteriaCollection)
+    public final List<T> getWithCriteria(final Collection<Criterion> criteriaCollection)
             throws DBManagerException {
         return retryTemplate.execute(
-            new RetryCallback<List<AbstractEntity>, DBManagerException>() {
+            new RetryCallback<List<T>, DBManagerException>() {
                 @Override
-                public List<AbstractEntity> doWithRetry(final RetryContext context)
+                public List<T> doWithRetry(final RetryContext context)
                         throws DBManagerException {
                     return doGetWithCriteria(criteriaCollection);
                 }
@@ -138,13 +137,13 @@ public class DBManager<T> extends AbstractDbManager<T> {
      * @throws DBManagerException if an error is encountered while performing the query or creating
      * the result objects
      */
-    protected final List<hirs.data.persist.ArchivableEntity> getWithCriteria(
-            final Class<hirs.data.persist.ArchivableEntity> clazzToGet,
+    protected final List<T> getWithCriteria(
+            final Class<T> clazzToGet,
             final Collection<Criterion> criteriaCollection) throws DBManagerException {
         return retryTemplate.execute(
-                new RetryCallback<List<AbstractEntity>, DBManagerException>() {
+                new RetryCallback<List<T>, DBManagerException>() {
                     @Override
-                    public List<hirs.data.persist.ArchivableEntity> doWithRetry(final RetryContext context)
+                    public List<T> doWithRetry(final RetryContext context)
                             throws DBManagerException {
                         return doGetWithCriteria(clazzToGet, criteriaCollection);
                     }
@@ -178,10 +177,10 @@ public class DBManager<T> extends AbstractDbManager<T> {
      * @throws DBManagerException if object has previously been saved or an
      * error occurs while trying to save it to the database
      */
-    public final AbstractEntity save(final AbstractEntity object) throws DBManagerException {
-        return retryTemplate.execute(new RetryCallback<AbstractEntity, DBManagerException>() {
+    public final T save(final T object) throws DBManagerException {
+        return retryTemplate.execute(new RetryCallback<T, DBManagerException>() {
             @Override
-            public AbstractEntity doWithRetry(final RetryContext context) throws DBManagerException {
+            public T doWithRetry(final RetryContext context) throws DBManagerException {
                 return doSave(object);
             }
         });
@@ -194,7 +193,7 @@ public class DBManager<T> extends AbstractDbManager<T> {
      * @param object object to update
      * @throws DBManagerException if an error occurs while trying to save it to the database
      */
-    public final void update(final AbstractEntity object) throws DBManagerException {
+    public final void update(final T object) throws DBManagerException {
         retryTemplate.execute(new RetryCallback<Void, DBManagerException>() {
             @Override
             public Void doWithRetry(final RetryContext context) throws DBManagerException {
@@ -214,10 +213,10 @@ public class DBManager<T> extends AbstractDbManager<T> {
      * @throws DBManagerException if unable to search the database or recreate
      * the <code>Object</code>
      */
-    public final ArchivableEntity get(final String name) throws DBManagerException {
-        return retryTemplate.execute(new RetryCallback<ArchivableEntity, DBManagerException>() {
+    public final T get(final String name) throws DBManagerException {
+        return retryTemplate.execute(new RetryCallback<T, DBManagerException>() {
             @Override
-            public ArchivableEntity doWithRetry(final RetryContext context) throws DBManagerException {
+            public T doWithRetry(final RetryContext context) throws DBManagerException {
                 return doGet(name);
             }
         });
@@ -233,10 +232,10 @@ public class DBManager<T> extends AbstractDbManager<T> {
      * @throws DBManagerException if unable to search the database or recreate
      * the <code>Object</code>
      */
-    public final AbstractEntity get(final Serializable id) throws DBManagerException {
-        return retryTemplate.execute(new RetryCallback<AbstractEntity, DBManagerException>() {
+    public final T get(final Serializable id) throws DBManagerException {
+        return retryTemplate.execute(new RetryCallback<T, DBManagerException>() {
             @Override
-            public AbstractEntity doWithRetry(final RetryContext context) throws DBManagerException {
+            public T doWithRetry(final RetryContext context) throws DBManagerException {
                 return doGet(id);
             }
         });
@@ -257,12 +256,13 @@ public class DBManager<T> extends AbstractDbManager<T> {
      * @throws DBManagerException if unable to search the database or recreate
      * the <code>Object</code>
      */
-    public final AbstractEntity getAndLoadLazyFields(final String name, final boolean recurse)
+    public final T getAndLoadLazyFields(final String name, final boolean recurse)
             throws DBManagerException {
-        return retryTemplate.execute(new RetryCallback<AbstractEntity, DBManagerException>() {
+        return retryTemplate.execute(new RetryCallback<T, DBManagerException>() {
             @Override
-            public AbstractEntity doWithRetry(final RetryContext context) throws DBManagerException {
-                return doGetAndLoadLazyFields(name, recurse);
+            public T doWithRetry(final RetryContext context) throws DBManagerException {
+                return null;
+//                return doGetAndLoadLazyFields(name, recurse);
             }
         });
     }
@@ -282,9 +282,10 @@ public class DBManager<T> extends AbstractDbManager<T> {
      * @throws DBManagerException if unable to search the database or recreate
      * the <code>Object</code>
      */
-    public final AbstractEntity getAndLoadLazyFields(final Serializable id, final boolean recurse)
+    public final T getAndLoadLazyFields(final Serializable id, final boolean recurse)
             throws DBManagerException {
-        return doGetAndLoadLazyFields(id, recurse);
+        return null;
+//        return doGetAndLoadLazyFields(id, recurse);
     }
 
     /**
@@ -300,7 +301,7 @@ public class DBManager<T> extends AbstractDbManager<T> {
      * @return list of <code>T</code> names
      * @throws DBManagerException if unable to search the database
      */
-    public List<AbstractEntity> getList(final AbstractEntity entity)
+    public List<T> getList(final T entity)
             throws DBManagerException {
         return getList(entity, null);
     }
@@ -320,11 +321,11 @@ public class DBManager<T> extends AbstractDbManager<T> {
      * @throws DBManagerException if unable to search the database
      */
     @Override
-    public List<AbstractEntity> getList(final AbstractEntity entity, final Criterion additionalRestriction)
+    public List<T> getList(final T entity, final Criterion additionalRestriction)
             throws DBManagerException {
-        return retryTemplate.execute(new RetryCallback<List<AbstractEntity>, DBManagerException>() {
+        return retryTemplate.execute(new RetryCallback<List<T>, DBManagerException>() {
             @Override
-            public List<AbstractEntity> doWithRetry(final RetryContext context) throws DBManagerException {
+            public List<T> doWithRetry(final RetryContext context) throws DBManagerException {
                 return doGetList(entity, additionalRestriction);
             }
         });
@@ -350,7 +351,7 @@ public class DBManager<T> extends AbstractDbManager<T> {
      */
     @Override
     public final FilteredRecordsList getOrderedList(
-            final AbstractEntity clazz, final String columnToOrder,
+            final Class<T> clazz, final String columnToOrder,
             final boolean ascending, final int firstResult,
             final int maxResults, final String search,
             final Map<String, Boolean> searchableColumns)
@@ -388,17 +389,17 @@ public class DBManager<T> extends AbstractDbManager<T> {
      * @throws DBManagerException if unable to create the list
      */
     @SuppressWarnings("checkstyle:parameternumber")
-    public final FilteredRecordsList<AbstractEntity> getOrderedList(
-            final AbstractEntity clazz, final String columnToOrder,
+    public final FilteredRecordsList<T> getOrderedList(
+            final Class<T> clazz, final String columnToOrder,
             final boolean ascending, final int firstResult,
             final int maxResults, final String search,
             final Map<String, Boolean> searchableColumns, final CriteriaModifier criteriaModifier)
             throws DBManagerException {
 
         return retryTemplate.execute(
-                new RetryCallback<FilteredRecordsList<AbstractEntity>, DBManagerException>() {
+                new RetryCallback<FilteredRecordsList<T>, DBManagerException>() {
                     @Override
-                    public FilteredRecordsList<AbstractEntity> doWithRetry(final RetryContext context)
+                    public FilteredRecordsList<T> doWithRetry(final RetryContext context)
                             throws DBManagerException {
                         return doGetOrderedList(clazz, columnToOrder, ascending,
                                 firstResult, maxResults,
@@ -419,7 +420,6 @@ public class DBManager<T> extends AbstractDbManager<T> {
      * @throws DBManagerException if unable to find the baseline or delete it
      * from the database
      */
-
     public final boolean delete(final String name) throws DBManagerException {
         return retryTemplate.execute(new RetryCallback<Boolean, DBManagerException>() {
             @Override
@@ -464,7 +464,7 @@ public class DBManager<T> extends AbstractDbManager<T> {
      * @throws DBManagerException if unable to delete the object from the database
      */
     @Override
-    public final boolean delete(final AbstractEntity object) throws DBManagerException {
+    public final boolean delete(final Class<T> object) throws DBManagerException {
         return retryTemplate.execute(new RetryCallback<Boolean, DBManagerException>() {
             @Override
             public Boolean doWithRetry(final RetryContext context) throws DBManagerException {
@@ -489,7 +489,7 @@ public class DBManager<T> extends AbstractDbManager<T> {
             return false;
         }
 
-        ArchivableEntity target = get(name);
+        T target = get(name);
         if (target == null) {
             return false;
         }

@@ -9,7 +9,6 @@ import hirs.persist.DBDeviceGroupManager;
 import hirs.persist.DBDeviceManager;
 import hirs.persist.DBManager;
 import hirs.persist.DBPolicyManager;
-import hirs.persist.DBReferenceDigestManager;
 import hirs.persist.DBReferenceEventManager;
 import hirs.persist.DBReferenceManifestManager;
 import hirs.persist.DeviceGroupManager;

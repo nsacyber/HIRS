@@ -113,7 +113,7 @@ public class PersistenceConfiguration {
     @Bean
     public CertificateManager certificateManager() {
         DBCertificateManager manager = new DBCertificateManager(sessionFactory.getObject());
-        setDbManagerRetrySettings(manager);
+        manager.setRetryTemplate(maxTransactionRetryAttempts, retryWaitTimeMilliseconds);
         return manager;
     }
 
@@ -126,19 +126,6 @@ public class PersistenceConfiguration {
     public ReferenceManifestManager referenceManifestManager() {
         DBReferenceManifestManager manager
                 = new DBReferenceManifestManager(sessionFactory.getObject());
-        setDbManagerRetrySettings(manager);
-        return manager;
-    }
-
-    /**
-     * Creates a {@link ReferenceDigestManager} ready to use.
-     *
-     * @return {@link ReferenceDigestManager}
-     */
-    @Bean
-    public ReferenceDigestManager referenceDigestManager() {
-        DBReferenceDigestManager manager
-                = new DBReferenceDigestManager(sessionFactory.getObject());
         setDbManagerRetrySettings(manager);
         return manager;
     }

@@ -13,7 +13,6 @@ import hirs.data.persist.SupportReferenceManifest;
 import hirs.data.persist.certificate.Certificate;
 import hirs.persist.CriteriaModifier;
 import hirs.persist.DBManagerException;
-import hirs.persist.DBReferenceDigestManager;
 import hirs.persist.DBReferenceEventManager;
 import hirs.persist.DBReferenceManifestManager;
 import hirs.persist.ReferenceDigestManager;

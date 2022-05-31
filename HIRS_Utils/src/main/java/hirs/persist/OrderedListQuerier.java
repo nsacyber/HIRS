@@ -30,7 +30,7 @@ public interface OrderedListQuerier<T> {
      * @throws DBManagerException if unable to create the list
      */
     FilteredRecordsList getOrderedList(
-            Class<? extends T> clazz, String columnToOrder,
+            Class<T> clazz, String columnToOrder,
             boolean ascending, int firstResult,
             int maxResults, String search,
             Map<String, Boolean> searchableColumns)
@@ -59,7 +59,7 @@ public interface OrderedListQuerier<T> {
      */
     @SuppressWarnings("checkstyle:parameternumber")
     FilteredRecordsList<T> getOrderedList(
-            Class<? extends T> clazz, String columnToOrder,
+            Class<T> clazz, String columnToOrder,
             boolean ascending, int firstResult,
             int maxResults, String search,
             Map<String, Boolean> searchableColumns, CriteriaModifier criteriaModifier)
