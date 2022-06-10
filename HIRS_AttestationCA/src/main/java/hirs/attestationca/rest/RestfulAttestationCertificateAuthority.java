@@ -4,7 +4,6 @@ import hirs.attestationca.AbstractAttestationCertificateAuthority;
 import hirs.attestationca.service.SupplyChainValidationService;
 import hirs.data.service.DeviceRegister;
 import hirs.persist.CertificateManager;
-import hirs.persist.DBManager;
 import hirs.persist.DeviceManager;
 import hirs.persist.ReferenceDigestManager;
 import hirs.persist.ReferenceEventManager;
@@ -42,7 +41,6 @@ public class RestfulAttestationCertificateAuthority
      * @param deviceRegister the device register
      * @param validDays the number of days issued certs are valid
      * @param deviceManager the device manager
-     * @param tpm2ProvisionerStateDBManager the DBManager for persisting provisioner state
      * @param referenceDigestManager the reference digest manager
      * @param referenceEventManager the reference event manager
      */
@@ -56,14 +54,13 @@ public class RestfulAttestationCertificateAuthority
             final ReferenceManifestManager referenceManifestManager,
             final DeviceRegister deviceRegister,
             final DeviceManager deviceManager,
-            final DBManager<TPM2ProvisionerState> tpm2ProvisionerStateDBManager,
             final ReferenceDigestManager referenceDigestManager,
             final ReferenceEventManager referenceEventManager,
             @Value("${aca.certificates.validity}") final int validDays) {
         super(supplyChainValidationService, privateKey, acaCertificate, structConverter,
                 certificateManager, referenceManifestManager,
                 deviceRegister, validDays, deviceManager,
-                tpm2ProvisionerStateDBManager, referenceDigestManager, referenceEventManager);
+                referenceDigestManager, referenceEventManager);
     }
 
     /*

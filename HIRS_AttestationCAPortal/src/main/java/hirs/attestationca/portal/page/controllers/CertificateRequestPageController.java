@@ -277,7 +277,7 @@ public class CertificateRequestPageController extends PageController<NoPageParam
                             for (PlatformCredential pc : sharedCertificates) {
                                 if (!pc.isBase()) {
                                     pc.archive();
-                                    certificateManager.update(pc);
+                                    certificateManager.updateCertificate(pc);
                                 }
                             }
                         }
@@ -285,7 +285,7 @@ public class CertificateRequestPageController extends PageController<NoPageParam
                 }
 
                 certificate.archive();
-                certificateManager.update(certificate);
+                certificateManager.updateCertificate(certificate);
 
                 String deleteCompletedMessage = "Certificate successfully deleted";
                 messages.addInfo(deleteCompletedMessage);
@@ -621,7 +621,7 @@ public class CertificateRequestPageController extends PageController<NoPageParam
      * @param certificateType String containing the certificate type
      * @return the certificate class type
      */
-    private static Class<? extends Certificate> getCertificateClass(final String certificateType) {
+    private static Class getCertificateClass(final String certificateType) {
         switch (certificateType) {
             case PLATFORMCREDENTIAL:
                 return PlatformCredential.class;
@@ -906,7 +906,7 @@ public class CertificateRequestPageController extends PageController<NoPageParam
                     }**/
                 }
 
-                certificateManager.save(certificate);
+                certificateManager.saveCertificate(certificate);
 
                 final String successMsg
                         = String.format("New certificate successfully uploaded (%s): ", fileName);
@@ -928,7 +928,7 @@ public class CertificateRequestPageController extends PageController<NoPageParam
             if (existingCertificate.isArchived()) {
                 existingCertificate.restore();
                 existingCertificate.resetCreateTime();
-                certificateManager.update(existingCertificate);
+                certificateManager.updateCertificate(existingCertificate);
 
                 final String successMsg = String.format("Pre-existing certificate "
                         + "found and unarchived (%s): ", fileName);

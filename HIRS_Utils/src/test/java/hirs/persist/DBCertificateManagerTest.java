@@ -16,6 +16,7 @@ import hirs.data.persist.certificate.PlatformCredentialTest;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.hibernate.Session;
+import org.hibernate.query.Query;
 import org.testng.Assert;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.AfterMethod;
@@ -23,6 +24,9 @@ import org.testng.annotations.BeforeClass;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
+import javax.persistence.criteria.CriteriaBuilder;
+import javax.persistence.criteria.CriteriaQuery;
+import javax.persistence.criteria.Root;
 import java.io.IOException;
 import java.math.BigInteger;
 import java.security.KeyStoreException;
@@ -159,20 +163,63 @@ public class DBCertificateManagerTest extends SpringPersistenceTest {
      */
     @AfterMethod
     public void resetTestState() {
-        LOGGER.debug("reset test state");
+        LOGGER.debug("reset test states");
+        resetCertificateTestState();
+        resetDeviceTestState();
+        resetDeviceGroupTestState();
+    }
+
+    private void resetCertificateTestState() {
         Session session = sessionFactory.getCurrentSession();
         session.beginTransaction();
-        final Class<?>[] clazzes =
-                {Certificate.class, Device.class, DeviceGroup.class};
-        for (Class<?> clazz : clazzes) {
-            final List<?> objects = session.createCriteria(clazz).list();
-            for (Object o : objects) {
-                LOGGER.debug("deleting object: {}", o);
-                session.delete(o);
-            }
-            LOGGER.debug("all {} removed", clazz);
-        }
+        CriteriaBuilder builder = session.getCriteriaBuilder();
+        CriteriaQuery<Certificate> criteriaQuery = builder.createQuery(Certificate.class);
+        Root<Certificate> root = criteriaQuery.from(Certificate.class);
+        criteriaQuery.select(root);
+        Query<Certificate> query = session.createQuery(criteriaQuery);
+        List<Certificate> objects = query.getResultList();
 
+        for (Object o : objects) {
+            LOGGER.debug("deleting object: {}", o);
+            session.delete(o);
+        }
+        LOGGER.debug("all {} removed", Certificate.class);
+        session.getTransaction().commit();
+    }
+
+    private void resetDeviceTestState() {
+        Session session = sessionFactory.getCurrentSession();
+        session.beginTransaction();
+        CriteriaBuilder builder = session.getCriteriaBuilder();
+        CriteriaQuery<Device> criteriaQuery = builder.createQuery(Device.class);
+        Root<Device> root = criteriaQuery.from(Device.class);
+        criteriaQuery.select(root);
+        Query<Device> query = session.createQuery(criteriaQuery);
+        List<Device> objects = query.getResultList();
+
+        for (Object o : objects) {
+            LOGGER.debug("deleting object: {}", o);
+            session.delete(o);
+        }
+        LOGGER.debug("all {} removed", Device.class);
+        session.getTransaction().commit();
+    }
+
+    private void resetDeviceGroupTestState() {
+        Session session = sessionFactory.getCurrentSession();
+        session.beginTransaction();
+        CriteriaBuilder builder = session.getCriteriaBuilder();
+        CriteriaQuery<DeviceGroup> criteriaQuery = builder.createQuery(DeviceGroup.class);
+        Root<DeviceGroup> root = criteriaQuery.from(DeviceGroup.class);
+        criteriaQuery.select(root);
+        Query<DeviceGroup> query = session.createQuery(criteriaQuery);
+        List<DeviceGroup> objects = query.getResultList();
+
+        for (Object o : objects) {
+            LOGGER.debug("deleting object: {}", o);
+            session.delete(o);
+        }
+        LOGGER.debug("all {} removed", DeviceGroup.class);
         session.getTransaction().commit();
     }
 
@@ -247,7 +294,7 @@ public class DBCertificateManagerTest extends SpringPersistenceTest {
                 entry.getValue().archive();
             }
             if (entry.getKey() != IssuedAttestationCertificate.class) {
-                Certificate savedCert = certMan.save(entry.getValue());
+                Certificate savedCert = certMan.saveCertificate(entry.getValue());
                 Assert.assertEquals(entry.getValue(), savedCert);
                 Assert.assertNotNull(savedCert.getId());
             } else {
@@ -256,7 +303,7 @@ public class DBCertificateManagerTest extends SpringPersistenceTest {
         }
 
         for (Certificate cert : secondaryCertsToSave) {
-            Certificate savedCert = certMan.save(cert);
+            Certificate savedCert = certMan.saveCertificate(cert);
             Assert.assertEquals(cert, savedCert);
             Assert.assertNotNull(savedCert.getId());
         }
@@ -293,9 +340,9 @@ public class DBCertificateManagerTest extends SpringPersistenceTest {
     public void testGetAllByType() throws IOException {
         CertificateManager certMan = new DBCertificateManager(sessionFactory);
 
-        Certificate savedRootCert = certMan.save(rootCert);
-        Certificate savedIntelIntermediateCert = certMan.save(intelIntermediateCert);
-        Certificate savedSGIIntermediateCert  = certMan.save(sgiIntermediateCert);
+        Certificate savedRootCert = certMan.saveCertificate(rootCert);
+        Certificate savedIntelIntermediateCert = certMan.saveCertificate(intelIntermediateCert);
+        Certificate savedSGIIntermediateCert  = certMan.saveCertificate(sgiIntermediateCert);
 
         Set<CertificateAuthorityCredential> retrievedCerts =
                 CertificateAuthorityCredential.select(certMan)
@@ -315,9 +362,9 @@ public class DBCertificateManagerTest extends SpringPersistenceTest {
     public void testGetAllByIssuer() throws IOException, CertificateException {
         CertificateManager certMan = new DBCertificateManager(sessionFactory);
 
-        Certificate savedRootCert = certMan.save(rootCert);
-        Certificate savedIntelIntermediateCert = certMan.save(intelIntermediateCert);
-        Certificate savedSGIIntermediateCert  = certMan.save(sgiIntermediateCert);
+        Certificate savedRootCert = certMan.saveCertificate(rootCert);
+        Certificate savedIntelIntermediateCert = certMan.saveCertificate(intelIntermediateCert);
+        Certificate savedSGIIntermediateCert  = certMan.saveCertificate(sgiIntermediateCert);
 
         Set<CertificateAuthorityCredential> retrievedCerts =
                 CertificateAuthorityCredential.select(certMan)
@@ -341,10 +388,10 @@ public class DBCertificateManagerTest extends SpringPersistenceTest {
     public void testGetAllBySubjectOrganization() throws IOException, CertificateException {
         CertificateManager certMan = new DBCertificateManager(sessionFactory);
 
-        certMan.save(stmRootCaCert);
-        certMan.save(stmEkCert);
-        Certificate savedStmInt02Cert = certMan.save(stmInt02CaCert);
-        Certificate savedGsRootCa = certMan.save(gsTpmRootCaCert);
+        certMan.saveCertificate(stmRootCaCert);
+        certMan.saveCertificate(stmEkCert);
+        Certificate savedStmInt02Cert = certMan.saveCertificate(stmInt02CaCert);
+        Certificate savedGsRootCa = certMan.saveCertificate(gsTpmRootCaCert);
 
         Set<CertificateAuthorityCredential> retrievedCerts =
                 CertificateAuthorityCredential.select(certMan)
@@ -378,9 +425,9 @@ public class DBCertificateManagerTest extends SpringPersistenceTest {
     public void testGetAllByIssuerOrganization() throws IOException, CertificateException {
         CertificateManager certMan = new DBCertificateManager(sessionFactory);
 
-        Certificate savedStmRootCert = certMan.save(stmRootCaCert);
-        certMan.save(stmEkCert);
-        certMan.save(gsTpmRootCaCert);
+        Certificate savedStmRootCert = certMan.saveCertificate(stmRootCaCert);
+        certMan.saveCertificate(stmEkCert);
+        certMan.saveCertificate(gsTpmRootCaCert);
 
         Set<CertificateAuthorityCredential> retrievedCerts =
                 CertificateAuthorityCredential.select(certMan)
@@ -411,7 +458,7 @@ public class DBCertificateManagerTest extends SpringPersistenceTest {
         device.setDeviceGroup(savedDg);
         Device savedDevice = deviceManager.saveDevice(device);
         ((DeviceAssociatedCertificate) hirsClientCert).setDevice(savedDevice);
-        Certificate savedCert = certMan.save(hirsClientCert);
+        Certificate savedCert = certMan.saveCertificate(hirsClientCert);
 
         Set<IssuedAttestationCertificate> retrievedCerts =
                 IssuedAttestationCertificate.select(certMan).byDeviceId(savedDevice.getId()).
@@ -443,7 +490,7 @@ public class DBCertificateManagerTest extends SpringPersistenceTest {
                 (EndorsementCredential) CertificateTest.getTestCertificate(
                         EndorsementCredential.class, CertificateTest.TEST_EC);
         endorsementCredential.setDevice(savedDevice);
-        Certificate savedCert = certMan.save(endorsementCredential);
+        Certificate savedCert = certMan.saveCertificate(endorsementCredential);
 
         Set<EndorsementCredential> retrievedCerts =
                 EndorsementCredential.select(certMan).byDeviceId(savedDevice.getId()).
@@ -474,7 +521,7 @@ public class DBCertificateManagerTest extends SpringPersistenceTest {
         PlatformCredential platformCert = (PlatformCredential) CertificateTest.getTestCertificate(
                 PlatformCredential.class, PlatformCredentialTest.TEST_PLATFORM_CERT_2);
         platformCert.setDevice(savedDevice);
-        Certificate savedCert = certMan.save(platformCert);
+        Certificate savedCert = certMan.saveCertificate(platformCert);
 
         Set<PlatformCredential> retrievedCerts =
                 PlatformCredential.select(certMan).byDeviceId(savedDevice.getId()).
@@ -496,9 +543,9 @@ public class DBCertificateManagerTest extends SpringPersistenceTest {
     public void testGetBySubject() throws IOException, CertificateException {
         CertificateManager certMan = new DBCertificateManager(sessionFactory);
 
-        certMan.save(rootCert);
-        certMan.save(sgiIntermediateCert);
-        Certificate savedIntelIntermediateCert = certMan.save(intelIntermediateCert);
+        certMan.saveCertificate(rootCert);
+        certMan.saveCertificate(sgiIntermediateCert);
+        Certificate savedIntelIntermediateCert = certMan.saveCertificate(intelIntermediateCert);
 
         Set<CertificateAuthorityCredential> retrievedCerts =
                 CertificateAuthorityCredential.select(certMan)
@@ -518,9 +565,9 @@ public class DBCertificateManagerTest extends SpringPersistenceTest {
     public void testGetSingleBySerialNumber() throws IOException, CertificateException {
         CertificateManager certMan = new DBCertificateManager(sessionFactory);
 
-        certMan.save(rootCert);
-        certMan.save(sgiIntermediateCert);
-        Certificate savedIntelIntermediateCert = certMan.save(intelIntermediateCert);
+        certMan.saveCertificate(rootCert);
+        certMan.saveCertificate(sgiIntermediateCert);
+        Certificate savedIntelIntermediateCert = certMan.saveCertificate(intelIntermediateCert);
 
         Set<CertificateAuthorityCredential> retrievedCerts =
                 CertificateAuthorityCredential.select(certMan)
@@ -542,9 +589,9 @@ public class DBCertificateManagerTest extends SpringPersistenceTest {
     public void testGetSingleByPublicKey() throws IOException, CertificateException {
         CertificateManager certMan = new DBCertificateManager(sessionFactory);
 
-        certMan.save(rootCert);
-        certMan.save(sgiIntermediateCert);
-        Certificate savedIntelIntermediateCert = certMan.save(intelIntermediateCert);
+        certMan.saveCertificate(rootCert);
+        certMan.saveCertificate(sgiIntermediateCert);
+        Certificate savedIntelIntermediateCert = certMan.saveCertificate(intelIntermediateCert);
 
         Set<CertificateAuthorityCredential> retrievedCerts =
                 CertificateAuthorityCredential.select(certMan)
@@ -565,9 +612,9 @@ public class DBCertificateManagerTest extends SpringPersistenceTest {
     public void testGetSingleByPublicKeyModulus() throws IOException {
         CertificateManager certMan = new DBCertificateManager(sessionFactory);
 
-        certMan.save(rootCert);
-        certMan.save(sgiIntermediateCert);
-        Certificate savedIntelIntermediateCert = certMan.save(intelIntermediateCert);
+        certMan.saveCertificate(rootCert);
+        certMan.saveCertificate(sgiIntermediateCert);
+        Certificate savedIntelIntermediateCert = certMan.saveCertificate(intelIntermediateCert);
 
         Set<CertificateAuthorityCredential> retrievedCerts =
                 CertificateAuthorityCredential.select(certMan)
@@ -592,9 +639,9 @@ public class DBCertificateManagerTest extends SpringPersistenceTest {
                 PlatformCredential.class, PlatformCredentialTest.TEST_PLATFORM_CERT_2
         );
 
-        certMan.save(rootCert);
-        certMan.save(intelIntermediateCert);
-        certMan.save(platformSgiCert);
+        certMan.saveCertificate(rootCert);
+        certMan.saveCertificate(intelIntermediateCert);
+        certMan.saveCertificate(platformSgiCert);
 
         Set<PlatformCredential> retrievedCerts = PlatformCredential.select(certMan)
                 .getCertificates();
@@ -613,9 +660,9 @@ public class DBCertificateManagerTest extends SpringPersistenceTest {
         CertificateManager certMan = new DBCertificateManager(sessionFactory);
 
         CertificateAuthorityCredential savedRootCert = (CertificateAuthorityCredential)
-                certMan.save(rootCert);
-        certMan.save(sgiIntermediateCert);
-        certMan.save(intelIntermediateCert);
+                certMan.saveCertificate(rootCert);
+        certMan.saveCertificate(sgiIntermediateCert);
+        certMan.saveCertificate(intelIntermediateCert);
 
         byte[] subjectKeyIdentifier = savedRootCert.getSubjectKeyIdentifier();
 
@@ -721,9 +768,9 @@ public class DBCertificateManagerTest extends SpringPersistenceTest {
             throws IOException, KeyStoreException, CertificateException {
         CertificateManager certMan = new DBCertificateManager(sessionFactory);
 
-        certMan.save(rootCert);
-        certMan.save(intelIntermediateCert);
-        certMan.save(sgiIntermediateCert);
+        certMan.saveCertificate(rootCert);
+        certMan.saveCertificate(intelIntermediateCert);
+        certMan.saveCertificate(sgiIntermediateCert);
 
         String issuer = intelIntermediateCert.getX509Certificate().getIssuerDN().getName();
         BigInteger serialNumber = intelIntermediateCert.getX509Certificate().getSerialNumber();
@@ -778,9 +825,9 @@ public class DBCertificateManagerTest extends SpringPersistenceTest {
     public void testGetNone() throws IOException, KeyStoreException {
         CertificateManager certMan = new DBCertificateManager(sessionFactory);
 
-        certMan.save(rootCert);
-        certMan.save(intelIntermediateCert);
-        certMan.save(sgiIntermediateCert);
+        certMan.saveCertificate(rootCert);
+        certMan.saveCertificate(intelIntermediateCert);
+        certMan.saveCertificate(sgiIntermediateCert);
 
         CertificateSelector certSelector = CertificateAuthorityCredential.select(certMan)
                 .byIssuer("An issuer that doesn't exist");
@@ -802,8 +849,8 @@ public class DBCertificateManagerTest extends SpringPersistenceTest {
     @Test(expectedExceptions = DBManagerException.class)
     public void testStoreDuplicate() {
         CertificateManager certMan = new DBCertificateManager(sessionFactory);
-        certMan.save(rootCert);
-        certMan.save(rootCert);
+        certMan.saveCertificate(rootCert);
+        certMan.saveCertificate(rootCert);
     }
 
     /**
@@ -817,12 +864,12 @@ public class DBCertificateManagerTest extends SpringPersistenceTest {
         Certificate caCert = CertificateTest.getTestCertificate(
                 CertificateAuthorityCredential.class, CertificateTest.FAKE_ROOT_CA_FILE
         );
-        certMan.save(caCert);
+        certMan.saveCertificate(caCert);
 
         Certificate ecCert = CertificateTest.getTestCertificate(
                 EndorsementCredential.class, CertificateTest.FAKE_ROOT_CA_FILE
         );
-        certMan.save(ecCert);
+        certMan.saveCertificate(ecCert);
 
         Assert.assertEquals(caCert.getCertificateHash(), ecCert.getCertificateHash());
 
@@ -853,9 +900,9 @@ public class DBCertificateManagerTest extends SpringPersistenceTest {
     public void testDelete() throws IOException, CertificateException {
         CertificateManager certMan = new DBCertificateManager(sessionFactory);
 
-        certMan.save(rootCert);
-        certMan.save(sgiIntermediateCert);
-        Certificate savedIntelIntermediateCert = certMan.save(intelIntermediateCert);
+        certMan.saveCertificate(rootCert);
+        certMan.saveCertificate(sgiIntermediateCert);
+        Certificate savedIntelIntermediateCert = certMan.saveCertificate(intelIntermediateCert);
 
         Assert.assertTrue(certMan.delete(savedIntelIntermediateCert));
 

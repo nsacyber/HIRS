@@ -97,7 +97,7 @@ public class DBAppraiserManager extends DBManager<Appraiser> implements Appraise
     public final List<Appraiser> getAppraiserList(final Class<? extends Appraiser> clazz)
             throws AppraiserManagerException {
         LOGGER.debug("getting appraiser list");
-        return getList(clazz);
+        return null; //getList(clazz);  cyrus-dev
     }
 
     /**

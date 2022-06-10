@@ -57,5 +57,4 @@ public interface TPMDeviceStateManager {
      *             if any unexpected errors occur while trying to retrieve the state
      */
     boolean deleteState(Device device) throws TPMDeviceStateManagerException;
-
 }

@@ -6,11 +6,15 @@ import hirs.appraiser.TPMAppraiser;
 import hirs.appraiser.TestAppraiser;
 import hirs.data.persist.SpringPersistenceTest;
 import org.hibernate.Session;
+import org.hibernate.query.Query;
 import org.testng.Assert;
 import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
+import javax.persistence.criteria.CriteriaBuilder;
+import javax.persistence.criteria.CriteriaQuery;
+import javax.persistence.criteria.Root;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
@@ -40,7 +44,14 @@ public class DBAppraiserManagerTest extends SpringPersistenceTest {
     public void resetTestState() {
         Session session = sessionFactory.getCurrentSession();
         session.beginTransaction();
-        final List<?> baselines = session.createCriteria(Appraiser.class).list();
+
+        CriteriaBuilder builder = session.getCriteriaBuilder();
+        CriteriaQuery<Appraiser> criteriaQuery = builder.createQuery(Appraiser.class);
+        Root<Appraiser> root = criteriaQuery.from(Appraiser.class);
+        criteriaQuery.select(root);
+        Query<Appraiser> query = session.createQuery(criteriaQuery);
+        List<Appraiser> baselines = query.getResultList();
+//        final List<?> baselines = session.createCriteria(Appraiser.class).list();
         for (Object o : baselines) {
             session.delete(o);
         }

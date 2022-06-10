@@ -15,7 +15,6 @@ import hirs.persist.CriteriaModifier;
 import hirs.persist.DBManagerException;
 import hirs.persist.DBReferenceEventManager;
 import hirs.persist.DBReferenceManifestManager;
-import hirs.persist.ReferenceDigestManager;
 import hirs.persist.ReferenceEventManager;
 import hirs.persist.ReferenceManifestManager;
 import org.apache.logging.log4j.LogManager;
@@ -47,7 +46,6 @@ public class RimDatabasePageController
 
     private final BiosDateValidator biosValidator;
     private final ReferenceManifestManager referenceManifestManager;
-    private final ReferenceDigestManager referenceDigestManager;
     private final ReferenceEventManager referenceEventManager;
     private static final Logger LOGGER
             = LogManager.getLogger(RimDatabasePageController.class);
@@ -98,17 +96,14 @@ public class RimDatabasePageController
      * Constructor providing the Page's display and routing specification.
      *
      * @param referenceManifestManager the ReferenceManifestManager object
-     * @param referenceDigestManager the ReferenceDigestManager object
      * @param referenceEventManager  the referenceEventManager object
      */
     @Autowired
     public RimDatabasePageController(
             final DBReferenceManifestManager referenceManifestManager,
-            final DBReferenceDigestManager referenceDigestManager,
             final DBReferenceEventManager referenceEventManager) {
         super(Page.RIM_DATABASE);
         this.referenceManifestManager = referenceManifestManager;
-        this.referenceDigestManager = referenceDigestManager;
         this.referenceEventManager = referenceEventManager;
         this.biosValidator = new BiosDateValidator(BIOS_RELEASE_DATE_FORMAT);
     }

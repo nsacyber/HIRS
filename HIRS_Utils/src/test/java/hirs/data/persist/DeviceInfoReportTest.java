@@ -1,24 +1,26 @@
 package hirs.data.persist;
 
+import hirs.data.persist.info.FirmwareInfo;
+import hirs.data.persist.info.HardwareInfo;
+import hirs.data.persist.info.NetworkInfo;
 import hirs.data.persist.info.OSInfo;
 import hirs.data.persist.info.TPMInfo;
-import hirs.data.persist.info.NetworkInfo;
-import hirs.data.persist.info.HardwareInfo;
-import hirs.data.persist.info.FirmwareInfo;
-import hirs.data.persist.baseline.TpmWhiteListBaseline;
 import hirs.foss.XMLCleaner;
 import hirs.persist.DBReportManager;
 import hirs.persist.ReportManager;
-
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.hibernate.Session;
+import org.hibernate.query.Query;
 import org.testng.Assert;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
+import javax.persistence.criteria.CriteriaBuilder;
+import javax.persistence.criteria.CriteriaQuery;
+import javax.persistence.criteria.Root;
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Marshaller;
@@ -32,7 +34,6 @@ import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
-import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
 
@@ -81,8 +82,14 @@ public class DeviceInfoReportTest extends SpringPersistenceTest {
         LOGGER.debug("deleting all reports");
         Session session = sessionFactory.getCurrentSession();
         session.beginTransaction();
+        CriteriaBuilder builder = session.getCriteriaBuilder();
+        CriteriaQuery<Report> criteriaQuery = builder.createQuery(Report.class);
+        Root<Report> root = criteriaQuery.from(Report.class);
+        criteriaQuery.select(root);
+        Query<Report> query = session.createQuery(criteriaQuery);
         try {
-            final List<?> reports = session.createCriteria(Report.class).list();
+            final List<Report> reports = query.getResultList();
+//            final List<?> reports = session.createCriteria(Report.class).list();
             for (Object o : reports) {
                 LOGGER.debug("deleting report: {}", o);
                 session.delete(o);
@@ -216,61 +223,6 @@ public class DeviceInfoReportTest extends SpringPersistenceTest {
         Assert.assertEquals(getReport.getTPMInfo(), tpmInfo);
         Assert.assertEquals(getReport.getClientApplicationVersion(),
                 EXPECTED_CLIENT_VERSION);
-    }
-
-    /**
-    * Tests that the DeviceInfoReport can search a list of baselines to find if
-    * any contain the fields necessary to detect a kernel update.
-    */
-    @Test
-    public final void testMatchesKernelInfo() {
-        final DeviceInfoReport deviceInfoReport =
-            new DeviceInfoReport(networkInfo, osInfo, firmwareInfo, hardwareInfo, tpmInfo);
-        final List<TpmWhiteListBaseline> tpmBaselines = Arrays.asList(
-            new TpmWhiteListBaseline("Best named TPM Baseline"),
-            new TpmWhiteListBaseline("Bob"),
-            new TpmWhiteListBaseline("Worst named Baseline. Ever.")
-            );
-        final String osName = "test os name";
-        final String osVersion = "test os version";
-        final String manufacturer = "test manufacturer";
-        final String productName = "test product name";
-        final String version = "test version";
-        tpmBaselines.get(1).setFirmwareInfo(createTestFirmwareInfo());
-        tpmBaselines.get(1).setHardwareInfo(
-            new HardwareInfo(manufacturer, productName, version, "wrong value",
-                    "wrong value", "wrong value"));
-        tpmBaselines.get(1).setOSInfo(new OSInfo(osName, osVersion, "N/A", "not used", "ignored"));
-        final boolean expected = true;
-
-        Assert.assertEquals(deviceInfoReport.matchesKernelInfo(tpmBaselines), expected);
-    }
-
-    /**
-    * Tests that the method will return false when even one field is mismatched.
-    */
-    @Test
-    public final void testMatchesKernelInfoMismatch() {
-        final DeviceInfoReport deviceInfoReport =
-            new DeviceInfoReport(networkInfo, osInfo, firmwareInfo, hardwareInfo, tpmInfo);
-        final List<TpmWhiteListBaseline> tpmBaselines = Arrays.asList(
-            new TpmWhiteListBaseline("Best named TPM Baseline"),
-            new TpmWhiteListBaseline("Bob"),
-            new TpmWhiteListBaseline("Worst named Baseline. Ever.")
-            );
-        final String osName = "test os name";
-        final String osVersion = "88"; // osversion won't match
-        final String manufacturer = "test manufacturer";
-        final String productName = "test product name";
-        final String version = "test version";
-        tpmBaselines.get(2).setFirmwareInfo(createTestFirmwareInfo());
-        tpmBaselines.get(2).setHardwareInfo(
-            new HardwareInfo(manufacturer, productName, version, "wrong value",
-                    "wrong value", "wrong value"));
-        tpmBaselines.get(2).setOSInfo(new OSInfo(osName, osVersion, "N/A", "not used", "ignored"));
-        final boolean expected = false;
-
-        Assert.assertEquals(deviceInfoReport.matchesKernelInfo(tpmBaselines), expected);
     }
 
     /**

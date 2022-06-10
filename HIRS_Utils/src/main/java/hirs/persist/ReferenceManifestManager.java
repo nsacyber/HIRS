@@ -35,14 +35,6 @@ public interface ReferenceManifestManager extends OrderedListQuerier<ReferenceMa
     <T extends ReferenceManifest> Set<T> get(ReferenceManifestSelector referenceManifestSelector);
 
     /**
-     * Delete the given RIM.
-     *
-     * @param referenceManifest the RIM to delete
-     * @return true if the deletion succeeded, false otherwise.
-     */
-    boolean delete(ReferenceManifest referenceManifest);
-
-    /**
      * Remove a ReferenceManifest from the database.
      *
      * @param referenceManifest the referenceManifest to delete

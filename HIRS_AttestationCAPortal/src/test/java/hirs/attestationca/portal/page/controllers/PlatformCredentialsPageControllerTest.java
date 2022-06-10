@@ -82,7 +82,7 @@ public class PlatformCredentialsPageControllerTest extends PageControllerTest {
     private Certificate uploadTestCert() throws Exception {
         // perform upload. Attach csv file and add HTTP parameters for the baseline name and type.
         MvcResult result = getMockMvc().perform(MockMvcRequestBuilders
-                .fileUpload("/certificate-request/platform-credentials/upload")
+                .multipart("/certificate-request/platform-credentials/upload")
                 .file(realPcCertFile))
                 .andExpect(status().is3xxRedirection())
                 .andReturn();
@@ -95,7 +95,7 @@ public class PlatformCredentialsPageControllerTest extends PageControllerTest {
 
         // verify the cert was actually stored
         Set<Certificate> records =
-                certificateManager.get(PlatformCredential.select(certificateManager));
+                certificateManager.getCertificate(PlatformCredential.select(certificateManager));
         Assert.assertEquals(records.size(), 1);
 
         Certificate cert = records.iterator().next();
@@ -113,7 +113,7 @@ public class PlatformCredentialsPageControllerTest extends PageControllerTest {
             .andReturn();
 
         Set<Certificate> records =
-                certificateManager.get(PlatformCredential
+                certificateManager.getCertificate(PlatformCredential
                         .select(certificateManager).includeArchived());
         Assert.assertEquals(records.size(), 1);
 
@@ -133,7 +133,7 @@ public class PlatformCredentialsPageControllerTest extends PageControllerTest {
 
         // upload the same cert again
         MvcResult result = getMockMvc().perform(MockMvcRequestBuilders
-                .fileUpload("/certificate-request/platform-credentials/upload")
+                .multipart("/certificate-request/platform-credentials/upload")
                 .file(realPcCertFile))
                 .andExpect(status().is3xxRedirection())
                 .andReturn();
@@ -147,7 +147,7 @@ public class PlatformCredentialsPageControllerTest extends PageControllerTest {
                 "Pre-existing certificate found and unarchived (" + REALPCCERT + "): ");
 
         // verify the cert was actually stored
-        Set<Certificate> records = certificateManager.get(PlatformCredential.select(
+        Set<Certificate> records = certificateManager.getCertificate(PlatformCredential.select(
                 certificateManager));
         Assert.assertEquals(records.size(), 1);
 
@@ -168,12 +168,12 @@ public class PlatformCredentialsPageControllerTest extends PageControllerTest {
     public void uploadNonPlatformCert() throws Exception {
         // verify the cert was not actually stored
         Set<Certificate> originalRecords =
-                certificateManager.get(PlatformCredential.select(certificateManager));
+                certificateManager.getCertificate(PlatformCredential.select(certificateManager));
         Assert.assertEquals(originalRecords.size(), 0);
 
         // perform upload. Attach csv file and add HTTP parameters for the baseline name and type.
         MvcResult result = getMockMvc().perform(MockMvcRequestBuilders
-                .fileUpload("/certificate-request/platform-credentials/upload")
+                .multipart("/certificate-request/platform-credentials/upload")
                 .file(nonPcCertFile))
                 .andExpect(status().is3xxRedirection())
                 .andReturn();
@@ -186,7 +186,7 @@ public class PlatformCredentialsPageControllerTest extends PageControllerTest {
 
         // verify the cert was not actually stored
         Set<Certificate> records =
-                certificateManager.get(PlatformCredential.select(certificateManager));
+                certificateManager.getCertificate(PlatformCredential.select(certificateManager));
         Assert.assertEquals(records.size(), 0);
     }
 
@@ -199,7 +199,7 @@ public class PlatformCredentialsPageControllerTest extends PageControllerTest {
     public void uploadBadPlatformCert() throws Exception {
         // perform upload. Attach csv file and add HTTP parameters for the baseline name and type.
         MvcResult result = getMockMvc().perform(MockMvcRequestBuilders
-                .fileUpload("/certificate-request/platform-credentials/upload")
+                .multipart("/certificate-request/platform-credentials/upload")
                 .file(badCertFile))
                 .andExpect(status().is3xxRedirection())
                 .andReturn();
@@ -212,7 +212,7 @@ public class PlatformCredentialsPageControllerTest extends PageControllerTest {
 
         // verify the cert was not actually stored
         Set<Certificate> records =
-                certificateManager.get(PlatformCredential.select(certificateManager));
+                certificateManager.getCertificate(PlatformCredential.select(certificateManager));
         Assert.assertEquals(records.size(), 0);
     }
 }

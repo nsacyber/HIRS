@@ -1,6 +1,7 @@
 package hirs.persist;
 
 import com.zaxxer.hikari.HikariDataSource;
+import org.hibernate.SessionFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -134,7 +135,12 @@ public class HibernateConfiguration {
      */
     @Bean
     public HibernateTransactionManager transactionManager() {
-        return new HibernateTransactionManager(sessionFactory().getObject());
+        SessionFactory sessionFactory = sessionFactory().getObject();
+        if (sessionFactory != null) {
+            return new HibernateTransactionManager(sessionFactory);
+        } else {
+            return new HibernateTransactionManager();
+        }
     }
 
     /**

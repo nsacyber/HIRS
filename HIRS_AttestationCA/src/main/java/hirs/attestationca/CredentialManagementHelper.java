@@ -64,13 +64,14 @@ public final class CredentialManagementHelper {
                         .byHashCode(certificateHash).getCertificate();
         if (existingCredential == null) {
             LOG.info("No Endorsement Credential found with hash: " + certificateHash);
-            return (EndorsementCredential) certificateManager.save(endorsementCredential);
+            return (EndorsementCredential) certificateManager
+                    .saveCertificate(endorsementCredential);
         } else if (existingCredential.isArchived()) {
             // if the EK is stored in the DB and it's archived, unarchive.
             LOG.info("Unarchiving credential");
             existingCredential.restore();
             existingCredential.resetCreateTime();
-            certificateManager.update(existingCredential);
+            certificateManager.updateCertificate(existingCredential);
         }
         return existingCredential;
     }
@@ -134,12 +135,13 @@ public final class CredentialManagementHelper {
                         }
                     }
                 }
-                return (PlatformCredential) certificateManager.save(platformCredential);
+                return (PlatformCredential) certificateManager
+                        .saveCertificate(platformCredential);
             } else if (existingCredential.isArchived()) {
                 // if the PC is stored in the DB and it's archived, unarchive.
                 LOG.info("Unarchiving credential");
                 existingCredential.restore();
-                certificateManager.update(existingCredential);
+                certificateManager.updateCertificate(existingCredential);
                 return existingCredential;
             }
 

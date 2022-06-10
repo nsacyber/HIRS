@@ -1,9 +1,9 @@
 package hirs;
 
-import java.util.List;
-
 import org.testng.Assert;
 import org.testng.annotations.Test;
+
+import java.util.List;
 
 /**
  * <code>IntegrityReportRequestTest</code> is a unit test class for the
@@ -21,19 +21,6 @@ public class IntegrityReportRequestTest {
     }
 
     /**
-     * Tests adding ReportRequests to <code>IntegrityReportRequest</code>.
-     */
-    @Test
-    public final void addReportRequest() {
-        IMAReportRequest imaReportRequest = new IMAReportRequest();
-        IntegrityReportRequest reportRequest = new IntegrityReportRequest();
-        reportRequest.addReportRequest(imaReportRequest);
-        List<ReportRequest> requests = reportRequest.getReportRequest();
-        Assert.assertEquals(requests.get(0).getReportType(),
-                imaReportRequest.getReportType());
-    }
-
-    /**
      * Tests adding ReportRequests to <code>IntegrityReportRequest</code> when
      * passing in a null ReportRequest.
      */
@@ -43,20 +30,6 @@ public class IntegrityReportRequestTest {
         reportRequest.addReportRequest(null);
         List<ReportRequest> requests = reportRequest.getReportRequest();
         Assert.assertEquals(requests.size(), 0);
-    }
-
-    /**
-     * Tests retrieving <code>ReportRequest</code> from
-     * <code>IntegrityReportRequest</code>.
-     */
-    @Test
-    public final void getReportRequest() {
-        IMAReportRequest imaReportRequest = new IMAReportRequest();
-        IntegrityReportRequest reportRequest = new IntegrityReportRequest();
-        reportRequest.addReportRequest(imaReportRequest);
-        List<ReportRequest> requests = reportRequest.getReportRequest();
-        Assert.assertEquals(requests.get(0).getReportType(),
-                imaReportRequest.getReportType());
     }
 
     /**

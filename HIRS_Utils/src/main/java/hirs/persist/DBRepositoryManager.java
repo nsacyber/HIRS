@@ -58,7 +58,7 @@ public class DBRepositoryManager implements RepositoryManager {
      * @return a list of Repositories
      */
     @Override
-    public final List<Repository> getRepositoryList(final Class<? extends Repository> clazz) {
+    public final List<Repository> getRepositoryList(final Class<Repository> clazz) {
         return repositoryDBManager.getList(clazz);
     }
 
@@ -91,7 +91,7 @@ public class DBRepositoryManager implements RepositoryManager {
      */
     @Override
     public final boolean deleteRepository(final Repository<?> repository) {
-        return repositoryDBManager.delete(repository);
+        return repositoryDBManager.delete(repository.getName());
     }
 
     /**

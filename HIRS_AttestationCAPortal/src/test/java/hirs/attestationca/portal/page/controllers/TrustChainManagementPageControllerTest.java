@@ -156,7 +156,7 @@ public class TrustChainManagementPageControllerTest extends PageControllerTest {
     private Certificate uploadTestCert() throws Exception {
         // perform upload. Attach csv file and add HTTP parameters for the baseline name and type.
         MvcResult result = getMockMvc().perform(MockMvcRequestBuilders
-                .fileUpload("/certificate-request/trust-chain/upload")
+                .multipart("/certificate-request/trust-chain/upload")
                 .file(nonCaCertFile))
                 .andExpect(status().is3xxRedirection())
                 .andReturn();
@@ -170,7 +170,8 @@ public class TrustChainManagementPageControllerTest extends PageControllerTest {
 
         // verify the cert was actually stored
         Set<Certificate> records =
-                certificateManager.get(CertificateAuthorityCredential.select(certificateManager));
+                certificateManager.getCertificate(
+                        CertificateAuthorityCredential.select(certificateManager));
         Assert.assertEquals(records.size(), 1);
 
         //Check the cert is not already in the archive
@@ -187,7 +188,7 @@ public class TrustChainManagementPageControllerTest extends PageControllerTest {
                 .param("id", cert.getId().toString()))
                 .andExpect(status().is3xxRedirection())
                 .andReturn();
-        Set<Certificate> records = certificateManager.get(CertificateAuthorityCredential
+        Set<Certificate> records = certificateManager.getCertificate(CertificateAuthorityCredential
                 .select(certificateManager).includeArchived());
         Assert.assertEquals(records.size(), 1);
 
@@ -207,7 +208,7 @@ public class TrustChainManagementPageControllerTest extends PageControllerTest {
 
         // upload the same certificate again
         MvcResult result = getMockMvc().perform(MockMvcRequestBuilders
-                .fileUpload("/certificate-request/trust-chain/upload")
+                .multipart("/certificate-request/trust-chain/upload")
                 .file(nonCaCertFile))
                 .andExpect(status().is3xxRedirection())
                 .andReturn();
@@ -221,7 +222,7 @@ public class TrustChainManagementPageControllerTest extends PageControllerTest {
                 "Pre-existing certificate found and unarchived (" + NONCACERT + "): ");
 
         // verify the cert can be retrieved without looking at archived certs
-        Set<Certificate> records = certificateManager.get(CertificateAuthorityCredential
+        Set<Certificate> records = certificateManager.getCertificate(CertificateAuthorityCredential
                 .select(certificateManager).includeArchived());
         Assert.assertEquals(records.size(), 1);
         Certificate newCert = records.iterator().next();
@@ -242,7 +243,7 @@ public class TrustChainManagementPageControllerTest extends PageControllerTest {
     public void uploadBadCaCert() throws Exception {
         // perform upload. Attach csv file and add HTTP parameters for the baseline name and type.
         MvcResult result = getMockMvc().perform(MockMvcRequestBuilders
-                .fileUpload("/certificate-request/trust-chain/upload")
+                .multipart("/certificate-request/trust-chain/upload")
                 .file(badCertFile))
                 .andExpect(status().is3xxRedirection())
                 .andReturn();
@@ -255,7 +256,8 @@ public class TrustChainManagementPageControllerTest extends PageControllerTest {
 
         // verify the cert was not actually stored
         Set<Certificate> records =
-                certificateManager.get(CertificateAuthorityCredential.select(certificateManager));
+                certificateManager.getCertificate(
+                        CertificateAuthorityCredential.select(certificateManager));
         Assert.assertEquals(records.size(), 0);
     }
 

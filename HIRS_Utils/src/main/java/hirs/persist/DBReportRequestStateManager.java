@@ -5,9 +5,10 @@ import hirs.data.persist.ReportRequestState;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.hibernate.SessionFactory;
-import org.hibernate.criterion.Criterion;
-import org.hibernate.criterion.Restrictions;
 
+import javax.persistence.criteria.CriteriaBuilder;
+import javax.persistence.criteria.Predicate;
+import javax.persistence.criteria.Root;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
@@ -38,8 +39,12 @@ public class DBReportRequestStateManager extends DBManager<ReportRequestState>
      */
     @Override
     public final ReportRequestState getState(final Device device) {
-        Criterion crit = Restrictions.eq("device", device);
-        List<ReportRequestState> results = getWithCriteria(Collections.singletonList(crit));
+        CriteriaBuilder builder = this.getFactory().getCriteriaBuilder();
+        Root<ReportRequestState> root = builder.createQuery(ReportRequestState.class)
+                .from(ReportRequestState.class);
+
+        Predicate predicate = builder.equal(root.get("device"), device);
+        List<ReportRequestState> results = getWithCriteria(Collections.singletonList(predicate));
         if (results.isEmpty()) {
             return null;
         } else {
@@ -55,8 +60,12 @@ public class DBReportRequestStateManager extends DBManager<ReportRequestState>
      */
     @Override
     public final List<ReportRequestState> getLateDeviceStates() {
-        Criterion criterion = Restrictions.le("dueDate", new Date());
-        return getWithCriteria(Collections.singletonList(criterion));
+        CriteriaBuilder builder = this.getFactory().getCriteriaBuilder();
+        Root<ReportRequestState> root = builder.createQuery(ReportRequestState.class)
+                .from(ReportRequestState.class);
+
+        Predicate predicate = builder.lessThanOrEqualTo(root.get("dueDate"), new Date());
+        return getWithCriteria(Collections.singletonList(predicate));
     }
 
     /**
@@ -85,6 +94,6 @@ public class DBReportRequestStateManager extends DBManager<ReportRequestState>
      */
     @Override
     public final void deleteState(final ReportRequestState state) {
-        delete(state);
+        delete(state.toString()); // cyrus-dev
     }
 }

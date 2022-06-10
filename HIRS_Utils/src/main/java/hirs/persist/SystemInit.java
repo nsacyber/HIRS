@@ -109,7 +109,7 @@ public final class SystemInit {
         IMAAppraiser imaApp = (IMAAppraiser) appraiserManager.getAppraiser(IMAAppraiser.NAME);
         if (imaApp == null) {
             LOGGER.info("IMA appraiser not found; creating...");
-            imaApp = (IMAAppraiser) appraiserManager.saveAppraiser(new IMAAppraiser());
+//            imaApp = (IMAAppraiser) appraiserManager.saveAppraiser(new IMAAppraiser());
         } else {
             LOGGER.info("IMA appraiser found.");
         }
@@ -118,7 +118,7 @@ public final class SystemInit {
         TPMAppraiser tpmApp = (TPMAppraiser) appraiserManager.getAppraiser(TPMAppraiser.NAME);
         if (tpmApp == null) {
             LOGGER.info("TPM appraiser not found; creating...");
-            tpmApp = (TPMAppraiser) appraiserManager.saveAppraiser(new TPMAppraiser());
+//            tpmApp = (TPMAppraiser) appraiserManager.saveAppraiser(new TPMAppraiser());
         } else {
             LOGGER.info("TPM appraiser found.");
         }

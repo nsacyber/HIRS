@@ -4,19 +4,15 @@ import hirs.FilteredRecordsList;
 import hirs.data.persist.ArchivableEntity;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.hibernate.Criteria;
 import org.hibernate.HibernateException;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.StatelessSession;
 import org.hibernate.Transaction;
 import org.hibernate.criterion.Conjunction;
-import org.hibernate.criterion.CriteriaSpecification;
 import org.hibernate.criterion.Criterion;
 import org.hibernate.criterion.Disjunction;
 import org.hibernate.criterion.MatchMode;
-import org.hibernate.criterion.Order;
-import org.hibernate.criterion.Projections;
 import org.hibernate.criterion.Restrictions;
 import org.hibernate.query.Query;
 import org.hibernate.service.spi.ServiceRegistryImplementor;
@@ -111,6 +107,7 @@ public abstract class AbstractDbManager<T> implements CrudManager<T> {
      * @throws DBManagerException if unable to find the baseline or delete it
      * from the database
      */
+    @SuppressWarnings("unchecked")
     protected boolean doDelete(final Serializable id) throws DBManagerException {
         LOGGER.debug("deleting object: {}", id);
         if (id == null) {
@@ -167,20 +164,31 @@ public abstract class AbstractDbManager<T> implements CrudManager<T> {
         Transaction tx = null;
         Session session = factory.getCurrentSession();
         CriteriaBuilder builder = session.getCriteriaBuilder();
-        CriteriaQuery<T> criteria = builder.createQuery(clazz);
+
         try {
             LOGGER.debug("retrieving object from db");
             tx = session.beginTransaction();
-            Root<T> myObjectRoot = criteria.from(this.clazz.getClass());
-            Join<T, JoinObject> joinObject = myObjectRoot.join("joinObject");
-            Object object = session.getSessionFactory().getCurrentSession().createCriteria(this.clazz.getClass())
-                    .add(Restrictions.eq("name", name)).uniqueResult();
-            if (object instanceof T) {
-                T objectOfTypeT = (T) object;
-                LOGGER.debug("found object, deleting it");
-                session.delete(objectOfTypeT);
-                deleted = true;
-            }
+//            Root<T> myObjectRoot = criteria.from(this.clazz);
+//            Object object = session.getSessionFactory().getCurrentSession()
+//            .createCriteria(this.clazz.getClass())
+//                    .add(Restrictions.eq("name", name)).uniqueResult();
+//
+//                T objectOfTypeT = (T) object;
+//                LOGGER.debug("found object, deleting it");
+//                session.delete(objectOfTypeT);
+//                deleted = true;
+
+
+            CriteriaQuery<T> criteriaQuery = builder.createQuery(clazz);
+            Root<T> root = criteriaQuery.from(clazz);
+            Predicate recordPredicate = builder.and(
+                    builder.equal(root.get("name"), name));
+            criteriaQuery.select(root).where(recordPredicate).distinct(true);
+            Query<T> query = session.createQuery(criteriaQuery);
+            T result = query.getSingleResult();
+            session.delete(result);
+            deleted = true;
+
             tx.commit();
         } catch (Exception e) {
             final String msg = "unable to retrieve object";
@@ -238,6 +246,7 @@ public abstract class AbstractDbManager<T> implements CrudManager<T> {
      * @return the number of entities deleted
      * @throws DBManagerException if unable to delete the records
      */
+    @SuppressWarnings("unchecked")
     protected int doDeleteAll() throws DBManagerException {
         int numEntitiesDeleted = 0;
         Transaction tx = null;
@@ -246,24 +255,22 @@ public abstract class AbstractDbManager<T> implements CrudManager<T> {
             LOGGER.debug("Deleting instances of class: {}", this.clazz.getClass());
             tx = session.beginTransaction();
             CriteriaBuilder builder = session.getCriteriaBuilder();
-            CriteriaQuery<T> criteriaQuery = builder.createQuery(this.clazz.getClass());
-            Root<T> root = criteriaQuery.from(this.clazz.getClass());
-            Predicate recordPredicate = builder.and(
-                    );
-            criteriaQuery.select(root).where(recordPredicate);
+            CriteriaQuery<T> criteriaQuery = builder.createQuery(this.clazz);
+            Root<T> root = criteriaQuery.from(this.clazz);
+            criteriaQuery.select(root).distinct(true);
             Query<T> query = session.createQuery(criteriaQuery);
             List<T> results = query.getResultList();
-            T ret = null;
-            if (results != null && !results.isEmpty()) {
-                ret = results.get(0);
-            }
 
-            List instances = session.createCriteria(this.clazz.getClass())
-                    .setResultTransformer(Criteria.DISTINCT_ROOT_ENTITY).list();
-            for (Object instance : instances) {
-                    session.delete((T) instance);
-                    numEntitiesDeleted++;
+            for (T result : results) {
+                session.delete(result);
+                numEntitiesDeleted++;
             }
+//            List instances = session.createCriteria(this.clazz.getClass())
+//                    .setResultTransformer(Criteria.DISTINCT_ROOT_ENTITY).list();
+//            for (Object instance : instances) {
+//                    session.delete((T) instance);
+//                    numEntitiesDeleted++;
+//            }
             tx.commit();
         } catch (Exception e) {
             final String msg = "unable to truncate class";
@@ -281,15 +288,15 @@ public abstract class AbstractDbManager<T> implements CrudManager<T> {
      * Runs a Criteria query using the given collection of Criterion over the
      * associated class.
      *
-     * @param criteriaCollection the collection of Criterion to apply
+     * @param predicateCollection the collection of Criterion to apply
      *
      * @return a List of objects that match the criteria
      * @throws DBManagerException if an error is encountered while performing the query or creating
      * the result objects
      */
-    protected List<T> doGetWithCriteria(final Collection<Criterion> criteriaCollection)
+    protected List<T> doGetWithCriteria(final Collection<Predicate> predicateCollection)
             throws DBManagerException {
-        return doGetWithCriteria(clazz, criteriaCollection);
+        return doGetWithCriteria(clazz, predicateCollection);
     }
 
     /**
@@ -298,8 +305,7 @@ public abstract class AbstractDbManager<T> implements CrudManager<T> {
      *
      * @param clazzToGet the specific type of class to retrieve
      *            (should extend this class' &lt;T&gt; parameter)
-     * @param clazzToGet the class of object to retrieve
-     * @param criteriaCollection the collection of Criterion to apply
+     * @param predicateCollection the collection of Criterion to apply
      *
      * @return a List of objects that match the criteria
      * @throws DBManagerException if an error is encountered while performing the query or creating
@@ -307,10 +313,10 @@ public abstract class AbstractDbManager<T> implements CrudManager<T> {
      */
     protected final List<T> doGetWithCriteria(
             final Class<T> clazzToGet,
-            final Collection<Criterion> criteriaCollection
+            final Collection<Predicate> predicateCollection
     ) throws DBManagerException {
         LOGGER.debug("running criteria query over: {}", clazzToGet);
-        if (clazzToGet == null || criteriaCollection == null) {
+        if (clazzToGet == null || predicateCollection == null) {
             LOGGER.debug("null object argument");
             throw new NullPointerException("criteria or restrictions");
         }
@@ -320,12 +326,23 @@ public abstract class AbstractDbManager<T> implements CrudManager<T> {
         try {
             LOGGER.debug("retrieving criteria from db");
             tx = session.beginTransaction();
-            Criteria criteria = session.createCriteria(clazzToGet);
-            for (Criterion crit : criteriaCollection) {
-                criteria.add(crit);
+            CriteriaBuilder builder = session.getCriteriaBuilder();
+            CriteriaQuery<T> criteriaQuery = builder.createQuery(this.clazz);
+            Root<T> root = criteriaQuery.from(this.clazz);
+            criteriaQuery.select(root);
+            for (Predicate predicate : predicateCollection) {
+                criteriaQuery.where(predicate);
             }
-            List list = criteria.list();
-            for (Object o : list) {
+
+            Query<T> query = session.createQuery(criteriaQuery);
+            List<T> results = query.getResultList();
+
+//            Criteria criteria = session.createCriteria(clazzToGet);
+//            for (Criterion crit : criteriaCollection) {
+//                criteria.add(crit);
+//            }
+//            List list = criteria.list();
+            for (Object o : results) {
                 if (o != null && clazzToGet.isInstance(o)) {
                     ret.add(clazzToGet.cast(o));
                 }
@@ -354,6 +371,7 @@ public abstract class AbstractDbManager<T> implements CrudManager<T> {
      * @throws DBManagerException if object has previously been saved or an
      * error occurs while trying to save it to the database
      */
+    @SuppressWarnings("unchecked")
     protected T doSave(final T object) throws DBManagerException {
         LOGGER.debug("saving object: {}", object);
         if (object == null) {
@@ -511,7 +529,8 @@ public abstract class AbstractDbManager<T> implements CrudManager<T> {
      * @return list of <code>T</code> names
      * @throws DBManagerException if unable to search the database
      */
-    protected List<T> doGetList(final T entity,
+    @SuppressWarnings("unchecked")
+    protected List<T> doGetList(final Class<T> entity,
                                 final Criterion additionalRestriction)
             throws DBManagerException {
         LOGGER.debug("Getting object list");
@@ -520,7 +539,7 @@ public abstract class AbstractDbManager<T> implements CrudManager<T> {
             return new ArrayList<>();
         }
 
-        T searchClass = entity;
+        Class<T> searchClass = entity;
         List<T> objects = new ArrayList<>();
         Transaction tx = null;
         Session session = factory.getCurrentSession();
@@ -602,19 +621,32 @@ public abstract class AbstractDbManager<T> implements CrudManager<T> {
         List<T> objects = new ArrayList<>();
         Transaction tx = null;
         Session session = factory.getCurrentSession();
-        try {
+        CriteriaBuilder builder = session.getCriteriaBuilder();
+//        try {
             LOGGER.debug("updating object in db");
             tx = session.beginTransaction();
 
             //Returns totalResults in the given entity
-            Criteria criteria = session.createCriteria(searchClass)
-                    .setProjection(Projections.countDistinct("id"));
-            criteriaModifier.modify(criteria);
+            CriteriaQuery<Long> criteriaQuery = builder.createQuery(Long.class);
+            Root<T> root = criteriaQuery.from(clazz);
+            criteriaQuery.select(builder.count(criteriaQuery.from(clazz)));
+            List<Predicate> predicates = new ArrayList<>();
 
-            Long totalResultCount = (Long) criteria.uniqueResult();
+            predicates.add(builder.isNotNull(root.get("id")));
+
+        // is this enough to not use the id column?
+            criteriaQuery.select(builder.countDistinct(root));
+            criteriaQuery.where(predicates.toArray(new Predicate[]{}));
+
+//            Criteria criteria = session.createCriteria(searchClass)
+//                    .setProjection(Projections.countDistinct("id"));
+//            criteriaModifier.modify(criteria);
+
+        // criteria.uniqueResult();
+            Long totalResultCount = session.createQuery(criteriaQuery).getSingleResult();
 
             Long recordsFiltered = totalResultCount;
-            Conjunction and = Restrictions.conjunction();
+            Conjunction restrictions = Restrictions.conjunction();
             if (totalResultCount != 0) {
                 LOGGER.info("Total result count greater than 0");
                 //Builds the search criteria from all of the searchable columns
@@ -631,17 +663,21 @@ public abstract class AbstractDbManager<T> implements CrudManager<T> {
                                 or.add(ilikeCast(entry.getKey(), word));
                             }
                         }
-                        and.add(or);
+                        restrictions.add(or); // cyrus-dev
                     }
                 }
 
                 LOGGER.info("Search columns filtered");
                 //Retrieves a count of all the records after being filtered
-                criteria.setProjection(Projections.countDistinct("id"))
-                        .add(and);
+//                criteria.setProjection(Projections.countDistinct("id"))
+//                        .add(restrictions);
+
+//                criteriaQuery.add(restrictions);
+                criteriaQuery.where(predicates.toArray(new Predicate[]{}));
                 try {
                     LOGGER.info("Get unique result from criteria object");
-                    recordsFiltered = (Long) criteria.uniqueResult();
+                    //(Long) criteria.uniqueResult();
+                    recordsFiltered = session.createQuery(criteriaQuery).uniqueResult();
                 } catch (HibernateException e) {
                     LOGGER.error(e.getMessage());
                 }
@@ -651,59 +687,61 @@ public abstract class AbstractDbManager<T> implements CrudManager<T> {
                 //Generates an inner query that handles the searching, paging,
                 //and sorting of the data.  The query returns distinct ids in
                 //order based on these values
-                Criteria uniqueSubCriteria = session.createCriteria(searchClass)
-                        .setProjection(
-                                Projections.distinct(
-                                        Projections.property("id")))
-                        .add(and)
-                        .setFirstResult(firstResult)
-                        .setMaxResults(maxResults);
-                criteriaModifier.modify(uniqueSubCriteria);
-                if (ascending) {
-                    uniqueSubCriteria.addOrder(Order.asc(columnToOrder));
-                } else {
-                    uniqueSubCriteria.addOrder(Order.desc(columnToOrder));
-                }
-
-                List ids = uniqueSubCriteria.list();
+//                session.getCriteriaBuilder().createQuery(searchClass).
+//                Criteria uniqueSubCriteria = session.createCriteria(searchClass)
+//                        .setProjection(
+//                                Projections.distinct(
+//                                        Projections.property("id")))
+//                        .add(restrictions)
+//                        .setFirstResult(firstResult)
+//                        .setMaxResults(maxResults);
+//                criteriaModifier.modify(uniqueSubCriteria);
+//                if (ascending) {
+//                    uniqueSubCriteria.addOrder(Order.asc(columnToOrder));
+//                } else {
+//                    uniqueSubCriteria.addOrder(Order.desc(columnToOrder));
+//                }
+//
+//                List ids = uniqueSubCriteria.list();
 
                 //Values take the unique identities that passed all other
                 //criteria and returns the desired entity.  Queries needed to be
                 //separated in order to keep pagination and distinct results
-                Criteria finalCriteria = session.createCriteria(searchClass)
-                        .add(Restrictions.in("id", ids))
-                        .setResultTransformer(
-                                CriteriaSpecification.DISTINCT_ROOT_ENTITY);
-                criteriaModifier.modify(finalCriteria);
-
-                //Checks the order and validates before returning the values
-                if (ascending) {
-                    finalCriteria.addOrder(Order.asc(columnToOrder));
-                } else {
-                    finalCriteria.addOrder(Order.desc(columnToOrder));
-                }
-
-                List list = finalCriteria.list();
-                for (Object o : list) {
-                    if (clazz.isInstance(o)) {
-                        objects.add(clazz.cast(o));
-                    }
-                }
+//                Criteria finalCriteria = session.createCriteria(searchClass)
+//                        .add(Restrictions.in("id", ids))
+//                        .setResultTransformer(
+//                                CriteriaSpecification.DISTINCT_ROOT_ENTITY);
+//                criteriaModifier.modify(finalCriteria);
+//
+//                //Checks the order and validates before returning the values
+//                if (ascending) {
+//                    finalCriteria.addOrder(Order.asc(columnToOrder));
+//                } else {
+//                    finalCriteria.addOrder(Order.desc(columnToOrder));
+//                }
+//
+//                List list = finalCriteria.list();
+//                for (Object o : list) {
+//                    if (clazz.isInstance(o)) {
+//                        objects.add(clazz.cast(o));
+//                    }
+//                }
+//            }
+                //Stores results of all the queries for the JQuery Datatable
+                aqr.setRecordsTotal(totalResultCount);
+                aqr.setRecordsFiltered(recordsFiltered);
+                aqr.addAll(objects);
+                tx.commit();
+//        } catch (HibernateException e) {
+//            final String msg = "unable to update object";
+//            LOGGER.error(msg, e);
+//            if (tx != null) {
+//                LOGGER.debug("rolling back transaction");
+//                tx.rollback();
+//            }
+//            throw e;
             }
-            //Stores results of all the queries for the JQuery Datatable
-            aqr.setRecordsTotal(totalResultCount);
-            aqr.setRecordsFiltered(recordsFiltered);
-            aqr.addAll(objects);
-            tx.commit();
-        } catch (HibernateException e) {
-            final String msg = "unable to update object";
-            LOGGER.error(msg, e);
-            if (tx != null) {
-                LOGGER.debug("rolling back transaction");
-                tx.rollback();
-            }
-            throw e;
-        }
+
         LOGGER.info(searchClass.getName() + " found " + aqr.getRecordsTotal() + " records");
         return aqr;
     }

@@ -13,7 +13,7 @@ public interface CrudManager<T> extends OrderedListQuerier<T> {
 
     /**
      *
-      * @param classToSet
+      * @param classToSet the class to be referenced.
      */
     void setClazz(Class<T> classToSet);
 
@@ -76,7 +76,7 @@ public interface CrudManager<T> extends OrderedListQuerier<T> {
      * @return list of <code>T</code> names
      * @throws DBManagerException if unable to search the database
      */
-    List<T> getList(T object) throws DBManagerException;
+    List<T> getList(Class<T> object) throws DBManagerException;
 
     /**
      * Returns a list of all <code>T</code>s of type <code>clazz</code> in the database, with an
@@ -92,7 +92,7 @@ public interface CrudManager<T> extends OrderedListQuerier<T> {
      * @return list of <code>T</code> names
      * @throws DBManagerException if unable to search the database
      */
-    List<T> getList(T object, Criterion additionalRestriction)
+    List<T> getList(Class<T> object, Criterion additionalRestriction)
                             throws DBManagerException;
 
     /**
@@ -109,19 +109,6 @@ public interface CrudManager<T> extends OrderedListQuerier<T> {
      */
     boolean deleteById(Serializable id)
             throws DBManagerException;
-
-    /**
-     * Deletes the object from the database. This removes all of the database
-     * entries that stored information with regards to the this object.
-     * <p>
-     * If the object is referenced by any other tables then this will throw a
-     * <code>DBManagerException</code>.
-     *
-     * @param entity object to delete
-     * @return true if successfully found and deleted the object
-     * @throws DBManagerException if unable to delete the object from the database
-     */
-    boolean delete(Class<T> entity) throws DBManagerException;
 
     /**
      * Deletes all instances of the associated class.

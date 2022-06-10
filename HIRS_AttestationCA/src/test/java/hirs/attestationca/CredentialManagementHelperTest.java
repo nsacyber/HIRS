@@ -1,13 +1,13 @@
 package hirs.attestationca;
 
+import hirs.data.persist.certificate.Certificate;
+import hirs.persist.CertificateManager;
 import org.apache.commons.io.IOUtils;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
 import java.io.FileInputStream;
 import java.io.IOException;
-import hirs.data.persist.certificate.Certificate;
-import hirs.persist.CertificateManager;
 
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.mock;
@@ -85,7 +85,7 @@ public class CredentialManagementHelperTest {
         byte[] ekBytes = IOUtils.toByteArray(new FileInputStream(path));
 
         CredentialManagementHelper.storeEndorsementCredential(certMan, ekBytes);
-        verify(certMan).save(any(Certificate.class));
+        verify(certMan).saveCertificate(any(Certificate.class));
     }
 
     /**
@@ -99,6 +99,6 @@ public class CredentialManagementHelperTest {
         byte[] ekBytes = IOUtils.toByteArray(new FileInputStream(path));
 
         CredentialManagementHelper.storeEndorsementCredential(certMan, ekBytes);
-        verify(certMan).save(any(Certificate.class));
+        verify(certMan).saveCertificate(any(Certificate.class));
     }
 }

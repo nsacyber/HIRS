@@ -143,6 +143,18 @@ public class DBPolicyManager extends DBManager<Policy> implements PolicyManager 
     }
 
     /**
+     * Deletes the policy given.
+     *
+     * @param policy      {@link Policy} to be deleted
+     * @return status of the deletion
+     * @throws DBManagerException
+     */
+    @Override
+    public final boolean delete(final Policy policy) throws DBManagerException {
+        return false;
+    }
+
+    /**
      * Sets the default <code>Policy</code> to use for an <code>Appraiser</code>.
      * This updates the database to reflect this change so that when this
      * class is loaded it should read that property.
@@ -165,15 +177,19 @@ public class DBPolicyManager extends DBManager<Policy> implements PolicyManager 
         Transaction tx = session.beginTransaction();
         try {
             CriteriaBuilder criteriaBuilder = session.getCriteriaBuilder();
-            CriteriaQuery<DeviceGroup> deviceGroupCriteriaQuery = criteriaBuilder.createQuery(DeviceGroup.class);
-            CriteriaQuery<PolicyMapper> policyMapperCriteriaQuery = criteriaBuilder.createQuery(PolicyMapper.class);
+            CriteriaQuery<DeviceGroup> deviceGroupCriteriaQuery = criteriaBuilder
+                    .createQuery(DeviceGroup.class);
+            CriteriaQuery<PolicyMapper> policyMapperCriteriaQuery = criteriaBuilder
+                    .createQuery(PolicyMapper.class);
             Root<DeviceGroup> deviceGroupRoot = deviceGroupCriteriaQuery.from(DeviceGroup.class);
-            Root<PolicyMapper> policyMapperRoot = policyMapperCriteriaQuery.from(PolicyMapper.class);
+            Root<PolicyMapper> policyMapperRoot = policyMapperCriteriaQuery
+                    .from(PolicyMapper.class);
             Predicate deviceGroupPredicate = criteriaBuilder.and(
                     criteriaBuilder.equal(deviceGroupRoot.get("name"), DeviceGroup.DEFAULT_GROUP));
             Predicate policyPredicate = criteriaBuilder.and(
                     criteriaBuilder.equal(policyMapperRoot.get("appraiser"), appraiser),
-                    criteriaBuilder.equal(policyMapperRoot.get("group.name"), DeviceGroup.DEFAULT_GROUP));
+                    criteriaBuilder.equal(policyMapperRoot.get("group.name"),
+                            DeviceGroup.DEFAULT_GROUP));
             deviceGroupCriteriaQuery.select(deviceGroupRoot).where(deviceGroupPredicate);
             policyMapperCriteriaQuery.select(policyMapperRoot).where(policyPredicate);
 
@@ -264,7 +280,8 @@ public class DBPolicyManager extends DBManager<Policy> implements PolicyManager 
             LOGGER.debug("retrieving policy mapper from db where appraiser = {}",
                     appraiser);
             CriteriaBuilder criteriaBuilder = session.getCriteriaBuilder();
-            CriteriaQuery<PolicyMapper> criteriaQuery = criteriaBuilder.createQuery(PolicyMapper.class);
+            CriteriaQuery<PolicyMapper> criteriaQuery = criteriaBuilder
+                    .createQuery(PolicyMapper.class);
             Root<PolicyMapper> root = criteriaQuery.from(PolicyMapper.class);
             Predicate recordPredicate = criteriaBuilder.and(
                     criteriaBuilder.equal(root.get("appraiser"), appraiser),
@@ -350,7 +367,8 @@ public class DBPolicyManager extends DBManager<Policy> implements PolicyManager 
                 deviceGroup = retrievedDevice.getDeviceGroup();
             }
             final CriteriaBuilder policyCriteriaBuilder = session.getCriteriaBuilder();
-            CriteriaQuery<PolicyMapper> policyCriteriaQuery = policyCriteriaBuilder.createQuery(PolicyMapper.class);
+            CriteriaQuery<PolicyMapper> policyCriteriaQuery = policyCriteriaBuilder
+                    .createQuery(PolicyMapper.class);
             Root<PolicyMapper> policyRoot = policyCriteriaQuery.from(PolicyMapper.class);
             Predicate policyPredicate = policyCriteriaBuilder.and(
                     policyCriteriaBuilder.equal(policyRoot.get("appraiser"), appraiser),
@@ -413,7 +431,8 @@ public class DBPolicyManager extends DBManager<Policy> implements PolicyManager 
             LOGGER.debug("retrieving policy mapper from db where appraiser = "
                     + "{} and device group = {}", appraiser, deviceGroup);
             CriteriaBuilder criteriaBuilder = session.getCriteriaBuilder();
-            CriteriaQuery<PolicyMapper> criteriaQuery = criteriaBuilder.createQuery(PolicyMapper.class);
+            CriteriaQuery<PolicyMapper> criteriaQuery = criteriaBuilder
+                    .createQuery(PolicyMapper.class);
             Root<PolicyMapper> root = criteriaQuery.from(PolicyMapper.class);
             Predicate recordPredicate = criteriaBuilder.and(
                     criteriaBuilder.equal(root.get("appraiser"), appraiser),
@@ -483,7 +502,8 @@ public class DBPolicyManager extends DBManager<Policy> implements PolicyManager 
                     + "appraiser = {} and device group = {}", appraiser,
                     deviceGroup);
             CriteriaBuilder criteriaBuilder = session.getCriteriaBuilder();
-            CriteriaQuery<PolicyMapper> criteriaQuery = criteriaBuilder.createQuery(PolicyMapper.class);
+            CriteriaQuery<PolicyMapper> criteriaQuery = criteriaBuilder
+                    .createQuery(PolicyMapper.class);
             Root<PolicyMapper> root = criteriaQuery.from(PolicyMapper.class);
             Predicate recordPredicate = criteriaBuilder.and(
                     criteriaBuilder.equal(root.get("appraiser"), appraiser),

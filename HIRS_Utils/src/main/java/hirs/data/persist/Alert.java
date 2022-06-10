@@ -227,6 +227,32 @@ public class Alert extends ArchivableEntity {
     }
 
     /**
+     * Sets the id of the <code>baselineId</code> that was in use, if any, when the
+     * <code>Alert</code> was generated. This will occur during the appraisal
+     * process. The <code>Appraiser</code> validates the integrity of a client
+     * platform using a <code>baselineId</code> instance. If the appraisal fails
+     * then an <code>Alert</code> is generated and the id of the <code>Policy</code> used
+     * during the appraisal is set here.
+     *
+     * @param baselineId - id of the <code>baselineId</code> associated with this <code>Alert</code>
+     */
+    public final void setBaselineId(final UUID baselineId) {
+        this.baselineId = baselineId;
+    }
+
+    /**
+     * Returns the id of the <code>baselineId</code> that was in use, if any, when the
+     * <code>Alert</code> was generated. This will occur during the appraisal
+     * process. The <code>Appraiser</code> validates the integrity of a client
+     * platform using a <code>Policy</code> instance.
+     *
+     * @return the id of the <code>baselineId</code> associated with this <code>Alert</code>
+     */
+    public final UUID getBaselineId() {
+        return baselineId;
+    }
+
+    /**
      * Returns the IDs of the <code>Baseline</code>s that were in use, if any, when the
      * <code>Alert</code> was generated.
      *
@@ -325,13 +351,6 @@ public class Alert extends ArchivableEntity {
         if (severity != null) {
             this.severity = severity;
         }
-    }
-
-    /**
-     * Remove this alert's reference to a baseline, but keep the <code>Severity</code> the same.
-     */
-    public final void clearBaseline() {
-        this.baselineId = null;
     }
 
     /**

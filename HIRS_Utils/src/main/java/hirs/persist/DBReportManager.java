@@ -1,7 +1,6 @@
 package hirs.persist;
 
 import hirs.data.persist.Report;
-import hirs.data.persist.ReportSummary;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 import org.hibernate.SessionFactory;
@@ -10,7 +9,6 @@ import org.hibernate.criterion.Disjunction;
 import org.hibernate.criterion.MatchMode;
 import org.hibernate.criterion.Restrictions;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -77,7 +75,8 @@ public class DBReportManager extends DBManager<Report> implements ReportManager 
             throws ReportManagerException {
         LOGGER.debug("getting report list");
         try {
-            return super.getList(Report);
+            //super.getList(Report);
+            return null;
         } catch (DBManagerException e) {
             throw new ReportManagerException(e);
         }
@@ -158,29 +157,10 @@ public class DBReportManager extends DBManager<Report> implements ReportManager 
             throws ReportManagerException {
         LOGGER.debug("deleting baseline: {}", id);
         try {
-            return super.delete(id);
+            return false; //super.delete(id);
         } catch (DBManagerException e) {
             throw new ReportManagerException(e);
         }
-    }
-
-    /**
-     * Method retrieves all ima report ids corresponding to provided
-     * device id.
-     * device.
-     * @param id of device
-     * @return list of IMA report ids
-     */
-    private List<UUID> getImaIdsOfDevice(final String id) {
-
-        ReportSummaryManager reportSummaryManager =
-                new DBReportSummaryManager(getFactory());
-        List<ReportSummary> reportSummary = reportSummaryManager
-                .getReportSummaryListByHostname(id);
-
-        List<UUID> imaReportIds = new ArrayList<>();
-
-        return imaReportIds;
     }
 
     private Conjunction buildImaRecordSearchFilter(final String search, final

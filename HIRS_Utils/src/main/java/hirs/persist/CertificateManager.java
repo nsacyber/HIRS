@@ -15,13 +15,13 @@ public interface CertificateManager {
      * @param certificate the Certificate
      * @return the persisted Certificate
      */
-    Certificate save(Certificate certificate);
+    Certificate saveCertificate(Certificate certificate);
 
     /**
      * Updates an existing certificate.
      * @param certificate the cert to update
      */
-    void update(Certificate certificate);
+    void updateCertificate(Certificate certificate);
 
     /**
      * Retrieve Certificates according to the given {@link CertificateSelector}.
@@ -30,7 +30,7 @@ public interface CertificateManager {
      * @param certificateSelector a {@link CertificateSelector} to use for querying
      * @return a Set of matching Certificates, which may be empty
      */
-    <T extends Certificate> Set<T> get(CertificateSelector certificateSelector);
+    <T extends Certificate> Set<T> getCertificate(CertificateSelector certificateSelector);
 
     /**
      * Delete the given Certificate.

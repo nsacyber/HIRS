@@ -73,7 +73,7 @@ public class EndorsementKeyCredentialsPageControllerTest extends PageControllerT
     public void uploadAndArchiveNonEndorsementCert() throws Exception {
         // perform upload. Attach csv file and add HTTP parameters for the baseline name and type.
         MvcResult result = getMockMvc().perform(MockMvcRequestBuilders
-                .fileUpload("/certificate-request/endorsement-key-credentials/upload")
+                .multipart("/certificate-request/endorsement-key-credentials/upload")
                 .file(nonEkCertFile))
                 .andExpect(status().is3xxRedirection())
                 .andReturn();
@@ -87,7 +87,8 @@ public class EndorsementKeyCredentialsPageControllerTest extends PageControllerT
 
         // verify the cert was actually stored
         Set<Certificate> records =
-                certificateManager.get(EndorsementCredential.select(certificateManager));
+                certificateManager.getCertificate(
+                        EndorsementCredential.select(certificateManager));
         Assert.assertEquals(records.size(), 1);
 
         Certificate cert = records.iterator().next();
@@ -99,7 +100,7 @@ public class EndorsementKeyCredentialsPageControllerTest extends PageControllerT
                 .param("id", cert.getId().toString()))
                 .andExpect(status().is3xxRedirection())
                 .andReturn();
-        records = certificateManager.get(EndorsementCredential
+        records = certificateManager.getCertificate(EndorsementCredential
                 .select(certificateManager).includeArchived());
         Assert.assertEquals(records.size(), 1);
 
@@ -117,7 +118,7 @@ public class EndorsementKeyCredentialsPageControllerTest extends PageControllerT
     public void uploadBadEndorsementCert() throws Exception {
         // perform upload. Attach csv file and add HTTP parameters for the baseline name and type.
         MvcResult result = getMockMvc().perform(MockMvcRequestBuilders
-                .fileUpload("/certificate-request/endorsement-key-credentials/upload")
+                .multipart("/certificate-request/endorsement-key-credentials/upload")
                 .file(badCertFile))
                 .andExpect(status().is3xxRedirection())
                 .andReturn();
@@ -130,7 +131,8 @@ public class EndorsementKeyCredentialsPageControllerTest extends PageControllerT
 
         // verify the cert was not actually stored
         Set<Certificate> records =
-                certificateManager.get(EndorsementCredential.select(certificateManager));
+                certificateManager.getCertificate(
+                        EndorsementCredential.select(certificateManager));
         Assert.assertEquals(records.size(), 0);
     }
 }

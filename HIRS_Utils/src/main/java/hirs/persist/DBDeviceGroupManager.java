@@ -156,7 +156,8 @@ public class DBDeviceGroupManager extends DBManager<DeviceGroup> implements Devi
         try {
             LOGGER.debug("retrieving policy mapper from db where policy = {}", policy);
             CriteriaBuilder criteriaBuilder = session.getCriteriaBuilder();
-            CriteriaQuery<PolicyMapper> criteriaQuery = criteriaBuilder.createQuery(PolicyMapper.class);
+            CriteriaQuery<PolicyMapper> criteriaQuery = criteriaBuilder
+                    .createQuery(PolicyMapper.class);
             Root<PolicyMapper> root = criteriaQuery.from(PolicyMapper.class);
             Predicate recordPredicate = criteriaBuilder.and(
                     criteriaBuilder.equal(root.get("policy"), policy));
@@ -261,7 +262,8 @@ public class DBDeviceGroupManager extends DBManager<DeviceGroup> implements Devi
             return super.getOrderedList(DeviceGroup.class, columnToOrder, ascending, firstResult,
                     maxResults, search, searchableColumns, modifier);
         } catch (DBManagerException e) {
-            throw new AlertManagerException(e);
+            LOGGER.error(e);
+            return null;
         }
     }
 }

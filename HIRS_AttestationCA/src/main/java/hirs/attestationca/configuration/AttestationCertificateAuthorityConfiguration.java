@@ -7,7 +7,6 @@ import hirs.persist.DBReferenceManifestManager;
 import hirs.persist.DeviceGroupManager;
 import hirs.persist.DeviceManager;
 import hirs.persist.HibernateConfiguration;
-import hirs.persist.ReferenceDigestManager;
 import hirs.persist.ReferenceEventManager;
 import hirs.persist.ReferenceManifestManager;
 import hirs.structs.converters.SimpleStructConverter;
@@ -32,7 +31,7 @@ import org.springframework.orm.hibernate5.LocalSessionFactoryBean;
 import org.springframework.web.servlet.config.annotation.DefaultServletHandlerConfigurer;
 import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
-import org.springframework.web.servlet.config.annotation.WebMvcConfigurerAdapter;
+import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 import javax.annotation.PostConstruct;
 import java.io.IOException;
@@ -64,7 +63,7 @@ import java.security.cert.X509Certificate;
     "hirs.validation", "hirs.data.service" })
 @Import(HibernateConfiguration.class)
 @EnableWebMvc
-public class AttestationCertificateAuthorityConfiguration extends WebMvcConfigurerAdapter {
+public class AttestationCertificateAuthorityConfiguration implements WebMvcConfigurer {
 
     private static final Logger LOG
             = LogManager.getLogger(AttestationCertificateAuthorityConfiguration.class);
@@ -253,16 +252,6 @@ public class AttestationCertificateAuthorityConfiguration extends WebMvcConfigur
     @Bean
     public ReferenceManifestManager referenceManifestManager() {
         return new DBReferenceManifestManager(sessionFactory.getObject());
-    }
-
-    /**
-     * Creates a {@link ReferenceDigestManager} ready to use.
-     *
-     * @return {@link ReferenceDigestManager}
-     */
-    @Bean
-    public ReferenceDigestManager referenceDigestManager() {
-        return new DBReferenceDigestManager(sessionFactory.getObject());
     }
 
     /**

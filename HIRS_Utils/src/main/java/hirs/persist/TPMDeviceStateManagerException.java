@@ -42,5 +42,4 @@ public class TPMDeviceStateManagerException extends RuntimeException {
     TPMDeviceStateManagerException(final String msg, final Throwable t) {
         super(msg, t);
     }
-
 }

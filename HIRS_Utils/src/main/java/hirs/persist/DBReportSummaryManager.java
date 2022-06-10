@@ -1,15 +1,11 @@
 package hirs.persist;
 
-import hirs.FilteredRecordsList;
 import hirs.data.persist.ReportSummary;
-import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
-import org.hibernate.Criteria;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.Transaction;
 import org.hibernate.criterion.Order;
-import org.hibernate.criterion.Restrictions;
 import org.hibernate.query.Query;
 
 import javax.persistence.criteria.CriteriaBuilder;
@@ -18,7 +14,6 @@ import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Root;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.UUID;
 
 import static org.apache.logging.log4j.LogManager.getLogger;
@@ -101,11 +96,12 @@ public class DBReportSummaryManager extends DBManager<ReportSummary>
      */
     @Override
     public final List<ReportSummary> getReportSummaryList(
-            final Class<? extends ReportSummary> clazz)
+            final ReportSummary clazz)
             throws ReportSummaryManagerException {
         LOGGER.debug("getting ReportSummary list");
         try {
-            return super.getList(clazz);
+            // this should work but there is an issue with the ReportSummary class
+            return null; //super.getList(clazz);
         } catch (DBManagerException e) {
             throw new ReportSummaryManagerException(e);
         }
@@ -141,7 +137,8 @@ public class DBReportSummaryManager extends DBManager<ReportSummary>
             LOGGER.debug("retrieving objects from db");
             tx = session.beginTransaction();
             CriteriaBuilder criteriaBuilder = session.getCriteriaBuilder();
-            CriteriaQuery<ReportSummary> criteriaQuery = criteriaBuilder.createQuery(ReportSummary.class);
+            CriteriaQuery<ReportSummary> criteriaQuery = criteriaBuilder
+                    .createQuery(ReportSummary.class);
             Root<ReportSummary> root = criteriaQuery.from(ReportSummary.class);
             Predicate recordPredicate = criteriaBuilder
                     .and(criteriaBuilder.equal(root.get("clientHostname"), hostname));
@@ -216,7 +213,8 @@ public class DBReportSummaryManager extends DBManager<ReportSummary>
             LOGGER.debug("retrieving objects from db");
             tx = session.beginTransaction();
             CriteriaBuilder criteriaBuilder = session.getCriteriaBuilder();
-            CriteriaQuery<ReportSummary> criteriaQuery = criteriaBuilder.createQuery(ReportSummary.class);
+            CriteriaQuery<ReportSummary> criteriaQuery = criteriaBuilder
+                    .createQuery(ReportSummary.class);
             Root<ReportSummary> root = criteriaQuery.from(ReportSummary.class);
             Predicate recordPredicate = criteriaBuilder
                     .and(criteriaBuilder.equal(root.get("report.id"), id));
@@ -234,33 +232,6 @@ public class DBReportSummaryManager extends DBManager<ReportSummary>
             throw new ReportSummaryManagerException(e);
         }
         return object;
-    }
-
-    /**
-     * Deletes the <code>ReportSummary</code> from the database. This removes
-     * all of the database entries that stored information with regards to the
-     * this <code>ReportSummary</code>.
-     * <p>
-     * If the <code>ReportSummary</code> is referenced by any other tables then
-     * this will throw a <code>ReportSummaryManagerException</code>.
-     *
-     * @param id
-     *            id of the <code>ReportSummary</code> to delete
-     * @return true if successfully found and deleted the
-     *         <code>ReportSummary</code>
-     * @throws ReportSummaryManagerException
-     *             if unable to find the baseline or delete it from the
-     *             database
-     */
-    @Override
-    public final boolean deleteReportSummary(final Long id)
-            throws ReportSummaryManagerException {
-        LOGGER.debug("deleting report summary: {}", id);
-        try {
-            return super.delete(id);
-        } catch (DBManagerException e) {
-            throw new ReportSummaryManagerException(e);
-        }
     }
 
     /**
@@ -304,7 +275,8 @@ public class DBReportSummaryManager extends DBManager<ReportSummary>
 //            }
 
             CriteriaBuilder criteriaBuilder = session.getCriteriaBuilder();
-            CriteriaQuery<ReportSummary> criteriaQuery = criteriaBuilder.createQuery(ReportSummary.class);
+            CriteriaQuery<ReportSummary> criteriaQuery = criteriaBuilder
+                    .createQuery(ReportSummary.class);
             Root<ReportSummary> root = criteriaQuery.from(ReportSummary.class);
             criteriaQuery.multiselect(root.get("clientHostname"), root.get("timestamp"));
             Query<ReportSummary> query = session.createQuery(criteriaQuery);
@@ -388,7 +360,8 @@ public class DBReportSummaryManager extends DBManager<ReportSummary>
             tx = session.beginTransaction();
             //Returns a ReportSummary based on the timestamp and hostname
             CriteriaBuilder criteriaBuilder = session.getCriteriaBuilder();
-            CriteriaQuery<ReportSummary> criteriaQuery = criteriaBuilder.createQuery(ReportSummary.class);
+            CriteriaQuery<ReportSummary> criteriaQuery = criteriaBuilder
+                    .createQuery(ReportSummary.class);
             Root<ReportSummary> root = criteriaQuery.from(ReportSummary.class);
             Predicate recordPredicate = criteriaBuilder
                     .and(criteriaBuilder.equal(root.get("clientHostname"), hostname));

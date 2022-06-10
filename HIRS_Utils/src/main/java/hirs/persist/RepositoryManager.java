@@ -36,7 +36,7 @@ public interface RepositoryManager {
      * @param clazz the type of Repository to list
      * @return a list of all persisted Repositories of the given type
      */
-    List<Repository> getRepositoryList(Class<? extends Repository> clazz);
+    List<Repository> getRepositoryList(Class<Repository> clazz);
 
     /**
      * Persist the given Repository.

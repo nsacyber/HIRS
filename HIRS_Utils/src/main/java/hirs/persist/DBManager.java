@@ -16,6 +16,7 @@ import org.springframework.retry.backoff.FixedBackOffPolicy;
 import org.springframework.retry.policy.SimpleRetryPolicy;
 import org.springframework.retry.support.RetryTemplate;
 
+import javax.persistence.criteria.Predicate;
 import java.io.Serializable;
 import java.util.Collection;
 import java.util.HashMap;
@@ -23,6 +24,7 @@ import java.util.List;
 import java.util.Map;
 
 /**
+ * @param <T> passed in type
  * Generic database manager for managing objects in a database. This provides create, read, update,
  * archive, and delete operations for managing objects in a database.
  *
@@ -108,20 +110,20 @@ public class DBManager<T> extends AbstractDbManager<T> {
      * Runs a Criteria query using the given collection of Criterion over the
      * associated class.
      *
-     * @param criteriaCollection the collection of Criterion to apply
+     * @param predicateCollection the collection of Criterion to apply
      *
      * @return a List of objects that match the criteria
      * @throws DBManagerException if an error is encountered while performing the query or creating
      * the result objects
      */
-    public final List<T> getWithCriteria(final Collection<Criterion> criteriaCollection)
+    public final List<T> getWithCriteria(final Collection<Predicate> predicateCollection)
             throws DBManagerException {
         return retryTemplate.execute(
             new RetryCallback<List<T>, DBManagerException>() {
                 @Override
                 public List<T> doWithRetry(final RetryContext context)
                         throws DBManagerException {
-                    return doGetWithCriteria(criteriaCollection);
+                    return doGetWithCriteria(predicateCollection);
                 }
             });
     }
@@ -139,7 +141,7 @@ public class DBManager<T> extends AbstractDbManager<T> {
      */
     protected final List<T> getWithCriteria(
             final Class<T> clazzToGet,
-            final Collection<Criterion> criteriaCollection) throws DBManagerException {
+            final Collection<Predicate> criteriaCollection) throws DBManagerException {
         return retryTemplate.execute(
                 new RetryCallback<List<T>, DBManagerException>() {
                     @Override
@@ -301,7 +303,7 @@ public class DBManager<T> extends AbstractDbManager<T> {
      * @return list of <code>T</code> names
      * @throws DBManagerException if unable to search the database
      */
-    public List<T> getList(final T entity)
+    public List<T> getList(final Class<T> entity)
             throws DBManagerException {
         return getList(entity, null);
     }
@@ -321,7 +323,7 @@ public class DBManager<T> extends AbstractDbManager<T> {
      * @throws DBManagerException if unable to search the database
      */
     @Override
-    public List<T> getList(final T entity, final Criterion additionalRestriction)
+    public List<T> getList(final Class<T> entity, final Criterion additionalRestriction)
             throws DBManagerException {
         return retryTemplate.execute(new RetryCallback<List<T>, DBManagerException>() {
             @Override
@@ -448,27 +450,6 @@ public class DBManager<T> extends AbstractDbManager<T> {
             @Override
             public Boolean doWithRetry(final RetryContext context) throws DBManagerException {
                 return doDelete(id);
-            }
-        });
-    }
-
-    /**
-     * Deletes the object from the database. This removes all of the database
-     * entries that stored information with regards to the this object.
-     * <p>
-     * If the object is referenced by any other tables then this will throw a
-     * <code>DBManagerException</code>.
-     *
-     * @param object object to delete
-     * @return true if successfully found and deleted the object
-     * @throws DBManagerException if unable to delete the object from the database
-     */
-    @Override
-    public final boolean delete(final Class<T> object) throws DBManagerException {
-        return retryTemplate.execute(new RetryCallback<Boolean, DBManagerException>() {
-            @Override
-            public Boolean doWithRetry(final RetryContext context) throws DBManagerException {
-                return doDelete(object);
             }
         });
     }

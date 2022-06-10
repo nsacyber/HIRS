@@ -1,5 +1,8 @@
 package hirs.attestationca.portal.page.controllers;
 
+import hirs.attestationca.portal.page.Page;
+import hirs.attestationca.portal.page.PageController;
+import hirs.attestationca.portal.page.PageControllerTest;
 import hirs.data.persist.Device;
 import hirs.data.persist.DeviceGroup;
 import hirs.data.persist.certificate.Certificate;
@@ -10,34 +13,32 @@ import hirs.data.persist.certificate.PlatformCredential;
 import hirs.persist.CertificateManager;
 import hirs.persist.DeviceGroupManager;
 import hirs.persist.DeviceManager;
-import hirs.attestationca.portal.page.PageControllerTest;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.annotation.DirtiesContext;
+import org.springframework.test.annotation.Rollback;
+import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
+import org.springframework.web.servlet.ModelAndView;
+import org.testng.Assert;
+import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.security.Security;
+import java.util.Collections;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.security.Security;
 
-import static org.hamcrest.Matchers.hasProperty;
 import static org.hamcrest.Matchers.hasItem;
-
-import org.springframework.test.annotation.Rollback;
-import org.springframework.test.web.servlet.MvcResult;
+import static org.hamcrest.Matchers.hasProperty;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.model;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-import org.testng.Assert;
-import org.testng.annotations.BeforeClass;
-import hirs.attestationca.portal.page.Page;
-import hirs.attestationca.portal.page.PageController;
-import java.util.List;
 
 /**
  * Integration tests that test the URL End Points of CertificateDetailsPageController.
@@ -112,7 +113,7 @@ public class CertificateDetailsPageControllerTest extends PageControllerTest {
                             TEST_ENDORSEMENT_CREDENTIAL,
                             null,
                             null);
-        certificateManager.save(endorsementCredential);
+        certificateManager.saveCertificate(endorsementCredential);
 
         //Upload and save CA Cert
         caCertificate = (CertificateAuthorityCredential)
@@ -121,7 +122,7 @@ public class CertificateDetailsPageControllerTest extends PageControllerTest {
                             TEST_CA_CERTIFICATE,
                             null,
                             null);
-        certificateManager.save(caCertificate);
+        certificateManager.saveCertificate(caCertificate);
 
         //Upload and save root Cert
         caRootCertificate = (CertificateAuthorityCredential)
@@ -130,7 +131,7 @@ public class CertificateDetailsPageControllerTest extends PageControllerTest {
                             TEST_ROOT_CA_CERTIFICATE,
                             null,
                             null);
-        certificateManager.save(caRootCertificate);
+        certificateManager.saveCertificate(caRootCertificate);
 
         //Upload and save Platform Cert
         platformCredential = (PlatformCredential)
@@ -139,7 +140,7 @@ public class CertificateDetailsPageControllerTest extends PageControllerTest {
                             TEST_PLATFORM_CREDENTIAL,
                             null,
                             null);
-        certificateManager.save(platformCredential);
+        certificateManager.saveCertificate(platformCredential);
 
         pcCertSet.add(platformCredential);
 
@@ -150,7 +151,7 @@ public class CertificateDetailsPageControllerTest extends PageControllerTest {
                             TEST_PLATFORM_CREDENTIAL_2,
                             null,
                             null);
-        certificateManager.save(platformCredential2);
+        certificateManager.saveCertificate(platformCredential2);
 
         pcCertSet.add(platformCredential);
 
@@ -161,7 +162,7 @@ public class CertificateDetailsPageControllerTest extends PageControllerTest {
                             TEST_PLATFORM_CREDENTIAL_2_PCI,
                             null,
                             null);
-        certificateManager.save(platformCertificatePCI);
+        certificateManager.saveCertificate(platformCertificatePCI);
 
         pcCertSet.add(platformCertificatePCI);
 
@@ -173,7 +174,7 @@ public class CertificateDetailsPageControllerTest extends PageControllerTest {
                             endorsementCredential,
                             pcCertSet);
         issuedCredential.setDevice(device);
-        certificateManager.save(issuedCredential);
+        certificateManager.saveCertificate(issuedCredential);
     }
 
     /**
@@ -238,7 +239,6 @@ public class CertificateDetailsPageControllerTest extends PageControllerTest {
     @Rollback
     @SuppressWarnings("unchecked")
     public void testInitPageCertificateAuthority() throws Exception {
-
         MvcResult result = getMockMvc()
                 .perform(MockMvcRequestBuilders.get("/" + getPage().getViewName())
                 .param("id", caCertificate.getId().toString())
@@ -246,14 +246,16 @@ public class CertificateDetailsPageControllerTest extends PageControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(model().attributeExists(PolicyPageController.INITIAL_DATA))
                 .andReturn();
+        ModelAndView modelAndView = result.getModelAndView();
+        Map<String, Object> modelMap = Collections.EMPTY_MAP;
+        if (modelAndView != null) {
+            modelMap = modelAndView.getModel();
+        }
 
         // Obtain initialData HashMap
-        Map<String, String> initialData = (Map<String, String>) result
-                                    .getModelAndView()
-                                    .getModel()
+        Map<String, String> initialData = (Map<String, String>) modelMap
                                     .get(PolicyPageController.INITIAL_DATA);
         Assert.assertEquals(initialData.get("issuer"), caCertificate.getIssuer());
-
     }
 
     /**
@@ -265,7 +267,6 @@ public class CertificateDetailsPageControllerTest extends PageControllerTest {
     @Rollback
     @SuppressWarnings("unchecked")
     public void testInitPagePlatform() throws Exception {
-
         MvcResult result = getMockMvc()
                 .perform(MockMvcRequestBuilders.get("/" + getPage().getViewName())
                 .param("id", platformCredential.getId().toString())
@@ -274,15 +275,18 @@ public class CertificateDetailsPageControllerTest extends PageControllerTest {
                 .andExpect(model().attributeExists(PolicyPageController.INITIAL_DATA))
                 .andReturn();
 
+        ModelAndView modelAndView = result.getModelAndView();
+        Map<String, Object> modelMap = Collections.EMPTY_MAP;
+        if (modelAndView != null) {
+            modelMap = modelAndView.getModel();
+        }
+
         // Obtain initialData HashMap
-        Map<String, String> initialData = (Map<String, String>) result
-                                    .getModelAndView()
-                                    .getModel()
+        Map<String, String> initialData = (Map<String, String>) modelMap
                                     .get(PolicyPageController.INITIAL_DATA);
         Assert.assertEquals(initialData.get("issuer"), platformCredential.getIssuer());
         Assert.assertEquals(initialData.get("credentialType"),
                             ((PlatformCredential) platformCredential).getCredentialType());
-
     }
 
     /**
@@ -294,7 +298,6 @@ public class CertificateDetailsPageControllerTest extends PageControllerTest {
     @Rollback
     @SuppressWarnings("unchecked")
     public void testInitPagePlatform20() throws Exception {
-
         MvcResult result = getMockMvc()
                 .perform(MockMvcRequestBuilders.get("/" + getPage().getViewName())
                 .param("id", platformCredential2.getId().toString())
@@ -302,11 +305,14 @@ public class CertificateDetailsPageControllerTest extends PageControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(model().attributeExists(PolicyPageController.INITIAL_DATA))
                 .andReturn();
+        ModelAndView modelAndView = result.getModelAndView();
+        Map<String, Object> modelMap = Collections.EMPTY_MAP;
+        if (modelAndView != null) {
+            modelMap = modelAndView.getModel();
+        }
 
         // Obtain initialData HashMap
-        Map<String, Object> initialData = (Map<String, Object>) result
-                                    .getModelAndView()
-                                    .getModel()
+        Map<String, Object> initialData = (Map<String, Object>) modelMap
                                     .get(PolicyPageController.INITIAL_DATA);
         Assert.assertEquals(initialData.get("issuer"), platformCredential2.getIssuer());
         Assert.assertEquals(initialData.get("credentialType"),
@@ -320,7 +326,6 @@ public class CertificateDetailsPageControllerTest extends PageControllerTest {
         Assert.assertNotNull(initialData.get("platformProperties"));
         obj = (List<?>) initialData.get("platformProperties");
         Assert.assertEquals(obj.size(), 2);
-
     }
 
     /**
@@ -332,7 +337,6 @@ public class CertificateDetailsPageControllerTest extends PageControllerTest {
     @Rollback
     @SuppressWarnings("unchecked")
     public void testInitPagePlatform20PCI() throws Exception {
-
         MvcResult result = getMockMvc()
                 .perform(MockMvcRequestBuilders.get("/" + getPage().getViewName())
                 .param("id", platformCertificatePCI.getId().toString())
@@ -340,11 +344,14 @@ public class CertificateDetailsPageControllerTest extends PageControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(model().attributeExists(PolicyPageController.INITIAL_DATA))
                 .andReturn();
+        ModelAndView modelAndView = result.getModelAndView();
+        Map<String, Object> modelMap = Collections.EMPTY_MAP;
+        if (modelAndView != null) {
+            modelMap = modelAndView.getModel();
+        }
 
         // Obtain initialData HashMap
-        Map<String, Object> initialData = (Map<String, Object>) result
-                                    .getModelAndView()
-                                    .getModel()
+        Map<String, Object> initialData = (Map<String, Object>) modelMap
                                     .get(PolicyPageController.INITIAL_DATA);
         Assert.assertEquals(initialData.get("issuer"), platformCertificatePCI.getIssuer());
         Assert.assertEquals(initialData.get("credentialType"),
@@ -358,7 +365,6 @@ public class CertificateDetailsPageControllerTest extends PageControllerTest {
         Assert.assertNotNull(initialData.get("platformProperties"));
         obj = (List<?>) initialData.get("platformProperties");
         Assert.assertEquals(obj.size(), 0);
-
     }
 
     /**
@@ -370,7 +376,6 @@ public class CertificateDetailsPageControllerTest extends PageControllerTest {
     @Rollback
     @SuppressWarnings("unchecked")
     public void testInitPageEndorsement() throws Exception {
-
         MvcResult result = getMockMvc()
                 .perform(MockMvcRequestBuilders.get("/" + getPage().getViewName())
                 .param("id", endorsementCredential.getId().toString())
@@ -378,11 +383,14 @@ public class CertificateDetailsPageControllerTest extends PageControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(model().attributeExists(PolicyPageController.INITIAL_DATA))
                 .andReturn();
+        ModelAndView modelAndView = result.getModelAndView();
+        Map<String, Object> modelMap = Collections.EMPTY_MAP;
+        if (modelAndView != null) {
+            modelMap = modelAndView.getModel();
+        }
 
         // Obtain initialData HashMap
-        Map<String, String> initialData = (Map<String, String>) result
-                                    .getModelAndView()
-                                    .getModel()
+        Map<String, String> initialData = (Map<String, String>) modelMap
                                     .get(PolicyPageController.INITIAL_DATA);
         Assert.assertEquals(initialData.get("issuer"), endorsementCredential.getIssuer());
         Assert.assertEquals(initialData.get("manufacturer"),
@@ -397,20 +405,21 @@ public class CertificateDetailsPageControllerTest extends PageControllerTest {
     @Rollback
     @SuppressWarnings("unchecked")
     public void testInitPageID() throws Exception {
-
         MvcResult result = getMockMvc()
                             .perform(MockMvcRequestBuilders.get("/" + getPage().getViewName())
                             .param("id", caCertificate.getId().toString())
                             .param("type", "certificateauthority"))
                             .andExpect(model().attributeExists(
                                     CertificateDetailsPageController.INITIAL_DATA))
-
                             .andReturn();
+        ModelAndView modelAndView = result.getModelAndView();
+        Map<String, Object> modelMap = Collections.EMPTY_MAP;
+        if (modelAndView != null) {
+            modelMap = modelAndView.getModel();
+        }
 
         // Obtain initialData HashMap
-        Map<String, String> initialData = (Map<String, String>) result
-                            .getModelAndView()
-                            .getModel()
+        Map<String, String> initialData = (Map<String, String>) modelMap
                             .get(PolicyPageController.INITIAL_DATA);
 
         Assert.assertEquals(initialData.get("issuer"), caCertificate.getIssuer());
@@ -427,7 +436,6 @@ public class CertificateDetailsPageControllerTest extends PageControllerTest {
     @Rollback
     @SuppressWarnings("unchecked")
     public void testInitPageIssuedAttestation() throws Exception {
-
         MvcResult result = getMockMvc()
                 .perform(MockMvcRequestBuilders.get("/" + getPage().getViewName())
                 .param("id", issuedCredential.getId().toString())
@@ -435,11 +443,14 @@ public class CertificateDetailsPageControllerTest extends PageControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(model().attributeExists(PolicyPageController.INITIAL_DATA))
                 .andReturn();
+        ModelAndView modelAndView = result.getModelAndView();
+        Map<String, Object> modelMap = Collections.EMPTY_MAP;
+        if (modelAndView != null) {
+            modelMap = modelAndView.getModel();
+        }
 
         // Obtain initialData HashMap
-        Map<String, String> initialData = (Map<String, String>) result
-                                    .getModelAndView()
-                                    .getModel()
+        Map<String, String> initialData = (Map<String, String>) modelMap
                                     .get(PolicyPageController.INITIAL_DATA);
         Assert.assertEquals(initialData.get("issuer"), issuedCredential.getIssuer());
         Assert.assertEquals(initialData.get("endorsementID"),

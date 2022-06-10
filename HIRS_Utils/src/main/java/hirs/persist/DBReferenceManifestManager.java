@@ -1,20 +1,20 @@
 package hirs.persist;
 
 import hirs.data.persist.ReferenceManifest;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.hibernate.SessionFactory;
+import org.xml.sax.SAXException;
 
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-import java.io.InputStream;
-import java.io.IOException;
+import javax.persistence.criteria.CriteriaBuilder;
 import javax.xml.transform.stream.StreamSource;
 import javax.xml.validation.Schema;
 import javax.xml.validation.SchemaFactory;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-import org.xml.sax.SAXException;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 /**
  * This class is used to persist and retrieve {@link ReferenceManifest}s into
@@ -89,11 +89,10 @@ public class DBReferenceManifestManager extends DBManager<ReferenceManifest>
     public <T extends  ReferenceManifest> Set<T> get(
             final ReferenceManifestSelector referenceManifestSelector) {
         LOGGER.info("Getting the full set of Reference Manifest files.");
-        return new HashSet<>(
-                (List<T>) getWithCriteria(
-                        referenceManifestSelector.getReferenceManifestClass(),
-                        Collections.singleton(referenceManifestSelector.getCriterion())
-                )
+        CriteriaBuilder builder = this.getFactory().getCriteriaBuilder();
+        return new HashSet<>((List<T>) getWithCriteria(
+                referenceManifestSelector.getReferenceManifestClass(),
+                referenceManifestSelector.getCriterion(builder))
         );
     }
 
@@ -105,6 +104,6 @@ public class DBReferenceManifestManager extends DBManager<ReferenceManifest>
      */
     public boolean deleteReferenceManifest(final ReferenceManifest referenceManifest) {
         LOGGER.info(String.format("Deleting reference to %s", referenceManifest.getTagId()));
-        return delete(referenceManifest);
+        return deleteById(referenceManifest.getId());
     }
 }

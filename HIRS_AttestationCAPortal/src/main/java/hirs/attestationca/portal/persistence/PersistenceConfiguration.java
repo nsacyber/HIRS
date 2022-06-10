@@ -73,16 +73,6 @@ public class PersistenceConfiguration {
     }
 
     /**
-     * Creates a {@link DBReferenceDigestManager} ready to use.
-     *
-     * @return {@link DBReferenceDigestManager}
-     */
-    @Bean
-    public DBReferenceDigestManager referenceDigestManager() {
-        return new DBReferenceDigestManager(sessionFactory.getObject());
-    }
-
-    /**
      * Creates a {@link DBReferenceEventManager} ready to use.
      *
      * @return {@link DBReferenceEventManager}

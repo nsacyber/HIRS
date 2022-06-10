@@ -5,11 +5,13 @@ import hirs.data.persist.ReferenceManifest;
 import hirs.data.persist.certificate.Certificate;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.hibernate.criterion.Conjunction;
-import org.hibernate.criterion.Criterion;
-import org.hibernate.criterion.Restrictions;
 
+import javax.persistence.criteria.CriteriaBuilder;
+import javax.persistence.criteria.Predicate;
+import javax.persistence.criteria.Root;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -186,21 +188,25 @@ public abstract class ReferenceManifestSelector<T extends ReferenceManifest> {
      * Construct the criterion that can be used to query for rims matching the
      * configuration of this {@link ReferenceManifestSelector}.
      *
+     * @param builder - list of criteria to use for the search
      * @return a Criterion that can be used to query for rims matching the
      * configuration of this instance
      */
-    Criterion getCriterion() {
-        Conjunction conj = new Conjunction();
+    Collection<Predicate> getCriterion(final CriteriaBuilder builder) {
+        Collection<Predicate> predicates = new ArrayList<>();
+        Root<T> root = builder.createQuery(this.getReferenceManifestClass())
+                .from(this.getReferenceManifestClass());
 
         for (Map.Entry<String, Object> fieldValueEntry : fieldValueSelections.entrySet()) {
-            conj.add(Restrictions.eq(fieldValueEntry.getKey(), fieldValueEntry.getValue()));
+            predicates.add(builder.equal(root.get(fieldValueEntry.getKey()),
+                    fieldValueEntry.getValue()));
         }
 
         if (this.excludeArchivedRims) {
-            conj.add(Restrictions.isNull(Certificate.ARCHIVE_FIELD));
+            predicates.add(builder.isNull(root.get(Certificate.ARCHIVE_FIELD)));
         }
 
-        return conj;
+        return predicates;
     }
 
     /**

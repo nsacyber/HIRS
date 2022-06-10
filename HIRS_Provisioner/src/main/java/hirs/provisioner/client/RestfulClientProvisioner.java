@@ -1,6 +1,20 @@
 package hirs.provisioner.client;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+import hirs.DeviceInfoReportRequest;
+import hirs.client.collector.DeviceInfoCollector;
+import hirs.collector.CollectorException;
+import hirs.data.persist.DeviceInfoReport;
+import hirs.provisioner.CommandLineArguments;
+import hirs.structs.converters.SimpleStructBuilder;
+import hirs.structs.converters.StructConverter;
+import hirs.structs.elements.aca.IdentityRequestEnvelope;
+import hirs.structs.elements.aca.IdentityResponseEnvelope;
+import hirs.structs.elements.tpm.AsymmetricKeyParams;
+import hirs.structs.elements.tpm.AsymmetricPublicKey;
+import hirs.structs.elements.tpm.RsaSubParams;
+import hirs.structs.elements.tpm.StorePubKey;
+import hirs.tpm.tss.Tpm;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -25,20 +39,6 @@ import java.security.interfaces.RSAPublicKey;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.X509EncodedKeySpec;
 import java.util.UUID;
-import hirs.DeviceInfoReportRequest;
-import hirs.client.collector.DeviceInfoCollector;
-import hirs.collector.CollectorException;
-import hirs.data.persist.DeviceInfoReport;
-import hirs.provisioner.CommandLineArguments;
-import hirs.structs.converters.SimpleStructBuilder;
-import hirs.structs.converters.StructConverter;
-import hirs.structs.elements.aca.IdentityRequestEnvelope;
-import hirs.structs.elements.aca.IdentityResponseEnvelope;
-import hirs.structs.elements.tpm.AsymmetricKeyParams;
-import hirs.structs.elements.tpm.AsymmetricPublicKey;
-import hirs.structs.elements.tpm.RsaSubParams;
-import hirs.structs.elements.tpm.StorePubKey;
-import hirs.tpm.tss.Tpm;
 
 /**
  * Client implementation that uses a RestTemplate to communicate
@@ -176,10 +176,17 @@ public class RestfulClientProvisioner implements ClientProvisioner {
     RSAPublicKey getACAPublicKey() {
         // request the public key from the ACA
         ResponseEntity<byte[]> response = restTemplate.getForEntity(acaPublicKeyURL, byte[].class);
+        X509EncodedKeySpec keySpec;
+        byte[] body = response.getBody();
 
         try {
-            // use the public key information to create encoded key specification. then create a
-            X509EncodedKeySpec keySpec = new X509EncodedKeySpec(response.getBody());
+            if (body == null) {
+                throw new ProvisioningException("Encountered error: "
+                        + "ResponseEntity body is null.", null);
+            } else {
+                // use the public key information to create encoded key specification. then create a
+                keySpec = new X509EncodedKeySpec(body);
+            }
 
             // create the public key from that specification
             return (RSAPublicKey) KeyFactory.getInstance("RSA").generatePublic(keySpec);

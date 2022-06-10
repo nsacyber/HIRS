@@ -187,7 +187,8 @@ public class PersistenceConfiguration {
      */
     @Bean
     public CrudManager<SupplyChainValidationSummary> supplyChainValidationSummaryManager() {
-        DBManager<SupplyChainValidationSummary> manager = new DBManager<SupplyChainValidationSummary>(
+        DBManager<SupplyChainValidationSummary> manager
+                = new DBManager<SupplyChainValidationSummary>(
                 SupplyChainValidationSummary.class,
                 sessionFactory.getObject()
         );

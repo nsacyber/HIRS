@@ -166,11 +166,11 @@ public class SupplyChainValidationServiceImplTest extends SpringPersistenceTest 
         resultPcs.add(delta);
 
         // mock credential retrieval
-        when(certificateManager.get(any(EndorsementCredential.Selector.class)))
+        when(certificateManager.getCertificate(any(EndorsementCredential.Selector.class)))
                 .thenReturn(resultEcs);
-        when(certificateManager.get(any(PlatformCredential.Selector.class)))
+        when(certificateManager.getCertificate(any(PlatformCredential.Selector.class)))
                 .thenReturn(resultPcs);
-        when(certificateManager.get(any(CertificateAuthorityCredential.Selector.class)))
+        when(certificateManager.getCertificate(any(CertificateAuthorityCredential.Selector.class)))
                 .thenReturn(Collections.emptySet());
     }
 
@@ -217,7 +217,7 @@ public class SupplyChainValidationServiceImplTest extends SpringPersistenceTest 
         // verify the certs were updated with the test device object and saved in the cert man
         ArgumentCaptor<DeviceAssociatedCertificate> certificatesCaptor
                 = ArgumentCaptor.forClass(DeviceAssociatedCertificate.class);
-        verify(certificateManager, times(3)).update(certificatesCaptor.capture());
+        verify(certificateManager, times(3)).updateCertificate(certificatesCaptor.capture());
 
         List<DeviceAssociatedCertificate> certificateArgs = certificatesCaptor.getAllValues();
         for (DeviceAssociatedCertificate certArg : certificateArgs) {
@@ -469,9 +469,9 @@ public class SupplyChainValidationServiceImplTest extends SpringPersistenceTest 
                 Files.readAllBytes(Paths.get(getClass().getResource(
                         NUC1_EC).toURI())));
 
-        realCertMan.save(endorsementCredential);
-        realCertMan.save(rootCa);
-        realCertMan.save(globalSignCaCert);
+        realCertMan.saveCertificate(endorsementCredential);
+        realCertMan.saveCertificate(rootCa);
+        realCertMan.saveCertificate(globalSignCaCert);
 
         KeyStore ks = mostlyMockedService.getCaChain(endorsementCredential);
 
@@ -527,8 +527,8 @@ public class SupplyChainValidationServiceImplTest extends SpringPersistenceTest 
                 Files.readAllBytes(Paths.get(getClass().getResource(
                         NUC1_EC).toURI())));
 
-        realCertMan.save(endorsementCredential);
-        realCertMan.save(rootCa);
+        realCertMan.saveCertificate(endorsementCredential);
+        realCertMan.saveCertificate(rootCa);
 
         KeyStore ks = mostlyMockedService.getCaChain(endorsementCredential);
 
@@ -570,7 +570,7 @@ public class SupplyChainValidationServiceImplTest extends SpringPersistenceTest 
                 Files.readAllBytes(Paths.get(getClass().getResource(
                         NUC1_EC).toURI())));
 
-        realCertMan.save(endorsementCredential);
+        realCertMan.saveCertificate(endorsementCredential);
 
         KeyStore ks = mostlyMockedService.getCaChain(endorsementCredential);
 
@@ -622,10 +622,10 @@ public class SupplyChainValidationServiceImplTest extends SpringPersistenceTest 
                 Files.readAllBytes(Paths.get(getClass().getResource(
                         NUC1_EC).toURI())));
 
-        realCertMan.save(endorsementCredential);
-        realCertMan.save(rootCa);
-        realCertMan.save(globalSignCaCert);
-        realCertMan.save(intelCa);
+        realCertMan.saveCertificate(endorsementCredential);
+        realCertMan.saveCertificate(rootCa);
+        realCertMan.saveCertificate(globalSignCaCert);
+        realCertMan.saveCertificate(intelCa);
 
         KeyStore ks = mostlyMockedService.getCaChain(endorsementCredential);
 
@@ -675,8 +675,8 @@ public class SupplyChainValidationServiceImplTest extends SpringPersistenceTest 
                 Files.readAllBytes(Paths.get(getClass().getResource(
                         NUC_PC).toURI())));
 
-        realCertMan.save(platformCredential);
-        realCertMan.save(intelCa);
+        realCertMan.saveCertificate(platformCredential);
+        realCertMan.saveCertificate(intelCa);
 
         KeyStore ks = mostlyMockedService.getCaChain(platformCredential);
 
@@ -727,9 +727,9 @@ public class SupplyChainValidationServiceImplTest extends SpringPersistenceTest 
                 Files.readAllBytes(Paths.get(getClass().getResource(
                         NUC_PC).toURI())));
 
-        realCertMan.save(platformCredential);
-        realCertMan.save(rootCa);
-        realCertMan.save(globalSignCaCert);
+        realCertMan.saveCertificate(platformCredential);
+        realCertMan.saveCertificate(rootCa);
+        realCertMan.saveCertificate(globalSignCaCert);
 
         KeyStore ks = mostlyMockedService.getCaChain(platformCredential);
 
@@ -780,15 +780,15 @@ public class SupplyChainValidationServiceImplTest extends SpringPersistenceTest 
                         GS_ROOT_CA).toURI()))
         );
 
-        realCertMan.save(stmTpmEkIntermediateCA);
-        realCertMan.save(globalSignTpmRoot);
-        realCertMan.save(stmEkRootCa);
+        realCertMan.saveCertificate(stmTpmEkIntermediateCA);
+        realCertMan.saveCertificate(globalSignTpmRoot);
+        realCertMan.saveCertificate(stmEkRootCa);
 
         EndorsementCredential nucEc = new EndorsementCredential(
                 Files.readAllBytes(Paths.get(getClass().getResource(NUC_EC).toURI()))
         );
 
-        realCertMan.save(nucEc);
+        realCertMan.saveCertificate(nucEc);
 
         SupplyChainValidationSummary summary = mostlyMockedService.validateSupplyChain(
                 nucEc, Collections.emptySet(), storedDevice

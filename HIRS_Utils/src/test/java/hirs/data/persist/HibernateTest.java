@@ -1,17 +1,21 @@
 package hirs.data.persist;
 
-import static org.apache.logging.log4j.LogManager.getLogger;
-
-import java.io.Serializable;
-import java.util.List;
-
 import org.apache.logging.log4j.Logger;
 import org.hibernate.Session;
+import org.hibernate.query.Query;
 import org.testng.Assert;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
+
+import javax.persistence.criteria.CriteriaBuilder;
+import javax.persistence.criteria.CriteriaQuery;
+import javax.persistence.criteria.Root;
+import java.io.Serializable;
+import java.util.List;
+
+import static org.apache.logging.log4j.LogManager.getLogger;
 
 /**
  * This is an abstract class for testing the basic create, read, update, and
@@ -56,11 +60,18 @@ public abstract class HibernateTest<T> extends SpringPersistenceTest {
      *
      * @param clazz the class to remove
      */
+    @SuppressWarnings("unchecked")
     protected final void removeAllOfClass(final Class clazz) {
         Session session = sessionFactory.getCurrentSession();
         session.beginTransaction();
-        final List<?> objects = session.createCriteria(clazz).list();
-        for (Object o : objects) {
+        CriteriaBuilder builder = session.getCriteriaBuilder();
+        CriteriaQuery<T> criteriaQuery = builder.createQuery(clazz);
+        Root<T> root = criteriaQuery.from(clazz);
+        criteriaQuery.select(root);
+        Query<T> query = session.createQuery(criteriaQuery);
+        List<T> results = query.getResultList();
+//        final List<?> objects = session.createCriteria(clazz).list();
+        for (Object o : results) {
             LOGGER.debug("deleting object: {}", o);
             session.delete(o);
         }

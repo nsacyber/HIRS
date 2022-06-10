@@ -179,7 +179,7 @@ public class SupplyChainValidationServiceImpl implements SupplyChainValidationSe
             // store the device with the credential
             if (ec != null) {
                 ec.setDevice(device);
-                this.certificateManager.update(ec);
+                this.certificateManager.updateCertificate(ec);
             }
         }
 
@@ -208,7 +208,7 @@ public class SupplyChainValidationServiceImpl implements SupplyChainValidationSe
                         deltaMapping.put(pc, null);
                     }
                     pc.setDevice(device);
-                    this.certificateManager.update(pc);
+                    this.certificateManager.updateCertificate(pc);
 
                 }
 
@@ -780,7 +780,7 @@ public class SupplyChainValidationServiceImpl implements SupplyChainValidationSe
             case FAIL:
                 if (!result.getAdditionalInfo().isEmpty()) {
                     pc.setComponentFailures(result.getAdditionalInfo());
-                    this.certificateManager.update(pc);
+                    this.certificateManager.updateCertificate(pc);
                 }
                 return buildValidationRecord(validationType, AppraisalStatus.Status.FAIL,
                         result.getMessage(), pc, Level.WARN);
@@ -816,10 +816,10 @@ public class SupplyChainValidationServiceImpl implements SupplyChainValidationSe
             case FAIL:
                 if (!result.getAdditionalInfo().isEmpty()) {
                     base.setComponentFailures(result.getAdditionalInfo());
-                    this.certificateManager.update(base);
+                    this.certificateManager.updateCertificate(base);
                 }
                 // we are adding things to componentFailures
-                this.certificateManager.update(delta);
+                this.certificateManager.updateCertificate(delta);
                 return buildValidationRecord(validationType, AppraisalStatus.Status.FAIL,
                         result.getMessage(), delta, Level.WARN);
             case ERROR:

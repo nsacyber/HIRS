@@ -1,13 +1,11 @@
 package hirs.persist;
 
 import hirs.appraiser.Appraiser;
+import hirs.appraiser.TestAppraiser;
 import hirs.data.persist.Device;
 import hirs.data.persist.DeviceGroup;
+import hirs.data.persist.DeviceTest;
 import hirs.data.persist.Policy;
-
-import java.io.Serializable;
-import java.util.List;
-
 import hirs.data.persist.SpringPersistenceTest;
 import hirs.data.persist.TestPolicy;
 import hirs.data.persist.TestPolicy2;
@@ -15,7 +13,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
-import org.hibernate.criterion.Restrictions;
+import org.hibernate.query.Query;
 import org.testng.Assert;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.AfterMethod;
@@ -23,8 +21,11 @@ import org.testng.annotations.BeforeClass;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
-import hirs.appraiser.TestAppraiser;
-import hirs.data.persist.DeviceTest;
+import javax.persistence.criteria.CriteriaBuilder;
+import javax.persistence.criteria.CriteriaQuery;
+import javax.persistence.criteria.Root;
+import java.io.Serializable;
+import java.util.List;
 
 /**
  * <code>DBPolicyManagerTest</code> is a unit test class for the
@@ -82,19 +83,100 @@ public final class DBPolicyManagerTest extends SpringPersistenceTest {
     public void resetTestState() {
         LOGGER.debug("reset test state");
         LOGGER.debug("deleting all policies and appraisers");
+        resetPolicyMapperTestState();
+        resetAppraiserTestState();
+        resetPolicyTestState();
+        resetDeviceTestState();
+        resetDeviceGroupTestState();
+    }
+
+    private void resetPolicyMapperTestState() {
         Session session = sessionFactory.getCurrentSession();
         session.beginTransaction();
-        final Class<?>[] clazzes =
-                {PolicyMapper.class, Appraiser.class, Policy.class,
-                    Device.class, DeviceGroup.class};
-        for (Class<?> clazz : clazzes) {
-            final List<?> objects = session.createCriteria(clazz).list();
-            for (Object o : objects) {
-                LOGGER.debug("deleting object: {}", o);
-                session.delete(o);
-            }
-            LOGGER.debug("all {} removed", clazz);
+        CriteriaBuilder builder = session.getCriteriaBuilder();
+        CriteriaQuery<PolicyMapper> criteriaQuery = builder.createQuery(PolicyMapper.class);
+        Root<PolicyMapper> root = criteriaQuery.from(PolicyMapper.class);
+        criteriaQuery.select(root);
+        Query<PolicyMapper> query = session.createQuery(criteriaQuery);
+        List<PolicyMapper> objects = query.getResultList();
+
+        for (Object o : objects) {
+            LOGGER.debug("deleting object: {}", o);
+            session.delete(o);
         }
+        LOGGER.debug("all {} removed", PolicyMapper.class);
+        session.getTransaction().commit();
+    }
+
+    private void resetAppraiserTestState() {
+        Session session = sessionFactory.getCurrentSession();
+        session.beginTransaction();
+        CriteriaBuilder builder = session.getCriteriaBuilder();
+        CriteriaQuery<Appraiser> criteriaQuery = builder.createQuery(Appraiser.class);
+        Root<Appraiser> root = criteriaQuery.from(Appraiser.class);
+        criteriaQuery.select(root);
+        Query<Appraiser> query = session.createQuery(criteriaQuery);
+        List<Appraiser> objects = query.getResultList();
+
+        for (Object o : objects) {
+            LOGGER.debug("deleting object: {}", o);
+            session.delete(o);
+        }
+        LOGGER.debug("all {} removed", Appraiser.class);
+        session.getTransaction().commit();
+    }
+
+    private void resetPolicyTestState() {
+        Session session = sessionFactory.getCurrentSession();
+        session.beginTransaction();
+        CriteriaBuilder builder = session.getCriteriaBuilder();
+        CriteriaQuery<Policy> criteriaQuery = builder.createQuery(Policy.class);
+        Root<Policy> root = criteriaQuery.from(Policy.class);
+        criteriaQuery.select(root);
+        Query<Policy> query = session.createQuery(criteriaQuery);
+        List<Policy> objects = query.getResultList();
+
+        for (Object o : objects) {
+            LOGGER.debug("deleting object: {}", o);
+            session.delete(o);
+        }
+        LOGGER.debug("all {} removed", Policy.class);
+        session.getTransaction().commit();
+    }
+
+    private void resetDeviceTestState() {
+        Session session = sessionFactory.getCurrentSession();
+        session.beginTransaction();
+        CriteriaBuilder builder = session.getCriteriaBuilder();
+        CriteriaQuery<Device> criteriaQuery = builder.createQuery(Device.class);
+        Root<Device> root = criteriaQuery.from(Device.class);
+        criteriaQuery.select(root);
+        Query<Device> query = session.createQuery(criteriaQuery);
+        List<Device> objects = query.getResultList();
+
+        for (Object o : objects) {
+            LOGGER.debug("deleting object: {}", o);
+            session.delete(o);
+        }
+        LOGGER.debug("all {} removed", Device.class);
+        session.getTransaction().commit();
+    }
+
+    private void resetDeviceGroupTestState() {
+        Session session = sessionFactory.getCurrentSession();
+        session.beginTransaction();
+        CriteriaBuilder builder = session.getCriteriaBuilder();
+        CriteriaQuery<DeviceGroup> criteriaQuery = builder.createQuery(DeviceGroup.class);
+        Root<DeviceGroup> root = criteriaQuery.from(DeviceGroup.class);
+        criteriaQuery.select(root);
+        Query<DeviceGroup> query = session.createQuery(criteriaQuery);
+        List<DeviceGroup> objects = query.getResultList();
+
+        for (Object o : objects) {
+            LOGGER.debug("deleting object: {}", o);
+            session.delete(o);
+        }
+        LOGGER.debug("all {} removed", DeviceGroup.class);
         session.getTransaction().commit();
     }
 
@@ -797,9 +879,15 @@ public final class DBPolicyManagerTest extends SpringPersistenceTest {
         try {
             LOGGER.debug("retrieving policy");
             tx = session.beginTransaction();
-            policy =
-                    (Policy) session.createCriteria(Policy.class)
-                            .add(Restrictions.eq("name", name)).uniqueResult();
+            CriteriaBuilder builder = session.getCriteriaBuilder();
+            CriteriaQuery<Policy> criteriaQuery = builder.createQuery(Policy.class);
+            Root<Policy> root = criteriaQuery.from(Policy.class);
+            criteriaQuery.select(root).where(builder.equal(root.get("name"), name));
+            Query<Policy> query = session.createQuery(criteriaQuery);
+            policy = query.getSingleResult();
+//            policy =
+//                    (Policy) session.createCriteria(Policy.class)
+//                            .add(Restrictions.eq("name", name)).uniqueResult();
             session.getTransaction().commit();
         } catch (Exception e) {
             final String msg = "unable to retrieve policy";

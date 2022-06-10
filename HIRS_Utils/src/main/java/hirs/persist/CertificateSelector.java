@@ -451,7 +451,7 @@ public abstract class CertificateSelector<T extends Certificate> {
 
     // construct and execute query
     private Set<T> execute() {
-        return certificateManager.get(this);
+        return certificateManager.getCertificate(this);
     }
 
     /**

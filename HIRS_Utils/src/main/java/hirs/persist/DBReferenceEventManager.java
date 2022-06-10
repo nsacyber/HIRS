@@ -29,7 +29,7 @@ import java.util.UUID;
 public class DBReferenceEventManager  extends DBManager<ReferenceDigestValue>
         implements ReferenceEventManager {
 
-    private static final Logger LOGGER = LogManager.getLogger(DBReferenceDigestManager.class);
+    private static final Logger LOGGER = LogManager.getLogger(DBReferenceEventManager.class);
 
     /**
      * Default Constructor.
@@ -38,6 +38,7 @@ public class DBReferenceEventManager  extends DBManager<ReferenceDigestValue>
      */
     public DBReferenceEventManager(final SessionFactory sessionFactory) {
         super(ReferenceDigestValue.class, sessionFactory);
+        this.setClazz(ReferenceDigestValue.class);
     }
 
     @Override
@@ -72,12 +73,16 @@ public class DBReferenceEventManager  extends DBManager<ReferenceDigestValue>
             LOGGER.debug("retrieving referenceDigestValue from db");
             tx = session.beginTransaction();
             CriteriaBuilder criteriaBuilder = session.getCriteriaBuilder();
-            CriteriaQuery<ReferenceDigestValue> criteriaQuery = criteriaBuilder.createQuery(ReferenceDigestValue.class);
+            CriteriaQuery<ReferenceDigestValue> criteriaQuery = criteriaBuilder
+                    .createQuery(ReferenceDigestValue.class);
             Root<ReferenceDigestValue> root = criteriaQuery.from(ReferenceDigestValue.class);
             Predicate recordPredicate = criteriaBuilder.and(
-                    criteriaBuilder.equal(root.get("supportRimId"), referenceDigestValue.getSupportRimId()),
-                    criteriaBuilder.equal(root.get("digestValue"), referenceDigestValue.getDigestValue()),
-                    criteriaBuilder.equal(root.get("eventNumber"), referenceDigestValue.getPcrIndex()));
+                    criteriaBuilder.equal(root.get("supportRimId"),
+                            referenceDigestValue.getSupportRimId()),
+                    criteriaBuilder.equal(root.get("digestValue"),
+                            referenceDigestValue.getDigestValue()),
+                    criteriaBuilder.equal(root.get("eventNumber"),
+                            referenceDigestValue.getPcrIndex()));
             criteriaQuery.select(root).where(recordPredicate);
             Query<ReferenceDigestValue> query = session.createQuery(criteriaQuery);
             List<ReferenceDigestValue> results = query.getResultList();
@@ -138,7 +143,8 @@ public class DBReferenceEventManager  extends DBManager<ReferenceDigestValue>
             LOGGER.debug("retrieving referenceDigestValue from db");
             tx = session.beginTransaction();
             CriteriaBuilder criteriaBuilder = session.getCriteriaBuilder();
-            CriteriaQuery<ReferenceDigestValue> criteriaQuery = criteriaBuilder.createQuery(ReferenceDigestValue.class);
+            CriteriaQuery<ReferenceDigestValue> criteriaQuery = criteriaBuilder
+                    .createQuery(ReferenceDigestValue.class);
             Root<ReferenceDigestValue> root = criteriaQuery.from(ReferenceDigestValue.class);
             Predicate recordPredicate = criteriaBuilder.and(
                     criteriaBuilder.equal(root.get("id"), referenceDigestValue.getId()));
@@ -179,7 +185,8 @@ public class DBReferenceEventManager  extends DBManager<ReferenceDigestValue>
             LOGGER.debug("retrieving referenceDigestValue from db");
             tx = session.beginTransaction();
             CriteriaBuilder criteriaBuilder = session.getCriteriaBuilder();
-            CriteriaQuery<ReferenceDigestValue> criteriaQuery = criteriaBuilder.createQuery(ReferenceDigestValue.class);
+            CriteriaQuery<ReferenceDigestValue> criteriaQuery = criteriaBuilder
+                    .createQuery(ReferenceDigestValue.class);
             Root<ReferenceDigestValue> root = criteriaQuery.from(ReferenceDigestValue.class);
             Predicate recordPredicate = criteriaBuilder.and(
                     criteriaBuilder.equal(root.get("digestValue"), eventDigest));
@@ -353,12 +360,16 @@ public class DBReferenceEventManager  extends DBManager<ReferenceDigestValue>
     @Override
     public boolean deleteEvent(final ReferenceDigestValue referenceDigestValue) {
         boolean result;
-        LOGGER.info(String.format("Deleting reference to %s",
-                referenceDigestValue.getId()));
-        try {
-            result = super.delete(referenceDigestValue);
-        } catch (DBManagerException dbMEx) {
-            throw new RuntimeException(dbMEx);
+        if (referenceDigestValue == null || referenceDigestValue.getId() == null) {
+            result = false;
+        } else {
+            LOGGER.info(String.format("Deleting reference to %s",
+                    referenceDigestValue.getId()));
+            try {
+                result = super.deleteById(referenceDigestValue.getId());
+            } catch (DBManagerException dbMEx) {
+                throw new RuntimeException(dbMEx);
+            }
         }
         return result;
     }

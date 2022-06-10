@@ -1,14 +1,14 @@
 package hirs.attestationca.portal.datatables;
 
+import hirs.FilteredRecordsList;
+import hirs.persist.CriteriaModifier;
+import hirs.persist.OrderedListQuerier;
 import org.hibernate.Criteria;
 import org.springframework.util.CollectionUtils;
 
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import hirs.FilteredRecordsList;
-import hirs.persist.CriteriaModifier;
-import hirs.persist.OrderedListQuerier;
 
 /**
  * A class to adapt the Javascript DataTable java class abstractions to the DBManager's getting
@@ -30,7 +30,7 @@ public final class OrderedListQueryDataTableAdapter<T> {
      * @param <T> the parameter type
      * @return the filtered record list
      */
-    public static <T> FilteredRecordsList<T> getOrderedList(final Class<? extends T> clazz,
+    public static <T> FilteredRecordsList<T> getOrderedList(final Class<T> clazz,
         final OrderedListQuerier<T> dbManager,
         final DataTableInput dataTableInput,
         final String orderColumnName) {
@@ -54,7 +54,7 @@ public final class OrderedListQueryDataTableAdapter<T> {
      * @param <T> the parameter type
      * @return the filtered record list
      */
-    public static <T> FilteredRecordsList<T> getOrderedList(final Class<? extends T> clazz,
+    public static <T> FilteredRecordsList<T> getOrderedList(final Class<T> clazz,
         final OrderedListQuerier<T> dbManager, final DataTableInput dataTableInput,
         final String orderColumnName,
         final CriteriaModifier criteriaModifier) {

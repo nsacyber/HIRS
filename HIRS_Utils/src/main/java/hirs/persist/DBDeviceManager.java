@@ -211,7 +211,8 @@ public class DBDeviceManager extends DBManager<Device> implements
             return super.getOrderedList(Device.class, columnToOrder, ascending, firstResult,
                     maxResults, search, searchableColumns, modifier);
         } catch (DBManagerException e) {
-            throw new AlertManagerException(e);
+            LOGGER.error(e);
+            return null;
         }
     }
     /**

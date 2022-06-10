@@ -72,7 +72,7 @@ public class SupplyChainValidationSummaryTest extends SpringPersistenceTest {
 
         for (SupplyChainValidationSummary summary
                 : summaryManager.getList(SupplyChainValidationSummary.class)) {
-            summaryManager.delete(summary.getId());
+            summaryManager.deleteById(summary.getId());
         }
     }
 

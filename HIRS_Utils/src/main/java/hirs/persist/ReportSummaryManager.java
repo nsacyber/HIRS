@@ -49,7 +49,7 @@ public interface ReportSummaryManager {
      * @return list of all managed <code>ReportSummary</code> objects
      * @throws ReportSummaryManagerException if unable to create the list
      */
-    List<ReportSummary> getReportSummaryList(Class<? extends ReportSummary> clazz)
+    List<ReportSummary> getReportSummaryList(ReportSummary clazz)
             throws ReportSummaryManagerException;
 
     /**
@@ -87,18 +87,6 @@ public interface ReportSummaryManager {
      * @throws ReportSummaryManagerException if unable to retrieve the ReportSum
      */
     ReportSummary getReportSummaryByReportID(UUID id) throws ReportSummaryManagerException;
-
-    /**
-     * Deletes the <code>ReportSummary</code> identified by <code>id</code>.
-     * If the <code>ReportSummary</code> is found and deleted then true is
-     * returned, otherwise false.
-     *
-     * @param id id of <code>ReportSummary</code> to be deleted
-     * @return true if successfully found and deleted from repo, otherwise false
-     * @throws ReportSummaryManagerException if unable to delete the ReportSum for any reason other
-     *                                       than not found
-     */
-    boolean deleteReportSummary(Long id) throws ReportSummaryManagerException;
 
     /**
      * Returns a list of <code>ReportSummary</code>s that contains the latest

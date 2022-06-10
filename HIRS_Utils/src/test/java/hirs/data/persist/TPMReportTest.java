@@ -1,8 +1,6 @@
 package hirs.data.persist;
 
 import hirs.data.persist.enums.DigestAlgorithm;
-import static org.apache.logging.log4j.LogManager.getLogger;
-
 import hirs.data.persist.tpm.PcrComposite;
 import hirs.data.persist.tpm.PcrInfoShort;
 import hirs.data.persist.tpm.PcrSelection;
@@ -11,13 +9,18 @@ import hirs.data.persist.tpm.QuoteData;
 import hirs.data.persist.tpm.QuoteInfo2;
 import hirs.data.persist.tpm.QuoteSignature;
 import hirs.foss.XMLCleaner;
+import org.apache.logging.log4j.Logger;
+import org.hibernate.Session;
+import org.hibernate.query.Query;
+import org.testng.Assert;
+import org.testng.annotations.AfterClass;
+import org.testng.annotations.AfterMethod;
+import org.testng.annotations.BeforeClass;
+import org.testng.annotations.Test;
 
-import java.io.StringReader;
-import java.io.StringWriter;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.UUID;
-
+import javax.persistence.criteria.CriteriaBuilder;
+import javax.persistence.criteria.CriteriaQuery;
+import javax.persistence.criteria.Root;
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBElement;
 import javax.xml.bind.JAXBException;
@@ -25,15 +28,13 @@ import javax.xml.bind.Marshaller;
 import javax.xml.bind.Unmarshaller;
 import javax.xml.bind.annotation.XmlElementDecl;
 import javax.xml.namespace.QName;
+import java.io.StringReader;
+import java.io.StringWriter;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.UUID;
 
-import hirs.utils.CollectionHelper;
-import org.apache.logging.log4j.Logger;
-import org.hibernate.Session;
-import org.testng.Assert;
-import org.testng.annotations.AfterClass;
-import org.testng.annotations.AfterMethod;
-import org.testng.annotations.BeforeClass;
-import org.testng.annotations.Test;
+import static org.apache.logging.log4j.LogManager.getLogger;
 
 /**
  * TPMReportTest is a unit test class for the TPMReport class.
@@ -78,8 +79,14 @@ TPMReportTest extends SpringPersistenceTest {
         LOGGER.debug("deleting all reports");
         Session session = sessionFactory.getCurrentSession();
         session.beginTransaction();
+        CriteriaBuilder builder = session.getCriteriaBuilder();
+        CriteriaQuery<Report> criteriaQuery = builder.createQuery(Report.class);
+        Root<Report> root = criteriaQuery.from(Report.class);
+        criteriaQuery.select(root);
+        Query<Report> query = session.createQuery(criteriaQuery);
         try {
-            final List<?> reports = session.createCriteria(Report.class).list();
+//            final List<?> reports = session.createCriteria(Report.class).list();
+            final List<Report> reports = query.getResultList();
             for (Object o : reports) {
                 LOGGER.debug("deleting report: {}", o);
                 session.delete(o);
@@ -146,8 +153,14 @@ TPMReportTest extends SpringPersistenceTest {
         session.getTransaction().commit();
 
         session.beginTransaction();
-        List<Report> reports = CollectionHelper.getArrayListOf(Report.class,
-                session.createCriteria(Report.class).list());
+        CriteriaBuilder builder = session.getCriteriaBuilder();
+        CriteriaQuery<Report> criteriaQuery = builder.createQuery(Report.class);
+        Root<Report> root = criteriaQuery.from(Report.class);
+        criteriaQuery.select(root);
+        Query<Report> query = session.createQuery(criteriaQuery);
+//        List<Report> reports = CollectionHelper.getArrayListOf(Report.class,
+//                session.createCriteria(Report.class).list());
+        List<Report> reports = query.getResultList();
         session.getTransaction().commit();
         Assert.assertEquals(reports.size(), 1);
 
@@ -156,8 +169,14 @@ TPMReportTest extends SpringPersistenceTest {
         session.getTransaction().commit();
 
         session.beginTransaction();
-        reports = CollectionHelper.getArrayListOf(Report.class,
-                session.createCriteria(Report.class).list());
+        builder = session.getCriteriaBuilder();
+        criteriaQuery = builder.createQuery(Report.class);
+        root = criteriaQuery.from(Report.class);
+        criteriaQuery.select(root);
+        query = session.createQuery(criteriaQuery);
+        reports = query.getResultList();
+//        reports = CollectionHelper.getArrayListOf(Report.class,
+//                session.createCriteria(Report.class).list());
         session.getTransaction().commit();
         Assert.assertEquals(reports.size(), 0);
     }

@@ -29,7 +29,6 @@ import hirs.data.persist.info.OSInfo;
 import hirs.data.persist.info.TPMInfo;
 import hirs.data.service.DeviceRegister;
 import hirs.persist.CertificateManager;
-import hirs.persist.DBManager;
 import hirs.persist.DeviceManager;
 import hirs.persist.ReferenceDigestManager;
 import hirs.persist.ReferenceEventManager;
@@ -180,7 +179,6 @@ public abstract class AbstractAttestationCertificateAuthority
     private final ReferenceManifestManager referenceManifestManager;
     private final DeviceRegister deviceRegister;
     private final DeviceManager deviceManager;
-    private final DBManager<TPM2ProvisionerState> tpm2ProvisionerStateDBManager;
     private final ReferenceDigestManager referenceDigestManager;
     private final ReferenceEventManager referenceEventManager;
     private String tpmQuoteHash = "";
@@ -197,7 +195,6 @@ public abstract class AbstractAttestationCertificateAuthority
      * @param deviceRegister the device register
      * @param validDays the number of days issued certs are valid
      * @param deviceManager the device manager
-     * @param tpm2ProvisionerStateDBManager the DBManager for persisting provisioner state
      * @param referenceDigestManager the reference digest manager
      * @param referenceEventManager the reference event manager
      */
@@ -210,7 +207,6 @@ public abstract class AbstractAttestationCertificateAuthority
             final ReferenceManifestManager referenceManifestManager,
             final DeviceRegister deviceRegister, final int validDays,
             final DeviceManager deviceManager,
-            final DBManager<TPM2ProvisionerState> tpm2ProvisionerStateDBManager,
             final ReferenceDigestManager referenceDigestManager,
             final ReferenceEventManager referenceEventManager) {
         this.supplyChainValidationService = supplyChainValidationService;
@@ -222,7 +218,6 @@ public abstract class AbstractAttestationCertificateAuthority
         this.deviceRegister = deviceRegister;
         this.validDays = validDays;
         this.deviceManager = deviceManager;
-        this.tpm2ProvisionerStateDBManager = tpm2ProvisionerStateDBManager;
         this.referenceDigestManager = referenceDigestManager;
         this.referenceEventManager = referenceEventManager;
     }
@@ -453,8 +448,6 @@ public abstract class AbstractAttestationCertificateAuthority
             LOG.info("Sending nonce: " + strNonce);
             LOG.info("Persisting claim of length: " + identityClaim.length);
 
-            tpm2ProvisionerStateDBManager.save(new TPM2ProvisionerState(nonce, identityClaim));
-
             if (scp != null && scp.isIgnoreImaEnabled()) {
                 pcrQuoteMask = PCR_QUOTE_MASK.replace("10,", "");
             }
@@ -634,9 +627,6 @@ public abstract class AbstractAttestationCertificateAuthority
                         endorsementCredential, platformCredentials, deviceName);
                 byte[] derEncodedAttestationCertificate = getDerEncodedCertificate(
                         attestationCertificate);
-
-                // We validated the nonce and made use of the identity claim so state can be deleted
-                tpm2ProvisionerStateDBManager.delete(tpm2ProvisionerState);
 
                 // Package the signed certificate into a response
                 ByteString certificateBytes = ByteString
@@ -1799,11 +1789,11 @@ public abstract class AbstractAttestationCertificateAuthority
      */
     private TPM2ProvisionerState getTpm2ProvisionerState(
             final ProvisionerTpm2.CertificateRequest request) {
-        if (request.hasNonce()) {
-            byte[] nonce = request.getNonce().toByteArray();
-            return TPM2ProvisionerState.getTPM2ProvisionerState(tpm2ProvisionerStateDBManager,
-                    nonce);
-        }
+//        if (request.hasNonce()) {
+//            byte[] nonce = request.getNonce().toByteArray();
+//            return TPM2ProvisionerState.getTPM2ProvisionerState(tpm2ProvisionerStateDBManager,
+//                    nonce);
+//        }
         return null;
     }
 
@@ -1947,7 +1937,7 @@ public abstract class AbstractAttestationCertificateAuthority
             }
             if (generateCertificate) {
                 attCert.setDevice(device);
-                certificateManager.save(attCert);
+                certificateManager.saveCertificate(attCert);
             }
         } catch (Exception e) {
             LOG.error("Error saving generated Attestation Certificate to database.", e);

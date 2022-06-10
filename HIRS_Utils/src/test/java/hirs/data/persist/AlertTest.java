@@ -1,18 +1,13 @@
 package hirs.data.persist;
 
-import hirs.data.persist.baseline.ImaBaseline;
-import hirs.data.persist.baseline.SimpleImaBaseline;
-import hirs.data.persist.baseline.Baseline;
 import hirs.data.persist.enums.AlertSeverity;
 import hirs.data.persist.enums.AlertSource;
 import hirs.data.persist.enums.AlertType;
-import java.util.Collections;
-import java.util.Date;
-import java.util.HashSet;
-import java.util.UUID;
-
 import org.testng.Assert;
 import org.testng.annotations.Test;
+
+import java.util.Date;
+import java.util.UUID;
 
 /**
  * A unit test class for <code>Alert</code>.
@@ -91,19 +86,6 @@ public final class AlertTest {
     }
 
     /**
-     * Test that the id and severity of a <code>Baseline</code> can be set and retrieved.
-     */
-    @Test
-    public void testBaselineIdAndSeverity() {
-        Alert alert = new Alert(TEST_DETAILS);
-        ImaBaseline baseline = new SimpleImaBaseline(TEST_BASELINE_NAME);
-        baseline.setSeverity(AlertSeverity.SEVERE);
-        alert.setBaselineIdsAndSeverity(Collections.singleton(baseline));
-        Assert.assertEquals(alert.getBaselineIds().iterator().next(), baseline.getId());
-        Assert.assertEquals(alert.getSeverity(), baseline.getSeverity());
-    }
-
-    /**
      * Test that the source can be set and retrieved.
      */
     @Test
@@ -142,29 +124,6 @@ public final class AlertTest {
     public void testSeverity() {
         Alert alert = new Alert(TEST_DETAILS);
         Assert.assertEquals(alert.getSeverity(), AlertSeverity.UNSPECIFIED);
-    }
-
-    /**
-     * Tests that the severity can be set independently from a baseline.
-     */
-    @Test
-    public void testSetSeverity() {
-        final AlertSeverity baselineSeverity = AlertSeverity.SEVERE;
-        final AlertSeverity alertSeverity = AlertSeverity.LOW;
-
-        // Set up a baseline with a severity
-        ImaBaseline baseline = new SimpleImaBaseline(TEST_BASELINE_NAME);
-        baseline.setSeverity(baselineSeverity);
-        HashSet<Baseline> baselineSet = new HashSet<>();
-        baselineSet.add(baseline);
-
-        // Track the status of the severity value
-        Alert alert = new Alert(TEST_DETAILS);
-        Assert.assertEquals(alert.getSeverity(), AlertSeverity.UNSPECIFIED);
-        alert.setBaselineIdsAndSeverity(baselineSet);
-        Assert.assertEquals(alert.getSeverity(), baselineSeverity);
-        alert.setSeverity(alertSeverity);
-        Assert.assertEquals(alert.getSeverity(), alertSeverity);
     }
 
     /**
