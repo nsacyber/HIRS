@@ -1,14 +1,14 @@
 ﻿using HardwareManifestPlugin;
+using HardwareManifestPluginManager;
 using Microsoft.Extensions.Configuration;
 using Serilog;
 using System;
-using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Text.RegularExpressions;
+using System.Collections.Generic;
 
 namespace hirs {
     public class Settings {
@@ -45,8 +45,7 @@ namespace hirs {
                 if (!string.IsNullOrWhiteSpace(configuration[Options.hardware_manifest_name.ToString()])) {
                     hardware_manifest_name = $"{ configuration[Options.hardware_manifest_name.ToString()] }";
                     List<string> names = Regex.Replace(hardware_manifest_name, @"\s", "").Split(',').ToList();
-                    HardwareManifestPluginManager plugins = new HardwareManifestPluginManager();
-                    hardwareManifests = plugins.LoadPlugins(names);
+                    hardwareManifests = HardwareManifestPluginManagerUtils.LoadPlugins(names, false);
                 }
                 
                 if (!string.IsNullOrWhiteSpace(configuration[Options.paccor_output_file.ToString()])) {
@@ -139,7 +138,7 @@ namespace hirs {
             string manifestJson = "";
             foreach (IHardwareManifest manifest in hardwareManifests) {
                 try {
-                    manifestJson = string.Join(manifestJson, manifest.asJsonString());
+                    manifestJson = string.Join(manifestJson, manifest.GatherHardwareManifestAsJsonString());
                 } catch (Exception e) {
                     Log.Debug($"Problem retrieving hardware manifest from {manifest.Name}.", e.InnerException);
                 }

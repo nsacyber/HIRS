@@ -41,24 +41,15 @@
         <PrivateAssets>all</PrivateAssets> <!-- These assets will be consumed but won't flow to the parent project -->
     </PackageReference>
   </ItemGroup>
-
-  <ItemGroup>
-    <Compile Update="Properties\Resources.Designer.cs">
-      <DesignTime>True</DesignTime>
-      <AutoGen>True</AutoGen>
-      <DependentUpon>Resources.resx</DependentUpon>
-    </Compile>
-  </ItemGroup>
-
-  <ItemGroup>
-    <EmbeddedResource Update="Properties\Resources.resx">
-      <Generator>ResXFileCodeGenerator</Generator>
-      <LastGenOutput>Resources.Designer.cs</LastGenOutput>
-    </EmbeddedResource>
-  </ItemGroup>
   
   <ItemGroup>
     <Protobuf Include="**/*.proto" />
+  </ItemGroup>
+  
+  <ItemGroup>
+    <ProjectReference Include="..\paccor\dotnet\HardwareManifestPlugin\HardwareManifestPluginManager\HardwareManifestPluginManager.csproj" />
+    <ProjectReference Include="..\paccor\dotnet\HardwareManifestPlugin\HardwareManifestPlugin\HardwareManifestPlugin.csproj" />
+    <ProjectReference Include="..\paccor\dotnet\paccor_scripts\paccor_scripts\paccor_scripts.csproj" />
   </ItemGroup>
   
   <ItemGroup>
@@ -66,10 +57,6 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
     </None>
-  </ItemGroup>
-  
-  <ItemGroup>
-    <ProjectReference Include="..\HardwareManifestPlugin\HardwareManifestPlugin.csproj" />
   </ItemGroup>
 
   <Target Name="BuildProto" BeforeTargets="PreBuildEvent">
