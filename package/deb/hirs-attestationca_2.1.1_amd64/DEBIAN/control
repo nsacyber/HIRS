@@ -1,0 +1,5 @@
+Package: hirs-attestationca
+Version: 2.1
+Architecture: amd64
+Maintainer: HIRS <HIRS@HIRS.HIRS>
+Description: Acts as ACA for HIRS Provisioner
