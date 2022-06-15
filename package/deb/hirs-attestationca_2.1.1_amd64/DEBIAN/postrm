@@ -1,0 +1,26 @@
+#!/bin/bash
+
+# don't run these during an upgrade
+# if [ $1 == 0 ]; then
+
+# Removes WARS from the Tomcat installation as well as ACA configuration files and certificates
+# (/etc/hirs/aca), and ACA installation (/opt/hirs/attestation-ca). Do not run during an upgrade
+
+echo "---Removing webaps, etc, opt hirs---"
+rm -f /usr/share/tomcat/webapps/HIRS_AttestationCA*.war
+rm -rf /usr/share/tomcat/webapps/HIRS_AttestationCA*
+rm -rf /etc/hirs/aca
+rm -rf /opt/hirs/attestation-ca
+
+# if there are no more HIRS packages remaining,
+# remove all HIRS directories
+if [[ -z $(dpkg -l | grep hirs) ]]; then
+    echo "---Removing val, etc, opt hirs---"
+    rm -rf /etc/hirs
+    rm -rf /opt/hirs
+    rm -rf /usr/share/hirs
+    rm -rf /var/log/hirs
+    rm -rf /etc/hirs/certificates
+fi
+
+# fi
