@@ -73,7 +73,7 @@ jobs:
           # Run provisioner
           echo "Running Provisioner"
           cd bin/Release/net6.0/win-x64/publish
-          $logs = ./hirs.exe --sim
+          $logs = ./tpm_aca_provision.exe --tcp --sim
 
           # Determine pass or fail
           $results = [string]$logs
@@ -191,12 +191,13 @@ jobs:
         run: |
           echo "Building provisioner"
           cd HIRS_Provisioner.NET/hirs
-          dotnet publish -r linux-x64 -c Release --self-contained
+          dotnet tool install --global dotnet-deb
+          dotnet deb -r linux-x64 -c Release
           
           echo "Running provisioner"
           cd bin/Release/net6.0/linux-x64/publish
           logName="${{matrix.os}}-system-tests.log"
-          sudo ./hirs --sim > $logName
+          sudo ./tpm_aca_provision --tcp --sim > $logName
           cat $logName
 
           if grep -rnw $logName -e "Certificate delivery succeeded"; 
