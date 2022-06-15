@@ -88,7 +88,7 @@ jobs:
         uses: actions/upload-artifact@v2
         with:
           name: "${{matrix.os}}-system-tests-${{steps.window_result.outputs.result}}.log"
-          path: HIRS_Provisioner.NET/hirs/*.log
+          path: HIRS_Provisioner.NET/hirs/bin/Release/net6.0/win-x64/publish/*.log
 
   dotnet-provisioner-aca-test-ubuntu:
     name: Setup ACA and Test Provisioner Ubuntu
@@ -211,7 +211,7 @@ jobs:
         if: contains(matrix.os, 'ubuntu') && always()
         with:
           name: "${{matrix.os}}-system-tests-${{steps.ubuntu_result.outputs.result}}.log"
-          path: HIRS_Provisioner.NET/hirs/*.log
+          path: HIRS_Provisioner.NET/hirs/bin/Release/net6.0/linux-x64/publish/*.log
 
   Evaluator:
     name: Evaluate Tests
