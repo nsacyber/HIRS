@@ -9,6 +9,8 @@ namespace hirsTest {
         [Fact]
         public void TestConstructorWithAppsettings() {
             Settings settings = Settings.LoadSettingsFromFile("./Resources/test/settings_test/appsettings.json");
+            settings.SetUpLog();
+            settings.CompleteSetUp();
 
             Assert.False(settings.IsAutoDetectTpmEnabled());
             Assert.True(settings.HasAcaAddress());

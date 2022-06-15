@@ -54,6 +54,8 @@ namespace hirsTest {
             A.CallTo(() => client.postCertificateRequest(certReq)).Returns(Task.FromResult<CertificateResponse>(certResp));
 
             Settings settings = Settings.LoadSettingsFromFile("./Resources/test/settings_test/appsettings.json");
+            settings.SetUpLog();
+            settings.CompleteSetUp();
 
             CLI cli = A.Fake<CLI>();
 
@@ -101,6 +103,8 @@ namespace hirsTest {
             A.CallTo(() => client.postIdentityClaim(idClaim)).WithAnyArguments().Returns(Task.FromResult<IdentityClaimResponse>(idClaimResp));
 
             Settings settings = Settings.LoadSettingsFromFile("./Resources/test/settings_test/appsettings.json");
+            settings.SetUpLog();
+            settings.CompleteSetUp();
 
             CLI cli = A.Fake<CLI>();
 

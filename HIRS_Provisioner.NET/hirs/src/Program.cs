@@ -15,10 +15,12 @@ namespace hirs {
             int result = 0;
             try {
                 Settings settings = Settings.LoadSettingsFromDefaultFile();
+                settings.SetUpLog();
                 Log.Information("Starting hirs version " + VERSION);
                 if (!IsRunningAsAdmin()) {
                     Log.Warning("The HIRS provisioner is not running as administrator.");
                 }
+                settings.CompleteSetUp();
                 CLI cli = new();
                 Log.Debug("Parsing CLI args.");
                 ParserResult<CLI> cliParseResult =

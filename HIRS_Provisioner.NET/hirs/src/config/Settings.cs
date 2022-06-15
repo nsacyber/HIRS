@@ -28,8 +28,8 @@ namespace hirs {
         private static readonly string EFI_ARTIFACT_PATH = "/EFI/tcg/";
         private static readonly string EFI_ARTIFACT_LINUX_PREFIX = "/boot/efi";
 
-        private string settingsFile;
-        private IConfiguration configFromSettingsFile;
+        private readonly string settingsFile;
+        private readonly IConfiguration configFromSettingsFile;
 
         // Storage of options collected from the settingsFile, with some default values
         public virtual string paccor_output {
@@ -57,6 +57,7 @@ namespace hirs {
         /// <param name="file">The path to the appsettings.json file on the file system.</param>
         private Settings(string file) {
             settingsFile = file;
+            configFromSettingsFile = ReadSettingsFile();
         }
 
         public static Settings LoadSettingsFromDefaultFile() {
@@ -67,9 +68,6 @@ namespace hirs {
         /// <param name="path">The path to the settings JSON file on the file system.</param>
         public static Settings LoadSettingsFromFile(string path) {
             Settings settings = new(path);
-            settings.ReadSettingsFile();
-            settings.SetUpLog();
-            settings.CompleteSetUp();
             return settings;
         }
 
@@ -77,13 +75,13 @@ namespace hirs {
             return AppContext.BaseDirectory;
         }
 
-        private void ReadSettingsFile() {
+        private IConfiguration ReadSettingsFile() {
             string basePath = GetBasePath();
             IConfiguration configuration = new ConfigurationBuilder()
                                 .SetBasePath(basePath)
                                 .AddJsonFile(settingsFile, false, true)
                                 .Build();
-            configFromSettingsFile = configuration;
+            return configuration;
         }
 
         public void SetUpLog() {
