@@ -72,7 +72,7 @@ jobs:
           # Run provisioner
           echo "Running Provisioner"
           cd bin/Release/net6.0/win-x64/publish
-          $logs = ./tpm_aca_provision --sim
+          $logs = ./hirs.exe --sim
 
           # Determine pass or fail
           $results = [string]$logs
@@ -195,7 +195,7 @@ jobs:
           echo "Running provisioner"
           cd bin/Release/net6.0/linux-x64/publish
           logName="${{matrix.os}}-system-tests.log"
-          sudo ./tpm_aca_provision --sim > $logName
+          sudo ./hirs --sim > $logName
           cat $logName
 
           if grep -rnw $logName -e "Certificate delivery succeeded"; 
