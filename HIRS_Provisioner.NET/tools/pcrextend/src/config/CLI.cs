@@ -2,8 +2,13 @@
 
 namespace pcrextend {
     public class CLI {
+        // These fields are controlled by the CommandLineParser library.
+        //   CS8618 is not relevant at this time.
+        //   Non-nullable field must contain a non-null value when exiting constructor.
+#pragma warning disable CS8618 
         [Option('i', "ip", Default = CommandTpmSimulator.DefaultSimulatorNamePort, HelpText = "IP of the TPM Simulator. Use the format ip:port.")]
         public string Ip {
+
             get; set;
         }
         [Option('p', "pcr", HelpText = "PCR Index 0 thru 23")]
@@ -19,5 +24,6 @@ namespace pcrextend {
         public string Digests {
             get; set;
         }
+#pragma warning restore CS8618
     }
 }

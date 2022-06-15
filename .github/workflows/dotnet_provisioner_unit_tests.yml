@@ -12,7 +12,7 @@ jobs:
         include:
          - os: windows-2022
          - os: ubuntu-20.04
-         - os: windows-2019
+         # - os: windows-2019 Cannot Target windows-2019 because the .NET 6 SDK won't receive security patches for this image
          - os: ubuntu-18.04
     steps:
     - name: Set git to use LF
