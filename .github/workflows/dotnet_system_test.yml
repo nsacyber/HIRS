@@ -8,7 +8,7 @@ on: push
   #     - completed
 
 env: 
-  DOTNET_VERSION: '3.1'
+  DOTNET_VERSION: '6.0'
 
 jobs:
   dotnet-provisioner-aca-test-windows:
@@ -27,7 +27,8 @@ jobs:
           git config --global core.eol lf
       
       - uses: actions/checkout@v2
-
+        with:
+          submodules: recursive
       - name: "Sets up WSL"
         if: contains(matrix.os, 'windows') && always()
         uses: Vampire/setup-wsl@v1
@@ -95,7 +96,8 @@ jobs:
     continue-on-error: true
     steps:
       - uses: actions/checkout@v2
-      
+        with:
+          submodules: recursive
       - name: "Setup ACA/TPM and Run Provisioner"
         run: |
           # Change dash to bash
@@ -210,6 +212,8 @@ jobs:
     steps:
 
     - uses: actions/checkout@v2
+        with:
+          submodules: recursive
 
     - name: Make artifact directory
       run: |
