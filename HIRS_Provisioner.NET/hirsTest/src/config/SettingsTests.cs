@@ -8,15 +8,14 @@ namespace hirsTest {
     public class SettingsTests {
         [Fact]
         public void TestConstructorWithAppsettings() {
-            Settings settings = new Settings("./Resources/test/settings_test/appsettings.json");
+            Settings settings = Settings.LoadSettingsFromFile("./Resources/test/settings_test/appsettings.json");
 
             Assert.False(settings.IsAutoDetectTpmEnabled());
             Assert.True(settings.HasAcaAddress());
-            Assert.Equal("https://127.0.0.1:8443/", settings.getAcaAddress().ToString());
+            Assert.Equal("https://127.0.0.1:8443/", settings.aca_address_port.ToString());
             Assert.True(settings.HasEfiPrefix());
-            Assert.True(settings.HasPaccorOutputFile());
-            Assert.Equal("./Resources/test/settings_test/component_list", settings.getPaccorOutputFile());
-            Assert.True(settings.hasEventLogPath());
+            Assert.True(settings.HasPaccorOutputFromFile());
+            Assert.True(settings.HasEventLogFromFile());
 
             const string baseSerial = "Base Platform Cert Serial\n";
             const string deltaSerial = "Delta Platform Certificate Serial\n";
@@ -27,12 +26,12 @@ namespace hirsTest {
             const string eventLogModel = "event log\n";
             const string componentList = "component list\n";
 
-            string paccorOutput = settings.getPaccorOutput();
+            string paccorOutput = settings.paccor_output;
             IEnumerable<byte[]> platformCerts = settings.gatherPlatformCertificatesFromEFI();
             IEnumerable<byte[]> rims = settings.gatherRIMBasesFromEFI();
             IEnumerable<byte[]> rimELs = settings.gatherSupportRIMELsFromEFI();
             IEnumerable<byte[]> rimPCRs = settings.gatherSupportRIMPCRsFromEFI();
-            byte[] eventLog = settings.gatherEventLogFromAppsettingsPath();
+            byte[] eventLog = settings.event_log;
 
             Assert.Equal(componentList, paccorOutput);
             Assert.Collection<byte[]>(platformCerts,

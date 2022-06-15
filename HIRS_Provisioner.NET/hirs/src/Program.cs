@@ -2,19 +2,24 @@
 using Serilog;
 using System;
 using System.Collections.Generic;
+using System.Runtime.InteropServices;
+using System.Security.Principal;
 using System.Text;
 using System.Threading.Tasks;
 
 namespace hirs {
     class Program {
-        public static readonly string VERSION = "15";
+        public static readonly string VERSION = "16";
 
         static async Task<int> Main(string[] args) {
             int result = 0;
             try {
-                Settings settings = new Settings();
-                CLI cli = new CLI();
+                Settings settings = Settings.LoadSettingsFromDefaultFile();
                 Log.Information("Starting hirs version " + VERSION);
+                if (!IsRunningAsAdmin()) {
+                    Log.Warning("The HIRS provisioner is not running as administrator.");
+                }
+                CLI cli = new();
                 Log.Debug("Parsing CLI args.");
                 ParserResult<CLI> cliParseResult =
                     CommandLine.Parser.Default.ParseArguments<CLI>(args)
@@ -25,7 +30,7 @@ namespace hirs {
                     // Help text requested, or parsing failed. Exit.
                     Log.Warning("Could not parse command line arguments. Set --tcp --sim, --tcp <ip>:<port>, --nix, or --win. See documentation for further assistance.");
                 } else {
-                    Provisioner p = new Provisioner(settings, cli);
+                    Provisioner p = new(settings, cli);
                     IHirsAcaTpm tpm = p.connectTpm();
                     p.useClassicDeviceInfoCollector();
                     result = await p.provision(tpm);
@@ -42,6 +47,20 @@ namespace hirs {
         private static void HandleParseError(IEnumerable<Error> errs) {
             //handle errors
             Log.Error("There was a CLI error: " + errs.ToString());
+        }
+
+        private static bool IsRunningAsAdmin() {
+            bool isAdmin = false;
+            try {
+                if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows)) {
+                    WindowsIdentity user = WindowsIdentity.GetCurrent();
+                    WindowsPrincipal principal = new(user);
+                    isAdmin = principal.IsInRole(WindowsBuiltInRole.Administrator);
+                } else {
+                    isAdmin = Mono.Unix.Native.Syscall.geteuid() == 0;
+                }
+            } catch { }
+            return isAdmin;
         }
     }
 }

@@ -19,13 +19,14 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="CommandLineParser" Version="2.8.0" />
+    <PackageReference Include="CommandLineParser" Version="2.9.1" />
     <PackageReference Include="Google.Protobuf" Version="3.20.1" />
     <PackageReference Include="Google.Protobuf.Tools" Version="3.20.1">
         <PrivateAssets>all</PrivateAssets> <!-- These assets will be consumed but won't flow to the parent project -->
     </PackageReference>
     <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="6.0.0" />
     <PackageReference Include="Microsoft.TSS" Version="2.1.1" />
+    <PackageReference Include="Mono.Posix.NETStandard" Version="1.0.0" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
     <PackageReference Include="Packaging.Targets" Version="0.1.220">
       <PrivateAssets>all</PrivateAssets> <!-- These assets will be consumed but won't flow to the parent project -->

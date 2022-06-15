@@ -38,7 +38,7 @@ namespace hirs {
         public CommandTpm(Boolean sim, string ip, int port) {
             simulator = sim;
             Tpm2Device tpmDevice = new TcpTpmDevice(ip, port);
-            tpm = tpmSetupByType(tpmDevice);
+            tpm = TpmSetupByType(tpmDevice);
         }
 
         /**
@@ -58,7 +58,7 @@ namespace hirs {
                     Log.Error("Unknown option selected in CommandTpm(Devices) constructor.");
                     break;
             }
-            tpm = tpmSetupByType(tpmDevice);
+            tpm = TpmSetupByType(tpmDevice);
         }
 
         public CommandTpm(Tpm2 tpm) {
@@ -71,43 +71,42 @@ namespace hirs {
             }
         }
 
-        public byte[] getCertificateFromNvIndex(uint index) {
-            Log.Debug("getCertificateFromNvIndex 0x" + index.ToString("X"));
+        public byte[] GetCertificateFromNvIndex(uint index) {
+            Log.Debug("GetCertificateFromNvIndex 0x" + index.ToString("X"));
             byte[] certificate = null;
             
-            TpmHandle nvHandle = new TpmHandle(index);
+            TpmHandle nvHandle = new(index);
             try {
                 byte[] nvName; // not used for this function. have to collect from NvReadPublic. 
                 NvPublic obj = tpm.NvReadPublic(nvHandle, out nvName);
                 if (obj != null) {
-                    byte[] indexData = nvBufferedRead(TpmHandle.RhOwner, nvHandle, obj.dataSize, 0);
+                    byte[] indexData = NvBufferedRead(TpmHandle.RhOwner, nvHandle, obj.dataSize, 0);
                     if (indexData != null) {
-                        certificate = extractFirstCertificate(indexData); // the nvIndex could contain random fill around the certificate
+                        certificate = ExtractFirstCertificate(indexData); // the nvIndex could contain random fill around the certificate
                         if (certificate != null) {
-                            Log.Debug("getEndorsementKeyCertificate: Read: " + BitConverter.ToString(certificate));
+                            Log.Debug("GetCertificateFromNvIndex: Read: " + BitConverter.ToString(certificate));
                         } else {
-                            Log.Warning("getEndorsementKeyCertificate: No certificate found within data at index.");
+                            Log.Warning("GetCertificateFromNvIndex: No certificate found within data at index.");
                         }
                     } else {
-                        Log.Warning("getEndorsementKeyCertificate: Could not read any data.");
+                        Log.Warning("GetCertificateFromNvIndex: Could not read any data.");
                     }
                 } else {
-                    Log.Warning("getEndorsementKeyCertificate: Nothing found at index: " + DefaultEkcNvIndex);
+                    Log.Warning("GetCertificateFromNvIndex: Nothing found at index: " + DefaultEkcNvIndex);
                 }
             } catch (TpmException e) {
-                Log.Error(e, "getEndorsementKeyCertificate TPM error");
+                Log.Error(e, "GetCertificateFromNvIndex TPM error");
             }
             return certificate;
         }
 
-        private byte[] nvBufferedRead(TpmHandle authHandle, TpmHandle nvIndex, ushort size, ushort offset) {
+        private byte[] NvBufferedRead(TpmHandle authHandle, TpmHandle nvIndex, ushort size, ushort offset) {
             ushort maxReadSize = 256;
             byte[] buffer = new byte[size];
 
             ushort ptr = 0;
             while (offset < size) {
-                int r;
-                int q = Math.DivRem(size - offset, maxReadSize, out r);
+                int q = Math.DivRem(size - offset, maxReadSize, out int r);
                 ushort sizeToRead = q > 0 ? maxReadSize : (ushort)r;
                 byte[] block = tpm.NvRead(authHandle, nvIndex, sizeToRead, offset);
                 Array.Copy(block, 0, buffer, ptr, sizeToRead);
@@ -117,7 +116,7 @@ namespace hirs {
             return buffer;
         }
 
-        private byte[] extractFirstCertificate(byte[] data) {
+        private static byte[] ExtractFirstCertificate(byte[] data) {
             byte[] extracted = null;
 
             if (data != null) {
@@ -156,23 +155,22 @@ namespace hirs {
         }
 
         // allows client to access the readpublic function
-        public TpmPublic readPublicArea(uint handleInt, out byte[] name, out byte[] qualifiedName) {
-            TpmHandle handle = new TpmHandle(handleInt);
+        public TpmPublic ReadPublicArea(uint handleInt, out byte[] name, out byte[] qualifiedName) {
+            TpmHandle handle = new(handleInt);
             TpmPublic obj = null;
-            byte[] localName = null, localQualifiedName = null;
             name = null;
             qualifiedName = null;
             try {
-                obj = tpm.ReadPublic(handle, out localName, out localQualifiedName);
+                obj = tpm.ReadPublic(handle, out byte[] localName, out byte[] localQualifiedName);
                 name = localName;
                 qualifiedName = localQualifiedName;
-            } catch (TpmException e) {
-                Log.Debug(e, "readPublicArea");
+            } catch {
+                // Don't think I need an exception here. Let the calling method throw if needed.
             }
             return obj;
         }
 
-        public static TpmPublic generateEKTemplateL1() {
+        public static TpmPublic GenerateEKTemplateL1() {
             TpmAlgId nameAlg = TpmAlgId.Sha256;
             ObjectAttr attributes = ObjectAttr.FixedTPM | ObjectAttr.FixedParent | ObjectAttr.SensitiveDataOrigin | ObjectAttr.AdminWithPolicy | ObjectAttr.Restricted | ObjectAttr.Decrypt;
             byte[] auth_policy = { // Template L-1
@@ -184,37 +182,33 @@ namespace hirs {
                 0x69, 0xAA
             };
             // ASYM: RSA 2048 with NULL scheme, SYM: AES-128 with CFB mode
-            RsaParms rsa = new RsaParms(new SymDefObject(TpmAlgId.Aes, 128, TpmAlgId.Cfb), new NullAsymScheme(), 2048, 0);
+            RsaParms rsa = new(new SymDefObject(TpmAlgId.Aes, 128, TpmAlgId.Cfb), new NullAsymScheme(), 2048, 0);
             // unique buffer must be filled with 0 for the EK Template L-1.
             byte[] zero256 = new byte[256];
             Array.Fill<byte>(zero256, 0x00);
-            Tpm2bPublicKeyRsa unique = new Tpm2bPublicKeyRsa(zero256);
-            TpmPublic inPublic = new TpmPublic(nameAlg, attributes, auth_policy, rsa, unique);
+            Tpm2bPublicKeyRsa unique = new(zero256);
+            TpmPublic inPublic = new(nameAlg, attributes, auth_policy, rsa, unique);
             return inPublic;
         }
 
-        public void createEndorsementKey(uint ekHandleInt) {
-            TpmHandle ekHandle = new TpmHandle(ekHandleInt);
+        public void CreateEndorsementKey(uint ekHandleInt) {
+            TpmHandle ekHandle = new(ekHandleInt);
 
-            TpmPublic existingObject = null;
-            byte[] name, qualifiedName;
+            TpmPublic existingObject;
             try {
-                existingObject = tpm.ReadPublic(ekHandle, out name, out qualifiedName);
+                existingObject = tpm.ReadPublic(ekHandle, out byte[] name, out byte[] qualifiedName);
                 Log.Debug("EK already exists.");
                 return;
             } catch (TpmException) {
                 Log.Debug("Verified EK does not exist at expected handle. Creating EK.");
             }
 
-            SensitiveCreate inSens = new SensitiveCreate(); // key password (no params = no key password)
-            TpmPublic inPublic = CommandTpm.generateEKTemplateL1(); 
-            TpmPublic outPublic;
-            CreationData creationData;
-            byte[] creationHash;
-            TkCreation ticket;
+            SensitiveCreate inSens = new(); // key password (no params = no key password)
+            TpmPublic inPublic = CommandTpm.GenerateEKTemplateL1(); 
 
-            TpmHandle newTransientEkHandle = tpm.CreatePrimary(TpmRh.Endorsement, inSens, inPublic, new byte[] { }, new PcrSelection[] { }, out outPublic,
-                                            out creationData, out creationHash, out ticket);
+            TpmHandle newTransientEkHandle = tpm.CreatePrimary(TpmRh.Endorsement, inSens, inPublic,
+                                                new byte[] { }, new PcrSelection[] { }, out TpmPublic outPublic,
+                                                out CreationData creationData, out byte[] creationHash, out TkCreation ticket);
 
             Log.Debug("New EK Handle: " + BitConverter.ToString(newTransientEkHandle));
             Log.Debug("New EK PUB Name: " + BitConverter.ToString(outPublic.GetName()));
@@ -228,35 +222,34 @@ namespace hirs {
             Log.Debug("Flushed the context for the transient EK.");
         }
 
-        private RsaParms akRsaParms() {
+        private static RsaParms AkRsaParms() {
             TpmAlgId digestAlg = TpmAlgId.Sha256;
-            RsaParms parms = new RsaParms(new SymDefObject(TpmAlgId.Null, 0, TpmAlgId.Null), new SchemeRsassa(digestAlg), 2048, 0);
+            RsaParms parms = new(new SymDefObject(TpmAlgId.Null, 0, TpmAlgId.Null), new SchemeRsassa(digestAlg), 2048, 0);
             return parms;
         }
 
-        private ObjectAttr akAttributes() {
+        private static ObjectAttr AkAttributes() {
             ObjectAttr attrib = ObjectAttr.Restricted | ObjectAttr.Sign | ObjectAttr.FixedParent | ObjectAttr.FixedTPM
                     | ObjectAttr.SensitiveDataOrigin | ObjectAttr.UserWithAuth;
             return attrib;
         }
 
-        private TpmPublic generateAKTemplate(TpmAlgId nameAlg) {
-            RsaParms rsa = akRsaParms();
-            ObjectAttr attributes = akAttributes();
-            TpmPublic inPublic = new TpmPublic(nameAlg, attributes, null, rsa, new Tpm2bPublicKeyRsa());
+        private static TpmPublic GenerateAKTemplate(TpmAlgId nameAlg) {
+            RsaParms rsa = AkRsaParms();
+            ObjectAttr attributes = AkAttributes();
+            TpmPublic inPublic = new(nameAlg, attributes, null, rsa, new Tpm2bPublicKeyRsa());
             return inPublic;
         }
 
-        public void createAttestationKey(uint ekHandleInt, uint akHandleInt, bool replace) {
-            TpmHandle ekHandle = new TpmHandle(ekHandleInt);
-            TpmHandle akHandle = new TpmHandle(akHandleInt);
+        public void CreateAttestationKey(uint ekHandleInt, uint akHandleInt, bool replace) {
+            TpmHandle ekHandle = new(ekHandleInt);
+            TpmHandle akHandle = new(akHandleInt);
 
             TpmPublic existingObject = null;
-            byte[] name, qualifiedName;
             try {
-                existingObject = tpm.ReadPublic(akHandle, out name, out qualifiedName);
-            } catch (TpmException e) {
-                Log.Warning(e, "createAttestationKey: Problem reading public AK handle.");
+                existingObject = tpm.ReadPublic(akHandle, out byte[] name, out byte[] qualifiedName);
+            } catch {
+                Log.Debug("No AK found. Will create a new one.");
             }
 
             if (replace && existingObject != null) {
@@ -270,15 +263,10 @@ namespace hirs {
             }
 
             // Create a new key and make it persistent at akHandle
-            byte[] wellKnownSecret = new byte[] { 00 };
             TpmAlgId nameAlg = TpmAlgId.Sha256;
 
-            SensitiveCreate inSens = new SensitiveCreate(); // do better: generate random, store in file with permissions to read only for admin? store in TPM?
-            TpmPublic inPublic = generateAKTemplate(nameAlg); //policyAIK.GetPolicyDigest()
-            TpmPublic outPublic;
-            CreationData creationData;
-            byte[] creationHash;
-            TkCreation ticket;
+            SensitiveCreate inSens = new(); // do better: generate random, store in file with permissions to read only for admin? store in TPM?
+            TpmPublic inPublic = GenerateAKTemplate(nameAlg); //policyAIK.GetPolicyDigest()
 
             var policyEK = new PolicyTree(nameAlg);
             policyEK.SetPolicyRoot(new TpmPolicySecret(TpmRh.Endorsement, false, 0, null, null));
@@ -286,8 +274,8 @@ namespace hirs {
             AuthSession sessEK = tpm.StartAuthSessionEx(TpmSe.Policy, nameAlg);
             sessEK.RunPolicy(tpm, policyEK);
 
-            TpmPrivate kAK = tpm[sessEK].Create(ekHandle, inSens, inPublic, null, null, out outPublic,
-                                            out creationData, out creationHash, out ticket);
+            TpmPrivate kAK = tpm[sessEK].Create(ekHandle, inSens, inPublic, null, null, out TpmPublic outPublic,
+                                            out CreationData creationData, out byte[] creationHash, out TkCreation ticket);
 
             Log.Debug("New AK PUB Name: " + BitConverter.ToString(outPublic.GetName()));
             Log.Debug("New AK PUB 2BREP: " + BitConverter.ToString(outPublic.GetTpm2BRepresentation()));
@@ -306,7 +294,7 @@ namespace hirs {
             tpm.FlushContext(sessEK);
         }
 
-        public Tpm2bDigest[] getPcrList(TpmAlgId pcrBankDigestAlg, uint[] pcrs = null) {
+        public Tpm2bDigest[] GetPcrList(TpmAlgId pcrBankDigestAlg, uint[] pcrs = null) {
             if (pcrs == null) {
                 pcrs = new uint[] { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23 };
             }
@@ -315,14 +303,14 @@ namespace hirs {
             PcrSelection[] pcrSelection = new PcrSelection[] {
                 new PcrSelection(pcrBankDigestAlg, pcrs, (uint)pcrs.Length)
             };
-            Tpm2bDigest[] pcrValues = multiplePcrRead(pcrSelection[0]);
+            Tpm2bDigest[] pcrValues = MultiplePcrRead(pcrSelection[0]);
             return pcrValues;
         }
 
         // qualifying data hashed with SHA256, quote set to use RSASSA scheme with SHA256-- TODO: enable usage of ECC and other digest alg
         // if no pcrs are requested (parameter pcrs == null), all pcrs wil be returned. The function does not check if any pcr is available before asking for the quote
-        public void getQuote(uint akHandleInt, TpmAlgId pcrBankDigestAlg, byte[] nonce, out CommandTpmQuoteResponse ctqr, uint[] pcrs = null) {
-            TpmHandle akHandle = new TpmHandle(akHandleInt);
+        public void GetQuote(uint akHandleInt, TpmAlgId pcrBankDigestAlg, byte[] nonce, out CommandTpmQuoteResponse ctqr, uint[] pcrs = null) {
+            TpmHandle akHandle = new(akHandleInt);
 
             if (pcrs == null) {
                 pcrs = new uint[] { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23 };
@@ -337,12 +325,10 @@ namespace hirs {
             // for test only
             TpmHash qualifyingData = TpmHash.FromData(TpmAlgId.Sha256, nonce);
 
-            ISignatureUnion localQuoteSig;
-            Attest localQuotedInfo = tpm.Quote(akHandle, qualifyingData, new SchemeRsassa(TpmAlgId.Sha256), pcrSelection, out localQuoteSig);
-            Tpm2bDigest[] localPcrValues = multiplePcrRead(pcrSelection[0]);
+            Attest localQuotedInfo = tpm.Quote(akHandle, qualifyingData, new SchemeRsassa(TpmAlgId.Sha256), pcrSelection, out ISignatureUnion localQuoteSig);
+            Tpm2bDigest[] localPcrValues = MultiplePcrRead(pcrSelection[0]);
 
-            byte[] name, qualifiedName;
-            TpmPublic pub = tpm.ReadPublic(akHandle, out name, out qualifiedName);
+            TpmPublic pub = tpm.ReadPublic(akHandle, out byte[] name, out byte[] qualifiedName);
 
             bool verified = pub.VerifyQuote(TpmAlgId.Sha256, pcrSelection, localPcrValues, qualifyingData, localQuotedInfo, localQuoteSig, qualifiedName);
             Log.Debug("Quote " + (verified ? "was" : "was not") + " verified.");
@@ -352,30 +338,28 @@ namespace hirs {
             }
         }
 
-        public Tpm2bDigest[] multiplePcrRead(PcrSelection pcrs) {
+        public Tpm2bDigest[] MultiplePcrRead(PcrSelection pcrs) {
             if (pcrs == null) {
-                return new Tpm2bDigest[0];
+                return Array.Empty<Tpm2bDigest>();
             }
 
-            List<Tpm2bDigest> pcrValues = new List<Tpm2bDigest>();
+            List<Tpm2bDigest> pcrValues = new();
 
             const int MAX_NUM_PCRS_PER_READ = 8;  // anticipate TPM has a limit on the number of PCRs read at a time
-            Queue<uint> selectedPcrs = new Queue<uint>(pcrs.GetSelectedPcrs());
+            Queue<uint> selectedPcrs = new(pcrs.GetSelectedPcrs());
 
             while (selectedPcrs.Count() > 0) {
-                int numPcrsToRead = (selectedPcrs.Count() > MAX_NUM_PCRS_PER_READ) ? MAX_NUM_PCRS_PER_READ : selectedPcrs.Count();
-                
-                List<uint> subset = new List<uint>();
+                int numPcrsToRead = (selectedPcrs.Count > MAX_NUM_PCRS_PER_READ) ? MAX_NUM_PCRS_PER_READ : selectedPcrs.Count;
+
+                List<uint> subset = new();
                 for (int i = 0; i < numPcrsToRead; i++) {
                     subset.Add(selectedPcrs.Dequeue());
                 }
-                PcrSelection selection = new PcrSelection(pcrs.hash, subset.ToArray());
+                PcrSelection selection = new(pcrs.hash, subset.ToArray());
                 PcrSelection[] pcrsIn = { // Need to wrap into an array
                     selection
                 };
-                PcrSelection[] pcrsOut;
-                Tpm2bDigest[] pcrValuesRetrieved;
-                uint count = tpm.PcrRead(pcrsIn, out pcrsOut, out pcrValuesRetrieved); // TODO incorporate check on count to handle race condition
+                uint count = tpm.PcrRead(pcrsIn, out PcrSelection[] pcrsOut, out Tpm2bDigest[] pcrValuesRetrieved); // TODO incorporate check on count to handle race condition
                 if (pcrValuesRetrieved != null && pcrValuesRetrieved.Length > 0) {
                     pcrValues.AddRange(pcrValuesRetrieved);
                 }
@@ -383,13 +367,13 @@ namespace hirs {
             return pcrValues.ToArray();
         }
 
-        public byte[] activateCredential(uint akHandleInt, uint ekHandleInt, byte[] integrityHMAC, byte[] encIdentity, byte[] encryptedSecret) {
-            byte[] recoveredSecret = null;
+        public byte[] ActivateCredential(uint akHandleInt, uint ekHandleInt, byte[] integrityHMAC, byte[] encIdentity, byte[] encryptedSecret) {
+            byte[] recoveredSecret;
 
-            TpmHandle ekHandle = new TpmHandle(ekHandleInt);
-            TpmHandle akHandle = new TpmHandle(akHandleInt);
+            TpmHandle ekHandle = new(ekHandleInt);
+            TpmHandle akHandle = new(akHandleInt);
 
-            IdObject credentialBlob = new IdObject(integrityHMAC, encIdentity);
+            IdObject credentialBlob = new(integrityHMAC, encIdentity);
 
             TpmAlgId nameAlg = TpmAlgId.Sha256;
             var policyEK = new PolicyTree(nameAlg);
@@ -422,7 +406,7 @@ namespace hirs {
                                                                                                                                            // attempt to read from the measuredboot log folder
                     string windir = System.Environment.GetEnvironmentVariable("windir");
                     string path = windir + "\\Logs\\MeasuredBoot\\";
-                    DirectoryInfo directory = new DirectoryInfo(path);
+                    DirectoryInfo directory = new(path);
                     FileInfo mostRecent = directory.GetFiles()
                         .OrderByDescending(f => f.LastWriteTime)
                         .FirstOrDefault();
@@ -444,7 +428,7 @@ namespace hirs {
             return eventLog;
         }
 
-        private Tpm2 tpmSetupByType(Tpm2Device tpmDevice) {
+        private Tpm2 TpmSetupByType(Tpm2Device tpmDevice) {
             try {
                 tpmDevice.Connect();
             } catch (AggregateException e) {
@@ -452,7 +436,7 @@ namespace hirs {
                 throw e;
             }
             
-            Tpm2 tpm = new Tpm2(tpmDevice);
+            Tpm2 tpm = new(tpmDevice);
             if (tpmDevice is TcpTpmDevice) {
                 //
                 // If we are using the simulator, we have to do a few things the
@@ -492,7 +476,7 @@ namespace hirs {
         }
 
         //TODO Fix ACA so that I don't have to re-format data in this way
-        public static void formatPcrValuesForAca(Tpm2bDigest[] pcrValues, string algName, out string pcrValuesStr) {
+        public static void FormatPcrValuesForAca(Tpm2bDigest[] pcrValues, string algName, out string pcrValuesStr) {
             pcrValuesStr = "";
             if (pcrValues != null && pcrValues.Length > 0) {
                 pcrValuesStr = algName + " :\n";
