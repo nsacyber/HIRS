@@ -64,10 +64,15 @@ jobs:
           # Provisioner exits on error because directory does not exist on windows-2022 runner
           mkdir C:\Windows\Logs\MeasuredBoot  
 
+          # Publish provisioner
+          echo "Building provisioner"
+          cd HIRS_Provisioner.NET/hirs
+          dotnet msbuild hirs.csproj /t:Msi /P:TargetFramework=net6.0 /p:RuntimeIdentifier=win-x64 /p:Configuration=Release
+          
           # Run provisioner
           echo "Running Provisioner"
-          cd HIRS_Provisioner.NET/hirs
-          $logs = dotnet run -r win-x64 --configuration Release --sim
+          cd bin/Release/net6.0/win-x64/publish
+          $logs = ./tpm_aca_provision --sim
 
           # Determine pass or fail
           $results = [string]$logs
@@ -183,10 +188,14 @@ jobs:
       - name: Run Provisioner and Extract Ubuntu System Test Results
         id: ubuntu_result
         run: |
-          echo "Running provisioner"
+          echo "Building provisioner"
           cd HIRS_Provisioner.NET/hirs
+          dotnet publish -r linux-x64 -c Release --self-contained
+          
+          echo "Running provisioner"
+          cd bin/Release/net6.0/linux-x64/publish
           logName="${{matrix.os}}-system-tests.log"
-          sudo dotnet run --configuration Release --sim > $logName
+          sudo ./tpm_aca_provision --sim > $logName
           cat $logName
 
           if grep -rnw $logName -e "Certificate delivery succeeded"; 
