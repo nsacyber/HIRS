@@ -67,6 +67,7 @@ jobs:
           # Publish provisioner
           echo "Building provisioner"
           cd HIRS_Provisioner.NET/hirs
+          dotnet restore
           dotnet msbuild hirs.csproj /t:Msi /P:TargetFramework=net6.0 /p:RuntimeIdentifier=win-x64 /p:Configuration=Release
           
           # Run provisioner
