@@ -1,7 +1,7 @@
-﻿using CommandLine;
-using System;
+﻿using System;
 using System.Collections.Generic;
-using System.Text;
+using System.Linq;
+using CommandLine;
 
 namespace hirs {
     public class CLI {
@@ -33,6 +33,10 @@ namespace hirs {
         [Option(Default = false, HelpText = "Clear any existing hirs AK and create a new one.")]
         public bool replaceAK {
             get; set;
+        }
+
+        public static string[] SplitArgs(string argString) {
+            return argString.SplitArgs(true);
         }
     }
 }

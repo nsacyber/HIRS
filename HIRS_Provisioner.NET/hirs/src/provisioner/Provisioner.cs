@@ -22,6 +22,9 @@ namespace hirs {
         private IHirsDeviceInfoCollector deviceInfoCollector = null;
         private IHirsAcaClient acaClient = null;
 
+        public Provisioner() {
+        }
+
         public Provisioner(Settings settings, CLI cli) {
             setSettings(settings);
             setCLI(cli);
@@ -65,14 +68,14 @@ namespace hirs {
                     try {
                         tpm = new CommandTpm(CommandTpm.Devices.WIN);
                         Log.Warning("Auto Detect found a WIN TPM Device.");
-                    } catch (Exception e) {
+                    } catch (Exception) {
                         Log.Warning("No WIN TPM Device found by auto detect.");
                     }
                 } else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux)) {
                     try {
                         tpm = new CommandTpm(CommandTpm.Devices.NIX);
                         Log.Warning("Auto Detect found a Linux TPM Device.");
-                    } catch (Exception e) {
+                    } catch (Exception) {
                         Log.Warning("No Linux TPM Device found by auto detect.");
                     }
                 }
@@ -83,7 +86,7 @@ namespace hirs {
                         string[] split = CommandTpm.DefaultSimulatorNamePort.Split(":");
                         tpm = new CommandTpm(true, split[0], Int32.Parse(split[1]));
                         Log.Warning("Auto Detect found a TPM simulator at " + CommandTpm.DefaultSimulatorNamePort + ".");
-                    } catch (Exception e) {
+                    } catch (Exception) {
                         Log.Warning("No TPM simulator found by auto detect.");
                     }
                 }
@@ -137,19 +140,19 @@ namespace hirs {
                 
                 Log.Debug("Gathering EK Certificate.");
                 byte[] name = null, qualifiedName = null, ekPublicArea = null;
-                byte[] ekc = tpm.getCertificateFromNvIndex(CommandTpm.DefaultEkcNvIndex);
+                byte[] ekc = tpm.GetCertificateFromNvIndex(CommandTpm.DefaultEkcNvIndex);
                 Log.Debug("Checking EK PUBLIC");
-                tpm.createEndorsementKey(CommandTpm.DefaultEkHandle); // Will not create key if obj already exists at handle
-                ekPublicArea = tpm.readPublicArea(CommandTpm.DefaultEkHandle, out name, out qualifiedName);
+                tpm.CreateEndorsementKey(CommandTpm.DefaultEkHandle); // Will not create key if obj already exists at handle
+                ekPublicArea = tpm.ReadPublicArea(CommandTpm.DefaultEkHandle, out name, out qualifiedName);
 
                 Log.Debug(cli.replaceAK ? "Creating AK." : "Verifying AK.");
-                tpm.createAttestationKey(CommandTpm.DefaultEkHandle, CommandTpm.DefaultAkHandle, cli.replaceAK);
+                tpm.CreateAttestationKey(CommandTpm.DefaultEkHandle, CommandTpm.DefaultAkHandle, cli.replaceAK);
 
                 Log.Debug("Gathering AK PUBLIC.");
-                byte[] akPublicArea = tpm.readPublicArea(CommandTpm.DefaultAkHandle, out name, out qualifiedName);
+                byte[] akPublicArea = tpm.ReadPublicArea(CommandTpm.DefaultAkHandle, out name, out qualifiedName);
 
                 Log.Debug("Gather Device Info");
-                Uri acaAddress = settings.getAcaAddress();
+                Uri acaAddress = settings.aca_address_port;
                 DeviceInfo dv = deviceInfoCollector.collectDeviceInfo(acaAddress.AbsoluteUri);
                 if (baseRims != null) {
                     foreach (byte[] baseRim in baseRims) {
@@ -168,10 +171,15 @@ namespace hirs {
                 }
 
                 Log.Debug("Gather Event log");
-                byte[] eventLog = settings.gatherEventLogFromAppsettingsPath();
-                if (eventLog == null) {
+                byte[] eventLog;
+                if (settings.HasEventLogFromFile()) {
+                    Log.Debug("  Using the event log identified in settings.");
+                    eventLog = settings.event_log;
+                } else {
+                    Log.Debug("  Attempting to collect the event log from the system.");
                     eventLog = tpm.GetEventLog();
                 }
+                    
                 if (eventLog != null) {
                     dv.Livelog = ByteString.CopyFrom(eventLog);
                 }
@@ -181,17 +189,17 @@ namespace hirs {
                     useBuiltInClient(acaAddress.AbsoluteUri);
                 }
 
-                Log.Debug("Gather hardware manifest:");
-                string manifest = settings.getHardwareManifest();
-                if (manifest == null) {
-                    manifest = settings.getPaccorOutput();
+                Log.Debug("Gathering hardware information:");
+                string manifest = settings.RunHardwareManifestCollectors();
+                if (manifest == null && settings.HasPaccorOutputFromFile()) {
+                    manifest = settings.paccor_output;
                 }
                 Log.Debug(manifest);
 
                 Log.Debug("Gather PCR List.");
                 string pcrsList, pcrsSha1, pcrsSha256;
-                CommandTpm.formatPcrValuesForAca(tpm.getPcrList(Tpm2Lib.TpmAlgId.Sha1), "sha1", out pcrsSha1);
-                CommandTpm.formatPcrValuesForAca(tpm.getPcrList(Tpm2Lib.TpmAlgId.Sha256), "sha256", out pcrsSha256);
+                CommandTpm.FormatPcrValuesForAca(tpm.GetPcrList(Tpm2Lib.TpmAlgId.Sha1), "sha1", out pcrsSha1);
+                CommandTpm.FormatPcrValuesForAca(tpm.GetPcrList(Tpm2Lib.TpmAlgId.Sha256), "sha256", out pcrsSha256);
                 pcrsList = pcrsSha1 + pcrsSha256;
                 Log.Debug("Result of formatting pcr values for the ACA:");
                 Log.Debug("\n" + pcrsList);
@@ -232,7 +240,7 @@ namespace hirs {
 
                 if (integrityHMAC != null && encIdentity != null && encryptedSecret != null) {
                     Log.Debug("Executing activateCredential.");
-                    byte[] recoveredSecret = tpm.activateCredential(CommandTpm.DefaultAkHandle, CommandTpm.DefaultEkHandle, integrityHMAC, encIdentity, encryptedSecret);
+                    byte[] recoveredSecret = tpm.ActivateCredential(CommandTpm.DefaultAkHandle, CommandTpm.DefaultEkHandle, integrityHMAC, encIdentity, encryptedSecret);
                     CommandTpmQuoteResponse ctqr;
                     Log.Debug("Gathering quote.");
                     uint[] selectPcrs = null;
@@ -240,13 +248,13 @@ namespace hirs {
                         // For now, the ACA will send a comma separated selection of PCRs as a string
                         try {
                             selectPcrs = (uint[])icr.PcrMask.Split(',').Select(uint.Parse).ToList().ToArray();
-                        } catch (Exception e) {
+                        } catch (Exception) {
                             Log.Warning("PcrMask was included in the IdentityClaimResponse, but could not be parsed." +
                                         "Collecting quote over default PCR selection.");
                             Log.Debug("This PcrMask could not be parsed: " + icr.PcrMask);
                         }
                     }
-                    tpm.getQuote(CommandTpm.DefaultAkHandle, Tpm2Lib.TpmAlgId.Sha256, recoveredSecret, out ctqr, selectPcrs);
+                    tpm.GetQuote(CommandTpm.DefaultAkHandle, Tpm2Lib.TpmAlgId.Sha256, recoveredSecret, out ctqr, selectPcrs);
                     Log.Debug("Create certificate request and include recovered secret");
                     CertificateRequest akCertReq = acaClient.createAkCertificateRequest(recoveredSecret, ctqr);
                     byte[] certificate;

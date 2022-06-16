@@ -75,10 +75,12 @@ namespace hirs {
             IncludeTpm20 = 0x00000004,
         }
 
+        // This method is only intended to be called from Windows.
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Interoperability", "CA1416:Validate platform compatibility", Justification = "<Pending>")]
         public static bool GetOwnerAuthFromOS(out byte[] ownerAuth) {
-            ownerAuth = new byte[0];
+            ownerAuth = Array.Empty<byte>();
             WindowsIdentity identity = WindowsIdentity.GetCurrent();
-            WindowsPrincipal principal = new WindowsPrincipal(identity);
+            WindowsPrincipal principal = new(identity);
             if (!principal.IsInRole(WindowsBuiltInRole.Administrator)) {
                 Log.Error("GetOwnerAuthFromOS: run the client with Administrator privileges");
                 return false;
@@ -125,10 +127,12 @@ namespace hirs {
             return true;
         }
 
+        // This method is only intended to be called from Windows.
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Interoperability", "CA1416:Validate platform compatibility", Justification = "<Pending>")]
         public static bool GetEventLog(out byte[] eventLog) {
-            eventLog = new byte[0];
+            eventLog = Array.Empty<byte>();
             WindowsIdentity identity = WindowsIdentity.GetCurrent();
-            WindowsPrincipal principal = new WindowsPrincipal(identity);
+            WindowsPrincipal principal = new(identity);
             if (!principal.IsInRole(WindowsBuiltInRole.Administrator)) {
                 Log.Debug("GetEventLog: run the client with Administrator privileges");
                 return false;

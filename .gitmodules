@@ -1,0 +1,3 @@
+[submodule "HIRS_Provisioner.NET/paccor"]
+	path = HIRS_Provisioner.NET/paccor
+	url = https://github.com/nsacyber/paccor.git

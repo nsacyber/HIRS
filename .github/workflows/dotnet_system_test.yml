@@ -8,7 +8,7 @@ on: push
   #     - completed
 
 env: 
-  DOTNET_VERSION: '3.1'
+  DOTNET_VERSION: '6.0'
 
 jobs:
   dotnet-provisioner-aca-test-windows:
@@ -18,7 +18,7 @@ jobs:
       matrix:
         include:
          - os: windows-2022
-         - os: windows-2019
+         # - os: windows-2019 Cannot Target windows-2019 because the .NET 6 SDK won't receive security patches for this image
     continue-on-error: true
     steps:
       - name: Set git to use LF
@@ -27,7 +27,8 @@ jobs:
           git config --global core.eol lf
       
       - uses: actions/checkout@v2
-
+        with:
+          submodules: recursive
       - name: "Sets up WSL"
         if: contains(matrix.os, 'windows') && always()
         uses: Vampire/setup-wsl@v1
@@ -63,10 +64,16 @@ jobs:
           # Provisioner exits on error because directory does not exist on windows-2022 runner
           mkdir C:\Windows\Logs\MeasuredBoot  
 
+          # Publish provisioner
+          echo "Building provisioner"
+          cd HIRS_Provisioner.NET/hirs
+          dotnet restore
+          dotnet msbuild hirs.csproj /t:Msi /P:TargetFramework=net6.0 /p:RuntimeIdentifier=win-x64 /p:Configuration=Release
+          
           # Run provisioner
           echo "Running Provisioner"
-          cd HIRS_Provisioner.NET/hirs
-          $logs = dotnet run -r win-x64 --configuration Release --sim
+          cd bin/Release/net6.0/win-x64/publish
+          $logs = ./tpm_aca_provision.exe --tcp --sim
 
           # Determine pass or fail
           $results = [string]$logs
@@ -82,7 +89,7 @@ jobs:
         uses: actions/upload-artifact@v2
         with:
           name: "${{matrix.os}}-system-tests-${{steps.window_result.outputs.result}}.log"
-          path: HIRS_Provisioner.NET/hirs/*.log
+          path: HIRS_Provisioner.NET/hirs/bin/Release/net6.0/win-x64/publish/*.log
 
   dotnet-provisioner-aca-test-ubuntu:
     name: Setup ACA and Test Provisioner Ubuntu
@@ -95,7 +102,8 @@ jobs:
     continue-on-error: true
     steps:
       - uses: actions/checkout@v2
-      
+        with:
+          submodules: recursive
       - name: "Setup ACA/TPM and Run Provisioner"
         run: |
           # Change dash to bash
@@ -181,10 +189,15 @@ jobs:
       - name: Run Provisioner and Extract Ubuntu System Test Results
         id: ubuntu_result
         run: |
-          echo "Running provisioner"
+          echo "Building provisioner"
           cd HIRS_Provisioner.NET/hirs
+          dotnet tool install --global dotnet-deb
+          dotnet deb -r linux-x64 -c Release
+          
+          echo "Running provisioner"
+          cd bin/Release/net6.0/linux-x64/publish
           logName="${{matrix.os}}-system-tests.log"
-          sudo dotnet run --configuration Release --sim > $logName
+          sudo ./tpm_aca_provision --tcp --sim > $logName
           cat $logName
 
           if grep -rnw $logName -e "Certificate delivery succeeded"; 
@@ -200,7 +213,7 @@ jobs:
         if: contains(matrix.os, 'ubuntu') && always()
         with:
           name: "${{matrix.os}}-system-tests-${{steps.ubuntu_result.outputs.result}}.log"
-          path: HIRS_Provisioner.NET/hirs/*.log
+          path: HIRS_Provisioner.NET/hirs/bin/Release/net6.0/linux-x64/publish/*.log
 
   Evaluator:
     name: Evaluate Tests
@@ -210,6 +223,8 @@ jobs:
     steps:
 
     - uses: actions/checkout@v2
+      with:
+        submodules: recursive
 
     - name: Make artifact directory
       run: |

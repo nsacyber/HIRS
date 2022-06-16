@@ -1,7 +1,7 @@
 name: Dotnet Provisioner Unit Tests
 on: push
 env: 
-  DOTNET_VERSION: '3.1'
+  DOTNET_VERSION: '6.0'
 jobs:
   dotnet_provisioner_unit_tests:
     name: Restore and Run Unit Tests
@@ -12,7 +12,7 @@ jobs:
         include:
          - os: windows-2022
          - os: ubuntu-20.04
-         - os: windows-2019
+         # - os: windows-2019 Cannot Target windows-2019 because the .NET 6 SDK won't receive security patches for this image
          - os: ubuntu-18.04
     steps:
     - name: Set git to use LF
@@ -22,6 +22,8 @@ jobs:
 
     - name: Checkout repo
       uses: actions/checkout@v2
+      with:
+        submodules: recursive
     
     - name: Restore Project
       working-directory: HIRS_Provisioner.NET
@@ -101,6 +103,8 @@ jobs:
     steps:
 
     - uses: actions/checkout@v2
+      with:
+        submodules: recursive
 
     - name: Make artifact directory
       run: |

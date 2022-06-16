@@ -5,14 +5,10 @@
     </PropertyGroup>
     <Move SourceFiles="$(OUTDIR)publish\$(AssemblyName)" DestinationFiles="$(OUTDIR)publish\tpm_aca_provision" />
     <Message Text="Renamed linux binary file." Importance="high" />
-    <Delete Files="$(PublishDir)\$(AssemblyName).pdb" />
-    <Message Text="Deleted PDB file." Importance="high" />
   </Target>
   <Target Name="RenameBeforePublishWindows" BeforeTargets="SetWixPath" Condition="$(RuntimeIdentifier.Contains('win'))">
     <Move SourceFiles="$(OUTDIR)publish\$(AssemblyName).exe" DestinationFiles="$(OUTDIR)publish\tpm_aca_provision.exe" />
     <Message Text="Renamed exe binary file." Importance="high" />
-    <Delete Files="$(PublishDir)\$(AssemblyName).pdb" />
-    <Message Text="Deleted PDB file." Importance="high" />
   </Target>
   <PropertyGroup>
     <PostInstallScript>"/bin/sh -c \"chmod 664 /usr/share/hirs/appsettings.json\""</PostInstallScript>
@@ -26,7 +22,36 @@
         <Light>$(WixInstallPath)light.exe</Light>
     </PropertyGroup>
   </Target>
-
+  <Target Name="DeletePDB" AfterTargets="RenameBeforePublishLinux;RenameBeforePublishWindows">
+    <ItemGroup>
+      <PDBToDelete Include="$(PublishDir)*.pdb"/>
+    </ItemGroup>   
+    <Delete Files="@(PDBToDelete)" />
+    <Message Text="Deleted PDB files." Importance="high" />	
+  </Target>
+  <Target Name="CopyFiles" AfterTargets="DeletePDB">
+    <ItemGroup>
+      <PaccorScriptsDll Include="$(OUTDIR)paccor_scripts.dll"/>
+    </ItemGroup>
+    <Copy
+      SourceFiles="@(PaccorScriptsDll)"
+      DestinationFolder="$(PublishDir)plugins"
+    />
+	<ItemGroup> 
+      <PaccorScriptsLinux Include="$(PublishDir)scripts\*"/>
+	  <PaccorScriptsWindows Include="$(PublishDir)scripts\windows\*"/>
+	</ItemGroup>
+	<Move
+      SourceFiles="@(PaccorScriptsLinux)"
+      DestinationFolder="$(PublishDir)plugins/scripts"
+    />
+	<Move
+      SourceFiles="@(PaccorScriptsWindows)"
+      DestinationFolder="$(PublishDir)plugins/scripts/windows"
+    />
+	<RemoveDir Directories="$(PublishDir)scripts" />
+  </Target>
+  
 <ItemGroup>
     <Content Include="plugins\**\*.*">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
