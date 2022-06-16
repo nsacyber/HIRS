@@ -70,7 +70,7 @@
                     <h3>
                         <a href="${portal}/rim-database"><img src="${icons}/ic_devices_black_24dp.png" /> RIM Database</a>
                     </h3>
-                    <h4>View a list of TPM events </h4>
+                    <h4>View a list of Reference Integrity Measurements</h4>
                 </div>
             </div>
         </div>
