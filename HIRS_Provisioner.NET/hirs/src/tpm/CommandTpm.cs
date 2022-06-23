@@ -51,8 +51,10 @@ namespace hirs {
                     // LinuxTpmDevice will first try to connect tpm2-abrmd and second try to connect directly to device
                     StringWriter writer = new();
                     Console.SetOut(writer);
+                    // The LinuxTpmDevice will print to Console/Stdout an error when it cannot find a resource manager
+                    // This will redirect the Console messages
                     tpmDevice = new LinuxTpmDevice();
-                    //writer.Flush();
+                    // Reset the Console messages
                     Console.SetOut(new StreamWriter(Console.OpenStandardOutput()));
                     break;
                 case Devices.WIN:
