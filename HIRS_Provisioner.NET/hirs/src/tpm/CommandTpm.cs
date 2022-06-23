@@ -49,7 +49,11 @@ namespace hirs {
             switch (dev) {
                 case Devices.NIX:
                     // LinuxTpmDevice will first try to connect tpm2-abrmd and second try to connect directly to device
+                    StringWriter writer = new();
+                    Console.SetOut(writer);
                     tpmDevice = new LinuxTpmDevice();
+                    //writer.Flush();
+                    Console.SetOut(new StreamWriter(Console.OpenStandardOutput()));
                     break;
                 case Devices.WIN:
                     tpmDevice = new TbsDevice();
@@ -73,7 +77,7 @@ namespace hirs {
 
         public byte[] GetCertificateFromNvIndex(uint index) {
             Log.Debug("GetCertificateFromNvIndex 0x" + index.ToString("X"));
-            byte[] certificate = null;
+            byte[] certificate = Array.Empty<byte>();
             
             TpmHandle nvHandle = new(index);
             try {
@@ -86,16 +90,16 @@ namespace hirs {
                         if (certificate != null) {
                             Log.Debug("GetCertificateFromNvIndex: Read: " + BitConverter.ToString(certificate));
                         } else {
-                            Log.Warning("GetCertificateFromNvIndex: No certificate found within data at index.");
+                            Log.Debug("GetCertificateFromNvIndex: No certificate found within data at index.");
                         }
                     } else {
-                        Log.Warning("GetCertificateFromNvIndex: Could not read any data.");
+                        Log.Debug("GetCertificateFromNvIndex: Could not read any data.");
                     }
                 } else {
-                    Log.Warning("GetCertificateFromNvIndex: Nothing found at index: " + DefaultEkcNvIndex);
+                    Log.Debug("GetCertificateFromNvIndex: Nothing found at index: " + DefaultEkcNvIndex);
                 }
             } catch (TpmException e) {
-                Log.Error(e, "GetCertificateFromNvIndex TPM error");
+                Log.Debug(e, "GetCertificateFromNvIndex TPM error");
             }
             return certificate;
         }

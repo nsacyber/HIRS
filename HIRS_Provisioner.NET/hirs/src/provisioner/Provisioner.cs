@@ -125,6 +125,9 @@ namespace hirs {
                 Log.Information("--> Provisioning");
                 Log.Information("----> Gathering Endorsement Key Certificate.");
                 byte[] ekc = tpm.GetCertificateFromNvIndex(CommandTpm.DefaultEkcNvIndex);
+                if (ekc.Length == 0) {
+                    Log.Information("------> No Endorsement Key Certificate found at the expected index. The ACA may have one uploaded for this TPM.");
+                }
                 Log.Debug("Checking EK PUBLIC");
                 tpm.CreateEndorsementKey(CommandTpm.DefaultEkHandle); // Will not create key if obj already exists at handle
                 byte[] ekPublicArea = tpm.ReadPublicArea(CommandTpm.DefaultEkHandle, out byte[] name, out byte[] qualifiedName);
@@ -209,15 +212,18 @@ namespace hirs {
                 Log.Information("----> Sending identity claim to Attestation CA");
                 IdentityClaimResponse icr = await acaClient.PostIdentityClaim(idClaim);
                 Log.Information("----> Received response. Attempting to decrypt nonce");
-                if (icr.Status == ResponseStatus.Pass) {
-                    Log.Debug("The ACA accepted the identity claim.");
-                } else {
-                    Log.Debug("The ACA did not accept the identity claim. See details on the ACA.");
-                    result = ClientExitCodes.PASS_1_STATUS_FAIL;
+                if (icr.HasStatus) {
+                    if (icr.Status == ResponseStatus.Pass) {
+                        Log.Debug("The ACA accepted the identity claim.");
+                    } else {
+                        Log.Debug("The ACA did not accept the identity claim. See details on the ACA.");
+                        result = ClientExitCodes.PASS_1_STATUS_FAIL;
+                        return (int)result;
+                    }
                 }
 
                 byte[] integrityHMAC = null, encIdentity = null, encryptedSecret = null;
-                if (icr.Status == ResponseStatus.Pass && icr.HasCredentialBlob) {
+                if (icr.HasCredentialBlob) {
                     byte[] credentialBlob = icr.CredentialBlob.ToByteArray(); // look for the nonce
                     Log.Debug("ACA delivered IdentityClaimResponse credentialBlob " + BitConverter.ToString(credentialBlob));
                     int credentialBlobLen = credentialBlob[0] | (credentialBlob[1] << 8); 
@@ -262,13 +268,18 @@ namespace hirs {
                     Log.Debug("Communicate certificate request to the ACA.");
                     CertificateResponse cr = await acaClient.PostCertificateRequest(akCertReq);
                     Log.Debug("Response received from the ACA regarding the certificate request.");
-                    if (cr.Status == ResponseStatus.Pass) {
-                        Log.Debug("ACA returned a positive response to the Certificate Request.");
+                    if (cr.HasStatus) {
+                        if (cr.Status == ResponseStatus.Pass) {
+                            Log.Debug("ACA returned a positive response to the Certificate Request.");
+                        } else {
+                            Log.Debug("The ACA did not return any certificates. See details on the ACA.");
+                            result = ClientExitCodes.PASS_2_STATUS_FAIL;
+                            return (int)result;
+                        }
+                    }
+                    if (cr.HasCertificate) {
                         certificate = cr.Certificate.ToByteArray(); // contains certificate
                         Log.Debug("Printing attestation key certificate: " + BitConverter.ToString(certificate));
-                    } else {
-                        Log.Debug("The ACA did not return any certificates. See details on the ACA.");
-                        result = ClientExitCodes.PASS_2_STATUS_FAIL;
                     }
                 } else {
                     result = ClientExitCodes.MAKE_CREDENTIAL_BLOB_MALFORMED;

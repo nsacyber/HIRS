@@ -287,7 +287,7 @@ namespace hirs {
                         }
                     }
                 }
-                if (files.Count() > 0) { // if none found, don't initialize platformCerts
+                if (files.Count > 0) { // if none found, don't initialize platformCerts
                     // At least one base platform cert found
                     platformCerts = new List<byte[]>();
                     foreach (FileInfo file in files) {
