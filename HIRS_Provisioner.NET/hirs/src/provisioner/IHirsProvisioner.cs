@@ -5,11 +5,11 @@ using System.Threading.Tasks;
 
 namespace hirs {
     public interface IHirsProvisioner {
-        void setSettings(Settings settings);
-        void setCLI(CLI cli);
-        IHirsAcaTpm connectTpm();
-        void setClient(IHirsAcaClient clientWithAddress);
-        void setDeviceInfoCollector(IHirsDeviceInfoCollector collector);
-        Task<int> provision(IHirsAcaTpm tpm);
+        void SetSettings(Settings settings);
+        void SetCLI(CLI cli);
+        IHirsAcaTpm ConnectTpm();
+        void SetClient(IHirsAcaClient clientWithAddress);
+        void SetDeviceInfoCollector(IHirsDeviceInfoCollector collector);
+        Task<int> Provision(IHirsAcaTpm tpm);
     }
 }

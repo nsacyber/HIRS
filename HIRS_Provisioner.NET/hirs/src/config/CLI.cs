@@ -1,37 +1,34 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using CommandLine;
+﻿using CommandLine;
 
 namespace hirs {
     public class CLI {
-        [Option(SetName="type", Default = false, HelpText = "Connect to the TPM by IP. Use the format ip:port. By default will connect to " + CommandTpm.DefaultSimulatorNamePort + ".")]
-        public bool tcp {
+        [Option("tcp", SetName="type", Default = false, HelpText = "Connect to the TPM by IP. Use the format ip:port. By default will connect to " + CommandTpm.DefaultSimulatorNamePort + ".")]
+        public bool Tcp {
             get; set;
         }
 
-        [Option(SetName = "type", Default = false, HelpText = "Connect to a Windows TPM device.")]
-        public bool win {
+        [Option("win", SetName = "type", Default = false, HelpText = "Connect to a Windows TPM device.")]
+        public bool Win {
             get; set;
         }
 
-        [Option(SetName = "type", Default = false, HelpText = "Connect to a Linux TPM device.")]
-        public bool nix {
+        [Option("nix", SetName = "type", Default = false, HelpText = "Connect to a Linux TPM device.")]
+        public bool Nix {
             get; set;
         }
 
-        [Option(Default = false, HelpText = "Notify the program of intent to connect to a TPM simulator.")]
-        public bool sim {
+        [Option("sim", Default = false, HelpText = "Notify the program of intent to connect to a TPM simulator.")]
+        public bool Sim {
             get; set;
         }
 
-        [Option(Default = CommandTpm.DefaultSimulatorNamePort, HelpText = "IP of the TPM Device. Use the format ip:port.")]
-        public string ip {
+        [Option("ip", Default = CommandTpm.DefaultSimulatorNamePort, HelpText = "IP of the TPM Device. Use the format ip:port.")]
+        public string Ip {
             get; set;
         }
 
-        [Option(Default = false, HelpText = "Clear any existing hirs AK and create a new one.")]
-        public bool replaceAK {
+        [Option("replaceAK", Default = false, HelpText = "Clear any existing hirs AK and create a new one.")]
+        public bool ReplaceAK {
             get; set;
         }
 

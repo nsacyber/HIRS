@@ -1,23 +1,24 @@
 ﻿using hirs;
-using System;
+using NUnit.Framework;
 using System.Collections.Generic;
 using System.Text;
-using Xunit;
 
 namespace hirsTest {
     public class SettingsTests {
-        [Fact]
+        [Test]
         public void TestConstructorWithAppsettings() {
             Settings settings = Settings.LoadSettingsFromFile("./Resources/test/settings_test/appsettings.json");
             settings.SetUpLog();
             settings.CompleteSetUp();
 
-            Assert.False(settings.IsAutoDetectTpmEnabled());
-            Assert.True(settings.HasAcaAddress());
-            Assert.Equal("https://127.0.0.1:8443/", settings.aca_address_port.ToString());
-            Assert.True(settings.HasEfiPrefix());
-            Assert.True(settings.HasPaccorOutputFromFile());
-            Assert.True(settings.HasEventLogFromFile());
+            Assert.Multiple(() => {
+                Assert.That(settings.IsAutoDetectTpmEnabled(), Is.False);
+                Assert.That(settings.HasAcaAddress(), Is.True);
+                Assert.That(settings.aca_address_port.ToString(), Is.EqualTo("https://127.0.0.1:8443/"));
+                Assert.That(settings.HasEfiPrefix(), Is.True);
+                Assert.That(settings.HasPaccorOutputFromFile(), Is.True);
+                Assert.That(settings.HasEventLogFromFile(), Is.True);
+            });
 
             const string baseSerial = "Base Platform Cert Serial\n";
             const string deltaSerial = "Delta Platform Certificate Serial\n";
@@ -29,28 +30,30 @@ namespace hirsTest {
             const string componentList = "component list\n";
 
             string paccorOutput = settings.paccor_output;
-            IEnumerable<byte[]> platformCerts = settings.gatherPlatformCertificatesFromEFI();
-            IEnumerable<byte[]> rims = settings.gatherRIMBasesFromEFI();
-            IEnumerable<byte[]> rimELs = settings.gatherSupportRIMELsFromEFI();
-            IEnumerable<byte[]> rimPCRs = settings.gatherSupportRIMPCRsFromEFI();
+            List<byte[]> platformCerts = settings.gatherPlatformCertificatesFromEFI();
+            List<byte[]> rims = settings.gatherRIMBasesFromEFI();
+            List<byte[]> rimELs = settings.gatherSupportRIMELsFromEFI();
+            List<byte[]> rimPCRs = settings.gatherSupportRIMPCRsFromEFI();
             byte[] eventLog = settings.event_log;
+            //Assert.Multiple(() => {
+                Assert.That(paccorOutput, Is.EqualTo(componentList));
+                Assert.That(platformCerts, Has.Count.EqualTo(3));
+            
+                Assert.That(platformCerts[0], Is.EqualTo(Encoding.ASCII.GetBytes(baseSerial)));
+                Assert.That(platformCerts[1], Is.EqualTo(Encoding.ASCII.GetBytes(deltaSerial)));
+                Assert.That(platformCerts[2], Is.EqualTo(Encoding.ASCII.GetBytes(deltaModel)));
 
-            Assert.Equal(componentList, paccorOutput);
-            Assert.Collection<byte[]>(platformCerts,
-                elem1 => Assert.Equal(Encoding.ASCII.GetBytes(baseSerial), elem1),
-                elem2 => Assert.Equal(Encoding.ASCII.GetBytes(deltaSerial), elem2),
-                elem3 => Assert.Equal(Encoding.ASCII.GetBytes(deltaModel), elem3));
+                Assert.That(rims, Has.Count.EqualTo(1));
+                Assert.That(rims[0], Is.EqualTo(Encoding.ASCII.GetBytes(swidtagModel)));
 
-            Assert.Collection<byte[]>(rims,
-                elem1 => Assert.Equal(Encoding.ASCII.GetBytes(swidtagModel), elem1));
+                Assert.That(rimELs, Has.Count.EqualTo(1));
+                Assert.That(rimELs[0], Is.EqualTo(Encoding.ASCII.GetBytes(rimelModel)));
 
-            Assert.Collection<byte[]>(rimELs,
-                elem1 => Assert.Equal(Encoding.ASCII.GetBytes(rimelModel), elem1));
+                Assert.That(rimPCRs, Has.Count.EqualTo(1));
+                Assert.That(rimPCRs[0], Is.EqualTo(Encoding.ASCII.GetBytes(rimpcrModel)));
 
-            Assert.Collection<byte[]>(rimPCRs,
-                elem1 => Assert.Equal(Encoding.ASCII.GetBytes(rimpcrModel), elem1));
-
-            Assert.Equal(eventLogModel, Encoding.ASCII.GetString(eventLog));
+                Assert.That(Encoding.ASCII.GetString(eventLog), Is.EqualTo(eventLogModel));
+            //});
         }
     }
 }

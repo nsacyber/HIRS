@@ -248,25 +248,23 @@ namespace hirs {
             TpmPublic existingObject = null;
             try {
                 existingObject = tpm.ReadPublic(akHandle, out byte[] name, out byte[] qualifiedName);
-            } catch {
-                Log.Debug("No AK found. Will create a new one.");
-            }
+            } catch { }
 
-            if (replace && existingObject != null) {
-                // Clear the object
+            if (!replace && existingObject != null) {
+                // Do Nothing
+                Log.Debug("AK exists at expected handle. Flag to not replace the AK is set in the settings file.");
+                return;
+            } else if (replace && existingObject != null) {
+                // Clear the object and continue
                 tpm.EvictControl(TpmRh.Owner, akHandle, akHandle);
                 Log.Debug("Removed previous AK.");
-            } else if (!replace && existingObject != null) {
-                // Do Nothing
-                Log.Debug("AK exists at expected handle. Flag is set to not replace it.");
-                return;
-            }
+            }  
 
             // Create a new key and make it persistent at akHandle
             TpmAlgId nameAlg = TpmAlgId.Sha256;
 
-            SensitiveCreate inSens = new(); // do better: generate random, store in file with permissions to read only for admin? store in TPM?
-            TpmPublic inPublic = GenerateAKTemplate(nameAlg); //policyAIK.GetPolicyDigest()
+            SensitiveCreate inSens = new();
+            TpmPublic inPublic = GenerateAKTemplate(nameAlg);
 
             var policyEK = new PolicyTree(nameAlg);
             policyEK.SetPolicyRoot(new TpmPolicySecret(TpmRh.Endorsement, false, 0, null, null));

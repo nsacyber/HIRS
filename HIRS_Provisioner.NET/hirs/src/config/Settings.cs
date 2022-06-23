@@ -1,5 +1,4 @@
-﻿using CommandLine;
-using HardwareManifestPlugin;
+﻿using HardwareManifestPlugin;
 using HardwareManifestPluginManager;
 using Microsoft.Extensions.Configuration;
 using Serilog;
@@ -7,8 +6,6 @@ using System;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
-using System.Text;
-using System.Text.RegularExpressions;
 using System.Collections.Generic;
 
 namespace hirs {
@@ -192,13 +189,15 @@ namespace hirs {
                     if (!File.Exists(paccor_output_file)) {
                         paccor_output_file = null;
                         Log.Warning(Options.paccor_output_file.ToString() + ": " + paccor_output_file + " does not exist.");
-                    } else if (hardwareManifests.Count > 0) {
+                    } else if (HasHardwareManifestPlugins()) {
                         Log.Warning("The settings file specified hardware manifest collectors and a paccor output file. Fresh data is preferred over data from a file. If you want to use the file data, clear the collectors field from the settings file.");
                     } else {
-                        Log.Debug("Retrieving JSON-formatted components from " + Options.paccor_output_file.ToString() + ".");
+                        Log.Debug("Retrieving components from " + Options.paccor_output_file.ToString() + ".");
                         paccor_output = File.ReadAllText(paccor_output_file);
                         if (string.IsNullOrWhiteSpace(paccor_output)) {
                             Log.Warning(Options.paccor_output_file.ToString() + " Paccor output was empty. Cannot perform Platform Attribute validation.");
+                        } else {
+                            Log.Debug("Output file contains:\n" + paccor_output);
                         }
                     }
                 }
@@ -449,6 +448,9 @@ namespace hirs {
         }
         #endregion
 
+        public bool HasHardwareManifestPlugins() {
+            return hardwareManifests.Count > 0;
+        }
         public bool HasPaccorOutputFromFile() {
             return !string.IsNullOrEmpty(paccor_output);
         }

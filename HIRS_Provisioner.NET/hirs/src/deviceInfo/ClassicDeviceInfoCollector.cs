@@ -19,7 +19,7 @@ namespace hirs {
         public ClassicDeviceInfoCollector() {
         }
 
-        public string fileToString(string path, string def) {
+        public string FileToString(string path, string def) {
             string result;
             try {
                 result = File.ReadAllText(path).Trim();
@@ -32,21 +32,21 @@ namespace hirs {
             return result;
         }
 
-        public DeviceInfo collectDeviceInfo(string acaAddress) {
-            DeviceInfo dv = new DeviceInfo();
-            dv.Fw = collectFirmwareInfo();
-            dv.Hw = collectHardwareInfo();
-            dv.Nw = collectNetworkInfo(acaAddress);
-            dv.Os = collectOsInfo();
+        public DeviceInfo CollectDeviceInfo(string acaAddress) {
+            DeviceInfo dv = new();
+            dv.Fw = CollectFirmwareInfo();
+            dv.Hw = CollectHardwareInfo();
+            dv.Nw = CollectNetworkInfo(acaAddress);
+            dv.Os = CollectOsInfo();
             return dv;
         }
 
-        public FirmwareInfo collectFirmwareInfo() {
-            FirmwareInfo fw = new FirmwareInfo();
+        public FirmwareInfo CollectFirmwareInfo() {
+            FirmwareInfo fw = new();
 
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows)) {
-                ManagementScope myScope = new ManagementScope("root\\CIMV2");
-                ManagementObjectSearcher s = new ManagementObjectSearcher("SELECT * FROM Win32_BIOS");
+                ManagementScope myScope = new("root\\CIMV2");
+                ManagementObjectSearcher s = new("SELECT * FROM Win32_BIOS");
                 fw.BiosVendor = NOT_SPECIFIED;
                 fw.BiosVersion = NOT_SPECIFIED;
                 fw.BiosReleaseDate = NOT_SPECIFIED;
@@ -60,9 +60,9 @@ namespace hirs {
                     break;
                 }
             } else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux)) {
-                fw.BiosVendor = fileToString("/sys/class/dmi/id/bios_vendor", NOT_SPECIFIED);
-                fw.BiosVersion = fileToString("/sys/class/dmi/id/bios_version", NOT_SPECIFIED);
-                fw.BiosReleaseDate = fileToString("/sys/class/dmi/id/bios_date", NOT_SPECIFIED);
+                fw.BiosVendor = FileToString("/sys/class/dmi/id/bios_vendor", NOT_SPECIFIED);
+                fw.BiosVersion = FileToString("/sys/class/dmi/id/bios_version", NOT_SPECIFIED);
+                fw.BiosReleaseDate = FileToString("/sys/class/dmi/id/bios_date", NOT_SPECIFIED);
             } else if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX)) {
                 // tbd
             } else {
@@ -78,12 +78,12 @@ namespace hirs {
 
         
 
-        public HardwareInfo collectHardwareInfo() {
-            HardwareInfo hw = new HardwareInfo();
+        public HardwareInfo CollectHardwareInfo() {
+            HardwareInfo hw = new();
 
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows)) {
-                ManagementScope myScope = new ManagementScope("root\\CIMV2");
-                ManagementObjectSearcher s = new ManagementObjectSearcher("SELECT * FROM Win32_ComputerSystemProduct");
+                ManagementScope myScope = new("root\\CIMV2");
+                ManagementObjectSearcher s = new("SELECT * FROM Win32_ComputerSystemProduct");
                 hw.Manufacturer = NOT_SPECIFIED;
                 hw.ProductName = NOT_SPECIFIED;
                 hw.ProductVersion = NOT_SPECIFIED;
@@ -100,10 +100,10 @@ namespace hirs {
                     break;
                 }
             } else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux)) {
-                hw.Manufacturer = fileToString("/sys/class/dmi/id/sys_vendor", NOT_SPECIFIED);
-                hw.ProductName = fileToString("/sys/class/dmi/id/product_name", NOT_SPECIFIED);
-                hw.ProductVersion = fileToString("/sys/class/dmi/id/product_version", NOT_SPECIFIED);
-                hw.SystemSerialNumber = fileToString("/sys/class/dmi/id/product_serial", NOT_SPECIFIED);
+                hw.Manufacturer = FileToString("/sys/class/dmi/id/sys_vendor", NOT_SPECIFIED);
+                hw.ProductName = FileToString("/sys/class/dmi/id/product_name", NOT_SPECIFIED);
+                hw.ProductVersion = FileToString("/sys/class/dmi/id/product_version", NOT_SPECIFIED);
+                hw.SystemSerialNumber = FileToString("/sys/class/dmi/id/product_serial", NOT_SPECIFIED);
             } else if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX)) {
                 // tbd
             } else {
@@ -118,8 +118,8 @@ namespace hirs {
             return hw;
         }
 
-        public NetworkInfo collectNetworkInfo(string acaAddress) {
-            NetworkInfo nw = new NetworkInfo();
+        public NetworkInfo CollectNetworkInfo(string acaAddress) {
+            NetworkInfo nw = new();
             nw.Hostname = Dns.GetHostName();
 
             NetworkInterface iface = NetworkInterface
@@ -132,9 +132,9 @@ namespace hirs {
             nw.ClearIpAddress();
             // First attempt to find local ip by connecting ACA
             if (string.IsNullOrWhiteSpace(acaAddress)) {
-                Uri uri = new Uri(acaAddress);
+                Uri uri = new(acaAddress);
                 try {
-                    using (Socket socket = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, 0)) {
+                    using (Socket socket = new(AddressFamily.InterNetwork, SocketType.Dgram, 0)) {
                         socket.Connect(uri.Host, uri.Port);
                         IPEndPoint endPoint = socket.LocalEndPoint as IPEndPoint;
                         nw.IpAddress = endPoint.Address.ToString();
@@ -160,8 +160,8 @@ namespace hirs {
             return nw;
         }
 
-        public OsInfo collectOsInfo() {
-            OsInfo info = new OsInfo();
+        public OsInfo CollectOsInfo() {
+            OsInfo info = new();
 
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows)) {
                 info.OsName = OSPlatform.Windows.ToString();
