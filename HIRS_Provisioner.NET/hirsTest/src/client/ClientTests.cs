@@ -1,20 +1,15 @@
 ﻿using hirs;
 using Hirs.Pb;
-using FakeItEasy;
-using System;
+using NUnit.Framework;
 using System.Collections.Generic;
-using System.Net;
-using System.Net.Http;
 using System.Text;
-using Xunit;
-using System.Threading.Tasks;
 using Tpm2Lib;
 
 namespace hirsTest {
     public class ClientTests {
         public static readonly string localhost = "https://127.0.0.1:8443/";
 
-        [Fact]
+        [Test]
         public void TestCreateIdentityClaim() {
             IHirsAcaClient client = new Client(ClientTests.localhost);
 
@@ -26,17 +21,18 @@ namespace hirsTest {
             pcs.Add(new byte[] { });
             string componentList= "";
 
-            IdentityClaim obj = client.createIdentityClaim(dv, akPub, ekPub, ekc, pcs, componentList);
-
-            Assert.NotNull(obj.Dv);
-            Assert.True(obj.HasAkPublicArea);
-            Assert.True(obj.HasEkPublicArea);
-            Assert.True(obj.HasEndorsementCredential);
-            Assert.Single(obj.PlatformCredential);
-            Assert.True(obj.HasPaccorOutput);
+            IdentityClaim obj = client.CreateIdentityClaim(dv, akPub, ekPub, ekc, pcs, componentList);
+            Assert.Multiple(() => {
+                Assert.That(obj.Dv, Is.Not.Null);
+                Assert.That(obj.HasAkPublicArea, Is.True);
+                Assert.That(obj.HasEkPublicArea, Is.True);
+                Assert.That(obj.HasEndorsementCredential, Is.True);
+                Assert.That(obj.PlatformCredential, Has.Count.EqualTo(1));
+                Assert.That(obj.HasPaccorOutput, Is.True);
+            });
         }
 
-        [Fact]
+        [Test]
         public void TestCreateAkCertificateRequest() {
             IHirsAcaClient client = new Client(ClientTests.localhost);
 
@@ -47,10 +43,11 @@ namespace hirsTest {
 
             CommandTpmQuoteResponse ctqr = new CommandTpmQuoteResponse(quoted, signature, pcrValues);
 
-            CertificateRequest obj = client.createAkCertificateRequest(secret, ctqr);
-
-            Assert.True(obj.HasNonce);
-            Assert.True(obj.HasQuote);
+            CertificateRequest obj = client.CreateAkCertificateRequest(secret, ctqr);
+            Assert.Multiple(() => {
+                Assert.That(obj.HasNonce, Is.True);
+                Assert.That(obj.HasQuote, Is.True);
+            });
         }
     }
 }

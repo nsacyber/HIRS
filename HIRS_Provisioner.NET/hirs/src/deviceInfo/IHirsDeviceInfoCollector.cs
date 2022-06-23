@@ -5,6 +5,6 @@ using System.Text;
 
 namespace hirs {
     public interface IHirsDeviceInfoCollector {
-        DeviceInfo collectDeviceInfo(string address);
+        DeviceInfo CollectDeviceInfo(string address);
     }
 }

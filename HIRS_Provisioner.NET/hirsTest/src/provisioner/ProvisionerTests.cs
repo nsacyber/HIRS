@@ -1,17 +1,16 @@
 ﻿using Hirs.Pb;
 using hirs;
 using FakeItEasy;
+using NUnit.Framework;
 using System;
-using System.Collections.Generic;
 using System.Text;
 using System.Threading.Tasks;
 using Tpm2Lib;
-using Xunit;
 
 namespace hirsTest {
     public class ProvisionerTests {
-        [Fact]
-        public async void TestGood() {
+        [Test]
+        public async Task TestGoodAsync() {
             const string address = "https://127.0.0.1:8443/";
             byte[] ekCert = Encoding.UTF8.GetBytes("EK CERTIFICATE");
             byte[] secret = Encoding.UTF8.GetBytes("AuthCredential Secret");
@@ -29,8 +28,10 @@ namespace hirsTest {
             
             CommandTpmQuoteResponse ctqr = null;
             IdentityClaimResponse idClaimResp = new();
+            idClaimResp.Status = ResponseStatus.Pass;
             idClaimResp.CredentialBlob = Google.Protobuf.ByteString.CopyFrom(credentialBlob);
             CertificateResponse certResp = new();
+            certResp.Status = ResponseStatus.Pass;
             certResp.Certificate = Google.Protobuf.ByteString.CopyFrom(acaIssuedCert);
 
             IHirsAcaTpm tpm = A.Fake<IHirsAcaTpm>();
@@ -45,13 +46,13 @@ namespace hirsTest {
             A.CallTo(() => tpm.GetQuote(CommandTpm.DefaultAkHandle, TpmAlgId.Sha256, secret, out ctqr, A<uint[]>.Ignored)).DoesNothing();
 
             IHirsDeviceInfoCollector collector = A.Fake<IHirsDeviceInfoCollector>();
-            A.CallTo(() => collector.collectDeviceInfo(address)).Returns(dv);
+            A.CallTo(() => collector.CollectDeviceInfo(address)).Returns(dv);
 
             IHirsAcaClient client = A.Fake<IHirsAcaClient>();
-            IdentityClaim idClaim = client.createIdentityClaim(dv, akPublic, ekPublic, ekCert, null, paccorOutput);
-            CertificateRequest certReq = client.createAkCertificateRequest(secret, ctqr);
-            A.CallTo(() => client.postIdentityClaim(idClaim)).Returns(Task.FromResult<IdentityClaimResponse>(idClaimResp));
-            A.CallTo(() => client.postCertificateRequest(certReq)).Returns(Task.FromResult<CertificateResponse>(certResp));
+            IdentityClaim idClaim = client.CreateIdentityClaim(dv, akPublic, ekPublic, ekCert, null, paccorOutput);
+            CertificateRequest certReq = client.CreateAkCertificateRequest(secret, ctqr);
+            A.CallTo(() => client.PostIdentityClaim(idClaim)).Returns(Task.FromResult<IdentityClaimResponse>(idClaimResp));
+            A.CallTo(() => client.PostCertificateRequest(certReq)).Returns(Task.FromResult<CertificateResponse>(certResp));
 
             Settings settings = Settings.LoadSettingsFromFile("./Resources/test/settings_test/appsettings.json");
             settings.SetUpLog();
@@ -60,19 +61,19 @@ namespace hirsTest {
             CLI cli = A.Fake<CLI>();
 
             IHirsProvisioner p = A.Fake<Provisioner>();
-            p.setSettings(settings);
-            p.setCLI(cli);
-            p.setClient(client);
+            p.SetSettings(settings);
+            p.SetCLI(cli);
+            p.SetClient(client);
 
-            p.setDeviceInfoCollector(collector); // Give the provisioner the mocked collector
-            int result = await p.provision(tpm);
+            p.SetDeviceInfoCollector(collector); // Give the provisioner the mocked collector
+            int result = await p.Provision(tpm);
 
             A.CallTo(() => tpm.ActivateCredential(CommandTpm.DefaultAkHandle, CommandTpm.DefaultEkHandle, A<byte[]>.That.IsSameSequenceAs(integrityHMAC), A<byte[]>.That.IsSameSequenceAs(encIdentity), A<byte[]>.That.IsSameSequenceAs(encryptedSecret))).MustHaveHappenedOnceExactly();
-            Assert.Equal(0, result);
+            Assert.That(result, Is.EqualTo(0));
         }
 
-        [Fact]
-        public async void TestIssueWithIdentityClaimResponse() {
+        [Test]
+        public async Task TestIssueWithIdentityClaimResponse() {
             const string address = "https://127.0.0.1:8443/";
             byte[] ekCert = Encoding.UTF8.GetBytes("EK CERTIFICATE");
             byte[] acaIssuedCert = Encoding.UTF8.GetBytes("ACA ISSUED CERTIFICATE");
@@ -96,11 +97,11 @@ namespace hirsTest {
             A.CallTo(() => tpm.GetPcrList(TpmAlgId.Sha256, A<uint[]>.Ignored)).Returns(sha256Values);
 
             IHirsDeviceInfoCollector collector = A.Fake<IHirsDeviceInfoCollector>();
-            A.CallTo(() => collector.collectDeviceInfo(address)).Returns(dv);
+            A.CallTo(() => collector.CollectDeviceInfo(address)).Returns(dv);
 
             IHirsAcaClient client = A.Fake<IHirsAcaClient>();
-            IdentityClaim idClaim = client.createIdentityClaim(dv, akPublic, ekPublic, ekCert, null, paccorOutput);
-            A.CallTo(() => client.postIdentityClaim(idClaim)).WithAnyArguments().Returns(Task.FromResult<IdentityClaimResponse>(idClaimResp));
+            IdentityClaim idClaim = client.CreateIdentityClaim(dv, akPublic, ekPublic, ekCert, null, paccorOutput);
+            A.CallTo(() => client.PostIdentityClaim(idClaim)).WithAnyArguments().Returns(Task.FromResult<IdentityClaimResponse>(idClaimResp));
 
             Settings settings = Settings.LoadSettingsFromFile("./Resources/test/settings_test/appsettings.json");
             settings.SetUpLog();
@@ -109,14 +110,14 @@ namespace hirsTest {
             CLI cli = A.Fake<CLI>();
 
             IHirsProvisioner p = A.Fake<Provisioner>();
-            p.setSettings(settings);
-            p.setCLI(cli);
-            p.setClient(client);
+            p.SetSettings(settings);
+            p.SetCLI(cli);
+            p.SetClient(client);
             
-            p.setDeviceInfoCollector(collector); // Give the provisioner the mocked collector
-            int result = await p.provision(tpm);
+            p.SetDeviceInfoCollector(collector); // Give the provisioner the mocked collector
+            int result = await p.Provision(tpm);
 
-            Assert.Equal(102, result);
+            Assert.That(result, Is.EqualTo((int)ClientExitCodes.MAKE_CREDENTIAL_BLOB_MALFORMED));
         }
     }
 }

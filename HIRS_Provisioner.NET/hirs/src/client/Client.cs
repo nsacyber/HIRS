@@ -18,7 +18,7 @@ namespace hirs {
         public static readonly string POST_REQUEST_CERT_TPM2_PATH = "HIRS_AttestationCA/request-certificate-tpm2";
 
         private readonly Uri uri;
-        private static readonly HttpClientHandler handler = new HttpClientHandler() {
+        private static readonly HttpClientHandler handler = new() {
             ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator
         }; // TODO: Overhaul ACA security 
         private readonly HttpClient client;
@@ -27,23 +27,23 @@ namespace hirs {
          * This method will create an HttpClient that will accept any server certificate.
          */
         public Client(string address) {
-            uri = new Uri(address);
+            uri = new(address);
             client = new HttpClient(handler);
         }
 
         public Client(string address, HttpClient httpClient) {
-            uri = new Uri(address);
+            uri = new(address);
             client = httpClient;
         }
 
-        public async Task<IdentityClaimResponse> postIdentityClaim(IdentityClaim identityClaim) {
-            var stream = new MemoryStream(identityClaim.ToByteArray());
+        public async Task<IdentityClaimResponse> PostIdentityClaim(IdentityClaim identityClaim) {
+            MemoryStream stream = new(identityClaim.ToByteArray());
             // serialize to stream
 
             stream.Seek(0, SeekOrigin.Begin);
-            Uri full_address = new Uri(uri.AbsoluteUri + POST_IDENTITY_CLAIM_PATH);
+            Uri full_address = new(uri.AbsoluteUri + POST_IDENTITY_CLAIM_PATH);
             // send data via HTTP
-            StreamContent streamContent = new StreamContent(stream);
+            StreamContent streamContent = new(stream);
             streamContent.Headers.TryAddWithoutValidation("Content-Type", "application/octet-stream");
             streamContent.Headers.TryAddWithoutValidation("Accept", "application/octet-stream, application/json");
 
@@ -62,16 +62,15 @@ namespace hirs {
                     Log.Debug("Request content: " + response.Content);
                 }
             } catch (Exception e) {
-                Log.Debug(e, "Unknown error");
-                throw;
+                Log.Debug(e, "Error during post of the identity claim.");
             }
             return icr;
         }
 
-        public IdentityClaim createIdentityClaim(DeviceInfo dv, byte[] akPublicArea, byte[] ekPublicArea,
+        public IdentityClaim CreateIdentityClaim(DeviceInfo dv, byte[] akPublicArea, byte[] ekPublicArea,
                                        byte[] endorsementCredential, List<byte[]> platformCredentials,
                                        string paccoroutput) {
-            IdentityClaim identityClaim = new IdentityClaim();
+            IdentityClaim identityClaim = new();
             identityClaim.Dv = dv;
             identityClaim.AkPublicArea = ByteString.CopyFrom(akPublicArea);
             identityClaim.EkPublicArea = ByteString.CopyFrom(ekPublicArea);
@@ -86,45 +85,43 @@ namespace hirs {
             return identityClaim;
         }
 
-        public async Task<CertificateResponse> postCertificateRequest(CertificateRequest certReq) {
-            var stream = new MemoryStream(certReq.ToByteArray());
+        public async Task<CertificateResponse> PostCertificateRequest(CertificateRequest certReq) {
+            MemoryStream stream = new(certReq.ToByteArray());
             // serialize to stream
 
             stream.Seek(0, SeekOrigin.Begin);
-            Uri full_address = new Uri(uri.AbsoluteUri + POST_REQUEST_CERT_TPM2_PATH);
+            Uri full_address = new(uri.AbsoluteUri + POST_REQUEST_CERT_TPM2_PATH);
             // send data via HTTP
-            StreamContent streamContent = new StreamContent(stream);
+            StreamContent streamContent = new(stream);
             streamContent.Headers.TryAddWithoutValidation("Content-Type", "application/octet-stream");
             streamContent.Headers.TryAddWithoutValidation("Accept", "application/octet-stream, application/json");
 
             CertificateResponse cr = null;
             try {
-                Log.Debug("Attempting to send IdentityClaim to " + full_address);
+                Log.Debug("Attempting to send the Certificate Request to " + full_address);
                 HttpResponseMessage response = await client.PostAsync(full_address, streamContent).ConfigureAwait(continueOnCapturedContext: false);
                 Log.Debug(response.ToString());
                 if (response.StatusCode == HttpStatusCode.OK) {
                     byte[] contentBytes = await response.Content.ReadAsByteArrayAsync();
                     cr = CertificateResponse.Parser.ParseFrom(contentBytes);
-                    Log.Debug("Certificate delivery succeeded.");
+                    Log.Debug("Certificate Response recevied.");
                 } else {
-                    Log.Debug("Certificate delivery failed.");
+                    Log.Debug("Certificate Response failed.");
                     Log.Debug("Request reason phrase: " + response.ReasonPhrase);
                     Log.Debug("Request content: " + response.Content);
                 }
             } catch (Exception e) {
-                Log.Debug(e, "Unknown error");
-                throw;
+                Log.Debug(e, "Error during post of the certificate request.");
             }
             return cr;
         }
 
-        public CertificateRequest createAkCertificateRequest(byte[] secret, CommandTpmQuoteResponse ctqr) {
-            CertificateRequest akCertReq = new CertificateRequest();
+        public CertificateRequest CreateAkCertificateRequest(byte[] secret, CommandTpmQuoteResponse ctqr) {
+            CertificateRequest akCertReq = new();
             akCertReq.Nonce = ByteString.CopyFrom(secret);
-            string quoteInfoSigStr;//, pcrValuesStr;
-            CommandTpmQuoteResponse.formatQuoteInfoSigForAca(ctqr.quoted, ctqr.signature, out quoteInfoSigStr);
+            CommandTpmQuoteResponse.formatQuoteInfoSigForAca(ctqr.quoted, ctqr.signature, out string quoteInfoSigStr);
             akCertReq.Quote = ByteString.CopyFromUtf8(quoteInfoSigStr);
-            //formatPcrValuesForAca(pcrValues, out pcrValuesStr);
+            //formatPcrValuesForAca(pcrValues, out string pcrValuesStr);
             //akCertReq.Pcrslist = ByteString.CopyFromUtf8(pcrValuesStr);
 
             return akCertReq;

@@ -4,20 +4,20 @@ using System;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using System.Security.Principal;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace hirs {
     class Program {
-        public static readonly string VERSION = "16";
+        public static readonly string VERSION = "17";
 
         static async Task<int> Main(string[] args) {
-            int result = 0;
+            ClientExitCodes result = 0;
             try {
                 Settings settings = Settings.LoadSettingsFromDefaultFile();
                 settings.SetUpLog();
                 Log.Information("Starting hirs version " + VERSION);
                 if (!IsRunningAsAdmin()) {
+                    result = ClientExitCodes.NOT_PRIVILEGED;
                     Log.Warning("The HIRS provisioner is not running as administrator.");
                 }
                 settings.CompleteSetUp();
@@ -33,17 +33,18 @@ namespace hirs {
                     Log.Warning("Could not parse command line arguments. Set --tcp --sim, --tcp <ip>:<port>, --nix, or --win. See documentation for further assistance.");
                 } else {
                     Provisioner p = new(settings, cli);
-                    IHirsAcaTpm tpm = p.connectTpm();
-                    p.useClassicDeviceInfoCollector();
-                    result = await p.provision(tpm);
+                    IHirsAcaTpm tpm = p.ConnectTpm();
+                    p.UseClassicDeviceInfoCollector();
+                    result = (ClientExitCodes)await p.Provision(tpm);
+                    Log.Information("----> Provisioning " + (result == 0 ? "successful" : "failed") + ".");
                 }
             } catch (Exception e) {
-                result = 101;
+                result = ClientExitCodes.FAIL;
                 Log.Fatal(e, "Application stopped.");
             }
             Log.CloseAndFlush();
 
-            return result;
+            return (int)result;
         }
 
         private static void HandleParseError(IEnumerable<Error> errs) {

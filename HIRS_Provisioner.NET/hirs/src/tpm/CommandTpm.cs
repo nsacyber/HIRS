@@ -49,7 +49,13 @@ namespace hirs {
             switch (dev) {
                 case Devices.NIX:
                     // LinuxTpmDevice will first try to connect tpm2-abrmd and second try to connect directly to device
+                    StringWriter writer = new();
+                    Console.SetOut(writer);
+                    // The LinuxTpmDevice will print to Console/Stdout an error when it cannot find a resource manager
+                    // This will redirect the Console messages
                     tpmDevice = new LinuxTpmDevice();
+                    // Reset the Console messages
+                    Console.SetOut(new StreamWriter(Console.OpenStandardOutput()));
                     break;
                 case Devices.WIN:
                     tpmDevice = new TbsDevice();
@@ -73,7 +79,7 @@ namespace hirs {
 
         public byte[] GetCertificateFromNvIndex(uint index) {
             Log.Debug("GetCertificateFromNvIndex 0x" + index.ToString("X"));
-            byte[] certificate = null;
+            byte[] certificate = Array.Empty<byte>();
             
             TpmHandle nvHandle = new(index);
             try {
@@ -86,16 +92,16 @@ namespace hirs {
                         if (certificate != null) {
                             Log.Debug("GetCertificateFromNvIndex: Read: " + BitConverter.ToString(certificate));
                         } else {
-                            Log.Warning("GetCertificateFromNvIndex: No certificate found within data at index.");
+                            Log.Debug("GetCertificateFromNvIndex: No certificate found within data at index.");
                         }
                     } else {
-                        Log.Warning("GetCertificateFromNvIndex: Could not read any data.");
+                        Log.Debug("GetCertificateFromNvIndex: Could not read any data.");
                     }
                 } else {
-                    Log.Warning("GetCertificateFromNvIndex: Nothing found at index: " + DefaultEkcNvIndex);
+                    Log.Debug("GetCertificateFromNvIndex: Nothing found at index: " + DefaultEkcNvIndex);
                 }
             } catch (TpmException e) {
-                Log.Error(e, "GetCertificateFromNvIndex TPM error");
+                Log.Debug(e, "GetCertificateFromNvIndex TPM error");
             }
             return certificate;
         }
@@ -248,25 +254,23 @@ namespace hirs {
             TpmPublic existingObject = null;
             try {
                 existingObject = tpm.ReadPublic(akHandle, out byte[] name, out byte[] qualifiedName);
-            } catch {
-                Log.Debug("No AK found. Will create a new one.");
-            }
+            } catch { }
 
-            if (replace && existingObject != null) {
-                // Clear the object
+            if (!replace && existingObject != null) {
+                // Do Nothing
+                Log.Debug("AK exists at expected handle. Flag to not replace the AK is set in the settings file.");
+                return;
+            } else if (replace && existingObject != null) {
+                // Clear the object and continue
                 tpm.EvictControl(TpmRh.Owner, akHandle, akHandle);
                 Log.Debug("Removed previous AK.");
-            } else if (!replace && existingObject != null) {
-                // Do Nothing
-                Log.Debug("AK exists at expected handle. Flag is set to not replace it.");
-                return;
-            }
+            }  
 
             // Create a new key and make it persistent at akHandle
             TpmAlgId nameAlg = TpmAlgId.Sha256;
 
-            SensitiveCreate inSens = new(); // do better: generate random, store in file with permissions to read only for admin? store in TPM?
-            TpmPublic inPublic = GenerateAKTemplate(nameAlg); //policyAIK.GetPolicyDigest()
+            SensitiveCreate inSens = new();
+            TpmPublic inPublic = GenerateAKTemplate(nameAlg);
 
             var policyEK = new PolicyTree(nameAlg);
             policyEK.SetPolicyRoot(new TpmPolicySecret(TpmRh.Endorsement, false, 0, null, null));
