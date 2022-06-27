@@ -20,11 +20,15 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 import org.springframework.orm.hibernate5.LocalSessionFactoryBean;
+import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.EnableTransactionManagement;
 
 /**
  * Spring configuration class for persistence beans used by the Attestation CA Portal.
  */
+@Repository
 @Configuration
+@EnableTransactionManagement
 @Import({ HibernateConfiguration.class })
 public class PersistenceConfiguration {
 

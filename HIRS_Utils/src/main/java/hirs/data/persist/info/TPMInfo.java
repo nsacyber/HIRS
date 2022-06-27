@@ -3,20 +3,17 @@ package hirs.data.persist.info;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import hirs.data.persist.DeviceInfoReport;
 import hirs.data.persist.X509CertificateAdapter;
-
-import java.io.Serializable;
-import java.security.cert.X509Certificate;
+import hirs.utils.StringValidator;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import javax.persistence.Column;
 import javax.persistence.Embeddable;
 import javax.persistence.Lob;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
-
-import hirs.utils.StringValidator;
-import org.apache.logging.log4j.Logger;
-import org.apache.logging.log4j.LogManager;
-import org.hibernate.annotations.Type;
+import java.io.Serializable;
+import java.security.cert.X509Certificate;
 
 /**
  * This class is used to represent the TPM information for a device.
@@ -49,7 +46,7 @@ public class TPMInfo implements Serializable {
     @XmlElement
     @XmlJavaTypeAdapter(X509CertificateAdapter.class)
     @Lob
-    @Type(type = "hirs.data.persist.type.X509CertificateType")
+//    @Type(type = "hirs.data.persist.type.X509CertificateType")
     @JsonIgnore
     private X509Certificate identityCertificate;
 

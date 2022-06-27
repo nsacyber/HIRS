@@ -11,6 +11,7 @@ import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.Transaction;
 import org.hibernate.query.Query;
+import org.springframework.stereotype.Service;
 
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
@@ -29,6 +30,7 @@ import java.util.Set;
  * This class defines a <code>DeviceManager</code> that stores the devices
  * in a database.
  */
+@Service
 public class DBDeviceManager extends DBManager<Device> implements
         DeviceManager {
 

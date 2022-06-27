@@ -11,6 +11,7 @@ import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.Transaction;
 import org.hibernate.query.Query;
+import org.springframework.stereotype.Repository;
 
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
@@ -23,6 +24,7 @@ import java.util.List;
  * This class defines a <code>PolicyManager</code> that stores policies in a
  * database.
  */
+@Repository
 public class DBPolicyManager extends DBManager<Policy> implements PolicyManager {
 
     private static final Logger LOGGER = LogManager.getLogger(DBPolicyManager.class);

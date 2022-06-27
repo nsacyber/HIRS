@@ -3,7 +3,7 @@ package hirs.persist;
 import hirs.data.persist.ReferenceManifest;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.hibernate.SessionFactory;
+import org.springframework.stereotype.Service;
 import org.xml.sax.SAXException;
 
 import javax.persistence.criteria.CriteriaBuilder;
@@ -20,6 +20,7 @@ import java.util.Set;
  * This class is used to persist and retrieve {@link ReferenceManifest}s into
  * and from the database.
  */
+@Service
 public class DBReferenceManifestManager extends DBManager<ReferenceManifest>
         implements ReferenceManifestManager {
 

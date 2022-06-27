@@ -5,7 +5,6 @@ import com.google.common.base.Preconditions;
 import org.apache.commons.codec.binary.Hex;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.hibernate.annotations.Type;
 
 import javax.persistence.Access;
 import javax.persistence.AccessType;
@@ -91,7 +90,6 @@ public abstract class ReferenceManifest extends ArchivableEntity {
     private String platformModel = null;
     @Column(nullable = false)
     private String fileName = null;
-    @Type(type = "uuid-char")
     @Column
     private UUID associatedRim;
     @Column

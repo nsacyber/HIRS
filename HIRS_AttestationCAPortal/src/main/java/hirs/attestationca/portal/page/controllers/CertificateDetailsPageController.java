@@ -8,9 +8,9 @@ import hirs.persist.CertificateManager;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.ModelAndView;
 
 import java.io.IOException;
@@ -22,8 +22,8 @@ import static hirs.attestationca.portal.page.Page.CERTIFICATE_DETAILS;
 /**
  * Controller for the Certificate Details page.
  */
-@Controller
-@RequestMapping("/certificate-details")
+@RestController
+@RequestMapping(path = "/certificate-details")
 public class CertificateDetailsPageController extends PageController<CertificateDetailsPageParams> {
 
     /**
@@ -31,6 +31,7 @@ public class CertificateDetailsPageController extends PageController<Certificate
      */
     static final String INITIAL_DATA = "initialData";
 
+    @Autowired
     private final CertificateManager certificateManager;
     private static final Logger LOGGER =
             LogManager.getLogger(CertificateDetailsPageController.class);

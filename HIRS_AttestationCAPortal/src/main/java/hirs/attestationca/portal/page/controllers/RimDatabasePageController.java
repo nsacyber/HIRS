@@ -23,11 +23,12 @@ import org.hibernate.Criteria;
 import org.hibernate.criterion.Restrictions;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
-import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.ModelAndView;
 
 import java.text.DateFormat;
@@ -37,8 +38,8 @@ import java.text.SimpleDateFormat;
 /**
  * Controller for the TPM Events page.
  */
-@Controller
-@RequestMapping("/rim-database")
+@RestController
+@RequestMapping(path = "/rim-database")
 public class RimDatabasePageController
         extends PageController<NoPageParams> {
 
@@ -131,6 +132,7 @@ public class RimDatabasePageController
      * information
      */
     @ResponseBody
+    @GetMapping
     @RequestMapping(value = "/list",
             produces = MediaType.APPLICATION_JSON_VALUE,
             method = RequestMethod.GET)

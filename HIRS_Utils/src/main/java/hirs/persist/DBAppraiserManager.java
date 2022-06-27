@@ -4,6 +4,7 @@ import hirs.appraiser.Appraiser;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.hibernate.SessionFactory;
+import org.springframework.stereotype.Service;
 
 import java.util.List;
 
@@ -11,6 +12,7 @@ import java.util.List;
  * This class defines a <code>ApprasierManager</code> that stores the
  * appraisers in a database.
  */
+@Service
 public class DBAppraiserManager extends DBManager<Appraiser> implements AppraiserManager {
     private static final Logger LOGGER = LogManager.getLogger();
 

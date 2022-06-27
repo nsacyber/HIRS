@@ -1,19 +1,26 @@
 package hirs.attestationca.portal.page.controllers;
 
+import hirs.FilteredRecordsList;
 import hirs.attestationca.portal.datatables.DataTableInput;
 import hirs.attestationca.portal.datatables.DataTableResponse;
 import hirs.attestationca.portal.datatables.OrderedListQueryDataTableAdapter;
-import static hirs.attestationca.portal.page.Page.DEVICES;
 import hirs.attestationca.portal.page.PageController;
 import hirs.attestationca.portal.page.params.NoPageParams;
+import hirs.data.persist.Device;
+import hirs.data.persist.certificate.Certificate;
+import hirs.data.persist.certificate.DeviceAssociatedCertificate;
+import hirs.persist.DBManager;
+import hirs.persist.DeviceManager;
 import org.apache.logging.log4j.Logger;
+import org.hibernate.criterion.Restrictions;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
-import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.ModelAndView;
 
 import java.util.ArrayList;
@@ -22,23 +29,19 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.UUID;
 
+import static hirs.attestationca.portal.page.Page.DEVICES;
 import static org.apache.logging.log4j.LogManager.getLogger;
-import org.hibernate.criterion.Restrictions;
-import hirs.FilteredRecordsList;
-import hirs.data.persist.Device;
-import hirs.data.persist.certificate.Certificate;
-import hirs.data.persist.certificate.DeviceAssociatedCertificate;
-import hirs.persist.DBManager;
-import hirs.persist.DeviceManager;
 
 /**
  * Controller for the Device page.
  */
-@Controller
-@RequestMapping("/devices")
+@RestController
+@RequestMapping(path = "/devices")
 public class DevicesPageController extends PageController<NoPageParams> {
 
+    @Autowired
     private final DeviceManager deviceManager;
+    @Autowired
     private final DBManager<Certificate> certificateDBManager;
     private static final Logger LOGGER = getLogger(DevicesPageController.class);
 
@@ -76,6 +79,7 @@ public class DevicesPageController extends PageController<NoPageParams> {
      * @return the data tables response, including the result set and paging information
      */
     @ResponseBody
+    @GetMapping
     @RequestMapping(value = "list", produces = MediaType.APPLICATION_JSON_VALUE,
             method = RequestMethod.GET)
     public DataTableResponse<HashMap<String, Object>> getTableData(

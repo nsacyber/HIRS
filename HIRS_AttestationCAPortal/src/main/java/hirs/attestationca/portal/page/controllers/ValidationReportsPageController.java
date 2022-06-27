@@ -22,11 +22,12 @@ import org.hibernate.Criteria;
 import org.hibernate.criterion.Restrictions;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
-import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.ModelAndView;
 
 import javax.servlet.http.HttpServletRequest;
@@ -52,12 +53,15 @@ import static org.apache.logging.log4j.LogManager.getLogger;
 /**
  * Controller for the Validation Reports page.
  */
-@Controller
-@RequestMapping("/validation-reports")
+@RestController
+@RequestMapping(path = "/validation-reports")
 public class ValidationReportsPageController extends PageController<NoPageParams> {
 
+    @Autowired
     private final CrudManager<SupplyChainValidationSummary> supplyChainValidatorSummaryManager;
+    @Autowired
     private final CertificateManager certificateManager;
+    @Autowired
     private final DeviceManager deviceManager;
 
     private static String systemColumnHeaders = "Verified Manufacturer,"
@@ -105,6 +109,7 @@ public class ValidationReportsPageController extends PageController<NoPageParams
      * @return the data table response containing the supply chain summary records
      */
     @ResponseBody
+    @GetMapping
     @RequestMapping(value = "list", produces = MediaType.APPLICATION_JSON_VALUE,
             method = RequestMethod.GET)
     public DataTableResponse<SupplyChainValidationSummary> getTableData(

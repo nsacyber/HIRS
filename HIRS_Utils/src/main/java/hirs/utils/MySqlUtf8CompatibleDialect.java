@@ -1,6 +1,6 @@
 package hirs.utils;
 
-import org.hibernate.dialect.MySQL5InnoDBDialect;
+import org.hibernate.dialect.MySQLDialect;
 
 /**
  * This class is a shim on top of the standard MySQL5InnoDBDialect to set the row format
@@ -24,7 +24,7 @@ import org.hibernate.dialect.MySQL5InnoDBDialect;
  * https://dev.mysql.com/doc/refman/5.7/en/innodb-row-format-dynamic.html
  * https://dev.mysql.com/doc/refman/5.5/en/innodb-restrictions.html
  */
-public class MySqlUtf8CompatibleDialect extends MySQL5InnoDBDialect {
+public class MySqlUtf8CompatibleDialect extends MySQLDialect {
     /**
      * Returns the table 'type' string, which specifies the storage engine (via the
      * super call) and appends the desired row format.

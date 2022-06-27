@@ -7,6 +7,7 @@ import org.hibernate.SessionFactory;
 import org.springframework.retry.RetryCallback;
 import org.springframework.retry.RetryContext;
 import org.springframework.retry.support.RetryTemplate;
+import org.springframework.stereotype.Service;
 
 import java.io.Serializable;
 import java.util.HashSet;
@@ -15,6 +16,7 @@ import java.util.Set;
 /**
  * This class is used to persist and retrieve {@link Certificate}s into and from a database.
  */
+@Service
 public class DBCertificateManager extends DBManager<Certificate>
         implements CertificateManager {
 

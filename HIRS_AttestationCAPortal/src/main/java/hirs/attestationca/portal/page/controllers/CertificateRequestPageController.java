@@ -26,14 +26,15 @@ import org.hibernate.criterion.Restrictions;
 import org.hibernate.sql.JoinType;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
-import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.util.StreamUtils;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
@@ -57,11 +58,13 @@ import static org.apache.logging.log4j.LogManager.getLogger;
 /**
  * Controller for the Certificates list all pages.
  */
-@Controller
-@RequestMapping("/certificate-request")
+@RestController
+@RequestMapping(path = "/certificate-request")
 public class CertificateRequestPageController extends PageController<NoPageParams> {
 
+    @Autowired
     private final CertificateManager certificateManager;
+    @Autowired
     private final OrderedListQuerier<Certificate> dataTableQuerier;
 
     private CertificateAuthorityCredential certificateAuthorityCredential;
@@ -127,6 +130,7 @@ public class CertificateRequestPageController extends PageController<NoPageParam
      * redirect.
      * @return the path for the view and data model for the page.
      */
+    @GetMapping
     @RequestMapping("/{certificateType}")
     public ModelAndView initPage(@PathVariable("certificateType") final String certificateType,
             final NoPageParams params, final Model model) {
@@ -168,6 +172,7 @@ public class CertificateRequestPageController extends PageController<NoPageParam
      * @return the data table
      */
     @ResponseBody
+    @GetMapping
     @RequestMapping(value = "/{certificateType}/list",
             produces = MediaType.APPLICATION_JSON_VALUE,
             method = RequestMethod.GET)

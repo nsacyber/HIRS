@@ -11,6 +11,7 @@ import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.Transaction;
 import org.hibernate.query.Query;
+import org.springframework.stereotype.Service;
 
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
@@ -26,6 +27,7 @@ import java.util.UUID;
  * This class is used to persist and retrieve {@link hirs.data.persist.ReferenceDigestValue}s into
  * and from the database.
  */
+@Service
 public class DBReferenceEventManager  extends DBManager<ReferenceDigestValue>
         implements ReferenceEventManager {
 

@@ -7,6 +7,7 @@ import org.hibernate.SessionFactory;
 import org.hibernate.Transaction;
 import org.hibernate.criterion.Order;
 import org.hibernate.query.Query;
+import org.springframework.stereotype.Service;
 
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
@@ -23,6 +24,7 @@ import static org.apache.logging.log4j.LogManager.getLogger;
  * report
  * summary in a database.
  */
+@Service
 public class DBReportSummaryManager extends DBManager<ReportSummary>
         implements ReportSummaryManager {
 

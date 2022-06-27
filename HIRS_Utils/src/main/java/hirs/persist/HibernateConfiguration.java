@@ -1,18 +1,19 @@
 package hirs.persist;
 
-import com.zaxxer.hikari.HikariDataSource;
-import org.hibernate.SessionFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.context.annotation.PropertySources;
 import org.springframework.context.support.PropertySourcesPlaceholderConfigurer;
+import org.springframework.jdbc.datasource.DriverManagerDataSource;
 import org.springframework.orm.hibernate5.HibernateTransactionManager;
 import org.springframework.orm.hibernate5.LocalSessionFactoryBean;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
 
 import javax.sql.DataSource;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Properties;
 
 /**
@@ -86,14 +87,16 @@ public class HibernateConfiguration {
      */
     @Bean
     public DataSource dataSource() {
-        HikariDataSource dataSource = new HikariDataSource();
-        dataSource.setJdbcUrl(url);
+        DriverManagerDataSource dataSource = new DriverManagerDataSource();
+        dataSource.setUrl(url);
         dataSource.setUsername(username);
         dataSource.setPassword(password);
         dataSource.setDriverClassName(driverClass);
-        dataSource.setMaximumPoolSize(Integer.parseInt(maximumPoolSize));
-        dataSource.setConnectionTimeout(Long.parseLong(connectionTimeout));
-        dataSource.setLeakDetectionThreshold(Long.parseLong(leakDetectionThreshold));
+
+//        dataSource.setMaximumPoolSize(Integer.parseInt(maximumPoolSize));
+//        dataSource.setConnectionTimeout(Long.parseLong(connectionTimeout));
+//        dataSource.setLeakDetectionThreshold(Long.parseLong(leakDetectionThreshold));
+
         return dataSource;
     }
 
@@ -121,12 +124,60 @@ public class HibernateConfiguration {
      */
     @Bean
     public LocalSessionFactoryBean sessionFactory() {
-        LocalSessionFactoryBean sessionFactory = new LocalSessionFactoryBean();
-        sessionFactory.setDataSource(dataSource());
+        // Hibernate 5.4 SessionFactory example without XML
+        Map<String, String> settings = new HashMap<>();
+        settings.put("connection.driver_class", "com.mysql.jdbc.Driver");
+        settings.put("dialect", "org.hibernate.dialect.MySQL8Dialect");
+        settings.put("hibernate.connection.url",
+                "jdbc:mysql://localhost/hibernate_examples");
+        settings.put("hibernate.connection.username", "root");
+        settings.put("hibernate.connection.password", "root");
+        settings.put("hibernate.current_session_context_class", "thread");
+        settings.put("hibernate.show_sql", "true");
+        settings.put("hibernate.format_sql", "true");
+
+        ServiceRegistry serviceRegistry = new StandardServiceRegistryBuilder()
+                .applySettings(settings).build();
+
+        MetadataSources metadataSources = new MetadataSources(serviceRegistry);
+        // metadataSources.addAnnotatedClass(Player.class);
+        Metadata metadata = metadataSources.buildMetadata();
+
+        // here we build the SessionFactory (Hibernate 5.4)
+        LocalSessionFactoryBean sessionFactory = (LocalSessionFactoryBean) metadata
+                .getSessionFactoryBuilder()
+                .build();
         sessionFactory.setHibernateProperties(hibernateProperties());
         sessionFactory.setPackagesToScan("hirs");
         return sessionFactory;
     }
+
+//    public static SessionFactory getCurrentSessionFromJPA() {
+//        // JPA and Hibernate SessionFactory example
+//        EntityManagerFactory emf =
+//                Persistence.createEntityManagerFactory("jpa-tutorial");
+//        EntityManager entityManager = emf.createEntityManager();
+//        // Get the Hibernate Session from the EntityManager in JPA
+//        Session session = entityManager.unwrap(org.hibernate.Session.class);
+//        SessionFactory factory = session.getSessionFactory();
+//        return factory;
+//    }
+
+//    /**
+//     * Configures a session factory bean that in turn configures the hibernate session factory.
+//     * Enables auto scanning of annotations such that entities do not need to be registered in a
+//     * hibernate configuration file.
+//     *
+//     * @return session factory
+//     */
+//    @Bean
+//    public LocalSessionFactoryBean sessionFactory() {
+//        LocalSessionFactoryBean sessionFactory = new LocalSessionFactoryBean();
+//        sessionFactory.setDataSource(dataSource());
+//        sessionFactory.setHibernateProperties(hibernateProperties());
+//        sessionFactory.setPackagesToScan("hirs");
+//        return sessionFactory;
+//    }
 
     /**
      * Configure a transaction manager for the hibernate session factory.
@@ -134,13 +185,10 @@ public class HibernateConfiguration {
      * @return transaction manager
      */
     @Bean
-    public HibernateTransactionManager transactionManager() {
-        SessionFactory sessionFactory = sessionFactory().getObject();
-        if (sessionFactory != null) {
-            return new HibernateTransactionManager(sessionFactory);
-        } else {
-            return new HibernateTransactionManager();
-        }
+    public HibernateTransactionManager getTransactionManager() {
+        HibernateTransactionManager transactionManager = new HibernateTransactionManager();
+        transactionManager.setSessionFactory(sessionFactory().getObject());
+        return transactionManager;
     }
 
     /**

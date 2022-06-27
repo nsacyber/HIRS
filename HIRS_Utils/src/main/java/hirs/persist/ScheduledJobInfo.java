@@ -1,6 +1,5 @@
 package hirs.persist;
 
-import org.hibernate.annotations.Type;
 import org.joda.time.Interval;
 import org.joda.time.LocalDateTime;
 import org.joda.time.LocalTime;
@@ -8,7 +7,6 @@ import org.joda.time.Period;
 
 import javax.persistence.Column;
 import javax.persistence.Embeddable;
-
 import java.util.Date;
 
 /**
@@ -26,7 +24,6 @@ public class ScheduledJobInfo {
     public static final LocalTime DEFAULT_START_TIME = new LocalTime(22, 0, 0);
 
     @Column
-    @Type(type = "org.jadira.usertype.dateandtime.joda.PersistentLocalTime")
     private LocalTime startTime;
 
     @Column

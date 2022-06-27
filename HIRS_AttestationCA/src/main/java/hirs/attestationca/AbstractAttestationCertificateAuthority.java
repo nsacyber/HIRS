@@ -30,7 +30,6 @@ import hirs.data.persist.info.TPMInfo;
 import hirs.data.service.DeviceRegister;
 import hirs.persist.CertificateManager;
 import hirs.persist.DeviceManager;
-import hirs.persist.ReferenceDigestManager;
 import hirs.persist.ReferenceEventManager;
 import hirs.persist.ReferenceManifestManager;
 import hirs.persist.TPM2ProvisionerState;
@@ -179,7 +178,6 @@ public abstract class AbstractAttestationCertificateAuthority
     private final ReferenceManifestManager referenceManifestManager;
     private final DeviceRegister deviceRegister;
     private final DeviceManager deviceManager;
-    private final ReferenceDigestManager referenceDigestManager;
     private final ReferenceEventManager referenceEventManager;
     private String tpmQuoteHash = "";
     private String tpmQuoteSignature = "";
@@ -195,7 +193,6 @@ public abstract class AbstractAttestationCertificateAuthority
      * @param deviceRegister the device register
      * @param validDays the number of days issued certs are valid
      * @param deviceManager the device manager
-     * @param referenceDigestManager the reference digest manager
      * @param referenceEventManager the reference event manager
      */
     @SuppressWarnings("checkstyle:parameternumber")
@@ -207,7 +204,6 @@ public abstract class AbstractAttestationCertificateAuthority
             final ReferenceManifestManager referenceManifestManager,
             final DeviceRegister deviceRegister, final int validDays,
             final DeviceManager deviceManager,
-            final ReferenceDigestManager referenceDigestManager,
             final ReferenceEventManager referenceEventManager) {
         this.supplyChainValidationService = supplyChainValidationService;
         this.privateKey = privateKey;
@@ -218,7 +214,6 @@ public abstract class AbstractAttestationCertificateAuthority
         this.deviceRegister = deviceRegister;
         this.validDays = validDays;
         this.deviceManager = deviceManager;
-        this.referenceDigestManager = referenceDigestManager;
         this.referenceEventManager = referenceEventManager;
     }
 

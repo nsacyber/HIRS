@@ -1,8 +1,5 @@
 package hirs.data.persist;
 
-import org.hibernate.annotations.GenericGenerator;
-import org.hibernate.annotations.Type;
-
 import javax.persistence.Column;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
@@ -25,8 +22,6 @@ public abstract class AbstractEntity {
     @Id
     @Column(name = "id")
     @GeneratedValue(generator = "uuid2")
-    @GenericGenerator(name = "uuid2", strategy = "uuid2")
-    @Type(type = "uuid-char")
     private UUID id;
 
     @Column (name = "create_time")

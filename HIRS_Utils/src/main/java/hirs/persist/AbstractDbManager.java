@@ -16,6 +16,7 @@ import org.hibernate.criterion.MatchMode;
 import org.hibernate.criterion.Restrictions;
 import org.hibernate.query.Query;
 import org.hibernate.service.spi.ServiceRegistryImplementor;
+import org.springframework.stereotype.Service;
 
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
@@ -38,6 +39,7 @@ import static org.hibernate.criterion.Restrictions.sqlRestriction;
  *
  * @param <T> type of objects to manage by this manager
  */
+@Service
 public abstract class AbstractDbManager<T> implements CrudManager<T> {
 
     private static final Logger LOGGER = LogManager.getLogger(AbstractDbManager.class);

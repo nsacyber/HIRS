@@ -3,6 +3,7 @@ package hirs.persist;
 import hirs.repository.RepoPackage;
 import hirs.repository.Repository;
 import org.hibernate.SessionFactory;
+import org.springframework.stereotype.Service;
 
 import java.io.Serializable;
 import java.util.List;
@@ -11,6 +12,7 @@ import java.util.List;
  * This class defines a {@link RepositoryManager} that stores Repositories and RepoPackages
  * in a database.
  */
+@Service
 public class DBRepositoryManager implements RepositoryManager {
     private final DBManager<Repository> repositoryDBManager;
     private final DBManager<RepoPackage> repoPackageDBManager;

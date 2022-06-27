@@ -30,13 +30,14 @@ import org.hibernate.Criteria;
 import org.hibernate.criterion.Restrictions;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
-import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.util.StreamUtils;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
@@ -66,8 +67,8 @@ import java.util.zip.ZipOutputStream;
 /**
  * Controller for the Reference Manifest page.
  */
-@Controller
-@RequestMapping("/reference-manifests")
+@RestController
+@RequestMapping(path = "/reference-manifests")
 public class ReferenceManifestPageController
         extends PageController<NoPageParams> {
 
@@ -75,7 +76,9 @@ public class ReferenceManifestPageController
     private static final String LOG_FILE_PATTERN = "([^\\s]+(\\.(?i)(rimpcr|rimel|bin|log))$)";
 
     private final BiosDateValidator biosValidator;
+    @Autowired
     private final ReferenceManifestManager referenceManifestManager;
+    @Autowired
     private final ReferenceEventManager referenceEventManager;
     private static final Logger LOGGER
             = LogManager.getLogger(ReferenceManifestPageController.class);
@@ -161,6 +164,7 @@ public class ReferenceManifestPageController
      * information
      */
     @ResponseBody
+    @GetMapping
     @RequestMapping(value = "/list",
             produces = MediaType.APPLICATION_JSON_VALUE,
             method = RequestMethod.GET)

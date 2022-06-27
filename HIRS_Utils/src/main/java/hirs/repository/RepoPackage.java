@@ -2,7 +2,6 @@ package hirs.repository;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import hirs.data.persist.Digest;
-import org.hibernate.annotations.Type;
 
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
@@ -33,7 +32,6 @@ import java.util.UUID;
 public abstract class RepoPackage {
     @Id
     @Column(name = "id")
-    @Type(type = "uuid-char")
     private UUID id;
 
     @Column

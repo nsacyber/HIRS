@@ -5,6 +5,7 @@ import hirs.data.persist.ReportRequestState;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.hibernate.SessionFactory;
+import org.springframework.stereotype.Service;
 
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.Predicate;
@@ -17,6 +18,7 @@ import java.util.List;
  * This class defines a <code>ReportRequestStateManager</code> that stores ReportRequestStates in a
  * database.
  */
+@Service
 public class DBReportRequestStateManager extends DBManager<ReportRequestState>
         implements ReportRequestStateManager {
     private static final Logger LOGGER = LogManager.getLogger(DBReportRequestStateManager.class);

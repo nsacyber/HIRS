@@ -1,19 +1,20 @@
 package hirs.persist;
 
-import hirs.data.persist.info.PortalInfo;
 import hirs.data.persist.enums.PortalScheme;
-
-import java.net.URI;
-import java.net.URISyntaxException;
-
+import hirs.data.persist.info.PortalInfo;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.hibernate.SessionFactory;
+import org.springframework.stereotype.Service;
+
+import java.net.URI;
+import java.net.URISyntaxException;
 
 /**
  * A <code>DBPortalInfoManager</code> is a service (extends <code>DBManager</code>) that
  * implements the <code>PortalInfoManager</code> that stores and retrieves Portal Info objects.
  */
+@Service
 public class DBPortalInfoManager extends DBManager<PortalInfo> implements PortalInfoManager {
 
     private static final Logger LOGGER = LogManager.getLogger(DBPortalInfoManager.class);

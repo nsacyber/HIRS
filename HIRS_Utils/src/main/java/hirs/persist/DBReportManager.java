@@ -8,6 +8,7 @@ import org.hibernate.criterion.Conjunction;
 import org.hibernate.criterion.Disjunction;
 import org.hibernate.criterion.MatchMode;
 import org.hibernate.criterion.Restrictions;
+import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Map;
@@ -20,6 +21,7 @@ import static org.hibernate.criterion.Restrictions.ilike;
  * This class defines a <code>ReportManager</code> that stores the reports in a
  * database.
  */
+@Service
 public class DBReportManager extends DBManager<Report> implements ReportManager {
     private static final Logger LOGGER = getLogger(DBReportManager.class);
 

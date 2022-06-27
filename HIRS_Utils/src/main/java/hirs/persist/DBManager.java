@@ -15,6 +15,7 @@ import org.springframework.retry.RetryListener;
 import org.springframework.retry.backoff.FixedBackOffPolicy;
 import org.springframework.retry.policy.SimpleRetryPolicy;
 import org.springframework.retry.support.RetryTemplate;
+import org.springframework.stereotype.Service;
 
 import javax.persistence.criteria.Predicate;
 import java.io.Serializable;
@@ -29,6 +30,7 @@ import java.util.Map;
  * archive, and delete operations for managing objects in a database.
  *
  */
+@Service
 public class DBManager<T> extends AbstractDbManager<T> {
     private static final Logger LOGGER = LogManager.getLogger(DBManager.class);
 

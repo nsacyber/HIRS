@@ -25,9 +25,9 @@ import hirs.validation.SupplyChainValidatorException;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.ModelAndView;
 
 import java.io.IOException;
@@ -47,14 +47,18 @@ import java.util.UUID;
 /**
  * Controller for the Reference Manifest Details page.
  */
-@Controller
-@RequestMapping("/rim-details")
+@RestController
+@RequestMapping(path = "/rim-details")
 public class ReferenceManifestDetailsPageController
         extends PageController<ReferenceManifestDetailsPageParams> {
 
+    @Autowired
     private final ReferenceManifestManager referenceManifestManager;
+    @Autowired
     private final ReferenceDigestManager referenceDigestManager;
+    @Autowired
     private final ReferenceEventManager referenceEventManager;
+    @Autowired
     private final CertificateManager certificateManager;
     private static final ReferenceManifestValidator RIM_VALIDATOR
             = new ReferenceManifestValidator();

@@ -7,6 +7,8 @@ import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 import org.springframework.context.support.PropertySourcesPlaceholderConfigurer;
+import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.EnableTransactionManagement;
 import org.springframework.web.multipart.commons.CommonsMultipartResolver;
 import org.springframework.web.servlet.ViewResolver;
 import org.springframework.web.servlet.config.annotation.EnableWebMvc;
@@ -19,7 +21,9 @@ import java.nio.charset.StandardCharsets;
  * Specifies the location to scan for page controllers, view resolver for JSON data, and view
  * resolver to map view names to jsp files.
  */
+@Repository
 @Configuration
+@EnableTransactionManagement
 @EnableWebMvc
 @ComponentScan("hirs.attestationca.portal.page.controllers")
 @Import({ PersistenceConfiguration.class })

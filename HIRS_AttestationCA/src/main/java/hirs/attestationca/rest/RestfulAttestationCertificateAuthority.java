@@ -5,7 +5,6 @@ import hirs.attestationca.service.SupplyChainValidationService;
 import hirs.data.service.DeviceRegister;
 import hirs.persist.CertificateManager;
 import hirs.persist.DeviceManager;
-import hirs.persist.ReferenceDigestManager;
 import hirs.persist.ReferenceEventManager;
 import hirs.persist.ReferenceManifestManager;
 import hirs.structs.converters.StructConverter;
@@ -41,7 +40,6 @@ public class RestfulAttestationCertificateAuthority
      * @param deviceRegister the device register
      * @param validDays the number of days issued certs are valid
      * @param deviceManager the device manager
-     * @param referenceDigestManager the reference digest manager
      * @param referenceEventManager the reference event manager
      */
     @SuppressWarnings({ "checkstyle:parameternumber" })
@@ -54,13 +52,12 @@ public class RestfulAttestationCertificateAuthority
             final ReferenceManifestManager referenceManifestManager,
             final DeviceRegister deviceRegister,
             final DeviceManager deviceManager,
-            final ReferenceDigestManager referenceDigestManager,
             final ReferenceEventManager referenceEventManager,
             @Value("${aca.certificates.validity}") final int validDays) {
         super(supplyChainValidationService, privateKey, acaCertificate, structConverter,
                 certificateManager, referenceManifestManager,
                 deviceRegister, validDays, deviceManager,
-                referenceDigestManager, referenceEventManager);
+                referenceEventManager);
     }
 
     /*
