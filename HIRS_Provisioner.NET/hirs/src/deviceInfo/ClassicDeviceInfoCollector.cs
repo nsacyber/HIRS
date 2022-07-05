@@ -74,13 +74,13 @@ namespace hirs {
             } else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux)) {
                 if (settings != null) {
                     if (!string.IsNullOrEmpty(settings.linux_bios_vendor)) {
-                        fw.BiosVendor = settings.linux_bios_vendor;
+                        fw.BiosVendor = settings.linux_bios_vendor.Trim();
                     }
                     if (!string.IsNullOrEmpty(settings.linux_bios_version)) {
-                        fw.BiosVersion = settings.linux_bios_version;
+                        fw.BiosVersion = settings.linux_bios_version.Trim();
                     }
                     if (!string.IsNullOrEmpty(settings.linux_bios_date)) {
-                        fw.BiosReleaseDate = settings.linux_bios_date;
+                        fw.BiosReleaseDate = settings.linux_bios_date.Trim();
                     }
                 }
                 if (string.IsNullOrEmpty(fw.BiosVendor)) {
@@ -129,16 +129,16 @@ namespace hirs {
             } else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux)) {
                 if (settings != null) {
                     if (!string.IsNullOrEmpty(settings.linux_sys_vendor)) {
-                        hw.Manufacturer = settings.linux_sys_vendor;
+                        hw.Manufacturer = settings.linux_sys_vendor.Trim();
                     }
                     if (!string.IsNullOrEmpty(settings.linux_product_name)) {
-                        hw.ProductName = settings.linux_product_name;
+                        hw.ProductName = settings.linux_product_name.Trim();
                     }
                     if (!string.IsNullOrEmpty(settings.linux_product_version)) {
-                        hw.ProductVersion = settings.linux_product_version;
+                        hw.ProductVersion = settings.linux_product_version.Trim();
                     }
                     if (!string.IsNullOrEmpty(settings.linux_product_serial)) {
-                        hw.SystemSerialNumber = settings.linux_product_serial;
+                        hw.SystemSerialNumber = settings.linux_product_serial.Trim();
                     }
                 }
                 if (string.IsNullOrEmpty(hw.Manufacturer)) {

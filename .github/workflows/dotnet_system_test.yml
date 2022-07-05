@@ -215,14 +215,14 @@ jobs:
 
   Evaluator:
     name: Evaluate Tests
-    needs: [dotnet-provisioner-aca-test-ubuntu]
+    needs: dotnet-provisioner-aca-test-ubuntu
     runs-on: ubuntu-latest
     continue-on-error: false
     steps:
     - name: Summarize
       run: |
-        result1=$(echo ${{needs.dotnet-provisioner-aca-test-ubuntu.outputs.output1}})
-        result2=$(echo ${{needs.dotnet-provisioner-aca-test-ubuntu.outputs.output2}})
+        result1=$(echo "${{needs.dotnet-provisioner-aca-test-ubuntu.outputs.output1}}")
+        result2=$(echo "${{needs.dotnet-provisioner-aca-test-ubuntu.outputs.output2}}")
         echo "Result 1: $result1."
         echo "Result 2: $result2."
         if [ $result1 -ne 0 ]; then
