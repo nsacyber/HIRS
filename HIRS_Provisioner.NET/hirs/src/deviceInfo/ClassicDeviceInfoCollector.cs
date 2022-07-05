@@ -83,13 +83,13 @@ namespace hirs {
                         fw.BiosReleaseDate = settings.linux_bios_date;
                     }
                 }
-                if (!string.IsNullOrEmpty(fw.BiosVendor)) {
+                if (string.IsNullOrEmpty(fw.BiosVendor)) {
                     fw.BiosVendor = FileToString(LINUX_DEFAULT_BIOS_VENDOR_PATH, NOT_SPECIFIED);
                 }
-                if (!string.IsNullOrEmpty(fw.BiosVersion)) {
+                if (string.IsNullOrEmpty(fw.BiosVersion)) {
                     fw.BiosVersion = FileToString(LINUX_DEFAULT_BIOS_VERSION_PATH, NOT_SPECIFIED);
                 }
-                if (!string.IsNullOrEmpty(fw.BiosReleaseDate)) {
+                if (string.IsNullOrEmpty(fw.BiosReleaseDate)) {
                     fw.BiosReleaseDate = FileToString(LINUX_DEFAULT_BIOS_DATE_PATH, NOT_SPECIFIED);
                 }
             } else if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX)) {
@@ -141,16 +141,16 @@ namespace hirs {
                         hw.SystemSerialNumber = settings.linux_product_serial;
                     }
                 }
-                if (!string.IsNullOrEmpty(hw.Manufacturer)) {
+                if (string.IsNullOrEmpty(hw.Manufacturer)) {
                     hw.Manufacturer = FileToString(LINUX_DEFAULT_SYS_VENDOR_PATH, NOT_SPECIFIED);
                 }
-                if (!string.IsNullOrEmpty(hw.ProductName)) {
+                if (string.IsNullOrEmpty(hw.ProductName)) {
                     hw.ProductName = FileToString(LINUX_DEFAULT_PRODUCT_NAME_PATH, NOT_SPECIFIED);
                 }
-                if (!string.IsNullOrEmpty(hw.ProductVersion)) {
+                if (string.IsNullOrEmpty(hw.ProductVersion)) {
                     hw.ProductVersion = FileToString(LINUX_DEFAULT_PRODUCT_VERSION_PATH, NOT_SPECIFIED);
                 }
-                if (!string.IsNullOrEmpty(hw.SystemSerialNumber)) {
+                if (string.IsNullOrEmpty(hw.SystemSerialNumber)) {
                     hw.SystemSerialNumber = FileToString(LINUX_DEFAULT_PRODUCT_SERIAL_PATH, NOT_SPECIFIED);
                 }
             } else if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX)) {
