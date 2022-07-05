@@ -143,8 +143,7 @@ jobs:
         id: ubuntu_result
         run: |         
           echo "Running provisioner"
-          sudo /usr/share/hirs/tpm_aca_provision --tcp --sim
-          retVal=$?
+          retVal=$(sudo /usr/share/hirs/tpm_aca_provision --tcp --sim)
           echo "Provisioner exited with code $retVal"
           echo "::set-output name=result::$retVal"
       
@@ -201,8 +200,7 @@ jobs:
         id: ubuntu_result_full
         run: | 
           echo "Running provisioner"
-          sudo /usr/share/hirs/tpm_aca_provision --tcp --sim
-          retVal=$?
+          retVal=$(sudo /usr/share/hirs/tpm_aca_provision --tcp --sim)
           echo "Provisioner exited with code $retVal"
           echo "::set-output name=result::$retVal"
 
