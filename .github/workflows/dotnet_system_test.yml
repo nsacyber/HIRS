@@ -148,18 +148,18 @@ jobs:
           echo "Provisioner exited with code $retVal"
           echo "::set-output name=result::$retVal"
       
-      - name: Configure ACA for EK validation
+      - name: Configure ACA for Full validation
         run: |
-          echo "Set ACA Policy for EK validation"
+          echo "Set ACA Policy for Full validation"
           mysql -u root -D hirs_db -e "Update SupplyChainPolicy set enableEcValidation=1, enablePcAttributeValidation=1, enablePcValidation=1,
-           enableUtcValidation=0, enableFirmwareValidation=0, enableExpiredCertificateValidation=0, enableIgnoreGpt=0, enableIgnoreIma=1, enableIgnoretBoot=0;"
+           enableUtcValidation=0, enableFirmwareValidation=1, enableExpiredCertificateValidation=0, enableIgnoreGpt=0, enableIgnoreIma=1, enableIgnoretBoot=0;"
            
           echo "Uploading trust certs to the ACA"
           curl -k -s -F "file=@/home/runner/work/HIRS/HIRS/.ci/setup/certs/ca.crt" https://127.0.0.1:8443/HIRS_AttestationCAPortal/portal/certificate-request/trust-chain/upload
           curl -k -s -F "file=@/home/runner/work/HIRS/HIRS/.ci/setup/certs/RIMCaCert.pem" https://127.0.0.1:8443/HIRS_AttestationCAPortal/portal/certificate-request/trust-chain/upload
           curl -k -s -F "file=@/home/runner/work/HIRS/HIRS/.ci/setup/certs/RimSignCert.pem" https://127.0.0.1:8443/HIRS_AttestationCAPortal/portal/certificate-request/trust-chain/upload
           
-      - name: Set up test files for EK validation
+      - name: Set up test files for Full validation
         run: |
           echo "Copying artifacts to EFI"
           sudo cp /home/runner/work/HIRS/HIRS/.ci/system-tests/profiles/laptop/default/platformcerts/laptop.default.1.base.cer /home/runner/work/efi/EFI/tcg/cert/platform/
@@ -197,7 +197,7 @@ jobs:
           tpm2_pcrextend 14:sha256=9fa163e06ff76a9f0d0262151328aa38f903495bc81ebcbd5bc40fcdbebb4a63 -Q
           tpm2_pcrextend 14:sha256=8d8a3aae50d5d25838c95c034aadce7b548c9a952eb7925e366eda537c59c3b0 -Q
           
-      - name: Run Provisioner with EK validation
+      - name: Run Provisioner with Full validation
         id: ubuntu_result_full
         run: | 
           echo "Running provisioner"
@@ -223,6 +223,8 @@ jobs:
       run: |
         result1=$(echo ${{needs.dotnet-provisioner-aca-test-ubuntu.outputs.output1}})
         result2=$(echo ${{needs.dotnet-provisioner-aca-test-ubuntu.outputs.output2}})
+        echo "Result 1: $result1."
+        echo "Result 2: $result2."
         if [ $result1 -ne 0 ]; then
           exit 1
         fi
