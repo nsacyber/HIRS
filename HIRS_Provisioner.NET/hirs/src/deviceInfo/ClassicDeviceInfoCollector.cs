@@ -72,9 +72,9 @@ namespace hirs {
                     break;
                 }
             } else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux)) {
-                fw.BiosVendor = FileToString(settings != null && !string.IsNullOrEmpty(settings.linux_bios_vendor_file) ? settings.linux_bios_vendor_file : LINUX_DEFAULT_BIOS_VENDOR_PATH, NOT_SPECIFIED);
-                fw.BiosVersion = FileToString(settings != null && !string.IsNullOrEmpty(settings.linux_bios_version_file ) ? settings.linux_bios_version_file : LINUX_DEFAULT_BIOS_VERSION_PATH, NOT_SPECIFIED);
-                fw.BiosReleaseDate = FileToString(settings != null && !string.IsNullOrEmpty(settings.linux_bios_date_file) ? settings.linux_bios_date_file : LINUX_DEFAULT_BIOS_DATE_PATH, NOT_SPECIFIED);
+                fw.BiosVendor = FileToString(settings != null && !string.IsNullOrEmpty(settings.linux_bios_vendor) ? settings.linux_bios_vendor : LINUX_DEFAULT_BIOS_VENDOR_PATH, NOT_SPECIFIED);
+                fw.BiosVersion = FileToString(settings != null && !string.IsNullOrEmpty(settings.linux_bios_version) ? settings.linux_bios_version : LINUX_DEFAULT_BIOS_VERSION_PATH, NOT_SPECIFIED);
+                fw.BiosReleaseDate = FileToString(settings != null && !string.IsNullOrEmpty(settings.linux_bios_date) ? settings.linux_bios_date : LINUX_DEFAULT_BIOS_DATE_PATH, NOT_SPECIFIED);
             } else if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX)) {
                 // tbd
             } else {
@@ -112,10 +112,10 @@ namespace hirs {
                     break;
                 }
             } else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux)) {
-                hw.Manufacturer = FileToString(settings != null && !string.IsNullOrEmpty(settings.linux_sys_vendor_file) ? settings.linux_sys_vendor_file : LINUX_DEFAULT_SYS_VENDOR_PATH, NOT_SPECIFIED);
-                hw.ProductName = FileToString(settings != null && !string.IsNullOrEmpty(settings.linux_product_name_file) ? settings.linux_product_name_file : LINUX_DEFAULT_PRODUCT_NAME_PATH, NOT_SPECIFIED);
-                hw.ProductVersion = FileToString(settings != null && !string.IsNullOrEmpty(settings.linux_product_version_file) ? settings.linux_product_version_file : LINUX_DEFAULT_PRODUCT_VERSION_PATH, NOT_SPECIFIED);
-                hw.SystemSerialNumber = FileToString(settings != null && !string.IsNullOrEmpty(settings.linux_product_serial_file) ? settings.linux_product_serial_file : LINUX_DEFAULT_PRODUCT_SERIAL_PATH, NOT_SPECIFIED);
+                hw.Manufacturer = FileToString(settings != null && !string.IsNullOrEmpty(settings.linux_sys_vendor) ? settings.linux_sys_vendor : LINUX_DEFAULT_SYS_VENDOR_PATH, NOT_SPECIFIED);
+                hw.ProductName = FileToString(settings != null && !string.IsNullOrEmpty(settings.linux_product_name) ? settings.linux_product_name : LINUX_DEFAULT_PRODUCT_NAME_PATH, NOT_SPECIFIED);
+                hw.ProductVersion = FileToString(settings != null && !string.IsNullOrEmpty(settings.linux_product_version) ? settings.linux_product_version : LINUX_DEFAULT_PRODUCT_VERSION_PATH, NOT_SPECIFIED);
+                hw.SystemSerialNumber = FileToString(settings != null && !string.IsNullOrEmpty(settings.linux_product_serial) ? settings.linux_product_serial : LINUX_DEFAULT_PRODUCT_SERIAL_PATH, NOT_SPECIFIED);
             } else if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX)) {
                 // tbd
             } else {

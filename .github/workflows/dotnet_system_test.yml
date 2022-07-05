@@ -137,7 +137,7 @@ jobs:
           sudo cp /home/runner/work/HIRS/HIRS/.ci/system-tests/profiles/laptop/default/laptop_default_hw.json /home/runner/work/hw/test_hw.json
           sudo cp /home/runner/work/HIRS/HIRS/.ci/system-tests/profiles/laptop/default/laptop_default_binary_bios_measurements /home/runner/work/tpm/test_event_log
           sudo unzip -q /home/runner/work/HIRS/HIRS/.ci/system-tests/profiles/laptop/laptop_dmi.zip -d /home/runner/work/sys/class/
-          sudo chmod -R 666 /home/runner/work/sys
+          sudo chmod -R 444 /home/runner/work/sys
         
       - name: Run Provisioner with no ACA policy
         id: ubuntu_result

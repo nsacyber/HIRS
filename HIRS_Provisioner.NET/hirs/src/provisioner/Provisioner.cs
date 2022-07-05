@@ -27,7 +27,7 @@ namespace hirs {
             if (settings == null) {
                 Log.Error("Unknown error. Settings were supposed to have been parsed.");
             }
-            this.settings = settings;
+            this.settings = settings!;
         }
 
         public void SetCLI(CLI cli) {
@@ -108,7 +108,7 @@ namespace hirs {
         }
 
         public void UseClassicDeviceInfoCollector() {
-            deviceInfoCollector = new ClassicDeviceInfoCollector();
+            deviceInfoCollector = new ClassicDeviceInfoCollector(settings);
         }
 
         public void SetDeviceInfoCollector(IHirsDeviceInfoCollector collector) {

@@ -51,25 +51,25 @@ namespace hirs {
         public virtual byte[] event_log {
             get; private set;
         }
-        public virtual string linux_bios_vendor_file {
+        public virtual string linux_bios_vendor {
             get; private set;
         }
-        public virtual string linux_bios_version_file {
+        public virtual string linux_bios_version {
             get; private set;
         }
-        public virtual string linux_bios_date_file {
+        public virtual string linux_bios_date {
             get; private set;
         }
-        public virtual string linux_sys_vendor_file {
+        public virtual string linux_sys_vendor {
             get; private set;
         }
-        public virtual string linux_product_name_file {
+        public virtual string linux_product_name {
             get; private set;
         }
-        public virtual string linux_product_version_file {
+        public virtual string linux_product_version {
             get; private set;
         }
-        public virtual string linux_product_serial_file {
+        public virtual string linux_product_serial {
             get; private set;
         }
         private List<IHardwareManifest> hardwareManifests = new();
@@ -471,44 +471,32 @@ namespace hirs {
             if (!string.IsNullOrWhiteSpace(configFromSettingsFile[Options.linux_bios_vendor_file.ToString()])) {
                 Log.Debug("Custom bios vendor file specified for the Device Info Collector on Linux.");
                 string path = $"{ configFromSettingsFile[Options.linux_bios_vendor_file.ToString()] }";
-                if (DoesFileExist(path, out path)) {
-                    linux_bios_vendor_file = path;
-                }
+                linux_bios_vendor = ReadFileText(path);
             }
             if (!string.IsNullOrWhiteSpace(configFromSettingsFile[Options.linux_bios_version_file.ToString()])) {
                 Log.Debug("Custom bios version file specified for the Device Info Collector on Linux.");
                 string path = $"{ configFromSettingsFile[Options.linux_bios_version_file.ToString()] }";
-                if (DoesFileExist(path, out path)) {
-                    linux_bios_version_file = path;
-                }
+                linux_bios_version = ReadFileText(path);
             }
             if (!string.IsNullOrWhiteSpace(configFromSettingsFile[Options.linux_sys_vendor_file.ToString()])) {
                 Log.Debug("Custom hardware manufacturer file specified for the Device Info Collector on Linux.");
                 string path = $"{ configFromSettingsFile[Options.linux_sys_vendor_file.ToString()] }";
-                if (DoesFileExist(path, out path)) {
-                    linux_sys_vendor_file = path;
-                }
+                linux_sys_vendor = ReadFileText(path);
             }
             if (!string.IsNullOrWhiteSpace(configFromSettingsFile[Options.linux_product_name_file.ToString()])) {
                 Log.Debug("Custom hardware product name file specified for the Device Info Collector on Linux.");
                 string path = $"{ configFromSettingsFile[Options.linux_product_name_file.ToString()] }";
-                if (DoesFileExist(path, out path)) {
-                    linux_product_name_file = path;
-                }
+                linux_product_name = ReadFileText(path);
             }
             if (!string.IsNullOrWhiteSpace(configFromSettingsFile[Options.linux_product_version_file.ToString()])) {
                 Log.Debug("Custom hardware product version file specified for the Device Info Collector on Linux.");
                 string path = $"{ configFromSettingsFile[Options.linux_product_version_file.ToString()] }";
-                if (DoesFileExist(path, out path)) {
-                    linux_product_version_file = path;
-                }
+                linux_product_version = ReadFileText(path);
             }
             if (!string.IsNullOrWhiteSpace(configFromSettingsFile[Options.linux_product_serial_file.ToString()])) {
                 Log.Debug("Custom hardware product serial file specified for the Device Info Collector on Linux.");
                 string path = $"{ configFromSettingsFile[Options.linux_product_serial_file.ToString()] }";
-                if (DoesFileExist(path, out path)) {
-                    linux_product_serial_file = path;
-                }
+                linux_product_serial = ReadFileText(path);
             }
         }
         #endregion
@@ -525,6 +513,18 @@ namespace hirs {
                 }
             }
             return found;
+        }
+
+        public static string ReadFileText(string path) {
+            string text = "";
+            if (DoesFileExist(path, out string full_path)) {
+                Log.Debug("  Reading file: " + full_path + ".");
+                text = File.ReadAllText(full_path);
+                if (string.IsNullOrWhiteSpace(text)) {
+                    Log.Debug("  File was empty.");
+                }
+            }
+            return text;
         }
 
         public bool HasHardwareManifestPlugins() {
