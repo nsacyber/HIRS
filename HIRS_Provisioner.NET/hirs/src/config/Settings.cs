@@ -520,9 +520,7 @@ namespace hirs {
             if (DoesFileExist(path, out string full_path)) {
                 Log.Debug("  Reading file: " + full_path + ".");
                 text = File.ReadAllText(full_path);
-                if (string.IsNullOrWhiteSpace(text)) {
-                    Log.Debug("  File was empty.");
-                }
+                Log.Debug("   " + (string.IsNullOrWhiteSpace(text) ? "File was empty." : text));
             }
             return text;
         }
