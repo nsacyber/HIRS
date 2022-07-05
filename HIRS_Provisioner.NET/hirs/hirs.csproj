@@ -6,6 +6,8 @@
     <RuntimeIdentifiers>linux-x64;win-x64</RuntimeIdentifiers>
     <StartupObject>hirs.Program</StartupObject>
     <PublishSingleFile>true</PublishSingleFile>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">

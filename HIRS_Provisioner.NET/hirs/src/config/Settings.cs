@@ -17,7 +17,14 @@ namespace hirs {
             auto_detect_tpm,
             event_log_file,
             hardware_manifest_collectors,
-            hardware_manifest_collection_swid_enforced
+            hardware_manifest_collection_swid_enforced,
+            linux_bios_vendor_file,
+            linux_bios_version_file,
+            linux_bios_date_file,
+            linux_sys_vendor_file,
+            linux_product_name_file,
+            linux_product_version_file,
+            linux_product_serial_file
         }
 
         private static readonly string DEFAULT_SETTINGS_FILE = "appsettings.json";
@@ -42,6 +49,27 @@ namespace hirs {
             get; private set;
         }
         public virtual byte[] event_log {
+            get; private set;
+        }
+        public virtual string linux_bios_vendor_file {
+            get; private set;
+        }
+        public virtual string linux_bios_version_file {
+            get; private set;
+        }
+        public virtual string linux_bios_date_file {
+            get; private set;
+        }
+        public virtual string linux_sys_vendor_file {
+            get; private set;
+        }
+        public virtual string linux_product_name_file {
+            get; private set;
+        }
+        public virtual string linux_product_version_file {
+            get; private set;
+        }
+        public virtual string linux_product_serial_file {
             get; private set;
         }
         private List<IHardwareManifest> hardwareManifests = new();
@@ -99,6 +127,8 @@ namespace hirs {
                 CheckEfiPrefix();
 
                 IngestEventLogFromFile();
+
+                StoreCustomDeviceInfoCollectorOptions();
 
             } catch (Exception e) {
                 if (Log.Logger == null) {
@@ -183,17 +213,13 @@ namespace hirs {
         private void IngestPaccorDataFromFile() {
             if (!string.IsNullOrWhiteSpace(configFromSettingsFile[Options.paccor_output_file.ToString()])) {
                 Log.Debug("Checking location of the paccor output file.");
-                string paccor_output_file = $"{ configFromSettingsFile[Options.paccor_output_file.ToString()] }";
-                if (!string.IsNullOrWhiteSpace(paccor_output_file)) {
-                    paccor_output_file = Path.GetFullPath(paccor_output_file);
-                    if (!File.Exists(paccor_output_file)) {
-                        paccor_output_file = null;
-                        Log.Warning(Options.paccor_output_file.ToString() + ": " + paccor_output_file + " does not exist.");
-                    } else if (HasHardwareManifestPlugins()) {
+                string paccor_output_path = $"{ configFromSettingsFile[Options.paccor_output_file.ToString()] }";
+                if (DoesFileExist(paccor_output_path, out paccor_output_path)) {
+                    if (HasHardwareManifestPlugins()) {
                         Log.Warning("The settings file specified hardware manifest collectors and a paccor output file. Fresh data is preferred over data from a file. If you want to use the file data, clear the collectors field from the settings file.");
                     } else {
                         Log.Debug("Retrieving components from " + Options.paccor_output_file.ToString() + ".");
-                        paccor_output = File.ReadAllText(paccor_output_file);
+                        paccor_output = File.ReadAllText(paccor_output_path);
                         if (string.IsNullOrWhiteSpace(paccor_output)) {
                             Log.Warning(Options.paccor_output_file.ToString() + " Paccor output was empty. Cannot perform Platform Attribute validation.");
                         } else {
@@ -253,8 +279,8 @@ namespace hirs {
                     }
                 } else {
                     if (!Directory.Exists(efi_prefix)) {
-                        efi_prefix = null;
                         Log.Debug(Options.efi_prefix.ToString() + ": " + efi_prefix + " did not exist.");
+                        efi_prefix = null;
                     }
                 }
             }
@@ -426,20 +452,12 @@ namespace hirs {
             if (!string.IsNullOrWhiteSpace(configFromSettingsFile[Options.event_log_file.ToString()])) {
                 Log.Debug("Checking location of the event log.");
                 string event_log_path = $"{ configFromSettingsFile[Options.event_log_file.ToString()] }";
-                if (!string.IsNullOrWhiteSpace(event_log_path)) {
-                    event_log_path = Path.GetFullPath(event_log_path);
-                    if (!File.Exists(event_log_path)) {
-                        event_log_path = null;
-                        Log.Debug(Options.event_log_file.ToString() + ": " + event_log_path + " does not exist.");
-                    } else {
-                        Log.Debug("Retrieving the Event Log. ");
-                        event_log = File.ReadAllBytes(event_log_path);
-                        if (event_log == null || event_log.Length == 0) {
-                            Log.Warning(Options.event_log_file.ToString() + " The event log was empty.");
-                        }
+                if (DoesFileExist(event_log_path, out event_log_path)) {
+                    Log.Debug("Retrieving the Event Log. ");
+                    event_log = File.ReadAllBytes(event_log_path);
+                    if (event_log == null || event_log.Length == 0) {
+                        Log.Warning(Options.event_log_file.ToString() + " The event log was empty.");
                     }
-                } else {
-                    Log.Debug(Options.event_log_file.ToString() + " was not set in the settings file.");
                 }
             } else {
                 Log.Debug(Options.event_log_file.ToString() + " not set in the settings file.");
@@ -447,6 +465,67 @@ namespace hirs {
 
         }
         #endregion
+
+        #region Store Custom Device Info Collector Options
+        private void StoreCustomDeviceInfoCollectorOptions() {
+            if (!string.IsNullOrWhiteSpace(configFromSettingsFile[Options.linux_bios_vendor_file.ToString()])) {
+                Log.Debug("Custom bios vendor file specified for the Device Info Collector on Linux.");
+                string path = $"{ configFromSettingsFile[Options.linux_bios_vendor_file.ToString()] }";
+                if (DoesFileExist(path, out path)) {
+                    linux_bios_vendor_file = path;
+                }
+            }
+            if (!string.IsNullOrWhiteSpace(configFromSettingsFile[Options.linux_bios_version_file.ToString()])) {
+                Log.Debug("Custom bios version file specified for the Device Info Collector on Linux.");
+                string path = $"{ configFromSettingsFile[Options.linux_bios_version_file.ToString()] }";
+                if (DoesFileExist(path, out path)) {
+                    linux_bios_version_file = path;
+                }
+            }
+            if (!string.IsNullOrWhiteSpace(configFromSettingsFile[Options.linux_sys_vendor_file.ToString()])) {
+                Log.Debug("Custom hardware manufacturer file specified for the Device Info Collector on Linux.");
+                string path = $"{ configFromSettingsFile[Options.linux_sys_vendor_file.ToString()] }";
+                if (DoesFileExist(path, out path)) {
+                    linux_sys_vendor_file = path;
+                }
+            }
+            if (!string.IsNullOrWhiteSpace(configFromSettingsFile[Options.linux_product_name_file.ToString()])) {
+                Log.Debug("Custom hardware product name file specified for the Device Info Collector on Linux.");
+                string path = $"{ configFromSettingsFile[Options.linux_product_name_file.ToString()] }";
+                if (DoesFileExist(path, out path)) {
+                    linux_product_name_file = path;
+                }
+            }
+            if (!string.IsNullOrWhiteSpace(configFromSettingsFile[Options.linux_product_version_file.ToString()])) {
+                Log.Debug("Custom hardware product version file specified for the Device Info Collector on Linux.");
+                string path = $"{ configFromSettingsFile[Options.linux_product_version_file.ToString()] }";
+                if (DoesFileExist(path, out path)) {
+                    linux_product_version_file = path;
+                }
+            }
+            if (!string.IsNullOrWhiteSpace(configFromSettingsFile[Options.linux_product_serial_file.ToString()])) {
+                Log.Debug("Custom hardware product serial file specified for the Device Info Collector on Linux.");
+                string path = $"{ configFromSettingsFile[Options.linux_product_serial_file.ToString()] }";
+                if (DoesFileExist(path, out path)) {
+                    linux_product_serial_file = path;
+                }
+            }
+        }
+        #endregion
+        public static bool DoesFileExist(string path, out string out_full_path) {
+            bool found = false;
+            out_full_path = "";
+            if (!string.IsNullOrWhiteSpace(path)) {
+                out_full_path = Path.GetFullPath(path);
+                found = File.Exists(out_full_path);
+                if (!found) {
+                    Log.Debug("  File identified in settings did not exist: " + out_full_path);
+                } else {
+                    Log.Debug("  File exists: " + out_full_path);
+                }
+            }
+            return found;
+        }
 
         public bool HasHardwareManifestPlugins() {
             return hardwareManifests.Count > 0;
