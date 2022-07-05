@@ -133,7 +133,7 @@ jobs:
           sudo mkdir -p /home/runner/work/efi/EFI/tcg/manifest/rim
           sudo mkdir -p /home/runner/work/hw
           sudo mkdir -p /home/runner/work/tpm
-          sudo mdkir -p /home/runner/work/sys/class/dmi/id/
+          sudo mkdir -p /home/runner/work/sys/class/dmi/id/
           sudo cp /home/runner/work/HIRS/HIRS/.ci/system-tests/profiles/laptop/default/laptop_default_hw.json /home/runner/work/hw/test_hw.json
           sudo cp /home/runner/work/HIRS/HIRS/.ci/system-tests/profiles/laptop/default/laptop_default_binary_bios_measurements /home/runner/work/tpm/test_event_log  
         
