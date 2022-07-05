@@ -72,9 +72,26 @@ namespace hirs {
                     break;
                 }
             } else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux)) {
-                fw.BiosVendor = FileToString(settings != null && !string.IsNullOrEmpty(settings.linux_bios_vendor) ? settings.linux_bios_vendor : LINUX_DEFAULT_BIOS_VENDOR_PATH, NOT_SPECIFIED);
-                fw.BiosVersion = FileToString(settings != null && !string.IsNullOrEmpty(settings.linux_bios_version) ? settings.linux_bios_version : LINUX_DEFAULT_BIOS_VERSION_PATH, NOT_SPECIFIED);
-                fw.BiosReleaseDate = FileToString(settings != null && !string.IsNullOrEmpty(settings.linux_bios_date) ? settings.linux_bios_date : LINUX_DEFAULT_BIOS_DATE_PATH, NOT_SPECIFIED);
+                if (settings != null) {
+                    if (!string.IsNullOrEmpty(settings.linux_bios_vendor)) {
+                        fw.BiosVendor = settings.linux_bios_vendor;
+                    }
+                    if (!string.IsNullOrEmpty(settings.linux_bios_version)) {
+                        fw.BiosVersion = settings.linux_bios_version;
+                    }
+                    if (!string.IsNullOrEmpty(settings.linux_bios_date)) {
+                        fw.BiosReleaseDate = settings.linux_bios_date;
+                    }
+                }
+                if (!string.IsNullOrEmpty(fw.BiosVendor)) {
+                    fw.BiosVendor = FileToString(LINUX_DEFAULT_BIOS_VENDOR_PATH, NOT_SPECIFIED);
+                }
+                if (!string.IsNullOrEmpty(fw.BiosVersion)) {
+                    fw.BiosVersion = FileToString(LINUX_DEFAULT_BIOS_VERSION_PATH, NOT_SPECIFIED);
+                }
+                if (!string.IsNullOrEmpty(fw.BiosReleaseDate)) {
+                    fw.BiosReleaseDate = FileToString(LINUX_DEFAULT_BIOS_DATE_PATH, NOT_SPECIFIED);
+                }
             } else if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX)) {
                 // tbd
             } else {
@@ -87,8 +104,6 @@ namespace hirs {
 
             return fw;
         }
-
-        
 
         public HardwareInfo CollectHardwareInfo() {
             HardwareInfo hw = new();
@@ -112,10 +127,32 @@ namespace hirs {
                     break;
                 }
             } else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux)) {
-                hw.Manufacturer = FileToString(settings != null && !string.IsNullOrEmpty(settings.linux_sys_vendor) ? settings.linux_sys_vendor : LINUX_DEFAULT_SYS_VENDOR_PATH, NOT_SPECIFIED);
-                hw.ProductName = FileToString(settings != null && !string.IsNullOrEmpty(settings.linux_product_name) ? settings.linux_product_name : LINUX_DEFAULT_PRODUCT_NAME_PATH, NOT_SPECIFIED);
-                hw.ProductVersion = FileToString(settings != null && !string.IsNullOrEmpty(settings.linux_product_version) ? settings.linux_product_version : LINUX_DEFAULT_PRODUCT_VERSION_PATH, NOT_SPECIFIED);
-                hw.SystemSerialNumber = FileToString(settings != null && !string.IsNullOrEmpty(settings.linux_product_serial) ? settings.linux_product_serial : LINUX_DEFAULT_PRODUCT_SERIAL_PATH, NOT_SPECIFIED);
+                if (settings != null) {
+                    if (!string.IsNullOrEmpty(settings.linux_sys_vendor)) {
+                        hw.Manufacturer = settings.linux_sys_vendor;
+                    }
+                    if (!string.IsNullOrEmpty(settings.linux_product_name)) {
+                        hw.ProductName = settings.linux_product_name;
+                    }
+                    if (!string.IsNullOrEmpty(settings.linux_product_version)) {
+                        hw.ProductVersion = settings.linux_product_version;
+                    }
+                    if (!string.IsNullOrEmpty(settings.linux_product_serial)) {
+                        hw.SystemSerialNumber = settings.linux_product_serial;
+                    }
+                }
+                if (!string.IsNullOrEmpty(hw.Manufacturer)) {
+                    hw.Manufacturer = FileToString(LINUX_DEFAULT_SYS_VENDOR_PATH, NOT_SPECIFIED);
+                }
+                if (!string.IsNullOrEmpty(hw.ProductName)) {
+                    hw.ProductName = FileToString(LINUX_DEFAULT_PRODUCT_NAME_PATH, NOT_SPECIFIED);
+                }
+                if (!string.IsNullOrEmpty(hw.ProductVersion)) {
+                    hw.ProductVersion = FileToString(LINUX_DEFAULT_PRODUCT_VERSION_PATH, NOT_SPECIFIED);
+                }
+                if (!string.IsNullOrEmpty(hw.SystemSerialNumber)) {
+                    hw.SystemSerialNumber = FileToString(LINUX_DEFAULT_PRODUCT_SERIAL_PATH, NOT_SPECIFIED);
+                }
             } else if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX)) {
                 // tbd
             } else {
