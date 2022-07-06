@@ -1,7 +1,7 @@
 package hirs.attestationca.portal.page;
 
 import hirs.attestationca.portal.datatables.DataTableView;
-import hirs.attestationca.portal.persistence.PersistenceConfiguration;
+import hirs.persist.PersistenceConfiguration;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;

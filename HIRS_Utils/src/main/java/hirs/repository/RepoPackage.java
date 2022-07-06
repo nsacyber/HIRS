@@ -47,9 +47,9 @@ public abstract class RepoPackage {
     @Column
     private String architecture;
 
-    @ManyToOne
-    @JoinColumn(name = "sourceRepository")
-    private Repository<?> sourceRepository;
+//    @ManyToOne
+//    @JoinColumn(name = "sourceRepository")
+//    private Repository<?> sourceRepository;
 
     @Column
     private boolean measured = false;
@@ -105,7 +105,7 @@ public abstract class RepoPackage {
         this.version = version;
         this.release = release;
         this.architecture = architecture;
-        this.sourceRepository = sourceRepository;
+//        this.sourceRepository = sourceRepository;
         this.id = UUID.randomUUID();
     }
 
@@ -157,9 +157,9 @@ public abstract class RepoPackage {
      *
      * @return this package's source repository
      */
-    public final Repository<?> getSourceRepository() {
-        return sourceRepository;
-    }
+//    public final Repository<?> getSourceRepository() {
+//        return sourceRepository;
+//    }
 
     /**
      * Sets the measurements of the package.  Must be only called on a package that has not yet
@@ -270,9 +270,9 @@ public abstract class RepoPackage {
             return false;
         }
 
-        if (!sourceRepository.equals(that.sourceRepository)) {
-            return false;
-        }
+//        if (!sourceRepository.equals(that.sourceRepository)) {
+//            return false;
+//        }
 
         return true;
     }
@@ -284,14 +284,13 @@ public abstract class RepoPackage {
         result = prime * result + version.hashCode();
         result = prime * result + release.hashCode();
         result = prime * result + architecture.hashCode();
-        result = prime * result + sourceRepository.hashCode();
         return result;
     }
 
     @Override
     public final String toString() {
         return String.format(
-                "RepoPackage{name=%s, version=%s, release=%s, architecture=%s, sourceRepository=%s",
-                name, version, release, architecture, sourceRepository);
+                "RepoPackage{name=%s, version=%s, release=%s, architecture=%s",
+                name, version, release, architecture);
     }
 }
