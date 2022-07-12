@@ -39,7 +39,7 @@ public class DBManagerException extends RuntimeException {
      * @param t
      *            root cause
      */
-    DBManagerException(final String msg, final Throwable t) {
+    public DBManagerException(final String msg, final Throwable t) {
         super(msg, t);
     }
 

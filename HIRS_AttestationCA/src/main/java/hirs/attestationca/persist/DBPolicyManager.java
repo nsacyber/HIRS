@@ -1,10 +1,14 @@
-package hirs.persist;
+package hirs.attestationca.persist;
 
 import com.google.common.base.Preconditions;
 import hirs.appraiser.Appraiser;
 import hirs.data.persist.Device;
 import hirs.data.persist.DeviceGroup;
 import hirs.data.persist.Policy;
+import hirs.persist.DBManagerException;
+import hirs.persist.PolicyManager;
+import hirs.persist.PolicyManagerException;
+import hirs.persist.PolicyMapper;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.hibernate.Session;
@@ -46,7 +50,7 @@ public class DBPolicyManager extends DBManager<Policy> implements PolicyManager 
      * @param policy
      *            policy to save
      * @return <code>Policy</code> that was saved
-     * @throws PolicyManagerException
+     * @throws hirs.persist.PolicyManagerException
      *             if policy has previously been saved or an error occurs while
      *             trying to save it to the database
      */

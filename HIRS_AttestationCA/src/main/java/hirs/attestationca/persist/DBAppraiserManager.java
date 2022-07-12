@@ -1,6 +1,9 @@
-package hirs.persist;
+package hirs.attestationca.persist;
 
 import hirs.appraiser.Appraiser;
+import hirs.persist.AppraiserManager;
+import hirs.persist.AppraiserManagerException;
+import hirs.persist.DBManagerException;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.hibernate.SessionFactory;
@@ -36,7 +39,7 @@ public class DBAppraiserManager extends DBManager<Appraiser> implements Appraise
      * @param appraiser
      *            appraiser to save
      * @return reference to saved appraiser
-     * @throws AppraiserManagerException
+     * @throws hirs.persist.AppraiserManagerException
      *             if appraiser has previously been saved or an error occurs
      *             while trying to save it to the database
      */

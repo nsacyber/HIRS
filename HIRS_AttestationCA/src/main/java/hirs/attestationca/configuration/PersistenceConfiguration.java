@@ -1,12 +1,32 @@
-package hirs.persist;
+package hirs.attestationca.configuration;
 
 import hirs.data.persist.SupplyChainValidationSummary;
+import hirs.persist.CertificateManager;
+import hirs.persist.CrudManager;
+import hirs.attestationca.persist.DBCertificateManager;
+import hirs.attestationca.persist.DBDeviceGroupManager;
+import hirs.attestationca.persist.DBDeviceManager;
+import hirs.attestationca.persist.DBManager;
+import hirs.attestationca.persist.DBPolicyManager;
+import hirs.attestationca.persist.DBPortalInfoManager;
+import hirs.attestationca.persist.DBReferenceEventManager;
+import hirs.attestationca.persist.DBReferenceManifestManager;
+import hirs.attestationca.persist.DBReportManager;
+import hirs.attestationca.persist.DBReportRequestStateManager;
+import hirs.attestationca.persist.DBReportSummaryManager;
+import hirs.persist.DeviceGroupManager;
+import hirs.persist.DeviceManager;
+import hirs.persist.PolicyManager;
+import hirs.persist.PortalInfoManager;
+import hirs.persist.ReferenceEventManager;
+import hirs.persist.ReferenceManifestManager;
+import hirs.persist.ReportManager;
+import hirs.persist.ReportRequestStateManager;
+import hirs.persist.ReportSummaryManager;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Import;
 import org.springframework.orm.hibernate5.LocalSessionFactoryBean;
-
 
 /**
  * Persistence Configuration for Spring enabled applications. Constructs a Hibernate SessionFactory
@@ -16,7 +36,6 @@ import org.springframework.orm.hibernate5.LocalSessionFactoryBean;
  * file, the default persistence file will be used instead.
  */
 @Configuration
-@Import({ HibernateConfiguration.class })
 public class PersistenceConfiguration {
 
     /**
@@ -34,21 +53,9 @@ public class PersistenceConfiguration {
     private int maxTransactionRetryAttempts;
 
     /**
-     * Creates a {@link AppraiserManager} ready to use.
+     * Creates a {@link hirs.persist.PolicyManager} ready to use.
      *
-     * @return {@link AppraiserManager}
-     */
-    @Bean
-    public AppraiserManager appraiserManager() {
-        DBAppraiserManager manager = new DBAppraiserManager(sessionFactory.getObject());
-        setDbManagerRetrySettings(manager);
-        return manager;
-    }
-
-    /**
-     * Creates a {@link PolicyManager} ready to use.
-     *
-     * @return {@link PolicyManager}
+     * @return {@link hirs.persist.PolicyManager}
      */
     @Bean
     public PolicyManager policyManager() {
@@ -58,9 +65,9 @@ public class PersistenceConfiguration {
     }
 
     /**
-     * Creates a {@link ReportManager} ready to use.
+     * Creates a {@link hirs.persist.ReportManager} ready to use.
      *
-     * @return {@link ReportManager}
+     * @return {@link hirs.persist.ReportManager}
      */
     @Bean
     public ReportManager reportManager() {
@@ -70,9 +77,9 @@ public class PersistenceConfiguration {
     }
 
     /**
-     * Creates a {@link DeviceManager} ready to use.
+     * Creates a {@link hirs.persist.DeviceManager} ready to use.
      *
-     * @return {@link DeviceManager}
+     * @return {@link hirs.persist.DeviceManager}
      */
     @Bean
     public DeviceManager deviceManager() {
@@ -82,9 +89,9 @@ public class PersistenceConfiguration {
     }
 
     /**
-     * Creates a {@link ReportSummaryManager} ready to use.
+     * Creates a {@link hirs.persist.ReportSummaryManager} ready to use.
      *
-     * @return {@link ReportSummaryManager}
+     * @return {@link hirs.persist.ReportSummaryManager}
      */
     @Bean
     public ReportSummaryManager reportSummaryManager() {
@@ -94,9 +101,9 @@ public class PersistenceConfiguration {
     }
 
     /**
-     * Creates a {@link DeviceGroupManager} ready to use.
+     * Creates a {@link hirs.persist.DeviceGroupManager} ready to use.
      *
-     * @return {@link DeviceGroupManager}
+     * @return {@link hirs.persist.DeviceGroupManager}
      */
     @Bean
     public DeviceGroupManager deviceGroupManager() {
@@ -106,9 +113,9 @@ public class PersistenceConfiguration {
     }
 
     /**
-     * Creates a {@link CertificateManager} ready to use.
+     * Creates a {@link hirs.persist.CertificateManager} ready to use.
      *
-     * @return {@link CertificateManager}
+     * @return {@link hirs.persist.CertificateManager}
      */
     @Bean
     public CertificateManager certificateManager() {
@@ -118,9 +125,9 @@ public class PersistenceConfiguration {
     }
 
     /**
-     * Creates a {@link ReferenceManifestManager} ready to use.
+     * Creates a {@link hirs.persist.ReferenceManifestManager} ready to use.
      *
-     * @return {@link ReferenceManifestManager}
+     * @return {@link hirs.persist.ReferenceManifestManager}
      */
     @Bean
     public ReferenceManifestManager referenceManifestManager() {
@@ -131,9 +138,9 @@ public class PersistenceConfiguration {
     }
 
     /**
-     * Creates a {@link ReferenceEventManager} ready to use.
+     * Creates a {@link hirs.persist.ReferenceEventManager} ready to use.
      *
-     * @return {@link ReferenceEventManager}
+     * @return {@link hirs.persist.ReferenceEventManager}
      */
     @Bean
     public ReferenceEventManager referenceEventManager() {
@@ -144,9 +151,9 @@ public class PersistenceConfiguration {
     }
 
     /**
-     * Creates a {@link ReportRequestStateManager} ready to use.
+     * Creates a {@link hirs.persist.ReportRequestStateManager} ready to use.
      *
-     * @return {@link ReportRequestStateManager}
+     * @return {@link hirs.persist.ReportRequestStateManager}
      */
     @Bean
     public ReportRequestStateManager reportRequestStateManager() {
@@ -157,21 +164,9 @@ public class PersistenceConfiguration {
     }
 
     /**
-     * Creates a {@link RepositoryManager} ready to use.
+     * Creates a {@link hirs.persist.PortalInfoManager} ready to use.
      *
-     * @return {@link RepositoryManager}
-     */
-    @Bean
-    public RepositoryManager repositoryManager() {
-        DBRepositoryManager manager = new DBRepositoryManager(sessionFactory.getObject());
-        manager.setRetryTemplate(maxTransactionRetryAttempts, retryWaitTimeMilliseconds);
-        return manager;
-    }
-
-    /**
-     * Creates a {@link PortalInfoManager} ready to use.
-     *
-     * @return {@link PortalInfoManager}
+     * @return {@link hirs.persist.PortalInfoManager}
      */
     @Bean
     public PortalInfoManager portalInfoManager() {
@@ -181,9 +176,9 @@ public class PersistenceConfiguration {
     }
 
     /**
-     * Creates a {@link DBManager} for SupplyChainValidationSummary persistence, ready for use.
+     * Creates a {@link hirs.attestationca.persist.DBManager} for SupplyChainValidationSummary persistence, ready for use.
      *
-     * @return {@link DBManager}
+     * @return {@link hirs.attestationca.persist.DBManager}
      */
     @Bean
     public CrudManager<SupplyChainValidationSummary> supplyChainValidationSummaryManager() {

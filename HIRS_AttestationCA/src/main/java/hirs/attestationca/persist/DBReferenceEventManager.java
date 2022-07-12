@@ -1,10 +1,13 @@
-package hirs.persist;
+package hirs.attestationca.persist;
 
 import hirs.data.persist.BaseReferenceManifest;
 import hirs.data.persist.ReferenceDigestRecord;
 import hirs.data.persist.ReferenceDigestValue;
 import hirs.data.persist.ReferenceManifest;
 import hirs.data.persist.SupportReferenceManifest;
+import hirs.persist.DBManagerException;
+import hirs.persist.DeviceManagerException;
+import hirs.persist.ReferenceEventManager;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.hibernate.Session;

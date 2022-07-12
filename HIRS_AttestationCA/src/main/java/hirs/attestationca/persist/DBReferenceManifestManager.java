@@ -1,8 +1,11 @@
-package hirs.persist;
+package hirs.attestationca.persist;
 
 import hirs.data.persist.ReferenceManifest;
+import hirs.persist.ReferenceManifestManager;
+import hirs.persist.ReferenceManifestSelector;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.hibernate.SessionFactory;
 import org.springframework.stereotype.Service;
 import org.xml.sax.SAXException;
 
@@ -77,12 +80,12 @@ public class DBReferenceManifestManager extends DBManager<ReferenceManifest>
 
     /**
      * This method does not need to be used directly as it is used by
-     * {@link ReferenceManifestSelector}'s get* methods. Regardless, it may be
+     * {@link hirs.persist.ReferenceManifestSelector}'s get* methods. Regardless, it may be
      * used to retrieve ReferenceManifest by other code in this package, given a
      * configured ReferenceManifestSelector.
      *
      * @param referenceManifestSelector a configured
-     * {@link ReferenceManifestSelector} to use for querying
+     * {@link hirs.persist.ReferenceManifestSelector} to use for querying
      * @return the resulting set of ReferenceManifest, possibly empty
      */
     @Override

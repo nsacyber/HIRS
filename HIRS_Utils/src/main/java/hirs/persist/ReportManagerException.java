@@ -15,7 +15,7 @@ public class ReportManagerException extends RuntimeException {
      * @param msg
      *            exception message
      */
-    ReportManagerException(final String msg) {
+    public ReportManagerException(final String msg) {
         super(msg);
     }
 
@@ -26,7 +26,7 @@ public class ReportManagerException extends RuntimeException {
      * @param t
      *            root cause
      */
-    ReportManagerException(final Throwable t) {
+    public ReportManagerException(final Throwable t) {
         super(t);
     }
 
@@ -39,7 +39,7 @@ public class ReportManagerException extends RuntimeException {
      * @param t
      *            root cause
      */
-    ReportManagerException(final String msg, final Throwable t) {
+    public ReportManagerException(final String msg, final Throwable t) {
         super(msg, t);
     }
 }

@@ -15,7 +15,7 @@ public class PolicyManagerException extends RuntimeException {
      * @param msg
      *            exception message
      */
-    PolicyManagerException(final String msg) {
+    public PolicyManagerException(final String msg) {
         super(msg);
     }
 
@@ -26,7 +26,7 @@ public class PolicyManagerException extends RuntimeException {
      * @param t
      *            root cause
      */
-    PolicyManagerException(final Throwable t) {
+    public PolicyManagerException(final Throwable t) {
         super(t);
     }
 
@@ -39,7 +39,7 @@ public class PolicyManagerException extends RuntimeException {
      * @param t
      *            root cause
      */
-    PolicyManagerException(final String msg, final Throwable t) {
+    public PolicyManagerException(final String msg, final Throwable t) {
         super(msg, t);
     }
 }

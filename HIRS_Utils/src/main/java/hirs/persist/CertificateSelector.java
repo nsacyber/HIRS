@@ -25,7 +25,7 @@ import java.util.UUID;
 
 /**
  * This class is used to select one or many certificates in conjunction
- * with a {@link CertificateManager}.  To make use of this object,
+ * with a {@link hirs.persist.CertificateManager}.  To make use of this object,
  * use (some CertificateImpl).select(CertificateManager).
  *
  * This class loosely follows the builder pattern.  It is instantiated with

@@ -1,6 +1,9 @@
-package hirs.persist;
+package hirs.attestationca.persist;
 
 import hirs.data.persist.ReportSummary;
+import hirs.persist.DBManagerException;
+import hirs.persist.ReportSummaryManager;
+import hirs.persist.ReportSummaryManagerException;
 import org.apache.logging.log4j.Logger;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
@@ -48,7 +51,7 @@ public class DBReportSummaryManager extends DBManager<ReportSummary>
      * @param report
      *            report summary to save
      * @return <code>ReportSummary</code> that was saved
-     * @throws ReportSummaryManagerException
+     * @throws hirs.persist.ReportSummaryManagerException
      *             if ReportSummary has previously been saved or an error
      *             occurs while trying to save it to the database
      */

@@ -1,8 +1,12 @@
-package hirs.persist;
+package hirs.attestationca.persist;
 
 import hirs.FilteredRecordsList;
 import hirs.data.persist.Device;
 import hirs.data.persist.DeviceGroup;
+import hirs.persist.CriteriaModifier;
+import hirs.persist.DBManagerException;
+import hirs.persist.DeviceManager;
+import hirs.persist.DeviceManagerException;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.hibernate.Criteria;
@@ -56,7 +60,7 @@ public class DBDeviceManager extends DBManager<Device> implements
      * @param device
      *            device to save
      * @return reference to saved device
-     * @throws DeviceManagerException
+     * @throws hirs.persist.DeviceManagerException
      *             if device has previously been saved or an error occurs
      *             while trying to save it to the database
      */
@@ -295,7 +299,7 @@ public class DBDeviceManager extends DBManager<Device> implements
      *
      * @param name of the device to be deleted
      * @return true if successfully found and deleted, false if otherwise
-     * @throws DeviceGroupManagerException
+     * @throws hirs.persist.DeviceGroupManagerException
      *             if unable to find the device group or delete it from the
      *             database
      */

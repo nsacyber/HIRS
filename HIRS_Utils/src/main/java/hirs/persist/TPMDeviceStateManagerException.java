@@ -15,7 +15,7 @@ public class TPMDeviceStateManagerException extends RuntimeException {
      * @param msg
      *            exception message
      */
-    TPMDeviceStateManagerException(final String msg) {
+    public TPMDeviceStateManagerException(final String msg) {
         super(msg);
     }
 
@@ -26,7 +26,7 @@ public class TPMDeviceStateManagerException extends RuntimeException {
      * @param t
      *            root cause
      */
-    TPMDeviceStateManagerException(final Throwable t) {
+    public TPMDeviceStateManagerException(final Throwable t) {
         super(t);
     }
 
@@ -39,7 +39,7 @@ public class TPMDeviceStateManagerException extends RuntimeException {
      * @param t
      *            root cause
      */
-    TPMDeviceStateManagerException(final String msg, final Throwable t) {
+    public TPMDeviceStateManagerException(final String msg, final Throwable t) {
         super(msg, t);
     }
 }

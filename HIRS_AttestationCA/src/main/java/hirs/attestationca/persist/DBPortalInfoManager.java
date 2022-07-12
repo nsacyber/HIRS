@@ -1,7 +1,10 @@
-package hirs.persist;
+package hirs.attestationca.persist;
 
 import hirs.data.persist.enums.PortalScheme;
 import hirs.data.persist.info.PortalInfo;
+import hirs.persist.DBManagerException;
+import hirs.persist.PortalInfoManager;
+import hirs.persist.PortalInfoManagerException;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.hibernate.SessionFactory;
@@ -36,7 +39,7 @@ public class DBPortalInfoManager extends DBManager<PortalInfo> implements Portal
      *
      * @param info PortalInfo to save
      * @return reference to saved PortalInfo
-     * @throws PortalInfoManagerException if PortalInfo has previously been saved or an
+     * @throws hirs.persist.PortalInfoManagerException if PortalInfo has previously been saved or an
      * error occurs while trying to save it to the database
      */
     @Override

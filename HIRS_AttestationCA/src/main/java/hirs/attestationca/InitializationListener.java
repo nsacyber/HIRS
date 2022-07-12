@@ -1,9 +1,8 @@
 package hirs.attestationca;
 
-import hirs.persist.DBAppraiserManager;
-import hirs.persist.DBDeviceGroupManager;
-import hirs.persist.DBPolicyManager;
-import hirs.persist.PersistenceConfiguration;
+import hirs.attestationca.persist.DBAppraiserManager;
+import hirs.attestationca.persist.DBDeviceGroupManager;
+import hirs.attestationca.persist.DBPolicyManager;
 import hirs.utils.HIRSProfiles;
 import org.hibernate.SessionFactory;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;

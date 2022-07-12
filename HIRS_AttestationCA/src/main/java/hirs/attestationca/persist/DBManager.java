@@ -1,7 +1,9 @@
-package hirs.persist;
+package hirs.attestationca.persist;
 
 import hirs.FilteredRecordsList;
 import hirs.data.persist.ArchivableEntity;
+import hirs.persist.CriteriaModifier;
+import hirs.persist.DBManagerException;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.hibernate.Criteria;
@@ -115,7 +117,7 @@ public class DBManager<T> extends AbstractDbManager<T> {
      * @param predicateCollection the collection of Criterion to apply
      *
      * @return a List of objects that match the criteria
-     * @throws DBManagerException if an error is encountered while performing the query or creating
+     * @throws hirs.persist.DBManagerException if an error is encountered while performing the query or creating
      * the result objects
      */
     public final List<T> getWithCriteria(final Collection<Predicate> predicateCollection)

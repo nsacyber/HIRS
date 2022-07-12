@@ -14,7 +14,7 @@ public class PortalInfoManagerException extends RuntimeException {
      *
      * @param msg exception message
      */
-    PortalInfoManagerException(final String msg) {
+    public PortalInfoManagerException(final String msg) {
         super(msg);
     }
 
@@ -24,7 +24,7 @@ public class PortalInfoManagerException extends RuntimeException {
      *
      * @param t root cause
      */
-    PortalInfoManagerException(final Throwable t) {
+    public PortalInfoManagerException(final Throwable t) {
         super(t);
     }
 
@@ -35,7 +35,7 @@ public class PortalInfoManagerException extends RuntimeException {
      * @param msg exception message
      * @param t root cause
      */
-    PortalInfoManagerException(final String msg, final Throwable t) {
+    public PortalInfoManagerException(final String msg, final Throwable t) {
         super(msg, t);
     }
 }

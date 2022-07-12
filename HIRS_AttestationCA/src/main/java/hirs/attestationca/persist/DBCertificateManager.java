@@ -1,6 +1,9 @@
-package hirs.persist;
+package hirs.attestationca.persist;
 
 import hirs.data.persist.certificate.Certificate;
+import hirs.persist.CertificateManager;
+import hirs.persist.CertificateSelector;
+import hirs.persist.DBManagerException;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.hibernate.SessionFactory;
@@ -36,7 +39,7 @@ public class DBCertificateManager extends DBManager<Certificate>
     }
 
     /**
-     * This method does not need to be used directly as it is used by {@link CertificateSelector}'s
+     * This method does not need to be used directly as it is used by {@link hirs.persist.CertificateSelector}'s
      * get* methods.  Regardless, it may be used to retrieve certificates by other code in this
      * package, given a configured CertificateSelector.
      *
@@ -52,7 +55,7 @@ public class DBCertificateManager extends DBManager<Certificate>
      * </pre>
      *
      * @param <T> the type of certificate that will be retrieved
-     * @param certificateSelector a configured {@link CertificateSelector} to use for querying
+     * @param certificateSelector a configured {@link hirs.persist.CertificateSelector} to use for querying
      * @return the resulting set of Certificates, possibly empty
      */
     @SuppressWarnings("unchecked")
@@ -83,7 +86,7 @@ public class DBCertificateManager extends DBManager<Certificate>
      *
      * @param object object to save
      * @return reference to saved object
-     * @throws DBManagerException if object has previously been saved or an
+     * @throws hirs.persist.DBManagerException if object has previously been saved or an
      * error occurs while trying to save it to the database
      */
     @Override

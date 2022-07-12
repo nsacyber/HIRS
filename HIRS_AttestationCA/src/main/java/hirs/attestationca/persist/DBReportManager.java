@@ -1,6 +1,9 @@
-package hirs.persist;
+package hirs.attestationca.persist;
 
 import hirs.data.persist.Report;
+import hirs.persist.DBManagerException;
+import hirs.persist.ReportManager;
+import hirs.persist.ReportManagerException;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 import org.hibernate.SessionFactory;
@@ -41,7 +44,7 @@ public class DBReportManager extends DBManager<Report> implements ReportManager 
      * @param report
      *            report to save
      * @return <code>Report</code> that was saved
-     * @throws DBManagerException
+     * @throws hirs.persist.DBManagerException
      *             if Report has previously been saved or an error occurs while
      *             trying to save it to the database
      */

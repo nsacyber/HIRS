@@ -1,8 +1,13 @@
-package hirs.persist;
+package hirs.attestationca.persist;
 
 import hirs.FilteredRecordsList;
 import hirs.data.persist.DeviceGroup;
 import hirs.data.persist.Policy;
+import hirs.persist.CriteriaModifier;
+import hirs.persist.DBManagerException;
+import hirs.persist.DeviceGroupManager;
+import hirs.persist.DeviceGroupManagerException;
+import hirs.persist.PolicyMapper;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.hibernate.Criteria;
@@ -50,7 +55,7 @@ public class DBDeviceGroupManager extends DBManager<DeviceGroup> implements Devi
      * @param deviceGroup
      *            device group to save
      * @return reference to saved device group
-     * @throws DeviceGroupManagerException
+     * @throws hirs.persist.DeviceGroupManagerException
      *             if device group had been previously saved or an error occurs
      *             while trying to save it to the database
      */

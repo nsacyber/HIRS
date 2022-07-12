@@ -25,7 +25,6 @@ import hirs.persist.AppraiserManager;
 import hirs.persist.CertificateManager;
 import hirs.persist.CrudManager;
 import hirs.persist.DBManagerException;
-import hirs.persist.PersistenceConfiguration;
 import hirs.persist.PolicyManager;
 import hirs.persist.ReferenceDigestManager;
 import hirs.persist.ReferenceEventManager;

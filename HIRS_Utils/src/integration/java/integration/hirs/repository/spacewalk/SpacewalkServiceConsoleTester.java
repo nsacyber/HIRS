@@ -1,6 +1,5 @@
 package integration.hirs.repository.spacewalk;
 
-import hirs.persist.PersistenceConfiguration;
 import hirs.persist.RepositoryManager;
 import hirs.repository.RepositoryException;
 import hirs.repository.RepositoryUpdateService;
