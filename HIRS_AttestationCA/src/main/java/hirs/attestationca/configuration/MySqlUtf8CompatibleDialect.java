@@ -1,4 +1,4 @@
-package hirs.utils;
+package hirs.attestationca.configuration;
 
 import org.hibernate.dialect.MySQLDialect;
 

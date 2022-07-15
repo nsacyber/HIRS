@@ -7,16 +7,8 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.hibernate.SessionFactory;
 import org.springframework.stereotype.Service;
-import org.xml.sax.SAXException;
 
-import javax.persistence.criteria.CriteriaBuilder;
-import javax.xml.transform.stream.StreamSource;
-import javax.xml.validation.Schema;
-import javax.xml.validation.SchemaFactory;
-import java.io.IOException;
-import java.io.InputStream;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 
 /**
@@ -28,13 +20,6 @@ public class DBReferenceManifestManager extends DBManager<ReferenceManifest>
         implements ReferenceManifestManager {
 
     private static final Logger LOGGER = LogManager.getLogger(DBReferenceManifestManager.class);
-    /**
-     * The variable that establishes a schema factory for xml processing.
-     */
-    public static final SchemaFactory SCHEMA_FACTORY
-            = SchemaFactory.newInstance(ReferenceManifest.SCHEMA_LANGUAGE);
-
-    private static Schema schema;
 
     /**
      * Default Constructor.
@@ -43,39 +28,6 @@ public class DBReferenceManifestManager extends DBManager<ReferenceManifest>
      */
     public DBReferenceManifestManager(final SessionFactory sessionFactory) {
         super(ReferenceManifest.class, sessionFactory);
-        getSchemaObject();
-    }
-
-    /**
-     * This method sets the xml schema for processing RIMs.
-     *
-     * @return the schema
-     */
-    public static final Schema getSchemaObject() {
-        if (schema == null) {
-            InputStream is = null;
-            try {
-                is = ReferenceManifest.class
-                        .getClassLoader()
-                        .getResourceAsStream(ReferenceManifest.SCHEMA_URL);
-                schema = SCHEMA_FACTORY.newSchema(new StreamSource(is));
-            } catch (SAXException saxEx) {
-                LOGGER.error(String.format("Error setting schema for validation!%n%s",
-                    saxEx.getMessage()));
-            } finally {
-                if (is != null) {
-                    try {
-                        is.close();
-                    } catch (IOException ioEx) {
-                        LOGGER.error(String.format("Error closing input stream%n%s",
-                                ioEx.getMessage()));
-                    }
-                } else {
-                    LOGGER.error("Input stream variable is null");
-                }
-            }
-        }
-        return schema;
     }
 
     /**
@@ -93,10 +45,11 @@ public class DBReferenceManifestManager extends DBManager<ReferenceManifest>
     public <T extends  ReferenceManifest> Set<T> get(
             final ReferenceManifestSelector referenceManifestSelector) {
         LOGGER.info("Getting the full set of Reference Manifest files.");
-        CriteriaBuilder builder = this.getFactory().getCriteriaBuilder();
-        return new HashSet<>((List<T>) getWithCriteria(
-                referenceManifestSelector.getReferenceManifestClass(),
-                referenceManifestSelector.getCriterion(builder))
+//        CriteriaBuilder builder = this.getFactory().getCriteriaBuilder();
+        return new HashSet<>(0
+//                new HashSet<>((List<T>) getWithCriteria(
+//                referenceManifestSelector.getReferenceManifestClass(),
+//                referenceManifestSelector.getCriterion(builder))
         );
     }
 

@@ -1,7 +1,6 @@
 package hirs.data.persist;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import hirs.persist.DBReferenceManifestManager;
 import hirs.persist.ReferenceManifestManager;
 import hirs.persist.ReferenceManifestSelector;
 import hirs.utils.xjc.BaseElement;
@@ -13,6 +12,7 @@ import hirs.utils.xjc.SoftwareIdentity;
 import hirs.utils.xjc.SoftwareMeta;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.xml.sax.SAXException;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -22,7 +22,9 @@ import javax.xml.bind.JAXBException;
 import javax.xml.bind.UnmarshalException;
 import javax.xml.bind.Unmarshaller;
 import javax.xml.namespace.QName;
+import javax.xml.transform.stream.StreamSource;
 import javax.xml.validation.Schema;
+import javax.xml.validation.SchemaFactory;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -43,6 +45,11 @@ public class BaseReferenceManifest extends ReferenceManifest {
      * Holds the name of the 'base64Hash' field.
      */
     public static final String BASE_64_HASH_FIELD = "base64Hash";
+    /**
+     * The variable that establishes a schema factory for xml processing.
+     */
+    public static final SchemaFactory SCHEMA_FACTORY
+            = SchemaFactory.newInstance(ReferenceManifest.SCHEMA_LANGUAGE);
 
     private static JAXBContext jaxbContext;
 
@@ -398,7 +405,7 @@ public class BaseReferenceManifest extends ReferenceManifest {
         Schema schema;
 
         try {
-            schema = DBReferenceManifestManager.getSchemaObject();
+            schema = getSchemaObject();
             if (jaxbContext == null) {
                 jaxbContext = JAXBContext.newInstance(SCHEMA_PACKAGE);
             }
@@ -853,5 +860,37 @@ public class BaseReferenceManifest extends ReferenceManifest {
                         + "tagId=%s, rimHash=%s}",
                 swidName, this.getPlatformManufacturer(),
                 this.getPlatformModel(), getTagId(), this.getBase64Hash());
+    }
+
+    /**
+     * This method sets the xml schema for processing RIMs.
+     *
+     * @return the schema
+     */
+    protected static final Schema getSchemaObject() {
+        Schema schema = null;
+        InputStream is = null;
+        try {
+            is = ReferenceManifest.class
+                    .getClassLoader()
+                    .getResourceAsStream(ReferenceManifest.SCHEMA_URL);
+            schema = SCHEMA_FACTORY.newSchema(new StreamSource(is));
+        } catch (SAXException saxEx) {
+            LOGGER.error(String.format("Error setting schema for validation!%n%s",
+                    saxEx.getMessage()));
+        } finally {
+            if (is != null) {
+                try {
+                    is.close();
+                } catch (IOException ioEx) {
+                    LOGGER.error(String.format("Error closing input stream%n%s",
+                            ioEx.getMessage()));
+                }
+            } else {
+                LOGGER.error("Input stream variable is null");
+            }
+        }
+
+        return schema;
     }
 }

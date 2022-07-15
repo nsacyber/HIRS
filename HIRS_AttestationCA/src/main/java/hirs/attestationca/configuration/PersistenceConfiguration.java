@@ -1,8 +1,5 @@
 package hirs.attestationca.configuration;
 
-import hirs.data.persist.SupplyChainValidationSummary;
-import hirs.persist.CertificateManager;
-import hirs.persist.CrudManager;
 import hirs.attestationca.persist.DBCertificateManager;
 import hirs.attestationca.persist.DBDeviceGroupManager;
 import hirs.attestationca.persist.DBDeviceManager;
@@ -14,6 +11,9 @@ import hirs.attestationca.persist.DBReferenceManifestManager;
 import hirs.attestationca.persist.DBReportManager;
 import hirs.attestationca.persist.DBReportRequestStateManager;
 import hirs.attestationca.persist.DBReportSummaryManager;
+import hirs.data.persist.SupplyChainValidationSummary;
+import hirs.persist.CertificateManager;
+import hirs.persist.CrudManager;
 import hirs.persist.DeviceGroupManager;
 import hirs.persist.DeviceManager;
 import hirs.persist.PolicyManager;
@@ -26,6 +26,7 @@ import hirs.persist.ReportSummaryManager;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Import;
 import org.springframework.orm.hibernate5.LocalSessionFactoryBean;
 
 /**
@@ -36,6 +37,7 @@ import org.springframework.orm.hibernate5.LocalSessionFactoryBean;
  * file, the default persistence file will be used instead.
  */
 @Configuration
+@Import(AttestationCertificateAuthorityConfiguration.class)
 public class PersistenceConfiguration {
 
     /**

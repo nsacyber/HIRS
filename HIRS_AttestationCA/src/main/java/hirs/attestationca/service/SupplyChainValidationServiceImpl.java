@@ -1,5 +1,6 @@
 package hirs.attestationca.service;
 
+import hirs.attestationca.configuration.PersistenceConfiguration;
 import hirs.appraiser.Appraiser;
 import hirs.appraiser.SupplyChainAppraiser;
 import hirs.data.persist.AppraisalStatus;

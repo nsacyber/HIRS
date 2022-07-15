@@ -1,13 +1,5 @@
 package hirs.attestationca.configuration;
 
-import hirs.attestationca.persist.DBDeviceGroupManager;
-import hirs.attestationca.persist.DBDeviceManager;
-import hirs.attestationca.persist.DBReferenceEventManager;
-import hirs.attestationca.persist.DBReferenceManifestManager;
-import hirs.persist.DeviceGroupManager;
-import hirs.persist.DeviceManager;
-import hirs.persist.ReferenceEventManager;
-import hirs.persist.ReferenceManifestManager;
 import hirs.structs.converters.SimpleStructConverter;
 import hirs.structs.converters.StructConverter;
 import hirs.utils.LogConfigurationUtil;
@@ -16,7 +8,6 @@ import org.apache.logging.log4j.Logger;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.springframework.beans.factory.BeanInitializationException;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
@@ -29,6 +20,7 @@ import org.springframework.core.env.Environment;
 import org.springframework.jdbc.datasource.DriverManagerDataSource;
 import org.springframework.orm.hibernate5.HibernateTransactionManager;
 import org.springframework.orm.hibernate5.LocalSessionFactoryBean;
+import org.springframework.transaction.annotation.EnableTransactionManagement;
 import org.springframework.web.servlet.config.annotation.DefaultServletHandlerConfigurer;
 import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
@@ -57,11 +49,13 @@ import java.util.Properties;
 @Configuration
 @PropertySources({
     @PropertySource(value = "classpath:defaults.properties"),
+        @PropertySource(value = "classpath:persistence.properties"),
 
     // detects if file exists, if not, ignore errors
     @PropertySource(value = "file:/etc/hirs/aca/aca.properties",
             ignoreResourceNotFound = true)
 })
+@EnableTransactionManagement
 @ComponentScan({ "hirs.attestationca", "hirs.attestationca.service", "hirs.attestationca.rest",
     "hirs.validation", "hirs.data.service" })
 @Import(PersistenceConfiguration.class)
@@ -81,56 +75,8 @@ public class AttestationCertificateAuthorityConfiguration implements WebMvcConfi
 
     private static final String CLIENT_FILES_PATH = "file:/etc/hirs/aca/client-files/";
 
-    @Value("${persistence.db.url}")
-    private String url;
-
-    @Value("${persistence.db.username}")
-    private String username;
-
-    @Value("${persistence.db.password}")
-    private String password;
-
-    @Value("${persistence.db.driverClass}")
-    private String driverClass;
-
-    @Value("${persistence.db.maximumPoolSize}")
-    private String maximumPoolSize;
-
-    @Value("${persistence.db.connectionTimeout}")
-    private String connectionTimeout;
-
-    @Value("${persistence.db.leakDetectionThreshold}")
-    private String leakDetectionThreshold;
-
-    @Value("${persistence.hibernate.dialect}")
-    private String dialect;
-
-    @Value("${persistence.hibernate.ddl}")
-    private String ddl;
-
-    @Value("${persistence.hibernate.contextClass}")
-    private String contextClass;
-
-    @Value("${persistence.hibernate.provider}")
-    private String provider;
-
-    @Value("${persistence.db.maxTransactionRetryAttempts}")
-    private int maxTransactionRetryAttempts;
-
-    @Value("${persistence.db.retryWaitTimeMilliseconds}")
-    private long retryWaitTimeMilliseconds;
-
-    @Value("${aca.directories.certificates}")
-    private String certificatesLocation;
-
-    @Value("${aca.keyStore.location}")
-    private String keyStoreLocation;
-
-    @Value("${aca.keyStore.password:''}")
-    private String keyStorePassword;
-
-    @Value("${aca.keyStore.alias}")
-    private String keyAlias;
+//    @Value("${persistence.db.url}")
+//    private String url;
 
     @Autowired
     private Environment environment;
@@ -148,6 +94,22 @@ public class AttestationCertificateAuthorityConfiguration implements WebMvcConfi
     }
 
     /**
+     * Configures a session factory bean that in turn configures the hibernate session factory.
+     * Enables auto scanning of annotations such that entities do not need to be registered in a
+     * hibernate configuration file.
+     *
+     * @return session factory
+     */
+    @Bean
+    public LocalSessionFactoryBean sessionFactory() {
+        sessionFactory = new LocalSessionFactoryBean();
+        sessionFactory.setDataSource(dataSource());
+        sessionFactory.setHibernateProperties(hibernateProperties());
+        sessionFactory.setPackagesToScan("hirs");
+        return sessionFactory;
+    }
+
+    /**
      * Configures the data source to be used by the hibernate session factory.
      *
      * @return configured data source
@@ -155,16 +117,41 @@ public class AttestationCertificateAuthorityConfiguration implements WebMvcConfi
     @Bean
     public DataSource dataSource() {
         DriverManagerDataSource dataSource = new DriverManagerDataSource();
-        dataSource.setUrl(url);
-        dataSource.setUsername(username);
-        dataSource.setPassword(password);
-        dataSource.setDriverClassName(driverClass);
+        dataSource.setUrl(
+                environment.getRequiredProperty("persistence.db.url"));
+        dataSource.setUsername(
+                environment.getRequiredProperty("persistence.db.username"));
+        dataSource.setPassword(
+                environment.getRequiredProperty("persistence.db.password"));
+        dataSource.setDriverClassName(
+                environment.getRequiredProperty("persistence.db.driverClass"));
 
-//        dataSource.setMaximumPoolSize(Integer.parseInt(maximumPoolSize));
-//        dataSource.setConnectionTimeout(Long.parseLong(connectionTimeout));
-//        dataSource.setLeakDetectionThreshold(Long.parseLong(leakDetectionThreshold));
+//        dataSource.setMaximumPoolSize(Integer.parseInt(environment.getRequiredProperty("persistence.db.maximumPoolSize"));
+//        dataSource.setConnectionTimeout(Long.parseLong(environment.getRequiredProperty("persistence.db.connectionTimeout"));
+//        dataSource.setLeakDetectionThreshold(Long.parseLong(environment.getRequiredProperty("persistence.db.leakDetectionThreshold"));
 
         return dataSource;
+    }
+
+    /**
+     * Generates properties using configuration file that will be used to configure the session
+     * factory.
+     *
+     * @return properties for hibernate session factory
+     */
+    @Bean
+    public Properties hibernateProperties() {
+        Properties properties = new Properties();
+        properties.put("hibernate.dialect",
+                environment.getRequiredProperty("persistence.hibernate.dialect"));
+        properties.put("hibernate.show_sql",
+                environment.getRequiredProperty("hibernate.show_sql"));
+        properties.put("hibernate.format_sql",
+                environment.getRequiredProperty("hibernate.format_sql"));
+        properties.put("hibernate.hbm2ddl.auto",
+                environment.getRequiredProperty("persistence.hibernate.ddl"));
+//        properties.put("hibernate.current_session_context_class", "thread");
+        return properties;
     }
 
     /**
@@ -179,7 +166,8 @@ public class AttestationCertificateAuthorityConfiguration implements WebMvcConfi
         Security.addProvider(new BouncyCastleProvider());
 
         // obtain path to ACA configuration
-        Path certificatesPath = Paths.get(certificatesLocation);
+        Path certificatesPath = Paths.get(
+                environment.getRequiredProperty("aca.directories.certificates"));
 
         // create base directories if they do not exist
         try {
@@ -190,11 +178,12 @@ public class AttestationCertificateAuthorityConfiguration implements WebMvcConfi
         }
 
         // create the ACA key store if it doesn't exist
-        Path keyStorePath = Paths.get(keyStoreLocation);
+        Path keyStorePath = Paths.get(environment.getRequiredProperty("aca.keyStore.location"));
         if (!Files.exists(keyStorePath)) {
             throw new IllegalStateException(
                     String.format("ACA Key Store not found at %s. Consult the HIRS User "
-                            + "Guide for ACA installation instructions.", keyStoreLocation));
+                            + "Guide for ACA installation instructions.",
+                            environment.getRequiredProperty("aca.keyStore.location")));
         }
     }
 
@@ -209,14 +198,16 @@ public class AttestationCertificateAuthorityConfiguration implements WebMvcConfi
         try {
 
             // load the key from the key store
-            PrivateKey acaKey = (PrivateKey) keyStore.getKey(keyAlias,
-                    keyStorePassword.toCharArray());
+            PrivateKey acaKey = (PrivateKey) keyStore.getKey("aca.keyStore.alias",
+                    environment.getRequiredProperty("aca.keyStore.password").toCharArray());
 
             // break early if the certificate is not available.
             if (acaKey == null) {
                 throw new BeanInitializationException(String.format("Key with alias "
                         + "%s was not in KeyStore %s. Ensure that the KeyStore has the "
-                        + "specified certificate. ", keyAlias, keyStoreLocation));
+                        + "specified certificate. ",
+                        environment.getRequiredProperty("aca.keyStore.alias"),
+                        environment.getRequiredProperty("aca.keyStore.location")));
             }
             return acaKey;
         } catch (Exception e) {
@@ -224,44 +215,13 @@ public class AttestationCertificateAuthorityConfiguration implements WebMvcConfi
                     + "from key store: " + e.getMessage(), e);
         }
     }
-
-    /**
-     * Generates properties using configuration file that will be used to configure the session
-     * factory.
-     *
-     * @return properties for hibernate session factory
-     */
-    @Bean
-    public Properties hibernateProperties() {
-        Properties properties = new Properties();
-        properties.put("hibernate.hbm2ddl.auto", ddl);
-        properties.put("hibernate.dialect", dialect);
-        properties.put("hibernate.current_session_context_class", "thread");
-        return properties;
-    }
-
-    /**
-     * Configures a session factory bean that in turn configures the hibernate session factory.
-     * Enables auto scanning of annotations such that entities do not need to be registered in a
-     * hibernate configuration file.
-     *
-     * @return session factory
-     */
-    @Bean
-    public LocalSessionFactoryBean sessionFactory() {
-        LocalSessionFactoryBean sessionFactory = new LocalSessionFactoryBean();
-        sessionFactory.setDataSource(dataSource());
-        sessionFactory.setHibernateProperties(hibernateProperties());
-        sessionFactory.setPackagesToScan("hirs");
-        return sessionFactory;
-    }
     /**
      * Configure a transaction manager for the hibernate session factory.
      *
      * @return transaction manager
      */
     @Bean
-    public HibernateTransactionManager transactionManager() {
+    public HibernateTransactionManager getTransactionManager() {
         return new HibernateTransactionManager(sessionFactory().getObject());
     }
 
@@ -271,7 +231,8 @@ public class AttestationCertificateAuthorityConfiguration implements WebMvcConfi
      */
     @Bean(name = "maxTransactionRetryAttempts")
     public int maxTransactionRetryAttempts() {
-        return maxTransactionRetryAttempts;
+        return environment.getRequiredProperty("persistence.db.maxTransactionRetryAttempts",
+                Integer.class);
     }
 
     /**
@@ -280,7 +241,8 @@ public class AttestationCertificateAuthorityConfiguration implements WebMvcConfi
      */
     @Bean(name = "retryWaitTimeMilliseconds")
     public long retryWaitTimeMilliseconds() {
-        return retryWaitTimeMilliseconds;
+        return environment.getRequiredProperty("persistence.db.retryWaitTimeMilliseconds",
+                Long.class);
     }
 
     /**
@@ -291,13 +253,16 @@ public class AttestationCertificateAuthorityConfiguration implements WebMvcConfi
         KeyStore keyStore = keyStore();
 
         try {
-            X509Certificate acaCertificate = (X509Certificate) keyStore.getCertificate(keyAlias);
+            X509Certificate acaCertificate = (X509Certificate) keyStore.getCertificate(
+                    environment.getRequiredProperty("aca.keyStore.alias"));
 
             // break early if the certificate is not available.
             if (acaCertificate == null) {
                 throw new BeanInitializationException(String.format("Certificate with alias "
                         + "%s was not in KeyStore %s. Ensure that the KeyStore has the "
-                        + "specified certificate. ", keyAlias, keyStoreLocation));
+                        + "specified certificate. ",
+                        environment.getRequiredProperty("aca.keyStore.alias"),
+                        environment.getRequiredProperty("aca.keyStore.location")));
             }
 
             return acaCertificate;
@@ -313,12 +278,13 @@ public class AttestationCertificateAuthorityConfiguration implements WebMvcConfi
      */
     @Bean
     public KeyStore keyStore() {
-        Path keyStorePath = Paths.get(keyStoreLocation);
+        Path keyStorePath = Paths.get(environment.getRequiredProperty("aca.keyStore.location"));
 
         // attempt to open the key store. if that fails, log a meaningful message before failing.
         try {
             KeyStore keyStore = KeyStore.getInstance("JKS");
-            keyStore.load(Files.newInputStream(keyStorePath), keyStorePassword.toCharArray());
+            keyStore.load(Files.newInputStream(keyStorePath),
+                    environment.getRequiredProperty("aca.keyStore.password").toCharArray());
             return keyStore;
         } catch (Exception e) {
             LOG.error(String.format(
@@ -341,46 +307,6 @@ public class AttestationCertificateAuthorityConfiguration implements WebMvcConfi
     @Scope("prototype")
     public static StructConverter structConverter() {
         return new SimpleStructConverter();
-    }
-
-    /**
-     * Creates a {@link DeviceGroupManager} ready to use.
-     *
-     * @return {@link DeviceGroupManager}
-     */
-    @Bean
-    public DeviceGroupManager deviceGroupManager() {
-        return new DBDeviceGroupManager(sessionFactory.getObject());
-    }
-
-    /**
-     * Creates a {@link DeviceManager} ready to use.
-     *
-     * @return {@link DeviceManager}
-     */
-    @Bean
-    public DeviceManager deviceManager() {
-        return new DBDeviceManager(sessionFactory.getObject());
-    }
-
-    /**
-     * Creates a {@link ReferenceManifestManager} ready to use.
-     *
-     * @return {@link ReferenceManifestManager}
-     */
-    @Bean
-    public ReferenceManifestManager referenceManifestManager() {
-        return new DBReferenceManifestManager(sessionFactory.getObject());
-    }
-
-    /**
-     * Creates a {@link ReferenceEventManager} ready to use.
-     *
-     * @return {@link ReferenceEventManager}
-     */
-    @Bean
-    public ReferenceEventManager referenceEventManager() {
-        return new DBReferenceEventManager(sessionFactory.getObject());
     }
 
     @Override

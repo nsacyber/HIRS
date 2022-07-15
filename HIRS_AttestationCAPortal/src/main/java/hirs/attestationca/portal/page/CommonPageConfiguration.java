@@ -1,5 +1,6 @@
 package hirs.attestationca.portal.page;
 
+import hirs.attestationca.configuration.PersistenceConfiguration;
 import hirs.attestationca.portal.datatables.DataTableView;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
@@ -11,6 +12,7 @@ import org.springframework.transaction.annotation.EnableTransactionManagement;
 import org.springframework.web.multipart.commons.CommonsMultipartResolver;
 import org.springframework.web.servlet.ViewResolver;
 import org.springframework.web.servlet.config.annotation.EnableWebMvc;
+import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 import org.springframework.web.servlet.view.InternalResourceViewResolver;
 import org.springframework.web.servlet.view.UrlBasedViewResolver;
 
@@ -26,8 +28,7 @@ import java.nio.charset.StandardCharsets;
 @EnableWebMvc
 @ComponentScan("hirs.attestationca.portal.page.controllers")
 @Import({ PersistenceConfiguration.class })
-public class CommonPageConfiguration {
-
+public class CommonPageConfiguration implements WebMvcConfigurer {
 
     /**
      * @return bean to resolve injected annotation.Value

@@ -1,5 +1,6 @@
 package hirs.attestationca;
 
+import hirs.attestationca.configuration.AttestationCertificateAuthorityConfiguration;
 import hirs.attestationca.persist.DBAppraiserManager;
 import hirs.attestationca.persist.DBDeviceGroupManager;
 import hirs.attestationca.persist.DBPolicyManager;
@@ -21,7 +22,7 @@ public class InitializationListener implements ServletContextListener {
         context.getEnvironment().addActiveProfile(HIRSProfiles.SERVER);
 
         // register the database configuration and refresh the context
-        context.register(PersistenceConfiguration.class);
+        context.register(AttestationCertificateAuthorityConfiguration.class);
         context.refresh();
 
         // obtain reference to hibernate session factory
