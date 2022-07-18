@@ -357,12 +357,12 @@ public class Commander {
      * @return false is an invalid combination was found
      */
     public final boolean checkForInvalidOptions() {
-    	if (!bEventIds && (bEventHex || bContentHex)) {
-        	bValidArgs = false;
+        if (!bEventIds && (bEventHex || bContentHex)) {
+            bValidArgs = false;
         } else if (bHex && (bEventHex || bContentHex)) {
-        	bValidArgs = false;
+            bValidArgs = false;
         } else {
-        	bValidArgs = true;
+            bValidArgs = true;
         }
         return bValidArgs;
     }
