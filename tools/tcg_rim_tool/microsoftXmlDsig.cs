@@ -1,9 +1,23 @@
- using System;
+using System;
 using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
 using System.Security.Cryptography.Xml;
 using System.Xml;
 
+/**
+ * This program reads in the following files:
+ * 1. Public certificate, pem format
+ * 2. Corresponding private key, pem format
+ * 3. Unsigned xml document
+ * 4. Signed xml document
+ * The two functions are SignXml() and VerifyXml() and are called in succession.
+ * 
+ * XmlDocument.PreserveWhitespace(false) allows the subsequent signed xml document
+ * to pass validation.
+ * 
+ * VerifyXml() strictly checks the cryptographic integrity of the Signature block,
+ * it does not verify the integrity of the certificate chain.
+ */
 public class VerifyXML
 {
 
@@ -14,6 +28,9 @@ public class VerifyXML
             const string signingAlgorithm = "http://www.w3.org/2001/04/xmldsig-more#ecdsa-sha256";
             const string signingCertName = "RimSignCert.pem";
             const string privateKeyFilename = "privateRimKey.pem";
+            const string unsignedFilename = "unsigned.xml";
+            const string signedFilename = "signed.xml";
+            const string signedRIM = "signedRIM.swidtag";
 
             //Load public cert from file
             X509Certificate2 signingCert = new X509Certificate2(signingCertName);
@@ -26,21 +43,20 @@ public class VerifyXML
 
             // Load an XML file into the XmlDocument object.
             XmlDocument unsignedDoc = new XmlDocument();
-            unsignedDoc.PreserveWhitespace = true;
-            unsignedDoc.Load("unsigned.xml");
+            unsignedDoc.Load(unsignedFilename);
             SignXml(unsignedDoc, privateKey);
-            unsignedDoc.Save("signed.xml");
+            unsignedDoc.Save(signedFilename);
 
             // Verify the signature of the signed XML.
             XmlDocument signedDoc = new XmlDocument();
-            signedDoc.Load("signed.xml");
+            signedDoc.Load(signedFilename);
             bool result = VerifyXml(signedDoc, publicKey);
 
             // Display the results of the signature verification to
             // the console.
             if (result)
             {
-                Console.WriteLine("The XML signature is valid.");
+                Console.WriteLine("The XML signature is valid!");
             }
             else
             {
@@ -78,6 +94,11 @@ public class VerifyXML
         // Add the reference to the SignedXml object.
         signedXml.AddReference(reference);
 
+        // Add keyinfo block
+        KeyInfo keyInfo = new KeyInfo();
+        keyInfo.AddClause(new RSAKeyValue((RSA)rsaKey));
+        signedXml.KeyInfo = keyInfo;
+
         // Compute the signature.
         signedXml.ComputeSignature();
 
@@ -92,7 +113,7 @@ public class VerifyXML
 
     // Verify the signature of an XML file against an asymmetric
     // algorithm and return the result.
-    public static Boolean VerifyXml(XmlDocument xmlDoc, RSA key)
+    private static Boolean VerifyXml(XmlDocument xmlDoc, RSA key)
     {
         // Check arguments.
         if (xmlDoc == null)
@@ -129,22 +150,14 @@ public class VerifyXML
         try
         {
             isValid = signedXml.CheckSignature(key);
-        } catch (Exception e)
+        }
+        catch (Exception e)
         {
             Console.WriteLine(e.Message);
         }
-        
+
         // Check the signature and return the result.
         return isValid;
     }
 
 }
-//6/17/2022
-//Copied RimSignCert.pem, RimCertChain.pem, and generated_user_cert_embed.swidtag to EC2. 
-//Tried reading RimSignCert and RimCertChain (both certs and each cert by itself) and extracting the PK, validation failed all attempts.
-//Verified that swidtag is in fact signed by RimSignCert's private key.
-//
-//7/11/2022
-//Copied RimSignCert.pem, generated_user_cert_embed.swidtag (less the signature block), and privateRimKey.pem to EC2.
-//Tried signing the unsigned RIM with the private key and then validated with the public key from the cert; unsuccessful.
-
