@@ -1,6 +1,6 @@
 package hirs.attestationca.portal.page;
 
-import hirs.attestationca.configuration.PersistenceConfiguration;
+import hirs.attestationca.AttestationCertificateAuthorityConfiguration;
 import hirs.attestationca.portal.datatables.DataTableView;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
@@ -27,7 +27,7 @@ import java.nio.charset.StandardCharsets;
 @EnableTransactionManagement
 @EnableWebMvc
 @ComponentScan("hirs.attestationca.portal.page.controllers")
-@Import({ PersistenceConfiguration.class })
+@Import({ AttestationCertificateAuthorityConfiguration.class })
 public class CommonPageConfiguration implements WebMvcConfigurer {
 
     /**

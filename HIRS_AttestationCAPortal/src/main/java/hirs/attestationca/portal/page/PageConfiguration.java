@@ -1,6 +1,6 @@
 package hirs.attestationca.portal.page;
 
-import hirs.attestationca.configuration.AttestationCertificateAuthorityConfiguration;
+import hirs.attestationca.AttestationCertificateAuthorityConfiguration;
 import org.springframework.context.annotation.Import;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 

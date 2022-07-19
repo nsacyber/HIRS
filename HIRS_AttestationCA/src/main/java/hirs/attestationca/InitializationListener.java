@@ -1,6 +1,5 @@
 package hirs.attestationca;
 
-import hirs.attestationca.configuration.AttestationCertificateAuthorityConfiguration;
 import hirs.attestationca.persist.DBAppraiserManager;
 import hirs.attestationca.persist.DBDeviceGroupManager;
 import hirs.attestationca.persist.DBPolicyManager;

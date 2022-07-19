@@ -1,5 +1,6 @@
 package hirs.attestationca.configuration;
 
+import hirs.attestationca.AttestationCertificateAuthorityConfiguration;
 import hirs.attestationca.persist.DBCertificateManager;
 import hirs.attestationca.persist.DBDeviceGroupManager;
 import hirs.attestationca.persist.DBDeviceManager;
@@ -23,11 +24,11 @@ import hirs.persist.ReferenceManifestManager;
 import hirs.persist.ReportManager;
 import hirs.persist.ReportRequestStateManager;
 import hirs.persist.ReportSummaryManager;
+import org.hibernate.SessionFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
-import org.springframework.orm.hibernate5.LocalSessionFactoryBean;
 
 /**
  * Persistence Configuration for Spring enabled applications. Constructs a Hibernate SessionFactory
@@ -46,7 +47,7 @@ public class PersistenceConfiguration {
     public static final String DEVICE_STATE_MANAGER_BEAN_NAME = "general_db_man_bean";
 
     @Autowired
-    private LocalSessionFactoryBean sessionFactory;
+    private SessionFactory sessionFactory;
 
     @Autowired
     private long retryWaitTimeMilliseconds;
@@ -61,7 +62,7 @@ public class PersistenceConfiguration {
      */
     @Bean
     public PolicyManager policyManager() {
-        DBPolicyManager manager = new DBPolicyManager(sessionFactory.getObject());
+        DBPolicyManager manager = new DBPolicyManager(sessionFactory);
         setDbManagerRetrySettings(manager);
         return manager;
     }
@@ -73,7 +74,7 @@ public class PersistenceConfiguration {
      */
     @Bean
     public ReportManager reportManager() {
-        DBReportManager manager = new DBReportManager(sessionFactory.getObject());
+        DBReportManager manager = new DBReportManager(sessionFactory);
         setDbManagerRetrySettings(manager);
         return manager;
     }
@@ -85,7 +86,7 @@ public class PersistenceConfiguration {
      */
     @Bean
     public DeviceManager deviceManager() {
-        DBDeviceManager manager = new DBDeviceManager(sessionFactory.getObject());
+        DBDeviceManager manager = new DBDeviceManager(sessionFactory);
         setDbManagerRetrySettings(manager);
         return manager;
     }
@@ -97,7 +98,7 @@ public class PersistenceConfiguration {
      */
     @Bean
     public ReportSummaryManager reportSummaryManager() {
-        DBReportSummaryManager manager = new DBReportSummaryManager(sessionFactory.getObject());
+        DBReportSummaryManager manager = new DBReportSummaryManager(sessionFactory);
         setDbManagerRetrySettings(manager);
         return manager;
     }
@@ -109,7 +110,7 @@ public class PersistenceConfiguration {
      */
     @Bean
     public DeviceGroupManager deviceGroupManager() {
-        DBDeviceGroupManager manager = new DBDeviceGroupManager(sessionFactory.getObject());
+        DBDeviceGroupManager manager = new DBDeviceGroupManager(sessionFactory);
         setDbManagerRetrySettings(manager);
         return manager;
     }
@@ -121,7 +122,7 @@ public class PersistenceConfiguration {
      */
     @Bean
     public CertificateManager certificateManager() {
-        DBCertificateManager manager = new DBCertificateManager(sessionFactory.getObject());
+        DBCertificateManager manager = new DBCertificateManager(sessionFactory);
         manager.setRetryTemplate(maxTransactionRetryAttempts, retryWaitTimeMilliseconds);
         return manager;
     }
@@ -134,7 +135,7 @@ public class PersistenceConfiguration {
     @Bean
     public ReferenceManifestManager referenceManifestManager() {
         DBReferenceManifestManager manager
-                = new DBReferenceManifestManager(sessionFactory.getObject());
+                = new DBReferenceManifestManager(sessionFactory);
         setDbManagerRetrySettings(manager);
         return manager;
     }
@@ -147,7 +148,7 @@ public class PersistenceConfiguration {
     @Bean
     public ReferenceEventManager referenceEventManager() {
         DBReferenceEventManager manager
-                = new DBReferenceEventManager(sessionFactory.getObject());
+                = new DBReferenceEventManager(sessionFactory);
         setDbManagerRetrySettings(manager);
         return manager;
     }
@@ -160,7 +161,7 @@ public class PersistenceConfiguration {
     @Bean
     public ReportRequestStateManager reportRequestStateManager() {
         DBReportRequestStateManager manager
-                = new DBReportRequestStateManager(sessionFactory.getObject());
+                = new DBReportRequestStateManager(sessionFactory);
         setDbManagerRetrySettings(manager);
         return manager;
     }
@@ -172,7 +173,7 @@ public class PersistenceConfiguration {
      */
     @Bean
     public PortalInfoManager portalInfoManager() {
-        DBPortalInfoManager manager = new DBPortalInfoManager(sessionFactory.getObject());
+        DBPortalInfoManager manager = new DBPortalInfoManager(sessionFactory);
         setDbManagerRetrySettings(manager);
         return manager;
     }
@@ -187,7 +188,7 @@ public class PersistenceConfiguration {
         DBManager<SupplyChainValidationSummary> manager
                 = new DBManager<SupplyChainValidationSummary>(
                 SupplyChainValidationSummary.class,
-                sessionFactory.getObject()
+                sessionFactory
         );
         setDbManagerRetrySettings(manager);
         return manager;

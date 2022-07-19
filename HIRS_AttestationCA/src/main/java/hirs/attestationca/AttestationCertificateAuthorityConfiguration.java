@@ -1,4 +1,4 @@
-package hirs.attestationca.configuration;
+package hirs.attestationca;
 
 import hirs.structs.converters.SimpleStructConverter;
 import hirs.structs.converters.StructConverter;
@@ -11,7 +11,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Import;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.context.annotation.PropertySources;
 import org.springframework.context.annotation.Scope;
@@ -57,8 +56,7 @@ import java.util.Properties;
 })
 @EnableTransactionManagement
 @ComponentScan({ "hirs.attestationca", "hirs.attestationca.service", "hirs.attestationca.rest",
-    "hirs.validation", "hirs.data.service" })
-@Import(PersistenceConfiguration.class)
+    "hirs.validation", "hirs.data.service", "hirsattestationca.configuration" })
 @EnableWebMvc
 public class AttestationCertificateAuthorityConfiguration implements WebMvcConfigurer {
 
@@ -81,9 +79,6 @@ public class AttestationCertificateAuthorityConfiguration implements WebMvcConfi
     @Autowired
     private Environment environment;
 
-    @Autowired
-    private LocalSessionFactoryBean sessionFactory;
-
     /**
      * @return bean to resolve injected annotation.Value property expressions
      * for beans.
@@ -102,10 +97,10 @@ public class AttestationCertificateAuthorityConfiguration implements WebMvcConfi
      */
     @Bean
     public LocalSessionFactoryBean sessionFactory() {
-        sessionFactory = new LocalSessionFactoryBean();
+        LocalSessionFactoryBean sessionFactory = new LocalSessionFactoryBean();
         sessionFactory.setDataSource(dataSource());
-        sessionFactory.setHibernateProperties(hibernateProperties());
         sessionFactory.setPackagesToScan("hirs");
+        sessionFactory.setHibernateProperties(hibernateProperties());
         return sessionFactory;
     }
 
