@@ -20,9 +20,7 @@ import org.springframework.jdbc.datasource.DriverManagerDataSource;
 import org.springframework.orm.hibernate5.HibernateTransactionManager;
 import org.springframework.orm.hibernate5.LocalSessionFactoryBean;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
-import org.springframework.web.servlet.config.annotation.DefaultServletHandlerConfigurer;
 import org.springframework.web.servlet.config.annotation.EnableWebMvc;
-import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 import javax.annotation.PostConstruct;
@@ -71,7 +69,6 @@ public class AttestationCertificateAuthorityConfiguration implements WebMvcConfi
         }
     }
 
-    private static final String CLIENT_FILES_PATH = "file:/etc/hirs/aca/client-files/";
 
 //    @Value("${persistence.db.url}")
 //    private String url;
@@ -304,15 +301,5 @@ public class AttestationCertificateAuthorityConfiguration implements WebMvcConfi
         return new SimpleStructConverter();
     }
 
-    @Override
-    public void addResourceHandlers(final ResourceHandlerRegistry resourceHandlerRegistry) {
-        resourceHandlerRegistry.addResourceHandler("/client-files/**")
-                .addResourceLocations(CLIENT_FILES_PATH);
-    }
-
-    @Override
-    public void configureDefaultServletHandling(final DefaultServletHandlerConfigurer configurer) {
-        configurer.enable();
-    }
 
 }

@@ -11,7 +11,9 @@ import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
 import org.springframework.web.multipart.commons.CommonsMultipartResolver;
 import org.springframework.web.servlet.ViewResolver;
+import org.springframework.web.servlet.config.annotation.DefaultServletHandlerConfigurer;
 import org.springframework.web.servlet.config.annotation.EnableWebMvc;
+import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 import org.springframework.web.servlet.view.InternalResourceViewResolver;
 import org.springframework.web.servlet.view.UrlBasedViewResolver;
@@ -29,6 +31,8 @@ import java.nio.charset.StandardCharsets;
 @ComponentScan("hirs.attestationca.portal.page.controllers")
 @Import({ AttestationCertificateAuthorityConfiguration.class })
 public class CommonPageConfiguration implements WebMvcConfigurer {
+
+    private static final String CLIENT_FILES_PATH = "file:/etc/hirs/aca/client-files/";
 
     /**
      * @return bean to resolve injected annotation.Value
@@ -81,4 +85,14 @@ public class CommonPageConfiguration implements WebMvcConfigurer {
         return resolver;
     }
 
+    @Override
+    public void addResourceHandlers(final ResourceHandlerRegistry resourceHandlerRegistry) {
+        resourceHandlerRegistry.addResourceHandler("/client-files/**")
+                .addResourceLocations(CLIENT_FILES_PATH);
+    }
+
+    @Override
+    public void configureDefaultServletHandling(final DefaultServletHandlerConfigurer configurer) {
+        configurer.enable();
+    }
 }
