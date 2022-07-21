@@ -1,4 +1,4 @@
-package hirs.attestationca.portal.persistence;
+package hirs.attestationca.configuration;
 
 import hirs.attestationca.AttestationCertificateAuthorityConfiguration;
 import hirs.attestationca.persist.DBCertificateManager;

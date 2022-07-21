@@ -1,7 +1,6 @@
 package hirs.attestationca.portal.page;
 
 import hirs.attestationca.AttestationCertificateAuthorityConfiguration;
-import hirs.attestationca.portal.persistence.PersistenceConfiguration;
 import org.springframework.web.servlet.support.AbstractAnnotationConfigDispatcherServletInitializer;
 
 public class AcaInitializer extends AbstractAnnotationConfigDispatcherServletInitializer {
