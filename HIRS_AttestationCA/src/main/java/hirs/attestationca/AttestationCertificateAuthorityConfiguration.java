@@ -6,6 +6,11 @@ import hirs.utils.LogConfigurationUtil;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
+import org.hibernate.SessionFactory;
+import org.hibernate.boot.Metadata;
+import org.hibernate.boot.MetadataSources;
+import org.hibernate.boot.registry.StandardServiceRegistryBuilder;
+import org.hibernate.service.ServiceRegistry;
 import org.springframework.beans.factory.BeanInitializationException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
@@ -18,7 +23,6 @@ import org.springframework.context.support.PropertySourcesPlaceholderConfigurer;
 import org.springframework.core.env.Environment;
 import org.springframework.jdbc.datasource.DriverManagerDataSource;
 import org.springframework.orm.hibernate5.HibernateTransactionManager;
-import org.springframework.orm.hibernate5.LocalSessionFactoryBean;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
 import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
@@ -34,6 +38,8 @@ import java.security.KeyStoreException;
 import java.security.PrivateKey;
 import java.security.Security;
 import java.security.cert.X509Certificate;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Properties;
 
 /**
@@ -93,12 +99,29 @@ public class AttestationCertificateAuthorityConfiguration implements WebMvcConfi
      * @return session factory
      */
     @Bean
-    public LocalSessionFactoryBean sessionFactory() {
-        LocalSessionFactoryBean sessionFactory = new LocalSessionFactoryBean();
-        sessionFactory.setDataSource(dataSource());
-        sessionFactory.setPackagesToScan("hirs");
-        sessionFactory.setHibernateProperties(hibernateProperties());
+    public SessionFactory sessionFactory() {
+        ServiceRegistry serviceRegistry = new StandardServiceRegistryBuilder().applySettings(getSettings()).build();
+        MetadataSources metadataSources = new MetadataSources(serviceRegistry);
+        Metadata metadata = metadataSources.buildMetadata();
+//        LocalSessionFactoryBean sessionFactory = new LocalSessionFactoryBean();
+        SessionFactory sessionFactory = metadata.getSessionFactoryBuilder().build();
+//        sessionFactory.setDataSource(dataSource());
+//        sessionFactory.setPackagesToScan("hirs");
+//        sessionFactory.setHibernateProperties(hibernateProperties());
         return sessionFactory;
+    }
+
+    private Map<String, String> getSettings() {
+        Map<String, String> settings = new HashMap<>();
+        settings.put("connection.driver_class", environment.getRequiredProperty("persistence.db.driverClass"));
+        settings.put("dialect", environment.getRequiredProperty("persistence.hibernate.dialect"));
+        settings.put("hibernate.connection.url", environment.getRequiredProperty("persistence.db.url"));
+        settings.put("hibernate.connection.username", environment.getRequiredProperty("persistence.db.username"));
+        settings.put("hibernate.connection.password", environment.getRequiredProperty("persistence.db.password"));
+//        settings.put("hibernate.current_session_context_class", );
+        settings.put("hibernate.show_sql", environment.getRequiredProperty("hibernate.show_sql"));
+        settings.put("hibernate.format_sql", environment.getRequiredProperty("hibernate.format_sql"));
+        return settings;
     }
 
     /**
@@ -134,12 +157,12 @@ public class AttestationCertificateAuthorityConfiguration implements WebMvcConfi
     @Bean
     public Properties hibernateProperties() {
         Properties properties = new Properties();
-        properties.put("hibernate.dialect",
-                environment.getRequiredProperty("persistence.hibernate.dialect"));
-        properties.put("hibernate.show_sql",
-                environment.getRequiredProperty("hibernate.show_sql"));
-        properties.put("hibernate.format_sql",
-                environment.getRequiredProperty("hibernate.format_sql"));
+//        properties.put("hibernate.dialect",
+//                environment.getRequiredProperty("persistence.hibernate.dialect"));
+//        properties.put("hibernate.show_sql",
+//                environment.getRequiredProperty("hibernate.show_sql"));
+//        properties.put("hibernate.format_sql",
+//                environment.getRequiredProperty("hibernate.format_sql"));
         properties.put("hibernate.hbm2ddl.auto",
                 environment.getRequiredProperty("persistence.hibernate.ddl"));
 //        properties.put("hibernate.current_session_context_class", "thread");
@@ -214,7 +237,7 @@ public class AttestationCertificateAuthorityConfiguration implements WebMvcConfi
      */
     @Bean
     public HibernateTransactionManager getTransactionManager() {
-        return new HibernateTransactionManager(sessionFactory().getObject());
+        return new HibernateTransactionManager(sessionFactory());
     }
 
     /**
