@@ -6,12 +6,12 @@ import hirs.persist.ReportSummaryManager;
 import hirs.persist.ReportSummaryManagerException;
 import org.apache.logging.log4j.Logger;
 import org.hibernate.Session;
-import org.hibernate.SessionFactory;
 import org.hibernate.Transaction;
 import org.hibernate.criterion.Order;
 import org.hibernate.query.Query;
 import org.springframework.stereotype.Service;
 
+import javax.persistence.EntityManager;
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Predicate;
@@ -39,10 +39,10 @@ public class DBReportSummaryManager extends DBManager<ReportSummary>
      * The default database is used to store all of the
      * <code>ReportSummary</code> objects.
      *
-     * @param sessionFactory session factory used to access database connections
+     * @param em entity manager used to access database connections
      */
-    public DBReportSummaryManager(final SessionFactory sessionFactory) {
-        super(ReportSummary.class, sessionFactory);
+    public DBReportSummaryManager(final EntityManager em) {
+        super(ReportSummary.class, em);
     }
 
     /**

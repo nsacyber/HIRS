@@ -7,9 +7,9 @@ import hirs.persist.PortalInfoManager;
 import hirs.persist.PortalInfoManagerException;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.hibernate.SessionFactory;
 import org.springframework.stereotype.Service;
 
+import javax.persistence.EntityManager;
 import java.net.URI;
 import java.net.URISyntaxException;
 
@@ -26,10 +26,10 @@ public class DBPortalInfoManager extends DBManager<PortalInfo> implements Portal
      * Creates a new <code>DBPortalInfoManager</code>. The optional SessionFactory parameter is
      * used to manage sessions with a hibernate db.
      *
-     * @param factory a hibernate session
+     * @param em a hibernate session
      */
-    public DBPortalInfoManager(final SessionFactory factory) {
-        super(PortalInfo.class, factory);
+    public DBPortalInfoManager(final EntityManager em) {
+        super(PortalInfo.class, em);
     }
 
     /**

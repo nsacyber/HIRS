@@ -17,6 +17,7 @@ import org.hibernate.Transaction;
 import org.hibernate.query.Query;
 import org.springframework.stereotype.Service;
 
+import javax.persistence.EntityManager;
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.JoinType;
@@ -45,10 +46,10 @@ public class DBDeviceManager extends DBManager<Device> implements
      * database. The default database is used to store all of the
      * <code>Device</code>s.
      *
-     * @param sessionFactory session factory used to access database connections
+     * @param em entity manager used to access database connections
      */
-    public DBDeviceManager(final SessionFactory sessionFactory) {
-        super(Device.class, sessionFactory);
+    public DBDeviceManager(final EntityManager em) {
+        super(Device.class, em);
     }
 
     /**

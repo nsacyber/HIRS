@@ -6,12 +6,12 @@ import hirs.persist.CertificateSelector;
 import hirs.persist.DBManagerException;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.hibernate.SessionFactory;
 import org.springframework.retry.RetryCallback;
 import org.springframework.retry.RetryContext;
 import org.springframework.retry.support.RetryTemplate;
 import org.springframework.stereotype.Service;
 
+import javax.persistence.EntityManager;
 import java.io.Serializable;
 import java.util.HashSet;
 import java.util.Set;
@@ -32,10 +32,10 @@ public class DBCertificateManager extends DBManager<Certificate>
      * Creates a new {@link DBCertificateManager} that uses the default
      * database.
      *
-     * @param sessionFactory session factory used to access database connections
+     * @param em entity manager used to access database connections
      */
-    public DBCertificateManager(final SessionFactory sessionFactory) {
-        super(Certificate.class, sessionFactory);
+    public DBCertificateManager(final EntityManager em) {
+        super(Certificate.class, em);
     }
 
     /**

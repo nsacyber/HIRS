@@ -17,6 +17,7 @@ import org.hibernate.Transaction;
 import org.hibernate.query.Query;
 import org.springframework.stereotype.Service;
 
+import javax.persistence.EntityManager;
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Predicate;
@@ -40,10 +41,10 @@ public class DBDeviceGroupManager extends DBManager<DeviceGroup> implements Devi
      * Creates a new <code>DBDeviceGroupManager</code> and sets the
      * <code>SessionFactory</code> to the given instance.
      *
-     * @param factory session factory used to access database connections
+     * @param em session factory used to access database connections
      */
-    public DBDeviceGroupManager(final SessionFactory factory) {
-        super(DeviceGroup.class, factory);
+    public DBDeviceGroupManager(final EntityManager em) {
+        super(DeviceGroup.class, em);
     }
 
     /**

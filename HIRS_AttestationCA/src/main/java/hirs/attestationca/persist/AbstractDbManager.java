@@ -12,15 +12,20 @@ import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.StatelessSession;
 import org.hibernate.Transaction;
+import org.hibernate.boot.Metadata;
+import org.hibernate.boot.MetadataSources;
+import org.hibernate.boot.registry.StandardServiceRegistryBuilder;
 import org.hibernate.criterion.Conjunction;
 import org.hibernate.criterion.Criterion;
 import org.hibernate.criterion.Disjunction;
 import org.hibernate.criterion.MatchMode;
 import org.hibernate.criterion.Restrictions;
 import org.hibernate.query.Query;
+import org.hibernate.service.ServiceRegistry;
 import org.hibernate.service.spi.ServiceRegistryImplementor;
 import org.springframework.stereotype.Service;
 
+import javax.persistence.EntityManager;
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Predicate;
@@ -50,30 +55,31 @@ public abstract class AbstractDbManager<T> implements CrudManager<T> {
 
     private Class<T> clazz;
 
-    private SessionFactory factory;
+    private EntityManager em;
 
     /**
      * Creates a new <code>AbstractDbManager</code>.
      *
      * @param clazz Class to search for when doing Hibernate queries,
      * unfortunately class type of T cannot be determined using only T
-     * @param sessionFactory the session factory to use to interact with the database
+     * @param em the entity manager to use to interact with the database
      */
-    public AbstractDbManager(final Class<T> clazz, final SessionFactory sessionFactory) {
+    public AbstractDbManager(final Class<T> clazz, final EntityManager em) {
         if (clazz == null) {
             LOGGER.error("AbstractDbManager cannot be instantiated with a null class");
             throw new IllegalArgumentException(
                     "AbstractDbManager cannot be instantiated with a null class"
             );
         }
-        if (sessionFactory == null) {
+        if (em == null) {
             LOGGER.error("AbstractDbManager cannot be instantiated with a null SessionFactory");
             throw new IllegalArgumentException(
                     "AbstractDbManager cannot be instantiated with a null SessionFactory"
             );
         }
         this.clazz = clazz;
-        this.factory = sessionFactory;
+        this.em = em;
+//        this.factory = sessionFactory;
     }
 
     @Override
@@ -87,7 +93,7 @@ public abstract class AbstractDbManager<T> implements CrudManager<T> {
      * @return the configured database implementation
      */
     protected DBManager.DBImpl getConfiguredImplementation() {
-        String dialect = ((ServiceRegistryImplementor) factory).getParentServiceRegistry()
+        String dialect = ((ServiceRegistryImplementor) em).getParentServiceRegistry()
                 .getParentServiceRegistry().toString().toLowerCase();
         if (dialect.contains("hsql")) {
             return DBManager.DBImpl.HSQL;
@@ -122,7 +128,8 @@ public abstract class AbstractDbManager<T> implements CrudManager<T> {
 
         boolean deleted = false;
         Transaction tx = null;
-        Session session = factory.getCurrentSession();
+        Session session = em.unwrap(org.hibernate.Session.class);
+        //factory.getCurrentSession();
         try {
             LOGGER.debug("retrieving object from db");
             tx = session.beginTransaction();
@@ -167,7 +174,7 @@ public abstract class AbstractDbManager<T> implements CrudManager<T> {
 
         boolean deleted = false;
         Transaction tx = null;
-        Session session = factory.getCurrentSession();
+        Session session = em.unwrap(org.hibernate.Session.class);
         CriteriaBuilder builder = session.getCriteriaBuilder();
 
         try {
@@ -227,7 +234,7 @@ public abstract class AbstractDbManager<T> implements CrudManager<T> {
         }
 
         Transaction tx = null;
-        Session session = factory.getCurrentSession();
+        Session session = em.unwrap(org.hibernate.Session.class);
         try {
             LOGGER.debug("deleting object from db");
             tx = session.beginTransaction();
@@ -255,7 +262,7 @@ public abstract class AbstractDbManager<T> implements CrudManager<T> {
     protected int doDeleteAll() throws DBManagerException {
         int numEntitiesDeleted = 0;
         Transaction tx = null;
-        Session session = factory.getCurrentSession();
+        Session session = em.unwrap(org.hibernate.Session.class);
         try {
             LOGGER.debug("Deleting instances of class: {}", this.clazz.getClass());
             tx = session.beginTransaction();
@@ -327,7 +334,7 @@ public abstract class AbstractDbManager<T> implements CrudManager<T> {
         }
         List<T> ret = new ArrayList<>();
         Transaction tx = null;
-        Session session = factory.getCurrentSession();
+        Session session = em.unwrap(org.hibernate.Session.class);
         try {
             LOGGER.debug("retrieving criteria from db");
             tx = session.beginTransaction();
@@ -385,7 +392,7 @@ public abstract class AbstractDbManager<T> implements CrudManager<T> {
         }
 
         Transaction tx = null;
-        Session session = factory.getCurrentSession();
+        Session session = em.unwrap(org.hibernate.Session.class);
         try {
             LOGGER.debug("saving object in db");
             tx = session.beginTransaction();
@@ -419,7 +426,7 @@ public abstract class AbstractDbManager<T> implements CrudManager<T> {
         }
 
         Transaction tx = null;
-        Session session = factory.getCurrentSession();
+        Session session = em.unwrap(org.hibernate.Session.class);
         try {
             LOGGER.debug("updating object in db");
             tx = session.beginTransaction();

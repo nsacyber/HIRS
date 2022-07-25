@@ -5,9 +5,9 @@ import hirs.data.persist.ReportRequestState;
 import hirs.persist.ReportRequestStateManager;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.hibernate.SessionFactory;
 import org.springframework.stereotype.Service;
 
+import javax.persistence.EntityManager;
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Root;
@@ -28,10 +28,10 @@ public class DBReportRequestStateManager extends DBManager<ReportRequestState>
      * Creates a new <code>DBReportRequestStateManager</code> that uses the default database. The
      * default database is used to store all of the <code>ReportRequestState</code>s.
      *
-     * @param sessionFactory session factory used to access database connections
+     * @param em entity manager used to access database connections
      */
-    public DBReportRequestStateManager(final SessionFactory sessionFactory) {
-        super(ReportRequestState.class, sessionFactory);
+    public DBReportRequestStateManager(final EntityManager em) {
+        super(ReportRequestState.class, em);
     }
 
     /**

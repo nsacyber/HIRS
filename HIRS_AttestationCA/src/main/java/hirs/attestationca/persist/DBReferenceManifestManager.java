@@ -5,9 +5,9 @@ import hirs.persist.ReferenceManifestManager;
 import hirs.persist.ReferenceManifestSelector;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.hibernate.SessionFactory;
 import org.springframework.stereotype.Service;
 
+import javax.persistence.EntityManager;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -24,10 +24,10 @@ public class DBReferenceManifestManager extends DBManager<ReferenceManifest>
     /**
      * Default Constructor.
      *
-     * @param sessionFactory session factory used to access database connections
+     * @param em entity manager used to access database connections
      */
-    public DBReferenceManifestManager(final SessionFactory sessionFactory) {
-        super(ReferenceManifest.class, sessionFactory);
+    public DBReferenceManifestManager(final EntityManager em) {
+        super(ReferenceManifest.class, em);
     }
 
     /**

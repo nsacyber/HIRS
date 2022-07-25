@@ -6,13 +6,13 @@ import hirs.persist.ReportManager;
 import hirs.persist.ReportManagerException;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
-import org.hibernate.SessionFactory;
 import org.hibernate.criterion.Conjunction;
 import org.hibernate.criterion.Disjunction;
 import org.hibernate.criterion.MatchMode;
 import org.hibernate.criterion.Restrictions;
 import org.springframework.stereotype.Service;
 
+import javax.persistence.EntityManager;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -32,10 +32,10 @@ public class DBReportManager extends DBManager<Report> implements ReportManager 
      * Creates a new <code>DBReportManager</code> that uses the provided sessionFactory
      * to interact with a database.
      *
-     * @param sessionFactory session factory used to access database connections
+     * @param em entity manager used to access database connections
      */
-    public DBReportManager(final SessionFactory sessionFactory) {
-        super(Report.class, sessionFactory);
+    public DBReportManager(final EntityManager em) {
+        super(Report.class, em);
     }
 
     /**

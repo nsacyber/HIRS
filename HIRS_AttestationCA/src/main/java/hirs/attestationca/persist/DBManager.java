@@ -19,6 +19,7 @@ import org.springframework.retry.policy.SimpleRetryPolicy;
 import org.springframework.retry.support.RetryTemplate;
 import org.springframework.stereotype.Service;
 
+import javax.persistence.EntityManager;
 import javax.persistence.criteria.Predicate;
 import java.io.Serializable;
 import java.util.Collection;
@@ -68,11 +69,11 @@ public class DBManager<T> extends AbstractDbManager<T> {
      * default database is used to store all of the objects.
      *
      * @param clazz Class to search for when doing Hibernate queries
-     * @param sessionFactory the session factory to use to connect to the database
+     * @param em the entity manager to use to connect to the database
      * unfortunately class type of T cannot be determined using only T
      */
-    public DBManager(final Class<T> clazz, final SessionFactory sessionFactory) {
-        super(clazz, sessionFactory);
+    public DBManager(final Class<T> clazz, final EntityManager em) {
+        super(clazz, em);
         setRetryTemplate(DEFAULT_MAX_RETRY_ATTEMPTS, DEFAULT_RETRY_WAIT_TIME_MS);
     }
 

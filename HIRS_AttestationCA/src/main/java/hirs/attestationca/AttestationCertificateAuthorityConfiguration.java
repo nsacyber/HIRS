@@ -98,7 +98,7 @@ public class AttestationCertificateAuthorityConfiguration implements WebMvcConfi
      *
      * @return session factory
      */
-    @Bean
+//    @Bean
     public SessionFactory sessionFactory() {
         ServiceRegistry serviceRegistry = new StandardServiceRegistryBuilder().applySettings(getSettings()).build();
         MetadataSources metadataSources = new MetadataSources(serviceRegistry);

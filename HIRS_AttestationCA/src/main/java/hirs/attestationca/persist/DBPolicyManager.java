@@ -17,6 +17,7 @@ import org.hibernate.Transaction;
 import org.hibernate.query.Query;
 import org.springframework.stereotype.Repository;
 
+import javax.persistence.EntityManager;
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Predicate;
@@ -38,10 +39,10 @@ public class DBPolicyManager extends DBManager<Policy> implements PolicyManager 
      * parameter is used to initialize a session factory to manage all hibernate
      * sessions.
      *
-     * @param factory session factory to manage connections to hibernate db
+     * @param em Entity Manager to manage connections to hibernate db
      */
-    public DBPolicyManager(final SessionFactory factory) {
-        super(Policy.class, factory);
+    public DBPolicyManager(final EntityManager em) {
+        super(Policy.class, em);
     }
 
     /**

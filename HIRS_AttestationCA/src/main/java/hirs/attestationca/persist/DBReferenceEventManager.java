@@ -11,11 +11,11 @@ import hirs.persist.ReferenceEventManager;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.hibernate.Session;
-import org.hibernate.SessionFactory;
 import org.hibernate.Transaction;
 import org.hibernate.query.Query;
 import org.springframework.stereotype.Service;
 
+import javax.persistence.EntityManager;
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Predicate;
@@ -39,10 +39,10 @@ public class DBReferenceEventManager  extends DBManager<ReferenceDigestValue>
     /**
      * Default Constructor.
      *
-     * @param sessionFactory session factory used to access database connections
+     * @param em entity manager used to access database connections
      */
-    public DBReferenceEventManager(final SessionFactory sessionFactory) {
-        super(ReferenceDigestValue.class, sessionFactory);
+    public DBReferenceEventManager(final EntityManager em) {
+        super(ReferenceDigestValue.class, em);
         this.setClazz(ReferenceDigestValue.class);
     }
 

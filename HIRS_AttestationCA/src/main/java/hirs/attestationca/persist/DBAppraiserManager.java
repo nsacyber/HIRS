@@ -6,9 +6,9 @@ import hirs.persist.AppraiserManagerException;
 import hirs.persist.DBManagerException;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.hibernate.SessionFactory;
 import org.springframework.stereotype.Service;
 
+import javax.persistence.EntityManager;
 import java.util.List;
 
 /**
@@ -24,10 +24,10 @@ public class DBAppraiserManager extends DBManager<Appraiser> implements Appraise
      * database. The default database is used to store all of the
      * <code>Appraiser</code>s.
      *
-     * @param sessionFactory session factory used to access database connections
+     * @param em entity manager used to access database connections
      */
-    public DBAppraiserManager(final SessionFactory sessionFactory) {
-        super(Appraiser.class, sessionFactory);
+    public DBAppraiserManager(final EntityManager em) {
+        super(Appraiser.class, em);
     }
 
     /**
