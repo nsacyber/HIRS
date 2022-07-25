@@ -764,18 +764,18 @@ public abstract class AbstractDbManager<T> implements CrudManager<T> {
      *
      * @return session factory
      */
-    protected final SessionFactory getFactory() {
-        return factory;
+    protected final Session getSession() {
+        return em.unwrap(org.hibernate.Session.class);
     }
 
-    /**
-     * Returns a StatelessSession that can be used for querying.
-     *
-     * @return stateless session
-     */
-    protected final StatelessSession getStatelessSession() {
-        return factory.openStatelessSession();
-    }
+//    /**
+//     * Returns a StatelessSession that can be used for querying.
+//     *
+//     * @return stateless session
+//     */
+//    protected final StatelessSession getStatelessSession() {
+//        return factory.openStatelessSession();
+//    }
 
 
     /**

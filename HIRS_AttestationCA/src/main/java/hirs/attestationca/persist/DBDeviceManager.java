@@ -12,7 +12,6 @@ import org.apache.logging.log4j.Logger;
 import org.hibernate.Criteria;
 import org.hibernate.HibernateException;
 import org.hibernate.Session;
-import org.hibernate.SessionFactory;
 import org.hibernate.Transaction;
 import org.hibernate.query.Query;
 import org.springframework.stereotype.Service;
@@ -113,7 +112,7 @@ public class DBDeviceManager extends DBManager<Device> implements
             throws DeviceManagerException {
         LOGGER.debug("updating all devices in list");
 
-        Session session = getFactory().getCurrentSession();
+        Session session = getSession();
         Transaction tx = session.beginTransaction();
         try {
             for (final Device device : deviceList) {
@@ -256,7 +255,7 @@ public class DBDeviceManager extends DBManager<Device> implements
     public final List<Device> getDefaultDevices() throws DeviceManagerException {
         Transaction tx = null;
 
-        Session session = getFactory().getCurrentSession();
+        Session session = getSession();
         List<Device> devices = new ArrayList<>();
         try {
             LOGGER.debug("retrieving defaults devices from db");

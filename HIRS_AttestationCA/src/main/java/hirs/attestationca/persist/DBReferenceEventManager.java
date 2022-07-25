@@ -73,7 +73,7 @@ public class DBReferenceEventManager  extends DBManager<ReferenceDigestValue>
 
         ReferenceDigestValue dbRecord = null;
         Transaction tx = null;
-        Session session = getFactory().getCurrentSession();
+        Session session = getSession();
         try {
             LOGGER.debug("retrieving referenceDigestValue from db");
             tx = session.beginTransaction();
@@ -143,7 +143,7 @@ public class DBReferenceEventManager  extends DBManager<ReferenceDigestValue>
 
         ReferenceDigestValue dbRecord = null;
         Transaction tx = null;
-        Session session = getFactory().getCurrentSession();
+        Session session = getSession();
         try {
             LOGGER.debug("retrieving referenceDigestValue from db");
             tx = session.beginTransaction();
@@ -185,7 +185,7 @@ public class DBReferenceEventManager  extends DBManager<ReferenceDigestValue>
 
         ReferenceDigestValue dbRecord = null;
         Transaction tx = null;
-        Session session = getFactory().getCurrentSession();
+        Session session = getSession();
         try {
             LOGGER.debug("retrieving referenceDigestValue from db");
             tx = session.beginTransaction();

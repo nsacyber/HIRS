@@ -155,10 +155,9 @@ public class DBDeviceGroupManager extends DBManager<DeviceGroup> implements Devi
             throw new DeviceGroupManagerException("policy provided was null");
         }
 
-        final SessionFactory factory = getFactory();
         Set<DeviceGroup> groups = new HashSet<>();
 
-        Session session = factory.getCurrentSession();
+        Session session = getSession();
         Transaction tx = session.beginTransaction();
 
         try {

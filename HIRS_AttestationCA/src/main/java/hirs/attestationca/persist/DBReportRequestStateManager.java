@@ -42,7 +42,7 @@ public class DBReportRequestStateManager extends DBManager<ReportRequestState>
      */
     @Override
     public final ReportRequestState getState(final Device device) {
-        CriteriaBuilder builder = this.getFactory().getCriteriaBuilder();
+        CriteriaBuilder builder = this.getSession().getCriteriaBuilder();
         Root<ReportRequestState> root = builder.createQuery(ReportRequestState.class)
                 .from(ReportRequestState.class);
 
@@ -63,7 +63,7 @@ public class DBReportRequestStateManager extends DBManager<ReportRequestState>
      */
     @Override
     public final List<ReportRequestState> getLateDeviceStates() {
-        CriteriaBuilder builder = this.getFactory().getCriteriaBuilder();
+        CriteriaBuilder builder = this.getSession().getCriteriaBuilder();
         Root<ReportRequestState> root = builder.createQuery(ReportRequestState.class)
                 .from(ReportRequestState.class);
 

@@ -179,8 +179,7 @@ public class DBPolicyManager extends DBManager<Policy> implements PolicyManager 
             LOGGER.error("cannot set default policy on null appraiser");
             throw new NullPointerException("appraiser");
         }
-        final SessionFactory factory = getFactory();
-        Session session = factory.getCurrentSession();
+        Session session = getSession();
         Transaction tx = session.beginTransaction();
         try {
             CriteriaBuilder criteriaBuilder = session.getCriteriaBuilder();
@@ -279,9 +278,8 @@ public class DBPolicyManager extends DBManager<Policy> implements PolicyManager 
         }
 
         Policy ret = null;
-        final SessionFactory factory = getFactory();
         Transaction tx = null;
-        Session session = factory.getCurrentSession();
+        Session session = getSession();
         try {
             tx = session.beginTransaction();
             LOGGER.debug("retrieving policy mapper from db where appraiser = {}",
@@ -347,9 +345,8 @@ public class DBPolicyManager extends DBManager<Policy> implements PolicyManager 
         Preconditions.checkArgument(device != null, "Device must not be null");
 
         Policy ret = null;
-        final SessionFactory factory = getFactory();
         Transaction tx = null;
-        Session session = factory.getCurrentSession();
+        Session session = getSession();
         try {
             tx = session.beginTransaction();
             LOGGER.debug("retrieving policy mapper from db where appraiser = "
@@ -430,9 +427,8 @@ public class DBPolicyManager extends DBManager<Policy> implements PolicyManager 
         }
 
         Policy ret = null;
-        final SessionFactory factory = getFactory();
         Transaction tx = null;
-        Session session = factory.getCurrentSession();
+        Session session = getSession();
         try {
             tx = session.beginTransaction();
             LOGGER.debug("retrieving policy mapper from db where appraiser = "
@@ -500,9 +496,8 @@ public class DBPolicyManager extends DBManager<Policy> implements PolicyManager 
         Preconditions.checkNotNull(appraiser, "Cannot set policy on null appraiser");
         Preconditions.checkNotNull(deviceGroup, "Cannot set policy on null device group");
 
-        final SessionFactory factory = getFactory();
         Transaction tx = null;
-        Session session = factory.getCurrentSession();
+        Session session = getSession();
         try {
             tx = session.beginTransaction();
             LOGGER.debug("Finding existing policy mapper from db where "
@@ -565,9 +560,8 @@ public class DBPolicyManager extends DBManager<Policy> implements PolicyManager 
         int count = 0;
 
         if (policy != null) {
-            final SessionFactory factory = getFactory();
             Transaction tx = null;
-            Session session = factory.getCurrentSession();
+            Session session = getSession();
             try {
                 tx = session.beginTransaction();
                 LOGGER.debug("retrieving group use count for policy {}", policy);

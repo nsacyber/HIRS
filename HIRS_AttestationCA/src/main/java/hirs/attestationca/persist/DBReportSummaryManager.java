@@ -137,7 +137,7 @@ public class DBReportSummaryManager extends DBManager<ReportSummary>
 
         List<ReportSummary> reportSummaryList = new ArrayList<>();
         Transaction tx = null;
-        Session session = getFactory().getCurrentSession();
+        Session session = getSession();
         try {
             LOGGER.debug("retrieving objects from db");
             tx = session.beginTransaction();
@@ -213,7 +213,7 @@ public class DBReportSummaryManager extends DBManager<ReportSummary>
 
         ReportSummary object;
         Transaction tx = null;
-        Session session = getFactory().getCurrentSession();
+        Session session = getSession();
         try {
             LOGGER.debug("retrieving objects from db");
             tx = session.beginTransaction();
@@ -255,7 +255,7 @@ public class DBReportSummaryManager extends DBManager<ReportSummary>
 
         List<ReportSummary> reportSummaryList = new ArrayList<>();
         Transaction tx = null;
-        Session session = getFactory().getCurrentSession();
+        Session session = getSession();
         try {
             LOGGER.debug("retrieving objects from db");
             tx = session.beginTransaction();
@@ -359,7 +359,7 @@ public class DBReportSummaryManager extends DBManager<ReportSummary>
 
         ReportSummary object;
         Transaction tx = null;
-        Session session = getFactory().getCurrentSession();
+        Session session = getSession();
         try {
             LOGGER.debug("retrieving objects from db");
             tx = session.beginTransaction();
