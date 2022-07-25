@@ -3,9 +3,9 @@ package hirs.attestationca.persist;
 import hirs.persist.RepositoryManager;
 import hirs.repository.RepoPackage;
 import hirs.repository.Repository;
-import org.hibernate.SessionFactory;
 import org.springframework.stereotype.Service;
 
+import javax.persistence.EntityManager;
 import java.io.Serializable;
 import java.util.List;
 
@@ -22,12 +22,12 @@ public class DBRepositoryManager implements RepositoryManager {
      * Creates a new <code>DBRepositoryManager</code> that uses the default
      * database. The default database is used to store and retrieve all objects.
      *
-     * @param sessionFactory session factory used to access database connections
+     * @param entityManager object used to access database connections
      */
-    public DBRepositoryManager(final SessionFactory sessionFactory) {
+    public DBRepositoryManager(final EntityManager entityManager) {
         super();
-        repositoryDBManager = new DBManager<>(Repository.class, sessionFactory);
-        repoPackageDBManager = new DBManager<>(RepoPackage.class, sessionFactory);
+        repositoryDBManager = new DBManager<>(Repository.class, entityManager);
+        repoPackageDBManager = new DBManager<>(RepoPackage.class, entityManager);
     }
 
     /**

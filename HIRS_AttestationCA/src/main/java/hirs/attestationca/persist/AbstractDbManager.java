@@ -461,7 +461,7 @@ public abstract class AbstractDbManager<T> implements CrudManager<T> {
         }
 
         Transaction tx = null;
-        Session session = factory.getCurrentSession();
+        Session session = getSession();
         try {
             LOGGER.debug("retrieving " + clazz.toString() + " from db");
             tx = session.beginTransaction();
@@ -509,7 +509,7 @@ public abstract class AbstractDbManager<T> implements CrudManager<T> {
             return null;
         }
         Transaction tx = null;
-        Session session = factory.getCurrentSession();
+        Session session =getSession();
         try {
             LOGGER.debug("retrieving object from db");
             tx = session.beginTransaction();
@@ -554,7 +554,7 @@ public abstract class AbstractDbManager<T> implements CrudManager<T> {
         Class<T> searchClass = entity;
         List<T> objects = new ArrayList<>();
         Transaction tx = null;
-        Session session = factory.getCurrentSession();
+        Session session = getSession();
         try {
             LOGGER.debug("Retrieving objects from db of class {}", searchClass);
             tx = session.beginTransaction();
@@ -632,7 +632,7 @@ public abstract class AbstractDbManager<T> implements CrudManager<T> {
 
         List<T> objects = new ArrayList<>();
         Transaction tx = null;
-        Session session = factory.getCurrentSession();
+        Session session = getSession();
         CriteriaBuilder builder = session.getCriteriaBuilder();
 //        try {
             LOGGER.debug("updating object in db");
