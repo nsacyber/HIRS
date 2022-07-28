@@ -1,27 +1,33 @@
-package hirs.persist;
+package hirs.attestationca.persist;
 
-import java.util.LinkedList;
-import java.util.List;
-import java.util.UUID;
-
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Set;
-
+import hirs.attestationca.servicemanager.DBDeviceGroupManager;
+import hirs.attestationca.servicemanager.DBDeviceManager;
+import hirs.attestationca.servicemanager.DBReportManager;
 import hirs.data.persist.Device;
 import hirs.data.persist.DeviceGroup;
 import hirs.data.persist.DeviceInfoReport;
-import hirs.data.persist.DeviceTest;
+import hirs.attestationca.data.persist.DeviceTest;
 import hirs.data.persist.enums.HealthStatus;
 import hirs.data.persist.info.NetworkInfo;
+import hirs.persist.DBUtility;
+import hirs.persist.DeviceGroupManager;
+import hirs.persist.DeviceManager;
+import hirs.persist.DeviceManagerException;
+import hirs.persist.ReportManager;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-
 import org.testng.Assert;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
+
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Set;
+import java.util.UUID;
 
 /**
  * <code>DBDeviceManagerTest</code> is a unit test class for the
@@ -99,7 +105,7 @@ public final class DBDeviceManagerTest extends SpringPersistenceTest {
      * <code>DeviceManagerException</code> if a <code>Device</code> is saved
      * twice.
      *
-     * @throws DeviceManagerException if any unexpected errors occur
+     * @throws hirs.persist.DeviceManagerException if any unexpected errors occur
      * @throws Exception
      *          if any unexpected errors occur
      */

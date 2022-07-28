@@ -2,7 +2,9 @@ package hirs.attestationca.portal.page;
 
 import hirs.attestationca.AttestationCertificateAuthorityConfiguration;
 import org.springframework.web.servlet.support.AbstractAnnotationConfigDispatcherServletInitializer;
-
+/**
+ * Simply holds a contextInitialized method which will be called when the web app starts.
+ */
 public class AcaInitializer extends AbstractAnnotationConfigDispatcherServletInitializer {
 
 

@@ -1,5 +1,8 @@
-package hirs.persist;
+package hirs.attestationca.persist;
 
+import hirs.attestationca.servicemanager.DBCertificateManager;
+import hirs.attestationca.servicemanager.DBDeviceGroupManager;
+import hirs.attestationca.servicemanager.DBDeviceManager;
 import hirs.data.persist.Device;
 import hirs.data.persist.DeviceGroup;
 import hirs.data.persist.certificate.Certificate;
@@ -11,7 +14,11 @@ import hirs.data.persist.certificate.EndorsementCredential;
 import hirs.data.persist.certificate.IssuedAttestationCertificate;
 import hirs.data.persist.certificate.PlatformCredential;
 import hirs.data.persist.certificate.PlatformCredentialTest;
-
+import hirs.persist.CertificateManager;
+import hirs.persist.CertificateSelector;
+import hirs.persist.DBManagerException;
+import hirs.persist.DeviceGroupManager;
+import hirs.persist.DeviceManager;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.hibernate.Session;
@@ -169,7 +176,7 @@ public class DBCertificateManagerTest extends SpringPersistenceTest {
     }
 
     private void resetCertificateTestState() {
-        Session session = sessionFactory.getCurrentSession();
+        Session session = sessionFactory.unwrap(org.hibernate.Session.class);
         session.beginTransaction();
         CriteriaBuilder builder = session.getCriteriaBuilder();
         CriteriaQuery<Certificate> criteriaQuery = builder.createQuery(Certificate.class);
@@ -187,7 +194,7 @@ public class DBCertificateManagerTest extends SpringPersistenceTest {
     }
 
     private void resetDeviceTestState() {
-        Session session = sessionFactory.getCurrentSession();
+        Session session = sessionFactory.unwrap(org.hibernate.Session.class);
         session.beginTransaction();
         CriteriaBuilder builder = session.getCriteriaBuilder();
         CriteriaQuery<Device> criteriaQuery = builder.createQuery(Device.class);
@@ -205,7 +212,7 @@ public class DBCertificateManagerTest extends SpringPersistenceTest {
     }
 
     private void resetDeviceGroupTestState() {
-        Session session = sessionFactory.getCurrentSession();
+        Session session = sessionFactory.unwrap(org.hibernate.Session.class);
         session.beginTransaction();
         CriteriaBuilder builder = session.getCriteriaBuilder();
         CriteriaQuery<DeviceGroup> criteriaQuery = builder.createQuery(DeviceGroup.class);
@@ -755,7 +762,8 @@ public class DBCertificateManagerTest extends SpringPersistenceTest {
     }
 
     /**
-     * Tests that a {@link CertificateSelector} can be used to retrieve certificates in various
+     * Tests that a {@link hirs.persist.CertificateSelector} can be used to
+     * retrieve certificates in various
      * forms, including {@link Certificate}.
      *
      * @throws IOException if there is a problem creating the certificate

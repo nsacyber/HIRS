@@ -1,5 +1,6 @@
 package hirs.attestationca.service;
 
+import hirs.attestationca.persist.SpringPersistenceTest;
 import hirs.appraiser.SupplyChainAppraiser;
 import hirs.data.persist.AppraisalStatus;
 import hirs.data.persist.Device;

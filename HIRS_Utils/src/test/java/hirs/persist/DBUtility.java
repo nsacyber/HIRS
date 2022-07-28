@@ -3,10 +3,10 @@ package hirs.persist;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.hibernate.Session;
-import org.hibernate.SessionFactory;
 import org.hibernate.Transaction;
 import org.hibernate.query.Query;
 
+import javax.persistence.EntityManager;
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Root;
@@ -39,10 +39,10 @@ public final class DBUtility {
      */
     @SuppressWarnings("unchecked")
     public static void removeAllInstances(
-            final SessionFactory sessionFactory,
+            final EntityManager sessionFactory,
             final Class clazz) {
         LOGGER.debug("deleting all {} instances", clazz.toString());
-        Session session = sessionFactory.getCurrentSession();
+        Session session = sessionFactory.unwrap(org.hibernate.Session.class);
         session.beginTransaction();
         CriteriaBuilder builder = session.getCriteriaBuilder();
         CriteriaQuery<Class> criteriaQuery = builder.createQuery(clazz);
@@ -69,7 +69,7 @@ public final class DBUtility {
      * @return true if in database, otherwise false
      */
     public static boolean isInDatabase(
-            final SessionFactory sessionFactory,
+            final EntityManager sessionFactory,
             final Class<?> clazz,
             final String name) {
         LOGGER.debug("checking if {} is in db", clazz.toString(), name);
@@ -88,14 +88,14 @@ public final class DBUtility {
      */
     @SuppressWarnings("unchecked")
     public static boolean isInDatabase(
-            final SessionFactory sessionFactory,
+            final EntityManager sessionFactory,
             final Class clazz,
             final String propName, final Object value) {
         LOGGER.debug("checking if {} with property {} set to {}",
                 clazz.toString(), propName, value);
         Object search = null;
         Transaction tx = null;
-        Session session = sessionFactory.getCurrentSession();
+        Session session = sessionFactory.unwrap(org.hibernate.Session.class);
         try {
             LOGGER.debug("retrieving");
             tx = session.beginTransaction();
@@ -130,11 +130,11 @@ public final class DBUtility {
      * @return number of instance of <code>clazz</code> in the database
      */
     @SuppressWarnings("unchecked")
-    public static int getCount(final SessionFactory sessionFactory, final Class clazz) {
+    public static int getCount(final EntityManager sessionFactory, final Class clazz) {
         LOGGER.debug("counting number of instances of {} in db", clazz);
         int count = 0;
         Transaction tx = null;
-        Session session = sessionFactory.getCurrentSession();
+        Session session = sessionFactory.unwrap(org.hibernate.Session.class);
         try {
             tx = session.beginTransaction();
             CriteriaBuilder builder = session.getCriteriaBuilder();

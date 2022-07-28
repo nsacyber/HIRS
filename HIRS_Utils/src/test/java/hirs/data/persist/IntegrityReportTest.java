@@ -46,7 +46,7 @@ public class IntegrityReportTest extends HibernateTest<IntegrityReport> {
      */
     private static IntegrityReport getTestReport() {
         IntegrityReport integrityReport = new IntegrityReport();
-        integrityReport.addReport(DeviceInfoReportTest.getTestReport());
+//        integrityReport.addReport(DeviceInfoReportTest.getTestReport());
         return integrityReport;
     }
 
@@ -191,7 +191,7 @@ public class IntegrityReportTest extends HibernateTest<IntegrityReport> {
     @Test
     public final void testPersistingManyReports() throws Exception {
         IntegrityReport integrityReport = new IntegrityReport();
-        integrityReport.addReport(DeviceInfoReportTest.getTestReport());
+//        integrityReport.addReport(DeviceInfoReportTest.getTestReport());
         integrityReport.addReport(TPMReportTest.getTestReport());
         integrityReport.addReport(new TestReport());
 

@@ -1,13 +1,21 @@
-package hirs.persist;
+package hirs.attestationca.persist;
 
 import hirs.appraiser.Appraiser;
 import hirs.appraiser.TestAppraiser;
+import hirs.attestationca.data.persist.DeviceTest;
+import hirs.attestationca.servicemanager.DBDeviceGroupManager;
+import hirs.attestationca.servicemanager.DBDeviceManager;
+import hirs.attestationca.servicemanager.DBPolicyManager;
 import hirs.data.persist.Device;
 import hirs.data.persist.DeviceGroup;
-import hirs.data.persist.DeviceTest;
 import hirs.data.persist.Policy;
 import hirs.data.persist.TestPolicy;
 import hirs.data.persist.TestPolicy2;
+import hirs.persist.DeviceGroupManager;
+import hirs.persist.DeviceManager;
+import hirs.persist.PolicyManager;
+import hirs.persist.PolicyManagerException;
+import hirs.persist.PolicyMapper;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.hibernate.Session;
@@ -66,7 +74,7 @@ public final class DBPolicyManagerTest extends SpringPersistenceTest {
     @BeforeMethod
     public void testSetup() {
         LOGGER.debug("setting up DBPolicyManager tests");
-        Session session = sessionFactory.getCurrentSession();
+        Session session = sessionFactory.unwrap(org.hibernate.Session.class);
         session.beginTransaction();
         appraiser = new TestAppraiser("Test Appraiser");
         final Serializable id = session.save(appraiser);
@@ -90,7 +98,7 @@ public final class DBPolicyManagerTest extends SpringPersistenceTest {
     }
 
     private void resetPolicyMapperTestState() {
-        Session session = sessionFactory.getCurrentSession();
+        Session session = sessionFactory.unwrap(org.hibernate.Session.class);
         session.beginTransaction();
         CriteriaBuilder builder = session.getCriteriaBuilder();
         CriteriaQuery<PolicyMapper> criteriaQuery = builder.createQuery(PolicyMapper.class);
@@ -108,7 +116,7 @@ public final class DBPolicyManagerTest extends SpringPersistenceTest {
     }
 
     private void resetAppraiserTestState() {
-        Session session = sessionFactory.getCurrentSession();
+        Session session = sessionFactory.unwrap(org.hibernate.Session.class);
         session.beginTransaction();
         CriteriaBuilder builder = session.getCriteriaBuilder();
         CriteriaQuery<Appraiser> criteriaQuery = builder.createQuery(Appraiser.class);
@@ -126,7 +134,7 @@ public final class DBPolicyManagerTest extends SpringPersistenceTest {
     }
 
     private void resetPolicyTestState() {
-        Session session = sessionFactory.getCurrentSession();
+        Session session = sessionFactory.unwrap(org.hibernate.Session.class);
         session.beginTransaction();
         CriteriaBuilder builder = session.getCriteriaBuilder();
         CriteriaQuery<Policy> criteriaQuery = builder.createQuery(Policy.class);
@@ -144,7 +152,7 @@ public final class DBPolicyManagerTest extends SpringPersistenceTest {
     }
 
     private void resetDeviceTestState() {
-        Session session = sessionFactory.getCurrentSession();
+        Session session = sessionFactory.unwrap(org.hibernate.Session.class);
         session.beginTransaction();
         CriteriaBuilder builder = session.getCriteriaBuilder();
         CriteriaQuery<Device> criteriaQuery = builder.createQuery(Device.class);
@@ -162,7 +170,7 @@ public final class DBPolicyManagerTest extends SpringPersistenceTest {
     }
 
     private void resetDeviceGroupTestState() {
-        Session session = sessionFactory.getCurrentSession();
+        Session session = sessionFactory.unwrap(org.hibernate.Session.class);
         session.beginTransaction();
         CriteriaBuilder builder = session.getCriteriaBuilder();
         CriteriaQuery<DeviceGroup> criteriaQuery = builder.createQuery(DeviceGroup.class);
@@ -183,7 +191,7 @@ public final class DBPolicyManagerTest extends SpringPersistenceTest {
      * Tests that the <code>DBPolicyManager</code> can save a
      * <code>Policy</code>.
      *
-     * @throws PolicyManagerException
+     * @throws hirs.persist.PolicyManagerException
      *             if any unexpected errors occur
      */
     @Test
@@ -874,7 +882,7 @@ public final class DBPolicyManagerTest extends SpringPersistenceTest {
         LOGGER.debug("checking if policy {} is in database", name);
         Policy policy = null;
         Transaction tx = null;
-        Session session = sessionFactory.getCurrentSession();
+        Session session = sessionFactory.unwrap(org.hibernate.Session.class);
         try {
             LOGGER.debug("retrieving policy");
             tx = session.beginTransaction();

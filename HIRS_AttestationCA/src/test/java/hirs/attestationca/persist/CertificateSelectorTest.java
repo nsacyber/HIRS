@@ -1,12 +1,15 @@
-package hirs.persist;
+package hirs.attestationca.persist;
 
+import hirs.attestationca.servicemanager.DBCertificateManager;
 import hirs.data.persist.certificate.CertificateAuthorityCredential;
+import hirs.persist.CertificateManager;
 import org.springframework.util.Assert;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
 /**
- * This class contains simple tests some of the functionality of {@link CertificateSelector}.
+ * This class contains simple tests some of the functionality of
+ * {@link hirs.persist.CertificateSelector}.
  * For actual functional tests that test certificate retrieval using the class, see
  * {@link DBCertificateManagerTest}.
  */

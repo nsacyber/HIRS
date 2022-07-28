@@ -1,20 +1,23 @@
-package hirs.persist;
+package hirs.attestationca.persist;
+
+import hirs.attestationca.servicemanager.DBPortalInfoManager;
+import hirs.data.persist.enums.PortalScheme;
+import hirs.data.persist.info.PortalInfo;
+import hirs.persist.DBUtility;
+import hirs.persist.PortalInfoManager;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.testng.Assert;
+import org.testng.annotations.AfterClass;
+import org.testng.annotations.AfterMethod;
+import org.testng.annotations.BeforeClass;
+import org.testng.annotations.Test;
 
 import java.lang.reflect.Field;
 import java.net.URI;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
-
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-import hirs.data.persist.info.PortalInfo;
-import hirs.data.persist.enums.PortalScheme;
-import org.testng.Assert;
-import org.testng.annotations.AfterClass;
-import org.testng.annotations.AfterMethod;
-import org.testng.annotations.BeforeClass;
-import org.testng.annotations.Test;
 
 /**
  * Tests for the DBPortalInfoManager.

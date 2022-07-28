@@ -1,27 +1,35 @@
-package hirs.persist;
+package hirs.attestationca.persist;
 
 import hirs.appraiser.Appraiser;
-
+import hirs.appraiser.TestAppraiser;
+import hirs.attestationca.servicemanager.DBAppraiserManager;
+import hirs.attestationca.servicemanager.DBDeviceGroupManager;
+import hirs.attestationca.servicemanager.DBDeviceManager;
+import hirs.attestationca.servicemanager.DBPolicyManager;
 import hirs.data.persist.Device;
 import hirs.data.persist.DeviceGroup;
 import hirs.data.persist.DeviceInfoReport;
+import hirs.attestationca.data.persist.DeviceTest;
 import hirs.data.persist.Policy;
-
-import java.util.HashSet;
-import java.util.Set;
-import java.util.UUID;
-
 import hirs.data.persist.TestPolicy;
-import org.apache.logging.log4j.Logger;
+import hirs.persist.AppraiserManager;
+import hirs.persist.DBUtility;
+import hirs.persist.DeviceGroupManager;
+import hirs.persist.DeviceGroupManagerException;
+import hirs.persist.DeviceManager;
+import hirs.persist.PolicyManager;
+import hirs.persist.PolicyMapper;
 import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.testng.Assert;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
-import hirs.appraiser.TestAppraiser;
 
-import hirs.data.persist.DeviceTest;
+import java.util.HashSet;
+import java.util.Set;
+import java.util.UUID;
 
 /**
  * Unit tests for the <code>DBDeviceGroupManager</code> class.

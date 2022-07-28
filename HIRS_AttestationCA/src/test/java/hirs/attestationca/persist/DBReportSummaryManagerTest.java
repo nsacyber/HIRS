@@ -1,11 +1,12 @@
-package hirs.persist;
+package hirs.attestationca.persist;
 
 import hirs.appraiser.HIRSAppraiser;
 import hirs.appraiser.IMAAppraiser;
+import hirs.attestationca.servicemanager.DBReportSummaryManager;
 import hirs.data.persist.AppraisalResult;
 import hirs.data.persist.AppraisalStatus;
 import hirs.data.persist.ReportSummary;
-
+import hirs.data.persist.SpringPersistenceTest;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.testng.Assert;
 import org.testng.annotations.AfterClass;

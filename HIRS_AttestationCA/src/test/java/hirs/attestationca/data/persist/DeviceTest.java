@@ -1,5 +1,8 @@
-package hirs.data.persist;
+package hirs.attestationca.data.persist;
 
+import hirs.data.persist.AppraisalStatus;
+import hirs.data.persist.Device;
+import hirs.data.persist.DeviceInfoReport;
 import hirs.data.persist.enums.HealthStatus;
 import org.testng.Assert;
 import org.testng.annotations.Test;

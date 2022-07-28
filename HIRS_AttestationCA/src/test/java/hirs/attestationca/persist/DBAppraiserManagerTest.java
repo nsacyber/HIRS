@@ -1,9 +1,11 @@
-package hirs.persist;
+package hirs.attestationca.persist;
 
 import hirs.appraiser.Appraiser;
 import hirs.appraiser.IMAAppraiser;
 import hirs.appraiser.TPMAppraiser;
 import hirs.appraiser.TestAppraiser;
+import hirs.attestationca.servicemanager.DBAppraiserManager;
+import hirs.persist.AppraiserManager;
 import org.hibernate.Session;
 import org.hibernate.query.Query;
 import org.testng.Assert;
@@ -41,7 +43,7 @@ public class DBAppraiserManagerTest extends SpringPersistenceTest {
      */
     @AfterMethod
     public void resetTestState() {
-        Session session = sessionFactory.getCurrentSession();
+        Session session = sessionFactory.unwrap(org.hibernate.Session.class);
         session.beginTransaction();
 
         CriteriaBuilder builder = session.getCriteriaBuilder();

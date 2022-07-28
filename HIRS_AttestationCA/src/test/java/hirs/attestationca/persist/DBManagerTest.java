@@ -1,6 +1,9 @@
-package hirs.persist;
+package hirs.attestationca.persist;
 
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+import hirs.attestationca.servicemanager.DBManager;
+import hirs.data.persist.LazyTestItemChild;
+import hirs.persist.DBManagerException;
+import hirs.persist.DBUtility;
 import org.hibernate.LazyInitializationException;
 import org.hibernate.StaleObjectStateException;
 import org.hibernate.exception.LockAcquisitionException;
@@ -13,7 +16,6 @@ import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
-import hirs.data.persist.LazyTestItemChild;
 
 import java.sql.SQLException;
 
@@ -68,10 +70,7 @@ public class DBManagerTest extends SpringPersistenceTest {
      * LazyInitializationException.
      */
     @Test(expectedExceptions = LazyInitializationException.class)
-    @SuppressFBWarnings(
-            value = "RV_RETURN_VALUE_IGNORED_NO_SIDE_EFFECT",
-            justification = "The statement is meant to throw an exception"
-    )
+
     public final void testGet() {
         LazyTestItemChild child = new LazyTestItemChild("Test Child");
         DBManager<LazyTestItemChild> childMan =

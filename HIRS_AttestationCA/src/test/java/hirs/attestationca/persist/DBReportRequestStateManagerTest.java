@@ -1,16 +1,20 @@
-package hirs.persist;
+package hirs.attestationca.persist;
 
+import hirs.attestationca.servicemanager.DBDeviceGroupManager;
+import hirs.attestationca.servicemanager.DBDeviceManager;
+import hirs.attestationca.servicemanager.DBReportRequestStateManager;
 import hirs.data.persist.Device;
 import hirs.data.persist.DeviceGroup;
+import hirs.attestationca.data.persist.DeviceTest;
 import hirs.data.persist.ReportRequestState;
 import hirs.data.persist.type.ReportRequestType;
-
+import hirs.persist.DBManagerException;
+import hirs.persist.DBUtility;
 import org.testng.Assert;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
-import hirs.data.persist.DeviceTest;
 
 import java.util.ArrayList;
 import java.util.Date;

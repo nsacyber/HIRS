@@ -1,13 +1,15 @@
-package hirs.data.persist;
+package hirs.attestationca.data.persist;
 
+import hirs.data.persist.Device;
+import hirs.data.persist.DeviceGroup;
 import hirs.data.persist.enums.HealthStatus;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.Set;
-
 import hirs.persist.ScheduledJobInfo;
 import org.testng.Assert;
 import org.testng.annotations.Test;
+
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Set;
 
 import static hirs.data.persist.DeviceGroup.DEFAULT_REPORT_DELAY_THRESHOLD;
 import static hirs.data.persist.DeviceGroup.MINIMUM_THRESHOLD_INTERVAL_MS;

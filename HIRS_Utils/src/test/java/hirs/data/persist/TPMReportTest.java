@@ -77,7 +77,7 @@ TPMReportTest extends SpringPersistenceTest {
     public final void resetTestState() {
         LOGGER.debug("reset test state");
         LOGGER.debug("deleting all reports");
-        Session session = sessionFactory.getCurrentSession();
+        Session session = sessionFactory.unwrap(org.hibernate.Session.class);
         session.beginTransaction();
         CriteriaBuilder builder = session.getCriteriaBuilder();
         CriteriaQuery<Report> criteriaQuery = builder.createQuery(Report.class);
@@ -102,7 +102,7 @@ TPMReportTest extends SpringPersistenceTest {
      */
     @Test
     public final void testSaveReport() {
-        Session session = sessionFactory.getCurrentSession();
+        Session session = sessionFactory.unwrap(org.hibernate.Session.class);
         session.beginTransaction();
         final TPMReport r = getTestReport();
         session.save(r);
@@ -116,13 +116,13 @@ TPMReportTest extends SpringPersistenceTest {
      */
     @Test
     public final void testGetReport() {
-        Session session = sessionFactory.getCurrentSession();
+        Session session = sessionFactory.unwrap(org.hibernate.Session.class);
         session.beginTransaction();
         final TPMReport r = getTestReport();
         final UUID id = (UUID) session.save(r);
         session.getTransaction().commit();
 
-        session = sessionFactory.getCurrentSession();
+        session = sessionFactory.unwrap(org.hibernate.Session.class);
         session.beginTransaction();
         final TPMReport testReport = (TPMReport) session.get(TPMReport.class, id);
 
@@ -145,7 +145,7 @@ TPMReportTest extends SpringPersistenceTest {
      */
     @Test(enabled = false)
     public final void testDeleteReport() {
-        Session session = sessionFactory.getCurrentSession();
+        Session session = sessionFactory.unwrap(org.hibernate.Session.class);
 
         session.beginTransaction();
         final TPMReport r = getTestReport();
