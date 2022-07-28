@@ -1,4 +1,4 @@
-package hirs.attestationca.persist;
+package hirs.attestationca.servicemanager;
 
 import hirs.appraiser.Appraiser;
 import hirs.persist.AppraiserManager;

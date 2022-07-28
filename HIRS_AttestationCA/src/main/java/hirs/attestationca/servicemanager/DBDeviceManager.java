@@ -1,4 +1,4 @@
-package hirs.attestationca.persist;
+package hirs.attestationca.servicemanager;
 
 import hirs.FilteredRecordsList;
 import hirs.data.persist.Device;

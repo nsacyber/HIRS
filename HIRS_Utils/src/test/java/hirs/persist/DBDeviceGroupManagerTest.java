@@ -11,7 +11,6 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
 
-import hirs.data.persist.SpringPersistenceTest;
 import hirs.data.persist.TestPolicy;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;

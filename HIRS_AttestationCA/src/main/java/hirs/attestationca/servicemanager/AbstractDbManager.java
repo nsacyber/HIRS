@@ -1,4 +1,4 @@
-package hirs.attestationca.persist;
+package hirs.attestationca.servicemanager;
 
 import hirs.FilteredRecordsList;
 import hirs.data.persist.ArchivableEntity;
@@ -9,19 +9,13 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.hibernate.HibernateException;
 import org.hibernate.Session;
-import org.hibernate.SessionFactory;
-import org.hibernate.StatelessSession;
 import org.hibernate.Transaction;
-import org.hibernate.boot.Metadata;
-import org.hibernate.boot.MetadataSources;
-import org.hibernate.boot.registry.StandardServiceRegistryBuilder;
 import org.hibernate.criterion.Conjunction;
 import org.hibernate.criterion.Criterion;
 import org.hibernate.criterion.Disjunction;
 import org.hibernate.criterion.MatchMode;
 import org.hibernate.criterion.Restrictions;
 import org.hibernate.query.Query;
-import org.hibernate.service.ServiceRegistry;
 import org.hibernate.service.spi.ServiceRegistryImplementor;
 import org.springframework.stereotype.Service;
 
@@ -509,7 +503,7 @@ public abstract class AbstractDbManager<T> implements CrudManager<T> {
             return null;
         }
         Transaction tx = null;
-        Session session =getSession();
+        Session session = getSession();
         try {
             LOGGER.debug("retrieving object from db");
             tx = session.beginTransaction();

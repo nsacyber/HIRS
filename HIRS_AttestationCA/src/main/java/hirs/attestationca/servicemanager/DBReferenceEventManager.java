@@ -1,4 +1,4 @@
-package hirs.attestationca.persist;
+package hirs.attestationca.servicemanager;
 
 import hirs.data.persist.BaseReferenceManifest;
 import hirs.data.persist.ReferenceDigestRecord;

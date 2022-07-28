@@ -1,6 +1,5 @@
 package hirs.persist;
 
-import hirs.data.persist.SpringPersistenceTest;
 import hirs.data.persist.certificate.CertificateAuthorityCredential;
 import org.springframework.util.Assert;
 import org.testng.annotations.BeforeClass;

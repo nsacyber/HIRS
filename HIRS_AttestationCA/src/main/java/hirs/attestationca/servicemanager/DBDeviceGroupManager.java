@@ -1,4 +1,4 @@
-package hirs.attestationca.persist;
+package hirs.attestationca.servicemanager;
 
 import hirs.FilteredRecordsList;
 import hirs.data.persist.DeviceGroup;
@@ -12,7 +12,6 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.hibernate.Criteria;
 import org.hibernate.Session;
-import org.hibernate.SessionFactory;
 import org.hibernate.Transaction;
 import org.hibernate.query.Query;
 import org.springframework.stereotype.Service;

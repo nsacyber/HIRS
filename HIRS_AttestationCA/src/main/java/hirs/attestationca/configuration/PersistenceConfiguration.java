@@ -1,17 +1,17 @@
 package hirs.attestationca.configuration;
 
 import hirs.attestationca.AttestationCertificateAuthorityConfiguration;
-import hirs.attestationca.persist.DBCertificateManager;
-import hirs.attestationca.persist.DBDeviceGroupManager;
-import hirs.attestationca.persist.DBDeviceManager;
-import hirs.attestationca.persist.DBManager;
-import hirs.attestationca.persist.DBPolicyManager;
-import hirs.attestationca.persist.DBPortalInfoManager;
-import hirs.attestationca.persist.DBReferenceEventManager;
-import hirs.attestationca.persist.DBReferenceManifestManager;
-import hirs.attestationca.persist.DBReportManager;
-import hirs.attestationca.persist.DBReportRequestStateManager;
-import hirs.attestationca.persist.DBReportSummaryManager;
+import hirs.attestationca.servicemanager.DBCertificateManager;
+import hirs.attestationca.servicemanager.DBDeviceGroupManager;
+import hirs.attestationca.servicemanager.DBDeviceManager;
+import hirs.attestationca.servicemanager.DBManager;
+import hirs.attestationca.servicemanager.DBPolicyManager;
+import hirs.attestationca.servicemanager.DBPortalInfoManager;
+import hirs.attestationca.servicemanager.DBReferenceEventManager;
+import hirs.attestationca.servicemanager.DBReferenceManifestManager;
+import hirs.attestationca.servicemanager.DBReportManager;
+import hirs.attestationca.servicemanager.DBReportRequestStateManager;
+import hirs.attestationca.servicemanager.DBReportSummaryManager;
 import hirs.data.persist.SupplyChainValidationSummary;
 import hirs.persist.CertificateManager;
 import hirs.persist.CrudManager;
@@ -50,9 +50,10 @@ public class PersistenceConfiguration {
     public static final String DEVICE_STATE_MANAGER_BEAN_NAME = "general_db_man_bean";
 
     @Autowired
-    EntityManagerFactory entityManagerFactory;
+    private EntityManagerFactory entityManagerFactory;
+
     @PersistenceContext
-    EntityManager entityManager = entityManagerFactory.createEntityManager();
+    private EntityManager entityManager = entityManagerFactory.createEntityManager();
 
     @Autowired
     private long retryWaitTimeMilliseconds;
@@ -184,9 +185,10 @@ public class PersistenceConfiguration {
     }
 
     /**
-     * Creates a {@link hirs.attestationca.persist.DBManager} for SupplyChainValidationSummary persistence, ready for use.
+     * Creates a {@link hirs.attestationca.servicemanager.DBManager}
+     * for SupplyChainValidationSummary persistence, ready for use.
      *
-     * @return {@link hirs.attestationca.persist.DBManager}
+     * @return {@link hirs.attestationca.servicemanager.DBManager}
      */
     @Bean
     public CrudManager<SupplyChainValidationSummary> supplyChainValidationSummaryManager() {

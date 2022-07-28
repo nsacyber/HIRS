@@ -2,7 +2,6 @@ package hirs.persist;
 
 import hirs.data.persist.Device;
 import hirs.data.persist.DeviceGroup;
-import hirs.data.persist.SpringPersistenceTest;
 import hirs.data.persist.certificate.Certificate;
 import hirs.data.persist.certificate.CertificateAuthorityCredential;
 import hirs.data.persist.certificate.CertificateTest;

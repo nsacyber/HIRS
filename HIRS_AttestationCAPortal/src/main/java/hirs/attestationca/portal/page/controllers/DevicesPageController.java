@@ -9,7 +9,7 @@ import hirs.attestationca.portal.page.params.NoPageParams;
 import hirs.data.persist.Device;
 import hirs.data.persist.certificate.Certificate;
 import hirs.data.persist.certificate.DeviceAssociatedCertificate;
-import hirs.attestationca.persist.DBManager;
+import hirs.attestationca.servicemanager.DBManager;
 import hirs.persist.DeviceManager;
 import org.apache.logging.log4j.Logger;
 import org.hibernate.criterion.Restrictions;

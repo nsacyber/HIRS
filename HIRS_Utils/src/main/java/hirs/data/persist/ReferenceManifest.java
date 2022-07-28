@@ -72,33 +72,21 @@ public abstract class ReferenceManifest extends ArchivableEntity {
     private byte[] rimBytes;
     @Column(nullable = false)
     private String rimType = "Base";
-    @Column
     private String tagId = null;
-    @Column
     private boolean swidPatch = false;
-    @Column
     private boolean swidSupplemental = false;
-    @Column
     private String platformManufacturer = null;
-    @Column
     private String platformManufacturerId = null;
-    @Column
     private String swidTagVersion = null;
-    @Column
     private String swidVersion = null;
-    @Column
     private String platformModel = null;
     @Column(nullable = false)
     private String fileName = null;
-    @Column
     private UUID associatedRim;
-    @Column
     @JsonIgnore
     private String deviceName;
-    @Column
     @JsonIgnore
     private String hexDecHash = "";
-    @Column
     @JsonIgnore
     private String eventLogHash = "";
 

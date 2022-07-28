@@ -3,7 +3,6 @@ package hirs.persist;
 import hirs.data.persist.Device;
 import hirs.data.persist.DeviceGroup;
 import hirs.data.persist.ReportRequestState;
-import hirs.data.persist.SpringPersistenceTest;
 import hirs.data.persist.type.ReportRequestType;
 
 import org.testng.Assert;

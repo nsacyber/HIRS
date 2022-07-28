@@ -14,6 +14,7 @@ dependencies {
     compile libs.commons_codec
     compile libs.commons_lang
     compile libs.spring_webmvc
+    compile libs.spring_data  // Cyrus ?
     compile libs.log4j2
     compile libs.log4j2_web
     compile libs.protobuf_java

@@ -1,8 +1,8 @@
 package hirs.attestationca;
 
-import hirs.attestationca.persist.DBAppraiserManager;
-import hirs.attestationca.persist.DBDeviceGroupManager;
-import hirs.attestationca.persist.DBPolicyManager;
+import hirs.attestationca.servicemanager.DBAppraiserManager;
+import hirs.attestationca.servicemanager.DBDeviceGroupManager;
+import hirs.attestationca.servicemanager.DBPolicyManager;
 import hirs.utils.HIRSProfiles;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 
@@ -25,8 +25,10 @@ public class InitializationListener implements ServletContextListener {
         context.refresh();
 
         // obtain reference to hibernate session factory
-//        SessionFactory sessionFactory = context.getBean(LocalSessionFactoryBean.class).getObject();
-        EntityManager entityManager = context.getBean(EntityManagerFactory.class).createEntityManager();
+//        SessionFactory sessionFactory = context.getBean(LocalSessionFactoryBean.class)
+//        .getObject();
+        EntityManager entityManager = context.getBean(EntityManagerFactory.class)
+                .createEntityManager();
         AcaDbInit.insertDefaultEntries(
                 new DBAppraiserManager(entityManager),
                 new DBDeviceGroupManager(entityManager),

@@ -1,7 +1,6 @@
 package hirs.persist;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
-import hirs.data.persist.SpringPersistenceTest;
 import org.hibernate.LazyInitializationException;
 import org.hibernate.StaleObjectStateException;
 import org.hibernate.exception.LockAcquisitionException;

@@ -6,7 +6,6 @@ import hirs.data.persist.Device;
 import hirs.data.persist.DeviceGroup;
 import hirs.data.persist.DeviceTest;
 import hirs.data.persist.Policy;
-import hirs.data.persist.SpringPersistenceTest;
 import hirs.data.persist.TestPolicy;
 import hirs.data.persist.TestPolicy2;
 import org.apache.logging.log4j.LogManager;

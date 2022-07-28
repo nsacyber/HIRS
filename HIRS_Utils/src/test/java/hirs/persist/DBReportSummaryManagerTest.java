@@ -6,7 +6,6 @@ import hirs.data.persist.AppraisalResult;
 import hirs.data.persist.AppraisalStatus;
 import hirs.data.persist.ReportSummary;
 
-import hirs.data.persist.SpringPersistenceTest;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.testng.Assert;
 import org.testng.annotations.AfterClass;

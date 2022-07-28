@@ -100,7 +100,8 @@ public class AttestationCertificateAuthorityConfiguration implements WebMvcConfi
      */
 //    @Bean
     public SessionFactory sessionFactory() {
-        ServiceRegistry serviceRegistry = new StandardServiceRegistryBuilder().applySettings(getSettings()).build();
+        ServiceRegistry serviceRegistry = new StandardServiceRegistryBuilder()
+                .applySettings(getSettings()).build();
         MetadataSources metadataSources = new MetadataSources(serviceRegistry);
         Metadata metadata = metadataSources.buildMetadata();
 //        LocalSessionFactoryBean sessionFactory = new LocalSessionFactoryBean();
@@ -113,14 +114,19 @@ public class AttestationCertificateAuthorityConfiguration implements WebMvcConfi
 
     private Map<String, String> getSettings() {
         Map<String, String> settings = new HashMap<>();
-        settings.put("connection.driver_class", environment.getRequiredProperty("persistence.db.driverClass"));
+        settings.put("connection.driver_class",
+                environment.getRequiredProperty("persistence.db.driverClass"));
         settings.put("dialect", environment.getRequiredProperty("persistence.hibernate.dialect"));
-        settings.put("hibernate.connection.url", environment.getRequiredProperty("persistence.db.url"));
-        settings.put("hibernate.connection.username", environment.getRequiredProperty("persistence.db.username"));
-        settings.put("hibernate.connection.password", environment.getRequiredProperty("persistence.db.password"));
+        settings.put("hibernate.connection.url",
+                environment.getRequiredProperty("persistence.db.url"));
+        settings.put("hibernate.connection.username",
+                environment.getRequiredProperty("persistence.db.username"));
+        settings.put("hibernate.connection.password",
+                environment.getRequiredProperty("persistence.db.password"));
 //        settings.put("hibernate.current_session_context_class", );
         settings.put("hibernate.show_sql", environment.getRequiredProperty("hibernate.show_sql"));
-        settings.put("hibernate.format_sql", environment.getRequiredProperty("hibernate.format_sql"));
+        settings.put("hibernate.format_sql",
+                environment.getRequiredProperty("hibernate.format_sql"));
         return settings;
     }
 
@@ -141,9 +147,12 @@ public class AttestationCertificateAuthorityConfiguration implements WebMvcConfi
         dataSource.setDriverClassName(
                 environment.getRequiredProperty("persistence.db.driverClass"));
 
-//        dataSource.setMaximumPoolSize(Integer.parseInt(environment.getRequiredProperty("persistence.db.maximumPoolSize"));
-//        dataSource.setConnectionTimeout(Long.parseLong(environment.getRequiredProperty("persistence.db.connectionTimeout"));
-//        dataSource.setLeakDetectionThreshold(Long.parseLong(environment.getRequiredProperty("persistence.db.leakDetectionThreshold"));
+//        dataSource.setMaximumPoolSize(Integer.parseInt(environment
+//        .getRequiredProperty("persistence.db.maximumPoolSize"));
+//        dataSource.setConnectionTimeout(Long.parseLong(environment.
+//        getRequiredProperty("persistence.db.connectionTimeout"));
+//        dataSource.setLeakDetectionThreshold(Long.parseLong(environment
+//        .getRequiredProperty("persistence.db.leakDetectionThreshold"));
 
         return dataSource;
     }

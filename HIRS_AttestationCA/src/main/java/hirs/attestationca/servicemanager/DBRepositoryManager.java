@@ -1,4 +1,4 @@
-package hirs.attestationca.persist;
+package hirs.attestationca.servicemanager;
 
 import hirs.persist.RepositoryManager;
 import hirs.repository.RepoPackage;
@@ -10,7 +10,8 @@ import java.io.Serializable;
 import java.util.List;
 
 /**
- * This class defines a {@link hirs.persist.RepositoryManager} that stores Repositories and RepoPackages
+ * This class defines a {@link hirs.persist.RepositoryManager} that
+ * stores Repositories and RepoPackages
  * in a database.
  */
 @Service

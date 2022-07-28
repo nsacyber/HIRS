@@ -1,4 +1,4 @@
-package hirs.attestationca.persist;
+package hirs.attestationca.servicemanager;
 
 import hirs.data.persist.certificate.Certificate;
 import hirs.persist.CertificateManager;
@@ -39,8 +39,10 @@ public class DBCertificateManager extends DBManager<Certificate>
     }
 
     /**
-     * This method does not need to be used directly as it is used by {@link hirs.persist.CertificateSelector}'s
-     * get* methods.  Regardless, it may be used to retrieve certificates by other code in this
+     * This method does not need to be used directly as it is used by
+     * {@link hirs.persist.CertificateSelector}'s
+     * get methods.  Regardless, it may be used to retrieve certificates
+     * by other code in this
      * package, given a configured CertificateSelector.
      *
      * Example:
@@ -55,7 +57,8 @@ public class DBCertificateManager extends DBManager<Certificate>
      * </pre>
      *
      * @param <T> the type of certificate that will be retrieved
-     * @param certificateSelector a configured {@link hirs.persist.CertificateSelector} to use for querying
+     * @param certificateSelector a configured {@link hirs.persist.CertificateSelector}
+     *                            to use for querying
      * @return the resulting set of Certificates, possibly empty
      */
     @SuppressWarnings("unchecked")
