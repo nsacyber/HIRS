@@ -1,87 +1,103 @@
-using System;
 using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
 using System.Security.Cryptography.Xml;
 using System.Xml;
+using System.CommandLine;
 
 /**
- * This program reads in the following files:
- * 1. Public certificate, pem format
- * 2. Corresponding private key, pem format
- * 3. Unsigned xml document
- * 4. Signed xml document
- * The two functions are SignXml() and VerifyXml() and are called in succession.
- * 
- * XmlDocument.PreserveWhitespace(false) allows the subsequent signed xml document
- * to pass validation.
- * 
- * VerifyXml() strictly checks the cryptographic integrity of the Signature block,
+ * This command line program has three commands:
+ * 1. sign - append a signature calculated from a user-provided private key
+ * 2. validate - validate a signature with a user-provided certificate
+ * 3. debug - print out important components of a signed XML document
+ *  
+ * The validate functioin strictly checks the cryptographic integrity of the signature,
  * it does not verify the integrity of the certificate chain.
  */
-public class VerifyXML
+class Rimtool
 {
 
-    public static void Main(String[] args)
+    static async Task<int> Main(String[] args)
     {
-        try
-        {
-            const string signingAlgorithm = "http://www.w3.org/2001/04/xmldsig-more#ecdsa-sha256";
-            const string signingCertName = "RimSignCert.pem";
-            const string privateKeyFilename = "privateRimKey.pem";
-            const string unsignedFilename = "unsigned.xml";
-            const string signedFilename = "signed.xml";
-            const string signedRIM = "signedRIM.swidtag";
-
-            //Load public cert from file
-            X509Certificate2 signingCert = new X509Certificate2(signingCertName);
-            RSA publicKey = signingCert.GetRSAPublicKey();
-            //Load private key from file
-            string privateKeyText = System.IO.File.ReadAllText(privateKeyFilename);
-            //System.Console.WriteLine("Using private key: " + privateKeyText);
-            var privateKey = RSA.Create();
-            privateKey.ImportFromPem(privateKeyText);
-
-            // Load an XML file into the XmlDocument object.
-            XmlDocument unsignedDoc = new XmlDocument();
-            unsignedDoc.Load(unsignedFilename);
-            SignXml(unsignedDoc, privateKey);
-            unsignedDoc.Save(signedFilename);
-
-            // Verify the signature of the signed XML.
-            XmlDocument signedDoc = new XmlDocument();
-            signedDoc.Load(signedFilename);
-            bool result = VerifyXml(signedDoc, publicKey);
-
-            // Display the results of the signature verification to
-            // the console.
-            if (result)
+        var fileOption = new Option<string>(
+            name: "--file",
+            description: "The filename input for the command.",
+            parseArgument: result => 
             {
-                Console.WriteLine("The XML signature is valid!");
-            }
-            else
-            {
-                Console.WriteLine("The XML signature is not valid.");
-            }
-        }
-        catch (Exception e)
+                string? filePath = result.Tokens.Single().Value;
+                if (!File.Exists(filePath))
+                {
+                    result.ErrorMessage = "File " + filePath + " does not exist.";
+                    return null;
+                } else
+                {
+                    return filePath;
+                }
+            });
+        var privateKeyOption = new Option<string>(
+            name: "--private-key",
+            description: "The private key with which to sign."
+            );
+        var certificateOption = new Option<string>(
+            name: "--certificate",
+            description: "The certificate with which to validate the signature."
+            );
+
+        var rootCommand = new RootCommand("A tool for signing, validating, and debugging base RIMs.");
+        var signCommand = new Command("sign", "Sign the given file with the given key.")
         {
-            Console.WriteLine(e.Message);
-        }
+            fileOption,
+            privateKeyOption
+        };
+        var validateCommand = new Command("validate", "Validate the signature in the given base RIM.")
+        {
+            fileOption,
+            certificateOption
+        };
+        var debugCommand = new Command("debug", "Print out the significant portions of a base RIM.")
+        {
+            fileOption
+        };
+
+        signCommand.SetHandler(async (file, privateKey) =>
+        {
+            await SignXml(file, privateKey);
+        }, fileOption, privateKeyOption);
+        validateCommand.SetHandler(async (file, certificate) =>
+        {
+            await ValidateXml(file, certificate);
+        }, fileOption, certificateOption);
+        debugCommand.SetHandler(async (file) =>
+        {
+            await DebugRim(file);
+        }, fileOption);
+
+        rootCommand.AddCommand(signCommand);
+        rootCommand.AddCommand(validateCommand);
+        rootCommand.AddCommand(debugCommand);
+
+        return rootCommand.InvokeAsync(args).Result;
     }
-    private static void SignXml(XmlDocument xmlDoc, RSA rsaKey)
+    internal static async Task SignXml(string xmlFilename, string keyFilename)
     {
-        if (xmlDoc == null)
-            throw new ArgumentException(nameof(xmlDoc));
-        if (rsaKey == null)
-            throw new ArgumentException(nameof(rsaKey));
+        if (String.IsNullOrWhiteSpace(xmlFilename))
+            throw new ArgumentException(nameof(xmlFilename));
+        if (String.IsNullOrWhiteSpace(keyFilename))
+            throw new ArgumentException(nameof(keyFilename));
 
         Console.Write("Signing xml...");
 
-        // Create a SignedXml object.
-        SignedXml signedXml = new SignedXml(xmlDoc);
+        // Load an XML file into a SignedXML object.
+        XmlDocument unsignedDoc = new XmlDocument();
+        unsignedDoc.Load(xmlFilename);
+        SignedXml signedXml = new SignedXml(unsignedDoc);
+
+        //Load private key from file
+        string privateKeyText = System.IO.File.ReadAllText(keyFilename);
+        var privateKey = RSA.Create();
+        privateKey.ImportFromPem(privateKeyText);
 
         // Add the key to the SignedXml document.
-        signedXml.SigningKey = rsaKey;
+        signedXml.SigningKey = privateKey;
 
         // Create a reference to be signed.
         Reference reference = new Reference();
@@ -96,7 +112,7 @@ public class VerifyXML
 
         // Add keyinfo block
         KeyInfo keyInfo = new KeyInfo();
-        keyInfo.AddClause(new RSAKeyValue((RSA)rsaKey));
+        keyInfo.AddClause(new RSAKeyValue((RSA)privateKey));
         signedXml.KeyInfo = keyInfo;
 
         // Compute the signature.
@@ -107,28 +123,35 @@ public class VerifyXML
         XmlElement xmlDigitalSignature = signedXml.GetXml();
 
         // Append the element to the XML document.
-        xmlDoc.DocumentElement.AppendChild(xmlDoc.ImportNode(xmlDigitalSignature, true));
+        unsignedDoc.DocumentElement.AppendChild(unsignedDoc.ImportNode(xmlDigitalSignature, true));
+        //        unsignedDoc.Save(signedFilename);
         Console.WriteLine("Xml signed.");
     }
 
     // Verify the signature of an XML file against an asymmetric
     // algorithm and return the result.
-    private static Boolean VerifyXml(XmlDocument xmlDoc, RSA key)
+    internal static async Task ValidateXml(string signedFilename, string certFilename)
     {
         // Check arguments.
-        if (xmlDoc == null)
-            throw new ArgumentException("xmlDoc");
-        if (key == null)
-            throw new ArgumentException("key");
+        if (String.IsNullOrWhiteSpace(signedFilename))
+            throw new ArgumentException(nameof(signedFilename));
+        if (certFilename == null)
+            throw new ArgumentException(nameof(certFilename));
 
         Console.Write("Verifying signature...");
         // Create a new SignedXml object and pass it
         // the XML document class.
-        SignedXml signedXml = new SignedXml(xmlDoc);
+        XmlDocument signedDoc = new XmlDocument();
+        signedDoc.Load(signedFilename);
+        SignedXml signedXml = new SignedXml(signedDoc);
+
+        //Load public cert from file
+        X509Certificate2 signingCert = new X509Certificate2(certFilename);
+        RSA publicKey = signingCert.GetRSAPublicKey();
 
         // Find the "Signature" node and create a new
         // XmlNodeList object.
-        XmlNodeList nodeList = xmlDoc.GetElementsByTagName("Signature");
+        XmlNodeList nodeList = signedDoc.GetElementsByTagName("Signature");
 
         // Throw an exception if no signature was found.
         if (nodeList.Count <= 0)
@@ -149,7 +172,7 @@ public class VerifyXML
         Boolean isValid = false;
         try
         {
-            isValid = signedXml.CheckSignature(key);
+            isValid = signedXml.CheckSignature(publicKey);
         }
         catch (Exception e)
         {
@@ -157,7 +180,24 @@ public class VerifyXML
         }
 
         // Check the signature and return the result.
-        return isValid;
+        if (isValid)
+        {
+            Console.WriteLine("Signature is valid!");
+        } else
+        {
+            Console.WriteLine("Signature is not valid.");
+        }
+    }
+
+    internal static async Task DebugRim(string filename)
+    {
+        if (String.IsNullOrWhiteSpace(filename))
+        {
+            throw new ArgumentException(nameof(filename));
+        }
+        XmlDocument xmlDoc = new XmlDocument();
+        xmlDoc.Load(filename);
+
     }
 
 }
