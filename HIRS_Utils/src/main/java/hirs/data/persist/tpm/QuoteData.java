@@ -1,6 +1,7 @@
 package hirs.data.persist.tpm;
 
-import java.util.UUID;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import javax.persistence.Column;
 import javax.persistence.Embeddable;
@@ -14,9 +15,8 @@ import javax.xml.bind.annotation.XmlSchemaType;
 import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.adapters.CollapsedStringAdapter;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
-
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import java.io.Serializable;
+import java.util.UUID;
 
 /**
  * Java class for QuoteData complex type, which was modified from code
@@ -30,7 +30,7 @@ import org.apache.logging.log4j.Logger;
                 + "Integrity_Report_v1_0#", propOrder = {"quote2",
                 "tpmSignature" })
 @Embeddable
-public class QuoteData {
+public class QuoteData implements Serializable {
 
     private static final Logger LOGGER = LogManager.getLogger(QuoteData.class);
 

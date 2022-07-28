@@ -7,6 +7,7 @@ import org.joda.time.Period;
 
 import javax.persistence.Column;
 import javax.persistence.Embeddable;
+import java.io.Serializable;
 import java.util.Date;
 
 /**
@@ -14,7 +15,7 @@ import java.util.Date;
  * a specified time of day.
  */
 @Embeddable
-public class ScheduledJobInfo {
+public class ScheduledJobInfo implements Serializable {
 
     private static final long MINIMUM_FREQUENCY_MILLISECONDS = 1;
 

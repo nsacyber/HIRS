@@ -6,19 +6,18 @@ import hirs.repository.RepositoryUpdateService;
 import hirs.repository.spacewalk.Credentials;
 import hirs.repository.spacewalk.SpacewalkChannel;
 import hirs.repository.spacewalk.SpacewalkChannelRepository;
-import hirs.repository.spacewalk.SpacewalkService;
 import hirs.repository.spacewalk.SpacewalkException;
 import hirs.repository.spacewalk.SpacewalkPackage;
+import hirs.repository.spacewalk.SpacewalkService;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.List;
 import java.util.Set;
-
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 
 /**
  * Console tester application that exercises the SpacewalkService test by connecting to a real
@@ -71,7 +70,7 @@ public final class SpacewalkServiceConsoleTester {
 
     private static void loadBeansFromSpringContext() {
         AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext();
-        context.register(PersistenceConfiguration.class);
+//        context.register(null);
         context.refresh();
 
         // register a shutdown hook such that components are properly shutdown when JVM is closing

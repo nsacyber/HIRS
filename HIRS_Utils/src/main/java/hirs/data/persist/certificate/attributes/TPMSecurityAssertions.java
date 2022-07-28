@@ -2,6 +2,7 @@ package hirs.data.persist.certificate.attributes;
 
 import javax.persistence.Column;
 import javax.persistence.Embeddable;
+import java.io.Serializable;
 import java.math.BigInteger;
 
 /**
@@ -15,7 +16,7 @@ import java.math.BigInteger;
  * for specifications for TPM 2.0 (pg. 19).
  */
 @Embeddable
-public class TPMSecurityAssertions {
+public class TPMSecurityAssertions implements Serializable {
 
     /**
      * A type to handle the different endorsement key generation types used in the TPM

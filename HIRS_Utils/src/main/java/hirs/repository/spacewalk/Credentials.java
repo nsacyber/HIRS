@@ -1,10 +1,12 @@
 package hirs.repository.spacewalk;
 
 
+import java.io.Serializable;
+
 /**
  * Wraps credentials for Spacewalk connections.
  */
-public class Credentials {
+public class Credentials implements Serializable {
     private String userName, password;
 
     /**
