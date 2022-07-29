@@ -1,24 +1,23 @@
 package hirs.data.persist.tpm;
 
 import hirs.data.persist.Digest;
-import hirs.data.persist.enums.DigestAlgorithm;
 import hirs.data.persist.TPMMeasurementRecord;
+import hirs.data.persist.enums.DigestAlgorithm;
+import org.apache.commons.codec.binary.Hex;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import javax.persistence.AttributeOverride;
 import javax.persistence.AttributeOverrides;
+import javax.persistence.Column;
 import javax.persistence.Embeddable;
 import javax.persistence.Embedded;
-import javax.persistence.Column;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlSchemaType;
 import javax.xml.bind.annotation.XmlType;
-
-import org.apache.commons.codec.binary.Hex;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-
+import java.io.Serializable;
 import java.nio.ByteBuffer;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -44,7 +43,7 @@ import java.util.List;
                 + "Integrity_Report_v1_0#", propOrder = {"pcrSelection",
                 "localityAtRelease", "compositeHash", "pcrComposite" })
 @Embeddable
-public class PcrInfoShort {
+public class PcrInfoShort implements Serializable {
     private static final Logger LOGGER = LogManager
             .getLogger(PcrInfoShort.class);
 
