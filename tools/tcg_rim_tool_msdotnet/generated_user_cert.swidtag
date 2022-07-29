@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<SoftwareIdentity xmlns="http://standards.iso.org/iso/19770/-2/2015/schema.xsd" xmlns:ns2="http://www.w3.org/2000/09/xmldsig#" corpus="false" name="Example.com BIOS" patch="false" supplemental="false" tagId="94f6b457-9ac9-4d35-9b3f-78804173b65as" tagVersion="0" version="01" versionScheme="multipartnumeric" xml:lang="en">
+  <Entity name="Example Inc" regid="http://Example.com" role="softwareCreator tagCreator"/>
+  <Link href="https://Example.com/support/ProductA/firmware/installfiles" rel="installationmedia"/>
+  <Meta xmlns:n8060="http://csrc.nist.gov/ns/swid/2015-extensions/1.0" xmlns:rim="https://trustedcomputinggroup.org/wp-content/uploads/TCG_RIM_Model" n8060:colloquialVersion="Firmware_2019" n8060:edition="12" n8060:product="ProductA" n8060:revision="r2" rim:BindingSpec="PC Client RIM" rim:BindingSpecVersion="1.2" rim:PayloadType="direct" rim:firmwareManufacturerId="00213022" rim:firmwareManufacturerStr="BIOSVendorA" rim:firmwareModel="A0" rim:firmwareVersion="12" rim:pcURIGlobal="https://Example.com/support/ProductA/" rim:pcURILocal="/boot/tcg/manifest/switag/" rim:platformManufacturerId="00201234" rim:platformManufacturerStr="Example.com" rim:platformModel="ProductA" rim:platformVersion="01"/>
+  <Payload xmlns:rim="https://trustedcomputinggroup.org/wp-content/uploads/TCG_RIM_Model" rim:supportRIMFormat="TCG_EventLog_Assertion" rim:supportRIMURIGlobal="https://Example.com/support/ProductA/firmware/rims/">
+    <Directory name="rim">
+      <File xmlns:SHA256="http://www.w3.org/2001/04/xmlenc#sha256" SHA256:hash="4479ca722623f8c47b703996ced3cbd981b06b1ae8a897db70137e0b7c546848" name="Example.com.BIOS.01.rimel" size="7549"/>
+    </Directory>
+  </Payload>
+  <Signature xmlns="http://www.w3.org/2000/09/xmldsig#">
+    <SignedInfo>
+      <CanonicalizationMethod Algorithm="http://www.w3.org/TR/2001/REC-xml-c14n-20010315"/>
+      <SignatureMethod Algorithm="http://www.w3.org/2001/04/xmldsig-more#rsa-sha256"/>
+      <Reference URI="">
+        <Transforms>
+          <Transform Algorithm="http://www.w3.org/2000/09/xmldsig#enveloped-signature"/>
+        </Transforms>
+        <DigestMethod Algorithm="http://www.w3.org/2001/04/xmlenc#sha256"/>
+        <DigestValue>97uWB7zSsO5WaGbrcQrlKd1Bju0aDTjK1/ktUYBje8A=</DigestValue>
+      </Reference>
+    </SignedInfo>
+    <SignatureValue>N1YtTeo2Ryuj+CtlXIpICEay+ni7vt8+4J7tAsYpa3efnLwtea69PIqEylPWm9LdA8Eo8XDdpgxV&#13;
+7h3hi2LTOU+Wxq3bLiLamo99T1EtIwl+ZPcOv8bsfEkmShHdMC0dlfcj6r7x4tc0XkNAhhJgfRNz&#13;
+FsmPWKJb6FYcsHFbHO/Uw1hSokbAGcWWTshEOqvKHMa8UVkrFMUPnrnMtdyJqZlhDBrZHNi4rWth&#13;
+8TjlUnQVSCF9s9I04FxJ1cUAdeVMHtXKM8Pvjv68PaJMJK73dW5Yd3SbcgoKLesf/HPWeeZL0rr4&#13;
+TNjlqJ/wq61Ons45MFG9bIscVbnd+XxFHx8Skw==</SignatureValue>
+    <KeyInfo>
+      <KeyValue>
+        <RSAKeyValue>
+          <Modulus>p3WVYaRJG7EABjbAdqDYZXFSTV1nHY9Ol9A5+W8t5xwBXBryZCGWxERGr5AryKWPxd+qzjj+cFpx&#13;
+xkM6N18jEhQIx/CEZePEJqpluBO5w2wTEOe7hqtMatqgDDMeDRxUuIpP8LGP00vh1wyDFFew90d9&#13;
+dvT3bcLvFh3a3ap9bTm6aBqPup5CXpzrwIU2wZfgkDytYVBm+8bHkMaUrgpNyM+5BAg2zl/Fqw0q&#13;
+otjaGr7PzbH+urCvaGbKLMPoWkVLIgAE8Qw98HTfoYSFHC7VYQySrzIinaOBFSgViR72kHemH2lW&#13;
+jDQeHiY0VIoPik/jVVIpjWe6zzeZ2S66Q/LmjQ==</Modulus>
+          <Exponent>AQAB</Exponent>
+        </RSAKeyValue>
+      </KeyValue>
+    </KeyInfo>
+  </Signature>
+</SoftwareIdentity>

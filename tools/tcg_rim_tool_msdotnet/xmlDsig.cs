@@ -21,14 +21,15 @@ class Rimtool
         var fileOption = new Option<string>(
             name: "--file",
             description: "The filename input for the command.",
-            parseArgument: result => 
+            parseArgument: result =>
             {
                 string? filePath = result.Tokens.Single().Value;
                 if (!File.Exists(filePath))
                 {
                     result.ErrorMessage = "File " + filePath + " does not exist.";
                     return null;
-                } else
+                }
+                else
                 {
                     return filePath;
                 }
@@ -124,8 +125,9 @@ class Rimtool
 
         // Append the element to the XML document.
         unsignedDoc.DocumentElement.AppendChild(unsignedDoc.ImportNode(xmlDigitalSignature, true));
-        //        unsignedDoc.Save(signedFilename);
-        Console.WriteLine("Xml signed.");
+        string signedFilename = "signed_" + xmlFilename;
+        unsignedDoc.Save(signedFilename);
+        Console.WriteLine("Xml signed and written to " + signedFilename);
     }
 
     // Verify the signature of an XML file against an asymmetric
@@ -183,7 +185,8 @@ class Rimtool
         if (isValid)
         {
             Console.WriteLine("Signature is valid!");
-        } else
+        }
+        else
         {
             Console.WriteLine("Signature is not valid.");
         }
@@ -201,3 +204,4 @@ class Rimtool
     }
 
 }
+
