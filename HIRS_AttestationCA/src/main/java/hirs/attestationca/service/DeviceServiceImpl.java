@@ -22,7 +22,8 @@ import java.util.UUID;
  * support for the basic create, read, update, and delete methods.
  */
 @Service
-public class DeviceServiceImpl implements DeviceService, OrderedQuery<Device> {
+public class DeviceServiceImpl implements DefaultService<Device>,
+        DeviceService, OrderedQuery<Device> {
 
     private static final Logger LOGGER = LogManager.getLogger();
     @Autowired
@@ -32,12 +33,6 @@ public class DeviceServiceImpl implements DeviceService, OrderedQuery<Device> {
     public final Device saveDevice(final Device device) throws DeviceManagerException {
         LOGGER.debug("Saving device: {}", device);
         return deviceRepository.save(device);
-    }
-
-    @Override
-    public final List<Device> getDeviceList() {
-        LOGGER.debug("Getting all devices...");
-        return deviceRepository.findAll();
     }
 
     @Override
@@ -72,14 +67,19 @@ public class DeviceServiceImpl implements DeviceService, OrderedQuery<Device> {
                 this.updateDevice(device, device.getId());
             }
         });
-
     }
 
     @Override
-    public final void deleteDeviceById(final UUID deviceId)
+    public final List<Device> getList() {
+        LOGGER.debug("Getting all devices...");
+        return deviceRepository.findAll();
+    }
+
+    @Override
+    public final void deleteObjectById(final UUID uuid)
             throws DeviceManagerException {
-        LOGGER.debug("Deleting deviceById: {}", deviceId);
-        deviceRepository.deleteById(deviceId);
+        LOGGER.debug("Deleting deviceById: {}", uuid);
+        deviceRepository.deleteById(uuid);
     }
 
     @Override

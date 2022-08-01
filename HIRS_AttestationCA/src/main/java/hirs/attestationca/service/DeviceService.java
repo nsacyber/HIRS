@@ -29,16 +29,6 @@ public interface DeviceService {
     Device saveDevice(Device device) throws DeviceManagerException;
 
     /**
-     * Returns a list of all <code>Devices</code>. This searches through
-     * the database for this information.
-     *
-     * @return list of <code>Devices</code>
-     * @throws DeviceManagerException
-     *             if unable to search the database
-     */
-    List<Device> getDeviceList();
-
-    /**
      * Updates a <code>Device</code>. This updates the database entries to
      * reflect the new values that should be set.
      *
@@ -63,16 +53,4 @@ public interface DeviceService {
      *             while trying to save it to the database
      */
     void updateDeviceList(List<Device> deviceList) throws DeviceManagerException;
-
-    /**
-     * Deletes the <code>Device</code> from the database. This removes all
-     * of the database entries that stored information with regards to the
-     * <code>Device</code> with a foreign key relationship.
-     *
-     * @param deviceId of the device to be deleted
-     * @throws DeviceManagerException
-     *             if unable to find the device group or delete it from the
-     *             database
-     */
-    void deleteDeviceById(UUID deviceId) throws DeviceManagerException;
 }

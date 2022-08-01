@@ -1,0 +1,89 @@
+package hirs.attestationca.service;
+
+import hirs.FilteredRecordsList;
+import hirs.attestationca.repository.ReferenceManifestRepository;
+import hirs.data.persist.ReferenceManifest;
+import hirs.persist.CriteriaModifier;
+import hirs.persist.DBManagerException;
+import hirs.persist.OrderedQuery;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
+
+/**
+ * A <code>ReferenceManifestServiceImpl</code> manages <code>ReferenceManifestService</code>s. A
+ * <code>ReferenceManifestServiceImpl</code> is used to store and manage reference manifest. It has
+ * support for the basic create, read, update, and delete methods.
+ */
+@Service
+public class ReferenceManifestServiceImpl implements DefaultService<ReferenceManifest>,
+        ReferenceManifestService, OrderedQuery<ReferenceManifest> {
+
+    private static final Logger LOGGER = LogManager.getLogger();
+    @Autowired
+    private ReferenceManifestRepository referenceManifestRepository;
+
+    @Override
+    public ReferenceManifest saveRIM(final ReferenceManifest rim) {
+        LOGGER.debug("Saving reference manifest: {}", rim);
+        return referenceManifestRepository.save(rim);
+    }
+
+    @Override
+    public ReferenceManifest updateReferenceManifest(final ReferenceManifest rim,
+                                                     final UUID uuid) {
+        LOGGER.debug("Updating reference manifest: {}", rim);
+        ReferenceManifest dbRim;
+
+        if (uuid == null) {
+            LOGGER.debug("Reference Manifest not found: {}", rim);
+            dbRim = rim;
+        } else {
+            // will not return null, throws and exception
+            dbRim = referenceManifestRepository.getReferenceById(uuid);
+
+            // run through things that aren't equal and update
+
+        }
+
+        referenceManifestRepository.save(dbRim);
+
+        return dbRim;
+    }
+
+    @Override
+    public List<ReferenceManifest> getList() {
+        LOGGER.debug("Getting all reference manifest...");
+        return this.referenceManifestRepository.findAll();
+    }
+
+    @Override
+    public void deleteObjectById(final UUID uuid) {
+        LOGGER.debug("Deleting reference manifest by id: {}", uuid);
+        this.referenceManifestRepository.deleteById(uuid);
+    }
+
+    @Override
+    public FilteredRecordsList getOrderedList(
+            final Class<ReferenceManifest> clazz, final String columnToOrder,
+            final boolean ascending, final int firstResult, final int maxResults,
+            final String search, final Map<String, Boolean> searchableColumns)
+            throws DBManagerException {
+        return null;
+    }
+
+    @Override
+    public FilteredRecordsList<ReferenceManifest> getOrderedList(
+            final Class<ReferenceManifest> clazz, final String columnToOrder,
+            final boolean ascending, final int firstResult, final int maxResults,
+            final String search, final Map<String, Boolean> searchableColumns,
+            final CriteriaModifier criteriaModifier)
+            throws DBManagerException {
+        return null;
+    }
+}
