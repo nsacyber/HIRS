@@ -1,6 +1,6 @@
 package hirs.appraiser;
 
-import hirs.data.persist.Policy;
+import hirs.data.persist.policy.Policy;
 import org.springframework.plugin.core.Plugin;
 
 /**

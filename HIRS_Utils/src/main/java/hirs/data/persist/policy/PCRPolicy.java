@@ -1,5 +1,7 @@
-package hirs.data.persist;
+package hirs.data.persist.policy;
 
+import hirs.data.persist.ReferenceDigestValue;
+import hirs.data.persist.TPMMeasurementRecord;
 import hirs.data.persist.tpm.PcrComposite;
 import hirs.data.persist.tpm.PcrInfoShort;
 import hirs.data.persist.tpm.PcrSelection;

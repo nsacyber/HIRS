@@ -1,6 +1,6 @@
 package hirs.attestationca.portal.model;
 
-import hirs.data.persist.SupplyChainPolicy;
+import hirs.data.persist.policy.SupplyChainPolicy;
 
 /**
  * PolicyPage model object to demonstrate data exchange between policy.jsp page

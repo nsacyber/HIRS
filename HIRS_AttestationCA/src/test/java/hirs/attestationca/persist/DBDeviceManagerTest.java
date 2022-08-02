@@ -1,16 +1,13 @@
 package hirs.attestationca.persist;
 
-import hirs.attestationca.servicemanager.DBDeviceGroupManager;
 import hirs.attestationca.servicemanager.DBDeviceManager;
 import hirs.attestationca.servicemanager.DBReportManager;
 import hirs.data.persist.Device;
-import hirs.data.persist.DeviceGroup;
 import hirs.data.persist.DeviceInfoReport;
 import hirs.attestationca.data.persist.DeviceTest;
 import hirs.data.persist.enums.HealthStatus;
 import hirs.data.persist.info.NetworkInfo;
 import hirs.persist.DBUtility;
-import hirs.persist.DeviceGroupManager;
 import hirs.persist.DeviceManager;
 import hirs.persist.DeviceManagerException;
 import hirs.persist.ReportManager;

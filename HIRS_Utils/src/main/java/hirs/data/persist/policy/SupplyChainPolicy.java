@@ -1,4 +1,4 @@
-package hirs.data.persist;
+package hirs.data.persist.policy;
 
 import javax.persistence.Column;
 import javax.persistence.Embedded;

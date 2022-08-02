@@ -1,7 +1,6 @@
 package hirs.attestationca.data.persist;
 
 import hirs.data.persist.Device;
-import hirs.data.persist.DeviceGroup;
 import hirs.data.persist.enums.HealthStatus;
 import hirs.persist.ScheduledJobInfo;
 import org.testng.Assert;

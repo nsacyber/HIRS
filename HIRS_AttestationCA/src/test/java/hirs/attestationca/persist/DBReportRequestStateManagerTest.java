@@ -1,10 +1,8 @@
 package hirs.attestationca.persist;
 
-import hirs.attestationca.servicemanager.DBDeviceGroupManager;
 import hirs.attestationca.servicemanager.DBDeviceManager;
 import hirs.attestationca.servicemanager.DBReportRequestStateManager;
 import hirs.data.persist.Device;
-import hirs.data.persist.DeviceGroup;
 import hirs.attestationca.data.persist.DeviceTest;
 import hirs.data.persist.ReportRequestState;
 import hirs.data.persist.type.ReportRequestType;

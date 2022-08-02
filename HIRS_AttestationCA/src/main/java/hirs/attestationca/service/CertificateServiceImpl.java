@@ -13,6 +13,8 @@ import hirs.persist.OrderedQuery;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.retry.RetryCallback;
+import org.springframework.retry.RetryContext;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -36,7 +38,15 @@ public class CertificateServiceImpl extends DbServiceImpl<Certificate>
     @Override
     public Certificate saveCertificate(final Certificate certificate) {
         LOGGER.debug("Saving certificate: {}", certificate);
-        return certificateRepository.save(certificate);
+
+        return getRetryTemplate().execute(new RetryCallback<Certificate,
+                DBManagerException>() {
+            @Override
+            public Certificate doWithRetry(final RetryContext context)
+                    throws DBManagerException {
+                return certificateRepository.save(certificate);
+            }
+        });
     }
 
     @Override
@@ -58,15 +68,21 @@ public class CertificateServiceImpl extends DbServiceImpl<Certificate>
 
         }
 
-        certificateRepository.save(dbCertificate);
-
-        return dbCertificate;
+        return saveCertificate(dbCertificate);
     }
 
     @Override
     public List<Certificate> getList() {
         LOGGER.debug("Getting all certificates...");
-        return this.certificateRepository.findAll();
+
+        return getRetryTemplate().execute(new RetryCallback<List<Certificate>,
+                DBManagerException>() {
+            @Override
+            public List<Certificate> doWithRetry(final RetryContext context)
+                    throws DBManagerException {
+                return certificateRepository.findAll();
+            }
+        });
     }
 
     @Override
@@ -78,12 +94,23 @@ public class CertificateServiceImpl extends DbServiceImpl<Certificate>
                 this.updateCertificate(certificate, certificate.getId());
             }
         });
+        certificateRepository.flush();
     }
 
     @Override
     public void deleteObjectById(final UUID uuid) {
         LOGGER.debug("Deleting certificate by id: {}", uuid);
-        this.certificateRepository.deleteById(uuid);
+
+        getRetryTemplate().execute(new RetryCallback<Void,
+                DBManagerException>() {
+            @Override
+            public Void doWithRetry(final RetryContext context)
+                    throws DBManagerException {
+                certificateRepository.deleteById(uuid);
+                certificateRepository.flush();
+                return null;
+            }
+        });
     }
 
     @Override

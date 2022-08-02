@@ -14,7 +14,7 @@ import hirs.data.persist.DeviceInfoReport;
 import hirs.data.persist.EventLogMeasurements;
 import hirs.data.persist.ReferenceDigestValue;
 import hirs.data.persist.ReferenceManifest;
-import hirs.data.persist.SupplyChainPolicy;
+import hirs.data.persist.policy.SupplyChainPolicy;
 import hirs.data.persist.SupplyChainValidationSummary;
 import hirs.data.persist.SupportReferenceManifest;
 import hirs.data.persist.SwidResource;

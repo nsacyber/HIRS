@@ -1,4 +1,6 @@
-package hirs.data.persist;
+package hirs.data.persist.policy;
+
+import hirs.data.persist.UserDefinedEntity;
 
 import javax.persistence.Access;
 import javax.persistence.AccessType;

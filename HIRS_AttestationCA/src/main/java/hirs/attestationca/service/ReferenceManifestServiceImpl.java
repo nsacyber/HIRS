@@ -9,6 +9,8 @@ import hirs.persist.OrderedQuery;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.retry.RetryCallback;
+import org.springframework.retry.RetryContext;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -32,7 +34,15 @@ public class ReferenceManifestServiceImpl extends DbServiceImpl<ReferenceManifes
     @Override
     public ReferenceManifest saveRIM(final ReferenceManifest rim) {
         LOGGER.debug("Saving reference manifest: {}", rim);
-        return referenceManifestRepository.save(rim);
+
+        return getRetryTemplate().execute(new RetryCallback<ReferenceManifest,
+                DBManagerException>() {
+            @Override
+            public ReferenceManifest doWithRetry(final RetryContext context)
+                    throws DBManagerException {
+                return referenceManifestRepository.save(rim);
+            }
+        });
     }
 
     @Override
@@ -52,15 +62,21 @@ public class ReferenceManifestServiceImpl extends DbServiceImpl<ReferenceManifes
 
         }
 
-        referenceManifestRepository.save(dbRim);
-
-        return dbRim;
+        return saveRIM(dbRim);
     }
 
     @Override
     public List<ReferenceManifest> getList() {
         LOGGER.debug("Getting all reference manifest...");
-        return this.referenceManifestRepository.findAll();
+
+        return getRetryTemplate().execute(new RetryCallback<List<ReferenceManifest>,
+                DBManagerException>() {
+            @Override
+            public List<ReferenceManifest> doWithRetry(final RetryContext context)
+                    throws DBManagerException {
+                return referenceManifestRepository.findAll();
+            }
+        });
     }
 
     @Override
@@ -77,7 +93,16 @@ public class ReferenceManifestServiceImpl extends DbServiceImpl<ReferenceManifes
     @Override
     public void deleteObjectById(final UUID uuid) {
         LOGGER.debug("Deleting reference manifest by id: {}", uuid);
-        this.referenceManifestRepository.deleteById(uuid);
+
+        getRetryTemplate().execute(new RetryCallback<Void, DBManagerException>() {
+            @Override
+            public Void doWithRetry(final RetryContext context)
+                    throws DBManagerException {
+                referenceManifestRepository.deleteById(uuid);
+                referenceManifestRepository.flush();
+                return null;
+            }
+        });
     }
 
     @Override

@@ -2,10 +2,8 @@ package hirs.attestationca.portal.page.controllers;
 
 import hirs.appraiser.Appraiser;
 import hirs.appraiser.SupplyChainAppraiser;
-import hirs.data.persist.DeviceGroup;
-import hirs.data.persist.SupplyChainPolicy;
+import hirs.data.persist.policy.SupplyChainPolicy;
 import hirs.persist.AppraiserManager;
-import hirs.persist.DeviceGroupManager;
 import hirs.persist.PolicyManager;
 import org.testng.Assert;
 import static hirs.attestationca.portal.page.Page.POLICY;

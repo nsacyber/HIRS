@@ -2,7 +2,6 @@ package hirs.attestationca.servicemanager;
 
 import hirs.FilteredRecordsList;
 import hirs.data.persist.Device;
-import hirs.data.persist.DeviceGroup;
 import hirs.persist.CriteriaModifier;
 import hirs.persist.DBManagerException;
 import hirs.persist.DeviceManager;

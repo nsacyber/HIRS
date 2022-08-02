@@ -10,6 +10,8 @@ import hirs.persist.OrderedQuery;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.retry.RetryCallback;
+import org.springframework.retry.RetryContext;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -32,7 +34,15 @@ public class DeviceServiceImpl extends DbServiceImpl<Device> implements DefaultS
     @Override
     public final Device saveDevice(final Device device) throws DeviceManagerException {
         LOGGER.debug("Saving device: {}", device);
-        return deviceRepository.save(device);
+
+        return getRetryTemplate().execute(new RetryCallback<Device,
+                DBManagerException>() {
+            @Override
+            public Device doWithRetry(final RetryContext context)
+                    throws DBManagerException {
+                return deviceRepository.save(device);
+            }
+        });
     }
 
     @Override
@@ -50,19 +60,22 @@ public class DeviceServiceImpl extends DbServiceImpl<Device> implements DefaultS
 
             // run through things that aren't equal and update
 
+                    }
 
-
-        }
-
-        deviceRepository.save(dbDevice);
-
-        return dbDevice;
+        return saveDevice(dbDevice);
     }
 
     @Override
     public final List<Device> getList() {
         LOGGER.debug("Getting all devices...");
-        return deviceRepository.findAll();
+
+        return getRetryTemplate().execute(new RetryCallback<List<Device>, DBManagerException>() {
+            @Override
+            public List<Device> doWithRetry(final RetryContext context)
+                    throws DBManagerException {
+                return deviceRepository.findAll();
+            }
+        });
     }
 
     @Override
@@ -74,13 +87,23 @@ public class DeviceServiceImpl extends DbServiceImpl<Device> implements DefaultS
                 this.updateDevice(device, device.getId());
             }
         });
+        deviceRepository.flush();
     }
 
     @Override
     public final void deleteObjectById(final UUID uuid)
             throws DeviceManagerException {
         LOGGER.debug("Deleting deviceById: {}", uuid);
-        deviceRepository.deleteById(uuid);
+
+        getRetryTemplate().execute(new RetryCallback<Void, DBManagerException>() {
+            @Override
+            public Void doWithRetry(final RetryContext context)
+                    throws DBManagerException {
+                deviceRepository.deleteById(uuid);
+                deviceRepository.flush();
+                return null;
+            }
+        });
     }
 
     @Override

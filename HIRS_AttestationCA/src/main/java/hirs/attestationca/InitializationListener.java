@@ -1,7 +1,6 @@
 package hirs.attestationca;
 
 import hirs.attestationca.servicemanager.DBAppraiserManager;
-import hirs.attestationca.servicemanager.DBDeviceGroupManager;
 import hirs.attestationca.servicemanager.DBPolicyManager;
 import hirs.utils.HIRSProfiles;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
@@ -31,7 +30,6 @@ public class InitializationListener implements ServletContextListener {
                 .createEntityManager();
         AcaDbInit.insertDefaultEntries(
                 new DBAppraiserManager(entityManager),
-                new DBDeviceGroupManager(entityManager),
                 new DBPolicyManager(entityManager)
         );
     }

@@ -1,9 +1,7 @@
 package hirs.data.service;
 
 import hirs.data.persist.Device;
-import hirs.data.persist.DeviceGroup;
 import hirs.data.persist.DeviceInfoReport;
-import hirs.persist.DeviceGroupManager;
 import hirs.persist.DeviceManager;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;

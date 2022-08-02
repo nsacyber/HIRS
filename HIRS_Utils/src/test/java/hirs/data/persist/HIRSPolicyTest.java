@@ -9,6 +9,7 @@ import hirs.appraiser.TPMAppraiser;
 
 import java.util.HashSet;
 
+import hirs.data.persist.policy.HIRSPolicy;
 import org.apache.logging.log4j.Logger;
 import org.hibernate.Session;
 import org.testng.Assert;

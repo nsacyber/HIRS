@@ -1,14 +1,12 @@
 package hirs.data.service;
 
 import hirs.data.persist.Device;
-import hirs.data.persist.DeviceGroup;
 import hirs.data.persist.DeviceInfoReport;
 import hirs.data.persist.info.FirmwareInfo;
 import hirs.data.persist.info.HardwareInfo;
 import hirs.data.persist.info.NetworkInfo;
 import hirs.data.persist.info.OSInfo;
 import hirs.data.persist.info.TPMInfo;
-import hirs.persist.DeviceGroupManager;
 import hirs.persist.DeviceManager;
 
 import org.testng.annotations.Test;

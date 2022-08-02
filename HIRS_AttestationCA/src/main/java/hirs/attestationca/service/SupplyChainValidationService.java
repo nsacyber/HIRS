@@ -3,7 +3,7 @@ package hirs.attestationca.service;
 import java.util.Set;
 
 import hirs.data.persist.Device;
-import hirs.data.persist.SupplyChainPolicy;
+import hirs.data.persist.policy.SupplyChainPolicy;
 import hirs.data.persist.SupplyChainValidationSummary;
 import hirs.data.persist.certificate.EndorsementCredential;
 import hirs.data.persist.certificate.PlatformCredential;

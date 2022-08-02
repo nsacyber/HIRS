@@ -2,7 +2,6 @@ package hirs.attestationca.configuration;
 
 import hirs.attestationca.AttestationCertificateAuthorityConfiguration;
 import hirs.attestationca.servicemanager.DBCertificateManager;
-import hirs.attestationca.servicemanager.DBDeviceGroupManager;
 import hirs.attestationca.servicemanager.DBDeviceManager;
 import hirs.attestationca.servicemanager.DBManager;
 import hirs.attestationca.servicemanager.DBPolicyManager;
@@ -15,7 +14,6 @@ import hirs.attestationca.servicemanager.DBReportSummaryManager;
 import hirs.data.persist.SupplyChainValidationSummary;
 import hirs.persist.CertificateManager;
 import hirs.persist.CrudManager;
-import hirs.persist.DeviceGroupManager;
 import hirs.persist.DeviceManager;
 import hirs.persist.PolicyManager;
 import hirs.persist.PortalInfoManager;
@@ -105,18 +103,6 @@ public class PersistenceConfiguration {
     @Bean
     public ReportSummaryManager reportSummaryManager() {
         DBReportSummaryManager manager = new DBReportSummaryManager(entityManager);
-        setDbManagerRetrySettings(manager);
-        return manager;
-    }
-
-    /**
-     * Creates a {@link hirs.persist.DeviceGroupManager} ready to use.
-     *
-     * @return {@link hirs.persist.DeviceGroupManager}
-     */
-    @Bean
-    public DeviceGroupManager deviceGroupManager() {
-        DBDeviceGroupManager manager = new DBDeviceGroupManager(entityManager);
         setDbManagerRetrySettings(manager);
         return manager;
     }

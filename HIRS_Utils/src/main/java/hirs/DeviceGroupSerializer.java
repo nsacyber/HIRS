@@ -3,7 +3,6 @@ package hirs;
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.JsonSerializer;
 import com.fasterxml.jackson.databind.SerializerProvider;
-import hirs.data.persist.DeviceGroup;
 
 import java.io.IOException;
 import java.util.Date;

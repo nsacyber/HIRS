@@ -1,10 +1,8 @@
 package hirs.attestationca.persist;
 
 import hirs.attestationca.servicemanager.DBCertificateManager;
-import hirs.attestationca.servicemanager.DBDeviceGroupManager;
 import hirs.attestationca.servicemanager.DBDeviceManager;
 import hirs.data.persist.Device;
-import hirs.data.persist.DeviceGroup;
 import hirs.data.persist.certificate.Certificate;
 import hirs.data.persist.certificate.CertificateAuthorityCredential;
 import hirs.data.persist.certificate.CertificateTest;
@@ -17,7 +15,6 @@ import hirs.data.persist.certificate.PlatformCredentialTest;
 import hirs.persist.CertificateManager;
 import hirs.persist.CertificateSelector;
 import hirs.persist.DBManagerException;
-import hirs.persist.DeviceGroupManager;
 import hirs.persist.DeviceManager;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;

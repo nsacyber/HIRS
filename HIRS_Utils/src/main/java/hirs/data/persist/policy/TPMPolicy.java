@@ -1,5 +1,6 @@
-package hirs.data.persist;
+package hirs.data.persist.policy;
 
+import hirs.data.persist.TPMMeasurementRecord;
 import hirs.data.persist.enums.AlertSeverity;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;

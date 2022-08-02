@@ -2,8 +2,7 @@ package hirs.persist;
 
 import static org.apache.logging.log4j.LogManager.getLogger;
 import hirs.appraiser.Appraiser;
-import hirs.data.persist.DeviceGroup;
-import hirs.data.persist.Policy;
+import hirs.data.persist.policy.Policy;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;

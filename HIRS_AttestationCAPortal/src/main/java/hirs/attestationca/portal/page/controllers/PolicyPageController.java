@@ -6,7 +6,7 @@ import hirs.attestationca.portal.model.PolicyPageModel;
 import hirs.attestationca.portal.page.PageController;
 import hirs.attestationca.portal.page.PageMessages;
 import hirs.attestationca.portal.page.params.NoPageParams;
-import hirs.data.persist.SupplyChainPolicy;
+import hirs.data.persist.policy.SupplyChainPolicy;
 import hirs.persist.AppraiserManager;
 import hirs.persist.PolicyManager;
 import hirs.persist.PolicyManagerException;

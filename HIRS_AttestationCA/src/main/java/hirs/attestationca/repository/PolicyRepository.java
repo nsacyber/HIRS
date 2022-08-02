@@ -1,6 +1,6 @@
 package hirs.attestationca.repository;
 
-import hirs.data.persist.Policy;
+import hirs.data.persist.policy.Policy;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 

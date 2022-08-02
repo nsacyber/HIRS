@@ -2,13 +2,11 @@ package hirs.attestationca.portal.page.controllers;
 
 import hirs.attestationca.portal.page.PageControllerTest;
 import hirs.data.persist.Device;
-import hirs.data.persist.DeviceGroup;
 import hirs.data.persist.certificate.Certificate;
 import hirs.data.persist.certificate.EndorsementCredential;
 import hirs.data.persist.certificate.IssuedAttestationCertificate;
 import hirs.data.persist.certificate.PlatformCredential;
 import hirs.persist.CertificateManager;
-import hirs.persist.DeviceGroupManager;
 import hirs.persist.DeviceManager;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.annotation.DirtiesContext;

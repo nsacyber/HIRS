@@ -4,6 +4,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.hibernate.StaleObjectStateException;
 import org.hibernate.exception.LockAcquisitionException;
+import org.springframework.retry.RetryListener;
 import org.springframework.retry.backoff.FixedBackOffPolicy;
 import org.springframework.retry.policy.SimpleRetryPolicy;
 import org.springframework.retry.support.RetryTemplate;
@@ -36,7 +37,7 @@ public class DbServiceImpl<T> {
     private RetryTemplate retryTemplate;
 
     /**
-     * Creates a new <code>DBManager</code> that uses the default database. The
+     * Creates a new <code>DbServiceImpl</code> that uses the default database. The
      * default database is used to store all of the objects.
      *
      */
@@ -68,5 +69,21 @@ public class DbServiceImpl<T> {
         this.retryTemplate = new RetryTemplate();
         this.retryTemplate.setRetryPolicy(retryPolicy);
         this.retryTemplate.setBackOffPolicy(backoffPolicy);
+    }
+
+    /**
+     * Accessor method for the retry function.
+     * @return instance of the RetryTemplate
+     */
+    protected RetryTemplate getRetryTemplate() {
+        return this.retryTemplate;
+    }
+
+    /**
+     * Registers a retry listener to be notified of retry activity.
+     * @param retryListener the retry listener
+     */
+    public void addRetryListener(final RetryListener retryListener) {
+        retryTemplate.registerListener(retryListener);
     }
 }

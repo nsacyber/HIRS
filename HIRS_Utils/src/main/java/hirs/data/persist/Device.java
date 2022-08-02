@@ -67,13 +67,6 @@ public class Device extends AbstractEntity {
     private DeviceInfoReport deviceInfo;
 
     @XmlTransient
-    @JsonSerialize(using = DeviceGroupSerializer.class)
-    @ManyToOne(cascade = { CascadeType.PERSIST, CascadeType.MERGE }, fetch = FetchType.EAGER,
-            optional = false)
-    @JoinColumn(name = "device_group_id", nullable = false)
-    private DeviceGroup deviceGroup;
-
-    @XmlTransient
     @Column
     @Enumerated(EnumType.ORDINAL)
     private HealthStatus healthStatus;
@@ -187,54 +180,6 @@ public class Device extends AbstractEntity {
      */
     public final void setDeviceInfo(final DeviceInfoReport deviceInfo) {
         this.deviceInfo = deviceInfo;
-    }
-
-    /**
-     * Returns the device group that is set for this device. May return null if
-     * no device group is set. Null represents the "default" device group.
-     *
-     * @return deviceGroup
-     */
-    public final DeviceGroup getDeviceGroup() {
-        return deviceGroup;
-    }
-
-    /**
-     * Sets the device group for this device. May be null if the "default"
-     * device group is desired. This method also adds or removes the Device
-     * from the Device Group as appropriate.
-     *
-     * @param deviceGroup
-     *            deviceGroup or null
-     */
-    public final void setDeviceGroup(final DeviceGroup deviceGroup) {
-        if (deviceGroup == null) {
-            LOGGER.error("could not add devicegroup -- null");
-            throw new NullPointerException("deviceGroup");
-        }
-
-        if (this.deviceGroup != null) {
-            if (this.deviceGroup.equals(deviceGroup)) {
-                // Do nothing if the device is already in the group
-                return;
-            }
-            this.deviceGroup.removeDeviceProtected(this);
-        }
-
-        deviceGroup.addDeviceProtected(this);
-        this.deviceGroup = deviceGroup;
-    }
-
-    /**
-     * Sets the device group for this device. May be null if the "default"
-     * device group is desired.
-     *
-     * @param deviceGroup
-     *            deviceGroup or null
-     */
-    protected final void setOnlyDeviceGroup(
-            final DeviceGroup deviceGroup) {
-        this.deviceGroup = deviceGroup;
     }
 
     /**

@@ -1,16 +1,15 @@
-package hirs.data.persist;
+package hirs.data.persist.policy;
 
 import hirs.appraiser.Appraiser;
-
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Set;
 
 import javax.persistence.CollectionTable;
 import javax.persistence.ElementCollection;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
 import javax.persistence.JoinColumn;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * A <code>HIRSPolicy</code> is a <code>Policy</code> that specifies the
@@ -83,16 +82,5 @@ public class HIRSPolicy extends Policy {
      */
     public final Set<Class<? extends Appraiser>> getRequiredAppraisers() {
         return Collections.unmodifiableSet(requiredAppraisers);
-    }
-
-
-    /**
-     * Generates the name for the HIRS Policy.
-     *
-     * @param group The group related to the HIRS Policy
-     * @return The name of the Policy
-     */
-    public static String nameFromGroup(final DeviceGroup group) {
-        return "hirspolicy_" + group.getId();
     }
 }

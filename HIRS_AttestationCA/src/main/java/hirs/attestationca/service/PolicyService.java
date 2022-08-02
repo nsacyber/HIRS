@@ -1,6 +1,6 @@
 package hirs.attestationca.service;
 
-import hirs.data.persist.Policy;
+import hirs.data.persist.policy.Policy;
 
 import java.util.UUID;
 

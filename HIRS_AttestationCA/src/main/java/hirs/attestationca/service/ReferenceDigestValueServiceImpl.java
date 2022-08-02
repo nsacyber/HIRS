@@ -9,6 +9,8 @@ import hirs.persist.OrderedQuery;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.retry.RetryCallback;
+import org.springframework.retry.RetryContext;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -52,18 +54,36 @@ public class ReferenceDigestValueServiceImpl extends DbServiceImpl<ReferenceDige
                 this.updateDigestValue(values, values.getId());
             }
         });
+        referenceDigestValueRepository.flush();
     }
 
     @Override
     public void deleteObjectById(final UUID uuid) {
         LOGGER.debug("Deleting reference digest values by id: {}", uuid);
-        this.referenceDigestValueRepository.deleteById(uuid);
+
+        getRetryTemplate().execute(new RetryCallback<Void, DBManagerException>() {
+            @Override
+            public Void doWithRetry(final RetryContext context)
+                    throws DBManagerException {
+                referenceDigestValueRepository.deleteById(uuid);
+                referenceDigestValueRepository.flush();
+                return null;
+            }
+        });
     }
 
     @Override
     public ReferenceDigestValue saveDigestValue(final ReferenceDigestValue digestValue) {
         LOGGER.debug("Saving reference digest value: {}", digestValue);
-        return this.referenceDigestValueRepository.save(digestValue);
+
+        return getRetryTemplate().execute(new RetryCallback<ReferenceDigestValue,
+                DBManagerException>() {
+            @Override
+            public ReferenceDigestValue doWithRetry(final RetryContext context)
+                    throws DBManagerException {
+                return referenceDigestValueRepository.save(digestValue);
+            }
+        });
     }
 
     @Override
@@ -88,9 +108,7 @@ public class ReferenceDigestValueServiceImpl extends DbServiceImpl<ReferenceDige
             }
         }
 
-        this.referenceDigestValueRepository.save(dbDigestValue);
-
-        return dbDigestValue;
+        return saveDigestValue(dbDigestValue);
     }
 
     @Override

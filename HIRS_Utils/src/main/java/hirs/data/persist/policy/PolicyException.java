@@ -1,4 +1,4 @@
-package hirs.data.persist;
+package hirs.data.persist.policy;
 
 /**
  * Represents an exception thrown when a <code>Policy</code> is misconfigured in
