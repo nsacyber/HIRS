@@ -3,6 +3,10 @@ package hirs.attestationca.service;
 import hirs.FilteredRecordsList;
 import hirs.attestationca.repository.CertificateRepository;
 import hirs.data.persist.certificate.Certificate;
+import hirs.data.persist.certificate.CertificateAuthorityCredential;
+import hirs.data.persist.certificate.EndorsementCredential;
+import hirs.data.persist.certificate.IssuedAttestationCertificate;
+import hirs.data.persist.certificate.PlatformCredential;
 import hirs.persist.CriteriaModifier;
 import hirs.persist.DBManagerException;
 import hirs.persist.OrderedQuery;
@@ -21,10 +25,11 @@ import java.util.UUID;
  * support for the basic create, read, update, and delete methods.
  */
 @Service
-public class CertificateServiceImpl implements DefaultService<Certificate>,
+public class CertificateServiceImpl extends DbServiceImpl<Certificate>
+        implements DefaultService<Certificate>,
         CertificateService, OrderedQuery<Certificate> {
 
-    private static final Logger LOGGER = LogManager.getLogger();
+    private static final Logger LOGGER = LogManager.getLogger(CertificateServiceImpl.class);
     @Autowired
     private CertificateRepository certificateRepository;
 
@@ -49,6 +54,8 @@ public class CertificateServiceImpl implements DefaultService<Certificate>,
 
             // run through things that aren't equal and update
 
+            getCertificateClass(dbCertificate); // need to coming
+
         }
 
         certificateRepository.save(dbCertificate);
@@ -60,6 +67,17 @@ public class CertificateServiceImpl implements DefaultService<Certificate>,
     public List<Certificate> getList() {
         LOGGER.debug("Getting all certificates...");
         return this.certificateRepository.findAll();
+    }
+
+    @Override
+    public void updateElements(final List<Certificate> certificates) {
+        LOGGER.debug("Updating {} certificates...", certificates.size());
+
+        certificates.stream().forEach((certificate) -> {
+            if (certificate != null) {
+                this.updateCertificate(certificate, certificate.getId());
+            }
+        });
     }
 
     @Override
@@ -85,5 +103,25 @@ public class CertificateServiceImpl implements DefaultService<Certificate>,
             final CriteriaModifier criteriaModifier)
             throws DBManagerException {
         return null;
+    }
+
+    /**
+     * Gets the concrete certificate class type to query for.
+     *
+     * @param certificate the instance of the certificate to get type.
+     * @return the certificate class type
+     */
+    private Class<? extends Certificate> getCertificateClass(final Certificate certificate) {
+        if (certificate instanceof PlatformCredential) {
+            return PlatformCredential.class;
+        } else if (certificate instanceof EndorsementCredential) {
+            return EndorsementCredential.class;
+        } else if (certificate instanceof CertificateAuthorityCredential) {
+            return CertificateAuthorityCredential.class;
+        } else if (certificate instanceof IssuedAttestationCertificate) {
+            return IssuedAttestationCertificate.class;
+        } else {
+            return null;
+        }
     }
 }

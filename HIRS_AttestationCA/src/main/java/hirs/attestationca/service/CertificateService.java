@@ -13,7 +13,7 @@ public interface CertificateService {
 
     /**
      * Saves the <code>Certificate</code> in the database. This creates a new
-     * database session and saves the device.
+     * database session and saves the certificate.
      *
      * @param certificate Certificate to save
      * @return reference to saved certificate

@@ -20,6 +20,13 @@ public interface DefaultService<T> {
     List<T> getList();
 
     /**
+     * All passed in objects of type T will either be updated.
+     * However if the element doesn't exist, it will be saved.
+     * @param elements list of objects to save
+     */
+    void updateElements(List<T> elements);
+
+    /**
      * Deletes the <code>T</code> from the database. This removes all
      * of the database entries that stored information with regards to the
      * <code>T</code> with a foreign key relationship.

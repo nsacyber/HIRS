@@ -21,10 +21,11 @@ import java.util.UUID;
  * support for the basic create, read, update, and delete methods.
  */
 @Service
-public class ReferenceManifestServiceImpl implements DefaultService<ReferenceManifest>,
+public class ReferenceManifestServiceImpl extends DbServiceImpl<ReferenceManifest>
+        implements DefaultService<ReferenceManifest>,
         ReferenceManifestService, OrderedQuery<ReferenceManifest> {
 
-    private static final Logger LOGGER = LogManager.getLogger();
+    private static final Logger LOGGER = LogManager.getLogger(ReferenceManifestServiceImpl.class);
     @Autowired
     private ReferenceManifestRepository referenceManifestRepository;
 
@@ -60,6 +61,17 @@ public class ReferenceManifestServiceImpl implements DefaultService<ReferenceMan
     public List<ReferenceManifest> getList() {
         LOGGER.debug("Getting all reference manifest...");
         return this.referenceManifestRepository.findAll();
+    }
+
+    @Override
+    public void updateElements(final List<ReferenceManifest> referenceManifests) {
+        LOGGER.debug("Updating {} reference manifests...", referenceManifests.size());
+
+        referenceManifests.stream().forEach((rim) -> {
+            if (rim != null) {
+                this.updateReferenceManifest(rim, rim.getId());
+            }
+        });
     }
 
     @Override

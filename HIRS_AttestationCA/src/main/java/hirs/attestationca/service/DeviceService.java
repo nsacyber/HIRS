@@ -3,7 +3,6 @@ package hirs.attestationca.service;
 import hirs.data.persist.Device;
 import hirs.persist.DeviceManagerException;
 
-import java.util.List;
 import java.util.UUID;
 
 /**
@@ -40,17 +39,4 @@ public interface DeviceService {
      * @return a device object
      */
     Device updateDevice(Device device, UUID deviceId) throws DeviceManagerException;
-
-    /**
-     * Updates list of <code>Device</code>s. This updates the database entries
-     * to reflect the new values that should be set.  Commonly used when
-     * deleting a DeviceGroup.
-     *
-     * @param deviceList
-     *            list of devices that should be updated in single transaction
-     * @throws DeviceManagerException
-     *             if device has not previously been saved or an error occurs
-     *             while trying to save it to the database
-     */
-    void updateDeviceList(List<Device> deviceList) throws DeviceManagerException;
 }

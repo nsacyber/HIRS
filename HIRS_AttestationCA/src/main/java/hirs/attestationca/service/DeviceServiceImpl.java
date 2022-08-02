@@ -22,10 +22,10 @@ import java.util.UUID;
  * support for the basic create, read, update, and delete methods.
  */
 @Service
-public class DeviceServiceImpl implements DefaultService<Device>,
+public class DeviceServiceImpl extends DbServiceImpl<Device> implements DefaultService<Device>,
         DeviceService, OrderedQuery<Device> {
 
-    private static final Logger LOGGER = LogManager.getLogger();
+    private static final Logger LOGGER = LogManager.getLogger(DeviceServiceImpl.class);
     @Autowired
     private DeviceRepository deviceRepository;
 
@@ -50,6 +50,8 @@ public class DeviceServiceImpl implements DefaultService<Device>,
 
             // run through things that aren't equal and update
 
+
+
         }
 
         deviceRepository.save(dbDevice);
@@ -58,21 +60,20 @@ public class DeviceServiceImpl implements DefaultService<Device>,
     }
 
     @Override
-    public final void updateDeviceList(final List<Device> deviceList)
-            throws DeviceManagerException {
-        LOGGER.debug("Updating {} devices...", deviceList.size());
+    public final List<Device> getList() {
+        LOGGER.debug("Getting all devices...");
+        return deviceRepository.findAll();
+    }
 
-        deviceList.stream().forEach((device) -> {
+    @Override
+    public void updateElements(final List<Device> devices) {
+        LOGGER.debug("Updating {} devices...", devices.size());
+
+        devices.stream().forEach((device) -> {
             if (device != null) {
                 this.updateDevice(device, device.getId());
             }
         });
-    }
-
-    @Override
-    public final List<Device> getList() {
-        LOGGER.debug("Getting all devices...");
-        return deviceRepository.findAll();
     }
 
     @Override
