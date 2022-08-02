@@ -104,9 +104,8 @@ public class TpmPcrEvent2 extends TpmPcrEvent {
                 hashName = hashAlg.getHashName();
                 hashlist.add(hashAlg);
                 eventDigest = new byte[hashAlg.getHashLength()];
-                setEventDigest(hashAlg.getDigest(),hashAlg.getHashLength());
+                setEventDigest(hashAlg.getDigest(), hashAlg.getHashLength());
             }
-            
             is.read(rawEventSize);
             eventSize = HexUtils.leReverseInt(rawEventSize);
             eventContent = new byte[eventSize];

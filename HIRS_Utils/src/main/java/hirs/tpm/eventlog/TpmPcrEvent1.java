@@ -49,7 +49,7 @@ public class TpmPcrEvent1 extends TpmPcrEvent {
         byte[] rawEventSize = new byte[UefiConstants.SIZE_4];
         byte[] eventDigest = new byte[EvConstants.SHA1_LENGTH];
         byte[] eventContent = null;
-        int digestSize= EvConstants.SHA1_LENGTH;
+        int digestSize = EvConstants.SHA1_LENGTH;
         int eventSize = 0;
         String hashName = "TPM_ALG_SHA1";
         if (is.available() > UefiConstants.SIZE_32) {

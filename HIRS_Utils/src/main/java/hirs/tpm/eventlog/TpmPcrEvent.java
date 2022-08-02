@@ -121,9 +121,10 @@ public class TpmPcrEvent {
      * This can be SHA1 for older event structures or any algorithm for newer structure.
      *
      * @param digestData cryptographic hash
+     * @param digestLength length of the cryptographic hash
      */
     protected void setEventDigest(final byte[] digestData, final int digestLength) {
-    	digest = new byte[digestLength];
+        digest = new byte[digestLength];
         System.arraycopy(digestData, 0, digest, 0, digestLength);
     }
 
@@ -138,7 +139,7 @@ public class TpmPcrEvent {
         System.arraycopy(digest, 0, digestCopy, 0, this.digestLength);
         return digestCopy;
     }
-    
+
     /**
      * Returns a hex representation of the event digest.
      * @return hex string
@@ -469,6 +470,7 @@ public class TpmPcrEvent {
      * @param event        the byte array holding the event data.
      * @param eventContent the byte array holding the event content.
      * @param eventNumber  event position within the event log.
+     * @param hashName     name of the hash algorithm used by the event log
      * @return String description of the event.
      * @throws CertificateException     if the event contains an event that cannot be processed.
      * @throws NoSuchAlgorithmException if an event contains an unsupported algorithm.
@@ -485,11 +487,11 @@ public class TpmPcrEvent {
         description += "\n";
         if (hashName.compareToIgnoreCase("TPM_ALG_SHA1") == 0) {   // Digest
             description += "digest (SHA-1): " + Hex.encodeHexString(this.digest);
-        } else if (hashName.compareToIgnoreCase("TPM_ALG_SHA256") == 0) {   // Digest 
+        } else if (hashName.compareToIgnoreCase("TPM_ALG_SHA256") == 0) {   // Digest
         	description += "digest (SHA256): " + Hex.encodeHexString(this.digest);
-        } else if (hashName.compareToIgnoreCase("TPM_ALG_SHA384") == 0) {   // Digest 
+        } else if (hashName.compareToIgnoreCase("TPM_ALG_SHA384") == 0) {   // Digest
         	description += "digest (SHA384): " + Hex.encodeHexString(this.digest);
-        } else if (hashName.compareToIgnoreCase("TPM_ALG_SHA512") == 0) {   // Digest 
+        } else if (hashName.compareToIgnoreCase("TPM_ALG_SHA512") == 0) {   // Digest
         	description += "digest (SHA512): " + Hex.encodeHexString(this.digest);
         } else {
         	description += "Unsupported Hash Algorithm encoutered";
