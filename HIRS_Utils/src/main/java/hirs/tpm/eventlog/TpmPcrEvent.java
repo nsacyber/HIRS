@@ -488,13 +488,13 @@ public class TpmPcrEvent {
         if (hashName.compareToIgnoreCase("TPM_ALG_SHA1") == 0) {   // Digest
             description += "digest (SHA-1): " + Hex.encodeHexString(this.digest);
         } else if (hashName.compareToIgnoreCase("TPM_ALG_SHA256") == 0) {   // Digest
-        	description += "digest (SHA256): " + Hex.encodeHexString(this.digest);
+            description += "digest (SHA256): " + Hex.encodeHexString(this.digest);
         } else if (hashName.compareToIgnoreCase("TPM_ALG_SHA384") == 0) {   // Digest
-        	description += "digest (SHA384): " + Hex.encodeHexString(this.digest);
+            description += "digest (SHA384): " + Hex.encodeHexString(this.digest);
         } else if (hashName.compareToIgnoreCase("TPM_ALG_SHA512") == 0) {   // Digest
-        	description += "digest (SHA512): " + Hex.encodeHexString(this.digest);
+            description += "digest (SHA512): " + Hex.encodeHexString(this.digest);
         } else {
-        	description += "Unsupported Hash Algorithm encoutered";
+            description += "Unsupported Hash Algorithm encoutered";
         }
         if (eventID != UefiConstants.SIZE_4) {
             description += "\n";
