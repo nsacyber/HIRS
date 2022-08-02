@@ -477,7 +477,7 @@ public class TpmPcrEvent {
      * @throws IOException              if the event cannot be parsed.
      */
     public String processEvent(final byte[] event, final byte[] eventContent, final int eventNumber,
-    		                        final String hashName)
+                                    final String hashName)
            throws CertificateException, NoSuchAlgorithmException, IOException {
         int eventID = (int) eventType;
         this.eventNumber = eventNumber;
