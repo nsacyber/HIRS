@@ -1,4 +1,4 @@
-package hirs.attestationca.service;
+package hirs.persist.service;
 
 import java.util.List;
 import java.util.UUID;

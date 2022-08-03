@@ -1,4 +1,4 @@
-package hirs.attestationca.service;
+package hirs.persist.service;
 
 import hirs.data.persist.ReferenceDigestValue;
 

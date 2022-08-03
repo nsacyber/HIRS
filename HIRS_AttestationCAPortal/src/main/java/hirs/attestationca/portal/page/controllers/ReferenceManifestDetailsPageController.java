@@ -12,11 +12,11 @@ import hirs.data.persist.ReferenceManifest;
 import hirs.data.persist.SupportReferenceManifest;
 import hirs.data.persist.SwidResource;
 import hirs.data.persist.certificate.CertificateAuthorityCredential;
-import hirs.persist.CertificateManager;
 import hirs.persist.DBManagerException;
 import hirs.persist.ReferenceDigestManager;
 import hirs.persist.ReferenceEventManager;
 import hirs.persist.ReferenceManifestManager;
+import hirs.persist.service.CertificateService;
 import hirs.tpm.eventlog.TCGEventLog;
 import hirs.tpm.eventlog.TpmPcrEvent;
 import hirs.utils.ReferenceManifestValidator;
@@ -59,7 +59,7 @@ public class ReferenceManifestDetailsPageController
     @Autowired
     private final ReferenceEventManager referenceEventManager;
     @Autowired
-    private final CertificateManager certificateManager;
+    private final CertificateService certificateService;
     private static final ReferenceManifestValidator RIM_VALIDATOR
             = new ReferenceManifestValidator();
     private static final Logger LOGGER
@@ -71,19 +71,19 @@ public class ReferenceManifestDetailsPageController
      * @param referenceManifestManager the reference manifest manager.
      * @param referenceDigestManager   the reference digest manager.
      * @param referenceEventManager    the reference event manager.
-     * @param certificateManager       the certificate manager.
+     * @param certificateService       the certificate service.
      */
     @Autowired
     public ReferenceManifestDetailsPageController(
             final ReferenceManifestManager referenceManifestManager,
             final ReferenceDigestManager referenceDigestManager,
             final ReferenceEventManager referenceEventManager,
-            final CertificateManager certificateManager) {
+            final CertificateService certificateService) {
         super(Page.RIM_DETAILS);
         this.referenceManifestManager = referenceManifestManager;
         this.referenceDigestManager = referenceDigestManager;
         this.referenceEventManager = referenceEventManager;
-        this.certificateManager = certificateManager;
+        this.certificateService = certificateService;
     }
 
     /**
@@ -114,7 +114,7 @@ public class ReferenceManifestDetailsPageController
             try {
                 UUID uuid = UUID.fromString(params.getId());
                 data.putAll(getRimDetailInfo(uuid, referenceManifestManager,
-                        referenceDigestManager, referenceEventManager, certificateManager));
+                        referenceDigestManager, referenceEventManager, certificateService));
             } catch (IllegalArgumentException iaEx) {
                 String uuidError = "Failed to parse ID from: " + params.getId();
                 messages.addError(uuidError);
@@ -144,7 +144,7 @@ public class ReferenceManifestDetailsPageController
      * @param referenceManifestManager the reference manifest manager.
      * @param referenceDigestManager   the reference digest manager.
      * @param referenceEventManager    the reference event manager.
-     * @param certificateManager       the certificate manager.
+     * @param certificateService       the certificate service.
      * @return mapping of the RIM information from the database.
      * @throws java.io.IOException      error for reading file bytes.
      * @throws NoSuchAlgorithmException If an unknown Algorithm is encountered.
@@ -154,7 +154,7 @@ public class ReferenceManifestDetailsPageController
                                            final ReferenceManifestManager referenceManifestManager,
                                            final ReferenceDigestManager referenceDigestManager,
                                            final ReferenceEventManager referenceEventManager,
-                                           final CertificateManager certificateManager)
+                                           final CertificateService certificateService)
                                             throws IOException,
             CertificateException, NoSuchAlgorithmException {
         HashMap<String, Object> data = new HashMap<>();
@@ -163,7 +163,7 @@ public class ReferenceManifestDetailsPageController
                 .byEntityId(uuid).getRIM();
 
         if (bRim != null) {
-            data.putAll(getBaseRimInfo(bRim, referenceManifestManager, certificateManager));
+            data.putAll(getBaseRimInfo(bRim, referenceManifestManager, certificateService));
         }
 
         SupportReferenceManifest sRim = SupportReferenceManifest.select(referenceManifestManager)
@@ -190,7 +190,7 @@ public class ReferenceManifestDetailsPageController
      *
      * @param baseRim                  established ReferenceManifest Type.
      * @param referenceManifestManager the reference manifest manager.
-     * @param certificateManager       the certificate manager.
+     * @param certificateService       the certificate service.
      * @return mapping of the RIM information from the database.
      * @throws java.io.IOException      error for reading file bytes.
      * @throws NoSuchAlgorithmException If an unknown Algorithm is encountered.
@@ -199,7 +199,7 @@ public class ReferenceManifestDetailsPageController
     private static HashMap<String, Object> getBaseRimInfo(
             final BaseReferenceManifest baseRim,
             final ReferenceManifestManager referenceManifestManager,
-            final CertificateManager certificateManager)
+            final CertificateService certificateService)
             throws IOException, CertificateException, NoSuchAlgorithmException {
         HashMap<String, Object> data = new HashMap<>();
 
@@ -304,13 +304,13 @@ public class ReferenceManifestDetailsPageController
         }
 
         Set<CertificateAuthorityCredential> certificates =
-                CertificateAuthorityCredential.select(certificateManager)
+                CertificateAuthorityCredential.select(certificateService)
                         .getCertificates();
         //Report invalid signature unless RIM_VALIDATOR validates it and cert path is valid
         data.put("signatureValid", false);
         for (CertificateAuthorityCredential cert : certificates) {
             SupplyChainValidationServiceImpl scvsImpl =
-                    new SupplyChainValidationServiceImpl(certificateManager);
+                    new SupplyChainValidationServiceImpl(certificateService);
             KeyStore keystore = scvsImpl.getCaChain(cert);
             if (RIM_VALIDATOR.validateXmlSignature(cert)) {
                 try {

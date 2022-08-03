@@ -14,7 +14,7 @@ import hirs.data.persist.certificate.CertificateAuthorityCredential;
 import hirs.data.persist.certificate.EndorsementCredential;
 import hirs.data.persist.certificate.IssuedAttestationCertificate;
 import hirs.data.persist.certificate.PlatformCredential;
-import hirs.persist.CertificateManager;
+import hirs.persist.service.CertificateService;
 import hirs.persist.CriteriaModifier;
 import hirs.persist.CrudManager;
 import hirs.persist.DBManagerException;
@@ -63,7 +63,7 @@ import static org.apache.logging.log4j.LogManager.getLogger;
 public class CertificateRequestPageController extends PageController<NoPageParams> {
 
     @Autowired
-    private final CertificateManager certificateManager;
+    private final CertificateService certificateService;
     @Autowired
     private final OrderedListQuerier<Certificate> dataTableQuerier;
 
@@ -84,17 +84,17 @@ public class CertificateRequestPageController extends PageController<NoPageParam
     /**
      * Constructor providing the Page's display and routing specification.
      *
-     * @param certificateManager the certificate manager
+     * @param certificateService the certificate service impl
      * @param crudManager the CRUD manager for certificates
      * @param acaCertificate the ACA's X509 certificate
      */
     @Autowired
     public CertificateRequestPageController(
-            final CertificateManager certificateManager,
+            final CertificateService certificateService,
             final CrudManager<Certificate> crudManager,
             final X509Certificate acaCertificate) {
         super(Page.TRUST_CHAIN);
-        this.certificateManager = certificateManager;
+        this.certificateService = certificateService;
         this.dataTableQuerier = crudManager;
 
         try {
@@ -152,7 +152,7 @@ public class CertificateRequestPageController extends PageController<NoPageParam
                  mav = getBaseModelAndView(Page.TRUST_CHAIN);
                 // Map with the ACA certificate information
                 data.putAll(CertificateStringMapBuilder.getCertificateAuthorityInformation(
-                        certificateAuthorityCredential, this.certificateManager));
+                        certificateAuthorityCredential, this.certificateService));
                 mav.addObject(ACA_CERT_DATA, data);
                 break;
             default:
@@ -222,7 +222,7 @@ public class CertificateRequestPageController extends PageController<NoPageParam
                     PlatformCredential pc = (PlatformCredential) records.get(i);
                     // find the EC using the PC's "holder serial number"
                     associatedEC = EndorsementCredential
-                            .select(certificateManager)
+                            .select(certificateService)
                             .bySerialNumber(pc.getHolderSerialNumber())
                             .getCertificate();
 
@@ -262,7 +262,7 @@ public class CertificateRequestPageController extends PageController<NoPageParam
 
         try {
             UUID uuid = UUID.fromString(id);
-            Certificate certificate = getCertificateById(certificateType, uuid, certificateManager);
+            Certificate certificate = getCertificateById(certificateType, uuid, certificateService);
             if (certificate == null) {
                 // Use the term "record" here to avoid user confusion b/t cert and cred
                 String notFoundMessage = "Unable to locate record with ID: " + uuid;
@@ -276,13 +276,13 @@ public class CertificateRequestPageController extends PageController<NoPageParam
                         List<PlatformCredential> sharedCertificates = getCertificateByBoardSN(
                                 certificateType,
                                 platformCertificate.getPlatformSerial(),
-                                certificateManager);
+                                certificateService);
 
                         if (sharedCertificates != null) {
                             for (PlatformCredential pc : sharedCertificates) {
                                 if (!pc.isBase()) {
                                     pc.archive();
-                                    certificateManager.updateCertificate(pc);
+                                    certificateService.updateCertificate(pc, pc.getId());
                                 }
                             }
                         }
@@ -290,7 +290,7 @@ public class CertificateRequestPageController extends PageController<NoPageParam
                 }
 
                 certificate.archive();
-                certificateManager.updateCertificate(certificate);
+                certificateService.updateCertificate(certificate, uuid);
 
                 String deleteCompletedMessage = "Certificate successfully deleted";
                 messages.addInfo(deleteCompletedMessage);
@@ -330,7 +330,7 @@ public class CertificateRequestPageController extends PageController<NoPageParam
 
         try {
             UUID uuid = UUID.fromString(id);
-            Certificate certificate = getCertificateById(certificateType, uuid, certificateManager);
+            Certificate certificate = getCertificateById(certificateType, uuid, certificateService);
             if (certificate == null) {
                 // Use the term "record" here to avoid user confusion b/t cert and cred
                 String notFoundMessage = "Unable to locate record with ID: " + uuid;
@@ -404,7 +404,7 @@ public class CertificateRequestPageController extends PageController<NoPageParam
         try (ZipOutputStream zipOut = new ZipOutputStream(response.getOutputStream())) {
             // get all files
             for (CertificateAuthorityCredential ca : CertificateAuthorityCredential
-                    .select(certificateManager)
+                    .select(certificateService)
                     .getCertificates()) {
                 zipFileName = String.format("ca-certificates[%s].cer",
                         Integer.toHexString(ca.getCertificateHash()));
@@ -448,7 +448,7 @@ public class CertificateRequestPageController extends PageController<NoPageParam
 
         try (ZipOutputStream zipOut = new ZipOutputStream(response.getOutputStream())) {
             // get all files
-            for (PlatformCredential pc : PlatformCredential.select(certificateManager)
+            for (PlatformCredential pc : PlatformCredential.select(certificateService)
                     .getCertificates()) {
                 zipFileName = String.format("Platform_Certificates[%s].cer",
                         Integer.toHexString(pc.getCertificateHash()));
@@ -493,7 +493,7 @@ public class CertificateRequestPageController extends PageController<NoPageParam
         try (ZipOutputStream zipOut = new ZipOutputStream(response.getOutputStream())) {
             // get all files
             for (IssuedAttestationCertificate ic : IssuedAttestationCertificate
-                    .select(certificateManager)
+                    .select(certificateService)
                     .getCertificates()) {
                 zipFileName = String.format("Issued_Certificates[%s].cer",
                         Integer.toHexString(ic.getCertificateHash()));
@@ -538,7 +538,7 @@ public class CertificateRequestPageController extends PageController<NoPageParam
         try (ZipOutputStream zipOut = new ZipOutputStream(response.getOutputStream())) {
             // get all files
             for (EndorsementCredential ek : EndorsementCredential
-                    .select(certificateManager)
+                    .select(certificateService)
                     .getCertificates()) {
                 zipFileName = String.format("Endorsement_Certificates[%s].cer",
                         Integer.toHexString(ek.getCertificateHash()));
@@ -589,7 +589,7 @@ public class CertificateRequestPageController extends PageController<NoPageParam
                         certificateType,
                         file.getOriginalFilename(),
                         messages, certificate,
-                        certificateManager);
+                        certificateService);
             }
         }
 
@@ -666,33 +666,33 @@ public class CertificateRequestPageController extends PageController<NoPageParam
      *
      * @param certificateType String containing the certificate type
      * @param uuid the ID of the cert
-     * @param certificateManager the certificate manager to query
+     * @param certificateService the certificate service to query
      * @return the certificate or null if none is found
      */
     private Certificate getCertificateById(
             final String certificateType,
             final UUID uuid,
-            final CertificateManager certificateManager) {
+            final CertificateService certificateService) {
 
         switch (certificateType) {
             case PLATFORMCREDENTIAL:
                 return PlatformCredential
-                        .select(certificateManager)
+                        .select(certificateService)
                         .byEntityId(uuid)
                         .getCertificate();
             case ENDORSEMENTCREDENTIAL:
                 return EndorsementCredential
-                        .select(certificateManager)
+                        .select(certificateService)
                         .byEntityId(uuid)
                         .getCertificate();
             case ISSUEDCERTIFICATES:
                 return IssuedAttestationCertificate
-                        .select(certificateManager)
+                        .select(certificateService)
                         .byEntityId(uuid)
                         .getCertificate();
             case TRUSTCHAIN:
                 return CertificateAuthorityCredential
-                        .select(certificateManager)
+                        .select(certificateService)
                         .byEntityId(uuid)
                         .getCertificate();
             default:
@@ -706,30 +706,30 @@ public class CertificateRequestPageController extends PageController<NoPageParam
      *
      * @param certificateType String containing the certificate type
      * @param certificateHash the hash of the certificate's bytes
-     * @param certificateManager the certificate manager to query
+     * @param certificateService the certificate service to query
      * @return the certificate or null if none is found
      */
     private Certificate getCertificateByHash(
             final String certificateType,
             final int certificateHash,
-            final CertificateManager certificateManager) {
+            final CertificateService certificateService) {
 
         switch (certificateType) {
             case PLATFORMCREDENTIAL:
                 return PlatformCredential
-                        .select(certificateManager)
+                        .select(certificateService)
                         .includeArchived()
                         .byHashCode(certificateHash)
                         .getCertificate();
             case ENDORSEMENTCREDENTIAL:
                 return EndorsementCredential
-                        .select(certificateManager)
+                        .select(certificateService)
                         .includeArchived()
                         .byHashCode(certificateHash)
                         .getCertificate();
             case TRUSTCHAIN:
                 return CertificateAuthorityCredential
-                        .select(certificateManager)
+                        .select(certificateService)
                         .includeArchived()
                         .byHashCode(certificateHash)
                         .getCertificate();
@@ -743,13 +743,13 @@ public class CertificateRequestPageController extends PageController<NoPageParam
      *
      * @param certificateType String containing the certificate type
      * @param serialNumber the platform serial number
-     * @param certificateManager the certificate manager to query
+     * @param certificateService the certificate service to query
      * @return the certificate or null if none is found
      */
     private List<PlatformCredential> getCertificateByBoardSN(
             final String certificateType,
             final String serialNumber,
-            final CertificateManager certificateManager) {
+            final CertificateService certificateService) {
 
         if (serialNumber == null) {
             return null;
@@ -758,7 +758,7 @@ public class CertificateRequestPageController extends PageController<NoPageParam
         switch (certificateType) {
             case PLATFORMCREDENTIAL:
                 return PlatformCredential
-                        .select(certificateManager)
+                        .select(certificateService)
                         .byBoardSerialNumber(serialNumber)
                         .getCertificates().stream().collect(Collectors.toList());
             default:
@@ -839,7 +839,7 @@ public class CertificateRequestPageController extends PageController<NoPageParam
      * be stored
      * @param messages contains any messages that will be display on the page
      * @param certificate the certificate to store
-     * @param certificateManager the DB manager to use
+     * @param certificateService the DB service to use
      * @return the messages for the page
      */
     private void storeCertificate(
@@ -847,7 +847,7 @@ public class CertificateRequestPageController extends PageController<NoPageParam
             final String fileName,
             final PageMessages messages,
             final Certificate certificate,
-            final CertificateManager certificateManager) {
+            final CertificateService certificateService) {
 
         Certificate existingCertificate;
 
@@ -856,7 +856,7 @@ public class CertificateRequestPageController extends PageController<NoPageParam
             existingCertificate = getCertificateByHash(
                     certificateType,
                     certificate.getCertificateHash(),
-                    certificateManager);
+                    certificateService);
         } catch (DBManagerException e) {
             final String failMessage = "Querying for existing certificate failed ("
                     + fileName + "): ";
@@ -874,7 +874,7 @@ public class CertificateRequestPageController extends PageController<NoPageParam
                         List<PlatformCredential> sharedCertificates = getCertificateByBoardSN(
                                 certificateType,
                                 platformCertificate.getPlatformSerial(),
-                                certificateManager);
+                                certificateService);
 
                         if (sharedCertificates != null) {
                             for (PlatformCredential pc : sharedCertificates) {
@@ -911,7 +911,7 @@ public class CertificateRequestPageController extends PageController<NoPageParam
                     }**/
                 }
 
-                certificateManager.saveCertificate(certificate);
+                certificateService.saveCertificate(certificate);
 
                 final String successMsg
                         = String.format("New certificate successfully uploaded (%s): ", fileName);
@@ -933,7 +933,7 @@ public class CertificateRequestPageController extends PageController<NoPageParam
             if (existingCertificate.isArchived()) {
                 existingCertificate.restore();
                 existingCertificate.resetCreateTime();
-                certificateManager.updateCertificate(existingCertificate);
+                certificateService.updateCertificate(existingCertificate, certificate.getId());
 
                 final String successMsg = String.format("Pre-existing certificate "
                         + "found and unarchived (%s): ", fileName);

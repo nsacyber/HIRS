@@ -14,7 +14,6 @@ import hirs.data.persist.DeviceInfoReport;
 import hirs.data.persist.EventLogMeasurements;
 import hirs.data.persist.ReferenceDigestValue;
 import hirs.data.persist.ReferenceManifest;
-import hirs.data.persist.policy.SupplyChainPolicy;
 import hirs.data.persist.SupplyChainValidationSummary;
 import hirs.data.persist.SupportReferenceManifest;
 import hirs.data.persist.SwidResource;
@@ -27,12 +26,13 @@ import hirs.data.persist.info.HardwareInfo;
 import hirs.data.persist.info.NetworkInfo;
 import hirs.data.persist.info.OSInfo;
 import hirs.data.persist.info.TPMInfo;
+import hirs.data.persist.policy.SupplyChainPolicy;
 import hirs.data.service.DeviceRegister;
-import hirs.persist.CertificateManager;
 import hirs.persist.DeviceManager;
 import hirs.persist.ReferenceEventManager;
 import hirs.persist.ReferenceManifestManager;
 import hirs.persist.TPM2ProvisionerState;
+import hirs.persist.service.CertificateService;
 import hirs.structs.converters.SimpleStructBuilder;
 import hirs.structs.converters.StructConverter;
 import hirs.structs.elements.aca.IdentityRequestEnvelope;
@@ -174,7 +174,7 @@ public abstract class AbstractAttestationCertificateAuthority
      */
     private Integer validDays = 1;
 
-    private final CertificateManager certificateManager;
+    private final CertificateService certificateService;
     private final ReferenceManifestManager referenceManifestManager;
     private final DeviceRegister deviceRegister;
     private final DeviceManager deviceManager;
@@ -188,7 +188,7 @@ public abstract class AbstractAttestationCertificateAuthority
      * @param privateKey the ACA private key
      * @param acaCertificate the ACA certificate
      * @param structConverter the struct converter
-     * @param certificateManager the certificate manager
+     * @param certificateService the certificate service
      * @param referenceManifestManager the Reference Manifest manager
      * @param deviceRegister the device register
      * @param validDays the number of days issued certs are valid
@@ -200,7 +200,7 @@ public abstract class AbstractAttestationCertificateAuthority
             final SupplyChainValidationService supplyChainValidationService,
             final PrivateKey privateKey, final X509Certificate acaCertificate,
             final StructConverter structConverter,
-            final CertificateManager certificateManager,
+            final CertificateService certificateService,
             final ReferenceManifestManager referenceManifestManager,
             final DeviceRegister deviceRegister, final int validDays,
             final DeviceManager deviceManager,
@@ -209,7 +209,7 @@ public abstract class AbstractAttestationCertificateAuthority
         this.privateKey = privateKey;
         this.acaCertificate = acaCertificate;
         this.structConverter = structConverter;
-        this.certificateManager = certificateManager;
+        this.certificateService = certificateService;
         this.referenceManifestManager = referenceManifestManager;
         this.deviceRegister = deviceRegister;
         this.validDays = validDays;
@@ -252,7 +252,7 @@ public abstract class AbstractAttestationCertificateAuthority
         byte[] ecBytesFromIdentityRequest = proof.getEndorsementCredential();
         if (ArrayUtils.isNotEmpty(ecBytesFromIdentityRequest)) {
             endorsementCredential = CredentialManagementHelper.storeEndorsementCredential(
-                    this.certificateManager, ecBytesFromIdentityRequest
+                    this.certificateService, ecBytesFromIdentityRequest
             );
             try {
                 BigInteger publicKeyModulus = Certificate.getPublicKeyModulus(
@@ -281,7 +281,7 @@ public abstract class AbstractAttestationCertificateAuthority
         byte[] pcBytesFromIdentityRequest = proof.getPlatformCredential();
         if (ArrayUtils.isNotEmpty(pcBytesFromIdentityRequest)) {
             platformCredentials.add(CredentialManagementHelper.storePlatformCredential(
-                    this.certificateManager, pcBytesFromIdentityRequest
+                    this.certificateService, pcBytesFromIdentityRequest
             ));
         } else if (endorsementCredential != null) {
             // if none in the identity request, look for uploaded platform credentials
@@ -492,7 +492,7 @@ public abstract class AbstractAttestationCertificateAuthority
         if (platformCredentials.size() == 1) {
             for (PlatformCredential pc : platformCredentials) {
                 if (pc != null && pc.getPlatformSerial() != null) {
-                    platformCredentials.addAll(PlatformCredential.select(this.certificateManager)
+                    platformCredentials.addAll(PlatformCredential.select(this.certificateService)
                             .byBoardSerialNumber(pc.getPlatformSerial()).getCertificates());
                 }
             }
@@ -1129,7 +1129,7 @@ public abstract class AbstractAttestationCertificateAuthority
         EndorsementCredential credential = null;
 
         try {
-            credential = EndorsementCredential.select(this.certificateManager)
+            credential = EndorsementCredential.select(this.certificateService)
                     .byPublicKeyModulus(Certificate.getPublicKeyModulus(ekPublicKey))
                     .getCertificate();
         } catch (IOException e) {
@@ -1153,7 +1153,7 @@ public abstract class AbstractAttestationCertificateAuthority
         } else {
             LOG.debug("Searching for platform credential(s) based on holder serial number: "
                         + ec.getSerialNumber());
-            credentials = PlatformCredential.select(this.certificateManager)
+            credentials = PlatformCredential.select(this.certificateService)
                                             .byHolderSerialNumber(ec.getSerialNumber())
                                             .getCertificates();
             if (credentials == null || credentials.isEmpty()) {
@@ -1824,7 +1824,7 @@ public abstract class AbstractAttestationCertificateAuthority
         EndorsementCredential endorsementCredential = null;
         if (identityClaim.hasEndorsementCredential()) {
             endorsementCredential = CredentialManagementHelper.storeEndorsementCredential(
-                    this.certificateManager,
+                    this.certificateService,
                     identityClaim.getEndorsementCredential().toByteArray());
         } else if (ekPub != null) {
             LOG.warn("Endorsement Cred was not in the identity claim from the client."
@@ -1855,7 +1855,7 @@ public abstract class AbstractAttestationCertificateAuthority
             for (ByteString platformCredential : identityClaim.getPlatformCredentialList()) {
                 if (!platformCredential.isEmpty()) {
                     platformCredentials.add(CredentialManagementHelper.storePlatformCredential(
-                            this.certificateManager, platformCredential.toByteArray()));
+                            this.certificateService, platformCredential.toByteArray()));
                 }
             }
         } else if (endorsementCredential != null) {
@@ -1913,7 +1913,7 @@ public abstract class AbstractAttestationCertificateAuthority
                     derEncodedAttestationCertificate, endorsementCredential, platformCredentials);
 
             if (scp != null) {
-                issuedAc = IssuedAttestationCertificate.select(certificateManager)
+                issuedAc = IssuedAttestationCertificate.select(certificateService)
                         .byDeviceId(device.getId()).getCertificate();
 
                 generateCertificate = scp.isIssueAttestationCertificate();
@@ -1932,7 +1932,7 @@ public abstract class AbstractAttestationCertificateAuthority
             }
             if (generateCertificate) {
                 attCert.setDevice(device);
-                certificateManager.saveCertificate(attCert);
+                certificateService.saveCertificate(attCert);
             }
         } catch (Exception e) {
             LOG.error("Error saving generated Attestation Certificate to database.", e);

@@ -1,18 +1,16 @@
 package hirs.attestationca.service;
 
-import hirs.attestationca.configuration.PersistenceConfiguration;
 import hirs.appraiser.Appraiser;
 import hirs.appraiser.SupplyChainAppraiser;
+import hirs.attestationca.configuration.PersistenceConfiguration;
 import hirs.data.persist.AppraisalStatus;
 import hirs.data.persist.ArchivableEntity;
 import hirs.data.persist.BaseReferenceManifest;
 import hirs.data.persist.Device;
 import hirs.data.persist.DeviceInfoReport;
 import hirs.data.persist.EventLogMeasurements;
-import hirs.data.persist.policy.PCRPolicy;
 import hirs.data.persist.ReferenceDigestValue;
 import hirs.data.persist.ReferenceManifest;
-import hirs.data.persist.policy.SupplyChainPolicy;
 import hirs.data.persist.SupplyChainValidation;
 import hirs.data.persist.SupplyChainValidationSummary;
 import hirs.data.persist.SupportReferenceManifest;
@@ -22,14 +20,16 @@ import hirs.data.persist.certificate.Certificate;
 import hirs.data.persist.certificate.CertificateAuthorityCredential;
 import hirs.data.persist.certificate.EndorsementCredential;
 import hirs.data.persist.certificate.PlatformCredential;
+import hirs.data.persist.policy.PCRPolicy;
+import hirs.data.persist.policy.SupplyChainPolicy;
 import hirs.persist.AppraiserManager;
-import hirs.persist.CertificateManager;
 import hirs.persist.CrudManager;
 import hirs.persist.DBManagerException;
 import hirs.persist.PolicyManager;
 import hirs.persist.ReferenceDigestManager;
 import hirs.persist.ReferenceEventManager;
 import hirs.persist.ReferenceManifestManager;
+import hirs.persist.service.CertificateService;
 import hirs.tpm.eventlog.TCGEventLog;
 import hirs.tpm.eventlog.TpmPcrEvent;
 import hirs.utils.BouncyCastleUtils;
@@ -81,7 +81,7 @@ public class SupplyChainValidationServiceImpl implements SupplyChainValidationSe
     private ReferenceManifestManager referenceManifestManager;
     private ReferenceDigestManager referenceDigestManager;
     private ReferenceEventManager referenceEventManager;
-    private CertificateManager certificateManager;
+    private CertificateService certificateService;
     private CredentialValidator supplyChainCredentialValidator;
     private CrudManager<SupplyChainValidationSummary> supplyChainValidatorSummaryManager;
 
@@ -92,10 +92,10 @@ public class SupplyChainValidationServiceImpl implements SupplyChainValidationSe
      * Constructor to set just the CertificateManager, so that cert chain validating
      * methods can be called from outside classes.
      *
-     * @param certificateManager the cert manager
+     * @param certificateService the cert service
      */
-    public SupplyChainValidationServiceImpl(final CertificateManager certificateManager) {
-        this.certificateManager = certificateManager;
+    public SupplyChainValidationServiceImpl(final CertificateService certificateService) {
+        this.certificateService = certificateService;
     }
 
     /**
@@ -103,7 +103,7 @@ public class SupplyChainValidationServiceImpl implements SupplyChainValidationSe
      *
      * @param policyManager                      the policy manager
      * @param appraiserManager                   the appraiser manager
-     * @param certificateManager                 the cert manager
+     * @param certificateService                 the cert service
      * @param referenceManifestManager           the RIM manager
      * @param supplyChainValidatorSummaryManager the summary manager
      * @param supplyChainCredentialValidator     the credential validator
@@ -114,7 +114,7 @@ public class SupplyChainValidationServiceImpl implements SupplyChainValidationSe
     @SuppressWarnings("ParameterNumberCheck")
     public SupplyChainValidationServiceImpl(
             final PolicyManager policyManager, final AppraiserManager appraiserManager,
-            final CertificateManager certificateManager,
+            final CertificateService certificateService,
             final ReferenceManifestManager referenceManifestManager,
             final CrudManager<SupplyChainValidationSummary> supplyChainValidatorSummaryManager,
             final CredentialValidator supplyChainCredentialValidator,
@@ -122,7 +122,7 @@ public class SupplyChainValidationServiceImpl implements SupplyChainValidationSe
             final ReferenceEventManager referenceEventManager) {
         this.policyManager = policyManager;
         this.appraiserManager = appraiserManager;
-        this.certificateManager = certificateManager;
+        this.certificateService = certificateService;
         this.referenceManifestManager = referenceManifestManager;
         this.supplyChainValidatorSummaryManager = supplyChainValidatorSummaryManager;
         this.supplyChainCredentialValidator = supplyChainCredentialValidator;
@@ -179,7 +179,7 @@ public class SupplyChainValidationServiceImpl implements SupplyChainValidationSe
             // store the device with the credential
             if (ec != null) {
                 ec.setDevice(device);
-                this.certificateManager.updateCertificate(ec);
+                this.certificateService.updateCertificate(ec, ec.getId());
             }
         }
 
@@ -208,7 +208,7 @@ public class SupplyChainValidationServiceImpl implements SupplyChainValidationSe
                         deltaMapping.put(pc, null);
                     }
                     pc.setDevice(device);
-                    this.certificateManager.updateCertificate(pc);
+                    this.certificateService.updateCertificate(pc, pc.getId());
 
                 }
 
@@ -353,7 +353,7 @@ public class SupplyChainValidationServiceImpl implements SupplyChainValidationSe
             if (pc.isBase()) {
                 // Grab all certs associated with this platform chain
                 List<PlatformCredential> chainCertificates = PlatformCredential
-                        .select(certificateManager)
+                        .select(certificateService)
                         .byBoardSerialNumber(pc.getPlatformSerial())
                         .getCertificates().stream().collect(Collectors.toList());
 
@@ -433,7 +433,7 @@ public class SupplyChainValidationServiceImpl implements SupplyChainValidationSe
 
             //Validate signing cert
             Set<CertificateAuthorityCredential> allCerts =
-                    CertificateAuthorityCredential.select(certificateManager).getCertificates();
+                    CertificateAuthorityCredential.select(certificateService).getCertificates();
             CertificateAuthorityCredential signingCert = null;
             for (CertificateAuthorityCredential cert : allCerts) {
                 signingCert = cert;
@@ -780,7 +780,7 @@ public class SupplyChainValidationServiceImpl implements SupplyChainValidationSe
             case FAIL:
                 if (!result.getAdditionalInfo().isEmpty()) {
                     pc.setComponentFailures(result.getAdditionalInfo());
-                    this.certificateManager.updateCertificate(pc);
+                    this.certificateService.updateCertificate(pc, pc.getId());
                 }
                 return buildValidationRecord(validationType, AppraisalStatus.Status.FAIL,
                         result.getMessage(), pc, Level.WARN);
@@ -816,10 +816,10 @@ public class SupplyChainValidationServiceImpl implements SupplyChainValidationSe
             case FAIL:
                 if (!result.getAdditionalInfo().isEmpty()) {
                     base.setComponentFailures(result.getAdditionalInfo());
-                    this.certificateManager.updateCertificate(base);
+                    this.certificateService.updateCertificate(base, base.getId());
                 }
                 // we are adding things to componentFailures
-                this.certificateManager.updateCertificate(delta);
+                this.certificateService.updateCertificate(delta, delta.getId());
                 return buildValidationRecord(validationType, AppraisalStatus.Status.FAIL,
                         result.getMessage(), delta, Level.WARN);
             case ERROR:
@@ -913,7 +913,7 @@ public class SupplyChainValidationServiceImpl implements SupplyChainValidationSe
                 && !credential.getAuthKeyId().isEmpty()) {
             byte[] bytes = Hex.decode(credential.getAuthKeyId());
             skiCA = CertificateAuthorityCredential
-                    .select(certificateManager)
+                    .select(certificateService)
                     .bySubjectKeyIdentifier(bytes).getCertificate();
         }
 
@@ -921,13 +921,13 @@ public class SupplyChainValidationServiceImpl implements SupplyChainValidationSe
             if (credential.getIssuerSorted() == null
                     || credential.getIssuerSorted().isEmpty()) {
                 certAuthsWithMatchingIssuer = CertificateAuthorityCredential
-                        .select(certificateManager)
+                        .select(certificateService)
                         .bySubject(credential.getIssuer())
                         .getCertificates();
             } else {
                 //Get certificates by subject organization
                 certAuthsWithMatchingIssuer = CertificateAuthorityCredential
-                        .select(certificateManager)
+                        .select(certificateService)
                         .bySubjectSorted(credential.getIssuerSorted())
                         .getCertificates();
             }
@@ -969,7 +969,7 @@ public class SupplyChainValidationServiceImpl implements SupplyChainValidationSe
 
         if (platformSerialNumber != null) {
             List<PlatformCredential> chainCertificates = PlatformCredential
-                    .select(certificateManager)
+                    .select(certificateService)
                     .byBoardSerialNumber(platformSerialNumber)
                     .getCertificates().stream().collect(Collectors.toList());
 

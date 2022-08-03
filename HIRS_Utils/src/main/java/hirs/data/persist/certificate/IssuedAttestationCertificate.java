@@ -2,17 +2,18 @@ package hirs.data.persist.certificate;
 
 import hirs.persist.CertificateManager;
 import hirs.persist.CertificateSelector;
+import hirs.persist.service.CertificateService;
 
-import java.io.IOException;
-import java.nio.file.Path;
-import java.util.Collections;
-import java.util.Set;
-import java.util.UUID;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToMany;
 import javax.persistence.ManyToOne;
+import java.io.IOException;
+import java.nio.file.Path;
+import java.util.Collections;
+import java.util.Set;
+import java.util.UUID;
 
 /**
  * Represents an issued attestation certificate to a HIRS Client.
@@ -41,10 +42,10 @@ public class IssuedAttestationCertificate extends DeviceAssociatedCertificate {
          * Construct a new CertificateSelector that will use the given {@link CertificateManager} to
          * retrieve one or many IssuedAttestationCertificate.
          *
-         * @param certificateManager the certificate manager to be used to retrieve certificates
+         * @param certificateService the certificate service to be used to retrieve certificates
          */
-        public Selector(final CertificateManager certificateManager) {
-            super(certificateManager, IssuedAttestationCertificate.class);
+        public Selector(final CertificateService certificateService) {
+            super(certificateService, IssuedAttestationCertificate.class);
         }
 
         /**
@@ -63,11 +64,12 @@ public class IssuedAttestationCertificate extends DeviceAssociatedCertificate {
     /**
      * Get a Selector for use in retrieving IssuedAttestationCertificate.
      *
-     * @param certMan the CertificateManager to be used to retrieve persisted certificates
+     * @param certificateService the CertificateService to be used to retrieve persisted certificates
      * @return a IssuedAttestationCertificate.Selector instance to use for retrieving certificates
      */
-    public static IssuedAttestationCertificate.Selector select(final CertificateManager certMan) {
-        return new IssuedAttestationCertificate.Selector(certMan);
+    public static IssuedAttestationCertificate.Selector select(
+            final CertificateService certificateService) {
+        return new IssuedAttestationCertificate.Selector(certificateService);
     }
 
 

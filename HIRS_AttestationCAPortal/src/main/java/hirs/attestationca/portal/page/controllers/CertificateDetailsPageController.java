@@ -4,7 +4,7 @@ import hirs.attestationca.portal.page.PageController;
 import hirs.attestationca.portal.page.PageMessages;
 import hirs.attestationca.portal.page.params.CertificateDetailsPageParams;
 import hirs.attestationca.portal.util.CertificateStringMapBuilder;
-import hirs.persist.CertificateManager;
+import hirs.persist.service.CertificateService;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -32,17 +32,17 @@ public class CertificateDetailsPageController extends PageController<Certificate
     static final String INITIAL_DATA = "initialData";
 
     @Autowired
-    private final CertificateManager certificateManager;
+    private final CertificateService certificateService;
     private static final Logger LOGGER =
             LogManager.getLogger(CertificateDetailsPageController.class);
     /**
      * Constructor providing the Page's display and routing specification.
-     * @param certificateManager the certificate manager
+     * @param certificateService the certificate service
      */
     @Autowired
-    public CertificateDetailsPageController(final CertificateManager certificateManager) {
+    public CertificateDetailsPageController(final CertificateService certificateService) {
         super(CERTIFICATE_DETAILS);
-        this.certificateManager = certificateManager;
+        this.certificateService = certificateService;
     }
 
     /**
@@ -80,19 +80,19 @@ public class CertificateDetailsPageController extends PageController<Certificate
                 switch (type) {
                     case "certificateauthority":
                         data.putAll(CertificateStringMapBuilder.getCertificateAuthorityInformation(
-                                uuid, certificateManager));
+                                uuid, certificateService));
                         break;
                     case "endorsement":
                         data.putAll(CertificateStringMapBuilder.getEndorsementInformation(uuid,
-                                certificateManager));
+                                certificateService));
                         break;
                     case "platform":
                         data.putAll(CertificateStringMapBuilder.getPlatformInformation(uuid,
-                                certificateManager));
+                                certificateService));
                         break;
                     case "issued":
                         data.putAll(CertificateStringMapBuilder.getIssuedInformation(uuid,
-                                certificateManager));
+                                certificateService));
                         break;
                     default:
                         String typeError = "Invalid certificate type: " + params.getType();

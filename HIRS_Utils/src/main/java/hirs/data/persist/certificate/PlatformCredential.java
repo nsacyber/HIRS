@@ -9,6 +9,7 @@ import hirs.data.persist.certificate.attributes.URIReference;
 import hirs.data.persist.certificate.attributes.V2.PlatformConfigurationV2;
 import hirs.persist.CertificateManager;
 import hirs.persist.CertificateSelector;
+import hirs.persist.service.CertificateService;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -127,10 +128,10 @@ public class PlatformCredential extends DeviceAssociatedCertificate {
          * Construct a new CertificateSelector that will use the given {@link CertificateManager} to
          * retrieve one or many PlatformCredentials.
          *
-         * @param certificateManager the certificate manager to be used to retrieve certificates
+         * @param certificateService the certificate service to be used to retrieve certificates
          */
-        public Selector(final CertificateManager certificateManager) {
-            super(certificateManager, PlatformCredential.class);
+        public Selector(final CertificateService certificateService) {
+            super(certificateService, PlatformCredential.class);
         }
 
         /**
@@ -266,11 +267,12 @@ public class PlatformCredential extends DeviceAssociatedCertificate {
     /**
      * Get a Selector for use in retrieving PlatformCredentials.
      *
-     * @param certMan the CertificateManager to be used to retrieve persisted certificates
+     * @param certificateService the CertificateService to be used to
+     *                           retrieve persisted certificates
      * @return a PlatformCredential.Selector instance to use for retrieving certificates
      */
-    public static Selector select(final CertificateManager certMan) {
-        return new Selector(certMan);
+    public static Selector select(final CertificateService certificateService) {
+        return new Selector(certificateService);
     }
 
     /**

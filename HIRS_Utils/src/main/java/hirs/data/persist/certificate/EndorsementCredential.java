@@ -2,10 +2,10 @@ package hirs.data.persist.certificate;
 
 import hirs.data.persist.certificate.attributes.TPMSecurityAssertions;
 import hirs.data.persist.certificate.attributes.TPMSpecification;
-import hirs.persist.CertificateManager;
 import hirs.persist.CertificateSelector;
-import org.apache.commons.lang3.StringUtils;
+import hirs.persist.service.CertificateService;
 import org.apache.commons.lang3.ArrayUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.bouncycastle.asn1.ASN1ApplicationSpecific;
@@ -109,13 +109,13 @@ public class EndorsementCredential extends DeviceAssociatedCertificate {
      */
     public static class Selector extends CertificateSelector<EndorsementCredential> {
         /**
-         * Construct a new CertificateSelector that will use the given {@link CertificateManager} to
+         * Construct a new CertificateSelector that will use the given {@link CertificateService} to
          * retrieve one or many EndorsementCredentials.
          *
-         * @param certificateManager the certificate manager to be used to retrieve certificates
+         * @param certificateService the certificate service to be used to retrieve certificates
          */
-        public Selector(final CertificateManager certificateManager) {
-            super(certificateManager, EndorsementCredential.class);
+        public Selector(final CertificateService certificateService) {
+            super(certificateService, EndorsementCredential.class);
         }
 
         /**
@@ -164,11 +164,12 @@ public class EndorsementCredential extends DeviceAssociatedCertificate {
     /**
      * Get a Selector for use in retrieving EndorsementCredentials.
      *
-     * @param certMan the CertificateManager to be used to retrieve persisted certificates
+     * @param certificateService the CertificateService to be used to retrieve
+     *                          persisted certificates
      * @return a EndorsementCredential.Selector instance to use for retrieving certificates
      */
-    public static Selector select(final CertificateManager certMan) {
-        return new Selector(certMan);
+    public static Selector select(final CertificateService certificateService) {
+        return new Selector(certificateService);
     }
 
     /*

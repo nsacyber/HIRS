@@ -7,6 +7,8 @@ import hirs.persist.CriteriaModifier;
 import hirs.persist.DBManagerException;
 import hirs.persist.DeviceManagerException;
 import hirs.persist.OrderedQuery;
+import hirs.persist.service.DefaultService;
+import hirs.persist.service.DeviceService;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
