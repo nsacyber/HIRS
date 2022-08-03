@@ -15,6 +15,7 @@ import org.springframework.retry.RetryCallback;
 import org.springframework.retry.RetryContext;
 import org.springframework.stereotype.Service;
 
+import javax.persistence.EntityManager;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -32,6 +33,13 @@ public class ReferenceManifestServiceImpl extends DbServiceImpl<ReferenceManifes
     private static final Logger LOGGER = LogManager.getLogger(ReferenceManifestServiceImpl.class);
     @Autowired
     private ReferenceManifestRepository referenceManifestRepository;
+
+    /**
+     * Default constructor.
+     * @param em entity manager for jpa hibernate events
+     */
+    public ReferenceManifestServiceImpl(final EntityManager em) {
+    }
 
     @Override
     public ReferenceManifest saveRIM(final ReferenceManifest rim) {

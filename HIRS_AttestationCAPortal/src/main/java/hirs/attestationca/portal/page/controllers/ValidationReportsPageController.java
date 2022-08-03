@@ -13,10 +13,10 @@ import hirs.data.persist.certificate.Certificate;
 import hirs.data.persist.certificate.PlatformCredential;
 import hirs.data.persist.certificate.attributes.ComponentIdentifier;
 import hirs.data.persist.certificate.attributes.V2.ComponentIdentifierV2;
-import hirs.persist.CertificateManager;
 import hirs.persist.CriteriaModifier;
 import hirs.persist.CrudManager;
 import hirs.persist.DeviceManager;
+import hirs.persist.service.CertificateService;
 import org.apache.logging.log4j.Logger;
 import org.hibernate.Criteria;
 import org.hibernate.criterion.Restrictions;
@@ -60,7 +60,7 @@ public class ValidationReportsPageController extends PageController<NoPageParams
     @Autowired
     private final CrudManager<SupplyChainValidationSummary> supplyChainValidatorSummaryManager;
     @Autowired
-    private final CertificateManager certificateManager;
+    private final CertificateService certificateService;
     @Autowired
     private final DeviceManager deviceManager;
 
@@ -76,17 +76,17 @@ public class ValidationReportsPageController extends PageController<NoPageParams
     /**
      * Constructor providing the Page's display and routing specification.
      * @param supplyChainValidatorSummaryManager the manager
-     * @param certificateManager the certificate manager
+     * @param certificateService the certificate service
      * @param deviceManager the device manager
      */
     @Autowired
     public ValidationReportsPageController(
             final CrudManager<SupplyChainValidationSummary> supplyChainValidatorSummaryManager,
-            final CertificateManager certificateManager,
+            final CertificateService certificateService,
             final DeviceManager deviceManager) {
         super(VALIDATION_REPORTS);
         this.supplyChainValidatorSummaryManager = supplyChainValidatorSummaryManager;
-        this.certificateManager = certificateManager;
+        this.certificateService = certificateService;
         this.deviceManager = deviceManager;
     }
 
@@ -266,7 +266,7 @@ public class ValidationReportsPageController extends PageController<NoPageParams
                     && (createTimes.get(i).isBefore(endDate)
                         || createTimes.get(i).isEqual(endDate))) {
                 UUID deviceId = deviceManager.getDevice(deviceNames[i]).getId();
-                PlatformCredential pc = PlatformCredential.select(certificateManager)
+                PlatformCredential pc = PlatformCredential.select(certificateService)
                         .byDeviceId(deviceId).getCertificate();
                 if (jsonVersion) {
                     jsonReportData.add(assembleJsonContent(pc, parseComponents(pc),
@@ -381,7 +381,7 @@ public class ValidationReportsPageController extends PageController<NoPageParams
             componentFailureString.append(pc.getComponentFailures());
             // get all the certificates associated with the platform serial
             List<PlatformCredential> chainCertificates = PlatformCredential
-                    .select(certificateManager)
+                    .select(certificateService)
                     .byBoardSerialNumber(pc.getPlatformSerial())
                     .getCertificates().stream().collect(Collectors.toList());
             // combine all components in each certificate

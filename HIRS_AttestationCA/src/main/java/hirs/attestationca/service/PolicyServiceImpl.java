@@ -15,6 +15,7 @@ import org.springframework.retry.RetryCallback;
 import org.springframework.retry.RetryContext;
 import org.springframework.stereotype.Service;
 
+import javax.persistence.EntityManager;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -31,6 +32,12 @@ public class PolicyServiceImpl extends DbServiceImpl<Policy> implements DefaultS
     private static final Logger LOGGER = LogManager.getLogger(PolicyServiceImpl.class);
     @Autowired
     private PolicyRepository policyRepository;
+
+    /**
+     * Default Constructor.
+     */
+    public PolicyServiceImpl(final EntityManager em) {
+    }
 
     @Override
     public List<Policy> getList() {

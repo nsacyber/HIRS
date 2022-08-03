@@ -16,6 +16,7 @@ import org.springframework.retry.RetryCallback;
 import org.springframework.retry.RetryContext;
 import org.springframework.stereotype.Service;
 
+import javax.persistence.EntityManager;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -32,6 +33,13 @@ public class DeviceServiceImpl extends DbServiceImpl<Device> implements DefaultS
     private static final Logger LOGGER = LogManager.getLogger(DeviceServiceImpl.class);
     @Autowired
     private DeviceRepository deviceRepository;
+
+    /**
+     * Default constructor.
+     * @param em entity manager for jpa hibernate events
+     */
+    public DeviceServiceImpl(final EntityManager em) {
+    }
 
     @Override
     public final Device saveDevice(final Device device) throws DeviceManagerException {

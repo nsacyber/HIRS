@@ -15,6 +15,7 @@ import org.springframework.retry.RetryCallback;
 import org.springframework.retry.RetryContext;
 import org.springframework.stereotype.Service;
 
+import javax.persistence.EntityManager;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -37,8 +38,7 @@ public class ReferenceDigestValueServiceImpl extends DbServiceImpl<ReferenceDige
     /**
      * Default Constructor.
      */
-    public ReferenceDigestValueServiceImpl() {
-        super();
+    public ReferenceDigestValueServiceImpl(final EntityManager em) {
     }
 
     @Override

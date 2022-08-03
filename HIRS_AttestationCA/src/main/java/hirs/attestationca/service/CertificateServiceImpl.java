@@ -7,10 +7,11 @@ import hirs.data.persist.certificate.CertificateAuthorityCredential;
 import hirs.data.persist.certificate.EndorsementCredential;
 import hirs.data.persist.certificate.IssuedAttestationCertificate;
 import hirs.data.persist.certificate.PlatformCredential;
-import hirs.persist.service.CertificateService;
+import hirs.persist.CertificateSelector;
 import hirs.persist.CriteriaModifier;
 import hirs.persist.DBManagerException;
 import hirs.persist.OrderedQuery;
+import hirs.persist.service.CertificateService;
 import hirs.persist.service.DefaultService;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -19,8 +20,11 @@ import org.springframework.retry.RetryCallback;
 import org.springframework.retry.RetryContext;
 import org.springframework.stereotype.Service;
 
+import javax.persistence.EntityManager;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 
 /**
@@ -37,7 +41,14 @@ public class CertificateServiceImpl extends DbServiceImpl<Certificate>
     @Autowired
     private CertificateRepository certificateRepository;
 
-    @Override
+    /**
+     * Default constructor.
+     * @param em entity manager for jpa hibernate events
+     */
+    public CertificateServiceImpl(final EntityManager em) {
+    }
+
+                                  @Override
     public Certificate saveCertificate(final Certificate certificate) {
         LOGGER.debug("Saving certificate: {}", certificate);
 
@@ -71,6 +82,12 @@ public class CertificateServiceImpl extends DbServiceImpl<Certificate>
         }
 
         return saveCertificate(dbCertificate);
+    }
+
+    @Override
+    public <T extends Certificate> Set<T> getCertificate(
+            final CertificateSelector certificateSelector) {
+        return new HashSet<>(0);
     }
 
     @Override

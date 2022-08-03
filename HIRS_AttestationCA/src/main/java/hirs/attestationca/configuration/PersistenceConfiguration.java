@@ -1,31 +1,25 @@
 package hirs.attestationca.configuration;
 
-import hirs.attestationca.AttestationCertificateAuthorityConfiguration;
-import hirs.attestationca.servicemanager.DBCertificateManager;
-import hirs.attestationca.servicemanager.DBDeviceManager;
+import hirs.attestationca.service.CertificateServiceImpl;
+import hirs.attestationca.service.DbServiceImpl;
+import hirs.attestationca.service.DeviceServiceImpl;
+import hirs.attestationca.service.PolicyServiceImpl;
+import hirs.attestationca.service.ReferenceDigestValueServiceImpl;
+import hirs.attestationca.service.ReferenceManifestServiceImpl;
 import hirs.attestationca.servicemanager.DBManager;
-import hirs.attestationca.servicemanager.DBPolicyManager;
 import hirs.attestationca.servicemanager.DBPortalInfoManager;
-import hirs.attestationca.servicemanager.DBReferenceEventManager;
-import hirs.attestationca.servicemanager.DBReferenceManifestManager;
-import hirs.attestationca.servicemanager.DBReportManager;
-import hirs.attestationca.servicemanager.DBReportRequestStateManager;
-import hirs.attestationca.servicemanager.DBReportSummaryManager;
 import hirs.data.persist.SupplyChainValidationSummary;
-import hirs.persist.CertificateManager;
 import hirs.persist.CrudManager;
-import hirs.persist.DeviceManager;
-import hirs.persist.PolicyManager;
 import hirs.persist.PortalInfoManager;
-import hirs.persist.ReferenceEventManager;
-import hirs.persist.ReferenceManifestManager;
-import hirs.persist.ReportManager;
-import hirs.persist.ReportRequestStateManager;
-import hirs.persist.ReportSummaryManager;
+import hirs.persist.service.CertificateService;
+import hirs.persist.service.DeviceService;
+import hirs.persist.service.PolicyService;
+import hirs.persist.service.ReferenceDigestValueService;
+import hirs.persist.service.ReferenceManifestService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Import;
+import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
@@ -39,7 +33,7 @@ import javax.persistence.PersistenceContext;
  * file, the default persistence file will be used instead.
  */
 @Configuration
-@Import(AttestationCertificateAuthorityConfiguration.class)
+@EnableJpaRepositories("hirs.attestationca.service")
 public class PersistenceConfiguration {
 
     /**
@@ -60,115 +54,78 @@ public class PersistenceConfiguration {
     private int maxTransactionRetryAttempts;
 
     /**
-     * Creates a {@link hirs.persist.PolicyManager} ready to use.
+     * Creates a {@link hirs.persist.service.PolicyService} ready to use.
      *
-     * @return {@link hirs.persist.PolicyManager}
+     * @return {@link hirs.persist.service.PolicyService}
      */
     @Bean
-    public PolicyManager policyManager() {
-        DBPolicyManager manager = new DBPolicyManager(entityManager);
-        setDbManagerRetrySettings(manager);
-        return manager;
+    public PolicyService policyService() {
+        PolicyServiceImpl serviceImpl = new PolicyServiceImpl(entityManager);
+        setDbServiceRetrySettings(serviceImpl);
+        return serviceImpl;
     }
 
     /**
-     * Creates a {@link hirs.persist.ReportManager} ready to use.
+     * Creates a {@link hirs.persist.service.DeviceService} ready to use.
      *
-     * @return {@link hirs.persist.ReportManager}
+     * @return {@link hirs.persist.service.DeviceService}
      */
     @Bean
-    public ReportManager reportManager() {
-        DBReportManager manager = new DBReportManager(entityManager);
-        setDbManagerRetrySettings(manager);
-        return manager;
+    public DeviceService deviceService() {
+        DeviceServiceImpl serviceImpl = new DeviceServiceImpl(entityManager);
+        setDbServiceRetrySettings(serviceImpl);
+        return serviceImpl;
     }
 
     /**
-     * Creates a {@link hirs.persist.DeviceManager} ready to use.
+     * Creates a {@link hirs.persist.service.CertificateService} ready to use.
      *
-     * @return {@link hirs.persist.DeviceManager}
+     * @return {@link hirs.persist.service.CertificateService}
      */
     @Bean
-    public DeviceManager deviceManager() {
-        DBDeviceManager manager = new DBDeviceManager(entityManager);
-        setDbManagerRetrySettings(manager);
-        return manager;
+    public CertificateService certificateService() {
+        CertificateServiceImpl serviceImpl = new CertificateServiceImpl(entityManager);
+        setDbServiceRetrySettings(serviceImpl);
+        return serviceImpl;
     }
 
     /**
-     * Creates a {@link hirs.persist.ReportSummaryManager} ready to use.
+     * Creates a {@link hirs.persist.service.ReferenceManifestService} ready to use.
      *
-     * @return {@link hirs.persist.ReportSummaryManager}
+     * @return {@link hirs.persist.service.ReferenceManifestService}
      */
     @Bean
-    public ReportSummaryManager reportSummaryManager() {
-        DBReportSummaryManager manager = new DBReportSummaryManager(entityManager);
-        setDbManagerRetrySettings(manager);
-        return manager;
+    public ReferenceManifestService referenceManifestService() {
+        ReferenceManifestServiceImpl serviceImpl
+                = new ReferenceManifestServiceImpl(entityManager);
+        setDbServiceRetrySettings(serviceImpl);
+        return serviceImpl;
     }
 
     /**
-     * Creates a {@link hirs.persist.CertificateManager} ready to use.
+     * Creates a {@link hirs.persist.service.ReferenceDigestValueService} ready to use.
      *
-     * @return {@link hirs.persist.CertificateManager}
+     * @return {@link hirs.persist.service.ReferenceDigestValueService}
      */
     @Bean
-    public CertificateManager certificateManager() {
-        DBCertificateManager manager = new DBCertificateManager(entityManager);
-        manager.setRetryTemplate(maxTransactionRetryAttempts, retryWaitTimeMilliseconds);
-        return manager;
+    public ReferenceDigestValueService referenceEventService() {
+        ReferenceDigestValueServiceImpl serviceImpl
+                = new ReferenceDigestValueServiceImpl(entityManager);
+        setDbServiceRetrySettings(serviceImpl);
+        return serviceImpl;
     }
 
-    /**
-     * Creates a {@link hirs.persist.ReferenceManifestManager} ready to use.
-     *
-     * @return {@link hirs.persist.ReferenceManifestManager}
-     */
-    @Bean
-    public ReferenceManifestManager referenceManifestManager() {
-        DBReferenceManifestManager manager
-                = new DBReferenceManifestManager(entityManager);
-        setDbManagerRetrySettings(manager);
-        return manager;
-    }
-
-    /**
-     * Creates a {@link hirs.persist.ReferenceEventManager} ready to use.
-     *
-     * @return {@link hirs.persist.ReferenceEventManager}
-     */
-    @Bean
-    public ReferenceEventManager referenceEventManager() {
-        DBReferenceEventManager manager
-                = new DBReferenceEventManager(entityManager);
-        setDbManagerRetrySettings(manager);
-        return manager;
-    }
-
-    /**
-     * Creates a {@link hirs.persist.ReportRequestStateManager} ready to use.
-     *
-     * @return {@link hirs.persist.ReportRequestStateManager}
-     */
-    @Bean
-    public ReportRequestStateManager reportRequestStateManager() {
-        DBReportRequestStateManager manager
-                = new DBReportRequestStateManager(entityManager);
-        setDbManagerRetrySettings(manager);
-        return manager;
-    }
-
-    /**
-     * Creates a {@link hirs.persist.PortalInfoManager} ready to use.
-     *
-     * @return {@link hirs.persist.PortalInfoManager}
-     */
-    @Bean
-    public PortalInfoManager portalInfoManager() {
-        DBPortalInfoManager manager = new DBPortalInfoManager(entityManager);
-        setDbManagerRetrySettings(manager);
-        return manager;
-    }
+//    /**
+//     * Creates a {@link hirs.persist.PortalInfoManager} ready to use.
+//     *
+//     * @return {@link hirs.persist.PortalInfoManager}
+//     */
+//    @Bean
+//    public PortalInfoManager portalInfoManager() {
+//        DBPortalInfoManager manager = new DBPortalInfoManager(entityManager);
+//        setDbServiceRetrySettings(manager);
+//        return manager;
+//    }
 
     /**
      * Creates a {@link hirs.attestationca.servicemanager.DBManager}
@@ -178,20 +135,20 @@ public class PersistenceConfiguration {
      */
     @Bean
     public CrudManager<SupplyChainValidationSummary> supplyChainValidationSummaryManager() {
-        DBManager<SupplyChainValidationSummary> manager
-                = new DBManager<SupplyChainValidationSummary>(
+        DbServiceImpl<SupplyChainValidationSummary> manager
+                = new DbServiceImpl<>(
                 SupplyChainValidationSummary.class,
                 entityManager
         );
-        setDbManagerRetrySettings(manager);
+        setDbServiceRetrySettings(manager);
         return manager;
     }
 
     /**
      * Apply the spring-wired retry template settings to the db manager.
-     * @param dbManager the manager to apply the retry settings to
+     * @param dbServiceImpl the service to apply the retry settings to
      */
-    private void setDbManagerRetrySettings(final DBManager dbManager) {
-        dbManager.setRetryTemplate(maxTransactionRetryAttempts, retryWaitTimeMilliseconds);
+    private void setDbServiceRetrySettings(final DbServiceImpl dbServiceImpl) {
+        dbServiceImpl.setRetryTemplate(maxTransactionRetryAttempts, retryWaitTimeMilliseconds);
     }
 }

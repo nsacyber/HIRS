@@ -9,7 +9,7 @@ import java.util.List;
  * Interface defining database CRUD operations (Create, Read, Update, Delete).
  * @param <T> the object type, T.
  */
-public interface CrudManager<T> extends OrderedListQuerier<T> {
+public interface CrudManager<T> extends OrderedQuery<T> {
 
     /**
      *

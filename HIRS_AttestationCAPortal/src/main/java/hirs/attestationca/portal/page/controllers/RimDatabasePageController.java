@@ -8,14 +8,13 @@ import hirs.attestationca.portal.datatables.OrderedListQueryDataTableAdapter;
 import hirs.attestationca.portal.page.Page;
 import hirs.attestationca.portal.page.PageController;
 import hirs.attestationca.portal.page.params.NoPageParams;
+import hirs.attestationca.service.ReferenceDigestValueServiceImpl;
+import hirs.attestationca.servicemanager.DBReferenceManifestManager;
 import hirs.data.persist.ReferenceDigestValue;
 import hirs.data.persist.SupportReferenceManifest;
 import hirs.data.persist.certificate.Certificate;
 import hirs.persist.CriteriaModifier;
 import hirs.persist.DBManagerException;
-import hirs.attestationca.servicemanager.DBReferenceEventManager;
-import hirs.attestationca.servicemanager.DBReferenceManifestManager;
-import hirs.persist.ReferenceEventManager;
 import hirs.persist.ReferenceManifestManager;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -47,7 +46,7 @@ public class RimDatabasePageController
 
     private final BiosDateValidator biosValidator;
     private final ReferenceManifestManager referenceManifestManager;
-    private final ReferenceEventManager referenceEventManager;
+    private final ReferenceDigestValueServiceImpl referenceDigestValueService;
     private static final Logger LOGGER
             = LogManager.getLogger(RimDatabasePageController.class);
 
@@ -97,15 +96,15 @@ public class RimDatabasePageController
      * Constructor providing the Page's display and routing specification.
      *
      * @param referenceManifestManager the ReferenceManifestManager object
-     * @param referenceEventManager  the referenceEventManager object
+     * @param referenceDigestValueService  the referenceDigestValueService object
      */
     @Autowired
     public RimDatabasePageController(
             final DBReferenceManifestManager referenceManifestManager,
-            final DBReferenceEventManager referenceEventManager) {
+            final ReferenceDigestValueServiceImpl referenceDigestValueService) {
         super(Page.RIM_DATABASE);
         this.referenceManifestManager = referenceManifestManager;
-        this.referenceEventManager = referenceEventManager;
+        this.referenceDigestValueService = referenceDigestValueService;
         this.biosValidator = new BiosDateValidator(BIOS_RELEASE_DATE_FORMAT);
     }
 
@@ -156,7 +155,7 @@ public class RimDatabasePageController
         FilteredRecordsList<ReferenceDigestValue> referenceDigestValues =
                 OrderedListQueryDataTableAdapter.getOrderedList(
                 ReferenceDigestValue.class,
-                referenceEventManager,
+                        referenceDigestValueService,
                 input, orderColumnName, criteriaModifier);
 
         SupportReferenceManifest support;
@@ -168,7 +167,7 @@ public class RimDatabasePageController
                 if (support != null) {
                     rdv.setBaseRimId(support.getAssociatedRim());
                     try {
-                        referenceEventManager.updateEvent(rdv);
+                        referenceDigestValueService.updateDigestValue(rdv, rdv.getId());
                     } catch (DBManagerException e) {
                         LOGGER.error("Failed to update TPM Event with Base RIM ID");
                         LOGGER.error(rdv);

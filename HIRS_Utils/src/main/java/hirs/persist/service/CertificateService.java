@@ -1,7 +1,9 @@
 package hirs.persist.service;
 
 import hirs.data.persist.certificate.Certificate;
+import hirs.persist.CertificateSelector;
 
+import java.util.Set;
 import java.util.UUID;
 
 /**
@@ -29,4 +31,13 @@ public interface CertificateService {
      * @return a Certificate object
      */
     Certificate updateCertificate(Certificate certificate, UUID uuid);
+
+    /**
+     * Retrieve Certificates according to the given {@link CertificateSelector}.
+     *
+     * @param <T> the type of certificate that will be retrieved
+     * @param certificateSelector a {@link CertificateSelector} to use for querying
+     * @return a Set of matching Certificates, which may be empty
+     */
+    <T extends Certificate> Set<T> getCertificate(CertificateSelector certificateSelector);
 }

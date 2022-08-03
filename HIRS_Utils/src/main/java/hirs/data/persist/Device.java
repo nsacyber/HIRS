@@ -3,7 +3,6 @@ package hirs.data.persist;
 import hirs.data.persist.enums.HealthStatus;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
-import hirs.DeviceGroupSerializer;
 import hirs.foss.XMLCleaner;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
