@@ -6,11 +6,7 @@ import hirs.attestationca.service.DeviceServiceImpl;
 import hirs.attestationca.service.PolicyServiceImpl;
 import hirs.attestationca.service.ReferenceDigestValueServiceImpl;
 import hirs.attestationca.service.ReferenceManifestServiceImpl;
-import hirs.attestationca.servicemanager.DBManager;
-import hirs.attestationca.servicemanager.DBPortalInfoManager;
 import hirs.data.persist.SupplyChainValidationSummary;
-import hirs.persist.CrudManager;
-import hirs.persist.PortalInfoManager;
 import hirs.persist.service.CertificateService;
 import hirs.persist.service.DeviceService;
 import hirs.persist.service.PolicyService;
@@ -134,14 +130,13 @@ public class PersistenceConfiguration {
      * @return {@link hirs.attestationca.servicemanager.DBManager}
      */
     @Bean
-    public CrudManager<SupplyChainValidationSummary> supplyChainValidationSummaryManager() {
-        DbServiceImpl<SupplyChainValidationSummary> manager
-                = new DbServiceImpl<>(
-                SupplyChainValidationSummary.class,
+    public DbServiceImpl<SupplyChainValidationSummary> supplyChainValidationSummaryManager() {
+        DbServiceImpl<SupplyChainValidationSummary> serviceImpl
+                = new DbServiceImpl<SupplyChainValidationSummary>(
                 entityManager
         );
-        setDbServiceRetrySettings(manager);
-        return manager;
+        setDbServiceRetrySettings(serviceImpl);
+        return serviceImpl;
     }
 
     /**

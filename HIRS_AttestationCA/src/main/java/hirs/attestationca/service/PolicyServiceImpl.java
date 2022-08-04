@@ -1,21 +1,30 @@
 package hirs.attestationca.service;
 
 import hirs.FilteredRecordsList;
+import hirs.appraiser.Appraiser;
 import hirs.attestationca.repository.PolicyRepository;
 import hirs.data.persist.policy.Policy;
 import hirs.persist.CriteriaModifier;
 import hirs.persist.DBManagerException;
 import hirs.persist.OrderedQuery;
+import hirs.persist.PolicyMapper;
 import hirs.persist.service.DefaultService;
 import hirs.persist.service.PolicyService;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.hibernate.Session;
+import org.hibernate.Transaction;
+import org.hibernate.query.Query;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.retry.RetryCallback;
 import org.springframework.retry.RetryContext;
 import org.springframework.stereotype.Service;
 
 import javax.persistence.EntityManager;
+import javax.persistence.criteria.CriteriaBuilder;
+import javax.persistence.criteria.CriteriaQuery;
+import javax.persistence.criteria.Predicate;
+import javax.persistence.criteria.Root;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -37,6 +46,7 @@ public class PolicyServiceImpl extends DbServiceImpl<Policy> implements DefaultS
      * Default Constructor.
      */
     public PolicyServiceImpl(final EntityManager em) {
+        super(em);
     }
 
     @Override
@@ -109,6 +119,53 @@ public class PolicyServiceImpl extends DbServiceImpl<Policy> implements DefaultS
         }
 
         return savePolicy(dbPolicy);
+    }
+
+    @Override
+    public final Policy getDefaultPolicy(final Appraiser appraiser) {
+        if (appraiser == null) {
+            LOGGER.error("cannot get default policy for null appraiser");
+            return null;
+        }
+
+        Policy ret = null;
+        Transaction tx = null;
+        Session session =  getEm().unwrap(org.hibernate.Session.class);
+        try {
+            tx = session.beginTransaction();
+            LOGGER.debug("retrieving policy mapper from db where appraiser = {}",
+                    appraiser);
+            CriteriaBuilder criteriaBuilder = session.getCriteriaBuilder();
+            CriteriaQuery<PolicyMapper> criteriaQuery = criteriaBuilder
+                    .createQuery(PolicyMapper.class);
+            Root<PolicyMapper> root = criteriaQuery.from(PolicyMapper.class);
+            Predicate recordPredicate = criteriaBuilder.and(
+                    criteriaBuilder.equal(root.get("appraiser"), appraiser));
+            criteriaQuery.select(root).where(recordPredicate);
+            Query<PolicyMapper> query = session.createQuery(criteriaQuery);
+            List<PolicyMapper> results = query.getResultList();
+            PolicyMapper mapper = null;
+            if (results != null && !results.isEmpty()) {
+                mapper = results.get(0);
+            }
+
+            if (mapper == null) {
+                LOGGER.debug("no policy mapper found for appraiser {}",
+                        appraiser);
+            } else {
+                ret = mapper.getPolicy();
+            }
+            session.getTransaction().commit();
+        } catch (Exception e) {
+            final String msg = "unable to get default policy";
+            LOGGER.error(msg, e);
+            if (tx != null) {
+                LOGGER.debug("rolling back transaction");
+                tx.rollback();
+            }
+            throw new DBManagerException(msg, e);
+        }
+        return ret;
     }
 
     @Override

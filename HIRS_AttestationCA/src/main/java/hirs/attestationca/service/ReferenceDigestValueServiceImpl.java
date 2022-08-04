@@ -16,6 +16,7 @@ import org.springframework.retry.RetryContext;
 import org.springframework.stereotype.Service;
 
 import javax.persistence.EntityManager;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -111,6 +112,14 @@ public class ReferenceDigestValueServiceImpl extends DbServiceImpl<ReferenceDige
         }
 
         return saveDigestValue(dbDigestValue);
+    }
+
+    @Override
+    public List<ReferenceDigestValue> getValuesByRimId(final UUID uuid) {
+        // this isn't right, it will look for the ids in the wrong column (CYRUYS)
+        // need to figure out repo search based on criteria associated with a specific column
+
+        return new LinkedList<>(this.referenceDigestValueRepository.findAllById(uuid));
     }
 
     @Override

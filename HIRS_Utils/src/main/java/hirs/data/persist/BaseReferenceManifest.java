@@ -1,8 +1,8 @@
 package hirs.data.persist;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import hirs.persist.ReferenceManifestManager;
 import hirs.persist.ReferenceManifestSelector;
+import hirs.persist.service.ReferenceManifestService;
 import hirs.utils.xjc.BaseElement;
 import hirs.utils.xjc.Directory;
 import hirs.utils.xjc.FilesystemItem;
@@ -96,14 +96,14 @@ public class BaseReferenceManifest extends ReferenceManifest {
     public static class Selector extends ReferenceManifestSelector<BaseReferenceManifest> {
         /**
          * Construct a new ReferenceManifestSelector that will use
-         * the given (@link ReferenceManifestManager}
+         * the given (@link ReferenceManifestService}
          * to retrieve one or may BaseReferenceManifest.
          *
-         * @param referenceManifestManager the reference manifest manager to be used to retrieve
+         * @param referenceManifestService the reference manifest manager to be used to retrieve
          * reference manifests.
          */
-        public Selector(final ReferenceManifestManager referenceManifestManager) {
-            super(referenceManifestManager, BaseReferenceManifest.class);
+        public Selector(final ReferenceManifestService referenceManifestService) {
+            super(referenceManifestService, BaseReferenceManifest.class);
         }
 
         /**
@@ -289,12 +289,12 @@ public class BaseReferenceManifest extends ReferenceManifest {
     /**
      * Get a Selector for use in retrieving ReferenceManifest.
      *
-     * @param rimMan the ReferenceManifestManager to be used to retrieve
+     * @param rimService the ReferenceManifestService to be used to retrieve
      * persisted RIMs
      * @return a Selector instance to use for retrieving RIMs
      */
-    public static Selector select(final ReferenceManifestManager rimMan) {
-        return new Selector(rimMan);
+    public static Selector select(final ReferenceManifestService rimService) {
+        return new Selector(rimService);
     }
 
     /**

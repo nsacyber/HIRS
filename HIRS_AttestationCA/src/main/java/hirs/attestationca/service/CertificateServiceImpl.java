@@ -48,7 +48,7 @@ public class CertificateServiceImpl extends DbServiceImpl<Certificate>
     public CertificateServiceImpl(final EntityManager em) {
     }
 
-                                  @Override
+    @Override
     public Certificate saveCertificate(final Certificate certificate) {
         LOGGER.debug("Saving certificate: {}", certificate);
 

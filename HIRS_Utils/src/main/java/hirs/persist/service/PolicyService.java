@@ -1,5 +1,6 @@
 package hirs.persist.service;
 
+import hirs.appraiser.Appraiser;
 import hirs.data.persist.policy.Policy;
 
 import java.util.UUID;
@@ -29,4 +30,15 @@ public interface PolicyService {
      * @return a Policy object
      */
     Policy updatePolicy(Policy policy, UUID uuid);
+
+    /**
+     * Returns the default <code>Policy</code> for the <code>Appraiser</code>.
+     * If the default <code>Policy</code> has not been set then this returns
+     * null.
+     *
+     * @param appraiser
+     *            appraiser
+     * @return default policy
+     */
+    Policy getDefaultPolicy(Appraiser appraiser);
 }

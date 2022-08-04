@@ -22,14 +22,13 @@ import hirs.data.persist.certificate.EndorsementCredential;
 import hirs.data.persist.certificate.PlatformCredential;
 import hirs.data.persist.policy.PCRPolicy;
 import hirs.data.persist.policy.SupplyChainPolicy;
-import hirs.persist.AppraiserManager;
 import hirs.persist.CrudManager;
 import hirs.persist.DBManagerException;
-import hirs.persist.PolicyManager;
-import hirs.persist.ReferenceDigestManager;
-import hirs.persist.ReferenceEventManager;
-import hirs.persist.ReferenceManifestManager;
+import hirs.persist.service.AppraiserService;
 import hirs.persist.service.CertificateService;
+import hirs.persist.service.PolicyService;
+import hirs.persist.service.ReferenceDigestValueService;
+import hirs.persist.service.ReferenceManifestService;
 import hirs.tpm.eventlog.TCGEventLog;
 import hirs.tpm.eventlog.TpmPcrEvent;
 import hirs.utils.BouncyCastleUtils;
@@ -76,11 +75,11 @@ import static hirs.data.persist.AppraisalStatus.Status.PASS;
 @Import(PersistenceConfiguration.class)
 public class SupplyChainValidationServiceImpl implements SupplyChainValidationService {
 
-    private PolicyManager policyManager;
-    private AppraiserManager appraiserManager;
-    private ReferenceManifestManager referenceManifestManager;
-    private ReferenceDigestManager referenceDigestManager;
-    private ReferenceEventManager referenceEventManager;
+    private PolicyService policyService;
+    private AppraiserService appraiserService;
+    private ReferenceManifestService referenceManifestService;
+//    private ReferenceDigestValue referenceDigestManager;
+    private ReferenceDigestValueService referenceDigestValueService;
     private CertificateService certificateService;
     private CredentialValidator supplyChainCredentialValidator;
     private CrudManager<SupplyChainValidationSummary> supplyChainValidatorSummaryManager;
@@ -101,33 +100,30 @@ public class SupplyChainValidationServiceImpl implements SupplyChainValidationSe
     /**
      * Constructor.
      *
-     * @param policyManager                      the policy manager
-     * @param appraiserManager                   the appraiser manager
+     * @param policyService                      the policy service
+     * @param appraiserService                   the appraiser service
      * @param certificateService                 the cert service
-     * @param referenceManifestManager           the RIM manager
+     * @param referenceManifestService           the RIM service
      * @param supplyChainValidatorSummaryManager the summary manager
      * @param supplyChainCredentialValidator     the credential validator
-     * @param referenceDigestManager             the digest manager
-     * @param referenceEventManager              the even manager
+     * @param referenceDigestValueService        the event service
      */
     @Autowired
     @SuppressWarnings("ParameterNumberCheck")
     public SupplyChainValidationServiceImpl(
-            final PolicyManager policyManager, final AppraiserManager appraiserManager,
+            final PolicyService policyService, final AppraiserService appraiserService,
             final CertificateService certificateService,
-            final ReferenceManifestManager referenceManifestManager,
+            final ReferenceManifestService referenceManifestService,
             final CrudManager<SupplyChainValidationSummary> supplyChainValidatorSummaryManager,
             final CredentialValidator supplyChainCredentialValidator,
-            final ReferenceDigestManager referenceDigestManager,
-            final ReferenceEventManager referenceEventManager) {
-        this.policyManager = policyManager;
-        this.appraiserManager = appraiserManager;
+            final ReferenceDigestValueService referenceDigestValueService) {
+        this.policyService = policyService;
+        this.appraiserService = appraiserService;
         this.certificateService = certificateService;
-        this.referenceManifestManager = referenceManifestManager;
+        this.referenceManifestService = referenceManifestService;
         this.supplyChainValidatorSummaryManager = supplyChainValidatorSummaryManager;
         this.supplyChainCredentialValidator = supplyChainCredentialValidator;
-        this.referenceDigestManager = referenceDigestManager;
-        this.referenceEventManager = referenceEventManager;
+        this.referenceDigestValueService = referenceDigestValueService;
     }
 
     /**
@@ -136,9 +132,9 @@ public class SupplyChainValidationServiceImpl implements SupplyChainValidationSe
      * @return supply chain policy
      */
     public SupplyChainPolicy getPolicy() {
-        final Appraiser supplyChainAppraiser = appraiserManager.getAppraiser(
+        final Appraiser supplyChainAppraiser = appraiserService.getAppraiser(
                 SupplyChainAppraiser.NAME);
-        return (SupplyChainPolicy) policyManager.getDefaultPolicy(
+        return (SupplyChainPolicy) policyService.getDefaultPolicy(
                 supplyChainAppraiser);
     }
 
@@ -157,9 +153,9 @@ public class SupplyChainValidationServiceImpl implements SupplyChainValidationSe
     public SupplyChainValidationSummary validateSupplyChain(final EndorsementCredential ec,
                                                             final Set<PlatformCredential> pcs,
                                                             final Device device) {
-        final Appraiser supplyChainAppraiser = appraiserManager.getAppraiser(
+        final Appraiser supplyChainAppraiser = appraiserService.getAppraiser(
                 SupplyChainAppraiser.NAME);
-        SupplyChainPolicy policy = (SupplyChainPolicy) policyManager.getDefaultPolicy(
+        SupplyChainPolicy policy = (SupplyChainPolicy) policyService.getDefaultPolicy(
                 supplyChainAppraiser);
         boolean acceptExpiredCerts = policy.isExpiredCertificateValidationEnabled();
         PlatformCredential baseCredential = null;
@@ -390,7 +386,7 @@ public class SupplyChainValidationServiceImpl implements SupplyChainValidationSe
         ReferenceManifest supportReferenceManifest = null;
         EventLogMeasurements measurement = null;
 
-        baseReferenceManifests = BaseReferenceManifest.select(referenceManifestManager)
+        baseReferenceManifests = BaseReferenceManifest.select(referenceManifestService)
                 .byModel(model).getRIMs();
 
         for (BaseReferenceManifest bRim : baseReferenceManifests) {
@@ -405,11 +401,11 @@ public class SupplyChainValidationServiceImpl implements SupplyChainValidationSe
             failedString = "Base Reference Integrity Manifest\n";
             passed = false;
         } else {
-            measurement = EventLogMeasurements.select(referenceManifestManager)
+            measurement = EventLogMeasurements.select(referenceManifestService)
                     .byHexDecHash(baseReferenceManifest.getEventLogHash()).getRIM();
 
             if (measurement == null) {
-                measurement = EventLogMeasurements.select(referenceManifestManager)
+                measurement = EventLogMeasurements.select(referenceManifestService)
                         .byModel(baseReferenceManifest.getPlatformModel()).getRIM();
             }
         }
@@ -458,7 +454,7 @@ public class SupplyChainValidationServiceImpl implements SupplyChainValidationSe
             }
 
             for (SwidResource swidRes : resources) {
-                supportReferenceManifest = SupportReferenceManifest.select(referenceManifestManager)
+                supportReferenceManifest = SupportReferenceManifest.select(referenceManifestService)
                         .byHexDecHash(swidRes.getHashValue()).getRIM();
                 if (supportReferenceManifest != null) {
                     // Removed the filename check from this if statement
@@ -536,8 +532,8 @@ public class SupplyChainValidationServiceImpl implements SupplyChainValidationSe
                         try {
                             if (measurement.getPlatformManufacturer().equals(manufacturer)) {
                                 tcgMeasurementLog = new TCGEventLog(measurement.getRimBytes());
-                                eventValue = this.referenceEventManager
-                                        .getValuesByRimId(baseReferenceManifest);
+                                eventValue = this.referenceDigestValueService
+                                        .getValuesByRimId(baseReferenceManifest.getId());
                                 for (ReferenceDigestValue rdv : eventValue) {
                                     eventValueMap.put(rdv.getDigestValue(), rdv);
                                 }
@@ -578,13 +574,14 @@ public class SupplyChainValidationServiceImpl implements SupplyChainValidationSe
 
             EventLogMeasurements eventLog = (EventLogMeasurements) measurement;
             eventLog.setOverallValidationResult(fwStatus.getAppStatus());
-            this.referenceManifestManager.update(eventLog);
+            this.referenceManifestService.updateReferenceManifest(eventLog, eventLog.getId());
         } else {
             fwStatus = new AppraisalStatus(FAIL, String.format("Firmware Validation failed: "
                     + "%s for %s can not be found", failedString, manufacturer));
             if (measurement != null) {
                 measurement.setOverallValidationResult(fwStatus.getAppStatus());
-                this.referenceManifestManager.update(measurement);
+                this.referenceManifestService.updateReferenceManifest(
+                        measurement, measurement.getId());
             }
         }
 
@@ -600,9 +597,9 @@ public class SupplyChainValidationServiceImpl implements SupplyChainValidationSe
      */
     @Override
     public SupplyChainValidationSummary validateQuote(final Device device) {
-        final Appraiser supplyChainAppraiser = appraiserManager.getAppraiser(
+        final Appraiser supplyChainAppraiser = appraiserService.getAppraiser(
                 SupplyChainAppraiser.NAME);
-        SupplyChainPolicy policy = (SupplyChainPolicy) policyManager.getDefaultPolicy(
+        SupplyChainPolicy policy = (SupplyChainPolicy) policyService.getDefaultPolicy(
                 supplyChainAppraiser);
         SupplyChainValidation quoteScv = null;
         SupplyChainValidationSummary summary = null;
@@ -620,7 +617,7 @@ public class SupplyChainValidationServiceImpl implements SupplyChainValidationSe
 
             try {
                 Set<SupportReferenceManifest> supportRims = SupportReferenceManifest
-                        .select(this.referenceManifestManager)
+                        .select(this.referenceManifestService)
                         .byManufacturerModel(
                                 device.getDeviceInfo().getHardwareInfo().getManufacturer(),
                                 device.getDeviceInfo().getHardwareInfo().getProductName())
@@ -631,7 +628,7 @@ public class SupplyChainValidationServiceImpl implements SupplyChainValidationSe
                     }
                 }
                 eventLog = EventLogMeasurements
-                        .select(this.referenceManifestManager)
+                        .select(this.referenceManifestService)
                         .byHexDecHash(sRim.getEventLogHash()).getRIM();
 
                 if (sRim == null) {
@@ -663,7 +660,8 @@ public class SupplyChainValidationServiceImpl implements SupplyChainValidationSe
                                 + "\nPCR hash and Quote hash do not match.");
                     }
                     eventLog.setOverallValidationResult(fwStatus.getAppStatus());
-                    this.referenceManifestManager.update(eventLog);
+                    this.referenceManifestService.updateReferenceManifest(
+                            eventLog, eventLog.getId());
                 }
             } catch (Exception ex) {
                 LOGGER.error(ex);

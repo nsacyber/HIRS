@@ -10,6 +10,7 @@ import org.springframework.retry.policy.SimpleRetryPolicy;
 import org.springframework.retry.support.RetryTemplate;
 import org.springframework.stereotype.Service;
 
+import javax.persistence.EntityManager;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -35,6 +36,7 @@ public class DbServiceImpl<T> {
 
     // structure for retrying methods in the database
     private RetryTemplate retryTemplate;
+    private EntityManager em;
 
     /**
      * Creates a new <code>DbServiceImpl</code> that uses the default database. The
@@ -43,6 +45,16 @@ public class DbServiceImpl<T> {
      */
     public DbServiceImpl() {
         setRetryTemplate(DEFAULT_MAX_RETRY_ATTEMPTS, DEFAULT_RETRY_WAIT_TIME_MS);
+    }
+
+    /**
+     * Creates a new <code>DbServiceImpl</code> that uses the default database. The
+     * default database is used to store all of the objects.
+     *
+     */
+    public DbServiceImpl(final EntityManager em) {
+        setRetryTemplate(DEFAULT_MAX_RETRY_ATTEMPTS, DEFAULT_RETRY_WAIT_TIME_MS);
+        this.em = em;
     }
 
     /**
@@ -85,5 +97,13 @@ public class DbServiceImpl<T> {
      */
     public void addRetryListener(final RetryListener retryListener) {
         retryTemplate.registerListener(retryListener);
+    }
+
+    /**
+     * Getter for the EntityManager.
+     * @return instance of the manager
+     */
+    public final EntityManager getEm() {
+        return em;
     }
 }

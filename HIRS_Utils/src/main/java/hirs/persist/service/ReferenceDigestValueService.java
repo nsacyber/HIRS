@@ -2,6 +2,7 @@ package hirs.persist.service;
 
 import hirs.data.persist.ReferenceDigestValue;
 
+import java.util.List;
 import java.util.UUID;
 
 /**
@@ -29,4 +30,12 @@ public interface ReferenceDigestValueService {
      * @return a ReferenceDigestValue object
      */
     ReferenceDigestValue updateDigestValue(ReferenceDigestValue digestValue, UUID uuid);
+
+    /**
+     * Persists a new Reference Digest value.
+     *
+     * @param uuid associated with the base rim or potentially support rim.
+     * @return the persisted list of ReferenceDigestValue
+     */
+    List<ReferenceDigestValue> getValuesByRimId(UUID uuid);
 }

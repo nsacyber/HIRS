@@ -417,8 +417,7 @@ public class DBPolicyManager extends DBManager<Policy> implements PolicyManager 
      *         there is none
      */
     @Override
-    public final Policy getPolicy(final Appraiser appraiser,
-            final DeviceGroup deviceGroup) {
+    public final Policy getPolicy(final Appraiser appraiser) {
         if (appraiser == null) {
             LOGGER.error("cannot get policy for null appraiser");
             return null;
@@ -430,14 +429,13 @@ public class DBPolicyManager extends DBManager<Policy> implements PolicyManager 
         try {
             tx = session.beginTransaction();
             LOGGER.debug("retrieving policy mapper from db where appraiser = "
-                    + "{} and device group = {}", appraiser, deviceGroup);
+                    + "{}", appraiser);
             CriteriaBuilder criteriaBuilder = session.getCriteriaBuilder();
             CriteriaQuery<PolicyMapper> criteriaQuery = criteriaBuilder
                     .createQuery(PolicyMapper.class);
             Root<PolicyMapper> root = criteriaQuery.from(PolicyMapper.class);
             Predicate recordPredicate = criteriaBuilder.and(
-                    criteriaBuilder.equal(root.get("appraiser"), appraiser),
-                    criteriaBuilder.equal(root.get("deviceGroup"), deviceGroup));
+                    criteriaBuilder.equal(root.get("appraiser"), appraiser));
             criteriaQuery.select(root).where(recordPredicate);
             Query<PolicyMapper> query = session.createQuery(criteriaQuery);
             List<PolicyMapper> results = query.getResultList();
@@ -447,8 +445,7 @@ public class DBPolicyManager extends DBManager<Policy> implements PolicyManager 
             }
 
             if (mapper == null) {
-                LOGGER.debug("no policy mapper found for appraiser {} and "
-                    + "device group {}", appraiser, deviceGroup);
+                LOGGER.debug("no policy mapper found for appraiser {}", appraiser);
             } else {
                 ret = mapper.getPolicy();
             }

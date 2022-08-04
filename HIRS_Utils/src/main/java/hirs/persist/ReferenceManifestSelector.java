@@ -3,6 +3,7 @@ package hirs.persist;
 import com.google.common.base.Preconditions;
 import hirs.data.persist.ReferenceManifest;
 import hirs.data.persist.certificate.Certificate;
+import hirs.persist.service.ReferenceManifestService;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 
@@ -45,7 +46,7 @@ public abstract class ReferenceManifestSelector<T extends ReferenceManifest> {
     public static final String RIM_FILENAME_FIELD = "fileName";
     private static final String RIM_TYPE_FIELD = "rimType";
 
-    private final ReferenceManifestManager referenceManifestManager;
+    private final ReferenceManifestService referenceManifestService;
     private final Class<T> referenceTypeClass;
 
     private final Map<String, Object> fieldValueSelections;
@@ -54,26 +55,26 @@ public abstract class ReferenceManifestSelector<T extends ReferenceManifest> {
     /**
      * Default Constructor.
      *
-     * @param referenceManifestManager the RIM manager to be used to retrieve RIMs
+     * @param referenceManifestService the RIM service to be used to retrieve RIMs
      * @param referenceTypeClass the type of Reference Manifest to process.
      */
-    public ReferenceManifestSelector(final ReferenceManifestManager referenceManifestManager,
+    public ReferenceManifestSelector(final ReferenceManifestService referenceManifestService,
                                      final Class<T> referenceTypeClass) {
-        this(referenceManifestManager, referenceTypeClass, true);
+        this(referenceManifestService, referenceTypeClass, true);
     }
 
     /**
      * Standard Constructor for the Selector.
      *
-     * @param referenceManifestManager the RIM manager to be used to retrieve RIMs
+     * @param referenceManifestService the RIM service to be used to retrieve RIMs
      * @param referenceTypeClass the type of Reference Manifest to process.
      * @param excludeArchivedRims true if excluding archived RIMs
      */
-    public ReferenceManifestSelector(final ReferenceManifestManager referenceManifestManager,
+    public ReferenceManifestSelector(final ReferenceManifestService referenceManifestService,
                                      final Class<T> referenceTypeClass,
             final boolean excludeArchivedRims) {
         Preconditions.checkArgument(
-                referenceManifestManager != null,
+                referenceManifestService != null,
                 "reference manifest manager cannot be null"
         );
 
@@ -82,7 +83,7 @@ public abstract class ReferenceManifestSelector<T extends ReferenceManifest> {
                 "type cannot be null"
         );
 
-        this.referenceManifestManager = referenceManifestManager;
+        this.referenceManifestService = referenceManifestService;
         this.referenceTypeClass = referenceTypeClass;
         this.excludeArchivedRims = excludeArchivedRims;
         this.fieldValueSelections = new HashMap<>();
@@ -218,7 +219,7 @@ public abstract class ReferenceManifestSelector<T extends ReferenceManifest> {
 
     // construct and execute query
     private Set<T> execute() {
-        Set<T> results = this.referenceManifestManager.get(this);
+        Set<T> results = this.referenceManifestService.get(this);
         return results;
     }
 

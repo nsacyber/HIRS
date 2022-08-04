@@ -1,5 +1,7 @@
 package hirs.persist.service;
 
+import hirs.persist.OrderedQuery;
+
 import java.util.List;
 import java.util.UUID;
 
@@ -9,7 +11,7 @@ import java.util.UUID;
  * support for the basic create, read, update, and delete methods.
  * @param <T> class type
  */
-public interface DefaultService<T> {
+public interface DefaultService<T> extends OrderedQuery<T> {
 
     /**
      * Returns a list of all <code>T</code>. This searches through
