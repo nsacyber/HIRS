@@ -13,7 +13,6 @@ import org.springframework.retry.RetryContext;
 import org.springframework.stereotype.Service;
 
 import javax.persistence.EntityManager;
-import java.util.List;
 import java.util.UUID;
 
 /**
@@ -82,13 +81,8 @@ public class AppraiserServiceImpl extends DbServiceImpl<Appraiser>
             @Override
             public Appraiser doWithRetry(final RetryContext context)
                     throws DBManagerException {
-                List<Appraiser> appraiserList = appraiserRepository.findAll();
-                for (Appraiser appraiser : appraiserList) {
-                    if (appraiser.getName().equals(name)) {
-                        return appraiser;
-                    }
-                }
-                return null;            }
+                return appraiserRepository.findByName(name);
+            }
         });
     }
 

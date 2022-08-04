@@ -1,5 +1,6 @@
 package hirs.data.persist;
 
+import lombok.Data;
 import org.bouncycastle.util.Arrays;
 import org.hibernate.annotations.Type;
 
@@ -19,6 +20,7 @@ import java.util.UUID;
  * Digest Value, Event Type, index, RIM Tagid
  */
 @Entity
+@Data
 @Table(name = "ReferenceDigestValue")
 @XmlRootElement(name = "ReferenceDigestValue")
 @XmlAccessorType(XmlAccessType.FIELD)

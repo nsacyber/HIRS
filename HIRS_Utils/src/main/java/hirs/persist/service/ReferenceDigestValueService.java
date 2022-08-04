@@ -34,8 +34,16 @@ public interface ReferenceDigestValueService {
     /**
      * Persists a new Reference Digest value.
      *
-     * @param uuid associated with the base rim or potentially support rim.
+     * @param uuid associated with the base rim .
      * @return the persisted list of ReferenceDigestValue
      */
-    List<ReferenceDigestValue> getValuesByRimId(UUID uuid);
+    List<ReferenceDigestValue> getValuesByBaseRimId(UUID uuid);
+
+    /**
+     * Persists a new Reference Digest value.
+     *
+     * @param uuid associated with the support rim.
+     * @return the persisted list of ReferenceDigestValue
+     */
+    List<ReferenceDigestValue> getValuesBySupportRimId(UUID uuid);
 }

@@ -11,4 +11,6 @@ import java.util.UUID;
  */
 @Repository
 public interface AppraiserRepository extends JpaRepository<Appraiser, UUID> {
+
+    Appraiser findByName(String name);
 }

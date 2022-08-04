@@ -39,4 +39,13 @@ public interface DeviceService {
      * @return a device object
      */
     Device updateDevice(Device device, UUID deviceId) throws DeviceManagerException;
+
+
+    /**
+     * Simple accessor method using the repo to get a Device by the
+     * name column.
+     * @param name string instance of the name.
+     * @return instance of a device if found
+     */
+    Device getByName(String name);
 }

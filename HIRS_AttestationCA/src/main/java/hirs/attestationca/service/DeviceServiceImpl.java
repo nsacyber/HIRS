@@ -42,6 +42,20 @@ public class DeviceServiceImpl extends DbServiceImpl<Device> implements DefaultS
     }
 
     @Override
+    public final Device getByName(final String name) {
+        LOGGER.debug("Find device by name: {}", name);
+
+        return getRetryTemplate().execute(new RetryCallback<Device,
+                DBManagerException>() {
+            @Override
+            public Device doWithRetry(final RetryContext context)
+                    throws DBManagerException {
+                return deviceRepository.findByName(name);
+            }
+        });
+    }
+
+    @Override
     public final Device saveDevice(final Device device) throws DeviceManagerException {
         LOGGER.debug("Saving device: {}", device);
 

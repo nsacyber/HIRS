@@ -7,6 +7,7 @@ import javax.persistence.AccessType;
 import javax.persistence.Entity;
 import javax.persistence.Inheritance;
 import javax.persistence.InheritanceType;
+import javax.persistence.MappedSuperclass;
 import javax.persistence.Table;
 
 /**
@@ -20,6 +21,7 @@ import javax.persistence.Table;
 @Table(name = "Policy")
 @Inheritance(strategy = InheritanceType.JOINED)
 @Access(AccessType.FIELD)
+@MappedSuperclass
 public abstract class Policy extends UserDefinedEntity {
 
     /**

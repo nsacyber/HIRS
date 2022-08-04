@@ -15,8 +15,8 @@ import hirs.data.persist.certificate.attributes.ComponentIdentifier;
 import hirs.data.persist.certificate.attributes.V2.ComponentIdentifierV2;
 import hirs.persist.CriteriaModifier;
 import hirs.persist.CrudManager;
-import hirs.persist.DeviceManager;
 import hirs.persist.service.CertificateService;
+import hirs.persist.service.DeviceService;
 import org.apache.logging.log4j.Logger;
 import org.hibernate.Criteria;
 import org.hibernate.criterion.Restrictions;
@@ -62,7 +62,7 @@ public class ValidationReportsPageController extends PageController<NoPageParams
     @Autowired
     private final CertificateService certificateService;
     @Autowired
-    private final DeviceManager deviceManager;
+    private final DeviceService deviceService;
 
     private static String systemColumnHeaders = "Verified Manufacturer,"
             + "Model,SN,Verification Date,Device Status";
@@ -77,17 +77,17 @@ public class ValidationReportsPageController extends PageController<NoPageParams
      * Constructor providing the Page's display and routing specification.
      * @param supplyChainValidatorSummaryManager the manager
      * @param certificateService the certificate service
-     * @param deviceManager the device manager
+     * @param deviceService the device service
      */
     @Autowired
     public ValidationReportsPageController(
             final CrudManager<SupplyChainValidationSummary> supplyChainValidatorSummaryManager,
             final CertificateService certificateService,
-            final DeviceManager deviceManager) {
+            final DeviceService deviceService) {
         super(VALIDATION_REPORTS);
         this.supplyChainValidatorSummaryManager = supplyChainValidatorSummaryManager;
         this.certificateService = certificateService;
-        this.deviceManager = deviceManager;
+        this.deviceService = deviceService;
     }
 
     /**
@@ -265,7 +265,7 @@ public class ValidationReportsPageController extends PageController<NoPageParams
             if ((createTimes.get(i).isAfter(startDate) || createTimes.get(i).isEqual(startDate))
                     && (createTimes.get(i).isBefore(endDate)
                         || createTimes.get(i).isEqual(endDate))) {
-                UUID deviceId = deviceManager.getDevice(deviceNames[i]).getId();
+                UUID deviceId = deviceService.getByName(deviceNames[i]).getId();
                 PlatformCredential pc = PlatformCredential.select(certificateService)
                         .byDeviceId(deviceId).getCertificate();
                 if (jsonVersion) {
