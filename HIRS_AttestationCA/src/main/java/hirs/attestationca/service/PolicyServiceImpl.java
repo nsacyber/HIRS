@@ -113,7 +113,7 @@ public class PolicyServiceImpl extends DbServiceImpl<Policy> implements DefaultS
             dbPolicy = policy;
         } else {
             // will not return null, throws and exception
-            dbPolicy = policyRepository.getReferenceById(uuid);
+            dbPolicy = (Policy) policyRepository.getReferenceById(uuid);
 
             // run through things that aren't equal and update
         }

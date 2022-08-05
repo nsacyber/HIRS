@@ -50,7 +50,7 @@ public class ReferenceManifestServiceImpl extends DbServiceImpl<ReferenceManifes
             @Override
             public ReferenceManifest doWithRetry(final RetryContext context)
                     throws DBManagerException {
-                return referenceManifestRepository.save(rim);
+                return referenceManifestRepository.saveRIM(rim);
             }
         });
     }

@@ -6,7 +6,6 @@ import hirs.attestationca.portal.model.PolicyPageModel;
 import hirs.attestationca.portal.page.PageController;
 import hirs.attestationca.portal.page.PageMessages;
 import hirs.attestationca.portal.page.params.NoPageParams;
-import hirs.data.persist.policy.Policy;
 import hirs.data.persist.policy.SupplyChainPolicy;
 import hirs.persist.PolicyManagerException;
 import hirs.persist.service.AppraiserService;
@@ -963,7 +962,7 @@ public class PolicyPageController extends PageController<NoPageParams> {
             final PageMessages messages, final String successMessage,
             final SupplyChainPolicy policy) {
         // save the policy to the DB
-        policyService.updatePolicy(policy);
+        policyService.updatePolicy(policy, policy.getId());
 
         // Log and set the success message
         messages.addSuccess(successMessage);

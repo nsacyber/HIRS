@@ -16,4 +16,10 @@ public interface ReferenceDigestValueRepository extends JpaRepository<ReferenceD
     List<ReferenceDigestValue> findValuesByBaseRimId(UUID uuid);
 
     List<ReferenceDigestValue> findValuesBySupportRimId(UUID uuid);
+
+    /**
+     * List<String> results = session.createCriteria(User.class).add(Projections.projectionList().add(Projections.property("id")).add()....).list();
+     *
+     * List<Object[]> result = session.createCriteria(User.class).setProjection(Projections.projectionList().add(Projections.groupProperty("lastName")).add(Projections.rowCount())).list();
+     */
 }

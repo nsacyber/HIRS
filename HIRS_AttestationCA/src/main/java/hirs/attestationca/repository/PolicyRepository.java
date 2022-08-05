@@ -12,4 +12,6 @@ import java.util.UUID;
 @Repository
 public interface PolicyRepository<T extends Policy> extends JpaRepository<T, UUID> {
     T save(T policy);
+
+    T updatePolicy(T policy, UUID uuid);
 }
