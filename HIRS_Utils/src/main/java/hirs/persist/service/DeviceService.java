@@ -2,6 +2,7 @@ package hirs.persist.service;
 
 import hirs.data.persist.Device;
 import hirs.persist.DeviceManagerException;
+import hirs.persist.OrderedQuery;
 
 import java.util.UUID;
 
@@ -10,7 +11,7 @@ import java.util.UUID;
  * <code>DeviceService</code> is used to store and manage devices. It has
  * support for the basic create, read, update, and delete methods.
  */
-public interface DeviceService {
+public interface DeviceService extends OrderedQuery<Device> {
 
     /**
      * Saves the <code>Device</code> in the database. This creates a new

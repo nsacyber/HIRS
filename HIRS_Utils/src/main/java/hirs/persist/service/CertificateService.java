@@ -2,6 +2,7 @@ package hirs.persist.service;
 
 import hirs.data.persist.certificate.Certificate;
 import hirs.persist.CertificateSelector;
+import hirs.persist.OrderedQuery;
 
 import java.util.Set;
 import java.util.UUID;
@@ -11,7 +12,7 @@ import java.util.UUID;
  * <code>CertificateService</code> is used to store and manage certificates. It has
  * support for the basic create, read, update, and delete methods.
  */
-public interface CertificateService {
+public interface CertificateService extends OrderedQuery<Certificate> {
 
     /**
      * Saves the <code>Certificate</code> in the database. This creates a new

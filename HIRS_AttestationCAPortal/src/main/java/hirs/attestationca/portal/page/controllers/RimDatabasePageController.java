@@ -9,13 +9,13 @@ import hirs.attestationca.portal.page.Page;
 import hirs.attestationca.portal.page.PageController;
 import hirs.attestationca.portal.page.params.NoPageParams;
 import hirs.attestationca.service.ReferenceDigestValueServiceImpl;
-import hirs.attestationca.servicemanager.DBReferenceManifestManager;
+import hirs.attestationca.service.ReferenceManifestServiceImpl;
 import hirs.data.persist.ReferenceDigestValue;
 import hirs.data.persist.SupportReferenceManifest;
 import hirs.data.persist.certificate.Certificate;
 import hirs.persist.CriteriaModifier;
 import hirs.persist.DBManagerException;
-import hirs.persist.ReferenceManifestManager;
+import hirs.persist.service.ReferenceManifestService;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.hibernate.Criteria;
@@ -45,7 +45,7 @@ public class RimDatabasePageController
     private static final String BIOS_RELEASE_DATE_FORMAT = "yyyy-MM-dd";
 
     private final BiosDateValidator biosValidator;
-    private final ReferenceManifestManager referenceManifestManager;
+    private final ReferenceManifestService referenceManifestService;
     private final ReferenceDigestValueServiceImpl referenceDigestValueService;
     private static final Logger LOGGER
             = LogManager.getLogger(RimDatabasePageController.class);
@@ -95,15 +95,15 @@ public class RimDatabasePageController
     /**
      * Constructor providing the Page's display and routing specification.
      *
-     * @param referenceManifestManager the ReferenceManifestManager object
+     * @param referenceManifestService the referenceManifestService object
      * @param referenceDigestValueService  the referenceDigestValueService object
      */
     @Autowired
     public RimDatabasePageController(
-            final DBReferenceManifestManager referenceManifestManager,
+            final ReferenceManifestServiceImpl referenceManifestService,
             final ReferenceDigestValueServiceImpl referenceDigestValueService) {
         super(Page.RIM_DATABASE);
-        this.referenceManifestManager = referenceManifestManager;
+        this.referenceManifestService = referenceManifestService;
         this.referenceDigestValueService = referenceDigestValueService;
         this.biosValidator = new BiosDateValidator(BIOS_RELEASE_DATE_FORMAT);
     }
@@ -162,7 +162,7 @@ public class RimDatabasePageController
         for (ReferenceDigestValue rdv : referenceDigestValues) {
             // We are updating the base rim ID field if necessary and
             if (rdv.getBaseRimId() == null) {
-                support = SupportReferenceManifest.select(referenceManifestManager)
+                support = SupportReferenceManifest.select(referenceManifestService)
                         .byEntityId(rdv.getSupportRimId()).getRIM();
                 if (support != null) {
                     rdv.setBaseRimId(support.getAssociatedRim());

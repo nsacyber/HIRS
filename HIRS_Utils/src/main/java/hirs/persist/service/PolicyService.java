@@ -2,6 +2,7 @@ package hirs.persist.service;
 
 import hirs.appraiser.Appraiser;
 import hirs.data.persist.policy.Policy;
+import hirs.persist.OrderedQuery;
 
 import java.util.UUID;
 
@@ -10,7 +11,7 @@ import java.util.UUID;
  * <code>PolicyService</code> is used to store and manage policies. It has
  * support for the basic create, read, update, and delete methods.
  */
-public interface PolicyService {
+public interface PolicyService extends OrderedQuery<Policy> {
 
     /**
      * Saves the <code>Policy</code> in the database. This creates a new

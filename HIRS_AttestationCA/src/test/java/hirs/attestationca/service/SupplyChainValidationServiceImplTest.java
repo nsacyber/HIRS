@@ -2,6 +2,7 @@ package hirs.attestationca.service;
 
 import hirs.attestationca.persist.SpringPersistenceTest;
 import hirs.appraiser.SupplyChainAppraiser;
+import hirs.attestationca.validation.SupplyChainValidationServiceImpl;
 import hirs.data.persist.AppraisalStatus;
 import hirs.data.persist.Device;
 import hirs.data.persist.DeviceInfoReport;

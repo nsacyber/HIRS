@@ -10,7 +10,6 @@ import hirs.data.persist.certificate.PlatformCredential;
 import hirs.persist.CertificateSelector;
 import hirs.persist.CriteriaModifier;
 import hirs.persist.DBManagerException;
-import hirs.persist.OrderedQuery;
 import hirs.persist.service.CertificateService;
 import hirs.persist.service.DefaultService;
 import org.apache.logging.log4j.LogManager;
@@ -34,8 +33,7 @@ import java.util.UUID;
  */
 @Service
 public class CertificateServiceImpl extends DbServiceImpl<Certificate>
-        implements DefaultService<Certificate>,
-        CertificateService, OrderedQuery<Certificate> {
+        implements DefaultService<Certificate>, CertificateService {
 
     private static final Logger LOGGER = LogManager.getLogger(CertificateServiceImpl.class);
     @Autowired

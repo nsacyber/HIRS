@@ -1,4 +1,4 @@
-package hirs.attestationca.service;
+package hirs.attestationca.validation;
 
 import hirs.appraiser.Appraiser;
 import hirs.appraiser.SupplyChainAppraiser;

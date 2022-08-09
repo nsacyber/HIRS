@@ -5,7 +5,6 @@ import hirs.attestationca.repository.ReferenceManifestRepository;
 import hirs.data.persist.ReferenceManifest;
 import hirs.persist.CriteriaModifier;
 import hirs.persist.DBManagerException;
-import hirs.persist.OrderedQuery;
 import hirs.persist.service.DefaultService;
 import hirs.persist.service.ReferenceManifestService;
 import org.apache.logging.log4j.LogManager;
@@ -27,8 +26,7 @@ import java.util.UUID;
  */
 @Service
 public class ReferenceManifestServiceImpl extends DbServiceImpl<ReferenceManifest>
-        implements DefaultService<ReferenceManifest>,
-        ReferenceManifestService, OrderedQuery<ReferenceManifest> {
+        implements DefaultService<ReferenceManifest>, ReferenceManifestService {
 
     private static final Logger LOGGER = LogManager.getLogger(ReferenceManifestServiceImpl.class);
     @Autowired
@@ -66,13 +64,19 @@ public class ReferenceManifestServiceImpl extends DbServiceImpl<ReferenceManifes
             dbRim = rim;
         } else {
             // will not return null, throws and exception
-            dbRim = referenceManifestRepository.getReferenceById(uuid);
+            dbRim = (ReferenceManifest) this.referenceManifestRepository
+                    .getReferenceById(uuid);
 
             // run through things that aren't equal and update
 
         }
 
         return saveRIM(dbRim);
+    }
+
+    @Override
+    public void deleteRIM(final ReferenceManifest rim) {
+        deleteObjectById(rim.getId());
     }
 
     @Override

@@ -1,6 +1,7 @@
 package hirs.persist.service;
 
 import hirs.data.persist.ReferenceDigestValue;
+import hirs.persist.OrderedQuery;
 
 import java.util.List;
 import java.util.UUID;
@@ -10,7 +11,7 @@ import java.util.UUID;
  * <code>ReferenceDigestValue</code> is used to store and manage digest events. It has
  * support for the basic create, read, update, and delete methods.
  */
-public interface ReferenceDigestValueService {
+public interface ReferenceDigestValueService extends OrderedQuery<ReferenceDigestValue> {
 
     /**
      * Saves the <code>ReferenceDigestValue</code> in the database. This creates a new

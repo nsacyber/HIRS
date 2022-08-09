@@ -1,6 +1,7 @@
 package hirs.persist.service;
 
 import hirs.data.persist.ReferenceManifest;
+import hirs.persist.OrderedQuery;
 
 import java.util.UUID;
 
@@ -9,7 +10,7 @@ import java.util.UUID;
  * <code>ReferenceManifestService</code> is used to store and manage reference manifests. It has
  * support for the basic create, read, update, and delete methods.
  */
-public interface ReferenceManifestService {
+public interface ReferenceManifestService extends OrderedQuery<ReferenceManifest> {
 
     /**
      * Saves the <code>ReferenceManifest</code> in the database. This creates a new
@@ -29,4 +30,13 @@ public interface ReferenceManifestService {
      * @return a ReferenceManifest object
      */
     ReferenceManifest updateReferenceManifest(ReferenceManifest rim, UUID uuid);
+
+    /**
+     * Deletes the <code>ReferenceManifest</code> in the database. This creates a new
+     * database session and saves the device.
+     *
+     * @param rim ReferenceManifest to delete
+     * @return reference to deleted rim
+     */
+    void deleteRIM(ReferenceManifest rim);
 }

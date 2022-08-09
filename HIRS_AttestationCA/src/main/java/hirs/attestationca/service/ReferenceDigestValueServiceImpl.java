@@ -5,7 +5,6 @@ import hirs.attestationca.repository.ReferenceDigestValueRepository;
 import hirs.data.persist.ReferenceDigestValue;
 import hirs.persist.CriteriaModifier;
 import hirs.persist.DBManagerException;
-import hirs.persist.OrderedQuery;
 import hirs.persist.service.DefaultService;
 import hirs.persist.service.ReferenceDigestValueService;
 import org.apache.logging.log4j.LogManager;
@@ -27,8 +26,7 @@ import java.util.UUID;
  */
 @Service
 public class ReferenceDigestValueServiceImpl extends DbServiceImpl<ReferenceDigestValue>
-        implements DefaultService<ReferenceDigestValue>,
-        ReferenceDigestValueService, OrderedQuery<ReferenceDigestValue> {
+        implements DefaultService<ReferenceDigestValue>, ReferenceDigestValueService {
 
     private static final Logger LOGGER = LogManager
             .getLogger(ReferenceDigestValueServiceImpl.class);

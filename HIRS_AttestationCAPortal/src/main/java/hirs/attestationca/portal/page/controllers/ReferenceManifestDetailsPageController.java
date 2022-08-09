@@ -4,7 +4,7 @@ import hirs.attestationca.portal.page.Page;
 import hirs.attestationca.portal.page.PageController;
 import hirs.attestationca.portal.page.PageMessages;
 import hirs.attestationca.portal.page.params.ReferenceManifestDetailsPageParams;
-import hirs.attestationca.service.SupplyChainValidationServiceImpl;
+import hirs.attestationca.validation.SupplyChainValidationServiceImpl;
 import hirs.data.persist.BaseReferenceManifest;
 import hirs.data.persist.EventLogMeasurements;
 import hirs.data.persist.ReferenceDigestValue;

@@ -1,7 +1,7 @@
 package hirs.attestationca.rest;
 
 import hirs.attestationca.AbstractAttestationCertificateAuthority;
-import hirs.attestationca.service.SupplyChainValidationService;
+import hirs.attestationca.validation.SupplyChainValidationService;
 import hirs.data.service.DeviceRegister;
 import hirs.persist.CertificateManager;
 import hirs.persist.DeviceManager;
@@ -35,7 +35,7 @@ public class RestfulAttestationCertificateAuthority
      * @param privateKey the ACA private key
      * @param acaCertificate the ACA certificate
      * @param structConverter the struct converter
-     * @param certificateManager the certificate manager
+     * @param certificateService the certificate service
      * @param referenceManifestManager the referenceManifestManager
      * @param deviceRegister the device register
      * @param validDays the number of days issued certs are valid
@@ -48,14 +48,14 @@ public class RestfulAttestationCertificateAuthority
             final SupplyChainValidationService supplyChainValidationService,
             final PrivateKey privateKey, final X509Certificate acaCertificate,
             final StructConverter structConverter,
-            final CertificateManager certificateManager,
+            final CertificateManager certificateService,
             final ReferenceManifestManager referenceManifestManager,
             final DeviceRegister deviceRegister,
             final DeviceManager deviceManager,
             final ReferenceEventManager referenceEventManager,
             @Value("${aca.certificates.validity}") final int validDays) {
         super(supplyChainValidationService, privateKey, acaCertificate, structConverter,
-                certificateManager, referenceManifestManager,
+                certificateService, referenceManifestManager,
                 deviceRegister, validDays, deviceManager,
                 referenceEventManager);
     }

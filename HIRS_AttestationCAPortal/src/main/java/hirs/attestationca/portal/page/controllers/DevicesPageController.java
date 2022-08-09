@@ -6,11 +6,11 @@ import hirs.attestationca.portal.datatables.DataTableResponse;
 import hirs.attestationca.portal.datatables.OrderedListQueryDataTableAdapter;
 import hirs.attestationca.portal.page.PageController;
 import hirs.attestationca.portal.page.params.NoPageParams;
+import hirs.attestationca.servicemanager.DBManager;
 import hirs.data.persist.Device;
 import hirs.data.persist.certificate.Certificate;
 import hirs.data.persist.certificate.DeviceAssociatedCertificate;
-import hirs.attestationca.servicemanager.DBManager;
-import hirs.persist.DeviceManager;
+import hirs.persist.service.DeviceService;
 import org.apache.logging.log4j.Logger;
 import org.hibernate.criterion.Restrictions;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -40,22 +40,22 @@ import static org.apache.logging.log4j.LogManager.getLogger;
 public class DevicesPageController extends PageController<NoPageParams> {
 
     @Autowired
-    private final DeviceManager deviceManager;
+    private final DeviceService deviceService;
     @Autowired
-    private final DBManager<Certificate> certificateDBManager;
+    private final DBManager<Certificate> certificateDBManager;  // this may be what I need to do for all of them
     private static final Logger LOGGER = getLogger(DevicesPageController.class);
 
     /**
      * Constructor providing the Page's display and routing specification.
-     * @param deviceManager the device manager
+     * @param deviceService the device manager
      * @param certificateDBManager the certificate DB manager
      */
     @Autowired
     public DevicesPageController(
-            final DeviceManager deviceManager,
+            final DeviceService deviceService,
             final DBManager<Certificate> certificateDBManager) {
         super(DEVICES);
-        this.deviceManager = deviceManager;
+        this.deviceService = deviceService;
         this.certificateDBManager = certificateDBManager;
     }
 
@@ -90,7 +90,7 @@ public class DevicesPageController extends PageController<NoPageParams> {
         // get all the devices
         FilteredRecordsList<Device> deviceList =
                 OrderedListQueryDataTableAdapter.getOrderedList(Device.class,
-                        deviceManager, input, orderColumnName);
+                        deviceService, input, orderColumnName);
 
         FilteredRecordsList<HashMap<String, Object>> record
                 = retrieveDevicesAndAssociatedCertificates(deviceList);

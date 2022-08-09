@@ -6,7 +6,6 @@ import hirs.attestationca.repository.PolicyRepository;
 import hirs.data.persist.policy.Policy;
 import hirs.persist.CriteriaModifier;
 import hirs.persist.DBManagerException;
-import hirs.persist.OrderedQuery;
 import hirs.persist.PolicyMapper;
 import hirs.persist.service.DefaultService;
 import hirs.persist.service.PolicyService;
@@ -35,8 +34,8 @@ import java.util.UUID;
  * support for the basic create, read, update, and delete methods.
  */
 @Service
-public class PolicyServiceImpl extends DbServiceImpl<Policy> implements DefaultService<Policy>,
-        PolicyService, OrderedQuery<Policy> {
+public class PolicyServiceImpl extends DbServiceImpl<Policy>
+        implements DefaultService<Policy>, PolicyService {
 
     private static final Logger LOGGER = LogManager.getLogger(PolicyServiceImpl.class);
     @Autowired

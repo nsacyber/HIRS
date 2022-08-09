@@ -1,4 +1,4 @@
-package hirs.attestationca.service;
+package hirs.attestationca.validation;
 
 import hirs.data.persist.Device;
 import hirs.data.persist.SupplyChainValidationSummary;

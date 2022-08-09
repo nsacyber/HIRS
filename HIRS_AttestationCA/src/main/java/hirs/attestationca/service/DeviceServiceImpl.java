@@ -6,7 +6,6 @@ import hirs.data.persist.Device;
 import hirs.persist.CriteriaModifier;
 import hirs.persist.DBManagerException;
 import hirs.persist.DeviceManagerException;
-import hirs.persist.OrderedQuery;
 import hirs.persist.service.DefaultService;
 import hirs.persist.service.DeviceService;
 import org.apache.logging.log4j.LogManager;
@@ -27,8 +26,8 @@ import java.util.UUID;
  * support for the basic create, read, update, and delete methods.
  */
 @Service
-public class DeviceServiceImpl extends DbServiceImpl<Device> implements DefaultService<Device>,
-        DeviceService, OrderedQuery<Device> {
+public class DeviceServiceImpl extends DbServiceImpl<Device>
+        implements DefaultService<Device>, DeviceService {
 
     private static final Logger LOGGER = LogManager.getLogger(DeviceServiceImpl.class);
     @Autowired
