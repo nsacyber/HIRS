@@ -20,20 +20,16 @@ import org.springframework.stereotype.Service;
 public class DeviceRegisterImpl implements DeviceRegister {
 
     private DeviceManager deviceManager;
-    private DeviceGroupManager deviceGroupManager;
 
     private static final Logger LOGGER = LogManager.getLogger(DeviceRegisterImpl.class);
 
     /**
      * Constructor.
      * @param deviceManager the device manager
-     * @param deviceGroupManager the device group manager
      */
     @Autowired
-    public DeviceRegisterImpl(final DeviceManager deviceManager,
-                              final DeviceGroupManager deviceGroupManager) {
+    public DeviceRegisterImpl(final DeviceManager deviceManager) {
         this.deviceManager = deviceManager;
-        this.deviceGroupManager = deviceGroupManager;
     }
 
     @Override
@@ -59,8 +55,6 @@ public class DeviceRegisterImpl implements DeviceRegister {
 
         LOGGER.debug("device not found, saving new device");
         Device newDevice = new Device(deviceName, report);
-        DeviceGroup group = deviceGroupManager.getDeviceGroup(DeviceGroup.DEFAULT_GROUP);
-        newDevice.setDeviceGroup(group);
         deviceManager.saveDevice(newDevice);
         return newDevice;
     }
