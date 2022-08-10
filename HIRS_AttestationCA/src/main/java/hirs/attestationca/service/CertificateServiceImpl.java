@@ -2,6 +2,7 @@ package hirs.attestationca.service;
 
 import hirs.FilteredRecordsList;
 import hirs.attestationca.repository.CertificateRepository;
+import hirs.data.persist.ArchivableEntity;
 import hirs.data.persist.certificate.Certificate;
 import hirs.data.persist.certificate.CertificateAuthorityCredential;
 import hirs.data.persist.certificate.EndorsementCredential;
@@ -20,6 +21,7 @@ import org.springframework.retry.RetryContext;
 import org.springframework.stereotype.Service;
 
 import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -38,12 +40,15 @@ public class CertificateServiceImpl extends DbServiceImpl<Certificate>
     private static final Logger LOGGER = LogManager.getLogger(CertificateServiceImpl.class);
     @Autowired
     private CertificateRepository certificateRepository;
+    @PersistenceContext
+    private EntityManager entityManager;
 
     /**
      * Default constructor.
-     * @param em entity manager for jpa hibernate events
+     * @param entityManager entity manager for jpa hibernate events
      */
-    public CertificateServiceImpl(final EntityManager em) {
+    public CertificateServiceImpl(final EntityManager entityManager) {
+        this.entityManager = entityManager;
     }
 
     @Override
@@ -167,5 +172,26 @@ public class CertificateServiceImpl extends DbServiceImpl<Certificate>
         } else {
             return null;
         }
+    }
+
+    @Override
+    public boolean archive(UUID uuid) {
+        LOGGER.debug("archiving object: {}", uuid);
+        if (uuid == null) {
+            LOGGER.debug("null name argument");
+            return false;
+        }
+        Certificate target = (Certificate)
+                this.certificateRepository.getReferenceById(uuid);
+        if (target == null) {
+            return false;
+        }
+        if (!(target instanceof ArchivableEntity)) {
+            throw new DBManagerException("unable to archive non-archivable object");
+        }
+
+        ((ArchivableEntity) target).archive();
+        this.updateCertificate(target, uuid);
+        return true;
     }
 }

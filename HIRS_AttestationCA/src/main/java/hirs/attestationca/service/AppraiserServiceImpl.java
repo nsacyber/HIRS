@@ -13,6 +13,7 @@ import org.springframework.retry.RetryContext;
 import org.springframework.stereotype.Service;
 
 import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
 import java.util.UUID;
 
 /**
@@ -26,12 +27,20 @@ public class AppraiserServiceImpl extends DbServiceImpl<Appraiser>
     private static final Logger LOGGER = LogManager.getLogger();
     @Autowired
     private AppraiserRepository appraiserRepository;
+    @PersistenceContext
+    private EntityManager entityManager;
 
     /**
      * Default constructor.
-     * @param em entity manager for jpa hibernate events
+     * @param entityManager entity manager for jpa hibernate events
      */
-    public AppraiserServiceImpl(final EntityManager em) {
+    public AppraiserServiceImpl(final EntityManager entityManager) {
+        this.entityManager = entityManager;
+    }
+
+    @Override
+    public boolean archive(final UUID uuid) {
+        return false;
     }
 
     @Override

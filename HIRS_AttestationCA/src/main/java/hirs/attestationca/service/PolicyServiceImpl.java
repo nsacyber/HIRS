@@ -3,6 +3,7 @@ package hirs.attestationca.service;
 import hirs.FilteredRecordsList;
 import hirs.appraiser.Appraiser;
 import hirs.attestationca.repository.PolicyRepository;
+import hirs.data.persist.ArchivableEntity;
 import hirs.data.persist.policy.Policy;
 import hirs.persist.CriteriaModifier;
 import hirs.persist.DBManagerException;
@@ -20,6 +21,7 @@ import org.springframework.retry.RetryContext;
 import org.springframework.stereotype.Service;
 
 import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Predicate;
@@ -40,12 +42,16 @@ public class PolicyServiceImpl extends DbServiceImpl<Policy>
     private static final Logger LOGGER = LogManager.getLogger(PolicyServiceImpl.class);
     @Autowired
     private PolicyRepository policyRepository;
+    @PersistenceContext
+    private EntityManager entityManager;
 
     /**
      * Default Constructor.
+     * @param entityManager entity manager for jpa hibernate events
      */
-    public PolicyServiceImpl(final EntityManager em) {
-        super(em);
+    public PolicyServiceImpl(final EntityManager entityManager) {
+        super(entityManager);
+        this.entityManager = entityManager;
     }
 
     @Override
@@ -184,5 +190,26 @@ public class PolicyServiceImpl extends DbServiceImpl<Policy>
             final CriteriaModifier criteriaModifier)
             throws DBManagerException {
         return null;
+    }
+
+    @Override
+    public boolean archive(UUID uuid) {
+        LOGGER.debug("archiving object: {}", uuid);
+        if (uuid == null) {
+            LOGGER.debug("null name argument");
+            return false;
+        }
+        Policy target = (Policy)
+                this.policyRepository.getReferenceById(uuid);
+        if (target == null) {
+            return false;
+        }
+        if (!(target instanceof ArchivableEntity)) {
+            throw new DBManagerException("unable to archive non-archivable object");
+        }
+
+        ((ArchivableEntity) target).archive();
+        this.updatePolicy(target, uuid);
+        return true;
     }
 }

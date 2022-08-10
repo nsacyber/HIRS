@@ -1,21 +1,19 @@
 package hirs.attestationca.service;
 
-import hirs.data.persist.ArchivableEntity;
-import hirs.persist.DBManagerException;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.hibernate.StaleObjectStateException;
 import org.hibernate.exception.LockAcquisitionException;
-import org.jadira.usertype.spi.repository.JpaBaseRepository;
 import org.springframework.retry.RetryListener;
 import org.springframework.retry.backoff.FixedBackOffPolicy;
 import org.springframework.retry.policy.SimpleRetryPolicy;
 import org.springframework.retry.support.RetryTemplate;
-import org.springframework.stereotype.Service;
 
 import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.UUID;
 
 
 /**
@@ -24,8 +22,7 @@ import java.util.Map;
  * archive, and delete operations for managing objects in a database.
  *
  */
-@Service
-public class DbServiceImpl<T> {
+public abstract class DbServiceImpl<T> {
     private static final Logger LOGGER = LogManager.getLogger(DbServiceImpl.class);
 
     /**
@@ -39,7 +36,9 @@ public class DbServiceImpl<T> {
 
     // structure for retrying methods in the database
     private RetryTemplate retryTemplate;
-    private EntityManager em;
+
+    @PersistenceContext
+    private EntityManager entityManager;
 
     /**
      * Creates a new <code>DbServiceImpl</code> that uses the default database. The
@@ -53,11 +52,12 @@ public class DbServiceImpl<T> {
     /**
      * Creates a new <code>DbServiceImpl</code> that uses the default database. The
      * default database is used to store all of the objects.
+     * @param entityManager entity manager for jpa hibernate events
      *
      */
-    public DbServiceImpl(final EntityManager em) {
+    public DbServiceImpl(final EntityManager entityManager) {
         setRetryTemplate(DEFAULT_MAX_RETRY_ATTEMPTS, DEFAULT_RETRY_WAIT_TIME_MS);
-        this.em = em;
+        this.entityManager = entityManager;
     }
 
     /**
@@ -107,34 +107,16 @@ public class DbServiceImpl<T> {
      * @return instance of the manager
      */
     public final EntityManager getEm() {
-        return em;
+        return entityManager;
     }
 
     /**
      * Archives the named object and updates it in the database.
      *
-     * @param name name of the object to archive
+     * @param uuid unique id of the object to archive
      * @return true if the object was successfully found and archived, false if the object was not
      * found
      * @throws hirs.persist.DBManagerException if the object is not an instance of <code>ArchivableEntity</code>
      */
-    public final boolean archive(final String name) throws DBManagerException {
-        LOGGER.debug("archiving object: {}", name);
-        if (name == null) {
-            LOGGER.debug("null name argument");
-            return false;
-        }
-
-        T target = get(name);
-        if (target == null) {
-            return false;
-        }
-        if (!(target instanceof ArchivableEntity)) {
-            throw new DBManagerException("unable to archive non-archivable object");
-        }
-
-        ((ArchivableEntity) target).archive();
-        update(target);
-        return true;
-    }
+    public abstract boolean archive(final UUID uuid);
 }

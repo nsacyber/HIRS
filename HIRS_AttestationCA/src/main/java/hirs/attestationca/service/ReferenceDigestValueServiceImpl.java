@@ -2,6 +2,7 @@ package hirs.attestationca.service;
 
 import hirs.FilteredRecordsList;
 import hirs.attestationca.repository.ReferenceDigestValueRepository;
+import hirs.data.persist.ArchivableEntity;
 import hirs.data.persist.ReferenceDigestValue;
 import hirs.persist.CriteriaModifier;
 import hirs.persist.DBManagerException;
@@ -15,6 +16,8 @@ import org.springframework.retry.RetryContext;
 import org.springframework.stereotype.Service;
 
 import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -32,11 +35,15 @@ public class ReferenceDigestValueServiceImpl extends DbServiceImpl<ReferenceDige
             .getLogger(ReferenceDigestValueServiceImpl.class);
     @Autowired
     private ReferenceDigestValueRepository referenceDigestValueRepository;
+    @PersistenceContext
+    private EntityManager entityManager;
 
     /**
      * Default Constructor.
+     * @param entityManager entity manager for jpa hibernate events
      */
-    public ReferenceDigestValueServiceImpl(final EntityManager em) {
+    public ReferenceDigestValueServiceImpl(final EntityManager entityManager) {
+        this.entityManager = entityManager;
     }
 
     @Override
@@ -145,7 +152,27 @@ public class ReferenceDigestValueServiceImpl extends DbServiceImpl<ReferenceDige
             final boolean ascending, final int firstResult, final int maxResults,
             final String search, final Map<String, Boolean> searchableColumns)
             throws DBManagerException {
-        return null;
+        LOGGER.debug("Getting ordered object list");
+        Class<ReferenceDigestValue> searchClass = clazz;
+        if (clazz == null) {
+            LOGGER.debug("clazz is null");
+            searchClass = ReferenceDigestValue.class;
+        }
+
+        if (searchableColumns != null) {
+            LOGGER.info(searchClass.getName() + " querying for "
+                    + Arrays.toString(searchableColumns.entrySet().toArray())
+                    + " with search strings \"" + search + "\"");
+        }
+
+        //Object that will store query values
+        FilteredRecordsList<ReferenceDigestValue> rdvOrderedList = new FilteredRecordsList<>();
+
+        // Search
+//        Query keywordQuery = queryBuilder.
+
+        // sort
+        return rdvOrderedList;
     }
 
     @Override
@@ -156,5 +183,26 @@ public class ReferenceDigestValueServiceImpl extends DbServiceImpl<ReferenceDige
             final CriteriaModifier criteriaModifier)
             throws DBManagerException {
         return null;
+    }
+
+    @Override
+    public boolean archive(UUID uuid) {
+        LOGGER.debug("archiving object: {}", uuid);
+        if (uuid == null) {
+            LOGGER.debug("null name argument");
+            return false;
+        }
+        ReferenceDigestValue target = (ReferenceDigestValue)
+                this.referenceDigestValueRepository.getReferenceById(uuid);
+        if (target == null) {
+            return false;
+        }
+        if (!(target instanceof ArchivableEntity)) {
+            throw new DBManagerException("unable to archive non-archivable object");
+        }
+
+        ((ArchivableEntity) target).archive();
+        this.updateDigestValue(target, uuid);
+        return true;
     }
 }

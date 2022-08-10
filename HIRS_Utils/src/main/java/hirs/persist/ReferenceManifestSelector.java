@@ -219,8 +219,7 @@ public abstract class ReferenceManifestSelector<T extends ReferenceManifest> {
 
     // construct and execute query
     private Set<T> execute() {
-        Set<T> results = this.referenceManifestService.ge;
-        return results;
+        return this.referenceManifestService.getReferenceManifest(this);
     }
 
     /**

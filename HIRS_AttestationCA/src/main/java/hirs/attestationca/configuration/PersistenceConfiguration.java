@@ -6,7 +6,6 @@ import hirs.attestationca.service.DeviceServiceImpl;
 import hirs.attestationca.service.PolicyServiceImpl;
 import hirs.attestationca.service.ReferenceDigestValueServiceImpl;
 import hirs.attestationca.service.ReferenceManifestServiceImpl;
-import hirs.data.persist.SupplyChainValidationSummary;
 import hirs.persist.service.CertificateService;
 import hirs.persist.service.DeviceService;
 import hirs.persist.service.PolicyService;
@@ -110,34 +109,20 @@ public class PersistenceConfiguration {
         setDbServiceRetrySettings(serviceImpl);
         return serviceImpl;
     }
-
+//
 //    /**
-//     * Creates a {@link hirs.persist.PortalInfoManager} ready to use.
+//     * Creates a {@link hirs.attestationca.servicemanager.DBManager}
+//     * for SupplyChainValidationSummary persistence, ready for use.
 //     *
-//     * @return {@link hirs.persist.PortalInfoManager}
+//     * @return {@link hirs.attestationca.servicemanager.DBManager}
 //     */
 //    @Bean
-//    public PortalInfoManager portalInfoManager() {
-//        DBPortalInfoManager manager = new DBPortalInfoManager(entityManager);
-//        setDbServiceRetrySettings(manager);
-//        return manager;
+//    public DbServiceImpl<SupplyChainValidationSummary> supplyChainValidationSummaryManager() {
+//        DbServiceImpl<SupplyChainValidationSummary> serviceImpl
+//                = new DbServiceImpl<SupplyChainValidationSummary>(entityManager);
+//        setDbServiceRetrySettings(serviceImpl);
+//        return serviceImpl;
 //    }
-
-    /**
-     * Creates a {@link hirs.attestationca.servicemanager.DBManager}
-     * for SupplyChainValidationSummary persistence, ready for use.
-     *
-     * @return {@link hirs.attestationca.servicemanager.DBManager}
-     */
-    @Bean
-    public DbServiceImpl<SupplyChainValidationSummary> supplyChainValidationSummaryManager() {
-        DbServiceImpl<SupplyChainValidationSummary> serviceImpl
-                = new DbServiceImpl<SupplyChainValidationSummary>(
-                entityManager
-        );
-        setDbServiceRetrySettings(serviceImpl);
-        return serviceImpl;
-    }
 
     /**
      * Apply the spring-wired retry template settings to the db manager.

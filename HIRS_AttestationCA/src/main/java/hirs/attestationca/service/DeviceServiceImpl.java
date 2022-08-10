@@ -16,6 +16,7 @@ import org.springframework.retry.RetryContext;
 import org.springframework.stereotype.Service;
 
 import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -32,12 +33,15 @@ public class DeviceServiceImpl extends DbServiceImpl<Device>
     private static final Logger LOGGER = LogManager.getLogger(DeviceServiceImpl.class);
     @Autowired
     private DeviceRepository deviceRepository;
+    @PersistenceContext
+    private EntityManager entityManager;
 
     /**
      * Default constructor.
-     * @param em entity manager for jpa hibernate events
+     * @param entityManager entity manager for jpa hibernate events
      */
-    public DeviceServiceImpl(final EntityManager em) {
+    public DeviceServiceImpl(final EntityManager entityManager) {
+        this.entityManager = entityManager;
     }
 
     @Override
@@ -146,5 +150,10 @@ public class DeviceServiceImpl extends DbServiceImpl<Device>
             final CriteriaModifier criteriaModifier)
             throws DBManagerException {
         return null;
+    }
+
+    @Override
+    public boolean archive(UUID uuid) {
+        return true;
     }
 }

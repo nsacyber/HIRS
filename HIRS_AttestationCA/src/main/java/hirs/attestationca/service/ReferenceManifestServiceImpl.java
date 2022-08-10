@@ -2,10 +2,11 @@ package hirs.attestationca.service;
 
 import hirs.FilteredRecordsList;
 import hirs.attestationca.repository.ReferenceManifestRepository;
+import hirs.data.persist.ArchivableEntity;
 import hirs.data.persist.ReferenceManifest;
 import hirs.persist.CriteriaModifier;
 import hirs.persist.DBManagerException;
-import hirs.persist.service.DefaultService;
+import hirs.persist.ReferenceManifestSelector;
 import hirs.persist.service.ReferenceManifestService;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -15,8 +16,11 @@ import org.springframework.retry.RetryContext;
 import org.springframework.stereotype.Service;
 
 import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 
 /**
@@ -26,11 +30,13 @@ import java.util.UUID;
  */
 @Service
 public class ReferenceManifestServiceImpl extends DbServiceImpl<ReferenceManifest>
-        implements DefaultService<ReferenceManifest>, ReferenceManifestService {
+        implements ReferenceManifestService {
 
     private static final Logger LOGGER = LogManager.getLogger(ReferenceManifestServiceImpl.class);
     @Autowired
     private ReferenceManifestRepository referenceManifestRepository;
+    @PersistenceContext
+    private EntityManager entityManager;
 
     /**
      * Default constructor.
@@ -77,6 +83,12 @@ public class ReferenceManifestServiceImpl extends DbServiceImpl<ReferenceManifes
     @Override
     public void deleteRIM(final ReferenceManifest rim) {
         deleteObjectById(rim.getId());
+    }
+
+    @Override
+    public <T extends ReferenceManifest> Set<T> getReferenceManifest(
+            final ReferenceManifestSelector referenceManifestSelector) {
+        return new HashSet<>(0);
     }
 
     @Override
@@ -136,5 +148,26 @@ public class ReferenceManifestServiceImpl extends DbServiceImpl<ReferenceManifes
             final CriteriaModifier criteriaModifier)
             throws DBManagerException {
         return null;
+    }
+
+    @Override
+    public boolean archive(final UUID uuid) throws DBManagerException {
+        LOGGER.debug("archiving object: {}", uuid);
+        if (uuid == null) {
+            LOGGER.debug("null name argument");
+            return false;
+        }
+        ReferenceManifest target = (ReferenceManifest)
+                    this.referenceManifestRepository.getReferenceById(uuid);
+        if (target == null) {
+            return false;
+        }
+        if (!(target instanceof ArchivableEntity)) {
+            throw new DBManagerException("unable to archive non-archivable object");
+        }
+
+        ((ArchivableEntity) target).archive();
+        this.updateReferenceManifest(target, uuid);
+        return true;
     }
 }
