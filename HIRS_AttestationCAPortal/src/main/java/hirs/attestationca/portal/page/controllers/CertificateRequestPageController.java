@@ -14,11 +14,11 @@ import hirs.data.persist.certificate.CertificateAuthorityCredential;
 import hirs.data.persist.certificate.EndorsementCredential;
 import hirs.data.persist.certificate.IssuedAttestationCertificate;
 import hirs.data.persist.certificate.PlatformCredential;
-import hirs.persist.service.CertificateService;
 import hirs.persist.CriteriaModifier;
 import hirs.persist.CrudManager;
 import hirs.persist.DBManagerException;
-import hirs.persist.OrderedListQuerier;
+import hirs.persist.OrderedQuery;
+import hirs.persist.service.CertificateService;
 import org.apache.logging.log4j.Logger;
 import org.bouncycastle.util.encoders.DecoderException;
 import org.hibernate.Criteria;
@@ -65,7 +65,7 @@ public class CertificateRequestPageController extends PageController<NoPageParam
     @Autowired
     private final CertificateService certificateService;
     @Autowired
-    private final OrderedListQuerier<Certificate> dataTableQuerier;
+    private final OrderedQuery<Certificate> dataTableQuerier;
 
     private CertificateAuthorityCredential certificateAuthorityCredential;
 

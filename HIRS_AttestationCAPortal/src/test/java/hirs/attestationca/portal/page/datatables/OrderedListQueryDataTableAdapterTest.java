@@ -1,14 +1,14 @@
 package hirs.attestationca.portal.page.datatables;
 
 import hirs.FilteredRecordsList;
-import hirs.data.persist.Device;
-import hirs.persist.CriteriaModifier;
-import hirs.persist.OrderedListQuerier;
 import hirs.attestationca.portal.datatables.Column;
 import hirs.attestationca.portal.datatables.DataTableInput;
 import hirs.attestationca.portal.datatables.Order;
 import hirs.attestationca.portal.datatables.OrderedListQueryDataTableAdapter;
 import hirs.attestationca.portal.datatables.Search;
+import hirs.data.persist.Device;
+import hirs.persist.CriteriaModifier;
+import hirs.persist.OrderedQuery;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Matchers;
@@ -36,7 +36,7 @@ import static org.mockito.Mockito.when;
  */
 public class OrderedListQueryDataTableAdapterTest {
 
-    private OrderedListQuerier<Device> querier;
+    private OrderedQuery<Device> querier;
 
     private FilteredRecordsList filteredList;
 
@@ -54,8 +54,8 @@ public class OrderedListQueryDataTableAdapterTest {
         // sets up the @Captor
         MockitoAnnotations.initMocks(this);
 
-        querier = (OrderedListQuerier<Device>)
-                mock(OrderedListQuerier.class);
+        querier = (OrderedQuery<Device>)
+                mock(OrderedQuery .class);
 
         filteredList  = new FilteredRecordsList();
 

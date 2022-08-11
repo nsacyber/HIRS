@@ -45,6 +45,7 @@ public class ReferenceManifestServiceImpl extends DbServiceImpl<ReferenceManifes
     public ReferenceManifestServiceImpl(final EntityManager em) {
     }
 
+    @SuppressWarnings("unchecked")
     @Override
     public ReferenceManifest saveRIM(final ReferenceManifest rim) {
         LOGGER.debug("Saving reference manifest: {}", rim);
@@ -59,6 +60,12 @@ public class ReferenceManifestServiceImpl extends DbServiceImpl<ReferenceManifes
         });
     }
 
+    @Override
+    public ReferenceManifest updateReferenceManifest(final ReferenceManifest rim) {
+        return updateReferenceManifest(rim, rim.getId());
+    }
+
+    @SuppressWarnings("unchecked")
     @Override
     public ReferenceManifest updateReferenceManifest(final ReferenceManifest rim,
                                                      final UUID uuid) {
@@ -91,6 +98,7 @@ public class ReferenceManifestServiceImpl extends DbServiceImpl<ReferenceManifes
         return new HashSet<>(0);
     }
 
+    @SuppressWarnings("unchecked")
     @Override
     public List<ReferenceManifest> getList() {
         LOGGER.debug("Getting all reference manifest...");
@@ -116,6 +124,7 @@ public class ReferenceManifestServiceImpl extends DbServiceImpl<ReferenceManifes
         });
     }
 
+    @SuppressWarnings("unchecked")
     @Override
     public void deleteObjectById(final UUID uuid) {
         LOGGER.debug("Deleting reference manifest by id: {}", uuid);
@@ -150,6 +159,7 @@ public class ReferenceManifestServiceImpl extends DbServiceImpl<ReferenceManifes
         return null;
     }
 
+    @SuppressWarnings("unchecked")
     @Override
     public boolean archive(final UUID uuid) throws DBManagerException {
         LOGGER.debug("archiving object: {}", uuid);

@@ -265,7 +265,7 @@ public class DBDeviceManager extends DBManager<Device> implements
             Root<Device> root = criteriaQuery.from(Device.class);
             root.join("group.name", JoinType.LEFT).alias("group");
             Predicate recordPredicate = criteriaBuilder
-                    .and(criteriaBuilder.equal(root.get("group.name"), DeviceGroup.DEFAULT_GROUP));
+                    .and(criteriaBuilder.equal(root.get("group.name"), "Default Group"));
             criteriaQuery.select(root).where(recordPredicate).distinct(true);
             Query<Device> query = session.createQuery(criteriaQuery);
             List<Device> results = query.getResultList();
@@ -298,9 +298,6 @@ public class DBDeviceManager extends DBManager<Device> implements
      *
      * @param name of the device to be deleted
      * @return true if successfully found and deleted, false if otherwise
-     * @throws hirs.persist.DeviceGroupManagerException
-     *             if unable to find the device group or delete it from the
-     *             database
      */
     @Override
     public final boolean deleteDevice(final String name)

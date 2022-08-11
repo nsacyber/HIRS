@@ -1,14 +1,7 @@
 package hirs.data.service;
 
 import hirs.data.persist.Device;
-import hirs.data.persist.DeviceInfoReport;
-import hirs.data.persist.info.FirmwareInfo;
-import hirs.data.persist.info.HardwareInfo;
-import hirs.data.persist.info.NetworkInfo;
-import hirs.data.persist.info.OSInfo;
-import hirs.data.persist.info.TPMInfo;
 import hirs.persist.DeviceManager;
-
 import org.testng.annotations.Test;
 
 import java.net.InetAddress;
@@ -33,11 +26,6 @@ public class DeviceRegisterImplTest {
     @Test
     public void registerNonStoredDeviceByReport() {
         final DeviceManager deviceManager = mock(DeviceManager.class);
-        final InetAddress ipAddress = getTestIpAddress();
-        final NetworkInfo networkInfo = new NetworkInfo(HOSTNAME, ipAddress, MAC_ADDRESS);
-
-        final DeviceInfoReport report = new DeviceInfoReport(networkInfo, new OSInfo(),
-                new FirmwareInfo(), new HardwareInfo(), new TPMInfo());
 
         verify(deviceManager).saveDevice(any(Device.class));
     }
@@ -58,10 +46,6 @@ public class DeviceRegisterImplTest {
     @Test
     public void registerExistingDeviceByReport() {
         final DeviceManager deviceManager = mock(DeviceManager.class);
-        final InetAddress ipAddress = getTestIpAddress();
-        final NetworkInfo networkInfo = new NetworkInfo(HOSTNAME, ipAddress, MAC_ADDRESS);
-        final DeviceInfoReport report = new DeviceInfoReport(networkInfo, new OSInfo(),
-                new FirmwareInfo(), new HardwareInfo(), new TPMInfo());
         final Device device = new Device(HOSTNAME);
 
         when(deviceManager.getDevice(HOSTNAME)).thenReturn(device);

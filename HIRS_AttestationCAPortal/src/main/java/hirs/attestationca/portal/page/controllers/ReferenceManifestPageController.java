@@ -19,7 +19,7 @@ import hirs.data.persist.certificate.Certificate;
 import hirs.persist.CriteriaModifier;
 import hirs.persist.DBManagerException;
 import hirs.persist.ReferenceEventManager;
-import hirs.persist.ReferenceManifestManager;
+import hirs.persist.service.ReferenceManifestService;
 import hirs.tpm.eventlog.TCGEventLog;
 import hirs.tpm.eventlog.TpmPcrEvent;
 import org.apache.commons.codec.binary.Base64;
@@ -77,7 +77,7 @@ public class ReferenceManifestPageController
 
     private final BiosDateValidator biosValidator;
     @Autowired
-    private final ReferenceManifestManager referenceManifestManager;
+    private final ReferenceManifestService referenceManifestService;
     @Autowired
     private final ReferenceEventManager referenceEventManager;
     private static final Logger LOGGER
@@ -128,15 +128,15 @@ public class ReferenceManifestPageController
     /**
      * Constructor providing the Page's display and routing specification.
      *
-     * @param referenceManifestManager the reference manifest manager
+     * @param referenceManifestService the reference manifest service
      * @param referenceEventManager this is the reference event manager
      */
     @Autowired
     public ReferenceManifestPageController(
-            final ReferenceManifestManager referenceManifestManager,
+            final ReferenceManifestService referenceManifestService,
             final ReferenceEventManager referenceEventManager) {
         super(Page.REFERENCE_MANIFESTS);
-        this.referenceManifestManager = referenceManifestManager;
+        this.referenceManifestService = referenceManifestService;
         this.referenceEventManager = referenceEventManager;
         this.biosValidator = new BiosDateValidator(BIOS_RELEASE_DATE_FORMAT);
     }
@@ -185,7 +185,7 @@ public class ReferenceManifestPageController
         FilteredRecordsList<ReferenceManifest> records
                 = OrderedListQueryDataTableAdapter.getOrderedList(
                         ReferenceManifest.class,
-                        referenceManifestManager,
+                referenceManifestService,
                         input, orderColumnName, criteriaModifier);
 
         LOGGER.debug("Returning list of size: " + records.size());
@@ -246,7 +246,7 @@ public class ReferenceManifestPageController
                 // Make sure we are getting the db version of the file
                 updatedSupportRims.put(support.getHexDecHash(),
                         SupportReferenceManifest
-                                .select(referenceManifestManager)
+                                .select(referenceManifestService)
                                 .byHexDecHash(support.getHexDecHash())
                                 .getRIM());
             }
@@ -289,7 +289,7 @@ public class ReferenceManifestPageController
                 LOGGER.warn(notFoundMessage);
             } else {
                 referenceManifest.archive();
-                referenceManifestManager.update(referenceManifest);
+                referenceManifestService.updateReferenceManifest(referenceManifest);
 
                 String deleteCompletedMessage = "RIM successfully deleted";
                 messages.addInfo(deleteCompletedMessage);
@@ -382,9 +382,9 @@ public class ReferenceManifestPageController
 
         List<ReferenceManifest> referenceManifestList = new LinkedList<>();
         referenceManifestList.addAll(BaseReferenceManifest
-                .select(referenceManifestManager).getRIMs());
+                .select(referenceManifestService).getRIMs());
         referenceManifestList.addAll(SupportReferenceManifest
-                .select(referenceManifestManager).getRIMs());
+                .select(referenceManifestService).getRIMs());
 
         try (ZipOutputStream zipOut = new ZipOutputStream(response.getOutputStream())) {
             // get all files
@@ -423,16 +423,16 @@ public class ReferenceManifestPageController
      */
     private ReferenceManifest getRimFromDb(final String id) throws IllegalArgumentException {
         UUID uuid = UUID.fromString(id);
-        ReferenceManifest rim = BaseReferenceManifest.select(referenceManifestManager)
+        ReferenceManifest rim = BaseReferenceManifest.select(referenceManifestService)
                 .byEntityId(uuid).getRIM();
 
         if (rim == null) {
-            rim = SupportReferenceManifest.select(referenceManifestManager)
+            rim = SupportReferenceManifest.select(referenceManifestService)
                     .byEntityId(uuid).getRIM();
         }
 
         if (rim == null) {
-            rim = EventLogMeasurements.select(referenceManifestManager)
+            rim = EventLogMeasurements.select(referenceManifestService)
                     .byEntityId(uuid).getRIM();
         }
 
@@ -514,7 +514,7 @@ public class ReferenceManifestPageController
                             digest.digest(referenceManifest.getRimBytes()));
                 }
                 existingManifest = SupportReferenceManifest
-                        .select(referenceManifestManager)
+                        .select(referenceManifestService)
                         .byHexDecHash(rimHash)
                         .includeArchived()
                         .getRIM();
@@ -524,7 +524,7 @@ public class ReferenceManifestPageController
                             digest.digest(referenceManifest.getRimBytes()));
                 }
                 existingManifest = BaseReferenceManifest
-                        .select(referenceManifestManager).byBase64Hash(rimHash)
+                        .select(referenceManifestService).byBase64Hash(rimHash)
                         .includeArchived()
                         .getRIM();
             }
@@ -538,7 +538,7 @@ public class ReferenceManifestPageController
         try {
             // save the new certificate if no match is found
             if (existingManifest == null) {
-                referenceManifestManager.save(referenceManifest);
+                referenceManifestService.saveRIM(referenceManifest);
 
                 final String successMsg = String.format("RIM successfully uploaded (%s): ",
                         fileName);
@@ -558,7 +558,7 @@ public class ReferenceManifestPageController
             if (existingManifest != null && existingManifest.isArchived()) {
                 existingManifest.restore();
                 existingManifest.resetCreateTime();
-                referenceManifestManager.update(existingManifest);
+                referenceManifestService.updateReferenceManifest(existingManifest);
 
                 final String successMsg
                         = String.format("Pre-existing RIM found and unarchived (%s): ", fileName);
@@ -579,7 +579,7 @@ public class ReferenceManifestPageController
         HashMap<String, BaseReferenceManifest> tempMap = new HashMap<>();
         for (BaseReferenceManifest base : uploadedBaseRims) {
             // this is done to make sure we have the version with the UUID
-            dbBaseRim = BaseReferenceManifest.select(referenceManifestManager)
+            dbBaseRim = BaseReferenceManifest.select(referenceManifestService)
                     .byBase64Hash(base.getBase64Hash()).getRIM();
             if (dbBaseRim != null) {
                 for (SwidResource swid : dbBaseRim.parseResource()) {
@@ -598,7 +598,7 @@ public class ReferenceManifestPageController
         Map<String, SupportReferenceManifest> updatedSupportRims = new HashMap<>();
         List<String> hashValues = new LinkedList<>(dbBaseRims.keySet());
         for (String supportHash : hashValues) {
-            supportRim = SupportReferenceManifest.select(referenceManifestManager)
+            supportRim = SupportReferenceManifest.select(referenceManifestService)
                     .byHexDecHash(supportHash).getRIM();
             // I have to assume the baseRim is from the database
             // Updating the id values, manufacturer, model
@@ -610,7 +610,7 @@ public class ReferenceManifestPageController
                 supportRim.setTagId(dbBaseRim.getTagId());
                 supportRim.setAssociatedRim(dbBaseRim.getId());
                 supportRim.setUpdated(true);
-                referenceManifestManager.update(supportRim);
+                referenceManifestService.updateReferenceManifest(supportRim);
                 updatedSupportRims.put(supportHash, supportRim);
             }
         }
@@ -628,7 +628,7 @@ public class ReferenceManifestPageController
         if (supportRim != null && (supportRim.getId() != null
                 && !supportRim.getId().toString().equals(""))) {
             Set<BaseReferenceManifest> baseRims = BaseReferenceManifest
-                    .select(referenceManifestManager)
+                    .select(referenceManifestService)
                     .byManufacturerModel(supportRim.getPlatformManufacturer(),
                             supportRim.getPlatformModel()).getRIMs();
 

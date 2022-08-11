@@ -42,14 +42,10 @@ public class DevicesPageControllerTest extends PageControllerTest {
     private static final String TEST_PLATFORM_CREDENTIAL
             = "/platform_credentials/Intel_pc.cer";
 
-    private DeviceGroup group;
     private Device device;
 
     @Autowired
     private DeviceManager deviceManager;
-
-    @Autowired
-    private DeviceGroupManager deviceGroupManager;
 
     @Autowired
     private CertificateManager certificateManager;
@@ -67,14 +63,9 @@ public class DevicesPageControllerTest extends PageControllerTest {
      */
     @BeforeClass
     public void beforeMethod() throws IOException {
-        //Create new device group
-        group = new DeviceGroup(DEVICE_GROUP_NAME);
-        group = deviceGroupManager.saveDeviceGroup(group);
-
         //Create new device and save it
         device = new Device(DEVICE_NAME);
         device.setSupplyChainStatus(AppraisalStatus.Status.PASS);
-        device.setDeviceGroup(group);
         device = deviceManager.saveDevice(device);
 
         //Upload and save EK Cert

@@ -47,14 +47,11 @@ public class IssuedCertificatesPageControllerTest extends PageControllerTest {
     private Set<PlatformCredential> platformCredentials;
     private IssuedAttestationCertificate issued;
 
-    private DeviceGroup group;
     private Device device;
 
     @Autowired
     private DeviceManager deviceManager;
 
-    @Autowired
-    private DeviceGroupManager deviceGroupManager;
 
     @Autowired
     private CertificateManager certificateManager;
@@ -65,13 +62,8 @@ public class IssuedCertificatesPageControllerTest extends PageControllerTest {
      */
     @BeforeClass
     public void beforeMethod() throws IOException {
-        //Create new device grup
-        group = new DeviceGroup("default");
-        group = deviceGroupManager.saveDeviceGroup(group);
-
         //Create new device and save it
         device = new Device("Test");
-        device.setDeviceGroup(group);
         device = deviceManager.saveDevice(device);
 
         //Upload and save EK Cert

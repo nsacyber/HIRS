@@ -29,6 +29,15 @@ public interface ReferenceManifestService extends OrderedQuery<ReferenceManifest
      * reflect the new values that should be set.
      *
      * @param rim ReferenceManifest object to save
+     * @return a ReferenceManifest object
+     */
+    ReferenceManifest updateReferenceManifest(ReferenceManifest rim);
+
+    /**
+     * Updates a <code>ReferenceManifest</code>. This updates the database entries to
+     * reflect the new values that should be set.
+     *
+     * @param rim ReferenceManifest object to save
      * @param uuid UUID for the database object
      * @return a ReferenceManifest object
      */
@@ -39,7 +48,6 @@ public interface ReferenceManifestService extends OrderedQuery<ReferenceManifest
      * database session and saves the device.
      *
      * @param rim ReferenceManifest to delete
-     * @return reference to deleted rim
      */
     void deleteRIM(ReferenceManifest rim);
 

@@ -337,7 +337,7 @@ public final class CertificateStringMapBuilder {
             data.put("holderIssuer", certificate.getHolderIssuer());
             if (certificate.isBase()) {
                 EndorsementCredential ekCertificate = EndorsementCredential
-                        .select(certificateManager)
+                        .select(certificateService)
                         .bySerialNumber(certificate.getHolderSerialNumber())
                         .getCertificate();
                 if (ekCertificate != null) {
@@ -347,7 +347,7 @@ public final class CertificateStringMapBuilder {
                 if (certificate.getPlatformType() != null
                         && certificate.getPlatformType().equals("Delta")) {
                     PlatformCredential holderCertificate = PlatformCredential
-                            .select(certificateManager)
+                            .select(certificateService)
                             .bySerialNumber(certificate.getHolderSerialNumber())
                             .getCertificate();
                     if (holderCertificate != null) {
@@ -357,7 +357,7 @@ public final class CertificateStringMapBuilder {
             }
 
             PlatformCredential prevCertificate = PlatformCredential
-                    .select(certificateManager)
+                    .select(certificateService)
                     .byHolderSerialNumber(certificate.getSerialNumber())
                     .getCertificate();
 
@@ -397,7 +397,7 @@ public final class CertificateStringMapBuilder {
             if (certificate.getPlatformSerial() != null) {
                 // link certificate chain
                 List<PlatformCredential> chainCertificates = PlatformCredential
-                        .select(certificateManager)
+                        .select(certificateService)
                         .byBoardSerialNumber(certificate.getPlatformSerial())
                         .getCertificates().stream().collect(Collectors.toList());
 

@@ -1,5 +1,6 @@
 package hirs.data.persist.certificate;
 
+import hirs.persist.service.CertificateService;
 import org.apache.commons.codec.binary.Hex;
 import org.mockito.Mockito;
 import org.testng.Assert;
@@ -10,13 +11,12 @@ import java.net.URISyntaxException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.security.cert.CertificateException;
-import hirs.persist.CertificateManager;
 
 /**
  * Tests that CertificateAuthorityCredential properly parses its fields.
  */
 public class CertificateAuthorityCredentialTest {
-    private static final CertificateManager CERT_MAN = Mockito.mock(CertificateManager.class);
+    private static final CertificateService CERT_MAN = Mockito.mock(CertificateService.class);
 
     /**
      * Tests that a CertificateAuthorityCredential can be created from an X.509 certificate and

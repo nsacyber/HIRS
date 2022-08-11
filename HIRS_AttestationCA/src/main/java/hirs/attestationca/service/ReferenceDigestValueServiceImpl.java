@@ -186,7 +186,7 @@ public class ReferenceDigestValueServiceImpl extends DbServiceImpl<ReferenceDige
     }
 
     @Override
-    public boolean archive(UUID uuid) {
+    public boolean archive(final UUID uuid) {
         LOGGER.debug("archiving object: {}", uuid);
         if (uuid == null) {
             LOGGER.debug("null name argument");

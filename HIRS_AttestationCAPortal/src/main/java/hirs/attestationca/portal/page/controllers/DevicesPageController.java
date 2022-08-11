@@ -41,8 +41,9 @@ public class DevicesPageController extends PageController<NoPageParams> {
 
     @Autowired
     private final DeviceService deviceService;
+    // this may be what I need to do for all of them
     @Autowired
-    private final DBManager<Certificate> certificateDBManager;  // this may be what I need to do for all of them
+    private final DBManager<Certificate> certificateDBManager;
     private static final Logger LOGGER = getLogger(DevicesPageController.class);
 
     /**

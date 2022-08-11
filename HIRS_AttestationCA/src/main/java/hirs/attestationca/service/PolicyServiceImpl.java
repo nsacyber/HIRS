@@ -80,6 +80,7 @@ public class PolicyServiceImpl extends DbServiceImpl<Policy>
         policyRepository.flush();
     }
 
+    @SuppressWarnings("unchecked")
     @Override
     public void deleteObjectById(final UUID uuid) {
         LOGGER.debug("Deleting policy by id: {}", uuid);
@@ -95,6 +96,7 @@ public class PolicyServiceImpl extends DbServiceImpl<Policy>
         });
     }
 
+    @SuppressWarnings("unchecked")
     @Override
     public Policy savePolicy(final Policy policy) {
         LOGGER.debug("Saving policy: {}", policy);
@@ -108,6 +110,7 @@ public class PolicyServiceImpl extends DbServiceImpl<Policy>
         });
     }
 
+    @SuppressWarnings("unchecked")
     @Override
     public Policy updatePolicy(final Policy policy, final UUID uuid) {
         LOGGER.debug("Updating policy: {}", policy);
@@ -192,8 +195,9 @@ public class PolicyServiceImpl extends DbServiceImpl<Policy>
         return null;
     }
 
+    @SuppressWarnings("unchecked")
     @Override
-    public boolean archive(UUID uuid) {
+    public boolean archive(final UUID uuid) {
         LOGGER.debug("archiving object: {}", uuid);
         if (uuid == null) {
             LOGGER.debug("null name argument");

@@ -114,9 +114,10 @@ public abstract class DbServiceImpl<T> {
      * Archives the named object and updates it in the database.
      *
      * @param uuid unique id of the object to archive
-     * @return true if the object was successfully found and archived, false if the object was not
-     * found
-     * @throws hirs.persist.DBManagerException if the object is not an instance of <code>ArchivableEntity</code>
+     * @return true if the object was successfully found and archived,
+     * false if the object was not found
+     * @throws hirs.persist.DBManagerException if the object is not an instance
+     * of <code>ArchivableEntity</code>
      */
-    public abstract boolean archive(final UUID uuid);
+    public abstract boolean archive(UUID uuid);
 }

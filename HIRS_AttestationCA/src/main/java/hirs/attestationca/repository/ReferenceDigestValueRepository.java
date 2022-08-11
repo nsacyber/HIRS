@@ -13,13 +13,28 @@ import java.util.UUID;
 @Repository
 public interface ReferenceDigestValueRepository extends JpaRepository<ReferenceDigestValue, UUID> {
 
+    /**
+     * Persists a new Reference Digest value.
+     *
+     * @param uuid associated with the base rim .
+     * @return the persisted list of ReferenceDigestValue
+     */
     List<ReferenceDigestValue> findValuesByBaseRimId(UUID uuid);
 
+    /**
+     * Persists a new Reference Digest value.
+     *
+     * @param uuid associated with the support rim.
+     * @return the persisted list of ReferenceDigestValue
+     */
     List<ReferenceDigestValue> findValuesBySupportRimId(UUID uuid);
 
     /**
-     * List<String> results = session.createCriteria(User.class).add(Projections.projectionList().add(Projections.property("id")).add()....).list();
+     * List<String> results = session.createCriteria(User.class).add(Projections.projectionList()
+     * .add(Projections.property("id")).add()....).list();
      *
-     * List<Object[]> result = session.createCriteria(User.class).setProjection(Projections.projectionList().add(Projections.groupProperty("lastName")).add(Projections.rowCount())).list();
+     * List<Object[]> result = session.createCriteria(User.class).setProjection(Projections
+     * .projectionList().add(Projections.groupProperty("lastName"))
+     * .add(Projections.rowCount())).list();
      */
 }

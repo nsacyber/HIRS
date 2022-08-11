@@ -66,6 +66,27 @@ public class CertificateServiceImpl extends DbServiceImpl<Certificate>
     }
 
     @Override
+    public Certificate updateCertificate(final Certificate certificate) {
+        LOGGER.debug("Updating certificate: {}", certificate);
+        Certificate dbCertificate;
+
+        if (certificate.getId() == null) {
+            LOGGER.debug("Certificate not found: {}", certificate);
+            dbCertificate = certificate;
+        } else {
+            // will not return null, throws and exception
+            dbCertificate = certificateRepository.getReferenceById(certificate.getId());
+
+            // run through things that aren't equal and update
+
+            getCertificateClass(dbCertificate); // need to coming
+
+        }
+
+        return saveCertificate(dbCertificate);
+    }
+
+    @Override
     public Certificate updateCertificate(final Certificate certificate,
                                          final UUID uuid) {
         LOGGER.debug("Updating certificate: {}", certificate);
@@ -175,7 +196,7 @@ public class CertificateServiceImpl extends DbServiceImpl<Certificate>
     }
 
     @Override
-    public boolean archive(UUID uuid) {
+    public boolean archive(final UUID uuid) {
         LOGGER.debug("archiving object: {}", uuid);
         if (uuid == null) {
             LOGGER.debug("null name argument");

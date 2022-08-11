@@ -64,7 +64,8 @@ public class IssuedAttestationCertificate extends DeviceAssociatedCertificate {
     /**
      * Get a Selector for use in retrieving IssuedAttestationCertificate.
      *
-     * @param certificateService the CertificateService to be used to retrieve persisted certificates
+     * @param certificateService the CertificateService to be used to
+     *                          retrieve persisted certificates
      * @return a IssuedAttestationCertificate.Selector instance to use for retrieving certificates
      */
     public static IssuedAttestationCertificate.Selector select(

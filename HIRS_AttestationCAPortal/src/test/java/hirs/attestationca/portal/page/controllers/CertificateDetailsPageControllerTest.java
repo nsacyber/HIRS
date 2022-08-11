@@ -50,9 +50,6 @@ public class CertificateDetailsPageControllerTest extends PageControllerTest {
     @Autowired
     private DeviceManager deviceManager;
 
-    @Autowired
-    private DeviceGroupManager deviceGroupManager;
-
     private CertificateAuthorityCredential caCertificate;
     private CertificateAuthorityCredential caRootCertificate;
     private PlatformCredential platformCredential;
@@ -95,13 +92,8 @@ public class CertificateDetailsPageControllerTest extends PageControllerTest {
 
         Set<PlatformCredential> pcCertSet = new HashSet<>();
 
-        //Create new device group
-        DeviceGroup group = new DeviceGroup("default");
-        group = deviceGroupManager.saveDeviceGroup(group);
-
         //Create new device and save it
         Device device = new Device("Test");
-        device.setDeviceGroup(group);
         device = deviceManager.saveDevice(device);
 
          //Upload and save EK Cert

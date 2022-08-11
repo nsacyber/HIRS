@@ -1,7 +1,7 @@
 package hirs.attestationca;
 
 import hirs.data.persist.certificate.Certificate;
-import hirs.persist.CertificateManager;
+import hirs.persist.service.CertificateService;
 import org.apache.commons.io.IOUtils;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
@@ -18,7 +18,7 @@ import static org.mockito.Mockito.verify;
  */
 public class CredentialManagementHelperTest {
 
-    private CertificateManager certMan;
+    private CertificateService certMan;
 
     private static final String EK_HEADER_TRUNCATED
             = "/certificates/nuc-1/ek_cert_7_byte_header_removed.cer";
@@ -30,7 +30,7 @@ public class CredentialManagementHelperTest {
      */
     @BeforeMethod
     public void setUp() {
-        certMan = mock(CertificateManager.class);
+        certMan = mock(CertificateService.class);
     }
 
     /**

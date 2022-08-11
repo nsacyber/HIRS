@@ -1,10 +1,10 @@
 package hirs.attestationca.portal.page.controllers;
 
-import hirs.data.persist.certificate.Certificate;
-import hirs.data.persist.certificate.EndorsementCredential;
-import hirs.persist.CertificateManager;
 import hirs.attestationca.portal.page.PageControllerTest;
 import hirs.attestationca.portal.page.PageMessages;
+import hirs.data.persist.certificate.Certificate;
+import hirs.data.persist.certificate.EndorsementCredential;
+import hirs.persist.service.CertificateService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.mock.web.MockMultipartFile;
@@ -30,7 +30,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 public class EndorsementKeyCredentialsPageControllerTest extends PageControllerTest {
 
     @Autowired
-    private CertificateManager certificateManager;
+    private CertificateService certificateService;
 
     private static final String EKCERT = "fakeIntelIntermediateCA.pem";
     private static final String BADEKCERT = "badCert.pem";
@@ -87,8 +87,8 @@ public class EndorsementKeyCredentialsPageControllerTest extends PageControllerT
 
         // verify the cert was actually stored
         Set<Certificate> records =
-                certificateManager.getCertificate(
-                        EndorsementCredential.select(certificateManager));
+                certificateService.getCertificate(
+                        EndorsementCredential.select(certificateService));
         Assert.assertEquals(records.size(), 1);
 
         Certificate cert = records.iterator().next();
@@ -100,8 +100,8 @@ public class EndorsementKeyCredentialsPageControllerTest extends PageControllerT
                 .param("id", cert.getId().toString()))
                 .andExpect(status().is3xxRedirection())
                 .andReturn();
-        records = certificateManager.getCertificate(EndorsementCredential
-                .select(certificateManager).includeArchived());
+        records = certificateService.getCertificate(EndorsementCredential
+                .select(certificateService).includeArchived());
         Assert.assertEquals(records.size(), 1);
 
         cert = records.iterator().next();
@@ -131,8 +131,8 @@ public class EndorsementKeyCredentialsPageControllerTest extends PageControllerT
 
         // verify the cert was not actually stored
         Set<Certificate> records =
-                certificateManager.getCertificate(
-                        EndorsementCredential.select(certificateManager));
+                certificateService.getCertificate(
+                        EndorsementCredential.select(certificateService));
         Assert.assertEquals(records.size(), 0);
     }
 }

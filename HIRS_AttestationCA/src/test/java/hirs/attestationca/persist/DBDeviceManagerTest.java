@@ -1,16 +1,14 @@
 package hirs.attestationca.persist;
 
+import hirs.attestationca.data.persist.DeviceTest;
 import hirs.attestationca.servicemanager.DBDeviceManager;
-import hirs.attestationca.servicemanager.DBReportManager;
 import hirs.data.persist.Device;
 import hirs.data.persist.DeviceInfoReport;
-import hirs.attestationca.data.persist.DeviceTest;
 import hirs.data.persist.enums.HealthStatus;
 import hirs.data.persist.info.NetworkInfo;
 import hirs.persist.DBUtility;
 import hirs.persist.DeviceManager;
 import hirs.persist.DeviceManagerException;
-import hirs.persist.ReportManager;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.testng.Assert;
@@ -19,7 +17,6 @@ import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
@@ -65,7 +62,6 @@ public final class DBDeviceManagerTest extends SpringPersistenceTest {
     @AfterMethod
     public void resetTestState() {
         DBUtility.removeAllInstances(sessionFactory, Device.class);
-        DBUtility.removeAllInstances(sessionFactory, DeviceGroup.class);
         DBUtility.removeAllInstances(sessionFactory, DeviceInfoReport.class);
     }
 
@@ -82,8 +78,6 @@ public final class DBDeviceManagerTest extends SpringPersistenceTest {
         Assert.assertEquals(DBUtility.getCount(sessionFactory, Device.class), 0);
         Assert.assertEquals(DBUtility.getCount(sessionFactory, DeviceInfoReport.class), 0);
         final Device device = DeviceTest.getTestDevice(deviceName);
-        final DeviceGroup group = createGroup(DeviceGroup.DEFAULT_GROUP);
-        device.setDeviceGroup(group);
         final DeviceManager mgr = new DBDeviceManager(sessionFactory);
         final Device d2 = mgr.saveDevice(device);
         Assert.assertEquals(DBUtility.getCount(sessionFactory, Device.class), 1);
@@ -95,27 +89,6 @@ public final class DBDeviceManagerTest extends SpringPersistenceTest {
         Assert.assertTrue(
                 DBUtility.isInDatabase(sessionFactory, DeviceInfoReport.class, "id", reportId)
         );
-    }
-
-    /**
-     * Tests that the <code>DBDeviceManager</code> throws a
-     * <code>DeviceManagerException</code> if a <code>Device</code> is saved
-     * twice.
-     *
-     * @throws hirs.persist.DeviceManagerException if any unexpected errors occur
-     * @throws Exception
-     *          if any unexpected errors occur
-     */
-    @Test(expectedExceptions = DeviceManagerException.class)
-    public void testSaveTwice() throws DeviceManagerException, Exception {
-        LOGGER.debug("testSaveTwice test started");
-        final Device device = new Device(deviceName);
-        final DeviceManager mgr = new DBDeviceManager(sessionFactory);
-        final DeviceGroup group = createGroup(DeviceGroup.DEFAULT_GROUP);
-        device.setDeviceGroup(group);
-        final Device b2 = mgr.saveDevice(device);
-        mgr.saveDevice(b2);
-        Assert.fail("second save did not fail");
     }
 
     /**
@@ -152,35 +125,6 @@ public final class DBDeviceManagerTest extends SpringPersistenceTest {
     }
 
     /**
-     * Tests that when a <code>Device</code> is deleted, the
-     * <code>Device</code> is removed from the DB.
-     *
-     * @throws Exception if error occurs while creating test device
-     */
-    @Test
-    public void testDeleteDevice() throws Exception {
-        LOGGER.debug("testDeleteDevice");
-        Assert.assertEquals(DBUtility.getCount(sessionFactory, Device.class), 0);
-
-        final Device device = new Device(deviceName);
-        final DeviceManager mgr = new DBDeviceManager(sessionFactory);
-        final DeviceGroup group = createGroup(DeviceGroup.DEFAULT_GROUP);
-        device.setDeviceGroup(group);
-        final Device savedDevice = mgr.saveDevice(device);
-
-        Assert.assertEquals(DBUtility.getCount(sessionFactory, Device.class), 1);
-        Assert.assertTrue(DBUtility.isInDatabase(sessionFactory, Device.class, deviceName));
-
-        final UUID deviceID = savedDevice.getId();
-        Assert.assertNotNull(deviceID);
-        boolean deleteSuccessful = mgr.deleteDevice(deviceName);
-        Assert.assertTrue(deleteSuccessful);
-        Assert.assertFalse(
-                DBUtility.isInDatabase(sessionFactory, DeviceGroup.class, deviceName)
-        );
-    }
-
-    /**
      * Tests that the <code>DBDeviceManager</code> can update a
      * <code>Device</code>.
      *
@@ -195,8 +139,6 @@ public final class DBDeviceManagerTest extends SpringPersistenceTest {
 
         LOGGER.debug("saving new device in db");
         final Device device = DeviceTest.getTestDevice(deviceName);
-        final DeviceGroup group = createGroup(DeviceGroup.DEFAULT_GROUP);
-        device.setDeviceGroup(group);
         final DeviceManager mgr = new DBDeviceManager(sessionFactory);
         final Device d2 = mgr.saveDevice(device);
         Assert.assertEquals(DBUtility.getCount(sessionFactory, Device.class), 1);
@@ -222,71 +164,6 @@ public final class DBDeviceManagerTest extends SpringPersistenceTest {
     }
 
     /**
-     * This tests that when a <code>Device</code> is updated with a null
-     * <code>DeviceInfoReport</code> then the old report is removed from the
-     * database.
-     *
-     * @throws Exception
-     *              if any unexpected errors occur in getting a Device
-     */
-    @Test
-    public void testUpdateNullReport() throws Exception {
-        LOGGER.debug("testUpdate test started");
-        LOGGER.debug("asserting db is empty");
-        Assert.assertEquals(DBUtility.getCount(sessionFactory, Device.class), 0);
-        Assert.assertEquals(DBUtility.getCount(sessionFactory, DeviceInfoReport.class), 0);
-
-        LOGGER.debug("saving new device in db");
-        final Device device = DeviceTest.getTestDevice(deviceName);
-        final DeviceGroup group = createGroup(DeviceGroup.DEFAULT_GROUP);
-        device.setDeviceGroup(group);
-        final DeviceManager mgr = new DBDeviceManager(sessionFactory);
-        final Device d2 = mgr.saveDevice(device);
-        Assert.assertEquals(DBUtility.getCount(sessionFactory, Device.class), 1);
-        Assert.assertEquals(DBUtility.getCount(sessionFactory, DeviceInfoReport.class), 1);
-
-        LOGGER.debug("updating device will null device info");
-        d2.setDeviceInfo(null);
-        mgr.updateDevice(d2);
-        Assert.assertEquals(DBUtility.getCount(sessionFactory, Device.class), 1);
-        Assert.assertEquals(DBUtility.getCount(sessionFactory, DeviceInfoReport.class), 0);
-    }
-
-    /**
-     * Tests that the <code>DBDeviceManager</code> fails to update a
-     * <code>Device</code> that has the same name as an existing
-     * <code>Device</code>.
-     *
-     * @throws DeviceManagerException if any unexpected errors occur
-     * @throws Exception
-     *          if any unexpected errors occur
-     */
-    @Test
-    public void testUpdateSameName() throws DeviceManagerException, Exception {
-        LOGGER.debug("testUpdateSameName test started");
-        final String name1 = "Test Device 1";
-        final String name2 = "Test Device 2";
-        final DeviceManager mgr = new DBDeviceManager(sessionFactory);
-        final DeviceGroup group = createGroup(DeviceGroup.DEFAULT_GROUP);
-        Device d1 = new Device(name1);
-        Device d2 = new Device(name2);
-        d1.setDeviceGroup(group);
-        d2.setDeviceGroup(group);
-        mgr.saveDevice(d1);
-        d2 = mgr.saveDevice(d2);
-        d2.setName(name1);
-        DeviceManagerException expected = null;
-        try {
-            mgr.updateDevice(d2);
-        } catch (DeviceManagerException e) {
-            expected = e;
-        }
-        Assert.assertNotNull(expected);
-        Assert.assertTrue(DBUtility.isInDatabase(sessionFactory, Device.class, name1));
-        Assert.assertTrue(DBUtility.isInDatabase(sessionFactory, Device.class, name2));
-    }
-
-    /**
      * Tests that the <code>DBDeviceManager</code> throws a
      * <code>DeviceManagerException</code> if the device parameter is null.
      *
@@ -298,31 +175,6 @@ public final class DBDeviceManagerTest extends SpringPersistenceTest {
         final DeviceManager mgr = new DBDeviceManager(sessionFactory);
         mgr.updateDevice(null);
         Assert.fail("save did not fail");
-    }
-
-    /**
-     * Tests that the <code>DBDeviceManager</code> can successfully return a
-     * <code>Device</code> from the database.
-     *
-     * @throws Exception
-     *              if any unexpected errors occur in getting a Device
-     */
-    @Test
-    public void testGet() throws Exception {
-        LOGGER.debug("testGet test started");
-        final Device device = DeviceTest.getTestDevice(deviceName);
-        final DeviceManager mgr = new DBDeviceManager(sessionFactory);
-        final ReportManager reportMgr = new DBReportManager(sessionFactory);
-        final DeviceGroup group = createGroup(DeviceGroup.DEFAULT_GROUP);
-        device.setDeviceGroup(group);
-        final Device d2 = mgr.saveDevice(device);
-        final UUID reportId = d2.getDeviceInfo().getId();
-        final Device dbDevice = mgr.getDevice(d2.getName());
-        Assert.assertEquals(dbDevice, d2);
-        final DeviceInfoReport dbReport = (DeviceInfoReport) reportMgr
-                .getReport(reportId);
-        Assert.assertEquals(dbReport, device.getDeviceInfo());
-        Assert.assertEquals(dbDevice.getHealthStatus(), HealthStatus.UNKNOWN);
     }
 
     /**
@@ -349,32 +201,6 @@ public final class DBDeviceManagerTest extends SpringPersistenceTest {
     }
 
     /**
-     * Tests that the <code>DBDeviceManager</code> returns a complete list of
-     * all the names of the devices that it manages.
-     *
-     * @throws Exception
-     *              if any unexpected errors occur in getting a Device
-     */
-    @Test
-    public void testGetDeviceNameList() throws Exception {
-        LOGGER.debug("testGetDeviceNameList test started");
-        final DeviceManager mgr = new DBDeviceManager(sessionFactory);
-        final String[] names = {"Device1", "Device2", "Device3", "Device4"};
-        final List<String> namesList = new LinkedList<>();
-        final DeviceGroup group = createGroup(DeviceGroup.DEFAULT_GROUP);
-
-        for (String name : names) {
-            final Device device = DeviceTest.getTestDevice(name);
-            device.setDeviceGroup(group);
-            mgr.saveDevice(device);
-            namesList.add(name);
-        }
-        final List<String> dbNames = mgr.getDeviceNameList();
-        Collections.sort(dbNames);
-        Assert.assertEquals(dbNames, namesList);
-    }
-
-    /**
      * Tests that the <code>DBDeviceManager</code> returns an empty list when
      * get list is called when there are no items in the database.
      */
@@ -394,26 +220,6 @@ public final class DBDeviceManagerTest extends SpringPersistenceTest {
      *              if any unexpected errors occur in getting a Device
      */
 
-    @Test
-    public void testGetDeviceSet() throws Exception {
-        LOGGER.debug("testGetDeviceSet test started");
-        final DeviceManager mgr = new DBDeviceManager(sessionFactory);
-        final String[] names = {"Device1", "Device2", "Device3", "Device4"};
-        final Device[] expectedDevices = new Device[names.length];
-        final DeviceGroup group = createGroup(DeviceGroup.DEFAULT_GROUP);
-        for (int i = 0; i < names.length; ++i) {
-            final Device device = DeviceTest.getTestDevice(names[i]);
-            expectedDevices[i] = device;
-            device.setDeviceGroup(group);
-            mgr.saveDevice(device);
-        }
-        final Set<Device> devices = mgr.getDeviceList();
-        Assert.assertEquals(devices.size(), expectedDevices.length);
-        for (int i = 0; i < expectedDevices.length; ++i) {
-            Assert.assertTrue(devices.contains(expectedDevices[i]));
-        }
-    }
-
     /**
      * Tests that the <code>DBDeviceManager</code> returns an empty list when
      * get list is called when there are no items in the database.
@@ -425,11 +231,5 @@ public final class DBDeviceManagerTest extends SpringPersistenceTest {
         final Set<Device> devicesList = new HashSet<>();
         final Set<Device> devices = mgr.getDeviceList();
         Assert.assertEquals(devices, devicesList);
-    }
-
-    private DeviceGroup createGroup(final String name) throws Exception {
-        DeviceGroup group = new DeviceGroup(name);
-        final DeviceGroupManager groupManager = new DBDeviceGroupManager(sessionFactory);
-        return groupManager.saveDeviceGroup(group);
     }
 }

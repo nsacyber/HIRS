@@ -533,7 +533,7 @@ public class SupplyChainValidationServiceImpl implements SupplyChainValidationSe
                             if (measurement.getPlatformManufacturer().equals(manufacturer)) {
                                 tcgMeasurementLog = new TCGEventLog(measurement.getRimBytes());
                                 eventValue = this.referenceDigestValueService
-                                        .getValuesByRimId(baseReferenceManifest.getId());
+                                        .getValuesByBaseRimId(baseReferenceManifest.getId());
                                 for (ReferenceDigestValue rdv : eventValue) {
                                     eventValueMap.put(rdv.getDigestValue(), rdv);
                                 }

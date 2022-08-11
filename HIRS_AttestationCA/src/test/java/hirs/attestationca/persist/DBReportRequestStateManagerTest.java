@@ -34,14 +34,10 @@ public class DBReportRequestStateManagerTest extends SpringPersistenceTest {
      */
     @BeforeClass
     public final void setup() throws Exception {
-        DeviceGroup group = new DeviceGroup(DeviceGroup.DEFAULT_GROUP);
-        new DBDeviceGroupManager(sessionFactory).saveDeviceGroup(group);
-
         Device testDevice;
         DBDeviceManager dbDeviceManager = new DBDeviceManager(sessionFactory);
         for (int i = 0; i < NUMBER_OF_DEVICES; i++) {
             testDevice = DeviceTest.getTestDevice("Device " + i);
-            testDevice.setDeviceGroup(group);
             testDevices.add(dbDeviceManager.save(testDevice));
         }
     }
@@ -72,7 +68,7 @@ public class DBReportRequestStateManagerTest extends SpringPersistenceTest {
         DBReportRequestStateManager mgr = new DBReportRequestStateManager(sessionFactory);
         Device device = testDevices.get(0);
         ReportRequestState state = getTestReportRequestState(device);
-        state.setDueDate(DeviceGroup.MINUTE_MS_INTERVAL);
+        state.setDueDate(ReportRequestState.MINUTE_MS_INTERVAL);
         mgr.saveState(state);
 
         ReportRequestState retrievedState = mgr.getState(device);
@@ -117,7 +113,7 @@ public class DBReportRequestStateManagerTest extends SpringPersistenceTest {
         ReportRequestState newState = getTestReportRequestState(
                 testDevices.get(0)
         );
-        newState.setDueDate(DeviceGroup.MINUTE_MS_INTERVAL);
+        newState.setDueDate(ReportRequestState.MINUTE_MS_INTERVAL);
         mgr.update(newState);
         Assert.assertEquals(mgr.getState(testDevices.get(0)), newState);
     }
@@ -130,7 +126,7 @@ public class DBReportRequestStateManagerTest extends SpringPersistenceTest {
     public final void testUpdateExistentState() {
         DBReportRequestStateManager mgr = new DBReportRequestStateManager(sessionFactory);
         ReportRequestState deviceState = getTestReportRequestState(testDevices.get(0));
-        deviceState.setDueDate(DeviceGroup.MINUTE_MS_INTERVAL);
+        deviceState.setDueDate(ReportRequestState.MINUTE_MS_INTERVAL);
         ReportRequestState newState = mgr.saveState(deviceState);
         newState.setReportRequestType(ReportRequestType.ON_DEMAND_REPORT);
         mgr.update(newState);
@@ -156,7 +152,7 @@ public class DBReportRequestStateManagerTest extends SpringPersistenceTest {
     public final void testDeleteExistentState() {
         DBReportRequestStateManager mgr = new DBReportRequestStateManager(sessionFactory);
         ReportRequestState deviceState = getTestReportRequestState(testDevices.get(0));
-        deviceState.setDueDate(DeviceGroup.MINUTE_MS_INTERVAL);
+        deviceState.setDueDate(ReportRequestState.MINUTE_MS_INTERVAL);
         ReportRequestState state = mgr.saveState(deviceState);
         mgr.deleteState(state);
         Assert.assertEquals(mgr.getList(ReportRequestState.class).size(), 0);

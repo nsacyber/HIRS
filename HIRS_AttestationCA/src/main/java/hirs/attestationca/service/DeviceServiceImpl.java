@@ -153,7 +153,7 @@ public class DeviceServiceImpl extends DbServiceImpl<Device>
     }
 
     @Override
-    public boolean archive(UUID uuid) {
+    public boolean archive(final UUID uuid) {
         return true;
     }
 }

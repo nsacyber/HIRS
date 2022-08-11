@@ -28,6 +28,15 @@ public interface CertificateService extends OrderedQuery<Certificate> {
      * reflect the new values that should be set.
      *
      * @param certificate Certificate object to save
+     * @return a Certificate object
+     */
+    Certificate updateCertificate(Certificate certificate);
+
+    /**
+     * Updates a <code>Certificate</code>. This updates the database entries to
+     * reflect the new values that should be set.
+     *
+     * @param certificate Certificate object to save
      * @param uuid UUID for the database object
      * @return a Certificate object
      */
