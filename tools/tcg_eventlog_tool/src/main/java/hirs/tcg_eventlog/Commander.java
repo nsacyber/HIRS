@@ -74,7 +74,6 @@ public class Commander {
      */
     public final void parseArguments(final String[] args) {
         String tempValue;
-
         for (int i = 0; i < args.length; i++) {
             tempValue = args[i];
 
