@@ -3,6 +3,7 @@ using System.Security.Cryptography.X509Certificates;
 using System.Security.Cryptography.Xml;
 using System.Xml;
 using System.CommandLine;
+using System.Text;
 
 /**
  * This command line program has three commands:
@@ -13,7 +14,7 @@ using System.CommandLine;
  * The validate functioin strictly checks the cryptographic integrity of the signature,
  * it does not verify the integrity of the certificate chain.
  */
-class Rimtool
+class XmlDsigTool
 {
 
     static async Task<int> Main(String[] args)
@@ -54,9 +55,10 @@ class Rimtool
             fileOption,
             certificateOption
         };
-        var debugCommand = new Command("debug", "Print out the significant portions of a base RIM.")
+        var debugCommand = new Command("debug", "Print out the significant portions of a base RIM and the expected signature value.")
         {
-            fileOption
+            fileOption,
+            privateKeyOption
         };
 
         signCommand.SetHandler(async (file, privateKey) =>
@@ -67,10 +69,10 @@ class Rimtool
         {
             await ValidateXml(file, certificate);
         }, fileOption, certificateOption);
-        debugCommand.SetHandler(async (file) =>
+        debugCommand.SetHandler(async (file, privateKey) =>
         {
-            await DebugRim(file);
-        }, fileOption);
+            await DebugRim(file, privateKey);
+        }, fileOption, privateKeyOption);
 
         rootCommand.AddCommand(signCommand);
         rootCommand.AddCommand(validateCommand);
@@ -93,7 +95,7 @@ class Rimtool
         SignedXml signedXml = new SignedXml(unsignedDoc);
 
         //Load private key from file
-        string privateKeyText = System.IO.File.ReadAllText(keyFilename);
+        string privateKeyText = File.ReadAllText(keyFilename);
         var privateKey = RSA.Create();
         privateKey.ImportFromPem(privateKeyText);
 
@@ -192,16 +194,56 @@ class Rimtool
         }
     }
 
-    internal static async Task DebugRim(string filename)
+    internal static async Task DebugRim(string filename, string keyFilename)
     {
         if (String.IsNullOrWhiteSpace(filename))
         {
             throw new ArgumentException(nameof(filename));
+        } else if (String.IsNullOrWhiteSpace(keyFilename))
+        {
+            throw new ArgumentException(nameof(keyFilename));
         }
+
+        XmlDocument xmlToBeSigned = new XmlDocument();
         XmlDocument xmlDoc = new XmlDocument();
         xmlDoc.Load(filename);
+        XmlNodeList nodes = xmlDoc.GetElementsByTagName("SoftwareIdentity");
+        XmlNodeList signatureNodes = xmlDoc.GetElementsByTagName("Signature");
 
+        //Assumes there is only one signature; may change in the future for multiple signatures
+        if (signatureNodes.Count > 0)
+        {
+            nodes[0].RemoveChild(signatureNodes[0]);
+        }
+        xmlToBeSigned.AppendChild(xmlToBeSigned.ImportNode(nodes[0], true));
+        string outFileName = "ToBeSigned_" + filename;
+        xmlToBeSigned.Save(outFileName);
+        Console.WriteLine("Xml data to be signed parsed to " + outFileName);
+
+        //Load private key from file
+        string privateKeyText = File.ReadAllText(keyFilename);
+        var privateKey = RSA.Create();
+        privateKey.ImportFromPem(privateKeyText);
+
+        // Add the key to the SignedXml document.
+        SignedXml signedXml = new SignedXml(xmlToBeSigned);
+        signedXml.SigningKey = privateKey;
+
+        // Create a reference to be signed.
+        Reference reference = new Reference();
+        reference.Uri = "";
+
+        // Add an enveloped transformation to the reference.
+        XmlDsigEnvelopedSignatureTransform env = new XmlDsigEnvelopedSignatureTransform();
+        reference.AddTransform(env);
+
+        // Add the reference to the SignedXml object.
+        signedXml.AddReference(reference);
+
+        signedXml.ComputeSignature();
+        Signature signature = signedXml.Signature;
+        Console.WriteLine("For the data to be signed the expected signature value is "
+            + Encoding.Default.GetString(signature.SignatureValue));
     }
 
 }
-
