@@ -177,6 +177,16 @@ public class PolicyServiceImpl extends DbServiceImpl<Policy>
     }
 
     @Override
+    public void setPolicy(final Appraiser appraiser, final Policy policy) {
+
+    }
+
+    @Override
+    public void setDefaultPolicy(final Appraiser appraiser, final Policy policy) {
+
+    }
+
+    @Override
     public FilteredRecordsList getOrderedList(
             final Class<Policy> clazz, final String columnToOrder,
             final boolean ascending, final int firstResult, final int maxResults,

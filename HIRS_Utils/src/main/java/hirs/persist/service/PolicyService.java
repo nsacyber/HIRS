@@ -42,4 +42,33 @@ public interface PolicyService extends OrderedQuery<Policy> {
      * @return default policy
      */
     Policy getDefaultPolicy(Appraiser appraiser);
+
+
+
+    /**
+     * Sets the <code>Policy</code> for the <code>Appraiser</code>.
+     *
+     * @param appraiser  appraiser
+     * @param policy   policy
+     */
+    void setPolicy(Appraiser appraiser, Policy policy);
+
+    /**
+     * Sets the default <code>Policy</code> for an <code>Appraiser</code>. The
+     * default policy is used by an appraiser when a specific policy has not
+     * been set for a platform.
+     * <p>
+     * In this current release a specific policy for a platform cannot yet be
+     * set, so <code>Appraiser</code>s can only call
+     * {@link #getDefaultPolicy(Appraiser)} to retrieve the <code>Policy</code>
+     * for a platform.
+     * <p>
+     * The default policy can be unset by using null for the <code>policy</code>
+     * parameter. In that case future calls to get the default policy will
+     * return null.
+     *
+     * @param appraiser  appraiser
+     * @param policy default policy
+     */
+    void setDefaultPolicy(Appraiser appraiser, Policy policy);
 }
