@@ -38,14 +38,6 @@ public class ReferenceDigestValueServiceImpl extends DbServiceImpl<ReferenceDige
     @PersistenceContext
     private EntityManager entityManager;
 
-    /**
-     * Default Constructor.
-     * @param entityManager entity manager for jpa hibernate events
-     */
-    public ReferenceDigestValueServiceImpl(final EntityManager entityManager) {
-        this.entityManager = entityManager;
-    }
-
     @Override
     public List<ReferenceDigestValue> getList() {
         LOGGER.debug("Getting all reference digest value...");

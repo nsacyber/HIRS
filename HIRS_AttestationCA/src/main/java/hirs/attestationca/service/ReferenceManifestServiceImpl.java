@@ -38,13 +38,6 @@ public class ReferenceManifestServiceImpl extends DbServiceImpl<ReferenceManifes
     @PersistenceContext
     private EntityManager entityManager;
 
-    /**
-     * Default constructor.
-     * @param em entity manager for jpa hibernate events
-     */
-    public ReferenceManifestServiceImpl(final EntityManager em) {
-    }
-
     @SuppressWarnings("unchecked")
     @Override
     public ReferenceManifest saveRIM(final ReferenceManifest rim) {

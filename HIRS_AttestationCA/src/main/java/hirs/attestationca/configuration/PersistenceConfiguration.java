@@ -1,5 +1,6 @@
 package hirs.attestationca.configuration;
 
+import hirs.attestationca.AttestationCertificateAuthorityConfiguration;
 import hirs.attestationca.service.CertificateServiceImpl;
 import hirs.attestationca.service.DbServiceImpl;
 import hirs.attestationca.service.DeviceServiceImpl;
@@ -13,7 +14,9 @@ import hirs.persist.service.ReferenceDigestValueService;
 import hirs.persist.service.ReferenceManifestService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Import;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 
 import javax.persistence.EntityManager;
@@ -29,6 +32,8 @@ import javax.persistence.PersistenceContext;
  */
 @Configuration
 @EnableJpaRepositories("hirs.attestationca.service")
+@ComponentScan(basePackages = "hirs.data.persist")
+@Import({ AttestationCertificateAuthorityConfiguration.class })
 public class PersistenceConfiguration {
 
     /**
@@ -55,7 +60,7 @@ public class PersistenceConfiguration {
      */
     @Bean
     public PolicyService policyService() {
-        PolicyServiceImpl serviceImpl = new PolicyServiceImpl(entityManager);
+        PolicyServiceImpl serviceImpl = new PolicyServiceImpl();
         setDbServiceRetrySettings(serviceImpl);
         return serviceImpl;
     }
@@ -67,7 +72,7 @@ public class PersistenceConfiguration {
      */
     @Bean
     public DeviceService deviceService() {
-        DeviceServiceImpl serviceImpl = new DeviceServiceImpl(entityManager);
+        DeviceServiceImpl serviceImpl = new DeviceServiceImpl();
         setDbServiceRetrySettings(serviceImpl);
         return serviceImpl;
     }
@@ -79,7 +84,7 @@ public class PersistenceConfiguration {
      */
     @Bean
     public CertificateService certificateService() {
-        CertificateServiceImpl serviceImpl = new CertificateServiceImpl(entityManager);
+        CertificateServiceImpl serviceImpl = new CertificateServiceImpl();
         setDbServiceRetrySettings(serviceImpl);
         return serviceImpl;
     }
@@ -92,7 +97,7 @@ public class PersistenceConfiguration {
     @Bean
     public ReferenceManifestService referenceManifestService() {
         ReferenceManifestServiceImpl serviceImpl
-                = new ReferenceManifestServiceImpl(entityManager);
+                = new ReferenceManifestServiceImpl();
         setDbServiceRetrySettings(serviceImpl);
         return serviceImpl;
     }
@@ -105,7 +110,7 @@ public class PersistenceConfiguration {
     @Bean
     public ReferenceDigestValueService referenceEventService() {
         ReferenceDigestValueServiceImpl serviceImpl
-                = new ReferenceDigestValueServiceImpl(entityManager);
+                = new ReferenceDigestValueServiceImpl();
         setDbServiceRetrySettings(serviceImpl);
         return serviceImpl;
     }

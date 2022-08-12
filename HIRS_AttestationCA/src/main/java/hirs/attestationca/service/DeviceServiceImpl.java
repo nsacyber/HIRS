@@ -36,14 +36,6 @@ public class DeviceServiceImpl extends DbServiceImpl<Device>
     @PersistenceContext
     private EntityManager entityManager;
 
-    /**
-     * Default constructor.
-     * @param entityManager entity manager for jpa hibernate events
-     */
-    public DeviceServiceImpl(final EntityManager entityManager) {
-        this.entityManager = entityManager;
-    }
-
     @Override
     public final Device getByName(final String name) {
         LOGGER.debug("Find device by name: {}", name);

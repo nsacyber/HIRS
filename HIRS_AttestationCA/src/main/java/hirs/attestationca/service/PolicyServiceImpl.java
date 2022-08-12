@@ -45,15 +45,6 @@ public class PolicyServiceImpl extends DbServiceImpl<Policy>
     @PersistenceContext
     private EntityManager entityManager;
 
-    /**
-     * Default Constructor.
-     * @param entityManager entity manager for jpa hibernate events
-     */
-    public PolicyServiceImpl(final EntityManager entityManager) {
-        super(entityManager);
-        this.entityManager = entityManager;
-    }
-
     @Override
     public List<Policy> getList() {
         LOGGER.debug("Getting all policies...");
@@ -174,6 +165,17 @@ public class PolicyServiceImpl extends DbServiceImpl<Policy>
             throw new DBManagerException(msg, e);
         }
         return ret;
+    }
+
+    @Override
+    public Policy getPolicyByName(final String name) {
+        for (Policy policy : getList()) {
+            if (policy.getName().equals(name)) {
+                return policy;
+            }
+        }
+
+        return null;
     }
 
     @Override

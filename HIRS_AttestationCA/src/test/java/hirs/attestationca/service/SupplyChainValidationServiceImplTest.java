@@ -433,7 +433,7 @@ public class SupplyChainValidationServiceImplTest extends SpringPersistenceTest 
      */
     @Test
     public final void testGetCaChain() throws URISyntaxException, IOException, KeyStoreException {
-        CertificateServiceImpl realCertMan = new CertificateServiceImpl(sessionFactory);
+        CertificateServiceImpl realCertMan = new CertificateServiceImpl();
 
         // the main service in this class only uses mocked managers, we need a real DB certificate
         // manager for this test, so we make a second service.
@@ -494,7 +494,7 @@ public class SupplyChainValidationServiceImplTest extends SpringPersistenceTest 
     @Test
     public final void testGetNotFullCaChain() throws URISyntaxException, IOException,
             KeyStoreException {
-        CertificateServiceImpl realCertMan = new CertificateServiceImpl(sessionFactory);
+        CertificateServiceImpl realCertMan = new CertificateServiceImpl();
 
         // the main service in this class only uses mocked managers, we need a real DB certificate
         // manager for this test, so we make a second service.
@@ -541,7 +541,7 @@ public class SupplyChainValidationServiceImplTest extends SpringPersistenceTest 
     @Test
     public final void testGetEmptyCaChain() throws URISyntaxException, IOException,
             KeyStoreException {
-        CertificateServiceImpl realCertMan = new CertificateServiceImpl(sessionFactory);
+        CertificateServiceImpl realCertMan = new CertificateServiceImpl();
 
         // the main service in this class only uses mocked managers, we need a real DB certificate
         // manager for this test, so we make a second service.
@@ -578,7 +578,7 @@ public class SupplyChainValidationServiceImplTest extends SpringPersistenceTest 
     @Test
     public final void testGetCaChainWithExtraCerts() throws URISyntaxException, IOException,
             KeyStoreException {
-        CertificateServiceImpl realCertMan = new CertificateServiceImpl(sessionFactory);
+        CertificateServiceImpl realCertMan = new CertificateServiceImpl();
 
         // the main service in this class only uses mocked managers, we need a real DB certificate
         // manager for this test, so we make a second service.
@@ -639,7 +639,7 @@ public class SupplyChainValidationServiceImplTest extends SpringPersistenceTest 
      */
     @Test
     public final void testGetPcCaChain() throws URISyntaxException, IOException, KeyStoreException {
-        CertificateServiceImpl realCertMan = new CertificateServiceImpl(sessionFactory);
+        CertificateServiceImpl realCertMan = new CertificateServiceImpl();
 
         // the main service in this class only uses mocked managers, we need a real DB certificate
         // manager for this test, so we make a second service.
@@ -686,7 +686,7 @@ public class SupplyChainValidationServiceImplTest extends SpringPersistenceTest 
     @Test
     public final void testGetPcCaChainNoMatches() throws URISyntaxException, IOException,
             KeyStoreException {
-        CertificateServiceImpl realCertMan = new CertificateServiceImpl(sessionFactory);
+        CertificateServiceImpl realCertMan = new CertificateServiceImpl();
 
         // the main service in this class only uses mocked managers, we need a real DB certificate
         // manager for this test, so we make a second service.
@@ -739,7 +739,7 @@ public class SupplyChainValidationServiceImplTest extends SpringPersistenceTest 
         when(policy.isPcValidationEnabled()).thenReturn(false);
         when(policy.isPcAttributeValidationEnabled()).thenReturn(false);
 
-        CertificateServiceImpl realCertMan = new CertificateServiceImpl(sessionFactory);
+        CertificateServiceImpl realCertMan = new CertificateServiceImpl();
         Device storedDevice = getStoredTestDevice();
 
         SupplyChainValidationServiceImpl mostlyMockedService = new SupplyChainValidationServiceImpl(

@@ -6,11 +6,7 @@ import hirs.utils.LogConfigurationUtil;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
-import org.hibernate.SessionFactory;
-import org.hibernate.boot.Metadata;
-import org.hibernate.boot.MetadataSources;
-import org.hibernate.boot.registry.StandardServiceRegistryBuilder;
-import org.hibernate.service.ServiceRegistry;
+import org.hibernate.jpa.HibernatePersistenceProvider;
 import org.springframework.beans.factory.BeanInitializationException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
@@ -22,7 +18,9 @@ import org.springframework.context.annotation.Scope;
 import org.springframework.context.support.PropertySourcesPlaceholderConfigurer;
 import org.springframework.core.env.Environment;
 import org.springframework.jdbc.datasource.DriverManagerDataSource;
-import org.springframework.orm.hibernate5.HibernateTransactionManager;
+import org.springframework.orm.jpa.JpaTransactionManager;
+import org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean;
+import org.springframework.orm.jpa.vendor.HibernateJpaVendorAdapter;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
 import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
@@ -75,12 +73,19 @@ public class AttestationCertificateAuthorityConfiguration implements WebMvcConfi
         }
     }
 
-
-//    @Value("${persistence.db.url}")
-//    private String url;
-
     @Autowired
     private Environment environment;
+
+    /**
+     * Creates a JPA transaction manager.
+     * @return instance of the manager
+     */
+    @Bean
+    public JpaTransactionManager jpaTransactionManager() {
+        JpaTransactionManager transactionManager = new JpaTransactionManager();
+        transactionManager.setEntityManagerFactory(entityManagerFactoryBean().getObject());
+        return transactionManager;
+    }
 
     /**
      * @return bean to resolve injected annotation.Value property expressions
@@ -92,25 +97,63 @@ public class AttestationCertificateAuthorityConfiguration implements WebMvcConfi
     }
 
     /**
+     * Initialization of the ACA. Detects environment and runs configuration
+     * methods as required. This method is intended to be invoked by the Spring
+     * application context.
+     */
+    @PostConstruct
+    void initialize() {
+
+        // ensure that Bouncy Castle is registered as a security provider
+        Security.addProvider(new BouncyCastleProvider());
+
+        // obtain path to ACA configuration
+        Path certificatesPath = Paths.get(
+                environment.getRequiredProperty("aca.directories.certificates"));
+
+        // create base directories if they do not exist
+        try {
+            Files.createDirectories(certificatesPath);
+        } catch (IOException e) {
+            throw new BeanInitializationException(
+                    "Encountered error while initializing ACA directories: " + e.getMessage(), e);
+        }
+
+        // create the ACA key store if it doesn't exist
+        Path keyStorePath = Paths.get(environment.getRequiredProperty("aca.keyStore.location"));
+        if (!Files.exists(keyStorePath)) {
+            throw new IllegalStateException(
+                    String.format("ACA Key Store not found at %s. Consult the HIRS User "
+                                    + "Guide for ACA installation instructions.",
+                            environment.getRequiredProperty("aca.keyStore.location")));
+        }
+    }
+
+    private HibernateJpaVendorAdapter vendorAdaptor() {
+        HibernateJpaVendorAdapter vendorAdapter = new HibernateJpaVendorAdapter();
+        vendorAdapter.setShowSql(true);
+        return vendorAdapter;
+    }
+
+    /**
      * Configures a session factory bean that in turn configures the hibernate session factory.
      * Enables auto scanning of annotations such that entities do not need to be registered in a
      * hibernate configuration file.
      *
-     * @return session factory
+     * @return Entity Manager
      */
-//    @Bean
-    public SessionFactory sessionFactory() {
-        ServiceRegistry serviceRegistry = new StandardServiceRegistryBuilder()
-                .applySettings(getSettings()).build();
-        MetadataSources metadataSources = new MetadataSources(serviceRegistry);
-        Metadata metadata = metadataSources.buildMetadata();
-//        LocalSessionFactoryBean sessionFactory = new LocalSessionFactoryBean();
-        SessionFactory sessionFactory = metadata.getSessionFactoryBuilder().build();
-//        sessionFactory.setDataSource(dataSource());
-//        sessionFactory.setPackagesToScan("hirs");
-//        sessionFactory.setHibernateProperties(hibernateProperties());
-        return sessionFactory;
-    }
+    @Bean
+    public LocalContainerEntityManagerFactoryBean entityManagerFactoryBean() {
+         LocalContainerEntityManagerFactoryBean entityManagerFactoryBean
+                 = new LocalContainerEntityManagerFactoryBean();
+         entityManagerFactoryBean.setJpaVendorAdapter(vendorAdaptor());
+         entityManagerFactoryBean.setDataSource(dataSource());
+         entityManagerFactoryBean.setPersistenceProviderClass(HibernatePersistenceProvider.class);
+         entityManagerFactoryBean.setPackagesToScan("hirs");
+         entityManagerFactoryBean.setJpaProperties(hibernateProperties());
+
+         return entityManagerFactoryBean;
+     }
 
     private Map<String, String> getSettings() {
         Map<String, String> settings = new HashMap<>();
@@ -135,7 +178,7 @@ public class AttestationCertificateAuthorityConfiguration implements WebMvcConfi
      *
      * @return configured data source
      */
-    @Bean
+    @Bean(destroyMethod = "close")
     public DataSource dataSource() {
         DriverManagerDataSource dataSource = new DriverManagerDataSource();
         dataSource.setUrl(
@@ -179,39 +222,6 @@ public class AttestationCertificateAuthorityConfiguration implements WebMvcConfi
     }
 
     /**
-     * Initialization of the ACA. Detects environment and runs configuration
-     * methods as required. This method is intended to be invoked by the Spring
-     * application context.
-     */
-    @PostConstruct
-    void initialize() {
-
-        // ensure that Bouncy Castle is registered as a security provider
-        Security.addProvider(new BouncyCastleProvider());
-
-        // obtain path to ACA configuration
-        Path certificatesPath = Paths.get(
-                environment.getRequiredProperty("aca.directories.certificates"));
-
-        // create base directories if they do not exist
-        try {
-            Files.createDirectories(certificatesPath);
-        } catch (IOException e) {
-            throw new BeanInitializationException(
-                    "Encountered error while initializing ACA directories: " + e.getMessage(), e);
-        }
-
-        // create the ACA key store if it doesn't exist
-        Path keyStorePath = Paths.get(environment.getRequiredProperty("aca.keyStore.location"));
-        if (!Files.exists(keyStorePath)) {
-            throw new IllegalStateException(
-                    String.format("ACA Key Store not found at %s. Consult the HIRS User "
-                            + "Guide for ACA installation instructions.",
-                            environment.getRequiredProperty("aca.keyStore.location")));
-        }
-    }
-
-    /**
      * @return the {@link PrivateKey} of the ACA
      */
     @Bean
@@ -238,15 +248,6 @@ public class AttestationCertificateAuthorityConfiguration implements WebMvcConfi
             throw new BeanInitializationException("Encountered error loading ACA private key "
                     + "from key store: " + e.getMessage(), e);
         }
-    }
-    /**
-     * Configure a transaction manager for the hibernate session factory.
-     *
-     * @return transaction manager
-     */
-    @Bean
-    public HibernateTransactionManager getTransactionManager() {
-        return new HibernateTransactionManager(sessionFactory());
     }
 
     /**

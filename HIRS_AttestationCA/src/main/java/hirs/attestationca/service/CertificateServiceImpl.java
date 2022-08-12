@@ -43,14 +43,6 @@ public class CertificateServiceImpl extends DbServiceImpl<Certificate>
     @PersistenceContext
     private EntityManager entityManager;
 
-    /**
-     * Default constructor.
-     * @param entityManager entity manager for jpa hibernate events
-     */
-    public CertificateServiceImpl(final EntityManager entityManager) {
-        this.entityManager = entityManager;
-    }
-
     @Override
     public Certificate saveCertificate(final Certificate certificate) {
         LOGGER.debug("Saving certificate: {}", certificate);

@@ -43,7 +43,15 @@ public interface PolicyService extends OrderedQuery<Policy> {
      */
     Policy getDefaultPolicy(Appraiser appraiser);
 
-
+    /**
+     * Retrieves the <code>Policy</code> from the database. This searches the
+     * database for an entry whose name matches <code>name</code>. It then
+     * reconstructs a <code>Policy</code> object from the database entry
+     *
+     * @param name  name of the policy
+     * @return policy if found, otherwise null.
+     */
+    Policy getPolicyByName(String name);
 
     /**
      * Sets the <code>Policy</code> for the <code>Appraiser</code>.

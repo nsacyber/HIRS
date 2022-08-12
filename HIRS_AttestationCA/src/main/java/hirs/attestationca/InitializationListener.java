@@ -24,12 +24,10 @@ public class InitializationListener implements ServletContextListener {
         context.refresh();
 
         // obtain reference to hibernate session factory
-//        SessionFactory sessionFactory = context.getBean(LocalSessionFactoryBean.class)
-//        .getObject();
         EntityManager entityManager = context.getBean(EntityManagerFactory.class)
                 .createEntityManager();
         AcaDbInit.insertDefaultEntries(new AppraiserServiceImpl(entityManager),
-                new PolicyServiceImpl(entityManager)
+                new PolicyServiceImpl()
         );
     }
 
