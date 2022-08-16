@@ -26,6 +26,7 @@ import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 import javax.annotation.PostConstruct;
+import javax.persistence.EntityManagerFactory;
 import javax.sql.DataSource;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -83,7 +84,7 @@ public class AttestationCertificateAuthorityConfiguration implements WebMvcConfi
     @Bean
     public JpaTransactionManager jpaTransactionManager() {
         JpaTransactionManager transactionManager = new JpaTransactionManager();
-        transactionManager.setEntityManagerFactory(entityManagerFactoryBean().getObject());
+        transactionManager.setEntityManagerFactory(entityManagerFactory());
         return transactionManager;
     }
 
@@ -143,7 +144,7 @@ public class AttestationCertificateAuthorityConfiguration implements WebMvcConfi
      * @return Entity Manager
      */
     @Bean
-    public LocalContainerEntityManagerFactoryBean entityManagerFactoryBean() {
+    public EntityManagerFactory entityManagerFactory() {
          LocalContainerEntityManagerFactoryBean entityManagerFactoryBean
                  = new LocalContainerEntityManagerFactoryBean();
          entityManagerFactoryBean.setJpaVendorAdapter(vendorAdaptor());
@@ -152,7 +153,7 @@ public class AttestationCertificateAuthorityConfiguration implements WebMvcConfi
          entityManagerFactoryBean.setPackagesToScan("hirs");
          entityManagerFactoryBean.setJpaProperties(hibernateProperties());
 
-         return entityManagerFactoryBean;
+         return entityManagerFactoryBean.getObject();
      }
 
     private Map<String, String> getSettings() {
