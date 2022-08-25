@@ -49,6 +49,7 @@ public class Main {
                 String jksTruststoreFile = commander.getTruststoreFile();
                 String certificateFile = commander.getPublicCertificate();
                 String privateKeyFile = commander.getPrivateKeyFile();
+                boolean embeddedCert = commander.isEmbedded();
                 boolean defaultKey = commander.isDefaultKey();
                 String rimEventLog = commander.getRimEventLog();
                 switch (createType) {
@@ -63,6 +64,9 @@ public class Main {
                             gateway.setDefaultCredentials(false);
                             gateway.setPemCertificateFile(certificateFile);
                             gateway.setPemPrivateKeyFile(privateKeyFile);
+                            if (embeddedCert) {
+                                gateway.setEmbeddedCert(true);
+                            }
                         } else if (defaultKey){
                             gateway.setDefaultCredentials(true);
                             gateway.setJksTruststoreFile(SwidTagConstants.DEFAULT_KEYSTORE_FILE);
