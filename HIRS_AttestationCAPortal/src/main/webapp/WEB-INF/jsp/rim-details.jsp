@@ -13,10 +13,12 @@
     <jsp:attribute name="pageHeaderTitle">
     <c:choose>
         <c:when test="${initialData.rimType=='Measurement'}">
-            TCG Event Log
-            <a href="${portal}/reference-manifests/download?id=${param.id}">
-                <img src="${icons}/ic_file_download_black_24dp.png" title="Download ${initialData.rimType} RIM">
-            </a>
+            <c:if test="${initialData.validationResult=='PASS'}">
+                TCG Log events
+            </c:if>
+            <c:if test="${initialData.validationResult=='FAIL'}">
+                TCG Log event(s) not found in the RIM DB
+            </c:if>
         </c:when>
         <c:otherwise>
             ${initialData.rimType} Reference Integrity Manifest
@@ -38,19 +40,19 @@
                 <c:when test="${initialData.rimType=='Support' || (initialData.rimType=='Measurement' && initialData.validationResult=='PASS')}">
                     <div class="row">
                         <div class="col-md-1 col-md-offset-1"><span class="colHeader">Additional<br />RIM Info</span></div>
-                        <div id="baseRim" class="col col-md-8">
+                        <div class="col col-md-8">
                             <c:choose>
                                 <c:when test="${not empty initialData.associatedRim}">
                                     <a href="${portal}/rim-details?id=${initialData.associatedRim}">
                                         ${initialData.tagId}
                                     </a>
-                            <c:if test="${not empty initialData.hostName}">
-                                <div>Device:&nbsp;<span>${initialData.hostName}</span></div>
-                            </c:if>
-                            <c:if test="${not empty initialData.supportId}">
-                                <div>Support:&nbsp;<span><a href="${portal}/rim-details?id=${initialData.supportId}">${initialData.supportFilename}</a></span>
-                                </div>
-                            </c:if>
+                                    <c:if test="${not empty initialData.hostName}">
+                                        <div>Device:&nbsp;<span>${initialData.hostName}</span></div>
+                                    </c:if>
+                                    <c:if test="${not empty initialData.supportId}">
+                                        <div>Support:&nbsp;<span><a href="${portal}/rim-details?id=${initialData.supportId}">${initialData.supportFilename}</a></span>
+                                        </div>
+                                    </c:if>
                                 </c:when>
                                 <c:otherwise>
                                     <div class="component col col-md-10" style="color: red; padding-left: 20px">RIM not uploaded from the ACA RIM Page</div>
@@ -272,6 +274,13 @@
                     <div class="row">
                         <div class="col-md-1 col-md-offset-1"><span class="colHeader">Base/Support</span></div>
                         <div id="measurements" class="col col-md-8">
+                            <div>Download Measurement:&nbsp;
+                                <span>
+                                    <a href="${portal}/reference-manifests/download?id=${param.id}">
+                                        BIOS Measurements
+                                    </a>
+                                </span>
+                            </div>
                             <c:if test="${not empty initialData.hostName}">
                                 <div>Device:&nbsp;<span>${initialData.hostName}</span>
                                 </div>
@@ -306,7 +315,7 @@
                                     </div>
                                     <div style="display: flex;">
                                         <div class="mappedButton">
-                                            Baseline Events of Type:<br />
+                                            Expected Events from RIM DB:<br />
                                             <span style="word-wrap: break-word"><a role="button" data-toggle="collapse" href="#eventContent${iterator}">${lEvent.getEventTypeString()}</a></span>
                                         </div>
                                         <div id="eventContent${iterator}" class="panel-collapse collapse in" style="flex: 2">

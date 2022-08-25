@@ -54,6 +54,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.math.BigInteger;
 import java.security.InvalidAlgorithmParameterException;
+import java.security.KeyException;
 import java.security.NoSuchAlgorithmException;
 import java.security.PrivateKey;
 import java.security.cert.CertificateException;
@@ -77,6 +78,7 @@ public class SwidTagGateway {
     private String jksTruststoreFile;
     private String pemPrivateKeyFile;
     private String pemCertificateFile;
+    private boolean embeddedCert;
     private String rimEventLog;
     private String errorRequiredFields;
 
@@ -90,6 +92,7 @@ public class SwidTagGateway {
             attributesFile = SwidTagConstants.DEFAULT_ATTRIBUTES_FILE;
             defaultCredentials = true;
             pemCertificateFile = "";
+            embeddedCert = false;
             rimEventLog = "";
             errorRequiredFields = "";
         } catch (JAXBException e) {
@@ -102,7 +105,7 @@ public class SwidTagGateway {
      *
      * @param attributesFile
      */
-    public void setAttributesFile(String attributesFile) {
+    public void setAttributesFile(final String attributesFile) {
         this.attributesFile = attributesFile;
     }
 
@@ -112,7 +115,7 @@ public class SwidTagGateway {
      * @param defaultCredentials
      * @return
      */
-    public void setDefaultCredentials(boolean defaultCredentials) {
+    public void setDefaultCredentials(final boolean defaultCredentials) {
         this.defaultCredentials = defaultCredentials;
     }
 
@@ -121,7 +124,7 @@ public class SwidTagGateway {
      *
      * @param jksTruststoreFile
      */
-    public void setJksTruststoreFile(String jksTruststoreFile) {
+    public void setJksTruststoreFile(final String jksTruststoreFile) {
         this.jksTruststoreFile = jksTruststoreFile;
     }
 
@@ -130,7 +133,7 @@ public class SwidTagGateway {
      *
      * @param pemPrivateKeyFile
      */
-    public void setPemPrivateKeyFile(String pemPrivateKeyFile) {
+    public void setPemPrivateKeyFile(final String pemPrivateKeyFile) {
         this.pemPrivateKeyFile = pemPrivateKeyFile;
     }
 
@@ -139,8 +142,17 @@ public class SwidTagGateway {
      *
      * @param pemCertificateFile
      */
-    public void setPemCertificateFile(String pemCertificateFile) {
+    public void setPemCertificateFile(final String pemCertificateFile) {
         this.pemCertificateFile = pemCertificateFile;
+    }
+
+    /**
+     * Setter to embed certificate file in signature block
+     *
+     * @param embeddedCert
+     */
+    public void setEmbeddedCert(final boolean embeddedCert) {
+        this.embeddedCert = embeddedCert;
     }
 
     /**
@@ -148,7 +160,7 @@ public class SwidTagGateway {
      *
      * @param rimEventLog
      */
-    public void setRimEventLog(String rimEventLog) {
+    public void setRimEventLog(final String rimEventLog) {
         this.rimEventLog = rimEventLog;
     }
 
@@ -224,7 +236,7 @@ public class SwidTagGateway {
      *
      * @param swidTag
      */
-    public void writeSwidTagFile(Document swidTag, String output) {
+    public void writeSwidTagFile(final Document swidTag, final String output) {
         try {
             TransformerFactory tf = TransformerFactory.newInstance();
             Transformer transformer = tf.newTransformer();
@@ -252,7 +264,7 @@ public class SwidTagGateway {
      * @param jsonObject the Properties object containing parameters from file
      * @return SoftwareIdentity object created from the properties
      */
-    private SoftwareIdentity createSwidTag(JsonObject jsonObject) {
+    private SoftwareIdentity createSwidTag(final JsonObject jsonObject) {
         SoftwareIdentity swidTag = objectFactory.createSoftwareIdentity();
         if (jsonObject == null) {
             errorRequiredFields += SwidTagConstants.SOFTWARE_IDENTITY + ", ";
@@ -289,7 +301,7 @@ public class SwidTagGateway {
      * @param jsonObject the Properties object containing parameters from file
      * @return Entity object created from the properties
      */
-    private Entity createEntity(JsonObject jsonObject) {
+    private Entity createEntity(final JsonObject jsonObject) {
         boolean isTagCreator = false;
         Entity entity = objectFactory.createEntity();
         if (jsonObject == null) {
@@ -332,7 +344,7 @@ public class SwidTagGateway {
      * @param jsonObject the Properties object containing parameters from file
      * @return Link element created from the properties
      */
-    private Link createLink(JsonObject jsonObject) {
+    private Link createLink(final JsonObject jsonObject) {
         Link link = objectFactory.createLink();
         String href = jsonObject.getString(SwidTagConstants.HREF, "");
         if (!href.isEmpty()) {
@@ -353,7 +365,7 @@ public class SwidTagGateway {
      * @param jsonObject the Properties object containing parameters from file
      * @return the Meta element created from the properties
      */
-    private SoftwareMeta createSoftwareMeta(JsonObject jsonObject) {
+    private SoftwareMeta createSoftwareMeta(final JsonObject jsonObject) {
         SoftwareMeta softwareMeta = objectFactory.createSoftwareMeta();
         Map<QName, String> attributes = softwareMeta.getOtherAttributes();
         addNonNullAttribute(attributes, SwidTagConstants._COLLOQUIAL_VERSION,
@@ -402,7 +414,7 @@ public class SwidTagGateway {
      * @param jsonObject the Properties object containing parameters from file
      * @return the Payload object created
      */
-    private ResourceCollection createPayload(JsonObject jsonObject) {
+    private ResourceCollection createPayload(final JsonObject jsonObject) {
         ResourceCollection payload = objectFactory.createResourceCollection();
         Map<QName, String> attributes = payload.getOtherAttributes();
         if (jsonObject == null) {
@@ -425,7 +437,7 @@ public class SwidTagGateway {
      * @param jsonObject the Properties object containing parameters from file
      * @return Directory object created from the properties
      */
-    private Directory createDirectory(JsonObject jsonObject) {
+    private Directory createDirectory(final JsonObject jsonObject) {
         Directory directory = objectFactory.createDirectory();
         directory.setName(jsonObject.getString(SwidTagConstants.NAME, ""));
         Map<QName, String> attributes = directory.getOtherAttributes();
@@ -497,7 +509,8 @@ public class SwidTagGateway {
      * @param key
      * @param value
      */
-    private void addNonNullAttribute(Map<QName, String> attributes, QName key, String value) {
+    private void addNonNullAttribute(final Map<QName, String> attributes,
+                                     final QName key, String value) {
         if (!value.isEmpty()) {
             attributes.put(key, value);
         }
@@ -514,13 +527,16 @@ public class SwidTagGateway {
             Reference reference = sigFactory.newReference(
                     "",
                     sigFactory.newDigestMethod(DigestMethod.SHA256, null),
-                    Collections.singletonList(sigFactory.newTransform(Transform.ENVELOPED, (TransformParameterSpec) null)),
+                    Collections.singletonList(sigFactory.newTransform(Transform.ENVELOPED,
+                            (TransformParameterSpec) null)),
                     null,
                     null
             );
             SignedInfo signedInfo = sigFactory.newSignedInfo(
-                    sigFactory.newCanonicalizationMethod(CanonicalizationMethod.INCLUSIVE, (C14NMethodParameterSpec) null),
-                    sigFactory.newSignatureMethod(SwidTagConstants.SIGNATURE_ALGORITHM_RSA_SHA256, null),
+                    sigFactory.newCanonicalizationMethod(CanonicalizationMethod.INCLUSIVE,
+                            (C14NMethodParameterSpec) null),
+                    sigFactory.newSignatureMethod(SwidTagConstants.SIGNATURE_ALGORITHM_RSA_SHA256,
+                            null),
                     Collections.singletonList(reference)
             );
             List<XMLStructure> keyInfoElements = new ArrayList<XMLStructure>();
@@ -537,11 +553,15 @@ public class SwidTagGateway {
                 cp.parsePEMCredentials(pemCertificateFile, pemPrivateKeyFile);
                 X509Certificate certificate = cp.getCertificate();
                 privateKey = cp.getPrivateKey();
-                ArrayList<Object> x509Content = new ArrayList<Object>();
-                x509Content.add(certificate.getSubjectX500Principal().getName());
-                x509Content.add(certificate);
-                X509Data data = kiFactory.newX509Data(x509Content);
-                keyInfoElements.add(data);
+                if (embeddedCert) {
+                    ArrayList<Object> x509Content = new ArrayList<Object>();
+                    x509Content.add(certificate.getSubjectX500Principal().getName());
+                    x509Content.add(certificate);
+                    X509Data data = kiFactory.newX509Data(x509Content);
+                    keyInfoElements.add(data);
+                } else {
+                    keyInfoElements.add(kiFactory.newKeyValue(certificate.getPublicKey()));
+                }
             }
             KeyInfo keyinfo = kiFactory.newKeyInfo(keyInfoElements);
 
@@ -563,6 +583,9 @@ public class SwidTagGateway {
             System.out.println("Error marshaling signed swidtag: " + e.getMessage());
         } catch (MarshalException | XMLSignatureException e) {
             System.out.println("Error while signing SoftwareIdentity: " + e.getMessage());
+        } catch (KeyException e) {
+            System.out.println("Public key algorithm not recognized or supported: "
+                    + e.getMessage());
         }
 
         return doc;

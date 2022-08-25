@@ -21,34 +21,34 @@ fi
 
 # clear all policy settings
 setPolicyNone() {
-docker exec $aca_container mysql -u root -D hirs_db -e "Update SupplyChainPolicy set enableEcValidation=0, enablePcAttributeValidation=0, enablePcValidation=0,
+docker exec $aca_container mysql -u root -proot -D hirs_db -e "Update SupplyChainPolicy set enableEcValidation=0, enablePcAttributeValidation=0, enablePcValidation=0,
            enableUtcValidation=0, enableFirmwareValidation=0, enableExpiredCertificateValidation=0, enableIgnoreGpt=0, enableIgnoreIma=0, enableIgnoretBoot=0;" 
 }
 
 # Policy Settings for tests ...
 setPolicyEkOnly() {
-docker exec $aca_container mysql -u root -D hirs_db -e "Update SupplyChainPolicy set enableEcValidation=1, enablePcAttributeValidation=0, enablePcValidation=0,
+docker exec $aca_container mysql -u root -proot -D hirs_db -e "Update SupplyChainPolicy set enableEcValidation=1, enablePcAttributeValidation=0, enablePcValidation=0,
            enableUtcValidation=0, enableFirmwareValidation=0, enableExpiredCertificateValidation=0, enableIgnoreGpt=0, enableIgnoreIma=0, enableIgnoretBoot=0;"
 }
 
 setPolicyEkPc_noAttCheck() {
-docker exec $aca_container mysql -u root -D hirs_db -e "Update SupplyChainPolicy set enableEcValidation=1, enablePcAttributeValidation=0, enablePcValidation=1,
+docker exec $aca_container mysql -u root -proot -D hirs_db -e "Update SupplyChainPolicy set enableEcValidation=1, enablePcAttributeValidation=0, enablePcValidation=1,
            enableUtcValidation=0, enableFirmwareValidation=0, enableExpiredCertificateValidation=0, enableIgnoreGpt=0, enableIgnoreIma=0, enableIgnoretBoot=0;"
 }
 
 setPolicyEkPc() {
-docker exec $aca_container mysql -u root -D hirs_db -e "Update SupplyChainPolicy set enableEcValidation=1, enablePcAttributeValidation=1, enablePcValidation=1,
+docker exec $aca_container mysql -u root -proot -D hirs_db -e "Update SupplyChainPolicy set enableEcValidation=1, enablePcAttributeValidation=1, enablePcValidation=1,
            enableUtcValidation=0, enableFirmwareValidation=0, enableExpiredCertificateValidation=0, enableIgnoreGpt=0, enableIgnoreIma=0, enableIgnoretBoot=0;"
 }
 
 setPolicyEkPcFw() {
-docker exec $aca_container mysql -u root -D hirs_db -e "Update SupplyChainPolicy set enableEcValidation=1, enablePcAttributeValidation=1, enablePcValidation=1,
+docker exec $aca_container mysql -u root -proot -D hirs_db -e "Update SupplyChainPolicy set enableEcValidation=1, enablePcAttributeValidation=1, enablePcValidation=1,
            enableUtcValidation=0, enableFirmwareValidation=1, enableExpiredCertificateValidation=0, enableIgnoreGpt=0, enableIgnoreIma=1, enableIgnoretBoot=0;"
 }
 
 # Clear all ACA DB items including policy
 clearAcaDb() {
-docker exec $aca_container mysql -u root -e "use hirs_db; set foreign_key_checks=0; truncate Alert;truncate AlertBaselineIds;truncate
+docker exec $aca_container mysql -u root -proot -e "use hirs_db; set foreign_key_checks=0; truncate Alert;truncate AlertBaselineIds;truncate
  AppraisalResult;truncate Certificate;truncate Certificate_Certificate;truncate CertificatesUsedToValidate;truncate
  ComponentInfo;truncate Device;truncate DeviceInfoReport;truncate IMADeviceState;truncate IMAMeasurementRecord;truncate
  ImaBlacklistRecord;truncate ImaIgnoreSetRecord;truncate IntegrityReport;truncate IntegrityReports_Reports_Join;truncate

@@ -65,11 +65,12 @@ buildscript {
 
 // Produce packages
 ospackage {
+    def gitCommitHash = 'git rev-parse --verify --short HEAD'.execute().text.trim()
     packageName = 'tcg_eventlog_tool'
     os = LINUX
-    arch = NOARCH
+    arch = X86_64
     version = '2.1.0'
-    release = '1'
+    release = gitCommitHash
 
     into '/opt/hirs/eventlog'
     user 'root'
@@ -104,7 +105,7 @@ ospackage {
                 details.file.name.endsWith('.md')
         }
         into './'
-        link("/usr/local/bin/elt", "/opt/hirs/eventlog/scripts/eventlog.sh", 0x755)
+        link("/usr/bin/elt", "/opt/hirs/eventlog/scripts/eventlog.sh", 0x755)
     }
 
     into('/tmp/') {
@@ -118,9 +119,9 @@ ospackage {
     postInstall file('scripts/vendor-table.sh')
 
     buildRpm {
-        arch = I386
+        arch = X86_64
     }
     buildDeb {
-        arch = I386
+        arch = X86_64
     }
 }
