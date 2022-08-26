@@ -11,6 +11,7 @@ import hirs.swid.xjc.SoftwareMeta;
 import org.w3c.dom.Document;
 
 import javax.json.Json;
+import javax.json.JsonException;
 import javax.json.JsonObject;
 import javax.json.JsonReader;
 import javax.xml.bind.JAXBContext;
@@ -79,6 +80,7 @@ public class SwidTagGateway {
     private String pemCertificateFile;
     private boolean embeddedCert;
     private String rimEventLog;
+    private String errorRequiredFields;
 
     /**
      * Default constructor initializes jaxbcontext, marshaller, and unmarshaller
@@ -92,6 +94,7 @@ public class SwidTagGateway {
             pemCertificateFile = "";
             embeddedCert = false;
             rimEventLog = "";
+            errorRequiredFields = "";
         } catch (JAXBException e) {
             System.out.println("Error initializing jaxbcontext: " + e.getMessage());
         }
@@ -188,33 +191,44 @@ public class SwidTagGateway {
             JAXBElement<SoftwareMeta> meta = objectFactory.createSoftwareIdentityMeta(
                     createSoftwareMeta(configProperties.getJsonObject(SwidTagConstants.META)));
             swidTag.getEntityOrEvidenceOrLink().add(meta);
+            //Payload
+            ResourceCollection payload = createPayload(
+                    configProperties.getJsonObject(SwidTagConstants.PAYLOAD));
+            //Directory
+            Directory directory = createDirectory(
+                    configProperties.getJsonObject(SwidTagConstants.PAYLOAD)
+                            .getJsonObject(SwidTagConstants.DIRECTORY));
             //File
             hirs.swid.xjc.File file = createFile(
                     configProperties.getJsonObject(SwidTagConstants.PAYLOAD)
                             .getJsonObject(SwidTagConstants.DIRECTORY)
                             .getJsonObject(SwidTagConstants.FILE));
-            //Directory
-            Directory directory = createDirectory(
-                    configProperties.getJsonObject(SwidTagConstants.PAYLOAD)
-                            .getJsonObject(SwidTagConstants.DIRECTORY));
+            //Nest File in Directory in Payload
             directory.getDirectoryOrFile().add(file);
-            //Payload
-            ResourceCollection payload = createPayload(
-                    configProperties.getJsonObject(SwidTagConstants.PAYLOAD));
             payload.getDirectoryOrFileOrProcess().add(directory);
             JAXBElement<ResourceCollection> jaxbPayload =
                     objectFactory.createSoftwareIdentityPayload(payload);
             swidTag.getEntityOrEvidenceOrLink().add(jaxbPayload);
-
+            //Signature
+            if (errorRequiredFields.isEmpty()) {
+                Document signedSoftwareIdentity = signXMLDocument(
+                        objectFactory.createSoftwareIdentity(swidTag));
+                writeSwidTagFile(signedSoftwareIdentity, filename);
+            } else {
+                System.out.println("The following fields cannot be empty or null: "
+                        + errorRequiredFields.substring(0, errorRequiredFields.length()-2));
+                System.exit(1);
+            }
+        } catch (JsonException e) {
+            System.out.println("Error reading JSON attributes: " + e.getMessage());
+            System.exit(1);
         } catch (FileNotFoundException e) {
             System.out.println("File does not exist or cannot be read: " + e.getMessage());
+            System.exit(1);
         } catch (Exception e) {
             System.out.println(e.getMessage());
+            System.exit(1);
         }
-
-        Document signedSoftwareIdentity = signXMLDocument(
-                objectFactory.createSoftwareIdentity(swidTag));
-        writeSwidTagFile(signedSoftwareIdentity, filename);
     }
 
     /**
@@ -252,25 +266,29 @@ public class SwidTagGateway {
      */
     private SoftwareIdentity createSwidTag(final JsonObject jsonObject) {
         SoftwareIdentity swidTag = objectFactory.createSoftwareIdentity();
-        swidTag.setLang(SwidTagConstants.DEFAULT_ENGLISH);
-        String name = jsonObject.getString(SwidTagConstants.NAME, "");
-        if (!name.isEmpty()) {
-            swidTag.setName(name);
-        }
-        String tagId = jsonObject.getString(SwidTagConstants.TAGID, "");
-        if (!tagId.isEmpty()) {
-            swidTag.setTagId(tagId);
-        }
-        swidTag.setTagVersion(new BigInteger(
-                jsonObject.getString(SwidTagConstants.TAGVERSION, "0")));
-        swidTag.setVersion(jsonObject.getString(SwidTagConstants.VERSION, "0.0"));
-        swidTag.setCorpus(jsonObject.getBoolean(SwidTagConstants.CORPUS, false));
-        swidTag.setPatch(jsonObject.getBoolean(SwidTagConstants.PATCH, false));
-        swidTag.setSupplemental(jsonObject.getBoolean(SwidTagConstants.SUPPLEMENTAL, false));
-        if (!swidTag.isCorpus() && !swidTag.isPatch()
-                && !swidTag.isSupplemental() && swidTag.getVersion() != "0.0") {
-            swidTag.setVersionScheme(
-                    jsonObject.getString(SwidTagConstants.VERSION_SCHEME, "multipartnumeric"));
+        if (jsonObject == null) {
+            errorRequiredFields += SwidTagConstants.SOFTWARE_IDENTITY + ", ";
+        } else {
+            swidTag.setLang(SwidTagConstants.DEFAULT_ENGLISH);
+            String name = jsonObject.getString(SwidTagConstants.NAME, "");
+            if (!name.isEmpty()) {
+                swidTag.setName(name);
+            }
+            String tagId = jsonObject.getString(SwidTagConstants.TAGID, "");
+            if (!tagId.isEmpty()) {
+                swidTag.setTagId(tagId);
+            }
+            swidTag.setTagVersion(new BigInteger(
+                    jsonObject.getString(SwidTagConstants.TAGVERSION, "0")));
+            swidTag.setVersion(jsonObject.getString(SwidTagConstants.VERSION, "0.0"));
+            swidTag.setCorpus(jsonObject.getBoolean(SwidTagConstants.CORPUS, false));
+            swidTag.setPatch(jsonObject.getBoolean(SwidTagConstants.PATCH, false));
+            swidTag.setSupplemental(jsonObject.getBoolean(SwidTagConstants.SUPPLEMENTAL, false));
+            if (!swidTag.isCorpus() && !swidTag.isPatch()
+                    && !swidTag.isSupplemental() && swidTag.getVersion() != "0.0") {
+                swidTag.setVersionScheme(
+                        jsonObject.getString(SwidTagConstants.VERSION_SCHEME, "multipartnumeric"));
+            }
         }
 
         return swidTag;
@@ -286,30 +304,35 @@ public class SwidTagGateway {
     private Entity createEntity(final JsonObject jsonObject) {
         boolean isTagCreator = false;
         Entity entity = objectFactory.createEntity();
-        String name = jsonObject.getString(SwidTagConstants.NAME, "");
-        if (!name.isEmpty()) {
-            entity.setName(name);
-        }
-        String[] roles = jsonObject.getString(SwidTagConstants.ROLE, "").split(",");
-        for (int i = 0; i < roles.length; i++) {
-            entity.getRole().add(roles[i]);
-            if (roles[i].equals("tagCreator")) {
-                isTagCreator = true;
-            }
-        }
-        if (isTagCreator) {
-            String regid = jsonObject.getString(SwidTagConstants.REGID, "");
-            if (regid.isEmpty()) {
-                //throw exception that regid is required
-            } else {
-                entity.setRegid(regid);
-            }
+        if (jsonObject == null) {
+            errorRequiredFields += SwidTagConstants.ENTITY + ", ";
         } else {
-            entity.setRegid(jsonObject.getString(SwidTagConstants.REGID, "invalid.unavailable"));
-        }
-        String thumbprint = jsonObject.getString(SwidTagConstants.THUMBPRINT, "");
-        if (!thumbprint.isEmpty()) {
-            entity.setThumbprint(thumbprint);
+            String name = jsonObject.getString(SwidTagConstants.NAME, "");
+            if (!name.isEmpty()) {
+                entity.setName(name);
+            }
+            String[] roles = jsonObject.getString(SwidTagConstants.ROLE, "").split(",");
+            for (int i = 0; i < roles.length; i++) {
+                entity.getRole().add(roles[i]);
+                if (roles[i].equals("tagCreator")) {
+                    isTagCreator = true;
+                }
+            }
+            if (isTagCreator) {
+                String regid = jsonObject.getString(SwidTagConstants.REGID, "");
+                if (regid.isEmpty()) {
+                    //throw exception that regid is required
+                } else {
+                    entity.setRegid(regid);
+                }
+            } else {
+                entity.setRegid(jsonObject.getString(SwidTagConstants.REGID,
+                        "invalid.unavailable"));
+            }
+            String thumbprint = jsonObject.getString(SwidTagConstants.THUMBPRINT, "");
+            if (!thumbprint.isEmpty()) {
+                entity.setThumbprint(thumbprint);
+            }
         }
         return entity;
     }
@@ -356,11 +379,11 @@ public class SwidTagGateway {
         addNonNullAttribute(attributes, SwidTagConstants._PAYLOAD_TYPE,
                 jsonObject.getString(SwidTagConstants.PAYLOAD_TYPE, ""));
         addNonNullAttribute(attributes, SwidTagConstants._PLATFORM_MANUFACTURER_STR,
-                jsonObject.getString(SwidTagConstants.PLATFORM_MANUFACTURER_STR, ""));
+                jsonObject.getString(SwidTagConstants.PLATFORM_MANUFACTURER_STR, ""), true);
         addNonNullAttribute(attributes, SwidTagConstants._PLATFORM_MANUFACTURER_ID,
-                jsonObject.getString(SwidTagConstants.PLATFORM_MANUFACTURER_ID, ""));
+                jsonObject.getString(SwidTagConstants.PLATFORM_MANUFACTURER_ID, ""), true);
         addNonNullAttribute(attributes, SwidTagConstants._PLATFORM_MODEL,
-                jsonObject.getString(SwidTagConstants.PLATFORM_MODEL, ""));
+                jsonObject.getString(SwidTagConstants.PLATFORM_MODEL, ""), true);
         addNonNullAttribute(attributes, SwidTagConstants._PLATFORM_VERSION,
                 jsonObject.getString(SwidTagConstants.PLATFORM_VERSION, ""));
         addNonNullAttribute(attributes, SwidTagConstants._FIRMWARE_MANUFACTURER_STR,
@@ -394,18 +417,16 @@ public class SwidTagGateway {
     private ResourceCollection createPayload(final JsonObject jsonObject) {
         ResourceCollection payload = objectFactory.createResourceCollection();
         Map<QName, String> attributes = payload.getOtherAttributes();
-        addNonNullAttribute(attributes, SwidTagConstants._N8060_ENVVARPREFIX,
-                jsonObject.getString(SwidTagConstants._N8060_ENVVARPREFIX.getLocalPart(), ""));
-        addNonNullAttribute(attributes, SwidTagConstants._N8060_ENVVARSUFFIX,
-                jsonObject.getString(SwidTagConstants._N8060_ENVVARSUFFIX.getLocalPart(), ""));
-        addNonNullAttribute(attributes, SwidTagConstants._N8060_PATHSEPARATOR,
-                jsonObject.getString(SwidTagConstants._N8060_PATHSEPARATOR.getLocalPart(), ""));
-        addNonNullAttribute(attributes, SwidTagConstants._SUPPORT_RIM_FORMAT,
-                jsonObject.getString(SwidTagConstants.SUPPORT_RIM_FORMAT, ""));
-        addNonNullAttribute(attributes, SwidTagConstants._SUPPORT_RIM_TYPE,
-                jsonObject.getString(SwidTagConstants.SUPPORT_RIM_TYPE, ""));
-        addNonNullAttribute(attributes, SwidTagConstants._SUPPORT_RIM_URI_GLOBAL,
-                jsonObject.getString(SwidTagConstants.SUPPORT_RIM_URI_GLOBAL, ""));
+        if (jsonObject == null) {
+            errorRequiredFields += SwidTagConstants.PAYLOAD + ", ";
+        } else {
+            addNonNullAttribute(attributes, SwidTagConstants._N8060_ENVVARPREFIX,
+                    jsonObject.getString(SwidTagConstants._N8060_ENVVARPREFIX.getLocalPart(), ""));
+            addNonNullAttribute(attributes, SwidTagConstants._N8060_ENVVARSUFFIX,
+                    jsonObject.getString(SwidTagConstants._N8060_ENVVARSUFFIX.getLocalPart(), ""));
+            addNonNullAttribute(attributes, SwidTagConstants._N8060_PATHSEPARATOR,
+                    jsonObject.getString(SwidTagConstants._N8060_PATHSEPARATOR.getLocalPart(), ""));
+        }
 
         return payload;
     }
@@ -446,7 +467,7 @@ public class SwidTagGateway {
      * @param jsonObject the Properties object containing parameters from file
      * @return File object created from the properties
      */
-    private hirs.swid.xjc.File createFile(final JsonObject jsonObject) {
+    private hirs.swid.xjc.File createFile(JsonObject jsonObject) throws Exception {
         hirs.swid.xjc.File file = objectFactory.createFile();
         file.setName(jsonObject.getString(SwidTagConstants.NAME, ""));
         Map<QName, String> attributes = file.getOtherAttributes();
@@ -467,11 +488,20 @@ public class SwidTagGateway {
         File rimEventLogFile = new File(rimEventLog);
         file.setSize(new BigInteger(Long.toString(rimEventLogFile.length())));
         addNonNullAttribute(attributes, SwidTagConstants._SHA256_HASH,
-                HashSwid.get256Hash(rimEventLog));
+                jsonObject.getString(SwidTagConstants.HASH,
+                        HashSwid.get256Hash(rimEventLog)), true);
 
         return file;
     }
 
+    private void addNonNullAttribute(Map<QName, String> attributes, QName key, String value,
+                                     boolean required) {
+        if (required && value.isEmpty()) {
+            errorRequiredFields += key.getLocalPart() + ", ";
+        } else {
+            addNonNullAttribute(attributes, key, value);
+        }
+    }
     /**
      * This utility method checks if an attribute value is empty before adding it to the map.
      *
@@ -490,7 +520,7 @@ public class SwidTagGateway {
      * This method signs a SoftwareIdentity with an xmldsig in compatibility mode.
      * Current assumptions: digest method SHA256, signature method SHA256, enveloped signature
      */
-    private Document signXMLDocument(final JAXBElement<SoftwareIdentity> swidTag) {
+    private Document signXMLDocument(JAXBElement<SoftwareIdentity> swidTag) throws Exception {
         Document doc = null;
         try {
             XMLSignatureFactory sigFactory = XMLSignatureFactory.getInstance("DOM");

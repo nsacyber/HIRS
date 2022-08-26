@@ -65,7 +65,7 @@ public class CredentialParser {
     }
 
     public void parsePEMCredentials(String certificateFile, String privateKeyFile)
-            throws CertificateException, FileNotFoundException {
+            throws Exception {
         certificate = parsePEMCertificates(certificateFile).get(0);
         if (certificate.getIssuerX500Principal().equals(certificate.getSubjectX500Principal())) {
             throw new CertificateException("Signing certificate cannot be self-signed!");
@@ -125,7 +125,8 @@ public class CredentialParser {
             CertificateFactory certificateFactory = CertificateFactory.getInstance(X509);
 
             while (bis.available() > 0) {
-                certificates = (List<X509Certificate>) certificateFactory.generateCertificates(bis);
+                certificates =
+                        (List<X509Certificate>) certificateFactory.generateCertificates(bis);
             }
 
             if (certificates.size() < 1) {
@@ -160,10 +161,11 @@ public class CredentialParser {
      * @param filename
      * @return
      */
-    private PrivateKey parsePEMPrivateKey(String filename, String algorithm) {
+    private PrivateKey parsePEMPrivateKey(String filename, String algorithm) throws Exception {
         PrivateKey privateKey = null;
         FileInputStream fis = null;
         DataInputStream dis = null;
+        String errorMessage = "";
         try {
             File file = new File(filename);
             fis = new FileInputStream(file);
@@ -186,15 +188,15 @@ public class CredentialParser {
                 privateKey = keyFactory.generatePrivate(spec);
             }
         } catch (FileNotFoundException e) {
-            System.out.println("Unable to locate private key file: " + filename);
+            errorMessage += "Unable to locate private key file: " + filename;
         } catch (DecoderException e) {
-            System.out.println("Failed to parse uploaded pem file: " + e.getMessage());
+            errorMessage += "Failed to parse uploaded pem file: " + e.getMessage();
         } catch (NoSuchAlgorithmException e) {
-            System.out.println("Unable to instantiate KeyFactory with algorithm: " + algorithm);
+            errorMessage += "Unable to instantiate KeyFactory with algorithm: " + algorithm;
         } catch (IOException e) {
-            System.out.println("IOException: " + e.getMessage());
+            errorMessage += "IOException: " + e.getMessage();
         } catch (InvalidKeySpecException e) {
-            System.out.println("Error instantiating PKCS8EncodedKeySpec object: " + e.getMessage());
+            errorMessage += "Error instantiating PKCS8EncodedKeySpec object: " + e.getMessage();
         } finally {
             try {
                 if (fis != null) {
@@ -204,7 +206,10 @@ public class CredentialParser {
                     dis.close();
                 }
             } catch (IOException e) {
-                System.out.println("Error closing input stream: " + e.getMessage());
+                errorMessage += "Error closing input stream: " + e.getMessage();
+            }
+            if (!errorMessage.isEmpty()) {
+                throw new Exception("Error parsing private key: " + errorMessage);
             }
         }
 

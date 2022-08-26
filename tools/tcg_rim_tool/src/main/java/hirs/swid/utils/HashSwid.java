@@ -26,7 +26,7 @@ public class HashSwid {
      * @param filepath the file to hash.
      * @return 
      */
-    public static String get256Hash(String filepath) {
+    public static String get256Hash(String filepath) throws Exception {
         return getHashValue(filepath, SHA256);
     }
 
@@ -35,7 +35,7 @@ public class HashSwid {
      * @param filepath the file to hash.
      * @return 
      */
-    public String get384Hash(String filepath) {
+    public String get384Hash(String filepath) throws Exception {
         return getHashValue(filepath, SHA384);
     }
 
@@ -44,7 +44,7 @@ public class HashSwid {
      * @param filepath the file to hash.
      * @return 
      */
-    public String get512Hash(String filepath) {
+    public String get512Hash(String filepath) throws Exception {
         return getHashValue(filepath, SHA512);
     }
 
@@ -60,7 +60,7 @@ public class HashSwid {
      * @param sha the algorithm to use for the hash
      * @return 
      */
-    private static String getHashValue(String filepath, String sha) {
+    private static String getHashValue(String filepath, String sha) throws Exception {
         String resultString = null;
         try {
             MessageDigest md = MessageDigest.getInstance(sha);            
@@ -71,10 +71,15 @@ public class HashSwid {
                 sb.append(Integer.toString((bytes[i] & 0xff) + 0x100, 16).substring(1));
             }
             resultString = sb.toString();
-        } catch (UnsupportedEncodingException | NoSuchAlgorithmException grex) {
-            System.out.println(grex.getMessage());
-        } catch (IOException e) {
-            System.out.println("Error reading in file to hash: " + e.getMessage());
+        } catch (NoSuchAlgorithmException | IOException e) {
+            String errorMessage = "Error hashing file " + filepath + ": ";
+            if (e instanceof UnsupportedEncodingException ||
+                    e instanceof NoSuchAlgorithmException) {
+                errorMessage += ((Exception) e).getMessage();
+            } else if (e instanceof IOException) {
+                errorMessage += "error reading file.";
+            }
+            throw new Exception(errorMessage);
         }
 
         return resultString;

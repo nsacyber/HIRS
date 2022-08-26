@@ -9,6 +9,10 @@ dependencies {
 	testCompile 'org.testng:testng:6.8.8'
 }
 
+test {
+	testLogging.showStandardStreams true
+}
+
 jar {
 	manifest {
 		attributes("Main-Class": "hirs.swid.Main",

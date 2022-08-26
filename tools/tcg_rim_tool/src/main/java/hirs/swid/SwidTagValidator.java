@@ -114,15 +114,20 @@ public class SwidTagValidator {
         si.append("SoftwareIdentity tagId: " + softwareIdentity.getAttribute("tagId") + "\n");
         System.out.println(si.toString());
         Element file = (Element) document.getElementsByTagName("File").item(0);
-        validateFile(file);
-        validateSignedXMLDocument(document);
+        try {
+            validateFile(file);
+        } catch (Exception e) {
+            System.out.println(e.getMessage());
+            return false;
+        }
+        System.out.println("Signature core validity: " + validateSignedXMLDocument(document));
         return true;
     }
 
     /**
      * This method validates a hirs.swid.xjc.File from an indirect payload
      */
-    private boolean validateFile(Element file) {
+    private boolean validateFile(Element file) throws Exception {
         String filepath;
         if (!rimEventLog.isEmpty()) {
             filepath = rimEventLog;
