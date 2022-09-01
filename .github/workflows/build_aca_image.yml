@@ -1,18 +1,18 @@
-name: ACA Image Build Test
+name: ACA Docker Image Build
 on: 
   release:
     types: [ published ]
     inputs:
       imagename:
         description: 'ACA Docker Image Name'
-        default: 'aca-test'
+        default: 'aca-centos7'
         required: false
         type: string
   workflow_dispatch:
     inputs:
       imagename:
         description: 'ACA Docker Image Name'
-        default: 'aca-test'
+        default: 'aca-centos7'
         required: false
         type: string
 jobs:
