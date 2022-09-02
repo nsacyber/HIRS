@@ -2,12 +2,6 @@ name: ACA Docker Image Build
 on: 
   release:
     types: [ published ]
-    inputs:
-      imagename:
-        description: 'ACA Docker Image Name'
-        default: 'aca-centos7'
-        required: false
-        type: string
   workflow_dispatch:
     inputs:
       imagename:
@@ -54,7 +48,15 @@ jobs:
           cp /HIRS/package/rpm/RPMS/x86_64/* /.; \
           cp /HIRS/scripts/aca_image_setup.sh /.; \
           popd;' \
+    - name: Build and publish a release Docker image for ${{ github.repository }}
+      if: github.event_name == 'release'
+      uses: macbre/push-to-ghcr@master
+      with:
+        image_name: nsacyber/hirs/aca-centos7
+        github_token: ${{ secrets.GHCR_TOKEN }}
+        dockerfile: "./.ci/docker/Dockerfile.acaimage"
     - name: Build and publish a Docker image for ${{ github.repository }}
+      if: github.event_name == 'workflow_dispatch'
       uses: macbre/push-to-ghcr@master
       with:
         image_name: nsacyber/hirs/${{ inputs.imagename }}
