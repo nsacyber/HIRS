@@ -1,3 +1,64 @@
 name: ACA Docker Image Build
-on:
-  workflow_dispatch
+on: 
+  release:
+    types: [ published ]
+  workflow_dispatch:
+    inputs:
+      imagename:
+        description: 'ACA Docker Image Name'
+        default: 'aca-centos7'
+        required: false
+        type: string
+jobs:
+# run the package script for HIRS ACA, Provisioners, tcg_rim_tool, and tcg_eventlog_tool
+  Package:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    steps:
+    - uses: actions/checkout@v2
+    - name: Set up JDK 11
+      uses: actions/setup-java@v2
+      with:
+        java-version: '8'
+        distribution: 'adopt'
+        server-id: github # Value of the distributionManagement/repository/id field of the pom.xml
+        settings-path: ${{ github.workspace }} # location for the settings.xml file
+  package_centos:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    steps:
+    - uses: actions/checkout@v2
+    - name: directory setup
+      run: |
+       mkdir -p artifacts/jars
+       mkdir -p artifacts/wars
+       mkdir -p artifacts/rpms
+    - name: Create HIRS packages
+      run: |
+       echo ${{ secrets.GITHUB_TOKEN }} | docker login ghcr.io -u $ --password-stdin
+       docker run --rm \
+       -v $(pwd):/HIRS hirs/hirs-ci:centos7 /bin/bash \
+       -c 'pushd /HIRS; \
+          sh package/package.centos.sh; \
+          cp /HIRS/package/rpm/RPMS/noarch/* /.; \
+          cp /HIRS/package/rpm/RPMS/x86_64/* /.; \
+          cp /HIRS/scripts/aca_image_setup.sh /.; \
+          popd;' \
+    - name: Build and publish a release Docker image for ${{ github.repository }}
+      if: github.event_name == 'release'
+      uses: macbre/push-to-ghcr@master
+      with:
+        image_name: nsacyber/hirs/aca-centos7
+        github_token: ${{ secrets.GHCR_TOKEN }}
+        dockerfile: "./.ci/docker/Dockerfile.acaimage"
+    - name: Build and publish a Docker image for ${{ github.repository }}
+      if: github.event_name == 'workflow_dispatch'
+      uses: macbre/push-to-ghcr@master
+      with:
+        image_name: nsacyber/hirs/${{ inputs.imagename }}
+        github_token: ${{ secrets.GITHUB_TOKEN }}
+        dockerfile: "./.ci/docker/Dockerfile.acaimage"
