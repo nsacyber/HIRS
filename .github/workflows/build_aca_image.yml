@@ -53,7 +53,7 @@ jobs:
       uses: macbre/push-to-ghcr@master
       with:
         image_name: nsacyber/hirs/aca-centos7
-        github_token: ${{ secrets.GHCR_TOKEN }}
+        github_token: ${{ secrets.GITHUB_TOKEN }}
         dockerfile: "./.ci/docker/Dockerfile.acaimage"
     - name: Build and publish a Docker image for ${{ github.repository }}
       if: github.event_name == 'workflow_dispatch'
