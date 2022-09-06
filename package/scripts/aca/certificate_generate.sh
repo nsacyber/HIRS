@@ -60,14 +60,14 @@ cp ${CA_KEYSTORE} /etc/hirs/aca/client-files/
 # start up the tomcat service
 
 # Guess where Tomcat is installed and what it's called:
-if [ -d /usr/share/tomcat6 ] ; then
-    TOMCAT_SERVICE=tomcat6
-elif [ -d /usr/share/tomcat ] ; then
+#if [ -d /usr/share/tomcat6 ] ; then
+#    TOMCAT_SERVICE=tomcat6
+#elif [ -d /usr/share/tomcat ] ; then
     TOMCAT_SERVICE=tomcat
-else
-    echo "Can't find Tomcat installation"
-    exit 1
-fi
+#else
+#    echo "Can't find Tomcat installation"
+#    exit 1
+#fi
 
 # restart tomcat after updating the trust store.
 if [ $DOCKER_CONTAINER = true ]; then

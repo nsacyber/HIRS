@@ -133,12 +133,12 @@ Group           : System Environment/Base
 
 %if 0%{?build6}
 Requires        : mysql-server, openssl, tomcat6, java-1.8.0, rpmdevtools, coreutils, initscripts, chkconfig, sed, grep, iptables
-Prefix          : /usr/share/tomcat6
+Prefix          : /opt/tomcat6
 %endif
 
 %if 0%{?build7}
 Requires        : mariadb-server, openssl, tomcat, java-1.8.0, rpmdevtools, coreutils, initscripts, chkconfig, sed, grep, firewalld, policycoreutils
-Prefix          : /usr/share/tomcat
+Prefix          : /opt/tomcat
 %endif
 
 %description -n HIRS_AttestationCA

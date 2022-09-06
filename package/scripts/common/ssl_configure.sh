@@ -23,7 +23,7 @@ fi
 
 #################
 # Key Generation
-#################
+#################d
 
 # if the CA PEM file does not exist, generate the HIRS CA file and associated keystore and truststores
 if ! [ -f $CA_PEM ]; then
@@ -96,18 +96,18 @@ if [[ $1 = "server" ]]; then
 
     TOMCAT_MAJOR_VERSION=`echo $TOMCAT_VERSION | head -c 1`
 
-    if [[ $TOMCAT_MAJOR_VERSION = '6' ]]; then
-        CATALINA_HOME=/usr/share/tomcat6
-        TOMCAT_SERVICE=tomcat6
-        TOMCAT_CONF=${CATALINA_HOME}/conf/tomcat6.conf
-    elif [[ $TOMCAT_MAJOR_VERSION = '7' ]] ; then
-        CATALINA_HOME=/usr/share/tomcat
+#    if [[ $TOMCAT_MAJOR_VERSION = '6' ]]; then
+#        CATALINA_HOME=/usr/share/tomcat6
+#        TOMCAT_SERVICE=tomcat6
+#        TOMCAT_CONF=${CATALINA_HOME}/conf/tomcat6.conf
+#    elif [[ $TOMCAT_MAJOR_VERSION = '7' ]] ; then
+        CATALINA_HOME=/opt/tomcat
         TOMCAT_SERVICE=tomcat
         TOMCAT_CONF=${CATALINA_HOME}/conf/tomcat.conf
-    else
-        echo "Unsupported Tomcat version: ${TOMCAT_MAJOR_VERSION}"
-        exit 1
-    fi
+#    else
+#        echo "Unsupported Tomcat version: ${TOMCAT_MAJOR_VERSION}"
+#        exit 1
+#    fi
 
     if [[ -z `grep -o "keystoreFile=\"${CA_CERT_DIR_ESCAPED}\/keyStore.jks\"" $CATALINA_HOME/conf/server.xml` ]]; then
         echo "Configuring Tomcat SSL"
@@ -124,7 +124,7 @@ if [[ $1 = "server" ]]; then
         # Configure the server.xml file such that it uses our key store and trust store
         if [ $DOCKER_CONTAINER = true ]; then
             # If in Docker container, avoid services that invoke the D-Bus
-            if [[ $(pgrep -c -f /usr/share/tomcat) -ne 0 ]]; then
+            if [[ $(pgrep -c -f /opt/tomcat) -ne 0 ]]; then
                 echo "Tomcat is running, so we stop it."
                 /usr/libexec/tomcat/server stop
             fi
@@ -160,7 +160,8 @@ EOF
 
         if [ $DOCKER_CONTAINER = true ]; then
             # If in Docker container, avoid services that invoke the D-Bus
-            (/usr/libexec/tomcat/server start) &
+            #(/usr/libexec/tomcat/server start) &
+            (/opt/tomcat/bin/catalina.sh start) &
             # Wait for Tomcat to boot completely
             until [ "`curl --silent --connect-timeout 1 -I http://localhost:8080 | grep 'Coyote'`" != "" ]; do
                 :
