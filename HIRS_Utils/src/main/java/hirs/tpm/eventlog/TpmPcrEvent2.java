@@ -78,12 +78,14 @@ public class TpmPcrEvent2 extends TpmPcrEvent {
         setDigestLength(EvConstants.SHA256_LENGTH);
         setLogFormat(2);
         /**  Event data. */
+        int eventDigestLength = 0;
+        String hashName = "";
         byte[] event;
         byte[] rawIndex = new byte[UefiConstants.SIZE_4];
         byte[] algCountBytes = new byte[UefiConstants.SIZE_4];
         byte[] rawType = new byte[UefiConstants.SIZE_4];
         byte[] rawEventSize = new byte[UefiConstants.SIZE_4];
-        byte[] eventDigest = new byte[EvConstants.SHA256_LENGTH];
+        byte[] eventDigest = null;
         byte[] eventContent = null;
         TcgTpmtHa hashAlg = null;
         int eventSize = 0;
@@ -99,10 +101,10 @@ public class TpmPcrEvent2 extends TpmPcrEvent {
             // Process TPMT_HA,
             for (int i = 0; i < algCount; i++) {
                 hashAlg = new TcgTpmtHa(is);
+                hashName = hashAlg.getHashName();
                 hashlist.add(hashAlg);
-                if (hashAlg.getHashName().compareToIgnoreCase("TPM_ALG_SHA256") == 0) {
-                    setEventDigest(hashAlg.getDigest());
-                }
+                eventDigest = new byte[hashAlg.getHashLength()];
+                setEventDigest(hashAlg.getDigest(), hashAlg.getHashLength());
             }
             is.read(rawEventSize);
             eventSize = HexUtils.leReverseInt(rawEventSize);
@@ -126,7 +128,8 @@ public class TpmPcrEvent2 extends TpmPcrEvent {
             offset += rawEventSize.length;
             //System.arraycopy(eventContent, 0, event, offset, eventContent.length);
             setEventData(event);
-            this.processEvent(event, eventContent, eventNumber);
+            //setDigestLength(eventDigestLength);
+            this.processEvent(event, eventContent, eventNumber, hashName);
         }
     }
 }

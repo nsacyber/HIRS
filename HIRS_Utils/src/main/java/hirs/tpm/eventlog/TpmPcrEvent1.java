@@ -49,15 +49,16 @@ public class TpmPcrEvent1 extends TpmPcrEvent {
         byte[] rawEventSize = new byte[UefiConstants.SIZE_4];
         byte[] eventDigest = new byte[EvConstants.SHA1_LENGTH];
         byte[] eventContent = null;
+        int digestSize = EvConstants.SHA1_LENGTH;
         int eventSize = 0;
-
+        String hashName = "TPM_ALG_SHA1";
         if (is.available() > UefiConstants.SIZE_32) {
             is.read(rawIndex);
             setPcrIndex(rawIndex);
             is.read(rawType);
             setEventType(rawType);
             is.read(eventDigest);
-            setEventDigest(eventDigest);
+            setEventDigest(eventDigest, digestSize);
             is.read(rawEventSize);
             eventSize = HexUtils.leReverseInt(rawEventSize);
             eventContent = new byte[eventSize];
@@ -78,7 +79,7 @@ public class TpmPcrEvent1 extends TpmPcrEvent {
             offset += rawEventSize.length;
             setEventData(event);
             //System.arraycopy(eventContent, 0, event, offset, eventContent.length);
-            this.processEvent(event, eventContent, eventNumber);
+            this.processEvent(event, eventContent, eventNumber, hashName);
         }
     }
 }

@@ -36,10 +36,13 @@ public class Commander {
             description = "The public key certificate to embed in the base RIM created by "
             + "this tool.")
     private String publicCertificate = "";
-    @Parameter(names = {"-d", "--default-key"},
+    @Parameter(names = {"-e", "--embed-cert"}, order = 7,
+            description = "Embed the provided certificate in the signed swidtag.")
+    private boolean embedded = false;
+    @Parameter(names = {"-d", "--default-key"}, order = 8,
             description = "Use default signing credentials.")
     private boolean defaultKey = false;
-    @Parameter(names = {"-l", "--rimel <path>"}, order = 7,
+    @Parameter(names = {"-l", "--rimel <path>"}, order = 9,
             description = "The TCG eventlog file to use as a support RIM.")
     private String rimEventLog = "";
 
@@ -73,6 +76,8 @@ public class Commander {
         return publicCertificate;
     }
 
+    public boolean isEmbedded() { return embedded; }
+
     public boolean isDefaultKey() { return defaultKey; }
 
     public String getRimEventLog() { return rimEventLog; }
@@ -82,11 +87,12 @@ public class Commander {
         sb.append("Create a base RIM using the values in attributes.json; " +
                 "sign it with the default keystore; ");
         sb.append("and write the data to base_rim.swidtag:\n\n");
-        sb.append("\t\t-c base -a attributes.json -d -l support_rim.bin -o base_rim.swidtag\n\n\n");
+        sb.append("\t\t-c base -a attributes.json -d -l support_rim.bin -o base_rim.swidtag" +
+                "\n\n\n");
         sb.append("Create a base RIM using the default attribute values; ");
         sb.append("sign it using privateKey.pem; embed cert.pem in the signature block; ");
         sb.append("and write the data to console output:\n\n");
-        sb.append("\t\t-c base -l support_rim.bin -k privateKey.pem -p cert.pem\n\n\n");
+        sb.append("\t\t-c base -l support_rim.bin -k privateKey.pem -p cert.pem -e\n\n\n");
         sb.append("Validate a base RIM using an external support RIM to override the ");
         sb.append("payload file:\n\n");
         sb.append("\t\t-v base_rim.swidtag -l support_rim.bin\n\n\n");
@@ -107,7 +113,9 @@ public class Commander {
         } else if (!this.getPrivateKeyFile().isEmpty() &&
                     !this.getPublicCertificate().isEmpty()) {
             sb.append("Private key file: " + this.getPrivateKeyFile() + System.lineSeparator());
-            sb.append("Public certificate: " + this.getPublicCertificate() + System.lineSeparator());
+            sb.append("Public certificate: " + this.getPublicCertificate()
+                    + System.lineSeparator());
+            sb.append("Embedded certificate: " + this.isEmbedded() + System.lineSeparator());
         } else if (this.isDefaultKey()){
             sb.append("Truststore file: default (" + SwidTagConstants.DEFAULT_KEYSTORE_FILE + ")"
                     + System.lineSeparator());

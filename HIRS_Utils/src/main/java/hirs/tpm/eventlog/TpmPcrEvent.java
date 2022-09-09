@@ -121,10 +121,11 @@ public class TpmPcrEvent {
      * This can be SHA1 for older event structures or any algorithm for newer structure.
      *
      * @param digestData cryptographic hash
+     * @param digestLength length of the cryptographic hash
      */
-    protected void setEventDigest(final byte[] digestData) {
+    protected void setEventDigest(final byte[] digestData, final int digestLength) {
         digest = new byte[digestLength];
-        System.arraycopy(digestData, 0, digest, 0, this.digestLength);
+        System.arraycopy(digestData, 0, digest, 0, digestLength);
     }
 
     /**
@@ -469,23 +470,31 @@ public class TpmPcrEvent {
      * @param event        the byte array holding the event data.
      * @param eventContent the byte array holding the event content.
      * @param eventNumber  event position within the event log.
+     * @param hashName     name of the hash algorithm used by the event log
      * @return String description of the event.
      * @throws CertificateException     if the event contains an event that cannot be processed.
      * @throws NoSuchAlgorithmException if an event contains an unsupported algorithm.
      * @throws IOException              if the event cannot be parsed.
      */
-    public String processEvent(final byte[] event, final byte[] eventContent, final int eventNumber)
-            throws CertificateException, NoSuchAlgorithmException, IOException {
+    public String processEvent(final byte[] event, final byte[] eventContent, final int eventNumber,
+                                    final String hashName)
+           throws CertificateException, NoSuchAlgorithmException, IOException {
         int eventID = (int) eventType;
         this.eventNumber = eventNumber;
         description += "Event# " + eventNumber + ": ";
         description += "Index PCR[" + getPcrIndex() + "]\n";
         description += "Event Type: 0x" + Long.toHexString(eventType) + " " + eventString(eventID);
         description += "\n";
-        if (logFormat == 1) {   // Digest
+        if (hashName.compareToIgnoreCase("TPM_ALG_SHA1") == 0) {   // Digest
             description += "digest (SHA-1): " + Hex.encodeHexString(this.digest);
-        } else {
+        } else if (hashName.compareToIgnoreCase("TPM_ALG_SHA256") == 0) {   // Digest
             description += "digest (SHA256): " + Hex.encodeHexString(this.digest);
+        } else if (hashName.compareToIgnoreCase("TPM_ALG_SHA384") == 0) {   // Digest
+            description += "digest (SHA384): " + Hex.encodeHexString(this.digest);
+        } else if (hashName.compareToIgnoreCase("TPM_ALG_SHA512") == 0) {   // Digest
+            description += "digest (SHA512): " + Hex.encodeHexString(this.digest);
+        } else {
+            description += "Unsupported Hash Algorithm encoutered";
         }
         if (eventID != UefiConstants.SIZE_4) {
             description += "\n";
