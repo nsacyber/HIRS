@@ -548,7 +548,7 @@ public class SwidTagGateway {
             This line is for demonstration purposes only!
             Must be replaced with a call to a trusted timestamp authority (TSA).
              */
-            timeStampElement.setAttribute("TimeStamp", LocalDateTime.now().toString());
+            timeStampElement.setAttribute("dateTime", LocalDateTime.now().toString());
 
             DOMStructure timestampObject = new DOMStructure(timeStampElement);
             SignatureProperty signatureProperty = sigFactory.newSignatureProperty(
