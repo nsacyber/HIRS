@@ -71,82 +71,63 @@ public class SwidTagConstants {
     public static final String TPM_PCR_ASSERTION = "TPM_PCR_Assertion";
     public static final String SUPPORT_RIM_FORMAT_MISSING = "supportRIMFormat missing";
     public static final String SUPPORT_RIM_URI_GLOBAL = "supportRIMURIGlobal";
+    
+    public static final String NIST_NS = "http://csrc.nist.gov/ns/swid/2015-extensions/1.0";
+    public static final String TCG_NS =  "https://trustedcomputinggroup.org/wp-content/uploads/TCG_RIM_Model";
+    
+    public static final String N8060_PFX = "n8060";
+    public static final String RIM_PFX = "rim";
 
     public static final QName _SHA256_HASH = new QName(
-            "http://www.w3.org/2001/04/xmlenc#sha256",
-            "hash", "SHA256");
+            "http://www.w3.org/2001/04/xmlenc#sha256", HASH, "SHA256");
     public static final QName _COLLOQUIAL_VERSION = new QName(
-            "http://csrc.nist.gov/ns/swid/2015-extensions/1.0",
-            "colloquialVersion", "n8060");
+            NIST_NS, COLLOQUIAL_VERSION, N8060_PFX);
     public static final QName _EDITION = new QName(
-            "http://csrc.nist.gov/ns/swid/2015-extensions/1.0",
-            "edition", "n8060");
+            NIST_NS, EDITION, N8060_PFX);
     public static final QName _PRODUCT = new QName(
-            "http://csrc.nist.gov/ns/swid/2015-extensions/1.0",
-            "product", "n8060");
+            NIST_NS, PRODUCT, N8060_PFX);
     public static final QName _REVISION = new QName(
-            "http://csrc.nist.gov/ns/swid/2015-extensions/1.0",
-            "revision", "n8060");
+            NIST_NS, REVISION, N8060_PFX);
     public static final QName _PAYLOAD_TYPE = new QName(
-            "https://trustedcomputinggroup.org/wp-content/uploads/TCG_RIM_Model",
-            "PayloadType", "rim");
+            TCG_NS, PAYLOAD_TYPE, RIM_PFX);
     public static final QName _PLATFORM_MANUFACTURER_STR = new QName(
-            "https://trustedcomputinggroup.org/wp-content/uploads/TCG_RIM_Model",
-            "platformManufacturerStr", "rim");
+            TCG_NS, PLATFORM_MANUFACTURER_STR, RIM_PFX);
     public static final QName _PLATFORM_MANUFACTURER_ID = new QName(
-            "https://trustedcomputinggroup.org/wp-content/uploads/TCG_RIM_Model",
-            "platformManufacturerId", "rim");
+            TCG_NS, PLATFORM_MANUFACTURER_ID, RIM_PFX);
     public static final QName _PLATFORM_MODEL = new QName(
-            "https://trustedcomputinggroup.org/wp-content/uploads/TCG_RIM_Model",
-            "platformModel", "rim");
+            TCG_NS, PLATFORM_MODEL, RIM_PFX);
     public static final QName _PLATFORM_VERSION = new QName(
-            "https://trustedcomputinggroup.org/wp-content/uploads/TCG_RIM_Model",
-            "platformVersion", "rim");
+            TCG_NS, PLATFORM_VERSION, RIM_PFX);
     public static final QName _FIRMWARE_MANUFACTURER_STR = new QName(
-            "https://trustedcomputinggroup.org/wp-content/uploads/TCG_RIM_Model",
-            "firmwareManufacturerStr", "rim");
+            TCG_NS, FIRMWARE_MANUFACTURER_STR, RIM_PFX);
     public static final QName _FIRMWARE_MANUFACTURER_ID = new QName(
-            "https://trustedcomputinggroup.org/wp-content/uploads/TCG_RIM_Model",
-            "firmwareManufacturerId", "rim");
+            TCG_NS, FIRMWARE_MANUFACTURER_ID, RIM_PFX);
     public static final QName _FIRMWARE_MODEL = new QName(
-            "https://trustedcomputinggroup.org/wp-content/uploads/TCG_RIM_Model",
-            "firmwareModel", "rim");
+            TCG_NS, FIRMWARE_MODEL, RIM_PFX);
     public static final QName _FIRMWARE_VERSION = new QName(
-            "https://trustedcomputinggroup.org/wp-content/uploads/TCG_RIM_Model",
-            "firmwareVersion", "rim");
+            TCG_NS, FIRMWARE_VERSION, RIM_PFX);
     public static final QName _BINDING_SPEC = new QName(
-            "https://trustedcomputinggroup.org/wp-content/uploads/TCG_RIM_Model",
-            "BindingSpec", "rim");
+            TCG_NS, BINDING_SPEC, RIM_PFX);
     public static final QName _BINDING_SPEC_VERSION = new QName(
-            "https://trustedcomputinggroup.org/wp-content/uploads/TCG_RIM_Model",
-            "BindingSpecVersion", "rim");
+            TCG_NS, BINDING_SPEC_VERSION, RIM_PFX);
     public static final QName _PC_URI_LOCAL = new QName(
-            "https://trustedcomputinggroup.org/wp-content/uploads/TCG_RIM_Model",
-            "pcURILocal", "rim");
+            TCG_NS, PC_URI_LOCAL, RIM_PFX);
     public static final QName _PC_URI_GLOBAL = new QName(
-            "https://trustedcomputinggroup.org/wp-content/uploads/TCG_RIM_Model",
-            "pcURIGlobal", "rim");
+            TCG_NS, PC_URI_GLOBAL, RIM_PFX);
     public static final QName _RIM_LINK_HASH  = new QName(
-            "https://trustedcomputinggroup.org/wp-content/uploads/TCG_RIM_Model",
-            "rimLinkHash", "rim");
+            TCG_NS, RIM_LINK_HASH, RIM_PFX);
     public static final QName _SUPPORT_RIM_TYPE = new QName(
-            "https://trustedcomputinggroup.org/wp-content/uploads/TCG_RIM_Model",
-            "supportRIMType", "rim");
+            TCG_NS, SUPPORT_RIM_TYPE, RIM_PFX);
     public static final QName _SUPPORT_RIM_FORMAT = new QName(
-            "https://trustedcomputinggroup.org/wp-content/uploads/TCG_RIM_Model",
-            "supportRIMFormat", "rim");
+            TCG_NS, SUPPORT_RIM_FORMAT, RIM_PFX);
     public static final QName _SUPPORT_RIM_URI_GLOBAL = new QName(
-            "https://trustedcomputinggroup.org/wp-content/uploads/TCG_RIM_Model",
-            "supportRIMURIGlobal", "rim");
+            TCG_NS, SUPPORT_RIM_URI_GLOBAL, RIM_PFX);
     public static final QName _N8060_ENVVARPREFIX = new QName(
-            "http://csrc.nist.gov/ns/swid/2015-extensions/1.0",
-            "envVarPrefix", "n8060");
+            NIST_NS, "envVarPrefix", N8060_PFX);
     public static final QName _N8060_ENVVARSUFFIX = new QName(
-            "http://csrc.nist.gov/ns/swid/2015-extensions/1.0",
-            "envVarSuffix", "n8060");
+            NIST_NS, "envVarSuffix", N8060_PFX);
     public static final QName _N8060_PATHSEPARATOR = new QName(
-            "http://csrc.nist.gov/ns/swid/2015-extensions/1.0",
-            "pathSeparator", "n8060");
+            NIST_NS, "pathSeparator", N8060_PFX);
 
     public static final String CA_ISSUERS = "1.3.6.1.5.5.7.48.2";
 }
