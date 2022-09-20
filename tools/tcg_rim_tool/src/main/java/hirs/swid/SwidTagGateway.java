@@ -86,6 +86,7 @@ public class SwidTagGateway {
     private String pemCertificateFile;
     private boolean embeddedCert;
     private String rimEventLog;
+    private String timestampFormat;
     private String errorRequiredFields;
 
     /**
@@ -100,6 +101,7 @@ public class SwidTagGateway {
             pemCertificateFile = "";
             embeddedCert = false;
             rimEventLog = "";
+            timestampFormat = "";
             errorRequiredFields = "";
         } catch (JAXBException e) {
             System.out.println("Error initializing jaxbcontext: " + e.getMessage());
@@ -168,6 +170,14 @@ public class SwidTagGateway {
      */
     public void setRimEventLog(final String rimEventLog) {
         this.rimEventLog = rimEventLog;
+    }
+
+    /**
+     * Setter for timestamp format in XML signature
+     * @param timestampFormat
+     */
+    public void setTimestampFormat(String timestampFormat) {
+        this.timestampFormat = timestampFormat;
     }
 
     /**

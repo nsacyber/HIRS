@@ -81,6 +81,11 @@ public class Main {
                         } else {
                             gateway.setRimEventLog(rimEventLog);
                         }
+                        if (commander.isRfc3161()) {
+                            gateway.setTimestampFormat("RFC3161");
+                        } else {
+                            gateway.setTimestampFormat("RFC3339");
+                        }
                         gateway.generateSwidTag(commander.getOutFile());
                         break;
                     default:
