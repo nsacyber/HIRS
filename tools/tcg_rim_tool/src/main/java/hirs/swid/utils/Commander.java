@@ -45,6 +45,12 @@ public class Commander {
     @Parameter(names = {"-l", "--rimel <path>"}, order = 9,
             description = "The TCG eventlog file to use as a support RIM.")
     private String rimEventLog = "";
+    @Parameter(names = {"--rfc3161"}, order = 10,
+            description = "Add a timestamp to the signature that is compliant with RFC3161.")
+    private boolean rfc3161 = false;
+    @Parameter(names = {"--rfc3339"}, order = 11,
+            description = "Add a timestamp to the signature that is compliant with RFC3339.")
+    private boolean rfc3339 = false;
 
     public boolean isHelp() {
         return help;
@@ -81,6 +87,10 @@ public class Commander {
     public boolean isDefaultKey() { return defaultKey; }
 
     public String getRimEventLog() { return rimEventLog; }
+
+    public boolean isRfc3161() { return rfc3161; }
+
+    public boolean isRfc3339() { return rfc3339; }
 
     public String printHelpExamples() {
         StringBuilder sb = new StringBuilder();
@@ -123,6 +133,13 @@ public class Commander {
             sb.append("Signing credential: (none given)" + System.lineSeparator());
         }
         sb.append("Event log support RIM: " + this.getRimEventLog() + System.lineSeparator());
+        if (isRfc3161()) {
+            sb.append("Timestamp format: RFC3161");
+        } else if (isRfc3339()) {
+            sb.append("Timestamp format: RFC3339");
+        } else {
+            sb.append("Timestamp format: defaulting to RFC3339");
+        }
         return sb.toString();
     }
 }
