@@ -552,22 +552,6 @@ public class SwidTagGateway {
                     null
             );
 
-            //Create TimeStamp element
-            Element timeStampElement = doc.createElement("TimeStamp");
-            /*
-            This line is for demonstration purposes only!
-            Must be replaced with a call to a trusted timestamp authority (TSA).
-             */
-            timeStampElement.setAttribute("dateTime", LocalDateTime.now().toString());
-
-            DOMStructure timestampObject = new DOMStructure(timeStampElement);
-            SignatureProperty signatureProperty = sigFactory.newSignatureProperty(
-                    Collections.singletonList(timestampObject), "RimSignature", "TST"
-            );
-            SignatureProperties signatureProperties = sigFactory.newSignatureProperties(
-                    Collections.singletonList(signatureProperty), null);
-            XMLObject xmlObject = sigFactory.newXMLObject(
-                    Collections.singletonList(signatureProperties), null,null,null);
             Reference timestampRef = sigFactory.newReference(
                     "#TST",
                     sigFactory.newDigestMethod(DigestMethod.SHA256, null)
@@ -613,7 +597,7 @@ public class SwidTagGateway {
             XMLSignature signature = sigFactory.newXMLSignature(
                         signedInfo,
                         keyinfo,
-                        Collections.singletonList(xmlObject),
+                        Collections.singletonList(createXmlTimestamp(doc, sigFactory)),
                         "RimSignature",
                         null
             );
@@ -637,5 +621,42 @@ public class SwidTagGateway {
         }
 
         return doc;
+    }
+
+    /**
+     * This method creates a timestamp element and populates it with data according to
+     * the RFC format set in timestampFormat.  The element is returned within an XMLObject.
+     * @param doc the Document representing the XML to be signed
+     * @param sigFactory the SignatureFactory object
+     * @return an XMLObject containing the timestamp element
+     */
+    private XMLObject createXmlTimestamp(Document doc, XMLSignatureFactory sigFactory) {
+        Element timeStampElement = doc.createElement("TimeStamp");
+        switch (timestampFormat) {
+            case "RFC3161":
+                timeStampElement.setAttributeNS("http://www.w3.org/2000/xmlns/",
+                        "xmlns:" + SwidTagConstants.RFC3161_PFX,
+                        SwidTagConstants.RFC3161_NS);
+                timeStampElement.setAttribute(SwidTagConstants.DATETIME,
+                        "Base64 blob here");
+                break;
+            case "RFC3339":
+                timeStampElement.setAttributeNS("http://www.w3.org/2000/xmlns/",
+                        "xmlns:" + SwidTagConstants.RFC3339_PFX,
+                        SwidTagConstants.RFC3339_NS);
+                timeStampElement.setAttribute(SwidTagConstants.DATETIME,
+                        LocalDateTime.now().toString());
+                break;
+        }
+        DOMStructure timestampObject = new DOMStructure(timeStampElement);
+        SignatureProperty signatureProperty = sigFactory.newSignatureProperty(
+                Collections.singletonList(timestampObject), "RimSignature", "TST"
+        );
+        SignatureProperties signatureProperties = sigFactory.newSignatureProperties(
+                Collections.singletonList(signatureProperty), null);
+        XMLObject xmlObject = sigFactory.newXMLObject(
+                Collections.singletonList(signatureProperties), null,null,null);
+
+        return xmlObject;
     }
 }

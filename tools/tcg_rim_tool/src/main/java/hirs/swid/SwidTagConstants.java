@@ -71,6 +71,7 @@ public class SwidTagConstants {
     public static final String TPM_PCR_ASSERTION = "TPM_PCR_Assertion";
     public static final String SUPPORT_RIM_FORMAT_MISSING = "supportRIMFormat missing";
     public static final String SUPPORT_RIM_URI_GLOBAL = "supportRIMURIGlobal";
+    public static final String DATETIME = "dateTime";
     
     public static final String NIST_NS = "http://csrc.nist.gov/ns/swid/2015-extensions/1.0";
     public static final String TCG_NS =  "https://trustedcomputinggroup.org/wp-content/uploads/TCG_RIM_Model";
@@ -79,8 +80,8 @@ public class SwidTagConstants {
     
     public static final String N8060_PFX = "n8060";
     public static final String RIM_PFX = "rim";
-    public static final String RCF3161_PFX = "rcf3161";
-    public static final String RCF3339_PFX = "rcf3339";
+    public static final String RFC3161_PFX = "rcf3161";
+    public static final String RFC3339_PFX = "rcf3339";
 
     public static final QName _SHA256_HASH = new QName(
             "http://www.w3.org/2001/04/xmlenc#sha256", HASH, "SHA256");
@@ -132,9 +133,6 @@ public class SwidTagConstants {
             NIST_NS, "envVarSuffix", N8060_PFX);
     public static final QName _N8060_PATHSEPARATOR = new QName(
             NIST_NS, "pathSeparator", N8060_PFX);
-/*
-    public static final QName = new QName();
-    public static final QName = new QName();
-*/
+
     public static final String CA_ISSUERS = "1.3.6.1.5.5.7.48.2";
 }
