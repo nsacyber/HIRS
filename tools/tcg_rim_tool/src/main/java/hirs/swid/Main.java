@@ -83,7 +83,7 @@ public class Main {
                         }
                         if (commander.isRfc3161()) {
                             gateway.setTimestampFormat("RFC3161");
-                        } else {
+                        } else if (commander.isRfc3339()) {
                             gateway.setTimestampFormat("RFC3339");
                         }
                         gateway.generateSwidTag(commander.getOutFile());

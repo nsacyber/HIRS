@@ -542,6 +542,8 @@ public class SwidTagGateway {
             doc = DocumentBuilderFactory.newInstance().newDocumentBuilder().newDocument();
             marshaller.marshal(swidTag, doc);
             XMLSignatureFactory sigFactory = XMLSignatureFactory.getInstance("DOM");
+            List xmlObjectList = null;
+            String signatureId = null;
 
             Reference documentRef = sigFactory.newReference(
                     "",
@@ -552,13 +554,18 @@ public class SwidTagGateway {
                     null
             );
 
-            Reference timestampRef = sigFactory.newReference(
-                    "#TST",
-                    sigFactory.newDigestMethod(DigestMethod.SHA256, null)
-            );
             List<Reference> refList = new ArrayList<Reference>();
             refList.add(documentRef);
-            refList.add(timestampRef);
+
+            if (!timestampFormat.isEmpty()) {
+                Reference timestampRef = sigFactory.newReference(
+                        "#TST",
+                        sigFactory.newDigestMethod(DigestMethod.SHA256, null)
+                );
+                refList.add(timestampRef);
+                xmlObjectList = Collections.singletonList(createXmlTimestamp(doc, sigFactory));
+                signatureId = "RimSignature";
+            }
 
             SignedInfo signedInfo = sigFactory.newSignedInfo(
                     sigFactory.newCanonicalizationMethod(CanonicalizationMethod.INCLUSIVE, (C14NMethodParameterSpec) null),
@@ -593,11 +600,11 @@ public class SwidTagGateway {
 
             DOMSignContext context = new DOMSignContext(privateKey, doc.getDocumentElement());
             XMLSignature signature = sigFactory.newXMLSignature(
-                        signedInfo,
-                        keyinfo,
-                        Collections.singletonList(createXmlTimestamp(doc, sigFactory)),
-                        "RimSignature",
-                        null
+                    signedInfo,
+                    keyinfo,
+                    xmlObjectList,
+                    signatureId,
+                    null
             );
             signature.sign(context);
         } catch (FileNotFoundException e) {
