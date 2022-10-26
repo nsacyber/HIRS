@@ -6,6 +6,7 @@ validate : validate a signed base rim's signature (NOTE: cryptographic validatio
 
 # Build and package
  - Install Visual Studio
+ - The recommended project name is "xml_dsig_tool" so that the resulting executable file will be appropriately named xml_dsig_tool.exe.
  - Install NuGet packages:
    - System.CommandLine.2.0.0-beta4 (check "Include Prerelease" next to search bar)
    - System.Security.Cryptography.X509Certificates
