@@ -138,7 +138,7 @@ public class Commander {
         } else if (isRfc3339()) {
             sb.append("Timestamp format: RFC3339");
         } else {
-            sb.append("Timestamp format: defaulting to RFC3339");
+            sb.append("No timestamp included");
         }
         return sb.toString();
     }
