@@ -1,91 +1,66 @@
-apply plugin: 'war'
-apply plugin: 'checkstyle'
+plugins {
+     id  'war'
+     id  'java'
+}
+
+tasks.withType(JavaCompile) {
+    options.release = 11
+}
+
+repositories {
+    mavenCentral()
+}
 
 evaluationDependsOn(':HIRS_Utils')
 
-sourceCompatibility = 1.8
-
 dependencies {
-    compile project(':TPM_Utils')
-    compile project(':HIRS_Structs')
-    compile project(':HIRS_Utils')
+//    implementation project(':TPM_Utils')
+    implementation project(':HIRS_Structs')
+    implementation project(':HIRS_Utils')
+    implementation libs.bouncy.castle
+    implementation libs.commons.codec
+    implementation libs.commons.lang
+    implementation libs.commons.io
+    implementation libs.guava
+    implementation libs.javax.jaxb
+    implementation libs.spring.webmvc
+    implementation libs.spring.data 
+    implementation libs.spring.boot
+    implementation libs.spring.retry
+    implementation libs.spring.plugin
+    implementation libs.log4j2
+    implementation libs.log4j2.web
+    implementation libs.protobuf.java
 
-    compile libs.bouncy_castle
-    compile libs.commons_codec
-    compile libs.commons_lang
-    compile libs.spring_webmvc
-    compile libs.spring_data  // Cyrus ?
-    compile libs.spring_boot
-    compile libs.log4j2
-    compile libs.log4j2_web
-    compile libs.protobuf_java
+    implementation libs.servlet.api
 
-    providedCompile libs.servlet_api
+    testImplementation project(':HIRS_Utils').sourceSets.test.output
+    testImplementation project(':HIRS_Utils').sourceSets.test.resources
 
-    testCompile project(':HIRS_Utils').sourceSets.test.output
-    testCompile project(':HIRS_Utils').sourceSets.test.resources
-
-    testCompile libs.commons_lang
-    testCompile libs.spring_test
-    testCompile libs.mockito
-    testCompile libs.testng
-    testCompile libs.hsqldb
+    testImplementation libs.commons.lang
+    testImplementation libs.spring.test
+    testImplementation libs.mockito
+    testImplementation libs.testng
+    testImplementation libs.hsqldb
 }
 
 task generateProtoBuf(type:Exec) {
     workingDir 'config'
-
     commandLine './genJavaProtoBuf.sh'
 }
 
+def copyVersion = project.task('copyVersion')
 compileJava.dependsOn generateProtoBuf
 copyVersion.dependsOn compileJava
 war.dependsOn copyVersion
 
 ext.configDir = new File(projectDir, 'config')
 ext.checkstyleConfigDir = "$configDir/checkstyle"
-checkstyle {
-    toolVersion = '8.10.1'
-    configFile = checkstyleConfigFile
-    configProperties.put('basedir', checkstyleConfigDir)
-    ignoreFailures = false
-    showViolations = true
-}
 
 war {
     from(buildDir) {
         include 'VERSION'
         into 'WEB-INF/classes'
     }
-    archiveName = 'HIRS_AttestationCA.war'
-}
-
-publishing {
-    publications {
-        maven(MavenPublication) {
-            artifactId 'hirs-attestationca'
-            artifact jar
-            pom.withXml {
-                def dependenciesNode = asNode().appendNode('dependencies')
-
-                configurations.runtime.allDependencies.each {
-                    if (it.group != null && it.name != null) {
-                        def dependencyNode = dependenciesNode.appendNode('dependency')
-                        dependencyNode.appendNode('groupId', it.group)
-                        dependencyNode.appendNode('artifactId', it.name)
-                        dependencyNode.appendNode('version', it.version)
-
-                        if (it.excludeRules.size() > 0) {
-                            def exclusionsNode = dependencyNode.appendNode('exclusions')
-                            it.excludeRules.each { rule ->
-                                def exclusionNode = exclusionsNode.appendNode('exclusion')
-                                exclusionNode.appendNode('groupId', rule.group)
-                                exclusionNode.appendNode('artifactId', rule.module)
-                            }
-                        }
-                    }
-                }
-            }
-	   }
-    }
+    archiveFileName = 'HIRS_AttestationCA.war'
 }

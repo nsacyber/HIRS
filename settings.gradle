@@ -1,11 +1,82 @@
 rootProject.name = 'HIRS'
-include 'TPM_Utils',
-        'HIRS_Utils',
-        'HIRS_Provisioner',
-        'HIRS_ProvisionerTPM2',
-        'HIRS_Structs',
-        'HIRS_AttestationCA',
-        'HIRS_AttestationCAPortal',
-        'tpm_module',
-        'tools/tcg_rim_tool',
-        'tools/tcg_eventlog_tool'
+include ':HIRS_Utils'
+include ':HIRS_Structs'
+include ':TPM_Utils'
+include ':HIRS_AttestationCA'
+
+dependencyResolutionManagement {
+    versionCatalogs {
+       libs {
+            library('bouncy_castle',  'org.bouncycastle:bcmail-jdk15on:1.70')
+            library('checkstyle',     'com.puppycrawl.tools:checkstyle:10.0')
+            library('commons_cli',    'commons-cli:commons-cli:1.4')
+            library('commons_codec',  'commons-codec:commons-codec:1.15')
+            library('commons_csv',    'org.apache.commons:commons-csv:1.9.0')
+            library('commons_exec',   'org.apache.commons:commons-exec:1.3')
+            library('commons_http',   'commons-httpclient:commons-httpclient:3.1')
+            library('commons_io',     'commons-io:commons-io:2.11.0')
+            library('commons_lang',   'org.apache.commons:commons-lang3:3.12.0')
+            library('commons_text',   'org.apache.commons:commons-text:1.9')
+            library('commons_upload', 'commons-fileupload:commons-fileupload:1.4')
+            library('commons_valid',  'commons-validator:commons-validator:1.7')
+            library('findbugs',       'com.google.code.findbugs:findbugs:3.0.0')
+            library('gson',           'com.google.code.gson:gson:2.9.0')
+            library('guava',          'com.google.guava:guava:31.1-jre')
+            library('hamcrest',       'org.hamcrest:hamcrest-all:1.3')
+            library('hibernate',      'org.hibernate:hibernate-core:5.4.24.Final')
+            library('hibernate-annotate',  'org.hibernate.common:hibernate-commons-annotations:5.1.1.Final')
+            library('hibernate-validator', 'org.hibernate:hibernate-validator:5.3.4.Final')
+            library('hibernate-hikari',    'org.hibernate:hibernate-hikaricp:5.2.4.Final')
+            library('hikari',         'com.zaxxer:HikariCP:3.4.5')
+            library('hsqldb',         'org.hsqldb:hsqldb:2.6.1')
+            library('http',           'org.apache.httpcomponents:httpclient:4.5.13')
+            library('jackson',        'com.fasterxml.jackson.core:jackson-core:2.13.2')
+            library('jackson-databind', 'com.fasterxml.jackson.core:jackson-databind:2.13.2.2')
+            library('jackson-annotate', 'com.fasterxml.jackson.core:jackson-annotations:2.13.2')
+            library('jadira_usertype', 'org.jadira.usertype:usertype.core:6.0.1.GA')
+            library('javax_annotation', 'javax.annotation:javax.annotation-api:1.3')
+            library('javax_jaxb',       'javax.xml.bind:jaxb-api:2.3.0')
+            library('jboss_logging',   'org.jboss.logging:jboss-logging:3.2.0.Final')
+            library('jcommander',    'com.beust:jcommander:1.82')
+            library('joda_time',     'joda-time:joda-time:2.10.14')
+            library('jsonpath',      'com.jayway.jsonpath:json-path:2.1.0')
+            library('jstl',          'org.apache.taglibs:taglibs-standard-impl:1.2.5')
+            library('jstl-spec',     'org.apache.taglibs:taglibs-standard-spec:1.2.5')
+            library('log4j2',        'org.apache.logging.log4j:log4j-api:2.17.1')
+            library('log4j2-core',   'org.apache.logging.log4j:log4j-core:2.17.1')
+            library('log4j2-impl',   'org.apache.logging.log4j:log4j-slf4j-impl:2.17.1')
+            library('log4j2_web',    'org.apache.logging.log4j:log4j-web:2.17.1')
+            library('log4j2_bridge', 'org.apache.logging.log4j:log4j-jcl:2.17.1')
+            library('mariadb',       'org.mariadb.jdbc:mariadb-java-client:3.0.4')
+            library('minimal_json',  'com.eclipsesource.minimal-json:minimal-json:0.9.5')
+            library('mockito',       'org.mockito:mockito-all:1.10.19')
+            library('pci_ids',       'com.github.marandus:pci-ids:0.3')
+            library('powermock',     'org.powermock:powermock-core:2.0.9')
+            library('powermock-mockito', 'org.powermock:powermock-api-mockito:1.7.4')
+            library('powermock-testng', 'org.powermock:powermock-module-testng:1.7.4')
+            library('pmd',           'net.sourceforge.pmd:pmd:6.44.0')
+            library('protobuf_java', 'com.google.protobuf:protobuf-java:3.4.0')
+            library('reflections',   'org.reflections:reflections:0.10.2')
+            library('servlet_api',   'javax.servlet:javax.servlet-api:4.0.1')
+            library('slf4j',         'org.slf4j:slf4j-api:1.7.36')
+            library('jsonassert',    'org.skyscreamer:jsonassert:1.2.3')
+            library('spring_core',   'org.springframework:spring-aop:5.3.22')
+            library('spring_beans',       'org.springframework:spring-beans:5.3.22')
+            library('spring_context',     'org.springframework:spring-context:5.3.22')
+            library('spring_expressions', 'org.springframework:spring-expression:5.3.22')
+            library('spring_orm',          'org.springframework:spring-orm:5.3.22')
+            library('spring_boot',    'org.springframework.boot:spring-boot-starter-web:2.7.2')
+            library('spring_leaf',    'org.springframework.boot:spring-boot-starter-thymeleaf:2.7.2')
+            library('spring_data',    'org.springframework.boot:spring-boot-starter-data-jpa:2.7.2')
+            library('spring_jpa',    'org.springframework.data:spring-data-jpa:2.7.2' )
+            library('spring_msg',     'org.springframework:spring-messaging:5.3.19')
+            library('spring_plugin',  'org.springframework.plugin:spring-plugin-core:2.0.0.RELEASE')
+            library('spring_retry',   'org.springframework.retry:spring-retry:1.3.2')
+            library('spring_test',    'org.springframework:spring-test:5.3.19')
+            library('spring_web',     'org.springframework:spring-web:5.3.19')
+            library('spring_webmvc',  'org.springframework:spring-webmvc:5.3.19')
+            library('testng',         'org.testng:testng:7.4.0')
+            library('xml_rpc_client', 'org.apache.xmlrpc:xmlrpc-client:3.1.3')
+            }
+      }
+}

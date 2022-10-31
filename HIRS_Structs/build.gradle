@@ -1,33 +1,21 @@
-apply plugin: 'java'
-apply plugin: 'checkstyle'
+plugins {
+    id 'java'
+}
 
-sourceCompatibility = 1.8
+repositories {
+    mavenCentral()
+}
+
 
 dependencies {
-    compile libs.commons_lang
-
-    testCompile libs.mockito
-    testCompile libs.testng
+     implementation libs.commons.lang
+     testImplementation libs.mockito
+     testImplementation libs.testng     
 }
 
 ext.configDir = new File(projectDir, 'config')
 ext.checkstyleConfigDir = "$configDir/checkstyle"
 
-checkstyle {
-    toolVersion = '5.7'
-    configFile = checkstyleConfigFile
-    configProperties.put('basedir', checkstyleConfigDir)
-    ignoreFailures = false
-    showViolations = true
-}
 
-publishing {
-    publications {
-        maven(MavenPublication) {
-            artifactId 'hirs-structs'
-            from components.java
-        }
-    }
-}
 
 

@@ -1,65 +1,51 @@
-apply plugin: 'checkstyle'
-apply plugin: 'findbugs'
-apply plugin: 'java'
-apply plugin: 'jacoco'
-apply plugin: 'pmd'
-apply plugin: 'war'
-
-sourceCompatibility = 1.8
+plugins {
+   apply plugin: 'java'
+   apply plugin: 'war'
+}
 
 repositories {
-    flatDir {
-        dirs 'libs'
-    }
+    mavenCentral()
 }
 
 dependencies {
-    providedCompile 'javax.servlet:javax.servlet-api:3.1.0' //libs.servlet_api
-
-    compile(project(':HIRS_Utils')) {
+    implementation(project(':HIRS_Utils')) {
         exclude module: "javassist"
     }
-    compile(project(':HIRS_AttestationCA'))
-
-    compile libs.commons_io
-    compile libs.commons_lang
-    compile libs.commons_upload
-    compile libs.gson
-    compile libs.guava          // for com.google.common
-    compile libs.hibernate
-    compile libs.http
-    compile libs.jstl
-    compile libs.log4j2
-    compile libs.log4j2_web
-    compile libs.pci_ids
-    compile 'javax.servlet:javax.servlet-api:3.1.0' //libs.servlet_api
-    compile libs.spring_webmvc
-    compile 'org.springframework:spring-context-support:4.3.30.RELEASE'
-    compile 'org.hibernate:hibernate-validator:5.3.4.Final'
-
-    compileOnly libs.checkstyle
-    compileOnly libs.findbugs
+    implementation(':HIRS_AttestationCA'))
+    implementation  servlet.api
+    implementation libs.commons.io
+    implementation libs.commons.lang
+    implementation libs.commons.upload
+    implementation libs.gson
+    implementation libs.guava          // for com.google.common
+    implementation libs.hibernate
+    implementation libs.http
+    implementation libs.jstl
+    implementation libs.log4j2
+    implementation libs.log4j2.web
+    implementation libs.pci.ids
+    implementation libs.servlet-api
+    implementation libs.spring.webmvc
+    implementation libs.spring.context
+    implementation libs.hibernatex-validator
 
     runtime fileTree(dir: 'build/plugins', include: ['*.jar'])
 
-    testCompile 'org.hamcrest:hamcrest-all:1.3'
+    testImplementation libs.hamcrest
     // override the servlet API for testing. Required for Spring Integration tests
-    testCompile 'javax.servlet:javax.servlet-api:3.1.0'
+    testImplementation servlet.api
 
-    testCompile libs.hsqldb
-    testCompile libs.spring_test
-    testCompile libs.testng
-    testCompile libs.mockito
-    testCompile libs.testng
-    testCompile 'org.skyscreamer:jsonassert:1.2.3' // for .andExpect(content().json(json))
+    testImplementation libs.hsqldb
+    testImplementation libs.spring.test
+    testImplementation libs.testng
+    testImplementation libs.mockito
+    testImplementation libs.testng
+    testImplementation libs.jsonassert
 
-    testRuntime 'com.jayway.jsonpath:json-path:2.1.0'
+    testRuntime libs.jsonpath
 }
 
-test {
-    useTestNG()
-}
-
+def copyVersion = project.task('copyVersion')
 copyVersion.dependsOn compileJava
 war.dependsOn copyVersion
 war.dependsOn addPlugins
@@ -69,26 +55,12 @@ war {
         include 'VERSION'
         into 'WEB-INF/classes'
     }
-    archiveName = 'HIRS_AttestationCAPortal.war'
+    archiveFileName = 'HIRS_AttestationCAPortal.war'
 }
 
 ext.configDir = new File(projectDir, 'config')
 
 ext.checkstyleConfigDir = "$configDir/checkstyle"
 
-checkstyle {
-    toolVersion = '8.10.1'
-    configFile = checkstyleConfigFile
-    configProperties.put('basedir', checkstyleConfigDir)
-    ignoreFailures = false
-    showViolations = true
-}
-
 ext.findbugsConfigDir = "$configDir/findbugs"
 
-findbugs {
-    toolVersion = '3.0.0'
-    ignoreFailures = false
-    effort = 'max'
-    excludeFilter = new File(findbugsConfigDir, 'suppressions.xml')
-}

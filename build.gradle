@@ -1,21 +1,21 @@
+plugins {
+    // Apply the application plugin to add support for building a CLI application in Java.
+    id 'application'
+}
 
-allprojects {
-    task addPlugins << {
-        delete './build/plugins'
-        mkdir './build/plugins'
-        if (project.hasProperty('pluginDir')) {
-            if (pluginDir?.trim()) {
-                copy {
-                    from "$pluginDir"
-                    into 'build/plugins'
-                    include '*.jar'
-                    include '**/*.jar'
-                }
-            }
-        }
-    }
+// Global checkstyle file
+    ext.checkstyleConfigFile = new File(rootDir, "/config/checkstyle/sun_checks.xml")
 
-    task copyVersion() {
+dependencies {
+    repositories {
+          // Use Maven Central for resolving dependencies.
+             mavenCentral()
+         }
+   implementation project(':HIRS_Utils')
+   implementation project(':HIRS_Structs')
+}
+
+tasks.register('copyVersion') {
         doLast {
             if (project.hasProperty('displayVersion')) {
                 String resourceDir="${buildDir}/resources/main"
@@ -25,134 +25,4 @@ allprojects {
         }
     }
 
-    group = 'hirs'
-    version = file("$rootDir/VERSION").text.trim() + "-SNAPSHOT"
-}
-
-subprojects {
-    apply plugin: 'java'
-    apply plugin: 'maven-publish'
-
-    tasks.withType(JavaCompile) {
-        options.compilerArgs << "-Xlint:unchecked" << "-Xlint:deprecation" << "-Werror"
-    }
-
-    repositories {
-        mavenCentral()
-    }
-
-    test {
-        testLogging {
-            exceptionFormat = 'full'
-        }
-    }
-
-    tasks.withType(Test) {
-        useTestNG() {
-            includeGroups = project.ext.includeGroups.split()
-            excludeGroups = project.ext.excludeGroups.split()
-        }
-        afterSuite { desc, result ->
-            if (desc.parent == null) {
-                logger.lifecycle("${result.successfulTestCount}/${result.testCount} tests passed")
-            }
-        }
-    }
-
-    tasks.withType(FindBugs) {
-        reports {
-            xml.enabled = false
-            html.enabled = true
-        }
-    }
-
-    tasks.withType(Pmd) {
-        reports {
-            xml.enabled = false
-            html.enabled = true
-        }
-    }
-
-    publishing {
-      repositories {
-        if(findProperty("env") != null && findProperty("env") == "CI") {
-          maven {
-            url "$rootDir/librepo"
-          }
-        } else {
-          mavenLocal()
-        }
-      }
-    }
-
-    // Global checkstyle file
-    ext.checkstyleConfigFile = new File(rootDir, "/config/checkstyle/sun_checks.xml")
-
-    // Version definitions of all of the libraries we're using.  They're defined
-    // here to ensure that all projects are using the same versions of common
-    // dependencies:
-    ext.libs = [
-      bouncy_castle: 'org.bouncycastle:bcmail-jdk15on:1.70',
-      checkstyle:    'com.puppycrawl.tools:checkstyle:10.0',
-      commons_cli:   'commons-cli:commons-cli:1.4',
-      commons_codec: 'commons-codec:commons-codec:1.15',
-      commons_csv:   'org.apache.commons:commons-csv:1.9.0',
-      commons_exec:  'org.apache.commons:commons-exec:1.3',
-      commons_http:  'commons-httpclient:commons-httpclient:3.1',
-      commons_io:    'commons-io:commons-io:2.11.0',
-      commons_lang:  'org.apache.commons:commons-lang3:3.12.0',
-      commons_upload:'commons-fileupload:commons-fileupload:1.4',
-      commons_valid: 'commons-validator:commons-validator:1.7',
-      findbugs:      'com.google.code.findbugs:findbugs:3.0.0',
-      gson:          'com.google.code.gson:gson:2.9.0',
-      guava:         'com.google.guava:guava:31.1-jre',
-      hibernate:   [ 'org.hibernate:hibernate-core:5.4.24.Final',
-                     'org.hibernate.common:hibernate-commons-annotations:5.1.1.Final',
-                     'org.hibernate:hibernate-hikaricp:5.2.4.Final'],
-      hikari:        'com.zaxxer:HikariCP:3.4.5',
-      hsqldb:        'org.hsqldb:hsqldb:2.6.1',
-      http:          'org.apache.httpcomponents:httpclient:4.5.13',
-      jackson:      [ 'com.fasterxml.jackson.core:jackson-core:2.13.2',
-                      'com.fasterxml.jackson.core:jackson-databind:2.13.2.2',
-                      'com.fasterxml.jackson.core:jackson-annotations:2.13.2'],
-      jadira_usertype: 'org.jadira.usertype:usertype.core:6.0.1.GA',
-      jcommander:    'com.beust:jcommander:1.82',
-      joda_time:     'joda-time:joda-time:2.10.14',
-      jstl:        [ 'org.apache.taglibs:taglibs-standard-impl:1.2.5',
-                     'org.apache.taglibs:taglibs-standard-spec:1.2.5'],
-      log4j2:      [ 'org.apache.logging.log4j:log4j-api:2.17.1',
-                     'org.apache.logging.log4j:log4j-core:2.17.1',
-                     'org.apache.logging.log4j:log4j-slf4j-impl:2.17.1'],
-      log4j2_web:  'org.apache.logging.log4j:log4j-web:2.17.1',
-      log_bridge:    'org.apache.logging.log4j:log4j-jcl:2.17.1',
-      mockito:       'org.mockito:mockito-all:1.10.19',
-      mariadb:       'org.mariadb.jdbc:mariadb-java-client:3.0.4',
-      minimal_json:  'com.eclipsesource.minimal-json:minimal-json:0.9.5',
-      pci_ids:       'com.github.marandus:pci-ids:0.3',
-      pmd:           'net.sourceforge.pmd:pmd:6.44.0',
-      powermock:   [ 'org.powermock:powermock-core:2.0.9',
-                     'org.powermock:powermock-api-mockito:1.7.4',
-                     'org.powermock:powermock-module-testng:1.7.4' ],
-      protobuf_java: 'com.google.protobuf:protobuf-java:3.4.0',
-      reflections:   'org.reflections:reflections:0.10.2',
-      servlet_api:   'javax.servlet:javax.servlet-api:4.0.1',
-      slf4j:         'org.slf4j:slf4j-api:1.7.36',
-      spring_core:   ['org.springframework:spring-aop:5.3.22',
-                      'org.springframework:spring-beans:5.3.22',
-                      'org.springframework:spring-context:5.3.22',
-                      'org.springframework:spring-expression:5.3.22',
-                      'org.springframework:spring-orm:5.3.22'],
-      spring_boot:   ['org.springframework.boot:spring-boot-starter-web:2.7.2',
-                          'org.springframework.boot:spring-boot-starter-thymeleaf:2.7.2',
-                          'org.springframework.boot:spring-boot-starter-data-jpa:2.7.2'],
-      spring_data:   ['org.springframework.data:spring-data-jpa:2.7.2'],
-      spring_msg:    'org.springframework:spring-messaging:5.3.19',
-      spring_plugin: 'org.springframework.plugin:spring-plugin-core:2.0.0.RELEASE',
-      spring_retry:  'org.springframework.retry:spring-retry:1.3.2',
-      spring_test:   'org.springframework:spring-test:5.3.19',
-      spring_web:    'org.springframework:spring-web:5.3.19',
-      spring_webmvc:    'org.springframework:spring-webmvc:5.3.19',
-      testng:        'org.testng:testng:7.4.0',
-      xml_rpc_client: 'org.apache.xmlrpc:xmlrpc-client:3.1.3',
-    ]
-}
+version = file("$rootDir/VERSION").text.trim() + "-SNAPSHOT"
