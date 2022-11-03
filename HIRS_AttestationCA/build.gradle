@@ -6,7 +6,6 @@ evaluationDependsOn(':HIRS_Utils')
 sourceCompatibility = 1.8
 
 dependencies {
-    compile project(':TPM_Utils')
     compile project(':HIRS_Structs')
     compile project(':HIRS_Utils')
 

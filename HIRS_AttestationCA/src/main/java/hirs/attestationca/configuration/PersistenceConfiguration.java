@@ -1,6 +1,5 @@
 package hirs.attestationca.configuration;
 
-import hirs.attestationca.AttestationCertificateAuthorityConfiguration;
 import hirs.attestationca.service.CertificateServiceImpl;
 import hirs.attestationca.service.DbServiceImpl;
 import hirs.attestationca.service.DeviceServiceImpl;

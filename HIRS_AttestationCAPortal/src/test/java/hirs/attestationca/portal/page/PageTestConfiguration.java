@@ -1,5 +1,6 @@
 package hirs.attestationca.portal.page;
 
+import hirs.attestationca.portal.config.BaseWebConfig;
 import hirs.data.persist.certificate.CertificateAuthorityCredential;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -23,7 +24,7 @@ import java.util.Properties;
  */
 @Configuration
 @EnableTransactionManagement
-@Import({ CommonPageConfiguration.class })
+@Import({ BaseWebConfig.class })
 public class PageTestConfiguration {
 
     /**

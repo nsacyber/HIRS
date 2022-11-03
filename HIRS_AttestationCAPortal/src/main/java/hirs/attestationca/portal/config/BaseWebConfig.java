@@ -1,6 +1,6 @@
-package hirs.attestationca.portal.page;
+package hirs.attestationca.portal.config;
 
-import hirs.attestationca.AttestationCertificateAuthorityConfiguration;
+import hirs.attestationca.configuration.AttestationCertificateAuthorityConfiguration;
 import hirs.attestationca.portal.datatables.DataTableView;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
@@ -30,7 +30,7 @@ import java.nio.charset.StandardCharsets;
 @EnableWebMvc
 @ComponentScan("hirs.attestationca.portal.page.controllers")
 @Import({ AttestationCertificateAuthorityConfiguration.class })
-public class CommonPageConfiguration implements WebMvcConfigurer {
+public class BaseWebConfig implements WebMvcConfigurer {
 
     private static final String CLIENT_FILES_PATH = "file:/etc/hirs/aca/client-files/";
 

@@ -1,6 +1,6 @@
-package hirs.attestationca.portal.page;
+package hirs.attestationca.portal.config;
 
-import hirs.attestationca.AttestationCertificateAuthorityConfiguration;
+import hirs.attestationca.configuration.AttestationCertificateAuthorityConfiguration;
 import org.springframework.web.servlet.support.AbstractAnnotationConfigDispatcherServletInitializer;
 /**
  * Simply holds a contextInitialized method which will be called when the web app starts.
@@ -18,7 +18,7 @@ public class AcaInitializer extends AbstractAnnotationConfigDispatcherServletIni
     @Override
     protected Class<?>[] getServletConfigClasses() {
         return new Class[] {
-                CommonPageConfiguration.class, AttestationCertificateAuthorityConfiguration.class
+                BaseWebConfig.class, AttestationCertificateAuthorityConfiguration.class
         };
     }
 
