@@ -3,6 +3,7 @@ include ':HIRS_Utils'
 include ':HIRS_Structs'
 include ':TPM_Utils'
 include ':HIRS_AttestationCA'
+include ':tools:tcg_eventlog_tool'
 
 dependencyResolutionManagement {
     versionCatalogs {
