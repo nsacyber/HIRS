@@ -16,6 +16,7 @@ public class Main {
         SwidTagGateway gateway;
         SwidTagValidator validator;
         CredentialArgumentValidator caValidator;
+        String rimEventLogFile, trustStoreFile, certificateFile, privateKeyFile;
 
         if (commander.isHelp()) {
             jc.usage();
@@ -25,18 +26,17 @@ public class Main {
                 validator = new SwidTagValidator();
                 System.out.println(commander.toString());
                 String verifyFile = commander.getVerifyFile();
-                String rimel = commander.getRimEventLog();
-                String certificateFile = commander.getPublicCertificate();
-                String trustStore = commander.getTruststoreFile();
+                certificateFile = commander.getPublicCertificate();
+                rimEventLogFile = commander.getRimEventLog();
+                trustStoreFile = commander.getTruststoreFile();
                 boolean defaultKey = commander.isDefaultKey();
-                validator.setRimEventLog(rimel);
                 if (defaultKey) {
                     validator.validateSwidTag(verifyFile, "DEFAULT");
                 } else {
-                    caValidator = new CredentialArgumentValidator(trustStore,
+                    caValidator = new CredentialArgumentValidator(trustStoreFile,
                             certificateFile, "", "", "", true);
                     if (caValidator.isValid()) {
-                        validator.setTrustStoreFile(trustStore);
+                        validator.setTrustStoreFile(trustStoreFile);
                         validator.validateSwidTag(verifyFile, caValidator.getFormat());
                     } else {
                         System.out.println("Invalid combination of credentials given: "
@@ -47,16 +47,18 @@ public class Main {
             } else {
                 gateway = new SwidTagGateway();
                 System.out.println(commander.toString());
-                String createType = commander.getCreateType().toUpperCase();
-                String attributesFile = commander.getAttributesFile();
-                String truststoreFile = commander.getTruststoreFile();
-                String certificateFile = commander.getPublicCertificate();
-                String privateKeyFile = commander.getPrivateKeyFile();
+                rimEventLogFile = commander.getRimEventLog();
+                trustStoreFile = commander.getTruststoreFile();
+                certificateFile = commander.getPublicCertificate();
+                privateKeyFile = commander.getPrivateKeyFile();
                 boolean embeddedCert = commander.isEmbedded();
                 boolean defaultKey = commander.isDefaultKey();
-                String rimEventLog = commander.getRimEventLog();
-                switch (createType) {
-                    case "BASE":
+                if (!commander.getSignFile().isEmpty()) {
+
+                } else {
+                    String createType = commander.getCreateType().toUpperCase();
+                    String attributesFile = commander.getAttributesFile();
+                    if (createType.equals("BASE")) {
                         if (!attributesFile.isEmpty()) {
                             gateway.setAttributesFile(attributesFile);
                         }
@@ -65,10 +67,10 @@ public class Main {
                             gateway.setTruststoreFile(SwidTagConstants.DEFAULT_KEYSTORE_FILE);
                         } else {
                             gateway.setDefaultCredentials(false);
-                            caValidator = new CredentialArgumentValidator(truststoreFile,
+                            caValidator = new CredentialArgumentValidator(trustStoreFile,
                                     certificateFile, privateKeyFile, "", "", false);
                             if (caValidator.isValid()) {
-                                gateway.setTruststoreFile(truststoreFile);
+                                gateway.setTruststoreFile(trustStoreFile);
                                 gateway.setPemCertificateFile(certificateFile);
                                 gateway.setPemPrivateKeyFile(privateKeyFile);
                             } else {
@@ -80,7 +82,7 @@ public class Main {
                                 gateway.setEmbeddedCert(true);
                             }
                         }
-                        gateway.setRimEventLog(rimEventLog);
+                        gateway.setRimEventLog(rimEventLogFile);
                         List<String> timestampArguments = commander.getTimestampArguments();
                         if (timestampArguments.size() > 0) {
                             if (new TimestampArgumentValidator(timestampArguments).isValid()) {
@@ -93,10 +95,30 @@ public class Main {
                             }
                         }
                         gateway.generateSwidTag(commander.getOutFile());
-                        break;
-                    default:
+                    } else {
                         System.out.println("No create type given, nothing to do");
+                        System.exit(1);
+                    }
                 }
+                if (!trustStoreFile.isEmpty()) {
+                    gateway.setDefaultCredentials(true);
+                    gateway.setJksTruststoreFile(trustStoreFile);
+                } else if (!certificateFile.isEmpty() && !privateKeyFile.isEmpty()) {
+                    gateway.setDefaultCredentials(false);
+                    gateway.setPemCertificateFile(certificateFile);
+                    gateway.setPemPrivateKeyFile(privateKeyFile);
+                    if (embeddedCert) {
+                        gateway.setEmbeddedCert(true);
+                    }
+                } else if (defaultKey) {
+                    gateway.setDefaultCredentials(true);
+                    gateway.setJksTruststoreFile(SwidTagConstants.DEFAULT_KEYSTORE_FILE);
+                } else {
+                    System.out.println("A private key (-k) and public certificate (-p) " +
+                            "are required, or the default key (-d) must be indicated.");
+                    System.exit(1);
+                }
+                gateway.generateSwidTag(commander.getOutFile());
             }
         }
     }
