@@ -1,6 +1,12 @@
 plugins {
-   apply plugin: 'java'
-   apply plugin: 'war'
+    id 'java'
+    id 'war'
+}
+
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(11)
+    }
 }
 
 repositories {
@@ -8,47 +14,45 @@ repositories {
 }
 
 dependencies {
-    implementation(project(':HIRS_Utils')) {
-        exclude module: "javassist"
-    }
-    implementation(':HIRS_AttestationCA'))
-    implementation  servlet.api
+    implementation project(':HIRS_Utils')
+    implementation project(':HIRS_AttestationCA')
+    implementation libs.bouncy.castle
+    implementation libs.servlet.api
     implementation libs.commons.io
     implementation libs.commons.lang
     implementation libs.commons.upload
     implementation libs.gson
     implementation libs.guava          // for com.google.common
     implementation libs.hibernate
+    implementation libs.hibernate.validator
     implementation libs.http
     implementation libs.jstl
+    implementation libs.javax.validation
     implementation libs.log4j2
     implementation libs.log4j2.web
     implementation libs.pci.ids
-    implementation libs.servlet-api
-    implementation libs.spring.webmvc
+    implementation libs.servlet.api
     implementation libs.spring.context
-    implementation libs.hibernatex-validator
-
-    runtime fileTree(dir: 'build/plugins', include: ['*.jar'])
-
+    implementation libs.spring.jdbc
+    implementation libs.spring.orm
+    implementation libs.spring.transaction
+    implementation libs.spring.webmvc
     testImplementation libs.hamcrest
-    // override the servlet API for testing. Required for Spring Integration tests
-    testImplementation servlet.api
 
+    // override the servlet API for testing. Required for Spring Integration tests
+    testImplementation libs.servlet.api
     testImplementation libs.hsqldb
     testImplementation libs.spring.test
     testImplementation libs.testng
     testImplementation libs.mockito
     testImplementation libs.testng
     testImplementation libs.jsonassert
-
-    testRuntime libs.jsonpath
+    testImplementation libs.jsonpath
 }
 
 def copyVersion = project.task('copyVersion')
 copyVersion.dependsOn compileJava
 war.dependsOn copyVersion
-war.dependsOn addPlugins
 
 war {
     from(buildDir) {
@@ -63,4 +67,3 @@ ext.configDir = new File(projectDir, 'config')
 ext.checkstyleConfigDir = "$configDir/checkstyle"
 
 ext.findbugsConfigDir = "$configDir/findbugs"
-

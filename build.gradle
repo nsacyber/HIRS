@@ -11,8 +11,8 @@ dependencies {
           // Use Maven Central for resolving dependencies.
              mavenCentral()
          }
-   implementation project(':HIRS_Utils')
-   implementation project(':HIRS_Structs')
+//   implementation project(':HIRS_Utils')
+//   implementation project(':HIRS_Structs')
 }
 
 tasks.register('copyVersion') {
