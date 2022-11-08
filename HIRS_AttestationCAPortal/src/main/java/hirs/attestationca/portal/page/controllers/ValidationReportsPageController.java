@@ -220,12 +220,18 @@ public class ValidationReportsPageController extends PageController<NoPageParams
                 case "system":
                     if (parameterValue.equals(TRUE)) {
                         systemOnly = true;
+                        if (!columnHeaders.isEmpty()) {
+                            columnHeaders = "," + columnHeaders;
+                        }
                         columnHeaders = systemColumnHeaders + columnHeaders;
                     }
                     break;
                 case "component":
                     if (parameterValue.equals(TRUE)) {
                         componentOnly = true;
+                        if (!columnHeaders.isEmpty()) {
+                            columnHeaders += ",";
+                        }
                         columnHeaders += componentColumnHeaders;
                     }
                     break;
@@ -293,22 +299,24 @@ public class ValidationReportsPageController extends PageController<NoPageParams
                                     reportData.append(data + ",");
                                 }
                                 reportData.deleteCharAt(reportData.length() - 1);
-                                reportData.append("\n");
+                                reportData.append(System.lineSeparator());
                                 if (!componentOnly) {
                                     reportData.append(",,,,,");
                                 }
                             }
+                            reportData = reportData.delete(
+                                    reportData.lastIndexOf(System.lineSeparator()) + 1,
+                                        reportData.length());
                         }
                     }
-                    reportData.append("\n");
                 }
             }
         }
         if (!jsonVersion) {
             if (columnHeaders.isEmpty()) {
-                columnHeaders = systemColumnHeaders + componentColumnHeaders;
+                columnHeaders = systemColumnHeaders + "," + componentColumnHeaders;
             }
-            bufferedWriter.append(columnHeaders + "\n");
+            bufferedWriter.append(columnHeaders + System.lineSeparator());
             bufferedWriter.append(reportData.toString());
         } else {
             bufferedWriter.append(jsonReportData.toString());
@@ -405,7 +413,16 @@ public class ValidationReportsPageController extends PageController<NoPageParams
                 issuer = issuer.replaceAll(",", " ");
                 ComponentIdentifier ci = (ComponentIdentifier) issuerAndComponent.get(1);
                 if (ci instanceof ComponentIdentifierV2) {
-                    componentData.add(((ComponentIdentifierV2) ci).getComponentClass().toString());
+                    String componentClass =
+                            ((ComponentIdentifierV2) ci).getComponentClass().toString();
+                    String[] splitStrings = componentClass.split("\r\n|\n|\r");
+                    StringBuilder sb = new StringBuilder();
+                    for (String s : splitStrings) {
+                        sb.append(s);
+                        sb.append(" ");
+                    }
+                    sb = sb.deleteCharAt(sb.length() - 1);
+                    componentData.add(sb.toString());
                 } else {
                     componentData.add("Platform Component");
                 }
