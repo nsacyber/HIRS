@@ -3,6 +3,7 @@ package hirs.data.persist.certificate.attributes.V2;
 import hirs.data.persist.certificate.attributes.PlatformProperty;
 import org.bouncycastle.asn1.ASN1Enumerated;
 import org.bouncycastle.asn1.ASN1Sequence;
+import org.bouncycastle.asn1.ASN1UTF8String;
 import org.bouncycastle.asn1.DERUTF8String;
 
 /**
@@ -55,8 +56,8 @@ public class PlatformPropertyV2 extends PlatformProperty {
                     + "the required fields.");
         }
 
-        setPropertyName(DERUTF8String.getInstance(sequence.getObjectAt(0)));
-        setPropertyValue(DERUTF8String.getInstance(sequence.getObjectAt(1)));
+        setPropertyName(ASN1UTF8String.getInstance(sequence.getObjectAt(0)));
+        setPropertyValue(ASN1UTF8String.getInstance(sequence.getObjectAt(1)));
 
         // optional value which is a placeholder for now
         if (sequence.size() > IDENTIFIER_NUMBER

@@ -1,6 +1,5 @@
 package hirs.persist;
 
-import org.hibernate.annotations.Type;
 import org.joda.time.Interval;
 import org.joda.time.LocalDateTime;
 import org.joda.time.LocalTime;
@@ -8,7 +7,7 @@ import org.joda.time.Period;
 
 import javax.persistence.Column;
 import javax.persistence.Embeddable;
-
+import java.io.Serializable;
 import java.util.Date;
 
 /**
@@ -16,7 +15,7 @@ import java.util.Date;
  * a specified time of day.
  */
 @Embeddable
-public class ScheduledJobInfo {
+public class ScheduledJobInfo implements Serializable {
 
     private static final long MINIMUM_FREQUENCY_MILLISECONDS = 1;
 
@@ -26,7 +25,6 @@ public class ScheduledJobInfo {
     public static final LocalTime DEFAULT_START_TIME = new LocalTime(22, 0, 0);
 
     @Column
-    @Type(type = "org.jadira.usertype.dateandtime.joda.PersistentLocalTime")
     private LocalTime startTime;
 
     @Column

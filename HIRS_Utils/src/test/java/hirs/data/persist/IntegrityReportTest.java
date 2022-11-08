@@ -1,22 +1,20 @@
 package hirs.data.persist;
 
 import hirs.foss.XMLCleaner;
-
-import java.io.StringReader;
-import java.io.StringWriter;
-import java.util.ArrayList;
-import java.util.Set;
-
-import javax.xml.bind.JAXBContext;
-import javax.xml.bind.JAXBException;
-import javax.xml.bind.Marshaller;
-import javax.xml.bind.Unmarshaller;
-
 import org.hibernate.Session;
 import org.testng.Assert;
 import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
+
+import javax.xml.bind.JAXBContext;
+import javax.xml.bind.JAXBException;
+import javax.xml.bind.Marshaller;
+import javax.xml.bind.Unmarshaller;
+import java.io.StringReader;
+import java.io.StringWriter;
+import java.util.ArrayList;
+import java.util.Set;
 
 /**
  * IntegrityReportTest is a unit test class for IntegrityReports.
@@ -48,7 +46,7 @@ public class IntegrityReportTest extends HibernateTest<IntegrityReport> {
      */
     private static IntegrityReport getTestReport() {
         IntegrityReport integrityReport = new IntegrityReport();
-        integrityReport.addReport(DeviceInfoReportTest.getTestReport());
+//        integrityReport.addReport(DeviceInfoReportTest.getTestReport());
         return integrityReport;
     }
 
@@ -107,17 +105,6 @@ public class IntegrityReportTest extends HibernateTest<IntegrityReport> {
     public final void extractNonexistentDeviceInfoReport() {
         IntegrityReport integrityReport = new IntegrityReport();
         integrityReport.extractReport(DeviceInfoReport.class);
-    }
-
-    /**
-     * Tests that the Integrity Report does not contain an IMAReport unless one was added.
-     */
-    @Test(expectedExceptions = IllegalArgumentException.class)
-    public final void extractNonexistentIMAReport() {
-        TestReport report = new TestReport();
-        IntegrityReport integrityReport = new IntegrityReport();
-        integrityReport.addReport(report);
-        integrityReport.extractReport(IMAReport.class);
     }
 
     /**
@@ -204,8 +191,7 @@ public class IntegrityReportTest extends HibernateTest<IntegrityReport> {
     @Test
     public final void testPersistingManyReports() throws Exception {
         IntegrityReport integrityReport = new IntegrityReport();
-        integrityReport.addReport(DeviceInfoReportTest.getTestReport());
-        integrityReport.addReport(IMAReportTest.getTestReport());
+//        integrityReport.addReport(DeviceInfoReportTest.getTestReport());
         integrityReport.addReport(TPMReportTest.getTestReport());
         integrityReport.addReport(new TestReport());
 

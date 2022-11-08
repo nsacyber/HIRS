@@ -27,7 +27,6 @@ public class ReportSummaryTest {
     private static final String APPRAISAL_FAIL_MESSAGE = "test appraisal failure";
     private static final String DEFAULT_CLIENT_HOSTNAME = "test.hostname";
     private static final String DEFAULT_FILE_PATH = "/test/file/path";
-    private static final String DEFAULT_REPORT_TYPE = IMAReport.class.getName();
     private static final Timestamp DEFAULT_TIMESTAMP = new Timestamp(Calendar
             .getInstance().getTime().getTime());
 
@@ -113,15 +112,4 @@ public class ReportSummaryTest {
                 reportSummary.getHirsAppraisalResult();
         Assert.assertEquals(appResult.getAppraisalStatus(), AppraisalStatus.Status.ERROR);
     }
-
-    /**
-     * Tests that a ReportSummary report type can be retrieved and set.
-     */
-    @Test
-    public final void testReportType() {
-        ReportSummary reportSummary = new ReportSummary();
-        reportSummary.setReportType(DEFAULT_REPORT_TYPE);
-        Assert.assertEquals(reportSummary.getReportType(), DEFAULT_REPORT_TYPE);
-    }
-
 }

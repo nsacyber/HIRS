@@ -6,6 +6,7 @@ import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlType;
+import java.io.Serializable;
 import java.util.Arrays;
 
 /**
@@ -54,7 +55,7 @@ import java.util.Arrays;
                 + "Integrity_Report_v1_0#",
         propOrder = {"rawQuote", "signatureValue" })
 @Embeddable
-public class QuoteSignature {
+public class QuoteSignature implements Serializable {
     private static final int SIGNATURE_LENGTH = 10000;
 
     @XmlElement(name = "RawQuote", required = false)

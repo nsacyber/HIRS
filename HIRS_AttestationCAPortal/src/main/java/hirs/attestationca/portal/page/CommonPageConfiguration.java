@@ -1,15 +1,20 @@
 package hirs.attestationca.portal.page;
 
+import hirs.attestationca.AttestationCertificateAuthorityConfiguration;
 import hirs.attestationca.portal.datatables.DataTableView;
-import hirs.attestationca.portal.persistence.PersistenceConfiguration;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 import org.springframework.context.support.PropertySourcesPlaceholderConfigurer;
+import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.EnableTransactionManagement;
 import org.springframework.web.multipart.commons.CommonsMultipartResolver;
 import org.springframework.web.servlet.ViewResolver;
+import org.springframework.web.servlet.config.annotation.DefaultServletHandlerConfigurer;
 import org.springframework.web.servlet.config.annotation.EnableWebMvc;
+import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
+import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 import org.springframework.web.servlet.view.InternalResourceViewResolver;
 import org.springframework.web.servlet.view.UrlBasedViewResolver;
 
@@ -19,12 +24,15 @@ import java.nio.charset.StandardCharsets;
  * Specifies the location to scan for page controllers, view resolver for JSON data, and view
  * resolver to map view names to jsp files.
  */
+@Repository
 @Configuration
+@EnableTransactionManagement
 @EnableWebMvc
 @ComponentScan("hirs.attestationca.portal.page.controllers")
-@Import({ PersistenceConfiguration.class })
-public class CommonPageConfiguration {
+@Import({ AttestationCertificateAuthorityConfiguration.class })
+public class CommonPageConfiguration implements WebMvcConfigurer {
 
+    private static final String CLIENT_FILES_PATH = "file:/etc/hirs/aca/client-files/";
 
     /**
      * @return bean to resolve injected annotation.Value
@@ -77,4 +85,14 @@ public class CommonPageConfiguration {
         return resolver;
     }
 
+    @Override
+    public void addResourceHandlers(final ResourceHandlerRegistry resourceHandlerRegistry) {
+        resourceHandlerRegistry.addResourceHandler("/client-files/**")
+                .addResourceLocations(CLIENT_FILES_PATH);
+    }
+
+    @Override
+    public void configureDefaultServletHandling(final DefaultServletHandlerConfigurer configurer) {
+        configurer.enable();
+    }
 }

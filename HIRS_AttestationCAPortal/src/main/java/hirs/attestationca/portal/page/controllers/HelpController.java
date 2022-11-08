@@ -1,24 +1,26 @@
 package hirs.attestationca.portal.page.controllers;
 
-import static hirs.attestationca.portal.page.Page.HELP;
 import hirs.attestationca.portal.page.PageController;
 import hirs.attestationca.portal.page.params.NoPageParams;
-import java.io.File;
-import java.io.IOException;
-import static org.apache.logging.log4j.LogManager.getLogger;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
-import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.ModelAndView;
+
+import java.io.File;
+import java.io.IOException;
+
+import static hirs.attestationca.portal.page.Page.HELP;
+import static org.apache.logging.log4j.LogManager.getLogger;
 
 /**
  * Controller for the Help page.
  */
-@Controller
-@RequestMapping("/help")
+@RestController
+@RequestMapping(path = "/help")
 public class HelpController extends PageController<NoPageParams> {
 
     @Autowired

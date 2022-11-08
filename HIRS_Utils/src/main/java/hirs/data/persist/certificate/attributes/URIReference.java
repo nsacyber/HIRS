@@ -1,11 +1,10 @@
 package hirs.data.persist.certificate.attributes;
 
-import org.bouncycastle.asn1.ASN1Sequence;
-import org.bouncycastle.asn1.DERBitString;
-import org.bouncycastle.asn1.DERIA5String;
-import org.bouncycastle.asn1.x509.AlgorithmIdentifier;
-
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import org.bouncycastle.asn1.ASN1BitString;
+import org.bouncycastle.asn1.ASN1IA5String;
+import org.bouncycastle.asn1.ASN1Sequence;
+import org.bouncycastle.asn1.x509.AlgorithmIdentifier;
 
 /**
  *
@@ -19,10 +18,10 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 * </pre>
  */
 public class URIReference {
-    private DERIA5String uniformResourceIdentifier;
+    private ASN1IA5String uniformResourceIdentifier;
     private AlgorithmIdentifier hashAlgorithm;
     @JsonIgnore
-    private DERBitString hashValue;
+    private ASN1BitString hashValue;
 
     private static final int PLATFORM_PROPERTIES_URI_MAX = 3;
     private static final int PLATFORM_PROPERTIES_URI_MIN = 1;
@@ -43,9 +42,9 @@ public class URIReference {
      * @param hashAlgorithm algorithm identifier
      * @param hashValue string containing the hash value
      */
-    public URIReference(final DERIA5String uniformResourceIdentifier,
+    public URIReference(final ASN1IA5String uniformResourceIdentifier,
                     final AlgorithmIdentifier hashAlgorithm,
-                    final DERBitString hashValue) {
+                    final ASN1BitString hashValue) {
         this.uniformResourceIdentifier = uniformResourceIdentifier;
         this.hashAlgorithm = hashAlgorithm;
         this.hashValue = hashValue;
@@ -67,14 +66,15 @@ public class URIReference {
 
         //Get the Platform Configuration URI values
         for (int j = 0; j < sequence.size(); j++) {
-            if (sequence.getObjectAt(j) instanceof DERIA5String) {
-                this.uniformResourceIdentifier = DERIA5String.getInstance(sequence.getObjectAt(j));
+            if (sequence.getObjectAt(j) instanceof ASN1IA5String
+                    || sequence.getObjectAt(j) instanceof ASN1IA5String) {
+                this.uniformResourceIdentifier = ASN1IA5String.getInstance(sequence.getObjectAt(j));
             } else if ((sequence.getObjectAt(j) instanceof AlgorithmIdentifier)
                     || (sequence.getObjectAt(j) instanceof ASN1Sequence)) {
                 this.hashAlgorithm =
                         AlgorithmIdentifier.getInstance(sequence.getObjectAt(j));
-            } else if (sequence.getObjectAt(j) instanceof DERBitString) {
-                this.hashValue = DERBitString.getInstance(sequence.getObjectAt(j));
+            } else if (sequence.getObjectAt(j) instanceof ASN1BitString) {
+                this.hashValue = ASN1BitString.getInstance(sequence.getObjectAt(j));
             } else {
                 throw new IllegalArgumentException("Unexpected DER type found. "
                     + sequence.getObjectAt(j).getClass().getName() + " found at index " + j + ".");
@@ -85,14 +85,14 @@ public class URIReference {
     /**
      * @return the uniformResourceIdentifier
      */
-    public DERIA5String getUniformResourceIdentifier() {
+    public ASN1IA5String getUniformResourceIdentifier() {
         return uniformResourceIdentifier;
     }
 
     /**
      * @param uniformResourceIdentifier the uniformResourceIdentifier to set
      */
-    public void setUniformResourceIdentifier(final DERIA5String uniformResourceIdentifier) {
+    public void setUniformResourceIdentifier(final ASN1IA5String uniformResourceIdentifier) {
         this.uniformResourceIdentifier = uniformResourceIdentifier;
     }
 
@@ -113,14 +113,14 @@ public class URIReference {
     /**
      * @return the hashValue
      */
-    public DERBitString getHashValue() {
+    public ASN1BitString getHashValue() {
         return hashValue;
     }
 
     /**
      * @param hashValue the hashValue to set
      */
-    public void setHashValue(final DERBitString hashValue) {
+    public void setHashValue(final ASN1BitString hashValue) {
         this.hashValue = hashValue;
     }
 

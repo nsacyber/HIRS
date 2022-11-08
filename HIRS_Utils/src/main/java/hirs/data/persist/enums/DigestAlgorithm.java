@@ -3,12 +3,14 @@ package hirs.data.persist.enums;
 import hirs.data.persist.AbstractDigest;
 import hirs.data.persist.DeviceInfoReport;
 
+import java.io.Serializable;
+
 /**
  * Enum of digest algorithms. The enum values also provide a standardized
  * algorithm name. The standardized algorithm name is a String of the algorithm
  * name as defined by Java.
  */
-public enum DigestAlgorithm {
+public enum DigestAlgorithm implements Serializable {
     /**
      * MD2 digest algorithm.
      */

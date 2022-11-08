@@ -1,8 +1,7 @@
-apply plugin: 'java'
-apply plugin: 'findbugs'
-apply plugin: 'checkstyle'
-apply plugin: 'nebula.ospackage'
-
+plugins {
+       id "java"
+       id "nebula.ospackage" version "9.1.1"
+}
 version = '1.0'
 
 repositories {
@@ -10,58 +9,26 @@ repositories {
 }
 
 dependencies {
-    compile project(':HIRS_Utils')
-    compile libs.jcommander
-    compile libs.commons_io
-    compileOnly libs.checkstyle
-    compileOnly libs.findbugs
-    testCompile libs.testng
+    implementation project(':HIRS_Utils')
+    implementation libs.jcommander
+    implementation libs.commons.io
 }
 
 ext.configDir = new File(projectDir, 'config')
 ext.checkstyleConfigDir = "$configDir/checkstyle"
-checkstyle {
-    toolVersion = '5.7'
-    configFile = checkstyleConfigFile
-    configProperties.put('basedir', checkstyleConfigDir)
-    ignoreFailures = false
-    showViolations = true
-}
-
 ext.findbugsConfigDir = "$configDir/findbugs"
 
-findbugs {
-    toolVersion = '3.0.0'
-    ignoreFailures = false
-    effort = 'max'
-}
-
 jar {
-    manifest {
-        attributes("Main-Class": "hirs.tcg_eventlog.Main",
-                "Class-Path": configurations.runtime.files.collect { "lib/$it.name" }.join(' ')
-        )
-    }
-    from(configurations.compile.collect { it.isDirectory() ? it : zipTree(it) }) {}
-    exclude 'META-INF/*.RSA', 'META-INF/*.SF', 'META-INF/*.DSA'
-}
+        // Keep jar clean:
+        exclude 'META-INF/*.SF', 'META-INF/*.DSA', 'META-INF/*.RSA', 'META-INF/*.MF'
 
-uploadArchives {
-    repositories {
-        flatDir {
-            dirs "${buildDir}"
-        }
-    }
-}
-
-buildscript {
-    repositories {
-        mavenCentral()
-    }
-    dependencies {
-        classpath 'com.netflix.nebula:gradle-ospackage-plugin:4.9.3'
-    }
-}
+      manifest {
+         attributes(
+                     'Main-Class': 'hirs.tcg_eventlog.Main',
+                    'Class-Path': configurations.runtimeClasspath.files.collect { it.getName() }.join(' ')
+                   )
+      }
+   }
 
 // Produce packages
 ospackage {
@@ -82,7 +49,7 @@ ospackage {
     from('lib') {
         into 'lib'
     }
-    from(configurations.runtime) {
+    from(configurations.runtimeClasspath) {
         into 'lib'
     }
     from('scripts') {

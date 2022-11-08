@@ -1,5 +1,7 @@
 package hirs.attestationca;
 
+import hirs.data.persist.certificate.EndorsementCredential;
+import hirs.data.persist.certificate.PlatformCredential;
 import org.bouncycastle.asn1.DERSequence;
 import org.bouncycastle.asn1.DERSet;
 import org.bouncycastle.asn1.DERTaggedObject;
@@ -16,8 +18,6 @@ import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import hirs.data.persist.certificate.EndorsementCredential;
-import hirs.data.persist.certificate.PlatformCredential;
 
 import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertNull;
@@ -189,7 +189,7 @@ public class IssuedCertificateAttributeHelperTest {
 
         DLSequence dlSequence = (DLSequence) subjectAlternativeName.getParsedValue();
         DERTaggedObject derTaggedObject = (DERTaggedObject) dlSequence.getObjectAt(0);
-        DERSequence derSequence = (DERSequence) derTaggedObject.getObject();
+        DERSequence derSequence = (DERSequence) derTaggedObject.getLoadedObject();
 
         Enumeration enumeration = derSequence.getObjects();
         while (enumeration.hasMoreElements()) {

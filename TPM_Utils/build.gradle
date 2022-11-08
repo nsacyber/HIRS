@@ -1,45 +1,21 @@
-apply plugin: 'java'
-apply plugin: 'checkstyle'
-apply plugin: 'jacoco'
+plugins {
+     id 'java'
+}
 
-sourceCompatibility = 1.8
+repositories {
+    mavenCentral()
+}
 
 dependencies {
-    compile libs.log4j2
-    compile libs.commons_codec
-    compile libs.commons_io
-    compile libs.commons_lang
-    compile libs.spring_core
+    implementation libs.log4j2
+    implementation libs.commons.codec
+    implementation libs.commons.io
+    implementation libs.commons.lang
+    implementation libs.spring.core
 
-    testCompile libs.testng
+    testImplementation libs.testng
 }
 
 ext.configDir = new File(projectDir, 'config')
 ext.checkstyleConfigDir = "$configDir/checkstyle"
-
-checkstyle {
-    toolVersion = '5.7'
-    configFile = checkstyleConfigFile
-    configProperties.put('basedir', checkstyleConfigDir)
-    ignoreFailures = false
-    showViolations = true
-}
-
-jacocoTestReport {
-    reports {
-        xml.enabled true
-        csv.enabled true
-        html.enabled true
-        html.destination "${buildDir}/reports/jacoco/html"
-    }
-}
-
-publishing {
-    publications {
-        maven(MavenPublication) {
-            artifactId 'hirs-tpm-utils'
-            from components.java
-        }
-    }
-}
 

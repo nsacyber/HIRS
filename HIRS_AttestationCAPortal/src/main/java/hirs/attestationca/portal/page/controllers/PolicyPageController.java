@@ -6,17 +6,18 @@ import hirs.attestationca.portal.model.PolicyPageModel;
 import hirs.attestationca.portal.page.PageController;
 import hirs.attestationca.portal.page.PageMessages;
 import hirs.attestationca.portal.page.params.NoPageParams;
-import hirs.data.persist.SupplyChainPolicy;
-import hirs.persist.AppraiserManager;
-import hirs.persist.PolicyManager;
+import hirs.data.persist.policy.SupplyChainPolicy;
 import hirs.persist.PolicyManagerException;
+import hirs.persist.service.AppraiserService;
+import hirs.persist.service.PolicyService;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import org.springframework.web.servlet.view.RedirectView;
@@ -31,8 +32,8 @@ import static org.apache.logging.log4j.LogManager.getLogger;
 /**
  * Controller for the Policy page.
  */
-@Controller
-@RequestMapping("/policy")
+@RestController
+@RequestMapping(path = "/policy")
 public class PolicyPageController extends PageController<NoPageParams> {
 
     private static final Logger LOGGER = getLogger(PolicyPageController.class);
@@ -45,8 +46,10 @@ public class PolicyPageController extends PageController<NoPageParams> {
 
     private static final String ENABLED_EXPIRES_PARAMETER_VALUE = "expires";
 
-    private PolicyManager policyManager;
-    private AppraiserManager appraiserManager;
+    @Autowired
+    private PolicyService policyService;
+    @Autowired
+    private AppraiserService appraiserService;
 
     /**
      * Model attribute name used by initPage for the initial data passed to the
@@ -63,15 +66,15 @@ public class PolicyPageController extends PageController<NoPageParams> {
     /**
      * Constructor.
      *
-     * @param policyManager the policy manager
-     * @param appraiserManager the appraiser manager
+     * @param policyService the policy service
+     * @param appraiserService the appraiser service
      */
     @Autowired
-    public PolicyPageController(final PolicyManager policyManager,
-            final AppraiserManager appraiserManager) {
+    public PolicyPageController(final PolicyService policyService,
+            final AppraiserService appraiserService) {
         super(POLICY);
-        this.policyManager = policyManager;
-        this.appraiserManager = appraiserManager;
+        this.policyService = policyService;
+        this.appraiserService = appraiserService;
     }
 
     /**
@@ -108,6 +111,7 @@ public class PolicyPageController extends PageController<NoPageParams> {
      * @return View containing the url and parameters
      * @throws URISyntaxException if malformed URI
      */
+    @GetMapping
     @RequestMapping(value = "update-pc-validation", method = RequestMethod.POST)
     public RedirectView updatePcVal(@ModelAttribute final PolicyPageModel ppModel,
             final RedirectAttributes attr) throws URISyntaxException {
@@ -159,6 +163,7 @@ public class PolicyPageController extends PageController<NoPageParams> {
      * @return View containing the url and parameters
      * @throws URISyntaxException if malformed URI
      */
+    @GetMapping
     @RequestMapping(value = "update-pc-attribute-validation", method = RequestMethod.POST)
     public RedirectView updatePcAttributeVal(@ModelAttribute final PolicyPageModel ppModel,
             final RedirectAttributes attr)
@@ -928,9 +933,9 @@ public class PolicyPageController extends PageController<NoPageParams> {
      * @return The default Supply Chain Policy
      */
     private SupplyChainPolicy getDefaultPolicy() {
-        final Appraiser supplyChainAppraiser = appraiserManager.getAppraiser(
+        final Appraiser supplyChainAppraiser = appraiserService.getAppraiser(
                 SupplyChainAppraiser.NAME);
-        return (SupplyChainPolicy) policyManager.getDefaultPolicy(
+        return (SupplyChainPolicy) policyService.getDefaultPolicy(
                 supplyChainAppraiser);
     }
 
@@ -952,13 +957,12 @@ public class PolicyPageController extends PageController<NoPageParams> {
         return policy;
     }
 
-    private void savePolicyAndApplySuccessMessage(final PolicyPageModel ppModel,
-            final Map<String, Object> model,
-            final PageMessages messages,
-            final String successMessage,
+    private void savePolicyAndApplySuccessMessage(
+            final PolicyPageModel ppModel, final Map<String, Object> model,
+            final PageMessages messages, final String successMessage,
             final SupplyChainPolicy policy) {
         // save the policy to the DB
-        policyManager.updatePolicy(policy);
+        policyService.updatePolicy(policy, policy.getId());
 
         // Log and set the success message
         messages.addSuccess(successMessage);

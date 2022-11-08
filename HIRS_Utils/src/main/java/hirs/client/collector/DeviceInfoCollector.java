@@ -4,15 +4,14 @@ import hirs.DeviceInfoReportRequest;
 import hirs.ReportRequest;
 import hirs.collector.CollectorException;
 import hirs.data.persist.DeviceInfoReport;
+import hirs.data.persist.Report;
+import hirs.data.persist.enums.OSName;
 import hirs.data.persist.info.FirmwareInfo;
 import hirs.data.persist.info.HardwareInfo;
 import hirs.data.persist.info.NetworkInfo;
 import hirs.data.persist.info.OSInfo;
-import hirs.data.persist.enums.OSName;
-import hirs.data.persist.Report;
 import hirs.data.persist.info.TPMInfo;
 import hirs.utils.exec.ExecBuilder;
-import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -123,10 +122,10 @@ public class DeviceInfoCollector extends AbstractCollector {
                  InputStream processErrorStream = process.getErrorStream()) {
 
                 if (returnCode == 0) {
-                    return IOUtils.toString(processInputStream);
+                    return processInputStream.toString();
                 }
 
-                errorAsString = IOUtils.toString(processErrorStream);
+                errorAsString = processErrorStream.toString();
             }
         } catch (IOException | InterruptedException e) {
             errorAsString = e.getMessage();

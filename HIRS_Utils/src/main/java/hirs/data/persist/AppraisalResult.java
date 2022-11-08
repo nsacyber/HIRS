@@ -16,7 +16,6 @@ import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
-import javax.xml.bind.annotation.XmlTransient;
 
 /**
  * An <code>AppraisalResult</code> represents the result of an appraisal.
@@ -57,7 +56,6 @@ public class AppraisalResult extends AbstractEntity {
      */
     @ManyToOne
     @JoinColumn(name = "reportSummary")
-    @XmlTransient
     private ReportSummary reportSummary;
 
     /**

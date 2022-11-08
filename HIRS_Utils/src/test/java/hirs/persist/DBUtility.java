@@ -1,13 +1,16 @@
 package hirs.persist;
 
-import java.util.List;
-
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.hibernate.Session;
-import org.hibernate.SessionFactory;
 import org.hibernate.Transaction;
-import org.hibernate.criterion.Restrictions;
+import org.hibernate.query.Query;
+
+import javax.persistence.EntityManager;
+import javax.persistence.criteria.CriteriaBuilder;
+import javax.persistence.criteria.CriteriaQuery;
+import javax.persistence.criteria.Root;
+import java.util.List;
 
 /**
  * This is a utility class with common methods for DB*ManagerTest classes.
@@ -34,13 +37,20 @@ public final class DBUtility {
      * @param sessionFactory session factory to use to access the database
      * @param clazz class instances to remove
      */
+    @SuppressWarnings("unchecked")
     public static void removeAllInstances(
-            final SessionFactory sessionFactory,
-            final Class<?> clazz) {
+            final EntityManager sessionFactory,
+            final Class clazz) {
         LOGGER.debug("deleting all {} instances", clazz.toString());
-        Session session = sessionFactory.getCurrentSession();
+        Session session = sessionFactory.unwrap(org.hibernate.Session.class);
         session.beginTransaction();
-        final List<?> instances = session.createCriteria(clazz).list();
+        CriteriaBuilder builder = session.getCriteriaBuilder();
+        CriteriaQuery<Class> criteriaQuery = builder.createQuery(clazz);
+        Root<Class> root = criteriaQuery.from(clazz);
+        criteriaQuery.select(root);
+        Query<Class> query = session.createQuery(criteriaQuery);
+        List<Class> instances = query.getResultList();
+//        final List<?> instances = session.createCriteria(clazz).list();
         for (Object o : instances) {
             LOGGER.debug("deleting {}", o);
             session.delete(o);
@@ -59,7 +69,7 @@ public final class DBUtility {
      * @return true if in database, otherwise false
      */
     public static boolean isInDatabase(
-            final SessionFactory sessionFactory,
+            final EntityManager sessionFactory,
             final Class<?> clazz,
             final String name) {
         LOGGER.debug("checking if {} is in db", clazz.toString(), name);
@@ -76,20 +86,28 @@ public final class DBUtility {
      * @param value value
      * @return true if in database, otherwise false
      */
+    @SuppressWarnings("unchecked")
     public static boolean isInDatabase(
-            final SessionFactory sessionFactory,
-            final Class<?> clazz,
+            final EntityManager sessionFactory,
+            final Class clazz,
             final String propName, final Object value) {
         LOGGER.debug("checking if {} with property {} set to {}",
                 clazz.toString(), propName, value);
         Object search = null;
         Transaction tx = null;
-        Session session = sessionFactory.getCurrentSession();
+        Session session = sessionFactory.unwrap(org.hibernate.Session.class);
         try {
             LOGGER.debug("retrieving");
             tx = session.beginTransaction();
-            search = session.createCriteria(clazz)
-                    .add(Restrictions.eq(propName, value)).uniqueResult();
+            CriteriaBuilder builder = session.getCriteriaBuilder();
+            CriteriaQuery<Class> criteriaQuery = builder.createQuery(clazz);
+            Root<Class> root = criteriaQuery.from(clazz);
+            criteriaQuery.select(root);
+            Query<Class> query = session.createQuery(criteriaQuery);
+            Class instances = query.getSingleResult();
+            search = instances;
+//            search = session.createCriteria(clazz)
+//                    .add(Restrictions.eq(propName, value)).uniqueResult();
             session.getTransaction().commit();
         } catch (Exception e) {
             final String msg = "unable to retrieve";
@@ -111,15 +129,22 @@ public final class DBUtility {
      * @param clazz clazz
      * @return number of instance of <code>clazz</code> in the database
      */
-    public static int getCount(final SessionFactory sessionFactory, final Class<?> clazz) {
+    @SuppressWarnings("unchecked")
+    public static int getCount(final EntityManager sessionFactory, final Class clazz) {
         LOGGER.debug("counting number of instances of {} in db", clazz);
         int count = 0;
         Transaction tx = null;
-        Session session = sessionFactory.getCurrentSession();
+        Session session = sessionFactory.unwrap(org.hibernate.Session.class);
         try {
             tx = session.beginTransaction();
-            List<?> found = session.createCriteria(clazz).list();
-            count = found.size();
+            CriteriaBuilder builder = session.getCriteriaBuilder();
+            CriteriaQuery<Class> criteriaQuery = builder.createQuery(clazz);
+            Root<Class> root = criteriaQuery.from(clazz);
+            criteriaQuery.select(root);
+            Query<Class> query = session.createQuery(criteriaQuery);
+            List<Class> instances = query.getResultList();
+//            List<?> found = session.createCriteria(clazz).list();
+            count = instances.size();
             session.getTransaction().commit();
         } catch (Exception e) {
             final String msg = "unable to retrieve";

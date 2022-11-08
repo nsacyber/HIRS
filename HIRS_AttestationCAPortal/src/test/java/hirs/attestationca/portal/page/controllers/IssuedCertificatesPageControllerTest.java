@@ -1,33 +1,33 @@
 package hirs.attestationca.portal.page.controllers;
 
+import hirs.attestationca.portal.page.PageControllerTest;
 import hirs.data.persist.Device;
-import hirs.data.persist.DeviceGroup;
 import hirs.data.persist.certificate.Certificate;
 import hirs.data.persist.certificate.EndorsementCredential;
 import hirs.data.persist.certificate.IssuedAttestationCertificate;
 import hirs.data.persist.certificate.PlatformCredential;
 import hirs.persist.CertificateManager;
-import hirs.persist.DeviceGroupManager;
 import hirs.persist.DeviceManager;
-import static hirs.attestationca.portal.page.Page.ISSUED_CERTIFICATES;
-import hirs.attestationca.portal.page.PageControllerTest;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.test.annotation.DirtiesContext;
+import org.springframework.test.annotation.Rollback;
+import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
+import org.testng.annotations.BeforeClass;
+import org.testng.annotations.Test;
+
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.HashSet;
 import java.util.Set;
+
+import static hirs.attestationca.portal.page.Page.ISSUED_CERTIFICATES;
 import static org.hamcrest.Matchers.hasSize;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.test.annotation.DirtiesContext;
-import org.springframework.test.annotation.Rollback;
-import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-import org.testng.annotations.BeforeClass;
-import org.testng.annotations.Test;
 
 /**
  * Integration tests that test the URL End Points of IssuedCertificatesPageController.
@@ -47,14 +47,11 @@ public class IssuedCertificatesPageControllerTest extends PageControllerTest {
     private Set<PlatformCredential> platformCredentials;
     private IssuedAttestationCertificate issued;
 
-    private DeviceGroup group;
     private Device device;
 
     @Autowired
     private DeviceManager deviceManager;
 
-    @Autowired
-    private DeviceGroupManager deviceGroupManager;
 
     @Autowired
     private CertificateManager certificateManager;
@@ -65,13 +62,8 @@ public class IssuedCertificatesPageControllerTest extends PageControllerTest {
      */
     @BeforeClass
     public void beforeMethod() throws IOException {
-        //Create new device grup
-        group = new DeviceGroup("default");
-        group = deviceGroupManager.saveDeviceGroup(group);
-
         //Create new device and save it
         device = new Device("Test");
-        device.setDeviceGroup(group);
         device = deviceManager.saveDevice(device);
 
         //Upload and save EK Cert
@@ -82,7 +74,7 @@ public class IssuedCertificatesPageControllerTest extends PageControllerTest {
                             null,
                             null);
         ec.setDevice(device);
-        certificateManager.save(ec);
+        certificateManager.saveCertificate(ec);
 
         //Set up multi-platform cert Attestation Cert
         platformCredentials = new HashSet<>();
@@ -95,7 +87,7 @@ public class IssuedCertificatesPageControllerTest extends PageControllerTest {
                             null,
                             null);
         pc.setDevice(device);
-        certificateManager.save(pc);
+        certificateManager.saveCertificate(pc);
         platformCredentials.add(pc);
 
         pc = (PlatformCredential)
@@ -105,7 +97,7 @@ public class IssuedCertificatesPageControllerTest extends PageControllerTest {
                             null,
                             null);
         pc.setDevice(device);
-        certificateManager.save(pc);
+        certificateManager.saveCertificate(pc);
         platformCredentials.add(pc);
 
         issued = (IssuedAttestationCertificate)
@@ -115,7 +107,7 @@ public class IssuedCertificatesPageControllerTest extends PageControllerTest {
                             ec,
                             platformCredentials);
         issued.setDevice(device);
-        certificateManager.save(issued);
+        certificateManager.saveCertificate(issued);
 
     }
 

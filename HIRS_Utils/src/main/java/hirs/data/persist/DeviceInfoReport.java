@@ -1,12 +1,12 @@
 package hirs.data.persist;
 
+import hirs.data.persist.info.FirmwareInfo;
+import hirs.data.persist.info.HardwareInfo;
 import hirs.data.persist.info.NetworkInfo;
 import hirs.data.persist.info.OSInfo;
-import hirs.data.persist.info.HardwareInfo;
 import hirs.data.persist.info.TPMInfo;
-import hirs.data.persist.info.FirmwareInfo;
-import hirs.data.persist.baseline.TpmWhiteListBaseline;
-import static org.apache.logging.log4j.LogManager.getLogger;
+import hirs.utils.VersionHelper;
+import org.apache.logging.log4j.Logger;
 
 import javax.persistence.Column;
 import javax.persistence.Embedded;
@@ -17,11 +17,9 @@ import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlSeeAlso;
-
-import hirs.utils.VersionHelper;
-import org.apache.logging.log4j.Logger;
-
 import java.io.Serializable;
+
+import static org.apache.logging.log4j.LogManager.getLogger;
 
 /**
  * A <code>DeficeInfoReport</code> is a <code>Report</code> used to transfer the
@@ -249,7 +247,7 @@ public class DeviceInfoReport extends Report implements Serializable {
     * @return True, if one of the TPM baselines in the set has the same kernel-specific
     * info as this DeviceinfoReport.
     */
-    public final boolean matchesKernelInfo(final Iterable<TpmWhiteListBaseline> tpmBaselines) {
+    public final boolean matchesKernelInfo(final Iterable<Digest> tpmBaselines) {
         boolean match = false;
 
         if (tpmBaselines != null) {
@@ -257,8 +255,8 @@ public class DeviceInfoReport extends Report implements Serializable {
             final OSInfo kernelOSInfo = getOSInfo();
 
             // perform the search
-            for (final TpmWhiteListBaseline baseline : tpmBaselines) {
-                final OSInfo baselineOSInfo = baseline.getOSInfo();
+            for (final Digest baseline : tpmBaselines) {
+                final OSInfo baselineOSInfo = new OSInfo();//baseline.getOSInfo();
                 if(baselineOSInfo.getOSName().equalsIgnoreCase(kernelOSInfo.getOSName())
                     && baselineOSInfo.getOSVersion().equalsIgnoreCase(kernelOSInfo.getOSVersion())) {
                     match = true;

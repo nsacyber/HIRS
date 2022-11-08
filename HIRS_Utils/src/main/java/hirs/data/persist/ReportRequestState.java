@@ -15,12 +15,56 @@ import java.util.Date;
  * Whenever the server issues a {@link hirs.ReportRequest}  for a {@link Device}, the server
  * will create a <code>ReportRequestState</code>. This state will be used track if the given
  * <code>Device</code> has fulfilled reporting requirements in a timely manner. A client is late in
- * reporting if a report has not been received within the {@link DeviceGroup} threshold. This state
+ * reporting if a report has not been received within the threshold. This state
  * includes the necessary information for the server to generate alerts when a client fails to
  * report.
  */
 @Entity
 public class ReportRequestState extends State {
+    /**
+     * A second period in milliseconds.
+     */
+    public static final long SECOND_MS_INTERVAL = 1000;
+
+    /**
+     * A minute period in milliseconds.
+     */
+    public static final long MINUTE_MS_INTERVAL = 60 * SECOND_MS_INTERVAL;
+
+    /**
+     * five minutes period in milliseconds.
+     */
+    public static final long FIVE_MINUTES_MS_INTERVAL = 5  * MINUTE_MS_INTERVAL;
+
+    /**
+     * An hour period in milliseconds.
+     */
+    public static final long HOUR_MS_INTERVAL = 60 * MINUTE_MS_INTERVAL;
+
+    /**
+     * A day period in milliseconds.
+     */
+    public static final long DAY_MS_INTERVAL = 24 * HOUR_MS_INTERVAL;
+
+    /**
+     * The default for on demand and periodic report thresholds.
+     */
+    public static final long DEFAULT_REPORT_DELAY_THRESHOLD = 12 * HOUR_MS_INTERVAL;
+
+    /**
+     * Minimum Periodic report period is once every 500 millisecond.
+     */
+    public static final long MINIMUM_PERIODIC_REPORT_INTERVAL = FIVE_MINUTES_MS_INTERVAL;
+
+    /**
+     * Minimum allowed value for any report Threshold.
+     */
+    public static final long MINIMUM_THRESHOLD_INTERVAL_MS = MINUTE_MS_INTERVAL;
+
+    /**
+     * The default job frequency of 1 day in milliseconds.
+     */
+    public static final long DEFAULT_JOB_FREQUENCY_MS = DAY_MS_INTERVAL;
 
     @OneToOne(optional = false, fetch = FetchType.EAGER)
     private Device device;

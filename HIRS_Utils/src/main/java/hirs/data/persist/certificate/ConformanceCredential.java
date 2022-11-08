@@ -1,7 +1,7 @@
 package hirs.data.persist.certificate;
 
-import hirs.persist.CertificateManager;
 import hirs.persist.CertificateSelector;
+import hirs.persist.service.CertificateService;
 
 import javax.persistence.Entity;
 import java.io.IOException;
@@ -18,24 +18,26 @@ public class ConformanceCredential extends Certificate {
      */
     public static class Selector extends CertificateSelector<ConformanceCredential> {
         /**
-         * Construct a new CertificateSelector that will use the given {@link CertificateManager} to
+         * Construct a new CertificateSelector that will use the
+         * given {@link CertificateService} to
          * retrieve one or many ConformanceCredentials.
          *
-         * @param certificateManager the certificate manager to be used to retrieve certificates
+         * @param certificateService the certificate service to be used to retrieve certificates
          */
-        public Selector(final CertificateManager certificateManager) {
-            super(certificateManager, ConformanceCredential.class);
+        public Selector(final CertificateService certificateService) {
+            super(certificateService, ConformanceCredential.class);
         }
     }
 
     /**
      * Get a Selector for use in retrieving ConformanceCredentials.
      *
-     * @param certMan the CertificateManager to be used to retrieve persisted certificates
+     * @param certificateService the CertificateService to be used to retrieve
+     *                          persisted certificates
      * @return a ConformanceCredential.Selector instance to use for retrieving certificates
      */
-    public static Selector select(final CertificateManager certMan) {
-        return new Selector(certMan);
+    public static Selector select(final CertificateService certificateService) {
+        return new Selector(certificateService);
     }
 
     /**

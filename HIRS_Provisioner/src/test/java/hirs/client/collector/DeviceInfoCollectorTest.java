@@ -60,7 +60,7 @@ public class DeviceInfoCollectorTest extends PowerMockTestCase {
         final int numberOfDmiDecodeCalls = 9;
 
         // the following two lines assert that collectDmiDecodeValue was called 9 times
-        PowerMockito.verifyStatic(times(numberOfDmiDecodeCalls));
+        PowerMockito.verifyStatic(DeviceInfoCollector.class, times(numberOfDmiDecodeCalls));
         DeviceInfoCollector.collectDmiDecodeValue(any(OSName.class), anyString());
 
         Assert.assertNotNull(report.getNetworkInfo());

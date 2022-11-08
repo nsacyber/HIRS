@@ -2,6 +2,7 @@ package hirs.persist;
 
 import hirs.FilteredRecordsList;
 import hirs.data.persist.Device;
+import org.springframework.stereotype.Repository;
 
 import java.util.List;
 import java.util.Set;
@@ -11,6 +12,7 @@ import java.util.Set;
  * <code>DeviceManager</code> is used to store and manage devices. It has
  * support for the basic create, read, update, and delete methods.
  */
+@Repository
 public interface DeviceManager extends OrderedListQuerier<Device> {
 
     /**

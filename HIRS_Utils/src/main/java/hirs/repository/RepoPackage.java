@@ -2,8 +2,6 @@ package hirs.repository;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import hirs.data.persist.Digest;
-import hirs.data.persist.baseline.IMABaselineRecord;
-import org.hibernate.annotations.Type;
 
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
@@ -11,8 +9,6 @@ import javax.persistence.Embedded;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
 import javax.persistence.Id;
-import javax.persistence.JoinColumn;
-import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
 import javax.persistence.UniqueConstraint;
@@ -25,7 +21,7 @@ import java.util.UUID;
  * This class represents a software package found in a repository.  It is identified by its name,
  * version, and target architecture, and can store measurements of its contents.  These measurements
  * are the listing of the package's files (referenced by absolute path) and their hashes, stored
- * as {@link IMABaselineRecord}s.
+ * as {@link Object}s.
  */
 @Entity
 @Table(uniqueConstraints = @UniqueConstraint(columnNames =
@@ -34,7 +30,6 @@ import java.util.UUID;
 public abstract class RepoPackage {
     @Id
     @Column(name = "id")
-    @Type(type = "uuid-char")
     private UUID id;
 
     @Column
@@ -50,9 +45,9 @@ public abstract class RepoPackage {
     @Column
     private String architecture;
 
-    @ManyToOne
-    @JoinColumn(name = "sourceRepository")
-    private Repository<?> sourceRepository;
+//    @ManyToOne
+//    @JoinColumn(name = "sourceRepository")
+//    private Repository<?> sourceRepository;
 
     @Column
     private boolean measured = false;
@@ -65,7 +60,7 @@ public abstract class RepoPackage {
     @Column(name = PACKAGE_RECORDS_FIELD)
     @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
     @JsonIgnore
-    private Set<IMABaselineRecord> packageRecords = null;
+    private Set<Object> packageRecords = null;
 
     @Embedded
     private Digest packageMeasurement = null;
@@ -108,7 +103,7 @@ public abstract class RepoPackage {
         this.version = version;
         this.release = release;
         this.architecture = architecture;
-        this.sourceRepository = sourceRepository;
+//        this.sourceRepository = sourceRepository;
         this.id = UUID.randomUUID();
     }
 
@@ -160,9 +155,9 @@ public abstract class RepoPackage {
      *
      * @return this package's source repository
      */
-    public final Repository<?> getSourceRepository() {
-        return sourceRepository;
-    }
+//    public final Repository<?> getSourceRepository() {
+//        return sourceRepository;
+//    }
 
     /**
      * Sets the measurements of the package.  Must be only called on a package that has not yet
@@ -171,7 +166,7 @@ public abstract class RepoPackage {
      * @param packageRecords the measurements of the contents of the package
      * @param packageMeasurement the measurement of the package itself
      */
-    public final void setAllMeasurements(final Set<IMABaselineRecord> packageRecords,
+    public final void setAllMeasurements(final Set<Object> packageRecords,
                                          final Digest packageMeasurement) {
         if (packageRecords == null) {
             throw new IllegalArgumentException("Measurements cannot be null.");
@@ -194,10 +189,10 @@ public abstract class RepoPackage {
     /**
      * Gets the package's measurements.
      *
-     * @return a set of {@link IMABaselineRecord}s representing the measurements of the files in
+     * @return a set of {@link Object}s representing the measurements of the files in
      * this package
      */
-    public final Set<IMABaselineRecord> getPackageRecords() {
+    public final Set<Object> getPackageRecords() {
         if (!measured) {
             throw new IllegalStateException("Package measurements not yet set.");
         }
@@ -273,9 +268,9 @@ public abstract class RepoPackage {
             return false;
         }
 
-        if (!sourceRepository.equals(that.sourceRepository)) {
-            return false;
-        }
+//        if (!sourceRepository.equals(that.sourceRepository)) {
+//            return false;
+//        }
 
         return true;
     }
@@ -287,14 +282,13 @@ public abstract class RepoPackage {
         result = prime * result + version.hashCode();
         result = prime * result + release.hashCode();
         result = prime * result + architecture.hashCode();
-        result = prime * result + sourceRepository.hashCode();
         return result;
     }
 
     @Override
     public final String toString() {
         return String.format(
-                "RepoPackage{name=%s, version=%s, release=%s, architecture=%s, sourceRepository=%s",
-                name, version, release, architecture, sourceRepository);
+                "RepoPackage{name=%s, version=%s, release=%s, architecture=%s",
+                name, version, release, architecture);
     }
 }

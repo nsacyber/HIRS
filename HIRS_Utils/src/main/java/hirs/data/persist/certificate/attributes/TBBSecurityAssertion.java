@@ -1,13 +1,14 @@
 package hirs.data.persist.certificate.attributes;
 
-import java.math.BigInteger;
-
 import org.bouncycastle.asn1.ASN1Boolean;
 import org.bouncycastle.asn1.ASN1Enumerated;
+import org.bouncycastle.asn1.ASN1IA5String;
 import org.bouncycastle.asn1.ASN1Integer;
 import org.bouncycastle.asn1.ASN1Sequence;
 import org.bouncycastle.asn1.ASN1TaggedObject;
 import org.bouncycastle.asn1.DERIA5String;
+
+import java.math.BigInteger;
 
 /**
  * Basic class that handle component identifiers from the Platform Configuration
@@ -93,7 +94,7 @@ public class TBBSecurityAssertion {
     private FIPSLevel fipsLevel;
     private MeasurementRootType rtmType;
     private ASN1Boolean iso9000Certified;
-    private DERIA5String iso9000Uri;
+    private ASN1IA5String iso9000Uri;
 
     /**
      * Default constructor.
@@ -122,7 +123,7 @@ public class TBBSecurityAssertion {
             final FIPSLevel fipsLevel,
             final MeasurementRootType rtmType,
             final ASN1Boolean iso9000Certified,
-            final DERIA5String iso9000Uri) {
+            final ASN1IA5String iso9000Uri) {
         this.version = version;
         this.ccInfo = ccInfo;
         this.fipsLevel = fipsLevel;
@@ -192,7 +193,7 @@ public class TBBSecurityAssertion {
         // Check if it's a IA5String
         if (index < sequenceSize
                 && sequence.getObjectAt(index).toASN1Primitive() instanceof DERIA5String) {
-            iso9000Uri = DERIA5String.getInstance(sequence.getObjectAt(index));
+            iso9000Uri = ASN1IA5String.getInstance(sequence.getObjectAt(index));
         }
     }
 
@@ -269,14 +270,14 @@ public class TBBSecurityAssertion {
     /**
      * @return the iso9000Uri
      */
-    public DERIA5String getIso9000Uri() {
+    public ASN1IA5String getIso9000Uri() {
         return iso9000Uri;
     }
 
     /**
      * @param iso9000Uri the iso9000Uri to set
      */
-    public void setIso9000Uri(final DERIA5String iso9000Uri) {
+    public void setIso9000Uri(final ASN1IA5String iso9000Uri) {
         this.iso9000Uri = iso9000Uri;
     }
 

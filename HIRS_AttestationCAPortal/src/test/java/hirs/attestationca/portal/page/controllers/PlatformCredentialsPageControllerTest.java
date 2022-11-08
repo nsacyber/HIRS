@@ -1,10 +1,10 @@
 package hirs.attestationca.portal.page.controllers;
 
-import hirs.data.persist.certificate.Certificate;
-import hirs.data.persist.certificate.PlatformCredential;
-import hirs.persist.CertificateManager;
 import hirs.attestationca.portal.page.PageControllerTest;
 import hirs.attestationca.portal.page.PageMessages;
+import hirs.data.persist.certificate.Certificate;
+import hirs.data.persist.certificate.PlatformCredential;
+import hirs.persist.service.CertificateService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.mock.web.MockMultipartFile;
@@ -29,7 +29,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)
 public class PlatformCredentialsPageControllerTest extends PageControllerTest {
     @Autowired
-    private CertificateManager certificateManager;
+    private CertificateService certificateService;
 
     // A cert that is an actual PC cert file and should be parsable.
     private MockMultipartFile realPcCertFile;
@@ -82,7 +82,7 @@ public class PlatformCredentialsPageControllerTest extends PageControllerTest {
     private Certificate uploadTestCert() throws Exception {
         // perform upload. Attach csv file and add HTTP parameters for the baseline name and type.
         MvcResult result = getMockMvc().perform(MockMvcRequestBuilders
-                .fileUpload("/certificate-request/platform-credentials/upload")
+                .multipart("/certificate-request/platform-credentials/upload")
                 .file(realPcCertFile))
                 .andExpect(status().is3xxRedirection())
                 .andReturn();
@@ -95,7 +95,7 @@ public class PlatformCredentialsPageControllerTest extends PageControllerTest {
 
         // verify the cert was actually stored
         Set<Certificate> records =
-                certificateManager.get(PlatformCredential.select(certificateManager));
+                certificateService.getCertificate(PlatformCredential.select(certificateService));
         Assert.assertEquals(records.size(), 1);
 
         Certificate cert = records.iterator().next();
@@ -113,8 +113,8 @@ public class PlatformCredentialsPageControllerTest extends PageControllerTest {
             .andReturn();
 
         Set<Certificate> records =
-                certificateManager.get(PlatformCredential
-                        .select(certificateManager).includeArchived());
+                certificateService.getCertificate(PlatformCredential
+                        .select(certificateService).includeArchived());
         Assert.assertEquals(records.size(), 1);
 
         Assert.assertTrue(records.iterator().next().isArchived());
@@ -133,7 +133,7 @@ public class PlatformCredentialsPageControllerTest extends PageControllerTest {
 
         // upload the same cert again
         MvcResult result = getMockMvc().perform(MockMvcRequestBuilders
-                .fileUpload("/certificate-request/platform-credentials/upload")
+                .multipart("/certificate-request/platform-credentials/upload")
                 .file(realPcCertFile))
                 .andExpect(status().is3xxRedirection())
                 .andReturn();
@@ -147,8 +147,8 @@ public class PlatformCredentialsPageControllerTest extends PageControllerTest {
                 "Pre-existing certificate found and unarchived (" + REALPCCERT + "): ");
 
         // verify the cert was actually stored
-        Set<Certificate> records = certificateManager.get(PlatformCredential.select(
-                certificateManager));
+        Set<Certificate> records = certificateService.getCertificate(PlatformCredential.select(
+                certificateService));
         Assert.assertEquals(records.size(), 1);
 
         Certificate newCert = records.iterator().next();
@@ -168,12 +168,12 @@ public class PlatformCredentialsPageControllerTest extends PageControllerTest {
     public void uploadNonPlatformCert() throws Exception {
         // verify the cert was not actually stored
         Set<Certificate> originalRecords =
-                certificateManager.get(PlatformCredential.select(certificateManager));
+                certificateService.getCertificate(PlatformCredential.select(certificateService));
         Assert.assertEquals(originalRecords.size(), 0);
 
         // perform upload. Attach csv file and add HTTP parameters for the baseline name and type.
         MvcResult result = getMockMvc().perform(MockMvcRequestBuilders
-                .fileUpload("/certificate-request/platform-credentials/upload")
+                .multipart("/certificate-request/platform-credentials/upload")
                 .file(nonPcCertFile))
                 .andExpect(status().is3xxRedirection())
                 .andReturn();
@@ -186,7 +186,7 @@ public class PlatformCredentialsPageControllerTest extends PageControllerTest {
 
         // verify the cert was not actually stored
         Set<Certificate> records =
-                certificateManager.get(PlatformCredential.select(certificateManager));
+                certificateService.getCertificate(PlatformCredential.select(certificateService));
         Assert.assertEquals(records.size(), 0);
     }
 
@@ -199,7 +199,7 @@ public class PlatformCredentialsPageControllerTest extends PageControllerTest {
     public void uploadBadPlatformCert() throws Exception {
         // perform upload. Attach csv file and add HTTP parameters for the baseline name and type.
         MvcResult result = getMockMvc().perform(MockMvcRequestBuilders
-                .fileUpload("/certificate-request/platform-credentials/upload")
+                .multipart("/certificate-request/platform-credentials/upload")
                 .file(badCertFile))
                 .andExpect(status().is3xxRedirection())
                 .andReturn();
@@ -212,7 +212,7 @@ public class PlatformCredentialsPageControllerTest extends PageControllerTest {
 
         // verify the cert was not actually stored
         Set<Certificate> records =
-                certificateManager.get(PlatformCredential.select(certificateManager));
+                certificateService.getCertificate(PlatformCredential.select(certificateService));
         Assert.assertEquals(records.size(), 0);
     }
 }

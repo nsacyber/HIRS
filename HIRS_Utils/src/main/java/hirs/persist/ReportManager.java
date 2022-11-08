@@ -1,12 +1,8 @@
 package hirs.persist;
 
-import hirs.FilteredRecordsList;
-import hirs.data.bean.SimpleImaRecordBean;
-import hirs.data.persist.IMAMeasurementRecord;
 import hirs.data.persist.Report;
 
 import java.util.List;
-import java.util.Map;
 import java.util.UUID;
 
 /**
@@ -43,71 +39,6 @@ public interface ReportManager {
      *             if unable to create the list
      */
     List<Report> getReportList(Class<? extends Report> clazz)
-            throws ReportManagerException;
-
-    /**
-     * Returns a list of all Report Records that are ordered by a column
-     * and direction (ASC, DESC) that is provided by the user.  This
-     * method contains database interactions designed to extract specific
-     * fields from the database to avoid retrieving full records in order
-     * to improve query performance and reduce the size of teh data set
-     * returned to the caller. This method helps support the server-side
-     * processing in the JQuery DataTables.
-     *
-     * @param scope the scope of the search: NONE, ALL, REPORT, or DEVICE
-     * @param id the id or name of the REPORT or DEVICE to search
-     * @param sinceLastFullReport
-     *      limits the records to those since the last full report for the device
-     * @param columnToOrder Column to be ordered
-     * @param ascending direction of sort
-     * @param firstResult starting point of first result in set
-     * @param maxResults total number we want returned for display in table
-     * @param search string of criteria to be matched to visible columns
-     * @param searchableColumns map containing columns that search string can
-     *                          be applied to
-     * @return FilteredRecordsList object with fields for DataTables
-     * @throws ReportManagerException if unable to create the list
-     */
-    @SuppressWarnings("checkstyle:parameternumber")
-    FilteredRecordsList<SimpleImaRecordBean> getOrderedRecordListWithoutRecords(
-            IMARecordScope scope,
-            String id,
-            boolean sinceLastFullReport,
-            IMARecordField columnToOrder,
-            boolean ascending,
-            int firstResult,
-            int maxResults,
-            String search,
-            Map<String, Boolean> searchableColumns)
-            throws ReportManagerException;
-
-    /**
-     * Returns a list of all Report Records that are ordered by a column
-     * and direction (ASC, DESC) that is provided by the user.  This method
-     * helps support the server-side processing in the JQuery DataTables.
-     *
-     * @param scope the scope of the search: NONE, ALL, REPORT, or DEVICE
-     * @param id the id or name of the REPORT or DEVICE to search
-     * @param sinceLastFullReport
-     *      limits the records to those since the last full report for the device
-     * @param columnToOrder Column to be ordered
-     * @param ascending direction of sort
-     * @param firstResult starting point of first result in set
-     * @param maxResults total number we want returned for display in table
-     * @param search string of criteria to be matched to visible columns
-     * @return FilteredRecordsList object with fields for DataTables
-     * @throws ReportManagerException if unable to create the list
-     */
-    @SuppressWarnings("checkstyle:parameternumber")
-    FilteredRecordsList<IMAMeasurementRecord> getOrderedRecordList(
-            IMARecordScope scope,
-            String id,
-            boolean sinceLastFullReport,
-            IMARecordField columnToOrder,
-            boolean ascending,
-            int firstResult,
-            int maxResults,
-            String search)
             throws ReportManagerException;
 
     /**

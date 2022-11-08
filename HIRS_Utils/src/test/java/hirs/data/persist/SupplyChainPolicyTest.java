@@ -1,5 +1,6 @@
 package hirs.data.persist;
 
+import hirs.data.persist.policy.SupplyChainPolicy;
 import org.hibernate.Session;
 import org.testng.Assert;
 import org.testng.annotations.Test;

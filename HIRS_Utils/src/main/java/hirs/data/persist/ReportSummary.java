@@ -20,6 +20,7 @@ import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
+import java.io.Serializable;
 import java.util.Collections;
 import java.util.Date;
 import java.util.Set;
@@ -33,7 +34,7 @@ import java.util.Set;
 @Table(name = "ReportSummary")
 @XmlRootElement
 @XmlAccessorType(XmlAccessType.NONE)
-public class ReportSummary {
+public class ReportSummary implements Serializable {
 
     /**
      * The unique ID of the ReportSummary. The ID is randomly generated when the

@@ -1,7 +1,7 @@
 package hirs.data.persist.certificate;
 
-import hirs.persist.CertificateManager;
 import hirs.persist.CertificateSelector;
+import hirs.persist.service.CertificateService;
 import org.apache.commons.codec.binary.Hex;
 
 import javax.persistence.Column;
@@ -46,13 +46,13 @@ public class CertificateAuthorityCredential extends Certificate {
      */
     public static class Selector extends CertificateSelector<CertificateAuthorityCredential> {
         /**
-         * Construct a new CertificateSelector that will use the given {@link CertificateManager} to
+         * Construct a new CertificateSelector that will use the given {@link CertificateService} to
          * retrieve one or many CertificateAuthorityCredentials.
          *
-         * @param certificateManager the certificate manager to be used to retrieve certificates
+         * @param certificateService the certificate manager to be used to retrieve certificates
          */
-        public Selector(final CertificateManager certificateManager) {
-            super(certificateManager, CertificateAuthorityCredential.class);
+        public Selector(final CertificateService certificateService) {
+            super(certificateService, CertificateAuthorityCredential.class);
         }
 
         /**
@@ -74,7 +74,7 @@ public class CertificateAuthorityCredential extends Certificate {
      * @param certMan the CertificateManager to be used to retrieve persisted certificates
      * @return a CertificateAuthorityCredential.Selector instance to use for retrieving certificates
      */
-    public static Selector select(final CertificateManager certMan) {
+    public static Selector select(final CertificateService certMan) {
         return new Selector(certMan);
     }
 

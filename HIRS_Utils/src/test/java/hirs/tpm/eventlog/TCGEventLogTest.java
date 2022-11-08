@@ -1,23 +1,23 @@
 package hirs.tpm.eventlog;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.security.NoSuchAlgorithmException;
-import java.security.cert.CertificateException;
-import java.util.Arrays;
-//import java.util.List;
-//import java.util.Set;
-
 import org.apache.commons.io.IOUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-//import org.hibernate.Session;
-
-
 import org.testng.Assert;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
+import java.security.NoSuchAlgorithmException;
+import java.security.cert.CertificateException;
+import java.util.Arrays;
+
+//import java.util.List;
+//import java.util.Set;
+//import org.hibernate.Session;
 
 //import hirs.data.persist.Baseline;
 //import hirs.data.persist.Digest;
@@ -92,7 +92,7 @@ public class TCGEventLogTest {
      TCGEventLog evlog = new TCGEventLog(rawLogBytes, false, false, false);
      String[] pcrFromLog = evlog.getExpectedPCRValues();
      pcrs = this.getClass().getResourceAsStream(DEFAULT_EXPECTED_PCRS);
-     Object[] pcrObj = IOUtils.readLines(pcrs).toArray();
+     Object[] pcrObj = IOUtils.readLines(pcrs, StandardCharsets.UTF_16).toArray();
      String[] pcrTxt = Arrays.copyOf(pcrObj, pcrObj.length, String[].class);
      // Test 1 get all PCRs
      for (int i = 0; i < 24; i++) {
@@ -130,7 +130,7 @@ public class TCGEventLogTest {
       TCGEventLog evlog =  new TCGEventLog(rawLogBytes, false, false, false);
       String[] pcrFromLog = evlog.getExpectedPCRValues();
       pcrs = this.getClass().getResourceAsStream(SHA1_EXPECTED_PCRS);
-      Object[] pcrObj = IOUtils.readLines(pcrs).toArray();
+      Object[] pcrObj = IOUtils.readLines(pcrs, StandardCharsets.UTF_16).toArray();
       String[] pcrTxt = Arrays.copyOf(pcrObj, pcrObj.length, String[].class);
       // Test 1 get all PCRs
        for (int i = 0; i < 24; i++) {

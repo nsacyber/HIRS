@@ -1,5 +1,9 @@
 package hirs.data.persist.tpm;
 
+import org.apache.commons.codec.binary.Hex;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import javax.persistence.Embeddable;
 import javax.persistence.Embedded;
 import javax.xml.bind.annotation.XmlAccessType;
@@ -10,11 +14,7 @@ import javax.xml.bind.annotation.XmlSchemaType;
 import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.adapters.NormalizedStringAdapter;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
-
-import org.apache.commons.codec.binary.Hex;
-import org.apache.logging.log4j.Logger;
-import org.apache.logging.log4j.LogManager;
-
+import java.io.Serializable;
 import java.nio.ByteBuffer;
 import java.nio.charset.Charset;
 import java.util.Arrays;
@@ -30,7 +30,7 @@ import java.util.Arrays;
         namespace = "http://www.trustedcomputinggroup.org/XML/SCHEMA/"
                 + "Integrity_Report_v1_0#", propOrder = {"pcrInfoShort" })
 @Embeddable
-public class QuoteInfo2 {
+public class QuoteInfo2 implements Serializable {
 
     private static final Logger LOGGER = LogManager.getLogger(QuoteInfo2.class);
 

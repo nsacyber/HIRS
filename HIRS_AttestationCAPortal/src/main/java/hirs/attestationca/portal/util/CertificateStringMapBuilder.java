@@ -1,30 +1,29 @@
 package hirs.attestationca.portal.util;
 
+import hirs.persist.service.CertificateService;
+import hirs.data.persist.certificate.Certificate;
+import hirs.data.persist.certificate.CertificateAuthorityCredential;
+import hirs.data.persist.certificate.EndorsementCredential;
+import hirs.data.persist.certificate.IssuedAttestationCertificate;
+import hirs.data.persist.certificate.PlatformCredential;
+import hirs.data.persist.certificate.attributes.ComponentIdentifier;
+import hirs.data.persist.certificate.attributes.PlatformConfiguration;
+import hirs.utils.BouncyCastleUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.bouncycastle.util.encoders.Hex;
 
 import java.io.IOException;
 import java.math.BigInteger;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Set;
 import java.util.List;
-import java.util.Comparator;
-import java.util.stream.Collectors;
+import java.util.Set;
 import java.util.UUID;
-import hirs.data.persist.certificate.Certificate;
-import hirs.data.persist.certificate.CertificateAuthorityCredential;
-import hirs.data.persist.certificate.EndorsementCredential;
-import hirs.data.persist.certificate.PlatformCredential;
-import hirs.data.persist.certificate.IssuedAttestationCertificate;
-import hirs.data.persist.certificate.attributes.ComponentIdentifier;
-import hirs.data.persist.certificate.attributes.PlatformConfiguration;
-import hirs.persist.CertificateManager;
-import hirs.utils.BouncyCastleUtils;
-import org.bouncycastle.util.encoders.Hex;
-
-import java.util.Collections;
+import java.util.stream.Collectors;
 
 /**
  * Utility class for mapping certificate information in to string maps. These are used to display
@@ -43,11 +42,11 @@ public final class CertificateStringMapBuilder {
      * Returns the general information.
      *
      * @param certificate certificate to get the general information.
-     * @param certificateManager the certificate manager for retrieving certs.
+     * @param certificateService the certificate service for retrieving certs.
      * @return a hash map with the general certificate information.
      */
     public static HashMap<String, String> getGeneralCertificateInfo(
-            final Certificate certificate, final CertificateManager certificateManager) {
+            final Certificate certificate, final CertificateService certificateService) {
         HashMap<String, String> data = new HashMap<>();
 
         if (certificate != null) {
@@ -102,7 +101,7 @@ public final class CertificateStringMapBuilder {
             //Get issuer ID if not self signed
             if (data.get("isSelfSigned").equals("false")) {
                 //Get the missing certificate chain for not self sign
-                Certificate missingCert = containsAllChain(certificate, certificateManager);
+                Certificate missingCert = containsAllChain(certificate, certificateService);
                 String issuerResult;
 
                 if (missingCert != null) {
@@ -111,7 +110,7 @@ public final class CertificateStringMapBuilder {
                 }
                 //Find all certificates that could be the issuer certificate based on subject name
                 for (Certificate issuerCert : CertificateAuthorityCredential
-                        .select(certificateManager)
+                        .select(certificateService)
                         .bySubjectSorted(certificate.getIssuerSorted())
                         .getCertificates()) {
 
@@ -141,12 +140,12 @@ public final class CertificateStringMapBuilder {
      * Recursive function that check if all the certificate chain is present.
      *
      * @param certificate certificate to get the issuer
-     * @param certificateManager the certificate manager for retrieving certs.
+     * @param certificateService the certificate service for retrieving certs.
      * @return a boolean indicating if it has the full chain or not.
      */
     public static Certificate containsAllChain(
             final Certificate certificate,
-            final CertificateManager certificateManager) {
+            final CertificateService certificateService) {
         Set<CertificateAuthorityCredential> issuerCertificates = new HashSet<>();
         CertificateAuthorityCredential skiCA = null;
         String issuerResult;
@@ -155,7 +154,7 @@ public final class CertificateStringMapBuilder {
                 && !certificate.getAuthKeyId().isEmpty()) {
             byte[] bytes = Hex.decode(certificate.getAuthKeyId());
             skiCA = CertificateAuthorityCredential
-                    .select(certificateManager)
+                    .select(certificateService)
                     .bySubjectKeyIdentifier(bytes).getCertificate();
         } else {
             LOGGER.error(String.format("Certificate (%s) for %s has no authority key identifier.",
@@ -166,12 +165,12 @@ public final class CertificateStringMapBuilder {
             if (certificate.getIssuerSorted() == null
                     || certificate.getIssuerSorted().isEmpty()) {
                 //Get certificates by subject
-                issuerCertificates = CertificateAuthorityCredential.select(certificateManager)
+                issuerCertificates = CertificateAuthorityCredential.select(certificateService)
                         .bySubject(certificate.getIssuer())
                         .getCertificates();
             } else {
                 //Get certificates by subject organization
-                issuerCertificates = CertificateAuthorityCredential.select(certificateManager)
+                issuerCertificates = CertificateAuthorityCredential.select(certificateService)
                         .bySubjectSorted(certificate.getIssuerSorted())
                         .getCertificates();
             }
@@ -189,7 +188,7 @@ public final class CertificateStringMapBuilder {
                             issuerCert.getSubject())) {
                         return null;
                     }
-                    return containsAllChain(issuerCert, certificateManager);
+                    return containsAllChain(issuerCert, certificateService);
                 }
             } catch (IOException e) {
                 LOGGER.error(e);
@@ -204,21 +203,21 @@ public final class CertificateStringMapBuilder {
      * Returns the Certificate Authority information.
      *
      * @param uuid ID for the certificate.
-     * @param certificateManager the certificate manager for retrieving certs.
+     * @param certificateService the certificate service for retrieving certs.
      * @return a hash map with the endorsement certificate information.
      */
     public static HashMap<String, String> getCertificateAuthorityInformation(final UUID uuid,
-            final CertificateManager certificateManager) {
+            final CertificateService certificateService) {
         CertificateAuthorityCredential certificate =
                 CertificateAuthorityCredential
-                        .select(certificateManager)
+                        .select(certificateService)
                         .byEntityId(uuid)
                         .getCertificate();
 
         String notFoundMessage = "Unable to find Certificate Authority "
                 + "Credential with ID: " + uuid;
 
-        return getCertificateAuthorityInfoHelper(certificateManager, certificate, notFoundMessage);
+        return getCertificateAuthorityInfoHelper(certificateService, certificate, notFoundMessage);
     }
 
 
@@ -226,23 +225,23 @@ public final class CertificateStringMapBuilder {
      * Returns the Trust Chain credential information.
      *
      * @param certificate the certificate
-     * @param certificateManager the certificate manager for retrieving certs.
+     * @param certificateService the certificate service for retrieving certs.
      * @return a hash map with the endorsement certificate information.
      */
     public static HashMap<String, String> getCertificateAuthorityInformation(
             final CertificateAuthorityCredential certificate,
-            final CertificateManager certificateManager) {
-        return getCertificateAuthorityInfoHelper(certificateManager, certificate,
+            final CertificateService certificateService) {
+        return getCertificateAuthorityInfoHelper(certificateService, certificate,
                 "No cert provided for mapping");
     }
 
     private static HashMap<String, String> getCertificateAuthorityInfoHelper(
-            final CertificateManager certificateManager,
+            final CertificateService certificateService,
             final CertificateAuthorityCredential certificate, final String notFoundMessage) {
         HashMap<String, String> data = new HashMap<>();
 
         if (certificate != null) {
-            data.putAll(getGeneralCertificateInfo(certificate, certificateManager));
+            data.putAll(getGeneralCertificateInfo(certificate, certificateService));
             data.put("subjectKeyIdentifier",
                     Arrays.toString(certificate.getSubjectKeyIdentifier()));
             //x509 credential version
@@ -259,18 +258,18 @@ public final class CertificateStringMapBuilder {
      * Returns the endorsement credential information.
      *
      * @param uuid ID for the certificate.
-     * @param certificateManager the certificate manager for retrieving certs.
+     * @param certificateService the certificate service for retrieving certs.
      * @return a hash map with the endorsement certificate information.
      */
     public static HashMap<String, String> getEndorsementInformation(final UUID uuid,
-            final CertificateManager certificateManager) {
+            final CertificateService certificateService) {
         HashMap<String, String> data = new HashMap<>();
         EndorsementCredential certificate = EndorsementCredential
-                .select(certificateManager)
+                .select(certificateService)
                 .byEntityId(uuid)
                 .getCertificate();
         if (certificate != null) {
-            data.putAll(getGeneralCertificateInfo(certificate, certificateManager));
+            data.putAll(getGeneralCertificateInfo(certificate, certificateService));
             // Set extra fields
             data.put("manufacturer", certificate.getManufacturer());
             data.put("model", certificate.getModel());
@@ -302,22 +301,22 @@ public final class CertificateStringMapBuilder {
      * Returns the Platform credential information.
      *
      * @param uuid ID for the certificate.
-     * @param certificateManager the certificate manager for retrieving certs.
+     * @param certificateService the certificate service for retrieving certs.
      * @return a hash map with the endorsement certificate information.
      * @throws IOException when parsing the certificate
      * @throws IllegalArgumentException invalid argument on parsing the certificate
      */
     public static HashMap<String, Object> getPlatformInformation(final UUID uuid,
-            final CertificateManager certificateManager)
+            final CertificateService certificateService)
             throws IllegalArgumentException, IOException {
         HashMap<String, Object> data = new HashMap<>();
         PlatformCredential certificate = PlatformCredential
-                .select(certificateManager)
+                .select(certificateService)
                 .byEntityId(uuid)
                 .getCertificate();
 
         if (certificate != null) {
-            data.putAll(getGeneralCertificateInfo(certificate, certificateManager));
+            data.putAll(getGeneralCertificateInfo(certificate, certificateService));
             data.put("credentialType", certificate.getCredentialType());
             data.put("platformType", certificate.getPlatformType());
             data.put("manufacturer", certificate.getManufacturer());
@@ -338,7 +337,7 @@ public final class CertificateStringMapBuilder {
             data.put("holderIssuer", certificate.getHolderIssuer());
             if (certificate.isBase()) {
                 EndorsementCredential ekCertificate = EndorsementCredential
-                        .select(certificateManager)
+                        .select(certificateService)
                         .bySerialNumber(certificate.getHolderSerialNumber())
                         .getCertificate();
                 if (ekCertificate != null) {
@@ -348,7 +347,7 @@ public final class CertificateStringMapBuilder {
                 if (certificate.getPlatformType() != null
                         && certificate.getPlatformType().equals("Delta")) {
                     PlatformCredential holderCertificate = PlatformCredential
-                            .select(certificateManager)
+                            .select(certificateService)
                             .bySerialNumber(certificate.getHolderSerialNumber())
                             .getCertificate();
                     if (holderCertificate != null) {
@@ -358,7 +357,7 @@ public final class CertificateStringMapBuilder {
             }
 
             PlatformCredential prevCertificate = PlatformCredential
-                    .select(certificateManager)
+                    .select(certificateService)
                     .byHolderSerialNumber(certificate.getSerialNumber())
                     .getCertificate();
 
@@ -398,7 +397,7 @@ public final class CertificateStringMapBuilder {
             if (certificate.getPlatformSerial() != null) {
                 // link certificate chain
                 List<PlatformCredential> chainCertificates = PlatformCredential
-                        .select(certificateManager)
+                        .select(certificateService)
                         .byBoardSerialNumber(certificate.getPlatformSerial())
                         .getCertificates().stream().collect(Collectors.toList());
 
@@ -463,18 +462,18 @@ public final class CertificateStringMapBuilder {
      * Returns the Issued Attestation Certificate information.
      *
      * @param uuid ID for the certificate.
-     * @param certificateManager the certificate manager for retrieving certs.
+     * @param certificateService the certificate service for retrieving certs.
      * @return a hash map with the endorsement certificate information.
      */
     public static HashMap<String, String> getIssuedInformation(final UUID uuid,
-            final CertificateManager certificateManager) {
+            final CertificateService certificateService) {
         HashMap<String, String> data = new HashMap<>();
         IssuedAttestationCertificate certificate = IssuedAttestationCertificate
-                .select(certificateManager)
+                .select(certificateService)
                 .byEntityId(uuid)
                 .getCertificate();
         if (certificate != null) {
-            data.putAll(getGeneralCertificateInfo(certificate, certificateManager));
+            data.putAll(getGeneralCertificateInfo(certificate, certificateService));
 
             // add endorsement credential ID if not null
             if (certificate.getEndorsementCredential() != null) {

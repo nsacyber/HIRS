@@ -1,9 +1,8 @@
 package hirs.persist;
 
-import static org.apache.logging.log4j.LogManager.getLogger;
 import hirs.appraiser.Appraiser;
-import hirs.data.persist.DeviceGroup;
-import hirs.data.persist.Policy;
+import hirs.data.persist.policy.Policy;
+import org.apache.logging.log4j.Logger;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -15,7 +14,7 @@ import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 import javax.persistence.UniqueConstraint;
 
-import org.apache.logging.log4j.Logger;
+import static org.apache.logging.log4j.LogManager.getLogger;
 
 /**
  * Maps an <code>Appraiser</code> to its default <code>Policy</code>. This class
@@ -38,9 +37,6 @@ public final class PolicyMapper {
     @ManyToOne
     @JoinColumn(nullable = true, name = "Policy_ID")
     private Policy policy;
-    @ManyToOne
-    @JoinColumn(nullable = true, name = "Device_Group_ID")
-    private DeviceGroup deviceGroup;
 
     /**
      * Creates a new <code>DefaultPolicyMapper</code>. This maps the default
@@ -56,29 +52,6 @@ public final class PolicyMapper {
         }
         this.appraiser = appraiser;
         setPolicy(policy);
-    }
-
-    /**
-     * Creates a new <code>PolicyMapper</code>. This maps the policy
-     * <code>policy</code> to the <code>Appraiser</code> and
-     * <code>DeviceGroup</code>.
-     *
-     * @param appraiser
-     *            appraiser
-     * @param policy
-     *            policy
-     * @param deviceGroup
-     *            deviceGroup
-     */
-    public PolicyMapper(final Appraiser appraiser, final Policy policy,
-            final DeviceGroup deviceGroup) {
-        if (appraiser == null) {
-            LOGGER.error("creating default policy mapper with null appraiser");
-            throw new NullPointerException("appraiser");
-        }
-        this.appraiser = appraiser;
-        setPolicy(policy);
-        this.deviceGroup = deviceGroup;
     }
 
     /**
@@ -119,24 +92,4 @@ public final class PolicyMapper {
         }
         this.policy = policy;
     }
-
-    /**
-     * Sets the device group associated with this mapping.
-     *
-     * @param deviceGroup
-     *            device group
-     */
-    public void setDeviceGroup(final DeviceGroup deviceGroup) {
-        this.deviceGroup = deviceGroup;
-    }
-
-    /**
-     * Retrieves the device group associated with this mapping.
-     *
-     * @return deviceGroup
-     */
-    public DeviceGroup getDeviceGroup() {
-        return this.deviceGroup;
-    }
-
 }

@@ -2,6 +2,7 @@ package hirs.data.persist.certificate.attributes;
 
 import javax.persistence.Column;
 import javax.persistence.Embeddable;
+import java.io.Serializable;
 import java.math.BigInteger;
 
 /**
@@ -15,7 +16,7 @@ import java.math.BigInteger;
  * for specifications for TPM 2.0.
  */
 @Embeddable
-public class TPMSpecification {
+public class TPMSpecification implements Serializable {
 
     @Column
     private String family;

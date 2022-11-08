@@ -1,17 +1,16 @@
 package hirs.data.persist;
 
-import hirs.persist.PersistenceConfiguration;
-import org.hibernate.SessionFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.annotation.DirtiesContext;
-import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.testng.AbstractTestNGSpringContextTests;
+
+import javax.persistence.EntityManager;
 
 /**
  * Base class that autowires a session factory for use of
  * any tests that need a database connection.
  */
-@ContextConfiguration(classes = PersistenceConfiguration.class)
+//@ContextConfiguration(classes = PersistenceConfiguration.class)
 @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_CLASS)
 public class SpringPersistenceTest extends AbstractTestNGSpringContextTests {
 
@@ -20,5 +19,5 @@ public class SpringPersistenceTest extends AbstractTestNGSpringContextTests {
      */
     @SuppressWarnings("checkstyle:visibilitymodifier")
     @Autowired
-    protected SessionFactory sessionFactory;
+    protected EntityManager sessionFactory;
 }

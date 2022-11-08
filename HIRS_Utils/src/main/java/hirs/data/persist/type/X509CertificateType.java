@@ -1,5 +1,10 @@
 package hirs.data.persist.type;
 
+import org.hibernate.HibernateException;
+import org.hibernate.engine.spi.SharedSessionContractImplementor;
+import org.hibernate.usertype.UserType;
+
+import javax.sql.rowset.serial.SerialBlob;
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.io.Serializable;
@@ -13,12 +18,6 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Types;
 import java.util.Objects;
-
-import javax.sql.rowset.serial.SerialBlob;
-
-import org.hibernate.HibernateException;
-import org.hibernate.engine.spi.SessionImplementor;
-import org.hibernate.usertype.UserType;
 
 
 /**
@@ -100,7 +99,7 @@ public final class X509CertificateType implements UserType {
      */
     @Override
     public Object nullSafeGet(final ResultSet rs, final String[] names,
-            final SessionImplementor session, final Object owner)
+            final SharedSessionContractImplementor session, final Object owner)
             throws HibernateException, SQLException {
         final Blob cert = rs.getBlob(names[0]);
         if (cert == null) {
@@ -130,7 +129,7 @@ public final class X509CertificateType implements UserType {
      */
     @Override
     public void nullSafeSet(final PreparedStatement st, final Object value,
-            final int index, final SessionImplementor session)
+            final int index, final SharedSessionContractImplementor session)
             throws SQLException {
         if (value == null) {
             st.setString(index, null);

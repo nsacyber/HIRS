@@ -1,6 +1,7 @@
 package hirs.persist;
 
 
+import hirs.data.persist.ArchivableEntity;
 import org.bouncycastle.util.Arrays;
 
 import javax.persistence.Column;
@@ -17,7 +18,7 @@ import java.util.Date;
  * TPM 2.0 Provisioner.
  */
 @Entity
-public class TPM2ProvisionerState {
+public class TPM2ProvisionerState extends ArchivableEntity {
     private static final int MAX_BLOB_SIZE = 65535;
 
     @Id

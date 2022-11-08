@@ -15,7 +15,7 @@ public class DeviceManagerException extends RuntimeException {
      * @param msg
      *            exception message
      */
-    DeviceManagerException(final String msg) {
+    public DeviceManagerException(final String msg) {
         super(msg);
     }
 
@@ -26,7 +26,7 @@ public class DeviceManagerException extends RuntimeException {
      * @param t
      *            root cause
      */
-    DeviceManagerException(final Throwable t) {
+    public DeviceManagerException(final Throwable t) {
         super(t);
     }
 
@@ -39,7 +39,7 @@ public class DeviceManagerException extends RuntimeException {
      * @param t
      *            root cause
      */
-    DeviceManagerException(final String msg, final Throwable t) {
+    public DeviceManagerException(final String msg, final Throwable t) {
         super(msg, t);
     }
 

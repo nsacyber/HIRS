@@ -1,8 +1,8 @@
 package hirs.data.persist;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import hirs.persist.ReferenceManifestManager;
 import hirs.persist.ReferenceManifestSelector;
+import hirs.persist.service.ReferenceManifestService;
 import hirs.tpm.eventlog.TCGEventLog;
 import hirs.tpm.eventlog.TpmPcrEvent;
 import org.apache.logging.log4j.LogManager;
@@ -40,14 +40,14 @@ public class EventLogMeasurements extends ReferenceManifest {
     public static class Selector extends ReferenceManifestSelector<EventLogMeasurements> {
         /**
          * Construct a new ReferenceManifestSelector that
-         * will use the given (@link ReferenceManifestManager}
+         * will use the given (@link ReferenceManifestService}
          * to retrieve one or may SupportReferenceManifest.
          *
-         * @param referenceManifestManager the reference manifest manager to be used to retrieve
+         * @param referenceManifestService the reference manifest manager to be used to retrieve
          * reference manifests.
          */
-        public Selector(final ReferenceManifestManager referenceManifestManager) {
-            super(referenceManifestManager, EventLogMeasurements.class, false);
+        public Selector(final ReferenceManifestService referenceManifestService) {
+            super(referenceManifestService, EventLogMeasurements.class, false);
         }
 
         /**
@@ -131,12 +131,12 @@ public class EventLogMeasurements extends ReferenceManifest {
     /**
      * Get a Selector for use in retrieving ReferenceManifest.
      *
-     * @param rimMan the ReferenceManifestManager to be used to retrieve
+     * @param rimService the ReferenceManifestService to be used to retrieve
      * persisted RIMs
      * @return a Selector instance to use for retrieving RIMs
      */
-    public static Selector select(final ReferenceManifestManager rimMan) {
-        return new Selector(rimMan);
+    public static Selector select(final ReferenceManifestService rimService) {
+        return new Selector(rimService);
     }
 
     /**

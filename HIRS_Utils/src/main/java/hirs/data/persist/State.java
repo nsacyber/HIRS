@@ -1,7 +1,8 @@
 package hirs.data.persist;
 
-import java.util.Date;
-import java.util.UUID;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import javax.persistence.Access;
 import javax.persistence.AccessType;
 import javax.persistence.Column;
@@ -10,9 +11,8 @@ import javax.persistence.Id;
 import javax.persistence.Inheritance;
 import javax.persistence.InheritanceType;
 import javax.persistence.Table;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-import org.hibernate.annotations.Type;
+import java.util.Date;
+import java.util.UUID;
 
 /**
  * The <code>State</code> class represents a state. This is an abstract class
@@ -33,7 +33,6 @@ public abstract class State {
 
     @Id
     @Column(name = "id")
-    @Type(type = "uuid-char")
     private final UUID id;
 
     @Column (nullable = false)

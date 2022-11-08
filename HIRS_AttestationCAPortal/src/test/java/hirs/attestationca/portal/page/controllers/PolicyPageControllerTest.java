@@ -2,28 +2,25 @@ package hirs.attestationca.portal.page.controllers;
 
 import hirs.appraiser.Appraiser;
 import hirs.appraiser.SupplyChainAppraiser;
-import hirs.data.persist.DeviceGroup;
-import hirs.data.persist.SupplyChainPolicy;
-import hirs.persist.AppraiserManager;
-import hirs.persist.DeviceGroupManager;
-import hirs.persist.PolicyManager;
-import org.testng.Assert;
-import static hirs.attestationca.portal.page.Page.POLICY;
-
+import hirs.attestationca.portal.page.PageController;
 import hirs.attestationca.portal.page.PageControllerTest;
-
-import static org.hamcrest.Matchers.hasItem;
-import static org.hamcrest.Matchers.hasProperty;
-import static org.hamcrest.Matchers.is;
+import hirs.data.persist.policy.SupplyChainPolicy;
+import hirs.persist.AppraiserManager;
+import hirs.persist.PolicyManager;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
+import org.testng.Assert;
+import org.testng.annotations.BeforeClass;
+import org.testng.annotations.Test;
+
+import static hirs.attestationca.portal.page.Page.POLICY;
+import static org.hamcrest.Matchers.hasItem;
+import static org.hamcrest.Matchers.hasProperty;
+import static org.hamcrest.Matchers.is;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.flash;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.model;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-import org.testng.annotations.BeforeClass;
-import org.testng.annotations.Test;
-import hirs.attestationca.portal.page.PageController;
 
 /**
  * Integration tests that test the URL End Points of PolicyPageController.
@@ -35,9 +32,6 @@ public class PolicyPageControllerTest extends PageControllerTest {
 
     @Autowired
     private AppraiserManager appraiserManager;
-
-    @Autowired
-    private DeviceGroupManager groupManager;
 
     private SupplyChainPolicy policy;
 
@@ -54,12 +48,6 @@ public class PolicyPageControllerTest extends PageControllerTest {
      */
     @BeforeClass
     public void setUpPolicy() {
-
-        // create default group so that the policy can be applied as a default.
-        if (groupManager.getDeviceGroup(DeviceGroup.DEFAULT_GROUP) == null) {
-            groupManager.saveDeviceGroup(new DeviceGroup(DeviceGroup.DEFAULT_GROUP));
-        }
-
         appraiserManager.saveAppraiser(new SupplyChainAppraiser());
         final Appraiser supplyChainAppraiser = appraiserManager.getAppraiser(
                 SupplyChainAppraiser.NAME);

@@ -1,5 +1,7 @@
 package hirs.data.persist;
 
+import org.apache.commons.codec.DecoderException;
+import org.apache.commons.codec.binary.Hex;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -10,8 +12,7 @@ import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlElement;
-import org.apache.commons.codec.DecoderException;
-import org.apache.commons.codec.binary.Hex;
+import java.io.Serializable;
 
 /**
  * Class represents a Trusted Platform Module (TPM) Platform Configuration
@@ -22,7 +23,7 @@ import org.apache.commons.codec.binary.Hex;
  */
 @Embeddable
 @XmlAccessorType(XmlAccessType.FIELD)
-public final class TPMMeasurementRecord extends ExaminableRecord {
+public final class TPMMeasurementRecord extends ExaminableRecord implements Serializable {
 
     /**
      * Minimum possible value for a PCR ID. This is 0.

@@ -11,6 +11,7 @@ import javax.persistence.Embeddable;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
 import javax.xml.bind.annotation.XmlElement;
+import java.io.Serializable;
 import java.util.Arrays;
 
 /**
@@ -26,7 +27,7 @@ import java.util.Arrays;
  */
 @Embeddable
 @Access(AccessType.FIELD)
-public final class Digest extends AbstractDigest {
+public final class Digest extends AbstractDigest implements Serializable {
     /**
      * A SHA1 digest whose content is all zeros.
      */

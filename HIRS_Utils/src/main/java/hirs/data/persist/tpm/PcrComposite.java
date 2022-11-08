@@ -1,13 +1,8 @@
 package hirs.data.persist.tpm;
 
 import hirs.data.persist.TPMMeasurementRecord;
-
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-
-import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import javax.persistence.ElementCollection;
 import javax.persistence.Embeddable;
@@ -17,6 +12,10 @@ import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlType;
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
 /**
  * Java class for PcrComposite, based on the code auto-generated using xjc
@@ -50,7 +49,7 @@ import javax.xml.bind.annotation.XmlType;
                 + "Integrity_Report_v1_0#", propOrder = {"pcrSelection",
                 "valueSize", "pcrValueList" })
 @Embeddable
-public class PcrComposite {
+public class PcrComposite implements Serializable {
 
     private static final Logger LOGGER = LogManager
             .getLogger(PcrComposite.class);

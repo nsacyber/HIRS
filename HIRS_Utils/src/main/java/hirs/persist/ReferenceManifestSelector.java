@@ -3,13 +3,16 @@ package hirs.persist;
 import com.google.common.base.Preconditions;
 import hirs.data.persist.ReferenceManifest;
 import hirs.data.persist.certificate.Certificate;
+import hirs.persist.service.ReferenceManifestService;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.hibernate.criterion.Conjunction;
-import org.hibernate.criterion.Criterion;
-import org.hibernate.criterion.Restrictions;
 
+import javax.persistence.criteria.CriteriaBuilder;
+import javax.persistence.criteria.Predicate;
+import javax.persistence.criteria.Root;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -43,7 +46,7 @@ public abstract class ReferenceManifestSelector<T extends ReferenceManifest> {
     public static final String RIM_FILENAME_FIELD = "fileName";
     private static final String RIM_TYPE_FIELD = "rimType";
 
-    private final ReferenceManifestManager referenceManifestManager;
+    private final ReferenceManifestService referenceManifestService;
     private final Class<T> referenceTypeClass;
 
     private final Map<String, Object> fieldValueSelections;
@@ -52,26 +55,26 @@ public abstract class ReferenceManifestSelector<T extends ReferenceManifest> {
     /**
      * Default Constructor.
      *
-     * @param referenceManifestManager the RIM manager to be used to retrieve RIMs
+     * @param referenceManifestService the RIM service to be used to retrieve RIMs
      * @param referenceTypeClass the type of Reference Manifest to process.
      */
-    public ReferenceManifestSelector(final ReferenceManifestManager referenceManifestManager,
+    public ReferenceManifestSelector(final ReferenceManifestService referenceManifestService,
                                      final Class<T> referenceTypeClass) {
-        this(referenceManifestManager, referenceTypeClass, true);
+        this(referenceManifestService, referenceTypeClass, true);
     }
 
     /**
      * Standard Constructor for the Selector.
      *
-     * @param referenceManifestManager the RIM manager to be used to retrieve RIMs
+     * @param referenceManifestService the RIM service to be used to retrieve RIMs
      * @param referenceTypeClass the type of Reference Manifest to process.
      * @param excludeArchivedRims true if excluding archived RIMs
      */
-    public ReferenceManifestSelector(final ReferenceManifestManager referenceManifestManager,
+    public ReferenceManifestSelector(final ReferenceManifestService referenceManifestService,
                                      final Class<T> referenceTypeClass,
             final boolean excludeArchivedRims) {
         Preconditions.checkArgument(
-                referenceManifestManager != null,
+                referenceManifestService != null,
                 "reference manifest manager cannot be null"
         );
 
@@ -80,7 +83,7 @@ public abstract class ReferenceManifestSelector<T extends ReferenceManifest> {
                 "type cannot be null"
         );
 
-        this.referenceManifestManager = referenceManifestManager;
+        this.referenceManifestService = referenceManifestService;
         this.referenceTypeClass = referenceTypeClass;
         this.excludeArchivedRims = excludeArchivedRims;
         this.fieldValueSelections = new HashMap<>();
@@ -186,21 +189,25 @@ public abstract class ReferenceManifestSelector<T extends ReferenceManifest> {
      * Construct the criterion that can be used to query for rims matching the
      * configuration of this {@link ReferenceManifestSelector}.
      *
+     * @param builder - list of criteria to use for the search
      * @return a Criterion that can be used to query for rims matching the
      * configuration of this instance
      */
-    Criterion getCriterion() {
-        Conjunction conj = new Conjunction();
+    Collection<Predicate> getCriterion(final CriteriaBuilder builder) {
+        Collection<Predicate> predicates = new ArrayList<>();
+        Root<T> root = builder.createQuery(this.getReferenceManifestClass())
+                .from(this.getReferenceManifestClass());
 
         for (Map.Entry<String, Object> fieldValueEntry : fieldValueSelections.entrySet()) {
-            conj.add(Restrictions.eq(fieldValueEntry.getKey(), fieldValueEntry.getValue()));
+            predicates.add(builder.equal(root.get(fieldValueEntry.getKey()),
+                    fieldValueEntry.getValue()));
         }
 
         if (this.excludeArchivedRims) {
-            conj.add(Restrictions.isNull(Certificate.ARCHIVE_FIELD));
+            predicates.add(builder.isNull(root.get(Certificate.ARCHIVE_FIELD)));
         }
 
-        return conj;
+        return predicates;
     }
 
     /**
@@ -212,8 +219,7 @@ public abstract class ReferenceManifestSelector<T extends ReferenceManifest> {
 
     // construct and execute query
     private Set<T> execute() {
-        Set<T> results = this.referenceManifestManager.get(this);
-        return results;
+        return this.referenceManifestService.getReferenceManifest(this);
     }
 
     /**

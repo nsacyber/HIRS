@@ -1,7 +1,6 @@
 package hirs.data.persist;
 
 import com.google.common.base.Preconditions;
-import hirs.data.persist.baseline.TpmWhiteListBaseline;
 import hirs.data.persist.enums.DigestAlgorithm;
 import hirs.utils.xjc.File;
 import org.apache.logging.log4j.LogManager;
@@ -21,7 +20,6 @@ public class SwidResource {
 
     private String name, size;
     private String rimFormat, rimType, rimUriGlobal, hashValue;
-    private TpmWhiteListBaseline tpmWhiteList;
     private DigestAlgorithm digest = DigestAlgorithm.SHA1;
     private boolean validFileSize = false;
 
@@ -76,7 +74,6 @@ public class SwidResource {
         }
 
         this.digest = digest;
-        tpmWhiteList = new TpmWhiteListBaseline(this.name);
     }
 
     /**

@@ -1,14 +1,15 @@
 package hirs.data.persist.tpm;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import javax.persistence.Embeddable;
 import javax.persistence.Embedded;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlType;
-
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import java.io.Serializable;
 
 /**
  * Java class for Quote2 complex type, which was modified from code
@@ -26,7 +27,7 @@ import org.apache.logging.log4j.Logger;
         namespace = "http://www.trustedcomputinggroup.org/XML/SCHEMA/"
                 + "Integrity_Report_v1_0#", propOrder = {"quoteInfo2" })
 @Embeddable
-public class Quote2 {
+public class Quote2 implements Serializable {
 
     private static final Logger LOGGER = LogManager.getLogger(Quote2.class);
 

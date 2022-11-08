@@ -6,7 +6,7 @@ import hirs.attestationca.configuration.provisionerTpm2.ProvisionerTpm2;
 import hirs.attestationca.exceptions.CertificateProcessingException;
 import hirs.attestationca.exceptions.IdentityProcessingException;
 import hirs.attestationca.exceptions.UnexpectedServerException;
-import hirs.attestationca.service.SupplyChainValidationService;
+import hirs.attestationca.validation.SupplyChainValidationService;
 import hirs.data.persist.AppraisalStatus;
 import hirs.data.persist.BaseReferenceManifest;
 import hirs.data.persist.Device;
@@ -14,7 +14,6 @@ import hirs.data.persist.DeviceInfoReport;
 import hirs.data.persist.EventLogMeasurements;
 import hirs.data.persist.ReferenceDigestValue;
 import hirs.data.persist.ReferenceManifest;
-import hirs.data.persist.SupplyChainPolicy;
 import hirs.data.persist.SupplyChainValidationSummary;
 import hirs.data.persist.SupportReferenceManifest;
 import hirs.data.persist.SwidResource;
@@ -27,14 +26,13 @@ import hirs.data.persist.info.HardwareInfo;
 import hirs.data.persist.info.NetworkInfo;
 import hirs.data.persist.info.OSInfo;
 import hirs.data.persist.info.TPMInfo;
+import hirs.data.persist.policy.SupplyChainPolicy;
 import hirs.data.service.DeviceRegister;
-import hirs.persist.CertificateManager;
-import hirs.persist.DBManager;
 import hirs.persist.DeviceManager;
-import hirs.persist.ReferenceDigestManager;
 import hirs.persist.ReferenceEventManager;
-import hirs.persist.ReferenceManifestManager;
 import hirs.persist.TPM2ProvisionerState;
+import hirs.persist.service.CertificateService;
+import hirs.persist.service.ReferenceManifestService;
 import hirs.structs.converters.SimpleStructBuilder;
 import hirs.structs.converters.StructConverter;
 import hirs.structs.elements.aca.IdentityRequestEnvelope;
@@ -176,12 +174,10 @@ public abstract class AbstractAttestationCertificateAuthority
      */
     private Integer validDays = 1;
 
-    private final CertificateManager certificateManager;
-    private final ReferenceManifestManager referenceManifestManager;
+    private final CertificateService certificateService;
+    private final ReferenceManifestService referenceManifestService;
     private final DeviceRegister deviceRegister;
     private final DeviceManager deviceManager;
-    private final DBManager<TPM2ProvisionerState> tpm2ProvisionerStateDBManager;
-    private final ReferenceDigestManager referenceDigestManager;
     private final ReferenceEventManager referenceEventManager;
     private String tpmQuoteHash = "";
     private String tpmQuoteSignature = "";
@@ -192,13 +188,11 @@ public abstract class AbstractAttestationCertificateAuthority
      * @param privateKey the ACA private key
      * @param acaCertificate the ACA certificate
      * @param structConverter the struct converter
-     * @param certificateManager the certificate manager
-     * @param referenceManifestManager the Reference Manifest manager
+     * @param certificateService the certificate service
+     * @param referenceManifestService the Reference Manifest service
      * @param deviceRegister the device register
      * @param validDays the number of days issued certs are valid
      * @param deviceManager the device manager
-     * @param tpm2ProvisionerStateDBManager the DBManager for persisting provisioner state
-     * @param referenceDigestManager the reference digest manager
      * @param referenceEventManager the reference event manager
      */
     @SuppressWarnings("checkstyle:parameternumber")
@@ -206,24 +200,20 @@ public abstract class AbstractAttestationCertificateAuthority
             final SupplyChainValidationService supplyChainValidationService,
             final PrivateKey privateKey, final X509Certificate acaCertificate,
             final StructConverter structConverter,
-            final CertificateManager certificateManager,
-            final ReferenceManifestManager referenceManifestManager,
+            final CertificateService certificateService,
+            final ReferenceManifestService referenceManifestService,
             final DeviceRegister deviceRegister, final int validDays,
             final DeviceManager deviceManager,
-            final DBManager<TPM2ProvisionerState> tpm2ProvisionerStateDBManager,
-            final ReferenceDigestManager referenceDigestManager,
             final ReferenceEventManager referenceEventManager) {
         this.supplyChainValidationService = supplyChainValidationService;
         this.privateKey = privateKey;
         this.acaCertificate = acaCertificate;
         this.structConverter = structConverter;
-        this.certificateManager = certificateManager;
-        this.referenceManifestManager = referenceManifestManager;
+        this.certificateService = certificateService;
+        this.referenceManifestService = referenceManifestService;
         this.deviceRegister = deviceRegister;
         this.validDays = validDays;
         this.deviceManager = deviceManager;
-        this.tpm2ProvisionerStateDBManager = tpm2ProvisionerStateDBManager;
-        this.referenceDigestManager = referenceDigestManager;
         this.referenceEventManager = referenceEventManager;
     }
 
@@ -262,7 +252,7 @@ public abstract class AbstractAttestationCertificateAuthority
         byte[] ecBytesFromIdentityRequest = proof.getEndorsementCredential();
         if (ArrayUtils.isNotEmpty(ecBytesFromIdentityRequest)) {
             endorsementCredential = CredentialManagementHelper.storeEndorsementCredential(
-                    this.certificateManager, ecBytesFromIdentityRequest
+                    this.certificateService, ecBytesFromIdentityRequest
             );
             try {
                 BigInteger publicKeyModulus = Certificate.getPublicKeyModulus(
@@ -291,7 +281,7 @@ public abstract class AbstractAttestationCertificateAuthority
         byte[] pcBytesFromIdentityRequest = proof.getPlatformCredential();
         if (ArrayUtils.isNotEmpty(pcBytesFromIdentityRequest)) {
             platformCredentials.add(CredentialManagementHelper.storePlatformCredential(
-                    this.certificateManager, pcBytesFromIdentityRequest
+                    this.certificateService, pcBytesFromIdentityRequest
             ));
         } else if (endorsementCredential != null) {
             // if none in the identity request, look for uploaded platform credentials
@@ -453,8 +443,6 @@ public abstract class AbstractAttestationCertificateAuthority
             LOG.info("Sending nonce: " + strNonce);
             LOG.info("Persisting claim of length: " + identityClaim.length);
 
-            tpm2ProvisionerStateDBManager.save(new TPM2ProvisionerState(nonce, identityClaim));
-
             if (scp != null && scp.isIgnoreImaEnabled()) {
                 pcrQuoteMask = PCR_QUOTE_MASK.replace("10,", "");
             }
@@ -504,7 +492,7 @@ public abstract class AbstractAttestationCertificateAuthority
         if (platformCredentials.size() == 1) {
             for (PlatformCredential pc : platformCredentials) {
                 if (pc != null && pc.getPlatformSerial() != null) {
-                    platformCredentials.addAll(PlatformCredential.select(this.certificateManager)
+                    platformCredentials.addAll(PlatformCredential.select(this.certificateService)
                             .byBoardSerialNumber(pc.getPlatformSerial()).getCertificates());
                 }
             }
@@ -634,9 +622,6 @@ public abstract class AbstractAttestationCertificateAuthority
                         endorsementCredential, platformCredentials, deviceName);
                 byte[] derEncodedAttestationCertificate = getDerEncodedCertificate(
                         attestationCertificate);
-
-                // We validated the nonce and made use of the identity claim so state can be deleted
-                tpm2ProvisionerStateDBManager.delete(tpm2ProvisionerState);
 
                 // Package the signed certificate into a response
                 ByteString certificateBytes = ByteString
@@ -811,7 +796,7 @@ public abstract class AbstractAttestationCertificateAuthority
         if (dv.getLogfileCount() > 0) {
             for (ByteString logFile : dv.getLogfileList()) {
                 try {
-                    support = SupportReferenceManifest.select(referenceManifestManager)
+                    support = SupportReferenceManifest.select(referenceManifestService)
                             .byHexDecHash(Hex.encodeHexString(messageDigest.digest(
                                     logFile.toByteArray()))).includeArchived()
                             .getRIM();
@@ -829,13 +814,14 @@ public abstract class AbstractAttestationCertificateAuthority
                                 support.getHexDecHash().substring(
                                         support.getHexDecHash().length() - NUM_OF_VARIABLES)));
                         support.setDeviceName(dv.getNw().getHostname());
-                        this.referenceManifestManager.save(support);
+                        this.referenceManifestService.saveRIM(support);
                     } else {
                         LOG.info("Client provided Support RIM already loaded in database.");
                         if (support.isArchived()) {
                             support.restore();
                             support.resetCreateTime();
-                            this.referenceManifestManager.update(support);
+                            this.referenceManifestService.updateReferenceManifest(support,
+                                    support.getId());
                         }
                     }
                 } catch (IOException ioEx) {
@@ -853,7 +839,7 @@ public abstract class AbstractAttestationCertificateAuthority
         if (dv.getSwidfileCount() > 0) {
             for (ByteString swidFile : dv.getSwidfileList()) {
                 try {
-                    dbBaseRim = BaseReferenceManifest.select(referenceManifestManager)
+                    dbBaseRim = BaseReferenceManifest.select(referenceManifestService)
                             .byBase64Hash(Base64.getEncoder()
                                     .encodeToString(messageDigest
                                             .digest(swidFile.toByteArray())))
@@ -865,7 +851,7 @@ public abstract class AbstractAttestationCertificateAuthority
                                         defaultClientName),
                                 swidFile.toByteArray());
                         dbBaseRim.setDeviceName(dv.getNw().getHostname());
-                        this.referenceManifestManager.save(dbBaseRim);
+                        this.referenceManifestService.saveRIM(dbBaseRim);
                     } else {
                         LOG.info("Client provided Base RIM already loaded in database.");
                         /**
@@ -875,7 +861,8 @@ public abstract class AbstractAttestationCertificateAuthority
                         if (dbBaseRim.isArchived()) {
                             dbBaseRim.restore();
                             dbBaseRim.resetCreateTime();
-                            this.referenceManifestManager.update(dbBaseRim);
+                            this.referenceManifestService.updateReferenceManifest(dbBaseRim,
+                                    dbBaseRim.getId());
                         }
                     }
                 } catch (IOException ioEx) {
@@ -889,7 +876,7 @@ public abstract class AbstractAttestationCertificateAuthority
 
         //update Support RIMs and Base RIMs.
         for (ByteString swidFile : dv.getSwidfileList()) {
-            dbBaseRim = BaseReferenceManifest.select(referenceManifestManager)
+            dbBaseRim = BaseReferenceManifest.select(referenceManifestService)
                     .byBase64Hash(Base64.getEncoder().encodeToString(messageDigest.digest(
                             swidFile.toByteArray()))).includeArchived()
                     .getRIM();
@@ -908,7 +895,7 @@ public abstract class AbstractAttestationCertificateAuthority
 
                     // now update support rim
                     SupportReferenceManifest dbSupport = SupportReferenceManifest
-                            .select(referenceManifestManager)
+                            .select(referenceManifestService)
                             .byHexDecHash(swid.getHashValue()).getRIM();
                     if (dbSupport != null) {
                         dbSupport.setFileName(swid.getName());
@@ -921,11 +908,13 @@ public abstract class AbstractAttestationCertificateAuthority
                         dbBaseRim.setAssociatedRim(dbSupport.getId());
                         dbSupport.setUpdated(true);
                         dbSupport.setAssociatedRim(dbBaseRim.getId());
-                        this.referenceManifestManager.update(dbSupport);
+                        this.referenceManifestService.updateReferenceManifest(dbSupport,
+                                dbSupport.getId());
                         listOfSavedRims.add(dbSupport);
                     }
                 }
-                this.referenceManifestManager.update(dbBaseRim);
+                this.referenceManifestService.updateReferenceManifest(dbBaseRim,
+                        dbBaseRim.getId());
                 listOfSavedRims.add(dbBaseRim);
             }
         }
@@ -940,18 +929,18 @@ public abstract class AbstractAttestationCertificateAuthority
                 EventLogMeasurements temp = new EventLogMeasurements(fileName,
                         dv.getLivelog().toByteArray());
                 // find previous version.
-                measurements = EventLogMeasurements.select(referenceManifestManager)
+                measurements = EventLogMeasurements.select(referenceManifestService)
                         .byDeviceName(dv.getNw().getHostname())
                         .includeArchived()
                         .getRIM();
 
                 if (measurements != null) {
                     // Find previous log and delete it
-                    referenceManifestManager.deleteReferenceManifest(measurements);
+                    referenceManifestService.deleteRIM(measurements);
                 }
 
                 BaseReferenceManifest baseRim = BaseReferenceManifest
-                        .select(referenceManifestManager)
+                        .select(referenceManifestService)
                         .byManufacturerModelBase(dv.getHw().getManufacturer(),
                                 dv.getHw().getProductName())
                         .getRIM();
@@ -963,19 +952,19 @@ public abstract class AbstractAttestationCertificateAuthority
                 if (baseRim != null) {
                     measurements.setAssociatedRim(baseRim.getAssociatedRim());
                 }
-                this.referenceManifestManager.save(measurements);
+                this.referenceManifestService.saveRIM(measurements);
 
                 if (baseRim != null) {
                     // pull the base versions of the swidtag and rimel and set the
                     // event log hash for use during provision
                     SupportReferenceManifest sBaseRim = SupportReferenceManifest
-                            .select(referenceManifestManager)
+                            .select(referenceManifestService)
                             .byEntityId(baseRim.getAssociatedRim())
                             .getRIM();
                     baseRim.setEventLogHash(temp.getHexDecHash());
                     sBaseRim.setEventLogHash(temp.getHexDecHash());
-                    referenceManifestManager.update(baseRim);
-                    referenceManifestManager.update(sBaseRim);
+                    referenceManifestService.updateReferenceManifest(baseRim, baseRim.getId());
+                    referenceManifestService.updateReferenceManifest(sBaseRim, baseRim.getId());
                 }
             } catch (IOException ioEx) {
                 LOG.error(ioEx);
@@ -1010,7 +999,7 @@ public abstract class AbstractAttestationCertificateAuthority
         List<SupportReferenceManifest> supplementalRims = new ArrayList<>();
         List<SupportReferenceManifest> patchRims = new ArrayList<>();
         Set<SupportReferenceManifest> dbSupportRims = SupportReferenceManifest
-                .select(referenceManifestManager)
+                .select(referenceManifestService)
                 .byManufacturerModel(manufacturer, model).getRIMs();
         List<ReferenceDigestValue> sourcedValues = referenceEventManager
                 .getValueByManufacturerModel(manufacturer, model);
@@ -1144,7 +1133,7 @@ public abstract class AbstractAttestationCertificateAuthority
         EndorsementCredential credential = null;
 
         try {
-            credential = EndorsementCredential.select(this.certificateManager)
+            credential = EndorsementCredential.select(this.certificateService)
                     .byPublicKeyModulus(Certificate.getPublicKeyModulus(ekPublicKey))
                     .getCertificate();
         } catch (IOException e) {
@@ -1168,7 +1157,7 @@ public abstract class AbstractAttestationCertificateAuthority
         } else {
             LOG.debug("Searching for platform credential(s) based on holder serial number: "
                         + ec.getSerialNumber());
-            credentials = PlatformCredential.select(this.certificateManager)
+            credentials = PlatformCredential.select(this.certificateService)
                                             .byHolderSerialNumber(ec.getSerialNumber())
                                             .getCertificates();
             if (credentials == null || credentials.isEmpty()) {
@@ -1799,11 +1788,11 @@ public abstract class AbstractAttestationCertificateAuthority
      */
     private TPM2ProvisionerState getTpm2ProvisionerState(
             final ProvisionerTpm2.CertificateRequest request) {
-        if (request.hasNonce()) {
-            byte[] nonce = request.getNonce().toByteArray();
-            return TPM2ProvisionerState.getTPM2ProvisionerState(tpm2ProvisionerStateDBManager,
-                    nonce);
-        }
+//        if (request.hasNonce()) {
+//            byte[] nonce = request.getNonce().toByteArray();
+//            return TPM2ProvisionerState.getTPM2ProvisionerState(tpm2ProvisionerStateDBManager,
+//                    nonce);
+//        }
         return null;
     }
 
@@ -1839,7 +1828,7 @@ public abstract class AbstractAttestationCertificateAuthority
         EndorsementCredential endorsementCredential = null;
         if (identityClaim.hasEndorsementCredential()) {
             endorsementCredential = CredentialManagementHelper.storeEndorsementCredential(
-                    this.certificateManager,
+                    this.certificateService,
                     identityClaim.getEndorsementCredential().toByteArray());
         } else if (ekPub != null) {
             LOG.warn("Endorsement Cred was not in the identity claim from the client."
@@ -1870,7 +1859,7 @@ public abstract class AbstractAttestationCertificateAuthority
             for (ByteString platformCredential : identityClaim.getPlatformCredentialList()) {
                 if (!platformCredential.isEmpty()) {
                     platformCredentials.add(CredentialManagementHelper.storePlatformCredential(
-                            this.certificateManager, platformCredential.toByteArray()));
+                            this.certificateService, platformCredential.toByteArray()));
                 }
             }
         } else if (endorsementCredential != null) {
@@ -1928,7 +1917,7 @@ public abstract class AbstractAttestationCertificateAuthority
                     derEncodedAttestationCertificate, endorsementCredential, platformCredentials);
 
             if (scp != null) {
-                issuedAc = IssuedAttestationCertificate.select(certificateManager)
+                issuedAc = IssuedAttestationCertificate.select(certificateService)
                         .byDeviceId(device.getId()).getCertificate();
 
                 generateCertificate = scp.isIssueAttestationCertificate();
@@ -1947,7 +1936,7 @@ public abstract class AbstractAttestationCertificateAuthority
             }
             if (generateCertificate) {
                 attCert.setDevice(device);
-                certificateManager.save(attCert);
+                certificateService.saveCertificate(attCert);
             }
         } catch (Exception e) {
             LOG.error("Error saving generated Attestation Certificate to database.", e);

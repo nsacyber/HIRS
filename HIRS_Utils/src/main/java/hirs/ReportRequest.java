@@ -15,7 +15,7 @@ import javax.xml.bind.annotation.XmlTransient;
  * client and submitted to the <code>Appraiser</code> for processing.
  */
 @XmlTransient
-@XmlSeeAlso(value = { IntegrityReportRequest.class, TPMReportRequest.class, IMAReportRequest.class,
+@XmlSeeAlso(value = { IntegrityReportRequest.class, TPMReportRequest.class,
         DeviceInfoReportRequest.class })
 public interface ReportRequest {
 

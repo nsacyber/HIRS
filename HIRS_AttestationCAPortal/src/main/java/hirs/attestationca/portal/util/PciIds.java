@@ -6,7 +6,7 @@ import com.github.marandus.pciid.service.PciIdsDatabase;
 import com.google.common.base.Strings;
 import hirs.data.persist.certificate.attributes.ComponentIdentifier;
 import hirs.data.persist.certificate.attributes.V2.ComponentIdentifierV2;
-import org.bouncycastle.asn1.DERUTF8String;
+import org.bouncycastle.asn1.ASN1UTF8String;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -129,8 +129,8 @@ public final class PciIds {
             final String compClassValue = component.getComponentClass().getCategoryValue();
             if (compClassValue.equals(COMPCLASS_TCG_CAT_NIC)
                     || compClassValue.equals(COMPCLASS_TCG_CAT_GFX)) {
-                DERUTF8String manufacturer = translateVendor(component.getComponentManufacturer());
-                DERUTF8String model = translateDevice(component.getComponentManufacturer(),
+                ASN1UTF8String manufacturer = translateVendor(component.getComponentManufacturer());
+                ASN1UTF8String model = translateDevice(component.getComponentManufacturer(),
                                                         component.getComponentModel());
 
                 newComponent = new ComponentIdentifierV2(component.getComponentClass(),
@@ -153,15 +153,15 @@ public final class PciIds {
     /**
      * Look up the vendor name from the PCI IDs list, if the input string contains an ID.
      * If any part of this fails, return the original manufacturer value.
-     * @param refManufacturer DERUTF8String, likely from a ComponentIdentifier
-     * @return DERUTF8String with the discovered vendor name, or the original manufacturer value.
+     * @param refManufacturer ASN1UTF8String, likely from a ComponentIdentifier
+     * @return ASN1UTF8String with the discovered vendor name, or the original manufacturer value.
      */
-    public static DERUTF8String translateVendor(final DERUTF8String refManufacturer) {
-        DERUTF8String manufacturer = refManufacturer;
+    public static ASN1UTF8String translateVendor(final ASN1UTF8String refManufacturer) {
+        ASN1UTF8String manufacturer = refManufacturer;
         if (manufacturer != null && manufacturer.getString().trim().matches("^[0-9A-Fa-f]{4}$")) {
             Vendor ven = DB.findVendor(manufacturer.getString().toLowerCase());
             if (ven != null && !Strings.isNullOrEmpty(ven.getName())) {
-                manufacturer = new DERUTF8String(ven.getName());
+                manufacturer = ASN1UTF8String.getInstance(ven.getName());
             }
         }
         return manufacturer;
@@ -175,10 +175,10 @@ public final class PciIds {
      * @param refModel DERUTF8String, likely from a ComponentIdentifier
      * @return DERUTF8String with the discovered device name, or the original model value.
      */
-    public static DERUTF8String translateDevice(final DERUTF8String refManufacturer,
-                                                      final DERUTF8String refModel) {
-        DERUTF8String manufacturer = refManufacturer;
-        DERUTF8String model = refModel;
+    public static ASN1UTF8String translateDevice(final ASN1UTF8String refManufacturer,
+                                                      final ASN1UTF8String refModel) {
+        ASN1UTF8String manufacturer = refManufacturer;
+        ASN1UTF8String model = refModel;
         if (manufacturer != null
             && model != null
             && manufacturer.getString().trim().matches("^[0-9A-Fa-f]{4}$")
@@ -186,7 +186,7 @@ public final class PciIds {
             Device dev = DB.findDevice(manufacturer.getString().toLowerCase(),
                                         model.getString().toLowerCase());
             if (dev != null && !Strings.isNullOrEmpty(dev.getName())) {
-                model = new DERUTF8String(dev.getName());
+                model = ASN1UTF8String.getInstance(dev.getName());
             }
         }
         return model;

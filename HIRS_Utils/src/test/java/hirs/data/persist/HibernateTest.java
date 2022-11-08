@@ -1,17 +1,21 @@
 package hirs.data.persist;
 
-import static org.apache.logging.log4j.LogManager.getLogger;
-
-import java.io.Serializable;
-import java.util.List;
-
 import org.apache.logging.log4j.Logger;
 import org.hibernate.Session;
+import org.hibernate.query.Query;
 import org.testng.Assert;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
+
+import javax.persistence.criteria.CriteriaBuilder;
+import javax.persistence.criteria.CriteriaQuery;
+import javax.persistence.criteria.Root;
+import java.io.Serializable;
+import java.util.List;
+
+import static org.apache.logging.log4j.LogManager.getLogger;
 
 /**
  * This is an abstract class for testing the basic create, read, update, and
@@ -56,11 +60,18 @@ public abstract class HibernateTest<T> extends SpringPersistenceTest {
      *
      * @param clazz the class to remove
      */
+    @SuppressWarnings("unchecked")
     protected final void removeAllOfClass(final Class clazz) {
-        Session session = sessionFactory.getCurrentSession();
+        Session session = sessionFactory.unwrap(org.hibernate.Session.class);
         session.beginTransaction();
-        final List<?> objects = session.createCriteria(clazz).list();
-        for (Object o : objects) {
+        CriteriaBuilder builder = session.getCriteriaBuilder();
+        CriteriaQuery<T> criteriaQuery = builder.createQuery(clazz);
+        Root<T> root = criteriaQuery.from(clazz);
+        criteriaQuery.select(root);
+        Query<T> query = session.createQuery(criteriaQuery);
+        List<T> results = query.getResultList();
+//        final List<?> objects = session.createCriteria(clazz).list();
+        for (Object o : results) {
             LOGGER.debug("deleting object: {}", o);
             session.delete(o);
         }
@@ -74,7 +85,7 @@ public abstract class HibernateTest<T> extends SpringPersistenceTest {
     @Test
     public final void testSaveT() {
         LOGGER.debug("save {} test started", getDefaultClass());
-        Session session = sessionFactory.getCurrentSession();
+        Session session = sessionFactory.unwrap(org.hibernate.Session.class);
         session.beginTransaction();
         final T object = getDefault(session);
         session.save(object);
@@ -89,14 +100,14 @@ public abstract class HibernateTest<T> extends SpringPersistenceTest {
     @Test
     public final void testGetT() {
         LOGGER.debug("get {} test started", getDefaultClass());
-        Session session = sessionFactory.getCurrentSession();
+        Session session = sessionFactory.unwrap(org.hibernate.Session.class);
         session.beginTransaction();
         final T object = getDefault(session);
         LOGGER.debug("saving {}", object.getClass());
         final Serializable id = session.save(object);
         session.getTransaction().commit();
 
-        session = sessionFactory.getCurrentSession();
+        session = sessionFactory.unwrap(org.hibernate.Session.class);
         session.beginTransaction();
         LOGGER.debug("getting {}", object.getClass());
         @SuppressWarnings("unchecked")
@@ -115,7 +126,7 @@ public abstract class HibernateTest<T> extends SpringPersistenceTest {
     @SuppressWarnings("unchecked")
     public final void testUpdateT() {
         LOGGER.debug("update {} test started", getDefaultClass());
-        Session session = sessionFactory.getCurrentSession();
+        Session session = sessionFactory.unwrap(org.hibernate.Session.class);
         session.beginTransaction();
         final T object = getDefault(session);
         LOGGER.debug("saving {}", object.getClass());
@@ -123,7 +134,7 @@ public abstract class HibernateTest<T> extends SpringPersistenceTest {
         session.getTransaction().commit();
 
         LOGGER.debug("updating {}", object.getClass());
-        session = sessionFactory.getCurrentSession();
+        session = sessionFactory.unwrap(org.hibernate.Session.class);
         session.beginTransaction();
         T testObject = (T) session.get(object.getClass(), id);
         update(testObject);
@@ -131,7 +142,7 @@ public abstract class HibernateTest<T> extends SpringPersistenceTest {
         session.getTransaction().commit();
 
         LOGGER.debug("getting {}", object.getClass());
-        session = sessionFactory.getCurrentSession();
+        session = sessionFactory.unwrap(org.hibernate.Session.class);
         session.beginTransaction();
         testObject = (T) session.get(object.getClass(), id);
         session.getTransaction().commit();
@@ -145,14 +156,14 @@ public abstract class HibernateTest<T> extends SpringPersistenceTest {
     @Test
     public final void testDeleteT() {
         LOGGER.debug("delete {} test started", getDefaultClass());
-        Session session = sessionFactory.getCurrentSession();
+        Session session = sessionFactory.unwrap(org.hibernate.Session.class);
         session.beginTransaction();
         final T object = getDefault(session);
         LOGGER.debug("saving {}", object.getClass());
         final Serializable id = session.save(object);
         session.getTransaction().commit();
 
-        session = sessionFactory.getCurrentSession();
+        session = sessionFactory.unwrap(org.hibernate.Session.class);
         session.beginTransaction();
         LOGGER.debug("getting {}", object.getClass());
         @SuppressWarnings("unchecked")
@@ -160,7 +171,7 @@ public abstract class HibernateTest<T> extends SpringPersistenceTest {
         session.delete(t2);
         session.getTransaction().commit();
 
-        session = sessionFactory.getCurrentSession();
+        session = sessionFactory.unwrap(org.hibernate.Session.class);
         session.beginTransaction();
         LOGGER.debug("getting {} again", object.getClass());
         @SuppressWarnings("unchecked")
@@ -235,12 +246,12 @@ public abstract class HibernateTest<T> extends SpringPersistenceTest {
      *          the retrieved copy of the object from the database
      */
     protected final T saveAndRetrieve(final T object) {
-        Session session = sessionFactory.getCurrentSession();
+        Session session = sessionFactory.unwrap(org.hibernate.Session.class);
         session.beginTransaction();
         Serializable id = session.save(object);
         session.getTransaction().commit();
 
-        session = sessionFactory.getCurrentSession();
+        session = sessionFactory.unwrap(org.hibernate.Session.class);
         session.beginTransaction();
         @SuppressWarnings("unchecked")
         final T testObject = (T) session.get(object.getClass(), id);

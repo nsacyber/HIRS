@@ -29,7 +29,7 @@ public class ReportRequestStateTest {
     public final void setDueDate() {
         ReportRequestState state = new ReportRequestState();
         Date currentTime = new Date();
-        state.setDueDate(DeviceGroup.MINUTE_MS_INTERVAL);
+        state.setDueDate(ReportRequestState.MINUTE_MS_INTERVAL);
         Date setDate = state.getDueDate();
         Assert.assertTrue(currentTime.before(setDate));
     }

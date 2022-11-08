@@ -1,10 +1,8 @@
 package hirs.persist;
 
-import hirs.FilteredRecordsList;
 import hirs.data.persist.ReportSummary;
 
 import java.util.List;
-import java.util.Map;
 import java.util.UUID;
 
 /**
@@ -51,7 +49,7 @@ public interface ReportSummaryManager {
      * @return list of all managed <code>ReportSummary</code> objects
      * @throws ReportSummaryManagerException if unable to create the list
      */
-    List<ReportSummary> getReportSummaryList(Class<? extends ReportSummary> clazz)
+    List<ReportSummary> getReportSummaryList(ReportSummary clazz)
             throws ReportSummaryManagerException;
 
     /**
@@ -67,29 +65,6 @@ public interface ReportSummaryManager {
     List<ReportSummary> getReportSummaryListByHostname(String hostname)
             throws ReportSummaryManagerException;
 
-    /**
-     * Returns a list of all <code>ReportSummary</code> objects that are ordered
-     * by a column and direction (ASC, DESC) that is provided by the user.  This
-     * method helps support the server-side processing in the JQuery DataTables.
-     *
-     * @param columnToOrder Column to be ordered
-     * @param ascending direction of sort
-     * @param firstResult starting point of first result in set
-     * @param maxResults total number we want returned for display in table
-     * @param search string of criteria to be matched to visible columns
-     * @param searchableColumns Map of String and boolean values with column
-     *      headers and whether they are to.  Boolean is true if field provides
-     *      a typical String that can be searched by Hibernate without
-     *      transformation.
-     * @param hostname name of the device to filter on
-     * @return FilteredRecordsList object with fields for DataTables
-     * @throws ReportSummaryManagerException if unable to create the list
-     */
-    FilteredRecordsList<ReportSummary> getOrderedReportSummaryList(
-            String columnToOrder, boolean ascending, int firstResult,
-            int maxResults, String search,
-            Map<String, Boolean> searchableColumns,
-            String hostname) throws ReportSummaryManagerException;
     /**
      * Retrieves the <code>ReportSummary</code> identified by <code>id</code>.
      * If the <code>ReportSummary</code> cannot be found then null is returned.
@@ -112,18 +87,6 @@ public interface ReportSummaryManager {
      * @throws ReportSummaryManagerException if unable to retrieve the ReportSum
      */
     ReportSummary getReportSummaryByReportID(UUID id) throws ReportSummaryManagerException;
-
-    /**
-     * Deletes the <code>ReportSummary</code> identified by <code>id</code>.
-     * If the <code>ReportSummary</code> is found and deleted then true is
-     * returned, otherwise false.
-     *
-     * @param id id of <code>ReportSummary</code> to be deleted
-     * @return true if successfully found and deleted from repo, otherwise false
-     * @throws ReportSummaryManagerException if unable to delete the ReportSum for any reason other
-     *                                       than not found
-     */
-    boolean deleteReportSummary(Long id) throws ReportSummaryManagerException;
 
     /**
      * Returns a list of <code>ReportSummary</code>s that contains the latest

@@ -1,12 +1,13 @@
 package hirs.attestationca.service;
 
 import hirs.appraiser.SupplyChainAppraiser;
+import hirs.attestationca.persist.SpringPersistenceTest;
+import hirs.attestationca.servicemanager.DBCertificateManager;
+import hirs.attestationca.servicemanager.DBDeviceManager;
+import hirs.attestationca.validation.SupplyChainValidationServiceImpl;
 import hirs.data.persist.AppraisalStatus;
 import hirs.data.persist.Device;
-import hirs.data.persist.DeviceGroup;
 import hirs.data.persist.DeviceInfoReport;
-import hirs.data.persist.SpringPersistenceTest;
-import hirs.data.persist.SupplyChainPolicy;
 import hirs.data.persist.SupplyChainValidation;
 import hirs.data.persist.SupplyChainValidationSummary;
 import hirs.data.persist.certificate.Certificate;
@@ -14,17 +15,13 @@ import hirs.data.persist.certificate.CertificateAuthorityCredential;
 import hirs.data.persist.certificate.DeviceAssociatedCertificate;
 import hirs.data.persist.certificate.EndorsementCredential;
 import hirs.data.persist.certificate.PlatformCredential;
-import hirs.persist.AppraiserManager;
-import hirs.persist.CertificateManager;
+import hirs.data.persist.policy.SupplyChainPolicy;
 import hirs.persist.CrudManager;
-import hirs.persist.DBCertificateManager;
-import hirs.persist.DBDeviceGroupManager;
-import hirs.persist.DBDeviceManager;
-import hirs.persist.DeviceGroupManager;
 import hirs.persist.DeviceManager;
-import hirs.persist.PolicyManager;
-import hirs.persist.ReferenceDigestManager;
-import hirs.persist.ReferenceEventManager;
+import hirs.persist.service.AppraiserService;
+import hirs.persist.service.CertificateService;
+import hirs.persist.service.PolicyService;
+import hirs.persist.service.ReferenceDigestValueService;
 import hirs.validation.CredentialValidator;
 import hirs.validation.SupplyChainCredentialValidator;
 import org.mockito.ArgumentCaptor;
@@ -77,13 +74,13 @@ public class SupplyChainValidationServiceImplTest extends SpringPersistenceTest 
     private static final String NUC_EC = "/certificates/nuc_ec.pem";
 
     @Mock
-    private PolicyManager policyManager;
+    private PolicyService policyManager;
 
     @Mock
-    private AppraiserManager appraiserManager;
+    private AppraiserService appraiserManager;
 
     @Mock
-    private CertificateManager certificateManager;
+    private CertificateService certificateManager;
 
     @Mock
     private CredentialValidator supplyChainCredentialValidator;
@@ -92,10 +89,7 @@ public class SupplyChainValidationServiceImplTest extends SpringPersistenceTest 
     private CrudManager<SupplyChainValidationSummary> supplyChainValidationSummaryDBManager;
 
     @Mock
-    private ReferenceDigestManager referenceDigestManager;
-
-    @Mock
-    private ReferenceEventManager referenceEventManager;
+    private ReferenceDigestValueService referenceEventManager;
 
     @InjectMocks
     private SupplyChainValidationServiceImpl service;
@@ -166,11 +160,11 @@ public class SupplyChainValidationServiceImplTest extends SpringPersistenceTest 
         resultPcs.add(delta);
 
         // mock credential retrieval
-        when(certificateManager.get(any(EndorsementCredential.Selector.class)))
+        when(certificateManager.getCertificate(any(EndorsementCredential.Selector.class)))
                 .thenReturn(resultEcs);
-        when(certificateManager.get(any(PlatformCredential.Selector.class)))
+        when(certificateManager.getCertificate(any(PlatformCredential.Selector.class)))
                 .thenReturn(resultPcs);
-        when(certificateManager.get(any(CertificateAuthorityCredential.Selector.class)))
+        when(certificateManager.getCertificate(any(CertificateAuthorityCredential.Selector.class)))
                 .thenReturn(Collections.emptySet());
     }
 
@@ -181,11 +175,9 @@ public class SupplyChainValidationServiceImplTest extends SpringPersistenceTest 
     public void teardown() {
         DBCertificateManager certMan = new DBCertificateManager(sessionFactory);
         DBDeviceManager deviceMan = new DBDeviceManager(sessionFactory);
-        DBDeviceGroupManager groupMan = new DBDeviceGroupManager(sessionFactory);
 
         certMan.deleteAll();
         deviceMan.deleteAll();
-        groupMan.deleteAll();
     }
     /**
      * All validations enabled, all pass.
@@ -217,7 +209,7 @@ public class SupplyChainValidationServiceImplTest extends SpringPersistenceTest 
         // verify the certs were updated with the test device object and saved in the cert man
         ArgumentCaptor<DeviceAssociatedCertificate> certificatesCaptor
                 = ArgumentCaptor.forClass(DeviceAssociatedCertificate.class);
-        verify(certificateManager, times(3)).update(certificatesCaptor.capture());
+        verify(certificateManager, times(3)).updateCertificate(certificatesCaptor.capture());
 
         List<DeviceAssociatedCertificate> certificateArgs = certificatesCaptor.getAllValues();
         for (DeviceAssociatedCertificate certArg : certificateArgs) {
@@ -441,7 +433,7 @@ public class SupplyChainValidationServiceImplTest extends SpringPersistenceTest 
      */
     @Test
     public final void testGetCaChain() throws URISyntaxException, IOException, KeyStoreException {
-        CertificateManager realCertMan = new DBCertificateManager(sessionFactory);
+        CertificateServiceImpl realCertMan = new CertificateServiceImpl();
 
         // the main service in this class only uses mocked managers, we need a real DB certificate
         // manager for this test, so we make a second service.
@@ -452,7 +444,6 @@ public class SupplyChainValidationServiceImplTest extends SpringPersistenceTest 
                 null,
                 supplyChainValidationSummaryDBManager,
                 supplyChainCredentialValidator,
-                referenceDigestManager,
                 referenceEventManager
         );
 
@@ -469,9 +460,9 @@ public class SupplyChainValidationServiceImplTest extends SpringPersistenceTest 
                 Files.readAllBytes(Paths.get(getClass().getResource(
                         NUC1_EC).toURI())));
 
-        realCertMan.save(endorsementCredential);
-        realCertMan.save(rootCa);
-        realCertMan.save(globalSignCaCert);
+        realCertMan.saveCertificate(endorsementCredential);
+        realCertMan.saveCertificate(rootCa);
+        realCertMan.saveCertificate(globalSignCaCert);
 
         KeyStore ks = mostlyMockedService.getCaChain(endorsementCredential);
 
@@ -488,9 +479,9 @@ public class SupplyChainValidationServiceImplTest extends SpringPersistenceTest 
         Assert.assertNull(ks.getCertificate(stmCaAlias));
         Assert.assertNull(ks.getCertificate(gsCaAlias));
 
-        realCertMan.delete(endorsementCredential);
-        realCertMan.delete(rootCa);
-        realCertMan.delete(globalSignCaCert);
+        realCertMan.deleteObjectById(endorsementCredential.getId());
+        realCertMan.deleteObjectById(rootCa.getId());
+        realCertMan.deleteObjectById(globalSignCaCert.getId());
     }
 
     /**
@@ -503,7 +494,7 @@ public class SupplyChainValidationServiceImplTest extends SpringPersistenceTest 
     @Test
     public final void testGetNotFullCaChain() throws URISyntaxException, IOException,
             KeyStoreException {
-        CertificateManager realCertMan = new DBCertificateManager(sessionFactory);
+        CertificateServiceImpl realCertMan = new CertificateServiceImpl();
 
         // the main service in this class only uses mocked managers, we need a real DB certificate
         // manager for this test, so we make a second service.
@@ -514,7 +505,6 @@ public class SupplyChainValidationServiceImplTest extends SpringPersistenceTest 
                 null,
                 supplyChainValidationSummaryDBManager,
                 supplyChainCredentialValidator,
-                referenceDigestManager,
                 referenceEventManager
         );
 
@@ -527,8 +517,8 @@ public class SupplyChainValidationServiceImplTest extends SpringPersistenceTest 
                 Files.readAllBytes(Paths.get(getClass().getResource(
                         NUC1_EC).toURI())));
 
-        realCertMan.save(endorsementCredential);
-        realCertMan.save(rootCa);
+        realCertMan.saveCertificate(endorsementCredential);
+        realCertMan.saveCertificate(rootCa);
 
         KeyStore ks = mostlyMockedService.getCaChain(endorsementCredential);
 
@@ -538,8 +528,8 @@ public class SupplyChainValidationServiceImplTest extends SpringPersistenceTest 
         Assert.assertNull(ks.getCertificate(stmCaAlias));
         Assert.assertEquals(ks.size(), 0);
 
-        realCertMan.delete(endorsementCredential);
-        realCertMan.delete(rootCa);
+        realCertMan.deleteObjectById(endorsementCredential.getId());
+        realCertMan.deleteObjectById(rootCa.getId());
     }
 
     /**
@@ -551,7 +541,7 @@ public class SupplyChainValidationServiceImplTest extends SpringPersistenceTest 
     @Test
     public final void testGetEmptyCaChain() throws URISyntaxException, IOException,
             KeyStoreException {
-        CertificateManager realCertMan = new DBCertificateManager(sessionFactory);
+        CertificateServiceImpl realCertMan = new CertificateServiceImpl();
 
         // the main service in this class only uses mocked managers, we need a real DB certificate
         // manager for this test, so we make a second service.
@@ -562,7 +552,6 @@ public class SupplyChainValidationServiceImplTest extends SpringPersistenceTest 
                 null,
                 supplyChainValidationSummaryDBManager,
                 supplyChainCredentialValidator,
-                referenceDigestManager,
                 referenceEventManager
         );
 
@@ -570,13 +559,13 @@ public class SupplyChainValidationServiceImplTest extends SpringPersistenceTest 
                 Files.readAllBytes(Paths.get(getClass().getResource(
                         NUC1_EC).toURI())));
 
-        realCertMan.save(endorsementCredential);
+        realCertMan.saveCertificate(endorsementCredential);
 
         KeyStore ks = mostlyMockedService.getCaChain(endorsementCredential);
 
         Assert.assertEquals(ks.size(), 0);
 
-        realCertMan.delete(endorsementCredential);
+        realCertMan.deleteObjectById(endorsementCredential.getId());
     }
 
     /**
@@ -589,7 +578,7 @@ public class SupplyChainValidationServiceImplTest extends SpringPersistenceTest 
     @Test
     public final void testGetCaChainWithExtraCerts() throws URISyntaxException, IOException,
             KeyStoreException {
-        CertificateManager realCertMan = new DBCertificateManager(sessionFactory);
+        CertificateServiceImpl realCertMan = new CertificateServiceImpl();
 
         // the main service in this class only uses mocked managers, we need a real DB certificate
         // manager for this test, so we make a second service.
@@ -600,7 +589,6 @@ public class SupplyChainValidationServiceImplTest extends SpringPersistenceTest 
                 null,
                 supplyChainValidationSummaryDBManager,
                 supplyChainCredentialValidator,
-                referenceDigestManager,
                 referenceEventManager
         );
 
@@ -622,10 +610,10 @@ public class SupplyChainValidationServiceImplTest extends SpringPersistenceTest 
                 Files.readAllBytes(Paths.get(getClass().getResource(
                         NUC1_EC).toURI())));
 
-        realCertMan.save(endorsementCredential);
-        realCertMan.save(rootCa);
-        realCertMan.save(globalSignCaCert);
-        realCertMan.save(intelCa);
+        realCertMan.saveCertificate(endorsementCredential);
+        realCertMan.saveCertificate(rootCa);
+        realCertMan.saveCertificate(globalSignCaCert);
+        realCertMan.saveCertificate(intelCa);
 
         KeyStore ks = mostlyMockedService.getCaChain(endorsementCredential);
 
@@ -637,10 +625,10 @@ public class SupplyChainValidationServiceImplTest extends SpringPersistenceTest 
         Assert.assertNull(ks.getCertificate(gsCaAlias));
         Assert.assertEquals(ks.size(), 0);
 
-        realCertMan.delete(endorsementCredential);
-        realCertMan.delete(rootCa);
-        realCertMan.delete(globalSignCaCert);
-        realCertMan.delete(intelCa);
+        realCertMan.deleteObjectById(endorsementCredential.getId());
+        realCertMan.deleteObjectById(rootCa.getId());
+        realCertMan.deleteObjectById(globalSignCaCert.getId());
+        realCertMan.deleteObjectById(intelCa.getId());
     }
 
     /**
@@ -651,7 +639,7 @@ public class SupplyChainValidationServiceImplTest extends SpringPersistenceTest 
      */
     @Test
     public final void testGetPcCaChain() throws URISyntaxException, IOException, KeyStoreException {
-        CertificateManager realCertMan = new DBCertificateManager(sessionFactory);
+        CertificateServiceImpl realCertMan = new CertificateServiceImpl();
 
         // the main service in this class only uses mocked managers, we need a real DB certificate
         // manager for this test, so we make a second service.
@@ -662,7 +650,6 @@ public class SupplyChainValidationServiceImplTest extends SpringPersistenceTest 
                 null,
                 supplyChainValidationSummaryDBManager,
                 supplyChainCredentialValidator,
-                referenceDigestManager,
                 referenceEventManager
         );
 
@@ -675,8 +662,8 @@ public class SupplyChainValidationServiceImplTest extends SpringPersistenceTest 
                 Files.readAllBytes(Paths.get(getClass().getResource(
                         NUC_PC).toURI())));
 
-        realCertMan.save(platformCredential);
-        realCertMan.save(intelCa);
+        realCertMan.saveCertificate(platformCredential);
+        realCertMan.saveCertificate(intelCa);
 
         KeyStore ks = mostlyMockedService.getCaChain(platformCredential);
 
@@ -685,8 +672,8 @@ public class SupplyChainValidationServiceImplTest extends SpringPersistenceTest 
         Assert.assertNotNull(ks.getCertificate(intelCaAlias));
         Assert.assertEquals(ks.size(), 1);
 
-        realCertMan.delete(platformCredential);
-        realCertMan.delete(intelCa);
+        realCertMan.deleteObjectById(platformCredential.getId());
+        realCertMan.deleteObjectById(intelCa.getId());
     }
 
     /**
@@ -699,7 +686,7 @@ public class SupplyChainValidationServiceImplTest extends SpringPersistenceTest 
     @Test
     public final void testGetPcCaChainNoMatches() throws URISyntaxException, IOException,
             KeyStoreException {
-        CertificateManager realCertMan = new DBCertificateManager(sessionFactory);
+        CertificateServiceImpl realCertMan = new CertificateServiceImpl();
 
         // the main service in this class only uses mocked managers, we need a real DB certificate
         // manager for this test, so we make a second service.
@@ -710,7 +697,6 @@ public class SupplyChainValidationServiceImplTest extends SpringPersistenceTest 
                 null,
                 supplyChainValidationSummaryDBManager,
                 supplyChainCredentialValidator,
-                referenceDigestManager,
                 referenceEventManager
         );
 
@@ -727,17 +713,17 @@ public class SupplyChainValidationServiceImplTest extends SpringPersistenceTest 
                 Files.readAllBytes(Paths.get(getClass().getResource(
                         NUC_PC).toURI())));
 
-        realCertMan.save(platformCredential);
-        realCertMan.save(rootCa);
-        realCertMan.save(globalSignCaCert);
+        realCertMan.saveCertificate(platformCredential);
+        realCertMan.saveCertificate(rootCa);
+        realCertMan.saveCertificate(globalSignCaCert);
 
         KeyStore ks = mostlyMockedService.getCaChain(platformCredential);
 
         Assert.assertEquals(ks.size(), 0);
 
-        realCertMan.delete(platformCredential);
-        realCertMan.delete(rootCa);
-        realCertMan.delete(globalSignCaCert);
+        realCertMan.deleteObjectById(platformCredential.getId());
+        realCertMan.deleteObjectById(rootCa.getId());
+        realCertMan.deleteObjectById(globalSignCaCert.getId());
     }
 
     /**
@@ -753,7 +739,7 @@ public class SupplyChainValidationServiceImplTest extends SpringPersistenceTest 
         when(policy.isPcValidationEnabled()).thenReturn(false);
         when(policy.isPcAttributeValidationEnabled()).thenReturn(false);
 
-        CertificateManager realCertMan = new DBCertificateManager(sessionFactory);
+        CertificateServiceImpl realCertMan = new CertificateServiceImpl();
         Device storedDevice = getStoredTestDevice();
 
         SupplyChainValidationServiceImpl mostlyMockedService = new SupplyChainValidationServiceImpl(
@@ -763,7 +749,6 @@ public class SupplyChainValidationServiceImplTest extends SpringPersistenceTest 
                 null,
                 supplyChainValidationSummaryDBManager,
                 new SupplyChainCredentialValidator(),
-                referenceDigestManager,
                 referenceEventManager
         );
 
@@ -780,15 +765,15 @@ public class SupplyChainValidationServiceImplTest extends SpringPersistenceTest 
                         GS_ROOT_CA).toURI()))
         );
 
-        realCertMan.save(stmTpmEkIntermediateCA);
-        realCertMan.save(globalSignTpmRoot);
-        realCertMan.save(stmEkRootCa);
+        realCertMan.saveCertificate(stmTpmEkIntermediateCA);
+        realCertMan.saveCertificate(globalSignTpmRoot);
+        realCertMan.saveCertificate(stmEkRootCa);
 
         EndorsementCredential nucEc = new EndorsementCredential(
                 Files.readAllBytes(Paths.get(getClass().getResource(NUC_EC).toURI()))
         );
 
-        realCertMan.save(nucEc);
+        realCertMan.saveCertificate(nucEc);
 
         SupplyChainValidationSummary summary = mostlyMockedService.validateSupplyChain(
                 nucEc, Collections.emptySet(), storedDevice
@@ -809,20 +794,16 @@ public class SupplyChainValidationServiceImplTest extends SpringPersistenceTest 
 
         Assert.assertEquals(updatedStoredEc.getDevice().getId(), storedDevice.getId());
 
-        realCertMan.delete(stmTpmEkIntermediateCA);
-        realCertMan.delete(globalSignTpmRoot);
-        realCertMan.delete(stmEkRootCa);
-        realCertMan.delete(nucEc);
+        realCertMan.deleteObjectById(stmTpmEkIntermediateCA.getId());
+        realCertMan.deleteObjectById(globalSignTpmRoot.getId());
+        realCertMan.deleteObjectById(stmEkRootCa.getId());
+        realCertMan.deleteObjectById(nucEc.getId());
     }
 
     private Device getStoredTestDevice() {
         DeviceManager deviceManager = new DBDeviceManager(sessionFactory);
-        DeviceGroupManager deviceGroupManager = new DBDeviceGroupManager(sessionFactory);
-
-        DeviceGroup testGroup = new DeviceGroup("group1");
         Device testDevice = new Device("SCVSI-test");
 
-        testDevice.setDeviceGroup(deviceGroupManager.saveDeviceGroup(testGroup));
         return deviceManager.saveDevice(testDevice);
     }
 }

@@ -2,10 +2,10 @@ package hirs.data.persist.certificate;
 
 import hirs.data.persist.certificate.attributes.TPMSecurityAssertions;
 import hirs.data.persist.certificate.attributes.TPMSpecification;
-import hirs.persist.CertificateManager;
 import hirs.persist.CertificateSelector;
-import org.apache.commons.lang3.StringUtils;
+import hirs.persist.service.CertificateService;
 import org.apache.commons.lang3.ArrayUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.bouncycastle.asn1.ASN1ApplicationSpecific;
@@ -109,13 +109,13 @@ public class EndorsementCredential extends DeviceAssociatedCertificate {
      */
     public static class Selector extends CertificateSelector<EndorsementCredential> {
         /**
-         * Construct a new CertificateSelector that will use the given {@link CertificateManager} to
+         * Construct a new CertificateSelector that will use the given {@link CertificateService} to
          * retrieve one or many EndorsementCredentials.
          *
-         * @param certificateManager the certificate manager to be used to retrieve certificates
+         * @param certificateService the certificate service to be used to retrieve certificates
          */
-        public Selector(final CertificateManager certificateManager) {
-            super(certificateManager, EndorsementCredential.class);
+        public Selector(final CertificateService certificateService) {
+            super(certificateService, EndorsementCredential.class);
         }
 
         /**
@@ -164,11 +164,12 @@ public class EndorsementCredential extends DeviceAssociatedCertificate {
     /**
      * Get a Selector for use in retrieving EndorsementCredentials.
      *
-     * @param certMan the CertificateManager to be used to retrieve persisted certificates
+     * @param certificateService the CertificateService to be used to retrieve
+     *                          persisted certificates
      * @return a EndorsementCredential.Selector instance to use for retrieving certificates
      */
-    public static Selector select(final CertificateManager certMan) {
-        return new Selector(certMan);
+    public static Selector select(final CertificateService certificateService) {
+        return new Selector(certificateService);
     }
 
     /*
@@ -419,27 +420,29 @@ public class EndorsementCredential extends DeviceAssociatedCertificate {
             LOGGER.debug("Found TPM Assertions: " + tpmSecurityAssertions.toString());
             // Iterate through remaining fields to set optional attributes
             int tag;
-            DERTaggedObject obj;
+            ASN1TaggedObject obj;
             for (int i = seqPosition; i < seq.size(); i++) {
                 if (seq.getObjectAt(i) instanceof DERTaggedObject) {
                     obj = (DERTaggedObject) seq.getObjectAt(i);
                     tag = obj.getTagNo();
                     if (tag == EK_TYPE_TAG) {
-                        int ekGenTypeVal = ((ASN1Enumerated) obj.getObject()).getValue().intValue();
+                        int ekGenTypeVal = ((ASN1Enumerated) obj.getLoadedObject())
+                                .getValue().intValue();
                         if (ekGenTypeVal >= EK_TYPE_VAL_MIN && ekGenTypeVal <= EK_TYPE_VAL_MAX) {
                             TPMSecurityAssertions.EkGenerationType ekGenType
                                     = TPMSecurityAssertions.EkGenerationType.values()[ekGenTypeVal];
                             tpmSecurityAssertions.setEkGenType(ekGenType);
                         }
                     } else if (tag == EK_LOC_TAG) {
-                        int ekGenLocVal = ((ASN1Enumerated) obj.getObject()).getValue().intValue();
+                        int ekGenLocVal = ((ASN1Enumerated) obj.getLoadedObject())
+                                .getValue().intValue();
                         if (ekGenLocVal >= EK_LOC_VAL_MIN && ekGenLocVal <= EK_LOC_VAL_MAX) {
                             TPMSecurityAssertions.EkGenerationLocation ekGenLocation
                                 = TPMSecurityAssertions.EkGenerationLocation.values()[ekGenLocVal];
                             tpmSecurityAssertions.setEkGenLoc(ekGenLocation);
                         }
                     } else if (tag == EK_CERT_LOC_TAG) {
-                        int ekCertGenLocVal = ((ASN1Enumerated) obj.getObject())
+                        int ekCertGenLocVal = ((ASN1Enumerated) obj.getLoadedObject())
                                 .getValue().intValue();
                         if (ekCertGenLocVal >= EK_LOC_VAL_MIN
                                 && ekCertGenLocVal <= EK_LOC_VAL_MAX) {
@@ -498,7 +501,7 @@ public class EndorsementCredential extends DeviceAssociatedCertificate {
 
         } else if (component instanceof ASN1TaggedObject) {
             ASN1TaggedObject taggedObj = (ASN1TaggedObject) component;
-            parseSingle(taggedObj.getObject(), addToMapping, key);
+            parseSingle(taggedObj.getLoadedObject(), addToMapping, key);
 
         } else if (component instanceof ASN1OctetString) {
             // this may contain parseable data or may just be a OID key-pair value
@@ -605,7 +608,7 @@ public class EndorsementCredential extends DeviceAssociatedCertificate {
             }
 
         } else if (component instanceof ASN1ApplicationSpecific) {
-            parseSingle(((ASN1ApplicationSpecific) component).getObject(), addToMapping, key);
+            parseSingle(((ASN1ApplicationSpecific) component).getLoadedObject(), addToMapping, key);
 
         } else if (component instanceof DERBMPString) {
             if (addToMapping) {

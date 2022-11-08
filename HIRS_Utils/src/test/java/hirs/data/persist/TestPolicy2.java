@@ -1,5 +1,7 @@
 package hirs.data.persist;
 
+import hirs.data.persist.policy.Policy;
+
 import javax.persistence.Entity;
 
 /**

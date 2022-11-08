@@ -1,10 +1,8 @@
 package hirs.persist;
 
 import hirs.appraiser.Appraiser;
-import hirs.data.persist.baseline.Baseline;
 import hirs.data.persist.Device;
-import hirs.data.persist.DeviceGroup;
-import hirs.data.persist.Policy;
+import hirs.data.persist.policy.Policy;
 
 import java.io.Serializable;
 import java.util.List;
@@ -58,18 +56,6 @@ public interface PolicyManager {
      */
     List<Policy> getPolicyList(Class<? extends Policy> clazz)
             throws PolicyManagerException;
-
-    /**
-     * Return a list of all the policies that contain the given baseline.
-     *
-     * @param clazz the class of Policy to search
-     * @param baseline the baseline that should be a member of returned Policies
-     * @return the list of matching Policies
-     */
-    List<Policy> getPoliciesContainingBaseline(
-            Class<? extends Policy> clazz,
-            Baseline baseline
-    );
 
     /**
      * Retrieves the <code>Policy</code> identified by <code>name</code>. If
@@ -170,27 +156,23 @@ public interface PolicyManager {
      *
      * @param appraiser
      *            appraiser
-     * @param deviceGroup
-     *            deviceGroup
      * @return policy or null if not set
      */
-    Policy getPolicy(Appraiser appraiser, DeviceGroup deviceGroup);
+    Policy getPolicy(Appraiser appraiser);
 
     /**
      * Sets the <code>Policy</code> for the <code>Appraiser</code> and
-     * <code>DeviceGroup</code>. See {@link #getPolicy(Appraiser, DeviceGroup)}
+     * <code>DeviceGroup</code>. See {@link #getPolicy(Appraiser)}
      * for more details on the algorithm used. Policy can be null to remove
      * the policy for the appraiser-deviceGroup pair, which will retrieve the
      * default policy instead.
      *
      * @param appraiser
      *            appraiser
-     * @param deviceGroup
-     *            deviceGroup
      * @param policy
      *            policy
      */
-    void setPolicy(Appraiser appraiser, DeviceGroup deviceGroup, Policy policy);
+    void setPolicy(Appraiser appraiser, Policy policy);
 
     /**
      * Retrieves the <code>Policy</code> identified by <code>name</code>. If

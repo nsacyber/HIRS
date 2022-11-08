@@ -7,6 +7,7 @@ import org.testng.annotations.Test;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -110,7 +111,7 @@ public class ExecBuilderTest {
         Map<String, String> env = new HashMap<>();
         File tempFile = File.createTempFile("test", "sh");
         tempFile.deleteOnExit();
-        FileUtils.writeStringToFile(tempFile, "echo $TEST; pwd");
+        FileUtils.writeStringToFile(tempFile, "echo $TEST; pwd", StandardCharsets.UTF_16);
         tempFile.setExecutable(true);
         env.put("TEST", "SOMEVALUE");
 
@@ -147,7 +148,7 @@ public class ExecBuilderTest {
         Map<String, String> env = new HashMap<>();
         File tempFile = File.createTempFile("test", "sh");
         tempFile.deleteOnExit();
-        FileUtils.writeStringToFile(tempFile, "echo $TEST; pwd");
+        FileUtils.writeStringToFile(tempFile, "echo $TEST; pwd", StandardCharsets.UTF_16);
         tempFile.setExecutable(true);
         env.put("TEST", "SOMEVALUE");
 

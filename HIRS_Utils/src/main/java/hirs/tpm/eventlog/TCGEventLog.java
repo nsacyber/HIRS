@@ -1,5 +1,14 @@
 package hirs.tpm.eventlog;
 
+import hirs.data.persist.AbstractDigest;
+import hirs.tpm.eventlog.events.EvConstants;
+import hirs.tpm.eventlog.uefi.UefiConstants;
+import hirs.utils.HexUtils;
+import org.apache.commons.codec.DecoderException;
+import org.apache.commons.codec.binary.Hex;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.math.BigInteger;
@@ -9,20 +18,6 @@ import java.security.NoSuchAlgorithmException;
 import java.security.cert.CertificateException;
 import java.util.Collection;
 import java.util.LinkedHashMap;
-
-import org.apache.commons.codec.DecoderException;
-import org.apache.commons.codec.binary.Hex;
-
-import hirs.data.persist.AbstractDigest;
-import hirs.data.persist.Digest;
-import hirs.data.persist.TPMMeasurementRecord;
-import hirs.data.persist.baseline.TpmWhiteListBaseline;
-import hirs.data.persist.enums.DigestAlgorithm;
-import hirs.tpm.eventlog.events.EvConstants;
-import hirs.tpm.eventlog.uefi.UefiConstants;
-import hirs.utils.HexUtils;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 
 /**
  * Class for handling different formats of TCG Event logs.
@@ -171,33 +166,28 @@ public final class TCGEventLog {
             }
     }
 
-    /**
-     * Creates a TPM baseline using the expected PCR Values.
-     * Expected PCR Values were Calculated from the EventLog (RIM Support file).
-     *
-     * @param name name to call the TPM Baseline
-     * @return whitelist baseline
-     */
-    public TpmWhiteListBaseline createTPMBaseline(final String name) {
-        TpmWhiteListBaseline baseline = new TpmWhiteListBaseline(name);
-        TPMMeasurementRecord record;
-        String pcrValue;
-        for (int i = 0; i < PCR_COUNT; i++) {
-            if (algorithm.compareToIgnoreCase("TPM_ALG_SHA1") == 0) { // Log Was SHA1 Format
-                pcrValue = getExpectedPCRValue(i);
-                byte[] hexValue = HexUtils.hexStringToByteArray(pcrValue);
-                final Digest hash = new Digest(DigestAlgorithm.SHA1, hexValue);
-                record = new TPMMeasurementRecord(i, hash);
-            } else {  // Log was Crypto Agile, currently assumes SHA256
-                pcrValue = getExpectedPCRValue(i);
-                byte[] hexValue = HexUtils.hexStringToByteArray(pcrValue);
-                final Digest hash = new Digest(DigestAlgorithm.SHA256, hexValue);
-                record = new TPMMeasurementRecord(i, hash);
-            }
-            baseline.addToBaseline(record);
-        }
-        return baseline;
-    }
+//    /**
+//     * Creates a TPM baseline using the expected PCR Values.
+//     * Expected PCR Values were Calculated from the EventLog (RIM Support file).
+//     *
+//     */
+//    public void createTPMBaseline() {
+//        TPMMeasurementRecord record;
+//        String pcrValue;
+//        for (int i = 0; i < PCR_COUNT; i++) {
+//            if (algorithm.compareToIgnoreCase("TPM_ALG_SHA1") == 0) { // Log Was SHA1 Format
+//                pcrValue = getExpectedPCRValue(i);
+//                byte[] hexValue = HexUtils.hexStringToByteArray(pcrValue);
+//                final Digest hash = new Digest(DigestAlgorithm.SHA1, hexValue);
+//                record = new TPMMeasurementRecord(i, hash);
+//            } else {  // Log was Crypto Agile, currently assumes SHA256
+//                pcrValue = getExpectedPCRValue(i);
+//                byte[] hexValue = HexUtils.hexStringToByteArray(pcrValue);
+//                final Digest hash = new Digest(DigestAlgorithm.SHA256, hexValue);
+//                record = new TPMMeasurementRecord(i, hash);
+//            }
+//        }
+//    }
 
     /**
      * Calculates the "Expected Values for TPM PCRs based upon Event digests in the Event Log.

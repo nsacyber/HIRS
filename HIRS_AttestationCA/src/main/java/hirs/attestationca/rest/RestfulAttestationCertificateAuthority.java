@@ -1,15 +1,12 @@
 package hirs.attestationca.rest;
 
 import hirs.attestationca.AbstractAttestationCertificateAuthority;
-import hirs.attestationca.service.SupplyChainValidationService;
+import hirs.attestationca.validation.SupplyChainValidationService;
 import hirs.data.service.DeviceRegister;
-import hirs.persist.CertificateManager;
-import hirs.persist.DBManager;
 import hirs.persist.DeviceManager;
-import hirs.persist.ReferenceDigestManager;
 import hirs.persist.ReferenceEventManager;
-import hirs.persist.ReferenceManifestManager;
-import hirs.persist.TPM2ProvisionerState;
+import hirs.persist.service.CertificateService;
+import hirs.persist.service.ReferenceManifestService;
 import hirs.structs.converters.StructConverter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -38,13 +35,11 @@ public class RestfulAttestationCertificateAuthority
      * @param privateKey the ACA private key
      * @param acaCertificate the ACA certificate
      * @param structConverter the struct converter
-     * @param certificateManager the certificate manager
-     * @param referenceManifestManager the referenceManifestManager
+     * @param certificateService the certificate service
+     * @param referenceManifestService the referenceManifestManager
      * @param deviceRegister the device register
      * @param validDays the number of days issued certs are valid
      * @param deviceManager the device manager
-     * @param tpm2ProvisionerStateDBManager the DBManager for persisting provisioner state
-     * @param referenceDigestManager the reference digest manager
      * @param referenceEventManager the reference event manager
      */
     @SuppressWarnings({ "checkstyle:parameternumber" })
@@ -53,18 +48,16 @@ public class RestfulAttestationCertificateAuthority
             final SupplyChainValidationService supplyChainValidationService,
             final PrivateKey privateKey, final X509Certificate acaCertificate,
             final StructConverter structConverter,
-            final CertificateManager certificateManager,
-            final ReferenceManifestManager referenceManifestManager,
+            final CertificateService certificateService,
+            final ReferenceManifestService referenceManifestService,
             final DeviceRegister deviceRegister,
             final DeviceManager deviceManager,
-            final DBManager<TPM2ProvisionerState> tpm2ProvisionerStateDBManager,
-            final ReferenceDigestManager referenceDigestManager,
             final ReferenceEventManager referenceEventManager,
             @Value("${aca.certificates.validity}") final int validDays) {
         super(supplyChainValidationService, privateKey, acaCertificate, structConverter,
-                certificateManager, referenceManifestManager,
+                certificateService, referenceManifestService,
                 deviceRegister, validDays, deviceManager,
-                tpm2ProvisionerStateDBManager, referenceDigestManager, referenceEventManager);
+                referenceEventManager);
     }
 
     /*

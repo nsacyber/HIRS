@@ -1,11 +1,11 @@
 package hirs.attestationca;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import hirs.data.persist.certificate.EndorsementCredential;
 import hirs.data.persist.certificate.PlatformCredential;
-import hirs.persist.CertificateManager;
 import hirs.persist.DBManagerException;
+import hirs.persist.service.CertificateService;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -24,16 +24,16 @@ public final class CredentialManagementHelper {
     /**
      * Parses and stores the EK in the cert manager. If the cert is already present and archived,
      * it is unarchived.
-     * @param certificateManager the certificate manager used for storage
+     * @param certificateService the certificate service used for storage
      * @param endorsementBytes the raw EK bytes used for parsing
      * @return the parsed, valid EK
      * @throws IllegalArgumentException if the provided bytes are not a valid EK.
      */
     public static EndorsementCredential storeEndorsementCredential(
-            final CertificateManager certificateManager,
+            final CertificateService certificateService,
             final byte[] endorsementBytes) throws IllegalArgumentException {
 
-        if (certificateManager == null) {
+        if (certificateService == null) {
             throw new IllegalArgumentException("null certificate manager");
         }
 
@@ -60,17 +60,19 @@ public final class CredentialManagementHelper {
         }
         int certificateHash = endorsementCredential.getCertificateHash();
         EndorsementCredential existingCredential =
-                EndorsementCredential.select(certificateManager).includeArchived()
+                EndorsementCredential.select(certificateService).includeArchived()
                         .byHashCode(certificateHash).getCertificate();
         if (existingCredential == null) {
             LOG.info("No Endorsement Credential found with hash: " + certificateHash);
-            return (EndorsementCredential) certificateManager.save(endorsementCredential);
+            return (EndorsementCredential) certificateService
+                    .saveCertificate(endorsementCredential);
         } else if (existingCredential.isArchived()) {
             // if the EK is stored in the DB and it's archived, unarchive.
             LOG.info("Unarchiving credential");
             existingCredential.restore();
             existingCredential.resetCreateTime();
-            certificateManager.update(existingCredential);
+            certificateService.updateCertificate(existingCredential,
+                    existingCredential.getId());
         }
         return existingCredential;
     }
@@ -78,15 +80,15 @@ public final class CredentialManagementHelper {
     /**
      * Parses and stores the PC in the cert manager. If the cert is already present and archived,
      * it is unarchived.
-     * @param certificateManager the certificate manager used for storage
+     * @param certificateService the certificate service used for storage
      * @param platformBytes the raw PC bytes used for parsing
      * @return the parsed, valid PC, or null if the provided bytes are not a valid EK.
      */
     public static PlatformCredential storePlatformCredential(
-            final CertificateManager certificateManager,
+            final CertificateService certificateService,
             final byte[] platformBytes) {
 
-        if (certificateManager == null) {
+        if (certificateService == null) {
             throw new IllegalArgumentException("null certificate manager");
         }
 
@@ -108,7 +110,7 @@ public final class CredentialManagementHelper {
                 return null;
             }
             PlatformCredential existingCredential =
-                    PlatformCredential.select(certificateManager)
+                    PlatformCredential.select(certificateService)
                             .includeArchived()
                             .byHashCode(platformCredential
                                     .getCertificateHash())
@@ -116,7 +118,7 @@ public final class CredentialManagementHelper {
             if (existingCredential == null) {
                 if (platformCredential.getPlatformSerial() != null) {
                     List<PlatformCredential> certificates = PlatformCredential
-                            .select(certificateManager)
+                            .select(certificateService)
                             .byBoardSerialNumber(platformCredential.getPlatformSerial())
                             .getCertificates().stream().collect(Collectors.toList());
                     if (!certificates.isEmpty()) {
@@ -134,12 +136,14 @@ public final class CredentialManagementHelper {
                         }
                     }
                 }
-                return (PlatformCredential) certificateManager.save(platformCredential);
+                return (PlatformCredential) certificateService
+                        .saveCertificate(platformCredential);
             } else if (existingCredential.isArchived()) {
                 // if the PC is stored in the DB and it's archived, unarchive.
                 LOG.info("Unarchiving credential");
                 existingCredential.restore();
-                certificateManager.update(existingCredential);
+                certificateService.updateCertificate(existingCredential,
+                        existingCredential.getId());
                 return existingCredential;
             }
 

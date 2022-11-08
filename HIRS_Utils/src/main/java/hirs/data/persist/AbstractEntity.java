@@ -1,20 +1,18 @@
 package hirs.data.persist;
 
-import java.util.Date;
-import java.util.UUID;
-
 import javax.persistence.Column;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.MappedSuperclass;
-import org.hibernate.annotations.GenericGenerator;
-import org.hibernate.annotations.Type;
+import java.io.Serializable;
+import java.util.Date;
+import java.util.UUID;
 
 /**
  * An abstract database entity.
  */
 @MappedSuperclass
-public abstract class AbstractEntity {
+public abstract class AbstractEntity implements Serializable {
 
     /**
      * static value for the length of a status message for objects that
@@ -25,8 +23,6 @@ public abstract class AbstractEntity {
     @Id
     @Column(name = "id")
     @GeneratedValue(generator = "uuid2")
-    @GenericGenerator(name = "uuid2", strategy = "uuid2")
-    @Type(type = "uuid-char")
     private UUID id;
 
     @Column (name = "create_time")

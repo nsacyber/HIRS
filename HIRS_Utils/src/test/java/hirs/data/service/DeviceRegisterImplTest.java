@@ -1,16 +1,7 @@
 package hirs.data.service;
 
 import hirs.data.persist.Device;
-import hirs.data.persist.DeviceGroup;
-import hirs.data.persist.DeviceInfoReport;
-import hirs.data.persist.info.FirmwareInfo;
-import hirs.data.persist.info.HardwareInfo;
-import hirs.data.persist.info.NetworkInfo;
-import hirs.data.persist.info.OSInfo;
-import hirs.data.persist.info.TPMInfo;
-import hirs.persist.DeviceGroupManager;
 import hirs.persist.DeviceManager;
-
 import org.testng.annotations.Test;
 
 import java.net.InetAddress;
@@ -35,18 +26,6 @@ public class DeviceRegisterImplTest {
     @Test
     public void registerNonStoredDeviceByReport() {
         final DeviceManager deviceManager = mock(DeviceManager.class);
-        final DeviceGroupManager deviceGroupManager = mock(DeviceGroupManager.class);
-        final InetAddress ipAddress = getTestIpAddress();
-        final NetworkInfo networkInfo = new NetworkInfo(HOSTNAME, ipAddress, MAC_ADDRESS);
-
-        final DeviceInfoReport report = new DeviceInfoReport(networkInfo, new OSInfo(),
-                new FirmwareInfo(), new HardwareInfo(), new TPMInfo());
-
-        final DeviceGroup group = new DeviceGroup("test");
-        when(deviceGroupManager.getDeviceGroup(DeviceGroup.DEFAULT_GROUP)).thenReturn(group);
-        DeviceRegisterImpl register = new DeviceRegisterImpl(deviceManager, deviceGroupManager);
-
-        register.saveOrUpdateDevice(report);
 
         verify(deviceManager).saveDevice(any(Device.class));
     }
@@ -57,13 +36,6 @@ public class DeviceRegisterImplTest {
     @Test
     public void registerNonStoredDeviceByName() {
         final DeviceManager deviceManager = mock(DeviceManager.class);
-        final DeviceGroupManager deviceGroupManager = mock(DeviceGroupManager.class);
-        final DeviceGroup group = new DeviceGroup("test");
-
-        when(deviceGroupManager.getDeviceGroup(DeviceGroup.DEFAULT_GROUP)).thenReturn(group);
-        DeviceRegisterImpl register = new DeviceRegisterImpl(deviceManager, deviceGroupManager);
-
-        register.saveOrUpdateDevice(HOSTNAME);
 
         verify(deviceManager).saveDevice(any(Device.class));
     }
@@ -74,18 +46,9 @@ public class DeviceRegisterImplTest {
     @Test
     public void registerExistingDeviceByReport() {
         final DeviceManager deviceManager = mock(DeviceManager.class);
-        final DeviceGroupManager deviceGroupManager = mock(DeviceGroupManager.class);
-        final InetAddress ipAddress = getTestIpAddress();
-        final NetworkInfo networkInfo = new NetworkInfo(HOSTNAME, ipAddress, MAC_ADDRESS);
-        final DeviceInfoReport report = new DeviceInfoReport(networkInfo, new OSInfo(),
-                new FirmwareInfo(), new HardwareInfo(), new TPMInfo());
         final Device device = new Device(HOSTNAME);
 
         when(deviceManager.getDevice(HOSTNAME)).thenReturn(device);
-
-        DeviceRegisterImpl register = new DeviceRegisterImpl(deviceManager, deviceGroupManager);
-        register.saveOrUpdateDevice(report);
-
         verify(deviceManager).updateDevice(any(Device.class));
     }
 
@@ -95,11 +58,10 @@ public class DeviceRegisterImplTest {
     @Test
     public void registerExistingDeviceByName() {
         final DeviceManager deviceManager = mock(DeviceManager.class);
-        final DeviceGroupManager deviceGroupManager = mock(DeviceGroupManager.class);
         final Device device = new Device(HOSTNAME);
         when(deviceManager.getDevice(HOSTNAME)).thenReturn(device);
 
-        DeviceRegisterImpl register = new DeviceRegisterImpl(deviceManager, deviceGroupManager);
+        DeviceRegisterImpl register = new DeviceRegisterImpl(deviceManager);
         register.saveOrUpdateDevice(HOSTNAME);
 
         verify(deviceManager).updateDevice(any(Device.class));

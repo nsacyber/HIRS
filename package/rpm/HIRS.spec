@@ -326,7 +326,7 @@ mkdir -p %{buildroot}/opt/hirs/default-properties/provisioner
 cp HIRS_Utils/src/main/resources/logging.properties %{buildroot}/opt/hirs/default-properties/provisioner/logging.properties
 
 mkdir -p %{buildroot}/opt/hirs/default-properties/attestationca
-cp HIRS_Utils/src/main/resources/persistence.properties %{buildroot}/opt/hirs/default-properties/attestationca/
+cp HIRS_AttestationCA/src/main/resources/persistence.properties %{buildroot}/opt/hirs/default-properties/attestationca/
 cp HIRS_Utils/src/main/resources/logging.properties %{buildroot}/opt/hirs/default-properties/attestationca/
 cp HIRS_Utils/src/main/resources/banner.properties %{buildroot}/opt/hirs/default-properties/attestationca/
 cp HIRS_Utils/src/main/resources/component-class.json %{buildroot}/opt/hirs/default-properties/

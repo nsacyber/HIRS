@@ -15,7 +15,7 @@ public class AppraiserManagerException extends RuntimeException {
      * @param msg
      *            exception message
      */
-    AppraiserManagerException(final String msg) {
+    public AppraiserManagerException(final String msg) {
         super(msg);
     }
 
@@ -26,7 +26,7 @@ public class AppraiserManagerException extends RuntimeException {
      * @param t
      *            root cause
      */
-    AppraiserManagerException(final Throwable t) {
+    public AppraiserManagerException(final Throwable t) {
         super(t);
     }
 
@@ -39,7 +39,7 @@ public class AppraiserManagerException extends RuntimeException {
      * @param t
      *            root cause
      */
-    AppraiserManagerException(final String msg, final Throwable t) {
+    public AppraiserManagerException(final String msg, final Throwable t) {
         super(msg, t);
     }
 
