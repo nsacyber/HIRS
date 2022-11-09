@@ -1,8 +1,15 @@
+import java.util.concurrent.TimeUnit
+
 plugins {
        id "java"
        id "nebula.ospackage" version "9.1.1"
 }
-version = '1.0'
+
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(11)
+    }
+}
 
 repositories {
     mavenCentral()
@@ -30,12 +37,16 @@ jar {
       }
    }
 
+// Get version from main project gradle
+def packVersion = properties.get("packageVersion");
+//println "packageVersion is ${projVersion}"
+
 // Produce packages
 ospackage {
     packageName = 'tcg_eventlog_tool'
     os = LINUX
     arch = NOARCH
-    version = '2.1.0'
+    version = "$packVersion"
     release = '1'
 
     into '/opt/hirs/eventlog'

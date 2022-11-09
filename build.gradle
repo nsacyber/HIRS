@@ -1,7 +1,10 @@
+import java.util.concurrent.TimeUnit
+
 plugins {
     // Apply the application plugin to add support for building a CLI application in Java.
     id 'application'
 }
+
 
 // Global checkstyle file
     ext.checkstyleConfigFile = new File(rootDir, "/config/checkstyle/sun_checks.xml")
@@ -11,18 +14,23 @@ dependencies {
           // Use Maven Central for resolving dependencies.
              mavenCentral()
          }
-//   implementation project(':HIRS_Utils')
-//   implementation project(':HIRS_Structs')
 }
 
-tasks.register('copyVersion') {
-        doLast {
-            if (project.hasProperty('displayVersion')) {
-                String resourceDir="${buildDir}/resources/main"
-                println "setting app version file contents of: ${displayVersion} to ${resourceDir}"
-                new File(resourceDir, "VERSION").write("$displayVersion")
-            }
-        }
-    }
+def projectVersion = rootProject.file('VERSION').text.trim()
 
-version = file("$rootDir/VERSION").text.trim() + "-SNAPSHOT"
+def buildTime = { ->
+    Date latestdate = new Date();
+    def time = latestdate.getTime();
+    long seconds = TimeUnit.MILLISECONDS.toSeconds(time);
+    return seconds;
+}
+
+def gitHash = { ->
+    def gitProcess = 'git rev-parse --short HEAD'.execute();
+    gitProcess.waitFor();
+    def shortHash = gitProcess.text.trim();
+    def gitHash = shortHash.substring(0, shortHash.length() - 2);
+    return gitHash;
+}
+
+project.ext["packageVersion"] = "${projectVersion}.${buildTime}.${gitHash}.el8"

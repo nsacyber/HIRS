@@ -3,8 +3,10 @@ plugins {
      id  'java'
 }
 
-tasks.withType(JavaCompile) {
-    options.release = 11
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(11)
+    }
 }
 
 repositories {

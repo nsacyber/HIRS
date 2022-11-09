@@ -4,5 +4,5 @@
 scriptDir=$(dirname -- "$(readlink -f -- "${BASH_SOURCE[0]}")") 
 baseDir=${scriptDir%/*}
 libDir=$baseDir"/lib/"
-jar="tcg_eventlog_tool-1.0.jar";
-java -jar $libDir$jar "$@"
+jar="tcg_eventlog_tool.jar";
+java -cp $libDir$jar:$libsDir* hirs.tcg_eventlog.Main "$@"

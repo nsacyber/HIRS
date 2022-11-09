@@ -1,28 +1,91 @@
-apply plugin: 'java'
+plugins {
+       id "java"
+       id "nebula.ospackage" version "9.1.1"
+}
+
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(11)
+    }
+}
 
 repositories {
 	mavenCentral()
 }
 
 dependencies {
-	compile 'javax.json:javax.json-api:1.1.4', 'org.glassfish:javax.json:1.1.4', 'com.beust:jcommander:1.72', 'org.bouncycastle:bcmail-jdk15on:1.59'
-	testCompile 'org.testng:testng:6.8.8'
+    implementation libs.bouncy.castle
+    implementation libs.glassfish.json
+    implementation libs.glassfish.jaxb.runtime
+    implementation libs.jcommander
+    implementation libs.javax.json
+    implementation libs.javax.jaxb
+    implementation libs.javax.annotation
+
+    testImplementation libs.testng
 }
 
 jar {
-	manifest {
-		attributes("Main-Class": "hirs.swid.Main",
-			   "Class-Path": configurations.runtime.files.collect { "lib/$it.name" }.join(' ')
-			  )
-	}
-	from(configurations.compile.collect { it.isDirectory() ? it : zipTree(it) }) {}
-	exclude 'META-INF/*.RSA', 'META-INF/*.SF', 'META-INF/*.DSA'
+     	// Keep jar clean:
+        exclude 'META-INF/*.SF', 'META-INF/*.DSA', 'META-INF/*.RSA', 'META-INF/*.MF'
+
+      manifest {
+         attributes(
+                     'Main-Class': 'hirs.swid.Main',
+                    'Class-Path': configurations.runtimeClasspath.files.collect { it.getName() }.join(' ')
+                   )
+      }
 }
 
-uploadArchives {
-	repositories {
-		flatDir {
-			dirs "${buildDir}"
-		}
-	}
+// Get version from main project gradle
+def packVersion = properties.get("packageVersion");
+println "packageVersion is ${packVersion}"
+
+ospackage {
+    packageName = 'tcg-rim-tool'
+    os = LINUX
+    arch = NOARCH
+    version = "$packVersion"
+    release = '1'
+
+    into '/opt/hirs/rimtool'
+    user 'root'
+    fileMode = 0755
+
+    from(jar.outputs.files) {
+        into 'lib'
+    }
+
+    from('libs') {
+        into 'lib'
+    }
+
+    from(configurations.runtimeClasspath) {
+        into 'lib'
+    }
+
+    from('scripts') {
+        exclude {
+            FileTreeElement details ->
+                details.file.name.endsWith('.bat')
+        }
+	into 'scripts'
+    }
+
+    from('data') {
+        exclude {
+            FileTreeElement details ->
+                details.file.name.endsWith('.md')
+        }
+	into './'
+        link("/usr/local/bin/rim", "/opt/hirs/rimtool/scripts/rimtool.sh", 0x755)
+     }
+}
+
+buildRpm {
+   arch = I386
+}
+
+buildDeb {
+    arch = I386
 }

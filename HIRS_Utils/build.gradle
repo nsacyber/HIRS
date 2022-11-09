@@ -5,8 +5,10 @@ plugins {
 
 ext.configDir = new File(projectDir, 'config')
 
-tasks.withType(JavaCompile) {
-    options.release = 11
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(11)
+    }
 }
 
 repositories {
