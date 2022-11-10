@@ -2,7 +2,7 @@ import java.util.concurrent.TimeUnit
 
 plugins {
        id "java"
-       id "nebula.ospackage" version "9.1.1"
+       id "nebula.ospackage" version "9.0.0"
 }
 
 java {
@@ -43,7 +43,7 @@ def packVersion = properties.get("packageVersion");
 
 // Produce packages
 ospackage {
-    packageName = 'tcg_eventlog_tool'
+    packageName = 'tcg-eventlog-tool'
     os = LINUX
     arch = NOARCH
     version = "$packVersion"
@@ -96,9 +96,9 @@ ospackage {
     postInstall file('scripts/vendor-table.sh')
 
     buildRpm {
-        arch = I386
+        arch = X86_64
     }
     buildDeb {
-        arch = I386
+        arch = 'amd64'
     }
 }
