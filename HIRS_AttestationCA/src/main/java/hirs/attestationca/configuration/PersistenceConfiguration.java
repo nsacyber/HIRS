@@ -7,11 +7,11 @@ import hirs.attestationca.service.DeviceServiceImpl;
 import hirs.attestationca.service.PolicyServiceImpl;
 import hirs.attestationca.service.ReferenceDigestValueServiceImpl;
 import hirs.attestationca.service.ReferenceManifestServiceImpl;
-import hirs.persist.service.CertificateService;
-import hirs.persist.service.DeviceService;
-import hirs.persist.service.PolicyService;
-import hirs.persist.service.ReferenceDigestValueService;
-import hirs.persist.service.ReferenceManifestService;
+import hirs.attestationca.service.CertificateService;
+import hirs.attestationca.service.DeviceService;
+import hirs.attestationca.service.PolicyService;
+import hirs.attestationca.service.ReferenceDigestValueService;
+import hirs.attestationca.service.ReferenceManifestService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
@@ -54,9 +54,9 @@ public class PersistenceConfiguration {
     private int maxTransactionRetryAttempts;
 
     /**
-     * Creates a {@link hirs.persist.service.PolicyService} ready to use.
+     * Creates a {@link hirs.attestationca.service.PolicyService} ready to use.
      *
-     * @return {@link hirs.persist.service.PolicyService}
+     * @return {@link hirs.attestationca.service.PolicyService}
      */
     @Bean
     public PolicyService policyService() {
@@ -66,9 +66,9 @@ public class PersistenceConfiguration {
     }
 
     /**
-     * Creates a {@link hirs.persist.service.DeviceService} ready to use.
+     * Creates a {@link hirs.attestationca.service.DeviceService} ready to use.
      *
-     * @return {@link hirs.persist.service.DeviceService}
+     * @return {@link hirs.attestationca.service.DeviceService}
      */
     @Bean
     public DeviceService deviceService() {
@@ -78,9 +78,9 @@ public class PersistenceConfiguration {
     }
 
     /**
-     * Creates a {@link hirs.persist.service.CertificateService} ready to use.
+     * Creates a {@link hirs.attestationca.service.CertificateService} ready to use.
      *
-     * @return {@link hirs.persist.service.CertificateService}
+     * @return {@link hirs.attestationca.service.CertificateService}
      */
     @Bean
     public CertificateService certificateService() {
@@ -90,9 +90,9 @@ public class PersistenceConfiguration {
     }
 
     /**
-     * Creates a {@link hirs.persist.service.ReferenceManifestService} ready to use.
+     * Creates a {@link hirs.attestationca.service.ReferenceManifestService} ready to use.
      *
-     * @return {@link hirs.persist.service.ReferenceManifestService}
+     * @return {@link hirs.attestationca.service.ReferenceManifestService}
      */
     @Bean
     public ReferenceManifestService referenceManifestService() {
@@ -103,9 +103,9 @@ public class PersistenceConfiguration {
     }
 
     /**
-     * Creates a {@link hirs.persist.service.ReferenceDigestValueService} ready to use.
+     * Creates a {@link hirs.attestationca.service.ReferenceDigestValueService} ready to use.
      *
-     * @return {@link hirs.persist.service.ReferenceDigestValueService}
+     * @return {@link hirs.attestationca.service.ReferenceDigestValueService}
      */
     @Bean
     public ReferenceDigestValueService referenceEventService() {

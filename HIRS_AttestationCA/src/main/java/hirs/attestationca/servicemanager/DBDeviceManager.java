@@ -1,10 +1,9 @@
 package hirs.attestationca.servicemanager;
 
 import hirs.FilteredRecordsList;
-import hirs.data.persist.Device;
+import hirs.attestationca.entity.Device;
 import hirs.persist.CriteriaModifier;
 import hirs.persist.DBManagerException;
-import hirs.persist.DeviceManager;
 import hirs.persist.DeviceManagerException;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;

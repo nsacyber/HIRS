@@ -3,7 +3,6 @@ package hirs.attestationca.servicemanager;
 import hirs.data.persist.enums.PortalScheme;
 import hirs.data.persist.info.PortalInfo;
 import hirs.persist.DBManagerException;
-import hirs.persist.PortalInfoManager;
 import hirs.persist.PortalInfoManagerException;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;

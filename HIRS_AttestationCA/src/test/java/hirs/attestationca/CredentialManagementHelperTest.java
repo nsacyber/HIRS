@@ -1,7 +1,7 @@
 package hirs.attestationca;
 
-import hirs.data.persist.certificate.Certificate;
-import hirs.persist.service.CertificateService;
+import hirs.attestationca.entity.certificate.Certificate;
+import hirs.attestationca.service.CertificateService;
 import org.apache.commons.io.IOUtils;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;

@@ -2,11 +2,9 @@ package hirs.attestationca.rest;
 
 import hirs.attestationca.AbstractAttestationCertificateAuthority;
 import hirs.attestationca.validation.SupplyChainValidationService;
-import hirs.data.service.DeviceRegister;
-import hirs.persist.DeviceManager;
-import hirs.persist.ReferenceEventManager;
-import hirs.persist.service.CertificateService;
-import hirs.persist.service.ReferenceManifestService;
+import hirs.attestationca.service.DeviceRegister;
+import hirs.attestationca.service.CertificateService;
+import hirs.attestationca.service.ReferenceManifestService;
 import hirs.structs.converters.StructConverter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;

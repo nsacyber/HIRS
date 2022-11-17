@@ -1,6 +1,6 @@
 package hirs.attestationca.repository;
 
-import hirs.data.persist.Device;
+import hirs.attestationca.entity.Device;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 

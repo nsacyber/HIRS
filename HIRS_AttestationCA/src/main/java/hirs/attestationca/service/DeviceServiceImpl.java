@@ -1,13 +1,11 @@
 package hirs.attestationca.service;
 
 import hirs.FilteredRecordsList;
+import hirs.attestationca.entity.Device;
 import hirs.attestationca.repository.DeviceRepository;
-import hirs.data.persist.Device;
 import hirs.persist.CriteriaModifier;
 import hirs.persist.DBManagerException;
 import hirs.persist.DeviceManagerException;
-import hirs.persist.service.DefaultService;
-import hirs.persist.service.DeviceService;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -82,6 +80,20 @@ public class DeviceServiceImpl extends DbServiceImpl<Device>
                     }
 
         return saveDevice(dbDevice);
+    }
+
+    @Override
+    public Device getDevice(Device device) {
+        LOGGER.debug("Getting device: {}", device);
+
+        return getRetryTemplate().execute(new RetryCallback<Device,
+                DBManagerException>() {
+            @Override
+            public Device doWithRetry(final RetryContext context)
+                    throws DBManagerException {
+                return deviceRepository.getReferenceById(device.getId());
+            }
+        });
     }
 
     @Override

@@ -2,8 +2,8 @@ package hirs.attestationca;
 
 import hirs.appraiser.SupplyChainAppraiser;
 import hirs.data.persist.policy.SupplyChainPolicy;
-import hirs.persist.service.AppraiserService;
-import hirs.persist.service.PolicyService;
+import hirs.attestationca.service.AppraiserService;
+import hirs.attestationca.service.PolicyService;
 
 import static hirs.attestationca.AbstractAttestationCertificateAuthority.LOG;
 

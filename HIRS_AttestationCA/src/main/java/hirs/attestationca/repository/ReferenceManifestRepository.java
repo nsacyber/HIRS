@@ -1,6 +1,6 @@
 package hirs.attestationca.repository;
 
-import hirs.data.persist.ReferenceManifest;
+import hirs.attestationca.entity.ReferenceManifest;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 

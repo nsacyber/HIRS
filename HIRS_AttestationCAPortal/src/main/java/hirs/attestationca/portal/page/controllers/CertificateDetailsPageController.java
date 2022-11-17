@@ -4,7 +4,7 @@ import hirs.attestationca.portal.page.PageController;
 import hirs.attestationca.portal.page.PageMessages;
 import hirs.attestationca.portal.page.params.CertificateDetailsPageParams;
 import hirs.attestationca.portal.util.CertificateStringMapBuilder;
-import hirs.persist.service.CertificateService;
+import hirs.attestationca.service.CertificateService;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;

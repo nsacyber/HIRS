@@ -1,7 +1,7 @@
 package hirs.attestationca;
 
-import hirs.data.persist.certificate.EndorsementCredential;
-import hirs.data.persist.certificate.PlatformCredential;
+import hirs.attestationca.entity.certificate.EndorsementCredential;
+import hirs.attestationca.entity.certificate.PlatformCredential;
 import org.bouncycastle.asn1.DERSequence;
 import org.bouncycastle.asn1.DERSet;
 import org.bouncycastle.asn1.DERTaggedObject;

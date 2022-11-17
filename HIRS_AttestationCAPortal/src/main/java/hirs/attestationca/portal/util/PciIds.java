@@ -4,8 +4,8 @@ import com.github.marandus.pciid.model.Device;
 import com.github.marandus.pciid.model.Vendor;
 import com.github.marandus.pciid.service.PciIdsDatabase;
 import com.google.common.base.Strings;
-import hirs.data.persist.certificate.attributes.ComponentIdentifier;
-import hirs.data.persist.certificate.attributes.V2.ComponentIdentifierV2;
+import hirs.attestationca.entity.certificate.attributes.ComponentIdentifier;
+import hirs.attestationca.entity.certificate.attributes.V2.ComponentIdentifierV2;
 import org.bouncycastle.asn1.ASN1UTF8String;
 
 import java.io.File;

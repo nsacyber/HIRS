@@ -2,9 +2,9 @@ package hirs.attestationca.persist;
 
 import hirs.attestationca.servicemanager.DBDeviceManager;
 import hirs.attestationca.servicemanager.DBReportRequestStateManager;
-import hirs.data.persist.Device;
+import hirs.attestationca.entity.Device;
 import hirs.attestationca.data.persist.DeviceTest;
-import hirs.data.persist.ReportRequestState;
+import hirs.attestationca.entity.ReportRequestState;
 import hirs.data.persist.type.ReportRequestType;
 import hirs.persist.DBManagerException;
 import hirs.persist.DBUtility;

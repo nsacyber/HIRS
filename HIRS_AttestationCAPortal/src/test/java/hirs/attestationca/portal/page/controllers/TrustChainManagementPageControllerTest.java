@@ -2,9 +2,9 @@ package hirs.attestationca.portal.page.controllers;
 
 import hirs.attestationca.portal.page.PageControllerTest;
 import hirs.attestationca.portal.page.PageMessages;
-import hirs.data.persist.certificate.Certificate;
-import hirs.data.persist.certificate.CertificateAuthorityCredential;
-import hirs.persist.service.CertificateService;
+import hirs.attestationca.entity.certificate.Certificate;
+import hirs.attestationca.entity.certificate.CertificateAuthorityCredential;
+import hirs.attestationca.service.CertificateService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.mock.web.MockMultipartFile;

@@ -2,11 +2,10 @@ package hirs.attestationca.persist;
 
 import hirs.appraiser.Appraiser;
 import hirs.attestationca.servicemanager.DBDeviceManager;
-import hirs.data.persist.Device;
-import hirs.data.persist.DeviceInfoReport;
+import hirs.attestationca.entity.Device;
+import hirs.attestationca.entity.DeviceInfoReport;
 import hirs.data.persist.policy.Policy;
 import hirs.persist.DBUtility;
-import hirs.persist.DeviceManager;
 import hirs.persist.PolicyMapper;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;

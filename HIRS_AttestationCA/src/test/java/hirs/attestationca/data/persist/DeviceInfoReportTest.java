@@ -2,14 +2,13 @@ package hirs.attestationca.data.persist;
 
 import hirs.attestationca.persist.SpringPersistenceTest;
 import hirs.attestationca.servicemanager.DBReportManager;
-import hirs.data.persist.DeviceInfoReport;
+import hirs.attestationca.entity.DeviceInfoReport;
 import hirs.data.persist.info.FirmwareInfo;
 import hirs.data.persist.info.HardwareInfo;
 import hirs.data.persist.info.NetworkInfo;
 import hirs.data.persist.info.OSInfo;
 import hirs.data.persist.info.TPMInfo;
 import hirs.foss.XMLCleaner;
-import hirs.persist.ReportManager;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.testng.Assert;

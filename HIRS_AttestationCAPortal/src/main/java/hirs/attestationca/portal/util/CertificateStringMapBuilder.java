@@ -1,13 +1,13 @@
 package hirs.attestationca.portal.util;
 
-import hirs.persist.service.CertificateService;
-import hirs.data.persist.certificate.Certificate;
-import hirs.data.persist.certificate.CertificateAuthorityCredential;
-import hirs.data.persist.certificate.EndorsementCredential;
-import hirs.data.persist.certificate.IssuedAttestationCertificate;
-import hirs.data.persist.certificate.PlatformCredential;
-import hirs.data.persist.certificate.attributes.ComponentIdentifier;
-import hirs.data.persist.certificate.attributes.PlatformConfiguration;
+import hirs.attestationca.service.CertificateService;
+import hirs.attestationca.entity.certificate.Certificate;
+import hirs.attestationca.entity.certificate.CertificateAuthorityCredential;
+import hirs.attestationca.entity.certificate.EndorsementCredential;
+import hirs.attestationca.entity.certificate.IssuedAttestationCertificate;
+import hirs.attestationca.entity.certificate.PlatformCredential;
+import hirs.attestationca.entity.certificate.attributes.ComponentIdentifier;
+import hirs.attestationca.entity.certificate.attributes.PlatformConfiguration;
 import hirs.utils.BouncyCastleUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;

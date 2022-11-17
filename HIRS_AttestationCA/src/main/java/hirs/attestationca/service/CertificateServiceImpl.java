@@ -1,18 +1,16 @@
 package hirs.attestationca.service;
 
 import hirs.FilteredRecordsList;
+import hirs.attestationca.entity.certificate.Certificate;
+import hirs.attestationca.entity.certificate.CertificateAuthorityCredential;
+import hirs.attestationca.entity.certificate.EndorsementCredential;
+import hirs.attestationca.entity.certificate.IssuedAttestationCertificate;
+import hirs.attestationca.entity.certificate.PlatformCredential;
 import hirs.attestationca.repository.CertificateRepository;
 import hirs.data.persist.ArchivableEntity;
-import hirs.data.persist.certificate.Certificate;
-import hirs.data.persist.certificate.CertificateAuthorityCredential;
-import hirs.data.persist.certificate.EndorsementCredential;
-import hirs.data.persist.certificate.IssuedAttestationCertificate;
-import hirs.data.persist.certificate.PlatformCredential;
-import hirs.persist.CertificateSelector;
+import hirs.attestationca.entity.CertificateSelector;
 import hirs.persist.CriteriaModifier;
 import hirs.persist.DBManagerException;
-import hirs.persist.service.CertificateService;
-import hirs.persist.service.DefaultService;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;

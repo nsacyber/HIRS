@@ -4,8 +4,6 @@ import hirs.appraiser.Appraiser;
 import hirs.appraiser.IMAAppraiser;
 import hirs.appraiser.TPMAppraiser;
 import hirs.appraiser.TestAppraiser;
-import hirs.attestationca.servicemanager.DBAppraiserManager;
-import hirs.persist.AppraiserManager;
 import org.hibernate.Session;
 import org.hibernate.query.Query;
 import org.testng.Assert;

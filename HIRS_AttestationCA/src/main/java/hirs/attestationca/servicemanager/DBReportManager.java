@@ -2,7 +2,6 @@ package hirs.attestationca.servicemanager;
 
 import hirs.data.persist.Report;
 import hirs.persist.DBManagerException;
-import hirs.persist.ReportManager;
 import hirs.persist.ReportManagerException;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;

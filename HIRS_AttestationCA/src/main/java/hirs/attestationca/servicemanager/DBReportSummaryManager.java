@@ -1,8 +1,7 @@
 package hirs.attestationca.servicemanager;
 
-import hirs.data.persist.ReportSummary;
+import hirs.attestationca.entity.ReportSummary;
 import hirs.persist.DBManagerException;
-import hirs.persist.ReportSummaryManager;
 import hirs.persist.ReportSummaryManagerException;
 import org.apache.logging.log4j.Logger;
 import org.hibernate.Session;

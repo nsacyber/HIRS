@@ -1,13 +1,11 @@
 package hirs.attestationca.service;
 
 import hirs.FilteredRecordsList;
+import hirs.attestationca.entity.ReferenceDigestValue;
 import hirs.attestationca.repository.ReferenceDigestValueRepository;
 import hirs.data.persist.ArchivableEntity;
-import hirs.data.persist.ReferenceDigestValue;
 import hirs.persist.CriteriaModifier;
 import hirs.persist.DBManagerException;
-import hirs.persist.service.DefaultService;
-import hirs.persist.service.ReferenceDigestValueService;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -108,6 +106,11 @@ public class ReferenceDigestValueServiceImpl extends DbServiceImpl<ReferenceDige
         }
 
         return saveDigestValue(dbDigestValue);
+    }
+
+    @Override
+    public List<ReferenceDigestValue> getValueByManufacturerModel(String manufacturer, String model) {
+        return null;
     }
 
     @Override

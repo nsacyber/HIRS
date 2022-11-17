@@ -6,7 +6,7 @@ import hirs.attestationca.portal.datatables.DataTableInput;
 import hirs.attestationca.portal.datatables.Order;
 import hirs.attestationca.portal.datatables.OrderedListQueryDataTableAdapter;
 import hirs.attestationca.portal.datatables.Search;
-import hirs.data.persist.Device;
+import hirs.attestationca.entity.Device;
 import hirs.persist.CriteriaModifier;
 import hirs.persist.OrderedQuery;
 import org.mockito.ArgumentCaptor;

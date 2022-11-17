@@ -7,7 +7,6 @@ import javax.xml.bind.annotation.XmlElement;
 import org.apache.logging.log4j.Logger;
 
 import hirs.data.persist.Report;
-import hirs.data.persist.TPMReport;
 
 import java.util.Arrays;
 

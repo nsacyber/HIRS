@@ -4,7 +4,6 @@ import hirs.attestationca.servicemanager.DBPortalInfoManager;
 import hirs.data.persist.enums.PortalScheme;
 import hirs.data.persist.info.PortalInfo;
 import hirs.persist.DBUtility;
-import hirs.persist.PortalInfoManager;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.testng.Assert;

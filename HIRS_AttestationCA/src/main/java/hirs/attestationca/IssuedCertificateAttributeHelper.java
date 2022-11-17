@@ -26,8 +26,8 @@ import java.io.IOException;
 import java.security.cert.CertificateEncodingException;
 import java.security.cert.X509Certificate;
 import java.util.Collection;
-import hirs.data.persist.certificate.EndorsementCredential;
-import hirs.data.persist.certificate.PlatformCredential;
+import hirs.attestationca.entity.certificate.EndorsementCredential;
+import hirs.attestationca.entity.certificate.PlatformCredential;
 
 /**
  * Builds extensions based on Platform and Endorsement credentials to provide in an issued

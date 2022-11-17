@@ -1,21 +1,15 @@
 package hirs.data.persist.tpm;
 
-import hirs.data.persist.TPMMeasurementRecord;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import javax.persistence.ElementCollection;
 import javax.persistence.Embeddable;
 import javax.persistence.Embedded;
-import javax.persistence.FetchType;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlType;
 import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
 
 /**
  * Java class for PcrComposite, based on the code auto-generated using xjc
@@ -58,16 +52,11 @@ public class PcrComposite implements Serializable {
     @Embedded
     private final PcrSelection pcrSelection;
 
-    @XmlElement(name = "PcrValue", required = true)
-    @ElementCollection(fetch = FetchType.EAGER)
-    private final List<TPMMeasurementRecord> pcrValueList;
-
     /**
      * Default constructor necessary for marshalling/unmarshalling xml.
      */
     protected PcrComposite() {
         pcrSelection = null;
-        pcrValueList = new ArrayList<>();
     }
 
     /**
@@ -76,21 +65,13 @@ public class PcrComposite implements Serializable {
      * @param pcrSelection
      *            {@link PcrSelection } object, identifies which TPM PCRs are
      *            quoted
-     * @param pcrValueList
-     *            List of TPMMeasurementRecords representing the PCR values
      */
-    public PcrComposite(final PcrSelection pcrSelection,
-            final List<TPMMeasurementRecord> pcrValueList) {
+    public PcrComposite(final PcrSelection pcrSelection) {
         if (pcrSelection == null) {
             LOGGER.error("null pcrSelection value");
             throw new NullPointerException("pcrSelection");
         }
-        if (pcrValueList == null) {
-            LOGGER.error("null pcrValueList value");
-            throw new NullPointerException("pcrValueList");
-        }
         this.pcrSelection = pcrSelection;
-        this.pcrValueList = pcrValueList;
     }
 
     /**
@@ -114,20 +95,7 @@ public class PcrComposite implements Serializable {
     @XmlElement(name = "ValueSize", required = true)
     public final int getValueSize() {
         int valueSize = 0;
-        for (TPMMeasurementRecord record : this.pcrValueList) {
-            valueSize += record.getHash().getDigest().length;
-        }
         return valueSize;
-    }
-
-    /**
-     * Gets the list of PCR values, represented as a List of
-     * TPMMeasurementRecord objects.
-     *
-     * @return list of TPMeasurementRecords
-     */
-    public final List<TPMMeasurementRecord> getPcrValueList() {
-        return Collections.unmodifiableList(pcrValueList);
     }
 
     @Override
@@ -151,9 +119,6 @@ public class PcrComposite implements Serializable {
         * Object#equals, which will return false unless they're
         * the same object.
         */
-        if (pcrValueList.size() != that.pcrValueList.size()) {
-            return false;
-        }
 
         return true;
     }
@@ -162,7 +127,7 @@ public class PcrComposite implements Serializable {
     public final int hashCode() {
         final int prime = 31;
         int result = pcrSelection.hashCode();
-        result = prime * result + pcrValueList.hashCode();
+        result = prime * result;
         return result;
     }
 }

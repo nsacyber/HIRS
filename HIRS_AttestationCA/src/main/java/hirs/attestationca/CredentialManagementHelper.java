@@ -1,9 +1,9 @@
 package hirs.attestationca;
 
-import hirs.data.persist.certificate.EndorsementCredential;
-import hirs.data.persist.certificate.PlatformCredential;
+import hirs.attestationca.entity.certificate.EndorsementCredential;
+import hirs.attestationca.entity.certificate.PlatformCredential;
 import hirs.persist.DBManagerException;
-import hirs.persist.service.CertificateService;
+import hirs.attestationca.service.CertificateService;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 

@@ -2,10 +2,9 @@ package hirs.attestationca.servicemanager;
 
 import com.google.common.base.Preconditions;
 import hirs.appraiser.Appraiser;
-import hirs.data.persist.Device;
+import hirs.attestationca.entity.Device;
 import hirs.data.persist.policy.Policy;
 import hirs.persist.DBManagerException;
-import hirs.persist.PolicyManager;
 import hirs.persist.PolicyManagerException;
 import hirs.persist.PolicyMapper;
 import org.apache.logging.log4j.LogManager;

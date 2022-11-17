@@ -1,6 +1,5 @@
 package hirs;
 
-import hirs.data.persist.TPMReport;
 import org.testng.Assert;
 import org.testng.annotations.Test;
 

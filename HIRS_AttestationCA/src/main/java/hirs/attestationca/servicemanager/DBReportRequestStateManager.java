@@ -1,8 +1,7 @@
 package hirs.attestationca.servicemanager;
 
-import hirs.data.persist.Device;
-import hirs.data.persist.ReportRequestState;
-import hirs.persist.ReportRequestStateManager;
+import hirs.attestationca.entity.Device;
+import hirs.attestationca.entity.ReportRequestState;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.stereotype.Service;
