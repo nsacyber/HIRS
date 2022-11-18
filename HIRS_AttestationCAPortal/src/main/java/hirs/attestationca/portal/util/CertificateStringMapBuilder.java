@@ -8,6 +8,7 @@ import hirs.attestationca.entity.certificate.IssuedAttestationCertificate;
 import hirs.attestationca.entity.certificate.PlatformCredential;
 import hirs.attestationca.entity.certificate.attributes.ComponentIdentifier;
 import hirs.attestationca.entity.certificate.attributes.PlatformConfiguration;
+import hirs.attestationca.validation.PciIds;
 import hirs.utils.BouncyCastleUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;

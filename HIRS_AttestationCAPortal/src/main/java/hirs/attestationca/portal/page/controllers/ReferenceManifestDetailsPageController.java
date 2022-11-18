@@ -18,7 +18,7 @@ import hirs.attestationca.service.ReferenceDigestValueService;
 import hirs.attestationca.service.ReferenceManifestService;
 import hirs.tpm.eventlog.TCGEventLog;
 import hirs.tpm.eventlog.TpmPcrEvent;
-import hirs.attestationca.portal.util.ReferenceManifestValidator;
+import hirs.attestationca.validation.ReferenceManifestValidator;
 import hirs.attestationca.validation.SupplyChainCredentialValidator;
 import hirs.attestationca.validation.SupplyChainValidatorException;
 import org.apache.logging.log4j.LogManager;

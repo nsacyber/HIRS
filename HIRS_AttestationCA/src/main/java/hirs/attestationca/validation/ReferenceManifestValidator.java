@@ -1,4 +1,4 @@
-package hirs.attestationca.portal.util;
+package hirs.attestationca.validation;
 
 import hirs.attestationca.entity.ReferenceManifest;
 import hirs.attestationca.entity.certificate.CertificateAuthorityCredential;

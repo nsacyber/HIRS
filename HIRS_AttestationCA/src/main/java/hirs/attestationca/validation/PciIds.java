@@ -1,4 +1,4 @@
-package hirs.attestationca.portal.util;
+package hirs.attestationca.validation;
 
 import com.github.marandus.pciid.model.Device;
 import com.github.marandus.pciid.model.Vendor;

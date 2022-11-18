@@ -3,14 +3,14 @@ package hirs.attestationca.validation;
 import com.fasterxml.jackson.core.JsonFactory;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import hirs.attestationca.entity.SupplyChainValidation;
+import hirs.attestationca.entity.certificate.EndorsementCredential;
+import hirs.attestationca.entity.certificate.PlatformCredential;
+import hirs.attestationca.entity.certificate.attributes.ComponentIdentifier;
+import hirs.attestationca.entity.certificate.attributes.V2.ComponentIdentifierV2;
 import hirs.data.persist.AppraisalStatus;
 import hirs.data.persist.ArchivableEntity;
 import hirs.data.persist.DeviceInfoReport;
-import hirs.data.persist.SupplyChainValidation;
-import hirs.data.persist.certificate.EndorsementCredential;
-import hirs.data.persist.certificate.PlatformCredential;
-import hirs.data.persist.certificate.attributes.ComponentIdentifier;
-import hirs.data.persist.certificate.attributes.V2.ComponentIdentifierV2;
 import hirs.data.persist.info.ComponentInfo;
 import hirs.data.persist.info.HardwareInfo;
 import org.apache.commons.codec.digest.DigestUtils;
@@ -263,8 +263,7 @@ public final class SupplyChainCredentialValidator implements CredentialValidator
      */
     @Override
     public AppraisalStatus validatePlatformCredentialAttributes(
-            final P
-                    latformCredential platformCredential,
+            final PlatformCredential platformCredential,
             final DeviceInfoReport deviceInfoReport,
             final EndorsementCredential endorsementCredential) {
         final String baseErrorMessage = "Can't validate platform credential attributes without ";
