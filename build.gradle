@@ -1,10 +1,13 @@
 import java.util.concurrent.TimeUnit
+import org.gradle.api.tasks.Copy
 
 plugins {
     // Apply the application plugin to add support for building a CLI application in Java.
     id 'application'
+    id 'java'
+    id 'war'
+    id  "nebula.ospackage" version "9.1.1"
 }
-
 
 // Global checkstyle file
     ext.checkstyleConfigFile = new File(rootDir, "/config/checkstyle/sun_checks.xml")
@@ -34,3 +37,16 @@ def gitHash = { ->
 }
 
 project.ext["packageVersion"] = "${projectVersion}.${buildTime}.${gitHash}.el8"
+
+task buildAcaRpm(type:Exec) {
+  description 'Builds a RPM package for the HIRS ACA'
+  def rpmName="build/distributions/HIRS_AttesationCA-${projectVersion}.${buildTime}.${gitHash}.el8-1.x86_64.rpm created"
+  doFirst {
+    println "Building HIRS_AttestationCA.war, HIRS_AttestationCAPortal.war, and HIRS_AttestationCA.rpm"
+    commandLine './package/package.rocky.sh'
+  }
+  doLast {
+    println "Build complete"
+    println "${rpmName} created"
+   }
+}

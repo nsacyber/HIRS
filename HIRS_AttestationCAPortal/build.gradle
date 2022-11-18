@@ -1,6 +1,7 @@
 plugins {
     id 'java'
     id 'war'
+    id  "nebula.ospackage" version "9.1.1"
 }
 
 java {
@@ -10,6 +11,7 @@ java {
 }
 
 repositories {
+    flatDir { dirs "lib" }
     mavenCentral()
 }
 
@@ -58,8 +60,8 @@ war {
     from(buildDir) {
         include 'VERSION'
         into 'WEB-INF/classes'
+        archiveFileName = 'HIRS_AttestationCAPortal.war'
     }
-    archiveFileName = 'HIRS_AttestationCAPortal.war'
 }
 
 ext.configDir = new File(projectDir, 'config')
@@ -67,3 +69,150 @@ ext.configDir = new File(projectDir, 'config')
 ext.checkstyleConfigDir = "$configDir/checkstyle"
 
 ext.findbugsConfigDir = "$configDir/findbugs"
+
+// Get version from main project gradle
+def packVersion = properties.get("packageVersion");
+//println "packageVersion is ${packVersion}"
+
+ospackage {
+    packageName = 'HIRS_AttestationCA'
+    os = LINUX
+    arch = NOARCH
+    version = "$packVersion"
+    release = '1'
+
+    def tpath="/opt"
+
+    // Setup tomcat files
+    from(war.outputs.files) {
+        into "${tpath}/tomcat/webapps"
+        user 'root'
+        fileMode = 0755
+    }
+
+    // Create and package HIRS_AttestationCA:war
+    from('../HIRS_AttestationCA/build/libs/HIRS_AttestationCA.war') {
+        into "${tpath}/tomcat/webapps"
+    }
+    from('lib') {
+        into "${tpath}/tomcat/lib"
+    }
+    from(configurations.runtimeClasspath) {
+        into "${tpath}/tomcat/lib"
+    }
+    from ('../package/conf/tomcat.service') {
+            addParentDirs true
+            createDirectoryEntry true
+            into '/opt/hirs/scripts/aca/'
+    }
+    from ('../package/scripts/install_tomcat.sh') {
+            addParentDirs true
+            createDirectoryEntry true
+            into '/opt/hirs/scripts/aca/'
+    }
+
+    // Setup /opt/hirs defualt property files
+
+    from ('../HIRS_Utils/src/main/resources/vendor-table.json') {
+            addParentDirs true
+            createDirectoryEntry true
+            into '/opt/hirs/default-properties/'
+    }
+    from ('../HIRS_Utils/src/main/resources/component-class.json') {
+            into '/opt/hirs/default-properties/'
+    }
+    from ('../HIRS_Utils/src/main/resources/banner.properties') {
+            addParentDirs true
+            createDirectoryEntry true
+            into '/opt/hirs/default-properties/attestationca/'
+    }
+    from ('../HIRS_Utils/src/main/resources/persistence.properties') {
+            into '/opt/hirs/default-properties/attestationca/'
+    }
+    from ('../HIRS_Utils/src/main/resources/logging.properties') {
+            into '/opt/hirs/default-properties/attestationca/'
+    }
+
+ // Setup script files
+    from ('../package/scripts/aca/certificate_generate.sh') {
+            addParentDirs true
+            createDirectoryEntry true
+            into '/opt/hirs/scripts/aca/'
+    }
+    from ('../package/scripts/common/') {
+            addParentDirs true
+            createDirectoryEntry true
+            into '/opt/hirs/scripts/common/'
+    }
+    from ('../package/extras/aca/') {
+            addParentDirs true
+            createDirectoryEntry true
+            into '/opt/hirs/extras/aca/'
+    }
+
+    // Set /etc/hirs/ files
+
+    from ('../HIRS_Utils/src/main/resources/banner.properties') {
+            addParentDirs true
+            createDirectoryEntry true
+            into '/ect/hirs/'
+    }
+    from ('../HIRS_Utils/src/main/resources/persistence.properties') {
+            into '/ect/hirs/'
+    }
+    from ('../HIRS_Utils/src/main/resources/logging.properties') {
+            into '/ect/hirs/'
+    }
+
+ // Setup script files
+
+    from ('../package/scripts/aca/certificate_generate.sh') {
+            addParentDirs true
+            createDirectoryEntry true
+            into '/opt/hirs/scripts/aca/'
+    }
+    from ('../package/scripts/common/') {
+            addParentDirs true
+            createDirectoryEntry true
+            into '/opt/hirs/scripts/common/'
+    }
+    from ('../package/extras/aca/') {
+            addParentDirs true
+            createDirectoryEntry true
+            into '/opt/hirs/extras/aca/'
+    }
+
+    // Set /etc/hirs/ files
+
+    from ('../HIRS_Utils/src/main/resources/banner.properties') {
+            addParentDirs true
+            createDirectoryEntry true
+            into '/ect/hirs/'
+    }
+    from ('../HIRS_Utils/src/main/resources/persistence.properties') {
+            into '/ect/hirs/'
+    }
+    from ('../HIRS_Utils/src/main/resources/logging.properties') {
+            into '/ect/hirs/'
+    }
+
+ // Note /etc/hirs/aca/certificates files are created by  certificate_generate.sh
+ //	 /etc/hirs/aca/client-files files are created by  certificate_generate.sh
+ //	 /etc/hirs/certificates/ files are created by ssl_configure.sh
+ //	 /etc/hirs/certificates/mysql/  files are created by ssl_configure.sh
+ //	 /etc/hirs/certificates/private/  files are created by ssl_configure.sh
+
+    postInstall file('../package/scripts/install_tomcat.sh')
+    //postInstall file('/opt/hirs/scripts/aca/certificate_generate.sh')
+    //postInstall file('/opt/hirs/package/scripts/common/ssl_configure.sh')
+    //postInstall file('../tools/tcg_eventlog_tool/scripts/vendor-table.sh')
+    //postInstall file('/opt/tomcat/libs/catalina.sh')
+
+    buildRpm {
+	arch = X86_64
+    }
+
+    buildDeb {
+	arch = 'amd64'
+    }
+}

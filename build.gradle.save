@@ -1,0 +1,208 @@
+import java.util.concurrent.TimeUnit
+import org.gradle.api.tasks.Copy
+
+plugins {
+    // Apply the application plugin to add support for building a CLI application in Java.
+    id 'application'
+    id 'java'
+    id 'war'
+    id  "nebula.ospackage" version "9.1.1"
+}
+
+// Global checkstyle file
+    ext.checkstyleConfigFile = new File(rootDir, "/config/checkstyle/sun_checks.xml")
+
+dependencies {
+    repositories {
+          // Use Maven Central for resolving dependencies.
+             mavenCentral()
+         }
+}
+
+def projectVersion = rootProject.file('VERSION').text.trim()
+
+def buildTime = { ->
+    Date latestdate = new Date();
+    def time = latestdate.getTime();
+    long seconds = TimeUnit.MILLISECONDS.toSeconds(time);
+    return seconds;
+}
+
+def gitHash = { ->
+    def gitProcess = 'git rev-parse --short HEAD'.execute();
+    gitProcess.waitFor();
+    def shortHash = gitProcess.text.trim();
+    def gitHash = shortHash.substring(0, shortHash.length() - 2);
+    return gitHash;
+}
+
+project.ext["packageVersion"] = "${projectVersion}.${buildTime}.${gitHash}.el8"
+
+task copyPackage {
+  doFirst {
+    println "Copy package check"
+  }
+  doLast {
+    println "Copying package in to build/distibutions"
+//    from layout.buildDirectory.file('HIRS_AttestationCAPortal/build/distributions/*')
+//    into layout.buildDirectory.dir('build/disributions/')
+  }
+}
+
+task buildAcaRpm(type:Exec) {
+  description 'Builds a RPM package for the HIRS ACA'
+  doFirst {
+    println "Building HIRS_AttestationCA.war, HIRS_AttestationCAPortal.war, and HIRS_AttestationCA.rpm"
+    commandLine './gradlew', ':HIRS_AttestationCA:clean', ':HIRS_AttestationCA:war'
+    commandLine './gradlew', ':HIRS_AttestationCAPortal:clean', ':HIRS_AttestationCAPortal:buildRpm'
+  }
+  doLast {
+       println "Build complete"
+    }
+}
+
+task copyPackageB {
+  doFirst {
+    println "Copy package check $dist"
+  }  
+  doLast {
+    println "Copying $dist package in to build/distibutions"
+//    from layout.buildDirectory.file('HIRS_AttestationCAPortal/build/distributions/*')
+//    into layout.buildDirectory.dir('build/disributions/')
+  }
+}
+
+
+ospackage {
+    packageName = 'HIRS_AttestationCA'
+    os = LINUX
+    arch = NOARCH
+    version = "$packageVersion"
+    release = '1'
+
+    into '/usr/share/tomcat/'
+    user 'root'
+    fileMode = 0755
+
+    // Setup tomcat files
+    // Create and package HIRS_AttestationCA:war
+    from('HIRS_AttestationCA/build/libs/HIRS_AttestationCA.war') {
+          into '/usr/share/tomcat/webapps'
+    }
+    // Create and package HIRS_AttestationCAPortal:war
+    from('HIRS_AttestationCAPortal/build/libs/HIRS_AttestationCA.war') {
+          into '/usr/share/tomcat/webapps'
+    }
+
+    from(war.outputs.files) {
+        into '/usr/share/tomcat/webapps'
+    }
+    from('lib') {
+        into '/usr/share/tomcat/lib'
+    }
+    from(configurations.runtimeClasspath) {
+        into '/usr/share/tomcat/lib'
+    }
+
+    // Setup /opt/hirs defualt property files
+
+    from ('HIRS_Utils/src/main/resources/vendor-table.json') {
+            addParentDirs true
+            createDirectoryEntry true
+            into '/opt/hirs/default-properties/'
+    }
+    from ('HIRS_Utils/src/main/resources/component-class.json') {
+            into '/opt/hirs/default-properties/'
+    }
+    from ('HIRS_Utils/src/main/resources/banner.properties') {
+            addParentDirs true
+            createDirectoryEntry true
+            into '/opt/hirs/default-properties/attestationca/'
+    }
+    from ('HIRS_Utils/src/main/resources/persistence.properties') {
+            into '/opt/hirs/default-properties/attestationca/'
+    }
+    from ('HIRS_Utils/src/main/resources/logging.properties') {
+            into '/opt/hirs/default-properties/attestationca/'
+    }
+
+ // Setup script files
+    from ('package/scripts/aca/certificate_generate.sh') {
+            addParentDirs true
+            createDirectoryEntry true
+            into '/opt/hirs/scripts/aca/'
+    }
+    from ('package/scripts/common/') {
+            addParentDirs true
+            createDirectoryEntry true
+            into '/opt/hirs/scripts/common/'
+    }
+    from ('package/extras/aca/') {
+            addParentDirs true
+            createDirectoryEntry true
+            into '/opt/hirs/extras/aca/'
+    }
+
+    // Set /etc/hirs/ files
+
+    from ('HIRS_Utils/src/main/resources/banner.properties') {
+            addParentDirs true
+            createDirectoryEntry true
+            into '/ect/hirs/'
+    }
+    from ('HIRS_Utils/src/main/resources/persistence.properties') {
+            into '/ect/hirs/'
+    }
+    from ('HIRS_Utils/src/main/resources/logging.properties') {
+            into '/ect/hirs/'
+    }
+
+ // Setup script files
+    from ('package/scripts/aca/certificate_generate.sh') {
+            addParentDirs true
+            createDirectoryEntry true
+            into '/opt/hirs/scripts/aca/'
+    }
+    from ('package/scripts/common/') {
+            addParentDirs true
+            createDirectoryEntry true
+            into '/opt/hirs/scripts/common/'
+    }
+    from ('package/extras/aca/') {
+            addParentDirs true
+            createDirectoryEntry true
+            into '/opt/hirs/extras/aca/'
+    }
+
+    // Set /etc/hirs/ files
+
+    from ('HIRS_Utils/src/main/resources/banner.properties') {
+            addParentDirs true
+            createDirectoryEntry true
+            into '/ect/hirs/'
+    }
+    from ('HIRS_Utils/src/main/resources/persistence.properties') {
+            into '/ect/hirs/'
+    }
+    from ('HIRS_Utils/src/main/resources/logging.properties') {
+            into '/ect/hirs/'
+    }
+
+ // Note /etc/hirs/aca/certificates files are created by  certificate_generate.sh
+ //	 /etc/hirs/aca/client-files files are created by  certificate_generate.sh
+ //	 /etc/hirs/certificates/ files are created by ssl_configure.sh
+ //	 /etc/hirs/certificates/mysql/  files are created by ssl_configure.sh
+ //	 /etc/hirs/certificates/private/  files are created by ssl_configure.sh
+
+    postInstall file('package/scripts/aca/certificate_generate.sh')
+    postInstall file('package/scripts/common/ssl_configure.sh')
+
+    //postInstall file('scripts/vendor-table.sh')
+
+//    buildRpm {
+//	arch = X86_64
+//    }
+//    buildDeb {
+//	arch = 'amd64'
+//    }
+}

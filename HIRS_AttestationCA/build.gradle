@@ -1,6 +1,7 @@
 plugins {
      id  'war'
      id  'java'
+     id  "nebula.ospackage" version "9.1.1"
 }
 
 java {
@@ -16,7 +17,6 @@ repositories {
 evaluationDependsOn(':HIRS_Utils')
 
 dependencies {
-//    implementation project(':TPM_Utils')
     implementation project(':HIRS_Structs')
     implementation project(':HIRS_Utils')
     implementation libs.bouncy.castle

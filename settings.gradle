@@ -1,9 +1,5 @@
-rootProject.name = 'HIRS'
-include ':HIRS_Utils'
-include ':HIRS_Structs'
-include ':TPM_Utils'
-include ':HIRS_AttestationCA'
-include ':HIRS_AttestationCAPortal'
+//rootProject.name = 'HIRS'
+include ':HIRS_Utils',':HIRS_Structs',':TPM_Utils',':HIRS_AttestationCA',':HIRS_AttestationCAPortal'
 include ':tools:tcg_eventlog_tool'
 include ':tools:tcg_rim_tool'
 
