@@ -1,8 +1,8 @@
 package hirs.attestationca.entity;
 
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
-import hirs.AppraisalResultSerializer;
 import hirs.appraiser.Appraiser;
+import hirs.attestationca.AppraisalResultSerializer;
 import hirs.data.persist.AbstractEntity;
 import hirs.data.persist.AppraisalStatus;
 
