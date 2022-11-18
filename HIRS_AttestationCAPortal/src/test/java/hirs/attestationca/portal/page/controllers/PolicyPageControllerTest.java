@@ -4,7 +4,7 @@ import hirs.appraiser.Appraiser;
 import hirs.appraiser.SupplyChainAppraiser;
 import hirs.attestationca.portal.page.PageController;
 import hirs.attestationca.portal.page.PageControllerTest;
-import hirs.data.persist.policy.SupplyChainPolicy;
+import hirs.attestationca.policy.SupplyChainPolicy;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;

@@ -1,4 +1,6 @@
-package hirs.data.persist.policy;
+package hirs.attestationca.policy;
+
+import hirs.data.persist.policy.Policy;
 
 import javax.persistence.Column;
 import javax.persistence.Embedded;

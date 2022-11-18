@@ -4,7 +4,7 @@ import hirs.attestationca.entity.Device;
 import hirs.attestationca.entity.SupplyChainValidationSummary;
 import hirs.attestationca.entity.certificate.EndorsementCredential;
 import hirs.attestationca.entity.certificate.PlatformCredential;
-import hirs.data.persist.policy.SupplyChainPolicy;
+import hirs.attestationca.policy.SupplyChainPolicy;
 
 import java.util.Set;
 

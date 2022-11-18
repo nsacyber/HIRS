@@ -21,7 +21,7 @@ import hirs.attestationca.entity.certificate.CertificateAuthorityCredential;
 import hirs.attestationca.entity.certificate.EndorsementCredential;
 import hirs.attestationca.entity.certificate.PlatformCredential;
 import hirs.attestationca.policy.PCRPolicy;
-import hirs.data.persist.policy.SupplyChainPolicy;
+import hirs.attestationca.policy.SupplyChainPolicy;
 import hirs.persist.CrudManager;
 import hirs.persist.DBManagerException;
 import hirs.attestationca.service.AppraiserService;

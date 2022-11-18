@@ -14,7 +14,7 @@ import hirs.attestationca.entity.certificate.CertificateAuthorityCredential;
 import hirs.attestationca.entity.certificate.DeviceAssociatedCertificate;
 import hirs.attestationca.entity.certificate.EndorsementCredential;
 import hirs.attestationca.entity.certificate.PlatformCredential;
-import hirs.data.persist.policy.SupplyChainPolicy;
+import hirs.attestationca.policy.SupplyChainPolicy;
 import hirs.persist.CrudManager;
 import hirs.validation.CredentialValidator;
 import hirs.attestationca.validation.SupplyChainCredentialValidator;

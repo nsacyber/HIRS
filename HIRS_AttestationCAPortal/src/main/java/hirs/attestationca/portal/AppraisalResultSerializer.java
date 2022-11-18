@@ -1,9 +1,9 @@
-package hirs;
+package hirs.attestationca.portal;
 
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.JsonSerializer;
 import com.fasterxml.jackson.databind.SerializerProvider;
-import hirs.data.persist.AppraisalResult;
+import hirs.attestationca.entity.AppraisalResult;
 
 import java.io.IOException;
 

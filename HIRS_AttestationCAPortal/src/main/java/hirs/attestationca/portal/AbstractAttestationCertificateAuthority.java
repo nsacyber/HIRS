@@ -35,7 +35,7 @@ import hirs.data.persist.info.HardwareInfo;
 import hirs.data.persist.info.NetworkInfo;
 import hirs.data.persist.info.OSInfo;
 import hirs.data.persist.info.TPMInfo;
-import hirs.data.persist.policy.SupplyChainPolicy;
+import hirs.attestationca.policy.SupplyChainPolicy;
 import hirs.structs.converters.SimpleStructBuilder;
 import hirs.structs.converters.StructConverter;
 import hirs.structs.elements.aca.IdentityRequestEnvelope;

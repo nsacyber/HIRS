@@ -1,6 +1,5 @@
 package hirs.data.persist.policy;
 
-import hirs.data.persist.TPMMeasurementRecord;
 import hirs.data.persist.enums.AlertSeverity;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
@@ -139,7 +138,6 @@ public final class TPMPolicy extends Policy {
      */
     public void addToDeviceSpecificPCRs(final int pcrId) {
         LOGGER.debug("adding device-specific PCR ID# {} to policy {}", pcrId, getName());
-        TPMMeasurementRecord.checkForValidPcrId(pcrId);
 
         if (deviceSpecificPCRs.contains(pcrId)) {
             LOGGER.info("PCR ID already exists in list: {}", pcrId);
@@ -310,7 +308,6 @@ public final class TPMPolicy extends Policy {
      * @param pcrId the PCR to set to appraised.
      */
     public void setPcrAppraised(final int pcrId) {
-        TPMMeasurementRecord.checkForValidPcrId(pcrId);
         if (!isPcrReported(pcrId)) {
             String msg = "Cannot set PCR to be Appraised."
                     + " It is not being reported on by this Policy.";
