@@ -6,7 +6,7 @@ import hirs.attestationca.servicemanager.DBDeviceManager;
 import hirs.attestationca.validation.SupplyChainValidationServiceImpl;
 import hirs.data.persist.AppraisalStatus;
 import hirs.attestationca.entity.Device;
-import hirs.attestationca.entity.DeviceInfoReport;
+import hirs.data.persist.DeviceInfoReport;
 import hirs.attestationca.entity.SupplyChainValidation;
 import hirs.attestationca.entity.SupplyChainValidationSummary;
 import hirs.attestationca.entity.certificate.Certificate;

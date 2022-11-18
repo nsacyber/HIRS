@@ -7,7 +7,7 @@ import hirs.data.persist.AppraisalStatus;
 import hirs.data.persist.ArchivableEntity;
 import hirs.attestationca.entity.BaseReferenceManifest;
 import hirs.attestationca.entity.Device;
-import hirs.attestationca.entity.DeviceInfoReport;
+import hirs.data.persist.DeviceInfoReport;
 import hirs.attestationca.entity.EventLogMeasurements;
 import hirs.attestationca.entity.ReferenceDigestValue;
 import hirs.attestationca.entity.ReferenceManifest;

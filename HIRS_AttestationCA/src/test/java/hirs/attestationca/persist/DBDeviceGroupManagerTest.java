@@ -3,7 +3,7 @@ package hirs.attestationca.persist;
 import hirs.appraiser.Appraiser;
 import hirs.attestationca.servicemanager.DBDeviceManager;
 import hirs.attestationca.entity.Device;
-import hirs.attestationca.entity.DeviceInfoReport;
+import hirs.data.persist.DeviceInfoReport;
 import hirs.data.persist.policy.Policy;
 import hirs.persist.DBUtility;
 import hirs.persist.PolicyMapper;

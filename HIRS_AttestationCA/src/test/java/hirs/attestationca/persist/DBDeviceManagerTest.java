@@ -3,7 +3,7 @@ package hirs.attestationca.persist;
 import hirs.attestationca.data.persist.DeviceTest;
 import hirs.attestationca.servicemanager.DBDeviceManager;
 import hirs.attestationca.entity.Device;
-import hirs.attestationca.entity.DeviceInfoReport;
+import hirs.data.persist.DeviceInfoReport;
 import hirs.data.persist.enums.HealthStatus;
 import hirs.data.persist.info.NetworkInfo;
 import hirs.persist.DBUtility;

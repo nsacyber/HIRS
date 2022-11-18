@@ -1,6 +1,6 @@
 package hirs.attestationca.portal.validation;
 
-import hirs.attestationca.entity.DeviceInfoReport;
+import hirs.data.persist.DeviceInfoReport;
 import hirs.attestationca.entity.SupplyChainValidation;
 import hirs.attestationca.entity.certificate.EndorsementCredential;
 import hirs.attestationca.entity.certificate.PlatformCredential;

@@ -1,7 +1,6 @@
 package hirs.data.persist.enums;
 
 import hirs.data.persist.AbstractDigest;
-import hirs.data.persist.DeviceInfoReport;
 
 import java.io.Serializable;
 
@@ -39,7 +38,7 @@ public enum DigestAlgorithm implements Serializable {
      * Condition used when an algorithm is not specified and
      * the size doesn't match known digests.
      */
-    UNSPECIFIED(DeviceInfoReport.NOT_SPECIFIED, Integer.BYTES);
+    UNSPECIFIED("Not Specified", Integer.BYTES);
 
     private final String standardAlgorithmName;
 

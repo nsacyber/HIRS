@@ -1,7 +1,5 @@
-package hirs.attestationca.entity;
+package hirs.data.persist;
 
-import hirs.data.persist.Digest;
-import hirs.data.persist.Report;
 import hirs.data.persist.info.FirmwareInfo;
 import hirs.data.persist.info.HardwareInfo;
 import hirs.data.persist.info.NetworkInfo;

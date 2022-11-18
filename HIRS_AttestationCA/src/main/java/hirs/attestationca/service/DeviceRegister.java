@@ -2,7 +2,7 @@ package hirs.attestationca.service;
 
 
 import hirs.attestationca.entity.Device;
-import hirs.attestationca.entity.DeviceInfoReport;
+import hirs.data.persist.DeviceInfoReport;
 
 /**
  * Interface defining methods for registering a device with the system.

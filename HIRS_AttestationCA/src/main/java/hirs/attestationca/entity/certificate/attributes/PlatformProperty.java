@@ -1,6 +1,6 @@
 package hirs.attestationca.entity.certificate.attributes;
 
-import hirs.attestationca.entity.DeviceInfoReport;
+import hirs.data.persist.DeviceInfoReport;
 import org.bouncycastle.asn1.ASN1Sequence;
 import org.bouncycastle.asn1.ASN1UTF8String;
 

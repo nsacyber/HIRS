@@ -2,7 +2,7 @@ package hirs.attestationca.data.persist;
 
 import hirs.data.persist.AppraisalStatus;
 import hirs.attestationca.entity.Device;
-import hirs.attestationca.entity.DeviceInfoReport;
+import hirs.data.persist.DeviceInfoReport;
 import hirs.data.persist.enums.HealthStatus;
 import org.testng.Assert;
 import org.testng.annotations.Test;

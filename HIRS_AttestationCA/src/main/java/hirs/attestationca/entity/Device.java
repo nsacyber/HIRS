@@ -2,6 +2,7 @@ package hirs.attestationca.entity;
 
 import hirs.data.persist.AbstractEntity;
 import hirs.data.persist.AppraisalStatus;
+import hirs.data.persist.DeviceInfoReport;
 import hirs.data.persist.enums.HealthStatus;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import hirs.foss.XMLCleaner;

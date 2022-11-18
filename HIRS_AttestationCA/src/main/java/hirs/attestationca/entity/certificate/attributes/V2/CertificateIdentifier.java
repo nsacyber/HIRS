@@ -1,6 +1,6 @@
 package hirs.attestationca.entity.certificate.attributes.V2;
 
-import hirs.attestationca.entity.DeviceInfoReport;
+import hirs.data.persist.DeviceInfoReport;
 import java.math.BigInteger;
 
 import org.bouncycastle.asn1.ASN1Integer;

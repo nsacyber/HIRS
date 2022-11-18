@@ -2,7 +2,7 @@ package hirs.attestationca.data.persist;
 
 import hirs.attestationca.persist.SpringPersistenceTest;
 import hirs.attestationca.servicemanager.DBReportManager;
-import hirs.attestationca.entity.DeviceInfoReport;
+import hirs.data.persist.DeviceInfoReport;
 import hirs.data.persist.info.FirmwareInfo;
 import hirs.data.persist.info.HardwareInfo;
 import hirs.data.persist.info.NetworkInfo;
