@@ -1,4 +1,4 @@
-package hirs.attestationca.portal.validation;
+package hirs.attestationca.validation;
 
 import hirs.attestationca.entity.Device;
 import hirs.attestationca.entity.SupplyChainValidationSummary;

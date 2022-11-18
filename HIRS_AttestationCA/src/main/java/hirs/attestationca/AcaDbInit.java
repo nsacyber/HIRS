@@ -4,14 +4,19 @@ import hirs.appraiser.SupplyChainAppraiser;
 import hirs.attestationca.policy.SupplyChainPolicy;
 import hirs.attestationca.service.AppraiserService;
 import hirs.attestationca.service.PolicyService;
-
-import static hirs.attestationca.AbstractAttestationCertificateAuthority.LOG;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 /**
  * Utility class that simply holds logic to seed the ACA's database with its
  * default entries.
  */
 public final class AcaDbInit {
+
+    /**
+     *  Logger instance for for subclass instances.
+     */
+    protected static final Logger LOG = LogManager.getLogger(AcaDbInit.class);
     // prevent construction
     private AcaDbInit() { }
 

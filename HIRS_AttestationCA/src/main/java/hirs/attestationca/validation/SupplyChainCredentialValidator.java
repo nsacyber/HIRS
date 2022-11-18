@@ -1,4 +1,4 @@
-package hirs.attestationca.portal.validation;
+package hirs.attestationca.validation;
 
 import com.fasterxml.jackson.core.JsonFactory;
 import com.fasterxml.jackson.databind.JsonNode;

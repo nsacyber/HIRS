@@ -1,16 +1,13 @@
 package hirs;
 
-import static org.apache.logging.log4j.LogManager.getLogger;
-
-import javax.xml.bind.annotation.XmlElement;
-
+import hirs.data.persist.Report;
+import org.apache.commons.codec.binary.Hex;
 import org.apache.logging.log4j.Logger;
 
-import hirs.data.persist.Report;
-
+import javax.xml.bind.annotation.XmlElement;
 import java.util.Arrays;
 
-import org.apache.commons.codec.binary.Hex;
+import static org.apache.logging.log4j.LogManager.getLogger;
 
 /**
  * <code>TPMReportRequest</code> is an immutable class and extends
@@ -91,7 +88,7 @@ public final class TPMReportRequest implements ReportRequest {
      */
     @Override
     public Class<? extends Report> getReportType() {
-        return TPMReport.class;
+        return null;
      }
 
     /**

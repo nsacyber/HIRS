@@ -1,4 +1,4 @@
-package hirs.attestationca.portal.validation;
+package hirs.attestationca.validation;
 
 /**
  * This class represents exceptions thrown by the SupplyChainValidator class.

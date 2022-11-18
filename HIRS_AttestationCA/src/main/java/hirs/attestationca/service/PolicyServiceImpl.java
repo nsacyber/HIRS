@@ -8,8 +8,6 @@ import hirs.data.persist.policy.Policy;
 import hirs.persist.CriteriaModifier;
 import hirs.persist.DBManagerException;
 import hirs.persist.PolicyMapper;
-import hirs.persist.service.DefaultService;
-import hirs.persist.service.PolicyService;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.hibernate.Session;

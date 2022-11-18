@@ -1,10 +1,12 @@
 package hirs.attestationca.rest;
 
 import hirs.attestationca.AbstractAttestationCertificateAuthority;
-import hirs.attestationca.validation.SupplyChainValidationService;
-import hirs.attestationca.service.DeviceRegister;
 import hirs.attestationca.service.CertificateService;
+import hirs.attestationca.service.DeviceRegister;
+import hirs.attestationca.service.DeviceService;
+import hirs.attestationca.service.ReferenceDigestValueService;
 import hirs.attestationca.service.ReferenceManifestService;
+import hirs.attestationca.validation.SupplyChainValidationService;
 import hirs.structs.converters.StructConverter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -37,8 +39,8 @@ public class RestfulAttestationCertificateAuthority
      * @param referenceManifestService the referenceManifestManager
      * @param deviceRegister the device register
      * @param validDays the number of days issued certs are valid
-     * @param deviceManager the device manager
-     * @param referenceEventManager the reference event manager
+     * @param deviceService the device service
+     * @param referenceDigestValueService the reference digest value service
      */
     @SuppressWarnings({ "checkstyle:parameternumber" })
     @Autowired
@@ -49,13 +51,12 @@ public class RestfulAttestationCertificateAuthority
             final CertificateService certificateService,
             final ReferenceManifestService referenceManifestService,
             final DeviceRegister deviceRegister,
-            final DeviceManager deviceManager,
-            final ReferenceEventManager referenceEventManager,
+            final DeviceService deviceService,
+            final ReferenceDigestValueService referenceDigestValueService,
             @Value("${aca.certificates.validity}") final int validDays) {
         super(supplyChainValidationService, privateKey, acaCertificate, structConverter,
-                certificateService, referenceManifestService,
-                deviceRegister, validDays, deviceManager,
-                referenceEventManager);
+                certificateService, referenceManifestService,referenceDigestValueService,
+                deviceRegister, validDays, deviceService);
     }
 
     /*
