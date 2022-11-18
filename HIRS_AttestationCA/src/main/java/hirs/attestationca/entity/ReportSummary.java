@@ -3,7 +3,6 @@ package hirs.attestationca.entity;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import hirs.appraiser.Appraiser;
 import hirs.appraiser.HIRSAppraiser;
-import hirs.data.persist.AppraisalResult;
 import hirs.data.persist.AppraisalStatus;
 import hirs.data.persist.Report;
 import org.springframework.util.CollectionUtils;

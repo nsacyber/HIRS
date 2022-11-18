@@ -1,7 +1,6 @@
 package hirs.data.persist.info;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import hirs.data.persist.DeviceInfoReport;
 import hirs.data.persist.X509CertificateAdapter;
 import hirs.utils.StringValidator;
 import org.apache.logging.log4j.LogManager;
@@ -15,6 +14,9 @@ import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 import java.io.Serializable;
 import java.security.cert.X509Certificate;
 
+import static hirs.data.persist.info.HardwareInfo.MED_STRING_LENGTH;
+import static hirs.data.persist.info.HardwareInfo.NOT_SPECIFIED;
+
 /**
  * This class is used to represent the TPM information for a device.
  */
@@ -24,7 +26,7 @@ public class TPMInfo implements Serializable {
     private static final int MAX_BLOB_SIZE = 65535;
 
     @XmlElement
-    @Column(length = DeviceInfoReport.MED_STRING_LENGTH, nullable = true)
+    @Column(length = MED_STRING_LENGTH, nullable = true)
     private String tpmMake;
 
     @XmlElement
@@ -191,7 +193,7 @@ public class TPMInfo implements Serializable {
      * Default constructor used for marshalling/unmarshalling XML objects.
      */
     public TPMInfo() {
-        this(DeviceInfoReport.NOT_SPECIFIED,
+        this(NOT_SPECIFIED,
                 (short) 0,
                 (short) 0,
                 (short) 0,
@@ -334,7 +336,7 @@ public class TPMInfo implements Serializable {
     private void setTPMMake(final String tpmMake) {
         LOGGER.debug("setting TPM make info: {}", tpmMake);
         this.tpmMake = StringValidator.check(tpmMake, "tpmMake")
-                .notNull().maxLength(DeviceInfoReport.MED_STRING_LENGTH).get();
+                .notNull().maxLength(MED_STRING_LENGTH).get();
     }
 
     private void setTPMVersionMajor(final short tpmVersionMajor) {

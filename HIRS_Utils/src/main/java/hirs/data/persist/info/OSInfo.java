@@ -1,6 +1,5 @@
 package hirs.data.persist.info;
 
-import hirs.data.persist.DeviceInfoReport;
 import hirs.utils.StringValidator;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -10,6 +9,10 @@ import javax.persistence.Embeddable;
 import javax.xml.bind.annotation.XmlElement;
 import java.io.Serializable;
 
+import static hirs.data.persist.info.HardwareInfo.LONG_STRING_LENGTH;
+import static hirs.data.persist.info.HardwareInfo.NOT_SPECIFIED;
+import static hirs.data.persist.info.HardwareInfo.SHORT_STRING_LENGTH;
+
 /**
  * This class is used to represent the OS info of a device.
  */
@@ -18,23 +21,23 @@ public class OSInfo implements Serializable {
     private static final Logger LOGGER = LogManager.getLogger(OSInfo.class);
 
     @XmlElement
-    @Column(length = DeviceInfoReport.LONG_STRING_LENGTH, nullable = false)
+    @Column(length = LONG_STRING_LENGTH, nullable = false)
     private final String osName;
 
     @XmlElement
-    @Column(length = DeviceInfoReport.LONG_STRING_LENGTH, nullable = false)
+    @Column(length = LONG_STRING_LENGTH, nullable = false)
     private final String osVersion;
 
     @XmlElement
-    @Column(length = DeviceInfoReport.SHORT_STRING_LENGTH, nullable = false)
+    @Column(length = SHORT_STRING_LENGTH, nullable = false)
     private final String osArch;
 
     @XmlElement
-    @Column(length = DeviceInfoReport.SHORT_STRING_LENGTH, nullable = true)
+    @Column(length = SHORT_STRING_LENGTH, nullable = true)
     private final String distribution;
 
     @XmlElement
-    @Column(length = DeviceInfoReport.SHORT_STRING_LENGTH, nullable = true)
+    @Column(length = SHORT_STRING_LENGTH, nullable = true)
     private final String distributionRelease;
 
     /**
@@ -60,35 +63,35 @@ public class OSInfo implements Serializable {
             final String distributionRelease) {
         LOGGER.debug("setting OS name information to: {}", osName);
         this.osName = StringValidator.check(osName, "osName")
-                .notNull().maxLength(DeviceInfoReport.LONG_STRING_LENGTH).get();
+                .notNull().maxLength(LONG_STRING_LENGTH).get();
 
         LOGGER.debug("setting OS version information to: {}", osVersion);
         this.osVersion = StringValidator.check(osVersion, "osVersion")
-                .notNull().maxLength(DeviceInfoReport.LONG_STRING_LENGTH).get();
+                .notNull().maxLength(LONG_STRING_LENGTH).get();
 
         LOGGER.debug("setting OS arch information to: {}", osArch);
         this.osArch = StringValidator.check(osArch, "osArch")
-                .notNull().maxLength(DeviceInfoReport.SHORT_STRING_LENGTH).get();
+                .notNull().maxLength(SHORT_STRING_LENGTH).get();
 
         LOGGER.debug("setting OS distribution information to: {}", distribution);
         this.distribution = StringValidator.check(distribution, "distribution")
-                .maxLength(DeviceInfoReport.SHORT_STRING_LENGTH).get();
+                .maxLength(SHORT_STRING_LENGTH).get();
 
         LOGGER.debug("setting OS distribution release information to: {}",
                 distributionRelease);
         this.distributionRelease = StringValidator.check(distributionRelease, "distributionRelease")
-                .maxLength(DeviceInfoReport.SHORT_STRING_LENGTH).get();
+                .maxLength(SHORT_STRING_LENGTH).get();
     }
 
     /**
      * Default constructor necessary for marshalling/unmarshalling XML objects.
      */
     public OSInfo() {
-        this(DeviceInfoReport.NOT_SPECIFIED,
-            DeviceInfoReport.NOT_SPECIFIED,
-            DeviceInfoReport.NOT_SPECIFIED,
-            DeviceInfoReport.NOT_SPECIFIED,
-            DeviceInfoReport.NOT_SPECIFIED);
+        this(NOT_SPECIFIED,
+            NOT_SPECIFIED,
+            NOT_SPECIFIED,
+            NOT_SPECIFIED,
+            NOT_SPECIFIED);
     }
 
     /**

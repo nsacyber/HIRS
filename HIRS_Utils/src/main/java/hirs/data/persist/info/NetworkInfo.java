@@ -1,6 +1,5 @@
 package hirs.data.persist.info;
 
-import hirs.data.persist.DeviceInfoReport;
 import hirs.data.persist.InetAddressXmlAdapter;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -12,6 +11,9 @@ import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 import java.io.Serializable;
 import java.net.InetAddress;
 import java.util.Arrays;
+
+import static hirs.data.persist.info.HardwareInfo.LONG_STRING_LENGTH;
+import static hirs.data.persist.info.HardwareInfo.SHORT_STRING_LENGTH;
 
 /**
  * This class is used to represent the network info of a device.
@@ -25,12 +27,12 @@ public class NetworkInfo implements Serializable {
     private static final int NUM_MAC_ADDRESS_BYTES = 6;
 
     @XmlElement
-    @Column(length = DeviceInfoReport.LONG_STRING_LENGTH, nullable = true)
+    @Column(length = LONG_STRING_LENGTH, nullable = true)
     private String hostname;
 
     @XmlElement
     @XmlJavaTypeAdapter(value = InetAddressXmlAdapter.class)
-    @Column(length = DeviceInfoReport.SHORT_STRING_LENGTH, nullable = true)
+    @Column(length = SHORT_STRING_LENGTH, nullable = true)
     //@Type(type = "hirs.data.persist.type.InetAddressType")
     private InetAddress ipAddress;
 

@@ -1,11 +1,14 @@
 package hirs.data.persist.info;
 
-import hirs.data.persist.DeviceInfoReport;
 import hirs.utils.StringValidator;
-import java.io.Serializable;
+
 import javax.persistence.Column;
 import javax.persistence.Embeddable;
 import javax.xml.bind.annotation.XmlElement;
+import java.io.Serializable;
+
+import static hirs.data.persist.info.HardwareInfo.MED_STRING_LENGTH;
+import static hirs.data.persist.info.HardwareInfo.NOT_SPECIFIED;
 
 /**
  *
@@ -14,19 +17,19 @@ import javax.xml.bind.annotation.XmlElement;
 public class RIMInfo implements Serializable {
 
     @XmlElement
-    @Column(length = DeviceInfoReport.MED_STRING_LENGTH, nullable = false)
+    @Column(length = MED_STRING_LENGTH, nullable = false)
     private final String rimManufacturer;
 
     @XmlElement
-    @Column(length = DeviceInfoReport.MED_STRING_LENGTH, nullable = false)
+    @Column(length = MED_STRING_LENGTH, nullable = false)
     private final String model;
 
     @XmlElement
-    @Column(length = DeviceInfoReport.MED_STRING_LENGTH, nullable = false)
+    @Column(length = MED_STRING_LENGTH, nullable = false)
     private final String fileHash;
 
     @XmlElement
-    @Column(length = DeviceInfoReport.MED_STRING_LENGTH, nullable = false)
+    @Column(length = MED_STRING_LENGTH, nullable = false)
     private final String pcrHash;
 
     /**
@@ -39,21 +42,21 @@ public class RIMInfo implements Serializable {
     public RIMInfo(final String rimManufacturer, final String model,
             final String fileHash, final String pcrHash) {
         this.rimManufacturer = StringValidator.check(rimManufacturer, "rimManufacturer")
-                .notBlank().maxLength(DeviceInfoReport.MED_STRING_LENGTH).get();
+                .notBlank().maxLength(MED_STRING_LENGTH).get();
         this.model = StringValidator.check(model, "model")
-                .notBlank().maxLength(DeviceInfoReport.MED_STRING_LENGTH).get();
+                .notBlank().maxLength(MED_STRING_LENGTH).get();
         this.fileHash = StringValidator.check(fileHash, "fileHash")
-                .notBlank().maxLength(DeviceInfoReport.MED_STRING_LENGTH).get();
+                .notBlank().maxLength(MED_STRING_LENGTH).get();
         this.pcrHash = StringValidator.check(pcrHash, "pcrHash")
-                .notBlank().maxLength(DeviceInfoReport.MED_STRING_LENGTH).get();
+                .notBlank().maxLength(MED_STRING_LENGTH).get();
     }
 
     /**
      * Default no parameter constructor.
      */
     public RIMInfo() {
-        this(DeviceInfoReport.NOT_SPECIFIED, DeviceInfoReport.NOT_SPECIFIED,
-                DeviceInfoReport.NOT_SPECIFIED, DeviceInfoReport.NOT_SPECIFIED);
+        this(NOT_SPECIFIED, NOT_SPECIFIED,
+                NOT_SPECIFIED, NOT_SPECIFIED);
     }
 
     /**

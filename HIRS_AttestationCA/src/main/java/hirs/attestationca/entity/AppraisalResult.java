@@ -1,8 +1,10 @@
-package hirs.data.persist;
+package hirs.attestationca.entity;
 
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import hirs.AppraisalResultSerializer;
 import hirs.appraiser.Appraiser;
+import hirs.data.persist.AbstractEntity;
+import hirs.data.persist.AppraisalStatus;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;

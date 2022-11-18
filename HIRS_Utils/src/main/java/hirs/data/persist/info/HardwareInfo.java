@@ -1,6 +1,5 @@
 package hirs.data.persist.info;
 
-import hirs.data.persist.DeviceInfoReport;
 import hirs.utils.StringValidator;
 import org.apache.commons.lang3.StringUtils;
 
@@ -15,30 +14,46 @@ import java.util.Objects;
  */
 @Embeddable
 public class HardwareInfo implements Serializable {
+    /**
+     * A variable used to describe unavailable hardware, firmware, or OS info.
+     */
+    public static final String NOT_SPECIFIED = "Not Specified";
+    /**
+     * Constant variable representing the various Short sized strings.
+     */
+    public static final int SHORT_STRING_LENGTH = 32;
+    /**
+     * Constant variable representing the various Medium sized strings.
+     */
+    public static final int MED_STRING_LENGTH = 64;
+    /**
+     * Constant variable representing the various Long sized strings.
+     */
+    public static final int LONG_STRING_LENGTH = 255;
 
     @XmlElement
-    @Column(length = DeviceInfoReport.LONG_STRING_LENGTH, nullable = false)
-    private String manufacturer = DeviceInfoReport.NOT_SPECIFIED;
+    @Column(length = LONG_STRING_LENGTH, nullable = false)
+    private String manufacturer = NOT_SPECIFIED;
 
     @XmlElement
-    @Column(length = DeviceInfoReport.LONG_STRING_LENGTH, nullable = false)
-    private String productName = DeviceInfoReport.NOT_SPECIFIED;
+    @Column(length = LONG_STRING_LENGTH, nullable = false)
+    private String productName = NOT_SPECIFIED;
 
     @XmlElement
-    @Column(length = DeviceInfoReport.MED_STRING_LENGTH, nullable = false)
-    private String version = DeviceInfoReport.NOT_SPECIFIED;
+    @Column(length = MED_STRING_LENGTH, nullable = false)
+    private String version = NOT_SPECIFIED;
 
     @XmlElement
-    @Column(length = DeviceInfoReport.LONG_STRING_LENGTH, nullable = false)
-    private String systemSerialNumber = DeviceInfoReport.NOT_SPECIFIED;
+    @Column(length = LONG_STRING_LENGTH, nullable = false)
+    private String systemSerialNumber = NOT_SPECIFIED;
 
     @XmlElement
-    @Column(length = DeviceInfoReport.LONG_STRING_LENGTH, nullable = false)
-    private String chassisSerialNumber = DeviceInfoReport.NOT_SPECIFIED;
+    @Column(length = LONG_STRING_LENGTH, nullable = false)
+    private String chassisSerialNumber = NOT_SPECIFIED;
 
     @XmlElement
-    @Column(length = DeviceInfoReport.LONG_STRING_LENGTH, nullable = false)
-    private String baseboardSerialNumber = DeviceInfoReport.NOT_SPECIFIED;
+    @Column(length = LONG_STRING_LENGTH, nullable = false)
+    private String baseboardSerialNumber = NOT_SPECIFIED;
 
     /**
      * Constructor used to create a populated firmware info object.
@@ -60,35 +75,35 @@ public class HardwareInfo implements Serializable {
     ) {
         if (!StringUtils.isBlank(manufacturer)) {
             this.manufacturer = StringValidator.check(manufacturer, "manufacturer")
-                    .maxLength(DeviceInfoReport.LONG_STRING_LENGTH).get();
+                    .maxLength(LONG_STRING_LENGTH).get();
         }
 
         if (!StringUtils.isBlank(productName)) {
             this.productName = StringValidator.check(productName, "productName")
-                    .maxLength(DeviceInfoReport.LONG_STRING_LENGTH).get();
+                    .maxLength(LONG_STRING_LENGTH).get();
         }
 
         if (!StringUtils.isBlank(version)) {
             this.version = StringValidator.check(version, "version")
-                    .maxLength(DeviceInfoReport.MED_STRING_LENGTH).get();
+                    .maxLength(MED_STRING_LENGTH).get();
         }
 
         if (!StringUtils.isBlank(systemSerialNumber)) {
             this.systemSerialNumber = StringValidator.check(systemSerialNumber,
                     "systemSerialNumber")
-                    .maxLength(DeviceInfoReport.LONG_STRING_LENGTH).get();
+                    .maxLength(LONG_STRING_LENGTH).get();
         }
 
         if (!StringUtils.isBlank(chassisSerialNumber)) {
             this.chassisSerialNumber = StringValidator.check(chassisSerialNumber,
                     "chassisSerialNumber")
-                    .maxLength(DeviceInfoReport.LONG_STRING_LENGTH).get();
+                    .maxLength(LONG_STRING_LENGTH).get();
         }
 
         if (!StringUtils.isBlank(baseboardSerialNumber)) {
             this.baseboardSerialNumber = StringValidator.check(
                     baseboardSerialNumber, "baseboardSerialNumber")
-                    .maxLength(DeviceInfoReport.LONG_STRING_LENGTH).get();
+                    .maxLength(LONG_STRING_LENGTH).get();
         }
     }
 
@@ -97,12 +112,12 @@ public class HardwareInfo implements Serializable {
      */
     public HardwareInfo() {
         this(
-                DeviceInfoReport.NOT_SPECIFIED,
-                DeviceInfoReport.NOT_SPECIFIED,
-                DeviceInfoReport.NOT_SPECIFIED,
-                DeviceInfoReport.NOT_SPECIFIED,
-                DeviceInfoReport.NOT_SPECIFIED,
-                DeviceInfoReport.NOT_SPECIFIED
+                NOT_SPECIFIED,
+                NOT_SPECIFIED,
+                NOT_SPECIFIED,
+                NOT_SPECIFIED,
+                NOT_SPECIFIED,
+                NOT_SPECIFIED
         );
     }
 

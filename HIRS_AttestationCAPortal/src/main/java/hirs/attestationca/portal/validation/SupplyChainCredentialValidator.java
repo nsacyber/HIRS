@@ -13,7 +13,6 @@ import hirs.data.persist.certificate.attributes.ComponentIdentifier;
 import hirs.data.persist.certificate.attributes.V2.ComponentIdentifierV2;
 import hirs.data.persist.info.ComponentInfo;
 import hirs.data.persist.info.HardwareInfo;
-import hirs.utils.PciIds;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;

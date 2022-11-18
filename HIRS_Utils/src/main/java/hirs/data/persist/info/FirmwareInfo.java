@@ -1,11 +1,14 @@
 package hirs.data.persist.info;
 
-import hirs.data.persist.DeviceInfoReport;
 import hirs.utils.StringValidator;
 
 import javax.persistence.Column;
 import javax.xml.bind.annotation.XmlElement;
 import java.io.Serializable;
+
+import static hirs.data.persist.info.HardwareInfo.LONG_STRING_LENGTH;
+import static hirs.data.persist.info.HardwareInfo.SHORT_STRING_LENGTH;
+import static hirs.data.persist.info.HardwareInfo.NOT_SPECIFIED;
 
 /**
  * Used for representing the firmware info of a device, such as the BIOS information.
@@ -13,15 +16,15 @@ import java.io.Serializable;
 public class FirmwareInfo implements Serializable {
 
     @XmlElement
-    @Column(length = DeviceInfoReport.LONG_STRING_LENGTH, nullable = false)
+    @Column(length = LONG_STRING_LENGTH, nullable = false)
     private final String biosVendor;
 
     @XmlElement
-    @Column(length = DeviceInfoReport.LONG_STRING_LENGTH, nullable = false)
+    @Column(length = LONG_STRING_LENGTH, nullable = false)
     private final String biosVersion;
 
     @XmlElement
-    @Column(length = DeviceInfoReport.SHORT_STRING_LENGTH, nullable = false)
+    @Column(length = SHORT_STRING_LENGTH, nullable = false)
     private final String biosReleaseDate;
 
     /**
@@ -34,22 +37,20 @@ public class FirmwareInfo implements Serializable {
     public FirmwareInfo(final String biosVendor, final String biosVersion,
                         final String biosReleaseDate) {
         this.biosVendor = StringValidator.check(biosVendor, "biosVendor")
-                .notBlank().maxLength(DeviceInfoReport.LONG_STRING_LENGTH).get();
+                .notBlank().maxLength(LONG_STRING_LENGTH).get();
 
         this.biosVersion = StringValidator.check(biosVersion, "biosVersion")
-                .notBlank().maxLength(DeviceInfoReport.LONG_STRING_LENGTH).get();
+                .notBlank().maxLength(LONG_STRING_LENGTH).get();
 
         this.biosReleaseDate = StringValidator.check(biosReleaseDate, "biosReleaseDate")
-                .notBlank().maxLength(DeviceInfoReport.SHORT_STRING_LENGTH).get();
+                .notBlank().maxLength(SHORT_STRING_LENGTH).get();
     }
 
     /**
      * Default constructor, useful for hibernate and marshalling and unmarshalling.
      */
     public FirmwareInfo() {
-        this(DeviceInfoReport.NOT_SPECIFIED,
-        DeviceInfoReport.NOT_SPECIFIED,
-        DeviceInfoReport.NOT_SPECIFIED);
+        this(NOT_SPECIFIED, NOT_SPECIFIED, NOT_SPECIFIED);
     }
 
     /**
