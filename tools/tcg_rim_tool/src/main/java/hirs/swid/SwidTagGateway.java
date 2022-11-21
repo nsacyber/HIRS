@@ -638,10 +638,10 @@ public class SwidTagGateway {
     private XMLObject createXmlTimestamp(Document doc, XMLSignatureFactory sigFactory) {
         Element timeStampElement = doc.createElement("TimeStamp");
         switch (timestampFormat) {
-            case "RFC3161":
+            case "RFC3852":
                 timeStampElement.setAttributeNS("http://www.w3.org/2000/xmlns/",
-                        "xmlns:" + SwidTagConstants.RFC3161_PFX,
-                        SwidTagConstants.RFC3161_NS);
+                        "xmlns:" + SwidTagConstants.RFC3852_PFX,
+                        SwidTagConstants.RFC3852_NS);
                 timeStampElement.setAttribute(SwidTagConstants.DATETIME,
                         "Base64 blob here");
                 break;
