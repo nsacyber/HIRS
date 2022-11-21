@@ -75,12 +75,12 @@ public class SwidTagConstants {
     
     public static final String NIST_NS = "http://csrc.nist.gov/ns/swid/2015-extensions/1.0";
     public static final String TCG_NS =  "https://trustedcomputinggroup.org/wp-content/uploads/TCG_RIM_Model";
-    public static final String RFC3161_NS = "https://www.ietf.org/rfc/rfc3161.txt";
+    public static final String RFC3852_NS = "https://www.ietf.org/rfc/rfc3852.txt";
     public static final String RFC3339_NS = "https://www.ietf.org/rfc/rfc3339.txt";
     
     public static final String N8060_PFX = "n8060";
     public static final String RIM_PFX = "rim";
-    public static final String RFC3161_PFX = "rcf3161";
+    public static final String RFC3852_PFX = "rcf3852";
     public static final String RFC3339_PFX = "rcf3339";
 
     public static final QName _SHA256_HASH = new QName(

@@ -3,8 +3,6 @@ package hirs.swid;
 import hirs.swid.utils.Commander;
 import com.beust.jcommander.JCommander;
 
-import java.io.IOException;
-
 public class Main {
 
     public static void main(String[] args) {
@@ -81,8 +79,8 @@ public class Main {
                         } else {
                             gateway.setRimEventLog(rimEventLog);
                         }
-                        if (commander.isRfc3161()) {
-                            gateway.setTimestampFormat("RFC3161");
+                        if (commander.isRfc3852()) {
+                            gateway.setTimestampFormat("RFC3852");
                         } else if (commander.isRfc3339()) {
                             gateway.setTimestampFormat("RFC3339");
                         }
