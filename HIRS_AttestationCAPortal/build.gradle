@@ -208,6 +208,8 @@ ospackage {
     //postInstall file('../tools/tcg_eventlog_tool/scripts/vendor-table.sh')
     //postInstall file('/opt/tomcat/libs/catalina.sh')
 
+    buildRpm.dependsOn ':HIRS_AttestationCA:war'
+
     buildRpm {
 	arch = X86_64
     }

@@ -61,3 +61,10 @@ dependencies {
 
 ext.checkstyleConfigDir = "$configDir/checkstyle"
 
+task generateXjcLibrary(type:Exec) {
+    workingDir 'config'
+
+    commandLine './genXjcLibrary.sh'
+}
+
+compileJava.dependsOn generateXjcLibrary
