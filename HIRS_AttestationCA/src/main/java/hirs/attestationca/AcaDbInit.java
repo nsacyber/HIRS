@@ -30,31 +30,31 @@ public final class AcaDbInit {
     public static synchronized void insertDefaultEntries(
             final AppraiserService appraiserService,
             final PolicyService policyService) {
-        LOG.info("Ensuring default ACA database entries are present.");
+        LOG.error("Ensuring default ACA database entries are present.");
 
         // If the SupplyChainAppraiser exists, do not attempt to re-save the supply chain appraiser
         // or SupplyChainPolicy
         SupplyChainAppraiser supplyChainAppraiser = (SupplyChainAppraiser)
                 appraiserService.getAppraiser(SupplyChainAppraiser.NAME);
         if (supplyChainAppraiser != null) {
-            LOG.info("Supply chain appraiser is present; not inserting any more entries.");
+            LOG.error("Supply chain appraiser is present; not inserting any more entries.");
             LOG.info("ACA database initialization complete.");
             return;
         }
 
         // Create the SupplyChainAppraiser
-        LOG.info("Saving supply chain appraiser...");
+        LOG.error("Saving supply chain appraiser...");
         supplyChainAppraiser = (SupplyChainAppraiser)
                 appraiserService.saveAppraiser(new SupplyChainAppraiser());
 
         // Create the SupplyChainPolicy
-        LOG.info("Saving default supply chain policy...");
+        LOG.error("Saving default supply chain policy...");
         SupplyChainPolicy supplyChainPolicy = new SupplyChainPolicy(
                 SupplyChainPolicy.DEFAULT_POLICY);
         policyService.savePolicy(supplyChainPolicy);
         policyService.setDefaultPolicy(supplyChainAppraiser, supplyChainPolicy);
         policyService.setPolicy(supplyChainAppraiser, supplyChainPolicy);
 
-        LOG.info("ACA database initialization complete.");
+        LOG.error("ACA database initialization complete.");
     }
 }

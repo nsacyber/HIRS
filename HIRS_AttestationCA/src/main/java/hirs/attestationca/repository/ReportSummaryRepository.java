@@ -13,14 +13,14 @@ import java.util.UUID;
 public interface ReportSummaryRepository<T extends ReportSummary>
         extends JpaRepository<ReportSummary, UUID> {
 
-    /**
-     * Saves the <code>ReportSummary</code> in the database. This creates a new
-     * database session and saves the report summary.
-     *
-     * @param reportSummary ReportSummary to save
-     * @return reference to saved reportSummary
-     */
-    T save(T reportSummary);
+//    /**
+//     * Saves the <code>ReportSummary</code> in the database. This creates a new
+//     * database session and saves the report summary.
+//     *
+//     * @param reportSummary ReportSummary to save
+//     * @return reference to saved reportSummary
+//     */
+//    T save(T reportSummary);
 
     /**
      * Update the <code>ReportSummary</code> in the database. This creates a new

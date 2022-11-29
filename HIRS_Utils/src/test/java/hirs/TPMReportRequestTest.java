@@ -80,13 +80,4 @@ public class TPMReportRequestTest {
         TPMReportRequest tpmRepReq = new TPMReportRequest(TEST_NONCE, TEST_MASK);
         Assert.assertEquals(tpmRepReq.getPcrMask(), TEST_MASK);
     }
-
-    /**
-     * Tests ReportType getter method.
-     */
-    @Test
-    public final void getReportType() {
-        TPMReportRequest tpmRepReq = new TPMReportRequest(TEST_NONCE, TEST_MASK);
-        Assert.assertEquals(tpmRepReq.getReportType(), TPMReport.class);
-    }
 }

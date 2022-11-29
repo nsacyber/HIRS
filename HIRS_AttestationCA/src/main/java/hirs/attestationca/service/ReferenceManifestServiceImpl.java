@@ -1,12 +1,12 @@
 package hirs.attestationca.service;
 
 import hirs.FilteredRecordsList;
+import hirs.attestationca.entity.ReferenceManifest;
+import hirs.attestationca.entity.ReferenceManifestSelector;
 import hirs.attestationca.repository.ReferenceManifestRepository;
 import hirs.data.persist.ArchivableEntity;
-import hirs.attestationca.entity.ReferenceManifest;
 import hirs.persist.CriteriaModifier;
 import hirs.persist.DBManagerException;
-import hirs.persist.service.ReferenceManifestService;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;

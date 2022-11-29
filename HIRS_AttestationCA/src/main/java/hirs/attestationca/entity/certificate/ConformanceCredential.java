@@ -1,7 +1,7 @@
 package hirs.attestationca.entity.certificate;
 
 import hirs.attestationca.entity.CertificateSelector;
-import hirs.persist.service.CertificateService;
+import hirs.attestationca.service.CertificateService;
 
 import javax.persistence.Entity;
 import java.io.IOException;

@@ -16,6 +16,7 @@ import hirs.attestationca.entity.ReferenceManifest;
 import hirs.attestationca.entity.SupportReferenceManifest;
 import hirs.attestationca.entity.SwidResource;
 import hirs.attestationca.entity.certificate.Certificate;
+import hirs.attestationca.service.ReferenceDigestValueService;
 import hirs.persist.CriteriaModifier;
 import hirs.persist.DBManagerException;
 import hirs.attestationca.service.ReferenceManifestService;
@@ -78,7 +79,7 @@ public class ReferenceManifestPageController
     @Autowired
     private final ReferenceManifestService referenceManifestService;
     @Autowired
-    private final ReferenceEventManager referenceEventManager;
+    private final ReferenceDigestValueService referenceDigestValueService;
     private static final Logger LOGGER
             = LogManager.getLogger(ReferenceManifestPageController.class);
 
@@ -128,15 +129,15 @@ public class ReferenceManifestPageController
      * Constructor providing the Page's display and routing specification.
      *
      * @param referenceManifestService the reference manifest service
-     * @param referenceEventManager this is the reference event manager
+     * @param referenceDigestValueService this is the reference digest value service
      */
     @Autowired
     public ReferenceManifestPageController(
             final ReferenceManifestService referenceManifestService,
-            final ReferenceEventManager referenceEventManager) {
+            final ReferenceDigestValueService referenceDigestValueService) {
         super(Page.REFERENCE_MANIFESTS);
         this.referenceManifestService = referenceManifestService;
-        this.referenceEventManager = referenceEventManager;
+        this.referenceDigestValueService = referenceDigestValueService;
         this.biosValidator = new BiosDateValidator(BIOS_RELEASE_DATE_FORMAT);
     }
 
@@ -296,12 +297,12 @@ public class ReferenceManifestPageController
 
                 // if support rim, update associated events
                 if (referenceManifest instanceof SupportReferenceManifest) {
-                    List<ReferenceDigestValue> rdvs = referenceEventManager
-                            .getValuesByRimId(referenceManifest);
+                    List<ReferenceDigestValue> rdvs = referenceDigestValueService
+                            .getValuesByBaseRimId(referenceManifest.getId());
 
                     for (ReferenceDigestValue rdv : rdvs) {
                        rdv.archive("Support RIM was deleted");
-                       referenceEventManager.updateEvent(rdv);
+                       referenceDigestValueService.updateDigestValue(rdv, rdv.getId());
                     }
                 }
             }
@@ -652,7 +653,7 @@ public class ReferenceManifestPageController
             // get by support rim id NEXT
 
             if (dbSupport.getPlatformManufacturer() != null) {
-                tpmEvents = referenceEventManager.getValuesByRimId(dbSupport);
+                tpmEvents = referenceDigestValueService.getValuesByBaseRimId(dbSupport.getId());
                 baseRim = findBaseRim(dbSupport);
                 if (tpmEvents.isEmpty()) {
                     ReferenceDigestValue rdv;
@@ -665,7 +666,7 @@ public class ReferenceManifestPageController
                                     tpe.getEventDigestStr(), tpe.getEventTypeStr(),
                                     false, false, updated, tpe.getEventContent());
 
-                            this.referenceEventManager.saveValue(rdv);
+                            this.referenceDigestValueService.saveDigestValue(rdv);
                         }
                     } catch (CertificateException e) {
                         e.printStackTrace();
@@ -678,7 +679,7 @@ public class ReferenceManifestPageController
                     for (ReferenceDigestValue rdv : tpmEvents) {
                         if (!rdv.isUpdated()) {
                             rdv.updateInfo(dbSupport, baseRim.getId());
-                            this.referenceEventManager.updateEvent(rdv);
+                            this.referenceDigestValueService.updateDigestValue(rdv, rdv.getId());
                         }
                     }
                 }

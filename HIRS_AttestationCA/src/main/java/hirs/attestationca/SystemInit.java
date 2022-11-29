@@ -54,7 +54,7 @@ public final class SystemInit {
      */
     @SuppressWarnings("checkstyle:methodlength")
     public static void main(final String[] args) {
-        LOGGER.info("Seeding database with initial entries...");
+        LOGGER.error("Seeding database with initial entries...");
         // construct application context
         AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext();
         context.getEnvironment().addActiveProfile(HIRSProfiles.SERVER);
@@ -68,7 +68,7 @@ public final class SystemInit {
         // scan for appraiser plugins
         int registeredBeanCount = scanner.scan("hirs");
         System.out.println("Beans scanned " + registeredBeanCount);
-        LOGGER.info("Beans scanned: " + registeredBeanCount);
+        LOGGER.error("Beans scanned: " + registeredBeanCount);
 
         // register the database configuration and refresh the context
         context.register(PersistenceConfiguration.class);
@@ -94,7 +94,7 @@ public final class SystemInit {
             LOGGER.info("DeviceInfo appraiser found.");
         }
 
-        LOGGER.info("Checking for TPM appraiser...");
+        LOGGER.error("Checking for TPM appraiser...");
         TPMAppraiser tpmApp = (TPMAppraiser) appraiserServiceImpl.getAppraiser(TPMAppraiser.NAME);
         if (tpmApp == null) {
             LOGGER.info("TPM appraiser not found; creating...");

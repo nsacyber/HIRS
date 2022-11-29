@@ -21,6 +21,8 @@ dependencies {
     implementation libs.commons.codec
     implementation libs.commons.lang
     implementation libs.commons.io
+    implementation libs.minimal.json
+    implementation libs.pci.ids
     implementation libs.guava
     implementation libs.javax.jaxb
     implementation libs.spring.webmvc
@@ -31,6 +33,8 @@ dependencies {
     implementation libs.log4j2
     implementation libs.log4j2.web
     implementation libs.protobuf.java
+    implementation libs.lombok
+    annotationProcessor libs.lombok
 
     implementation libs.servlet.api
 

@@ -37,6 +37,8 @@ dependencies {
     implementation libs.spring.orm
     implementation libs.spring.transaction
     implementation libs.spring.webmvc
+    implementation libs.lombok
+    annotationProcessor libs.lombok
     testImplementation libs.hamcrest
 
     // override the servlet API for testing. Required for Spring Integration tests

@@ -19,6 +19,8 @@ import java.util.Collection;
 /**
  * Sub class that will just focus on PCR Values and Events.
  */
+@Getter
+@Setter
 @Entity
 public class SupportReferenceManifest extends ReferenceManifest {
     private static final Logger LOGGER = LogManager.getLogger(SupportReferenceManifest.class);
