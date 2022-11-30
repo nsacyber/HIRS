@@ -1,4 +1,4 @@
-#!/usr/bin/env bash
+#!/bin/bash
 
 # Check if we're in a Docker container
 if [ -f /.dockerenv ]; then

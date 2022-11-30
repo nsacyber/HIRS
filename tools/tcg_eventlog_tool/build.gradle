@@ -26,9 +26,8 @@ ext.checkstyleConfigDir = "$configDir/checkstyle"
 ext.findbugsConfigDir = "$configDir/findbugs"
 
 jar {
-        // Keep jar clean:
+        // Keep the jar clean:
         exclude 'META-INF/*.SF', 'META-INF/*.DSA', 'META-INF/*.RSA', 'META-INF/*.MF'
-
       manifest {
          attributes(
                      'Main-Class': 'hirs.tcg_eventlog.Main',
@@ -49,52 +48,51 @@ ospackage {
     version = "$packVersion"
     release = '1'
 
-    into '/opt/hirs/eventlog'
     user 'root'
     fileMode = 0755
-
-    from(jar.outputs.files) {
-        into 'lib'
+    
+    into ('/opt/hirs/eventlog/lib') {
+       from jar.outputs.files
+       from 'lib'
+       from 'configurations.runtimeClasspath'
     }
-    from('lib') {
-        into 'lib'
-    }
-    from(configurations.runtimeClasspath) {
-        into 'lib'
-    }
-    from('scripts') {
+    into ('/opt/hirs/eventlog/scripts') {
+      from ('scripts') {
         exclude {
-            FileTreeElement details ->
-                details.file.name.endsWith('.bat')
+            FileTreeElement details -> 
+               details.file.name.endsWith('.bat')
         }
-        into 'scripts'
+      }
     }
-    from('docs') {
-        exclude {
-            FileTreeElement details ->
-                details.file.name.endsWith('.odt')
+    into ('/opt/hirs/eventlog/docs') {
+        from ('docs') {
+           exclude {
+               FileTreeElement details ->
+                   details.file.name.endsWith('.odt')
+           }
         }
-        into 'docs'
     }
-    from('./') {
-        include {
-            FileTreeElement details ->
-                details.file.name.endsWith('.md')
-        }
-        into './'
-        link("/usr/local/bin/elt", "/opt/hirs/eventlog/scripts/eventlog.sh", 0x755)
-    }
-
-    into('/tmp/') {
-        fileMode 0664
+    // Copy vendor-table into /tmp to avoid conflict with the ACA 
+    into('/tmp/elt/default-properties') {
         from ('../../HIRS_Utils/src/main/resources/vendor-table.json') {
-            addParentDirs true
-            createDirectoryEntry true
+         fileMode 0664
+         addParentDirs = true
         }
     }
 
-    postInstall file('scripts/vendor-table.sh')
+    // place elt link in system path to enable command line access
+    link("/usr/local/bin/elt", "/opt/hirs/eventlog/scripts/eventlog.sh", 0x755)
 
+    // PostInstall
+    // Copy files from /opt/elt/default-properties/ to avoid conflicts with the ACA
+     postInstall "cp /tmp/elt/default-properties/vendor-table.json /opt/hirs/default-properties/."
+     postInstall "rm -rf /tmp/elt" 
+    
+    // Uninstall
+    // copy files to where package manager exspects them and remove project files
+     preUninstall "mkdir -p /tmp/elt/default-properties"
+     preUninstall "cp /opt/hirs/default-properties/vendor-table.json /tmp/elt/default-properties/."
+     postUninstall "rm -rf /tmp/elt"
     buildRpm {
         arch = X86_64
     }

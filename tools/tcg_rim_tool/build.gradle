@@ -26,9 +26,8 @@ dependencies {
 }
 
 jar {
-     	// Keep jar clean:
+     	// Keep the jar clean:
         exclude 'META-INF/*.SF', 'META-INF/*.DSA', 'META-INF/*.RSA', 'META-INF/*.MF'
-
       manifest {
          attributes(
                      'Main-Class': 'hirs.swid.Main',
@@ -52,34 +51,30 @@ ospackage {
     user 'root'
     fileMode = 0755
 
-    from(jar.outputs.files) {
-        into 'lib'
+    into ('lib') {
+        from 'jar.outputs.files'
+        from 'libs'
+        from 'configurations.runtimeClasspath'
     }
 
-    from('libs') {
-        into 'lib'
-    }
-
-    from(configurations.runtimeClasspath) {
-        into 'lib'
-    }
-
-    from('scripts') {
+    into ('scripts') {
+      from ('scripts') {
         exclude {
             FileTreeElement details ->
                 details.file.name.endsWith('.bat')
         }
-	into 'scripts'
+      }
     }
 
-    from('data') {
+    into ('data') {
+      from('data') {
         exclude {
             FileTreeElement details ->
                 details.file.name.endsWith('.md')
         }
-	into './'
-        link("/usr/local/bin/rim", "/opt/hirs/rimtool/scripts/rimtool.sh", 0x755)
+       }
      }
+     link("/usr/local/bin/rim", "/opt/hirs/rimtool/scripts/rimtool.sh", 0x755)
 }
 
 buildRpm {
