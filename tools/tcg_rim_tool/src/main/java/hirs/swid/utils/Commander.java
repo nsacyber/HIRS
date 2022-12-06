@@ -46,7 +46,7 @@ public class Commander {
             description = "The TCG eventlog file to use as a support RIM.")
     private String rimEventLog = "";
     @Parameter(names = {"--rfc3852"}, order = 10,
-            description = "Add a timestamp to the signature that is compliant with RFC3852.")
+            description = "Add a placeholder for a base 64-encoded RFC3852 countersignature.")
     private boolean rfc3852 = false;
     @Parameter(names = {"--rfc3339"}, order = 11,
             description = "Add a timestamp to the signature that is compliant with RFC3339.")
