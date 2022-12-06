@@ -10,6 +10,10 @@ import hirs.swid.xjc.SoftwareIdentity;
 import hirs.swid.xjc.SoftwareMeta;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
+import org.xml.sax.InputSource;
+import org.xml.sax.SAXException;
 
 import javax.json.Json;
 import javax.json.JsonException;
@@ -41,6 +45,7 @@ import javax.xml.crypto.dsig.keyinfo.X509Data;
 import javax.xml.crypto.dsig.spec.C14NMethodParameterSpec;
 import javax.xml.crypto.dsig.spec.TransformParameterSpec;
 import javax.xml.namespace.QName;
+import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.OutputKeys;
@@ -57,6 +62,7 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.StringReader;
 import java.math.BigInteger;
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -547,6 +553,117 @@ public class SwidTagGateway {
         if (!value.isEmpty()) {
             attributes.put(key, value);
         }
+    }
+
+    private void printXmlAttributes(Node node) {
+        org.w3c.dom.NamedNodeMap attributes = node.getAttributes();
+        if (attributes.getLength() <= 0) {
+            System.out.println("No attributes in this node");
+        } else {
+            for (int i = 0; i < attributes.getLength(); i++) {
+                System.out.println("SoftwareIdentity attribute: " + attributes.item(i).getNodeName());
+            }
+        }
+    }
+
+    public Document signXMLDocument(String signFile) {
+        //Read signFile contents
+        String xmlToSign = "";
+        try {
+            byte[] fileContents = Files.readAllBytes(Paths.get(signFile));
+            xmlToSign = new String(fileContents);    //safe to assume default charset??
+        } catch (IOException e) {
+            System.out.println("Error reading contents of " + signFile);
+            System.exit(1);
+        }
+
+        //Parse SoftwareIdentity id
+        String tagId = "";
+        Document swidTag = null;
+        Element softwareIdentity = null;
+        try {
+            DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
+            DocumentBuilder db = dbf.newDocumentBuilder();
+            swidTag = db.parse(new InputSource(new StringReader(xmlToSign)));
+            softwareIdentity = (Element) swidTag.getElementsByTagName(
+                    SwidTagConstants.SOFTWARE_IDENTITY).item(0);
+            tagId = softwareIdentity.getAttributes()
+                    .getNamedItem(SwidTagConstants.TAGID).getNodeValue();
+            //How to sign without an Id attribute?
+        } catch (ParserConfigurationException e) {
+            System.out.println("Error instantiating DocumentBuilder object: " + e.getMessage());
+            System.exit(1);
+        } catch (IOException | SAXException e) {
+            System.out.println("Error parsing XML from " + signFile);
+        }
+
+        //Create signature with a reference to SoftwareIdentity id
+        System.out.println("Referencing SoftwareIdentity with tagID " + tagId);
+        Document detachedSignature = null;
+        try {
+            XMLSignatureFactory sigFactory = XMLSignatureFactory.getInstance("DOM");
+            Reference ref = sigFactory.newReference("#" + tagId,
+                    sigFactory.newDigestMethod(DigestMethod.SHA256, null));
+            SignedInfo signedInfo = sigFactory.newSignedInfo(
+                    sigFactory.newCanonicalizationMethod(CanonicalizationMethod.INCLUSIVE,
+                            (C14NMethodParameterSpec) null),
+                    sigFactory.newSignatureMethod(SwidTagConstants.SIGNATURE_ALGORITHM_RSA_SHA256,
+                            null),
+                    Collections.singletonList(ref)
+            );
+            List<XMLStructure> keyInfoElements = new ArrayList<XMLStructure>();
+
+            KeyInfoFactory kiFactory = sigFactory.getKeyInfoFactory();
+            PrivateKey privateKey;
+            CredentialParser cp = new CredentialParser();
+            if (defaultCredentials) {
+                cp.parseJKSCredentials(jksTruststoreFile);
+                privateKey = cp.getPrivateKey();
+                KeyName keyName = kiFactory.newKeyName(cp.getCertificateSubjectKeyIdentifier());
+                keyInfoElements.add(keyName);
+            } else {
+                cp.parsePEMCredentials(pemCertificateFile, pemPrivateKeyFile);
+                X509Certificate certificate = cp.getCertificate();
+                privateKey = cp.getPrivateKey();
+                if (embeddedCert) {
+                    ArrayList<Object> x509Content = new ArrayList<Object>();
+                    x509Content.add(certificate.getSubjectX500Principal().getName());
+                    x509Content.add(certificate);
+                    X509Data data = kiFactory.newX509Data(x509Content);
+                    keyInfoElements.add(data);
+                } else {
+                    keyInfoElements.add(kiFactory.newKeyValue(certificate.getPublicKey()));
+                }
+            }
+            KeyInfo keyinfo = kiFactory.newKeyInfo(keyInfoElements);
+
+            detachedSignature = DocumentBuilderFactory.newInstance()
+                                    .newDocumentBuilder().newDocument();
+            detachedSignature.appendChild(detachedSignature.createElement("root"));
+            DOMSignContext context = new DOMSignContext(privateKey,
+                                detachedSignature.getDocumentElement());
+            XMLSignature signature = sigFactory.newXMLSignature(signedInfo, keyinfo);
+            signature.sign(context);
+            System.out.println("Detached signature: " + detachedSignature);
+        } catch (InvalidAlgorithmParameterException e) {
+            System.out.println("Digest method parameters are invalid: " + e.getMessage());
+        } catch (NoSuchAlgorithmException e) {
+            System.out.println("The digest algorithm could not be found: " + e.getMessage());
+        } catch (IOException e) {
+            System.out.println("Error getting SKID from signing credentials: " + e.getMessage());
+        } catch (ParserConfigurationException e) {
+            System.out.println("Error creating new document object: " + e.getMessage());
+        } catch (MarshalException | XMLSignatureException e) {
+            System.out.println("Error while signing SoftwareIdentity");
+            e.printStackTrace();
+        } catch (KeyException e) {
+            System.out.println("Public key algorithm not recognized or supported: "
+                    + e.getMessage());
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return swidTag;
     }
 
     /**

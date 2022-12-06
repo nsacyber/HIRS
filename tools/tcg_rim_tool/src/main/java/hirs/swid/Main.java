@@ -4,6 +4,7 @@ import com.beust.jcommander.JCommander;
 import hirs.swid.utils.Commander;
 import hirs.swid.utils.CredentialArgumentValidator;
 import hirs.swid.utils.TimestampArgumentValidator;
+import org.w3c.dom.Document;
 
 import java.util.List;
 
@@ -118,7 +119,28 @@ public class Main {
                             "are required, or the default key (-d) must be indicated.");
                     System.exit(1);
                 }
-                gateway.generateSwidTag(commander.getOutFile());
+                if (!commander.getSignFile().isEmpty()) {
+                    Document doc = gateway.signXMLDocument(commander.getSignFile());
+                    gateway.writeSwidTagFile(doc, "");
+                } else {
+                    String createType = commander.getCreateType().toUpperCase();
+                    String attributesFile = commander.getAttributesFile();
+                    if (createType.equals("BASE")) {
+                        if (!attributesFile.isEmpty()) {
+                            gateway.setAttributesFile(attributesFile);
+                        }
+                        if (!rimEventLogFile.isEmpty()) {
+                            gateway.setRimEventLog(rimEventLogFile);
+                        } else {
+                            System.out.println("Error: a support RIM is required!");
+                            System.exit(1);
+                        }
+                    } else {
+                        System.out.println("No create type given, nothing to do");
+                        System.exit(1);
+                    }
+                    gateway.generateSwidTag(commander.getOutFile());
+                }
             }
         }
     }
