@@ -58,6 +58,8 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.math.BigInteger;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.KeyException;
 import java.security.NoSuchAlgorithmException;
@@ -66,6 +68,7 @@ import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Base64;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -87,6 +90,7 @@ public class SwidTagGateway {
     private boolean embeddedCert;
     private String rimEventLog;
     private String timestampFormat;
+    private String rfc3852Filename;
     private String errorRequiredFields;
 
     /**
@@ -102,6 +106,7 @@ public class SwidTagGateway {
             embeddedCert = false;
             rimEventLog = "";
             timestampFormat = "";
+            rfc3852Filename = "";
             errorRequiredFields = "";
         } catch (JAXBException e) {
             System.out.println("Error initializing jaxbcontext: " + e.getMessage());
@@ -178,6 +183,14 @@ public class SwidTagGateway {
      */
     public void setTimestampFormat(String timestampFormat) {
         this.timestampFormat = timestampFormat;
+    }
+
+    /**
+     * Setter for RFC3852 file path
+     * @param rfc3852Filename
+     */
+    public void setRfc3852Filename(String rfc3852Filename) {
+        this.rfc3852Filename = rfc3852Filename;
     }
 
     /**
@@ -641,11 +654,18 @@ public class SwidTagGateway {
         Element timeStampElement = doc.createElement("TimeStamp");
         switch (timestampFormat) {
             case "RFC3852":
-                timeStampElement.setAttributeNS("http://www.w3.org/2000/xmlns/",
-                        "xmlns:" + SwidTagConstants.RFC3852_PFX,
-                        SwidTagConstants.RFC3852_NS);
-                timeStampElement.setAttribute(SwidTagConstants.DATETIME,
-                        "Base64 blob here");
+                try {
+                    byte[] counterSignature = Base64.getEncoder().encode(
+                            Files.readAllBytes(Paths.get(rfc3852Filename)));
+                    timeStampElement.setAttributeNS("http://www.w3.org/2000/xmlns/",
+                            "xmlns:" + SwidTagConstants.RFC3852_PFX,
+                            SwidTagConstants.RFC3852_NS);
+                    timeStampElement.setAttribute(SwidTagConstants.DATETIME,
+                            new String(counterSignature));
+                } catch (IOException e) {
+                    e.printStackTrace();
+                    System.exit(1);
+                }
                 break;
             case "RFC3339":
                 timeStampElement.setAttributeNS("http://www.w3.org/2000/xmlns/",

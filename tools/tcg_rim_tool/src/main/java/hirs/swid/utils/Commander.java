@@ -134,7 +134,7 @@ public class Commander {
         }
         sb.append("Event log support RIM: " + this.getRimEventLog() + System.lineSeparator());
         if (!this.getRfc3852Filename().isEmpty()) {
-            sb.append("Timestamp format: RFC3852");
+            sb.append("Timestamp format: RFC3852, " + this.getRfc3852Filename());
         } else if (this.isRfc3339()) {
             sb.append("Timestamp format: RFC3339");
         } else {
