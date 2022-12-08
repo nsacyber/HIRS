@@ -79,8 +79,11 @@ public class Main {
                         } else {
                             gateway.setRimEventLog(rimEventLog);
                         }
-                        if (commander.isRfc3852()) {
-                            gateway.setTimestampFormat("RFC3852");
+                        if (!commander.getRfc3852Filename().isEmpty() && commander.isRfc3339()) {
+                            System.out.println("Only one timestamp format can be specified");
+                            System.exit(1);
+                        } else if (!commander.getRfc3852Filename().isEmpty()) {
+                            //pass file to gateway
                         } else if (commander.isRfc3339()) {
                             gateway.setTimestampFormat("RFC3339");
                         }
