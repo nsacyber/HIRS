@@ -44,6 +44,7 @@ import javax.xml.crypto.dsig.keyinfo.KeyName;
 import javax.xml.crypto.dsig.keyinfo.X509Data;
 import javax.xml.crypto.dsig.spec.C14NMethodParameterSpec;
 import javax.xml.crypto.dsig.spec.TransformParameterSpec;
+import javax.xml.crypto.dsig.spec.XPathFilterParameterSpec;
 import javax.xml.namespace.QName;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -602,8 +603,13 @@ public class SwidTagGateway {
         Document detachedSignature = null;
         try {
             XMLSignatureFactory sigFactory = XMLSignatureFactory.getInstance("DOM");
+            //Use xpath to select SoftwareIdentity
+            XPathFilterParameterSpec xPathParams = new XPathFilterParameterSpec("/SoftwareIdentity");
+            //ref must be distinguished from existing <Reference URI="">    
             Reference ref = sigFactory.newReference("#" + tagId,
-                    sigFactory.newDigestMethod(DigestMethod.SHA256, null));
+                    sigFactory.newDigestMethod(DigestMethod.SHA256, null),
+                    Collections.singletonList(sigFactory.newTransform(Transform.XPATH, xPathParams)),
+                    null, null);
             SignedInfo signedInfo = sigFactory.newSignedInfo(
                     sigFactory.newCanonicalizationMethod(CanonicalizationMethod.INCLUSIVE,
                             (C14NMethodParameterSpec) null),
