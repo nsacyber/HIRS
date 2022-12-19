@@ -87,6 +87,7 @@ public class SwidTagGateway {
     private boolean embeddedCert;
     private String rimEventLog;
     private String timestampFormat;
+    private String timestampArgument;
     private String errorRequiredFields;
 
     /**
@@ -102,6 +103,7 @@ public class SwidTagGateway {
             embeddedCert = false;
             rimEventLog = "";
             timestampFormat = "";
+            timestampArgument = "";
             errorRequiredFields = "";
         } catch (JAXBException e) {
             System.out.println("Error initializing jaxbcontext: " + e.getMessage());
@@ -178,6 +180,14 @@ public class SwidTagGateway {
      */
     public void setTimestampFormat(String timestampFormat) {
         this.timestampFormat = timestampFormat;
+    }
+
+    /**
+     * Setter for timestamp input - RFC3852 + file or RFC3339 + value
+     * @param timestampArgument
+     */
+    public void setTimestampArgument(String timestampArgument) {
+        this.timestampArgument = timestampArgument;
     }
 
     /**
@@ -649,8 +659,13 @@ public class SwidTagGateway {
                 timeStampElement.setAttributeNS("http://www.w3.org/2000/xmlns/",
                         "xmlns:" + SwidTagConstants.RFC3339_PFX,
                         SwidTagConstants.RFC3339_NS);
-                timeStampElement.setAttribute(SwidTagConstants.DATETIME,
-                        LocalDateTime.now().toString());
+                if (timestampArgument.isEmpty()) {
+                    timeStampElement.setAttribute(SwidTagConstants.DATETIME,
+                            LocalDateTime.now().toString());
+                } else {
+                    timeStampElement.setAttribute(SwidTagConstants.DATETIME,
+                            timestampArgument);
+                }
                 break;
         }
         DOMStructure timestampObject = new DOMStructure(timeStampElement);

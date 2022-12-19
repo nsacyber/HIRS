@@ -48,9 +48,9 @@ public class Commander {
     @Parameter(names = {"--rfc3852"}, order = 10,
             description = "Add a placeholder for a base 64-encoded RFC3852 countersignature.")
     private boolean rfc3852 = false;
-    @Parameter(names = {"--rfc3339"}, order = 11,
+    @Parameter(names = {"--rfc3339"}, order = 11, validateWith = Rfc3339Format.class,
             description = "Add a timestamp to the signature that is compliant with RFC3339.")
-    private boolean rfc3339 = false;
+    private String rfc3339 = "";
 
     public boolean isHelp() {
         return help;
@@ -90,7 +90,7 @@ public class Commander {
 
     public boolean isRfc3852() { return rfc3852; }
 
-    public boolean isRfc3339() { return rfc3339; }
+    public String getRfc3339() { return rfc3339; }
 
     public String printHelpExamples() {
         StringBuilder sb = new StringBuilder();
@@ -135,8 +135,10 @@ public class Commander {
         sb.append("Event log support RIM: " + this.getRimEventLog() + System.lineSeparator());
         if (isRfc3852()) {
             sb.append("Timestamp format: RFC3852");
-        } else if (isRfc3339()) {
-            sb.append("Timestamp format: RFC3339");
+        } else if (getRfc3339().isEmpty()) {
+            sb.append("Timestamp format: RFC3339 with generated timestamp");
+        } else if (!getRfc3339().isEmpty()) {
+            sb.append("Timestamp format: RFC3339 with timestamp input");
         } else {
             sb.append("No timestamp included");
         }
