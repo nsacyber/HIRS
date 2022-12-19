@@ -80,14 +80,15 @@ public class Main {
                             gateway.setRimEventLog(rimEventLog);
                         }
                         String filename = commander.getRfc3852Filename();
-                        if (!filename.isEmpty() && commander.isRfc3339()) {
+                        if (!filename.isEmpty() && commander.getRfc3339() != null) {
                             System.out.println("Only one timestamp format can be specified");
                             System.exit(1);
                         } else if (!filename.isEmpty()) {
                             gateway.setTimestampFormat("RFC3852");
-                            gateway.setRfc3852Filename(filename);
-                        } else if (commander.isRfc3339()) {
+                            gateway.setTimestampArgument(filename);
+                        } else if (commander.getRfc3339() != null) {
                             gateway.setTimestampFormat("RFC3339");
+                            gateway.setTimestampArgument(commander.getRfc3339());
                         }
                         gateway.generateSwidTag(commander.getOutFile());
                         break;

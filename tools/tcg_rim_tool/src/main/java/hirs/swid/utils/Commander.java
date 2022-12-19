@@ -50,7 +50,10 @@ public class Commander {
     private String rfc3852Filename = "";
     @Parameter(names = {"--rfc3339"}, order = 11,
             description = "Add a timestamp to the signature that is compliant with RFC3339.")
-    private boolean rfc3339 = false;
+    private boolean rfc3852 = false;
+    @Parameter(names = {"--rfc3339"}, order = 11, validateWith = Rfc3339Format.class,
+            description = "Add a timestamp to the signature that is compliant with RFC3339.")
+    private String rfc3339 = "";
 
     public boolean isHelp() {
         return help;
@@ -90,7 +93,9 @@ public class Commander {
 
     public String getRfc3852Filename() { return rfc3852Filename; }
 
-    public boolean isRfc3339() { return rfc3339; }
+    public boolean isRfc3852() { return rfc3852; }
+
+    public String getRfc3339() { return rfc3339; }
 
     public String printHelpExamples() {
         StringBuilder sb = new StringBuilder();
@@ -135,10 +140,12 @@ public class Commander {
         sb.append("Event log support RIM: " + this.getRimEventLog() + System.lineSeparator());
         if (!this.getRfc3852Filename().isEmpty()) {
             sb.append("Timestamp format: RFC3852, " + this.getRfc3852Filename());
-        } else if (this.isRfc3339()) {
-            sb.append("Timestamp format: RFC3339");
+        } else if (getRfc3339().isEmpty()) {
+            sb.append("Timestamp format: RFC3339 with generated timestamp");
+        } else if (!getRfc3339().isEmpty()) {
+            sb.append("Timestamp format: RFC3339 with timestamp input");
         } else {
-            sb.append("No timestamp specified");
+            sb.append("No timestamp included");
         }
         return sb.toString();
     }

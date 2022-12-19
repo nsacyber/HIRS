@@ -90,7 +90,7 @@ public class SwidTagGateway {
     private boolean embeddedCert;
     private String rimEventLog;
     private String timestampFormat;
-    private String rfc3852Filename;
+    private String timestampArgument;
     private String errorRequiredFields;
 
     /**
@@ -106,7 +106,7 @@ public class SwidTagGateway {
             embeddedCert = false;
             rimEventLog = "";
             timestampFormat = "";
-            rfc3852Filename = "";
+            timestampArgument = "";
             errorRequiredFields = "";
         } catch (JAXBException e) {
             System.out.println("Error initializing jaxbcontext: " + e.getMessage());
@@ -186,11 +186,11 @@ public class SwidTagGateway {
     }
 
     /**
-     * Setter for RFC3852 file path
-     * @param rfc3852Filename
+     * Setter for timestamp input - RFC3852 + file or RFC3339 + value
+     * @param timestampArgument
      */
-    public void setRfc3852Filename(String rfc3852Filename) {
-        this.rfc3852Filename = rfc3852Filename;
+    public void setTimestampArgument(String timestampArgument) {
+        this.timestampArgument = timestampArgument;
     }
 
     /**
@@ -656,7 +656,7 @@ public class SwidTagGateway {
             case "RFC3852":
                 try {
                     byte[] counterSignature = Base64.getEncoder().encode(
-                            Files.readAllBytes(Paths.get(rfc3852Filename)));
+                            Files.readAllBytes(Paths.get(timestampArgument)));
                     timeStampElement.setAttributeNS("http://www.w3.org/2000/xmlns/",
                             "xmlns:" + SwidTagConstants.RFC3852_PFX,
                             SwidTagConstants.RFC3852_NS);
@@ -671,8 +671,13 @@ public class SwidTagGateway {
                 timeStampElement.setAttributeNS("http://www.w3.org/2000/xmlns/",
                         "xmlns:" + SwidTagConstants.RFC3339_PFX,
                         SwidTagConstants.RFC3339_NS);
-                timeStampElement.setAttribute(SwidTagConstants.DATETIME,
-                        LocalDateTime.now().toString());
+                if (timestampArgument.isEmpty()) {
+                    timeStampElement.setAttribute(SwidTagConstants.DATETIME,
+                            LocalDateTime.now().toString());
+                } else {
+                    timeStampElement.setAttribute(SwidTagConstants.DATETIME,
+                            timestampArgument);
+                }
                 break;
         }
         DOMStructure timestampObject = new DOMStructure(timeStampElement);
