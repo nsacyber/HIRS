@@ -652,7 +652,7 @@ public class SwidTagGateway {
      */
     private XMLObject createXmlTimestamp(Document doc, XMLSignatureFactory sigFactory) {
         Element timeStampElement = doc.createElement("TimeStamp");
-        switch (timestampFormat) {
+        switch (timestampFormat.toUpperCase()) {
             case "RFC3852":
                 try {
                     byte[] counterSignature = Base64.getEncoder().encode(

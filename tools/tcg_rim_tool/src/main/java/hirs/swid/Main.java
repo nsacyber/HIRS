@@ -2,6 +2,9 @@ package hirs.swid;
 
 import hirs.swid.utils.Commander;
 import com.beust.jcommander.JCommander;
+import hirs.swid.utils.TimestampArgumentValidator;
+
+import java.util.List;
 
 public class Main {
 
@@ -79,16 +82,16 @@ public class Main {
                         } else {
                             gateway.setRimEventLog(rimEventLog);
                         }
-                        String filename = commander.getRfc3852Filename();
-                        if (!filename.isEmpty() && commander.getRfc3339() != null) {
-                            System.out.println("Only one timestamp format can be specified");
-                            System.exit(1);
-                        } else if (!filename.isEmpty()) {
-                            gateway.setTimestampFormat("RFC3852");
-                            gateway.setTimestampArgument(filename);
-                        } else if (commander.getRfc3339() != null) {
-                            gateway.setTimestampFormat("RFC3339");
-                            gateway.setTimestampArgument(commander.getRfc3339());
+                        List<String> timestampArguments = commander.getTimestampArguments();
+                        if (timestampArguments.size() > 0) {
+                            if (new TimestampArgumentValidator(timestampArguments).isValid()) {
+                                gateway.setTimestampFormat(timestampArguments.get(0));
+                                if (timestampArguments.size() > 1) {
+                                    gateway.setTimestampArgument(timestampArguments.get(1));
+                                }
+                            } else {
+                                System.exit(1);
+                            }
                         }
                         gateway.generateSwidTag(commander.getOutFile());
                         break;

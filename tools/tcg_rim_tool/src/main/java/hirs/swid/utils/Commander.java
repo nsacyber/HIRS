@@ -3,6 +3,9 @@ package hirs.swid.utils;
 import com.beust.jcommander.Parameter;
 import hirs.swid.SwidTagConstants;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * Commander is a class that handles the command line arguments for the SWID
  * Tags gateway by implementing the JCommander package.
@@ -45,15 +48,11 @@ public class Commander {
     @Parameter(names = {"-l", "--rimel <path>"}, order = 9,
             description = "The TCG eventlog file to use as a support RIM.")
     private String rimEventLog = "";
-    @Parameter(names = {"--rfc3852"}, order = 10,
-            description = "Add a placeholder for a base 64-encoded RFC3852 countersignature.")
-    private String rfc3852Filename = "";
-    @Parameter(names = {"--rfc3339"}, order = 11,
-            description = "Add a timestamp to the signature that is compliant with RFC3339.")
-    private boolean rfc3852 = false;
-    @Parameter(names = {"--rfc3339"}, order = 11, validateWith = Rfc3339Format.class,
-            description = "Add a timestamp to the signature that is compliant with RFC3339.")
-    private String rfc3339 = "";
+    @Parameter(names = {"--timestamp"}, order = 10, variableArity = true,
+            description = "Add a timestamp to the signature. " +
+                    "Currently only RFC3339 and RFC3852 are supported:\n" +
+                    "\tRFC3339 [yyyy-MM-ddThh:mm:ssZ]\n\tRFC3852 <counterSignature.bin>")
+    private List<String> timestampArguments = new ArrayList<String>(2);
 
     public boolean isHelp() {
         return help;
@@ -91,11 +90,9 @@ public class Commander {
 
     public String getRimEventLog() { return rimEventLog; }
 
-    public String getRfc3852Filename() { return rfc3852Filename; }
-
-    public boolean isRfc3852() { return rfc3852; }
-
-    public String getRfc3339() { return rfc3339; }
+    public List<String> getTimestampArguments() {
+        return timestampArguments;
+    }
 
     public String printHelpExamples() {
         StringBuilder sb = new StringBuilder();
@@ -108,6 +105,11 @@ public class Commander {
         sb.append("sign it using privateKey.pem; embed cert.pem in the signature block; ");
         sb.append("and write the data to console output:\n\n");
         sb.append("\t\t-c base -l support_rim.bin -k privateKey.pem -p cert.pem -e\n\n\n");
+        sb.append("Create a base RIM using the values in attributes.json; " +
+                "sign it with the default keystore; add a RFC3852 timestamp; ");
+        sb.append("and write the data to base_rim.swidtag:\n\n");
+        sb.append("\t\t-c base -a attributes.json -d -l support_rim.bin " +
+                "--timestamp RFC3852 counterSignature.bin -o base_rim.swidtag\n\n\n");
         sb.append("Validate a base RIM using an external support RIM to override the ");
         sb.append("payload file:\n\n");
         sb.append("\t\t-v base_rim.swidtag -l support_rim.bin\n\n\n");
@@ -138,12 +140,12 @@ public class Commander {
             sb.append("Signing credential: (none given)" + System.lineSeparator());
         }
         sb.append("Event log support RIM: " + this.getRimEventLog() + System.lineSeparator());
-        if (!this.getRfc3852Filename().isEmpty()) {
-            sb.append("Timestamp format: RFC3852, " + this.getRfc3852Filename());
-        } else if (getRfc3339().isEmpty()) {
-            sb.append("Timestamp format: RFC3339 with generated timestamp");
-        } else if (!getRfc3339().isEmpty()) {
-            sb.append("Timestamp format: RFC3339 with timestamp input");
+        List<String> timestampArguments = this.getTimestampArguments();
+        if (timestampArguments.size() > 0) {
+            sb.append("Timestamp format: " + timestampArguments.get(0));
+            if (timestampArguments.size() == 2) {
+                sb.append(", " + timestampArguments.get(1));
+            }
         } else {
             sb.append("No timestamp included");
         }
