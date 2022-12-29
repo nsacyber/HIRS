@@ -29,7 +29,7 @@ public class TimestampArgumentValidator {
     public boolean isValid() {
         if (isExactlyOneFormat(args)) {
             if (args.get(0).equalsIgnoreCase("RFC3852")) {
-                if (args.size() == 2) {
+                if (args.size() > 1) {
                     if (isRfc3852FileValid(args.get(1))) {
                         return true;
                     } else {
@@ -40,7 +40,7 @@ public class TimestampArgumentValidator {
                     return false;
                 }
             } else if (args.get(0).equalsIgnoreCase("RFC3339")) {
-                if (args.size() == 2) {
+                if (args.size() > 1) {
                     if (isRfc3339Format(args.get(1))) {
                         return true;
                     } else {
@@ -94,7 +94,8 @@ public class TimestampArgumentValidator {
         try {
             Instant instant = Instant.parse(timestamp);
         } catch (DateTimeParseException e) {
-            System.out.println("Invalid RFC3339 timestamp given: " + timestamp);
+            System.out.println("Invalid RFC3339 timestamp given, " +
+                    "expected yyyy-MM-dd'T'HH:mm:ss.SSS'Z'");
             return false;
         }
         return true;
