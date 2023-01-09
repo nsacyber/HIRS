@@ -9,6 +9,7 @@ import hirs.swid.xjc.ResourceCollection;
 import hirs.swid.xjc.SoftwareIdentity;
 import hirs.swid.xjc.SoftwareMeta;
 import org.w3c.dom.Document;
+import org.w3c.dom.Element;
 
 import javax.json.Json;
 import javax.json.JsonException;
@@ -20,11 +21,15 @@ import javax.xml.bind.JAXBException;
 import javax.xml.bind.Marshaller;
 import javax.xml.crypto.MarshalException;
 import javax.xml.crypto.XMLStructure;
+import javax.xml.crypto.dom.DOMStructure;
 import javax.xml.crypto.dsig.CanonicalizationMethod;
 import javax.xml.crypto.dsig.DigestMethod;
 import javax.xml.crypto.dsig.Reference;
+import javax.xml.crypto.dsig.SignatureProperties;
+import javax.xml.crypto.dsig.SignatureProperty;
 import javax.xml.crypto.dsig.SignedInfo;
 import javax.xml.crypto.dsig.Transform;
+import javax.xml.crypto.dsig.XMLObject;
 import javax.xml.crypto.dsig.XMLSignature;
 import javax.xml.crypto.dsig.XMLSignatureException;
 import javax.xml.crypto.dsig.XMLSignatureFactory;
@@ -53,13 +58,17 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.math.BigInteger;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.KeyException;
 import java.security.NoSuchAlgorithmException;
 import java.security.PrivateKey;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Base64;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -80,6 +89,8 @@ public class SwidTagGateway {
     private String pemCertificateFile;
     private boolean embeddedCert;
     private String rimEventLog;
+    private String timestampFormat;
+    private String timestampArgument;
     private String errorRequiredFields;
 
     /**
@@ -94,6 +105,8 @@ public class SwidTagGateway {
             pemCertificateFile = "";
             embeddedCert = false;
             rimEventLog = "";
+            timestampFormat = "";
+            timestampArgument = "";
             errorRequiredFields = "";
         } catch (JAXBException e) {
             System.out.println("Error initializing jaxbcontext: " + e.getMessage());
@@ -162,6 +175,22 @@ public class SwidTagGateway {
      */
     public void setRimEventLog(final String rimEventLog) {
         this.rimEventLog = rimEventLog;
+    }
+
+    /**
+     * Setter for timestamp format in XML signature
+     * @param timestampFormat
+     */
+    public void setTimestampFormat(String timestampFormat) {
+        this.timestampFormat = timestampFormat;
+    }
+
+    /**
+     * Setter for timestamp input - RFC3852 + file or RFC3339 + value
+     * @param timestampArgument
+     */
+    public void setTimestampArgument(String timestampArgument) {
+        this.timestampArgument = timestampArgument;
     }
 
     /**
@@ -523,8 +552,13 @@ public class SwidTagGateway {
     private Document signXMLDocument(JAXBElement<SoftwareIdentity> swidTag) throws Exception {
         Document doc = null;
         try {
+            doc = DocumentBuilderFactory.newInstance().newDocumentBuilder().newDocument();
+            marshaller.marshal(swidTag, doc);
             XMLSignatureFactory sigFactory = XMLSignatureFactory.getInstance("DOM");
-            Reference reference = sigFactory.newReference(
+            List xmlObjectList = null;
+            String signatureId = null;
+
+            Reference documentRef = sigFactory.newReference(
                     "",
                     sigFactory.newDigestMethod(DigestMethod.SHA256, null),
                     Collections.singletonList(sigFactory.newTransform(Transform.ENVELOPED,
@@ -532,12 +566,26 @@ public class SwidTagGateway {
                     null,
                     null
             );
+
+            List<Reference> refList = new ArrayList<Reference>();
+            refList.add(documentRef);
+
+            if (!timestampFormat.isEmpty()) {
+                Reference timestampRef = sigFactory.newReference(
+                        "#TST",
+                        sigFactory.newDigestMethod(DigestMethod.SHA256, null)
+                );
+                refList.add(timestampRef);
+                xmlObjectList = Collections.singletonList(createXmlTimestamp(doc, sigFactory));
+                signatureId = "RimSignature";
+            }
+
             SignedInfo signedInfo = sigFactory.newSignedInfo(
                     sigFactory.newCanonicalizationMethod(CanonicalizationMethod.INCLUSIVE,
                             (C14NMethodParameterSpec) null),
                     sigFactory.newSignatureMethod(SwidTagConstants.SIGNATURE_ALGORITHM_RSA_SHA256,
                             null),
-                    Collections.singletonList(reference)
+                    refList
             );
             List<XMLStructure> keyInfoElements = new ArrayList<XMLStructure>();
 
@@ -565,10 +613,14 @@ public class SwidTagGateway {
             }
             KeyInfo keyinfo = kiFactory.newKeyInfo(keyInfoElements);
 
-            doc = DocumentBuilderFactory.newInstance().newDocumentBuilder().newDocument();
-            marshaller.marshal(swidTag, doc);
             DOMSignContext context = new DOMSignContext(privateKey, doc.getDocumentElement());
-            XMLSignature signature = sigFactory.newXMLSignature(signedInfo, keyinfo);
+            XMLSignature signature = sigFactory.newXMLSignature(
+                    signedInfo,
+                    keyinfo,
+                    xmlObjectList,
+                    signatureId,
+                    null
+            );
             signature.sign(context);
         } catch (FileNotFoundException e) {
             System.out.println("Keystore not found! " + e.getMessage());
@@ -589,5 +641,54 @@ public class SwidTagGateway {
         }
 
         return doc;
+    }
+
+    /**
+     * This method creates a timestamp element and populates it with data according to
+     * the RFC format set in timestampFormat.  The element is returned within an XMLObject.
+     * @param doc the Document representing the XML to be signed
+     * @param sigFactory the SignatureFactory object
+     * @return an XMLObject containing the timestamp element
+     */
+    private XMLObject createXmlTimestamp(Document doc, XMLSignatureFactory sigFactory) {
+        Element timeStampElement = doc.createElement("TimeStamp");
+        switch (timestampFormat.toUpperCase()) {
+            case "RFC3852":
+                try {
+                    byte[] counterSignature = Base64.getEncoder().encode(
+                            Files.readAllBytes(Paths.get(timestampArgument)));
+                    timeStampElement.setAttributeNS("http://www.w3.org/2000/xmlns/",
+                            "xmlns:" + SwidTagConstants.RFC3852_PFX,
+                            SwidTagConstants.RFC3852_NS);
+                    timeStampElement.setAttribute(SwidTagConstants.DATETIME,
+                            new String(counterSignature));
+                } catch (IOException e) {
+                    e.printStackTrace();
+                    System.exit(1);
+                }
+                break;
+            case "RFC3339":
+                timeStampElement.setAttributeNS("http://www.w3.org/2000/xmlns/",
+                        "xmlns:" + SwidTagConstants.RFC3339_PFX,
+                        SwidTagConstants.RFC3339_NS);
+                if (timestampArgument.isEmpty()) {
+                    timeStampElement.setAttribute(SwidTagConstants.DATETIME,
+                            LocalDateTime.now().toString());
+                } else {
+                    timeStampElement.setAttribute(SwidTagConstants.DATETIME,
+                            timestampArgument);
+                }
+                break;
+        }
+        DOMStructure timestampObject = new DOMStructure(timeStampElement);
+        SignatureProperty signatureProperty = sigFactory.newSignatureProperty(
+                Collections.singletonList(timestampObject), "RimSignature", "TST"
+        );
+        SignatureProperties signatureProperties = sigFactory.newSignatureProperties(
+                Collections.singletonList(signatureProperty), null);
+        XMLObject xmlObject = sigFactory.newXMLObject(
+                Collections.singletonList(signatureProperties), null,null,null);
+
+        return xmlObject;
     }
 }

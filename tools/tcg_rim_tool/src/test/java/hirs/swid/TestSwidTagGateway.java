@@ -17,6 +17,8 @@ public class TestSwidTagGateway {
 	private final String BASE_USER_CERT = "generated_user_cert.swidtag";
 	private final String BASE_USER_CERT_EMBED = "generated_user_cert_embed.swidtag";
 	private final String BASE_DEFAULT_CERT = "generated_default_cert.swidtag";
+	private final String BASE_RFC3339_TIMESTAMP = "generated_timestamp_rfc3339.swidtag";
+	private final String BASE_RFC3852_TIMESTAMP = "generated_timestamp_rfc3852.swidtag";
 	private final String ATTRIBUTES_FILE = TestSwidTagGateway.class.getClassLoader()
 			.getResource("rim_fields.json").getPath();
 	private final String JKS_KEYSTORE_FILE = TestSwidTagGateway.class.getClassLoader()
@@ -29,6 +31,8 @@ public class TestSwidTagGateway {
 			.getResource("RimCertChain.pem").getPath();
 	private final String SUPPORT_RIM_FILE = TestSwidTagGateway.class.getClassLoader()
 			.getResource("TpmLog.bin").getPath();
+	private final String RFC3852_COUNTERSIGNATURE_FILE = TestSwidTagGateway.class.getClassLoader()
+			.getResource("counterSignature.file").getPath();
 	private InputStream expectedFile;
 
 	@BeforeClass
@@ -87,7 +91,7 @@ public class TestSwidTagGateway {
 
 	/**
 	 * This test corresponds to the arguments:
-	 * -c base -l TpmLog.bin
+	 * -c base -l TpmLog.bin -d
 	 */
 	@Test
 	public void testCreateBaseDefaultCert() {
@@ -96,6 +100,40 @@ public class TestSwidTagGateway {
 		gateway.generateSwidTag(DEFAULT_OUTPUT);
 		expectedFile = TestSwidTagGateway.class.getClassLoader()
 				.getResourceAsStream(BASE_DEFAULT_CERT);
+		Assert.assertTrue(compareFileBytesToExpectedFile(DEFAULT_OUTPUT));
+		Assert.assertTrue(validator.validateSwidTag(DEFAULT_OUTPUT));
+	}
+
+	/**
+	 * This test corresponds to the arguments:
+	 * -c base -l TpmLog.bin -d --timestamp rfc3339 2023-01-01T00:00:00Z
+	 */
+	@Test
+	public void testCreateTimestampRfc3339() {
+		gateway.setDefaultCredentials(true);
+		gateway.setJksTruststoreFile(JKS_KEYSTORE_FILE);
+		gateway.setTimestampFormat("RFC3339");
+		gateway.setTimestampArgument("2023-01-01T00:00:00Z");
+		gateway.generateSwidTag(DEFAULT_OUTPUT);
+		expectedFile = TestSwidTagGateway.class.getClassLoader()
+				.getResourceAsStream(BASE_RFC3339_TIMESTAMP);
+		Assert.assertTrue(compareFileBytesToExpectedFile(DEFAULT_OUTPUT));
+		Assert.assertTrue(validator.validateSwidTag(DEFAULT_OUTPUT));
+	}
+
+	/**
+	 * This test corresponds to the arguments:
+	 * -c base -l TpmLog.bin -d --timestamp rfc3852 countersignature.file
+	 */
+	@Test
+	public void testCreateTimestampRfc3852() {
+		gateway.setDefaultCredentials(true);
+		gateway.setJksTruststoreFile(JKS_KEYSTORE_FILE);
+		gateway.setTimestampFormat("RFC3852");
+		gateway.setTimestampArgument(RFC3852_COUNTERSIGNATURE_FILE);
+		gateway.generateSwidTag(DEFAULT_OUTPUT);
+		expectedFile = TestSwidTagGateway.class.getClassLoader()
+				.getResourceAsStream(BASE_RFC3852_TIMESTAMP);
 		Assert.assertTrue(compareFileBytesToExpectedFile(DEFAULT_OUTPUT));
 		Assert.assertTrue(validator.validateSwidTag(DEFAULT_OUTPUT));
 	}
