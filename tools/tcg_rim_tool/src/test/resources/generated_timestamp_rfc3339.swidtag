@@ -8,7 +8,7 @@
       <File xmlns:SHA256="http://www.w3.org/2001/04/xmlenc#sha256" SHA256:hash="4479ca722623f8c47b703996ced3cbd981b06b1ae8a897db70137e0b7c546848" name="Example.com.BIOS.01.rimel" size="7549"/>
     </Directory>
   </Payload>
-  <Signature xmlns="http://www.w3.org/2000/09/xmldsig#">
+  <Signature xmlns="http://www.w3.org/2000/09/xmldsig#" Id="RimSignature">
     <SignedInfo>
       <CanonicalizationMethod Algorithm="http://www.w3.org/TR/2001/REC-xml-c14n-20010315"/>
       <SignatureMethod Algorithm="http://www.w3.org/2001/04/xmldsig-more#rsa-sha256"/>
@@ -19,34 +19,25 @@
         <DigestMethod Algorithm="http://www.w3.org/2001/04/xmlenc#sha256"/>
         <DigestValue>DJMc0n3VHHwU+F3HNpiY/l3EMcjRZAQOYlrjhD5v9qE=</DigestValue>
       </Reference>
+      <Reference URI="#TST">
+        <DigestMethod Algorithm="http://www.w3.org/2001/04/xmlenc#sha256"/>
+        <DigestValue>j8sqX9NGt8DAPOvbhXKAT648BGdPnQnblai1PYDUryE=</DigestValue>
+      </Reference>
     </SignedInfo>
-    <SignatureValue>ojJ6v8ToxLWWekCKmBoZ+Yg2V4MYMPbKB9FjDs/QG/AMP+LKjnb55Z7FSLhC8+CvvShKPAoS9mv1&#13;
-QepwI17NEqbfnC1U4WH0u578A3J6wiHMXIDnIQqKAAXb8v2c/wjMDArzFl8CXmDA7HUDIt+3C4VC&#13;
-tA598YY7o0Hf6hK5qO8oWGQxXUKfpUwvtGLxHpbDWYFuVSPa+uk6OTzutt/QyzTERzxyO9Le1i6K&#13;
-nrpzh4lgHn6EfGs6HR1ffdHQ069q0bE61zDx0VC18nK9DmszW6p6FlMzApiTVW/4PiVt+dSFeVGR&#13;
-9///OdtxcoBCeofDDFPRyO+s+kY1pXd92Q3nfg==</SignatureValue>
+    <SignatureValue>N8QB5dMLnSLaDuCO8Ds/9nPlJGzsF1HJCthEXDXPrMTpfWBwmsVTqtNwoGzHIXlx8HDdDcfTLa3j&#13;
+3rfFmDZNMqv6+6jjjJZerpN6XyWHGaVjVuPiNGmafE5SajTg53+6KlWXTGs3kcbbV5cTtjASz/A0&#13;
+cz9gBYTwYXmWA3+V0USLA0MNYzPkKp83eDnizbrkGx824NU9qG1DetVFfZqotWoTGJ1Wz4J8D1yR&#13;
+wUILS0DbtZalCNVv3kw9raIRKQ/CjlDztfP1SgiNuXu6IaVZKoVG9HGp3s8pQvFPHr0HD2sNrAkx&#13;
+twKcg3XIzGrTc22Y2TYw9Dk3NxumQSp4kve6ow==</SignatureValue>
     <KeyInfo>
-      <X509Data>
-        <X509SubjectName>CN=example.RIM.signer,OU=PCClient,O=Example,ST=VA,C=US</X509SubjectName>
-        <X509Certificate>MIID2jCCAsKgAwIBAgIJAP0uwoNdwZDFMA0GCSqGSIb3DQEBCwUAMFMxCzAJBgNVBAYTAlVTMQsw&#13;
-CQYDVQQIDAJWQTEQMA4GA1UECgwHRXhhbXBsZTERMA8GA1UECwwIUENDbGllbnQxEjAQBgNVBAMM&#13;
-CUV4YW1wbGVDQTAeFw0yMDA3MjEyMTQ1MDBaFw0zMDA1MzAyMTQ1MDBaMFwxCzAJBgNVBAYTAlVT&#13;
-MQswCQYDVQQIDAJWQTEQMA4GA1UECgwHRXhhbXBsZTERMA8GA1UECwwIUENDbGllbnQxGzAZBgNV&#13;
-BAMMEmV4YW1wbGUuUklNLnNpZ25lcjCCASIwDQYJKoZIhvcNAQEBBQADggEPADCCAQoCggEBAKd1&#13;
-lWGkSRuxAAY2wHag2GVxUk1dZx2PTpfQOflvLeccAVwa8mQhlsRERq+QK8ilj8Xfqs44/nBaccZD&#13;
-OjdfIxIUCMfwhGXjxCaqZbgTucNsExDnu4arTGraoAwzHg0cVLiKT/Cxj9NL4dcMgxRXsPdHfXb0&#13;
-923C7xYd2t2qfW05umgaj7qeQl6c68CFNsGX4JA8rWFQZvvGx5DGlK4KTcjPuQQINs5fxasNKqLY&#13;
-2hq+z82x/rqwr2hmyizD6FpFSyIABPEMPfB036GEhRwu1WEMkq8yIp2jgRUoFYke9pB3ph9pVow0&#13;
-Hh4mNFSKD4pP41VSKY1nus83mdkuukPy5o0CAwEAAaOBpzCBpDAdBgNVHQ4EFgQUL96459AwoiCd&#13;
-qgGGGpZP7ezyvMEwHwYDVR0jBBgwFoAURqG47dumcV/Q0ud6ijxdbprDljgwCQYDVR0TBAIwADAL&#13;
-BgNVHQ8EBAMCBsAwEwYDVR0lBAwwCgYIKwYBBQUHAwMwNQYIKwYBBQUHAQEEKTAnMCUGCCsGAQUF&#13;
-BzAChhlodHRwczovL2V4YW1wbGUuY29tL2NlcnRzMA0GCSqGSIb3DQEBCwUAA4IBAQDpKx5oQlkS&#13;
-11cg7Qp58BmCvjCzFpof+qYePooJsD3i5SwKfRTa2CkDMww9qrwBK7G60y7jhe5InKTdqIlVqaji&#13;
-5ZImR0QMKTtk7zt9AJ9EaEzKxfDiE/qX34KxNe4ZmbvLH8N+BSujQXMMi56zGjW469Y/rbDMG8uU&#13;
-1dq3zqhO5b+dUr1ecdkYLgzxu6O+oWy5JpVibmcjvNezJsUtjc+km2FYm24vU3/fCNzZ2z0EHQES&#13;
-cIEQ5OqfpdFrV3De238RhMH6J4xePSidnFpfBc6FrdyDI1A8eRFz36I4xfVL3ZnJP/+j+NE4q6yz&#13;
-5VGvm0npLO394ZihtsI1sRAR8ORJ</X509Certificate>
-      </X509Data>
+      <KeyName>2fdeb8e7d030a2209daa01861a964fedecf2bcc1</KeyName>
     </KeyInfo>
+    <Object>
+      <SignatureProperties>
+        <SignatureProperty Id="TST" Target="RimSignature">
+          <TimeStamp xmlns:rcf3339="https://www.ietf.org/rfc/rfc3339.txt" dateTime="2023-01-01T00:00:00Z"/>
+        </SignatureProperty>
+      </SignatureProperties>
+    </Object>
   </Signature>
 </SoftwareIdentity>
