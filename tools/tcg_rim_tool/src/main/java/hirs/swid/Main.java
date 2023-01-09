@@ -3,8 +3,6 @@ package hirs.swid;
 import hirs.swid.utils.Commander;
 import com.beust.jcommander.JCommander;
 
-import java.io.IOException;
-
 public class Main {
 
     public static void main(String[] args) {
@@ -46,7 +44,7 @@ public class Main {
                 System.out.println(commander.toString());
                 String createType = commander.getCreateType().toUpperCase();
                 String attributesFile = commander.getAttributesFile();
-                String jksTruststoreFile = commander.getTruststoreFile();
+                String truststoreFile = commander.getTruststoreFile();
                 String certificateFile = commander.getPublicCertificate();
                 String privateKeyFile = commander.getPrivateKeyFile();
                 boolean embeddedCert = commander.isEmbedded();
@@ -57,23 +55,21 @@ public class Main {
                         if (!attributesFile.isEmpty()) {
                             gateway.setAttributesFile(attributesFile);
                         }
-                        if (!jksTruststoreFile.isEmpty()) {
-                            gateway.setDefaultCredentials(true);
-                            gateway.setJksTruststoreFile(jksTruststoreFile);
-                        } else if (!certificateFile.isEmpty() && !privateKeyFile.isEmpty()) {
+                        if (!defaultKey) {
                             gateway.setDefaultCredentials(false);
-                            gateway.setPemCertificateFile(certificateFile);
-                            gateway.setPemPrivateKeyFile(privateKeyFile);
-                            if (embeddedCert) {
-                                gateway.setEmbeddedCert(true);
+                            if (!truststoreFile.isEmpty()) {
+                                gateway.setTruststoreFile(truststoreFile);
+                            } else if (!certificateFile.isEmpty() && !privateKeyFile.isEmpty()) {
+                                gateway.setPemCertificateFile(certificateFile);
+                                gateway.setPemPrivateKeyFile(privateKeyFile);
+                                if (embeddedCert) {
+                                    gateway.setEmbeddedCert(true);
+                                }
+                            } else {
+                                System.out.println("Signing credentials must be provided " +
+                                        "if not using defaults");
+                                System.exit(1);
                             }
-                        } else if (defaultKey){
-                            gateway.setDefaultCredentials(true);
-                            gateway.setJksTruststoreFile(SwidTagConstants.DEFAULT_KEYSTORE_FILE);
-                        } else {
-                            System.out.println("A private key (-k) and public certificate (-p) " +
-                                    "are required, or the default key (-d) must be indicated.");
-                            System.exit(1);
                         }
                         if (rimEventLog.isEmpty()) {
                             System.out.println("Error: a support RIM is required!");

@@ -92,7 +92,7 @@ public class TestSwidTagGateway {
 	@Test
 	public void testCreateBaseDefaultCert() {
 		gateway.setDefaultCredentials(true);
-		gateway.setJksTruststoreFile(JKS_KEYSTORE_FILE);
+		gateway.setTruststoreFile(JKS_KEYSTORE_FILE);
 		gateway.generateSwidTag(DEFAULT_OUTPUT);
 		expectedFile = TestSwidTagGateway.class.getClassLoader()
 				.getResourceAsStream(BASE_DEFAULT_CERT);

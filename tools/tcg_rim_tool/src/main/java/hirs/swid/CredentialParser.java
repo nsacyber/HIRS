@@ -12,8 +12,24 @@ import org.bouncycastle.openssl.jcajce.JcaPEMKeyConverter;
 import org.bouncycastle.util.encoders.Base64;
 import org.bouncycastle.util.encoders.DecoderException;
 
-import java.io.*;
-import java.security.*;
+import java.io.BufferedInputStream;
+import java.io.ByteArrayInputStream;
+import java.io.DataInputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.security.KeyFactory;
+import java.security.KeyPair;
+import java.security.KeyStore;
+import java.security.KeyStoreException;
+import java.security.NoSuchAlgorithmException;
+import java.security.PrivateKey;
+import java.security.PublicKey;
+import java.security.Security;
+import java.security.UnrecoverableEntryException;
 import java.security.cert.CertificateException;
 import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
@@ -22,7 +38,8 @@ import java.security.spec.PKCS8EncodedKeySpec;
 import java.util.List;
 
 /**
- * This class parses private key, public key, and certificate for use in their respective java.security objects.
+ * This class parses private key, public key, and certificates for use in
+ * their respective java.security objects.
  */
 public class CredentialParser {
     private static final String X509 = "X.509";
@@ -54,14 +71,35 @@ public class CredentialParser {
         return publicKey;
     }
 
-    public void parseJKSCredentials(String jksKeystore) {
+    /**
+     * This method parses the X509 signing cert, private key, and public key from
+     * a JKS truststore.
+     * @param jksKeystore the truststore file
+     */
+    public void parseJKSCredentials(String jksKeystore, String alias, String password) {
         KeyStore.PrivateKeyEntry privateKeyEntry =
-                parseKeystorePrivateKey(jksKeystore,
-                        SwidTagConstants.DEFAULT_PRIVATE_KEY_ALIAS,
-                        SwidTagConstants.DEFAULT_KEYSTORE_PASSWORD);
+                parseKeystorePrivateKey(jksKeystore, alias, password);
         certificate = (X509Certificate) privateKeyEntry.getCertificate();
         privateKey = privateKeyEntry.getPrivateKey();
         publicKey = certificate.getPublicKey();
+    }
+
+    /**
+     * Convenience method for parsing the cert and keys of the default JKS.
+     */
+    public void parseDefaultCredentials() {
+        parseJKSCredentials(SwidTagConstants.DEFAULT_KEYSTORE_FILE,
+                            SwidTagConstants.DEFAULT_PRIVATE_KEY_ALIAS,
+                            SwidTagConstants.DEFAULT_KEYSTORE_PASSWORD);
+    }
+
+    /**
+     * This method returns the X509Certificate object from a PEM truststore.
+     * @param truststore the PEM truststore
+     * @return a list of X509 certs
+     */
+    public List<X509Certificate> parseCertsFromPEM(String truststore)     {
+        return parsePEMCertificates(truststore);
     }
 
     public void parsePEMCredentials(String certificateFile, String privateKeyFile)
@@ -94,17 +132,6 @@ public class CredentialParser {
         } catch (CertificateException e) {
             throw e;
         }
-    }
-
-    /**
-     * This method returns the X509Certificate object from a PEM certificate file.
-     * @param certificateFile
-     * @return
-     * @throws FileNotFoundException
-     */
-    public List<X509Certificate> parseCertsFromPEM(String certificateFile)
-            throws FileNotFoundException {
-        return parsePEMCertificates(certificateFile);
     }
 
     /**
@@ -237,7 +264,9 @@ public class CredentialParser {
      * @param password
      * @return KeyStore.PrivateKeyEntry
      */
-    private KeyStore.PrivateKeyEntry parseKeystorePrivateKey(String keystoreFile, String alias, String password) {
+    private KeyStore.PrivateKeyEntry parseKeystorePrivateKey(String keystoreFile,
+                                                             String alias,
+                                                             String password) {
         KeyStore keystore = null;
         KeyStore.PrivateKeyEntry privateKey = null;
         try {
@@ -247,7 +276,8 @@ public class CredentialParser {
                     new KeyStore.PasswordProtection(password.toCharArray()));
         } catch (FileNotFoundException e) {
             System.out.println("Cannot locate keystore " + keystoreFile);
-        } catch (KeyStoreException | NoSuchAlgorithmException | UnrecoverableEntryException | CertificateException | IOException e) {
+        } catch (KeyStoreException | NoSuchAlgorithmException | UnrecoverableEntryException |
+                CertificateException | IOException e) {
             e.printStackTrace();
         }
 

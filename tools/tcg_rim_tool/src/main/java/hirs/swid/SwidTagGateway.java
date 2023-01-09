@@ -75,7 +75,7 @@ public class SwidTagGateway {
     private Marshaller marshaller;
     private String attributesFile;
     private boolean defaultCredentials;
-    private String jksTruststoreFile;
+    private String truststoreFile;
     private String pemPrivateKeyFile;
     private String pemCertificateFile;
     private boolean embeddedCert;
@@ -91,6 +91,7 @@ public class SwidTagGateway {
             marshaller = jaxbContext.createMarshaller();
             attributesFile = SwidTagConstants.DEFAULT_ATTRIBUTES_FILE;
             defaultCredentials = true;
+            truststoreFile = SwidTagConstants.DEFAULT_KEYSTORE_FILE;
             pemCertificateFile = "";
             embeddedCert = false;
             rimEventLog = "";
@@ -120,12 +121,12 @@ public class SwidTagGateway {
     }
 
     /**
-     * Setter for JKS keystore file
+     * Setter for keystore file
      *
-     * @param jksTruststoreFile
+     * @param truststoreFile
      */
-    public void setJksTruststoreFile(final String jksTruststoreFile) {
-        this.jksTruststoreFile = jksTruststoreFile;
+    public void setTruststoreFile(final String truststoreFile) {
+        this.truststoreFile = truststoreFile;
     }
 
     /**
@@ -545,11 +546,13 @@ public class SwidTagGateway {
             PrivateKey privateKey;
             CredentialParser cp = new CredentialParser();
             if (defaultCredentials) {
-                cp.parseJKSCredentials(jksTruststoreFile);
+                cp.parseDefaultCredentials();
                 privateKey = cp.getPrivateKey();
                 KeyName keyName = kiFactory.newKeyName(cp.getCertificateSubjectKeyIdentifier());
                 keyInfoElements.add(keyName);
             } else {
+                //If JKS or PEM...
+
                 cp.parsePEMCredentials(pemCertificateFile, pemPrivateKeyFile);
                 X509Certificate certificate = cp.getCertificate();
                 privateKey = cp.getPrivateKey();

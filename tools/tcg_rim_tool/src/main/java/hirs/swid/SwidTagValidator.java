@@ -204,8 +204,6 @@ public class SwidTagValidator {
             cp.setCertificate(signingCert);
             System.out.println(System.lineSeparator() + cp.getCertificateAuthorityInfoAccess());
             return signatureIsValid;
-        } catch (FileNotFoundException e) {
-            System.out.println("Error parsing truststore: " + e.getMessage());
         } catch (NoSuchAlgorithmException e) {
             System.out.println("Error instantiating a KeyFactory to generate pk: "
                     + e.getMessage());
