@@ -1,5 +1,10 @@
 #!/bin/bash
 tom_version="10.1.1"
+CATALINA_HOME=/opt/tomcat/
+CATALINA_BASE=/opt/tomcat/
+
+export CATALINA_HOME
+export CATALINA_BASE
 
 # Check if tomcat already installed 
 if [ -d "/opt/tomcat" ]; then
