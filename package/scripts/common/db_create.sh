@@ -14,6 +14,8 @@ if [ $DOCKER_CONTAINER  = true ]; then
    # If in Docker container, avoid services that invoke the D-Bus
     if [[ $(pgrep -c -u mysql mysqld) -eq 0 ]]; then
        echo "running in a container..."
+       /usr/bin/mysql_install_db
+       chown -R mysql:mysql /var/lib/mysql 
        /usr/libexec/mysql-prepare-db-dir > /dev/null 2>&1 
        nohup /usr/bin/mysqld_safe > /dev/null 2>&1 &
     fi
@@ -27,8 +29,3 @@ mysqladmin -u root password $DB_DEFAULT_PWD
 DB_CREATE_SCRIPT=/opt/hirs/scripts/common/db_create.sql.el7
 
 mysql -u root --password="$DB_DEFAULT_PWD" < $DB_CREATE_SCRIPT
-
-// Set logfile for 
-#echo '[mysqld]' >> /etc/my.cnf
-#echo 'log-error=/var/log/mariadb/hirs_db.log' >> /etc/my.cnf
-

@@ -24,7 +24,7 @@ else
 fi
 if [ -f /.dockerenv ]; then
   echo "in a container..."
-  ./opt/tomcat/tomcat/bin/catalina.sh
+  sh /opt/tomcat/bin/catalina.sh start
 else 
   cp /opt/hirs/scripts/aca/tomcat.service   /etc/systemd/system/.
   systemctl daemon-reload
