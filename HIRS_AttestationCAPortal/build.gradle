@@ -149,7 +149,7 @@ ospackage {
  //	 /etc/hirs/certificates/private/  files are created by ssl_configure.sh
  //   postInstall file('../package/scripts/common/firewall_configure_tomcat.sh')
  //   postInstall file('../package/scripts/common/ssl_configure.sh')
- //   postInstall file('../package/scripts/common/db_create.sh')
+      postInstall file('../package/scripts/common/db_create.sh')
  //   postInstall file('../package/scripts/aca/certificate_generate.sh')
  //   postInstall 'if [ selinuxenabled ]; then semodule -i /opt/hirs/extras/aca/tomcat-mysql-hirs.pp; fi'
      
@@ -159,6 +159,8 @@ ospackage {
     // Copy files to /tmp that package manager will be expecting them there
     preUninstall 'mkdir -p /tmp/aca/default-properties/'
     preUninstall 'cp /opt/hirs/default-properties/* /tmp/aca/default-properties/.'
+    // postUninstall file(/opt/hirs/scripts/common/db_drop.sql)
+
 
     buildRpm.dependsOn ':HIRS_AttestationCA:war'
 
