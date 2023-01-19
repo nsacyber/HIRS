@@ -159,8 +159,7 @@ ospackage {
     // Copy files to /tmp that package manager will be expecting them there
     preUninstall 'mkdir -p /tmp/aca/default-properties/'
     preUninstall 'cp /opt/hirs/default-properties/* /tmp/aca/default-properties/.'
-    // postUninstall file(/opt/hirs/scripts/common/db_drop.sql)
-
+    preUninstall file('../package/scripts/common/db_drop.sh')
 
     buildRpm.dependsOn ':HIRS_AttestationCA:war'
 

@@ -1,5 +1,19 @@
 #!/bin/bash
-DB_DEFAULT_PWD="hirs_db"
+#
+###############################################
+# HIRS DB creation
+# Conditions to address
+# a. Install is called mutiple times
+# b. Another app sets the root password 
+# c. ACA is updated 
+# d. ACA is updated after a DB password change
+################################################
+
+if [ -z ${HIRS_DB_PWD+x} ]; then
+ DB_DEFAULT_PWD="hirs_db";
+ else 
+ DB_DEFAULT_PWD=$HIRS_DB_PWD;
+fi
 
 # Check if we're in a Docker container
 if [ -f /.dockerenv ]; then
@@ -25,10 +39,11 @@ if [[ $(pgrep -c -u mysql mysqld) -eq 0 ]]; then
        systemctl $SQL_SERVICE enable
        systemctl $SQL_SERVICE start
    fi
-  # Set intial password
-  mysqladmin -u root password $DB_DEFAULT_PWD
 fi
-# Initialize the hirs_db database
 
+# Set intial passwor, ingore result in case its already been set
+mysqladmin -u root --silent password $DB_DEFAULT_PWD || true > /dev/null 2>&1
+
+# Create the hirs_db database  
 DB_CREATE_SCRIPT=/opt/hirs/scripts/common/db_create.sql.el7
 mysql -u root --password="$DB_DEFAULT_PWD" < $DB_CREATE_SCRIPT
