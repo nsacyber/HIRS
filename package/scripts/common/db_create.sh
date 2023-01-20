@@ -30,10 +30,28 @@ if [[ $(pgrep -c -u mysql mysqld) -eq 0 ]]; then
    if [ $DOCKER_CONTAINER  = true ]; then
    # if in Docker container, avoid services that invoke the D-Bus
        echo "ACA is running in a container..."
-       /usr/bin/mysql_install_db
+       # Start DBus
+       mkdir -p /var/run/dbus
+       if [ -e /var/run/dbus/pid ]; then
+         rm /var/run/dbus/pid
+       fi
+       if [ -e /var/run/dbus/system_bus_socket ]; then
+         rm /var/run/dbus/system_bus_socket
+       fi
+       if [ -e /run/dbus/messagebus.pid ]; then
+         rm /run/dbus/messagebus.pid
+       fi
+       if pgrep dbus ;
+         then echo "dbus already running"; 
+       else
+         echo "starting dbus";
+         dbus-daemon --fork --system
+       fi
+       echo "starting mariadb"
+       /usr/bin/mysql_install_db  &
        chown -R mysql:mysql /var/lib/mysql/  
        chown -R mysql:mysql /var/log/mariadb/
-       nohup /usr/bin/mysqld_safe > /dev/null 2>&1 &
+       /usr/bin/mysqld_safe  & 
    else
        SQL_SERVICE=`/opt/hirs/scripts/common/get_db_service.sh`
        systemctl $SQL_SERVICE enable

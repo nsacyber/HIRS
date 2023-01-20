@@ -12,4 +12,6 @@ user="root"
 pwd=$(prop 'persistence.db.password')
 
 # drop the database
-mysql -u "$user" --password="$pwd" < /opt/hirs/scripts/common/db_drop.sql
+if pgrep  mysqld >/dev/null 2>&1; then  
+    mysql -u "$user" --password="$pwd" < /opt/hirs/scripts/common/db_drop.sql
+fi

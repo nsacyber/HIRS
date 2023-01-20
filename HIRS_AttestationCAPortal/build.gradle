@@ -135,11 +135,12 @@ ospackage {
     }
 
     // Post Install
-    postInstall file('../package/scripts/install_tomcat.sh')
+    postInstall file('../package/scripts/common/db_create.sh')
     postInstall 'mkdir -p /etc/hirs/aca/client_files'
     postInstall 'mkdir -p /etc/hirs/aca/certificates'
     postInstall 'cp /tmp/aca/default-properties/* /opt/hirs/default-properties/.'
     postInstall 'rm -rf /tmp/aca/'
+    postInstall file('../package/scripts/install_tomcat.sh')
 
  //   Old post install files, to be removed...
  // Note /etc/hirs/aca/certificates files are created by  certificate_generate.sh
@@ -149,7 +150,6 @@ ospackage {
  //	 /etc/hirs/certificates/private/  files are created by ssl_configure.sh
  //   postInstall file('../package/scripts/common/firewall_configure_tomcat.sh')
  //   postInstall file('../package/scripts/common/ssl_configure.sh')
-      postInstall file('../package/scripts/common/db_create.sh')
  //   postInstall file('../package/scripts/aca/certificate_generate.sh')
  //   postInstall 'if [ selinuxenabled ]; then semodule -i /opt/hirs/extras/aca/tomcat-mysql-hirs.pp; fi'
      
