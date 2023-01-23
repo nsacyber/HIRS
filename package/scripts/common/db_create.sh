@@ -47,11 +47,14 @@ if [[ $(pgrep -c -u mysql mysqld) -eq 0 ]]; then
          echo "starting dbus";
          dbus-daemon --fork --system
        fi
-       echo "starting mariadb"
-       /usr/bin/mysql_install_db  &
-       chown -R mysql:mysql /var/lib/mysql/  
-       chown -R mysql:mysql /var/log/mariadb/
-       /usr/bin/mysqld_safe  & 
+       if [ ! -d "/var/lib/mysql/mysql/" ]; then
+           echo "Installing mariadb"
+           /usr/bin/mysql_install_db 
+           chown -R mysql:mysql /var/lib/mysql/  
+           chown -R mysql:mysql /var/log/mariadb/
+       fi
+       echo "Starting mysql...."
+       nohup /usr/bin/mysqld_safe > /dev/null 2>&1 &
    else
        SQL_SERVICE=`/opt/hirs/scripts/common/get_db_service.sh`
        systemctl $SQL_SERVICE enable
@@ -59,7 +62,20 @@ if [[ $(pgrep -c -u mysql mysqld) -eq 0 ]]; then
    fi
 fi
 
-# Set intial passwor, ingore result in case its already been set
+# Wait for mysql to start before continuing. Exit if it doesnt start.
+count=0; 
+while [ $(pgrep -c -u mysql mysqld) -eq 0 ] && [ count -lt 5 ]; do
+  sleep 1;
+  count=$(count+1);
+done
+
+if [ $count -gt 5 ]; then
+  echo "Mysql failed to start"
+  exit 1;
+fi
+
+# Set intial password, ingore result in case its already been set
+echo "Setting mysql password"
 mysqladmin -u root --silent password $DB_DEFAULT_PWD || true > /dev/null 2>&1
 
 # Create the hirs_db database  
