@@ -22,8 +22,6 @@ else
     DOCKER_CONTAINER=false
 fi
 
-echo "Creating HIRS Database..."
-
 # Check if mysql is already running, if not initialize
 if [[ $(pgrep -c -u mysql mysqld) -eq 0 ]]; then
 # Check if running in a container
@@ -43,7 +41,7 @@ if [[ $(pgrep -c -u mysql mysqld) -eq 0 ]]; then
            if [ -e /run/dbus/messagebus.pid ]; then
              rm /run/dbus/messagebus.pid
            fi
-           echo "starting dbus";
+           echo "Starting dbus";
            dbus-daemon --fork --system
        fi
        # Check if mariadb is setup
@@ -51,10 +49,10 @@ if [[ $(pgrep -c -u mysql mysqld) -eq 0 ]]; then
            echo "Installing mariadb"
            /usr/bin/mysql_install_db 
            chown -R mysql:mysql /var/lib/mysql/  
-           chown -R mysql:mysql /var/log/mariadb/
        fi
        echo "Starting mysql...."
        #nohup /usr/bin/mysqld_safe > /dev/null 2>&1 &
+       chown -R mysql:mysql /var/log/mariadb
        /usr/bin/mysqld_safe &
    else
        SQL_SERVICE=`/opt/hirs/scripts/common/get_db_service.sh`
@@ -65,22 +63,23 @@ fi
 
 # Wait for mysql to start before continuing. Exit if it doesnt start.
 count=0; 
-while ([ $(pgrep -c -u mysql mysqld) -eq 0 ] && [ "$count" -lt 5 ]); do
+while ([ $(pgrep -c -u mysql mysqld) = "0" ] && [ "$count" -lt 100 ]); do
   sleep 1;
   count=$((count+1));
 done
 
-if [ "$count" -gt 4 ]; then
+if [ "$count" -gt 99 ]; then
   echo "Mysql failed to start"
   exit 1;
 else
-  echo "mysql is started"
+  echo "Mysql is runnning"
 fi
 
 # Set intial password, ingore result in case its already been set
-echo "Setting mysql password"
+echo "Setting Mysql password"
 mysqladmin -u root --silent password $DB_DEFAULT_PWD || true > /dev/null 2>&1
 
-# Create the hirs_db database  
+# Create the hirs_db database
+echo "Creating HIRS Database..."  
 DB_CREATE_SCRIPT=/opt/hirs/scripts/common/db_create.sql.el7
 mysql -u root --password="$DB_DEFAULT_PWD" < $DB_CREATE_SCRIPT
