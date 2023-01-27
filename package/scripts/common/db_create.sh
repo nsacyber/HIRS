@@ -1,19 +1,27 @@
 #!/bin/bash
 #
-###############################################
+###############################################################################
 # HIRS DB creation
-# Conditions to address
-# a. Install is called mutiple times
-# b. Another app sets the root password 
-# c. ACA is updated 
-# d. ACA is updated after a DB password change
-################################################
+# Environment variables used:
+# a. HIRS_MYSQL_ROOT_EXSITING_PWD: set this variable if mysql root password is already set
+# b. HIRS_MYSQL_ROOT_NEW_PWD: set this variable if install needs to set new pwd
+# c. HIRS_DB_PWD: Set the pwd if default password to hirs_db user needs to be changed
+# HIRS_MYSQL_ROOT_NEW_PWD wil be ignored if HIRS_MYSQL_ROOT_EXSITING_PWD is set.
+################################################################################
 
-if [ -z ${HIRS_DB_PWD+x} ]; then
- DB_DEFAULT_PWD="hirs_db";
- else 
- DB_DEFAULT_PWD=$HIRS_DB_PWD;
+# Set Mysql root password
+if [ ! -z $HIRS_MYSQL_ROOT_EXSITING_PWD ]; then
+   HIRS_MYSQL_ROOT_PWD=$HIRS_MYSQL_ROOT_EXSITING_PWD;
+elif [ ! -z $HIRS_MYSQL_ROOT_NEW_PWD ]; then
+   HIRS_MYSQL_ROOT_PWD=$HIRS_MYSQL_ROOT_NEW_PWD;
+else
+   HIRS_MYSQL_ROOT_PWD="root";
 fi
+
+echo "HIRS_DB_PWD is $HIRS_DB_PWD"
+echo "HIRS_MYSQL_ROOT_EXSITING_PWD is $HIRS_MYSQL_ROOT_EXSITING_PWD"
+echo "HIRS_MYSQL_ROOT_NEW_PWD is $HIRS_MYSQL_ROOT_NEW_PWD"
+echo "HIRS_MYSQL_ROOT_PWD is $HIRS_MYSQL_ROOT_PWD"
 
 # Check if we're in a Docker container
 if [ -f /.dockerenv ]; then
@@ -51,11 +59,22 @@ while ! mysqladmin ping -h "$localhost" --silent; do
   sleep 1;
 done
 
-# Set intial password, ingore result in case its already been set
-echo "Setting Mysql password"
-mysqladmin -u root --silent password $DB_DEFAULT_PWD || true > /dev/null 2>&1
-
 # Create the hirs_db database
-echo "Creating HIRS Database..."  
-DB_CREATE_SCRIPT=/opt/hirs/scripts/common/db_create.sql.el7
-mysql -u root --password="$DB_DEFAULT_PWD" < $DB_CREATE_SCRIPT
+echo "Creating HIRS Database..." 
+
+if [ ! -z $HIRS_MYSQL_ROOT_EXSITING_PWD ]; then
+   echo "processing with hirs root set"
+   mysql -u root --password=$HIRS_MYSQL_ROOT_PWD < /opt/hirs/scripts/common/db_create.sql
+   mysql -u root --password=$HIRS_MYSQL_ROOT_PWD < /opt/hirs/scripts/common/secure_mysql.sql
+else 
+   echo "processing with hirs root NOT set"
+   mysql -u root < /opt/hirs/scripts/common/db_create.sql
+   mysql -u root < /opt/hirs/scripts/common/secure_mysql.sql
+   mysqladmin -u root --silent password $HIRS_MYSQL_ROOT_PWD || true > /dev/null 2>&1
+fi
+
+if [ ! -z $HIRS_DB_PWD ]; then
+   echo "Setting hirs_db password"
+   mysql -u root --password=$HIRS_MYSQL_ROOT_PWD -e "ALTER USER 'hirs_db'@'localhost' IDENTIFIED BY '"$HIRS_DB_PWD"'; FLUSH PRIVILEGES;";
+fi
+
