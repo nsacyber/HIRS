@@ -136,6 +136,7 @@ ospackage {
 
     // Post Install
     postInstall file('../package/scripts/common/db_create.sh')
+    postInstall file('../package/scripts/common/ssl_configure.sh')
     postInstall 'mkdir -p /etc/hirs/aca/client_files'
     postInstall 'mkdir -p /etc/hirs/aca/certificates'
     postInstall 'cp /tmp/aca/default-properties/* /opt/hirs/default-properties/.'

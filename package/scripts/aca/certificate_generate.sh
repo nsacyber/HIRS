@@ -1,10 +1,18 @@
 #!/bin/bash
-
+####################################################################################
+#
+# Creates new HIRS ACA Certificates
+#
+####################################################################################
 # Check if we're in a Docker container
 if [ -f /.dockerenv ]; then
     DOCKER_CONTAINER=true
 else
     DOCKER_CONTAINER=false
+fi
+
+if [ -z $CATALINA_HOME ]; then
+   CATALINA_HOME=/opt/tomcat
 fi
 
 # variables for the CA certificates
@@ -57,34 +65,22 @@ sed -i "s/aca\.keyStore\.password\s*=/aca.keyStore.password=password/" /etc/hirs
 # copy the trust store to the ACA
 cp ${CA_KEYSTORE} /etc/hirs/aca/client-files/
 
-# start up the tomcat service
-
-# Guess where Tomcat is installed and what it's called:
-if [ -d /usr/share/tomcat6 ] ; then
-    TOMCAT_SERVICE=tomcat6
-elif [ -d /usr/share/tomcat ] ; then
-    TOMCAT_SERVICE=tomcat
-else
-    echo "Can't find Tomcat installation"
-    exit 1
-fi
-
 # restart tomcat after updating the trust store.
 if [ $DOCKER_CONTAINER = true ]; then
     # If in Docker container, avoid services that invoke the D-Bus
-    if [[ $(ss -t -l -n | grep -q LISTEN.*:::8009) -eq 0 ]]; then
+    if [[ $(ss -ltn | grep 8080) == *"8080"* ]]; then
         echo "Tomcat is running, so we restart it."
-        /usr/libexec/tomcat/server stop
+        {CATALINA_HOME}/bin/catalina.sh stop
         # Wait for Tomcat to stop completely and prevent port bind collisions
-        while [ -z "$(tail -n 1 /var/log/tomcat/catalina.$(date +"%Y-%m-%d").log | grep "Destroying ProtocolHandler \[\"http-bio-8443\"\]")" ]; do
-            :
+        until [[ $(ss -ltn | grep 8080) == "" ]]; do
+           : 
         done
-        (/usr/libexec/tomcat/server start) &
+         ${CATALINA_HOME}/bin/catalina.sh start &
         # Wait for Tomcat to boot completely
-        until [ "`curl --silent --connect-timeout 1 -I http://localhost:8080 | grep 'Coyote'`" != "" ]; do
-            :
+        until [[ $(ss -ltn | grep 8080) == *"8080"* ]]; do 
+          :
         done
     fi
 else
-    /sbin/service ${TOMCAT_SERVICE} restart;
+    systemctl tomcat restart;
 fi
