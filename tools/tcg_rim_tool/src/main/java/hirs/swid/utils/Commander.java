@@ -45,7 +45,7 @@ public class Commander {
     @Parameter(names = {"-d", "--default-key"}, order = 8,
             description = "Use default signing credentials.")
     private boolean defaultKey = false;
-    @Parameter(names = {"-l", "--rimel <path>"}, order = 9,
+    @Parameter(names = {"-l", "--rimel <path>"}, order = 9, required = true,
             description = "The TCG eventlog file to use as a support RIM.")
     private String rimEventLog = "";
     @Parameter(names = {"--timestamp"}, order = 10, variableArity = true,
@@ -125,19 +125,15 @@ public class Commander {
         sb.append("Using attributes file: " + this.getAttributesFile() + System.lineSeparator());
         sb.append("Write to: " + this.getOutFile() + System.lineSeparator());
         sb.append("Verify file: " + this.getVerifyFile() + System.lineSeparator());
-        if (!this.getTruststoreFile().isEmpty()) {
+        if (this.isDefaultKey()) {
+            sb.append("Truststore file: default (" + SwidTagConstants.DEFAULT_KEYSTORE_FILE + ")"
+                    + System.lineSeparator());
+        } else {
             sb.append("Truststore file: " + this.getTruststoreFile() + System.lineSeparator());
-        } else if (!this.getPrivateKeyFile().isEmpty() &&
-                    !this.getPublicCertificate().isEmpty()) {
             sb.append("Private key file: " + this.getPrivateKeyFile() + System.lineSeparator());
             sb.append("Public certificate: " + this.getPublicCertificate()
                     + System.lineSeparator());
             sb.append("Embedded certificate: " + this.isEmbedded() + System.lineSeparator());
-        } else if (this.isDefaultKey()){
-            sb.append("Truststore file: default (" + SwidTagConstants.DEFAULT_KEYSTORE_FILE + ")"
-                    + System.lineSeparator());
-        } else {
-            sb.append("Signing credential: (none given)" + System.lineSeparator());
         }
         sb.append("Event log support RIM: " + this.getRimEventLog() + System.lineSeparator());
         List<String> timestampArguments = this.getTimestampArguments();

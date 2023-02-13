@@ -16,6 +16,7 @@ public class TestSwidTagGateway {
 	private final String DEFAULT_OUTPUT = "generated_swidTag.swidtag";
 	private final String BASE_USER_CERT = "generated_user_cert.swidtag";
 	private final String BASE_USER_CERT_EMBED = "generated_user_cert_embed.swidtag";
+	private final String BASE_TRUSTSTORE_EMBED = "generated_truststore_embed.swidtag";
 	private final String BASE_DEFAULT_CERT = "generated_default_cert.swidtag";
 	private final String BASE_RFC3339_TIMESTAMP = "generated_timestamp_rfc3339.swidtag";
 	private final String BASE_RFC3852_TIMESTAMP = "generated_timestamp_rfc3852.swidtag";
@@ -58,7 +59,7 @@ public class TestSwidTagGateway {
 	 * where RimSignCert.pem has the AIA extension.
 	 */
 	@Test
-	public void testCreateBaseUserCertNotEmbedded() {
+	public void testCreateBasePemCertNotEmbedded() {
 		gateway.setDefaultCredentials(false);
 		gateway.setPemCertificateFile(SIGNING_CERT_FILE);
 		gateway.setPemPrivateKeyFile(PRIVATE_KEY_FILE);
@@ -77,14 +78,35 @@ public class TestSwidTagGateway {
 	 * -v [base RIM] -l TpmLog.bin -t RimCertChain.pem
 	 */
 	@Test
-	public void testCreateBaseUserCertEmbedded() {
+	public void testCreateBasePemCertEmbedded() {
 		gateway.setDefaultCredentials(false);
+		gateway.setTruststoreFile("");
 		gateway.setPemCertificateFile(SIGNING_CERT_FILE);
 		gateway.setPemPrivateKeyFile(PRIVATE_KEY_FILE);
 		gateway.setEmbeddedCert(true);
 		gateway.generateSwidTag(DEFAULT_OUTPUT);
 		expectedFile = TestSwidTagGateway.class.getClassLoader()
 				.getResourceAsStream(BASE_USER_CERT_EMBED);
+		Assert.assertTrue(compareFileBytesToExpectedFile(DEFAULT_OUTPUT));
+		Assert.assertTrue(validator.validateSwidTag(DEFAULT_OUTPUT));
+	}
+
+	/**
+	 * This test corresponds to:
+	 * -c base -l TpmLog.bin -t RimCertChain.pem -k privateRimKey.pem -e
+	 * And then validates it:
+	 * -v [base RIM] -l TpmLog.bin -t RimCertChain.pem
+	 */
+	@Test
+	public void testCreateBasePemTruststoreEmbedded() {
+		gateway.setDefaultCredentials(false);
+		gateway.setTruststoreFile(CA_CHAIN_FILE);
+		gateway.setPemCertificateFile("");
+		gateway.setPemPrivateKeyFile(PRIVATE_KEY_FILE);
+		gateway.setEmbeddedCert(true);
+		gateway.generateSwidTag(DEFAULT_OUTPUT);
+		expectedFile = TestSwidTagGateway.class.getClassLoader()
+				.getResourceAsStream(BASE_TRUSTSTORE_EMBED);
 		Assert.assertTrue(compareFileBytesToExpectedFile(DEFAULT_OUTPUT));
 		Assert.assertTrue(validator.validateSwidTag(DEFAULT_OUTPUT));
 	}
@@ -111,7 +133,7 @@ public class TestSwidTagGateway {
 	@Test
 	public void testCreateTimestampRfc3339() {
 		gateway.setDefaultCredentials(true);
-		gateway.setJksTruststoreFile(JKS_KEYSTORE_FILE);
+		gateway.setTruststoreFile(JKS_KEYSTORE_FILE);
 		gateway.setTimestampFormat("RFC3339");
 		gateway.setTimestampArgument("2023-01-01T00:00:00Z");
 		gateway.generateSwidTag(DEFAULT_OUTPUT);
@@ -128,7 +150,7 @@ public class TestSwidTagGateway {
 	@Test
 	public void testCreateTimestampRfc3852() {
 		gateway.setDefaultCredentials(true);
-		gateway.setJksTruststoreFile(JKS_KEYSTORE_FILE);
+		gateway.setTruststoreFile(JKS_KEYSTORE_FILE);
 		gateway.setTimestampFormat("RFC3852");
 		gateway.setTimestampArgument(RFC3852_COUNTERSIGNATURE_FILE);
 		gateway.generateSwidTag(DEFAULT_OUTPUT);

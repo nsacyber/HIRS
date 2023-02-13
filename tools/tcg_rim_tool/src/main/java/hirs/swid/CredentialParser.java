@@ -28,7 +28,9 @@ import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.security.PrivateKey;
 import java.security.PublicKey;
+import java.security.SecureRandom;
 import java.security.Security;
+import java.security.Signature;
 import java.security.UnrecoverableEntryException;
 import java.security.cert.CertificateException;
 import java.security.cert.CertificateFactory;
@@ -45,6 +47,7 @@ public class CredentialParser {
     private static final String X509 = "X.509";
     private static final String JKS = "JKS";
     private static final String PEM = "PEM";
+    private static final String DEFAULT_ALGORITHM = "RSA";
     private static final String PKCS1_HEADER = "-----BEGIN RSA PRIVATE KEY-----";
     private static final String PKCS1_FOOTER = "-----END RSA PRIVATE KEY-----";
     private static final String PKCS8_HEADER = "-----BEGIN PRIVATE KEY-----";
@@ -98,8 +101,32 @@ public class CredentialParser {
      * @param truststore the PEM truststore
      * @return a list of X509 certs
      */
-    public List<X509Certificate> parseCertsFromPEM(String truststore)     {
+    public List<X509Certificate> parseCertsFromPEM(String truststore) {
         return parsePEMCertificates(truststore);
+    }
+
+    public void parsePEMCredentials(List<X509Certificate> truststore,
+                                    String privateKeyFile)
+                                    throws Exception {
+        byte[] challengeString = new byte[15];
+        for (X509Certificate cert : truststore) {
+            certificate = cert;
+            privateKey = parsePEMPrivateKey(privateKeyFile, DEFAULT_ALGORITHM);
+            publicKey = certificate.getPublicKey();
+            SecureRandom.getInstanceStrong().nextBytes(challengeString);
+            Signature signature = Signature.getInstance("SHA256withRSA");
+            signature.initSign(privateKey);
+            signature.update(challengeString);
+            byte[] signedChallenge = signature.sign();
+            signature.initVerify(publicKey);
+            signature.update(challengeString);
+            if (signature.verify(signedChallenge)) {
+                System.out.println("Matched private key to truststore certificate");
+                break;
+            } else {
+                publicKey = null;
+            }
+        }
     }
 
     public void parsePEMCredentials(String certificateFile, String privateKeyFile)
@@ -108,7 +135,7 @@ public class CredentialParser {
         if (certificate.getIssuerX500Principal().equals(certificate.getSubjectX500Principal())) {
             throw new CertificateException("Signing certificate cannot be self-signed!");
         }
-        privateKey = parsePEMPrivateKey(privateKeyFile, "RSA");
+        privateKey = parsePEMPrivateKey(privateKeyFile, DEFAULT_ALGORITHM);
         publicKey = certificate.getPublicKey();
     }
 
@@ -163,7 +190,8 @@ public class CredentialParser {
         } catch (CertificateException e) {
             System.out.println("Error in certificate factory: " + e.getMessage());
         } catch (IOException e) {
-            System.out.println("Error reading from input stream: " + e.getMessage());
+            System.out.println("Error reading from input stream: " + filename);
+            e.printStackTrace();
         } finally {
             try {
                 if (fis != null) {

@@ -58,28 +58,26 @@ public class Main {
                         if (!attributesFile.isEmpty()) {
                             gateway.setAttributesFile(attributesFile);
                         }
-                        if (!defaultKey) {
+                        if (defaultKey) {
+                            gateway.setDefaultCredentials(true);
+                            gateway.setTruststoreFile(SwidTagConstants.DEFAULT_KEYSTORE_FILE);
+                        } else {
                             gateway.setDefaultCredentials(false);
-                            if (!truststoreFile.isEmpty()) {
-                                gateway.setTruststoreFile(truststoreFile);
-                            } else if (!certificateFile.isEmpty() && !privateKeyFile.isEmpty()) {
-                                gateway.setPemCertificateFile(certificateFile);
-                                gateway.setPemPrivateKeyFile(privateKeyFile);
-                                if (embeddedCert) {
-                                    gateway.setEmbeddedCert(true);
-                                }
-                            } else {
+                            gateway.setTruststoreFile(truststoreFile);
+                            gateway.setPemCertificateFile(certificateFile);
+                            gateway.setPemPrivateKeyFile(privateKeyFile);
+/*
+                            if () {
                                 System.out.println("Signing credentials must be provided " +
                                         "if not using defaults");
                                 System.exit(1);
                             }
+*/
+                            if (embeddedCert) {
+                                gateway.setEmbeddedCert(true);
+                            }
                         }
-                        if (rimEventLog.isEmpty()) {
-                            System.out.println("Error: a support RIM is required!");
-                            System.exit(1);
-                        } else {
-                            gateway.setRimEventLog(rimEventLog);
-                        }
+                        gateway.setRimEventLog(rimEventLog);
                         List<String> timestampArguments = commander.getTimestampArguments();
                         if (timestampArguments.size() > 0) {
                             if (new TimestampArgumentValidator(timestampArguments).isValid()) {
