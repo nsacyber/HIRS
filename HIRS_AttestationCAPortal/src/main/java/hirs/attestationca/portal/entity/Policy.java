@@ -60,10 +60,10 @@ public abstract class  Policy extends UserDefinedEntity {
     }
 
     /**
-     * When {@link hirs.attestationca.portal.entity.Policy} are serialized to be sent to the browser, this can be used
-     * to determine the type of {@link hirs.attestationca.portal.entity.Policy}.
+     * When {@link Policy} are serialized to be sent to the browser, this can be used
+     * to determine the type of {@link Policy}.
      *
-     * @return The class name for the {@link hirs.attestationca.portal.entity.Policy}
+     * @return The class name for the {@link Policy}
      */
     public String getType() {
         return this.getClass().getSimpleName();

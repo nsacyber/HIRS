@@ -6,8 +6,6 @@ import jakarta.persistence.EntityManager;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.UUID;
-
 @Service
 public class SettingsServiceImpl {
 
@@ -17,15 +15,12 @@ public class SettingsServiceImpl {
     @Autowired
     private SettingsRepository repository;
 
-    public SupplyChainSettings updateSettings(SupplyChainSettings settings, UUID uuid) {
-        if (repository.existsById(uuid)) {
-            // already in DB
-        }
-
-        return updateSettings(settings);
-    }
-
     public SupplyChainSettings updateSettings(SupplyChainSettings settings) {
+        SupplyChainSettings existing = repository.findByName(settings.getName());
+
+        if (existing != null) {
+            settings.setId(existing.getId());
+        }
         return repository.save(settings);
     }
 

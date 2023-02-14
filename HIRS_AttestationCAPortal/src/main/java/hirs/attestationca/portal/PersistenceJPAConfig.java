@@ -1,6 +1,5 @@
 package hirs.attestationca.portal;
 
-import hirs.attestationca.portal.entity.userdefined.SupplyChainSettings;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
@@ -77,11 +76,11 @@ public class PersistenceJPAConfig {
 
         return hibernateProperties;
     }
-
-    @Bean(name="default-settings")
-    public SupplyChainSettings supplyChainSettings() {
-        SupplyChainSettings scSettings = new SupplyChainSettings("Default", "Settings are configured for no validation flags set.");
-
-        return scSettings;
-    }
+//
+//    @Bean(name="default-settings")
+//    public SupplyChainSettings supplyChainSettings() {
+//        SupplyChainSettings scSettings = new SupplyChainSettings("Default", "Settings are configured for no validation flags set.");
+//
+//        return scSettings;
+//    }
 }

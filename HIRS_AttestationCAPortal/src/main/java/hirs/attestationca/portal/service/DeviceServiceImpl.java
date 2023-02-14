@@ -1,5 +1,6 @@
 package hirs.attestationca.portal.service;
 
+import hirs.attestationca.portal.entity.manager.DeviceRepository;
 import hirs.attestationca.portal.entity.userdefined.Device;
 import hirs.attestationca.portal.enums.AppraisalStatus;
 import hirs.attestationca.portal.enums.HealthStatus;
@@ -21,6 +22,8 @@ public class DeviceServiceImpl {
 
     @Autowired(required = false)
     private EntityManager entityManager;
+    @Autowired
+    private DeviceRepository deviceRepository;
 
     private static List<Device> devices = new ArrayList<>(Arrays.asList(
             new Device("Dell", HealthStatus.TRUSTED,

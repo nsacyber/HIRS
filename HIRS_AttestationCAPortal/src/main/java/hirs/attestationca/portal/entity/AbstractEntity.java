@@ -48,6 +48,17 @@ public abstract class AbstractEntity implements Serializable {
     }
 
     /**
+     * Setter for the UUID that can not be null
+     * and can not be overridden.
+     * @param id - primary able key
+     */
+    public void setId(UUID id) {
+        if (id != null) {
+            this.id = id;
+        }
+    }
+
+    /**
      * Returns the creation time of this entity.
      *
      * @return creation time

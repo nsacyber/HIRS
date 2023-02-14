@@ -8,8 +8,6 @@ import java.util.List;
 import java.util.UUID;
 
 @Repository
-public interface DeviceRepository extends CrudRepository<Device, UUID> {
-
+public interface DeviceRepository extends JpaRepository<Device, UUID> {
     List<Device> findByName(String deviceName);
-
 }

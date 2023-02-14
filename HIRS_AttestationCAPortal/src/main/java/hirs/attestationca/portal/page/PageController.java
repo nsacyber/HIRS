@@ -116,7 +116,7 @@ public abstract class PageController<P extends PageParams> {
      * @param model The model data to pass to the page.
      * @param attr The request's RedirectAttributes to hold the model data.
      * @return RedirectView back to the page with the specified parameters.
-     * @throws java.net.URISyntaxException if malformed URI
+     * @throws URISyntaxException if malformed URI
      */
     protected final RedirectView redirectToSelf(
             final P params,
@@ -134,7 +134,7 @@ public abstract class PageController<P extends PageParams> {
      * @param model The model data to pass to the page.
      * @param attr The request's RedirectAttributes to hold the model data.
      * @return RedirectView back to the page with the specified parameters.
-     * @throws java.net.URISyntaxException if malformed URI
+     * @throws URISyntaxException if malformed URI
      */
     protected final RedirectView redirectTo(
             final Page newPage,
@@ -145,7 +145,7 @@ public abstract class PageController<P extends PageParams> {
         String defaultUri = "../" + newPage.getViewName();
         // create uri with specified parameters
         URIBuilder uri = new URIBuilder("../" + newPage.getViewName());
-        LOGGER.error(uri.toString());
+        LOGGER.debug("Redirection URI = " + uri.toString());
 
         if (params != null) {
             for (Map.Entry<String, ?> e : params.asMap().entrySet()) {

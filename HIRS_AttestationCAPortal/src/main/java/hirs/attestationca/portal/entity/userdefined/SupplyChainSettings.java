@@ -6,6 +6,7 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.Table;
 import lombok.Getter;
 import lombok.Setter;
+import lombok.ToString;
 
 /**
  * Class represents Supply Chain policy. Supply Chain Policy identifies the methods in
@@ -16,6 +17,7 @@ import lombok.Setter;
 @Getter
 @Setter
 @Entity
+@ToString(callSuper = true)
 public class SupplyChainSettings extends UserDefinedEntity {
     /**
      * Name of the default Supply Chain Policy.
