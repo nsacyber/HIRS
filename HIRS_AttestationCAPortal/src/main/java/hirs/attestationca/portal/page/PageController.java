@@ -1,12 +1,11 @@
 package hirs.attestationca.portal.page;
 
-import hirs.utils.BannerConfiguration;
-import java.io.IOException;
-import java.net.URISyntaxException;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Optional;
+import hirs.attestationca.portal.enums.Page;
+import hirs.attestationca.portal.utils.BannerConfiguration;
+import lombok.AllArgsConstructor;
 import org.apache.http.client.utils.URIBuilder;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.springframework.ui.ExtendedModelMap;
 import org.springframework.ui.Model;
 import org.springframework.ui.ModelMap;
@@ -16,12 +15,21 @@ import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import org.springframework.web.servlet.view.RedirectView;
 
+import java.io.IOException;
+import java.net.URISyntaxException;
+import java.util.Map;
+import java.util.Optional;
+
 /**
  * Abstract class to provide common functionality for page Controllers.
  *
  * @param <P> PageParams class used by the subclass.
  */
+@AllArgsConstructor
 public abstract class PageController<P extends PageParams> {
+
+    private static final Logger LOGGER = LogManager.getLogger(PageController.class);
+
     /**
      * Model attribute name used by initPage for the initial data passed to the page.
      */
@@ -51,16 +59,6 @@ public abstract class PageController<P extends PageParams> {
     public static final String MESSAGES_ATTRIBUTE = "messages";
 
     private final Page page;
-
-    /**
-     * Constructor requiring the Page's display and routing specification.
-     *
-     * @param page The page specification for this controller.
-     */
-    public PageController(final Page page) {
-        this.page = page;
-    }
-
 
     /**
      * Returns the path for the view and the data model for the page.
@@ -118,7 +116,7 @@ public abstract class PageController<P extends PageParams> {
      * @param model The model data to pass to the page.
      * @param attr The request's RedirectAttributes to hold the model data.
      * @return RedirectView back to the page with the specified parameters.
-     * @throws URISyntaxException if malformed URI
+     * @throws java.net.URISyntaxException if malformed URI
      */
     protected final RedirectView redirectToSelf(
             final P params,
@@ -136,7 +134,7 @@ public abstract class PageController<P extends PageParams> {
      * @param model The model data to pass to the page.
      * @param attr The request's RedirectAttributes to hold the model data.
      * @return RedirectView back to the page with the specified parameters.
-     * @throws URISyntaxException if malformed URI
+     * @throws java.net.URISyntaxException if malformed URI
      */
     protected final RedirectView redirectTo(
             final Page newPage,
@@ -144,25 +142,27 @@ public abstract class PageController<P extends PageParams> {
             final Map<String, ?> model,
             final RedirectAttributes attr) throws URISyntaxException {
 
+        String defaultUri = "../" + newPage.getViewName();
         // create uri with specified parameters
         URIBuilder uri = new URIBuilder("../" + newPage.getViewName());
+        LOGGER.error(uri.toString());
 
         if (params != null) {
-            for (Entry<String, ?> e : params.asMap().entrySet()) {
+            for (Map.Entry<String, ?> e : params.asMap().entrySet()) {
                 Object v = Optional.ofNullable(e.getValue()).orElse("");
                 uri.addParameter(e.getKey(), v.toString());
             }
         }
 
         // create view
-        RedirectView redirect = new RedirectView(uri.toString());
+        RedirectView redirect = new RedirectView(defaultUri);
 
         // do not put model attributes in the url
         redirect.setExposeModelAttributes(false);
 
         // add model data to forward to redirected page
         if (model != null) {
-            for (Entry<String, ?> e : model.entrySet()) {
+            for (Map.Entry<String, ?> e : model.entrySet()) {
                 attr.addFlashAttribute(e.getKey(), e.getValue());
             }
         }

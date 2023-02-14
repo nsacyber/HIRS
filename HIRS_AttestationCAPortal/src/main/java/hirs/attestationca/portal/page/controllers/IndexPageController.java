@@ -1,16 +1,13 @@
 package hirs.attestationca.portal.page.controllers;
 
+import hirs.attestationca.portal.enums.Page;
 import hirs.attestationca.portal.page.PageController;
-import static hirs.attestationca.portal.page.Page.INDEX;
 import hirs.attestationca.portal.page.params.NoPageParams;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.servlet.ModelAndView;
 
-/**
- * Controller for the Index page.
- */
 @Controller
 @RequestMapping("/index")
 public class IndexPageController extends PageController<NoPageParams> {
@@ -19,7 +16,7 @@ public class IndexPageController extends PageController<NoPageParams> {
      * Constructor providing the Page's display and routing specification.
      */
     public IndexPageController() {
-        super(INDEX);
+        super(Page.INDEX);
     }
 
     /**
@@ -35,4 +32,9 @@ public class IndexPageController extends PageController<NoPageParams> {
         return getBaseModelAndView();
     }
 
+//    @RequestMapping(value = "/", method = RequestMethod.GET)
+//    public String showIndexPage(ModelMap model) {
+//        model.put("name", "welcome");
+//        return "welcome";
+//    }
 }

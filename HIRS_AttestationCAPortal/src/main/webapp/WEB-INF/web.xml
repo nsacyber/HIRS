@@ -1,84 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<web-app metadata-complete="true" version="2.5"
-         xmlns="http://java.sun.com/xml/ns/javaee"
+<web-app xmlns="http://xmlns.jcp.org/xml/ns/javaee"
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd">
-
+         xsi:schemaLocation="http://xmlns.jcp.org/xml/ns/javaee http://xmlns.jcp.org/xml/ns/javaee/web-app_3_1.xsd"
+         version="3.1">
     <display-name>HIRS Attestation CA Portal</display-name>
 
     <welcome-file-list>
         <welcome-file>index.jsp</welcome-file>
     </welcome-file-list>
-
-    <!-- Require HTTPS for everything... -->
-    <security-constraint>
-        <web-resource-collection>
-            <web-resource-name>HTTPSOnly</web-resource-name>
-            <url-pattern>/*</url-pattern>
-        </web-resource-collection>
-        <user-data-constraint>
-            <transport-guarantee>CONFIDENTIAL</transport-guarantee>
-        </user-data-constraint>
-    </security-constraint>
-
-    <!-- ...except static resources -->
-    <security-constraint>
-        <web-resource-collection>
-            <web-resource-name>HTTPSOrHTTP</web-resource-name>
-            <url-pattern>*.ico</url-pattern>
-            <url-pattern>/images/*</url-pattern>
-            <url-pattern>*.css</url-pattern>
-            <url-pattern>*.js</url-pattern>
-        </web-resource-collection>
-        <user-data-constraint>
-            <transport-guarantee>NONE</transport-guarantee>
-        </user-data-constraint>
-    </security-constraint>
-
-    <!-- Specify the location of the LOG4J file -->
-    <context-param>
-        <param-name>log4j.configurationFile</param-name>
-        <param-value>classpath:log4j2.xml</param-value>
-    </context-param>
-
-    <!-- Configure spring to not expose web app root system property -->
-    <context-param>
-        <param-name>log4jExposeWebAppRoot</param-name>
-        <param-value>false</param-value>
-    </context-param>
-
-    <!-- Register LOG4J with the Spring Context -->
-    <listener>
-        <listener-class>org.springframework.web.util.Log4jConfigListener</listener-class>
-    </listener>
-
-    <!--
-        Configure ContextLoaderListener to use AnnotationConfigWebApplicationContext
-        instead of the default XmlWebApplicationContext
-    -->
-    <context-param>
-        <param-name>contextClass</param-name>
-        <param-value>org.springframework.web.context.support.AnnotationConfigWebApplicationContext</param-value>
-    </context-param>
-
-    <!-- Instructs spring to load the specified configuration class as the root context -->
-    <context-param>
-        <param-name>contextConfigLocation</param-name>
-        <param-value>hirs.attestationca.portal.page.PageConfiguration</param-value>
-    </context-param>
-
-    <!-- Bootstrap the root application context as usual using ContextLoaderListener -->
-    <listener>
-        <listener-class>org.springframework.web.context.ContextLoaderListener</listener-class>
-    </listener>
-
-    <listener>
-        <listener-class>org.springframework.web.context.request.RequestContextListener</listener-class>
-    </listener>
-
-    <listener>
-        <listener-class>hirs.attestationca.InitializationListener</listener-class>
-    </listener>
 
     <!--
         Dispatches page requests via PageConfiguration to PageControllers
@@ -90,16 +19,13 @@
             <param-name>contextClass</param-name>
             <param-value>org.springframework.web.context.support.AnnotationConfigWebApplicationContext</param-value>
         </init-param>
-        <init-param>
-            <param-name>contextConfigLocation</param-name>
-            <param-value>hirs.attestationca.portal.page.PageConfiguration</param-value>
-        </init-param>
     </servlet>
-
-    <!-- Map individual page requests to PageControllers -->
     <servlet-mapping>
         <servlet-name>pages</servlet-name>
         <url-pattern>/portal/*</url-pattern>
     </servlet-mapping>
 
+    <error-page>
+        <location>/errors</location>
+    </error-page>
 </web-app>

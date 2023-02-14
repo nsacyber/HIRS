@@ -1,94 +1,77 @@
-apply plugin: 'checkstyle'
-apply plugin: 'findbugs'
-apply plugin: 'java'
-apply plugin: 'jacoco'
-apply plugin: 'pmd'
-apply plugin: 'war'
+plugins {
+    id 'application'
+    id 'java'
+    id 'war'
+    id "nebula.ospackage" version "9.1.1"
+    id 'org.springframework.boot' version '3.0.1'
+    id 'io.spring.dependency-management' version '1.1.0'
+}
 
-sourceCompatibility = 1.8
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(17)
+    }
+}
+
+configurations {
+    compileOnly {
+        extendsFrom annotationProcessor
+    }
+}
 
 repositories {
-    flatDir {
-        dirs 'libs'
-    }
+    flatDir { dirs "lib" }
+    mavenCentral()
 }
 
 dependencies {
-    providedCompile 'javax.servlet:javax.servlet-api:3.1.0' //libs.servlet_api
+    implementation 'org.springframework.boot:spring-boot-starter-web'
+    implementation 'org.springframework.boot:spring-boot-starter-validation'
+    implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+    implementation 'org.springframework.plugin:spring-plugin-core:3.0.0'
+    implementation 'org.apache.httpcomponents:httpclient:4.5.7'
+    implementation 'com.google.guava:guava:31.1-jre'
+    implementation 'org.glassfish.web:jakarta.servlet.jsp.jstl:3.0.0'
+    implementation 'org.apache.httpcomponents.client5:httpclient5:5.2.1'
+    implementation 'commons-codec:commons-codec:1.15'
+    implementation 'org.apache.logging.log4j:log4j-core:2.19.0'
+    implementation 'org.apache.logging.log4j:log4j-api:2.19.0'
+    compileOnly 'org.projectlombok:lombok'
+    runtimeOnly 'org.mariadb.jdbc:mariadb-java-client'
+    annotationProcessor 'org.projectlombok:lombok'
+    providedRuntime 'org.springframework.boot:spring-boot-starter-tomcat'
 
-    compile(project(':HIRS_Utils')) {
-        exclude module: "javassist"
-    }
-    compile(project(':HIRS_AttestationCA'))
-
-    compile libs.commons_io
-    compile libs.commons_lang
-    compile libs.commons_upload
-    compile libs.gson
-    compile libs.guava          // for com.google.common
-    compile libs.hibernate
-    compile libs.http
-    compile libs.jstl
-    compile libs.log4j2
-    compile libs.log4j2_web
-    compile libs.pci_ids
-    compile 'javax.servlet:javax.servlet-api:3.1.0' //libs.servlet_api
-    compile libs.spring_webmvc
-    compile 'org.springframework:spring-context-support:4.3.30.RELEASE'
-    compile 'org.hibernate:hibernate-validator:5.3.4.Final'
-
-    compileOnly libs.checkstyle
-    compileOnly libs.findbugs
-
-    runtime fileTree(dir: 'build/plugins', include: ['*.jar'])
-
-    testCompile 'org.hamcrest:hamcrest-all:1.3'
-    // override the servlet API for testing. Required for Spring Integration tests
-    testCompile 'javax.servlet:javax.servlet-api:3.1.0'
-
-    testCompile libs.hsqldb
-    testCompile libs.spring_test
-    testCompile libs.testng
-    testCompile libs.mockito
-    testCompile libs.testng
-    testCompile 'org.skyscreamer:jsonassert:1.2.3' // for .andExpect(content().json(json))
-
-    testRuntime 'com.jayway.jsonpath:json-path:2.1.0'
+    testImplementation 'org.springframework.boot:spring-boot-starter-test'
 }
-
-test {
-    useTestNG()
-}
-
-copyVersion.dependsOn compileJava
-war.dependsOn copyVersion
-war.dependsOn addPlugins
 
 war {
     from(buildDir) {
         include 'VERSION'
         into 'WEB-INF/classes'
     }
-    archiveName = 'HIRS_AttestationCAPortal.war'
+    archiveFileName = 'HIRS_AttestationCAPortal.war'
 }
 
-ext.configDir = new File(projectDir, 'config')
-
-ext.checkstyleConfigDir = "$configDir/checkstyle"
-
-checkstyle {
-    toolVersion = '8.10.1'
-    configFile = checkstyleConfigFile
-    configProperties.put('basedir', checkstyleConfigDir)
-    ignoreFailures = false
-    showViolations = true
-}
-
-ext.findbugsConfigDir = "$configDir/findbugs"
-
-findbugs {
-    toolVersion = '3.0.0'
-    ignoreFailures = false
-    effort = 'max'
-    excludeFilter = new File(findbugsConfigDir, 'suppressions.xml')
-}
+//ospackage {
+//    packageName = 'HIRS_AttestationCA'
+//    os = LINUX
+//    arch = NOARCH
+//    release = '1'
+//
+//    user 'root'
+//    fileMode = 0755
+//
+//    addParentDirs = true
+//    createDirectoryEntry true
+//
+//    into ("/opt/tomcat/webapps") {
+//        from war.outputs.files
+//        from '../HIRS_AttestationCAPortal/build/libs/HIRS_AttestationCAPortal.war'
+//        user 'root'
+//        fileMode = 0755
+//    }
+//
+//    buildRpm {
+//        arch = X86_64
+//    }
+//}

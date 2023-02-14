@@ -1,14 +1,14 @@
 <%-- Set variables for the banner if it have one. --%>
 <%@tag description="page navigation components" pageEncoding="UTF-8"%>
 
-<%@taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core"%>
+<%@taglib prefix="c" uri="jakarta.tags.core" %>
 <%@taglib prefix="my" tagdir="/WEB-INF/tags"%>
 
 <%-- Default values --%>
 <c:set var="topBanner" />
 <c:set var="bottomBanner" />
 <c:set var="bottomBannerInfo" />
-    
+
 <c:if test="${banner.hasBanner}">
 
     <link type="text/css" rel="stylesheet" href="${common}/banner.css"/>
@@ -29,13 +29,13 @@
                 var bannerColor = "${banner.bannerColor}";
                 $('.bannerColor').css({'background-color': bannerColor});
 
-                //get basic heights 
+                //get basic heights
                 var mainHeight = $('.main, .main-without-navigation').height();
                 var contentHeight = $('.content').height();
                 var spacerHeight = $('.spacer').height() + $('.extra-spacer').height();
                 var bottomBannerHeight = $(".bottomBanner").height() + $(".bottomBannerInfo").height();
-                var pageHeaderHeight = $('.page-header').height() + 
-                        parseInt($('.page-header').css('margin-top').replace('px', '')) + 
+                var pageHeaderHeight = $('.page-header').height() +
+                        parseInt($('.page-header').css('margin-top').replace('px', '')) +
                         parseInt($('.page-header').css('margin-bottom').replace('px', '')) +
                         parseInt($('.page-header').css('padding-top').replace('px', '')) +
                         parseInt($('.page-header').css('padding-bottom').replace('px', '')) +

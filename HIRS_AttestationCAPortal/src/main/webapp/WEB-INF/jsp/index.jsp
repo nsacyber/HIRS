@@ -1,6 +1,7 @@
 <%@page contentType="text/html" pageEncoding="UTF-8"%>
 
 <%-- JSP TAGS --%>
+<%@taglib prefix="c" uri="jakarta.tags.core" %>
 <%@taglib prefix="my" tagdir="/WEB-INF/tags"%>
 
 <%-- CONTENT --%>
@@ -38,13 +39,13 @@
                         <a href="${certificateRequest}/endorsement-key-credentials">
                             <img src="${icons}/ic_vpn_key_black_24dp.png" /> Endorsement Certificates
                         </a>
-                    </h3> 
+                    </h3>
                     <h4>Upload, view and manage endorsement credentials.</h4>
                     <h3>
                         <a href="${portal}/reference-manifests">
                             <img src="${icons}/ic_important_devices_black_24dp.png" /> Reference Integrity Manifests
                         </a>
-                    </h3> 
+                    </h3>
                     <h4>Upload, view and manage reference integrity manifests.</h4>
                 </div>
                 <div class="col col-md-6 index-right-side">
@@ -57,15 +58,15 @@
                         <a href="${certificateRequest}/issued-certificates">
                             <img src="${icons}/ic_library_books_black_24dp.png" /> Issued Certificates
                         </a>
-                    </h3>        
+                    </h3>
                     <h4>View Certificates issued by this CA</h4>
                     <h3>
                         <a href="${portal}/validation-reports"><img src="${icons}/ic_assignment_black_24dp.png" /> Validation Reports</a>
-                    </h3> 
+                    </h3>
                     <h4>View a list of device validations carried out by this CA.</h4>
                     <h3>
                         <a href="${portal}/devices"><img src="${icons}/ic_devices_black_24dp.png" /> Devices</a>
-                    </h3>  
+                    </h3>
                     <h4>View devices covered by this CA for supply chain validation.</h4>
                     <h3>
                         <a href="${portal}/rim-database"><img src="${icons}/ic_devices_black_24dp.png" /> RIM Database</a>
