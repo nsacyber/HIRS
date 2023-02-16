@@ -14,7 +14,7 @@ public class SettingsServiceImpl {
 
     @Autowired
     private SettingsRepository repository;
-
+    
     public SupplyChainSettings updateSettings(SupplyChainSettings settings) {
         SupplyChainSettings existing = repository.findByName(settings.getName());
 
