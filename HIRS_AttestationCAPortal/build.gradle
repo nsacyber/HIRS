@@ -25,6 +25,9 @@ repositories {
 }
 
 dependencies {
+    jaxb "org.glassfish.jaxb:jaxb-xjc:4.0.1"
+    jaxb "org.glassfish.jaxb:jaxb-runtime:4.0.1"
+
     implementation 'org.springframework.boot:spring-boot-starter-web'
     implementation 'org.springframework.boot:spring-boot-starter-validation'
     implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
@@ -34,8 +37,15 @@ dependencies {
     implementation 'org.glassfish.web:jakarta.servlet.jsp.jstl:3.0.0'
     implementation 'org.apache.httpcomponents.client5:httpclient5:5.2.1'
     implementation 'commons-codec:commons-codec:1.15'
+    implementation 'org.apache.commons:commons-lang3:3.12.0'
     implementation 'org.apache.logging.log4j:log4j-core:2.19.0'
     implementation 'org.apache.logging.log4j:log4j-api:2.19.0'
+    implementation 'com.eclipsesource.minimal-json:minimal-json:0.9.5'
+    implementation 'com.fasterxml.jackson.core:jackson-core:2.14.2'
+    implementation 'com.fasterxml.jackson.core:jackson-databind:2.14.2'
+    implementation "org.glassfish.jaxb:jaxb-runtime:4.0.1"
+    implementation 'jakarta.xml.bind:jakarta.xml.bind-api:4.0.0'
+    implementation 'com.sun.xml.bind:jaxb-impl:4.0.2'
     compileOnly 'org.projectlombok:lombok'
     runtimeOnly 'org.mariadb.jdbc:mariadb-java-client'
     annotationProcessor 'org.projectlombok:lombok'
@@ -51,6 +61,13 @@ war {
     }
     archiveFileName = 'HIRS_AttestationCAPortal.war'
 }
+
+task generateXjcLibrary(type:Exec) {
+    workingDir 'config'
+
+    commandLine './genXjcLibrary.sh'
+}
+compileJava.dependsOn generateXjcLibrary
 
 //ospackage {
 //    packageName = 'HIRS_AttestationCA'
