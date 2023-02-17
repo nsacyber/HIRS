@@ -45,8 +45,6 @@ import java.util.List;
  */
 public class CredentialParser {
     private static final String X509 = "X.509";
-    private static final String JKS = "JKS";
-    private static final String PEM = "PEM";
     private static final String DEFAULT_ALGORITHM = "RSA";
     private static final String PKCS1_HEADER = "-----BEGIN RSA PRIVATE KEY-----";
     private static final String PKCS1_FOOTER = "-----END RSA PRIVATE KEY-----";

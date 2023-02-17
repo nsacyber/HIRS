@@ -2,6 +2,7 @@ package hirs.swid;
 
 import hirs.swid.utils.Commander;
 import com.beust.jcommander.JCommander;
+import hirs.swid.utils.CredentialArgumentValidator;
 import hirs.swid.utils.TimestampArgumentValidator;
 
 import java.util.List;
@@ -14,6 +15,7 @@ public class Main {
         jc.parse(args);
         SwidTagGateway gateway;
         SwidTagValidator validator;
+        CredentialArgumentValidator caValidator;
 
         if (commander.isHelp()) {
             jc.usage();
@@ -63,16 +65,17 @@ public class Main {
                             gateway.setTruststoreFile(SwidTagConstants.DEFAULT_KEYSTORE_FILE);
                         } else {
                             gateway.setDefaultCredentials(false);
-                            gateway.setTruststoreFile(truststoreFile);
-                            gateway.setPemCertificateFile(certificateFile);
-                            gateway.setPemPrivateKeyFile(privateKeyFile);
-/*
-                            if () {
-                                System.out.println("Signing credentials must be provided " +
-                                        "if not using defaults");
+                            caValidator = new CredentialArgumentValidator(truststoreFile,
+                                    certificateFile, privateKeyFile,"","", false);
+                            if (caValidator.isValid()) {
+                                gateway.setTruststoreFile(truststoreFile);
+                                gateway.setPemCertificateFile(certificateFile);
+                                gateway.setPemPrivateKeyFile(privateKeyFile);
+                            } else {
+                                System.out.println("Invalid combination of credentials given: "
+                                        + caValidator.getErrorMessage());
                                 System.exit(1);
                             }
-*/
                             if (embeddedCert) {
                                 gateway.setEmbeddedCert(true);
                             }
