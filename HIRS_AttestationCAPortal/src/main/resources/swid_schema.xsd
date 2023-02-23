@@ -2,13 +2,20 @@
 <xs:schema
   xmlns="http://standards.iso.org/iso/19770/-2/2015/schema.xsd"
   xmlns:swid="http://standards.iso.org/iso/19770/-2/2015/schema.xsd"
+  xmlns:jaxb="https://jakarta.ee/xml/ns/jaxb"
   xmlns:xs="http://www.w3.org/2001/XMLSchema"
   xmlns:ds="http://www.w3.org/2000/09/xmldsig#"
   xmlns:xml="http://www.w3.org/XML/1998/namespace"
 
   targetNamespace="http://standards.iso.org/iso/19770/-2/2015/schema.xsd"
   elementFormDefault="qualified">
-
+  <xs:annotation>
+    <xs:documentation>
+      This is the XML Schema for the Jakarta XML Binding binding customization descriptor. All binding customization descriptors must indicate the descriptor schema by using the Jakarta XML Binding namespace: https://jakarta.ee/xml/ns/jaxb and by indicating the version of the schema by using the version element as shown below:
+      <bindings xmlns="https://jakarta.ee/xml/ns/jaxb" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="https://jakarta.ee/xml/ns/jaxb https://jakarta.ee/xml/ns/jaxb/bindingschema_3_0.xsd" version="3.0"> ... </bindings>
+      The instance documents may indicate the published version of the schema using the xsi:schemaLocation attribute for Jakarta XML Binding namespace with the following location: https://jakarta.ee/xml/ns/jaxb/bindingschema_3_0.xsd
+    </xs:documentation>
+  </xs:annotation>
   <xs:import
     namespace="http://www.w3.org/2000/09/xmldsig#"
     schemaLocation="http://www.w3.org/TR/xmldsig-core/xmldsig-core-schema.xsd"/>
