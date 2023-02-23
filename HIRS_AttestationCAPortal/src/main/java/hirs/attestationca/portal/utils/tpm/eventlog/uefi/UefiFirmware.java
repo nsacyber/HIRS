@@ -1,6 +1,6 @@
 package hirs.attestationca.portal.utils.tpm.eventlog.uefi;
 
-import hirs.attestationca.portal.utils.HexUtils;
+import hirs.attestationca.utils.HexUtils;
 import lombok.Getter;
 
 import java.math.BigInteger;

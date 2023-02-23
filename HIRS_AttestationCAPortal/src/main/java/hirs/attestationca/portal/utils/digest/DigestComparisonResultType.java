@@ -2,7 +2,7 @@ package hirs.attestationca.portal.utils.digest;
 
 /**
  * Enumeration identifying the different outcomes of a comparison between
- * two {@link Digest} objects.
+ * two {@link hirs.attestationca.portal.utils.digest.Digest} objects.
  *
  */
 public enum DigestComparisonResultType {

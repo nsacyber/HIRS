@@ -47,7 +47,7 @@ public final class VersionHelper {
      * Read the symbolic link to VERSION in the top level HIRS directory.
      * @param filename "VERSION"
      * @return the version number from the file
-     * @throws IOException
+     * @throws java.io.IOException
      */
     private static String getFileContents(final String filename) throws IOException {
         URL url = Resources.getResource(filename);

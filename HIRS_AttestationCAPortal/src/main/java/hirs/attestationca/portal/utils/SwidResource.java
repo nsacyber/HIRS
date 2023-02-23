@@ -1,12 +1,12 @@
 package hirs.attestationca.portal.utils;
 
 import com.google.common.base.Preconditions;
-import hirs.attestationca.portal.utils.digest.DigestAlgorithm;
+import hirs.attestationca.utils.digest.DigestAlgorithm;
 import lombok.Getter;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import hirs.attestationca.portal.utils.xjc.File;
+import hirs.attestationca.utils.xjc.File;
 import javax.xml.namespace.QName;
 import java.math.BigInteger;
 import java.util.Map;

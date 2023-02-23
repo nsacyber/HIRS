@@ -12,6 +12,6 @@ dir=$(pwd)
 
 XSD_FILE=$SRC_DIR/main/resources/swid_schema.xsd
 
-if [ ! -d "$DEST_DIR/hirs/attestationca/portal/utils/xjc" ]; then
-  xjc -p hirs.attestationca.portal.utils.xjc $XSD_FILE -d $DEST_DIR -quiet
+if [ ! -d "$DEST_DIR/hirs/attestationca/utils/xjc" ]; then
+  xjc -p hirs.attestationca.utils.xjc $XSD_FILE -d $DEST_DIR -quiet
 fi

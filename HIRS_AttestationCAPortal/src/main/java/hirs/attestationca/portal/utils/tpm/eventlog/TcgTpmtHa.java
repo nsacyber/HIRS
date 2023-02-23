@@ -1,6 +1,6 @@
 package hirs.attestationca.portal.utils.tpm.eventlog;
 
-import hirs.attestationca.portal.utils.HexUtils;
+import hirs.attestationca.utils.HexUtils;
 import lombok.AccessLevel;
 import lombok.Getter;
 

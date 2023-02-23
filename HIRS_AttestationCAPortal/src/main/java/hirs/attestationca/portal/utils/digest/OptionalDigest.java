@@ -11,12 +11,12 @@ import jakarta.xml.bind.annotation.XmlElement;
 import java.util.Arrays;
 
 /**
- * This class is identical to {@link Digest} except its fields are nullable.  However, in practice,
+ * This class is identical to {@link hirs.attestationca.portal.utils.digest.Digest} except its fields are nullable.  However, in practice,
  * an instance of this class cannot have null values assigned to its fields.  The fields are marked
  * as nullable to allow Hibernate to set a reference an embedded instance of this class to null
  * (as there is no way for Hibernate to distinguish between a null reference and completely
  * null fields on an embedded entity.)  Otherwise, there is no operational difference between
- * this class and {@link Digest}.
+ * this class and {@link hirs.attestationca.portal.utils.digest.Digest}.
  */
 @Embeddable
 @Access(AccessType.FIELD)

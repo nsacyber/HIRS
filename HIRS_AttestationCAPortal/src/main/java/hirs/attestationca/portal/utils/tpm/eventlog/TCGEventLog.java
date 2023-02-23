@@ -1,9 +1,9 @@
 package hirs.attestationca.portal.utils.tpm.eventlog;
 
-import hirs.attestationca.portal.utils.digest.AbstractDigest;
-import hirs.attestationca.portal.utils.HexUtils;
-import hirs.attestationca.portal.utils.tpm.eventlog.events.EvConstants;
-import hirs.attestationca.portal.utils.tpm.eventlog.uefi.UefiConstants;
+import hirs.attestationca.utils.HexUtils;
+import hirs.attestationca.utils.digest.AbstractDigest;
+import hirs.attestationca.utils.tpm.eventlog.events.EvConstants;
+import hirs.attestationca.utils.tpm.eventlog.uefi.UefiConstants;
 import lombok.Getter;
 import org.apache.commons.codec.DecoderException;
 import org.apache.commons.codec.binary.Hex;

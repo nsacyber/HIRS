@@ -11,11 +11,11 @@ import java.util.regex.Pattern;
 
 /**
  * This abstract class represents a message digest. Extending classes include
- * {@link hirs.attestationca.portal.utils.digest.Digest} and {@link hirs.attestationca.portal.utils.digest.OptionalDigest}.
+ * {@link main.java.hirs.attestationca.utils.digest.Digest} and {@link main.java.hirs.attestationca.utils.digest.OptionalDigest}.
  * <p>
  * Two classes were made to facilitate persisting them with Hibernate in different ways.
- * To persist non-nullable entries in an embedded collection, use {@link hirs.attestationca.portal.utils.digest.Digest} (see
- * {@link TPMBaseline} for reference.)  To persist nullable entries, use {@link hirs.attestationca.portal.utils.digest.OptionalDigest}
+ * To persist non-nullable entries in an embedded collection, use {@link main.java.hirs.attestationca.utils.digest.Digest} (see
+ * {@link TPMBaseline} for reference.)  To persist nullable entries, use {@link main.java.hirs.attestationca.utils.digest.OptionalDigest}
  * (see {@link ImaBlacklistRecord} for reference.)
  */
 public abstract class AbstractDigest {
@@ -66,7 +66,7 @@ public abstract class AbstractDigest {
         }
 
         if (digest.length != algorithm.getLengthInBytes()) {
-            throw new AbstractDigest.IllegalDigestLength(algorithm, digest);
+            throw new IllegalDigestLength(algorithm, digest);
         }
     }
 
@@ -157,7 +157,7 @@ public abstract class AbstractDigest {
     }
 
     /**
-     * Parses a {@link DigestAlgorithm} from a String returned by {@link AbstractDigest#toString()}.
+     * Parses a {@link hirs.attestationca.portal.utils.digest.DigestAlgorithm} from a String returned by {@link hirs.attestationca.portal.utils.digest.AbstractDigest#toString()}.
      *
      * @param digest the digest string as computed above
      * @return the DigestAlgorithm component of the String
@@ -167,7 +167,7 @@ public abstract class AbstractDigest {
     }
 
     /**
-     * Parses a digest from a String returned by {@link AbstractDigest#toString()}.
+     * Parses a digest from a String returned by {@link hirs.attestationca.portal.utils.digest.AbstractDigest#toString()}.
      *
      * @param digest the digest string as computed above
      * @return the byte array representing the actual digest

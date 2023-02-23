@@ -1,6 +1,6 @@
 package hirs.attestationca.portal.utils.tpm.eventlog.events;
 
-import hirs.attestationca.portal.utils.tpm.eventlog.uefi.UefiConstants;
+import hirs.attestationca.utils.tpm.eventlog.uefi.UefiConstants;
 import lombok.Getter;
 
 import java.io.UnsupportedEncodingException;

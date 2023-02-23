@@ -1,8 +1,8 @@
 package hirs.attestationca.portal.utils.tpm.eventlog.events;
 
-import hirs.attestationca.portal.utils.HexUtils;
-import hirs.attestationca.portal.utils.tpm.eventlog.uefi.UefiConstants;
-import hirs.attestationca.portal.utils.tpm.eventlog.uefi.UefiPartition;
+import hirs.attestationca.utils.HexUtils;
+import hirs.attestationca.utils.tpm.eventlog.uefi.UefiConstants;
+import hirs.attestationca.utils.tpm.eventlog.uefi.UefiPartition;
 import lombok.Getter;
 
 import java.io.UnsupportedEncodingException;

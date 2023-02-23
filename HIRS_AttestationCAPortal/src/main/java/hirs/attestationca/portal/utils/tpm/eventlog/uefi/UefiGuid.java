@@ -1,8 +1,8 @@
 package hirs.attestationca.portal.utils.tpm.eventlog.uefi;
 
 import com.eclipsesource.json.JsonObject;
-import hirs.attestationca.portal.utils.HexUtils;
-import hirs.attestationca.portal.utils.JsonUtils;
+import hirs.attestationca.utils.HexUtils;
+import hirs.attestationca.utils.JsonUtils;
 
 import java.math.BigInteger;
 import java.nio.file.FileSystems;

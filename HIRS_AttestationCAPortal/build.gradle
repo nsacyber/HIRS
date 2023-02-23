@@ -2,6 +2,7 @@ plugins {
     id 'application'
     id 'java'
     id 'war'
+    id "nebula.ospackage" version "9.1.1"
     id 'org.springframework.boot' version '3.0.1'
     id 'io.spring.dependency-management' version '1.1.0'
 }
@@ -30,6 +31,8 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-web'
     implementation 'org.springframework.boot:spring-boot-starter-validation'
     implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+    implementation 'org.projectlombok:lombok'
+    implementation 'org.bouncycastle:bcmail-jdk15on:1.70'
     implementation 'org.springframework.plugin:spring-plugin-core:3.0.0'
     implementation 'org.apache.httpcomponents:httpclient:4.5.7'
     implementation 'com.google.guava:guava:31.1-jre'
@@ -44,7 +47,7 @@ dependencies {
     implementation 'com.fasterxml.jackson.core:jackson-databind:2.14.2'
     implementation "org.glassfish.jaxb:jaxb-runtime:4.0.1"
     implementation 'jakarta.xml.bind:jakarta.xml.bind-api:4.0.0'
-    implementation 'com.sun.xml.bind:jaxb-impl:4.0.2'
+//    implementation 'com.sun.xml.bind:jaxb-impl:4.0.2' //creates duplicate error
     compileOnly 'org.projectlombok:lombok'
     runtimeOnly 'org.mariadb.jdbc:mariadb-java-client'
     annotationProcessor 'org.projectlombok:lombok'

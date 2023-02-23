@@ -1,6 +1,6 @@
 package hirs.attestationca.portal.utils;
 
-import hirs.attestationca.portal.entity.userdefined.SupplyChainSettings;
+import hirs.attestationca.persist.entity.userdefined.SupplyChainSettings;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;

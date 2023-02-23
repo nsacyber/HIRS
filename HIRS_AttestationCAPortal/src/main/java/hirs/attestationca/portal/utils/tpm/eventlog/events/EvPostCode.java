@@ -1,6 +1,6 @@
 package hirs.attestationca.portal.utils.tpm.eventlog.events;
 
-import hirs.attestationca.portal.utils.tpm.eventlog.uefi.UefiFirmware;
+import hirs.attestationca.utils.tpm.eventlog.uefi.UefiFirmware;
 import lombok.Getter;
 
 import java.nio.charset.StandardCharsets;

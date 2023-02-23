@@ -43,7 +43,7 @@ public class BannerConfiguration {
      * Verify if the file exist, if it does it will get all the
      * properties values and save them on the class.
      *
-     * @throws IOException the banner level for the web site.
+     * @throws java.io.IOException the banner level for the web site.
      */
     public BannerConfiguration() throws IOException {
         if (!Files.exists(BANNER_PROPERTIES_PATH)) {

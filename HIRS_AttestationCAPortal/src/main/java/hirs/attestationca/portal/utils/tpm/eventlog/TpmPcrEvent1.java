@@ -1,8 +1,8 @@
 package hirs.attestationca.portal.utils.tpm.eventlog;
 
-import hirs.attestationca.portal.utils.HexUtils;
-import hirs.attestationca.portal.utils.tpm.eventlog.events.EvConstants;
-import hirs.attestationca.portal.utils.tpm.eventlog.uefi.UefiConstants;
+import hirs.attestationca.utils.HexUtils;
+import hirs.attestationca.utils.tpm.eventlog.events.EvConstants;
+import hirs.attestationca.utils.tpm.eventlog.uefi.UefiConstants;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
