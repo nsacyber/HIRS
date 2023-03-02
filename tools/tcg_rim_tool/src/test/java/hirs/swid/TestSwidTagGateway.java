@@ -142,7 +142,7 @@ public class TestSwidTagGateway {
         expectedFile = TestSwidTagGateway.class.getClassLoader()
                 .getResourceAsStream(BASE_RFC3339_TIMESTAMP);
         Assert.assertTrue(compareFileBytesToExpectedFile(DEFAULT_OUTPUT));
-        Assert.assertTrue(validator.validateSwidTag(DEFAULT_OUTPUT, JKS));
+        Assert.assertTrue(validator.validateSwidTag(DEFAULT_OUTPUT, "DEFAULT"));
     }
 
     /**
@@ -159,19 +159,7 @@ public class TestSwidTagGateway {
         expectedFile = TestSwidTagGateway.class.getClassLoader()
                 .getResourceAsStream(BASE_RFC3852_TIMESTAMP);
         Assert.assertTrue(compareFileBytesToExpectedFile(DEFAULT_OUTPUT));
-        Assert.assertTrue(validator.validateSwidTag(DEFAULT_OUTPUT, JKS));
-    }
-
-    /**
-     * This test corresponds to the arguments:
-     * -v <path>
-     */
-
-    public void testValidateSwidTag() {
-        String filepath = TestSwidTagGateway.class.getClassLoader()
-                .getResource(BASE_USER_CERT).getPath();
-        System.out.println("Validating file at " + filepath);
-        Assert.assertTrue(validator.validateSwidTag(filepath, PEM));
+        Assert.assertTrue(validator.validateSwidTag(DEFAULT_OUTPUT, "DEFAULT"));
     }
 
     /**
