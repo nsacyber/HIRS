@@ -11,6 +11,7 @@ import java.util.regex.Pattern;
 
 public class TimestampArgumentValidator {
     List<String> args;
+
     /**
      * This class handles validation of the --timestamp commandline parameter.
      * Currently only RFC3339 and RFC3852 formats are supported.
@@ -35,7 +36,7 @@ public class TimestampArgumentValidator {
                     } else {
                         return false;
                     }
-                } else if (args.size() == 1){
+                } else if (args.size() == 1) {
                     System.out.println("Countersignature file is required for RFC3852 timestamps");
                     return false;
                 }

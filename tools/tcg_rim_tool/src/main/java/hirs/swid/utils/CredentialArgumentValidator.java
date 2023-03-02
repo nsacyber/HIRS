@@ -29,15 +29,21 @@ public class CredentialArgumentValidator {
 
     /**
      * Getter for format property
+     *
      * @return string
      */
-    public String getFormat() { return format; }
+    public String getFormat() {
+        return format;
+    }
 
     /**
      * Getter for error message
+     *
      * @return string
      */
-    public String getErrorMessage() { return errorMessage; }
+    public String getErrorMessage() {
+        return errorMessage;
+    }
 
     /**
      * This method checks for the following valid configurations of input arguments:

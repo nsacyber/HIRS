@@ -19,25 +19,25 @@ public class Commander {
     private String createType = "";
     @Parameter(names = {"-a", "--attributes <path>"}, order = 1,
             description = "The configuration file holding attributes "
-            + "to populate the base RIM with.")
+                    + "to populate the base RIM with.")
     private String attributesFile = "";
     @Parameter(names = {"-o", "--out <path>"}, order = 2,
             description = "The file to write the RIM out to. "
-            + "The RIM will be written to stdout by default.")
+                    + "The RIM will be written to stdout by default.")
     private String outFile = "";
     @Parameter(names = {"-v", "--verify <path>"}, order = 3,
             description = "Specify a RIM file to verify.")
     private String verifyFile = "";
     @Parameter(names = {"-t", "--truststore <path>"}, order = 4,
             description = "The truststore to sign the base RIM created "
-            + "or to validate the signed base RIM.")
+                    + "or to validate the signed base RIM.")
     private String truststoreFile = "";
     @Parameter(names = {"-k", "--privateKeyFile <path>"}, order = 5,
             description = "The private key used to sign the base RIM created by this tool.")
     private String privateKeyFile = "";
     @Parameter(names = {"-p", "--publicCertificate <path>"}, order = 6,
             description = "The public key certificate to embed in the base RIM created by "
-            + "this tool.")
+                    + "this tool.")
     private String publicCertificate = "";
     @Parameter(names = {"-e", "--embed-cert"}, order = 7,
             description = "Embed the provided certificate in the signed swidtag.")
@@ -74,7 +74,9 @@ public class Commander {
         return verifyFile;
     }
 
-    public String getTruststoreFile() { return truststoreFile; }
+    public String getTruststoreFile() {
+        return truststoreFile;
+    }
 
     public String getPrivateKeyFile() {
         return privateKeyFile;
@@ -84,11 +86,17 @@ public class Commander {
         return publicCertificate;
     }
 
-    public boolean isEmbedded() { return embedded; }
+    public boolean isEmbedded() {
+        return embedded;
+    }
 
-    public boolean isDefaultKey() { return defaultKey; }
+    public boolean isDefaultKey() {
+        return defaultKey;
+    }
 
-    public String getRimEventLog() { return rimEventLog; }
+    public String getRimEventLog() {
+        return rimEventLog;
+    }
 
     public List<String> getTimestampArguments() {
         return timestampArguments;
@@ -119,6 +127,7 @@ public class Commander {
 
         return sb.toString();
     }
+
     public String toString() {
         StringBuilder sb = new StringBuilder();
         sb.append("Creating: " + this.getCreateType() + System.lineSeparator());
