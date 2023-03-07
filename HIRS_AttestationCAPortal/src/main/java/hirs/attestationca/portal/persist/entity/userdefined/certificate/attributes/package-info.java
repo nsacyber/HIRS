@@ -1,1 +1,0 @@
-package hirs.attestationca.portal.persist.entity.userdefined.certificate.attributes;
