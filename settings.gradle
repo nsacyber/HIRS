@@ -1,6 +1,19 @@
 rootProject.name = 'HIRS'
-include 'TPM_Utils',
-        'HIRS_AttestationCAPortal',
-        'tpm_module',
-        'tools/tcg_rim_tool',
-        'tools/tcg_eventlog_tool'
+
+include 'HIRS_Utils',
+        'HIRS_AttestationCA',
+        'HIRS_AttestationCAPortal'
+
+dependencyResolutionManagement {
+    versionCatalogs {
+        libs {
+            version('springboot', '3.0.1')
+            version('jackson', '2.14.2')
+            library('common-lang3', 'org.apache.commons:commons-lang3:3.12.0')
+            library('jackson-core', 'com.fasterxml.jackson.core', 'jackson-core').version('jackson')
+            library('jackson-databind', 'com.fasterxml.jackson.core', 'jackson-databind').version('jackson')
+            library('spring-datajpa', 'org.springframework.boot', 'spring-boot-starter-data-jpa').version('springboot')
+            library('lombok', 'org.projectlombok:lombok:1.18.26')
+        }
+    }
+}

@@ -1,0 +1,54 @@
+plugins {
+    id 'java'
+}
+
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(17)
+    }
+}
+
+repositories {
+    mavenCentral()
+
+    flatDir { dirs "lib" }
+}
+
+configurations {
+    compileOnly {
+        extendsFrom annotationProcessor
+    }
+    jaxb
+}
+
+dependencies {
+    implementation 'org.bouncycastle:bcmail-jdk15on:1.70'
+    implementation 'com.google.guava:guava:31.1-jre'
+    implementation 'commons-codec:commons-codec:1.15'
+    implementation 'org.apache.commons:commons-lang3:3.12.0'
+    implementation 'org.apache.logging.log4j:log4j-core:2.19.0'
+    implementation 'org.apache.logging.log4j:log4j-api:2.19.0'
+    implementation 'jakarta.xml.bind:jakarta.xml.bind-api:4.0.0'
+    implementation 'jakarta.persistence:jakarta.persistence-api:3.1.0'
+    implementation 'com.eclipsesource.minimal-json:minimal-json:0.9.5'
+    implementation 'com.fasterxml.jackson.core:jackson-core:2.14.2'
+    implementation 'com.fasterxml.jackson.core:jackson-databind:2.14.2'
+    implementation 'org.glassfish.jaxb:jaxb-runtime:4.0.1'
+    compileOnly libs.lombok
+    implementation libs.lombok
+    annotationProcessor libs.lombok
+
+    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.6.0'
+    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine'
+}
+
+test {
+    useJUnitPlatform()
+}
+
+//task generateXjcLibrary(type:Exec) {
+//    workingDir 'config'
+//
+//    commandLine './genXjcLibrary.sh'
+//}
+//compileJava.dependsOn generateXjcLibrary

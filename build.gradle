@@ -1,154 +1,120 @@
-
-allprojects {
-    task addPlugins << {
-        delete './build/plugins'
-        mkdir './build/plugins'
-        if (project.hasProperty('pluginDir')) {
-            if (pluginDir?.trim()) {
-                copy {
-                    from "$pluginDir"
-                    into 'build/plugins'
-                    include '*.jar'
-                    include '**/*.jar'
-                }
-            }
-        }
-    }
-
-    task copyVersion() {
-        doLast {
-            if (project.hasProperty('displayVersion')) {
-                String resourceDir="${buildDir}/resources/main"
-                println "setting app version file contents of: ${displayVersion} to ${resourceDir}"
-                new File(resourceDir, "VERSION").write("$displayVersion")
-            }
-        }
-    }
-
-    group = 'hirs'
-    version = file("$rootDir/VERSION").text.trim() + "-SNAPSHOT"
+//import java.util.concurrent.TimeUnit
+//
+plugins {
+    // Apply the application plugin to add support for building a CLI application in Java.
+    id 'application'
+//    id 'java'
+//    id 'war'
+//    id  "nebula.ospackage" version "9.1.1"
 }
 
-subprojects {
-    apply plugin: 'java'
-    apply plugin: 'maven-publish'
+//subprojects {
+//
+//}
 
-    tasks.withType(JavaCompile) {
-        options.compilerArgs << "-Xlint:unchecked" << "-Xlint:deprecation" << "-Werror"
-    }
-
-    repositories {
-        mavenCentral()
-    }
-
-    test {
-        testLogging {
-            exceptionFormat = 'full'
-        }
-    }
-
-    tasks.withType(Test) {
-        useTestNG() {
-            includeGroups = project.ext.includeGroups.split()
-            excludeGroups = project.ext.excludeGroups.split()
-        }
-        afterSuite { desc, result ->
-            if (desc.parent == null) {
-                logger.lifecycle("${result.successfulTestCount}/${result.testCount} tests passed")
-            }
-        }
-    }
-
-    tasks.withType(FindBugs) {
-        reports {
-            xml.enabled = false
-            html.enabled = true
-        }
-    }
-
-    tasks.withType(Pmd) {
-        reports {
-            xml.enabled = false
-            html.enabled = true
-        }
-    }
-
-    publishing {
-      repositories {
-        if(findProperty("env") != null && findProperty("env") == "CI") {
-          maven {
-            url "$rootDir/librepo"
-          }
-        } else {
-          mavenLocal()
-        }
-      }
-    }
-
-    // Global checkstyle file
-    ext.checkstyleConfigFile = new File(rootDir, "/config/checkstyle/sun_checks.xml")
-
-    // Version definitions of all of the libraries we're using.  They're defined
-    // here to ensure that all projects are using the same versions of common
-    // dependencies:
-    ext.libs = [
-      bouncy_castle: 'org.bouncycastle:bcmail-jdk15on:1.59',
-      checkstyle:    'com.puppycrawl.tools:checkstyle:8.10.1',
-      commons_cli:   'commons-cli:commons-cli:1.2',
-      commons_codec: 'commons-codec:commons-codec:1.9',
-      commons_csv:   'org.apache.commons:commons-csv:1.4',
-      commons_exec:  'org.apache.commons:commons-exec:1.3',
-      commons_http:  'commons-httpclient:commons-httpclient:3.1',
-      commons_io:    'commons-io:commons-io:2.4',
-      commons_lang:  'org.apache.commons:commons-lang3:3.3.2',
-      commons_upload:'commons-fileupload:commons-fileupload:1.3.1',
-      commons_valid: 'commons-validator:commons-validator:1.4.0',
-      findbugs:      'com.google.code.findbugs:findbugs:3.0.0',
-      gson:          'com.google.code.gson:gson:2.2.4',
-      guava:         'com.google.guava:guava:18.0',
-      hibernate:   [ 'org.hibernate.common:hibernate-commons-annotations:4.0.4.Final',
-                     'org.hibernate:hibernate-core:4.3.11.Final',
-                     'org.hibernate:hibernate-hikaricp:4.3.11.Final'],
-      hikari:        'com.zaxxer:HikariCP:2.4.1',
-      hsqldb:        'org.hsqldb:hsqldb:2.3.2',
-      http:          'org.apache.httpcomponents:httpclient:4.5',
-      jackson:      [ 'com.fasterxml.jackson.core:jackson-core:2.6.3',
-                      'com.fasterxml.jackson.core:jackson-databind:2.6.3',
-                      'com.fasterxml.jackson.core:jackson-annotations:2.6.3'],
-      jadira_usertype: 'org.jadira.usertype:usertype.core:4.0.0.GA',
-      jcommander:    'com.beust:jcommander:1.72',
-      joda_time:     'joda-time:joda-time:2.9.4',
-      jstl:        [ 'org.apache.taglibs:taglibs-standard-impl:1.2.5',
-                     'org.apache.taglibs:taglibs-standard-spec:1.2.5'],
-      log4j2:      [ 'org.apache.logging.log4j:log4j-api:2.17.1',
-                     'org.apache.logging.log4j:log4j-core:2.17.1',
-                     'org.apache.logging.log4j:log4j-slf4j-impl:2.17.1'],
-      log4j2_web:  'org.apache.logging.log4j:log4j-web:2.17.1',
-      log_bridge:    'org.apache.logging.log4j:log4j-jcl:2.17.1',
-      mockito:       'org.mockito:mockito-all:1.10.19',
-      mariadb:       'org.mariadb.jdbc:mariadb-java-client:2.2.1',
-      minimal_json:  'com.eclipsesource.minimal-json:minimal-json:0.9.5',
-      pci_ids:       'com.github.marandus:pci-ids:0.3',
-      pmd:           'net.sourceforge.pmd:pmd:5.1.1',
-      powermock:   [ 'org.powermock:powermock-core:1.6.3',
-                     'org.powermock:powermock-api-mockito:1.6.3',
-                     'org.powermock:powermock-module-testng:1.6.3' ],
-      protobuf_java: 'com.google.protobuf:protobuf-java:3.4.0',
-      reflections:   'org.reflections:reflections:0.9.9-RC1',
-      servlet_api:   'javax.servlet:servlet-api:2.5',
-      slf4j:         'org.slf4j:slf4j-api:1.7.13',
-      spring_core:   ['org.springframework:spring-aop:4.3.30.RELEASE',
-                      'org.springframework:spring-beans:4.3.30.RELEASE',
-                      'org.springframework:spring-context:4.3.30.RELEASE',
-                      'org.springframework:spring-expression:4.3.30.RELEASE',
-                      'org.springframework:spring-orm:4.3.30.RELEASE'],
-      spring_msg:    'org.springframework:spring-messaging:4.3.30.RELEASE',
-      spring_plugin: 'org.springframework.plugin:spring-plugin-core:1.2.0.RELEASE',
-      spring_retry:  'org.springframework.retry:spring-retry:1.2.2.RELEASE',
-      spring_test:   'org.springframework:spring-test:4.3.30.RELEASE',
-      spring_web:    'org.springframework:spring-web:4.3.30.RELEASE',
-      spring_webmvc:    'org.springframework:spring-webmvc:4.3.30.RELEASE',
-      testng:        'org.testng:testng:6.8.8',
-      xml_rpc_client: 'org.apache.xmlrpc:xmlrpc-client:3.1.3',
-    ]
-}
+//plugins {
+//    id 'application'
+//    id 'java'
+//    id 'war'
+//    id "nebula.ospackage" version "9.1.1"
+//    id 'org.springframework.boot' version '3.0.1'
+//    id 'io.spring.dependency-management' version '1.1.0'
+//}
+//
+//java {
+//    toolchain {
+//        languageVersion = JavaLanguageVersion.of(17)
+//    }
+//}
+//
+//configurations {
+//    compileOnly {
+//        extendsFrom annotationProcessor
+//    }
+//    jaxb
+//}
+//
+//repositories {
+//    flatDir { dirs "lib" }
+//    mavenCentral()
+//}
+//
+//dependencies {
+//    implementation project(':HIRS_Utils')
+//    implementation project(':HIRS_AttestationCA')
+//
+//    implementation 'org.springframework.boot:spring-boot-starter-web'
+//    implementation 'org.springframework.boot:spring-boot-starter-validation'
+//    implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+//    implementation 'org.projectlombok:lombok:1.18.26'
+//    implementation 'org.bouncycastle:bcmail-jdk15on:1.70'
+//    implementation 'org.springframework.plugin:spring-plugin-core:3.0.0'
+//    implementation 'org.apache.httpcomponents:httpclient:4.5.7'
+//    implementation 'com.google.guava:guava:31.1-jre'
+//    implementation 'org.glassfish.web:jakarta.servlet.jsp.jstl:3.0.0'
+//    implementation 'com.github.marandus:pci-ids:0.3'
+//    implementation 'org.apache.httpcomponents.client5:httpclient5:5.2.1'
+//    implementation 'commons-codec:commons-codec:1.15'
+//    implementation 'org.apache.commons:commons-lang3:3.12.0'
+//    implementation 'org.apache.logging.log4j:log4j-core:2.19.0'
+//    implementation 'org.apache.logging.log4j:log4j-api:2.19.0'
+//    implementation 'com.eclipsesource.minimal-json:minimal-json:0.9.5'
+//    implementation 'com.fasterxml.jackson.core:jackson-core:2.14.2'
+//    implementation 'com.fasterxml.jackson.core:jackson-databind:2.14.2'
+//    implementation "org.glassfish.jaxb:jaxb-runtime:4.0.1"
+//    implementation 'jakarta.xml.bind:jakarta.xml.bind-api:4.0.0'
+////    implementation 'com.sun.xml.bind:jaxb-impl:4.0.2' //creates duplicate error
+//    compileOnly 'org.projectlombok:lombok:1.18.26'
+//    runtimeOnly 'org.mariadb.jdbc:mariadb-java-client'
+//    annotationProcessor 'org.projectlombok:lombok:1.18.26'
+//    providedRuntime 'org.springframework.boot:spring-boot-starter-tomcat'
+//
+//    testImplementation 'org.springframework.boot:spring-boot-starter-test'
+//}
+//
+//war {
+//    from(buildDir) {
+//        include 'VERSION'
+//        into 'WEB-INF/classes'
+//    }
+//    archiveFileName = 'HIRS_AttestationCAPortal.war'
+//}
+//
+//tasks.register("spring-boot-properties") {
+//    group = 'Introspection'
+//    description = 'Print properties from all BOMs'
+//    doLast {
+//        println dependencyManagement.importedProperties
+//    }
+//}
+//
+////task generateXjcLibrary(type:Exec) {
+////    workingDir 'config'
+////
+////    commandLine './genXjcLibrary.sh'
+////}
+////compileJava.dependsOn generateXjcLibrary
+//
+////ospackage {
+////    packageName = 'HIRS_AttestationCA'
+////    os = LINUX
+////    arch = NOARCH
+////    release = '1'
+////
+////    user 'root'
+////    fileMode = 0755
+////
+////    addParentDirs = true
+////    createDirectoryEntry true
+////
+////    into ("/opt/tomcat/webapps") {
+////        from war.outputs.files
+////        from '../HIRS_AttestationCAPortal/build/libs/HIRS_AttestationCAPortal.war'
+////        user 'root'
+////        fileMode = 0755
+////    }
+////
+////    buildRpm {
+////        arch = X86_64
+////    }
+////}
