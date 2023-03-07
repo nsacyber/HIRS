@@ -1,0 +1,52 @@
+plugins {
+    id 'java'
+    id 'io.spring.dependency-management' version '1.1.0'
+}
+
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(17)
+    }
+}
+
+repositories {
+    mavenCentral()
+
+    flatDir { dirs "lib" }
+}
+
+configurations {
+    compileOnly {
+        extendsFrom annotationProcessor
+    }
+}
+
+dependencies {
+    implementation project(':HIRS_Utils')
+
+    implementation 'org.springframework.boot:spring-boot-starter-data-jpa:3.0.1'
+
+    implementation 'commons-codec:commons-codec:1.15'
+    implementation 'com.eclipsesource.minimal-json:minimal-json:0.9.5'
+    implementation 'com.google.guava:guava:31.1-jre'
+    implementation 'org.apache.commons:commons-lang3:3.12.0'
+
+    implementation 'org.bouncycastle:bcmail-jdk15on:1.70'
+    implementation 'jakarta.persistence:jakarta.persistence-api:3.1.0'
+//    implementation libs.jackson_core
+//    implementation libs.jackson_databind
+    implementation 'com.fasterxml.jackson.core:jackson-core:2.14.2'
+    implementation 'com.fasterxml.jackson.core:jackson-databind:2.14.2'
+    implementation 'jakarta.xml.bind:jakarta.xml.bind-api:4.0.0'
+    implementation 'org.apache.logging.log4j:log4j-core:2.19.0'
+    implementation 'org.apache.logging.log4j:log4j-api:2.19.0'
+
+    // spring management
+    compileOnly libs.lombok
+    implementation libs.lombok
+    annotationProcessor libs.lombok
+}
+
+test {
+    useJUnitPlatform()
+}
