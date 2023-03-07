@@ -28,10 +28,10 @@ dependencies {
     implementation project(':HIRS_Utils')
     implementation project(':HIRS_AttestationCA')
 
-    implementation 'com.github.marandus:pci-ids:0.3'
-    implementation 'org.bouncycastle:bcmail-jdk15on:1.70'
-    implementation 'com.google.guava:guava:31.1-jre'
-    implementation 'org.glassfish.web:jakarta.servlet.jsp.jstl:3.0.0'
+    implementation libs.pci
+    implementation libs.bouncycastle
+    implementation libs.guava
+    implementation libs.jakarta.servlet
 
     implementation 'org.springframework.boot:spring-boot-starter-web'
     implementation 'org.springframework.boot:spring-boot-starter-validation'
