@@ -127,6 +127,8 @@ public class SwidTagValidator {
             si.append("SoftwareIdentity name: " + softwareIdentity.getAttribute("name") + "\n");
             si.append("SoftwareIdentity tagId: " + softwareIdentity.getAttribute("tagId") + "\n");
             System.out.println(si.toString());
+            Element directory = (Element) document.getElementsByTagName("Directory").item(0);
+            validateDirectory(directory);
             return validateEnvelopedSignature(document, format);
         } else {
             System.out.println("Invalid xml for validation, please verify " + path);
@@ -182,23 +184,38 @@ public class SwidTagValidator {
     }
 
     /**
+     * This method iterates over the list of File elements under the directory.
+     *
+     * @param directory the Directory element
+     */
+    private boolean validateDirectory(Element directory) {
+        boolean isValid = true;
+        NodeList fileNodeList = directory.getChildNodes();
+        for (int i = 0;i < fileNodeList.getLength();i++) {
+            Element file = (Element) fileNodeList.item(i);
+            isValid &= validateFile(file);
+        }
+
+        return isValid;
+    }
+
+    /**
      * This method validates a hirs.swid.xjc.File from an indirect payload
      */
-    private boolean validateFile(Element file) throws Exception {
-        String filepath;
-        if (!rimEventLog.isEmpty()) {
-            filepath = rimEventLog;
-        } else {
-            filepath = file.getAttribute(SwidTagConstants.NAME);
-        }
-        System.out.println("Support rim found at " + filepath);
-        if (HashSwid.get256Hash(filepath).equals(
-                file.getAttribute(SwidTagConstants._SHA256_HASH.getPrefix() + ":" +
-                        SwidTagConstants._SHA256_HASH.getLocalPart()))) {
-            System.out.println("Support RIM hash verified!" + System.lineSeparator());
-            return true;
-        } else {
-            System.out.println("Support RIM hash does not match Base RIM!" + System.lineSeparator());
+    private boolean validateFile(Element file) {
+        String filepath = file.getAttribute(SwidTagConstants.NAME);
+        try {
+            if (HashSwid.get256Hash(filepath).equals(
+                    file.getAttribute(SwidTagConstants._SHA256_HASH.getPrefix() + ":" +
+                            SwidTagConstants._SHA256_HASH.getLocalPart()))) {
+                System.out.println("Support RIM hash verified for " + filepath);
+                return true;
+            } else {
+                System.out.println("Hash of " + filepath + " does not match value in Base RIM");
+                return false;
+            }
+        } catch (Exception e) {
+            System.out.println(e.getMessage());
             return false;
         }
     }
