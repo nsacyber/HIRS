@@ -41,12 +41,14 @@
                 "Directory": {
                         "name": "rim",
                         "root": "/boot/tcg/manifest/rim/",
-                        "File": {
+                        "File": [
+				{
                                 "version":"01",
                                 "name": "Example.com.BIOS.01.rimel",
                                 "size": "7549",
                                 "hash": "4479ca722623f8c47b703996ced3cbd981b06b1ae8a897db70137e0b7c546848"
                                 }
+			]
                 }
         }
 }
