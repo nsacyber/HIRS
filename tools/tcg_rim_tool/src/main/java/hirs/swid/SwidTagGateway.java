@@ -11,6 +11,7 @@ import hirs.swid.xjc.SoftwareMeta;
 import org.w3c.dom.Document;
 
 import javax.json.Json;
+import javax.json.JsonArray;
 import javax.json.JsonException;
 import javax.json.JsonObject;
 import javax.json.JsonReader;
@@ -61,6 +62,7 @@ import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -199,12 +201,16 @@ public class SwidTagGateway {
                     configProperties.getJsonObject(SwidTagConstants.PAYLOAD)
                             .getJsonObject(SwidTagConstants.DIRECTORY));
             //File
-            hirs.swid.xjc.File file = createFile(
-                    configProperties.getJsonObject(SwidTagConstants.PAYLOAD)
-                            .getJsonObject(SwidTagConstants.DIRECTORY)
-                            .getJsonObject(SwidTagConstants.FILE));
-            //Nest File in Directory in Payload
-            directory.getDirectoryOrFile().add(file);
+            JsonArray fileArray = configProperties.getJsonObject(SwidTagConstants.PAYLOAD)
+                    .getJsonObject(SwidTagConstants.DIRECTORY)
+                    .getJsonArray(SwidTagConstants.FILE);
+            Iterator itr = fileArray.iterator();
+            while(itr.hasNext()) {
+                JsonObject arrayItem = (JsonObject) itr.next();
+                hirs.swid.xjc.File file = createFile(arrayItem);
+                //Nest File in Directory in Payload
+                directory.getDirectoryOrFile().add(file);
+            }
             payload.getDirectoryOrFileOrProcess().add(directory);
             JAXBElement<ResourceCollection> jaxbPayload =
                     objectFactory.createSoftwareIdentityPayload(payload);
@@ -225,8 +231,12 @@ public class SwidTagGateway {
         } catch (FileNotFoundException e) {
             System.out.println("File does not exist or cannot be read: " + e.getMessage());
             System.exit(1);
+        } catch (ClassCastException e) {
+            System.out.println("File object in JSON attributes file must be an array.");
+            System.exit(1);
         } catch (Exception e) {
             System.out.println(e.getMessage());
+            e.printStackTrace();
             System.exit(1);
         }
     }
@@ -467,9 +477,9 @@ public class SwidTagGateway {
      * @param jsonObject the Properties object containing parameters from file
      * @return File object created from the properties
      */
-    private hirs.swid.xjc.File createFile(JsonObject jsonObject) throws Exception {
+    private hirs.swid.xjc.File createFile(JsonObject jsonObject)
+            throws Exception {
         hirs.swid.xjc.File file = objectFactory.createFile();
-        file.setName(jsonObject.getString(SwidTagConstants.NAME, ""));
         Map<QName, String> attributes = file.getOtherAttributes();
         String supportRimFormat = jsonObject.getString(SwidTagConstants.SUPPORT_RIM_FORMAT,
                 SwidTagConstants.SUPPORT_RIM_FORMAT_MISSING);
@@ -485,11 +495,13 @@ public class SwidTagGateway {
                 jsonObject.getString(SwidTagConstants.SUPPORT_RIM_TYPE, ""));
         addNonNullAttribute(attributes, SwidTagConstants._SUPPORT_RIM_URI_GLOBAL,
                 jsonObject.getString(SwidTagConstants.SUPPORT_RIM_URI_GLOBAL, ""));
-        File rimEventLogFile = new File(rimEventLog);
-        file.setSize(new BigInteger(Long.toString(rimEventLogFile.length())));
+        String filepath = jsonObject.getString(SwidTagConstants.NAME);
+        File fileToAdd = new File(filepath);
+        file.setName(filepath);
+        file.setSize(new BigInteger(Long.toString(fileToAdd.length())));
         addNonNullAttribute(attributes, SwidTagConstants._SHA256_HASH,
                 jsonObject.getString(SwidTagConstants.HASH,
-                        HashSwid.get256Hash(rimEventLog)), true);
+                        HashSwid.get256Hash(filepath)), true);
 
         return file;
     }
