@@ -1,5 +1,6 @@
-//import java.util.concurrent.TimeUnit
-//
+import java.util.concurrent.TimeUnit
+import org.gradle.api.tasks.Copy
+
 plugins {
     // Apply the application plugin to add support for building a CLI application in Java.
     id 'application'
@@ -7,6 +8,35 @@ plugins {
 //    id 'war'
 //    id  "nebula.ospackage" version "9.1.1"
 }
+
+// Global checkstyle file
+    ext.checkstyleConfigFile = new File(rootDir, "/config/checkstyle/sun_checks.xml")
+
+dependencies {
+    repositories {
+          // Use Maven Central for resolving dependencies.
+             mavenCentral()
+         }
+}
+
+def projectVersion = rootProject.file('VERSION').text.trim()
+
+def buildTime = { ->
+    Date latestdate = new Date();
+    def time = latestdate.getTime();
+    long seconds = TimeUnit.MILLISECONDS.toSeconds(time);
+    return seconds;
+}
+
+def gitHash = { ->
+    def gitProcess = 'git rev-parse --short HEAD'.execute();
+    gitProcess.waitFor();
+    def shortHash = gitProcess.text.trim();
+    def gitHash = shortHash.substring(0, shortHash.length() - 2);
+    return gitHash;
+}
+
+project.ext["packageVersion"] = "${projectVersion}.${buildTime}.${gitHash}.el8"
 
 //subprojects {
 //
