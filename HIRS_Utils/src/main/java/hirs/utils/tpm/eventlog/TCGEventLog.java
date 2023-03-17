@@ -257,14 +257,7 @@ public final class TCGEventLog {
         return pcrs;
     }
     
-    /**
-     * Returns a flag which is set if the event log follows the "Crypto Agile" Format Type.
-     * A false implies the type is SHA1 format.
-     * @return true if log follows the Crypto Agile format.
-     */
-    public boolean  isCryptoAgile() {
-        return bCryptoAgile;
-    }
+   
     
     /**
      * Returns a list of event found in the Event Log.

@@ -36,6 +36,7 @@ def gitHash = { ->
     return gitHash;
 }
 
+project.ext["jarVersion"] = "${projectVersion}.${buildTime}.${gitHash}"
 project.ext["packageVersion"] = "${projectVersion}.${buildTime}.${gitHash}.el8"
 
 //subprojects {

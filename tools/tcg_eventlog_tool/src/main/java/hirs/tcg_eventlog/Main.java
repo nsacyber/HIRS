@@ -115,7 +115,7 @@ final class Main {
             // General event log output
             if ((bEventFlag || bHexFlag) && !bPcrFlag) {
                 if (!bHexFlag) {
-                    if (evLog.isCryptoAgile()) {
+                    if (evLog.isBCryptoAgile()) {
                         writeOut("\nEvent Log follows the \"Crypto Agile\" format and has "
                                 + evLog.getEventList().size() + " events:\n\n");
                     } else {

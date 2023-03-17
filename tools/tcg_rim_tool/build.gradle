@@ -1,12 +1,35 @@
-apply plugin: 'java'
+plugins {
+       id "java"
+       id "nebula.ospackage" version "9.1.1"
+       id 'com.intershop.gradle.jaxb' version '5.1.0'
+}
+
+// Get version from main project gradle
+def packVersion = properties.get("packageVersion");
+def jarVersion = properties.get("jarVersion");
+//println "packageVersion is ${projVersion}"
+
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(17)
+    }
+}
 
 repositories {
 	mavenCentral()
+	flatDir { dirs "lib" }
 }
 
 dependencies {
-	compile 'javax.json:javax.json-api:1.1.4', 'org.glassfish:javax.json:1.1.4', 'com.beust:jcommander:1.72', 'org.bouncycastle:bcmail-jdk15on:1.59'
-	testCompile 'org.testng:testng:6.8.8'
+	implementation libs.bouncycastle
+    implementation libs.glassfish.json
+    implementation libs.glassfish.jaxb.runtime
+    implementation libs.jcommander
+//    implementation libs.javax.json
+ //   implementation libs.javax.jaxb
+//    implementation libs.javax.annotation
+
+    testImplementation libs.testng
 }
 
 test {
@@ -14,19 +37,61 @@ test {
 }
 
 jar {
+    exclude 'META-INF/*.SF', 'META-INF/*.DSA', 'META-INF/*.RSA', 'META-INF/*.MF'
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
 	manifest {
 		attributes("Main-Class": "hirs.swid.Main",
-			   "Class-Path": configurations.runtime.files.collect { "lib/$it.name" }.join(' ')
+			    'Class-Path':configurations.runtimeClasspath.files.collect { it.getName() }.join(' ')
 			  )
 	}
-	from(configurations.compile.collect { it.isDirectory() ? it : zipTree(it) }) {}
-	exclude 'META-INF/*.RSA', 'META-INF/*.SF', 'META-INF/*.DSA'
+     //jar name format: [archiveBaseName]-[archiveAppendix]-[archiveVersion]-[archiveClassifier].[archiveExtension]
+     archiveVersion = jarVersion
 }
 
-uploadArchives {
-	repositories {
-		flatDir {
-			dirs "${buildDir}"
-		}
-	}
+ospackage {
+    packageName = 'tcg-rim-tool'
+    os = LINUX
+    arch = NOARCH
+    version = "$packVersion"
+    release = '1'
+
+    user 'root'
+    fileMode = 0755
+
+    into ('/opt/hirs/rimtool/lib') {
+        from jar.outputs.files
+        from configurations.runtimeClasspath
+        from 'libs'
+    }
+
+    into ('/opt/hirs/rimtool/scripts') {
+      from ('scripts') {
+        exclude {
+            FileTreeElement details ->
+                details.file.name.endsWith('.bat')
+        }
+      }
+    }
+    into ('/opt/hirs/rimtool/docs') {
+      from('./') {
+         include {
+             FileTreeElement details ->
+                 details.file.name.endsWith('.md')
+          }        
+       }
+       }
+    into ('/opt/hirs/rimtool/data') {
+      from('src/test/resources/') {
+       }
+     }
+     link("/usr/local/bin/rim", "/opt/hirs/rimtool/scripts/rimtool.sh", 0x755)
 }
+
+buildRpm {
+   arch = X86_64
+}
+
+buildDeb {
+    arch = 'amd64'
+}
+

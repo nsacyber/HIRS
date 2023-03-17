@@ -1,12 +1,14 @@
 import java.util.concurrent.TimeUnit
-
 plugins {
       id "java"
 //    id "findbugs"
 //    id "checkstyle"
       id "nebula.ospackage" version "9.1.1"
 }
-version = '1.0'
+// Get version from main project gradle
+def packVersion = properties.get("packageVersion");
+def jarVersion = properties.get("jarVersion");
+//println "packageVersion is ${projVersion}"
 
 java {
     toolchain {
@@ -16,9 +18,10 @@ java {
 
 repositories {
     mavenCentral()
+    flatDir { dirs "lib" }
 }
 
-dependencies {
+dependencies { 
     implementation project(':HIRS_Utils')
     implementation libs.jcommander
     implementation libs.commons.io
@@ -39,7 +42,6 @@ ext.configDir = new File(projectDir, 'config')
 //    showViolations = true
 //}
 
-
 //findbugs {
 //    toolVersion = '3.0.0'
 //    ignoreFailures = false
@@ -47,19 +49,18 @@ ext.configDir = new File(projectDir, 'config')
 //}
 
 jar {
-     exclude 'META-INF/*.SF', 'META-INF/*.DSA', 'META-INF/*.RSA', 'META-INF/*.MF'
+    // Keep jar clean:
+    exclude 'META-INF/*.SF', 'META-INF/*.DSA', 'META-INF/*.RSA', 'META-INF/*.MF'
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
     manifest {
         attributes(
                  "Main-Class": "hirs.tcg_eventlog.Main",
-                 'Class-Path': configurations.runtimeClasspath.files.collect { it.getName() }.join(' ')
+                 'Class-Path':configurations.runtimeClasspath.files.collect { it.getName() }.join(' ')
            )
-    }
-   // from(configurations.compile.collect { it.isDirectory() ? it : zipTree(it) }) {}
-   // exclude 'META-INF/*.RSA', 'META-INF/*.SF', 'META-INF/*.DSA'
+     }
+     //jar name format: [archiveBaseName]-[archiveAppendix]-[archiveVersion]-[archiveClassifier].[archiveExtension]
+     archiveVersion = jarVersion
 }
-// Get version from main project gradle
-def packVersion = properties.get("packageVersion");
-//println "packageVersion is ${projVersion}"
 
 // Produce packages
 ospackage {
@@ -74,8 +75,7 @@ ospackage {
 
    into ('/opt/hirs/eventlog/lib') {
        from jar.outputs.files
-       from 'lib'
-       from 'configurations.runtimeClasspath'
+       from configurations.runtimeClasspath
     }
     into ('/opt/hirs/eventlog/scripts') {
       from ('scripts') {
@@ -92,6 +92,12 @@ ospackage {
                    details.file.name.endsWith('.odt')
            }
         }
+       from('./') {
+         include {
+             FileTreeElement details ->
+                 details.file.name.endsWith('.md')
+          }        
+       }
     }
     // Copy vendor-table into /tmp to avoid conflict with the ACA 
     into('/tmp/elt/default-properties') {
@@ -105,10 +111,11 @@ ospackage {
     link("/usr/local/bin/elt", "/opt/hirs/eventlog/scripts/eventlog.sh", 0x755)
 
     // PostInstall
+     //postInstall "cp ../../HIRS_Utils/build/libs/* /opt/hirs/eventlog/lib/."
     // Copy files from /opt/elt/default-properties/ to avoid conflicts with the ACA
-     postInstall "cp /tmp/elt/default-properties/vendor-table.json /opt/hirs/default-properties/."
-     postInstall "rm -rf /tmp/elt" 
-    
+     postInstall "cp /tmp/elt/default-properties/* /opt/hirs/default-properties/."
+     postInstall "rm -rf /tmp/elt"
+
     // Uninstall
     // copy files to where package manager exspects them and remove project files
      preUninstall "mkdir -p /tmp/elt/default-properties"
