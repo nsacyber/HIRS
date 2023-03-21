@@ -79,6 +79,7 @@ import java.util.Base64;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
 
 /**
@@ -317,6 +318,7 @@ public class SwidTagGateway {
             if (!tagId.isEmpty()) {
                 swidTag.setTagId(tagId);
             }
+            swidTag.getOtherAttributes().put(new QName("id"), tagId);
             swidTag.setTagVersion(new BigInteger(
                     jsonObject.getString(SwidTagConstants.TAGVERSION, "0")));
             swidTag.setVersion(jsonObject.getString(SwidTagConstants.VERSION, "0.0"));
@@ -579,7 +581,7 @@ public class SwidTagGateway {
         }
 
         //Parse SoftwareIdentity id
-        String tagId = "";
+        String softwareIdentityId = "";
         Document swidTag = null;
         Element softwareIdentity = null;
         try {
@@ -588,8 +590,8 @@ public class SwidTagGateway {
             swidTag = db.parse(new InputSource(new StringReader(xmlToSign)));
             softwareIdentity = (Element) swidTag.getElementsByTagName(
                     SwidTagConstants.SOFTWARE_IDENTITY).item(0);
-            tagId = softwareIdentity.getAttributes()
-                    .getNamedItem(SwidTagConstants.TAGID).getNodeValue();
+            softwareIdentityId = softwareIdentity.getAttributes()
+                    .getNamedItem("id").getNodeValue();
             //How to sign without an Id attribute?
         } catch (ParserConfigurationException e) {
             System.out.println("Error instantiating DocumentBuilder object: " + e.getMessage());
@@ -599,14 +601,14 @@ public class SwidTagGateway {
         }
 
         //Create signature with a reference to SoftwareIdentity id
-        System.out.println("Referencing SoftwareIdentity with tagID " + tagId);
+        System.out.println("Referencing SoftwareIdentity with id " + softwareIdentityId);
         Document detachedSignature = null;
         try {
             XMLSignatureFactory sigFactory = XMLSignatureFactory.getInstance("DOM");
             //Use xpath to select SoftwareIdentity
             XPathFilterParameterSpec xPathParams = new XPathFilterParameterSpec("/SoftwareIdentity");
             //ref must be distinguished from existing <Reference URI="">    
-            Reference ref = sigFactory.newReference("#" + tagId,
+            Reference ref = sigFactory.newReference("#" + softwareIdentityId,
                     sigFactory.newDigestMethod(DigestMethod.SHA256, null),
                     Collections.singletonList(sigFactory.newTransform(Transform.XPATH, xPathParams)),
                     null, null);
@@ -648,6 +650,7 @@ public class SwidTagGateway {
             detachedSignature.appendChild(detachedSignature.createElement("root"));
             DOMSignContext context = new DOMSignContext(privateKey,
                                 detachedSignature.getDocumentElement());
+            context.setIdAttributeNS(softwareIdentity, null, "id");
             XMLSignature signature = sigFactory.newXMLSignature(signedInfo, keyinfo);
             signature.sign(context);
             System.out.println("Detached signature: " + detachedSignature);
