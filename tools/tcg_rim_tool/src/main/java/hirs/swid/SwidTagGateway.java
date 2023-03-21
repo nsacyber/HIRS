@@ -11,7 +11,6 @@ import hirs.swid.xjc.SoftwareMeta;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
@@ -44,7 +43,6 @@ import javax.xml.crypto.dsig.keyinfo.KeyName;
 import javax.xml.crypto.dsig.keyinfo.X509Data;
 import javax.xml.crypto.dsig.spec.C14NMethodParameterSpec;
 import javax.xml.crypto.dsig.spec.TransformParameterSpec;
-import javax.xml.crypto.dsig.spec.XPathFilterParameterSpec;
 import javax.xml.namespace.QName;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -79,7 +77,6 @@ import java.util.Base64;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import java.util.UUID;
 
 
 /**
@@ -605,13 +602,9 @@ public class SwidTagGateway {
         Document detachedSignature = null;
         try {
             XMLSignatureFactory sigFactory = XMLSignatureFactory.getInstance("DOM");
-            //Use xpath to select SoftwareIdentity
-            XPathFilterParameterSpec xPathParams = new XPathFilterParameterSpec("/SoftwareIdentity");
-            //ref must be distinguished from existing <Reference URI="">    
+            //ref must be distinguished from existing <Reference URI="">
             Reference ref = sigFactory.newReference("#" + softwareIdentityId,
-                    sigFactory.newDigestMethod(DigestMethod.SHA256, null),
-                    Collections.singletonList(sigFactory.newTransform(Transform.XPATH, xPathParams)),
-                    null, null);
+                    sigFactory.newDigestMethod(DigestMethod.SHA256, null));
             SignedInfo signedInfo = sigFactory.newSignedInfo(
                     sigFactory.newCanonicalizationMethod(CanonicalizationMethod.INCLUSIVE,
                             (C14NMethodParameterSpec) null),
