@@ -578,45 +578,54 @@ public class SwidTagGateway {
         }
 
         //Parse SoftwareIdentity id
-        String softwareIdentityId = "";
         Document swidTag = null;
-        Element softwareIdentity = null;
+        DocumentBuilder db = null;
         try {
             DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
-            DocumentBuilder db = dbf.newDocumentBuilder();
-            swidTag = db.parse(new InputSource(new StringReader(xmlToSign)));
-            softwareIdentity = (Element) swidTag.getElementsByTagName(
-                    SwidTagConstants.SOFTWARE_IDENTITY).item(0);
-            softwareIdentityId = softwareIdentity.getAttributes()
-                    .getNamedItem("id").getNodeValue();
-            //How to sign without an Id attribute?
+            dbf.setNamespaceAware(false);
+            db = dbf.newDocumentBuilder();
         } catch (ParserConfigurationException e) {
             System.out.println("Error instantiating DocumentBuilder object: " + e.getMessage());
             System.exit(1);
+        }
+        try {
+            swidTag = db.parse(new InputSource(new StringReader(xmlToSign)));
         } catch (IOException | SAXException e) {
             System.out.println("Error parsing XML from " + signFile);
+            System.exit(1);
         }
+        Element softwareIdentity = (Element) swidTag.getElementsByTagName(
+                    SwidTagConstants.SOFTWARE_IDENTITY).item(0);
+        String softwareIdentityId = softwareIdentity.getAttributes()
+                    .getNamedItem("id").getNodeValue();
 
         //Create signature with a reference to SoftwareIdentity id
         System.out.println("Referencing SoftwareIdentity with id " + softwareIdentityId);
-        Document detachedSignature = null;
+        XMLSignatureFactory sigFactory = null;
+        SignedInfo signedInfo = null;
         try {
-            XMLSignatureFactory sigFactory = XMLSignatureFactory.getInstance("DOM");
+            sigFactory = XMLSignatureFactory.getInstance("DOM");
             //ref must be distinguished from existing <Reference URI="">
             Reference ref = sigFactory.newReference("#" + softwareIdentityId,
                     sigFactory.newDigestMethod(DigestMethod.SHA256, null));
-            SignedInfo signedInfo = sigFactory.newSignedInfo(
+            signedInfo = sigFactory.newSignedInfo(
                     sigFactory.newCanonicalizationMethod(CanonicalizationMethod.INCLUSIVE,
                             (C14NMethodParameterSpec) null),
                     sigFactory.newSignatureMethod(SwidTagConstants.SIGNATURE_ALGORITHM_RSA_SHA256,
                             null),
                     Collections.singletonList(ref)
             );
-            List<XMLStructure> keyInfoElements = new ArrayList<XMLStructure>();
+        } catch (InvalidAlgorithmParameterException e) {
+            System.out.println("Digest method parameters are invalid: " + e.getMessage());
+        } catch (NoSuchAlgorithmException e) {
+            System.out.println("The digest algorithm could not be found: " + e.getMessage());
+        }
+        List<XMLStructure> keyInfoElements = new ArrayList<XMLStructure>();
 
-            KeyInfoFactory kiFactory = sigFactory.getKeyInfoFactory();
-            PrivateKey privateKey;
-            CredentialParser cp = new CredentialParser();
+        KeyInfoFactory kiFactory = sigFactory.getKeyInfoFactory();
+        PrivateKey privateKey = null;
+        CredentialParser cp = new CredentialParser();
+        try {
             if (defaultCredentials) {
                 cp.parseJKSCredentials(jksTruststoreFile);
                 privateKey = cp.getPrivateKey();
@@ -636,34 +645,36 @@ public class SwidTagGateway {
                     keyInfoElements.add(kiFactory.newKeyValue(certificate.getPublicKey()));
                 }
             }
-            KeyInfo keyinfo = kiFactory.newKeyInfo(keyInfoElements);
-
-            detachedSignature = DocumentBuilderFactory.newInstance()
-                                    .newDocumentBuilder().newDocument();
-            detachedSignature.appendChild(detachedSignature.createElement("root"));
-            DOMSignContext context = new DOMSignContext(privateKey,
-                                detachedSignature.getDocumentElement());
-            context.setIdAttributeNS(softwareIdentity, null, "id");
-            XMLSignature signature = sigFactory.newXMLSignature(signedInfo, keyinfo);
-            signature.sign(context);
-            System.out.println("Detached signature: " + detachedSignature);
-        } catch (InvalidAlgorithmParameterException e) {
-            System.out.println("Digest method parameters are invalid: " + e.getMessage());
-        } catch (NoSuchAlgorithmException e) {
-            System.out.println("The digest algorithm could not be found: " + e.getMessage());
         } catch (IOException e) {
             System.out.println("Error getting SKID from signing credentials: " + e.getMessage());
-        } catch (ParserConfigurationException e) {
-            System.out.println("Error creating new document object: " + e.getMessage());
-        } catch (MarshalException | XMLSignatureException e) {
-            System.out.println("Error while signing SoftwareIdentity");
-            e.printStackTrace();
         } catch (KeyException e) {
             System.out.println("Public key algorithm not recognized or supported: "
                     + e.getMessage());
         } catch (Exception e) {
+             e.printStackTrace();
+        }
+        KeyInfo keyinfo = kiFactory.newKeyInfo(keyInfoElements);
+
+        Document detachedSignature = null;
+        try {
+            detachedSignature = DocumentBuilderFactory.newInstance()
+                                .newDocumentBuilder().newDocument();
+        } catch (ParserConfigurationException e) {
+            System.out.println("Error creating new document object: " + e.getMessage());
+        }
+        detachedSignature.setXmlVersion("1.0");
+        detachedSignature.appendChild(detachedSignature.createElement("root"));
+        DOMSignContext context = new DOMSignContext(privateKey,
+                            detachedSignature.getDocumentElement());
+        context.setIdAttributeNS(softwareIdentity, null, "id");
+        XMLSignature signature = sigFactory.newXMLSignature(signedInfo, keyinfo);
+        try {
+            signature.sign(context);
+        } catch (MarshalException | XMLSignatureException e) {
+            System.out.println("Error while signing SoftwareIdentity");
             e.printStackTrace();
         }
+        System.out.println("Detached signature: " + detachedSignature);
 
         return swidTag;
     }
