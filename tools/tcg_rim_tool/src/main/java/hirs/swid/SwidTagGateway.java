@@ -656,8 +656,17 @@ public class SwidTagGateway {
         }
         KeyInfo keyinfo = kiFactory.newKeyInfo(keyInfoElements);
 
-        Document detachedSignature = db.newDocument();
-        DOMSignContext context = new DOMSignContext(privateKey, detachedSignature);
+        Document detachedSignature = null;
+        try {
+            detachedSignature = DocumentBuilderFactory.newInstance()
+                                .newDocumentBuilder().newDocument();
+        } catch (ParserConfigurationException e) {
+            System.out.println("Error creating new document object: " + e.getMessage());
+        }
+        detachedSignature.setXmlVersion("1.0");
+        detachedSignature.appendChild(detachedSignature.createElement("root"));
+        DOMSignContext context = new DOMSignContext(privateKey,
+                            detachedSignature.getDocumentElement());
         context.setIdAttributeNS(softwareIdentity, null, "id");
         XMLSignature signature = sigFactory.newXMLSignature(signedInfo, keyinfo);
         try {
@@ -666,6 +675,7 @@ public class SwidTagGateway {
             System.out.println("Error while signing SoftwareIdentity");
             e.printStackTrace();
         }
+        System.out.println("Detached signature: " + detachedSignature);
 
         return detachedSignature;
     }
