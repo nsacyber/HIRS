@@ -45,6 +45,9 @@ public class Commander {
     @Parameter(names = {"-l", "--rimel <path>"}, order = 9,
             description = "The TCG eventlog file to use as a support RIM.")
     private String rimEventLog = "";
+    @Parameter(names = {"--directory"}, validateWith = DirectoryArgumentValidator.class,
+            description = "The directory in which to locate required files.")
+    private String directoryOverride = "";
 
     public boolean isHelp() {
         return help;
@@ -81,6 +84,8 @@ public class Commander {
     public boolean isDefaultKey() { return defaultKey; }
 
     public String getRimEventLog() { return rimEventLog; }
+
+    public String getDirectoryOverride() { return directoryOverride; }
 
     public String printHelpExamples() {
         StringBuilder sb = new StringBuilder();
@@ -122,7 +127,8 @@ public class Commander {
         } else {
             sb.append("Signing credential: (none given)" + System.lineSeparator());
         }
-        sb.append("Event log support RIM: " + this.getRimEventLog() + System.lineSeparator());
+        sb.append("Override payload directory with: " + this.getDirectoryOverride()
+                + System.lineSeparator());
         return sb.toString();
     }
 }

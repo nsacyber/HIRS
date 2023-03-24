@@ -23,11 +23,15 @@ public class Main {
                 System.out.println(commander.toString());
                 String verifyFile = commander.getVerifyFile();
                 String rimel = commander.getRimEventLog();
+                String directory = commander.getDirectoryOverride();
                 String certificateFile = commander.getPublicCertificate();
                 String trustStore = commander.getTruststoreFile();
                 if (!verifyFile.isEmpty()) {
                     if (!rimel.isEmpty()) {
                         validator.setRimEventLog(rimel);
+                    }
+                    if (!directory.isEmpty()) {
+
                     }
                     if (!trustStore.isEmpty()) {
                         validator.setTrustStoreFile(trustStore);
@@ -52,6 +56,7 @@ public class Main {
                 boolean embeddedCert = commander.isEmbedded();
                 boolean defaultKey = commander.isDefaultKey();
                 String rimEventLog = commander.getRimEventLog();
+                String directory = commander.getDirectoryOverride();
                 switch (createType) {
                     case "BASE":
                         if (!attributesFile.isEmpty()) {
@@ -75,11 +80,8 @@ public class Main {
                                     "are required, or the default key (-d) must be indicated.");
                             System.exit(1);
                         }
-                        if (rimEventLog.isEmpty()) {
-                            System.out.println("Error: a support RIM is required!");
-                            System.exit(1);
-                        } else {
-                            gateway.setRimEventLog(rimEventLog);
+                         if (!directory.isEmpty()) {
+
                         }
                         gateway.generateSwidTag(commander.getOutFile());
                         break;
