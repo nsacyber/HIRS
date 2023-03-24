@@ -112,6 +112,7 @@ public class Commander {
     public List<String> getTimestampArguments() {
         return timestampArguments;
     }
+
     public String getDirectoryOverride() { return directoryOverride; }
 
     public String printHelpExamples() {
