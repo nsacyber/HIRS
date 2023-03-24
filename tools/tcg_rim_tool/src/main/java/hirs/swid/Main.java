@@ -17,7 +17,7 @@ public class Main {
         SwidTagGateway gateway;
         SwidTagValidator validator;
         CredentialArgumentValidator caValidator;
-        String rimEventLogFile, trustStoreFile, certificateFile, privateKeyFile;
+        String rimEventLogFile, trustStoreFile, certificateFile, privateKeyFile, directory;
 
         if (commander.isHelp()) {
             jc.usage();
@@ -30,6 +30,8 @@ public class Main {
                 certificateFile = commander.getPublicCertificate();
                 privateKeyFile = commander.getPrivateKeyFile();
                 trustStoreFile = commander.getTruststoreFile();
+                rimEventLogFile = commander.getRimEventLog();
+                directory = commander.getDirectoryOverride();
                 boolean defaultKey = commander.isDefaultKey();
                 if (defaultKey) {
                     validator.validateSwidTag(verifyFile, "DEFAULT");
@@ -37,8 +39,11 @@ public class Main {
                     caValidator = new CredentialArgumentValidator(trustStoreFile,
                             certificateFile, privateKeyFile, "", "", true);
                     if (caValidator.isValid()) {
-                        validator.setTrustStoreFile(trustStoreFile);
+                        validator.setRimEventLog(rimEventLogFile);
+                        if (!directory.isEmpty()) {
 
+                        }
+                        validator.setTrustStoreFile(trustStoreFile);
                         validator.validateSwidTag(verifyFile, caValidator.getFormat());
                     } else {
                         System.out.println("Invalid combination of credentials given: "
@@ -53,6 +58,7 @@ public class Main {
                 trustStoreFile = commander.getTruststoreFile();
                 certificateFile = commander.getPublicCertificate();
                 privateKeyFile = commander.getPrivateKeyFile();
+                directory = commander.getDirectoryOverride();
                 boolean embeddedCert = commander.isEmbedded();
                 boolean defaultKey = commander.isDefaultKey();
                 String outputFile = commander.getOutFile();
@@ -84,6 +90,9 @@ public class Main {
                             }
                             if (embeddedCert) {
                                 gateway.setEmbeddedCert(true);
+                            }
+                            if (!directory.isEmpty()) {
+
                             }
                         }
                         gateway.setRimEventLog(rimEventLogFile);

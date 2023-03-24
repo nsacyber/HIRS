@@ -57,6 +57,9 @@ public class Commander {
                     "Currently only RFC3339 and RFC3852 are supported:\n" +
                     "\tRFC3339 [yyyy-MM-ddThh:mm:ssZ]\n\tRFC3852 <counterSignature.bin>")
     private List<String> timestampArguments = new ArrayList<String>(2);
+    @Parameter(names = {"--directory"}, validateWith = DirectoryArgumentValidator.class,
+            description = "The directory in which to locate required files.")
+    private String directoryOverride = "";
 
     public boolean isHelp() {
         return help;
@@ -109,6 +112,7 @@ public class Commander {
     public List<String> getTimestampArguments() {
         return timestampArguments;
     }
+    public String getDirectoryOverride() { return directoryOverride; }
 
     public String printHelpExamples() {
         StringBuilder sb = new StringBuilder();
@@ -157,7 +161,6 @@ public class Commander {
                     + System.lineSeparator());
             sb.append("Embedded certificate: " + this.isEmbedded() + System.lineSeparator());
         }
-        sb.append("Event log support RIM: " + this.getRimEventLog() + System.lineSeparator());
         List<String> timestampArguments = this.getTimestampArguments();
         if (timestampArguments.size() > 0) {
             sb.append("Timestamp format: " + timestampArguments.get(0));
@@ -167,6 +170,8 @@ public class Commander {
         } else {
             sb.append("No timestamp included");
         }
+        sb.append("Override payload directory with: " + this.getDirectoryOverride()
+                + System.lineSeparator());
         return sb.toString();
     }
 }
