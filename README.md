@@ -1,7 +1,5 @@
 <h1><center>Host Integrity at Runtime and Start-up (HIRS) <BR\></center></h1>
 
-[![Build Status](https://travis-ci.org/nsacyber/HIRS.svg?branch=master)](https://travis-ci.org/nsacyber/HIRS)
-
 <h2>Attestation Certificate Authority (ACA) and TPM Provisioning with Trusted Computing-based Supply Chain Validation </h2>
 
 The Host Integrity at Runtime and Start-up Attestation Certificate Authority is a Proof of Concept - Prototype intended to spur interest and adoption of the [Trusted Platform Module (TPM)](https://trustedcomputinggroup.org/work-groups/trusted-platform-module/). It's intended for testing and development purposes only and is not intended for production. The ACA's functionality supports the provisioning of both the TPM 1.2 and [TPM 2.0](https://trustedcomputinggroup.org/wp-content/uploads/2019_TCG_TPM2_BriefOverview_DR02web.pdf) with an [Attestation Identity Credential (AIC)](https://www.trustedcomputinggroup.org/wp-content/uploads/IWG-Credential_Profiles_V1_R1_14.pdf). The ACA can be configured to enforce the Validation of Endorsement and Platform Credentials to illustrate a supply chain validation capability. 
