@@ -43,7 +43,7 @@ public class Commander {
             description = "Embed the provided certificate in the signed swidtag.")
     private boolean embedded = false;
     @Parameter(names = {"-d", "--default-key"}, order = 8,
-            description = "Use default signing credentials.")
+            description = "Use keystore.jks from the rimtool installation to sign.")
     private boolean defaultKey = false;
     @Parameter(names = {"-l", "--rimel <path>"}, order = 9, required = true,
             description = "The TCG eventlog file to use as a support RIM.")

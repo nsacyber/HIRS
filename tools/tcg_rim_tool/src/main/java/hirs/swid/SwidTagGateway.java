@@ -617,6 +617,8 @@ public class SwidTagGateway {
                     X509Data data = kiFactory.newX509Data(x509Content);
                     keyInfoElements.add(data);
                 } else {
+                    KeyName keyName = kiFactory.newKeyName(cp.getCertificateSubjectKeyIdentifier());
+                    keyInfoElements.add(keyName);
                     keyInfoElements.add(kiFactory.newKeyValue(certificate.getPublicKey()));
                 }
             }
