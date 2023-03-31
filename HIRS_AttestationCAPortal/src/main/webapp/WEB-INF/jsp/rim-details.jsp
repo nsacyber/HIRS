@@ -161,10 +161,10 @@
                                 <ul>
                                 <c:choose>
                                     <c:when test="${initialData.rimType=='Support'}">
-                                        <li>This Support RIM file covers the following critical items:</li>
+                                        <li>This Support RIM file does NOT covers the following critical items:</li>
                                     </c:when>
                                     <c:otherwise>
-                                        <li>This Event Log file covers the following critical items:</li>
+                                        <li>This Event Log file  does NOT covers the following critical items:</li>
                                     </c:otherwise>
                                 </c:choose>
                                     <ul>
