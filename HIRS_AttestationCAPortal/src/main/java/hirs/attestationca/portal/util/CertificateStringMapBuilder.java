@@ -373,6 +373,7 @@ public final class CertificateStringMapBuilder {
 
             if (!certificate.getComponentFailures().isEmpty()) {
                 data.put("failures", certificate.getComponentFailures());
+                data.put("failureMessages", certificate.getComponentFailureMessage());
             }
 
             //Get platform Configuration values and set map with it

@@ -781,6 +781,7 @@ public class SupplyChainValidationServiceImpl implements SupplyChainValidationSe
             case FAIL:
                 if (!result.getAdditionalInfo().isEmpty()) {
                     pc.setComponentFailures(result.getAdditionalInfo());
+                    pc.setComponentFailureMessage(result.getMessage());
                     this.certificateManager.update(pc);
                 }
                 return buildValidationRecord(validationType, AppraisalStatus.Status.FAIL,
@@ -817,6 +818,7 @@ public class SupplyChainValidationServiceImpl implements SupplyChainValidationSe
             case FAIL:
                 if (!result.getAdditionalInfo().isEmpty()) {
                     base.setComponentFailures(result.getAdditionalInfo());
+                    base.setComponentFailureMessage(result.getMessage());
                     this.certificateManager.update(base);
                 }
                 // we are adding things to componentFailures
