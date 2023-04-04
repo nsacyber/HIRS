@@ -182,6 +182,7 @@ public class SwidTagGateway {
     }
 
     /**
+<<<<<<< HEAD
      * Setter for timestamp format in XML signature
      * @param timestampFormat
      */
@@ -198,6 +199,8 @@ public class SwidTagGateway {
     }
 
     /**
+=======
+>>>>>>> fd32c9fc8cac878dca147246dfebd0da1a001e00
      * Setter for directory path to search for required files
      *
      * @param directoryOverride
