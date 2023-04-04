@@ -80,9 +80,7 @@ public class Main {
                                     "are required, or the default key (-d) must be indicated.");
                             System.exit(1);
                         }
-                         if (!directory.isEmpty()) {
-
-                        }
+                        gateway.setDirectoryOverride(directory);
                         gateway.generateSwidTag(commander.getOutFile());
                         break;
                     default:

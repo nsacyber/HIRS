@@ -82,6 +82,7 @@ public class SwidTagGateway {
     private String pemCertificateFile;
     private boolean embeddedCert;
     private String rimEventLog;
+    private String directoryOverride;
     private String errorRequiredFields;
 
     /**
@@ -96,6 +97,7 @@ public class SwidTagGateway {
             pemCertificateFile = "";
             embeddedCert = false;
             rimEventLog = "";
+            directoryOverride = "";
             errorRequiredFields = "";
         } catch (JAXBException e) {
             System.out.println("Error initializing jaxbcontext: " + e.getMessage());
@@ -164,6 +166,15 @@ public class SwidTagGateway {
      */
     public void setRimEventLog(final String rimEventLog) {
         this.rimEventLog = rimEventLog;
+    }
+
+    /**
+     * Setter for directory path to search for required files
+     *
+     * @param directoryOverride
+     */
+    public void setDirectoryOverride(String directoryOverride) {
+        this.directoryOverride = directoryOverride;
     }
 
     /**
@@ -495,7 +506,7 @@ public class SwidTagGateway {
                 jsonObject.getString(SwidTagConstants.SUPPORT_RIM_TYPE, ""));
         addNonNullAttribute(attributes, SwidTagConstants._SUPPORT_RIM_URI_GLOBAL,
                 jsonObject.getString(SwidTagConstants.SUPPORT_RIM_URI_GLOBAL, ""));
-        String filepath = jsonObject.getString(SwidTagConstants.NAME);
+        String filepath = directoryOverride + jsonObject.getString(SwidTagConstants.NAME);
         File fileToAdd = new File(filepath);
         file.setName(filepath);
         file.setSize(new BigInteger(Long.toString(fileToAdd.length())));
