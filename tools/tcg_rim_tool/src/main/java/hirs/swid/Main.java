@@ -81,9 +81,6 @@ public class Main {
                                     "are required, or the default key (-d) must be indicated.");
                             System.exit(1);
                         }
-                         if (!directory.isEmpty()) {
-
-                        }
                         List<String> timestampArguments = commander.getTimestampArguments();
                         if (timestampArguments.size() > 0) {
                             if (new TimestampArgumentValidator(timestampArguments).isValid()) {
@@ -95,6 +92,7 @@ public class Main {
                                 System.exit(1);
                             }
                         }
+                        gateway.setDirectoryOverride(directory);
                         gateway.generateSwidTag(commander.getOutFile());
                         break;
                     default:
