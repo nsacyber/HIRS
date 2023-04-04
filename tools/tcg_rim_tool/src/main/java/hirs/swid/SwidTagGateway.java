@@ -90,7 +90,6 @@ public class SwidTagGateway {
     private String pemPrivateKeyFile;
     private String pemCertificateFile;
     private boolean embeddedCert;
-    private String rimEventLog;
     private String timestampFormat;
     private String timestampArgument;
     private String directoryOverride;
@@ -107,7 +106,6 @@ public class SwidTagGateway {
             defaultCredentials = true;
             pemCertificateFile = "";
             embeddedCert = false;
-            rimEventLog = "";
             timestampFormat = "";
             timestampArgument = "";
             directoryOverride = "";
@@ -173,16 +171,6 @@ public class SwidTagGateway {
     }
 
     /**
-     * Setter for event log support RIM
-     *
-     * @param rimEventLog
-     */
-    public void setRimEventLog(final String rimEventLog) {
-        this.rimEventLog = rimEventLog;
-    }
-
-    /**
-<<<<<<< HEAD
      * Setter for timestamp format in XML signature
      * @param timestampFormat
      */
@@ -199,8 +187,6 @@ public class SwidTagGateway {
     }
 
     /**
-=======
->>>>>>> fd32c9fc8cac878dca147246dfebd0da1a001e00
      * Setter for directory path to search for required files
      *
      * @param directoryOverride

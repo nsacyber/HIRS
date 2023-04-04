@@ -59,10 +59,10 @@ import java.util.List;
  */
 public class SwidTagValidator {
     private Unmarshaller unmarshaller;
-    private String rimEventLog;
     private String certificateFile;
     private String trustStoreFile;
     private List<X509Certificate> trustStore;
+    private String directoryOverride;
 
     /**
      * Ensure that BouncyCastle is configured as a javax.security.Security provider, as this
@@ -73,14 +73,6 @@ public class SwidTagValidator {
     }
 
     /**
-     * Setter for rimel file path.
-     * @param rimEventLog the rimel file
-     */
-    public void setRimEventLog(String rimEventLog) {
-        this.rimEventLog = rimEventLog;
-    }
-
-    /**
      * Setter for the truststore file path.
      * @param trustStoreFile the truststore
      */
@@ -88,13 +80,21 @@ public class SwidTagValidator {
         this.trustStoreFile = trustStoreFile;
     }
 
+    /**
+     * Setter for directory override path.
+     * @param directoryOverride directory path
+     */
+    public void setDirectoryOverride(String directoryOverride) {
+        this.directoryOverride = directoryOverride;
+    }
+
     public SwidTagValidator() {
         try {
             JAXBContext jaxbContext = JAXBContext.newInstance(SwidTagConstants.SCHEMA_PACKAGE);
             unmarshaller = jaxbContext.createUnmarshaller();
-            rimEventLog = "";
             certificateFile = "";
             trustStoreFile = SwidTagConstants.DEFAULT_KEYSTORE_FILE;
+            directoryOverride = "";
         } catch (JAXBException e) {
             System.out.println("Error initializing JAXBContext: " + e.getMessage());
         }
@@ -139,7 +139,7 @@ public class SwidTagValidator {
      * This method validates a hirs.swid.xjc.File from an indirect payload
      */
     private boolean validateFile(Element file) {
-        String filepath = file.getAttribute(SwidTagConstants.NAME);
+        String filepath = directoryOverride + file.getAttribute(SwidTagConstants.NAME);
         try {
             if (HashSwid.get256Hash(filepath).equals(
                     file.getAttribute(SwidTagConstants._SHA256_HASH.getPrefix() + ":" +

@@ -45,9 +45,6 @@ public class Commander {
     @Parameter(names = {"-d", "--default-key"}, order = 8,
             description = "Use default signing credentials.")
     private boolean defaultKey = false;
-    @Parameter(names = {"-l", "--rimel <path>"}, order = 9,
-            description = "The TCG eventlog file to use as a support RIM.")
-    private String rimEventLog = "";
     @Parameter(names = {"--timestamp"}, order = 10, variableArity = true,
             description = "Add a timestamp to the signature. " +
                     "Currently only RFC3339 and RFC3852 are supported:\n" +
@@ -90,8 +87,6 @@ public class Commander {
     public boolean isEmbedded() { return embedded; }
 
     public boolean isDefaultKey() { return defaultKey; }
-
-    public String getRimEventLog() { return rimEventLog; }
 
     public List<String> getTimestampArguments() {
         return timestampArguments;
@@ -143,6 +138,8 @@ public class Commander {
         } else {
             sb.append("Signing credential: (none given)" + System.lineSeparator());
         }
+        sb.append("Override payload directory with: " + this.getDirectoryOverride()
+                + System.lineSeparator());
         List<String> timestampArguments = this.getTimestampArguments();
         if (timestampArguments.size() > 0) {
             sb.append("Timestamp format: " + timestampArguments.get(0));
@@ -150,10 +147,8 @@ public class Commander {
                 sb.append(", " + timestampArguments.get(1));
             }
         } else {
-            sb.append("No timestamp included");
+            sb.append("No timestamp included" + System.lineSeparator());
         }
-        sb.append("Override payload directory with: " + this.getDirectoryOverride()
-                + System.lineSeparator());
         return sb.toString();
     }
 }

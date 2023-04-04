@@ -23,17 +23,10 @@ public class Main {
                 validator = new SwidTagValidator();
                 System.out.println(commander.toString());
                 String verifyFile = commander.getVerifyFile();
-                String rimel = commander.getRimEventLog();
                 String directory = commander.getDirectoryOverride();
                 String certificateFile = commander.getPublicCertificate();
                 String trustStore = commander.getTruststoreFile();
                 if (!verifyFile.isEmpty()) {
-                    if (!rimel.isEmpty()) {
-                        validator.setRimEventLog(rimel);
-                    }
-                    if (!directory.isEmpty()) {
-
-                    }
                     if (!trustStore.isEmpty()) {
                         validator.setTrustStoreFile(trustStore);
                     }
@@ -41,6 +34,7 @@ public class Main {
                         System.out.println("A single cert cannot be used for verification. " +
                                 "The signing cert will be searched for in the trust store.");
                     }
+                    validator.setDirectoryOverride(directory);
                     validator.validateSwidTag(verifyFile);
                 } else {
                     System.out.println("Need a RIM file to validate!");
@@ -56,7 +50,6 @@ public class Main {
                 String privateKeyFile = commander.getPrivateKeyFile();
                 boolean embeddedCert = commander.isEmbedded();
                 boolean defaultKey = commander.isDefaultKey();
-                String rimEventLog = commander.getRimEventLog();
                 String directory = commander.getDirectoryOverride();
                 switch (createType) {
                     case "BASE":

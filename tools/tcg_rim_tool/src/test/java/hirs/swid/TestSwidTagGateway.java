@@ -29,8 +29,6 @@ public class TestSwidTagGateway {
 			.getResource("privateRimKey.pem").getPath();
 	private final String CA_CHAIN_FILE = TestSwidTagGateway.class.getClassLoader()
 			.getResource("RimCertChain.pem").getPath();
-	private final String SUPPORT_RIM_FILE = TestSwidTagGateway.class.getClassLoader()
-			.getResource("TpmLog.bin").getPath();
 	private final String RFC3852_COUNTERSIGNATURE_FILE = TestSwidTagGateway.class.getClassLoader()
 			.getResource("counterSignature.file").getPath();
 	private InputStream expectedFile;
@@ -38,10 +36,8 @@ public class TestSwidTagGateway {
 	@BeforeClass
 	public void setUp() throws Exception {
 		gateway = new SwidTagGateway();
-		gateway.setRimEventLog(SUPPORT_RIM_FILE);
 		gateway.setAttributesFile(ATTRIBUTES_FILE);
 		validator = new SwidTagValidator();
-		validator.setRimEventLog(SUPPORT_RIM_FILE);
 		validator.setTrustStoreFile(CA_CHAIN_FILE);
 	}
 
