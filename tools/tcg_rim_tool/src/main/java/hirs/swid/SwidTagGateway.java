@@ -99,6 +99,7 @@ public class SwidTagGateway {
     private String rimEventLog;
     private String timestampFormat;
     private String timestampArgument;
+    private String directoryOverride;
     private String errorRequiredFields;
 
     /**
@@ -116,6 +117,7 @@ public class SwidTagGateway {
             rimEventLog = "";
             timestampFormat = "";
             timestampArgument = "";
+            directoryOverride = "";
             errorRequiredFields = "";
         } catch (JAXBException e) {
             System.out.println("Error initializing jaxbcontext: " + e.getMessage());
@@ -202,6 +204,15 @@ public class SwidTagGateway {
      */
     public void setTimestampArgument(String timestampArgument) {
         this.timestampArgument = timestampArgument;
+    }
+
+    /**
+     * Setter for directory path to search for required files
+     *
+     * @param directoryOverride
+     */
+    public void setDirectoryOverride(String directoryOverride) {
+        this.directoryOverride = directoryOverride;
     }
 
     /**
@@ -534,7 +545,7 @@ public class SwidTagGateway {
                 jsonObject.getString(SwidTagConstants.SUPPORT_RIM_TYPE, ""));
         addNonNullAttribute(attributes, SwidTagConstants._SUPPORT_RIM_URI_GLOBAL,
                 jsonObject.getString(SwidTagConstants.SUPPORT_RIM_URI_GLOBAL, ""));
-        String filepath = jsonObject.getString(SwidTagConstants.NAME);
+        String filepath = directoryOverride + jsonObject.getString(SwidTagConstants.NAME);
         File fileToAdd = new File(filepath);
         file.setName(filepath);
         file.setSize(new BigInteger(Long.toString(fileToAdd.length())));

@@ -5,6 +5,11 @@ import com.beust.jcommander.ParameterException;
 
 import java.io.File;
 
+/**
+ * This class validates a directory argument. If the directory is neither valid nor
+ * read-accessible then an error is thrown.
+ */
+
 public class DirectoryArgumentValidator implements IParameterValidator {
     public void validate(String name, String value) throws ParameterException {
         try {
