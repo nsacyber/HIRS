@@ -41,7 +41,7 @@ public class Main {
                     if (caValidator.isValid()) {
                         validator.setRimEventLog(rimEventLogFile);
                         if (!directory.isEmpty()) {
-
+                            validator.setDirectoryOverride(directory);
                         }
                         validator.setTrustStoreFile(trustStoreFile);
                         validator.validateSwidTag(verifyFile, caValidator.getFormat());

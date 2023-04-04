@@ -15,8 +15,8 @@ public class DirectoryArgumentValidator implements IParameterValidator {
         try {
             File directory = new File(value);
             if (!directory.isDirectory()) {
-                throw new ParameterException("Invalid directory given, " +
-                        "please provide a valid directory path.");
+                throw new ParameterException("Invalid directory given: " + value +
+                        ".  Please provide a valid directory path.");
             }
         } catch (SecurityException e) {
             throw new ParameterException("Read access denied for " + value +

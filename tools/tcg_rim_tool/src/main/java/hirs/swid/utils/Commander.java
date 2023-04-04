@@ -113,7 +113,9 @@ public class Commander {
         return timestampArguments;
     }
 
-    public String getDirectoryOverride() { return directoryOverride; }
+    public String getDirectoryOverride() {
+        return directoryOverride;
+    }
 
     public String printHelpExamples() {
         StringBuilder sb = new StringBuilder();
@@ -162,6 +164,8 @@ public class Commander {
                     + System.lineSeparator());
             sb.append("Embedded certificate: " + this.isEmbedded() + System.lineSeparator());
         }
+        sb.append("Override payload directory with: " + this.getDirectoryOverride()
+                + System.lineSeparator());
         List<String> timestampArguments = this.getTimestampArguments();
         if (timestampArguments.size() > 0) {
             sb.append("Timestamp format: " + timestampArguments.get(0));
@@ -169,10 +173,8 @@ public class Commander {
                 sb.append(", " + timestampArguments.get(1));
             }
         } else {
-            sb.append("No timestamp included");
+            sb.append("No timestamp included" + System.lineSeparator());
         }
-        sb.append("Override payload directory with: " + this.getDirectoryOverride()
-                + System.lineSeparator());
         return sb.toString();
     }
 }

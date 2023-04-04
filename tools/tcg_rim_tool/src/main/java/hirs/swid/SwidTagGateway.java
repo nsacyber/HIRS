@@ -180,16 +180,15 @@ public class SwidTagGateway {
     }
 
     /**
-     * Setter for event log support RIM
+     * Setter for rim event log file
      *
      * @param rimEventLog
      */
-    public void setRimEventLog(final String rimEventLog) {
+    public void setRimEventLog(String rimEventLog) {
         this.rimEventLog = rimEventLog;
     }
 
     /**
-<<<<<<< HEAD
      * Setter for timestamp format in XML signature
      *
      * @param timestampFormat
@@ -208,9 +207,7 @@ public class SwidTagGateway {
     }
 
     /**
-=======
->>>>>>> fd32c9fc (Modify gateway class to handle a directory override argument)
-     * Setter for directory path to search for required files
+p     * Setter for directory path to search for required files
      *
      * @param directoryOverride
      */
