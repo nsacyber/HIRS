@@ -92,7 +92,7 @@ public class Main {
                                 gateway.setEmbeddedCert(true);
                             }
                             if (!directory.isEmpty()) {
-
+                                gateway.setDirectoryOverride(directory);
                             }
                         }
                         gateway.setRimEventLog(rimEventLogFile);
