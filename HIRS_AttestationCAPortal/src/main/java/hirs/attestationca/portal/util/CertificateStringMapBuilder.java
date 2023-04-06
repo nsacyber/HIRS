@@ -383,6 +383,7 @@ public final class CertificateStringMapBuilder {
                         results.put(componentResult.getComponentHash(), componentResult.getExpected());
                     }
                 }
+
                 data.put("componentResults", results);
                 data.put("failureMessages", certificate.getComponentFailureMessage());
             }
