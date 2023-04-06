@@ -19,6 +19,7 @@ import hirs.data.persist.SwidResource;
 import hirs.data.persist.TPMMeasurementRecord;
 import hirs.data.persist.certificate.Certificate;
 import hirs.data.persist.certificate.CertificateAuthorityCredential;
+import hirs.data.persist.certificate.ComponentResult;
 import hirs.data.persist.certificate.EndorsementCredential;
 import hirs.data.persist.certificate.PlatformCredential;
 import hirs.persist.AppraiserManager;
@@ -787,6 +788,10 @@ public class SupplyChainValidationServiceImpl implements SupplyChainValidationSe
                     pc.setComponentFailures(result.getAdditionalInfo());
                     pc.setComponentFailureMessage(result.getMessage());
                     this.certificateManager.update(pc);
+                    for (ComponentResult componentResult
+                            : supplyChainCredentialValidator.getComponentResultList()) {
+                        this.componentResultManager.saveResult(componentResult);
+                    }
                 }
                 return buildValidationRecord(validationType, AppraisalStatus.Status.FAIL,
                         result.getMessage(), pc, Level.WARN);

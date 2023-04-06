@@ -614,13 +614,14 @@
                                             <div class="panel-body">
                                                 <div id="componentIdentifier" class="row">
                                                     <c:forEach items="${initialData.componentsIdentifier}" var="component">
-                                                        <c:set var="combined" value="${component.hashCode()}" scope="page"/>
+                                                        <c:set var="combined" value="${component.hashCode()}" scope="page" />
                                                         <div class="component col col-md-4">
                                                             <div class="panel panel-default">
                                                                 <c:choose>
                                                                     <c:when test="${fn:contains(initialData.failures, combined)}">
                                                                         <div class="tooltip" style="background-color: red; color: white">
-                                                                        <span class="tooltiptext">
+                                                                        <c:set var="expected" value="${initialData.componentResults[combined]}" scope="page" />
+                                                                        <span class="tooltiptext" title="${expected}">
                                                                     </c:when>
                                                                     <c:otherwise>
                                                                         <div class="panel-heading">

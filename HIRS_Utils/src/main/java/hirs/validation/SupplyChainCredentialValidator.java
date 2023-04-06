@@ -98,6 +98,8 @@ public final class SupplyChainCredentialValidator implements CredentialValidator
      */
     public static final String FIRMWARE_VALID = "Firmware validated";
 
+    private static List<ComponentResult> componentResultList;
+
     /**
      * Ensure that BouncyCastle is configured as a javax.security.Security provider, as this
      * class expects it to be available.
@@ -110,7 +112,7 @@ public final class SupplyChainCredentialValidator implements CredentialValidator
      * Default constructor, should only be instantiated for testing.
      */
     public SupplyChainCredentialValidator() {
-
+        componentResultList = new LinkedList<>();
     }
 
     /**
@@ -183,6 +185,15 @@ public final class SupplyChainCredentialValidator implements CredentialValidator
             return node.findValue(fieldName).asText();
         }
         return null;
+    }
+
+    /**
+     * Getter for the list of the Component Results.
+     * @return a list of results
+     */
+    @Override
+    public List<ComponentResult> getComponentResultList() {
+        return this.componentResultList;
     }
 
     /**
@@ -1069,39 +1080,50 @@ public final class SupplyChainCredentialValidator implements CredentialValidator
     static boolean isMatch(final UUID certificateId, final ComponentIdentifier pcComponent,
                            final ComponentInfo potentialMatch) {
         boolean matchesSoFar = true;
-        ComponentResult componentResult;
 
         matchesSoFar &= isMatchOrEmptyInPlatformCert(
                 potentialMatch.getComponentManufacturer(),
                 pcComponent.getComponentManufacturer()
         );
-        componentResult = new ComponentResult(certificateId, pcComponent.hashCode(),
-                potentialMatch.getComponentManufacturer(),
-                pcComponent.getComponentManufacturer().getString());
+
+        if (matchesSoFar) {
+            componentResultList.add(new ComponentResult(certificateId, pcComponent.hashCode(),
+                    potentialMatch.getComponentManufacturer(),
+                    pcComponent.getComponentManufacturer().getString()));
+        }
 
         matchesSoFar &= isMatchOrEmptyInPlatformCert(
                 potentialMatch.getComponentModel(),
                 pcComponent.getComponentModel()
         );
-        componentResult = new ComponentResult(certificateId, pcComponent.hashCode(),
-                potentialMatch.getComponentModel(),
-                pcComponent.getComponentModel().getString());
+
+        if (matchesSoFar) {
+            componentResultList.add(new ComponentResult(certificateId, pcComponent.hashCode(),
+                    potentialMatch.getComponentModel(),
+                    pcComponent.getComponentModel().getString()));
+        }
 
         matchesSoFar &= isMatchOrEmptyInPlatformCert(
                 potentialMatch.getComponentSerial(),
                 pcComponent.getComponentSerial()
         );
-        componentResult = new ComponentResult(certificateId, pcComponent.hashCode(),
-                potentialMatch.getComponentSerial(),
-                pcComponent.getComponentSerial().getString());
+
+        if (matchesSoFar) {
+            componentResultList.add(new ComponentResult(certificateId, pcComponent.hashCode(),
+                    potentialMatch.getComponentSerial(),
+                    pcComponent.getComponentSerial().getString()));
+        }
 
         matchesSoFar &= isMatchOrEmptyInPlatformCert(
                 potentialMatch.getComponentRevision(),
                 pcComponent.getComponentRevision()
         );
-        componentResult = new ComponentResult(certificateId, pcComponent.hashCode(),
-                potentialMatch.getComponentRevision(),
-                pcComponent.getComponentRevision().getString());
+
+        if (matchesSoFar) {
+            componentResultList.add(new ComponentResult(certificateId, pcComponent.hashCode(),
+                    potentialMatch.getComponentRevision(),
+                    pcComponent.getComponentRevision().getString()));
+        }
 
         return matchesSoFar;
     }
