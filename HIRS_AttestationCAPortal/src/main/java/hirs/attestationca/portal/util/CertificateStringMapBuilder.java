@@ -1,5 +1,6 @@
 package hirs.attestationca.portal.util;
 
+import hirs.persist.ComponentResultManager;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -303,12 +304,14 @@ public final class CertificateStringMapBuilder {
      *
      * @param uuid ID for the certificate.
      * @param certificateManager the certificate manager for retrieving certs.
+     * @param componentResultManager the component result manager for component mismatches.
      * @return a hash map with the endorsement certificate information.
      * @throws IOException when parsing the certificate
      * @throws IllegalArgumentException invalid argument on parsing the certificate
      */
     public static HashMap<String, Object> getPlatformInformation(final UUID uuid,
-            final CertificateManager certificateManager)
+            final CertificateManager certificateManager,
+            final ComponentResultManager componentResultManager)
             throws IllegalArgumentException, IOException {
         HashMap<String, Object> data = new HashMap<>();
         PlatformCredential certificate = PlatformCredential

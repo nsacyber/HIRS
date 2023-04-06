@@ -5,6 +5,7 @@ import hirs.attestationca.portal.page.PageMessages;
 import hirs.attestationca.portal.page.params.CertificateDetailsPageParams;
 import hirs.attestationca.portal.util.CertificateStringMapBuilder;
 import hirs.persist.CertificateManager;
+import hirs.persist.ComponentResultManager;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -32,16 +33,20 @@ public class CertificateDetailsPageController extends PageController<Certificate
     static final String INITIAL_DATA = "initialData";
 
     private final CertificateManager certificateManager;
+    private final ComponentResultManager componentResultManager;
     private static final Logger LOGGER =
             LogManager.getLogger(CertificateDetailsPageController.class);
     /**
      * Constructor providing the Page's display and routing specification.
      * @param certificateManager the certificate manager
+     * @param componentResultManager the component result manager
      */
     @Autowired
-    public CertificateDetailsPageController(final CertificateManager certificateManager) {
+    public CertificateDetailsPageController(final CertificateManager certificateManager,
+                                            final ComponentResultManager componentResultManager) {
         super(CERTIFICATE_DETAILS);
         this.certificateManager = certificateManager;
+        this.componentResultManager = componentResultManager;
     }
 
     /**
@@ -87,7 +92,7 @@ public class CertificateDetailsPageController extends PageController<Certificate
                         break;
                     case "platform":
                         data.putAll(CertificateStringMapBuilder.getPlatformInformation(uuid,
-                                certificateManager));
+                                certificateManager, componentResultManager));
                         break;
                     case "issued":
                         data.putAll(CertificateStringMapBuilder.getIssuedInformation(uuid,

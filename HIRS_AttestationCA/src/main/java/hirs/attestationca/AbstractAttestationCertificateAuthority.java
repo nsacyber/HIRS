@@ -29,6 +29,7 @@ import hirs.data.persist.info.OSInfo;
 import hirs.data.persist.info.TPMInfo;
 import hirs.data.service.DeviceRegister;
 import hirs.persist.CertificateManager;
+import hirs.persist.ComponentResultManager;
 import hirs.persist.DBManager;
 import hirs.persist.DeviceManager;
 import hirs.persist.ReferenceDigestManager;
@@ -176,6 +177,7 @@ public abstract class AbstractAttestationCertificateAuthority
      */
     private Integer validDays = 1;
 
+    private final ComponentResultManager componentResultManager;
     private final CertificateManager certificateManager;
     private final ReferenceManifestManager referenceManifestManager;
     private final DeviceRegister deviceRegister;
@@ -192,6 +194,7 @@ public abstract class AbstractAttestationCertificateAuthority
      * @param privateKey the ACA private key
      * @param acaCertificate the ACA certificate
      * @param structConverter the struct converter
+     * @param componentResultManager the component result manager
      * @param certificateManager the certificate manager
      * @param referenceManifestManager the Reference Manifest manager
      * @param deviceRegister the device register
@@ -206,6 +209,7 @@ public abstract class AbstractAttestationCertificateAuthority
             final SupplyChainValidationService supplyChainValidationService,
             final PrivateKey privateKey, final X509Certificate acaCertificate,
             final StructConverter structConverter,
+            final ComponentResultManager componentResultManager,
             final CertificateManager certificateManager,
             final ReferenceManifestManager referenceManifestManager,
             final DeviceRegister deviceRegister, final int validDays,
@@ -217,6 +221,7 @@ public abstract class AbstractAttestationCertificateAuthority
         this.privateKey = privateKey;
         this.acaCertificate = acaCertificate;
         this.structConverter = structConverter;
+        this.componentResultManager = componentResultManager;
         this.certificateManager = certificateManager;
         this.referenceManifestManager = referenceManifestManager;
         this.deviceRegister = deviceRegister;

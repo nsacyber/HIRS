@@ -1444,7 +1444,8 @@ public class SupplyChainCredentialValidatorTest {
         );
 
         Assert.assertTrue(
-                SupplyChainCredentialValidator.isMatch(pcComponentIdentifier, nicComponentInfo)
+                SupplyChainCredentialValidator.isMatch(null, pcComponentIdentifier,
+                        nicComponentInfo)
         );
 
         pcComponentIdentifier = new ComponentIdentifier(
@@ -1458,7 +1459,8 @@ public class SupplyChainCredentialValidatorTest {
         );
 
         Assert.assertFalse(
-                SupplyChainCredentialValidator.isMatch(pcComponentIdentifier, nicComponentInfo)
+                SupplyChainCredentialValidator.isMatch(null, pcComponentIdentifier,
+                        nicComponentInfo)
         );
 
         pcComponentIdentifier = new ComponentIdentifier(
@@ -1472,7 +1474,8 @@ public class SupplyChainCredentialValidatorTest {
         );
 
         Assert.assertTrue(
-                SupplyChainCredentialValidator.isMatch(pcComponentIdentifier, nicComponentInfo)
+                SupplyChainCredentialValidator.isMatch(null, pcComponentIdentifier,
+                        nicComponentInfo)
         );
     }
 

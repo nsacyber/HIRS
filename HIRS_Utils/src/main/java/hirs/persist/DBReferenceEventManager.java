@@ -22,7 +22,7 @@ import java.util.UUID;
  * This class is used to persist and retrieve {@link hirs.data.persist.ReferenceDigestValue}s into
  * and from the database.
  */
-public class DBReferenceEventManager  extends DBManager<ReferenceDigestValue>
+public class DBReferenceEventManager extends DBManager<ReferenceDigestValue>
         implements ReferenceEventManager {
 
     private static final Logger LOGGER = LogManager.getLogger(DBReferenceDigestManager.class);

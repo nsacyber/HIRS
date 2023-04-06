@@ -16,6 +16,7 @@ import hirs.data.persist.certificate.EndorsementCredential;
 import hirs.data.persist.certificate.PlatformCredential;
 import hirs.persist.AppraiserManager;
 import hirs.persist.CertificateManager;
+import hirs.persist.ComponentResultManager;
 import hirs.persist.CrudManager;
 import hirs.persist.DBCertificateManager;
 import hirs.persist.DBDeviceGroupManager;
@@ -84,6 +85,9 @@ public class SupplyChainValidationServiceImplTest extends SpringPersistenceTest 
 
     @Mock
     private CertificateManager certificateManager;
+
+    @Mock
+    private ComponentResultManager componentResultManager;
 
     @Mock
     private CredentialValidator supplyChainCredentialValidator;
@@ -449,6 +453,7 @@ public class SupplyChainValidationServiceImplTest extends SpringPersistenceTest 
                 policyManager,
                 appraiserManager,
                 realCertMan,
+                componentResultManager,
                 null,
                 supplyChainValidationSummaryDBManager,
                 supplyChainCredentialValidator,
@@ -511,6 +516,7 @@ public class SupplyChainValidationServiceImplTest extends SpringPersistenceTest 
                 policyManager,
                 appraiserManager,
                 realCertMan,
+                componentResultManager,
                 null,
                 supplyChainValidationSummaryDBManager,
                 supplyChainCredentialValidator,
@@ -559,6 +565,7 @@ public class SupplyChainValidationServiceImplTest extends SpringPersistenceTest 
                 policyManager,
                 appraiserManager,
                 realCertMan,
+                componentResultManager,
                 null,
                 supplyChainValidationSummaryDBManager,
                 supplyChainCredentialValidator,
@@ -597,6 +604,7 @@ public class SupplyChainValidationServiceImplTest extends SpringPersistenceTest 
                 policyManager,
                 appraiserManager,
                 realCertMan,
+                componentResultManager,
                 null,
                 supplyChainValidationSummaryDBManager,
                 supplyChainCredentialValidator,
@@ -659,6 +667,7 @@ public class SupplyChainValidationServiceImplTest extends SpringPersistenceTest 
                 policyManager,
                 appraiserManager,
                 realCertMan,
+                componentResultManager,
                 null,
                 supplyChainValidationSummaryDBManager,
                 supplyChainCredentialValidator,
@@ -707,6 +716,7 @@ public class SupplyChainValidationServiceImplTest extends SpringPersistenceTest 
                 policyManager,
                 appraiserManager,
                 realCertMan,
+                componentResultManager,
                 null,
                 supplyChainValidationSummaryDBManager,
                 supplyChainCredentialValidator,
@@ -760,6 +770,7 @@ public class SupplyChainValidationServiceImplTest extends SpringPersistenceTest 
                 policyManager,
                 appraiserManager,
                 realCertMan,
+                componentResultManager,
                 null,
                 supplyChainValidationSummaryDBManager,
                 new SupplyChainCredentialValidator(),

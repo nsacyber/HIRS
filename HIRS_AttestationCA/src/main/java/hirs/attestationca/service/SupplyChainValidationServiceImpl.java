@@ -23,6 +23,7 @@ import hirs.data.persist.certificate.EndorsementCredential;
 import hirs.data.persist.certificate.PlatformCredential;
 import hirs.persist.AppraiserManager;
 import hirs.persist.CertificateManager;
+import hirs.persist.ComponentResultManager;
 import hirs.persist.CrudManager;
 import hirs.persist.DBManagerException;
 import hirs.persist.PersistenceConfiguration;
@@ -82,6 +83,7 @@ public class SupplyChainValidationServiceImpl implements SupplyChainValidationSe
     private ReferenceDigestManager referenceDigestManager;
     private ReferenceEventManager referenceEventManager;
     private CertificateManager certificateManager;
+    private ComponentResultManager componentResultManager;
     private CredentialValidator supplyChainCredentialValidator;
     private CrudManager<SupplyChainValidationSummary> supplyChainValidatorSummaryManager;
 
@@ -115,6 +117,7 @@ public class SupplyChainValidationServiceImpl implements SupplyChainValidationSe
     public SupplyChainValidationServiceImpl(
             final PolicyManager policyManager, final AppraiserManager appraiserManager,
             final CertificateManager certificateManager,
+            final ComponentResultManager componentResultManager,
             final ReferenceManifestManager referenceManifestManager,
             final CrudManager<SupplyChainValidationSummary> supplyChainValidatorSummaryManager,
             final CredentialValidator supplyChainCredentialValidator,
@@ -123,6 +126,7 @@ public class SupplyChainValidationServiceImpl implements SupplyChainValidationSe
         this.policyManager = policyManager;
         this.appraiserManager = appraiserManager;
         this.certificateManager = certificateManager;
+        this.componentResultManager = componentResultManager;
         this.referenceManifestManager = referenceManifestManager;
         this.supplyChainValidatorSummaryManager = supplyChainValidatorSummaryManager;
         this.supplyChainCredentialValidator = supplyChainCredentialValidator;
