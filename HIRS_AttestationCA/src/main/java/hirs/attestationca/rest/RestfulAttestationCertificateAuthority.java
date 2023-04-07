@@ -4,6 +4,7 @@ import hirs.attestationca.AbstractAttestationCertificateAuthority;
 import hirs.attestationca.service.SupplyChainValidationService;
 import hirs.data.service.DeviceRegister;
 import hirs.persist.CertificateManager;
+import hirs.persist.ComponentResultManager;
 import hirs.persist.DBManager;
 import hirs.persist.DeviceManager;
 import hirs.persist.ReferenceDigestManager;
@@ -38,6 +39,7 @@ public class RestfulAttestationCertificateAuthority
      * @param privateKey the ACA private key
      * @param acaCertificate the ACA certificate
      * @param structConverter the struct converter
+     * @param componentResultManager the component result manager
      * @param certificateManager the certificate manager
      * @param referenceManifestManager the referenceManifestManager
      * @param deviceRegister the device register
@@ -53,6 +55,7 @@ public class RestfulAttestationCertificateAuthority
             final SupplyChainValidationService supplyChainValidationService,
             final PrivateKey privateKey, final X509Certificate acaCertificate,
             final StructConverter structConverter,
+            final ComponentResultManager componentResultManager,
             final CertificateManager certificateManager,
             final ReferenceManifestManager referenceManifestManager,
             final DeviceRegister deviceRegister,
@@ -62,7 +65,7 @@ public class RestfulAttestationCertificateAuthority
             final ReferenceEventManager referenceEventManager,
             @Value("${aca.certificates.validity}") final int validDays) {
         super(supplyChainValidationService, privateKey, acaCertificate, structConverter,
-                certificateManager, referenceManifestManager,
+                componentResultManager, certificateManager, referenceManifestManager,
                 deviceRegister, validDays, deviceManager,
                 tpm2ProvisionerStateDBManager, referenceDigestManager, referenceEventManager);
     }

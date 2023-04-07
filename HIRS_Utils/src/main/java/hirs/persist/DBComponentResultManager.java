@@ -119,6 +119,7 @@ public class DBComponentResultManager extends DBManager<ComponentResult>
     }
 
     @Override
+    @SuppressWarnings("unchecked")
     public Set<ComponentResult> getComponentResultsByCertificate(final UUID certificateId) {
         LOGGER.debug("Getting record associated with {}", certificateId);
         if (certificateId == null) {
