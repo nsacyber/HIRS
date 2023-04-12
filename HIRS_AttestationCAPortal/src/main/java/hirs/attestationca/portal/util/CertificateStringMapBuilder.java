@@ -379,8 +379,10 @@ public final class CertificateStringMapBuilder {
                 HashMap<Integer, String> results = new HashMap<>();
                 for (ComponentResult componentResult : componentResultManager
                         .getComponentResultList()) {
-                    if (componentResult.getId().equals(certificate.getId())) {
-                        results.put(componentResult.getComponentHash(), componentResult.getExpected());
+                    if (componentResult.getCertificateId()
+                            .equals(certificate.getId())) {
+                        results.put(componentResult.getComponentHash(),
+                                componentResult.getExpected());
                     }
                 }
 

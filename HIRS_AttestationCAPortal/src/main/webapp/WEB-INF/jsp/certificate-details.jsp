@@ -619,9 +619,8 @@
                                                             <div class="panel panel-default">
                                                                 <c:choose>
                                                                     <c:when test="${fn:contains(initialData.failures, combined)}">
-                                                                        <div class="tooltip" style="background-color: red; color: white">
                                                                         <c:set var="expected" value="${initialData.componentResults[combined]}" scope="page" />
-                                                                        <span class="tooltiptext" title="${expected}">
+                                                                        <div class="tooltip" style="background-color: red; color: white" title="Testing">
                                                                     </c:when>
                                                                     <c:otherwise>
                                                                         <div class="panel-heading">
@@ -635,9 +634,6 @@
                                                                             <span data-toggle="tooltip" data-placement="top" title="Component Class">Platform Components</span>
                                                                         </c:otherwise>
                                                                     </c:choose>
-                                                                    <c:when test="${fn:contains(initialData.failures, combined)}">
-                                                                        </span>
-                                                                    </c:when>
                                                                 </div>
                                                                 <div class="panel-body">
                                                                     <span class="fieldHeader">Manufacturer:</span>
