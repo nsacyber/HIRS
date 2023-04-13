@@ -26,7 +26,8 @@ public class Commander {
                     + "The RIM will be written to stdout by default.")
     private String outFile = "";
     @Parameter(names = {"-s", "--sign <path>"}, order = 3,
-            description = "Specify a RIM file to append a signature to.")
+            validateWith = FileArgumentValidator.class,
+            description = "Generate a detached signature for the file at <path>")
     private String signFile = "";
     @Parameter(names = {"-v", "--verify <path>"}, order = 4,
             description = "Specify a RIM file to verify.")

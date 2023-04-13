@@ -54,8 +54,28 @@ public class Main {
                 privateKeyFile = commander.getPrivateKeyFile();
                 boolean embeddedCert = commander.isEmbedded();
                 boolean defaultKey = commander.isDefaultKey();
+                String outputFile = commander.getOutFile();
+                if (!trustStoreFile.isEmpty()) {
+                    gateway.setDefaultCredentials(true);
+                    gateway.setJksTruststoreFile(trustStoreFile);
+                } else if (!certificateFile.isEmpty() && !privateKeyFile.isEmpty()) {
+                    gateway.setDefaultCredentials(false);
+                    gateway.setPemCertificateFile(certificateFile);
+                    gateway.setPemPrivateKeyFile(privateKeyFile);
+                    if (embeddedCert) {
+                        gateway.setEmbeddedCert(true);
+                    }
+                } else if (defaultKey) {
+                    gateway.setDefaultCredentials(true);
+                    gateway.setJksTruststoreFile(SwidTagConstants.DEFAULT_KEYSTORE_FILE);
+                } else {
+                    System.out.println("A private key (-k) and public certificate (-p) " +
+                            "are required, or the default key (-d) must be indicated.");
+                    System.exit(1);
+                }
                 if (!commander.getSignFile().isEmpty()) {
-
+                    Document doc = gateway.signXMLDocument(commander.getSignFile());
+                    gateway.writeSwidTagFile(doc, outputFile);
                 } else {
                     String createType = commander.getCreateType().toUpperCase();
                     String attributesFile = commander.getAttributesFile();
@@ -95,51 +115,11 @@ public class Main {
                                 System.exit(1);
                             }
                         }
-                        gateway.generateSwidTag(commander.getOutFile());
                     } else {
                         System.out.println("No create type given, nothing to do");
                         System.exit(1);
                     }
-                }
-                if (!trustStoreFile.isEmpty()) {
-                    gateway.setDefaultCredentials(true);
-                    gateway.setJksTruststoreFile(trustStoreFile);
-                } else if (!certificateFile.isEmpty() && !privateKeyFile.isEmpty()) {
-                    gateway.setDefaultCredentials(false);
-                    gateway.setPemCertificateFile(certificateFile);
-                    gateway.setPemPrivateKeyFile(privateKeyFile);
-                    if (embeddedCert) {
-                        gateway.setEmbeddedCert(true);
-                    }
-                } else if (defaultKey) {
-                    gateway.setDefaultCredentials(true);
-                    gateway.setJksTruststoreFile(SwidTagConstants.DEFAULT_KEYSTORE_FILE);
-                } else {
-                    System.out.println("A private key (-k) and public certificate (-p) " +
-                            "are required, or the default key (-d) must be indicated.");
-                    System.exit(1);
-                }
-                if (!commander.getSignFile().isEmpty()) {
-                    Document doc = gateway.signXMLDocument(commander.getSignFile());
-                    gateway.writeSwidTagFile(doc, "");
-                } else {
-                    String createType = commander.getCreateType().toUpperCase();
-                    String attributesFile = commander.getAttributesFile();
-                    if (createType.equals("BASE")) {
-                        if (!attributesFile.isEmpty()) {
-                            gateway.setAttributesFile(attributesFile);
-                        }
-                        if (!rimEventLogFile.isEmpty()) {
-                            gateway.setRimEventLog(rimEventLogFile);
-                        } else {
-                            System.out.println("Error: a support RIM is required!");
-                            System.exit(1);
-                        }
-                    } else {
-                        System.out.println("No create type given, nothing to do");
-                        System.exit(1);
-                    }
-                    gateway.generateSwidTag(commander.getOutFile());
+                    gateway.generateSwidTag(outputFile);
                 }
             }
         }
