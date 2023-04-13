@@ -175,6 +175,7 @@ public class TestSwidTagGateway {
             gateway.setDefaultCredentials(true);
             Document doc = gateway.signXMLDocument(signFilePath);
             gateway.writeSwidTagFile(doc, DEFAULT_OUTPUT);
+            validator.validateSwidTag(DEFAULT_OUTPUT, "DEFAULT");
         } catch (Exception e) {
             e.printStackTrace();
         }
