@@ -12,22 +12,43 @@ import org.bouncycastle.openssl.jcajce.JcaPEMKeyConverter;
 import org.bouncycastle.util.encoders.Base64;
 import org.bouncycastle.util.encoders.DecoderException;
 
-import java.io.*;
-import java.security.*;
+import java.io.BufferedInputStream;
+import java.io.ByteArrayInputStream;
+import java.io.DataInputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.security.KeyFactory;
+import java.security.KeyPair;
+import java.security.KeyStore;
+import java.security.KeyStoreException;
+import java.security.NoSuchAlgorithmException;
+import java.security.PrivateKey;
+import java.security.PublicKey;
+import java.security.SecureRandom;
+import java.security.Security;
+import java.security.Signature;
+import java.security.UnrecoverableEntryException;
+import java.security.UnrecoverableKeyException;
+import java.security.cert.Certificate;
 import java.security.cert.CertificateException;
 import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.PKCS8EncodedKeySpec;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
- * This class parses private key, public key, and certificate for use in their respective java.security objects.
+ * This class parses private key, public key, and certificates for use in
+ * their respective java.security objects.
  */
 public class CredentialParser {
     private static final String X509 = "X.509";
-    private static final String JKS = "JKS";
-    private static final String PEM = "PEM";
+    private static final String DEFAULT_ALGORITHM = "RSA";
     private static final String PKCS1_HEADER = "-----BEGIN RSA PRIVATE KEY-----";
     private static final String PKCS1_FOOTER = "-----END RSA PRIVATE KEY-----";
     private static final String PKCS8_HEADER = "-----BEGIN PRIVATE KEY-----";
@@ -54,14 +75,94 @@ public class CredentialParser {
         return publicKey;
     }
 
-    public void parseJKSCredentials(String jksKeystore) {
-        KeyStore.PrivateKeyEntry privateKeyEntry =
-                parseKeystorePrivateKey(jksKeystore,
-                        SwidTagConstants.DEFAULT_PRIVATE_KEY_ALIAS,
-                        SwidTagConstants.DEFAULT_KEYSTORE_PASSWORD);
-        certificate = (X509Certificate) privateKeyEntry.getCertificate();
-        privateKey = privateKeyEntry.getPrivateKey();
-        publicKey = certificate.getPublicKey();
+    /**
+     * This method parses the CA cert chain, private key, and public key from
+     * a JKS truststore.
+     *
+     * @param jksKeystore the truststore file
+     */
+    public List<X509Certificate> parseJKSCredentials(String jksKeystore,
+                                                     String alias,
+                                                     String password) {
+        ArrayList<X509Certificate> keystoreAsList = new ArrayList<>();
+        try {
+            KeyStore keystore = KeyStore.getInstance("JKS");
+            keystore.load(new FileInputStream(jksKeystore), password.toCharArray());
+            for (Certificate cert : keystore.getCertificateChain(alias)) {
+                keystoreAsList.add((X509Certificate) cert);
+            }
+            KeyStore.PrivateKeyEntry privateKeyEntry =
+                    (KeyStore.PrivateKeyEntry) keystore.getEntry(alias,
+                            new KeyStore.PasswordProtection(password.toCharArray()));
+            certificate = (X509Certificate) privateKeyEntry.getCertificate();
+            privateKey = privateKeyEntry.getPrivateKey();
+            publicKey = certificate.getPublicKey();
+        } catch (KeyStoreException e) {
+            System.out.println("JKS keystore type not supported");
+        } catch (FileNotFoundException e) {
+            System.out.println("Unable to locate " + jksKeystore);
+        } catch (IOException e) {
+            if (e.getCause() instanceof UnrecoverableKeyException) {
+                System.out.println("Password is incorrect, please resubmit");
+            } else if (password.isEmpty()) {
+                System.out.println("No password given, please resubmit");
+            } else {
+                System.out.println("Error importing keystore data:");
+                e.printStackTrace();
+            }
+        } catch (NoSuchAlgorithmException e) {
+            System.out.println("Unable to verify keystore integrity");
+            e.printStackTrace();
+        } catch (CertificateException e) {
+            System.out.println("Error loading certificates from keystore:");
+            e.printStackTrace();
+        } catch (UnrecoverableEntryException e) {
+            e.printStackTrace();
+        }
+
+        return keystoreAsList;
+    }
+
+    /**
+     * Convenience method for parsing the default JKS.
+     */
+    public List<X509Certificate> parseDefaultCredentials() {
+        return parseJKSCredentials(SwidTagConstants.DEFAULT_KEYSTORE_FILE,
+                SwidTagConstants.DEFAULT_PRIVATE_KEY_ALIAS,
+                SwidTagConstants.DEFAULT_KEYSTORE_PASSWORD);
+    }
+
+    /**
+     * This method returns the X509Certificate object from a PEM truststore.
+     *
+     * @param truststore the PEM truststore
+     * @return a list of X509 certs
+     */
+    public List<X509Certificate> parseCertsFromPEM(String truststore) {
+        return parsePEMCertificates(truststore);
+    }
+
+    public void parsePEMCredentials(List<X509Certificate> truststore, String privateKeyFile)
+            throws Exception {
+        byte[] challengeString = new byte[15];
+        for (X509Certificate cert : truststore) {
+            certificate = cert;
+            privateKey = parsePEMPrivateKey(privateKeyFile, DEFAULT_ALGORITHM);
+            publicKey = certificate.getPublicKey();
+            SecureRandom.getInstanceStrong().nextBytes(challengeString);
+            Signature signature = Signature.getInstance("SHA256withRSA");
+            signature.initSign(privateKey);
+            signature.update(challengeString);
+            byte[] signedChallenge = signature.sign();
+            signature.initVerify(publicKey);
+            signature.update(challengeString);
+            if (signature.verify(signedChallenge)) {
+                System.out.println("Matched private key to truststore certificate");
+                break;
+            } else {
+                publicKey = null;
+            }
+        }
     }
 
     public void parsePEMCredentials(String certificateFile, String privateKeyFile)
@@ -70,7 +171,7 @@ public class CredentialParser {
         if (certificate.getIssuerX500Principal().equals(certificate.getSubjectX500Principal())) {
             throw new CertificateException("Signing certificate cannot be self-signed!");
         }
-        privateKey = parsePEMPrivateKey(privateKeyFile, "RSA");
+        privateKey = parsePEMPrivateKey(privateKeyFile, DEFAULT_ALGORITHM);
         publicKey = certificate.getPublicKey();
     }
 
@@ -78,6 +179,7 @@ public class CredentialParser {
      * This method extracts certificate bytes from a string. The bytes are assumed to be
      * PEM format, and a header and footer are concatenated with the input string to
      * facilitate proper parsing.
+     *
      * @param pemString the input string
      * @return an X509Certificate created from the string
      * @throws CertificateException if instantiating the CertificateFactory errors
@@ -86,10 +188,10 @@ public class CredentialParser {
         try {
             CertificateFactory factory = CertificateFactory.getInstance(X509);
             InputStream inputStream = new ByteArrayInputStream((CERTIFICATE_HEADER
-                                                                + System.lineSeparator()
-                                                                + pemString
-                                                                + System.lineSeparator()
-                                                                + CERTIFICATE_FOOTER).getBytes());
+                    + System.lineSeparator()
+                    + pemString
+                    + System.lineSeparator()
+                    + CERTIFICATE_FOOTER).getBytes());
             return (X509Certificate) factory.generateCertificate(inputStream);
         } catch (CertificateException e) {
             throw e;
@@ -97,20 +199,10 @@ public class CredentialParser {
     }
 
     /**
-     * This method returns the X509Certificate object from a PEM certificate file.
-     * @param certificateFile
-     * @return
-     * @throws FileNotFoundException
-     */
-    public List<X509Certificate> parseCertsFromPEM(String certificateFile)
-            throws FileNotFoundException {
-        return parsePEMCertificates(certificateFile);
-    }
-
-    /**
      * This method returns the X509Certificate found in a PEM file.
      * Unchecked typcase warnings are suppressed because the CertificateFactory
      * implements X509Certificate objects explicitly.
+     *
      * @param filename pem file
      * @return a list containing all X509Certificates extracted
      */
@@ -136,7 +228,8 @@ public class CredentialParser {
         } catch (CertificateException e) {
             System.out.println("Error in certificate factory: " + e.getMessage());
         } catch (IOException e) {
-            System.out.println("Error reading from input stream: " + e.getMessage());
+            System.out.println("Error reading from input stream: " + filename);
+            e.printStackTrace();
         } finally {
             try {
                 if (fis != null) {
@@ -158,6 +251,7 @@ public class CredentialParser {
      * Both PKCS1 and PKCS8 formats are handled.
      * Algorithm argument is present to allow handling of multiple encryption algorithms,
      * but for now it is always RSA.
+     *
      * @param filename
      * @return
      */
@@ -218,6 +312,7 @@ public class CredentialParser {
 
     /**
      * This method reads a PKCS1 keypair from a PEM file.
+     *
      * @param filename
      * @return
      */
@@ -232,12 +327,15 @@ public class CredentialParser {
 
     /**
      * This method returns the private key from a JKS keystore.
+     *
      * @param keystoreFile
      * @param alias
      * @param password
      * @return KeyStore.PrivateKeyEntry
      */
-    private KeyStore.PrivateKeyEntry parseKeystorePrivateKey(String keystoreFile, String alias, String password) {
+    private KeyStore.PrivateKeyEntry parseKeystorePrivateKey(String keystoreFile,
+                                                             String alias,
+                                                             String password) {
         KeyStore keystore = null;
         KeyStore.PrivateKeyEntry privateKey = null;
         try {
@@ -247,7 +345,8 @@ public class CredentialParser {
                     new KeyStore.PasswordProtection(password.toCharArray()));
         } catch (FileNotFoundException e) {
             System.out.println("Cannot locate keystore " + keystoreFile);
-        } catch (KeyStoreException | NoSuchAlgorithmException | UnrecoverableEntryException | CertificateException | IOException e) {
+        } catch (KeyStoreException | NoSuchAlgorithmException | UnrecoverableEntryException |
+                CertificateException | IOException e) {
             e.printStackTrace();
         }
 
@@ -256,6 +355,7 @@ public class CredentialParser {
 
     /**
      * This method returns the authorityInfoAccess from an X509Certificate.
+     *
      * @return
      * @throws IOException
      */
@@ -264,7 +364,7 @@ public class CredentialParser {
         byte[] extension = certificate.getExtensionValue(Extension.authorityInfoAccess.getId());
         if (extension != null && extension.length > 0) {
             AuthorityInformationAccess aia = AuthorityInformationAccess.getInstance(
-                                    JcaX509ExtensionUtils.parseExtensionValue(extension));
+                    JcaX509ExtensionUtils.parseExtensionValue(extension));
             for (AccessDescription ad : aia.getAccessDescriptions()) {
                 if (ad.getAccessMethod().toString().equals(SwidTagConstants.CA_ISSUERS)) {
                     sb.append("CA issuers - ");
@@ -279,6 +379,7 @@ public class CredentialParser {
 
     /**
      * This method returns the subjectKeyIdentifier from the local X509Certificate.
+     *
      * @return the String representation of the subjectKeyIdentifier
      * @throws IOException
      */
@@ -293,6 +394,7 @@ public class CredentialParser {
 
     /**
      * This method returns the subjectKeyIdentifier from a given X509Certificate.
+     *
      * @param certificate the cert to pull the subjectKeyIdentifier from
      * @return the String representation of the subjectKeyIdentifier
      * @throws IOException
