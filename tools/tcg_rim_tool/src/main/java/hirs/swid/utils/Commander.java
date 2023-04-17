@@ -19,25 +19,25 @@ public class Commander {
     private String createType = "";
     @Parameter(names = {"-a", "--attributes <path>"}, order = 1,
             description = "The configuration file holding attributes "
-            + "to populate the base RIM with.")
+                    + "to populate the base RIM with.")
     private String attributesFile = "";
     @Parameter(names = {"-o", "--out <path>"}, order = 2,
             description = "The file to write the RIM out to. "
-            + "The RIM will be written to stdout by default.")
+                    + "The RIM will be written to stdout by default.")
     private String outFile = "";
     @Parameter(names = {"-v", "--verify <path>"}, order = 3,
             description = "Specify a RIM file to verify.")
     private String verifyFile = "";
     @Parameter(names = {"-t", "--truststore <path>"}, order = 4,
             description = "The truststore to sign the base RIM created "
-            + "or to validate the signed base RIM.")
+                    + "or to validate the signed base RIM.")
     private String truststoreFile = "";
     @Parameter(names = {"-k", "--privateKeyFile <path>"}, order = 5,
             description = "The private key used to sign the base RIM created by this tool.")
     private String privateKeyFile = "";
     @Parameter(names = {"-p", "--publicCertificate <path>"}, order = 6,
             description = "The public key certificate to embed in the base RIM created by "
-            + "this tool.")
+                    + "this tool.")
     private String publicCertificate = "";
     @Parameter(names = {"-e", "--embed-cert"}, order = 7,
             description = "Embed the provided certificate in the signed swidtag.")
@@ -45,7 +45,7 @@ public class Commander {
     @Parameter(names = {"-d", "--default-key"}, order = 8,
             description = "Use default signing credentials.")
     private boolean defaultKey = false;
-    @Parameter(names = {"-l", "--rimel <path>"}, order = 9,
+    @Parameter(names = {"-l", "--rimel <path>"}, order = 9, required = true,
             description = "The TCG eventlog file to use as a support RIM.")
     private String rimEventLog = "";
     @Parameter(names = {"--timestamp"}, order = 10, variableArity = true,
@@ -74,7 +74,9 @@ public class Commander {
         return verifyFile;
     }
 
-    public String getTruststoreFile() { return truststoreFile; }
+    public String getTruststoreFile() {
+        return truststoreFile;
+    }
 
     public String getPrivateKeyFile() {
         return privateKeyFile;
@@ -84,11 +86,17 @@ public class Commander {
         return publicCertificate;
     }
 
-    public boolean isEmbedded() { return embedded; }
+    public boolean isEmbedded() {
+        return embedded;
+    }
 
-    public boolean isDefaultKey() { return defaultKey; }
+    public boolean isDefaultKey() {
+        return defaultKey;
+    }
 
-    public String getRimEventLog() { return rimEventLog; }
+    public String getRimEventLog() {
+        return rimEventLog;
+    }
 
     public List<String> getTimestampArguments() {
         return timestampArguments;
@@ -119,25 +127,22 @@ public class Commander {
 
         return sb.toString();
     }
+
     public String toString() {
         StringBuilder sb = new StringBuilder();
         sb.append("Creating: " + this.getCreateType() + System.lineSeparator());
         sb.append("Using attributes file: " + this.getAttributesFile() + System.lineSeparator());
         sb.append("Write to: " + this.getOutFile() + System.lineSeparator());
         sb.append("Verify file: " + this.getVerifyFile() + System.lineSeparator());
-        if (!this.getTruststoreFile().isEmpty()) {
+        if (this.isDefaultKey()) {
+            sb.append("Truststore file: default (" + SwidTagConstants.DEFAULT_KEYSTORE_FILE + ")"
+                    + System.lineSeparator());
+        } else {
             sb.append("Truststore file: " + this.getTruststoreFile() + System.lineSeparator());
-        } else if (!this.getPrivateKeyFile().isEmpty() &&
-                    !this.getPublicCertificate().isEmpty()) {
             sb.append("Private key file: " + this.getPrivateKeyFile() + System.lineSeparator());
             sb.append("Public certificate: " + this.getPublicCertificate()
                     + System.lineSeparator());
             sb.append("Embedded certificate: " + this.isEmbedded() + System.lineSeparator());
-        } else if (this.isDefaultKey()){
-            sb.append("Truststore file: default (" + SwidTagConstants.DEFAULT_KEYSTORE_FILE + ")"
-                    + System.lineSeparator());
-        } else {
-            sb.append("Signing credential: (none given)" + System.lineSeparator());
         }
         sb.append("Event log support RIM: " + this.getRimEventLog() + System.lineSeparator());
         List<String> timestampArguments = this.getTimestampArguments();

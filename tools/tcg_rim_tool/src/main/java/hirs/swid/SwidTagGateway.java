@@ -84,7 +84,7 @@ public class SwidTagGateway {
     private Marshaller marshaller;
     private String attributesFile;
     private boolean defaultCredentials;
-    private String jksTruststoreFile;
+    private String truststoreFile;
     private String pemPrivateKeyFile;
     private String pemCertificateFile;
     private boolean embeddedCert;
@@ -102,6 +102,7 @@ public class SwidTagGateway {
             marshaller = jaxbContext.createMarshaller();
             attributesFile = SwidTagConstants.DEFAULT_ATTRIBUTES_FILE;
             defaultCredentials = true;
+            truststoreFile = "";
             pemCertificateFile = "";
             embeddedCert = false;
             rimEventLog = "";
@@ -133,12 +134,12 @@ public class SwidTagGateway {
     }
 
     /**
-     * Setter for JKS keystore file
+     * Setter for keystore file
      *
-     * @param jksTruststoreFile
+     * @param truststoreFile
      */
-    public void setJksTruststoreFile(final String jksTruststoreFile) {
-        this.jksTruststoreFile = jksTruststoreFile;
+    public void setTruststoreFile(final String truststoreFile) {
+        this.truststoreFile = truststoreFile;
     }
 
     /**
@@ -179,6 +180,7 @@ public class SwidTagGateway {
 
     /**
      * Setter for timestamp format in XML signature
+     *
      * @param timestampFormat
      */
     public void setTimestampFormat(String timestampFormat) {
@@ -187,6 +189,7 @@ public class SwidTagGateway {
 
     /**
      * Setter for timestamp input - RFC3852 + file or RFC3339 + value
+     *
      * @param timestampArgument
      */
     public void setTimestampArgument(String timestampArgument) {
@@ -245,7 +248,7 @@ public class SwidTagGateway {
                 writeSwidTagFile(signedSoftwareIdentity, filename);
             } else {
                 System.out.println("The following fields cannot be empty or null: "
-                        + errorRequiredFields.substring(0, errorRequiredFields.length()-2));
+                        + errorRequiredFields.substring(0, errorRequiredFields.length() - 2));
                 System.exit(1);
             }
         } catch (JsonException e) {
@@ -531,6 +534,7 @@ public class SwidTagGateway {
             addNonNullAttribute(attributes, key, value);
         }
     }
+
     /**
      * This utility method checks if an attribute value is empty before adding it to the map.
      *
@@ -593,14 +597,19 @@ public class SwidTagGateway {
             PrivateKey privateKey;
             CredentialParser cp = new CredentialParser();
             if (defaultCredentials) {
-                cp.parseJKSCredentials(jksTruststoreFile);
+                cp.parseDefaultCredentials();
                 privateKey = cp.getPrivateKey();
                 KeyName keyName = kiFactory.newKeyName(cp.getCertificateSubjectKeyIdentifier());
                 keyInfoElements.add(keyName);
             } else {
-                cp.parsePEMCredentials(pemCertificateFile, pemPrivateKeyFile);
-                X509Certificate certificate = cp.getCertificate();
+                if (!truststoreFile.isEmpty()) {
+                    List<X509Certificate> truststore = cp.parseCertsFromPEM(truststoreFile);
+                    cp.parsePEMCredentials(truststore, pemPrivateKeyFile);
+                } else {
+                    cp.parsePEMCredentials(pemCertificateFile, pemPrivateKeyFile);
+                }
                 privateKey = cp.getPrivateKey();
+                X509Certificate certificate = cp.getCertificate();
                 if (embeddedCert) {
                     ArrayList<Object> x509Content = new ArrayList<Object>();
                     x509Content.add(certificate.getSubjectX500Principal().getName());
@@ -646,7 +655,8 @@ public class SwidTagGateway {
     /**
      * This method creates a timestamp element and populates it with data according to
      * the RFC format set in timestampFormat.  The element is returned within an XMLObject.
-     * @param doc the Document representing the XML to be signed
+     *
+     * @param doc        the Document representing the XML to be signed
      * @param sigFactory the SignatureFactory object
      * @return an XMLObject containing the timestamp element
      */
@@ -687,7 +697,7 @@ public class SwidTagGateway {
         SignatureProperties signatureProperties = sigFactory.newSignatureProperties(
                 Collections.singletonList(signatureProperty), null);
         XMLObject xmlObject = sigFactory.newXMLObject(
-                Collections.singletonList(signatureProperties), null,null,null);
+                Collections.singletonList(signatureProperties), null, null, null);
 
         return xmlObject;
     }

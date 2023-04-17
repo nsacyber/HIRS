@@ -1,7 +1,8 @@
 package hirs.swid;
 
-import hirs.swid.utils.Commander;
 import com.beust.jcommander.JCommander;
+import hirs.swid.utils.Commander;
+import hirs.swid.utils.CredentialArgumentValidator;
 import hirs.swid.utils.TimestampArgumentValidator;
 
 import java.util.List;
@@ -14,6 +15,7 @@ public class Main {
         jc.parse(args);
         SwidTagGateway gateway;
         SwidTagValidator validator;
+        CredentialArgumentValidator caValidator;
 
         if (commander.isHelp()) {
             jc.usage();
@@ -26,28 +28,28 @@ public class Main {
                 String rimel = commander.getRimEventLog();
                 String certificateFile = commander.getPublicCertificate();
                 String trustStore = commander.getTruststoreFile();
-                if (!verifyFile.isEmpty()) {
-                    if (!rimel.isEmpty()) {
-                        validator.setRimEventLog(rimel);
-                    }
-                    if (!trustStore.isEmpty()) {
-                        validator.setTrustStoreFile(trustStore);
-                    }
-                    if (!certificateFile.isEmpty()) {
-                        System.out.println("A single cert cannot be used for verification. " +
-                                "The signing cert will be searched for in the trust store.");
-                    }
-                    validator.validateSwidTag(verifyFile);
+                boolean defaultKey = commander.isDefaultKey();
+                validator.setRimEventLog(rimel);
+                if (defaultKey) {
+                    validator.validateSwidTag(verifyFile, "DEFAULT");
                 } else {
-                    System.out.println("Need a RIM file to validate!");
-                    System.exit(1);
+                    caValidator = new CredentialArgumentValidator(trustStore,
+                            certificateFile, "", "", "", true);
+                    if (caValidator.isValid()) {
+                        validator.setTrustStoreFile(trustStore);
+                        validator.validateSwidTag(verifyFile, caValidator.getFormat());
+                    } else {
+                        System.out.println("Invalid combination of credentials given: "
+                                + caValidator.getErrorMessage());
+                        System.exit(1);
+                    }
                 }
             } else {
                 gateway = new SwidTagGateway();
                 System.out.println(commander.toString());
                 String createType = commander.getCreateType().toUpperCase();
                 String attributesFile = commander.getAttributesFile();
-                String jksTruststoreFile = commander.getTruststoreFile();
+                String truststoreFile = commander.getTruststoreFile();
                 String certificateFile = commander.getPublicCertificate();
                 String privateKeyFile = commander.getPrivateKeyFile();
                 boolean embeddedCert = commander.isEmbedded();
@@ -58,30 +60,27 @@ public class Main {
                         if (!attributesFile.isEmpty()) {
                             gateway.setAttributesFile(attributesFile);
                         }
-                        if (!jksTruststoreFile.isEmpty()) {
+                        if (defaultKey) {
                             gateway.setDefaultCredentials(true);
-                            gateway.setJksTruststoreFile(jksTruststoreFile);
-                        } else if (!certificateFile.isEmpty() && !privateKeyFile.isEmpty()) {
+                            gateway.setTruststoreFile(SwidTagConstants.DEFAULT_KEYSTORE_FILE);
+                        } else {
                             gateway.setDefaultCredentials(false);
-                            gateway.setPemCertificateFile(certificateFile);
-                            gateway.setPemPrivateKeyFile(privateKeyFile);
+                            caValidator = new CredentialArgumentValidator(truststoreFile,
+                                    certificateFile, privateKeyFile, "", "", false);
+                            if (caValidator.isValid()) {
+                                gateway.setTruststoreFile(truststoreFile);
+                                gateway.setPemCertificateFile(certificateFile);
+                                gateway.setPemPrivateKeyFile(privateKeyFile);
+                            } else {
+                                System.out.println("Invalid combination of credentials given: "
+                                        + caValidator.getErrorMessage());
+                                System.exit(1);
+                            }
                             if (embeddedCert) {
                                 gateway.setEmbeddedCert(true);
                             }
-                        } else if (defaultKey){
-                            gateway.setDefaultCredentials(true);
-                            gateway.setJksTruststoreFile(SwidTagConstants.DEFAULT_KEYSTORE_FILE);
-                        } else {
-                            System.out.println("A private key (-k) and public certificate (-p) " +
-                                    "are required, or the default key (-d) must be indicated.");
-                            System.exit(1);
                         }
-                        if (rimEventLog.isEmpty()) {
-                            System.out.println("Error: a support RIM is required!");
-                            System.exit(1);
-                        } else {
-                            gateway.setRimEventLog(rimEventLog);
-                        }
+                        gateway.setRimEventLog(rimEventLog);
                         List<String> timestampArguments = commander.getTimestampArguments();
                         if (timestampArguments.size() > 0) {
                             if (new TimestampArgumentValidator(timestampArguments).isValid()) {
