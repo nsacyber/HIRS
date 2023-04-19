@@ -614,13 +614,12 @@
                                             <div class="panel-body">
                                                 <div id="componentIdentifier" class="row">
                                                     <c:forEach items="${initialData.componentsIdentifier}" var="component">
-                                                        <c:set var="combined" value="${component.hashCode()}" scope="page" />
+                                                        <c:set var="combined" value="${component.hashCode()}" scope="page"/>
                                                         <div class="component col col-md-4">
                                                             <div class="panel panel-default">
                                                                 <c:choose>
                                                                     <c:when test="${fn:contains(initialData.failures, combined)}">
-                                                                        <c:set var="expected" value="${initialData.componentResults[combined]}" scope="page" />
-                                                                        <div class="tooltip" style="background-color: red; color: white" title="Testing">
+                                                                        <div class="panel-heading" style="background-color: red; color: white">
                                                                     </c:when>
                                                                     <c:otherwise>
                                                                         <div class="panel-heading">
@@ -666,7 +665,7 @@
                                                                             <span class="fieldValue">${component.getCertificateIdentifier().getIssuerDN()}</span><br />
                                                                             <span class="fieldHeader">Platform Certificate Serial Number:</span>
                                                                             <span class="fieldValue">${component.getCertificateIdentifier().getCertificateSerialNumber()}</span><br />
-                                                                            <span class="fieldHeader">Platform Certificate URI:</span>  
+                                                                            <span class="fieldHeader">Platform Certificate URI:</span>
                                                                         </c:if>
                                                                         <span class="fieldValue">
                                                                             <a href="${component.getComponentPlatformUri().getUniformResourceIdentifier()}">
@@ -933,7 +932,7 @@
                     var subjectKeyIdentifier = ${initialData.subjectKeyIdentifier};
                     $("#subjectKeyIdentifier").html(byteToHexString(subjectKeyIdentifier));
                 }
-            </c:if>            
+            </c:if>
 
                 //Initilize tooltips
                 $('[data-toggle="tooltip"]').tooltip();
