@@ -55,24 +55,6 @@ public class Main {
                 boolean embeddedCert = commander.isEmbedded();
                 boolean defaultKey = commander.isDefaultKey();
                 String outputFile = commander.getOutFile();
-                if (!trustStoreFile.isEmpty()) {
-                    gateway.setDefaultCredentials(true);
-                    gateway.setJksTruststoreFile(trustStoreFile);
-                } else if (!certificateFile.isEmpty() && !privateKeyFile.isEmpty()) {
-                    gateway.setDefaultCredentials(false);
-                    gateway.setPemCertificateFile(certificateFile);
-                    gateway.setPemPrivateKeyFile(privateKeyFile);
-                    if (embeddedCert) {
-                        gateway.setEmbeddedCert(true);
-                    }
-                } else if (defaultKey) {
-                    gateway.setDefaultCredentials(true);
-                    gateway.setJksTruststoreFile(SwidTagConstants.DEFAULT_KEYSTORE_FILE);
-                } else {
-                    System.out.println("A private key (-k) and public certificate (-p) " +
-                            "are required, or the default key (-d) must be indicated.");
-                    System.exit(1);
-                }
                 if (!commander.getSignFile().isEmpty()) {
                     Document doc = gateway.signXMLDocument(commander.getSignFile());
                     gateway.writeSwidTagFile(doc, outputFile);

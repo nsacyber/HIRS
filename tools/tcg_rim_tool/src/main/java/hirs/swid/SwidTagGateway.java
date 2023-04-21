@@ -626,7 +626,7 @@ public class SwidTagGateway {
         CredentialParser cp = new CredentialParser();
         try {
             if (defaultCredentials) {
-                cp.parseJKSCredentials(jksTruststoreFile);
+                cp.parseDefaultCredentials();
                 privateKey = cp.getPrivateKey();
                 KeyName keyName = kiFactory.newKeyName(cp.getCertificateSubjectKeyIdentifier());
                 keyInfoElements.add(keyName);
