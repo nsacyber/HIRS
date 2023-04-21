@@ -1,6 +1,8 @@
 package hirs.attestationca.persist.entity.userdefined.certificate;
 
 import hirs.attestationca.persist.entity.userdefined.Certificate;
+import hirs.attestationca.persist.service.CertificateService;
+import hirs.attestationca.persist.service.selector.CertificateSelector;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import lombok.Getter;
@@ -43,6 +45,43 @@ public class CertificateAuthorityCredential extends Certificate {
     @Getter
     @Column
     private final String credentialType = "TCPA Trusted Platform Module Endorsement";
+
+    /**
+     * This class enables the retrieval of CertificateAuthorityCredentials by their attributes.
+     */
+    public static class Selector extends CertificateSelector<CertificateAuthorityCredential> {
+        /**
+         * Construct a new CertificateSelector that will use the given {@link CertificateService} to
+         * retrieve one or many CertificateAuthorityCredentials.
+         *
+         * @param certificateManager the certificate manager to be used to retrieve certificates
+         */
+        public Selector(final CertificateService certificateManager) {
+            super(certificateManager, CertificateAuthorityCredential.class);
+        }
+
+        /**
+         * Specify a subject key identifier that certificates must have to be considered
+         * as matching.
+         *
+         * @param subjectKeyIdentifier a subject key identifier buffer to query, not empty or null
+         * @return this instance (for chaining further calls)
+         */
+        public Selector bySubjectKeyIdentifier(final byte[] subjectKeyIdentifier) {
+            setFieldValue(SUBJECT_KEY_IDENTIFIER_FIELD, subjectKeyIdentifier);
+            return this;
+        }
+    }
+
+    /**
+     * Get a Selector for use in retrieving CertificateAuthorityCredentials.
+     *
+     * @param certMan the CertificateService to be used to retrieve persisted certificates
+     * @return a CertificateAuthorityCredential.Selector instance to use for retrieving certificates
+     */
+    public static Selector select(final CertificateService certMan) {
+        return new Selector(certMan);
+    }
 
     /**
      * Construct a new CertificateAuthorityCredential given its binary contents.  The given

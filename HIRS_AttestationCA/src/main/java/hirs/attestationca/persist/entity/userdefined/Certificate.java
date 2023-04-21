@@ -9,8 +9,7 @@ import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Transient;
 import lombok.Getter;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import lombok.extern.log4j.Log4j2;
 import org.bouncycastle.asn1.ASN1BitString;
 import org.bouncycastle.asn1.ASN1Encodable;
 import org.bouncycastle.asn1.ASN1GeneralizedTime;
@@ -76,10 +75,9 @@ import java.util.Objects;
  * It stores certain attributes separately from the serialized certificate to enable querying on
  * those attributes.
  */
+@Log4j2
 @Entity
 public abstract class Certificate extends ArchivableEntity {
-
-    private static final Logger LOGGER = LogManager.getLogger(Certificate.class);
 
     /**
      * Holds the different certificate types.
@@ -561,8 +559,8 @@ public abstract class Certificate extends ArchivableEntity {
         try {
             return getX509Certificate().getVersion() - 1;
         } catch (IOException ex) {
-            LOGGER.warn("X509 Credential Version not found.");
-            LOGGER.error(ex);
+            log.warn("X509 Credential Version not found.");
+            log.error(ex);
             return Integer.MAX_VALUE;
         }
     }
@@ -589,7 +587,7 @@ public abstract class Certificate extends ArchivableEntity {
                         isIssuer = "";
                     } catch (CertificateException | NoSuchAlgorithmException | InvalidKeyException
                             | NoSuchProviderException | SignatureException e) {
-                        LOGGER.error(e);
+                        log.error(e);
                     }
                     break;
                 case ATTRIBUTE_CERTIFICATE:
@@ -604,7 +602,7 @@ public abstract class Certificate extends ArchivableEntity {
                     } catch (NoSuchAlgorithmException
                             | InvalidKeyException
                             | SignatureException sigEx) {
-                        LOGGER.error(sigEx);
+                        log.error(sigEx);
                     }
                     break;
                 default:
@@ -769,7 +767,7 @@ public abstract class Certificate extends ArchivableEntity {
                 asn1InputStream = new ASN1InputStream(oct.getOctets());
                 asn1Primitive = asn1InputStream.readObject();
             } catch (IOException ioEx) {
-                LOGGER.error(ioEx);
+                log.error(ioEx);
             } finally {
                 if (asn1InputStream != null) {
                     asn1InputStream.close();
@@ -794,7 +792,7 @@ public abstract class Certificate extends ArchivableEntity {
                         .getInstance(JcaX509ExtensionUtils.parseExtensionValue(authInfoAccess))));
             }
         } catch (IOException ioEx) {
-            LOGGER.error(ioEx);
+            log.error(ioEx);
         }
 
         return sb.toString();
@@ -993,7 +991,7 @@ public abstract class Certificate extends ArchivableEntity {
                     certificateHolder.getSubjectPublicKeyInfo().parsePublicKey().toASN1Primitive()
             );
         } catch (IOException e) {
-            LOGGER.info("No RSA Key Detected in certificate");
+            log.info("No RSA Key Detected in certificate");
             return null;
         }
     }

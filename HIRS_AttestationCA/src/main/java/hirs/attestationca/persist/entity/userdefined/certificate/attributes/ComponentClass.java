@@ -52,6 +52,7 @@ public class ComponentClass {
     @Getter
     private String component, componentStr;
     private String registryType;
+    @Getter
     private String componentIdentifier;
 
     /**

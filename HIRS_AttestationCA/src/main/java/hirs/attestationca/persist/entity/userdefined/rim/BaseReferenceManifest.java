@@ -2,7 +2,9 @@ package hirs.attestationca.persist.entity.userdefined.rim;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import hirs.attestationca.persist.entity.userdefined.ReferenceManifest;
+import hirs.attestationca.persist.service.ReferenceManifestService;
 import hirs.attestationca.persist.service.ReferenceManifestServiceImpl;
+import hirs.attestationca.persist.service.selector.ReferenceManifestSelector;
 import hirs.utils.SwidResource;
 import hirs.utils.xjc.BaseElement;
 import hirs.utils.xjc.Directory;
@@ -92,6 +94,105 @@ public class BaseReferenceManifest extends ReferenceManifest {
     private String entityThumbprint = null;
     private String linkHref = null;
     private String linkRel = null;
+
+    /**
+     * This class enables the retrieval of BaseReferenceManifest by their attributes.
+     */
+    public static class Selector extends ReferenceManifestSelector<BaseReferenceManifest> {
+        /**
+         * Construct a new ReferenceManifestSelector that will use
+         * the given (@link ReferenceManifestService}
+         * to retrieve one or may BaseReferenceManifest.
+         *
+         * @param referenceManifestManager the reference manifest manager to be used to retrieve
+         * reference manifests.
+         */
+        public Selector(final ReferenceManifestService referenceManifestManager) {
+            super(referenceManifestManager, BaseReferenceManifest.class);
+        }
+
+        /**
+         * Specify the platform manufacturer that rims must have to be considered
+         * as matching.
+         * @param manufacturer string for the manufacturer
+         * @return this instance
+         */
+        public Selector byManufacturer(final String manufacturer) {
+            setFieldValue(PLATFORM_MANUFACTURER, manufacturer);
+            return this;
+        }
+
+        /**
+         * Specify the platform model that rims must have to be considered
+         * as matching.
+         * @param model string for the model
+         * @return this instance
+         */
+        public Selector byModel(final String model) {
+            setFieldValue(PLATFORM_MODEL, model);
+            return this;
+        }
+
+        /**
+         * Specify the platform manufacturer/model that rims must have to be considered
+         * as matching.
+         * @param manufacturer string for the manufacturer
+         * @param model string for the model
+         * @return this instance
+         */
+        public Selector byManufacturerModel(final String manufacturer, final String model) {
+            setFieldValue(PLATFORM_MANUFACTURER, manufacturer);
+            setFieldValue(PLATFORM_MODEL, model);
+            return this;
+        }
+
+        /**
+         * Specify the platform manufacturer/model/base flag that rims must have to be considered
+         * as matching.
+         * @param manufacturer string for the manufacturer
+         * @param model string for the model
+         * @return this instance
+         */
+        public Selector byManufacturerModelBase(final String manufacturer, final String model) {
+            setFieldValue(PLATFORM_MANUFACTURER, manufacturer);
+            setFieldValue(PLATFORM_MODEL, model);
+            setFieldValue("swidPatch", false);
+            setFieldValue("swidSupplemental", false);
+            //setFieldValue("", false); //corpus?
+            return this;
+        }
+
+        /**
+         * Specify the device name that rims must have to be considered
+         * as matching.
+         * @param deviceName string for the deviceName
+         * @return this instance
+         */
+        public Selector byDeviceName(final String deviceName) {
+            setFieldValue("deviceName", deviceName);
+            return this;
+        }
+
+        /**
+         * Specify the RIM hash associated with the base RIM.
+         * @param base64Hash the hash of the file associated with the rim
+         * @return this instance
+         */
+        public Selector byBase64Hash(final String base64Hash) {
+            setFieldValue(BASE_64_HASH_FIELD, base64Hash);
+            return this;
+        }
+
+        /**
+         * Specify the RIM hash associated with the base RIM.
+         * @param hexDecHash the hash of the file associated with the rim
+         * @return this instance
+         */
+        public Selector byHexDecHash(final String hexDecHash) {
+            setFieldValue(HEX_DEC_HASH_FIELD, hexDecHash);
+            return this;
+        }
+    }
 
     /**
      * Support constructor for the RIM object.
@@ -240,6 +341,17 @@ public class BaseReferenceManifest extends ReferenceManifest {
                 }
             }
         }
+    }
+
+    /**
+     * Get a Selector for use in retrieving ReferenceManifest.
+     *
+     * @param rimMan the ReferenceManifestService to be used to retrieve
+     * persisted RIMs
+     * @return a Selector instance to use for retrieving RIMs
+     */
+    public static Selector select(final ReferenceManifestService rimMan) {
+        return new Selector(rimMan);
     }
 
     /**

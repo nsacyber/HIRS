@@ -1,8 +1,13 @@
 package hirs.attestationca.persist.enums;
 
+import lombok.Getter;
+import lombok.Setter;
+
 /**
  * Class to capture appraisal results and corresponding messages.
  */
+@Getter
+@Setter
 public class AppraisalStatus {
     /**
      * Enum used to represent appraisal status.
@@ -56,51 +61,4 @@ public class AppraisalStatus {
         this.additionalInfo = additionalInfo;
     }
 
-    /**
-     * Get appraisal status.
-     * @return appraisal status
-     */
-    public Status getAppStatus() {
-        return appStatus;
-    }
-
-    /**
-     * Set appraisal status.
-     * @param appStatus new status
-     */
-    public void setAppStatus(final Status appStatus) {
-        this.appStatus = appStatus;
-    }
-
-    /**
-     * Get appraisal description message.
-     * @return appraisal description message
-     */
-    public String getMessage() {
-        return message;
-    }
-
-    /**
-     * Set appraisal description message.
-     * @param message appraisal description message
-     */
-    public void setMessage(final String message) {
-        this.message = message;
-    }
-
-    /**
-     * Getter for additional information during validation.
-     * @return string of additional information
-     */
-    public String getAdditionalInfo() {
-        return additionalInfo;
-    }
-
-    /**
-     * Setter for any additional information.
-     * @param additionalInfo the string of additional information
-     */
-    public void setAdditionalInfo(final String additionalInfo) {
-        this.additionalInfo = additionalInfo;
-    }
 }
