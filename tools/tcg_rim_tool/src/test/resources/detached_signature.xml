@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<Signature xmlns="http://www.w3.org/2000/09/xmldsig#">
+  <SignedInfo>
+    <CanonicalizationMethod Algorithm="http://www.w3.org/TR/2001/REC-xml-c14n-20010315"/>
+    <SignatureMethod Algorithm="http://www.w3.org/2001/04/xmldsig-more#rsa-sha256"/>
+    <Reference URI="file:/home/matsai/nsacyber/HIRS/tools/tcg_rim_tool/build/resources/test/generated_timestamp_rfc3852.swidtag">
+      <DigestMethod Algorithm="http://www.w3.org/2001/04/xmlenc#sha256"/>
+      <DigestValue>2nWBzbaADibxwD1sTQltPrKXt+bhJ2qMjKWgLg18EZE=</DigestValue>
+    </Reference>
+  </SignedInfo>
+  <SignatureValue>oCj3hZK/vZLncKPWIVbjNUa7nwHVTPZrzBLwX7e11eWmSDSvTtfsl+UrBrgAit5FFpG/3oSEtnw6&#13;
+iQAIr80aWaL1/EFylI/w94/zh9m2Y1f0P5w+HD6pS34ALBSBn+9GbDZ48/v1nJ6oDGCw7/3oXkIT&#13;
+Id+SpS/vuG3SPK0Ej3eFQQc2ahHvOdBKT+UhD9kWVi/esqF0PI0qwd18coMsrQNcqpTBghou+n++&#13;
+G+YIWG4Tkgey+EOQLdWLEIch0KeVL1s9ANPOFHKqT4a2BaYe0S7g8xhQ9ERtCnSusb09fgycjl0V&#13;
+5Mx9t3pdwIXjsS8FWNd25Xc7kayNrq8H+3aRgg==</SignatureValue>
+  <KeyInfo>
+    <KeyName>2fdeb8e7d030a2209daa01861a964fedecf2bcc1</KeyName>
+  </KeyInfo>
+</Signature>

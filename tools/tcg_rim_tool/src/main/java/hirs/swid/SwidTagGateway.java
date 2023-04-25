@@ -63,6 +63,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.StringReader;
 import java.math.BigInteger;
+import java.net.URI;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.security.InvalidAlgorithmParameterException;
@@ -569,6 +570,7 @@ public class SwidTagGateway {
     public Document signXMLDocument(String signFile) {
         //Read signFile contents
         String xmlToSign = "";
+        URI fileUri = new File(signFile).toURI();
         try {
             byte[] fileContents = Files.readAllBytes(Paths.get(signFile));
             xmlToSign = new String(fileContents);    //safe to assume default charset??
@@ -605,7 +607,7 @@ public class SwidTagGateway {
         try {
             sigFactory = XMLSignatureFactory.getInstance("DOM");
             //ref must be distinguished from existing <Reference URI="">
-            Reference ref = sigFactory.newReference("#" + softwareIdentityId,
+            Reference ref = sigFactory.newReference(fileUri.toString(),
                     sigFactory.newDigestMethod(DigestMethod.SHA256, null));
             signedInfo = sigFactory.newSignedInfo(
                     sigFactory.newCanonicalizationMethod(CanonicalizationMethod.INCLUSIVE,

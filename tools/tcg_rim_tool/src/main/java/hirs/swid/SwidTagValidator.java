@@ -5,6 +5,7 @@ import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
+import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
 import javax.security.auth.x500.X500Principal;
@@ -26,6 +27,9 @@ import javax.xml.crypto.dsig.dom.DOMValidateContext;
 import javax.xml.crypto.dsig.keyinfo.KeyInfo;
 import javax.xml.crypto.dsig.keyinfo.KeyValue;
 import javax.xml.crypto.dsig.keyinfo.X509Data;
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.Source;
 import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerConfigurationException;
@@ -38,6 +42,9 @@ import javax.xml.validation.SchemaFactory;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.StringReader;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.security.InvalidKeyException;
 import java.security.Key;
 import java.security.KeyException;
@@ -112,18 +119,31 @@ public class SwidTagValidator {
         Document document = unmarshallSwidTag(path);
         Element softwareIdentity =
                 (Element) document.getElementsByTagName("SoftwareIdentity").item(0);
-        StringBuilder si = new StringBuilder("Base RIM detected:\n");
-        si.append("SoftwareIdentity name: " + softwareIdentity.getAttribute("name") + "\n");
-        si.append("SoftwareIdentity tagId: " + softwareIdentity.getAttribute("tagId") + "\n");
-        System.out.println(si.toString());
-        Element file = (Element) document.getElementsByTagName("File").item(0);
+        Element signature = (Element) document.getElementsByTagName("Signature").item(0);
+        if (signature != null && softwareIdentity == null) {
+            return validateDetachedSignature(document, format);
+        } else if (signature != null && softwareIdentity != null) {
+            StringBuilder si = new StringBuilder("Base RIM detected:\n");
+            si.append("SoftwareIdentity name: " + softwareIdentity.getAttribute("name") + "\n");
+            si.append("SoftwareIdentity tagId: " + softwareIdentity.getAttribute("tagId") + "\n");
+            System.out.println(si.toString());
+            return validateEnvelopedSignature(document, format);
+        } else {
+            System.out.println("Invalid xml for validation, please verify " + path);
+        }
+
+        return false;
+    }
+
+    private boolean validateEnvelopedSignature(Document doc, String format) {
+        Element file = (Element) doc.getElementsByTagName("File").item(0);
         try {
             validateFile(file);
         } catch (Exception e) {
             System.out.println(e.getMessage());
             return false;
         }
-        boolean swidtagValidity = validateSignedXMLDocument(document, format);
+        boolean swidtagValidity = validateSignedXMLDocument(doc, format);
         if (swidtagValidity) {
             System.out.println("Signature core validity: true");
             return true;
@@ -131,6 +151,34 @@ public class SwidTagValidator {
             System.out.println("Signature core validity: false");
             return false;
         }
+    }
+
+    private boolean validateDetachedSignature(Document doc, String format) {
+/*        DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
+        DocumentBuilder db = null;
+        Document doc = null;
+
+        byte[] fileContents = new byte[0];
+        try {
+            fileContents = Files.readAllBytes(Paths.get(path));
+        } catch (IOException e) {
+            System.out.println("Error reading " + path + " for validation");
+        }
+        String xmlString = new String(fileContents);
+        try {
+            db = dbf.newDocumentBuilder();
+            doc = db.parse(path);
+        } catch (ParserConfigurationException e) {
+            System.out.println("Error instantiating DocumentBuilder object: " + e.getMessage());
+        } catch (SAXException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        } catch (IllegalArgumentException e) {
+            System.out.println("Tried to parse a null file at " + path);
+        }
+*/
+        return validateSignedXMLDocument(doc, format);
     }
 
     /**
