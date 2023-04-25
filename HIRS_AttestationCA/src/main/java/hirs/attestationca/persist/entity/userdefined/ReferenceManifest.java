@@ -92,7 +92,6 @@ public class ReferenceManifest  extends ArchivableEntity {
     private String platformModel = null;
     @Column(nullable = false)
     private String fileName = null;
-//    @Type(type="uuid-char")
     @JdbcTypeCode(java.sql.Types.VARCHAR)
     @Column
     private UUID associatedRim;

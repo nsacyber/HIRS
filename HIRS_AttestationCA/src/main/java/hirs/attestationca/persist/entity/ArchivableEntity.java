@@ -4,6 +4,8 @@ import jakarta.persistence.Column;
 import jakarta.persistence.MappedSuperclass;
 import lombok.Getter;
 import lombok.ToString;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
 
 import java.util.Date;
 
@@ -23,6 +25,7 @@ public abstract class ArchivableEntity extends AbstractEntity {
     @Column(name = "archived_time")
     private Date archivedTime;
 
+    @JdbcTypeCode(SqlTypes.LONGVARCHAR)
     @Column(name = "archived_description")
     private String archivedDescription;
 

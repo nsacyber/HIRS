@@ -1,5 +1,6 @@
 package hirs.attestationca.portal.datatables;
 
+import hirs.attestationca.persist.FilteredRecordsList;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -30,11 +31,11 @@ public final class DataTableResponse<T> {
      * @param recordList the filtered record list
      * @param inputQuery the data table input (used for draw)
      */
-//    public DataTableResponse(final FilteredRecordsList<T> recordList,
-//                             final DataTableInput inputQuery) {
-//        this(recordList, inputQuery.getDraw(),
-//                recordList.getRecordsTotal(), recordList.getRecordsFiltered());
-//    }
+    public DataTableResponse(final FilteredRecordsList<T> recordList,
+                             final DataTableInput inputQuery) {
+        this(recordList, inputQuery.getDraw(),
+                recordList.getRecordsTotal(), recordList.getRecordsFiltered());
+    }
 
     /**
      * Constructs a data table response using the specified data with the data table specific

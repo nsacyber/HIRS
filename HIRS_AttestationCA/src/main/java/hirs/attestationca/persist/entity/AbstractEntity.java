@@ -2,15 +2,15 @@ package hirs.attestationca.persist.entity;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.MappedSuperclass;
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.ToString;
 import org.hibernate.annotations.ColumnDefault;
 import org.hibernate.annotations.Generated;
 import org.hibernate.annotations.GenerationTime;
-import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.annotations.UuidGenerator;
 
 import java.io.Serializable;
 import java.util.Date;
@@ -19,6 +19,7 @@ import java.util.UUID;
 /**
  * An abstract database entity.
  */
+@EqualsAndHashCode
 @ToString
 @MappedSuperclass
 public abstract class AbstractEntity implements Serializable {
@@ -31,8 +32,8 @@ public abstract class AbstractEntity implements Serializable {
 
     @Id
     @Column(name = "id")
-    @GeneratedValue(generator = "uuid2", strategy=GenerationType.AUTO)
-    @JdbcTypeCode(java.sql.Types.VARCHAR)
+    @UuidGenerator(style = UuidGenerator.Style.AUTO)
+    @GeneratedValue
     @Getter
     private UUID id;
 
@@ -74,27 +75,5 @@ public abstract class AbstractEntity implements Serializable {
      */
     public void resetCreateTime() {
         createTime.setTime(new Date().getTime());
-    }
-
-    @Override
-    public int hashCode() {
-        if (id != null) {
-            return id.hashCode();
-        }
-        return super.hashCode();
-    }
-
-    @Override
-    public boolean equals(final Object obj) {
-        if (this == obj) {
-            return true;
-        }
-        if (obj == null) {
-            return false;
-        }
-        if (!(this.getClass().equals(obj.getClass()))) {
-            return false;
-        }
-        return this.hashCode() == obj.hashCode();
     }
 }
