@@ -152,4 +152,12 @@ public class ReferenceManifest  extends ArchivableEntity {
         }
         return null;
     }
+
+    public boolean isBase() {
+        return rimType.equals(BASE_RIM);
+    }
+
+    public boolean isSupport() {
+        return rimType.equals(SUPPORT_RIM);
+    }
 }
