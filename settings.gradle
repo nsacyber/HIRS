@@ -5,34 +5,35 @@ include 'HIRS_Utils',
         'HIRS_AttestationCAPortal',
         ':tools:tcg_eventlog_tool',
         ':tools:tcg_rim_tool'
-        
+
 dependencyResolutionManagement {
     versionCatalogs {
         libs {
             version('springboot', '3.0.1')
             version('jackson', '2.14.2')
-            library('bouncycastle',  'org.bouncycastle:bcmail-jdk15on:1.70')
             library('commons-codec', 'commons-codec:commons-codec:1.15')
+            library('commons_io',    'commons-io:commons-io:2.11.0')
             library('commons-lang3', 'org.apache.commons:commons-lang3:3.12.0')
-            library('commons_io', 'commons-io:commons-io:2.11.0')
+            library('bouncycastle', 'org.bouncycastle:bcmail-jdk15on:1.70')
             library('glassfish_json',   'org.glassfish:javax.json:1.1.4')
             library('glassfish_jaxb_runtime',   'org.glassfish.jaxb:jaxb-runtime:2.3.1')
+            library('gson', 'com.google.code.gson:gson:2.10.1')
             library('guava', 'com.google.guava:guava:31.1-jre')
             library('minimal-json', 'com.eclipsesource.minimal-json:minimal-json:0.9.5')
             library('jakarta-servlet', 'org.glassfish.web:jakarta.servlet.jsp.jstl:3.0.0')
             library('jakarta-api', 'jakarta.persistence:jakarta.persistence-api:3.1.0')
             library('jakarta-xml', 'jakarta.xml.bind:jakarta.xml.bind-api:4.0.0')
+            library('jcommander',    'com.beust:jcommander:1.82')
+            library('hibernate-core', 'org.hibernate:hibernate-core:6.1.7.Final')
             library('jackson-core', 'com.fasterxml.jackson.core', 'jackson-core').versionRef('jackson')
             library('jackson-databind', 'com.fasterxml.jackson.core', 'jackson-databind').versionRef('jackson')
-            library('jcommander', 'com.beust:jcommander:1.82')
- //           library('log4j2', 'org.apache.logging.log4j:log4j-api:2.17.1')
- //           library('log4j2-core', 'org.apache.logging.log4j:log4j-core:2.17.1')
-            library('lombok', 'org.projectlombok:lombok:1.18.26')
             library('pci', 'com.github.marandus:pci-ids:0.3')
-            library('testng', 'org.testng:testng:7.4.0')
+            library('ospackage', 'com.netflix.nebula:gradle-ospackage-plugin:11.2.0')
 //            library('spring-datajpa', 'org.springframework.boot', 'spring-boot-starter-data-jpa').version('springboot')
 //            library('spring-datajpa', 'org.springframework.boot', 'spring-boot-starter-web').version('springboot')
 //            library('spring-datajpa', 'org.springframework.boot', 'spring-boot-starter-validation').version('springboot')
+            library('lombok', 'org.projectlombok:lombok:1.18.26')
+            library('testng', 'org.testng:testng:7.4.0')
         }
     }
 }

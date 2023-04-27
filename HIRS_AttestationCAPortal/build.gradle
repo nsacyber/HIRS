@@ -3,7 +3,7 @@ plugins {
     id 'java'
     id 'war'
     id "nebula.ospackage" version "9.1.1"
-    id 'org.springframework.boot' version '3.0.1'
+    id 'org.springframework.boot' version '3.0.6'
     id 'io.spring.dependency-management' version '1.1.0'
 }
 
@@ -41,6 +41,7 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-web'
     implementation 'org.springframework.boot:spring-boot-starter-validation'
     implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+    implementation 'com.github.darrachequesne:spring-data-jpa-datatables:6.0.1'
     implementation 'org.projectlombok:lombok'
 
     compileOnly 'org.projectlombok:lombok'
@@ -59,4 +60,99 @@ war {
     archiveFileName = 'HIRS_AttestationCAPortal.war'
 }
 
+ospackage {
+    packageName = 'HIRS_AttestationCA'
+    os = LINUX
+    arch = NOARCH
+    version = "$packVersion"
+    release = '1'
 
+    user 'root'
+    fileMode = 0755
+
+    def tpath="/opt"
+
+    addParentDirs = true
+    createDirectoryEntry true 
+
+        preInstall "rm -rf /opt/hirs/default-properties"
+    preInstall "mkdir -p /opt/hirs/default-properties/"
+    preInstall "mkdir -p /tmp/hirs/default-properties/"
+
+    // Setup /etc/hirs
+    into ('/etc/hirs/aca/') {
+      from '../HIRS_AttestationCA/src/main/resources/defaults.properties'
+      rename {'aca.properties'}
+    }
+    into ('/etc/hirs/') {
+       from '../HIRS_Utils/src/main/resources/banner.properties'
+       from '../HIRS_Utils/src/main/resources/persistence.properties'
+       from '../HIRS_Utils/src/main/resources/logging.properties'
+    }
+    // Setup tomcat files
+    // Create and package HIRS_AttestationCA:war
+    into ("${tpath}/tomcat/webapps") {
+       from war.outputs.files
+       from '../HIRS_AttestationCA/build/libs/HIRS_AttestationCA.war'
+       user 'root'
+       fileMode = 0755
+    }
+    into ("${tpath}/tomcat/lib") {
+      from 'libs' 
+      from configurations.runtimeClasspath 
+    }
+    into ("/opt/hirs/scripts/aca/") {
+     from '../package/conf/tomcat.service'
+     from '../package/scripts/install_tomcat.sh'
+     from '../package/scripts/aca/certificate_generate.sh'
+    }
+    into ("/opt/hirs/scripts/common") {
+     from '../package/scripts/common/'
+    }
+    into ('/opt/hirs/extras/aca/') {
+      from '../package/extras/aca/'
+    }
+
+    // Copy json files to /tmp and move into /opt/hirs in postInstall section
+    // Allows HIRS tools to be installed using the same files
+    into ('/tmp/aca/default-properties/') {
+       from '../HIRS_AttestationCA/src/main/resources/vendor-table.json'
+       from '../HIRS_AttestationCA/src/main/resources/component-class.json'
+    }
+  // Post Install
+    postInstall file('../package/scripts/common/db_create.sh')
+  //  postInstall file('../package/scripts/common/ssl_configure.sh')
+  //  postInstall 'mkdir -p /etc/hirs/aca/client_files'
+    postInstall 'mkdir -p /etc/hirs/aca/certificates'
+    postInstall 'cp /tmp/aca/default-properties/* /opt/hirs/default-properties/.'
+    postInstall 'rm -rf /tmp/aca/'
+ //  postInstall file('../package/scripts/install_tomcat.sh')
+ //   Old post install files, to be removed...
+ // Note /etc/hirs/aca/certificates files are created by  certificate_generate.sh
+ //      /etc/hirs/aca/client-files files are created by  certificate_generate.sh
+ //      /etc/hirs/certificates/ files are created by ssl_configure.sh
+ //      /etc/hirs/certificates/mysql/  files are created by ssl_configure.sh
+ //      /etc/hirs/certificates/private/  files are created by ssl_configure.sh
+ //   postInstall file('../package/scripts/common/firewall_configure_tomcat.sh')
+ //   postInstall file('../package/scripts/common/ssl_configure.sh')
+ //   postInstall file('../package/scripts/aca/certificate_generate.sh')
+ //   postInstall 'if [ selinuxenabled ]; then semodule -i /opt/hirs/extras/aca/tomcat-mysql-hirs.pp; fi'
+     
+    postInstall 'sh /opt/tomcat/bin/catalina.sh start'
+
+    // Post Uninstall
+    // Copy files to /tmp that package manager will be expecting them there
+    preUninstall 'mkdir -p /tmp/aca/default-properties/'
+    preUninstall 'cp -f /opt/hirs/default-properties/* /tmp/aca/default-properties/.'
+    preUninstall file('../package/scripts/common/db_drop.sh')
+
+    //buildRpm.dependsOn ':HIRS_AttestationCA:war'
+
+    buildRpm {
+        arch = X86_64
+    }
+
+    buildDeb {
+        arch = 'amd64'
+    }
+}
