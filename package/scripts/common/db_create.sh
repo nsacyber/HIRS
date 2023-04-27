@@ -23,6 +23,7 @@ if [ -z $HIRS_DB_PWD ]; then
 fi
 
 # Set root password if not set
+
 if mysql -u root -e 'quit' &> /dev/null; then
    echo "Setting root password"
    mysqladmin -u root --silent password $HIRS_MYSQL_ROOT_PWD || true > /dev/null 2>&1
