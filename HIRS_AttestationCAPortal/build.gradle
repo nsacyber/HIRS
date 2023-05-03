@@ -75,7 +75,7 @@ ospackage {
     addParentDirs = true
     createDirectoryEntry true 
 
-        preInstall "rm -rf /opt/hirs/default-properties"
+    preInstall "rm -rf /opt/hirs/default-properties"
     preInstall "mkdir -p /opt/hirs/default-properties/"
     preInstall "mkdir -p /tmp/hirs/default-properties/"
 
@@ -120,7 +120,22 @@ ospackage {
        from '../HIRS_AttestationCA/src/main/resources/component-class.json'
     }
   // Post Install
-    postInstall file('../package/scripts/common/db_create.sh')
+//   println "*** Checking MYSQL Configuration ...."
+//    println " Myql password is $System.env.HIRS_MYSQL_ROOT_PWD"
+//   println " Myql password is ${System.getenv('HIRS_MYSQL_ROOT_PWD')} "
+
+//   if ( "$System.env.HIRS_MYSQL_ROOT_PWD".compareTo("null") == 0 ) {
+//      println "Gradle: Mysql Root password not set"
+//   }
+//   else {
+//      println "Gradle: Mysql Root Password set to $System.env.HIRS_MYSQL_ROOT_PWD" 
+ //  }
+
+     postInstall file('../package/scripts/common/db_create.sh')
+//     if (System.getenv('HIRS_INSTALL_STATUS').compareTo('fail')==0 ) {
+//       throw new GradleException('MYSQL password error occurred') 
+//     }
+  //    postInstall 'sh /opt/hirs/scripts/common/db_create.sh'
   //  postInstall file('../package/scripts/common/ssl_configure.sh')
   //  postInstall 'mkdir -p /etc/hirs/aca/client_files'
     postInstall 'mkdir -p /etc/hirs/aca/certificates'

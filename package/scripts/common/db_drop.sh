@@ -1,20 +1,11 @@
 #!/bin/bash
 
-# Get the current password from the perstence.properties file
-#file="/etc/hirs/persistence.properties"
-# Change java key/value pairs into  valid bash key/value pairs
-#function prop {
-#    grep "${1}" ${file} | cut -d'=' -f2 | xargs
-#}
+echo "dropping hirs database"
 
-#user="root"
-# user=$(prop 'persistence.db.user')
-#pwd=$(prop 'persistence.db.password')
-pwd="root"
-
-# Need to update when password get written to the persitence fil
-# delete the database
-
-if pgrep  mysqld >/dev/null 2>&1; then  
-    mysql -u "$user" --password="$pwd" < /opt/hirs/scripts/common/db_drop.sql
+if pgrep  mysqld >/dev/null 2>&1; then
+  if [ -z ${HIRS_MYSQL_ROOT_PWD} ]; then
+    mysql -u "root" < /opt/hirs/scripts/common/db_drop.sql
+  else
+    mysql -u "root" -p$HIRS_MYSQL_ROOT_PWD  < /opt/hirs/scripts/common/db_drop.sq1
+  fi
 fi
