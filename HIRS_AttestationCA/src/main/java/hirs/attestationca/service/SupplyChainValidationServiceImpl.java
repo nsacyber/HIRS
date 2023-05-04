@@ -107,6 +107,7 @@ public class SupplyChainValidationServiceImpl implements SupplyChainValidationSe
      * @param policyManager                      the policy manager
      * @param appraiserManager                   the appraiser manager
      * @param certificateManager                 the cert manager
+     * @param componentResultManager             the comp result manager
      * @param referenceManifestManager           the RIM manager
      * @param supplyChainValidatorSummaryManager the summary manager
      * @param supplyChainCredentialValidator     the credential validator
