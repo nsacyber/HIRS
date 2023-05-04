@@ -5,6 +5,7 @@ import hirs.persist.AppraiserManager;
 import hirs.persist.CrudManager;
 import hirs.persist.DBAppraiserManager;
 import hirs.persist.DBCertificateManager;
+import hirs.persist.DBComponentResultManager;
 import hirs.persist.DBDeviceGroupManager;
 import hirs.persist.DBDeviceManager;
 import hirs.persist.DBManager;
@@ -51,6 +52,16 @@ public class PersistenceConfiguration {
     @Bean
     public DeviceManager deviceManager() {
         return new DBDeviceManager(sessionFactory.getObject());
+    }
+
+    /**
+     * Creates a {@link DBComponentResultManager} ready to use.
+     *
+     * @return {@link DBComponentResultManager}
+     */
+    @Bean
+    public DBComponentResultManager componentResultManager() {
+        return new DBComponentResultManager(sessionFactory.getObject());
     }
 
     /**

@@ -7,7 +7,8 @@ import java.util.Objects;
 import java.util.UUID;
 
 /**
- *
+ * A custom class that merges the result of the validation attribute components and allows for
+ * the matching of what was expected to actual and display this information to the portal.
  */
 @Entity
 public class ComponentResult extends AbstractEntity {
@@ -19,7 +20,7 @@ public class ComponentResult extends AbstractEntity {
     private boolean mismatched;
 
     /**
-     * Hibernate default constructor
+     * Hibernate default constructor.
      */
     protected ComponentResult() {
     }
@@ -82,10 +83,16 @@ public class ComponentResult extends AbstractEntity {
     }
 
     @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        if (!super.equals(o)) return false;
+    public boolean equals(final Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+        if (!super.equals(o)) {
+            return false;
+        }
         ComponentResult that = (ComponentResult) o;
         return componentHash == that.componentHash
                 && mismatched == that.mismatched

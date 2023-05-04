@@ -45,8 +45,9 @@ public interface ComponentResultManager extends OrderedListQuerier<ComponentResu
 
     /**
      * Returns a list of all <code>ComponentResult</code>s that are
-     * associated with the certificate
+     * associated with the certificate.
      *
+     * @param certificateId the certificate id
      * @return FilteredRecordsList object with fields for DataTables
      */
     Set<ComponentResult> getComponentResultsByCertificate(UUID certificateId);

@@ -14,7 +14,8 @@ import java.util.Set;
 import java.util.UUID;
 
 /**
- * This class is used to persist and retrieve {@link hirs.data.persist.certificate.ComponentResult}s into
+ * This class is used to persist and retrieve
+ * {@link hirs.data.persist.certificate.ComponentResult}s into
  * and from the database.
  */
 public class DBComponentResultManager extends DBManager<ComponentResult>
@@ -150,7 +151,7 @@ public class DBComponentResultManager extends DBManager<ComponentResult>
     }
 
     @Override
-    public boolean deleteResult(ComponentResult componentResult) {
+    public boolean deleteResult(final ComponentResult componentResult) {
         boolean result;
         LOGGER.info(String.format("Deleting component result to %s",
                 componentResult.getId()));

@@ -601,6 +601,7 @@ public final class SupplyChainCredentialValidator implements CredentialValidator
      * pick out the changes that lead to the delta cert and make sure the changes
      * are valid.
      *
+     * @param certificateId the certificate id
      * @param deviceInfoReport The paccor profile of device being validated against.
      * @param deltaMapping map of delta certificates to their validated status
      * @param origPcComponents The component identifier list associated with the
@@ -782,7 +783,8 @@ public final class SupplyChainCredentialValidator implements CredentialValidator
                     subCompIdList.remove(cId);
                     subCompInfoList.remove(cInfo);
                 }
-            } // I have to get the unmatched from here, maybe create a list of component result and use that TDM
+            } // I have to get the unmatched from here,
+            // maybe create a list of component result and use that
         }
 
         if (subCompIdList.isEmpty()) {
@@ -1073,6 +1075,8 @@ public final class SupplyChainCredentialValidator implements CredentialValidator
     /**
      * Checks if the fields in the potentialMatch match the fields in the pcComponent,
      * or if the relevant field in the pcComponent is empty.
+     *
+     * @param certificateId the certificate id
      * @param pcComponent the platform credential component
      * @param potentialMatch the component info from a device info report
      * @return true if the fields match exactly (null is considered the same as an empty string)
