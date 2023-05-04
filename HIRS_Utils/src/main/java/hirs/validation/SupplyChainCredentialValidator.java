@@ -98,7 +98,7 @@ public final class SupplyChainCredentialValidator implements CredentialValidator
      */
     public static final String FIRMWARE_VALID = "Firmware validated";
 
-    private static List<ComponentResult> componentResultList;
+    private static List<ComponentResult> componentResultList = new LinkedList<>();;
 
     /**
      * Ensure that BouncyCastle is configured as a javax.security.Security provider, as this
@@ -112,7 +112,6 @@ public final class SupplyChainCredentialValidator implements CredentialValidator
      * Default constructor, should only be instantiated for testing.
      */
     public SupplyChainCredentialValidator() {
-        componentResultList = new LinkedList<>();
     }
 
     /**
