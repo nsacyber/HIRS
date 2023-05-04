@@ -86,6 +86,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.UUID;
 
 import static org.powermock.api.mockito.PowerMockito.mock;
 import static org.powermock.api.mockito.PowerMockito.when;
@@ -1474,7 +1475,7 @@ public class SupplyChainCredentialValidatorTest {
         );
 
         Assert.assertTrue(
-                SupplyChainCredentialValidator.isMatch(null, pcComponentIdentifier,
+                SupplyChainCredentialValidator.isMatch(UUID.randomUUID(), pcComponentIdentifier,
                         nicComponentInfo)
         );
     }
