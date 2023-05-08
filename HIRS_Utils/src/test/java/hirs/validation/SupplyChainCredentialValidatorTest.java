@@ -1463,15 +1463,15 @@ public class SupplyChainCredentialValidatorTest {
                         nicComponentInfo)
         );
 
-        pcComponentIdentifier = new ComponentIdentifier(
-                new DERUTF8String(nicComponentInfo.getComponentManufacturer()),
-                new DERUTF8String(nicComponentInfo.getComponentModel()),
-                null,
-                new DERUTF8String(nicComponentInfo.getComponentRevision()),
-                null,
-                ASN1Boolean.TRUE,
-                Collections.emptyList()
-        );
+//        pcComponentIdentifier = new ComponentIdentifier(
+//                new DERUTF8String(nicComponentInfo.getComponentManufacturer()),
+//                new DERUTF8String(nicComponentInfo.getComponentModel()),
+//                null,
+//                new DERUTF8String(nicComponentInfo.getComponentRevision()),
+//                null,
+//                ASN1Boolean.TRUE,
+//                Collections.emptyList()
+//        );
 
 //        Assert.assertTrue(
 //                SupplyChainCredentialValidator.isMatch(UUID.randomUUID(), pcComponentIdentifier,
