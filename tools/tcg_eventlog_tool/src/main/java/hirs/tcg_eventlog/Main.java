@@ -11,8 +11,8 @@ import java.security.cert.CertificateException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import hirs.tpm.eventlog.TCGEventLog;
-import hirs.tpm.eventlog.TpmPcrEvent;
+import hirs.utils.tpm.eventlog.TCGEventLog;
+import hirs.utils.tpm.eventlog.TpmPcrEvent;
 import hirs.utils.HexUtils;
 
 /**
@@ -115,7 +115,7 @@ final class Main {
             // General event log output
             if ((bEventFlag || bHexFlag) && !bPcrFlag) {
                 if (!bHexFlag) {
-                    if (evLog.isCryptoAgile()) {
+                    if (evLog.isBCryptoAgile()) {
                         writeOut("\nEvent Log follows the \"Crypto Agile\" format and has "
                                 + evLog.getEventList().size() + " events:\n\n");
                     } else {

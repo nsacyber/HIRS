@@ -1,122 +1,126 @@
-apply plugin: 'java'
-apply plugin: 'findbugs'
-apply plugin: 'checkstyle'
-apply plugin: 'nebula.ospackage'
+import java.util.concurrent.TimeUnit
+plugins {
+      id "java"
+//    id "findbugs"
+//    id "checkstyle"
+      id "nebula.ospackage" version "9.1.1"
+}
+// Get version from main project gradle
+def packVersion = properties.get("packageVersion");
+def jarVersion = properties.get("jarVersion");
+//println "packageVersion is ${projVersion}"
 
-version = '1.0'
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(17)
+    }
+}
 
 repositories {
     mavenCentral()
+    flatDir { dirs "lib" }
 }
 
-dependencies {
-    compile project(':HIRS_Utils')
-    compile libs.jcommander
-    compile libs.commons_io
-    compileOnly libs.checkstyle
-    compileOnly libs.findbugs
-    testCompile libs.testng
+dependencies { 
+    implementation project(':HIRS_Utils')
+    implementation libs.jcommander
+    implementation libs.commons.io
+//    implementation libs.checkstyle
+//    implementation libs.findbugs
+//    testCompile libs.testng
 }
 
 ext.configDir = new File(projectDir, 'config')
-ext.checkstyleConfigDir = "$configDir/checkstyle"
-checkstyle {
-    toolVersion = '5.7'
-    configFile = checkstyleConfigFile
-    configProperties.put('basedir', checkstyleConfigDir)
-    ignoreFailures = false
-    showViolations = true
-}
+//ext.checkstyleConfigDir = "$configDir/checkstyle"
+//ext.findbugsConfigDir = "$configDir/findbugs"
 
-ext.findbugsConfigDir = "$configDir/findbugs"
+//checkstyle {
+//    toolVersion = '5.7'
+//    configFile = checkstyleConfigFile
+//    configProperties.put('basedir', checkstyleConfigDir)
+//    ignoreFailures = false
+//    showViolations = true
+//}
 
-findbugs {
-    toolVersion = '3.0.0'
-    ignoreFailures = false
-    effort = 'max'
-}
+//findbugs {
+//    toolVersion = '3.0.0'
+//    ignoreFailures = false
+//    effort = 'max'
+//}
 
 jar {
+    // Keep jar clean:
+    exclude 'META-INF/*.SF', 'META-INF/*.DSA', 'META-INF/*.RSA', 'META-INF/*.MF'
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
     manifest {
-        attributes("Main-Class": "hirs.tcg_eventlog.Main",
-                "Class-Path": configurations.runtime.files.collect { "lib/$it.name" }.join(' ')
-        )
-    }
-    from(configurations.compile.collect { it.isDirectory() ? it : zipTree(it) }) {}
-    exclude 'META-INF/*.RSA', 'META-INF/*.SF', 'META-INF/*.DSA'
-}
-
-uploadArchives {
-    repositories {
-        flatDir {
-            dirs "${buildDir}"
-        }
-    }
-}
-
-buildscript {
-    repositories {
-        mavenCentral()
-    }
-    dependencies {
-        classpath 'com.netflix.nebula:gradle-ospackage-plugin:4.9.3'
-    }
+        attributes(
+                 "Main-Class": "hirs.tcg_eventlog.Main",
+                 'Class-Path':configurations.runtimeClasspath.files.collect { it.getName() }.join(' ')
+           )
+     }
+     //jar name format: [archiveBaseName]-[archiveAppendix]-[archiveVersion]-[archiveClassifier].[archiveExtension]
+     archiveVersion = jarVersion
 }
 
 // Produce packages
 ospackage {
-    def gitCommitHash = 'git rev-parse --verify --short HEAD'.execute().text.trim()
-    packageName = 'tcg_eventlog_tool'
+    packageName = 'tcg-eventlog-tool'
     os = LINUX
-    arch = X86_64
-    version = '2.1.0'
-    release = gitCommitHash
+    arch = NOARCH
+    version = "$packVersion"
+    release = '1'
 
-    into '/opt/hirs/eventlog'
     user 'root'
     fileMode = 0755
 
-    from(jar.outputs.files) {
-        into 'lib'
+   into ('/opt/hirs/eventlog/lib') {
+       from jar.outputs.files
+       from configurations.runtimeClasspath
     }
-    from('lib') {
-        into 'lib'
-    }
-    from(configurations.runtime) {
-        into 'lib'
-    }
-    from('scripts') {
+    into ('/opt/hirs/eventlog/scripts') {
+      from ('scripts') {
         exclude {
-            FileTreeElement details ->
-                details.file.name.endsWith('.bat')
+            FileTreeElement details -> 
+               details.file.name.endsWith('.bat')
         }
-        into 'scripts'
+      }
     }
-    from('docs') {
-        exclude {
-            FileTreeElement details ->
-                details.file.name.endsWith('.odt')
+    into ('/opt/hirs/eventlog/docs') {
+        from ('docs') {
+           exclude {
+               FileTreeElement details ->
+                   details.file.name.endsWith('.odt')
+           }
         }
-        into 'docs'
+       from('./') {
+         include {
+             FileTreeElement details ->
+                 details.file.name.endsWith('.md')
+          }        
+       }
     }
-    from('./') {
-        include {
-            FileTreeElement details ->
-                details.file.name.endsWith('.md')
-        }
-        into './'
-        link("/usr/bin/elt", "/opt/hirs/eventlog/scripts/eventlog.sh", 0x755)
-    }
-
-    into('/tmp/') {
-        fileMode 0664
+    // Copy vendor-table into /tmp to avoid conflict with the ACA 
+    into('/tmp/elt/default-properties') {
         from ('../../HIRS_Utils/src/main/resources/vendor-table.json') {
-            addParentDirs true
-            createDirectoryEntry true
+         fileMode 0664
+         addParentDirs = true
         }
     }
 
-    postInstall file('scripts/vendor-table.sh')
+    // place elt link in system path to enable command line access
+    link("/usr/local/bin/elt", "/opt/hirs/eventlog/scripts/eventlog.sh", 0x755)
+
+    // PostInstall
+     //postInstall "cp ../../HIRS_Utils/build/libs/* /opt/hirs/eventlog/lib/."
+    // Copy files from /opt/elt/default-properties/ to avoid conflicts with the ACA
+     postInstall "cp /tmp/elt/default-properties/* /opt/hirs/default-properties/."
+     postInstall "rm -rf /tmp/elt"
+
+    // Uninstall
+    // copy files to where package manager exspects them and remove project files
+     preUninstall "mkdir -p /tmp/elt/default-properties"
+     preUninstall "cp /opt/hirs/default-properties/vendor-table.json /tmp/elt/default-properties/."
+     postUninstall "rm -rf /tmp/elt"
 
     buildRpm {
         arch = X86_64
