@@ -7,7 +7,13 @@ import org.bouncycastle.asn1.ASN1Enumerated;
 import org.bouncycastle.asn1.ASN1Integer;
 import org.bouncycastle.asn1.ASN1Sequence;
 import org.bouncycastle.asn1.ASN1TaggedObject;
+import org.bouncycastle.asn1.DERBitString;
 import org.bouncycastle.asn1.DERIA5String;
+import org.bouncycastle.asn1.DEROctetString;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
+import hirs.utils.HexUtils;
 
 /**
  * Basic class that handle component identifiers from the Platform Configuration
@@ -19,7 +25,11 @@ import org.bouncycastle.asn1.DERIA5String;
  *      fipsLevel [1] IMPLICIT FIPSLevel OPTIONAL,
  *      rtmType [2] IMPLICIT MeasurementRootType OPTIONAL,
  *      iso9000Certified BOOLEAN DEFAULT FALSE,
- *      iso9000Uri IA5STRING (SIZE (1..URIMAX)) OPTIONAL }
+ *      iso9000Uri IA5STRING (SIZE (1..URIMAX)) OPTIONAL,
+ *      platformFwSignatureVerification [3] IMPLICIT BIT STRING OPTIONAL,
+ *      platformFirmwareUpdateCompliance [4] IMPLICIT BIT STRING OPTIONAL,
+ *      firmwareCapabilities [5] IMPLICIT BIT STRING OPTIONAL,
+ *      hardwareCapabilities [6] IMPLICIT BIT STRING OPTIONAL }
  * </pre>
  */
 public class TBBSecurityAssertion {
@@ -27,6 +37,10 @@ public class TBBSecurityAssertion {
     private static final int CCINFO = 0;
     private static final int FIPSLEVEL = 1;
     private static final int RTMTYPE = 2;
+    private static final int PLATFORMFWSIGNATUREVERIFICATION = 3;
+    private static final int PLATFORMFIRMWAREUPDATECOMPLIANCE = 4;
+    private static final int FIRMWARECAPABILITIES = 5;
+    private static final int HARDWARECAPABILITIES = 6;
 
     /**
      * A type to handle the evaluation status used in the Common Criteria Measurement.
@@ -94,7 +108,14 @@ public class TBBSecurityAssertion {
     private MeasurementRootType rtmType;
     private ASN1Boolean iso9000Certified;
     private DERIA5String iso9000Uri;
-
+    @JsonIgnore
+    private DERBitString platformFwSignatureVerification;
+    @JsonIgnore
+    private DERBitString platformFirmwareUpdateCompliance;
+    @JsonIgnore
+    private DERBitString firmwareCapabilities;
+    @JsonIgnore
+    private DERBitString hardwareCapabilities;
     /**
      * Default constructor.
      */
@@ -105,6 +126,10 @@ public class TBBSecurityAssertion {
         rtmType = null;
         iso9000Certified = null;
         iso9000Uri = null;
+        platformFwSignatureVerification = null;
+        platformFirmwareUpdateCompliance = null;
+        firmwareCapabilities = null;
+        hardwareCapabilities = null;
     }
 
     /**
@@ -113,7 +138,7 @@ public class TBBSecurityAssertion {
      * @param version represents the version of the TBB Security Assertion
      * @param ccInfo represents the common criteria measures
      * @param fipsLevel represent the FIPSLevel
-     * @param rtmType represent the measurement toot type
+     * @param rtmType represent the measurement root type
      * @param iso9000Certified indicate if is iso9000 certifies
      * @param iso9000Uri URI string for the iso9000
      */
@@ -123,12 +148,48 @@ public class TBBSecurityAssertion {
             final MeasurementRootType rtmType,
             final ASN1Boolean iso9000Certified,
             final DERIA5String iso9000Uri) {
+        this(version, ccInfo, fipsLevel, rtmType, iso9000Certified, iso9000Uri,
+                null, null, null, null);
+    }
+
+    /**
+     * Constructor given the components values.
+     *
+     * @param version represents the version of the TBB Security Assertion
+     * @param ccInfo represents the common criteria measures
+     * @param fipsLevel represent the FIPSLevel
+     * @param rtmType represent the measurement root type
+     * @param iso9000Certified indicate if is iso9000 certifies
+     * @param iso9000Uri URI string for the iso9000
+     * @param platformFwSignatureVerification represent the FIM platform
+     *            firmware signature verification method
+     * @param platformFirmwareUpdateCompliance represent the FIM platform
+     *            firmware update compliance level
+     * @param firmwareCapabilities represent the security capabilities of
+     *            the firmware as defined in the FIM
+     * @param hardwareCapabilities represent the security capabilities of
+     *            the platform motherboard or its attached components
+     */
+    public TBBSecurityAssertion(final ASN1Integer version,
+            final CommonCriteriaMeasures ccInfo,
+            final FIPSLevel fipsLevel,
+            final MeasurementRootType rtmType,
+            final ASN1Boolean iso9000Certified,
+            final DERIA5String iso9000Uri,
+            final DERBitString platformFwSignatureVerification,
+            final DERBitString platformFirmwareUpdateCompliance,
+            final DERBitString firmwareCapabilities,
+            final DERBitString hardwareCapabilities) {
         this.version = version;
         this.ccInfo = ccInfo;
         this.fipsLevel = fipsLevel;
         this.rtmType = rtmType;
         this.iso9000Certified = iso9000Certified;
         this.iso9000Uri = iso9000Uri;
+        this.platformFwSignatureVerification = null;
+        this.platformFirmwareUpdateCompliance = null;
+        this.firmwareCapabilities = null;
+        this.hardwareCapabilities = null;
     }
 
     /**
@@ -137,7 +198,6 @@ public class TBBSecurityAssertion {
      * @throws IllegalArgumentException if there was an error on the parsing
      */
     public TBBSecurityAssertion(final ASN1Sequence sequence) throws IllegalArgumentException {
-        int index = 0;
         //sequence size
         int sequenceSize = sequence.size();
 
@@ -148,51 +208,110 @@ public class TBBSecurityAssertion {
         rtmType = null;
         iso9000Certified = ASN1Boolean.FALSE;
         iso9000Uri = null;
+        platformFwSignatureVerification = null;
+        platformFirmwareUpdateCompliance = null;
+        firmwareCapabilities = null;
+        hardwareCapabilities = null;
 
         // Only contains defaults
         if (sequence.size() == 0) {
             return;
         }
 
-        // Get version if present
-        if (sequence.getObjectAt(index).toASN1Primitive() instanceof ASN1Integer) {
-            version = ASN1Integer.getInstance(sequence.getObjectAt(index));
-            index++;
-        }
-
-        // Check if it's a tag value
-        while (index < sequenceSize
-                && sequence.getObjectAt(index).toASN1Primitive() instanceof ASN1TaggedObject) {
-            ASN1TaggedObject taggedObj = ASN1TaggedObject.getInstance(sequence.getObjectAt(index));
-            switch (taggedObj.getTagNo()) {
-                case CCINFO:
-                    ASN1Sequence cciSequence = ASN1Sequence.getInstance(taggedObj, false);
-                    ccInfo = new CommonCriteriaMeasures(cciSequence);
-                    break;
-                case FIPSLEVEL:
-                    ASN1Sequence fipsSequence = ASN1Sequence.getInstance(taggedObj, false);
-                    fipsLevel = new FIPSLevel(fipsSequence);
-                    break;
-                case RTMTYPE:
-                    ASN1Enumerated enumarated = ASN1Enumerated.getInstance(taggedObj, false);
-                    rtmType = MeasurementRootType.values()[enumarated.getValue().intValue()];
-                    break;
-                default:
-                    throw new IllegalArgumentException("TBB Security Assertion contains "
-                            + "invalid tagged object.");
+        // Parse sequence elements
+        int nonTaggedPosition = 0;
+        for (int index = 0; index < sequenceSize; index++) {
+            // Get version if present
+            if (sequence.getObjectAt(index).toASN1Primitive() instanceof ASN1Integer
+                    && nonTaggedPosition == 0) {
+                version = ASN1Integer.getInstance(sequence.getObjectAt(index));
+                nonTaggedPosition++;
             }
-            index++;
-        }
-        // Check if it's a boolean
-        if (index < sequenceSize
-                && sequence.getObjectAt(index).toASN1Primitive() instanceof ASN1Boolean) {
-            iso9000Certified = ASN1Boolean.getInstance(sequence.getObjectAt(index));
-            index++;
-        }
-        // Check if it's a IA5String
-        if (index < sequenceSize
-                && sequence.getObjectAt(index).toASN1Primitive() instanceof DERIA5String) {
-            iso9000Uri = DERIA5String.getInstance(sequence.getObjectAt(index));
+
+            // Check if it's a tag value
+            if (sequence.getObjectAt(index).toASN1Primitive() instanceof ASN1TaggedObject) {
+                ASN1TaggedObject taggedObj =
+                        ASN1TaggedObject.getInstance(sequence.getObjectAt(index));
+                switch (taggedObj.getTagNo()) {
+                    case CCINFO:
+                        ASN1Sequence cciSequence = ASN1Sequence.getInstance(taggedObj, false);
+                        ccInfo = new CommonCriteriaMeasures(cciSequence);
+                        break;
+                    case FIPSLEVEL:
+                        ASN1Sequence fipsSequence = ASN1Sequence.getInstance(taggedObj, false);
+                        fipsLevel = new FIPSLevel(fipsSequence);
+                        break;
+                    case RTMTYPE:
+                        ASN1Enumerated enumerated =
+                            ASN1Enumerated.getInstance(taggedObj, false);
+                        rtmType =
+                            MeasurementRootType.values()[enumerated.getValue().intValue()];
+                        break;
+                    case PLATFORMFWSIGNATUREVERIFICATION:
+                        if (taggedObj.getObject() instanceof DEROctetString) {
+                            // workaround for an issue with DERBitString.fromOctetString
+                            // in BC 1.59. Looks fixed as of BC 1.69.
+                            platformFwSignatureVerification =
+                                new DERBitString(
+                                    ((DEROctetString) taggedObj.getObject()).getOctets());
+                        } else {
+                            platformFwSignatureVerification =
+                                DERBitString.getInstance(taggedObj.getObject());
+                        }
+                        break;
+                    case PLATFORMFIRMWAREUPDATECOMPLIANCE:
+                        if (taggedObj.getObject() instanceof DEROctetString) {
+                            // workaround for an issue with DERBitString.fromOctetString
+                            // in BC 1.59. Looks fixed as of BC 1.69.
+                            platformFirmwareUpdateCompliance =
+                                new DERBitString(
+                                    ((DEROctetString) taggedObj.getObject()).getOctets());
+                        } else {
+                            platformFirmwareUpdateCompliance =
+                                DERBitString.getInstance(taggedObj.getObject());
+                        }
+                        break;
+                    case FIRMWARECAPABILITIES:
+                        if (taggedObj.getObject() instanceof DEROctetString) {
+                            // workaround for an issue with DERBitString.fromOctetString
+                            // in BC 1.59. Looks fixed as of BC 1.69.
+                            firmwareCapabilities =
+                                new DERBitString(
+                                    ((DEROctetString) taggedObj.getObject()).getOctets());
+                        } else {
+                            firmwareCapabilities =
+                                DERBitString.getInstance(taggedObj.getObject());
+                        }
+                        break;
+                    case HARDWARECAPABILITIES:
+                        if (taggedObj.getObject() instanceof DEROctetString) {
+                            // workaround for an issue with DERBitString.fromOctetString
+                            // in BC 1.59. Looks fixed as of BC 1.69.
+                            hardwareCapabilities =
+                                new DERBitString(
+                                    ((DEROctetString) taggedObj.getObject()).getOctets());
+                        } else {
+                            hardwareCapabilities =
+                                DERBitString.getInstance(taggedObj.getObject());
+                        }
+                        break;
+                    default:
+                        throw new IllegalArgumentException("TBB Security Assertion contains "
+                                + "invalid tagged object.");
+                }
+            }
+            // Check if it's a boolean
+            if (sequence.getObjectAt(index).toASN1Primitive() instanceof ASN1Boolean
+                    && nonTaggedPosition == 1) {
+                iso9000Certified = ASN1Boolean.getInstance(sequence.getObjectAt(index));
+                nonTaggedPosition++;
+            }
+            // Check if it's a IA5String
+            if (sequence.getObjectAt(index).toASN1Primitive() instanceof DERIA5String
+                    && nonTaggedPosition == 2) {
+                iso9000Uri = DERIA5String.getInstance(sequence.getObjectAt(index));
+                nonTaggedPosition++;
+            }
         }
     }
 
@@ -278,6 +397,74 @@ public class TBBSecurityAssertion {
      */
     public void setIso9000Uri(final DERIA5String iso9000Uri) {
         this.iso9000Uri = iso9000Uri;
+    }
+
+    /**
+     * @return the platformFwSignatureVerification byte array
+     */
+    public DERBitString getPlatformFwSignatureVerification() {
+        return platformFwSignatureVerification;
+    }
+
+    /**
+     * @return the platformFwSignatureVerification as a string
+     */
+    public String getPlatformFwSignatureVerificationStr() {
+        if (platformFwSignatureVerification == null) {
+            return null;
+        }
+        return HexUtils.byteArrayToHexString(platformFwSignatureVerification.getOctets());
+    }
+
+    /**
+     * @return the platformFirmwareUpdateCompliance byte array
+     */
+    public DERBitString getPlatformFirmwareUpdateCompliance() {
+        return platformFirmwareUpdateCompliance;
+    }
+
+    /**
+     * @return the platformFirmwareUpdateCompliance as a string
+     */
+    public String getPlatformFirmwareUpdateComplianceStr() {
+        if (platformFirmwareUpdateCompliance == null) {
+            return null;
+        }
+        return HexUtils.byteArrayToHexString(platformFirmwareUpdateCompliance.getOctets());
+    }
+
+    /**
+     * @return the firmwareCapabilities byte array
+     */
+    public DERBitString getFirmwareCapabilities() {
+        return firmwareCapabilities;
+    }
+
+    /**
+     * @return the firmwareCapabilities as a string
+     */
+    public String getFirmwareCapabilitiesStr() {
+        if (firmwareCapabilities == null) {
+            return null;
+        }
+        return HexUtils.byteArrayToHexString(firmwareCapabilities.getOctets());
+    }
+
+    /**
+     * @return the hardwareCapabilities byte array
+     */
+    public DERBitString getHardwareCapabilities() {
+        return hardwareCapabilities;
+    }
+
+    /**
+     * @return the hardwareCapabilities as a string
+     */
+    public String getHardwareCapabilitiesStr() {
+        if (hardwareCapabilities == null) {
+            return null;
+        }
+        return HexUtils.byteArrayToHexString(hardwareCapabilities.getOctets());
     }
 
     @Override

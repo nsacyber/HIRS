@@ -591,6 +591,103 @@
                                         </div>
                                     </div>
                                 </div>
+                                <!-- FIM Add ons -->
+                                <c:set var="platformfwsignatureverification" value="${initialData.tbbSecurityAssertion.getPlatformFwSignatureVerificationStr()}" />
+                                <c:set var="platformfirmwareupdatecompliance" value="${initialData.tbbSecurityAssertion.getPlatformFirmwareUpdateComplianceStr()}" />
+                                <c:set var="firmwarecapabilities" value="${initialData.tbbSecurityAssertion.getFirmwareCapabilitiesStr()}" />
+                                <c:set var="hardwarecapabilities" value="${initialData.tbbSecurityAssertion.getHardwareCapabilitiesStr()}" />
+                                <c:if test="${(not empty platformfwsignatureverification) or (not empty platformfirmwareupdatecompliance) or (not empty firmwarecapabilities) or (not empty hardwarecapabilities)}">
+                                    
+                                    <div class="panel panel-default">
+                                        <div class="panel-heading" role="tab" id="headingFour">
+                                            <h4 class="panel-title">
+                                                <a role="button" data-toggle="collapse" data-parent="#tbbsecurity" class="collapsed"
+                                                   href="#fimaddonscollapse" aria-expanded="false" aria-controls="fimaddonscollapse">
+                                                    FIM Platform Firmware Assertions
+                                                </a>
+                                            </h4>
+                                        </div>
+                                        <div id="fimaddonscollapse" class="panel-collapse collapse" role="tabpanel" aria-labelledby="headingThree">
+                                            <div class="panel-body">
+                                                <div id="fimAddons" class="row">
+                                                    <c:if test="${not empty platformfwsignatureverification}">
+                                                        <div class="tbbsecurityLine">
+                                                            <span class="fieldHeader">Signature Verification:</span>
+                                                            <span class="fieldValue">
+                                                                <c:if test="${fn:contains(platformfwsignatureverification, '00')}">
+                                                                    <span class="label label-success">HardwareSRTM</span>
+                                                                </c:if>
+                                                                <c:if test="${fn:contains(platformfwsignatureverification, '01')}">
+                                                                    <span class="label label-success">SecureBoot</span>
+                                                                </c:if>
+                                                            </span>
+                                                        </div>
+                                                    </c:if>
+                                                    <c:if test="${not empty platformfirmwareupdatecompliance}">
+                                                        <div class="tbbsecurityLine">
+                                                            <span class="fieldHeader">Update Compliance:</span>
+                                                            <span class="fieldValue">
+                                                                <c:if test="${fn:contains(platformfirmwareupdatecompliance, '00')}">
+                                                                    <span class="label label-success">SP800-147</span>
+                                                                </c:if>
+                                                                <c:if test="${fn:contains(platformfirmwareupdatecompliance, '01')}">
+                                                                    <span class="label label-success">SP800-147B</span>
+                                                                </c:if>
+                                                                <c:if test="${fn:contains(platformfirmwareupdatecompliance, '02')}">
+                                                                    <span class="label label-success">SP800-193</span>
+                                                                </c:if>
+                                                            </span>
+                                                        </div>
+                                                    </c:if>
+                                                    <c:if test="${not empty firmwarecapabilities}">
+                                                        <div class="tbbsecurityLine">
+                                                            <span class="fieldHeader">Firmware Capabilities:</span>
+                                                            <span class="fieldValue">
+                                                                <c:if test="${fn:contains(firmwarecapabilities, '00')}">
+                                                                    <span class="label label-success">fwSetupAuthLocal</span>
+                                                                </c:if>
+                                                                <c:if test="${fn:contains(firmwarecapabilities, '01')}">
+                                                                    <span class="label label-success">fwSetupAuthRemote</span>
+                                                                </c:if>
+                                                                <c:if test="${fn:contains(firmwarecapabilities, '02')}">
+                                                                    <span class="label label-success">SMMProtection</span>
+                                                                </c:if>
+                                                                <c:if test="${fn:contains(firmwarecapabilities, '03')}">
+                                                                    <span class="label label-success">fwKernelDMAProtection</span>
+                                                                </c:if>
+                                                            </span>
+                                                        </div>
+                                                    </c:if>
+                                                    <c:if test="${not empty hardwarecapabilities}">
+                                                        <div class="tbbsecurityLine">
+                                                            <span class="fieldHeader">Hardware Capabilities:</span>
+                                                            <span class="fieldValue">
+                                                                <c:if test="${fn:contains(hardwarecapabilities, '00')}">
+                                                                    <span class="label label-success">IOMMUSupport</span>
+                                                                </c:if>
+                                                                <c:if test="${fn:contains(hardwarecapabilities, '01')}">
+                                                                    <span class="label label-success">trustedExecutionEnvironment</span>
+                                                                </c:if>
+                                                                <c:if test="${fn:contains(hardwarecapabilities, '02')}">
+                                                                    <span class="label label-success">physicalTamperProtection</span>
+                                                                </c:if>
+                                                                <c:if test="${fn:contains(hardwarecapabilities, '03')}">
+                                                                    <span class="label label-success">physicalTamperDetection</span>
+                                                                </c:if>
+                                                                <c:if test="${fn:contains(hardwarecapabilities, '04')}">
+                                                                    <span class="label label-success">firmwareFlashWP</span>
+                                                                </c:if>
+                                                                <c:if test="${fn:contains(hardwarecapabilities, '05')}">
+                                                                    <span class="label label-success">externalDMASupport</span>
+                                                                </c:if>
+                                                            </span>
+                                                        </div>
+                                                    </c:if>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </c:if>
                             </div>
                         </div>
                     </c:if>
