@@ -13,6 +13,7 @@ if [ -z $HIRS_DB_PWD ]; then
    HIRS_DB_PWD="hirs_db"
 fi
 # Save hirs_db mysql user password to the properties file
+mkdir -p /etc/hirs
 echo "hibernate.connection.username="hirs_db"" > /etc/hirs/hibernate.properties
 echo "hibernate.connection.password=$HIRS_DB_PWD" >> /etc/hirs/hibernate.properties
 
