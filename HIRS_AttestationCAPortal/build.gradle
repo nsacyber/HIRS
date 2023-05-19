@@ -102,6 +102,9 @@ ospackage {
       from configurations.runtimeClasspath 
     }
     into ("/opt/hirs/scripts/aca/") {
+     from '../package/scripts/pki/pki_chain_gen.sh'
+     from '../package/scripts/pki/pki_setup.sh'
+     from '../package/scripts/aca/aca_proprty_setup.sh'
      from '../package/conf/tomcat.service'
      from '../package/scripts/install_tomcat.sh'
      from '../package/scripts/aca/certificate_generate.sh'
@@ -132,11 +135,8 @@ ospackage {
  //  }
 
      postInstall file('../package/scripts/common/db_create.sh')
-//     if (System.getenv('HIRS_INSTALL_STATUS').compareTo('fail')==0 ) {
-//       throw new GradleException('MYSQL password error occurred') 
-//     }
-  //    postInstall 'sh /opt/hirs/scripts/common/db_create.sh'
-  //  postInstall file('../package/scripts/common/ssl_configure.sh')
+//   postInstall file('../package/scripts/pki/pki_setup.sh')  
+//  postInstall file('../package/scripts/common/ssl_configure.sh')
   //  postInstall 'mkdir -p /etc/hirs/aca/client_files'
     postInstall 'mkdir -p /etc/hirs/aca/certificates'
     postInstall 'cp /tmp/aca/default-properties/* /opt/hirs/default-properties/.'

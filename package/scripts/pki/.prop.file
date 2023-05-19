@@ -1,0 +1,9 @@
+# *** ACA Directories ***
+aca.directories.root         = /etc/hirs/
+aca.directories.certificates = ${aca.directories.root}/certificates
+# *** Certificate and Key Properties ***
+aca.setup.keys.rsa.keySize         =  3072
+aca.setup.keys.ecc.keySize         =  512
+aca.setup.certificates.validity    =  3652
+aca.setup.certificates.subjectName =  HIRS_AttestationCA
+aca.setup.certificates.expiration  =  ${aca.setup.certificates.validity}
