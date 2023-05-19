@@ -1,30 +1,31 @@
 package hirs.attestationca.portal.util;
 
+import hirs.data.persist.certificate.Certificate;
+import hirs.data.persist.certificate.CertificateAuthorityCredential;
+import hirs.data.persist.certificate.ComponentResult;
+import hirs.data.persist.certificate.EndorsementCredential;
+import hirs.data.persist.certificate.IssuedAttestationCertificate;
+import hirs.data.persist.certificate.PlatformCredential;
+import hirs.data.persist.certificate.attributes.ComponentIdentifier;
+import hirs.data.persist.certificate.attributes.PlatformConfiguration;
+import hirs.persist.CertificateManager;
+import hirs.persist.ComponentResultManager;
+import hirs.utils.BouncyCastleUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.bouncycastle.util.encoders.Hex;
 
 import java.io.IOException;
 import java.math.BigInteger;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Set;
 import java.util.List;
-import java.util.Comparator;
-import java.util.stream.Collectors;
+import java.util.Set;
 import java.util.UUID;
-import hirs.data.persist.certificate.Certificate;
-import hirs.data.persist.certificate.CertificateAuthorityCredential;
-import hirs.data.persist.certificate.EndorsementCredential;
-import hirs.data.persist.certificate.PlatformCredential;
-import hirs.data.persist.certificate.IssuedAttestationCertificate;
-import hirs.data.persist.certificate.attributes.ComponentIdentifier;
-import hirs.data.persist.certificate.attributes.PlatformConfiguration;
-import hirs.persist.CertificateManager;
-import hirs.utils.BouncyCastleUtils;
-import org.bouncycastle.util.encoders.Hex;
-
-import java.util.Collections;
+import java.util.stream.Collectors;
 
 /**
  * Utility class for mapping certificate information in to string maps. These are used to display
@@ -303,12 +304,14 @@ public final class CertificateStringMapBuilder {
      *
      * @param uuid ID for the certificate.
      * @param certificateManager the certificate manager for retrieving certs.
+     * @param componentResultManager the component result manager for component mismatches.
      * @return a hash map with the endorsement certificate information.
      * @throws IOException when parsing the certificate
      * @throws IllegalArgumentException invalid argument on parsing the certificate
      */
     public static HashMap<String, Object> getPlatformInformation(final UUID uuid,
-            final CertificateManager certificateManager)
+            final CertificateManager certificateManager,
+            final ComponentResultManager componentResultManager)
             throws IllegalArgumentException, IOException {
         HashMap<String, Object> data = new HashMap<>();
         PlatformCredential certificate = PlatformCredential
@@ -373,6 +376,18 @@ public final class CertificateStringMapBuilder {
 
             if (!certificate.getComponentFailures().isEmpty()) {
                 data.put("failures", certificate.getComponentFailures());
+                HashMap<Integer, String> results = new HashMap<>();
+                for (ComponentResult componentResult : componentResultManager
+                        .getComponentResultList()) {
+                    if (componentResult.getCertificateId()
+                            .equals(certificate.getId())) {
+                        results.put(componentResult.getComponentHash(),
+                                componentResult.getExpected());
+                    }
+                }
+
+                data.put("componentResults", results);
+                data.put("failureMessages", certificate.getComponentFailureMessage());
             }
 
             //Get platform Configuration values and set map with it

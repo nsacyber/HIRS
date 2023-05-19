@@ -255,6 +255,8 @@ public class PlatformCredential extends DeviceAssociatedCertificate {
 
     @Column(length = MAX_MESSAGE_LENGTH)
     private String componentFailures = Strings.EMPTY;
+    @Column(length = MAX_MESSAGE_LENGTH)
+    private String componentFailureMessage = Strings.EMPTY;
 
     @Transient
     private EndorsementCredential endorsementCredential = null;
@@ -734,6 +736,22 @@ public class PlatformCredential extends DeviceAssociatedCertificate {
      */
     public void setComponentFailures(final String componentFailures) {
         this.componentFailures = componentFailures;
+    }
+
+    /**
+     * Getter for the component failures message.
+     * @return string of failures.
+     */
+    public String getComponentFailureMessage() {
+        return componentFailureMessage;
+    }
+
+    /**
+     * Setter for the component failure message instance.
+     * @param componentFailureMessage a string of failures.
+     */
+    public void setComponentFailureMessage(final String componentFailureMessage) {
+        this.componentFailureMessage = componentFailureMessage;
     }
 
     /**

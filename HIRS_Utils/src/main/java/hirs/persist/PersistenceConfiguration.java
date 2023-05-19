@@ -142,6 +142,18 @@ public class PersistenceConfiguration {
     }
 
     /**
+     * Creates a {@link ComponentResultManager} ready to use.
+     *
+     * @return {@link ComponentResultManager}
+     */
+    @Bean
+    public ComponentResultManager componentResultManager() {
+        DBComponentResultManager manager = new DBComponentResultManager(sessionFactory.getObject());
+        setDbManagerRetrySettings(manager);
+        return manager;
+    }
+
+    /**
      * Creates a {@link ReferenceManifestManager} ready to use.
      *
      * @return {@link ReferenceManifestManager}

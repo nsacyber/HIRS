@@ -442,7 +442,8 @@ public class ReferenceManifestDetailsPageController
         for (TpmPcrEvent tpe : eventList) {
             contentStr = tpe.getEventContentStr();
             // check for specific events
-            if (contentStr.contains("CRTM")) {
+            if (contentStr.contains("CRTM")
+                    || tpe.getEventTypeStr().contains("EV_EFI_PLATFORM_FIRMWARE_BLOB")) {
                 crtm = true;
             } else if (contentStr.contains("shimx64.efi")
                     || contentStr.contains("bootmgfw.efi")) {

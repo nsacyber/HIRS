@@ -3,10 +3,12 @@ package hirs.validation;
 import hirs.data.persist.AppraisalStatus;
 import hirs.data.persist.DeviceInfoReport;
 import hirs.data.persist.SupplyChainValidation;
+import hirs.data.persist.certificate.ComponentResult;
 import hirs.data.persist.certificate.EndorsementCredential;
 import hirs.data.persist.certificate.PlatformCredential;
 
 import java.security.KeyStore;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -14,6 +16,13 @@ import java.util.Map;
  * validation of credentials.
  */
 public interface CredentialValidator {
+
+    /**
+     * Getter for the list of the Component Results.
+     * @return a list of results
+     */
+    List<ComponentResult> getComponentResultList();
+
     /**
      * Checks if the platform credential is valid.
      *

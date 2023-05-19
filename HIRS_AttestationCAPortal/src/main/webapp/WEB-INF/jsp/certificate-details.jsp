@@ -762,7 +762,7 @@
                                                                             <span class="fieldValue">${component.getCertificateIdentifier().getIssuerDN()}</span><br />
                                                                             <span class="fieldHeader">Platform Certificate Serial Number:</span>
                                                                             <span class="fieldValue">${component.getCertificateIdentifier().getCertificateSerialNumber()}</span><br />
-                                                                            <span class="fieldHeader">Platform Certificate URI:</span>  
+                                                                            <span class="fieldHeader">Platform Certificate URI:</span>
                                                                         </c:if>
                                                                         <span class="fieldValue">
                                                                             <a href="${component.getComponentPlatformUri().getUniformResourceIdentifier()}">
@@ -1029,7 +1029,7 @@
                     var subjectKeyIdentifier = ${initialData.subjectKeyIdentifier};
                     $("#subjectKeyIdentifier").html(byteToHexString(subjectKeyIdentifier));
                 }
-            </c:if>            
+            </c:if>
 
                 //Initilize tooltips
                 $('[data-toggle="tooltip"]').tooltip();

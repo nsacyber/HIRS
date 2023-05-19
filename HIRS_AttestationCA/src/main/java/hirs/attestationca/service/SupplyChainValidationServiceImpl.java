@@ -19,10 +19,12 @@ import hirs.data.persist.SwidResource;
 import hirs.data.persist.TPMMeasurementRecord;
 import hirs.data.persist.certificate.Certificate;
 import hirs.data.persist.certificate.CertificateAuthorityCredential;
+import hirs.data.persist.certificate.ComponentResult;
 import hirs.data.persist.certificate.EndorsementCredential;
 import hirs.data.persist.certificate.PlatformCredential;
 import hirs.persist.AppraiserManager;
 import hirs.persist.CertificateManager;
+import hirs.persist.ComponentResultManager;
 import hirs.persist.CrudManager;
 import hirs.persist.DBManagerException;
 import hirs.persist.PersistenceConfiguration;
@@ -82,6 +84,7 @@ public class SupplyChainValidationServiceImpl implements SupplyChainValidationSe
     private ReferenceDigestManager referenceDigestManager;
     private ReferenceEventManager referenceEventManager;
     private CertificateManager certificateManager;
+    private ComponentResultManager componentResultManager;
     private CredentialValidator supplyChainCredentialValidator;
     private CrudManager<SupplyChainValidationSummary> supplyChainValidatorSummaryManager;
 
@@ -104,6 +107,7 @@ public class SupplyChainValidationServiceImpl implements SupplyChainValidationSe
      * @param policyManager                      the policy manager
      * @param appraiserManager                   the appraiser manager
      * @param certificateManager                 the cert manager
+     * @param componentResultManager             the comp result manager
      * @param referenceManifestManager           the RIM manager
      * @param supplyChainValidatorSummaryManager the summary manager
      * @param supplyChainCredentialValidator     the credential validator
@@ -115,6 +119,7 @@ public class SupplyChainValidationServiceImpl implements SupplyChainValidationSe
     public SupplyChainValidationServiceImpl(
             final PolicyManager policyManager, final AppraiserManager appraiserManager,
             final CertificateManager certificateManager,
+            final ComponentResultManager componentResultManager,
             final ReferenceManifestManager referenceManifestManager,
             final CrudManager<SupplyChainValidationSummary> supplyChainValidatorSummaryManager,
             final CredentialValidator supplyChainCredentialValidator,
@@ -123,6 +128,7 @@ public class SupplyChainValidationServiceImpl implements SupplyChainValidationSe
         this.policyManager = policyManager;
         this.appraiserManager = appraiserManager;
         this.certificateManager = certificateManager;
+        this.componentResultManager = componentResultManager;
         this.referenceManifestManager = referenceManifestManager;
         this.supplyChainValidatorSummaryManager = supplyChainValidatorSummaryManager;
         this.supplyChainCredentialValidator = supplyChainCredentialValidator;
@@ -781,7 +787,12 @@ public class SupplyChainValidationServiceImpl implements SupplyChainValidationSe
             case FAIL:
                 if (!result.getAdditionalInfo().isEmpty()) {
                     pc.setComponentFailures(result.getAdditionalInfo());
+                    pc.setComponentFailureMessage(result.getMessage());
                     this.certificateManager.update(pc);
+                    for (ComponentResult componentResult
+                            : supplyChainCredentialValidator.getComponentResultList()) {
+                        this.componentResultManager.saveResult(componentResult);
+                    }
                 }
                 return buildValidationRecord(validationType, AppraisalStatus.Status.FAIL,
                         result.getMessage(), pc, Level.WARN);
@@ -817,6 +828,7 @@ public class SupplyChainValidationServiceImpl implements SupplyChainValidationSe
             case FAIL:
                 if (!result.getAdditionalInfo().isEmpty()) {
                     base.setComponentFailures(result.getAdditionalInfo());
+                    base.setComponentFailureMessage(result.getMessage());
                     this.certificateManager.update(base);
                 }
                 // we are adding things to componentFailures

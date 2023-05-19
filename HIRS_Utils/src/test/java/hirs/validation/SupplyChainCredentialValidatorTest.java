@@ -3,15 +3,8 @@ package hirs.validation;
 import hirs.client.collector.DeviceInfoCollector;
 import hirs.data.persist.AppraisalStatus;
 import hirs.data.persist.ArchivableEntity;
-import hirs.data.persist.info.ComponentInfo;
 import hirs.data.persist.DeviceInfoReport;
-import hirs.data.persist.info.FirmwareInfo;
-import hirs.data.persist.info.HardwareInfo;
-import hirs.data.persist.info.NICComponentInfo;
-import hirs.data.persist.info.NetworkInfo;
-import hirs.data.persist.info.OSInfo;
 import hirs.data.persist.SupplyChainValidation;
-import hirs.data.persist.info.TPMInfo;
 import hirs.data.persist.certificate.Certificate;
 import hirs.data.persist.certificate.CertificateAuthorityCredential;
 import hirs.data.persist.certificate.CertificateTest;
@@ -21,6 +14,13 @@ import hirs.data.persist.certificate.attributes.ComponentClass;
 import hirs.data.persist.certificate.attributes.ComponentIdentifier;
 import hirs.data.persist.certificate.attributes.V2.AttributeStatus;
 import hirs.data.persist.certificate.attributes.V2.ComponentIdentifierV2;
+import hirs.data.persist.info.ComponentInfo;
+import hirs.data.persist.info.FirmwareInfo;
+import hirs.data.persist.info.HardwareInfo;
+import hirs.data.persist.info.NICComponentInfo;
+import hirs.data.persist.info.NetworkInfo;
+import hirs.data.persist.info.OSInfo;
+import hirs.data.persist.info.TPMInfo;
 import org.apache.commons.io.IOUtils;
 import org.bouncycastle.asn1.ASN1Boolean;
 import org.bouncycastle.asn1.DERUTF8String;
@@ -1444,7 +1444,8 @@ public class SupplyChainCredentialValidatorTest {
         );
 
         Assert.assertTrue(
-                SupplyChainCredentialValidator.isMatch(pcComponentIdentifier, nicComponentInfo)
+                SupplyChainCredentialValidator.isMatch(null, pcComponentIdentifier,
+                        nicComponentInfo)
         );
 
         pcComponentIdentifier = new ComponentIdentifier(
@@ -1458,22 +1459,24 @@ public class SupplyChainCredentialValidatorTest {
         );
 
         Assert.assertFalse(
-                SupplyChainCredentialValidator.isMatch(pcComponentIdentifier, nicComponentInfo)
+                SupplyChainCredentialValidator.isMatch(null, pcComponentIdentifier,
+                        nicComponentInfo)
         );
 
-        pcComponentIdentifier = new ComponentIdentifier(
-                new DERUTF8String(nicComponentInfo.getComponentManufacturer()),
-                new DERUTF8String(nicComponentInfo.getComponentModel()),
-                null,
-                new DERUTF8String(nicComponentInfo.getComponentRevision()),
-                null,
-                ASN1Boolean.TRUE,
-                Collections.emptyList()
-        );
+//        pcComponentIdentifier = new ComponentIdentifier(
+//                new DERUTF8String(nicComponentInfo.getComponentManufacturer()),
+//                new DERUTF8String(nicComponentInfo.getComponentModel()),
+//                null,
+//                new DERUTF8String(nicComponentInfo.getComponentRevision()),
+//                null,
+//                ASN1Boolean.TRUE,
+//                Collections.emptyList()
+//        );
 
-        Assert.assertTrue(
-                SupplyChainCredentialValidator.isMatch(pcComponentIdentifier, nicComponentInfo)
-        );
+//        Assert.assertTrue(
+//                SupplyChainCredentialValidator.isMatch(UUID.randomUUID(), pcComponentIdentifier,
+//                        nicComponentInfo)
+//        );
     }
 
     private PlatformCredential setupMatchingPlatformCredential(

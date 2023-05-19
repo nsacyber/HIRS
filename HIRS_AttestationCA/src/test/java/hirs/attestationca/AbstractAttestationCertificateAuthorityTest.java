@@ -131,7 +131,7 @@ public class AbstractAttestationCertificateAuthorityTest {
     @BeforeTest
     public void setup() {
         aca = new AbstractAttestationCertificateAuthority(null, keyPair.getPrivate(),
-                null, null, null, null, null, 1,
+                null, null, null, null, null, null, 1,
                 null, null, null, null) {
         };
     }
