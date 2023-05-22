@@ -9,6 +9,7 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
+import org.w3c.dom.Document;
 
 public class TestSwidTagGateway {
     private SwidTagGateway gateway;
@@ -160,6 +161,24 @@ public class TestSwidTagGateway {
                 .getResourceAsStream(BASE_RFC3852_TIMESTAMP);
         Assert.assertTrue(compareFileBytesToExpectedFile(DEFAULT_OUTPUT));
         Assert.assertTrue(validator.validateSwidTag(DEFAULT_OUTPUT, "DEFAULT"));
+    }
+
+     /**
+      * This test corresponds to the arguments:
+      * -s <signed swidtag> -d
+     */
+    @Test
+    public void testCreateDetachedSignature() {
+        try {
+            String signFilePath = TestSwidTagGateway.class.getClassLoader()
+                    .getResource(BASE_RFC3852_TIMESTAMP).getPath();
+            gateway.setDefaultCredentials(true);
+            Document doc = gateway.signXMLDocument(signFilePath);
+            gateway.writeSwidTagFile(doc, DEFAULT_OUTPUT);
+            validator.validateSwidTag(DEFAULT_OUTPUT, "DEFAULT");
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     /**
