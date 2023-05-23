@@ -1,7 +1,7 @@
 package hirs.attestationca.portal.page.controllers;
 
+import hirs.attestationca.persist.entity.manager.CertificateRepository;
 import hirs.attestationca.portal.page.Page;
-import hirs.attestationca.persist.service.CertificateServiceImpl;
 import hirs.attestationca.portal.page.PageController;
 import hirs.attestationca.portal.page.PageMessages;
 import hirs.attestationca.portal.page.params.CertificateDetailsPageParams;
@@ -29,16 +29,16 @@ public class CertificateDetailsPageController extends PageController<Certificate
      * Model attribute name used by initPage for the initial data passed to the page.
      */
     static final String INITIAL_DATA = "initialData";
-    private final CertificateServiceImpl certificateServiceImpl;
+    private final CertificateRepository certificateRepository;
 
     /**
      * Constructor providing the Page's display and routing specification.
-     * @param certificateServiceImpl the certificate manager
+     * @param certificateRepository the certificate repository
      */
     @Autowired
-    public CertificateDetailsPageController(final CertificateServiceImpl certificateServiceImpl) {
+    public CertificateDetailsPageController(final CertificateRepository certificateRepository) {
         super(Page.CERTIFICATE_DETAILS);
-        this.certificateServiceImpl = certificateServiceImpl;
+        this.certificateRepository = certificateRepository;
     }
 
     /**
@@ -76,19 +76,19 @@ public class CertificateDetailsPageController extends PageController<Certificate
                 switch (type) {
                     case "certificateauthority":
                         data.putAll(CertificateStringMapBuilder.getCertificateAuthorityInformation(
-                                uuid, certificateServiceImpl));
+                                uuid, null));
                         break;
                     case "endorsement":
                         data.putAll(CertificateStringMapBuilder.getEndorsementInformation(uuid,
-                                certificateServiceImpl));
+                                null));
                         break;
                     case "platform":
                         data.putAll(CertificateStringMapBuilder.getPlatformInformation(uuid,
-                                certificateServiceImpl));
+                                null));
                         break;
                     case "issued":
                         data.putAll(CertificateStringMapBuilder.getIssuedInformation(uuid,
-                                certificateServiceImpl));
+                                null));
                         break;
                     default:
                         String typeError = "Invalid certificate type: " + params.getType();

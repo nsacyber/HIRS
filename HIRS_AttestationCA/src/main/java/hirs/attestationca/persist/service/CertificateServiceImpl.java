@@ -1,45 +1,35 @@
 package hirs.attestationca.persist.service;
 
+import hirs.attestationca.persist.DBManagerException;
+import hirs.attestationca.persist.entity.ArchivableEntity;
 import hirs.attestationca.persist.entity.manager.CertificateRepository;
 import hirs.attestationca.persist.entity.userdefined.Certificate;
 import hirs.attestationca.persist.service.selector.CertificateSelector;
-import jakarta.persistence.EntityManager;
+import lombok.NoArgsConstructor;
+import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 
+@Log4j2
+@NoArgsConstructor
 @Service
-public class CertificateServiceImpl<T extends Certificate> extends DefaultDbService<Certificate> implements CertificateService<Certificate> {
+public class CertificateServiceImpl<T extends Certificate> extends DefaultDbService<T>  {
 
-    @Autowired(required = false)
-    private EntityManager entityManager;
+//    @PersistenceContext  // I'll need this if I want to make custom native calls
+//    private EntityManager entityManager;
 
     @Autowired
-    private CertificateRepository repository;
+    private CertificateRepository certificateRepository;
 
-    @Override
-    public Certificate saveCertificate(Certificate certificate) {
-        return repository.save(certificate);
-    }
-
-    @Override
-    @SuppressWarnings("unchecked")
-    public <T extends Certificate> List<T> fetchCertificates(Class<T> classType) {
-        return (List<T>) repository.findAll(Sort.sort(classType));
-    }
-
-    @Override
-    public Certificate updateCertificate(Certificate certificate, UUID certificateId) {
-        return saveCertificate(certificate);
-    }
-
-    @Override
-    public Certificate updateCertificate(Certificate certificate) {
-        return saveCertificate(certificate);
+    /**
+     * Default Constructor.
+     */
+    public CertificateServiceImpl(final Class<T> clazz) {
+        super(clazz);
+        this.defineRepository(certificateRepository);
     }
 
     /**
@@ -73,13 +63,29 @@ public class CertificateServiceImpl<T extends Certificate> extends DefaultDbServ
         return null;
     }
 
+
     /**
-     * Remove a certificate from the database.
+     * Archives the named object and updates it in the database.
      *
-     * @param certificate the certificate to delete
-     * @return true if deletion was successful, false otherwise
+     * @param id UUID of the object to archive
+     * @return true if the object was successfully found and archived, false if the object was not
+     * found
+     * @throws hirs.attestationca.persist.DBManagerException if the object is not an instance of <code>ArchivableEntity</code>
      */
-    public void deleteCertificate(final Certificate certificate) {
-        repository.delete(certificate);
+    public final boolean archive(final UUID id) throws DBManagerException {
+        log.debug("archiving object: {}", id);
+        if (id == null) {
+            log.debug("null id argument");
+            return false;
+        }
+
+        T target = get(id);
+        if (target == null) {
+            return false;
+        }
+
+        ((ArchivableEntity) target).archive();
+        this.certificateRepository.save(target);
+        return true;
     }
 }

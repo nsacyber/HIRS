@@ -7,5 +7,5 @@ import org.springframework.stereotype.Repository;
 import java.util.UUID;
 
 @Repository
-public interface CertificateRepository extends JpaRepository<Certificate, UUID> {
+public interface CertificateRepository<T extends Certificate> extends JpaRepository<Certificate, UUID> {
 }

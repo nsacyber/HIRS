@@ -7,6 +7,8 @@ import hirs.attestationca.persist.entity.userdefined.certificate.CertificateVari
 import hirs.utils.HexUtils;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.Inheritance;
+import jakarta.persistence.InheritanceType;
 import jakarta.persistence.Transient;
 import lombok.Getter;
 import lombok.extern.log4j.Log4j2;
@@ -75,6 +77,7 @@ import java.util.Objects;
  * It stores certain attributes separately from the serialized certificate to enable querying on
  * those attributes.
  */
+@Inheritance(strategy = InheritanceType.SINGLE_TABLE)
 @Log4j2
 @Entity
 public abstract class Certificate extends ArchivableEntity {

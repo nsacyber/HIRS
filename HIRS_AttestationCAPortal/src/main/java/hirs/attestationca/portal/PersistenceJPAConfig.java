@@ -1,6 +1,5 @@
 package hirs.attestationca.portal;
 
-import hirs.attestationca.persist.entity.userdefined.SupplyChainSettings;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -18,6 +17,9 @@ import org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean;
 import org.springframework.orm.jpa.vendor.HibernateJpaVendorAdapter;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
+import org.springframework.web.multipart.support.StandardServletMultipartResolver;
+import org.springframework.web.servlet.config.annotation.DefaultServletHandlerConfigurer;
+import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 import javax.sql.DataSource;
 import java.security.cert.X509Certificate;
@@ -27,9 +29,9 @@ import java.util.Properties;
 @Configuration
 @EnableTransactionManagement
 @PropertySource({ "classpath:hibernate.properties", "classpath:portal.properties" })
-@ComponentScan({ "hirs.attestationca.portal.page.controllers", "hirs.attestationca.persist.entity" })
+@ComponentScan({"hirs.attestationca.portal", "hirs.attestationca.portal.page.controllers", "hirs.attestationca.persist.entity"})//, "hirs.attestationca.persist.service"})
 @EnableJpaRepositories(basePackages = "hirs.attestationca.persist.entity.manager")
-public class PersistenceJPAConfig {
+public class PersistenceJPAConfig implements WebMvcConfigurer {
 
     @Value("${aca.directories.certificates}")
     private String certificatesLocation;
@@ -50,7 +52,7 @@ public class PersistenceJPAConfig {
     public LocalContainerEntityManagerFactoryBean entityManagerFactory() {
         final LocalContainerEntityManagerFactoryBean entityManagerBean = new LocalContainerEntityManagerFactoryBean();
         entityManagerBean.setDataSource(dataSource());
-        entityManagerBean.setPackagesToScan(new String[] {"hirs.attestationca.persist"});
+        entityManagerBean.setPackagesToScan("hirs.attestationca.persist.entity");
 
         JpaVendorAdapter vendorAdapter = new HibernateJpaVendorAdapter();
         entityManagerBean.setJpaVendorAdapter(vendorAdapter);
@@ -62,7 +64,8 @@ public class PersistenceJPAConfig {
     @Bean
     public DataSource dataSource() {
         final DriverManagerDataSource dataSource = new DriverManagerDataSource();
-        dataSource.setDriverClassName(environment.getProperty("hibernate.connection.driver_class"));
+        dataSource.setDriverClassName(environment.getProperty("hibernate.connection.driver_class",
+                "org.mariadb.jdbc.Driver"));
         dataSource.setUrl(environment.getProperty("hibernate.connection.url"));
         dataSource.setUsername(environment.getProperty("hibernate.connection.username"));
         dataSource.setPassword(environment.getProperty("hibernate.connection.password"));
@@ -185,10 +188,28 @@ public class PersistenceJPAConfig {
         return hibernateProperties;
     }
 
-    @Bean(name="default-settings")
-    public SupplyChainSettings supplyChainSettings() {
-        SupplyChainSettings scSettings = new SupplyChainSettings("Default", "Settings are configured for no validation flags set.");
-
-        return scSettings;
+    /**
+     * Creates a Spring Resolver for Multi-part form uploads. This is required
+     * for spring controllers to be able to process Spring MultiPartFiles
+     *
+     * @return bean to handle multipart form requests
+     */
+    @Bean(name = "multipartResolver")
+    public StandardServletMultipartResolver multipartResolver() {
+        return new StandardServletMultipartResolver();
     }
+
+//    @Bean(name="default-settings")
+//    public PolicySettings supplyChainSettings() {
+//        PolicySettings scSettings = new PolicySettings("Default", "Settings are configured for no validation flags set.");
+//
+//        return scSettings;
+//    }
+
+
+    @Override
+    public void configureDefaultServletHandling(final DefaultServletHandlerConfigurer configurer) {
+        configurer.enable();
+    }
+
 }

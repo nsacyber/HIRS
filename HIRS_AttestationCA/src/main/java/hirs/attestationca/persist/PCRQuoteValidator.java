@@ -1,6 +1,6 @@
 package hirs.attestationca.persist;
 
-import hirs.attestationca.persist.entity.userdefined.SupplyChainSettings;
+import hirs.attestationca.persist.entity.userdefined.PolicySettings;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -46,7 +46,7 @@ public class PCRQuoteValidator {
     private String[] baselinePCRS = new String[MAX_PCR_ID + 1];
     @Getter
     @Setter
-    private SupplyChainSettings settings;
+    private PolicySettings settings;
 
     /**
      * Constructor to parse PCR values.
@@ -54,7 +54,7 @@ public class PCRQuoteValidator {
      * @param settings settings for the supply chain portal settings for provisioning
      */
     public PCRQuoteValidator(final String[] pcrValues,
-                             final SupplyChainSettings settings) {
+                             final PolicySettings settings) {
         if (pcrValues != null) {
             baselinePCRS = new String[MAX_PCR_ID + 1];
             for (int i = 0; i <= MAX_PCR_ID; i++) {

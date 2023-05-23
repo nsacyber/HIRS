@@ -3,7 +3,6 @@ package hirs.attestationca.portal.page.controllers;
 import hirs.attestationca.persist.entity.manager.DeviceRepository;
 import hirs.attestationca.persist.entity.userdefined.Device;
 import hirs.attestationca.portal.page.Page;
-import hirs.attestationca.persist.service.DeviceServiceImpl;
 import hirs.attestationca.portal.page.PageController;
 import hirs.attestationca.portal.page.params.NoPageParams;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,14 +22,11 @@ public class DevicePageController extends PageController<NoPageParams> {
      * Autowiring property vs constructor
      */
 
-    private final DeviceServiceImpl deviceServiceImpl;
     private final DeviceRepository deviceRepository;
 
     @Autowired
-    public DevicePageController(DeviceServiceImpl deviceServiceImpl,
-                                DeviceRepository deviceRepository) {
+    public DevicePageController(final DeviceRepository deviceRepository) {
         super(Page.DEVICES);
-        this.deviceServiceImpl = deviceServiceImpl;
         this.deviceRepository = deviceRepository;
     }
 

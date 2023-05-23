@@ -1,6 +1,6 @@
 package hirs.attestationca.portal.page;
 
-import hirs.attestationca.persist.entity.userdefined.SupplyChainSettings;
+import hirs.attestationca.persist.entity.userdefined.PolicySettings;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -55,7 +55,7 @@ public class PolicyPageModel {
      *
      * @param policy The supply chain policy
      */
-    public PolicyPageModel(final SupplyChainSettings policy) {
+    public PolicyPageModel(final PolicySettings policy) {
         this.enableEcValidation = policy.isEcValidationEnabled();
         this.enablePcCertificateValidation = policy.isPcValidationEnabled();
         this.enablePcCertificateAttributeValidation = policy.isPcAttributeValidationEnabled();

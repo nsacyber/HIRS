@@ -56,11 +56,11 @@ public final class CertificateStringMapBuilder {
      * Returns the Certificate Authority information.
      *
      * @param uuid ID for the certificate.
-     * @param certificateServiceImpl the certificate manager for retrieving certs.
+     * @param certificateService the certificate manager for retrieving certs.
      * @return a hash map with the endorsement certificate information.
      */
     public static HashMap<String, String> getCertificateAuthorityInformation(final UUID uuid,
-                                                                             final CertificateServiceImpl certificateServiceImpl) {
+                                                                             final CertificateServiceImpl certificateService) {
 //        CertificateAuthorityCredential certificate =
 //                CertificateAuthorityCredential
 //                        .select(certificateManager)
@@ -77,12 +77,12 @@ public final class CertificateStringMapBuilder {
      * Returns the Trust Chain credential information.
      *
      * @param certificate the certificate
-     * @param certificateServiceImpl the certificate manager for retrieving certs.
+     * @param certificateService the certificate manager for retrieving certs.
      * @return a hash map with the endorsement certificate information.
      */
     public static HashMap<String, String> getCertificateAuthorityInformation(
             final CertificateAuthorityCredential certificate,
-            final CertificateServiceImpl certificateServiceImpl) {
+            final CertificateServiceImpl certificateService) {
 //        return getCertificateAuthorityInfoHelper(certificateManager, certificate,
 //                "No cert provided for mapping");
         return null;
@@ -100,11 +100,11 @@ public final class CertificateStringMapBuilder {
      * Returns the endorsement credential information.
      *
      * @param uuid ID for the certificate.
-     * @param certificateServiceImpl the certificate manager for retrieving certs.
+     * @param certificateService the certificate manager for retrieving certs.
      * @return a hash map with the endorsement certificate information.
      */
     public static HashMap<String, String> getEndorsementInformation(final UUID uuid,
-                                                                    final CertificateServiceImpl certificateServiceImpl) {
+                                                                    final CertificateServiceImpl certificateService) {
         HashMap<String, String> data = new HashMap<>();
 
         return data;
@@ -114,13 +114,13 @@ public final class CertificateStringMapBuilder {
      * Returns the Platform credential information.
      *
      * @param uuid ID for the certificate.
-     * @param certificateServiceImpl the certificate manager for retrieving certs.
+     * @param certificateService the certificate manager for retrieving certs.
      * @return a hash map with the endorsement certificate information.
      * @throws IOException when parsing the certificate
      * @throws IllegalArgumentException invalid argument on parsing the certificate
      */
     public static HashMap<String, Object> getPlatformInformation(final UUID uuid,
-                                                                 final CertificateServiceImpl certificateServiceImpl)
+                                                                 final CertificateServiceImpl certificateService)
             throws IllegalArgumentException, IOException {
         HashMap<String, Object> data = new HashMap<>();
 
@@ -158,11 +158,11 @@ public final class CertificateStringMapBuilder {
      * Returns the Issued Attestation Certificate information.
      *
      * @param uuid ID for the certificate.
-     * @param certificateServiceImpl the certificate manager for retrieving certs.
+     * @param certificateService the certificate manager for retrieving certs.
      * @return a hash map with the endorsement certificate information.
      */
     public static HashMap<String, String> getIssuedInformation(final UUID uuid,
-                                                               final CertificateServiceImpl certificateServiceImpl) {
+                                                               final CertificateServiceImpl certificateService) {
         HashMap<String, String> data = new HashMap<>();
 
         return data;

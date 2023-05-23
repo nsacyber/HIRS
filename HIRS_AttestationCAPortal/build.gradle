@@ -3,7 +3,7 @@ plugins {
     id 'java'
     id 'war'
     id "nebula.ospackage" version "9.1.1"
-    id 'org.springframework.boot' version '3.0.6'
+    id 'org.springframework.boot' version '3.1.0'
     id 'io.spring.dependency-management' version '1.1.0'
 }
 
@@ -34,6 +34,7 @@ dependencies {
     implementation project(':HIRS_AttestationCA')
 
     implementation libs.pci
+    implementation libs.gson
     implementation libs.bouncycastle
     implementation libs.guava
     implementation libs.jakarta.servlet
@@ -41,8 +42,10 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-web'
     implementation 'org.springframework.boot:spring-boot-starter-validation'
     implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
-    implementation 'com.github.darrachequesne:spring-data-jpa-datatables:6.0.1'
     implementation 'org.projectlombok:lombok'
+    implementation 'commons-fileupload:commons-fileupload:1.5'
+    implementation 'org.junit.jupiter:junit-jupiter:5.4.2'
+    implementation 'org.junit.jupiter:junit-jupiter:5.4.2'
 
     compileOnly 'org.projectlombok:lombok'
     runtimeOnly 'org.mariadb.jdbc:mariadb-java-client'
@@ -50,7 +53,13 @@ dependencies {
     providedRuntime 'org.springframework.boot:spring-boot-starter-tomcat'
 
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
+    testImplementation libs.testng
+    testImplementation libs.mockito
 }
+//
+//test {
+//    useTestNG()
+//}
 
 war {
     from(buildDir) {

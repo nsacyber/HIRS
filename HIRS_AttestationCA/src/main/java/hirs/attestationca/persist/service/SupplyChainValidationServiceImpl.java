@@ -9,7 +9,6 @@ import hirs.utils.BouncyCastleUtils;
 import lombok.extern.log4j.Log4j2;
 import org.bouncycastle.util.encoders.Hex;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
 
 import java.io.IOException;
 import java.security.KeyStore;
@@ -20,41 +19,20 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Log4j2
-@Service
-public class SupplyChainValidationServiceImpl extends DefaultDbService<SupplyChainValidation> implements SupplyChainValidationService {
+//@Service
+public class SupplyChainValidationServiceImpl extends DefaultDbService<SupplyChainValidation> {
 
     @Autowired
     SupplyChainValidationRepository repository;
     @Autowired
-    private CertificateService certificateService;
+    private CertificateServiceImpl certificateService;
 
-    public SupplyChainValidationServiceImpl(final CertificateService certificateService) {
+    public SupplyChainValidationServiceImpl(final CertificateServiceImpl certificateService) {
         super();
         this.certificateService = certificateService;
-    }
-
-    @Override
-    public SupplyChainValidation saveSupplyChainValidation(SupplyChainValidation supplyChainValidation) {
-        return repository.save(supplyChainValidation);
-    }
-
-    @Override
-    public List<SupplyChainValidation> fetchSupplyChainValidations() {
-        return repository.findAll();
-    }
-
-    @Override
-    public SupplyChainValidation updateSupplyChainValidation(SupplyChainValidation supplyChainValidation, UUID scvId) {
-        return null;
-    }
-
-    @Override
-    public void deleteSupplyChainValidation(UUID scvId) {
-        repository.deleteById(scvId);
     }
 
     /**

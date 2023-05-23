@@ -10,10 +10,10 @@
     </welcome-file-list>
 
     <!-- Specify the location of the LOG4J file -->
-    <context-param>
-        <param-name>log4j.configurationFile</param-name>
-        <param-value>classpath:log4j2-spring.xml</param-value>
-    </context-param>
+<!--    <context-param>-->
+<!--        <param-name>log4j.configurationFile</param-name>-->
+<!--        <param-value>classpath:log4j2-spring.xml</param-value>-->
+<!--    </context-param>-->
 
     <!--
         Dispatches page requests via PageConfiguration to PageControllers
@@ -31,7 +31,12 @@
         <url-pattern>/portal/*</url-pattern>
     </servlet-mapping>
 
+    <listener>
+        <listener-class>hirs.attestationca.portal.HIRSDbInitializer</listener-class>
+    </listener>
     <error-page>
         <location>/errors</location>
     </error-page>
+
+
 </web-app>

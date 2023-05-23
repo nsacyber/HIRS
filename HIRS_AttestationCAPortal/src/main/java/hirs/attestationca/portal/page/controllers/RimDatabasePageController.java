@@ -1,17 +1,14 @@
 package hirs.attestationca.portal.page.controllers;
 
+import hirs.attestationca.persist.entity.manager.ReferenceDigestValueRepository;
 import hirs.attestationca.persist.entity.userdefined.rim.ReferenceDigestValue;
-import hirs.attestationca.persist.service.ReferenceDigestValueService;
-import hirs.attestationca.persist.service.ReferenceDigestValueServiceImpl;
-import hirs.attestationca.persist.service.ReferenceManifestService;
-import hirs.attestationca.persist.service.ReferenceManifestServiceImpl;
+import hirs.attestationca.portal.datatables.DataTableInput;
 import hirs.attestationca.portal.page.Page;
 import hirs.attestationca.portal.page.PageController;
 import hirs.attestationca.portal.page.params.NoPageParams;
 import jakarta.validation.Valid;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.jpa.datatables.mapping.DataTablesInput;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -30,21 +27,24 @@ import java.util.List;
 @RequestMapping("/rim-database")
 public class RimDatabasePageController extends PageController<NoPageParams> {
 
-    private final ReferenceManifestService referenceManifestManager;
-    private final ReferenceDigestValueService referenceEventManager;
+    private final ReferenceDigestValueRepository referenceDigestValueRepository;
+//    private final ReferenceManifestServiceImpl referenceManifestManager;
+//    private final ReferenceDigestValueServiceImpl referenceEventManager;
 
     /**
      * Constructor providing the Page's display and routing specification.
      *
-     * @param referenceManifestManager the ReferenceManifestManager object
-     * @param referenceEventManager  the referenceEventManager object
+     * @param referenceDigestValueRepository the referenceDigestValueRepository object
+//     * @param referenceEventManager  the referenceEventManager object
      */
     @Autowired
-    public RimDatabasePageController(final ReferenceManifestServiceImpl referenceManifestManager,
-            final ReferenceDigestValueServiceImpl referenceEventManager) {
+    public RimDatabasePageController(final ReferenceDigestValueRepository referenceDigestValueRepository
+//                                    , final ReferenceManifestServiceImpl referenceManifestManager,
+//            final ReferenceDigestValueServiceImpl referenceEventManager
+    ) {
         super(Page.RIM_DATABASE);
-        this.referenceManifestManager = referenceManifestManager;
-        this.referenceEventManager = referenceEventManager;
+        this.referenceDigestValueRepository = referenceDigestValueRepository;
+//        this.referenceEventManager = referenceEventManager;
     }
 
     /**
@@ -74,10 +74,10 @@ public class RimDatabasePageController extends PageController<NoPageParams> {
             produces = MediaType.APPLICATION_JSON_VALUE,
             method = RequestMethod.GET)
     public List<ReferenceDigestValue> getTableData(
-            @Valid final DataTablesInput input) {
+            @Valid final DataTableInput input) {
         log.info("Handling request for summary list: " + input);
 
-        return this.referenceEventManager.fetchDigestValues();
+        return this.referenceDigestValueRepository.listAll();
 
 
 //        String orderColumnName = input.getOrderColumnName();

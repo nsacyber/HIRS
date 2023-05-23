@@ -1,7 +1,7 @@
 package hirs.attestationca.persist.service;
 
 import hirs.attestationca.persist.DBManagerException;
-import hirs.attestationca.persist.entity.ArchivableEntity;
+import hirs.attestationca.persist.entity.AbstractEntity;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import lombok.NoArgsConstructor;
@@ -19,12 +19,14 @@ import org.springframework.stereotype.Service;
 
 import java.io.Serializable;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
 @Log4j2
 @Service
 @NoArgsConstructor
-public class DefaultDbService<T extends ArchivableEntity> extends HibernateDbService<T> {
+public class DefaultDbService<T extends AbstractEntity> {
     /**
      * The default maximum number of retries to attempt a database transaction.
      */
@@ -49,8 +51,27 @@ public class DefaultDbService<T extends ArchivableEntity> extends HibernateDbSer
      * unfortunately class type of T cannot be determined using only T
      */
     public DefaultDbService(final Class<T> clazz) {
-        super(clazz, null);
         setRetryTemplate();
+    }
+
+    public void defineRepository(final JpaRepository repository) {
+        this.repository = repository;
+    }
+
+    public List<T> listAll() {
+        return this.repository.findAll();
+    }
+
+    public void save(final T entity) {
+        this.repository.save(entity);
+    }
+
+    public void delete(final T entity) {
+        this.repository.delete(entity);
+    }
+
+    public void delete(final UUID id) {
+        this.repository.deleteById(id);
     }
 
     /**
@@ -167,33 +188,4 @@ public class DefaultDbService<T extends ArchivableEntity> extends HibernateDbSer
 
         return clazz.cast(entity);
     }
-
-    /**
-     * Archives the named object and updates it in the database.
-     *
-     * @param name name of the object to archive
-     * @return true if the object was successfully found and archived, false if the object was not
-     * found
-     * @throws DBManagerException if the object is not an instance of <code>ArchivableEntity</code>
-     */
-//    @Override
-//    public final boolean archive(final String name) throws DBManagerException {
-//        log.debug("archiving object: {}", name);
-//        if (name == null) {
-//            log.debug("null name argument");
-//            return false;
-//        }
-//
-//        T target = get(name);
-//        if (target == null) {
-//            return false;
-//        }
-//        if (!(target instanceof ArchivableEntity)) {
-//            throw new DBManagerException("unable to archive non-archivable object");
-//        }
-//
-//        ((ArchivableEntity) target).archive();
-//        repository.save(target);
-//        return true;
-//    }
 }

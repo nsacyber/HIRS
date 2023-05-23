@@ -2,7 +2,6 @@ package hirs.attestationca.persist.service.selector;
 
 import com.google.common.base.Preconditions;
 import hirs.attestationca.persist.entity.userdefined.Certificate;
-import hirs.attestationca.persist.service.CertificateService;
 import hirs.attestationca.persist.service.CertificateServiceImpl;
 import jakarta.persistence.criteria.CriteriaBuilder;
 import jakarta.persistence.criteria.CriteriaQuery;
@@ -77,7 +76,7 @@ import java.util.UUID;
  */
 public abstract class CertificateSelector<T extends Certificate> {
 
-    private final CertificateService certificateManager;
+    private final CertificateServiceImpl certificateService;
     private final Class<T> certificateClass;
 
     private final Map<String, Object> fieldValueSelections;
@@ -87,28 +86,28 @@ public abstract class CertificateSelector<T extends Certificate> {
      * Construct a new CertificateSelector that will use the given {@link CertificateServiceImpl} to
      * retrieve certificates of the given type.
      *
-     * @param certificateManager the certificate manager to be used to retrieve certificates
+     * @param certificateService the certificate manager to be used to retrieve certificates
      * @param certificateClass the class of certificate to be retrieved
      */
     public CertificateSelector(
-            final CertificateService certificateManager,
+            final CertificateServiceImpl certificateService,
             final Class<T> certificateClass) {
-        this(certificateManager, certificateClass, true);
+        this(certificateService, certificateClass, true);
     }
 
     /**
-     * Construct a new CertificateSelector that will use the given {@link CertificateService} to
+     * Construct a new CertificateSelector that will use the given {@link CertificateServiceImpl } to
      * retrieve certificates of the given type.
      *
-     * @param certificateManager the certificate manager to be used to retrieve certificates
+     * @param certificateService the certificate manager to be used to retrieve certificates
      * @param certificateClass the class of certificate to be retrieved
      * @param excludeArchivedCertificates true if excluding archived certificates
      */
     public CertificateSelector(
-            final CertificateService certificateManager,
+            final CertificateServiceImpl certificateService,
             final Class<T> certificateClass, final boolean excludeArchivedCertificates) {
         Preconditions.checkArgument(
-                certificateManager != null,
+                certificateService != null,
                 "certificate manager cannot be null"
         );
 
@@ -117,7 +116,7 @@ public abstract class CertificateSelector<T extends Certificate> {
                 "type cannot be null"
         );
 
-        this.certificateManager = certificateManager;
+        this.certificateService = certificateService;
         this.certificateClass = certificateClass;
         this.fieldValueSelections = new HashMap<>();
         this.excludeArchivedCertificates = excludeArchivedCertificates;
@@ -459,7 +458,7 @@ public abstract class CertificateSelector<T extends Certificate> {
 
     // construct and execute query
     private Set<T> execute() {
-        return certificateManager.get(this);
+        return certificateService.get(this);
     }
 
     /**
