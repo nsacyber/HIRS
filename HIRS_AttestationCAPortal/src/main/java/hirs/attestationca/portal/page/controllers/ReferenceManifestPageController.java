@@ -22,8 +22,6 @@ import hirs.persist.ReferenceEventManager;
 import hirs.persist.ReferenceManifestManager;
 import hirs.tpm.eventlog.TCGEventLog;
 import hirs.tpm.eventlog.TpmPcrEvent;
-import org.apache.commons.codec.binary.Base64;
-import org.apache.commons.codec.binary.Hex;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.hibernate.Criteria;
@@ -45,7 +43,6 @@ import org.springframework.web.servlet.view.RedirectView;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.net.URISyntaxException;
-import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.cert.CertificateException;
 import java.text.DateFormat;
@@ -221,11 +218,11 @@ public class ReferenceManifestPageController
         }
         baseRims.stream().forEach((rim) -> {
             LOGGER.info(String.format("Storing swidtag %s", rim.getFileName()));
-            storeManifest(messages, rim, false);
+            storeManifest(messages, rim);
         });
         supportRims.stream().forEach((rim) -> {
             LOGGER.info(String.format("Storing event log %s", rim.getFileName()));
-            storeManifest(messages, rim, true);
+            storeManifest(messages, rim);
         });
 
         // Prep a map to associated the swidtag payload hash to the swidtag.
@@ -284,8 +281,7 @@ public class ReferenceManifestPageController
                 messages.addError(notFoundMessage);
                 LOGGER.warn(notFoundMessage);
             } else {
-                referenceManifest.archive();
-                referenceManifestManager.update(referenceManifest);
+                referenceManifestManager.deleteReferenceManifest(referenceManifest);
 
                 String deleteCompletedMessage = "RIM successfully deleted";
                 messages.addInfo(deleteCompletedMessage);
@@ -297,8 +293,7 @@ public class ReferenceManifestPageController
                             .getValuesByRimId(referenceManifest);
 
                     for (ReferenceDigestValue rdv : rdvs) {
-                       rdv.archive("Support RIM was deleted");
-                       referenceEventManager.updateEvent(rdv);
+                       referenceEventManager.deleteEvent(rdv);
                     }
                 }
             }
@@ -484,86 +479,23 @@ public class ReferenceManifestPageController
      *
      * @param messages message object for user display of statuses
      * @param referenceManifest the object to store
-     * @param supportRim boolean flag indicating if this is a support RIM
-     * process.
      */
     private void storeManifest(
             final PageMessages messages,
-            final ReferenceManifest referenceManifest,
-            final boolean supportRim) {
-
-        ReferenceManifest existingManifest = null;
+            final ReferenceManifest referenceManifest) {
         String fileName = referenceManifest.getFileName();
-        MessageDigest digest = null;
-        String rimHash = "";
-        try {
-            digest = MessageDigest.getInstance("SHA-256");
-        } catch (NoSuchAlgorithmException noSaEx) {
-            LOGGER.error(noSaEx);
-        }
-
-        // look for existing manifest in the database
-        try {
-            if (supportRim) {
-                if (digest != null) {
-                    rimHash = Hex.encodeHexString(
-                            digest.digest(referenceManifest.getRimBytes()));
-                }
-                existingManifest = SupportReferenceManifest
-                        .select(referenceManifestManager)
-                        .byHexDecHash(rimHash)
-                        .includeArchived()
-                        .getRIM();
-            } else {
-                if (digest != null) {
-                    rimHash = Base64.encodeBase64String(
-                            digest.digest(referenceManifest.getRimBytes()));
-                }
-                existingManifest = BaseReferenceManifest
-                        .select(referenceManifestManager).byBase64Hash(rimHash)
-                        .includeArchived()
-                        .getRIM();
-            }
-        } catch (DBManagerException e) {
-            final String failMessage = String.format("Querying for existing certificate "
-                    + "failed (%s): ", fileName);
-            messages.addError(failMessage + e.getMessage());
-            LOGGER.error(failMessage, e);
-        }
 
         try {
             // save the new certificate if no match is found
-            if (existingManifest == null) {
-                referenceManifestManager.save(referenceManifest);
+            referenceManifestManager.save(referenceManifest);
 
-                final String successMsg = String.format("RIM successfully uploaded (%s): ",
-                        fileName);
-                messages.addSuccess(successMsg);
-                LOGGER.info(successMsg);
-            }
+            final String successMsg = String.format("RIM successfully uploaded (%s): ",
+                    fileName);
+            messages.addSuccess(successMsg);
+            LOGGER.info(successMsg);
         } catch (DBManagerException dbmEx) {
             final String failMessage = String.format("Storing RIM failed (%s): ",
                     fileName);
-            messages.addError(failMessage + dbmEx.getMessage());
-            LOGGER.error(failMessage, dbmEx);
-        }
-
-        try {
-            // if an identical RIM is archived, update the existing RIM to
-            // unarchive it and change the creation date
-            if (existingManifest != null && existingManifest.isArchived()) {
-                existingManifest.restore();
-                existingManifest.resetCreateTime();
-                referenceManifestManager.update(existingManifest);
-
-                final String successMsg
-                        = String.format("Pre-existing RIM found and unarchived (%s): ", fileName);
-                messages.addSuccess(successMsg);
-                LOGGER.info(successMsg);
-            }
-        } catch (DBManagerException dbmEx) {
-            final String failMessage = String.format("Found an identical pre-existing RIM in the "
-                    + "archive, but failed to unarchive it (%s): ", fileName);
             messages.addError(failMessage + dbmEx.getMessage());
             LOGGER.error(failMessage, dbmEx);
         }
