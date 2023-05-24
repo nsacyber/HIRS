@@ -527,6 +527,8 @@ public class ReferenceManifestPageController
         baseRims.stream().forEach((base) -> {
             if (base != null) {
                 for (SwidResource swid : base.parseResource()) {
+                    LOGGER.error(String.format("DAVY ******************* %s",
+                            swid.getHashValue()));
                     tempMap.put(swid.getHashValue(), base);
                 }
             }
