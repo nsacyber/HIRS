@@ -230,20 +230,38 @@ public class ReferenceManifestPageController
         // or already exist
         // create a map of the supports rims in case an uploaded swidtag
         // isn't one to one with the uploaded support rims.
+        Map<String, BaseReferenceManifest> payloadHashMap = generatePayloadHashMap();
         Map<String, SupportReferenceManifest> updatedSupportRims
-                = updateSupportRimInfo(generatePayloadHashMap(baseRims));
+                = updateSupportRimInfo(payloadHashMap);
 
         // look for missing uploaded support rims
-        for (SupportReferenceManifest support : supportRims) {
-            if (!updatedSupportRims.containsKey(support.getHexDecHash())) {
-                // Make sure we are getting the db version of the file
-                updatedSupportRims.put(support.getHexDecHash(),
-                        SupportReferenceManifest
-                                .select(referenceManifestManager)
-                                .byHexDecHash(support.getHexDecHash())
-                                .getRIM());
+//        for (SupportReferenceManifest support : supportRims) {
+//            if (!updatedSupportRims.containsKey(support.getHexDecHash())) {
+//                // Make sure we are getting the db version of the file
+//                updatedSupportRims.put(support.getHexDecHash(),
+//                        SupportReferenceManifest
+//                                .select(referenceManifestManager)
+//                                .byHexDecHash(support.getHexDecHash())
+//                                .getRIM());
+//            }
+//        }
+
+        List<SupportReferenceManifest> allSupports = new LinkedList<>(
+                SupportReferenceManifest.select(referenceManifestManager)
+                        .getRIMs());
+
+        allSupports.stream().forEach((support) -> {
+            if (!support.isUpdated() && payloadHashMap.containsKey(support.getHexDecHash())) {
+                BaseReferenceManifest dbBaseRim = payloadHashMap.get(support.getHexDecHash());
+                support.setSwidTagVersion(dbBaseRim.getSwidTagVersion());
+                support.setPlatformManufacturer(dbBaseRim.getPlatformManufacturer());
+                support.setPlatformModel(dbBaseRim.getPlatformModel());
+                support.setTagId(dbBaseRim.getTagId());
+                support.setAssociatedRim(dbBaseRim.getId());
+                support.setUpdated(true);
+                referenceManifestManager.update(support);
             }
-        }
+        });
 
         // pass in the updated support rims
         // and either update or add the events
@@ -501,20 +519,18 @@ public class ReferenceManifestPageController
         }
     }
 
-    private Map<String, BaseReferenceManifest> generatePayloadHashMap(
-            final List<BaseReferenceManifest> uploadedBaseRims) {
-        BaseReferenceManifest dbBaseRim;
+    private Map<String, BaseReferenceManifest> generatePayloadHashMap() {
         HashMap<String, BaseReferenceManifest> tempMap = new HashMap<>();
-        for (BaseReferenceManifest base : uploadedBaseRims) {
-            // this is done to make sure we have the version with the UUID
-            dbBaseRim = BaseReferenceManifest.select(referenceManifestManager)
-                    .byBase64Hash(base.getBase64Hash()).getRIM();
-            if (dbBaseRim != null) {
-                for (SwidResource swid : dbBaseRim.parseResource()) {
-                    tempMap.put(swid.getHashValue(), dbBaseRim);
+        List<BaseReferenceManifest> baseRims = new LinkedList<>(BaseReferenceManifest
+                .select(referenceManifestManager).getRIMs());
+
+        baseRims.stream().forEach((base) -> {
+            if (base != null) {
+                for (SwidResource swid : base.parseResource()) {
+                    tempMap.put(swid.getHashValue(), base);
                 }
             }
-        }
+        });
 
         return tempMap;
     }
@@ -571,7 +587,6 @@ public class ReferenceManifestPageController
     }
 
     private void processTpmEvents(final List<SupportReferenceManifest> dbSupportRims) {
-        boolean updated = true;
         List<ReferenceDigestValue> tpmEvents;
         TCGEventLog logProcessor = null;
         ReferenceManifest baseRim;
@@ -592,7 +607,7 @@ public class ReferenceManifestPageController
                                     dbSupport.getId(), dbSupport.getPlatformManufacturer(),
                                     dbSupport.getPlatformModel(), tpe.getPcrIndex(),
                                     tpe.getEventDigestStr(), tpe.getEventTypeStr(),
-                                    false, false, updated, tpe.getEventContent());
+                                    false, false, true, tpe.getEventContent());
 
                             this.referenceEventManager.saveValue(rdv);
                         }
