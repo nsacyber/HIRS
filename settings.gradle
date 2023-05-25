@@ -35,14 +35,10 @@ dependencyResolutionManagement {
 //            library('spring-datajpa', 'org.springframework.boot', 'spring-boot-starter-web').version('springboot')
 //            library('spring-datajpa', 'org.springframework.boot', 'spring-boot-starter-validation').version('springboot')
             library('lombok', 'org.projectlombok:lombok:1.18.26')
-<<<<<<< HEAD
-            library('testng', 'org.testng:testng:7.4.0')
-=======
 
             // Testing Libraries
             library('testng', 'org.testng:testng:7.7.1')
             library('mockito', 'org.mockito:mockito-core:5.3.1')
->>>>>>> 6661a6ca (Checking in updated code.  This set does build and load in a rocky)
         }
     }
 }
