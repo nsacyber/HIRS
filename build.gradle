@@ -6,7 +6,7 @@ plugins {
     id 'application'
 }
 
-<<<<<<< HEAD
+
 // Global checkstyle file
     ext.checkstyleConfigFile = new File(rootDir, "/config/checkstyle/sun_checks.xml")
 
@@ -37,7 +37,7 @@ def gitHash = { ->
 project.ext["jarVersion"] = "${projectVersion}.${buildTime}.${gitHash}"
 project.ext["packageVersion"] = "${projectVersion}.${buildTime}.${gitHash}.el8"
 
-=======
+
 //dependencies {
 //    implementation project(':HIRS_Utils')
 //    implementation project(':HIRS_AttestationCA')
@@ -102,5 +102,3 @@ project.ext["packageVersion"] = "${projectVersion}.${buildTime}.${gitHash}.el8"
 ////    buildRpm {
 ////        arch = X86_64
 ////    }
-////}
->>>>>>> 6661a6ca (Checking in updated code.  This set does build and load in a rocky)
