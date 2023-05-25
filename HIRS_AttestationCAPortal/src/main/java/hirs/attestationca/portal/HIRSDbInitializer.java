@@ -26,7 +26,6 @@ public class HIRSDbInitializer extends AbstractAnnotationConfigDispatcherServlet
                 log.debug("Unable to locate MultipartResolver with name 'multipartResolver': no multipart request handling provided");
             }
         } catch (Exception ex) {
-            log.error("DAVY********************************************************************************");
             log.error(ex.getMessage());
         }
     }
