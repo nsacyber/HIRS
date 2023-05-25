@@ -43,6 +43,10 @@ public class BaseReferenceManifest extends ReferenceManifest {
      * Holds the name of the 'base64Hash' field.
      */
     public static final String BASE_64_HASH_FIELD = "base64Hash";
+    /**
+     * Holds the name of the 'base64Hash' field.
+     */
+    public static final String RIM_LINK_FIELD = "rimLinkHash";
 
     private static JAXBContext jaxbContext;
 
@@ -168,6 +172,16 @@ public class BaseReferenceManifest extends ReferenceManifest {
          */
         public Selector byBase64Hash(final String base64Hash) {
             setFieldValue(BASE_64_HASH_FIELD, base64Hash);
+            return this;
+        }
+
+        /**
+         * Specify the RIM hash associated with the base RIM.
+         * @param rimLinkHash the hash of the file associated with the rim
+         * @return this instance
+         */
+        public Selector byRimLink(final String rimLinkHash) {
+            setFieldValue(RIM_LINK_FIELD, rimLinkHash);
             return this;
         }
 

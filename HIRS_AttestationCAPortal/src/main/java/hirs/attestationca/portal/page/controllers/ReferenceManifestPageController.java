@@ -251,8 +251,10 @@ public class ReferenceManifestPageController
                         .getRIMs());
 
         allSupports.stream().forEach((support) -> {
-            if (!support.isUpdated() && payloadHashMap.containsKey(support.getHexDecHash())) {
-                BaseReferenceManifest dbBaseRim = payloadHashMap.get(support.getHexDecHash());
+            BaseReferenceManifest dbBaseRim = BaseReferenceManifest
+                    .select(referenceManifestManager)
+                    .byRimLink(support.getHexDecHash()).getRIM();
+            if (dbBaseRim != null) {
                 support.setSwidTagVersion(dbBaseRim.getSwidTagVersion());
                 support.setPlatformManufacturer(dbBaseRim.getPlatformManufacturer());
                 support.setPlatformModel(dbBaseRim.getPlatformModel());
