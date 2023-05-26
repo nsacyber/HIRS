@@ -175,14 +175,40 @@ public class ReferenceManifestPageController
                 criteria.add(Restrictions.isNull(Certificate.ARCHIVE_FIELD));
             }
         };
-        FilteredRecordsList<ReferenceManifest> records
+        FilteredRecordsList<ReferenceManifest> referenceManifests
                 = OrderedListQueryDataTableAdapter.getOrderedList(
                         ReferenceManifest.class,
                         referenceManifestManager,
                         input, orderColumnName, criteriaModifier);
+        BaseReferenceManifest baseRIM;
+        SupportReferenceManifest supportRIM;
+        HashMap<String, BaseReferenceManifest> payloadMap = generatePayloadHashMap();
+        for (ReferenceManifest rim : referenceManifests) {
+            if (rim instanceof SupportReferenceManifest) {
+                supportRIM = (SupportReferenceManifest) rim;
+                if (!supportRIM.isUpdated()) {
+                    baseRIM = payloadMap.get(supportRIM.getHexDecHash());
+                    if (baseRIM != null) {
+                        supportRIM.setSwidTagVersion(baseRIM.getSwidTagVersion());
+                        supportRIM.setPlatformManufacturer(baseRIM.getPlatformManufacturer());
+                        supportRIM.setPlatformModel(baseRIM.getPlatformModel());
+                        supportRIM.setTagId(baseRIM.getTagId());
+                        supportRIM.setAssociatedRim(baseRIM.getId());
+                        supportRIM.setUpdated(true);
+                        referenceManifestManager.save(supportRIM);
+                    }
+                }
+            }
+        }
+        referenceManifests.clear();
+        referenceManifests
+                = OrderedListQueryDataTableAdapter.getOrderedList(
+                ReferenceManifest.class,
+                referenceManifestManager,
+                input, orderColumnName, criteriaModifier);
 
-        LOGGER.debug("Returning list of size: " + records.size());
-        return new DataTableResponse<>(records, input);
+        LOGGER.debug("Returning list of size: " + referenceManifests.size());
+        return new DataTableResponse<>(referenceManifests, input);
     }
 
     /**
@@ -521,7 +547,7 @@ public class ReferenceManifestPageController
         }
     }
 
-    private Map<String, BaseReferenceManifest> generatePayloadHashMap() {
+    private HashMap<String, BaseReferenceManifest> generatePayloadHashMap() {
         HashMap<String, BaseReferenceManifest> tempMap = new HashMap<>();
         List<BaseReferenceManifest> baseRims = new LinkedList<>(BaseReferenceManifest
                 .select(referenceManifestManager).getRIMs());

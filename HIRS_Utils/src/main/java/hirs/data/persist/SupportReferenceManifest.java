@@ -27,9 +27,9 @@ public class SupportReferenceManifest extends ReferenceManifest {
     @JsonIgnore
     private int pcrHash = 0;
     @Column
-    private boolean updated = false;
+    private boolean updated;
     @Column
-    private boolean processed = false;
+    private boolean processed;
 
     /**
      * This class enables the retrieval of SupportReferenceManifest by their attributes.
@@ -117,6 +117,8 @@ public class SupportReferenceManifest extends ReferenceManifest {
         this.setFileName(fileName);
         this.setRimType(SUPPORT_RIM);
         this.pcrHash = 0;
+        this.updated = false;
+        this.processed = false;
     }
 
     /**
@@ -136,6 +138,8 @@ public class SupportReferenceManifest extends ReferenceManifest {
     protected SupportReferenceManifest() {
         super();
         this.pcrHash = 0;
+        this.updated = false;
+        this.processed = false;
     }
 
     /**

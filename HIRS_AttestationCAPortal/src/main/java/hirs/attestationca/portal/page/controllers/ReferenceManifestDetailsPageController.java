@@ -248,14 +248,22 @@ public class ReferenceManifestDetailsPageController
         data.put("pcUriGlobal", baseRim.getPcURIGlobal());
         data.put("pcUriLocal", baseRim.getPcURILocal());
         data.put("rimLinkHash", baseRim.getRimLinkHash());
+        ReferenceManifest rim = null;
         if (baseRim.getRimLinkHash() != null) {
-            ReferenceManifest rim = BaseReferenceManifest.select(referenceManifestManager)
+            rim = BaseReferenceManifest.select(referenceManifestManager)
                     .byHexDecHash(baseRim.getRimLinkHash()).getRIM();
             if (rim != null) {
                 data.put("rimLinkId", rim.getId());
                 data.put("linkHashValid", true);
             } else {
-                data.put("linkHashValid", false);
+                rim = SupportReferenceManifest.select(referenceManifestManager)
+                        .byHexDecHash(baseRim.getRimLinkHash()).getRIM();
+                if (rim != null) {
+                    data.put("rimLinkId", rim.getId());
+                    data.put("linkHashValid", true);
+                } else {
+                    data.put("linkHashValid", false);
+                }
             }
         }
         data.put("rimType", baseRim.getRimType());

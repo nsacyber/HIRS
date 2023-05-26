@@ -35,6 +35,7 @@ import org.springframework.web.servlet.ModelAndView;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.Collections;
 
 /**
  * Controller for the TPM Events page.
@@ -164,6 +165,8 @@ public class RimDatabasePageController
                 input, orderColumnName, criteriaModifier);
 
         SupportReferenceManifest support;
+        FilteredRecordsList<ReferenceDigestValue> updatedRDVs = new FilteredRecordsList<>();
+        Collections.copy(updatedRDVs, referenceDigestValues);
         for (ReferenceDigestValue rdv : referenceDigestValues) {
             // We are updating the base rim ID field if necessary and
             if (rdv.getBaseRimId() == null) {
@@ -177,10 +180,14 @@ public class RimDatabasePageController
                         LOGGER.error("Failed to update TPM Event with Base RIM ID");
                         LOGGER.error(rdv);
                     }
+                } else {
+                    // support RIM is deleted, remove event
+                    referenceEventManager.deleteEvent(rdv);
+                    updatedRDVs.remove(rdv);
                 }
             }
         }
 
-        return new DataTableResponse<>(referenceDigestValues, input);
+        return new DataTableResponse<>(updatedRDVs, input);
     }
 }
