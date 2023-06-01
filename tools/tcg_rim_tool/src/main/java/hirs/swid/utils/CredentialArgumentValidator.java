@@ -47,33 +47,32 @@ public class CredentialArgumentValidator {
 
     /**
      * This method checks for the following valid configurations of input arguments:
-     * 1. truststore + password + alias (JKS format)
-     * 2. truststore + private key (PEM format)
-     * 3. truststore only for validating (PEM format)
-     * 4. certificate + private key (PEM format)
-     * 5. certificate only for validating (PEM format)
+     * 1. certificate only for validating (PEM format)
+     * 2. truststore only for validating (PEM format)
+     * 3. certificate + private key for signing (PEM format)
+     * 4. truststore + private key for signing (PEM format)
      *
      * @return true if the above are found, false otherwise
      */
     public boolean isValid() {
-        if (!truststoreFile.isEmpty()) {
-            if (!password.isEmpty() && !alias.isEmpty()) {
-                format = JKS;
-                return true;
-            } else if (!privateKeyFile.isEmpty() || isValidating) {
+        if (isValidating) {
+            if (!truststoreFile.isEmpty() || !certificateFile.isEmpty()) {
                 format = PEM;
                 return true;
             } else {
-                errorMessage = "A JKS truststore needs a password and alias; " +
-                        "a PEM truststore needs a private key file.";
+                errorMessage = "Validation requires a public key certificate or truststore.";
                 return false;
             }
-        } else if (!certificateFile.isEmpty() && !privateKeyFile.isEmpty()) {
-            format = PEM;
-            return true;
         } else {
-            errorMessage = "A public certificate must be accompanied by a private key file.";
-            return false;
+            if ((!truststoreFile.isEmpty() || !certificateFile.isEmpty())
+                    && !privateKeyFile.isEmpty()) {
+                format = PEM;
+                return true;
+            } else {
+                errorMessage = "Either a truststore or public certificate, " +
+                        "accompanied by a matching private key, is required for signing.";
+                return false;
+            }
         }
     }
 }

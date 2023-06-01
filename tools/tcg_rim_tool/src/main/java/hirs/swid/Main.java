@@ -28,16 +28,17 @@ public class Main {
                 System.out.println(commander.toString());
                 String verifyFile = commander.getVerifyFile();
                 certificateFile = commander.getPublicCertificate();
-                rimEventLogFile = commander.getRimEventLog();
+                privateKeyFile = commander.getPrivateKeyFile();
                 trustStoreFile = commander.getTruststoreFile();
                 boolean defaultKey = commander.isDefaultKey();
                 if (defaultKey) {
                     validator.validateSwidTag(verifyFile, "DEFAULT");
                 } else {
                     caValidator = new CredentialArgumentValidator(trustStoreFile,
-                            certificateFile, "", "", "", true);
+                            certificateFile, privateKeyFile, "", "", true);
                     if (caValidator.isValid()) {
                         validator.setTrustStoreFile(trustStoreFile);
+
                         validator.validateSwidTag(verifyFile, caValidator.getFormat());
                     } else {
                         System.out.println("Invalid combination of credentials given: "
