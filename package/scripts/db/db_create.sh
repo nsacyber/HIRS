@@ -8,6 +8,8 @@
 # HIRS_MYSQL_ROOT_NEW_PWD wil be ignored if HIRS_MYSQL_ROOT_EXSITING_PWD is set.
 ################################################################################
 
+# Capture location of the script to allow from invocation from any location
+SCRIPT_DIR=$( dirname -- "$( readlink -f -- "$0"; )"; )
 # Set Mysql HIRS DB  password
 if [ -z $HIRS_DB_PWD ]; then
    HIRS_DB_PWD="hirs_db"
@@ -40,7 +42,7 @@ if [[ $(pgrep -c -u mysql mysqld) -eq 0 ]]; then
        chown -R mysql:mysql /var/log/mariadb
        /usr/bin/mysqld_safe &
    else
-       SQL_SERVICE=`/opt/hirs/scripts/common/get_db_service.sh`
+       SQL_SERVICE="mariadb"
        systemctl $SQL_SERVICE enable
        systemctl $SQL_SERVICE start
    fi
@@ -51,9 +53,6 @@ echo "Checking mysqld status..."
 while ! mysqladmin ping -h "$localhost" --silent; do
   sleep 1;
 done
-
-# Test the root password, error if the password doesnt work
-
 if [ -z ${HIRS_MYSQL_ROOT_PWD} ]; then
     echo "HIRS_MYSQL_ROOT_PWD environment variable not set"
     mysql -fu root  -e 'quit'  &> /dev/null;
@@ -62,7 +61,7 @@ else
    $(mysql -u root -p$HIRS_MYSQL_ROOT_PWD -e 'quit'  &> /dev/null);
 fi
 if [ $? -eq 0 ]; then
- echo "root password verified" 
+ echo "root password verified"
 else
  echo "MYSQL root password was not the default, not supplied,  or was incorrect"
  echo "      please set the HIRS_MYSQL_ROOT_PWD system variable and retry."
@@ -73,16 +72,21 @@ fi
 echo "HIRS_DB_PWD is $HIRS_DB_PWD"
 echo "HIRS_MYSQL_ROOT_PWD is $HIRS_MYSQL_ROOT_PWD"
 
-# Check if we're in a Docker container
-if [ -f /.dockerenv ]; then
-    DOCKER_CONTAINER=true
+if [ -d /opt/hirs/scripts/db ]; then
+   MYSQL_DIR="/opt/hirs/scripts/db"
 else
-    DOCKER_CONTAINER=false
+
+   MYSQL_DIR="$SCRIPT_DIR/../db"
 fi
 
-# Create the hirs_db database
-echo "Creating HIRS Database..." 
-mysql -u root --password=$HIRS_MYSQL_ROOT_PWD < /opt/hirs/scripts/common/db_create.sql
-mysql -u root --password=$HIRS_MYSQL_ROOT_PWD < /opt/hirs/scripts/common/secure_mysql.sql
-mysql -u root --password=$HIRS_MYSQL_ROOT_PWD -e "ALTER USER 'hirs_db'@'localhost' IDENTIFIED BY '"$HIRS_DB_PWD"'; FLUSH PRIVILEGES;";
+echo "MYSQL_DIR is $MYSQL_DIR"
 
+# Check if hirs_db not created and create it if it wasn't
+mysqlshow --user=root --password="$HIRS_MYSQL_ROOT_PWD" | grep "hirs_db" > /dev/null 2>&1
+if [ $? -eq 0 ]; then
+   echo "hirs_db exists, skipping hirs_db create"
+else
+   mysql -u root --password=$HIRS_MYSQL_ROOT_PWD < $MYSQL_DIR/db_create.sql
+   mysql -u root --password=$HIRS_MYSQL_ROOT_PWD < $MYSQL_DIR/secure_mysql.sql
+   mysql -u root --password=$HIRS_MYSQL_ROOT_PWD -e "ALTER USER 'hirs_db'@'localhost' IDENTIFIED BY '"$HIRS_DB_PWD"'; FLUSH PRIVILEGES;";
+fi

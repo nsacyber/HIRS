@@ -15,19 +15,39 @@ if [ -z $HIRS_PKI_PWD ]; then
    #PKI_PASS="xrb204k"
 fi
 
-# Create an ACA proerties file using the new password
+# Create an ACA properties file using the new password
 pushd $SCRIPT_DIR &> /dev/null
-sh ../aca/aca_property_setup.sh $PKI_PASS
+  if [ ! -f "/etc/hirs/aca/aca.properties" ]; then
+      if [ -d /opt/hirs/scripts/aca ]; then
+            ACA_SETUP_DIR="/opt/hirs/scripts/aca"
+         else
+            ACA_SETUP_DIR=="$SCRIPT_DIR/../aca"
+      fi
+      echo "ACA_SETUP_DIR is $ACA_SETUP_DIR"
+   sh $ACA_SETUP_DIR/aca_property_setup.sh $PKI_PASS
+  else
+     echo  "aca property file exists, skipping"
+  fi
+
 popd &> /dev/null
 
 # Create Cert Chains
-rm -rf /etc/hirs/certificates
-mkdir -p /etc/hirs/certificates/
+if [ ! -d "/etc/hirs/certificates" ]; then
+  
+   if [ -d /opt/hirs/scripts/pki ]; then
+            PKI_SETUP_DIR="/opt/hirs/scripts/pki"
+         else
+            PKI_SETUP_DIR=="$SCRIPT_DIR/../pki"
+      fi
+      echo "PKI_SETUP_DIR is $PKI_SETUP_DIR"
 
-pushd  /etc/hirs/certificates/
-
-cp $SCRIPT_DIR/ca.conf .
-sh $SCRIPT_DIR/pki_chain_gen.sh "HIRS" "rsa" "3072" "sha384" "$PKI_PASS"
-sh $SCRIPT_DIR/pki_chain_gen.sh "HIRS" "ecc" "512" "sha384" "$PKI_PASS" 
-
-popd
+  mkdir -p /etc/hirs/certificates/
+   
+  pushd  /etc/hirs/certificates/ &> /dev/null
+  cp $PKI_SETUP_DIR/ca.conf .
+  sh $PKI_SETUP_DIR/pki_chain_gen.sh "HIRS" "rsa" "3072" "sha384" "$PKI_PASS"
+  sh $PKI_SETUP_DIR/pki_chain_gen.sh "HIRS" "ecc" "512" "sha384" "$PKI_PASS" 
+  popd &> /dev/null
+else 
+  echo "/etc/hirs/certificates exists, skipping"
+fi

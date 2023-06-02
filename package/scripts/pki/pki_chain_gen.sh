@@ -85,7 +85,7 @@ fi
 
 mkdir -p "$ACTOR_ALT" "$ACTOR_ALT"/"$CERT_FOLDER" "$ACTOR_ALT"/ca/certs
 cp ca.conf "$ACTOR_ALT"/.
-pushd "$ACTOR_ALT"
+pushd "$ACTOR_ALT" &> /dev/null
 touch ca/db
 if [ ! -f "ca/serial.txt" ]; then
      echo "01" > ca/serial.txt

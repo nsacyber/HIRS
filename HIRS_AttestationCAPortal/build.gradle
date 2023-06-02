@@ -102,12 +102,22 @@ ospackage {
       from configurations.runtimeClasspath 
     }
     into ("/opt/hirs/scripts/aca/") {
-     from '../package/scripts/pki/pki_chain_gen.sh'
-     from '../package/scripts/pki/pki_setup.sh'
-     from '../package/scripts/aca/aca_proprty_setup.sh'
      from '../package/conf/tomcat.service'
      from '../package/scripts/install_tomcat.sh'
-     from '../package/scripts/aca/certificate_generate.sh'
+     from '../package/scripts/aca/aca_property_setup.sh'
+     from '../package/scripts/aca/aca_setup.sh'
+    }
+    into ("/opt/hirs/scripts/pki/") {
+     from '../package/scripts/pki/ca.conf'
+     from '../package/scripts/pki/pki_setup.sh'
+     from '../package/scripts/pki/pki_chain_gen.sh'
+    }
+    into ("/opt/hirs/scripts/db/") {
+     from '../package/scripts/db/db_create.sh'
+     from '../package/scripts/db/db_create.sql'
+     from '../package/scripts/db/db_drop.sh'
+     from '../package/scripts/db/db_drop.sql'
+     from '../package/scripts/db/secure_mysql.sql'
     }
     into ("/opt/hirs/scripts/common") {
      from '../package/scripts/common/'
@@ -123,35 +133,14 @@ ospackage {
        from '../HIRS_AttestationCA/src/main/resources/component-class.json'
     }
   // Post Install
-//   println "*** Checking MYSQL Configuration ...."
-//    println " Myql password is $System.env.HIRS_MYSQL_ROOT_PWD"
-//   println " Myql password is ${System.getenv('HIRS_MYSQL_ROOT_PWD')} "
 
-//   if ( "$System.env.HIRS_MYSQL_ROOT_PWD".compareTo("null") == 0 ) {
-//      println "Gradle: Mysql Root password not set"
-//   }
-//   else {
-//      println "Gradle: Mysql Root Password set to $System.env.HIRS_MYSQL_ROOT_PWD" 
- //  }
+    postInstall file('../package/scripts/db/db_create.sh')
+    postInstall file('../package/scripts/pki/pki_setup.sh')
 
-     postInstall file('../package/scripts/common/db_create.sh')
-//   postInstall file('../package/scripts/pki/pki_setup.sh')  
-//  postInstall file('../package/scripts/common/ssl_configure.sh')
-  //  postInstall 'mkdir -p /etc/hirs/aca/client_files'
     postInstall 'mkdir -p /etc/hirs/aca/certificates'
     postInstall 'cp /tmp/aca/default-properties/* /opt/hirs/default-properties/.'
     postInstall 'rm -rf /tmp/aca/'
  //  postInstall file('../package/scripts/install_tomcat.sh')
- //   Old post install files, to be removed...
- // Note /etc/hirs/aca/certificates files are created by  certificate_generate.sh
- //      /etc/hirs/aca/client-files files are created by  certificate_generate.sh
- //      /etc/hirs/certificates/ files are created by ssl_configure.sh
- //      /etc/hirs/certificates/mysql/  files are created by ssl_configure.sh
- //      /etc/hirs/certificates/private/  files are created by ssl_configure.sh
- //   postInstall file('../package/scripts/common/firewall_configure_tomcat.sh')
- //   postInstall file('../package/scripts/common/ssl_configure.sh')
- //   postInstall file('../package/scripts/aca/certificate_generate.sh')
- //   postInstall 'if [ selinuxenabled ]; then semodule -i /opt/hirs/extras/aca/tomcat-mysql-hirs.pp; fi'
      
     postInstall 'sh /opt/tomcat/bin/catalina.sh start'
 
@@ -159,9 +148,7 @@ ospackage {
     // Copy files to /tmp that package manager will be expecting them there
     preUninstall 'mkdir -p /tmp/aca/default-properties/'
     preUninstall 'cp -f /opt/hirs/default-properties/* /tmp/aca/default-properties/.'
-    preUninstall file('../package/scripts/common/db_drop.sh')
-
-    //buildRpm.dependsOn ':HIRS_AttestationCA:war'
+    preUninstall file('../package/scripts/db/db_drop.sh')
 
     buildRpm {
         arch = X86_64

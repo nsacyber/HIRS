@@ -1,5 +1,5 @@
 #!/bin/bash
-tom_version="10.1.1"
+tom_version="10.1.9"
 tom_maj=$(echo "$tom_version" | cut -d '.' -f 1)
 CATALINA_HOME=/opt/tomcat/
 CATALINA_BASE=/opt/tomcat/
@@ -12,7 +12,7 @@ else
    pushd /tmp
    useradd -r -d /opt/tomcat/ -s /bin/false -c "Tomcat User" tomcat
    dnf install wget -y
-   wget https://dlcdn.apache.org/tomcat/tomcat-$tom_maj/v$tom_version/bin/apache-tomcat-$tom_version.tar.gz
+   wget https://downloads.apache.org/tomcat/tomcat-$tom_maj/v$tom_version/bin/apache-tomcat-$tom_version.tar.gz
    mkdir /opt/tomcat
    tar -xzf apache-tomcat-$tom_version.tar.gz -C /opt/tomcat --strip-components=1
    rm apache-tomcat-$tom_version.tar.gz
