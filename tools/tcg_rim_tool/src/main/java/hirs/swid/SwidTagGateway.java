@@ -95,8 +95,8 @@ public class SwidTagGateway {
     private String truststoreFile;
     private String pemPrivateKeyFile;
     private String pemCertificateFile;
-    private boolean embeddedCert;
     private String rimEventLog;
+    private boolean embeddedCert;
     private String timestampFormat;
     private String timestampArgument;
     private String directoryOverride;
@@ -113,8 +113,8 @@ public class SwidTagGateway {
             defaultCredentials = true;
             truststoreFile = "";
             pemCertificateFile = "";
-            embeddedCert = false;
             rimEventLog = "";
+            embeddedCert = false;
             timestampFormat = "";
             timestampArgument = "";
             directoryOverride = "";
@@ -207,7 +207,7 @@ public class SwidTagGateway {
     }
 
     /**
-p     * Setter for directory path to search for required files
+     * Setter for directory path to search for required files
      *
      * @param directoryOverride
      */
