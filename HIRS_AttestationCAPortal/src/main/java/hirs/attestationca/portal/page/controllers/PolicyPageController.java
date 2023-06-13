@@ -1,7 +1,7 @@
 package hirs.attestationca.portal.page.controllers;
 
-import hirs.attestationca.persist.entity.userdefined.SupplyChainSettings;
-import hirs.attestationca.persist.service.SettingsServiceImpl;
+import hirs.attestationca.persist.entity.manager.PolicyRepository;
+import hirs.attestationca.persist.entity.userdefined.PolicySettings;
 import hirs.attestationca.portal.page.Page;
 import hirs.attestationca.portal.page.PageController;
 import hirs.attestationca.portal.page.PageMessages;
@@ -39,7 +39,7 @@ public class PolicyPageController extends PageController<NoPageParams> {
 
     private static final String ENABLED_EXPIRES_PARAMETER_VALUE = "expires";
 
-    private SettingsServiceImpl settingsService;
+    private final PolicyRepository policyRepository;
 
     /**
      * Model attribute name used by initPage for the initial data passed to the
@@ -56,15 +56,15 @@ public class PolicyPageController extends PageController<NoPageParams> {
     /**
      * Constructor.
      *
-     * @param policyService the policy service
+     * @param policyRepository the policy service
      */
     @Autowired
-    public PolicyPageController(final SettingsServiceImpl policyService) {
+    public PolicyPageController(final PolicyRepository policyRepository) {
         super(Page.POLICY);
-        this.settingsService = policyService;
+        this.policyRepository = policyRepository;
 
-        if (this.settingsService.getByName("Default") == null) {
-            this.settingsService.saveSettings(new SupplyChainSettings("Default", "Settings are configured for no validation flags set."));
+        if (this.policyRepository.findByName("Default") == null) {
+            this.policyRepository.saveAndFlush(new PolicySettings("Default", "Settings are configured for no validation flags set."));
         }
     }
 
@@ -82,7 +82,7 @@ public class PolicyPageController extends PageController<NoPageParams> {
         // get the basic information to render the page
         ModelAndView mav = getBaseModelAndView();
 
-        SupplyChainSettings policy = getDefaultPolicy();
+        PolicySettings policy = getDefaultPolicy();
         log.debug(policy);
         PolicyPageModel pageModel = new PolicyPageModel(policy);
         mav.addObject(INITIAL_DATA, pageModel);
@@ -113,7 +113,7 @@ public class PolicyPageController extends PageController<NoPageParams> {
                 = ppModel.getPcValidate().equalsIgnoreCase(ENABLED_CHECKED_PARAMETER_VALUE);
 
         try {
-            SupplyChainSettings policy = getDefaultPolicyAndSetInModel(ppModel, model);
+            PolicySettings policy = getDefaultPolicyAndSetInModel(ppModel, model);
 
             // If PC policy setting change results in invalid policy, inform user
             if (!isPolicyValid(policy.isEcValidationEnabled(), pcValidationOptionEnabled,
@@ -164,7 +164,7 @@ public class PolicyPageController extends PageController<NoPageParams> {
                 .equalsIgnoreCase(ENABLED_CHECKED_PARAMETER_VALUE);
 
         try {
-            SupplyChainSettings policy = getDefaultPolicyAndSetInModel(ppModel, model);
+            PolicySettings policy = getDefaultPolicyAndSetInModel(ppModel, model);
 
             // If PC Attribute Validation is enabled without PC Validation, disallow change
             if (!isPolicyValid(policy.isEcValidationEnabled(),
@@ -216,7 +216,7 @@ public class PolicyPageController extends PageController<NoPageParams> {
                 .equalsIgnoreCase(ENABLED_CHECKED_PARAMETER_VALUE);
 
         try {
-            SupplyChainSettings policy = getDefaultPolicyAndSetInModel(ppModel, model);
+            PolicySettings policy = getDefaultPolicyAndSetInModel(ppModel, model);
 
             if (issuedAttestationOptionEnabled) {
                 successMessage = "Attestation Certificate generation enabled.";
@@ -260,7 +260,7 @@ public class PolicyPageController extends PageController<NoPageParams> {
                 .equalsIgnoreCase(ENABLED_CHECKED_PARAMETER_VALUE);
 
         try {
-            SupplyChainSettings policy = getDefaultPolicyAndSetInModel(ppModel, model);
+            PolicySettings policy = getDefaultPolicyAndSetInModel(ppModel, model);
 
             if (issuedDevIdOptionEnabled) {
                 successMessage = "DevID Certificate generation enabled.";
@@ -312,7 +312,7 @@ public class PolicyPageController extends PageController<NoPageParams> {
         }
 
         try {
-            SupplyChainSettings policy = getDefaultPolicyAndSetInModel(ppModel, model);
+            PolicySettings policy = getDefaultPolicyAndSetInModel(ppModel, model);
             boolean issuedAttestationOptionEnabled
                     = policy.isIssueAttestationCertificate();
 
@@ -326,7 +326,7 @@ public class PolicyPageController extends PageController<NoPageParams> {
                 if (generateCertificateEnabled) {
                     numOfDays = ppModel.getExpirationValue();
                     if (numOfDays == null) {
-                        numOfDays = SupplyChainSettings.TEN_YEARS;
+                        numOfDays = PolicySettings.TEN_YEARS;
                     }
                 } else {
                     numOfDays = policy.getValidityDays();
@@ -382,7 +382,7 @@ public class PolicyPageController extends PageController<NoPageParams> {
         }
 
         try {
-            SupplyChainSettings policy = getDefaultPolicyAndSetInModel(ppModel, model);
+            PolicySettings policy = getDefaultPolicyAndSetInModel(ppModel, model);
             boolean issuedDevIdOptionEnabled
                     = policy.isIssueDevIdCertificate();
 
@@ -396,7 +396,7 @@ public class PolicyPageController extends PageController<NoPageParams> {
                 if (generateDevIdCertificateEnabled) {
                     numOfDays = ppModel.getDevIdExpirationValue();
                     if (numOfDays == null) {
-                        numOfDays = SupplyChainSettings.TEN_YEARS;
+                        numOfDays = PolicySettings.TEN_YEARS;
                     }
                 } else {
                     numOfDays = policy.getDevIdValidityDays();
@@ -452,7 +452,7 @@ public class PolicyPageController extends PageController<NoPageParams> {
         }
 
         try {
-            SupplyChainSettings policy = getDefaultPolicyAndSetInModel(ppModel, model);
+            PolicySettings policy = getDefaultPolicyAndSetInModel(ppModel, model);
             boolean issuedAttestationOptionEnabled
                     = policy.isIssueAttestationCertificate();
 
@@ -470,7 +470,7 @@ public class PolicyPageController extends PageController<NoPageParams> {
                 }
 
                 if (threshold == null || threshold.isEmpty()) {
-                    threshold = SupplyChainSettings.YEAR;
+                    threshold = PolicySettings.YEAR;
                 }
 
                 policy.setReissueThreshold(threshold);
@@ -522,7 +522,7 @@ public class PolicyPageController extends PageController<NoPageParams> {
         }
 
         try {
-            SupplyChainSettings policy = getDefaultPolicyAndSetInModel(ppModel, model);
+            PolicySettings policy = getDefaultPolicyAndSetInModel(ppModel, model);
             boolean issuedDevIdOptionEnabled
                     = policy.isIssueDevIdCertificate();
 
@@ -540,7 +540,7 @@ public class PolicyPageController extends PageController<NoPageParams> {
                 }
 
                 if (threshold == null || threshold.isEmpty()) {
-                    threshold = SupplyChainSettings.YEAR;
+                    threshold = PolicySettings.YEAR;
                 }
 
                 policy.setDevIdReissueThreshold(threshold);
@@ -584,7 +584,7 @@ public class PolicyPageController extends PageController<NoPageParams> {
                 = ppModel.getEcValidate().equalsIgnoreCase(ENABLED_CHECKED_PARAMETER_VALUE);
 
         try {
-            SupplyChainSettings policy = getDefaultPolicyAndSetInModel(ppModel, model);
+            PolicySettings policy = getDefaultPolicyAndSetInModel(ppModel, model);
 
             //If PC Validation is enabled without EC Validation, disallow change
             if (!isPolicyValid(ecValidationOptionEnabled, policy.isPcValidationEnabled(),
@@ -636,7 +636,7 @@ public class PolicyPageController extends PageController<NoPageParams> {
                 .equalsIgnoreCase(ENABLED_CHECKED_PARAMETER_VALUE);
 
         try {
-            SupplyChainSettings policy = getDefaultPolicyAndSetInModel(ppModel, model);
+            PolicySettings policy = getDefaultPolicyAndSetInModel(ppModel, model);
 
             //If firmware is enabled without PC attributes, disallow change
             if (firmwareValidationOptionEnabled && !policy.isPcAttributeValidationEnabled()) {
@@ -692,7 +692,7 @@ public class PolicyPageController extends PageController<NoPageParams> {
                 .equalsIgnoreCase(ENABLED_CHECKED_PARAMETER_VALUE);
 
         try {
-            SupplyChainSettings policy = getDefaultPolicyAndSetInModel(ppModel, model);
+            PolicySettings policy = getDefaultPolicyAndSetInModel(ppModel, model);
 
             //If Ignore IMA is enabled without firmware, disallow change
             if (ignoreImaOptionEnabled && !policy.isFirmwareValidationEnabled()) {
@@ -743,7 +743,7 @@ public class PolicyPageController extends PageController<NoPageParams> {
                 .equalsIgnoreCase(ENABLED_CHECKED_PARAMETER_VALUE);
 
         try {
-            SupplyChainSettings policy = getDefaultPolicyAndSetInModel(ppModel, model);
+            PolicySettings policy = getDefaultPolicyAndSetInModel(ppModel, model);
 
             //If Ignore TBoot is enabled without firmware, disallow change
             if (ignoreTbootOptionEnabled && !policy.isFirmwareValidationEnabled()) {
@@ -794,7 +794,7 @@ public class PolicyPageController extends PageController<NoPageParams> {
                 .equalsIgnoreCase(ENABLED_CHECKED_PARAMETER_VALUE);
 
         try {
-            SupplyChainSettings policy = getDefaultPolicyAndSetInModel(ppModel, model);
+            PolicySettings policy = getDefaultPolicyAndSetInModel(ppModel, model);
 
             //If Ignore TBoot is enabled without firmware, disallow change
             if (ignoreGptOptionEnabled && !policy.isFirmwareValidationEnabled()) {
@@ -847,7 +847,7 @@ public class PolicyPageController extends PageController<NoPageParams> {
                 .equalsIgnoreCase(ENABLED_CHECKED_PARAMETER_VALUE);
 
         try {
-            SupplyChainSettings policy = getDefaultPolicyAndSetInModel(ppModel, model);
+            PolicySettings policy = getDefaultPolicyAndSetInModel(ppModel, model);
 
             //If Ignore TBoot is enabled without firmware, disallow change
             if (ignoreOsEvtOptionEnabled && !policy.isFirmwareValidationEnabled()) {
@@ -918,11 +918,11 @@ public class PolicyPageController extends PageController<NoPageParams> {
      *
      * @return The default Supply Chain Policy
      */
-    private SupplyChainSettings getDefaultPolicy() {
-        SupplyChainSettings defaultSettings = this.settingsService.getByName("Default");
+    private PolicySettings getDefaultPolicy() {
+        PolicySettings defaultSettings = this.policyRepository.findByName("Default");
 
         if (defaultSettings == null) {
-            defaultSettings = new SupplyChainSettings("Default", "Settings are configured for no validation flags set.");
+            defaultSettings = new PolicySettings("Default", "Settings are configured for no validation flags set.");
         }
         return defaultSettings;
     }
@@ -935,10 +935,10 @@ public class PolicyPageController extends PageController<NoPageParams> {
      * @param model the map of string messages to be displayed on the view
      * @return The default Supply Chain Policy
      */
-    private SupplyChainSettings getDefaultPolicyAndSetInModel(
+    private PolicySettings getDefaultPolicyAndSetInModel(
             final PolicyPageModel ppModel, final Map<String, Object> model) {
         // load the current default policy from the DB
-        SupplyChainSettings policy = getDefaultPolicy();
+        PolicySettings policy = getDefaultPolicy();
 
         // set the data received to be populated back into the form
         model.put(RESULT_DATA, ppModel);
@@ -948,9 +948,9 @@ public class PolicyPageController extends PageController<NoPageParams> {
     private void savePolicyAndApplySuccessMessage(
             final PolicyPageModel ppModel, final Map<String, Object> model,
             final PageMessages messages, final String successMessage,
-            final SupplyChainSettings settings) {
+            final PolicySettings settings) {
         // save the policy to the DB
-        settingsService.updateSettings(settings);
+        policyRepository.saveAndFlush(settings);
 
         // Log and set the success message
         messages.addSuccess(successMessage);

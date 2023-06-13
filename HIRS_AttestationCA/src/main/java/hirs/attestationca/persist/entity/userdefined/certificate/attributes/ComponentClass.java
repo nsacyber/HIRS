@@ -211,7 +211,7 @@ public class ComponentClass {
             for (Member member : components) {
                 typeID = verifyComponentValue(member.getName());
 
-                if (component.equals(typeID)) {
+                if (component.equalsIgnoreCase(typeID)) {
                     componentStr = member.getValue().asString();
                 }
             }

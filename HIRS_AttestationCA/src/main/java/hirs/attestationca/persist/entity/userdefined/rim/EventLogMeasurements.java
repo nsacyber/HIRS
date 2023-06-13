@@ -3,7 +3,7 @@ package hirs.attestationca.persist.entity.userdefined.rim;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import hirs.attestationca.persist.entity.userdefined.ReferenceManifest;
 import hirs.attestationca.persist.enums.AppraisalStatus;
-import hirs.attestationca.persist.service.ReferenceManifestService;
+import hirs.attestationca.persist.service.ReferenceManifestServiceImpl;
 import hirs.attestationca.persist.service.selector.ReferenceManifestSelector;
 import hirs.utils.tpm.eventlog.TCGEventLog;
 import hirs.utils.tpm.eventlog.TpmPcrEvent;
@@ -53,7 +53,7 @@ public class EventLogMeasurements extends ReferenceManifest {
          * @param referenceManifestManager the reference manifest manager to be used to retrieve
          * reference manifests.
          */
-        public Selector(final ReferenceManifestService referenceManifestManager) {
+        public Selector(final ReferenceManifestServiceImpl referenceManifestManager) {
             super(referenceManifestManager, EventLogMeasurements.class, false);
         }
 
@@ -142,7 +142,7 @@ public class EventLogMeasurements extends ReferenceManifest {
      * persisted RIMs
      * @return a Selector instance to use for retrieving RIMs
      */
-    public static Selector select(final ReferenceManifestService rimMan) {
+    public static Selector select(final ReferenceManifestServiceImpl rimMan) {
         return new Selector(rimMan);
     }
 

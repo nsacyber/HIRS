@@ -1,17 +1,27 @@
 package hirs.attestationca.portal.page.controllers;
 
+import hirs.attestationca.persist.CriteriaModifier;
+import hirs.attestationca.persist.DBManagerException;
+import hirs.attestationca.persist.FilteredRecordsList;
+import hirs.attestationca.persist.entity.manager.ReferenceDigestValueRepository;
+import hirs.attestationca.persist.entity.manager.ReferenceManifestRepository;
+import hirs.attestationca.persist.entity.userdefined.Certificate;
 import hirs.attestationca.persist.entity.userdefined.rim.ReferenceDigestValue;
-import hirs.attestationca.persist.service.ReferenceDigestValueService;
-import hirs.attestationca.persist.service.ReferenceDigestValueServiceImpl;
-import hirs.attestationca.persist.service.ReferenceManifestService;
-import hirs.attestationca.persist.service.ReferenceManifestServiceImpl;
+import hirs.attestationca.persist.entity.userdefined.rim.SupportReferenceManifest;
+import hirs.attestationca.portal.datatables.DataTableInput;
+import hirs.attestationca.portal.datatables.DataTableResponse;
+import hirs.attestationca.portal.datatables.OrderedListQueryDataTableAdapter;
 import hirs.attestationca.portal.page.Page;
 import hirs.attestationca.portal.page.PageController;
 import hirs.attestationca.portal.page.params.NoPageParams;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.criteria.CriteriaBuilder;
+import jakarta.persistence.criteria.CriteriaQuery;
+import jakarta.persistence.criteria.Root;
 import jakarta.validation.Valid;
 import lombok.extern.log4j.Log4j2;
+import org.hibernate.Session;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.jpa.datatables.mapping.DataTablesInput;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -20,7 +30,7 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.servlet.ModelAndView;
 
-import java.util.List;
+import java.lang.ref.Reference;
 
 /**
  * Controller for the TPM Events page.
@@ -30,21 +40,24 @@ import java.util.List;
 @RequestMapping("/rim-database")
 public class RimDatabasePageController extends PageController<NoPageParams> {
 
-    private final ReferenceManifestService referenceManifestManager;
-    private final ReferenceDigestValueService referenceEventManager;
+    @Autowired(required = false)
+    private EntityManager entityManager;
+
+    private final ReferenceDigestValueRepository referenceDigestValueRepository;
+    private final ReferenceManifestRepository referenceManifestRepository;
 
     /**
      * Constructor providing the Page's display and routing specification.
      *
-     * @param referenceManifestManager the ReferenceManifestManager object
-     * @param referenceEventManager  the referenceEventManager object
+     * @param referenceDigestValueRepository the referenceDigestValueRepository object
+     * @param referenceManifestRepository the reference manifest manager object
      */
     @Autowired
-    public RimDatabasePageController(final ReferenceManifestServiceImpl referenceManifestManager,
-            final ReferenceDigestValueServiceImpl referenceEventManager) {
+    public RimDatabasePageController(final ReferenceDigestValueRepository referenceDigestValueRepository,
+                                     final ReferenceManifestRepository referenceManifestRepository) {
         super(Page.RIM_DATABASE);
-        this.referenceManifestManager = referenceManifestManager;
-        this.referenceEventManager = referenceEventManager;
+        this.referenceDigestValueRepository = referenceDigestValueRepository;
+        this.referenceManifestRepository = referenceManifestRepository;
     }
 
     /**
@@ -73,50 +86,49 @@ public class RimDatabasePageController extends PageController<NoPageParams> {
     @RequestMapping(value = "/list",
             produces = MediaType.APPLICATION_JSON_VALUE,
             method = RequestMethod.GET)
-    public List<ReferenceDigestValue> getTableData(
-            @Valid final DataTablesInput input) {
+    public DataTableResponse<ReferenceDigestValue> getTableData(
+            @Valid final DataTableInput input) {
         log.info("Handling request for summary list: " + input);
 
-        return this.referenceEventManager.fetchDigestValues();
+        String orderColumnName = input.getOrderColumnName();
+        log.info("Ordering on column: " + orderColumnName);
 
+        // check that the alert is not archived and that it is in the specified report
+        CriteriaModifier criteriaModifier = new CriteriaModifier() {
+            @Override
+            public void modify(final CriteriaQuery criteriaQuery) {
+                Session session = entityManager.unwrap(Session.class);
+                CriteriaBuilder cb = session.getCriteriaBuilder();
+                Root<ReferenceDigestValue> rimRoot = criteriaQuery.from(Reference.class);
+                criteriaQuery.select(rimRoot).distinct(true).where(cb.isNull(rimRoot.get(Certificate.ARCHIVE_FIELD)));
+            }
+        };
 
-//        String orderColumnName = input.getOrderColumnName();
-//        log.info("Ordering on column: " + orderColumnName);
-//
-//        // check that the alert is not archived and that it is in the specified report
-//        CriteriaModifier criteriaModifier = new CriteriaModifier() {
-//            @Override
-//            public void modify(final Criteria criteria) {
-//                criteria.add(Restrictions.isNull(Certificate.ARCHIVE_FIELD));
-//            }
-//        };
-//
-//        log.info("Querying with the following datatableinput: " + input.toString());
-//
-//        FilteredRecordsList<ReferenceDigestValue> referenceDigestValues =
-//                OrderedListQueryDataTableAdapter.getOrderedList(
-//                        ReferenceDigestValue.class,
-//                        referenceEventManager,
-//                        input, orderColumnName, criteriaModifier);
-//
-//        SupportReferenceManifest support;
-//        for (ReferenceDigestValue rdv : referenceDigestValues) {
-//            // We are updating the base rim ID field if necessary and
-//            if (rdv.getBaseRimId() == null) {
-//                support = SupportReferenceManifest.select(referenceManifestManager)
-//                        .byEntityId(rdv.getSupportRimId()).getRIM();
-//                if (support != null) {
-//                    rdv.setBaseRimId(support.getAssociatedRim());
-//                    try {
-//                        referenceEventManager.updateRefDigestValue(rdv);
-//                    } catch (DBManagerException e) {
-//                        log.error("Failed to update TPM Event with Base RIM ID");
-//                        log.error(rdv);
-//                    }
-//                }
-//            }
-//        }
-//
-//        return new DataTableResponse<>(referenceDigestValues, input);
+        log.info("Querying with the following datatableinput: " + input.toString());
+
+        FilteredRecordsList<ReferenceDigestValue> referenceDigestValues =
+                OrderedListQueryDataTableAdapter.getOrderedList(
+                        ReferenceDigestValue.class,
+                        referenceDigestValueRepository,
+                        input, orderColumnName, criteriaModifier);
+
+        SupportReferenceManifest support;
+        for (ReferenceDigestValue rdv : referenceDigestValues) {
+            // We are updating the base rim ID field if necessary and
+            if (rdv.getBaseRimId() == null) {
+                support = (SupportReferenceManifest) referenceManifestRepository.getReferenceById(rdv.getSupportRimId());
+                if (support != null) {
+                    rdv.setBaseRimId(support.getAssociatedRim());
+                    try {
+                        referenceDigestValueRepository.save(rdv);
+                    } catch (DBManagerException e) {
+                        log.error("Failed to update TPM Event with Base RIM ID");
+                        log.error(rdv);
+                    }
+                }
+            }
+        }
+
+        return new DataTableResponse<>(referenceDigestValues, input);
     }
 }

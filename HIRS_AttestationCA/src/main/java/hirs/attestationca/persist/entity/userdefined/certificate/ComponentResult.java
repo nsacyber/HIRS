@@ -2,8 +2,10 @@ package hirs.attestationca.persist.entity.userdefined.certificate;
 
 import hirs.attestationca.persist.entity.AbstractEntity;
 import jakarta.persistence.Entity;
+import lombok.AccessLevel;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 import java.util.Objects;
 import java.util.UUID;
@@ -11,6 +13,7 @@ import java.util.UUID;
 @EqualsAndHashCode(callSuper=false)
 @Getter
 @Entity
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class ComponentResult extends AbstractEntity {
 
     private UUID certificateId;
@@ -18,12 +21,6 @@ public class ComponentResult extends AbstractEntity {
     private String expected;
     private String actual;
     private boolean mismatched;
-
-    /**
-     * Hibernate default constructor
-     */
-    protected ComponentResult() {
-    }
 
     public ComponentResult(final UUID certificateId, final int componentHash,
                            final String expected, final String actual) {

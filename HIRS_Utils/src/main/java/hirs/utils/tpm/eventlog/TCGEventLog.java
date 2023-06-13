@@ -256,9 +256,7 @@ public final class TCGEventLog {
         }
         return pcrs;
     }
-    
-   
-    
+
     /**
      * Returns a list of event found in the Event Log.
      * @return an arraylist of event.

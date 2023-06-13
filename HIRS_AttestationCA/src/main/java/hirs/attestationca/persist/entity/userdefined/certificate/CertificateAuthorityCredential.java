@@ -1,7 +1,7 @@
 package hirs.attestationca.persist.entity.userdefined.certificate;
 
 import hirs.attestationca.persist.entity.userdefined.Certificate;
-import hirs.attestationca.persist.service.CertificateService;
+import hirs.attestationca.persist.service.CertificateServiceImpl;
 import hirs.attestationca.persist.service.selector.CertificateSelector;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -51,13 +51,13 @@ public class CertificateAuthorityCredential extends Certificate {
      */
     public static class Selector extends CertificateSelector<CertificateAuthorityCredential> {
         /**
-         * Construct a new CertificateSelector that will use the given {@link CertificateService} to
+         * Construct a new CertificateSelector that will use the given {@link CertificateServiceImpl} to
          * retrieve one or many CertificateAuthorityCredentials.
          *
-         * @param certificateManager the certificate manager to be used to retrieve certificates
+         * @param certificateService the certificate manager to be used to retrieve certificates
          */
-        public Selector(final CertificateService certificateManager) {
-            super(certificateManager, CertificateAuthorityCredential.class);
+        public Selector(final CertificateServiceImpl certificateService) {
+            super(certificateService, CertificateAuthorityCredential.class);
         }
 
         /**
@@ -79,7 +79,7 @@ public class CertificateAuthorityCredential extends Certificate {
      * @param certMan the CertificateService to be used to retrieve persisted certificates
      * @return a CertificateAuthorityCredential.Selector instance to use for retrieving certificates
      */
-    public static Selector select(final CertificateService certMan) {
+    public static Selector select(final CertificateServiceImpl certMan) {
         return new Selector(certMan);
     }
 

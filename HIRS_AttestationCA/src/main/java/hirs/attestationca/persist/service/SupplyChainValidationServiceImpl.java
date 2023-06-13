@@ -1,5 +1,6 @@
 package hirs.attestationca.persist.service;
 
+import hirs.attestationca.persist.entity.manager.CertificateRepository;
 import hirs.attestationca.persist.entity.manager.SupplyChainValidationRepository;
 import hirs.attestationca.persist.entity.userdefined.Certificate;
 import hirs.attestationca.persist.entity.userdefined.SupplyChainValidation;
@@ -9,7 +10,6 @@ import hirs.utils.BouncyCastleUtils;
 import lombok.extern.log4j.Log4j2;
 import org.bouncycastle.util.encoders.Hex;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
 
 import java.io.IOException;
 import java.security.KeyStore;
@@ -18,43 +18,22 @@ import java.security.NoSuchAlgorithmException;
 import java.security.cert.CertificateException;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
-import java.util.UUID;
-import java.util.stream.Collectors;
 
 @Log4j2
-@Service
-public class SupplyChainValidationServiceImpl extends DefaultDbService<SupplyChainValidation> implements SupplyChainValidationService {
+//@Service
+public class SupplyChainValidationServiceImpl extends DefaultDbService<SupplyChainValidation> {
 
     @Autowired
     SupplyChainValidationRepository repository;
     @Autowired
-    private CertificateService certificateService;
+    private CertificateRepository certificateRepository;
 
-    public SupplyChainValidationServiceImpl(final CertificateService certificateService) {
+    public SupplyChainValidationServiceImpl(final CertificateRepository certificateRepository) {
         super();
-        this.certificateService = certificateService;
-    }
-
-    @Override
-    public SupplyChainValidation saveSupplyChainValidation(SupplyChainValidation supplyChainValidation) {
-        return repository.save(supplyChainValidation);
-    }
-
-    @Override
-    public List<SupplyChainValidation> fetchSupplyChainValidations() {
-        return repository.findAll();
-    }
-
-    @Override
-    public SupplyChainValidation updateSupplyChainValidation(SupplyChainValidation supplyChainValidation, UUID scvId) {
-        return null;
-    }
-
-    @Override
-    public void deleteSupplyChainValidation(UUID scvId) {
-        repository.deleteById(scvId);
+        this.certificateRepository = certificateRepository;
     }
 
     /**
@@ -111,28 +90,23 @@ public class SupplyChainValidationServiceImpl extends DefaultDbService<SupplyCha
             final Certificate credential,
             final Set<String> previouslyQueriedSubjects) {
         CertificateAuthorityCredential skiCA = null;
-        Set<CertificateAuthorityCredential> certAuthsWithMatchingIssuer = new HashSet<>();
+        List<CertificateAuthorityCredential> certAuthsWithMatchingIssuer = new LinkedList<>();
         if (credential.getAuthorityKeyIdentifier() != null
                 && !credential.getAuthorityKeyIdentifier().isEmpty()) {
             byte[] bytes = Hex.decode(credential.getAuthorityKeyIdentifier());
-            skiCA = CertificateAuthorityCredential
-                    .select(certificateService)
-                    .bySubjectKeyIdentifier(bytes).getCertificate();
+            skiCA = (CertificateAuthorityCredential) certificateRepository.findBySubjectKeyIdentifier(bytes);
         }
 
         if (skiCA == null) {
             if (credential.getIssuerSorted() == null
                     || credential.getIssuerSorted().isEmpty()) {
-                certAuthsWithMatchingIssuer = CertificateAuthorityCredential
-                        .select(certificateService)
-                        .bySubject(credential.getHolderIssuer())
-                        .getCertificates();
+                certAuthsWithMatchingIssuer = certificateRepository.findBySubject(credential.getHolderIssuer(),
+                        "CertificateAuthorityCredential");
             } else {
                 //Get certificates by subject organization
-                certAuthsWithMatchingIssuer = CertificateAuthorityCredential
-                        .select(certificateService)
-                        .bySubjectSorted(credential.getIssuerSorted())
-                        .getCertificates();
+                certAuthsWithMatchingIssuer = certificateRepository.findBySubjectSorted(credential.getIssuerSorted(),
+                        "CertificateAuthorityCredential");
+
             }
         } else {
             certAuthsWithMatchingIssuer.add(skiCA);
@@ -171,10 +145,8 @@ public class SupplyChainValidationServiceImpl extends DefaultDbService<SupplyCha
         PlatformCredential baseCredential = null;
 
         if (platformSerialNumber != null) {
-            List<PlatformCredential> chainCertificates = PlatformCredential
-                    .select(certificateService)
-                    .byBoardSerialNumber(platformSerialNumber)
-                    .getCertificates().stream().collect(Collectors.toList());
+            List<PlatformCredential> chainCertificates = certificateRepository
+                    .byBoardSerialNumber(platformSerialNumber);
 
             for (PlatformCredential pc : chainCertificates) {
                 if (baseCredential != null && pc.isPlatformBase()) {

@@ -7,6 +7,8 @@ import hirs.attestationca.persist.entity.userdefined.certificate.CertificateVari
 import hirs.utils.HexUtils;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.Inheritance;
+import jakarta.persistence.InheritanceType;
 import jakarta.persistence.Transient;
 import lombok.Getter;
 import lombok.extern.log4j.Log4j2;
@@ -75,6 +77,7 @@ import java.util.Objects;
  * It stores certain attributes separately from the serialized certificate to enable querying on
  * those attributes.
  */
+@Inheritance(strategy = InheritanceType.SINGLE_TABLE)
 @Log4j2
 @Entity
 public abstract class Certificate extends ArchivableEntity {
@@ -128,6 +131,7 @@ public abstract class Certificate extends ArchivableEntity {
      * Holds the name of the 'issuer' field.
      */
     public static final String ISSUER_FIELD = "issuer";
+    @Getter
     @Column(nullable = false)
     private final String issuer;
     /**
@@ -171,6 +175,7 @@ public abstract class Certificate extends ArchivableEntity {
     @Column(length = CertificateVariables.MAX_PUB_KEY_MODULUS_HEX_LENGTH, nullable = true)
     private final String publicKeyModulusHexValue;
 
+    @Getter
     @Column(length = CertificateVariables.MAX_CERT_LENGTH_BYTES, nullable = false)
     private final byte[] signature;
 
@@ -180,7 +185,7 @@ public abstract class Certificate extends ArchivableEntity {
     @Column(nullable = false)
     private final Date endValidity;
 
-    @Column(length = CertificateVariables.MAX_CERT_LENGTH_BYTES, nullable = false)
+    @Column(length = CertificateVariables.MAX_CERT_LENGTH_BYTES*CertificateVariables.KEY_USAGE_BIT4, nullable = false)
     @JsonIgnore
     private byte[] certificateBytes;
 
@@ -250,7 +255,6 @@ public abstract class Certificate extends ArchivableEntity {
         this.subject = null;
         this.issuerSorted = null;
         this.subjectSorted = null;
-
         this.encodedPublicKey = null;
         this.publicKeyModulusHexValue = null;
         this.signature = null;
