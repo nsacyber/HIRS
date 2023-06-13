@@ -29,6 +29,7 @@ dependencyResolutionManagement {
             library('jackson-databind', 'com.fasterxml.jackson.core', 'jackson-databind').versionRef('jackson')
             library('pci', 'com.github.marandus:pci-ids:0.3')
             library('ospackage', 'com.netflix.nebula:gradle-ospackage-plugin:11.2.0')
+            library('springdatajpa', 'org.springframework.boot:spring-boot-starter-web:3.0.1')
 //            library('spring-datajpa', 'org.springframework.boot', 'spring-boot-starter-data-jpa').version('springboot')
 //            library('spring-datajpa', 'org.springframework.boot', 'spring-boot-starter-web').version('springboot')
 //            library('spring-datajpa', 'org.springframework.boot', 'spring-boot-starter-validation').version('springboot')

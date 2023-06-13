@@ -135,7 +135,7 @@ public final class CertificateStringMapBuilder {
      * Recursive function that check if all the certificate chain is present.
      *
      * @param certificate certificate to get the issuer
-     * @param certificateServiceImpl the certificate manager for retrieving certs.
+     * @param certificateRepository the certificate repository for retrieving certs.
      * @return a boolean indicating if it has the full chain or not.
      */
     public static Certificate containsAllChain(
