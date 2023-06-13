@@ -3,13 +3,13 @@ package hirs.attestationca.persist.service;
 import hirs.attestationca.persist.CriteriaModifier;
 import hirs.attestationca.persist.DBManagerException;
 import hirs.attestationca.persist.FilteredRecordsList;
+import hirs.attestationca.persist.OrderedListQuerier;
 import hirs.attestationca.persist.entity.manager.ReferenceManifestRepository;
 import hirs.attestationca.persist.entity.userdefined.ReferenceManifest;
 import hirs.attestationca.persist.service.selector.ReferenceManifestSelector;
 import jakarta.persistence.EntityManager;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.xml.sax.SAXException;
 
@@ -20,12 +20,10 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
-import java.util.UUID;
 
 @Log4j2
 @Service
-public class ReferenceManifestServiceImpl<T extends ReferenceManifest> extends DefaultDbService<ReferenceManifest> implements ReferenceManifestService<ReferenceManifest> {
+public class ReferenceManifestServiceImpl<T extends ReferenceManifest> extends DefaultDbService<ReferenceManifest> implements OrderedListQuerier<ReferenceManifest> {
 
     /**
      * The variable that establishes a schema factory for xml processing.
@@ -33,7 +31,7 @@ public class ReferenceManifestServiceImpl<T extends ReferenceManifest> extends D
     public static final SchemaFactory SCHEMA_FACTORY
             = SchemaFactory.newInstance(ReferenceManifest.SCHEMA_LANGUAGE);
 
-    @Autowired(required = false)
+    @Autowired
     private EntityManager entityManager;
 
     @Autowired
@@ -77,29 +75,18 @@ public class ReferenceManifestServiceImpl<T extends ReferenceManifest> extends D
         return schema;
     }
 
-    @Override
-    public ReferenceManifest saveReferenceManifest(ReferenceManifest referenceManifest) {
-        return repository.save(referenceManifest);
-    }
-
-    @Override
-    public List<ReferenceManifest> fetchReferenceManifests() {
-        return repository.findAll();
-    }
-
     /**
      * This method does not need to be used directly as it is used by
      * {@link ReferenceManifestSelector}'s get* methods. Regardless, it may be
      * used to retrieve ReferenceManifest by other code in this package, given a
      * configured ReferenceManifestSelector.
      *
-     * @param referenceManifestSelector a configured
      * {@link ReferenceManifestSelector} to use for querying
      * @return the resulting set of ReferenceManifest, possibly empty
      */
     @SuppressWarnings("unchecked")
     public <T extends  ReferenceManifest> List<T> get(
-            Class<T> classType) {
+            final ReferenceManifestSelector referenceManifestSelector) {
         log.info("Getting the full set of Reference Manifest files.");
 //        return new HashSet<>(
 //                (List<T>) getWithCriteria(
@@ -107,22 +94,7 @@ public class ReferenceManifestServiceImpl<T extends ReferenceManifest> extends D
 //                        Collections.singleton(referenceManifestSelector.getCriterion())
 //                )
 //        );
-        return (List<T>) repository.findAll(Sort.sort(classType));
-    }
-
-    @Override
-    public ReferenceManifest updateReferenceManifest(ReferenceManifest referenceManifest, UUID rimId) {
-        return null;
-    }
-
-    @Override
-    public void deleteReferenceManifestById(UUID rimId) {
-        repository.deleteById(rimId);
-    }
-
-    @Override
-    public <T extends ReferenceManifest> Set<T> get(ReferenceManifestSelector referenceManifestSelector) {
-        return null;
+        return (List<T>) repository.findAll();
     }
 
     @Override
@@ -130,7 +102,7 @@ public class ReferenceManifestServiceImpl<T extends ReferenceManifest> extends D
                                               String columnToOrder, boolean ascending, int firstResult,
                                               int maxResults, String search,
                                               Map<String, Boolean> searchableColumns) throws DBManagerException {
-        return null;
+        return new FilteredRecordsList();
     }
 
     @Override
@@ -139,6 +111,6 @@ public class ReferenceManifestServiceImpl<T extends ReferenceManifest> extends D
                                                                  int firstResult, int maxResults, String search,
                                                                  Map<String, Boolean> searchableColumns,
                                                                  CriteriaModifier<ReferenceManifest> criteriaModifier) throws DBManagerException {
-        return null;
+        return new FilteredRecordsList<>();
     }
 }

@@ -12,9 +12,9 @@ import java.util.List;
  * https://github.com/darrachequesne/spring-data-jpa-datatables
  */
 @Service
-public class DeviceServiceImpl {
+public class DeviceServiceImpl extends DefaultDbService<Device> {
 
-    @Autowired(required = false)
+    @Autowired
     private EntityManager entityManager;
     @Autowired
     private DeviceRepository deviceRepository;

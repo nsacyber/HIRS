@@ -16,6 +16,7 @@ import jakarta.persistence.criteria.CriteriaBuilder;
 import jakarta.persistence.criteria.CriteriaQuery;
 import jakarta.persistence.criteria.Predicate;
 import jakarta.persistence.criteria.Root;
+import lombok.Getter;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.util.Strings;
@@ -39,6 +40,7 @@ import java.util.UUID;
 @Entity
 public class SupplyChainValidationSummary extends ArchivableEntity {
 
+    @Getter
     @ManyToOne
     @JoinColumn(name = "device_id")
     private final Device device;
@@ -49,6 +51,7 @@ public class SupplyChainValidationSummary extends ArchivableEntity {
     @Enumerated(EnumType.STRING)
     private final AppraisalStatus.Status overallValidationResult;
 
+    @Getter
     @Column(length = RESULT_MESSAGE_LENGTH)
     private final String message;
 
@@ -202,26 +205,10 @@ public class SupplyChainValidationSummary extends ArchivableEntity {
     }
 
     /**
-     * This retrieves the device associated with the supply chain validation summaries.
-     *
-     * @return the validated device
-     */
-    public Device getDevice() {
-        return device;
-    }
-
-    /**
      * @return the overall appraisal result
      */
     public AppraisalStatus.Status getOverallValidationResult() {
         return overallValidationResult;
-    }
-
-    /**
-     * @return the fail message if there is a failure.
-     */
-    public String getMessage() {
-        return message;
     }
 
     /**

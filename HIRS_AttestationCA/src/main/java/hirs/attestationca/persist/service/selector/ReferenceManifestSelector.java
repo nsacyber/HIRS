@@ -3,7 +3,7 @@ package hirs.attestationca.persist.service.selector;
 import com.google.common.base.Preconditions;
 import hirs.attestationca.persist.entity.userdefined.Certificate;
 import hirs.attestationca.persist.entity.userdefined.ReferenceManifest;
-import hirs.attestationca.persist.service.ReferenceManifestService;
+import hirs.attestationca.persist.service.ReferenceManifestServiceImpl;
 import jakarta.persistence.criteria.CriteriaBuilder;
 import jakarta.persistence.criteria.CriteriaQuery;
 import jakarta.persistence.criteria.Predicate;
@@ -12,16 +12,15 @@ import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 
 /**
  * This class is used to select one or many RIMs in conjunction
- * with a {@link ReferenceManifestService}.  To make use of this object,
+ * with a {@link ReferenceManifestServiceImpl}.  To make use of this object,
  * use (some ReferenceManifest).select(ReferenceManifestManager).
  *
  * @param <T> the type of Reference Integrity Manifest that will be retrieved.
@@ -45,7 +44,7 @@ public abstract class ReferenceManifestSelector<T extends ReferenceManifest> {
     public static final String RIM_FILENAME_FIELD = "fileName";
     private static final String RIM_TYPE_FIELD = "rimType";
 
-    private final ReferenceManifestService referenceManifestManager;
+    private final ReferenceManifestServiceImpl referenceManifestManager;
     private final Class<T> referenceTypeClass;
 
     private final Map<String, Object> fieldValueSelections;
@@ -57,7 +56,7 @@ public abstract class ReferenceManifestSelector<T extends ReferenceManifest> {
      * @param referenceManifestManager the RIM manager to be used to retrieve RIMs
      * @param referenceTypeClass the type of Reference Manifest to process.
      */
-    public ReferenceManifestSelector(final ReferenceManifestService referenceManifestManager,
+    public ReferenceManifestSelector(final ReferenceManifestServiceImpl referenceManifestManager,
                                      final Class<T> referenceTypeClass) {
         this(referenceManifestManager, referenceTypeClass, true);
     }
@@ -69,7 +68,7 @@ public abstract class ReferenceManifestSelector<T extends ReferenceManifest> {
      * @param referenceTypeClass the type of Reference Manifest to process.
      * @param excludeArchivedRims true if excluding archived RIMs
      */
-    public ReferenceManifestSelector(final ReferenceManifestService referenceManifestManager,
+    public ReferenceManifestSelector(final ReferenceManifestServiceImpl referenceManifestManager,
                                      final Class<T> referenceTypeClass,
                                      final boolean excludeArchivedRims) {
         Preconditions.checkArgument(
@@ -164,7 +163,7 @@ public abstract class ReferenceManifestSelector<T extends ReferenceManifest> {
      * @return a matching RIM or null if none is found
      */
     public T getRIM() {
-        Set<T> rims = execute();
+        List<T> rims = execute();
         if (rims.isEmpty()) {
             return null;
         }
@@ -216,8 +215,8 @@ public abstract class ReferenceManifestSelector<T extends ReferenceManifest> {
     }
 
     // construct and execute query
-    private Set<T> execute() {
-        Set<T> results = this.referenceManifestManager.get(this);
+    private List<T> execute() {
+        List<T> results = this.referenceManifestManager.get(this);
         return results;
     }
 

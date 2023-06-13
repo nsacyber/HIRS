@@ -146,7 +146,7 @@ public abstract class PageController<P extends PageParams> {
 
         if (params != null) {
             for (Map.Entry<String, ?> e : params.asMap().entrySet()) {
-                Object v = Optional.ofNullable(e.getValue()).orElse("");
+                Object v = Optional.ofNullable(e.getValue()).orElse(null);
                 uri.addParameter(e.getKey(), v.toString());
             }
         }

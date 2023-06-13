@@ -1,17 +1,15 @@
 package hirs.attestationca.portal.page.controllers;
 
 import hirs.attestationca.persist.DBServiceException;
+import hirs.attestationca.persist.entity.manager.CertificateRepository;
+import hirs.attestationca.persist.entity.manager.ReferenceDigestValueRepository;
+import hirs.attestationca.persist.entity.manager.ReferenceManifestRepository;
 import hirs.attestationca.persist.entity.userdefined.ReferenceManifest;
 import hirs.attestationca.persist.entity.userdefined.certificate.CertificateAuthorityCredential;
 import hirs.attestationca.persist.entity.userdefined.rim.BaseReferenceManifest;
 import hirs.attestationca.persist.entity.userdefined.rim.EventLogMeasurements;
 import hirs.attestationca.persist.entity.userdefined.rim.ReferenceDigestValue;
 import hirs.attestationca.persist.entity.userdefined.rim.SupportReferenceManifest;
-import hirs.attestationca.persist.service.CertificateService;
-import hirs.attestationca.persist.service.ReferenceDigestValueService;
-import hirs.attestationca.persist.service.ReferenceDigestValueServiceImpl;
-import hirs.attestationca.persist.service.ReferenceManifestService;
-import hirs.attestationca.persist.service.ReferenceManifestServiceImpl;
 import hirs.attestationca.persist.service.SupplyChainValidationServiceImpl;
 import hirs.attestationca.persist.validation.ReferenceManifestValidator;
 import hirs.attestationca.persist.validation.SupplyChainValidatorException;
@@ -41,7 +39,6 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.UUID;
 
 /**
@@ -52,28 +49,27 @@ import java.util.UUID;
 @RequestMapping("/rim-details")
 public class ReferenceManifestDetailsPageController extends PageController<ReferenceManifestDetailsPageParams> {
 
-    private final ReferenceManifestService referenceManifestManager;
-    private final ReferenceDigestValueService referenceEventManager;
-    private final CertificateService certificateService;
+    private final ReferenceManifestRepository referenceManifestRepository;
+    private final ReferenceDigestValueRepository referenceDigestValueRepository;
+    private final CertificateRepository certificateRepository;
     private static final ReferenceManifestValidator RIM_VALIDATOR
             = new ReferenceManifestValidator();
 
     /**
      * Constructor providing the Page's display and routing specification.
      *
-     * @param referenceManifestManager the reference manifest manager.
-     * @param referenceEventManager    the reference event manager.
-     * @param certificateService       the certificate manager.
+     * @param referenceManifestRepository the repository for RIM.
+     * @param referenceDigestValueRepository    the reference event manager.
+     * @param certificateRepository       the certificate manager.
      */
     @Autowired
-    public ReferenceManifestDetailsPageController(
-            final ReferenceManifestServiceImpl referenceManifestManager,
-            final ReferenceDigestValueServiceImpl referenceEventManager,
-            final CertificateService certificateService) {
+    public ReferenceManifestDetailsPageController(final ReferenceManifestRepository referenceManifestRepository,
+                                                  final ReferenceDigestValueRepository referenceDigestValueRepository,
+                                                  final CertificateRepository certificateRepository) {
         super(Page.RIM_DETAILS);
-        this.referenceManifestManager = referenceManifestManager;
-        this.referenceEventManager = referenceEventManager;
-        this.certificateService = certificateService;
+        this.referenceManifestRepository = referenceManifestRepository;
+        this.referenceDigestValueRepository = referenceDigestValueRepository;
+        this.certificateRepository = certificateRepository;
     }
 
     /**
@@ -103,8 +99,10 @@ public class ReferenceManifestDetailsPageController extends PageController<Refer
         } else {
             try {
                 UUID uuid = UUID.fromString(params.getId());
-                data.putAll(getRimDetailInfo(uuid, referenceManifestManager,
-                        referenceEventManager, certificateService));
+                data.putAll(getRimDetailInfo(uuid, referenceManifestRepository,
+                        referenceDigestValueRepository, certificateRepository));
+                data.putAll(getRimDetailInfo(uuid, referenceManifestRepository,
+                        referenceDigestValueRepository, certificateRepository));
             } catch (IllegalArgumentException iaEx) {
                 String uuidError = "Failed to parse ID from: " + params.getId();
                 messages.addError(uuidError);
@@ -131,42 +129,39 @@ public class ReferenceManifestDetailsPageController extends PageController<Refer
      * Gathers all information and returns it for displays.
      *
      * @param uuid                     database reference for the requested RIM.
-     * @param referenceManifestManager the reference manifest manager.
-     * @param referenceEventManager    the reference event manager.
-     * @param certificateManager       the certificate manager.
+     * @param referenceManifestRepository the reference manifest manager.
+     * @param referenceDigestValueRepository    the reference event manager.
+     * @param certificateRepository       the certificate manager.
      * @return mapping of the RIM information from the database.
      * @throws java.io.IOException      error for reading file bytes.
      * @throws NoSuchAlgorithmException If an unknown Algorithm is encountered.
      * @throws CertificateException     if a certificate doesn't parse.
      */
     public static HashMap<String, Object> getRimDetailInfo(final UUID uuid,
-                                                           final ReferenceManifestService referenceManifestManager,
-                                                           final ReferenceDigestValueService referenceEventManager,
-                                                           final CertificateService certificateManager)
+                                                           final ReferenceManifestRepository referenceManifestRepository,
+                                                           final ReferenceDigestValueRepository referenceDigestValueRepository,
+                                                           final CertificateRepository certificateRepository)
             throws IOException,
             CertificateException, NoSuchAlgorithmException {
         HashMap<String, Object> data = new HashMap<>();
 
-        BaseReferenceManifest bRim = BaseReferenceManifest.select(referenceManifestManager)
-                .byEntityId(uuid).getRIM();
+        BaseReferenceManifest bRim = referenceManifestRepository.getBaseRimEntityById(uuid);
 
         if (bRim != null) {
-            data.putAll(getBaseRimInfo(bRim, referenceManifestManager, certificateManager));
+            data.putAll(getBaseRimInfo(bRim, referenceManifestRepository, certificateRepository));
         }
 
-        SupportReferenceManifest sRim = SupportReferenceManifest.select(referenceManifestManager)
-                .byEntityId(uuid).getRIM();
+        SupportReferenceManifest sRim = referenceManifestRepository.getSupportRimEntityById(uuid);
 
         if (sRim != null) {
-            data.putAll(getSupportRimInfo(sRim, referenceManifestManager));
+            data.putAll(getSupportRimInfo(sRim, referenceManifestRepository));
         }
 
-        EventLogMeasurements bios = EventLogMeasurements.select(referenceManifestManager)
-                .byEntityId(uuid).getRIM();
+        EventLogMeasurements bios = referenceManifestRepository.getEventLogRimEntityById(uuid);
 
         if (bios != null) {
-            data.putAll(getMeasurementsRimInfo(bios, referenceManifestManager,
-                    referenceEventManager));
+            data.putAll(getMeasurementsRimInfo(bios, referenceManifestRepository,
+                    referenceDigestValueRepository));
         }
 
         return data;
@@ -177,8 +172,8 @@ public class ReferenceManifestDetailsPageController extends PageController<Refer
      * Gathers all information and returns it for displays.
      *
      * @param baseRim                  established ReferenceManifest Type.
-     * @param referenceManifestManager the reference manifest manager.
-     * @param certificateManager       the certificate manager.
+     * @param referenceManifestRepository the reference manifest manager.
+     * @param certificateRepository       the certificate manager.
      * @return mapping of the RIM information from the database.
      * @throws java.io.IOException      error for reading file bytes.
      * @throws NoSuchAlgorithmException If an unknown Algorithm is encountered.
@@ -186,8 +181,8 @@ public class ReferenceManifestDetailsPageController extends PageController<Refer
      */
     private static HashMap<String, Object> getBaseRimInfo(
             final BaseReferenceManifest baseRim,
-            final ReferenceManifestService referenceManifestManager,
-            final CertificateService certificateManager)
+            final ReferenceManifestRepository referenceManifestRepository,
+            final CertificateRepository certificateRepository)
             throws IOException, CertificateException, NoSuchAlgorithmException {
         HashMap<String, Object> data = new HashMap<>();
 
@@ -219,8 +214,7 @@ public class ReferenceManifestDetailsPageController extends PageController<Refer
         // Link
         data.put("linkHref", baseRim.getLinkHref());
         data.put("linkHrefLink", "");
-        for (BaseReferenceManifest bRim : BaseReferenceManifest
-                .select(referenceManifestManager).getRIMs()) {
+        for (BaseReferenceManifest bRim : referenceManifestRepository.findAllBaseRims()) {
             if (baseRim.getLinkHref().contains(bRim.getTagId())) {
                 data.put("linkHrefLink", bRim.getId());
             }
@@ -241,8 +235,8 @@ public class ReferenceManifestDetailsPageController extends PageController<Refer
         data.put("pcUriLocal", baseRim.getPcURILocal());
         data.put("rimLinkHash", baseRim.getRimLinkHash());
         if (baseRim.getRimLinkHash() != null) {
-            ReferenceManifest rim = BaseReferenceManifest.select(referenceManifestManager)
-                    .byHexDecHash(baseRim.getRimLinkHash()).getRIM();
+            ReferenceManifest rim = referenceManifestRepository.findByHash(baseRim.getRimLinkHash(),
+                    "BaseReferenceManifest");
             if (rim != null) {
                 data.put("rimLinkId", rim.getId());
                 data.put("linkHashValid", true);
@@ -257,15 +251,15 @@ public class ReferenceManifestDetailsPageController extends PageController<Refer
         SupportReferenceManifest support = null;
 
         if (baseRim.getAssociatedRim() == null) {
-            support = SupportReferenceManifest.select(referenceManifestManager)
-                    .byManufacturer(baseRim.getPlatformManufacturer())
-                    .getRIM();
+            support = (SupportReferenceManifest) referenceManifestRepository
+                    .getByManufacturer(baseRim.getPlatformManufacturer(),
+                    "SupportReferenceManifest");
             if (support != null) {
                 baseRim.setAssociatedRim(support.getId());
             }
         } else {
-            support = SupportReferenceManifest.select(referenceManifestManager)
-                    .byEntityId(baseRim.getAssociatedRim()).getRIM();
+            support = (SupportReferenceManifest) referenceManifestRepository
+                    .getReferenceById(baseRim.getAssociatedRim());
         }
         // going to have to pull the filename and grab that from the DB
         // to get the id to make the link
@@ -291,14 +285,13 @@ public class ReferenceManifestDetailsPageController extends PageController<Refer
             data.put("pcrList", support.getExpectedPCRList());
         }
 
-        Set<CertificateAuthorityCredential> certificates =
-                CertificateAuthorityCredential.select(certificateManager)
-                        .getCertificates();
+        List<CertificateAuthorityCredential> certificates = certificateRepository
+                .findByAll("CertificateAuthorityCredential");
         //Report invalid signature unless RIM_VALIDATOR validates it and cert path is valid
         data.put("signatureValid", false);
         for (CertificateAuthorityCredential cert : certificates) {
             SupplyChainValidationServiceImpl scvsImpl =
-                    new SupplyChainValidationServiceImpl(certificateManager);
+                    new SupplyChainValidationServiceImpl(certificateRepository);
             KeyStore keystore = scvsImpl.getCaChain(cert);
             if (RIM_VALIDATOR.validateXmlSignature(cert)) {
                 try {
@@ -331,7 +324,7 @@ public class ReferenceManifestDetailsPageController extends PageController<Refer
      * Gathers all information and returns it for displays.
      *
      * @param support                  established ReferenceManifest Type.
-     * @param referenceManifestManager the reference manifest manager.
+     * @param referenceManifestRepository the reference manifest manager.
      * @return mapping of the RIM information from the database.
      * @throws java.io.IOException      error for reading file bytes.
      * @throws NoSuchAlgorithmException If an unknown Algorithm is encountered.
@@ -339,21 +332,20 @@ public class ReferenceManifestDetailsPageController extends PageController<Refer
      */
     private static HashMap<String, Object> getSupportRimInfo(
             final SupportReferenceManifest support,
-            final ReferenceManifestService referenceManifestManager)
+            final ReferenceManifestRepository referenceManifestRepository)
             throws IOException, CertificateException, NoSuchAlgorithmException {
         HashMap<String, Object> data = new HashMap<>();
         EventLogMeasurements measurements = null;
 
         if (support.getAssociatedRim() == null) {
-            Set<BaseReferenceManifest> baseRims = BaseReferenceManifest
-                    .select(referenceManifestManager)
-                    .byRimType(ReferenceManifest.BASE_RIM).getRIMs();
+            List<BaseReferenceManifest> baseRims = referenceManifestRepository.findAllBaseRims();
+
             for (BaseReferenceManifest baseRim : baseRims) {
                 if (baseRim != null && baseRim.getAssociatedRim() != null
                         && baseRim.getAssociatedRim().equals(support.getId())) {
                     support.setAssociatedRim(baseRim.getId());
                     try {
-                        referenceManifestManager.updateReferenceManifest(support, support.getId());
+                        referenceManifestRepository.save(support);
                     } catch (DBServiceException ex) {
                         log.error("Failed to update Support RIM", ex);
                     }
@@ -365,8 +357,8 @@ public class ReferenceManifestDetailsPageController extends PageController<Refer
         // testing this independent of the above if statement because the above
         // starts off checking if associated rim is null; that is irrelevant for
         // this statement.
-        measurements = EventLogMeasurements.select(referenceManifestManager)
-                .byHexDecHash(support.getHexDecHash()).getRIM();
+        measurements = (EventLogMeasurements) referenceManifestRepository.findByHash(support.getHexDecHash(),
+                "EventLogMeasurements");
 
         if (support.isSwidPatch()) {
             data.put("swidPatch", "True");
@@ -491,8 +483,8 @@ public class ReferenceManifestDetailsPageController extends PageController<Refer
      * Gathers all information and returns it for displays.
      *
      * @param measurements             established ReferenceManifest Type.
-     * @param referenceManifestManager the reference manifest manager.
-     * @param referenceEventManager    the reference event manager.
+     * @param referenceManifestRepository the reference manifest manager.
+     * @param referenceDigestValueRepository    the reference event manager.
      * @return mapping of the RIM information from the database.
      * @throws java.io.IOException      error for reading file bytes.
      * @throws NoSuchAlgorithmException If an unknown Algorithm is encountered.
@@ -500,8 +492,8 @@ public class ReferenceManifestDetailsPageController extends PageController<Refer
      */
     private static HashMap<String, Object> getMeasurementsRimInfo(
             final EventLogMeasurements measurements,
-            final ReferenceManifestService referenceManifestManager,
-            final ReferenceDigestValueService referenceEventManager)
+            final ReferenceManifestRepository referenceManifestRepository,
+            final ReferenceDigestValueRepository referenceDigestValueRepository)
             throws IOException, CertificateException, NoSuchAlgorithmException {
         HashMap<String, Object> data = new HashMap<>();
         LinkedList<TpmPcrEvent> livelogEvents = new LinkedList<>();
@@ -519,10 +511,8 @@ public class ReferenceManifestDetailsPageController extends PageController<Refer
 
         List<ReferenceDigestValue> eventValues = new ArrayList<>();
         if (measurements.getDeviceName() != null) {
-            supports.addAll(SupportReferenceManifest
-                    .select(referenceManifestManager)
-                    .byDeviceName(measurements
-                            .getDeviceName()).getRIMs());
+            supports.addAll(referenceManifestRepository.byDeviceName(measurements
+                    .getDeviceName()));
             for (SupportReferenceManifest support : supports) {
                 if (support.isBaseSupport()) {
                     baseSupport = support;
@@ -532,18 +522,14 @@ public class ReferenceManifestDetailsPageController extends PageController<Refer
             if (baseSupport != null) {
                 data.put("supportFilename", baseSupport.getFileName());
                 data.put("supportId", baseSupport.getId());
-
-                base = BaseReferenceManifest
-                        .select(referenceManifestManager)
-                        .byEntityId(baseSupport.getAssociatedRim())
-                        .getRIM();
                 data.put("tagId", baseSupport.getTagId());
 
+                base = referenceManifestRepository.getBaseRimEntityById(baseSupport.getAssociatedRim());
                 if (base != null) {
                     data.put("associatedRim", base.getId());
                 }
 
-                eventValues.addAll(referenceEventManager.getValuesByRimId(base));
+                eventValues.addAll(referenceDigestValueRepository.getValuesByRimId(base.getId()));
             }
         }
 

@@ -2,7 +2,6 @@ package hirs.attestationca.persist.entity.userdefined.rim;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import hirs.attestationca.persist.entity.userdefined.ReferenceManifest;
-import hirs.attestationca.persist.service.ReferenceManifestService;
 import hirs.attestationca.persist.service.ReferenceManifestServiceImpl;
 import hirs.attestationca.persist.service.selector.ReferenceManifestSelector;
 import hirs.utils.SwidResource;
@@ -26,8 +25,7 @@ import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import lombok.extern.log4j.Log4j2;
 
 import javax.xml.namespace.QName;
 import javax.xml.validation.Schema;
@@ -44,13 +42,12 @@ import java.util.Map;
 /**
  *
  */
+@Log4j2
 @Getter
 @Setter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Entity
 public class BaseReferenceManifest extends ReferenceManifest {
-
-    private static final Logger LOGGER = LogManager.getLogger(BaseReferenceManifest.class);
     /**
      * Holds the name of the 'base64Hash' field.
      */
@@ -107,7 +104,7 @@ public class BaseReferenceManifest extends ReferenceManifest {
          * @param referenceManifestManager the reference manifest manager to be used to retrieve
          * reference manifests.
          */
-        public Selector(final ReferenceManifestService referenceManifestManager) {
+        public Selector(final ReferenceManifestServiceImpl referenceManifestManager) {
             super(referenceManifestManager, BaseReferenceManifest.class);
         }
 
@@ -227,7 +224,7 @@ public class BaseReferenceManifest extends ReferenceManifest {
             this.base64Hash = Base64.getEncoder().encodeToString(
                     digest.digest(rimBytes));
         } catch (NoSuchAlgorithmException noSaEx) {
-            LOGGER.error(noSaEx);
+            log.error(noSaEx);
         }
 
         // begin parsing valid swid tag
@@ -350,7 +347,7 @@ public class BaseReferenceManifest extends ReferenceManifest {
      * persisted RIMs
      * @return a Selector instance to use for retrieving RIMs
      */
-    public static Selector select(final ReferenceManifestService rimMan) {
+    public static Selector select(final ReferenceManifestServiceImpl rimMan) {
         return new Selector(rimMan);
     }
 
@@ -367,7 +364,7 @@ public class BaseReferenceManifest extends ReferenceManifest {
         JAXBElement jaxbe = unmarshallSwidTag(fileStream);
         SoftwareIdentity swidTag = (SoftwareIdentity) jaxbe.getValue();
 
-        LOGGER.info(String.format("SWID Tag found: %nname: %s;%ntagId:  %s%n%s",
+        log.debug(String.format("SWID Tag found: %nname: %s;%ntagId:  %s%n%s",
                 swidTag.getName(), swidTag.getTagId(), SCHEMA_STATEMENT));
         return swidTag;
     }
@@ -397,7 +394,7 @@ public class BaseReferenceManifest extends ReferenceManifest {
                 }
 
             } catch (IOException ioEx) {
-                LOGGER.error("Failed to parse Swid Tag bytes.", ioEx);
+                log.error("Failed to parse Swid Tag bytes.", ioEx);
             }
         }
 
@@ -425,16 +422,16 @@ public class BaseReferenceManifest extends ReferenceManifest {
             unmarshaller.setSchema(schema);
             jaxbe = (JAXBElement) unmarshaller.unmarshal(stream);
         } catch (UnmarshalException umEx) {
-            LOGGER.error(String.format("Error validating swidtag file!%n%s%n%s",
+            log.error(String.format("Error validating swidtag file!%n%s%n%s",
                     umEx.getMessage(), umEx.toString()));
             for (StackTraceElement ste : umEx.getStackTrace()) {
-                LOGGER.error(ste.toString());
+                log.error(ste.toString());
             }
         } catch (IllegalArgumentException iaEx) {
-            LOGGER.error("Input file empty.");
+            log.error("Input file empty.");
         } catch (JAXBException jaxEx) {
             for (StackTraceElement ste : jaxEx.getStackTrace()) {
-                LOGGER.error(ste.toString());
+                log.error(ste.toString());
             }
         }
 
@@ -463,27 +460,30 @@ public class BaseReferenceManifest extends ReferenceManifest {
     public final List<SwidResource> parseResource(final ResourceCollection rc) {
         List<SwidResource> resources = new ArrayList<>();
 
+        log.error("Parsing stuff");
         try {
             if (rc != null) {
                 for (Meta meta : rc.getDirectoryOrFileOrProcess()) {
-                    if (meta != null) {
-                        if (meta instanceof Directory) {
-                            Directory directory = (Directory) meta;
-                            for (FilesystemItem fsi : directory.getDirectoryOrFile()) {
-                                if (fsi != null) {
-                                    resources.add(new SwidResource(
-                                            (File) fsi, null));
-                                }
+                    if (meta instanceof Directory) {
+                        Directory directory = (Directory) meta;
+                        for (FilesystemItem fsi : directory.getDirectoryOrFile()) {
+                            if (fsi != null) {
+                                resources.add(new SwidResource(
+                                        (File) fsi, null));
+                            } else {
+                                log.error("fsi is negative");
                             }
-                        } else if (meta instanceof File) {
-                            resources.add(new SwidResource((File) meta, null));
                         }
+                    } else if (meta instanceof File) {
+                        resources.add(new SwidResource((File) meta, null));
                     }
                 }
+            } else {
+                log.error("ResourceCollection is negative");
             }
         } catch (ClassCastException ccEx) {
-            LOGGER.error(ccEx);
-            LOGGER.error("At this time, the code does not support the "
+            log.error(ccEx);
+            log.error("At this time, the code does not support the "
                     + "particular formatting of this SwidTag's Payload.");
         }
 
@@ -495,7 +495,7 @@ public class BaseReferenceManifest extends ReferenceManifest {
         return String.format("ReferenceManifest{swidName=%s,"
                         + "platformManufacturer=%s,"
                         + " platformModel=%s,"
-                        + "tagId=%s, rimHash=%s}",
+                        + "tagId=%s, base64Hash=%s}",
                 swidName, this.getPlatformManufacturer(),
                 this.getPlatformModel(), getTagId(), this.getBase64Hash());
     }

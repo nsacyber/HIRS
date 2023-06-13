@@ -2,12 +2,13 @@ package hirs.attestationca.portal.datatables;
 
 import hirs.attestationca.persist.CriteriaModifier;
 import hirs.attestationca.persist.FilteredRecordsList;
-import hirs.attestationca.persist.OrderedListQuerier;
+import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.util.CollectionUtils;
 
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
 /**
  * A class to adapt the Javascript DataTable java class abstractions to the DBManager's getting
@@ -30,7 +31,7 @@ public final class OrderedListQueryDataTableAdapter<T> {
      * @return the filtered record list
      */
     public static <T> FilteredRecordsList<T> getOrderedList(final Class<? extends T> clazz,
-                                                            final OrderedListQuerier<T> dbManager,
+                                                            final JpaRepository<T, UUID> dbManager,
                                                             final DataTableInput dataTableInput,
                                                             final String orderColumnName) {
         return getOrderedList(clazz, dbManager, dataTableInput, orderColumnName, null);
@@ -47,7 +48,7 @@ public final class OrderedListQueryDataTableAdapter<T> {
      * @return the filtered record list
      */
     public static <T> FilteredRecordsList<T> getOrderedList(final Class<? extends T> clazz,
-                                                            final OrderedListQuerier<T> dbManager,
+                                                            final JpaRepository<T, UUID> dbManager,
                                                             final DataTableInput dataTableInput,
                                                             final String orderColumnName,
                                                             final CriteriaModifier criteriaModifier) {
@@ -63,10 +64,19 @@ public final class OrderedListQueryDataTableAdapter<T> {
             isAscending = orders.get(0).isAscending();
         }
 
-        return dbManager.getOrderedList(clazz, orderColumnName, isAscending,
-                dataTableInput.getStart(), dataTableInput.getLength(),
-                dataTableInput.getSearch().getValue(),
-                searchableColumnMap, criteriaModifier);
+        //Object that will store query values
+        FilteredRecordsList<T> filteredRecordsList = new FilteredRecordsList<>();
+
+        filteredRecordsList.setRecordsTotal(dbManager.count());
+        filteredRecordsList.addAll(dbManager.findAll());
+        filteredRecordsList.setRecordsFiltered(10);
+
+        return filteredRecordsList;
+
+//        return dbManager.getOrderedList(clazz, orderColumnName, isAscending,
+//                dataTableInput.getStart(), dataTableInput.getLength(),
+//                dataTableInput.getSearch().getValue(),
+//                searchableColumnMap, criteriaModifier);
     }
 }
 

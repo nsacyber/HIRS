@@ -33,6 +33,10 @@ public enum Page {
     ISSUED_CERTIFICATES("Issued Certificates", "ic_library_books",
             null, "certificate-request/"),
     /**
+     * Page to display certificate validation reports.
+     */
+    VALIDATION_REPORTS("Validation Reports", "ic_assignment", "first"),
+    /**
      * Non-menu page to display certificate.  Reachable from all certificate pages.
      */
     CERTIFICATE_DETAILS("Certificate Details", "", null, true, false, null, null),

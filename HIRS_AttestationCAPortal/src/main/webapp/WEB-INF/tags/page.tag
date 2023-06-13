@@ -40,8 +40,8 @@
         <link type="text/css" rel="stylesheet" href="${common}/common.css"/>
         <link type="text/css" rel="stylesheet" href="${common}/sidebar.css"/>
 
-        <link type="text/css" rel="stylesheet" href="${lib}/bootstrap-3.3.7/css/bootstrap.min.css"/>
-        <link type="text/css" rel="stylesheet" href="${lib}/jquery.dataTables-1.10.13/media/css/jquery.dataTables.min.css"></link>
+        <link type="text/css" rel="stylesheet" href="${lib}/bootstrap-3.3.7/css/bootstrap.min.css" />
+        <link type="text/css" rel="stylesheet" href="${lib}/jquery.dataTables-1.10.13/media/css/jquery.dataTables.min.css" />
 
         <%-- page-specific style --%>
         <jsp:invoke fragment="style"/>

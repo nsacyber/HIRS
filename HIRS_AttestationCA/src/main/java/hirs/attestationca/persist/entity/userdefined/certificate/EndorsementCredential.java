@@ -10,10 +10,9 @@ import lombok.AccessLevel;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.extern.log4j.Log4j2;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.bouncycastle.asn1.ASN1ApplicationSpecific;
 import org.bouncycastle.asn1.ASN1BitString;
 import org.bouncycastle.asn1.ASN1Boolean;
@@ -63,6 +62,7 @@ import java.util.Set;
  *
  * trustedcomputinggroup.org/wp-content/uploads/Credential_Profiles_V1.2_Level2_Revision8.pdf
  */
+@Log4j2
 @EqualsAndHashCode(callSuper = false)
 @NoArgsConstructor(access= AccessLevel.PROTECTED)
 @Entity
@@ -104,8 +104,6 @@ public class EndorsementCredential extends DeviceAssociatedCertificate {
 
     // number of extra bytes potentially present in a cert header.
     private static final int EK_CERT_HEADER_BYTE_COUNT = 7;
-
-    private static final Logger LOG = LogManager.getLogger(EndorsementCredential.class);
 
     /**
      * This class enables the retrieval of EndorsementCredential by their attributes.
@@ -227,8 +225,6 @@ public class EndorsementCredential extends DeviceAssociatedCertificate {
     @Transient
     private Map<String, Object> parsedFields;
 
-    private static final Logger LOGGER = LogManager.getLogger(EndorsementCredential.class);
-
     /**
      * Construct a new EndorsementCredential given its binary contents.  The given
      * certificate should represent either an X509 certificate or X509 attribute certificate.
@@ -260,7 +256,6 @@ public class EndorsementCredential extends DeviceAssociatedCertificate {
      * @return the EC if a valid credential, null otherwise
      */
     public static EndorsementCredential parseWithPossibleHeader(final byte[] certificateBytes) {
-
         try {
             // first, attempt parsing as is
             return new EndorsementCredential(certificateBytes);
@@ -272,7 +267,7 @@ public class EndorsementCredential extends DeviceAssociatedCertificate {
             }
         }
 
-        LOG.debug("Attempting parse after removing extra header bytes");
+        log.debug("Attempting parse after removing extra header bytes");
         try {
             byte[] truncatedBytes = ArrayUtils.subarray(
                     certificateBytes, EK_CERT_HEADER_BYTE_COUNT,
@@ -341,13 +336,13 @@ public class EndorsementCredential extends DeviceAssociatedCertificate {
             value = entry.getValue();
             if (oid.equals(TPM_MODEL)) {
                 model = value.toString();
-                LOGGER.debug("Found TPM Model: " + model);
+                log.debug("Found TPM Model: " + model);
             } else if (oid.equals(TPM_VERSION)) {
                 version = value.toString();
-                LOGGER.debug("Found TPM Version: " + version);
+                log.debug("Found TPM Version: " + version);
             } else if (oid.equals(TPM_MANUFACTURER)) {
                 manufacturer = value.toString();
-                LOGGER.debug("Found TPM Manufacturer: " + manufacturer);
+                log.debug("Found TPM Manufacturer: " + manufacturer);
             }
         }
     }
@@ -392,7 +387,7 @@ public class EndorsementCredential extends DeviceAssociatedCertificate {
             ASN1Integer revision = (ASN1Integer) seq.getObjectAt(ASN1_REV_INDEX);
             tpmSpecification = new TPMSpecification(family.getString(), level.getValue(),
                     revision.getValue());
-            LOGGER.debug("Found TPM Spec:" + tpmSpecification.toString());
+            log.debug("Found TPM Spec:" + tpmSpecification.toString());
         } else if (addToMapping && key.equals(TPM_SECURITY_ASSERTIONS)) {
             // Parse TPM Security Assertions
             int seqPosition = 0;
@@ -420,7 +415,7 @@ public class EndorsementCredential extends DeviceAssociatedCertificate {
             tpmSecurityAssertions = new TPMSecurityAssertions(ver.getValue(),
                     fieldUpgradeable.isTrue());
 
-            LOGGER.debug("Found TPM Assertions: " + tpmSecurityAssertions.toString());
+            log.debug("Found TPM Assertions: " + tpmSecurityAssertions.toString());
             // Iterate through remaining fields to set optional attributes
             int tag;
             DERTaggedObject obj;
@@ -536,7 +531,7 @@ public class EndorsementCredential extends DeviceAssociatedCertificate {
             while (setContents.hasMoreElements()) {
                 subComp = (ASN1Encodable) setContents.nextElement();
                 if (subComp instanceof ASN1ObjectIdentifier) {
-                    LOGGER.warn("OID in top level of ASN1Set");
+                    log.warn("OID in top level of ASN1Set");
                 }
                 parseSingle((ASN1Primitive) subComp, addToMapping, key);
             }
@@ -646,7 +641,7 @@ public class EndorsementCredential extends DeviceAssociatedCertificate {
 
         } else {
             // there are some deprecated types that we don't parse
-            LOGGER.error("Unparsed type: " + component.getClass());
+            log.error("Unparsed type: " + component.getClass());
         }
     }
 }

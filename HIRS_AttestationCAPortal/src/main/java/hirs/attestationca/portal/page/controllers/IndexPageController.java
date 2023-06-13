@@ -9,6 +9,9 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.servlet.ModelAndView;
 
+/**
+ * Controller for the Index page.
+ */
 @Controller
 @Log4j2
 @RequestMapping("/index")
@@ -34,9 +37,4 @@ public class IndexPageController extends PageController<NoPageParams> {
         return getBaseModelAndView();
     }
 
-//    @RequestMapping(value = "/", method = RequestMethod.GET)
-//    public String showIndexPage(ModelMap model) {
-//        model.put("name", "welcome");
-//        return "welcome";
-//    }
 }

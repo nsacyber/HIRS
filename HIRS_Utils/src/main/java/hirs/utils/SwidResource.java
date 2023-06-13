@@ -4,6 +4,7 @@ import com.google.common.base.Preconditions;
 import hirs.utils.digest.DigestAlgorithm;
 import hirs.utils.xjc.File;
 import lombok.Getter;
+import lombok.ToString;
 
 import javax.xml.namespace.QName;
 import java.math.BigInteger;
@@ -13,6 +14,7 @@ import java.util.Map;
  * This object is used to represent the content of a Swid Tags Directory
  * section.
  */
+@ToString
 public class SwidResource {
 
     @Getter
