@@ -4,6 +4,9 @@ name: HIRS Build and Unit Test
 
 on:
   push:
+    branches:
+      - '*ci*'
+      - 'master'     
    # allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
 

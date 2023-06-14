@@ -3,6 +3,9 @@
 name: HIRS System Tests
 on: 
   push:
+    branches: 
+      - '*ci*'
+      - 'master'
   workflow_dispatch:
 env:
   TEST_STATUS: 0
