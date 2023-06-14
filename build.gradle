@@ -26,11 +26,12 @@ def buildTime = { ->
 }
 
 def gitHash = { ->
-    def gitProcess = 'git rev-parse --short HEAD'.execute();
-    gitProcess.waitFor();
-    def shortHash = gitProcess.text.trim();
-    def gitHash = shortHash.substring(0, shortHash.length() - 2);
-    return gitHash;
+    def stdout = new ByteArrayOutputStream()
+    exec {
+        commandLine 'git', 'rev-parse', '--short', 'HEAD'
+        standardOutput = stdout
+    }
+    return stdout.toString().trim()
 }
 
 project.ext["jarVersion"] = "${projectVersion}.${buildTime}.${gitHash}"
