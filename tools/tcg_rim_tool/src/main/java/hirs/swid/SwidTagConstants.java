@@ -47,7 +47,7 @@ public class SwidTagConstants {
     public static final String EDITION = "edition";
     public static final String PRODUCT = "product";
     public static final String REVISION = "revision";
-    public static final String PAYLOAD_TYPE = "PayloadType";
+    public static final String PAYLOAD_TYPE = "payloadType";
     public static final String HYBRID = "hybrid";
     public static final String PLATFORM_MANUFACTURER_STR = "platformManufacturerStr";
     public static final String PLATFORM_MANUFACTURER_ID = "platformManufacturerId";
@@ -59,17 +59,17 @@ public class SwidTagConstants {
     public static final String FIRMWARE_VERSION = "firmwareVersion";
     public static final String BINDING_SPEC = "bindingSpec";
     public static final String BINDING_SPEC_VERSION = "bindingSpecVersion";
-    public static final String PC_URI_LOCAL = "pcURIlocal";
-    public static final String PC_URI_GLOBAL = "pcURIGlobal";
+    public static final String PC_URI_LOCAL = "pcUriLocal";
+    public static final String PC_URI_GLOBAL = "pcUriGlobal";
     public static final String RIM_LINK_HASH = "rimLinkHash";
     public static final String SIZE = "size";
     public static final String HASH = "hash";
-    public static final String SUPPORT_RIM_TYPE = "supportRIMType";
-    public static final String SUPPORT_RIM_FORMAT = "supportRIMFormat";
+    public static final String SUPPORT_RIM_TYPE = "supportRimType";
+    public static final String SUPPORT_RIM_FORMAT = "supportRimFormat";
     public static final String TCG_EVENTLOG_ASSERTION = "TCG_EventLog_Assertion";
     public static final String TPM_PCR_ASSERTION = "TPM_PCR_Assertion";
-    public static final String SUPPORT_RIM_FORMAT_MISSING = "supportRIMFormat missing";
-    public static final String SUPPORT_RIM_URI_GLOBAL = "supportRIMURIGlobal";
+    public static final String SUPPORT_RIM_FORMAT_MISSING = "supportRimFormat missing";
+    public static final String SUPPORT_RIM_URI_GLOBAL = "supportRimUriGlobal";
     public static final String DATETIME = "dateTime";
 
     public static final String NIST_NS = "http://csrc.nist.gov/ns/swid/2015-extensions/1.0";
