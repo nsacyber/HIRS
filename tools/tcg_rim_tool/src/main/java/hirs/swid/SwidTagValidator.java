@@ -137,8 +137,9 @@ public class SwidTagValidator {
             si.append("SoftwareIdentity tagId: " + softwareIdentity.getAttribute("tagId") + "\n");
             System.out.println(si.toString());
             Element directory = (Element) document.getElementsByTagName("Directory").item(0);
-            validateDirectory(directory);
-            return validateEnvelopedSignature(document, format);
+            if (validateDirectory(directory)) {
+                return validateEnvelopedSignature(document, format);
+            }
         } else {
             System.out.println("Invalid xml for validation, please verify " + path);
         }
@@ -147,13 +148,6 @@ public class SwidTagValidator {
     }
 
     private boolean validateEnvelopedSignature(Document doc, String format) {
-        Element file = (Element) doc.getElementsByTagName("File").item(0);
-        try {
-            validateFile(file);
-        } catch (Exception e) {
-            System.out.println(e.getMessage());
-            return false;
-        }
         boolean swidtagValidity = validateSignedXMLDocument(doc, format);
         if (swidtagValidity) {
             System.out.println("Signature core validity: true");
