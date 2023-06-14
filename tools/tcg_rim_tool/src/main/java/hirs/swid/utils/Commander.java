@@ -49,7 +49,7 @@ public class Commander {
     @Parameter(names = {"-d", "--default-key"}, order = 9,
             description = "Use keystore.jks from the rimtool installation to sign.")
     private boolean defaultKey = false;
-    @Parameter(names = {"-l", "--rimel <path>"}, order = 10, required = true,
+    @Parameter(names = {"-l", "--rimel <path>"}, order = 10,
             description = "The TCG eventlog file to use as a support RIM.")
     private String rimEventLog = "";
     @Parameter(names = {"--timestamp"}, order = 11, variableArity = true,

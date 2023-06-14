@@ -30,7 +30,6 @@ public class Main {
                 certificateFile = commander.getPublicCertificate();
                 privateKeyFile = commander.getPrivateKeyFile();
                 trustStoreFile = commander.getTruststoreFile();
-                rimEventLogFile = commander.getRimEventLog();
                 directory = commander.getDirectoryOverride();
                 boolean defaultKey = commander.isDefaultKey();
                 if (defaultKey) {
@@ -39,7 +38,6 @@ public class Main {
                     caValidator = new CredentialArgumentValidator(trustStoreFile,
                             certificateFile, privateKeyFile, "", "", true);
                     if (caValidator.isValid()) {
-                        validator.setRimEventLog(rimEventLogFile);
                         if (!directory.isEmpty()) {
                             validator.setDirectoryOverride(directory);
                         }
