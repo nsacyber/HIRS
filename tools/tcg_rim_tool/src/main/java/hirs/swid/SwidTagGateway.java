@@ -316,7 +316,7 @@ public class SwidTagGateway {
             if (!tagId.isEmpty()) {
                 swidTag.setTagId(tagId);
             }
-            swidTag.getOtherAttributes().put(new QName("id"), tagId);
+            swidTag.getOtherAttributes().put(SwidTagConstants._SOFTWARE_IDENTITY_ID, tagId);
             swidTag.setTagVersion(new BigInteger(
                     jsonObject.getString(SwidTagConstants.TAGVERSION, "0")));
             swidTag.setVersion(jsonObject.getString(SwidTagConstants.VERSION, "0.0"));
@@ -598,8 +598,6 @@ public class SwidTagGateway {
         }
         Element softwareIdentity = (Element) swidTag.getElementsByTagName(
                     SwidTagConstants.SOFTWARE_IDENTITY).item(0);
-        String softwareIdentityId = softwareIdentity.getAttributes()
-                    .getNamedItem("id").getNodeValue();
 
         //Create signature with a reference to SoftwareIdentity id
         XMLSignatureFactory sigFactory = null;
@@ -658,7 +656,7 @@ public class SwidTagGateway {
 
         Document detachedSignature = db.newDocument();
         DOMSignContext context = new DOMSignContext(privateKey, detachedSignature);
-        context.setIdAttributeNS(softwareIdentity, null, "id");
+        context.setIdAttributeNS(softwareIdentity, null, SwidTagConstants.HIRS_PFX + ":id");
         XMLSignature signature = sigFactory.newXMLSignature(signedInfo, keyinfo);
         try {
             signature.sign(context);
@@ -784,10 +782,12 @@ public class SwidTagGateway {
      * @return an XMLObject containing the timestamp element
      */
     private XMLObject createXmlTimestamp(Document doc, XMLSignatureFactory sigFactory) {
-        Element timeStampElement = doc.createElement("TimeStamp");
+        Element timeStampElement = null;
         switch (timestampFormat.toUpperCase()) {
             case "RFC3852":
                 try {
+                    timeStampElement =
+                            doc.createElement(SwidTagConstants.RFC3852_PFX + ":timestamp");
                     byte[] counterSignature = Base64.getEncoder().encode(
                             Files.readAllBytes(Paths.get(timestampArgument)));
                     timeStampElement.setAttributeNS("http://www.w3.org/2000/xmlns/",
@@ -801,6 +801,8 @@ public class SwidTagGateway {
                 }
                 break;
             case "RFC3339":
+                timeStampElement =
+                        doc.createElement(SwidTagConstants.RFC3339_PFX + ":timestamp");
                 timeStampElement.setAttributeNS("http://www.w3.org/2000/xmlns/",
                         "xmlns:" + SwidTagConstants.RFC3339_PFX,
                         SwidTagConstants.RFC3339_NS);
