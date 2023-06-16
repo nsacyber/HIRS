@@ -77,7 +77,6 @@ public class ReferenceManifestPageController extends PageController<NoPageParams
     /**
      * Constructor providing the Page's display and routing specification.
      *
-     * @param filesStorageService storage services
      * @param referenceManifestRepository the reference manifest manager
      * @param referenceDigestValueRepository this is the reference event manager
      */
