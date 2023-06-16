@@ -10,7 +10,6 @@ import hirs.attestationca.persist.entity.userdefined.ReferenceManifest;
 import hirs.attestationca.persist.entity.userdefined.rim.BaseReferenceManifest;
 import hirs.attestationca.persist.entity.userdefined.rim.ReferenceDigestValue;
 import hirs.attestationca.persist.entity.userdefined.rim.SupportReferenceManifest;
-import hirs.attestationca.persist.service.FilesStorageService;
 import hirs.attestationca.portal.datatables.DataTableInput;
 import hirs.attestationca.portal.datatables.DataTableResponse;
 import hirs.attestationca.portal.datatables.OrderedListQueryDataTableAdapter;
@@ -72,7 +71,6 @@ public class ReferenceManifestPageController extends PageController<NoPageParams
     @Autowired(required = false)
     private EntityManager entityManager;
 
-    private final FilesStorageService filesStorageService;
     private final ReferenceManifestRepository referenceManifestRepository;
     private final ReferenceDigestValueRepository referenceDigestValueRepository;
 
@@ -84,11 +82,9 @@ public class ReferenceManifestPageController extends PageController<NoPageParams
      * @param referenceDigestValueRepository this is the reference event manager
      */
     @Autowired
-    public ReferenceManifestPageController(final FilesStorageService filesStorageService,
-                                           final ReferenceManifestRepository referenceManifestRepository,
+    public ReferenceManifestPageController(final ReferenceManifestRepository referenceManifestRepository,
             final ReferenceDigestValueRepository referenceDigestValueRepository) {
         super(Page.REFERENCE_MANIFESTS);
-        this.filesStorageService = filesStorageService;
         this.referenceManifestRepository = referenceManifestRepository;
         this.referenceDigestValueRepository = referenceDigestValueRepository;
     }
