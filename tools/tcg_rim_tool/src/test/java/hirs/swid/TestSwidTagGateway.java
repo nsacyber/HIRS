@@ -178,6 +178,7 @@ public class TestSwidTagGateway {
             validator.validateSwidTag(DEFAULT_OUTPUT, "DEFAULT");
         } catch (Exception e) {
             e.printStackTrace();
+            Assert.fail();
         }
     }
 
