@@ -1,6 +1,7 @@
 package hirs.attestationca.persist.entity.manager;
 
 import hirs.attestationca.persist.entity.userdefined.Certificate;
+import hirs.attestationca.persist.entity.userdefined.certificate.EndorsementCredential;
 import hirs.attestationca.persist.entity.userdefined.certificate.PlatformCredential;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -28,9 +29,9 @@ public interface CertificateRepository<T extends Certificate> extends JpaReposit
     @Query(value = "SELECT * FROM Certificate where platformSerial = ?1 AND DTYPE = 'PlatformCredential'", nativeQuery = true)
     List<PlatformCredential> byBoardSerialNumber(String boardSerialNumber);
     @Query(value = "SELECT * FROM Certificate where holderSerialNumber = ?1 AND DTYPE = 'PlatformCredential'", nativeQuery = true)
-    PlatformCredential byHolderSerialNumber(BigInteger holderSerialNumber);
-    @Query(value = "SELECT * FROM Certificate where holderSerialNumber = ?1 AND DTYPE = dType", nativeQuery = true)
-    T byHolderSerialNumber(BigInteger holderSerialNumber, String dType);
+    PlatformCredential getPcByHolderSerialNumber(BigInteger holderSerialNumber);
+    @Query(value = "SELECT * FROM Certificate where holderSerialNumber = ?1 AND DTYPE = 'EndorsementCredential'", nativeQuery = true)
+    EndorsementCredential getEcByHolderSerialNumber(BigInteger holderSerialNumber);
     @Query(value = "SELECT * FROM Certificate where certificateHash = ?1 AND DTYPE = ?2", nativeQuery = true)
     T findByCertificateHash(int certificateHash, String dType);
     @Query(value = "SELECT * FROM Certificate where subjectKeyIdentifier = ?1", nativeQuery = true)

@@ -340,7 +340,7 @@ public final class CertificateStringMapBuilder {
             }
 
             PlatformCredential prevCertificate = certificateRepository
-                    .byHolderSerialNumber(certificate.getSerialNumber());
+                    .getPcByHolderSerialNumber(certificate.getSerialNumber());
 
             if (prevCertificate != null) {
                 data.put("prevCertId", prevCertificate.getId().toString());
