@@ -656,7 +656,7 @@ public class SwidTagGateway {
 
         Document detachedSignature = db.newDocument();
         DOMSignContext context = new DOMSignContext(privateKey, detachedSignature);
-        context.setIdAttributeNS(softwareIdentity, null, SwidTagConstants.HIRS_PFX + ":id");
+        context.setIdAttributeNS(softwareIdentity, null, SwidTagConstants.PCRIM_PFX + ":id");
         XMLSignature signature = sigFactory.newXMLSignature(signedInfo, keyinfo);
         try {
             signature.sign(context);

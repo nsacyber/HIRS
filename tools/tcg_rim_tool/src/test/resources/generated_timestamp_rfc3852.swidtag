@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<SoftwareIdentity xmlns="http://standards.iso.org/iso/19770/-2/2015/schema.xsd" xmlns:hirs="https://hirs.gov" xmlns:ns2="http://www.w3.org/2000/09/xmldsig#" corpus="false" hirs:id="94f6b457-9ac9-4d35-9b3f-78804173b65as" name="Example.com BIOS" patch="false" supplemental="false" tagId="94f6b457-9ac9-4d35-9b3f-78804173b65as" tagVersion="0" version="01" versionScheme="multipartnumeric" xml:lang="en">
+<SoftwareIdentity xmlns="http://standards.iso.org/iso/19770/-2/2015/schema.xsd" xmlns:ns2="http://www.w3.org/2000/09/xmldsig#" xmlns:pcRim="https://trustedcomputinggroup.org/resource/tcg-pc-client-reference-integrity-manifest-specification/" corpus="false" name="Example.com BIOS" patch="false" pcRim:id="94f6b457-9ac9-4d35-9b3f-78804173b65as" supplemental="false" tagId="94f6b457-9ac9-4d35-9b3f-78804173b65as" tagVersion="0" version="01" versionScheme="multipartnumeric" xml:lang="en">
   <Entity name="Example Inc" regid="http://Example.com" role="softwareCreator tagCreator"/>
   <Link href="https://Example.com/support/ProductA/firmware/installfiles" rel="installationmedia"/>
   <Meta xmlns:n8060="http://csrc.nist.gov/ns/swid/2015-extensions/1.0" xmlns:rim="https://trustedcomputinggroup.org/wp-content/uploads/TCG_RIM_Model" n8060:colloquialVersion="Firmware_2019" n8060:edition="12" n8060:product="ProductA" n8060:revision="r2" rim:PayloadType="direct" rim:bindingSpec="PC Client RIM" rim:bindingSpecVersion="1.2" rim:firmwareManufacturerId="00213022" rim:firmwareManufacturerStr="BIOSVendorA" rim:firmwareModel="A0" rim:firmwareVersion="12" rim:pcURIGlobal="https://Example.com/support/ProductA/" rim:pcURIlocal="/boot/tcg/manifest/switag/" rim:platformManufacturerId="00201234" rim:platformManufacturerStr="Example.com" rim:platformModel="ProductA" rim:platformVersion="01"/>
@@ -17,18 +17,18 @@
           <Transform Algorithm="http://www.w3.org/2000/09/xmldsig#enveloped-signature"/>
         </Transforms>
         <DigestMethod Algorithm="http://www.w3.org/2001/04/xmlenc#sha256"/>
-        <DigestValue>I1c15EG4XjWL8a8JL4MDFyPqY7+wpQmC8dwSJTQXGMg=</DigestValue>
+        <DigestValue>9pLMfQcXsZKTNXd03a4djOUV6YofZJgtqZssSGf1ZGk=</DigestValue>
       </Reference>
       <Reference URI="#TST">
         <DigestMethod Algorithm="http://www.w3.org/2001/04/xmlenc#sha256"/>
-        <DigestValue>tXo0jnt5p+vph3Uak5KuolHFfHGQyLqTuLP9BBXFGVo=</DigestValue>
+        <DigestValue>Sv8QDWUUwrxCoUwFj0veh3oFqG/8XVscoqUDd96GL6Q=</DigestValue>
       </Reference>
     </SignedInfo>
-    <SignatureValue>G4YPYyfKovSALnJXmZ0HwBC6CrikMQfYjE06oqmHmeHCEBuJaNGBx0SglJaGOXHPcLZxQDJjKm5r&#13;
-U9plTCi1WdWhOd2m+azQfwZMTR/G9pfT0iLuE0KRDUsh/1pmvh/mKqwbTfLf2vhpUPxneVqSPIf5&#13;
-9LiEfTqcf9hhZ8aZ3+RobMSJ0a5xGkbwCZtq+VEzamfNhY3fp0u21i4D/tZumm0CC5QNWPLKXnoz&#13;
-X5b/9Ar2pO5rNTzzmExPTVubjYSaV7HOAvUz82NbFAvjefnSgD8h6edCGW6bBBT6cYj5tdMs5PKA&#13;
-DHFuJNz2SgrPVviy/xp92WShhypFGN3keqkzuA==</SignatureValue>
+    <SignatureValue>bCet0/jmRLoKnSicKKjkIQCox0gxZv48mOe0PcPU3FRBHbyZc4zzGeeanisz4/HwR4VbE1yKp1M4&#13;
+O2swiUih6iqNQwirQJVMks69fx9ueonPTUfJnQ/I+XLzCWRWivMM4gPs6Ubuvim+81I4Hjv2uIE2&#13;
+bqAWcixIvXvSaUL+O3BnTy9ykgRQrG9easHjEFV/Jrfb0s33WtvmjuV0kqDgHtvG96RitYOLG0Tr&#13;
+naEe2zNgB8+44IyWwGzEkYjG7JIVOW9QqlSKn4Gc2SVATw8eFnIRQYDh3kLG+IcaX8b94BabTiaX&#13;
+OH3ezftPeYay9H3f3nuApQZ5ujmqoORcTJxXcA==</SignatureValue>
     <KeyInfo>
       <KeyName>2fdeb8e7d030a2209daa01861a964fedecf2bcc1</KeyName>
     </KeyInfo>

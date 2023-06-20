@@ -76,13 +76,14 @@ public class SwidTagConstants {
     public static final String TCG_NS = "https://trustedcomputinggroup.org/wp-content/uploads/TCG_RIM_Model";
     public static final String RFC3852_NS = "https://www.ietf.org/rfc/rfc3852.txt";
     public static final String RFC3339_NS = "https://www.ietf.org/rfc/rfc3339.txt";
-    public static final String HIRS_NS = "https://hirs.gov";
+    public static final String PCRIM_NS = "https://trustedcomputinggroup.org/resource/" +
+            "tcg-pc-client-reference-integrity-manifest-specification/";
 
     public static final String N8060_PFX = "n8060";
     public static final String RIM_PFX = "rim";
     public static final String RFC3852_PFX = "rcf3852";
     public static final String RFC3339_PFX = "rcf3339";
-    public static final String HIRS_PFX = "hirs";
+    public static final String PCRIM_PFX = "pcRim";
 
     public static final QName _SHA256_HASH = new QName(
             "http://www.w3.org/2001/04/xmlenc#sha256", HASH, "SHA256");
@@ -135,7 +136,7 @@ public class SwidTagConstants {
     public static final QName _N8060_PATHSEPARATOR = new QName(
             NIST_NS, "pathSeparator", N8060_PFX);
     public static final QName _SOFTWARE_IDENTITY_ID = new QName(
-            HIRS_NS, "id", HIRS_PFX);
+            PCRIM_NS, "id", PCRIM_PFX);
 
     public static final String CA_ISSUERS = "1.3.6.1.5.5.7.48.2";
 }
