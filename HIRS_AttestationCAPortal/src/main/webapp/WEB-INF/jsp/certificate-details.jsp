@@ -3,7 +3,7 @@
 <%@taglib prefix="c" uri="jakarta.tags.core" %>
 <%@taglib prefix="spring" uri="http://www.springframework.org/tags"%>
 <%@taglib prefix="form" uri="http://www.springframework.org/tags/form"%>
-
+<%@taglib prefix="fn" uri="jakarta.tags.functions"%>
 <%@taglib prefix="my" tagdir="/WEB-INF/tags"%>
 
 <%--CONTENT--%>
@@ -437,7 +437,7 @@
                                                     </div>
                                                     <div class="tbbsecurityLine">
                                                         <span class="fieldHeader">Assurance Level:</span>
-                                                        <span class="fieldValue">${fn:toUpperCase(ccinfo.getAssurancelevel().getValue())}</span>
+                                                        <span class="fieldValue">${fn:toUpperCase(ccinfo.getAssuranceLevel().getValue())}</span>
                                                     </div>
                                                     <div class="tbbsecurityLine">
                                                         <span class="fieldHeader">Evaluation Status:</span>
