@@ -46,6 +46,7 @@ import java.net.URISyntaxException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
@@ -265,6 +266,57 @@ public class CertificatePageController extends PageController<NoPageParams> {
         model.put(MESSAGES_ATTRIBUTE, messages);
 
         return redirectTo(getCertificatePage(certificateType), new NoPageParams(), model, attr);
+    }
+
+
+    /**
+     * Handles request to download the cert by writing it to the response stream
+     * for download.
+     *
+     * @param certificateType String containing the certificate type
+     * @param id the UUID of the cert to download
+     * @param response the response object (needed to update the header with the
+     * file name)
+     * @throws java.io.IOException when writing to response output stream
+     */
+    @RequestMapping(value = "/{certificateType}/download", method = RequestMethod.GET)
+    public void download(
+            @PathVariable("certificateType") final String certificateType,
+            @RequestParam final String id,
+            final HttpServletResponse response)
+            throws IOException {
+        log.info("Handling request to download " + id);
+
+        try {
+            UUID uuid = UUID.fromString(id);
+            Certificate certificate = certificateRepository.getCertificate(uuid);
+            if (certificate == null) {
+                // Use the term "record" here to avoid user confusion b/t cert and cred
+                String notFoundMessage = "Unable to locate record with ID: " + uuid;
+                log.warn(notFoundMessage);
+                // send a 404 error when invalid certificate
+                response.sendError(HttpServletResponse.SC_NOT_FOUND);
+            } else {
+                StringBuilder fileName = new StringBuilder("filename=\"");
+                fileName.append(getCertificateClass(certificateType).getSimpleName());
+                fileName.append("_");
+                fileName.append(certificate.getSerialNumber());
+                fileName.append(".cer\"");
+
+                // Set filename for download.
+                response.setHeader("Content-Disposition", "attachment;" + fileName);
+                response.setContentType("application/octet-stream");
+
+                // write cert to output stream
+                response.getOutputStream().write(certificate.getRawBytes());
+            }
+        } catch (IllegalArgumentException ex) {
+            String uuidError = "Failed to parse ID from: " + id;
+            log.error(uuidError, ex);
+            // send a 404 error when invalid certificate
+            response.sendError(HttpServletResponse.SC_NOT_FOUND);
+        }
+
     }
 
     /**

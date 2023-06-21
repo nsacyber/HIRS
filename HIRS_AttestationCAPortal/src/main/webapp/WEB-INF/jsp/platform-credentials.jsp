@@ -70,8 +70,8 @@
                         {
                             data: 'credentialType',
                             render: function (data, type, full, meta) {
-                                if (full.platformType !== '') {
-                                    return full.platformType;
+                                if (full.platformChainType !== '') {
+                                    return full.platformChainType;
                                 } else {
                                     return full.credentialType;
                                 }
