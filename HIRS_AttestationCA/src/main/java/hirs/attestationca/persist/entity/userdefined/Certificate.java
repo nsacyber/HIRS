@@ -24,6 +24,7 @@ import org.bouncycastle.asn1.DERIA5String;
 import org.bouncycastle.asn1.DEROctetString;
 import org.bouncycastle.asn1.DERTaggedObject;
 import org.bouncycastle.asn1.DLSequence;
+import org.bouncycastle.asn1.DLTaggedObject;
 import org.bouncycastle.asn1.x500.X500Name;
 import org.bouncycastle.asn1.x509.AccessDescription;
 import org.bouncycastle.asn1.x509.AttCertIssuer;
@@ -665,7 +666,7 @@ public abstract class Certificate extends ArchivableEntity {
                 // V1 X509Certificate
                 return CertificateType.X509_CERTIFICATE;
             }
-        } else if (testSeq.toArray()[0] instanceof DERTaggedObject) {
+        } else if (testSeq.toArray()[0] instanceof DERTaggedObject || testSeq.toArray()[0] instanceof DLTaggedObject) {
             // V2 or V3 X509Certificate
             return CertificateType.X509_CERTIFICATE;
         }

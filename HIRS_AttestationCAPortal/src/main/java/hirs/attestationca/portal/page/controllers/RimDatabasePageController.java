@@ -10,7 +10,6 @@ import hirs.attestationca.persist.entity.userdefined.rim.ReferenceDigestValue;
 import hirs.attestationca.persist.entity.userdefined.rim.SupportReferenceManifest;
 import hirs.attestationca.portal.datatables.DataTableInput;
 import hirs.attestationca.portal.datatables.DataTableResponse;
-import hirs.attestationca.portal.datatables.OrderedListQueryDataTableAdapter;
 import hirs.attestationca.portal.page.Page;
 import hirs.attestationca.portal.page.PageController;
 import hirs.attestationca.portal.page.params.NoPageParams;
@@ -22,6 +21,9 @@ import jakarta.validation.Valid;
 import lombok.extern.log4j.Log4j2;
 import org.hibernate.Session;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -105,13 +107,23 @@ public class RimDatabasePageController extends PageController<NoPageParams> {
         };
 
         log.info("Querying with the following datatableinput: " + input.toString());
+        FilteredRecordsList<ReferenceDigestValue> referenceDigestValues = new FilteredRecordsList<>();
+        Pageable paging = PageRequest.of(input.getStart(), input.getLength(), Sort.by(orderColumnName));
 
-        FilteredRecordsList<ReferenceDigestValue> referenceDigestValues =
-                OrderedListQueryDataTableAdapter.getOrderedList(
-                        ReferenceDigestValue.class,
-                        referenceDigestValueRepository,
-                        input, orderColumnName, criteriaModifier);
+        org.springframework.data.domain.Page<ReferenceDigestValue> pagedResult = referenceDigestValueRepository.findAll(paging);
 
+        if (pagedResult.hasContent()) {
+            referenceDigestValues.addAll(pagedResult.getContent());
+        }
+        referenceDigestValues.setRecordsTotal(referenceDigestValueRepository.count());
+        referenceDigestValues.setRecordsFiltered(input.getLength());
+
+//        FilteredRecordsList<ReferenceDigestValue> referenceDigestValues =
+//                OrderedListQueryDataTableAdapter.getOrderedList(
+//                        referenceDigestValueRepository,
+//                        input, orderColumnName, criteriaModifier, entityManager);
+
+        // might be able to get rid of this, maybe right a query that looks for not updated
         SupportReferenceManifest support;
         for (ReferenceDigestValue rdv : referenceDigestValues) {
             // We are updating the base rim ID field if necessary and
@@ -123,7 +135,6 @@ public class RimDatabasePageController extends PageController<NoPageParams> {
                         referenceDigestValueRepository.save(rdv);
                     } catch (DBManagerException e) {
                         log.error("Failed to update TPM Event with Base RIM ID");
-                        log.error(rdv);
                     }
                 }
             }

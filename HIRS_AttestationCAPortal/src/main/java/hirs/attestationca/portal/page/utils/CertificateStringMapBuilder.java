@@ -1,5 +1,6 @@
 package hirs.attestationca.portal.page.utils;
 
+import hirs.attestationca.persist.entity.manager.CACredentialRepository;
 import hirs.attestationca.persist.entity.manager.CertificateRepository;
 import hirs.attestationca.persist.entity.manager.ComponentResultRepository;
 import hirs.attestationca.persist.entity.userdefined.Certificate;
@@ -65,8 +66,12 @@ public final class CertificateStringMapBuilder {
 
             if (certificate.getSubject() != null) {
                 data.put("subject", certificate.getSubject());
-                data.put("isSelfSigned",
-                        String.valueOf(certificate.getHolderIssuer().equals(certificate.getSubject())));
+                if (certificate.getHolderIssuer() != null) {
+                    data.put("isSelfSigned",
+                            String.valueOf(certificate.getHolderIssuer().equals(certificate.getSubject())));
+                } else {
+                    data.put("isSelfSigned", "false");
+                }
             } else {
                 data.put("isSelfSigned", "false");
             }
@@ -182,8 +187,8 @@ public final class CertificateStringMapBuilder {
                     }
                     return containsAllChain(issuerCert, certificateRepository);
                 }
-            } catch (IOException e) {
-                log.error(e);
+            } catch (IOException ioEx) {
+                log.error(ioEx);
                 return certificate;
             }
         }
@@ -195,17 +200,18 @@ public final class CertificateStringMapBuilder {
      * Returns the Certificate Authority information.
      *
      * @param uuid ID for the certificate.
-     * @param certificateRepository the certificate manager for retrieving certs.
+     * @param caCertificateRepository the certificate manager for retrieving certs.
      * @return a hash map with the endorsement certificate information.
      */
     public static HashMap<String, String> getCertificateAuthorityInformation(final UUID uuid,
-                                                                             final CertificateRepository certificateRepository) {
-        CertificateAuthorityCredential certificate = (CertificateAuthorityCredential) certificateRepository.getCertificate(uuid);
+                                                                             final CertificateRepository certificateRepository,
+                                                                             final CACredentialRepository caCertificateRepository) {
+        CertificateAuthorityCredential certificate = caCertificateRepository.getReferenceById(uuid);
 
         String notFoundMessage = "Unable to find Certificate Authority "
                 + "Credential with ID: " + uuid;
 
-        return getCertificateAuthorityInfoHelper(certificateRepository, certificate, notFoundMessage);
+        return getCertificateAuthorityInfoHelper(certificateRepository, caCertificateRepository, certificate, notFoundMessage);
     }
 
     /**
@@ -213,17 +219,20 @@ public final class CertificateStringMapBuilder {
      *
      * @param certificate the certificate
      * @param certificateRepository the certificate repository for retrieving certs.
+     * @param caCertificateRepository the certificate repository for retrieving certs.
      * @return a hash map with the endorsement certificate information.
      */
     public static HashMap<String, String> getCertificateAuthorityInformation(
             final CertificateAuthorityCredential certificate,
-            final CertificateRepository certificateRepository) {
-        return getCertificateAuthorityInfoHelper(certificateRepository, certificate,
+            final CertificateRepository certificateRepository,
+            final CACredentialRepository caCertificateRepository) {
+        return getCertificateAuthorityInfoHelper(certificateRepository, caCertificateRepository, certificate,
                 "No cert provided for mapping");
     }
 
     private static HashMap<String, String> getCertificateAuthorityInfoHelper(
             final CertificateRepository certificateRepository,
+            final CACredentialRepository caCertificateRepository,
             final CertificateAuthorityCredential certificate, final String notFoundMessage) {
         HashMap<String, String> data = new HashMap<>();
 
@@ -251,7 +260,7 @@ public final class CertificateStringMapBuilder {
     public static HashMap<String, String> getEndorsementInformation(final UUID uuid,
                                                                     final CertificateRepository certificateRepository) {
         HashMap<String, String> data = new HashMap<>();
-        EndorsementCredential certificate = (EndorsementCredential) certificateRepository.findById(uuid).get();
+        EndorsementCredential certificate = (EndorsementCredential) certificateRepository.getCertificate(uuid);
 
         if (certificate != null) {
             data.putAll(getGeneralCertificateInfo(certificate, certificateRepository));
@@ -296,7 +305,7 @@ public final class CertificateStringMapBuilder {
                                                                  final ComponentResultRepository componentResultRepository)
             throws IllegalArgumentException, IOException {
         HashMap<String, Object> data = new HashMap<>();
-        PlatformCredential certificate = (PlatformCredential) certificateRepository.findById(uuid).get();
+        PlatformCredential certificate = (PlatformCredential) certificateRepository.getCertificate(uuid);
 
         if (certificate != null) {
             data.putAll(getGeneralCertificateInfo(certificate, certificateRepository));
