@@ -2,6 +2,7 @@ package hirs.attestationca.portal.datatables;
 
 import hirs.attestationca.persist.CriteriaModifier;
 import hirs.attestationca.persist.FilteredRecordsList;
+import lombok.extern.log4j.Log4j2;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.util.CollectionUtils;
 
@@ -15,6 +16,7 @@ import java.util.UUID;
  * of ordered lists.
  * @param <T> The type of object to query
  */
+@Log4j2
 public final class OrderedListQueryDataTableAdapter<T> {
 
     private OrderedListQueryDataTableAdapter() {
@@ -66,6 +68,7 @@ public final class OrderedListQueryDataTableAdapter<T> {
 
         //Object that will store query values
         FilteredRecordsList<T> filteredRecordsList = new FilteredRecordsList<>();
+
 
         filteredRecordsList.setRecordsTotal(dbManager.count());
         filteredRecordsList.addAll(dbManager.findAll());

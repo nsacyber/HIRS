@@ -36,12 +36,5 @@ public class HIRSApplication extends SpringBootServletInitializer {
         SpringApplication springApplication = new SpringApplication(HIRSApplication.class);
         springApplication.setDefaultProperties(Collections.singletonMap("server.servlet.context-path", "/portal"));
         springApplication.run(args);
-
-//        log.debug("Debug log message");
-        log.info("Info log message");
-        log.error("Error log message");
-        log.warn("Warn log message");
-        log.fatal("Fatal log message");
-//        log.trace("Trace log message");
     }
 }
