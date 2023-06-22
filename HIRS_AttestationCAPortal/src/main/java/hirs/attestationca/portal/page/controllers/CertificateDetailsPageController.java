@@ -1,5 +1,6 @@
 package hirs.attestationca.portal.page.controllers;
 
+import hirs.attestationca.persist.entity.manager.CACredentialRepository;
 import hirs.attestationca.persist.entity.manager.CertificateRepository;
 import hirs.attestationca.persist.entity.manager.ComponentResultRepository;
 import hirs.attestationca.portal.page.Page;
@@ -31,19 +32,23 @@ public class CertificateDetailsPageController extends PageController<Certificate
      */
     static final String INITIAL_DATA = "initialData";
     private final CertificateRepository certificateRepository;
+    private final CACredentialRepository caCredentialRepository;
     private final ComponentResultRepository componentResultRepository;
 
     /**
      * Constructor providing the Page's display and routing specification.
      * @param certificateRepository the certificate repository
      * @param componentResultRepository the component result repository
+     * @param caCredentialRepository the ca credential manager
      */
     @Autowired
     public CertificateDetailsPageController(final CertificateRepository certificateRepository,
-                                            final ComponentResultRepository componentResultRepository) {
+                                            final ComponentResultRepository componentResultRepository,
+                                            final CACredentialRepository caCredentialRepository) {
         super(Page.CERTIFICATE_DETAILS);
         this.certificateRepository = certificateRepository;
         this.componentResultRepository = componentResultRepository;
+        this.caCredentialRepository = caCredentialRepository;
     }
 
     /**
@@ -81,7 +86,7 @@ public class CertificateDetailsPageController extends PageController<Certificate
                 switch (type) {
                     case "certificateauthority":
                         data.putAll(CertificateStringMapBuilder.getCertificateAuthorityInformation(
-                                uuid, certificateRepository));
+                                uuid, certificateRepository, caCredentialRepository));
                         break;
                     case "endorsement":
                         data.putAll(CertificateStringMapBuilder.getEndorsementInformation(uuid,

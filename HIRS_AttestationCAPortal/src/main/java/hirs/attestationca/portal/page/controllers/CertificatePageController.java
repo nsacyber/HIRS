@@ -3,7 +3,11 @@ package hirs.attestationca.portal.page.controllers;
 import hirs.attestationca.persist.CriteriaModifier;
 import hirs.attestationca.persist.DBServiceException;
 import hirs.attestationca.persist.FilteredRecordsList;
+import hirs.attestationca.persist.entity.manager.CACredentialRepository;
 import hirs.attestationca.persist.entity.manager.CertificateRepository;
+import hirs.attestationca.persist.entity.manager.EndorsementCredentialRepository;
+import hirs.attestationca.persist.entity.manager.IssuedCertificateRepository;
+import hirs.attestationca.persist.entity.manager.PlatformCertificateRepository;
 import hirs.attestationca.persist.entity.userdefined.Certificate;
 import hirs.attestationca.persist.entity.userdefined.certificate.CertificateAuthorityCredential;
 import hirs.attestationca.persist.entity.userdefined.certificate.EndorsementCredential;
@@ -67,6 +71,10 @@ public class CertificatePageController extends PageController<NoPageParams> {
 
     private CertificateAuthorityCredential certificateAuthorityCredential;
     private final CertificateRepository certificateRepository;
+    private final PlatformCertificateRepository platformCertificateRepository;
+    private final EndorsementCredentialRepository endorsementCredentialRepository;
+    private final IssuedCertificateRepository issuedCertificateRepository;
+    private final CACredentialRepository caCredentialRepository;
 
     private static final String TRUSTCHAIN = "trust-chain";
     private static final String PLATFORMCREDENTIAL = "platform-credentials";
@@ -81,15 +89,27 @@ public class CertificatePageController extends PageController<NoPageParams> {
     /**
      * Constructor providing the Page's display and routing specification.
      *
-     * @param certificateRepository the certificate manager
+     * @param certificateRepository the general certificate manager
+     * @param platformCertificateRepository the platform credential manager
+     * @param endorsementCredentialRepository the endorsement credential manager
+     * @param issuedCertificateRepository the issued certificate manager
+     * @param caCredentialRepository the ca credential manager
 //     * @param acaCertificate the ACA's X509 certificate
      */
     @Autowired
-    public CertificatePageController(final CertificateRepository certificateRepository
+    public CertificatePageController(final CertificateRepository certificateRepository,
+                                     final PlatformCertificateRepository platformCertificateRepository,
+                                     final EndorsementCredentialRepository endorsementCredentialRepository,
+                                     final IssuedCertificateRepository issuedCertificateRepository,
+                                     final CACredentialRepository caCredentialRepository
 //            final X509Certificate acaCertificate
     ) {
         super(Page.TRUST_CHAIN);
         this.certificateRepository = certificateRepository;
+        this.platformCertificateRepository = platformCertificateRepository;
+        this.endorsementCredentialRepository = endorsementCredentialRepository;
+        this.issuedCertificateRepository = issuedCertificateRepository;
+        this.caCredentialRepository = caCredentialRepository;
 
 //        try {
             certificateAuthorityCredential = null;
@@ -145,7 +165,7 @@ public class CertificatePageController extends PageController<NoPageParams> {
                 mav = getBaseModelAndView(Page.TRUST_CHAIN);
                 // Map with the ACA certificate information
                 data.putAll(CertificateStringMapBuilder.getCertificateAuthorityInformation(
-                        certificateAuthorityCredential, this.certificateRepository));
+                        certificateAuthorityCredential, this.certificateRepository, this.caCredentialRepository));
                 mav.addObject(ACA_CERT_DATA, data);
                 break;
             default:
@@ -197,15 +217,19 @@ public class CertificatePageController extends PageController<NoPageParams> {
             }
         };
 
-        FilteredRecordsList<Certificate> records
-                = OrderedListQueryDataTableAdapter.getOrderedList(
-                getCertificateClass(certificateType), this.certificateRepository,
-                input, orderColumnName, criteriaModifier);
 
+        /**
+         * Ok I think what I will do is make repositories for each certificate type to I can
+         * tell it what the type T is.
+         */
+        FilteredRecordsList<Certificate> records = new FilteredRecordsList<>();
         // special parsing for platform credential
         // Add the EndorsementCredential for each PlatformCredential based on the
         // serial number. (pc.HolderSerialNumber = ec.SerialNumber)
         if (certificateType.equals(PLATFORMCREDENTIAL)) {
+            records = OrderedListQueryDataTableAdapter.getOrderedList(
+                    getCertificateClass(certificateType), platformCertificateRepository,
+                    input, orderColumnName, criteriaModifier);
             EndorsementCredential associatedEC;
 
             if (!records.isEmpty()) {
@@ -213,7 +237,7 @@ public class CertificatePageController extends PageController<NoPageParams> {
                 for (int i = 0; i < records.size(); i++) {
                     PlatformCredential pc = (PlatformCredential) records.get(i);
                     // find the EC using the PC's "holder serial number"
-                    associatedEC = certificateRepository
+                    associatedEC = this.endorsementCredentialRepository
                             .getEcByHolderSerialNumber(pc.getHolderSerialNumber());
 
                     if (associatedEC != null) {
@@ -224,6 +248,14 @@ public class CertificatePageController extends PageController<NoPageParams> {
                     pc.setEndorsementCredential(associatedEC);
                 }
             }
+        } else if (certificateType.equals(ENDORSEMENTCREDENTIAL)) {
+            records = OrderedListQueryDataTableAdapter.getOrderedList(
+                    getCertificateClass(certificateType), endorsementCredentialRepository,
+                    input, orderColumnName, criteriaModifier);
+        } else if (certificateType.equals(TRUSTCHAIN)) {
+            records = OrderedListQueryDataTableAdapter.getOrderedList(
+                    getCertificateClass(certificateType), caCredentialRepository,
+                    input, orderColumnName, criteriaModifier);
         }
 
         log.debug("Returning list of size: " + records.size());
@@ -315,7 +347,6 @@ public class CertificatePageController extends PageController<NoPageParams> {
             // send a 404 error when invalid certificate
             response.sendError(HttpServletResponse.SC_NOT_FOUND);
         }
-
     }
 
     /**
@@ -617,11 +648,11 @@ public class CertificatePageController extends PageController<NoPageParams> {
         // build the certificate from the uploaded bytes
         try {
             fileBytes = file.getBytes();
-        } catch (IOException e) {
+        } catch (IOException ioEx) {
             final String failMessage = String.format(
                     "Failed to read uploaded file (%s): ", fileName);
-            log.error(failMessage, e);
-            messages.addError(failMessage + e.getMessage());
+            log.error(failMessage, ioEx);
+            messages.addError(failMessage + ioEx.getMessage());
             return null;
         }
         try {
@@ -639,11 +670,11 @@ public class CertificatePageController extends PageController<NoPageParams> {
                     messages.addError(failMessage);
                     return null;
             }
-        } catch (IOException e) {
+        } catch (IOException ioEx) {
             final String failMessage = String.format(
                     "Failed to parse uploaded file (%s): ", fileName);
-            log.error(failMessage, e);
-            messages.addError(failMessage + e.getMessage());
+            log.error(failMessage, ioEx);
+            messages.addError(failMessage + ioEx.getMessage());
             return null;
         } catch (DecoderException dEx) {
             final String failMessage = String.format(
