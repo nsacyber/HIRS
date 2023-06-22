@@ -49,7 +49,7 @@ public class Commander {
     @Parameter(names = {"-d", "--default-key"}, order = 9,
             description = "Use keystore.jks from the rimtool installation to sign.")
     private boolean defaultKey = false;
-    @Parameter(names = {"-l", "--rimel <path>"}, order = 10, required = true,
+    @Parameter(names = {"-l", "--rimel <path>"}, order = 10,
             description = "The TCG eventlog file to use as a support RIM.")
     private String rimEventLog = "";
     @Parameter(names = {"--timestamp"}, order = 11, variableArity = true,
@@ -57,6 +57,9 @@ public class Commander {
                     "Currently only RFC3339 and RFC3852 are supported:\n" +
                     "\tRFC3339 [yyyy-MM-ddThh:mm:ssZ]\n\tRFC3852 <counterSignature.bin>")
     private List<String> timestampArguments = new ArrayList<String>(2);
+    @Parameter(names = {"--directory"}, validateWith = DirectoryArgumentValidator.class,
+            description = "The directory in which to locate required files.")
+    private String directoryOverride = "";
 
     public boolean isHelp() {
         return help;
@@ -110,6 +113,10 @@ public class Commander {
         return timestampArguments;
     }
 
+    public String getDirectoryOverride() {
+        return directoryOverride;
+    }
+
     public String printHelpExamples() {
         StringBuilder sb = new StringBuilder();
         sb.append("Create a base RIM using the values in attributes.json; " +
@@ -157,7 +164,8 @@ public class Commander {
                     + System.lineSeparator());
             sb.append("Embedded certificate: " + this.isEmbedded() + System.lineSeparator());
         }
-        sb.append("Event log support RIM: " + this.getRimEventLog() + System.lineSeparator());
+        sb.append("Override payload directory with: " + this.getDirectoryOverride()
+                + System.lineSeparator());
         List<String> timestampArguments = this.getTimestampArguments();
         if (timestampArguments.size() > 0) {
             sb.append("Timestamp format: " + timestampArguments.get(0));
@@ -165,7 +173,7 @@ public class Commander {
                 sb.append(", " + timestampArguments.get(1));
             }
         } else {
-            sb.append("No timestamp included");
+            sb.append("No timestamp included" + System.lineSeparator());
         }
         return sb.toString();
     }
