@@ -123,6 +123,7 @@ public class SupplyChainValidationServiceImpl extends DefaultDbService<SupplyCha
                 caCreds.addAll(getCaChainRec(cred, queriedOrganizations));
             }
         }
+
         return caCreds;
     }
 
