@@ -3,7 +3,10 @@
 name: HIRS System Tests
 on: 
   push:
-  workflow_dispatch:
+    branches:
+      - '*v2*'
+      - 'master'
+    workflow_dispatch:
 env:
   TEST_STATUS: 0
 jobs:
