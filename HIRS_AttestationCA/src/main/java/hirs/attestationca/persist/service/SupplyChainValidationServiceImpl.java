@@ -117,7 +117,8 @@ public class SupplyChainValidationServiceImpl extends DefaultDbService<SupplyCha
         HashSet<CertificateAuthorityCredential> caCreds = new HashSet<>();
         for (CertificateAuthorityCredential cred : certAuthsWithMatchingIssuer) {
             caCreds.add(cred);
-            if (!BouncyCastleUtils.x500NameCompare(cred.getHolderIssuer(),
+            if ((cred.getHolderIssuer() != null && cred.getSubject() != null)
+                    && !BouncyCastleUtils.x500NameCompare(cred.getHolderIssuer(),
                     cred.getSubject())) {
                 caCreds.addAll(getCaChainRec(cred, queriedOrganizations));
             }
