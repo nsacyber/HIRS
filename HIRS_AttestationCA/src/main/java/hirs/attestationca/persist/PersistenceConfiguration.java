@@ -1,8 +1,5 @@
 package hirs.attestationca.persist;
 
-import hirs.attestationca.persist.service.FilesStorageService;
-import hirs.attestationca.persist.service.FilesStorageServiceImpl;
-import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 /**
@@ -15,12 +12,12 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 public class PersistenceConfiguration {
 
-    @Bean
-    public FilesStorageService filesStorageService() {
-        FilesStorageServiceImpl filesStorageService =  new FilesStorageServiceImpl(new StorageProperties());
-        filesStorageService.init();
-        return filesStorageService;
-    }
+//    @Bean
+//    public FilesStorageService filesStorageService() {
+//        FilesStorageServiceImpl filesStorageService =  new FilesStorageServiceImpl(new StorageProperties());
+//        filesStorageService.init();
+//        return filesStorageService;
+//    }
 
 //    /**
 //     * Creates a {@link CertificateServiceImpl} ready to use.
