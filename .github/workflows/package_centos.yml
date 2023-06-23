@@ -1,7 +1,10 @@
 name: HIRS packages for centos
 on:
   push:
-  workflow_dispatch:
+    branches:
+      - '*v2*'
+      - 'master'
+    workflow_dispatch:
   
 jobs:
   # run the package script for HIRS ACA, Provisioners, tcg_rim_tool, and tcg_eventlog_tool
