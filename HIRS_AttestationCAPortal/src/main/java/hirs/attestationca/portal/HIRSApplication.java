@@ -15,26 +15,27 @@ import org.springframework.web.servlet.DispatcherServlet;
 import java.util.Collections;
 
 @SpringBootApplication
-@EnableAutoConfiguration
-@Log4j2
-public class HIRSApplication extends SpringBootServletInitializer {
+//@EnableAutoConfiguration
+//@Log4j2
+public class HIRSApplication {//extends SpringBootServletInitializer {
 
-    @Override
-    protected SpringApplicationBuilder configure(SpringApplicationBuilder application) {
-        return application.sources(HIRSApplication.class);
-    }
+//    @Override
+//    protected SpringApplicationBuilder configure(SpringApplicationBuilder application) {
+//        return application.sources(HIRSApplication.class);
+//    }
 
-    @Override
-    public void onStartup(ServletContext servletContext) throws ServletException {
-        ServletRegistration.Dynamic appServlet = servletContext.addServlet("mvc", new DispatcherServlet(
-                new GenericWebApplicationContext()));
+//    @Override
+//    public void onStartup(ServletContext servletContext) throws ServletException {
+//        ServletRegistration.Dynamic appServlet = servletContext.addServlet("mvc", new DispatcherServlet(
+//                new GenericWebApplicationContext()));
 
-        appServlet.setLoadOnStartup(1);
-    }
+//        appServlet.setLoadOnStartup(1);
+//    }
 
     public static void main(String[] args) {
-        SpringApplication springApplication = new SpringApplication(HIRSApplication.class);
-        springApplication.setDefaultProperties(Collections.singletonMap("server.servlet.context-path", "/portal"));
-        springApplication.run(args);
+//        SpringApplication springApplication = new SpringApplication(HIRSApplication.class);
+//        springApplication.setDefaultProperties(Collections.singletonMap("server.servlet.context-path", "/portal"));
+//        springApplication.run(args);
+        SpringApplication.run(HIRSApplication.class, args);
     }
 }

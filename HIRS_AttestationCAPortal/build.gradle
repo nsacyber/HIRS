@@ -46,6 +46,7 @@ dependencies {
     implementation 'commons-fileupload:commons-fileupload:1.5'
     implementation 'org.junit.jupiter:junit-jupiter:5.4.2'
     implementation 'org.junit.jupiter:junit-jupiter:5.4.2'
+    implementation 'org.apache.tomcat.embed:tomcat-embed-jasper:10.1.5'
 
     compileOnly 'org.projectlombok:lombok'
     runtimeOnly 'org.mariadb.jdbc:mariadb-java-client'
@@ -56,13 +57,13 @@ dependencies {
     testImplementation libs.testng
 }
 
-war {
-    from(buildDir) {
-        include 'VERSION'
-        into 'WEB-INF/classes'
-    }
-    archiveFileName = 'HIRS_AttestationCAPortal.war'
-}
+//war {
+//    from(buildDir) {
+//        include 'VERSION'
+//        into 'WEB-INF/classes'
+//    }
+//    archiveFileName = 'HIRS_AttestationCAPortal.war'
+//}
 
 ospackage {
     packageName = 'HIRS_AttestationCA'
