@@ -16,9 +16,9 @@ import java.util.Collections;
 
 @SpringBootApplication
 //@EnableAutoConfiguration
-//@Log4j2
+@Log4j2
 public class HIRSApplication {//extends SpringBootServletInitializer {
-
+//      private static final Logger LOGGER = LogManager.getLogger(HIRSApplication.class);
 //    @Override
 //    protected SpringApplicationBuilder configure(SpringApplicationBuilder application) {
 //        return application.sources(HIRSApplication.class);

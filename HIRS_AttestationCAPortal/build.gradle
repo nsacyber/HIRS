@@ -22,6 +22,7 @@ configurations {
     compileOnly {
         extendsFrom annotationProcessor
     }
+    all*.exclude module: 'spring-boot-starter-logging'
 }
 
 repositories {
@@ -42,6 +43,8 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-web'
     implementation 'org.springframework.boot:spring-boot-starter-validation'
     implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+    implementation 'org.springframework.boot:spring-boot-starter-log4j2'
+    implementation 'org.apache.logging.log4j:log4j-spring-boot'
     implementation 'org.projectlombok:lombok'
     implementation 'commons-fileupload:commons-fileupload:1.5'
     implementation 'org.junit.jupiter:junit-jupiter:5.4.2'
