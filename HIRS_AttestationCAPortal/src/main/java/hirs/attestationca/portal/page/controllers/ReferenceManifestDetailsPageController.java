@@ -245,7 +245,7 @@ public class ReferenceManifestDetailsPageController extends PageController<Refer
         }
         data.put("rimType", baseRim.getRimType());
 
-        List<SwidResource> resources = baseRim.parseResource();
+        List<SwidResource> resources = baseRim.getFileResources();
         TCGEventLog logProcessor = null;
         List<ReferenceManifest> subManifests;
         SupportReferenceManifest support = null;
