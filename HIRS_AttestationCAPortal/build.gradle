@@ -22,6 +22,7 @@ configurations {
     compileOnly {
         extendsFrom annotationProcessor
     }
+    all*.exclude module: 'spring-boot-starter-logging'
 }
 
 repositories {
@@ -42,10 +43,13 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-web'
     implementation 'org.springframework.boot:spring-boot-starter-validation'
     implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+    implementation 'org.springframework.boot:spring-boot-starter-log4j2'
+    implementation 'org.apache.logging.log4j:log4j-spring-boot'
     implementation 'org.projectlombok:lombok'
     implementation 'commons-fileupload:commons-fileupload:1.5'
     implementation 'org.junit.jupiter:junit-jupiter:5.4.2'
     implementation 'org.junit.jupiter:junit-jupiter:5.4.2'
+    implementation 'org.apache.tomcat.embed:tomcat-embed-jasper:10.1.5'
 
     compileOnly 'org.projectlombok:lombok'
     runtimeOnly 'org.mariadb.jdbc:mariadb-java-client'
@@ -56,13 +60,13 @@ dependencies {
     testImplementation libs.testng
 }
 
-war {
-    from(buildDir) {
-        include 'VERSION'
-        into 'WEB-INF/classes'
-    }
-    archiveFileName = 'HIRS_AttestationCAPortal.war'
-}
+//war {
+//    from(buildDir) {
+//        include 'VERSION'
+//        into 'WEB-INF/classes'
+//    }
+//    archiveFileName = 'HIRS_AttestationCAPortal.war'
+//}
 
 ospackage {
     packageName = 'HIRS_AttestationCA'
