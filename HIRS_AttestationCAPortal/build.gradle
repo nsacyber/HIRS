@@ -60,13 +60,13 @@ dependencies {
     testImplementation libs.testng
 }
 
-//war {
-//    from(buildDir) {
-//        include 'VERSION'
-//        into 'WEB-INF/classes'
-//    }
-//    archiveFileName = 'HIRS_AttestationCAPortal.war'
-//}
+war {
+    from(buildDir) {
+        include 'VERSION'
+        into 'WEB-INF/classes'
+    }
+    archiveFileName = 'HIRS_AttestationCAPortal.war'
+}
 
 ospackage {
     packageName = 'HIRS_AttestationCA'
