@@ -29,6 +29,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.servlet.ModelAndView;
 
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.security.KeyStore;
 import java.security.NoSuchAlgorithmException;
 import java.security.cert.CertificateException;
@@ -99,8 +100,6 @@ public class ReferenceManifestDetailsPageController extends PageController<Refer
         } else {
             try {
                 UUID uuid = UUID.fromString(params.getId());
-                data.putAll(getRimDetailInfo(uuid, referenceManifestRepository,
-                        referenceDigestValueRepository, certificateRepository));
                 data.putAll(getRimDetailInfo(uuid, referenceManifestRepository,
                         referenceDigestValueRepository, certificateRepository));
             } catch (IllegalArgumentException iaEx) {
@@ -246,14 +245,29 @@ public class ReferenceManifestDetailsPageController extends PageController<Refer
         }
         data.put("rimType", baseRim.getRimType());
 
-        List<SwidResource> resources = baseRim.parseResource();
+        List<SwidResource> resources = baseRim.getFileResources();
         TCGEventLog logProcessor = null;
+        List<ReferenceManifest> subManifests;
         SupportReferenceManifest support = null;
 
         if (baseRim.getAssociatedRim() == null) {
-            support = (SupportReferenceManifest) referenceManifestRepository
+            /**
+             * Need to have parsing implemented
+             */
+//            referenceManifestRepository.findByHash("hexDecHash", "Support");
+            subManifests = referenceManifestRepository
                     .getByManufacturer(baseRim.getPlatformManufacturer(),
                     "SupportReferenceManifest");
+            String fileString = new String(baseRim.getRimBytes(), StandardCharsets.UTF_8);
+
+            for (ReferenceManifest rim : subManifests) {
+                if (rim instanceof SupportReferenceManifest) {
+                    support = (SupportReferenceManifest) rim;
+                    if (fileString.contains(rim.getHexDecHash())) {
+                        break;
+                    }
+                }
+            }
             if (support != null) {
                 baseRim.setAssociatedRim(support.getId());
             }
@@ -300,8 +314,8 @@ public class ReferenceManifestDetailsPageController extends PageController<Refer
                         data.replace("signatureValid", true);
                         break;
                     }
-                } catch (SupplyChainValidatorException e) {
-                    log.error("Error verifying cert chain: " + e.getMessage());
+                } catch (SupplyChainValidatorException scvEx) {
+                    log.warn("Error verifying cert chain: " + scvEx.getMessage());
                 }
             }
         }
@@ -315,6 +329,8 @@ public class ReferenceManifestDetailsPageController extends PageController<Refer
             }
         } catch (NullPointerException e) {
             log.error("Unable to link signing certificate: " + e.getMessage());
+        } catch (Exception ex) {
+            log.warn(ex.getMessage());
         }
         return data;
     }

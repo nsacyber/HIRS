@@ -21,7 +21,7 @@ public interface ReferenceManifestRepository extends JpaRepository<ReferenceMani
     @Query(value = "SELECT * FROM ReferenceManifest WHERE platformManufacturer = ?1 AND platformModel = ?2 AND rimType = 'Base'", nativeQuery = true)
     List<BaseReferenceManifest> getBaseByManufacturerModel(String manufacturer, String model);
     @Query(value = "SELECT * FROM ReferenceManifest WHERE platformManufacturer = ?1 AND DTYPE = ?2", nativeQuery = true)
-    ReferenceManifest getByManufacturer(String manufacturer, String dType);
+    List<ReferenceManifest> getByManufacturer(String manufacturer, String dType);
     @Query(value = "SELECT * FROM ReferenceManifest WHERE platformModel = ?1 AND DTYPE = ?2", nativeQuery = true)
     ReferenceManifest getByModel(String model, String dType);
     @Query(value = "SELECT * FROM ReferenceManifest WHERE DTYPE = 'BaseReferenceManifest'", nativeQuery = true)

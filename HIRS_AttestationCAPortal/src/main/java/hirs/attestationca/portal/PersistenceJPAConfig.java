@@ -26,6 +26,13 @@ import javax.sql.DataSource;
 import java.security.cert.X509Certificate;
 import java.util.Properties;
 
+/**
+ * Provides application context configuration for the Attestation Certificate
+ * Authority application. The properties are processed in order and as such, the
+ * last property file read in will override properties that may had already been
+ * defined previously. In other words, the 'defaults.properties' file provides a
+ * basic standard of properties that can be overrode by the
+ */
 @Log4j2
 @Configuration
 @EnableWebMvc

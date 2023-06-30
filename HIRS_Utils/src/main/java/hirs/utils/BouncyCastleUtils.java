@@ -27,7 +27,8 @@ public final class BouncyCastleUtils {
      */
     public static boolean x500NameCompare(final String nameValue1, final String nameValue2) {
         if (nameValue1 == null || nameValue2 == null) {
-            throw new IllegalArgumentException("Provided DN string is null.");
+            log.error("Provided DN string is null.");
+            return true;
         }
 
         boolean result = false;

@@ -2,22 +2,11 @@ package hirs.attestationca.persist.entity.userdefined.rim;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import hirs.attestationca.persist.entity.userdefined.ReferenceManifest;
-import hirs.attestationca.persist.service.ReferenceManifestServiceImpl;
-import hirs.attestationca.persist.service.selector.ReferenceManifestSelector;
 import hirs.utils.SwidResource;
-import hirs.utils.xjc.BaseElement;
-import hirs.utils.xjc.Directory;
-import hirs.utils.xjc.File;
-import hirs.utils.xjc.FilesystemItem;
-import hirs.utils.xjc.Link;
-import hirs.utils.xjc.Meta;
-import hirs.utils.xjc.ResourceCollection;
-import hirs.utils.xjc.SoftwareIdentity;
-import hirs.utils.xjc.SoftwareMeta;
+import hirs.utils.swid.SwidTagConstants;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.xml.bind.JAXBContext;
-import jakarta.xml.bind.JAXBElement;
 import jakarta.xml.bind.JAXBException;
 import jakarta.xml.bind.UnmarshalException;
 import jakarta.xml.bind.Unmarshaller;
@@ -26,9 +15,20 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.extern.log4j.Log4j2;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.NodeList;
+import org.xml.sax.SAXException;
 
-import javax.xml.namespace.QName;
+import javax.xml.transform.Source;
+import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerConfigurationException;
+import javax.xml.transform.TransformerException;
+import javax.xml.transform.TransformerFactory;
+import javax.xml.transform.dom.DOMResult;
+import javax.xml.transform.stream.StreamSource;
 import javax.xml.validation.Schema;
+import javax.xml.validation.SchemaFactory;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -37,7 +37,6 @@ import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.Base64;
 import java.util.List;
-import java.util.Map;
 
 /**
  *
@@ -93,129 +92,33 @@ public class BaseReferenceManifest extends ReferenceManifest {
     private String linkRel = null;
 
     /**
-     * This class enables the retrieval of BaseReferenceManifest by their attributes.
-     */
-    public static class Selector extends ReferenceManifestSelector<BaseReferenceManifest> {
-        /**
-         * Construct a new ReferenceManifestSelector that will use
-         * the given (@link ReferenceManifestService}
-         * to retrieve one or may BaseReferenceManifest.
-         *
-         * @param referenceManifestManager the reference manifest manager to be used to retrieve
-         * reference manifests.
-         */
-        public Selector(final ReferenceManifestServiceImpl referenceManifestManager) {
-            super(referenceManifestManager, BaseReferenceManifest.class);
-        }
-
-        /**
-         * Specify the platform manufacturer that rims must have to be considered
-         * as matching.
-         * @param manufacturer string for the manufacturer
-         * @return this instance
-         */
-        public Selector byManufacturer(final String manufacturer) {
-            setFieldValue(PLATFORM_MANUFACTURER, manufacturer);
-            return this;
-        }
-
-        /**
-         * Specify the platform model that rims must have to be considered
-         * as matching.
-         * @param model string for the model
-         * @return this instance
-         */
-        public Selector byModel(final String model) {
-            setFieldValue(PLATFORM_MODEL, model);
-            return this;
-        }
-
-        /**
-         * Specify the platform manufacturer/model that rims must have to be considered
-         * as matching.
-         * @param manufacturer string for the manufacturer
-         * @param model string for the model
-         * @return this instance
-         */
-        public Selector byManufacturerModel(final String manufacturer, final String model) {
-            setFieldValue(PLATFORM_MANUFACTURER, manufacturer);
-            setFieldValue(PLATFORM_MODEL, model);
-            return this;
-        }
-
-        /**
-         * Specify the platform manufacturer/model/base flag that rims must have to be considered
-         * as matching.
-         * @param manufacturer string for the manufacturer
-         * @param model string for the model
-         * @return this instance
-         */
-        public Selector byManufacturerModelBase(final String manufacturer, final String model) {
-            setFieldValue(PLATFORM_MANUFACTURER, manufacturer);
-            setFieldValue(PLATFORM_MODEL, model);
-            setFieldValue("swidPatch", false);
-            setFieldValue("swidSupplemental", false);
-            //setFieldValue("", false); //corpus?
-            return this;
-        }
-
-        /**
-         * Specify the device name that rims must have to be considered
-         * as matching.
-         * @param deviceName string for the deviceName
-         * @return this instance
-         */
-        public Selector byDeviceName(final String deviceName) {
-            setFieldValue("deviceName", deviceName);
-            return this;
-        }
-
-        /**
-         * Specify the RIM hash associated with the base RIM.
-         * @param base64Hash the hash of the file associated with the rim
-         * @return this instance
-         */
-        public Selector byBase64Hash(final String base64Hash) {
-            setFieldValue(BASE_64_HASH_FIELD, base64Hash);
-            return this;
-        }
-
-        /**
-         * Specify the RIM hash associated with the base RIM.
-         * @param hexDecHash the hash of the file associated with the rim
-         * @return this instance
-         */
-        public Selector byHexDecHash(final String hexDecHash) {
-            setFieldValue(HEX_DEC_HASH_FIELD, hexDecHash);
-            return this;
-        }
-    }
-
-    /**
      * Support constructor for the RIM object.
      *
-     * @param fileName - string representation of the uploaded file.
      * @param rimBytes - the file content of the uploaded file.
      * @throws IOException - thrown if the file is invalid.
      */
-    public BaseReferenceManifest(final String fileName, final byte[] rimBytes) throws IOException {
-        this(rimBytes);
-        this.setFileName(fileName);
+    public BaseReferenceManifest(final byte[] rimBytes) throws IOException {
+        this("", rimBytes);
     }
 
     /**
      * Main constructor for the RIM object. This takes in a byte array of a
      * valid swidtag file and parses the information.
      *
+     * @param fileName - string representation of the uploaded file.
      * @param rimBytes byte array representation of the RIM
      * @throws IOException if unable to unmarshal the string
      */
     @SuppressWarnings("checkstyle:AvoidInlineConditionals")
-    public BaseReferenceManifest(final byte[] rimBytes) throws IOException {
+    public BaseReferenceManifest(final String fileName, final byte[] rimBytes) throws IOException {
         super(rimBytes);
         this.setRimType(BASE_RIM);
-        this.setFileName("");
-        SoftwareIdentity si = validateSwidTag(new ByteArrayInputStream(rimBytes));
+        this.setFileName(fileName);
+        Document document = unmarshallSwidTag(new ByteArrayInputStream(rimBytes));
+        Element softwareIdentity;
+        Element meta;
+        Element entity;
+        Element link;
 
         MessageDigest digest = null;
         this.base64Hash = "";
@@ -228,56 +131,22 @@ public class BaseReferenceManifest extends ReferenceManifest {
         }
 
         // begin parsing valid swid tag
-        if (si != null) {
-            setTagId(si.getTagId());
-            this.swidName = si.getName();
-            this.swidCorpus = si.isCorpus() ? 1 : 0;
-            this.setSwidPatch(si.isPatch());
-            this.setSwidSupplemental(si.isSupplemental());
-            this.setSwidVersion(si.getVersion());
-            if (si.getTagVersion() != null) {
-                this.setSwidTagVersion(si.getTagVersion().toString());
-            }
+        if (document != null) {
+            softwareIdentity = (Element) document.getElementsByTagName(SwidTagConstants.SOFTWARE_IDENTITY).item(0);
+            entity = (Element) document.getElementsByTagName(SwidTagConstants.ENTITY).item(0);
+            link = (Element) document.getElementsByTagName(SwidTagConstants.LINK).item(0);
+            meta = (Element) document.getElementsByTagName(SwidTagConstants.META).item(0);
+            setTagId(softwareIdentity.getAttribute(SwidTagConstants.TAGID));
+            this.swidName = softwareIdentity.getAttribute(SwidTagConstants.NAME);
+            this.swidCorpus = Boolean.parseBoolean(softwareIdentity.getAttribute(SwidTagConstants.CORPUS)) ? 1 : 0;
+            this.setSwidPatch(Boolean.parseBoolean(softwareIdentity.getAttribute(SwidTagConstants.PATCH)));
+            this.setSwidSupplemental(Boolean.parseBoolean(softwareIdentity.getAttribute(SwidTagConstants.SUPPLEMENTAL)));
+            this.setSwidVersion(softwareIdentity.getAttribute(SwidTagConstants.VERSION));
+            this.setSwidTagVersion(softwareIdentity.getAttribute(SwidTagConstants.TAGVERSION));
 
-            for (Object object : si.getEntityOrEvidenceOrLink()) {
-                if (object instanceof JAXBElement) {
-                    JAXBElement element = (JAXBElement) object;
-                    String elementName = element.getName().getLocalPart();
-                    switch (elementName) {
-                        case "Meta":
-                            parseSoftwareMeta((SoftwareMeta) element.getValue());
-                            break;
-                        case "Entity":
-                            hirs.utils.xjc.Entity entity
-                                    = (hirs.utils.xjc.Entity) element.getValue();
-                            if (entity != null) {
-                                this.entityName = entity.getName();
-                                this.entityRegId = entity.getRegid();
-                                StringBuilder sb = new StringBuilder();
-                                for (String role : entity.getRole()) {
-                                    sb.append(String.format("%s%n", role));
-                                }
-                                this.entityRole = sb.toString();
-                                this.entityThumbprint = entity.getThumbprint();
-                            }
-                            break;
-                        case "Link":
-                            Link link
-                                    = (Link) element.getValue();
-                            if (link != null) {
-                                this.linkHref = link.getHref();
-                                this.linkRel = link.getRel();
-                            }
-                            break;
-                        case "Payload":
-                            parseResource((ResourceCollection) element.getValue());
-                            break;
-                        case "Signature":
-                            // left blank for a followup issue enhancement
-                        default:
-                    }
-                }
-            }
+            parseSoftwareMeta(meta);
+            parseEntity(entity);
+            parseLink(link);
         }
     }
 
@@ -287,207 +156,196 @@ public class BaseReferenceManifest extends ReferenceManifest {
      *
      * @param softwareMeta The object to parse.
      */
-    private void parseSoftwareMeta(final SoftwareMeta softwareMeta) {
+    private void parseSoftwareMeta(final Element softwareMeta) {
         if (softwareMeta != null) {
-            for (Map.Entry<QName, String> entry
-                    : softwareMeta.getOtherAttributes().entrySet()) {
-                switch (entry.getKey().getLocalPart()) {
-                    case "colloquialVersion":
-                        this.colloquialVersion = entry.getValue();
-                        break;
-                    case "product":
-                        this.product = entry.getValue();
-                        break;
-                    case "revision":
-                        this.revision = entry.getValue();
-                        break;
-                    case "edition":
-                        this.edition = entry.getValue();
-                        break;
-                    case "rimLinkHash":
-                        this.rimLinkHash = entry.getValue();
-                        break;
-                    case "bindingSpec":
-                        this.bindingSpec = entry.getValue();
-                        break;
-                    case "bindingSpecVersion":
-                        this.bindingSpecVersion = entry.getValue();
-                        break;
-                    case "platformManufacturerId":
-                        this.setPlatformManufacturerId(entry.getValue());
-                        break;
-                    case "platformModel":
-                        this.setPlatformModel(entry.getValue());
-                        break;
-                    case "platformManufacturerStr":
-                        this.setPlatformManufacturer(entry.getValue());
-                        break;
-                    case "platformVersion":
-                        this.platformVersion = entry.getValue();
-                        break;
-                    case "payloadType":
-                        this.payloadType = entry.getValue();
-                        break;
-                    case "pcURIGlobal":
-                        this.pcURIGlobal = entry.getValue();
-                        break;
-                    case "pcURILocal":
-                        this.pcURILocal = entry.getValue();
-                        break;
-                    default:
-                }
-            }
+            this.colloquialVersion = softwareMeta.getAttribute(SwidTagConstants._COLLOQUIAL_VERSION_STR);
+            this.product = softwareMeta.getAttribute(SwidTagConstants._PRODUCT_STR);
+            this.revision = softwareMeta.getAttribute(SwidTagConstants._REVISION_STR);
+            this.edition = softwareMeta.getAttribute(SwidTagConstants._EDITION_STR);
+            this.rimLinkHash = softwareMeta.getAttribute(SwidTagConstants._RIM_LINK_HASH_STR);
+            this.bindingSpec = softwareMeta.getAttribute(SwidTagConstants._BINDING_SPEC_STR);
+            this.bindingSpecVersion = softwareMeta.getAttribute(SwidTagConstants._BINDING_SPEC_VERSION_STR);
+            this.setPlatformManufacturerId(softwareMeta.getAttribute(SwidTagConstants._PLATFORM_MANUFACTURER_ID_STR));
+            this.setPlatformManufacturer(softwareMeta.getAttribute(SwidTagConstants._PLATFORM_MANUFACTURER_STR));
+            this.setPlatformModel(softwareMeta.getAttribute(SwidTagConstants._PLATFORM_MODEL_STR));
+            this.platformVersion = softwareMeta.getAttribute(SwidTagConstants._PLATFORM_VERSION_STR);
+            this.payloadType = softwareMeta.getAttribute(SwidTagConstants._PAYLOAD_TYPE_STR);
+            this.pcURIGlobal = softwareMeta.getAttribute(SwidTagConstants._PC_URI_GLOBAL_STR);
+            this.pcURILocal = softwareMeta.getAttribute(SwidTagConstants._PC_URI_LOCAL_STR);
+        } else {
+            log.warn("SoftwareMeta Tag not found.");
         }
     }
 
     /**
-     * Get a Selector for use in retrieving ReferenceManifest.
+     * This is a helper method that parses the Entity tag and stores the
+     * information in the class fields.
      *
-     * @param rimMan the ReferenceManifestService to be used to retrieve
-     * persisted RIMs
-     * @return a Selector instance to use for retrieving RIMs
+     * @param entity The object to parse.
      */
-    public static Selector select(final ReferenceManifestServiceImpl rimMan) {
-        return new Selector(rimMan);
+    private void parseEntity(final Element entity) {
+        if (entity != null) {
+            this.entityName = entity.getAttribute(SwidTagConstants.NAME);
+            this.entityRegId = entity.getAttribute(SwidTagConstants.REGID);
+            this.entityRole = entity.getAttribute(SwidTagConstants.ROLE);
+            this.entityThumbprint = entity.getAttribute(SwidTagConstants.THUMBPRINT);
+        } else {
+            log.warn("Entity Tag not found.");
+        }
     }
 
     /**
-     * This method and code is pulled and adopted from the TCG Tool. Since this
-     * is taking in an file stored in memory through http, this was changed from
-     * a file to a stream as the input.
+     * This is a helper method that parses the Link tag and stores the
+     * information in the class fields.
      *
-     * @param fileStream stream of the swidtag file.
-     * @return a {@link SoftwareIdentity} object
-     * @throws IOException Thrown by the unmarhsallSwidTag method.
+     * @param link The object to parse.
      */
-    private SoftwareIdentity validateSwidTag(final InputStream fileStream) throws IOException {
-        JAXBElement jaxbe = unmarshallSwidTag(fileStream);
-        SoftwareIdentity swidTag = (SoftwareIdentity) jaxbe.getValue();
-
-        log.debug(String.format("SWID Tag found: %nname: %s;%ntagId:  %s%n%s",
-                swidTag.getName(), swidTag.getTagId(), SCHEMA_STATEMENT));
-        return swidTag;
+    private void parseLink(final Element link) {
+        if (link != null) {
+            this.linkHref = link.getAttribute(SwidTagConstants.HREF);
+            this.linkRel = link.getAttribute(SwidTagConstants.REL);
+        } else {
+            log.warn("Link Tag not found.");
+        }
     }
 
     /**
-     * Helper method that is used to parse a specific element of the SwidTag
-     * based on an already established and stored byte array.
+     * This method validates the .swidtag file at the given filepath against the
+     * schema. A successful validation results in the output of the tag's name
+     * and tagId attributes, otherwise a generic error message is printed.
      *
-     * @param elementName string of an xml tag in the file.
-     * @return the object value of the element, if it exists
      */
-    private BaseElement getBaseElementFromBytes(final String elementName) {
-        BaseElement baseElement = null;
+    private Element getDirectoryTag() {
+        return getDirectoryTag(new ByteArrayInputStream(getRimBytes()));
+    }
 
-        if (getRimBytes() != null && elementName != null) {
-            try {
-                SoftwareIdentity si = validateSwidTag(new ByteArrayInputStream(getRimBytes()));
-                JAXBElement element;
-                for (Object object : si.getEntityOrEvidenceOrLink()) {
-                    if (object instanceof JAXBElement) {
-                        element = (JAXBElement) object;
-                        if (element.getName().getLocalPart().equals(elementName)) {
-                            // found the element
-                            baseElement = (BaseElement) element.getValue();
-                        }
-                    }
-                }
+    /**
+     * This method validates the .swidtag file at the given filepath against the
+     * schema. A successful validation results in the output of the tag's name
+     * and tagId attributes, otherwise a generic error message is printed.
+     *
+     * @param byteArrayInputStream the location of the file to be validated
+     */
+    private Element getDirectoryTag(final ByteArrayInputStream byteArrayInputStream) {
+        Document document = unmarshallSwidTag(byteArrayInputStream);
+        Element softwareIdentity =
+                (Element) document.getElementsByTagName("SoftwareIdentity").item(0);
+        if (softwareIdentity != null) {
+            Element directory = (Element) document.getElementsByTagName("Directory").item(0);
 
-            } catch (IOException ioEx) {
-                log.error("Failed to parse Swid Tag bytes.", ioEx);
-            }
+            return directory;
+        } else {
+            log.error("Invalid xml for validation, please verify ");
         }
 
-        return baseElement;
+        return null;
     }
 
     /**
-     * This method unmarshalls the swidtag found at [path] and validates it
-     * according to the schema.
-     *
-     * @param stream to the input swidtag
-     * @return the SoftwareIdentity element at the root of the swidtag
-     * @throws IOException if the swidtag cannot be unmarshalled or validated
+     * This method iterates over the list of File elements under the directory.     *
      */
-    private JAXBElement unmarshallSwidTag(final InputStream stream) throws IOException {
-        JAXBElement jaxbe = null;
-        Schema schema;
+    public List<SwidResource> getFileResources() {
+        return getFileResources(getRimBytes());
+    }
 
+    /**
+     * This method iterates over the list of File elements under the directory.
+     *
+     * @param rimBytes the bytes to find the files
+     *
+     */
+    public List<SwidResource> getFileResources(final byte[] rimBytes) {
+        Element directoryTag = getDirectoryTag(new ByteArrayInputStream(rimBytes));
+        List<SwidResource> validHashes = new ArrayList<>();
+        NodeList fileNodeList = directoryTag.getChildNodes();
+        Element file = null;
+        SwidResource swidResource = null;
+        for (int i = 0; i < fileNodeList.getLength(); i++) {
+            file = (Element) fileNodeList.item(i);
+            swidResource = new SwidResource();
+            swidResource.setName(file.getAttribute(SwidTagConstants.NAME));
+            swidResource.setSize(file.getAttribute(SwidTagConstants.SIZE));
+            swidResource.setHashValue(file.getAttribute(SwidTagConstants._SHA256_HASH.getPrefix() + ":"
+                    + SwidTagConstants._SHA256_HASH.getLocalPart()));
+            validHashes.add(swidResource);
+        }
+
+        return validHashes;
+    }
+
+    /**
+     * This method unmarshalls the swidtag found at [path] into a Document object
+     * and validates it according to the schema.
+     *
+     * @param byteArrayInputStream to the input swidtag
+     * @return the Document element at the root of the swidtag
+     */
+    private Document unmarshallSwidTag(final ByteArrayInputStream byteArrayInputStream) {
+        InputStream is = null;
+        Document document = null;
+        Unmarshaller unmarshaller = null;
         try {
-            schema = ReferenceManifestServiceImpl.getSchemaObject();
+            document = removeXMLWhitespace(byteArrayInputStream);
+            SchemaFactory schemaFactory = SchemaFactory.newInstance(SCHEMA_LANGUAGE);
+            is = getClass().getClassLoader().getResourceAsStream(SwidTagConstants.SCHEMA_URL);
+            Schema schema = schemaFactory.newSchema(new StreamSource(is));
             if (jaxbContext == null) {
                 jaxbContext = JAXBContext.newInstance(SCHEMA_PACKAGE);
             }
-            Unmarshaller unmarshaller = jaxbContext.createUnmarshaller();
+            unmarshaller = jaxbContext.createUnmarshaller();
             unmarshaller.setSchema(schema);
-            jaxbe = (JAXBElement) unmarshaller.unmarshal(stream);
-        } catch (UnmarshalException umEx) {
-            log.error(String.format("Error validating swidtag file!%n%s%n%s",
-                    umEx.getMessage(), umEx.toString()));
-            for (StackTraceElement ste : umEx.getStackTrace()) {
-                log.error(ste.toString());
-            }
-        } catch (IllegalArgumentException iaEx) {
+            unmarshaller.unmarshal(document);
+        } catch (IOException e) {
+            log.error(e.getMessage());
+        } catch (SAXException e) {
+            log.error("Error setting schema for validation!");
+        } catch (UnmarshalException e) {
+            log.error("Error validating swidtag file!");
+        } catch (IllegalArgumentException e) {
             log.error("Input file empty.");
-        } catch (JAXBException jaxEx) {
-            for (StackTraceElement ste : jaxEx.getStackTrace()) {
-                log.error(ste.toString());
-            }
-        }
-
-        if (jaxbe != null) {
-            return jaxbe;
-        } else {
-            throw new IOException("Invalid Base RIM, swidtag format expected.");
-        }
-    }
-
-    /**
-     * Default method for parsing the payload element.
-     *
-     * @return a collection of payload objects.
-     */
-    public final List<SwidResource> parseResource() {
-        return parseResource((ResourceCollection) this.getBaseElementFromBytes("Payload"));
-    }
-
-    /**
-     * This method parses the payload method of a {@link ResourceCollection}.
-     *
-     * @param rc Resource Collection object.
-     * @return a collection of payload objects.
-     */
-    public final List<SwidResource> parseResource(final ResourceCollection rc) {
-        List<SwidResource> resources = new ArrayList<>();
-
-        log.error("Parsing stuff");
-        try {
-            if (rc != null) {
-                for (Meta meta : rc.getDirectoryOrFileOrProcess()) {
-                    if (meta instanceof Directory) {
-                        Directory directory = (Directory) meta;
-                        for (FilesystemItem fsi : directory.getDirectoryOrFile()) {
-                            if (fsi != null) {
-                                resources.add(new SwidResource(
-                                        (File) fsi, null));
-                            } else {
-                                log.error("fsi is negative");
-                            }
-                        }
-                    } else if (meta instanceof File) {
-                        resources.add(new SwidResource((File) meta, null));
-                    }
+        } catch (JAXBException e) {
+            e.printStackTrace();
+        } finally {
+            if (is != null) {
+                try {
+                    is.close();
+                } catch (IOException e) {
+                    System.out.println("Error closing input stream");
                 }
-            } else {
-                log.error("ResourceCollection is negative");
             }
-        } catch (ClassCastException ccEx) {
-            log.error(ccEx);
-            log.error("At this time, the code does not support the "
-                    + "particular formatting of this SwidTag's Payload.");
         }
 
-        return resources;
+        return document;
+    }
+
+    /**
+     * This method strips all whitespace from an xml file, including indents and spaces
+     * added for human-readability.
+     *
+     * @param byteArrayInputStream to the xml file
+     * @return Document object without whitespace
+     */
+    private Document removeXMLWhitespace(final ByteArrayInputStream byteArrayInputStream) throws IOException {
+        TransformerFactory tf = TransformerFactory.newInstance();
+        Source source = new StreamSource(
+                getClass().getClassLoader().getResourceAsStream("identity_transform.xslt"));
+        Document document = null;
+        if (byteArrayInputStream.available() > 0) {
+            try {
+                Transformer transformer = tf.newTransformer(source);
+                DOMResult result = new DOMResult();
+                transformer.transform(new StreamSource(byteArrayInputStream), result);
+                document = (Document) result.getNode();
+            } catch (TransformerConfigurationException tcEx) {
+                log.error("Error configuring transformer!");
+            } catch (TransformerException tEx) {
+                log.error("Error transforming input!");
+            }
+        } else {
+            throw new IOException("Input file is empty!");
+        }
+
+        return document;
     }
 
     @Override

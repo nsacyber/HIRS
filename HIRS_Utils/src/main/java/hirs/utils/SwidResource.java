@@ -4,6 +4,7 @@ import com.google.common.base.Preconditions;
 import hirs.utils.digest.DigestAlgorithm;
 import hirs.utils.xjc.File;
 import lombok.Getter;
+import lombok.Setter;
 import lombok.ToString;
 
 import javax.xml.namespace.QName;
@@ -18,9 +19,10 @@ import java.util.Map;
 public class SwidResource {
 
     @Getter
-    private String name, size;
+    @Setter
+    private String name, size, hashValue;
     @Getter
-    private String rimFormat, rimType, rimUriGlobal, hashValue;
+    private String rimFormat, rimType, rimUriGlobal;
 //    private TpmWhiteListBaseline tpmWhiteList;
     private DigestAlgorithm digest = DigestAlgorithm.SHA1;
     @Getter
