@@ -79,6 +79,7 @@ public class SwidTagConstants {
 
     public static final String N8060_PFX = "n8060";
     public static final String RIM_PFX = "rim";
+    public static final String FX_SEPARATOR = ":";
     public static final String RFC3852_PFX = "rcf3852";
     public static final String RFC3339_PFX = "rcf3339";
 

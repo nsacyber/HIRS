@@ -4,13 +4,9 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import hirs.attestationca.persist.entity.userdefined.ReferenceManifest;
 import hirs.utils.SwidResource;
 import hirs.utils.swid.SwidTagConstants;
-import hirs.utils.xjc.Link;
-import hirs.utils.xjc.SoftwareIdentity;
-import hirs.utils.xjc.SoftwareMeta;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.xml.bind.JAXBContext;
-import jakarta.xml.bind.JAXBElement;
 import jakarta.xml.bind.JAXBException;
 import jakarta.xml.bind.UnmarshalException;
 import jakarta.xml.bind.Unmarshaller;
@@ -24,7 +20,6 @@ import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
-import javax.xml.namespace.QName;
 import javax.xml.transform.Source;
 import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerConfigurationException;
@@ -42,7 +37,6 @@ import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.Base64;
 import java.util.List;
-import java.util.Map;
 
 /**
  *
@@ -100,28 +94,31 @@ public class BaseReferenceManifest extends ReferenceManifest {
     /**
      * Support constructor for the RIM object.
      *
-     * @param fileName - string representation of the uploaded file.
      * @param rimBytes - the file content of the uploaded file.
      * @throws IOException - thrown if the file is invalid.
      */
-    public BaseReferenceManifest(final String fileName, final byte[] rimBytes) throws IOException {
-        this(rimBytes);
-        this.setFileName(fileName);
+    public BaseReferenceManifest(final byte[] rimBytes) throws IOException {
+        this("", rimBytes);
     }
 
     /**
      * Main constructor for the RIM object. This takes in a byte array of a
      * valid swidtag file and parses the information.
      *
+     * @param fileName - string representation of the uploaded file.
      * @param rimBytes byte array representation of the RIM
      * @throws IOException if unable to unmarshal the string
      */
     @SuppressWarnings("checkstyle:AvoidInlineConditionals")
-    public BaseReferenceManifest(final byte[] rimBytes) throws IOException {
+    public BaseReferenceManifest(final String fileName, final byte[] rimBytes) throws IOException {
         super(rimBytes);
         this.setRimType(BASE_RIM);
-        this.setFileName("");
-        SoftwareIdentity si = validateSwidTag(new ByteArrayInputStream(rimBytes));
+        this.setFileName(fileName);
+        Document document = unmarshallSwidTag(new ByteArrayInputStream(rimBytes));
+        Element softwareIdentity;
+        Element meta;
+        Element entity;
+        Element link;
 
         MessageDigest digest = null;
         this.base64Hash = "";
@@ -134,54 +131,22 @@ public class BaseReferenceManifest extends ReferenceManifest {
         }
 
         // begin parsing valid swid tag
-        if (si != null) {
-            setTagId(si.getTagId());
-            this.swidName = si.getName();
-            this.swidCorpus = si.isCorpus() ? 1 : 0;
-            this.setSwidPatch(si.isPatch());
-            this.setSwidSupplemental(si.isSupplemental());
-            this.setSwidVersion(si.getVersion());
-            if (si.getTagVersion() != null) {
-                this.setSwidTagVersion(si.getTagVersion().toString());
-            }
+        if (document != null) {
+            softwareIdentity = (Element) document.getElementsByTagName(SwidTagConstants.SOFTWARE_IDENTITY).item(0);
+            entity = (Element) document.getElementsByTagName(SwidTagConstants.ENTITY).item(0);
+            link = (Element) document.getElementsByTagName(SwidTagConstants.LINK).item(0);
+            meta = (Element) document.getElementsByTagName(SwidTagConstants.META).item(0);
+            setTagId(softwareIdentity.getAttribute(SwidTagConstants.TAGID));
+            this.swidName = softwareIdentity.getAttribute(SwidTagConstants.NAME);
+            this.swidCorpus = Boolean.parseBoolean(softwareIdentity.getAttribute(SwidTagConstants.CORPUS)) ? 1 : 0;
+            this.setSwidPatch(Boolean.parseBoolean(softwareIdentity.getAttribute(SwidTagConstants.PATCH)));
+            this.setSwidSupplemental(Boolean.parseBoolean(softwareIdentity.getAttribute(SwidTagConstants.SUPPLEMENTAL)));
+            this.setSwidVersion(softwareIdentity.getAttribute(SwidTagConstants.VERSION));
+            this.setSwidTagVersion(softwareIdentity.getAttribute(SwidTagConstants.TAGVERSION));
 
-            for (Object object : si.getEntityOrEvidenceOrLink()) {
-                if (object instanceof JAXBElement) {
-                    JAXBElement element = (JAXBElement) object;
-                    String elementName = element.getName().getLocalPart();
-                    switch (elementName) {
-                        case "Meta":
-                            parseSoftwareMeta((SoftwareMeta) element.getValue());
-                            break;
-                        case "Entity":
-                            hirs.utils.xjc.Entity entity
-                                    = (hirs.utils.xjc.Entity) element.getValue();
-                            if (entity != null) {
-                                this.entityName = entity.getName();
-                                this.entityRegId = entity.getRegid();
-                                StringBuilder sb = new StringBuilder();
-                                for (String role : entity.getRole()) {
-                                    sb.append(String.format("%s%n", role));
-                                }
-                                this.entityRole = sb.toString();
-                                this.entityThumbprint = entity.getThumbprint();
-                            }
-                            break;
-                        case "Link":
-                            Link link
-                                    = (Link) element.getValue();
-                            if (link != null) {
-                                this.linkHref = link.getHref();
-                                this.linkRel = link.getRel();
-                            }
-                            break;
-                        case "Payload":
-                        case "Signature":
-                            // left blank for a followup issue enhancement
-                        default:
-                    }
-                }
-            }
+            parseSoftwareMeta(meta);
+            parseEntity(entity);
+            parseLink(link);
         }
     }
 
@@ -191,75 +156,57 @@ public class BaseReferenceManifest extends ReferenceManifest {
      *
      * @param softwareMeta The object to parse.
      */
-    private void parseSoftwareMeta(final SoftwareMeta softwareMeta) {
+    private void parseSoftwareMeta(final Element softwareMeta) {
         if (softwareMeta != null) {
-            for (Map.Entry<QName, String> entry
-                    : softwareMeta.getOtherAttributes().entrySet()) {
-                switch (entry.getKey().getLocalPart()) {
-                    case "colloquialVersion":
-                        this.colloquialVersion = entry.getValue();
-                        break;
-                    case "product":
-                        this.product = entry.getValue();
-                        break;
-                    case "revision":
-                        this.revision = entry.getValue();
-                        break;
-                    case "edition":
-                        this.edition = entry.getValue();
-                        break;
-                    case "rimLinkHash":
-                        this.rimLinkHash = entry.getValue();
-                        break;
-                    case "bindingSpec":
-                        this.bindingSpec = entry.getValue();
-                        break;
-                    case "bindingSpecVersion":
-                        this.bindingSpecVersion = entry.getValue();
-                        break;
-                    case "platformManufacturerId":
-                        this.setPlatformManufacturerId(entry.getValue());
-                        break;
-                    case "platformModel":
-                        this.setPlatformModel(entry.getValue());
-                        break;
-                    case "platformManufacturerStr":
-                        this.setPlatformManufacturer(entry.getValue());
-                        break;
-                    case "platformVersion":
-                        this.platformVersion = entry.getValue();
-                        break;
-                    case "payloadType":
-                        this.payloadType = entry.getValue();
-                        break;
-                    case "pcURIGlobal":
-                        this.pcURIGlobal = entry.getValue();
-                        break;
-                    case "pcURILocal":
-                        this.pcURILocal = entry.getValue();
-                        break;
-                    default:
-                }
-            }
+            this.colloquialVersion = softwareMeta.getAttribute(SwidTagConstants._COLLOQUIAL_VERSION_STR);
+            this.product = softwareMeta.getAttribute(SwidTagConstants._PRODUCT_STR);
+            this.revision = softwareMeta.getAttribute(SwidTagConstants._REVISION_STR);
+            this.edition = softwareMeta.getAttribute(SwidTagConstants._EDITION_STR);
+            this.rimLinkHash = softwareMeta.getAttribute(SwidTagConstants._RIM_LINK_HASH_STR);
+            this.bindingSpec = softwareMeta.getAttribute(SwidTagConstants._BINDING_SPEC_STR);
+            this.bindingSpecVersion = softwareMeta.getAttribute(SwidTagConstants._BINDING_SPEC_VERSION_STR);
+            this.setPlatformManufacturerId(softwareMeta.getAttribute(SwidTagConstants._PLATFORM_MANUFACTURER_ID_STR));
+            this.setPlatformManufacturer(softwareMeta.getAttribute(SwidTagConstants._PLATFORM_MANUFACTURER_STR));
+            this.setPlatformModel(softwareMeta.getAttribute(SwidTagConstants._PLATFORM_MODEL_STR));
+            this.platformVersion = softwareMeta.getAttribute(SwidTagConstants._PLATFORM_VERSION_STR);
+            this.payloadType = softwareMeta.getAttribute(SwidTagConstants._PAYLOAD_TYPE_STR);
+            this.pcURIGlobal = softwareMeta.getAttribute(SwidTagConstants._PC_URI_GLOBAL_STR);
+            this.pcURILocal = softwareMeta.getAttribute(SwidTagConstants._PC_URI_LOCAL_STR);
+        } else {
+            log.warn("SoftwareMeta Tag not found.");
         }
     }
 
     /**
-     * This method and code is pulled and adopted from the TCG Tool. Since this
-     * is taking in an file stored in memory through http, this was changed from
-     * a file to a stream as the input.
+     * This is a helper method that parses the Entity tag and stores the
+     * information in the class fields.
      *
-     * @param fileStream stream of the swidtag file.
-     * @return a {@link SoftwareIdentity} object
-     * @throws IOException Thrown by the unmarhsallSwidTag method.
+     * @param entity The object to parse.
      */
-    private SoftwareIdentity validateSwidTag(final InputStream fileStream) throws IOException {
-        JAXBElement jaxbe = unmarshallSwidTag(fileStream);
-        SoftwareIdentity swidTag = (SoftwareIdentity) jaxbe.getValue();
+    private void parseEntity(final Element entity) {
+        if (entity != null) {
+            this.entityName = entity.getAttribute(SwidTagConstants.NAME);
+            this.entityRegId = entity.getAttribute(SwidTagConstants.REGID);
+            this.entityRole = entity.getAttribute(SwidTagConstants.ROLE);
+            this.entityThumbprint = entity.getAttribute(SwidTagConstants.THUMBPRINT);
+        } else {
+            log.warn("Entity Tag not found.");
+        }
+    }
 
-        log.debug(String.format("SWID Tag found: %nname: %s;%ntagId:  %s%n%s",
-                swidTag.getName(), swidTag.getTagId(), SCHEMA_STATEMENT));
-        return swidTag;
+    /**
+     * This is a helper method that parses the Link tag and stores the
+     * information in the class fields.
+     *
+     * @param link The object to parse.
+     */
+    private void parseLink(final Element link) {
+        if (link != null) {
+            this.linkHref = link.getAttribute(SwidTagConstants.HREF);
+            this.linkRel = link.getAttribute(SwidTagConstants.REL);
+        } else {
+            log.warn("Link Tag not found.");
+        }
     }
 
     /**
@@ -327,57 +274,11 @@ public class BaseReferenceManifest extends ReferenceManifest {
     }
 
     /**
-     * This method unmarshalls the swidtag found at [path] and validates it
-     * according to the schema.
-     *
-     * @param stream to the input swidtag
-     * @return the SoftwareIdentity element at the root of the swidtag
-     * @throws IOException if the swidtag cannot be unmarshalled or validated
-     */
-    private JAXBElement unmarshallSwidTag(final InputStream stream) throws IOException {
-        JAXBElement jaxbe = null;
-        Schema schema;
-        Unmarshaller unmarshaller = null;
-
-        try {
-            SchemaFactory schemaFactory = SchemaFactory.newInstance(SCHEMA_LANGUAGE);
-            schema = schemaFactory.newSchema(new StreamSource(stream));
-            if (jaxbContext == null) {
-                jaxbContext = JAXBContext.newInstance(SCHEMA_PACKAGE);
-            }
-            unmarshaller = jaxbContext.createUnmarshaller();
-            unmarshaller.setSchema(schema);
-            jaxbe = (JAXBElement) unmarshaller.unmarshal(stream);
-        } catch (UnmarshalException umEx) {
-            log.error(String.format("Error validating swidtag file!%n%s%n%s",
-                    umEx.getMessage(), umEx.toString()));
-            for (StackTraceElement ste : umEx.getStackTrace()) {
-                log.error(ste.toString());
-            }
-        } catch (SAXException e) {
-            System.out.println("Error setting schema for validation!");
-        } catch (IllegalArgumentException iaEx) {
-            log.error("Input file empty.");
-        } catch (JAXBException jaxEx) {
-            for (StackTraceElement ste : jaxEx.getStackTrace()) {
-                log.error(ste.toString());
-            }
-        }
-
-        if (jaxbe != null) {
-            return jaxbe;
-        } else {
-            throw new IOException("Invalid Base RIM, swidtag format expected.");
-        }
-    }
-
-    /**
      * This method unmarshalls the swidtag found at [path] into a Document object
      * and validates it according to the schema.
      *
      * @param byteArrayInputStream to the input swidtag
-     * @return the SoftwareIdentity element at the root of the swidtag
-     * @throws IOException if the swidtag cannot be unmarshalled or validated
+     * @return the Document element at the root of the swidtag
      */
     private Document unmarshallSwidTag(final ByteArrayInputStream byteArrayInputStream) {
         InputStream is = null;
