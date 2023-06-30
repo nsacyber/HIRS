@@ -537,6 +537,7 @@ public class SwidTagValidator {
             System.out.println("Error setting schema for validation!");
         } catch (UnmarshalException e) {
             System.out.println("Error validating swidtag file!");
+            e.printStackTrace();
         } catch (IllegalArgumentException e) {
             System.out.println("Input file empty.");
         } catch (JAXBException e) {

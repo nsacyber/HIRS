@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<SoftwareIdentity xmlns="http://standards.iso.org/iso/19770/-2/2015/schema.xsd" xmlns:ns2="http://www.w3.org/2000/09/xmldsig#" corpus="false" id="94f6b457-9ac9-4d35-9b3f-78804173b65as" name="Example.com BIOS" patch="false" supplemental="false" tagId="94f6b457-9ac9-4d35-9b3f-78804173b65as" tagVersion="0" version="01" versionScheme="multipartnumeric" xml:lang="en">
+<SoftwareIdentity xmlns="http://standards.iso.org/iso/19770/-2/2015/schema.xsd" xmlns:ns2="http://www.w3.org/2000/09/xmldsig#" xmlns:pcRim="https://trustedcomputinggroup.org/resource/tcg-pc-client-reference-integrity-manifest-specification/" corpus="false" name="Example.com BIOS" patch="false" pcRim:id="94f6b457-9ac9-4d35-9b3f-78804173b65as" supplemental="false" tagId="94f6b457-9ac9-4d35-9b3f-78804173b65as" tagVersion="0" version="01" versionScheme="multipartnumeric" xml:lang="en">
   <Entity name="Example Inc" regid="http://Example.com" role="softwareCreator tagCreator"/>
   <Link href="https://Example.com/support/ProductA/firmware/installfiles" rel="installationmedia"/>
   <Meta xmlns:n8060="http://csrc.nist.gov/ns/swid/2015-extensions/1.0" xmlns:rim="https://trustedcomputinggroup.org/wp-content/uploads/TCG_RIM_Model" n8060:colloquialVersion="Firmware_2019" n8060:edition="12" n8060:product="ProductA" n8060:revision="r2" rim:PayloadType="direct" rim:bindingSpec="PC Client RIM" rim:bindingSpecVersion="1.2" rim:firmwareManufacturerId="00213022" rim:firmwareManufacturerStr="BIOSVendorA" rim:firmwareModel="A0" rim:firmwareVersion="12" rim:pcURIGlobal="https://Example.com/support/ProductA/" rim:pcURIlocal="/boot/tcg/manifest/switag/" rim:platformManufacturerId="00201234" rim:platformManufacturerStr="Example.com" rim:platformModel="ProductA" rim:platformVersion="01"/>
@@ -17,25 +17,25 @@
           <Transform Algorithm="http://www.w3.org/2000/09/xmldsig#enveloped-signature"/>
         </Transforms>
         <DigestMethod Algorithm="http://www.w3.org/2001/04/xmlenc#sha256"/>
-        <DigestValue>f3ulvid12X4b4EqgAQrriXwqvqlNd1GXoSf/wI+zf2A=</DigestValue>
+        <DigestValue>9pLMfQcXsZKTNXd03a4djOUV6YofZJgtqZssSGf1ZGk=</DigestValue>
       </Reference>
       <Reference URI="#TST">
         <DigestMethod Algorithm="http://www.w3.org/2001/04/xmlenc#sha256"/>
-        <DigestValue>j8sqX9NGt8DAPOvbhXKAT648BGdPnQnblai1PYDUryE=</DigestValue>
+        <DigestValue>t4Csphwg9wOeclu4aD1noVk7FtRKCDPfUsu6ZP8WNmw=</DigestValue>
       </Reference>
     </SignedInfo>
-    <SignatureValue>RvpLLE0rAaZrj54xy3Ki1GJ3csJI5lzshcpQQz7M5dn56Wo1ShfQR7OqGN1ZMULAtYsR0vtt9UFk&#13;
-3JuB1/tsA1KuT5sNTR6ZbOCaMGfV448ufbY48Vbk8Bs+2N0mZuuD3IUwARlbjXxZwb/k1GnkGVKS&#13;
-jneEK2dJ6Ktk8+XOLhoFd1JZqpz9Qv7s53GMtQc/QC18vrmUZDW5HABMCtZRpylGjBsP/Mabakb4&#13;
-Nr4veMqhEMGVm2UpYY3171nTCjerxrf0jXsLZoTbJdJtyjo9ihCbjzYUOG361liQ3k63jVfPQbDl&#13;
-460jU4v+45L/sWNRUi29VBtgia7xAkQ3IdmSPA==</SignatureValue>
+    <SignatureValue>Hvx/nVnCcuMPApoaHH+nQWvOtwWRKyAubsoYaNqJVwj2pvyptqo6CePbt0a90ZEZDhkv0nUt56Ky&#13;
+VtuHVWK9i7m4JfL/vziZ2AfFkWhWFBD0cc2YxvEGs9pRZCNcYFpkXGXNs/g0ZHJSvFUyo6SgtGvo&#13;
+K1i+QJ97HYX0X0BEpXuOKyb5IVsiST3maGwMbdYxWyYWmKqwWALYE6wb+gD/g0gWjsP2EIrTTmOl&#13;
+d165CXPGspuCDbfEh51UUqjoqm7cWn/A6L+epFT3bB3G4i3JfSwnLbQvWdNfgukWafAkr5jOUWtG&#13;
+3y0ZQd635dDz4cMOWXNWUpB+FRwuV0l/bmRdMQ==</SignatureValue>
     <KeyInfo>
       <KeyName>2fdeb8e7d030a2209daa01861a964fedecf2bcc1</KeyName>
     </KeyInfo>
     <Object>
       <SignatureProperties>
         <SignatureProperty Id="TST" Target="RimSignature">
-          <TimeStamp xmlns:rcf3339="https://www.ietf.org/rfc/rfc3339.txt" dateTime="2023-01-01T00:00:00Z"/>
+          <rcf3339:timestamp xmlns:rcf3339="https://www.ietf.org/rfc/rfc3339.txt" dateTime="2023-01-01T00:00:00Z"/>
         </SignatureProperty>
       </SignatureProperties>
     </Object>
