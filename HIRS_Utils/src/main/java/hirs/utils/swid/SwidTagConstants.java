@@ -83,6 +83,37 @@ public class SwidTagConstants {
     public static final String RFC3852_PFX = "rcf3852";
     public static final String RFC3339_PFX = "rcf3339";
 
+    public static final String _COLLOQUIAL_VERSION_STR = new String(N8060_PFX + FX_SEPARATOR +
+            COLLOQUIAL_VERSION);
+    public static final String _PRODUCT_STR = new String(N8060_PFX + FX_SEPARATOR +
+            PRODUCT);
+    public static final String _REVISION_STR = new String(N8060_PFX + FX_SEPARATOR +
+            REVISION);
+    public static final String _EDITION_STR = new String(N8060_PFX + FX_SEPARATOR +
+            EDITION);
+
+    public static final String _RIM_LINK_HASH_STR = new String(RIM_PFX + FX_SEPARATOR +
+            RIM_LINK_HASH);
+    public static final String _BINDING_SPEC_STR = new String(RIM_PFX + FX_SEPARATOR +
+            BINDING_SPEC);
+    public static final String _BINDING_SPEC_VERSION_STR = new String(RIM_PFX + FX_SEPARATOR +
+            BINDING_SPEC_VERSION);
+    public static final String _PLATFORM_MANUFACTURER_STR = new String(RIM_PFX + FX_SEPARATOR +
+            PLATFORM_MANUFACTURER_STR);
+    public static final String _PLATFORM_MANUFACTURER_ID_STR = new String(RIM_PFX + FX_SEPARATOR +
+            PLATFORM_MANUFACTURER_ID);
+    public static final String _PLATFORM_MODEL_STR = new String(RIM_PFX + FX_SEPARATOR +
+            PLATFORM_MODEL);
+    public static final String _PLATFORM_VERSION_STR = new String(RIM_PFX + FX_SEPARATOR +
+            PLATFORM_VERSION);
+    public static final String _PAYLOAD_TYPE_STR = new String(RIM_PFX + FX_SEPARATOR +
+            PAYLOAD_TYPE);
+    public static final String _PC_URI_LOCAL_STR = new String(RIM_PFX + FX_SEPARATOR +
+            PC_URI_LOCAL);
+    public static final String _PC_URI_GLOBAL_STR = new String(RIM_PFX + FX_SEPARATOR +
+            PC_URI_GLOBAL);
+
+
     public static final QName _SHA256_HASH = new QName(
             "http://www.w3.org/2001/04/xmlenc#sha256", HASH, "SHA256");
     public static final QName _COLLOQUIAL_VERSION = new QName(
@@ -95,7 +126,7 @@ public class SwidTagConstants {
             NIST_NS, REVISION, N8060_PFX);
     public static final QName _PAYLOAD_TYPE = new QName(
             TCG_NS, PAYLOAD_TYPE, RIM_PFX);
-    public static final QName _PLATFORM_MANUFACTURER_STR = new QName(
+    public static final QName _PLATFORM_MANUFACTURER = new QName(
             TCG_NS, PLATFORM_MANUFACTURER_STR, RIM_PFX);
     public static final QName _PLATFORM_MANUFACTURER_ID = new QName(
             TCG_NS, PLATFORM_MANUFACTURER_ID, RIM_PFX);
