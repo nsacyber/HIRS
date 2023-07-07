@@ -6,28 +6,35 @@
 #
 ############################################################################################
 
+PROP_FILE=/etc/hirs/aca/apllication.properties
+
 # Capture location of the script to allow from invocation from any location 
 SCRIPT_DIR=$( dirname -- "$( readlink -f -- "$0"; )"; )
 # Set HIRS PKI  password
 if [ -z $HIRS_PKI_PWD ]; then
    # Create a 32 character random password
    PKI_PASS=$(head -c 64 /dev/urandom | md5sum | tr -dc 'a-zA-Z0-9')
-   #PKI_PASS="xrb204k"
 fi
 
 # Create an ACA properties file using the new password
-pushd $SCRIPT_DIR &> /dev/null
-  if [ ! -f "/etc/hirs/aca/aca.properties" ]; then
-      if [ -d /opt/hirs/scripts/aca ]; then
-            ACA_SETUP_DIR="/opt/hirs/scripts/aca"
-         else
-            ACA_SETUP_DIR=="$SCRIPT_DIR/../aca"
-      fi
-      echo "ACA_SETUP_DIR is $ACA_SETUP_DIR"
-   sh $ACA_SETUP_DIR/aca_property_setup.sh $PKI_PASS
-  else
-     echo  "aca property file exists, skipping"
-  fi
+#pushd $SCRIPT_DIR &> /dev/null
+#  if [ ! -f "/etc/hirs/aca/aca.properties" ]; then
+#      if [ -d /opt/hirs/scripts/aca ]; then
+#            ACA_SETUP_DIR="/opt/hirs/scripts/aca"
+#         else
+#            ACA_SETUP_DIR="$SCRIPT_DIR/../aca"
+#      fi
+#      echo "ACA_SETUP_DIR is $ACA_SETUP_DIR"
+#   sh $ACA_SETUP_DIR/aca_property_setup.sh $PKI_PASS
+#  else
+#     echo  "aca property file exists, skipping"
+#  fi
+
+# Add password to properties file
+echo "server.ssl.key-store-password="$PKI_PASS >> $PROP_FILE
+echo "server.ssl.trust-store-password="$PKI_PASS >> $PROP_FILE
+
+# Clear out previous pki password and set new password in the application.properties file for embedded tomcat
 
 popd &> /dev/null
 

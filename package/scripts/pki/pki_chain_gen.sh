@@ -72,7 +72,7 @@ ROOT_DN="/C=US/ST=MD/L=Columbia/O="$ACTOR"/CN="$NAME" test root ca"
 INT_DN="/C=US/ST=MD/L=Columbia/O="$ACTOR"/CN="$NAME" test intermediate ca"
 LEAF_DN="/C=US/ST=MD/L=Columbia/O="$ACTOR"/CN="$NAME" test ca"
 SIGNER_DN="/C=US/ST=MD/L=Columbia/O="$ACTOR"/CN="$NAME" test signer"
-TLS_DN="/C=US/ST=MD/L=Columbia/O="$ACTOR"/CN="$NAME" portal"
+TLS_DN="/C=US/ST=MD/L=Columbia/O="$ACTOR"/CN="localhost"
 
 # Add check for existing folder and halt if it exists
 if [ -d "$ACTOR_ALT"/"$CERT_FOLDER" ]; then
