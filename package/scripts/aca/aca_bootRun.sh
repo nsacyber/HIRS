@@ -22,9 +22,9 @@ else
   exit 1
 fi
 
-echo "server_ssl_trust-store-password = " ${props["server.ssl.trust-store-password"]}
-echo "server_ssl_key-store-password = " ${props["server.ssl.key-store-password"]}
+#echo "server_ssl_trust-store-password = " ${props["server.ssl.trust-store-password"]}
+#echo "server_ssl_key-store-password = " ${props["server.ssl.key-store-password"]}
 
-#./gradlew bootRun --args=--server.ssl.trust-store-password=${props["server.ssl.trust-store-password"]},--server.ssl.key-store-password=${props["server.ssl.key-store-password"]}
+echo "Starting HIRS ACA on https://localhost:8443/HIRS_AttestationCAPortal/portal/index"
 
-./gradlew bootRun --args="--server.ssl.trust-store-password=53d035ff814c1dd5c7e303f5fa080c18 --server.ssl.key-store-password=53d035ff814c1dd5c7e303f5fa080c18"
+./gradlew bootRun --args="--server.ssl.trust-store-password=${props["server.ssl.trust-store-password"]} --server.ssl.key-store-password=${props["server.ssl.key-store-password"]}"

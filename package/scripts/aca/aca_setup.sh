@@ -2,6 +2,8 @@
 # Capture location of the script to allow from invocation from any location
 SCRIPT_DIR=$( dirname -- "$( readlink -f -- "$0"; )"; )
 
+mkdir -p /etc/hirs/aca
+
 pushd $SCRIPT_DIR
 
 sh ../db/db_create.sh

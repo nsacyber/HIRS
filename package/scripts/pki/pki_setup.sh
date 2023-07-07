@@ -6,7 +6,7 @@
 #
 ############################################################################################
 
-PROP_FILE=/etc/hirs/aca/apllication.properties
+PROP_FILE=/etc/hirs/aca/application.properties
 
 # Capture location of the script to allow from invocation from any location 
 SCRIPT_DIR=$( dirname -- "$( readlink -f -- "$0"; )"; )
@@ -30,12 +30,6 @@ fi
 #     echo  "aca property file exists, skipping"
 #  fi
 
-# Add password to properties file
-echo "server.ssl.key-store-password="$PKI_PASS >> $PROP_FILE
-echo "server.ssl.trust-store-password="$PKI_PASS >> $PROP_FILE
-
-# Clear out previous pki password and set new password in the application.properties file for embedded tomcat
-
 popd &> /dev/null
 
 # Create Cert Chains
@@ -55,6 +49,15 @@ if [ ! -d "/etc/hirs/certificates" ]; then
   sh $PKI_SETUP_DIR/pki_chain_gen.sh "HIRS" "rsa" "3072" "sha384" "$PKI_PASS"
   sh $PKI_SETUP_DIR/pki_chain_gen.sh "HIRS" "ecc" "512" "sha384" "$PKI_PASS" 
   popd &> /dev/null
+
+  # Add/Replace password to properties file
+  if [ -f $PROP_FILE ]; then
+     sed -i '/server.ssl.key-store-password/d' $PROP_FILE
+     sed -i '/server.ssl.trust-store-password/d' $PROP_FILE
+  fi
+  echo "server.ssl.key-store-password="$PKI_PASS >> $PROP_FILE
+  echo "server.ssl.trust-store-password="$PKI_PASS >> $PROP_FILE
+
 else 
   echo "/etc/hirs/certificates exists, skipping"
 fi
