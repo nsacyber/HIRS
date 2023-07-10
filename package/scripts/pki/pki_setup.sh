@@ -10,6 +10,7 @@ PROP_FILE=/etc/hirs/aca/application.properties
 
 # Capture location of the script to allow from invocation from any location 
 SCRIPT_DIR=$( dirname -- "$( readlink -f -- "$0"; )"; )
+echo "SCRIPT_DIR is $SCRIPT_DIR"
 # Set HIRS PKI  password
 if [ -z $HIRS_PKI_PWD ]; then
    # Create a 32 character random password
@@ -35,10 +36,10 @@ popd &> /dev/null
 # Create Cert Chains
 if [ ! -d "/etc/hirs/certificates" ]; then
   
-   if [ -d /opt/hirs/scripts/pki ]; then
+   if [ -d "/opt/hirs/scripts/pki" ]; then
             PKI_SETUP_DIR="/opt/hirs/scripts/pki"
          else
-            PKI_SETUP_DIR=="$SCRIPT_DIR/../pki"
+            PKI_SETUP_DIR="$SCRIPT_DIR"
       fi
       echo "PKI_SETUP_DIR is $PKI_SETUP_DIR"
 
