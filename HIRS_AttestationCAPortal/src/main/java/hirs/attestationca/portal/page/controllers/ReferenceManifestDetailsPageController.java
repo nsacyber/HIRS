@@ -29,7 +29,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.servlet.ModelAndView;
 
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
 import java.security.KeyStore;
 import java.security.NoSuchAlgorithmException;
 import java.security.cert.CertificateException;
@@ -234,8 +233,8 @@ public class ReferenceManifestDetailsPageController extends PageController<Refer
         data.put("pcUriLocal", baseRim.getPcURILocal());
         data.put("rimLinkHash", baseRim.getRimLinkHash());
         if (baseRim.getRimLinkHash() != null) {
-            ReferenceManifest rim = referenceManifestRepository.findByHash(baseRim.getRimLinkHash(),
-                    "BaseReferenceManifest");
+            ReferenceManifest rim = referenceManifestRepository.findByHexDecHashAndRimType(
+                    baseRim.getRimLinkHash(), ReferenceManifest.BASE_RIM);
             if (rim != null) {
                 data.put("rimLinkId", rim.getId());
                 data.put("linkHashValid", true);
@@ -247,27 +246,12 @@ public class ReferenceManifestDetailsPageController extends PageController<Refer
 
         List<SwidResource> resources = baseRim.getFileResources();
         TCGEventLog logProcessor = null;
-        List<ReferenceManifest> subManifests;
         SupportReferenceManifest support = null;
 
         if (baseRim.getAssociatedRim() == null) {
-            /**
-             * Need to have parsing implemented
-             */
-//            referenceManifestRepository.findByHash("hexDecHash", "Support");
-            subManifests = referenceManifestRepository
+            support = (SupportReferenceManifest) referenceManifestRepository
                     .getByManufacturer(baseRim.getPlatformManufacturer(),
                     "SupportReferenceManifest");
-            String fileString = new String(baseRim.getRimBytes(), StandardCharsets.UTF_8);
-
-            for (ReferenceManifest rim : subManifests) {
-                if (rim instanceof SupportReferenceManifest) {
-                    support = (SupportReferenceManifest) rim;
-                    if (fileString.contains(rim.getHexDecHash())) {
-                        break;
-                    }
-                }
-            }
             if (support != null) {
                 baseRim.setAssociatedRim(support.getId());
             }
@@ -314,8 +298,8 @@ public class ReferenceManifestDetailsPageController extends PageController<Refer
                         data.replace("signatureValid", true);
                         break;
                     }
-                } catch (SupplyChainValidatorException scvEx) {
-                    log.warn("Error verifying cert chain: " + scvEx.getMessage());
+                } catch (SupplyChainValidatorException e) {
+                    log.error("Error verifying cert chain: " + e.getMessage());
                 }
             }
         }
@@ -329,8 +313,6 @@ public class ReferenceManifestDetailsPageController extends PageController<Refer
             }
         } catch (NullPointerException e) {
             log.error("Unable to link signing certificate: " + e.getMessage());
-        } catch (Exception ex) {
-            log.warn(ex.getMessage());
         }
         return data;
     }
@@ -373,8 +355,8 @@ public class ReferenceManifestDetailsPageController extends PageController<Refer
         // testing this independent of the above if statement because the above
         // starts off checking if associated rim is null; that is irrelevant for
         // this statement.
-        measurements = (EventLogMeasurements) referenceManifestRepository.findByHash(support.getHexDecHash(),
-                "EventLogMeasurements");
+        measurements = (EventLogMeasurements) referenceManifestRepository.findByHexDecHashAndRimType(support.getHexDecHash(),
+                ReferenceManifest.MEASUREMENT_RIM);
 
         if (support.isSwidPatch()) {
             data.put("swidPatch", "True");
@@ -525,7 +507,7 @@ public class ReferenceManifestDetailsPageController extends PageController<Refer
         data.put("validationResult", measurements.getOverallValidationResult());
         data.put("swidBase", true);
 
-        List<ReferenceDigestValue> eventValues = new ArrayList<>();
+        List<ReferenceDigestValue> eventValues = new LinkedList<>();
         if (measurements.getDeviceName() != null) {
             supports.addAll(referenceManifestRepository.byDeviceName(measurements
                     .getDeviceName()));
@@ -545,7 +527,7 @@ public class ReferenceManifestDetailsPageController extends PageController<Refer
                     data.put("associatedRim", base.getId());
                 }
 
-                eventValues.addAll(referenceDigestValueRepository.getValuesByRimId(base.getId()));
+                eventValues.addAll(referenceDigestValueRepository.findBySupportRimId(baseSupport.getId()));
             }
         }
 

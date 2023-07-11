@@ -14,14 +14,12 @@ import java.util.UUID;
 @Repository
 public interface ReferenceManifestRepository extends JpaRepository<ReferenceManifest, UUID> {
 
-    @Query(value = "SELECT * FROM ReferenceManifest WHERE hexDecHash = ?1", nativeQuery = true)
-    ReferenceManifest findByHash(String rimHash);
-    @Query(value = "SELECT * FROM ReferenceManifest WHERE hexDecHash = ?1 AND rimType = ?2", nativeQuery = true)
-    ReferenceManifest findByHash(String rimHash, String rimType);
+    ReferenceManifest findByHexDecHash(String hexDecHash);
+    ReferenceManifest findByHexDecHashAndRimType(String hexDecHash, String rimType);
     @Query(value = "SELECT * FROM ReferenceManifest WHERE platformManufacturer = ?1 AND platformModel = ?2 AND rimType = 'Base'", nativeQuery = true)
     List<BaseReferenceManifest> getBaseByManufacturerModel(String manufacturer, String model);
     @Query(value = "SELECT * FROM ReferenceManifest WHERE platformManufacturer = ?1 AND DTYPE = ?2", nativeQuery = true)
-    List<ReferenceManifest> getByManufacturer(String manufacturer, String dType);
+    ReferenceManifest getByManufacturer(String manufacturer, String dType);
     @Query(value = "SELECT * FROM ReferenceManifest WHERE platformModel = ?1 AND DTYPE = ?2", nativeQuery = true)
     ReferenceManifest getByModel(String model, String dType);
     @Query(value = "SELECT * FROM ReferenceManifest WHERE DTYPE = 'BaseReferenceManifest'", nativeQuery = true)

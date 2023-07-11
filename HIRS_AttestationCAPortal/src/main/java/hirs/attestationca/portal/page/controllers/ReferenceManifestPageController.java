@@ -221,26 +221,25 @@ public class ReferenceManifestPageController extends PageController<NoPageParams
 
         try {
             ReferenceManifest referenceManifest = getRimFromDb(id);
+            List<ReferenceDigestValue> values = new LinkedList<>();
 
             if (referenceManifest == null) {
                 String notFoundMessage = "Unable to locate RIM with ID: " + id;
                 messages.addError(notFoundMessage);
                 log.warn(notFoundMessage);
             } else {
+                // if support rim, update associated events
+                values = referenceDigestValueRepository.findBySupportRimHash(
+                        referenceManifest.getHexDecHash());
+
+                for (ReferenceDigestValue value : values) {
+                    referenceDigestValueRepository.delete(value);
+                }
+
                 referenceManifestRepository.delete(referenceManifest);
                 String deleteCompletedMessage = "RIM successfully deleted";
                 messages.addInfo(deleteCompletedMessage);
                 log.info(deleteCompletedMessage);
-
-                // if support rim, update associated events
-                if (referenceManifest instanceof SupportReferenceManifest) {
-                    List<ReferenceDigestValue> values = referenceDigestValueRepository
-                            .getValuesByRimId(referenceManifest.getId());
-
-                    for (ReferenceDigestValue value : values) {
-                        referenceDigestValueRepository.delete(value);
-                    }
-                }
             }
         } catch (IllegalArgumentException iaEx) {
             String uuidError = "Failed to parse ID from: " + id;
@@ -396,6 +395,8 @@ public class ReferenceManifestPageController extends PageController<NoPageParams
 
         byte[] fileBytes = new byte[0];
         String fileName = file.getOriginalFilename();
+        BaseReferenceManifest baseRim;
+        SupportReferenceManifest supportRim;
 
         // build the manifest from the uploaded bytes
         try {
@@ -409,9 +410,18 @@ public class ReferenceManifestPageController extends PageController<NoPageParams
 
         try {
             if (supportRIM) {
-                supportRims.add(new SupportReferenceManifest(fileName, fileBytes));
+                supportRim = new SupportReferenceManifest(fileName, fileBytes);
+                if (referenceManifestRepository.findByHexDecHashAndRimType(supportRim.getHexDecHash(),
+                        supportRim.getRimType()) == null) {
+                    supportRims.add(supportRim);
+                    messages.addInfo("Saved Reference Manifest " + fileName);
+                }
             } else {
-                baseRims.add(new BaseReferenceManifest(fileName, fileBytes));
+                baseRim = new BaseReferenceManifest(fileName, fileBytes);
+                if (referenceManifestRepository.findByHexDecHashAndRimType(baseRim.getHexDecHash(),
+                        baseRim.getRimType()) == null) {
+                    baseRims.add(baseRim);
+                }
             }
         } catch (IOException ioEx) {
             final String failMessage
@@ -489,7 +499,7 @@ public class ReferenceManifestPageController extends PageController<NoPageParams
             // So first we'll have to pull values based on support rim
             // get by support rim id NEXT
             if (dbSupport.getPlatformManufacturer() != null) {
-                tpmEvents = referenceDigestValueRepository.getValuesBySupportRimId(dbSupport.getAssociatedRim());
+                tpmEvents = referenceDigestValueRepository.findBySupportRimId(dbSupport.getId());
                 baseRim = findBaseRim(dbSupport);
                 if (tpmEvents.isEmpty()) {
                     try {
@@ -498,8 +508,9 @@ public class ReferenceManifestPageController extends PageController<NoPageParams
                             newRdv = new ReferenceDigestValue(baseRim.getId(),
                                     dbSupport.getId(), dbSupport.getPlatformManufacturer(),
                                     dbSupport.getPlatformModel(), tpe.getPcrIndex(),
-                                    tpe.getEventDigestStr(), tpe.getEventTypeStr(),
-                                    false, false, true, tpe.getEventContent());
+                                    tpe.getEventDigestStr(), dbSupport.getHexDecHash(),
+                                    tpe.getEventTypeStr(),false, false,
+                                    true, tpe.getEventContent());
 
                             this.referenceDigestValueRepository.save(newRdv);
                         }
