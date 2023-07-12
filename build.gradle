@@ -93,8 +93,8 @@ subprojects {
     // dependencies:
     ext.libs = [
       bouncy_castle: 'org.bouncycastle:bcmail-jdk15on:1.59',
-      checkstyle:    'com.puppycrawl.tools:checkstyle:8.10.1',
-      commons_cli:   'commons-cli:commons-cli:1.2',
+      checkstyle:    'com.puppycrawl.tools:checkstyle:8.45.1',
+      commons_cli:   'commons-cli:commons-cli:1.4',
       commons_codec: 'commons-codec:commons-codec:1.9',
       commons_csv:   'org.apache.commons:commons-csv:1.4',
       commons_exec:  'org.apache.commons:commons-exec:1.3',
