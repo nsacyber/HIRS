@@ -36,7 +36,10 @@ dependencies {
     implementation libs.commons.codec
     implementation libs.commons.lang3
     implementation libs.minimal.json
+    implementation libs.jakarta.api
 
+  
+    
     implementation 'org.apache.logging.log4j:log4j-core:2.19.0'
     implementation 'org.apache.logging.log4j:log4j-api:2.19.0'
     implementation 'org.glassfish.jaxb:jaxb-runtime:4.0.1'
