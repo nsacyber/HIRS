@@ -79,11 +79,12 @@ public class TCGEventLogTest {
       // Test 2 get an individual PCR
       String pcr3 = evlog.getExpectedPCRValue(3);
       assertThat(pcr3, equalTo(pcrFromLog[3]));
-      
-      // Test 3 check the Algorithm Identifiers used in the log
+
+      // Test 3 check the Algorithm String Identifier used in the log
       String algStr = evlog.getEventLogHashAlgorithm();
       assertThat(algStr, equalTo("TPM_ALG_SHA256"));
-      
+
+      // Test 4 check the Algorithm # Identifier used in the log
       int id = evlog.getEventLogHashAlgorithmID();
       assertThat(id, equalTo(TcgTpmtHa.TPM_ALG_SHA256));
       
@@ -123,10 +124,11 @@ public class TCGEventLogTest {
        String pcr0 = evlog.getExpectedPCRValue(0);
        assertThat(pcr0, equalTo(pcrFromLog[0]));
        
-       // Test 3 check the Algorithm Identifiers used in the log
+       // Test 3 check the Algorithm String Identifier used in the log
        String algStr = evlog.getEventLogHashAlgorithm();
        assertThat(algStr, equalTo("TPM_ALG_SHA1"));
-       
+
+       // Test 4 check the Algorithm # Identifier used in the log
        int id = evlog.getEventLogHashAlgorithmID();
        assertThat(id, equalTo(TcgTpmtHa.TPM_ALG_SHA1));
        
