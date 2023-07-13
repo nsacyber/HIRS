@@ -316,6 +316,15 @@ public final class TCGEventLog {
     }
 
     /**
+     * Returns the TCG Algorithm Registry defined string for the Digest Algorithm
+     * used in the event log.
+     * @return TCG Defined Algorithm name
+     */
+    public String getEventLogHashAlgorithm() {
+       return algorithm;
+    }
+    
+    /**
      * Returns the TCG Algorithm Registry defined ID for the Digest Algorithm
      * used in the event log.
      * @return TCG Defined Algorithm name
