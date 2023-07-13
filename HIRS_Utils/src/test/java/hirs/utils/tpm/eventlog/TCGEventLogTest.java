@@ -18,11 +18,9 @@ import org.junit.jupiter.api.Test;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-//import static org.junit.jupiter.api.Assertions.*;
 
 
 public class TCGEventLogTest {
-//class TCGEventLogTest {
 
     private static final String DEFAULT_EVENT_LOG = "/tcgeventlog/TpmLog.bin";
     private static final String DEFAULT_EXPECTED_PCRS = "/tcgeventlog/TpmLogExpectedPcrs.txt";
@@ -76,21 +74,17 @@ public class TCGEventLogTest {
               LOGGER.error("\ntestTCGEventLogProcessorParser error with PCR " + i);
           }
       }
-      //Assert.assertTrue(testPass);
       assertTrue(testPass);
       
       // Test 2 get an individual PCR
       String pcr3 = evlog.getExpectedPCRValue(3);
-      //Assert.assertEquals(pcr3, pcrFromLog[3]);
       assertThat(pcr3, equalTo(pcrFromLog[3]));
       
       // Test 3 check the Algorithm Identifiers used in the log
       String algStr = evlog.getEventLogHashAlgorithm();
-      //Assert.assertEquals(algStr, "TPM_ALG_SHA256");
       assertThat(algStr, equalTo("TPM_ALG_SHA256"));
       
       int id = evlog.getEventLogHashAlgorithmID();
-      //Assert.assertEquals(id, TcgTpmtHa.TPM_ALG_SHA256);
       assertThat(id, equalTo(TcgTpmtHa.TPM_ALG_SHA256));
       
       LOGGER.debug("OK. Parsing of a Crypto Agile Format Success");
@@ -123,21 +117,17 @@ public class TCGEventLogTest {
              LOGGER.error("\ntestTCGEventLogProcessorParser error with PCR " + i);
            }
        }
-       //Assert.assertTrue(testPass);
        assertTrue(testPass);
        
        // Test 2 get an individual PCR
        String pcr0 = evlog.getExpectedPCRValue(0);
-       //Assert.assertEquals(pcr0, pcrFromLog[0]);
        assertThat(pcr0, equalTo(pcrFromLog[0]));
        
        // Test 3 check the Algorithm Identifiers used in the log
        String algStr = evlog.getEventLogHashAlgorithm();
-       //Assert.assertEquals(algStr, "TPM_ALG_SHA1");
        assertThat(algStr, equalTo("TPM_ALG_SHA1"));
        
        int id = evlog.getEventLogHashAlgorithmID();
-       //Assert.assertEquals(id, TcgTpmtHa.TPM_ALG_SHA1);
        assertThat(id, equalTo(TcgTpmtHa.TPM_ALG_SHA1));
        
        LOGGER.debug("OK. Parsing of a SHA1 formatted TCG Event Log Success");
