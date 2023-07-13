@@ -11,6 +11,13 @@ PROP_FILE=/etc/hirs/aca/application.properties
 # Capture location of the script to allow from invocation from any location 
 SCRIPT_DIR=$( dirname -- "$( readlink -f -- "$0"; )"; )
 echo "SCRIPT_DIR is $SCRIPT_DIR"
+
+# Check for sudo or root user 
+if [ "$EUID" -ne 0 ]
+        then echo "The first time this script is run, this script requires root.  Please run as root"
+        exit 1
+fi
+
 # Set HIRS PKI  password
 if [ -z $HIRS_PKI_PWD ]; then
    # Create a 32 character random password

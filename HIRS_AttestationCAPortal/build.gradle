@@ -56,7 +56,7 @@ dependencies {
     implementation 'jakarta.servlet.jsp.jstl:jakarta.servlet.jsp.jstl-api:3.0.0'
     implementation 'jakarta.servlet.jsp:jakarta.servlet.jsp-api:3.0.0'    
     implementation 'jakarta.el:jakarta.el-api:5.0.0'
-    
+
 
     compileOnly 'org.projectlombok:lombok'
     runtimeOnly 'org.mariadb.jdbc:mariadb-java-client'

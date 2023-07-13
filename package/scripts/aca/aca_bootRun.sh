@@ -12,7 +12,7 @@ declare -A props
 
 if [ -f $PASS_FILE ]; then
   while IFS="=" read -r key value; do
-    echo "key is $key, value is $value"
+    #echo "key is $key, value is $value"
     if [ ! -z "$key" ]; then
         props["$key"]="$value"
     fi
