@@ -20,6 +20,7 @@ ASYM_ALG=$2
 ASYM_SIZE=$3
 HASH_ALG=$4
 PASS=$5
+LOG_FILE=$6
 ROOT_DN="/C=US/ST=MD/L=Columbia/O="$ACTOR"/CN="$ACTOR" test root ca"
 INT_DN="/C=US/ST=MD/L=Columbia/O="$ACTOR"/CN="$ACTOR" test intermediate ca"
 LEAF_DN="/C=US/ST=MD/L=Columbia/O="$ACTOR"/CN="$ACTOR" test ca"
@@ -32,13 +33,17 @@ KEYSTORE=KeyStore.jks
 
 # Parameter check 
 if [ -z "${ACTOR}" ] || [ -z "${ASYM_ALG}" ] || [ -z "${ASYM_SIZE}" ] || [ -z "${HASH_ALG}" ] || [ "${ACTOR}" == "-h" ] || [ "${ACTOR}" == "--help" ]; then
-   echo "parameter missing to pki_chain_gen.sh, exiting pki setup"
+   echo "parameter missing to pki_chain_gen.sh, exiting pki setup" | tee -a "$LOG_FILE"
    exit 1;
 fi
 
 if ! { [ $ASYM_ALG == "rsa" ] || [ $ASYM_ALG == "ecc" ]; }; then
-       echo "$ASYM_ALG is an unsupported assymetric algorithm, exiting pki setup"
-       exit 1
+       echo "$ASYM_ALG is an unsupported assymetric algorithm, exiting pki setup" | tee -a "$LOG_FILE"
+       exit 1;
+fi
+
+if [ -z ${LOG_FILE} ]; then
+       LOG_FILE="/dev/null"
 fi
 
 case $ASYM_SIZE in
@@ -52,7 +57,7 @@ case $ASYM_SIZE in
      3072) KSIZE=3k;;
      4096) KSIZE=4k;;
      *) 
-       echo "$ASYM_SIZE is an unsupported key size, exiting pki setup"
+       echo "$ASYM_SIZE is an unsupported key size, exiting pki setup" | tee -a "$LOG_FILE"
        exit 1;;
 esac
 
@@ -72,24 +77,40 @@ ROOT_DN="/C=US/ST=MD/L=Columbia/O="$ACTOR"/CN="$NAME" test root ca"
 INT_DN="/C=US/ST=MD/L=Columbia/O="$ACTOR"/CN="$NAME" test intermediate ca"
 LEAF_DN="/C=US/ST=MD/L=Columbia/O="$ACTOR"/CN="$NAME" test ca"
 SIGNER_DN="/C=US/ST=MD/L=Columbia/O="$ACTOR"/CN="$NAME" test signer"
-TLS_DN="/C=US/ST=MD/L=Columbia/O="$ACTOR"/CN=localhost"
+TLS_DN="/C=US/ST=MD/L=Columbia/O="$ACTOR"/CN="$NAME" portal"
 
 # Add check for existing folder and halt if it exists
 if [ -d "$ACTOR_ALT"/"$CERT_FOLDER" ]; then
-   echo "Folder for $CERT_FOLDER exists, exiting..."
+   echo "Folder for $CERT_FOLDER exists, exiting..." | tee -a "$LOG_FILE"
    exit 1;
 fi
 
 # Intialize sub folders
-echo "Creating PKI for $ACTOR_ALT using $KSIZE $ASYM_ALG and $HASH_ALG..."
+echo "Creating PKI for $ACTOR_ALT using $KSIZE $ASYM_ALG and $HASH_ALG..." | tee -a "$LOG_FILE"
 
 mkdir -p "$ACTOR_ALT" "$ACTOR_ALT"/"$CERT_FOLDER" "$ACTOR_ALT"/ca/certs
 cp ca.conf "$ACTOR_ALT"/.
 pushd "$ACTOR_ALT" &> /dev/null
 touch ca/db
+touch openssl-san.cnf
 if [ ! -f "ca/serial.txt" ]; then
-     echo "01" > ca/serial.txt
+     echo "01" > ca/serial.txt | tee -a "$LOG_FILE"
 fi
+
+# Function to add Cert to Truststore and key to Keystore
+add_to_stores () {
+   CERT_PATH=$1
+   ALIAS=${CERT_PATH#*/}    # Use filename without path as an alias
+   echo "Addding $ALIAS to the $TRUSTSTORE and $KEYSTORE" | tee -a "$LOG_FILE" 
+   # Add the cert and key to the key store. make a p12 file to import into te keystore
+   openssl pkcs12 -export -in "$CERT_PATH".pem -inkey "$CERT_PATH".key -out tmpkey.p12 -passin pass:"$PASS" -aes256 -passout pass:$PASS  >> "$LOG_FILE" 2>&1
+   # Use the p12 file to import into a java keystore via keytool
+   keytool -importkeystore -srckeystore tmpkey.p12 -destkeystore $KEYSTORE -srcstoretype pkcs12 -srcstorepass $PASS -deststoretype jks -deststorepass $PASS -noprompt -alias 1 -destalias -J-Dcom.redhat.fips=false "$ALIAS" >> "$LOG_FILE" 2>&1 
+   # Import the cert into a java trust store via keytool
+   keytool -import -keystore $TRUSTSTORE -storepass $PASS -file "$CERT_PATH".pem  -noprompt -alias "$ALIAS" -J-Dcom.redhat.fips=false >> "$LOG_FILE" 2>&1
+   # Remove the temp p1 file.
+   rm tmpkey.p12
+} 
 
 # Function to create an Intermediate Key, CSR, and Certificate
 # PARMS: 
@@ -106,16 +127,16 @@ create_cert () {
    ISSUER_CERT="$ISSUER".pem
    ALIAS=${CERT_PATH#*/}    # Use filename without path as an alias    
 
-   echo "Creating cert using "$ISSUER_KEY" with a DN="$SUBJ_DN"..."
+   echo "Creating cert using "$ISSUER_KEY" with a DN="$SUBJ_DN"..." | tee -a "$LOG_FILE"
 
    if [ "$ASYM_ALG" == "rsa" ]; then 
        openssl req -newkey rsa:"$ASYM_SIZE" \
             -keyout "$CERT_PATH".key \
             -out "$CERT_PATH".csr  -subj "$SUBJ_DN" \
-            -passout pass:"$PASS" &> /dev/null
+            -passout pass:"$PASS"  >> "$LOG_FILE" 2>&1
    else
-       openssl ecparam -genkey -name "$ECC_NAME" -out "$CERT_PATH".key &> /dev/null
-       openssl req -new -key "$CERT_PATH".key -out "$CERT_PATH".csr -$HASH_ALG  -subj "$SUBJ_DN" &> /dev/null    
+       openssl ecparam -genkey -name "$ECC_NAME" -out "$CERT_PATH".key  >> "$LOG_FILE" 2>&1
+       openssl req -new -key "$CERT_PATH".key -out "$CERT_PATH".csr -$HASH_ALG  -subj "$SUBJ_DN" >> "$LOG_FILE" 2>&1
    fi
 
    openssl ca -config ca.conf \
@@ -127,17 +148,18 @@ create_cert () {
            -in "$CERT_PATH".csr \
            -passin pass:"$PASS" \
            -batch \
-           -notext                          &> /dev/null
+           -notext                       >> "$LOG_FILE" 2>&1
    # Increment the cert serial number
-   awk -F',' '{printf("%s\t%d\n",$1,$2+1)}' ./ca/serial.txt &> /dev/null
+   SERIAL=$(awk -F',' '{printf("%s\t%d\n",$1,$2+1)}' ./ca/serial.txt)
+   echo "Cert Serial Number = $SERIAL" >> "$LOG_FILE";
    # remove csr file
    rm -f "$CERT_PATH".csr
    # Add the cert and key to the key store. make a p12 file to import into te keystore
-   openssl pkcs12 -export -in "$CERT_PATH".pem -inkey "$CERT_PATH".key -out tmpkey.p12 -passin pass:"$PASS" -passout pass:$PASS
+   openssl pkcs12 -export -in "$CERT_PATH".pem -inkey "$CERT_PATH".key -out tmpkey.p12 -passin pass:"$PASS" -aes256 -passout pass:$PASS  >> "$LOG_FILE" 2>&1
    # Use the p12 file to import into a java keystore via keytool
-   keytool -importkeystore -srckeystore tmpkey.p12 -destkeystore $KEYSTORE -srcstoretype pkcs12 -srcstorepass $PASS -deststoretype jks -deststorepass $PASS -noprompt -alias 1 -destalias "$ALIAS" &> /dev/null
+   keytool -importkeystore -srckeystore tmpkey.p12 -destkeystore $KEYSTORE -srcstoretype pkcs12 -srcstorepass $PASS -deststoretype jks -deststorepass $PASS -noprompt -alias 1 -destalias -J-Dcom.redhat.fips=false "$ALIAS" >> "$LOG_FILE" 2>&1 
    # Import the cert into a java trust store via keytool
-   keytool -import -keystore $TRUSTSTORE -storepass $PASS -file "$CERT_PATH".pem  -noprompt -alias "$ALIAS" &> /dev/null
+   keytool -import -keystore $TRUSTSTORE -storepass $PASS -file "$CERT_PATH".pem  -noprompt -alias "$ALIAS" -J-Dcom.redhat.fips=false >> "$LOG_FILE" 2>&1
    # Remove the temp p1 file.
    rm tmpkey.p12
 }
@@ -168,30 +190,35 @@ create_cert_chain () {
    cat "$PKI_CA1.pem" "$PKI_CA2.pem" "$PKI_CA3.pem" "$PKI_INT.pem" "$PKI_ROOT.pem" >  "$TRUST_STORE_FILE"
 
  # echo "Checking signer cert using tust store..." 
-   openssl verify -CAfile "$TRUST_STORE_FILE" $RIM_SIGNER.pem
+   openssl verify -CAfile "$TRUST_STORE_FILE" $RIM_SIGNER.pem | tee -a "$LOG_FILE"
 }
 
-if [ "$ASYM_ALG" == "rsa" ]; then 
+if [ "$ASYM_ALG" == "rsa" ]; then
    # Create Root CA key pair and self signed cert
-   openssl genrsa -out "$PKI_ROOT".key -passout pass:"$PASS" "$ASYM_SIZE" &> /dev/null
-
+   echo "Generating RSA Root CA ...." | tee -a "$LOG_FILE"
+   openssl genrsa -out "$PKI_ROOT".key -passout pass:"$PASS" "$ASYM_SIZE" >> "$LOG_FILE" 2>&1
+   
    # Create a self signed CA certificate
    openssl req -new -config ca.conf -x509 -days 3650 -key "$PKI_ROOT".key -subj "$ROOT_DN" \
           -extensions ca_extensions -out "$PKI_ROOT".pem \
-          -passout pass:"$PASS"   &> /dev/null
+          -passout pass:"$PASS" >> "$LOG_FILE" 2>&1
+   # Add the CA root cert to the Trust and Key stores
+   add_to_stores $PKI_ROOT
    # Create an intermediate CA, 2 Leaf CAs, and Signer Certs 
-   create_cert_chain
+   create_cert_chain 
 fi
 
 if [ "$ASYM_ALG" == "ecc" ]; then
     # Create Root CA key pair and self signed cert
-    openssl ecparam -genkey -name "$ECC_NAME" -out "$PKI_ROOT".key
+    echo "Generating Ecc Root CA ...." | tee -a "$LOG_FILE"
+    openssl ecparam -genkey -name "$ECC_NAME" -out "$PKI_ROOT".key >> "$LOG_FILE" 2>&1
 
     # Create a self signed CA certificate
     openssl req -new -config ca.conf -x509 -days 3650 -key "$PKI_ROOT".key -subj "$ROOT_DN" \
           -extensions ca_extensions -out "$PKI_ROOT".pem \
-          -passout pass:"$PASS"
+          -passout pass:"$PASS" >> "$LOG_FILE" 2>&1
+    # Add the CA root cert to the Trust and Key stores
+    add_to_stores $PKI_ROOT
     # Create an intermediate CA, 2 Leaf CAs, and Signer Certs 
    create_cert_chain
 fi
-
