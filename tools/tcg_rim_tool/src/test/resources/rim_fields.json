@@ -21,7 +21,7 @@
                 "edition": "12",
                 "product": "ProductA",
                 "revision": "r2",
-                "PayloadType": "direct",
+                "payloadType": "direct",
                 "platformManufacturerStr": "Example.com",
                 "platformManufacturerId": "00201234",
                 "platformModel": "ProductA",
@@ -32,12 +32,12 @@
                 "firmwareVersion": "12",
                 "bindingSpec": "PC Client RIM",
                 "bindingSpecVersion": "1.2",
-                "pcURIlocal": "/boot/tcg/manifest/switag/",
-                "pcURIGlobal": "https://Example.com/support/ProductA/"
+                "pcUriLocal": "/boot/tcg/manifest/switag/",
+                "pcUriGlobal": "https://Example.com/support/ProductA/"
         },
 	"Payload": {
-                "supportRIMURIGlobal": "https://Example.com/support/ProductA/firmware/rims/",
-                "supportRIMFormat":"TCG_EventLog_Assertion",
+                "supportRimUriGlobal": "https://Example.com/support/ProductA/firmware/rims/",
+                "supportRimFormat":"TCG_EventLog_Assertion",
                 "Directory": {
                         "name": "rim",
                         "root": "/boot/tcg/manifest/rim/",

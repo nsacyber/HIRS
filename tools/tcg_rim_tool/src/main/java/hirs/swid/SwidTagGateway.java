@@ -101,6 +101,7 @@ public class SwidTagGateway {
     private String timestampArgument;
     private String directoryOverride;
     private String errorRequiredFields;
+    private String missingNonrequiredFields;
 
     /**
      * Default constructor initializes jaxbcontext, marshaller, and unmarshaller
@@ -119,6 +120,7 @@ public class SwidTagGateway {
             timestampArgument = "";
             directoryOverride = "";
             errorRequiredFields = "";
+            missingNonrequiredFields = "";
         } catch (JAXBException e) {
             System.out.println("Error initializing jaxbcontext: " + e.getMessage());
         }
@@ -265,6 +267,8 @@ public class SwidTagGateway {
                     objectFactory.createSoftwareIdentityPayload(payload);
             swidTag.getEntityOrEvidenceOrLink().add(jaxbPayload);
             //Signature
+            System.out.println("The following fields were not read in the JSON attributes file: "
+                + missingNonrequiredFields.substring(0, missingNonrequiredFields.length() - 2));
             if (errorRequiredFields.isEmpty()) {
                 Document signedSoftwareIdentity = signXMLDocument(
                         objectFactory.createSoftwareIdentity(swidTag));
@@ -381,7 +385,7 @@ public class SwidTagGateway {
             if (isTagCreator) {
                 String regid = jsonObject.getString(SwidTagConstants.REGID, "");
                 if (regid.isEmpty()) {
-                    //throw exception that regid is required
+                    errorRequiredFields += SwidTagConstants.REGID + ", ";
                 } else {
                     entity.setRegid(regid);
                 }
@@ -576,6 +580,8 @@ public class SwidTagGateway {
                                      final QName key, String value) {
         if (!value.isEmpty()) {
             attributes.put(key, value);
+        } else {
+            missingNonrequiredFields += key.getLocalPart() + ", ";
         }
     }
 
