@@ -64,7 +64,7 @@ public class TCGEventLogTest {
       TCGEventLog evlog = new TCGEventLog(rawLogBytes, false, false, false);
       String[] pcrFromLog = evlog.getExpectedPCRValues();
       pcrs = this.getClass().getResourceAsStream(DEFAULT_EXPECTED_PCRS);
-      Object[] pcrObj = IOUtils.readLines(pcrs).toArray();
+      Object[] pcrObj = IOUtils.readLines(pcrs, "UTF-8").toArray();
       String[] pcrTxt = Arrays.copyOf(pcrObj, pcrObj.length, String[].class);
       
       // Test 1 get all PCRs
@@ -78,15 +78,15 @@ public class TCGEventLogTest {
       
       // Test 2 get an individual PCR
       String pcr3 = evlog.getExpectedPCRValue(3);
-      assertThat(pcr3, equalTo(pcrFromLog[3]));
+      assertThat(pcrFromLog[3], equalTo(pcr3));
 
       // Test 3 check the Algorithm String Identifier used in the log
       String algStr = evlog.getEventLogHashAlgorithm();
-      assertThat(algStr, equalTo("TPM_ALG_SHA256"));
+      assertThat("TPM_ALG_SHA256", equalTo(algStr));
 
       // Test 4 check the Algorithm # Identifier used in the log
       int id = evlog.getEventLogHashAlgorithmID();
-      assertThat(id, equalTo(TcgTpmtHa.TPM_ALG_SHA256));
+      assertThat(TcgTpmtHa.TPM_ALG_SHA256, equalTo(id));
       
       LOGGER.debug("OK. Parsing of a Crypto Agile Format Success");
     }
@@ -108,7 +108,7 @@ public class TCGEventLogTest {
       TCGEventLog evlog =  new TCGEventLog(rawLogBytes, false, false, false);
       String[] pcrFromLog = evlog.getExpectedPCRValues();
       pcrs = this.getClass().getResourceAsStream(SHA1_EXPECTED_PCRS);
-      Object[] pcrObj = IOUtils.readLines(pcrs).toArray();
+      Object[] pcrObj = IOUtils.readLines(pcrs, "UTF-8").toArray();
       String[] pcrTxt = Arrays.copyOf(pcrObj, pcrObj.length, String[].class);
       
       // Test 1 get all PCRs
@@ -122,15 +122,15 @@ public class TCGEventLogTest {
        
        // Test 2 get an individual PCR
        String pcr0 = evlog.getExpectedPCRValue(0);
-       assertThat(pcr0, equalTo(pcrFromLog[0]));
+       assertThat(pcrFromLog[0], equalTo(pcr0));
        
        // Test 3 check the Algorithm String Identifier used in the log
        String algStr = evlog.getEventLogHashAlgorithm();
-       assertThat(algStr, equalTo("TPM_ALG_SHA1"));
+       assertThat("TPM_ALG_SHA1", equalTo(algStr));
 
        // Test 4 check the Algorithm # Identifier used in the log
        int id = evlog.getEventLogHashAlgorithmID();
-       assertThat(id, equalTo(TcgTpmtHa.TPM_ALG_SHA1));
+       assertThat(TcgTpmtHa.TPM_ALG_SHA1, equalTo(id));
        
        LOGGER.debug("OK. Parsing of a SHA1 formatted TCG Event Log Success");
      }

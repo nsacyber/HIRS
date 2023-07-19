@@ -29,7 +29,7 @@ public final class TCGEventLog {
     private static final Logger LOGGER = LogManager.getLogger(TCGEventLog.class);
     /** Name of the hash algorithm used to process the Event Log, default is SHA256.  */
     @Getter
-    private String algorithm = "TPM_ALG_SHA256";
+    private String eventLogHashAlgorithm = "TPM_ALG_SHA256";
     /** Parsed event log array. */
     private static final int SIG_OFFSET = 32;
     /**  TEV_NO_ACTION signature size. */
@@ -87,7 +87,7 @@ public final class TCGEventLog {
         initLocalityFourValue = LOCALITY4_SHA1_LIST;
         pcrLength = EvConstants.SHA1_LENGTH;
         hashType = HASH_STRING;
-        algorithm = "TPM_ALG_SHA1";
+        eventLogHashAlgorithm = "TPM_ALG_SHA1";
         initPcrList();
     }
 
@@ -121,14 +121,14 @@ public final class TCGEventLog {
         if (bCryptoAgile) {
             initValue = INIT_SHA256_LIST;
             initLocalityFourValue = LOCALITY4_SHA256_LIST;
-            algorithm = "TPM_ALG_SHA256";
+            eventLogHashAlgorithm = "TPM_ALG_SHA256";
             hashType = HASH256_STRING;
             pcrLength = EvConstants.SHA256_LENGTH;
         } else {
             initValue = INIT_SHA1_LIST;
             initLocalityFourValue = LOCALITY4_SHA1_LIST;
             hashType = HASH_STRING;
-            algorithm = "TPM_ALG_SHA1";
+            eventLogHashAlgorithm = "TPM_ALG_SHA1";
             pcrLength = EvConstants.SHA1_LENGTH;
         }
         this.pcrList = new byte[PCR_COUNT][pcrLength];
@@ -181,7 +181,7 @@ public final class TCGEventLog {
 //        TPMMeasurementRecord record;
 //        String pcrValue;
 //        for (int i = 0; i < PCR_COUNT; i++) {
-//            if (algorithm.compareToIgnoreCase("TPM_ALG_SHA1") == 0) { // Log Was SHA1 Format
+//            if (eventLogHashAlgorithm.compareToIgnoreCase("TPM_ALG_SHA1") == 0) { // Log Was SHA1 Format
 //                pcrValue = getExpectedPCRValue(i);
 //                byte[] hexValue = HexUtils.hexStringToByteArray(pcrValue);
 //                final Digest hash = new Digest(DigestAlgorithm.SHA1, hexValue);
@@ -314,15 +314,6 @@ public final class TCGEventLog {
 
         return this.toString();
     }
-
-    /**
-     * Returns the TCG Algorithm Registry defined string for the Digest Algorithm
-     * used in the event log.
-     * @return TCG Defined Algorithm name
-     */
-    public String getEventLogHashAlgorithm() {
-       return algorithm;
-    }
     
     /**
      * Returns the TCG Algorithm Registry defined ID for the Digest Algorithm
@@ -330,7 +321,7 @@ public final class TCGEventLog {
      * @return TCG Defined Algorithm name
      */
     public int getEventLogHashAlgorithmID() {
-       return TcgTpmtHa.tcgAlgStringToId(algorithm);
+       return TcgTpmtHa.tcgAlgStringToId(eventLogHashAlgorithm);
     }
 
     /**
