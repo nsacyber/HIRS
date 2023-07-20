@@ -51,13 +51,6 @@ dependencies {
     implementation 'org.junit.jupiter:junit-jupiter:5.4.2'
     implementation 'org.apache.tomcat.embed:tomcat-embed-jasper:10.1.5'
 
-//    implementation 'org.glassfish.web:jakarta.servlet.jsp.jstl:3.0.0'
-//    implementation 'jakarta.servlet:jakarta.servlet-api:6.0.0'
-//    implementation 'jakarta.servlet.jsp.jstl:jakarta.servlet.jsp.jstl-api:3.0.0'
-//    implementation 'jakarta.servlet.jsp:jakarta.servlet.jsp-api:3.0.0'    
-//    implementation 'jakarta.el:jakarta.el-api:5.0.0'
-
-
     compileOnly 'org.projectlombok:lombok'
     runtimeOnly 'org.mariadb.jdbc:mariadb-java-client'
     annotationProcessor 'org.projectlombok:lombok'
