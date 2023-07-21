@@ -14,7 +14,7 @@ public class TimestampArgumentValidator {
 
     /**
      * This class handles validation of the --timestamp commandline parameter.
-     * Currently only RFC3339 and RFC3852 formats are supported.
+     * Currently RFC3339, RFC3852, and RFC2315 (PKCS7) formats are supported.
      *
      * @param args list of arguments from command line
      */
@@ -29,15 +29,17 @@ public class TimestampArgumentValidator {
      */
     public boolean isValid() {
         if (isExactlyOneFormat(args)) {
-            if (args.get(0).equalsIgnoreCase("RFC3852")) {
+            if (args.get(0).equalsIgnoreCase("RFC3852") ||
+                    args.get(0).equalsIgnoreCase("RFC2315")) {
                 if (args.size() > 1) {
-                    if (isRfc3852FileValid(args.get(1))) {
+                    if (isCountersignatureFileValid(args.get(1))) {
                         return true;
                     } else {
                         return false;
                     }
                 } else if (args.size() == 1) {
-                    System.out.println("Countersignature file is required for RFC3852 timestamps");
+                    System.out.println("Countersignature file is required for " +
+                            "RFC3852 and RFC2315 (PKCS7) timestamps");
                     return false;
                 }
             } else if (args.get(0).equalsIgnoreCase("RFC3339")) {
@@ -59,25 +61,26 @@ public class TimestampArgumentValidator {
     }
 
     /**
-     * This method ensures that exactly one of RFC3339 and RFC3852 are specified.
+     * This method ensures that exactly one format is specified.
      *
      * @param args list of command line arguments
      * @return true if exactly one format is specified, false otherwise
      */
     private boolean isExactlyOneFormat(List<String> args) {
-        Pattern pattern = Pattern.compile("(R|r)(F|f)(C|c)(3339|3852)");
+        Pattern pattern = Pattern.compile("(R|r)(F|f)(C|c)(3339|3852|2315)");
         String format = args.get(0);
         Matcher formatMatcher = pattern.matcher(format);
 
         if (!formatMatcher.matches()) {
-            System.out.println("Invalid timestamp format specified, expected RFC3339 or RFC3852.");
+            System.out.println("Invalid timestamp format specified. " +
+                    "Please choose from RFC3339, RFC3852, or RFC2315.");
             return false;
         }
         if (args.size() == 2) {
             String argument = args.get(1);
             Matcher argumentMatcher = pattern.matcher(argument);
             if (argumentMatcher.matches()) {
-                System.out.println("Exactly one timestamp format must be specified.");
+                System.out.println("Only one timestamp format may be specified at a time.");
                 return false;
             }
         }
@@ -108,7 +111,7 @@ public class TimestampArgumentValidator {
      * @param file the counter signature
      * @return true if file exists and is valid, false otherwise
      */
-    private boolean isRfc3852FileValid(String file) {
+    private boolean isCountersignatureFileValid(String file) {
         if (file != null && !file.isEmpty()) {
             try {
                 Files.readAllBytes(Paths.get(file));
@@ -117,7 +120,8 @@ public class TimestampArgumentValidator {
                 return false;
             }
         } else {
-            System.out.println("RFC3852 requires a filename input of the countersignature file.");
+            System.out.println("RFC3852 and RFC2315 (PKCS7) formats require " +
+                    "a filename input of the countersignature file.");
             return false;
         }
         return true;

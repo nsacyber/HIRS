@@ -76,6 +76,7 @@ public class SwidTagConstants {
     public static final String TCG_NS = "https://trustedcomputinggroup.org/wp-content/uploads/TCG_RIM_Model";
     public static final String RFC3852_NS = "https://www.ietf.org/rfc/rfc3852.txt";
     public static final String RFC3339_NS = "https://www.ietf.org/rfc/rfc3339.txt";
+    public static final String RFC2315_NS = "https://www.ietf.org/rfc/rfc2315.txt";
     public static final String PCRIM_NS = "https://trustedcomputinggroup.org/resource/" +
             "tcg-pc-client-reference-integrity-manifest-specification/";
 
@@ -83,6 +84,7 @@ public class SwidTagConstants {
     public static final String RIM_PFX = "rim";
     public static final String RFC3852_PFX = "rcf3852";
     public static final String RFC3339_PFX = "rcf3339";
+    public static final String RFC2315_PFX = "rcf2315";
     public static final String PCRIM_PFX = "pcRim";
 
     public static final QName _SHA256_HASH = new QName(

@@ -54,7 +54,7 @@ public class Commander {
     private String rimEventLog = "";
     @Parameter(names = {"--timestamp"}, order = 11, variableArity = true,
             description = "Add a timestamp to the signature. " +
-                    "Currently only RFC3339 and RFC3852 are supported:\n" +
+                    "Currently RFC3339, RFC3852, and RFC2315 (PKCS7) formats are supported:\n" +
                     "\tRFC3339 [yyyy-MM-ddThh:mm:ssZ]\n\tRFC3852 <counterSignature.bin>")
     private List<String> timestampArguments = new ArrayList<String>(2);
     @Parameter(names = {"--directory"}, validateWith = DirectoryArgumentValidator.class,

@@ -200,7 +200,7 @@ public class SwidTagGateway {
     }
 
     /**
-     * Setter for timestamp input - RFC3852 + file or RFC3339 + value
+     * Setter for timestamp input - RFC3852|RFC2315 + file or RFC3339 + value
      *
      * @param timestampArgument
      */
@@ -813,6 +813,20 @@ public class SwidTagGateway {
     private XMLObject createXmlTimestamp(Document doc, XMLSignatureFactory sigFactory) {
         Element timeStampElement = null;
         switch (timestampFormat.toUpperCase()) {
+            case "RFC2315":
+                try {
+                    byte[] counterSignature = Base64.getEncoder().encode(
+                            Files.readAllBytes(Paths.get(timestampArgument)));
+                    timeStampElement.setAttributeNS("http://www.w3.org/2000/xmlns/",
+                            "xmlns:" + SwidTagConstants.RFC2315_PFX,
+                            SwidTagConstants.RFC2315_NS);
+                    timeStampElement.setAttribute(SwidTagConstants.DATETIME,
+                            new String(counterSignature));
+                } catch (IOException e) {
+                    e.printStackTrace();
+                    System.exit(1);
+                }
+                break;
             case "RFC3852":
                 try {
                     timeStampElement =
