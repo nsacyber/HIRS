@@ -1,6 +1,6 @@
 package hirs.attestationca.persist.entity.userdefined.rim;
 
-import hirs.attestationca.persist.entity.ArchivableEntity;
+import hirs.attestationca.persist.entity.AbstractEntity;
 import jakarta.persistence.Access;
 import jakarta.persistence.AccessType;
 import jakarta.persistence.Column;
@@ -26,7 +26,7 @@ import java.util.UUID;
 @EqualsAndHashCode(callSuper=false)
 @Table(name = "ReferenceDigestValue")
 @Access(AccessType.FIELD)
-public class ReferenceDigestValue extends ArchivableEntity {
+public class ReferenceDigestValue extends AbstractEntity {
 
     @JdbcTypeCode(java.sql.Types.VARCHAR)
     @Column
@@ -42,6 +42,8 @@ public class ReferenceDigestValue extends ArchivableEntity {
     private int pcrIndex;
     @Column(nullable = false)
     private String digestValue;
+    @Column(nullable = false)
+    private String supportRimHash;
     @Column(nullable = false)
     private String eventType;
     @Column(columnDefinition = "blob", nullable = true)
@@ -64,6 +66,7 @@ public class ReferenceDigestValue extends ArchivableEntity {
         this.model = "";
         this.pcrIndex = -1;
         this.digestValue = "";
+        this.supportRimHash = "";
         this.eventType = "";
         this.matchFail = false;
         this.patched = false;
@@ -79,6 +82,7 @@ public class ReferenceDigestValue extends ArchivableEntity {
      * @param model the specific device type
      * @param pcrIndex the event number
      * @param digestValue the key digest value
+     * @param supportRimHash the support file's hash value
      * @param eventType the event type to store
      * @param matchFail the status of the baseline check
      * @param patched the status of the value being updated to patch
@@ -88,6 +92,7 @@ public class ReferenceDigestValue extends ArchivableEntity {
     public ReferenceDigestValue(final UUID baseRimId, final UUID supportRimId,
                                 final String manufacturer, final String model,
                                 final int pcrIndex, final String digestValue,
+                                final String supportRimHash,
                                 final String eventType, final boolean matchFail,
                                 final boolean patched, final boolean updated,
                                 final byte[] contentBlob) {
@@ -97,6 +102,7 @@ public class ReferenceDigestValue extends ArchivableEntity {
         this.model = model;
         this.pcrIndex = pcrIndex;
         this.digestValue = digestValue;
+        this.supportRimHash = supportRimHash;
         this.eventType = eventType;
         this.matchFail = matchFail;
         this.patched = patched;
