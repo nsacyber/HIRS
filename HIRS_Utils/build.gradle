@@ -35,16 +35,24 @@ dependencies {
     implementation libs.guava
     implementation libs.commons.codec
     implementation libs.commons.lang3
+    implementation libs.commons.io
     implementation libs.minimal.json
 
     implementation 'org.apache.logging.log4j:log4j-core:2.19.0'
     implementation 'org.apache.logging.log4j:log4j-api:2.19.0'
     implementation 'org.glassfish.jaxb:jaxb-runtime:4.0.1'
+
+    implementation 'org.junit.jupiter:junit-jupiter-api:5.9.3'
+    implementation 'org.junit.jupiter:junit-jupiter-engine:5.9.3'
+    testImplementation 'junit:junit:4.13.1'
+
     compileOnly libs.lombok
     annotationProcessor libs.lombok
 
-    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.6.0'
-    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine'
+    //testImplementation 'org.junit.jupiter:junit-jupiter-api:5.6.0'
+    //testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine'
+    testImplementation 'org.junit.platform:junit-platform-launcher:1.9.3'
+    testImplementation 'org.hamcrest:hamcrest:2.2'
 }
 
 test {
@@ -55,11 +63,11 @@ jar {
     duplicatesStrategy = DuplicatesStrategy.EXCLUDE
     manifest {
         attributes(
-                 'Class-Path': configurations.runtimeClasspath.files.collect { it.getName() }.join(' ')
-           )
+                'Class-Path': configurations.runtimeClasspath.files.collect { it.getName() }.join(' ')
+        )
     }
-     //jar name format: [archiveBaseName]-[archiveAppendix]-[archiveVersion]-[archiveClassifier].[archiveExtension]
-     archiveVersion = jarVersion
+    //jar name format: [archiveBaseName]-[archiveAppendix]-[archiveVersion]-[archiveClassifier].[archiveExtension]
+    archiveVersion = jarVersion
 }
 
 //task generateXjcLibrary(type:Exec) {
