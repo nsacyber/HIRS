@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<SoftwareIdentity xmlns="http://standards.iso.org/iso/19770/-2/2015/schema.xsd" xmlns:ns2="http://www.w3.org/2000/09/xmldsig#" corpus="false" id="94f6b457-9ac9-4d35-9b3f-78804173b65as" name="Example.com BIOS" patch="false" supplemental="false" tagId="94f6b457-9ac9-4d35-9b3f-78804173b65as" tagVersion="0" version="01" versionScheme="multipartnumeric" xml:lang="en">
+<SoftwareIdentity xmlns="http://standards.iso.org/iso/19770/-2/2015/schema.xsd" xmlns:ns2="http://www.w3.org/2000/09/xmldsig#" xmlns:pcRim="https://trustedcomputinggroup.org/resource/tcg-pc-client-reference-integrity-manifest-specification/" corpus="false" name="Example.com BIOS" patch="false" pcRim:id="94f6b457-9ac9-4d35-9b3f-78804173b65as" supplemental="false" tagId="94f6b457-9ac9-4d35-9b3f-78804173b65as" tagVersion="0" version="01" versionScheme="multipartnumeric" xml:lang="en">
   <Entity name="Example Inc" regid="http://Example.com" role="softwareCreator tagCreator"/>
   <Link href="https://Example.com/support/ProductA/firmware/installfiles" rel="installationmedia"/>
-  <Meta xmlns:n8060="http://csrc.nist.gov/ns/swid/2015-extensions/1.0" xmlns:rim="https://trustedcomputinggroup.org/wp-content/uploads/TCG_RIM_Model" n8060:colloquialVersion="Firmware_2019" n8060:edition="12" n8060:product="ProductA" n8060:revision="r2" rim:PayloadType="direct" rim:bindingSpec="PC Client RIM" rim:bindingSpecVersion="1.2" rim:firmwareManufacturerId="00213022" rim:firmwareManufacturerStr="BIOSVendorA" rim:firmwareModel="A0" rim:firmwareVersion="12" rim:pcURIGlobal="https://Example.com/support/ProductA/" rim:pcURIlocal="/boot/tcg/manifest/switag/" rim:platformManufacturerId="00201234" rim:platformManufacturerStr="Example.com" rim:platformModel="ProductA" rim:platformVersion="01"/>
+  <Meta xmlns:n8060="http://csrc.nist.gov/ns/swid/2015-extensions/1.0" xmlns:rim="https://trustedcomputinggroup.org/wp-content/uploads/TCG_RIM_Model" n8060:colloquialVersion="Firmware_2019" n8060:edition="12" n8060:product="ProductA" n8060:revision="r2" rim:bindingSpec="PC Client RIM" rim:bindingSpecVersion="1.2" rim:firmwareManufacturerId="00213022" rim:firmwareManufacturerStr="BIOSVendorA" rim:firmwareModel="A0" rim:firmwareVersion="12" rim:payloadType="direct" rim:pcUriGlobal="https://Example.com/support/ProductA/" rim:pcUriLocal="/boot/tcg/manifest/switag/" rim:platformManufacturerId="00201234" rim:platformManufacturerStr="Example.com" rim:platformModel="ProductA" rim:platformVersion="01"/>
   <Payload>
     <Directory name="rim">
       <File xmlns:SHA256="http://www.w3.org/2001/04/xmlenc#sha256" SHA256:hash="4479ca722623f8c47b703996ced3cbd981b06b1ae8a897db70137e0b7c546848" name="Example.com.BIOS.01.rimel" size="7549"/>
@@ -17,14 +17,14 @@
           <Transform Algorithm="http://www.w3.org/2000/09/xmldsig#enveloped-signature"/>
         </Transforms>
         <DigestMethod Algorithm="http://www.w3.org/2001/04/xmlenc#sha256"/>
-        <DigestValue>f3ulvid12X4b4EqgAQrriXwqvqlNd1GXoSf/wI+zf2A=</DigestValue>
+        <DigestValue>6Zw06t03HhtT/RdeEnhzyMl3L7kl99jh31JLDl5UqXA=</DigestValue>
       </Reference>
     </SignedInfo>
-    <SignatureValue>GbvVCBhCDBa1Oz0HereVan1VzqFnkhQbG/QvYAtaPwWCpqtVqSTla0dvEW8LFKJtoLpE8ZQopshx&#13;
-se53rd9Z4aR2ok7VKfhtFV6LCNseyvmzWypqzCvLaG0net7EpMCixj8i0A5e4zaAEgt5Jqg1Acew&#13;
-hAY8XSnz9/e0EuzC3s9QlWSZHBtSvqlWUhsSVThf9KyHE3F/bwUGmEg6QdtREAr3c2jNK+LEN5MF&#13;
-hx64fG/WLRaAkw0lEWnBbjCdiB1ao+1G/c9yzxUQ82EriJdRBYjuRVmMlIOFRtYqe7oc5148pAAY&#13;
-qhol4MYlrmdjg9aW+2nv4KHHSDIhVgAAwRNJoQ==</SignatureValue>
+    <SignatureValue>HgN3Zcp1ayYo447K4MIdSg7zBmG5daVSkwJeXcyvvd1/yCA00ISwzA0HPaJY42JmflpPzMU6oRPZ&#13;
+Wk10JhnI8Si6DuQDgs3mNyjQgewdTDv6w02oopl2I8Iw2GpvxYl9WPASmB65nxVvjfTi6ZLwU0Wn&#13;
+Mw3nrbTSM2cndg2vmhP7NxRP3vzZtj2d0Uluw7BAaLVPZnrLOCe6fPaIQeg7YXfbk6WyGJGSLmLx&#13;
+09EJWU0X7kG8XuPsy02zvHRjvSDjOPVazSZHLLHLRvMR4HCwpXQtmkeo6pId8bihvolECUCtnJzJ&#13;
+noL23abi+YKMwuYs4r8KepamYGFJZgU6i5ZQuA==</SignatureValue>
     <KeyInfo>
       <KeyName>2fdeb8e7d030a2209daa01861a964fedecf2bcc1</KeyName>
       <KeyValue>

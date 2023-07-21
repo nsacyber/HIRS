@@ -47,7 +47,7 @@ public class SwidTagConstants {
     public static final String EDITION = "edition";
     public static final String PRODUCT = "product";
     public static final String REVISION = "revision";
-    public static final String PAYLOAD_TYPE = "PayloadType";
+    public static final String PAYLOAD_TYPE = "payloadType";
     public static final String HYBRID = "hybrid";
     public static final String PLATFORM_MANUFACTURER_STR = "platformManufacturerStr";
     public static final String PLATFORM_MANUFACTURER_ID = "platformManufacturerId";
@@ -59,17 +59,17 @@ public class SwidTagConstants {
     public static final String FIRMWARE_VERSION = "firmwareVersion";
     public static final String BINDING_SPEC = "bindingSpec";
     public static final String BINDING_SPEC_VERSION = "bindingSpecVersion";
-    public static final String PC_URI_LOCAL = "pcURIlocal";
-    public static final String PC_URI_GLOBAL = "pcURIGlobal";
+    public static final String PC_URI_LOCAL = "pcUriLocal";
+    public static final String PC_URI_GLOBAL = "pcUriGlobal";
     public static final String RIM_LINK_HASH = "rimLinkHash";
     public static final String SIZE = "size";
     public static final String HASH = "hash";
-    public static final String SUPPORT_RIM_TYPE = "supportRIMType";
-    public static final String SUPPORT_RIM_FORMAT = "supportRIMFormat";
+    public static final String SUPPORT_RIM_TYPE = "supportRimType";
+    public static final String SUPPORT_RIM_FORMAT = "supportRimFormat";
     public static final String TCG_EVENTLOG_ASSERTION = "TCG_EventLog_Assertion";
     public static final String TPM_PCR_ASSERTION = "TPM_PCR_Assertion";
-    public static final String SUPPORT_RIM_FORMAT_MISSING = "supportRIMFormat missing";
-    public static final String SUPPORT_RIM_URI_GLOBAL = "supportRIMURIGlobal";
+    public static final String SUPPORT_RIM_FORMAT_MISSING = "supportRimFormat missing";
+    public static final String SUPPORT_RIM_URI_GLOBAL = "supportRimUriGlobal";
     public static final String DATETIME = "dateTime";
 
     public static final String NIST_NS = "http://csrc.nist.gov/ns/swid/2015-extensions/1.0";
@@ -77,12 +77,15 @@ public class SwidTagConstants {
     public static final String RFC3852_NS = "https://www.ietf.org/rfc/rfc3852.txt";
     public static final String RFC3339_NS = "https://www.ietf.org/rfc/rfc3339.txt";
     public static final String RFC2315_NS = "https://www.ietf.org/rfc/rfc2315.txt";
+    public static final String PCRIM_NS = "https://trustedcomputinggroup.org/resource/" +
+            "tcg-pc-client-reference-integrity-manifest-specification/";
 
     public static final String N8060_PFX = "n8060";
     public static final String RIM_PFX = "rim";
     public static final String RFC3852_PFX = "rcf3852";
     public static final String RFC3339_PFX = "rcf3339";
     public static final String RFC2315_PFX = "rcf2315";
+    public static final String PCRIM_PFX = "pcRim";
 
     public static final QName _SHA256_HASH = new QName(
             "http://www.w3.org/2001/04/xmlenc#sha256", HASH, "SHA256");
@@ -134,6 +137,8 @@ public class SwidTagConstants {
             NIST_NS, "envVarSuffix", N8060_PFX);
     public static final QName _N8060_PATHSEPARATOR = new QName(
             NIST_NS, "pathSeparator", N8060_PFX);
+    public static final QName _SOFTWARE_IDENTITY_ID = new QName(
+            PCRIM_NS, "id", PCRIM_PFX);
 
     public static final String CA_ISSUERS = "1.3.6.1.5.5.7.48.2";
 }

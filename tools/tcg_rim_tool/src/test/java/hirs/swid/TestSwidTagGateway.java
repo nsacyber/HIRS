@@ -46,7 +46,6 @@ public class TestSwidTagGateway {
         gateway.setRimEventLog(SUPPORT_RIM_FILE);
         gateway.setAttributesFile(ATTRIBUTES_FILE);
         validator = new SwidTagValidator();
-        validator.setRimEventLog(SUPPORT_RIM_FILE);
         validator.setTrustStoreFile(CA_CHAIN_FILE);
     }
 
@@ -196,6 +195,7 @@ public class TestSwidTagGateway {
             validator.validateSwidTag(DEFAULT_OUTPUT, "DEFAULT");
         } catch (Exception e) {
             e.printStackTrace();
+            Assert.fail();
         }
     }
 

@@ -37,6 +37,7 @@ import java.io.OutputStreamWriter;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Enumeration;
@@ -198,7 +199,7 @@ public class ValidationReportsPageController extends PageController<NoPageParams
                     if (parameterValue != null && !parameterValue.isEmpty()) {
                         endDate = LocalDate.parse(parameterValue, dateFormat);
                     } else {
-                        endDate = LocalDate.now();
+                        endDate = LocalDate.now(ZoneId.of("America/New_York"));
                     }
                     break;
                 case "createTimes":

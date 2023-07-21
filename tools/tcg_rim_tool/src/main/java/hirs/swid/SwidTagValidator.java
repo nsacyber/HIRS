@@ -5,7 +5,6 @@ import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
-import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
 import javax.security.auth.x500.X500Principal;
@@ -27,9 +26,6 @@ import javax.xml.crypto.dsig.dom.DOMValidateContext;
 import javax.xml.crypto.dsig.keyinfo.KeyInfo;
 import javax.xml.crypto.dsig.keyinfo.KeyValue;
 import javax.xml.crypto.dsig.keyinfo.X509Data;
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.Source;
 import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerConfigurationException;
@@ -42,9 +38,6 @@ import javax.xml.validation.SchemaFactory;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.StringReader;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.security.InvalidKeyException;
 import java.security.Key;
 import java.security.KeyException;
@@ -65,10 +58,10 @@ import java.util.List;
  */
 public class SwidTagValidator {
     private Unmarshaller unmarshaller;
-    private String rimEventLog;
     private String certificateFile;
     private String trustStoreFile;
     private List<X509Certificate> trustStore;
+    private String directoryOverride;
 
     /**
      * Ensure that BouncyCastle is configured as a javax.security.Security provider, as this
@@ -76,15 +69,6 @@ public class SwidTagValidator {
      */
     static {
         Security.addProvider(new BouncyCastleProvider());
-    }
-
-    /**
-     * Setter for rimel file path.
-     *
-     * @param rimEventLog the rimel file
-     */
-    public void setRimEventLog(String rimEventLog) {
-        this.rimEventLog = rimEventLog;
     }
 
     /**
@@ -96,13 +80,21 @@ public class SwidTagValidator {
         this.trustStoreFile = trustStoreFile;
     }
 
+    /**
+     * Setter for directory override path.
+     * @param directoryOverride directory path
+     */
+    public void setDirectoryOverride(String directoryOverride) {
+        this.directoryOverride = directoryOverride;
+    }
+
     public SwidTagValidator() {
         try {
             JAXBContext jaxbContext = JAXBContext.newInstance(SwidTagConstants.SCHEMA_PACKAGE);
             unmarshaller = jaxbContext.createUnmarshaller();
-            rimEventLog = "";
             certificateFile = "";
             trustStoreFile = SwidTagConstants.DEFAULT_KEYSTORE_FILE;
+            directoryOverride = "";
         } catch (JAXBException e) {
             System.out.println("Error initializing JAXBContext: " + e.getMessage());
         }
@@ -127,7 +119,10 @@ public class SwidTagValidator {
             si.append("SoftwareIdentity name: " + softwareIdentity.getAttribute("name") + "\n");
             si.append("SoftwareIdentity tagId: " + softwareIdentity.getAttribute("tagId") + "\n");
             System.out.println(si.toString());
-            return validateEnvelopedSignature(document, format);
+            Element directory = (Element) document.getElementsByTagName("Directory").item(0);
+            if (validateDirectory(directory)) {
+                return validateEnvelopedSignature(document, format);
+            }
         } else {
             System.out.println("Invalid xml for validation, please verify " + path);
         }
@@ -136,13 +131,6 @@ public class SwidTagValidator {
     }
 
     private boolean validateEnvelopedSignature(Document doc, String format) {
-        Element file = (Element) doc.getElementsByTagName("File").item(0);
-        try {
-            validateFile(file);
-        } catch (Exception e) {
-            System.out.println(e.getMessage());
-            return false;
-        }
         boolean swidtagValidity = validateSignedXMLDocument(doc, format);
         if (swidtagValidity) {
             System.out.println("Signature core validity: true");
@@ -182,23 +170,38 @@ public class SwidTagValidator {
     }
 
     /**
+     * This method iterates over the list of File elements under the directory.
+     *
+     * @param directory the Directory element
+     */
+    private boolean validateDirectory(Element directory) {
+        boolean isValid = true;
+        NodeList fileNodeList = directory.getChildNodes();
+        for (int i = 0;i < fileNodeList.getLength();i++) {
+            Element file = (Element) fileNodeList.item(i);
+            isValid &= validateFile(file);
+        }
+
+        return isValid;
+    }
+
+    /**
      * This method validates a hirs.swid.xjc.File from an indirect payload
      */
-    private boolean validateFile(Element file) throws Exception {
-        String filepath;
-        if (!rimEventLog.isEmpty()) {
-            filepath = rimEventLog;
-        } else {
-            filepath = file.getAttribute(SwidTagConstants.NAME);
-        }
-        System.out.println("Support rim found at " + filepath);
-        if (HashSwid.get256Hash(filepath).equals(
-                file.getAttribute(SwidTagConstants._SHA256_HASH.getPrefix() + ":" +
-                        SwidTagConstants._SHA256_HASH.getLocalPart()))) {
-            System.out.println("Support RIM hash verified!" + System.lineSeparator());
-            return true;
-        } else {
-            System.out.println("Support RIM hash does not match Base RIM!" + System.lineSeparator());
+    private boolean validateFile(Element file) {
+        String filepath = directoryOverride + file.getAttribute(SwidTagConstants.NAME);
+        try {
+            if (HashSwid.get256Hash(filepath).equals(
+                    file.getAttribute(SwidTagConstants._SHA256_HASH.getPrefix() + ":" +
+                            SwidTagConstants._SHA256_HASH.getLocalPart()))) {
+                System.out.println("Support RIM hash verified for " + filepath);
+                return true;
+            } else {
+                System.out.println("Hash of " + filepath + " does not match value in Base RIM");
+                return false;
+            }
+        } catch (Exception e) {
+            System.out.println(e.getMessage());
             return false;
         }
     }
@@ -534,6 +537,7 @@ public class SwidTagValidator {
             System.out.println("Error setting schema for validation!");
         } catch (UnmarshalException e) {
             System.out.println("Error validating swidtag file!");
+            e.printStackTrace();
         } catch (IllegalArgumentException e) {
             System.out.println("Input file empty.");
         } catch (JAXBException e) {

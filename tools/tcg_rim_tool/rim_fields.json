@@ -32,9 +32,10 @@
 		"Directory": {
                 	"supportRIMFormat": "TCG_EventLog_Assertion",
 			"name": "iotBase",
-			"File": {
-				"name": "TpmLog.bin"
-			}
+			"File": [
+				{ "name": "TpmLog.bin" },
+				{ "name": "generated_swidTag.swidtag" }
+			]
 		}
 	}
 }
