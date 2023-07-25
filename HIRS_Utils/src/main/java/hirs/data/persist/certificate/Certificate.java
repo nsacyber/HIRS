@@ -14,9 +14,9 @@ import org.bouncycastle.asn1.ASN1Integer;
 import org.bouncycastle.asn1.ASN1Object;
 import org.bouncycastle.asn1.ASN1Primitive;
 import org.bouncycastle.asn1.ASN1Sequence;
+import org.bouncycastle.asn1.ASN1TaggedObject;
 import org.bouncycastle.asn1.DERIA5String;
 import org.bouncycastle.asn1.DEROctetString;
-import org.bouncycastle.asn1.DERTaggedObject;
 import org.bouncycastle.asn1.DLSequence;
 import org.bouncycastle.asn1.x500.X500Name;
 import org.bouncycastle.asn1.x509.AccessDescription;
@@ -36,7 +36,6 @@ import org.bouncycastle.asn1.x509.V2Form;
 import org.bouncycastle.cert.X509AttributeCertificateHolder;
 import org.bouncycastle.cert.X509CertificateHolder;
 import org.bouncycastle.util.encoders.Base64;
-import org.bouncycastle.x509.extension.X509ExtensionUtil;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -557,7 +556,7 @@ public abstract class Certificate extends ArchivableEntity {
                  // V1 X509Certificate
                  return CertificateType.X509_CERTIFICATE;
              }
-        } else if (testSeq.toArray()[0] instanceof DERTaggedObject) {
+        } else if (testSeq.toArray()[0] instanceof ASN1TaggedObject) {
             // V2 or V3 X509Certificate
             return CertificateType.X509_CERTIFICATE;
         }
@@ -678,13 +677,16 @@ public abstract class Certificate extends ArchivableEntity {
      *
      * @return List Authority info access list
      */
-    private String getAuthorityInfoAccess(final byte[] authoInfoAccess) {
+    @SuppressWarnings("deprecation")
+private String getAuthorityInfoAccess(final byte[] authoInfoAccess) {
         StringBuilder sb = new StringBuilder();
 
         try {
             if (authoInfoAccess != null && authoInfoAccess.length > 0) {
                 sb.append(getAuthorityInfoAccess(AuthorityInformationAccess
-                        .getInstance(X509ExtensionUtil.fromExtensionValue(authoInfoAccess))));
+            .getInstance(
+            org.bouncycastle.x509.extension.X509ExtensionUtil.fromExtensionValue(
+                    authoInfoAccess))));
             }
         } catch (IOException ioEx) {
             LOGGER.error(ioEx);

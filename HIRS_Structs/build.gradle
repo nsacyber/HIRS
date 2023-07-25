@@ -14,7 +14,6 @@ dependencies {
 
 ext.configDir = new File(projectDir, 'config')
 ext.checkstyleConfigDir = "$configDir/checkstyle"
-//ext.checkstyleConfigDir = "$rootProject.projectDir/config/checkstyle"
 
 checkstyle {
     toolVersion = '8.45.1'

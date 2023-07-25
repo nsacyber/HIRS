@@ -99,7 +99,7 @@ task integrationTest(type: Test) {
 ext.checkstyleConfigDir = "$configDir/checkstyle"
 
 checkstyle {
-    toolVersion = '8.10.1'
+    toolVersion = '8.45.1'
     configFile = checkstyleConfigFile
     configProperties.put('basedir', checkstyleConfigDir)
     ignoreFailures = false
