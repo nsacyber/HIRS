@@ -60,6 +60,7 @@ import java.net.InetAddress;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.UnknownHostException;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.security.KeyFactory;
@@ -412,7 +413,7 @@ public class SupplyChainCredentialValidatorTest {
 
         URL url = SupplyChainCredentialValidator.class.getResource(
                 SAMPLE_PACCOR_OUTPUT_WITH_EXTRA_COMPONENT_TXT);
-        String paccorOutputString = IOUtils.toString(url);
+        String paccorOutputString = IOUtils.toString(url, StandardCharsets.UTF_8);
         when(deviceInfoReport.getPaccorOutputString()).thenReturn(paccorOutputString);
 
         byte[] certBytes = Files.readAllBytes(Paths.get(CertificateTest.class.
@@ -452,7 +453,7 @@ public class SupplyChainCredentialValidatorTest {
 
         URL url = SupplyChainCredentialValidator.class.getResource(
                 SAMPLE_PACCOR_OUTPUT_WITH_EXTRA_COMPONENT_TXT);
-        String paccorOutputString = IOUtils.toString(url);
+        String paccorOutputString = IOUtils.toString(url, StandardCharsets.UTF_8);
         when(deviceInfoReport.getPaccorOutputString()).thenReturn(paccorOutputString);
 
         byte[] certBytes = Files.readAllBytes(Paths.get(CertificateTest.class.
@@ -1418,7 +1419,7 @@ public class SupplyChainCredentialValidatorTest {
             final String paccorOutputResource) throws IOException {
         DeviceInfoReport deviceInfoReport = setupDeviceInfoReport();
         URL url = SupplyChainCredentialValidator.class.getResource(paccorOutputResource);
-        String paccorOutputString = IOUtils.toString(url);
+        String paccorOutputString = IOUtils.toString(url, StandardCharsets.UTF_8);
         when(deviceInfoReport.getPaccorOutputString()).thenReturn(paccorOutputString);
         return deviceInfoReport;
     }

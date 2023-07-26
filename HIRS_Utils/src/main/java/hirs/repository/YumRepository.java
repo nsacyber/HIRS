@@ -12,6 +12,7 @@ import javax.persistence.InheritanceType;
 import javax.persistence.Transient;
 import java.io.IOException;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -216,7 +217,8 @@ public class YumRepository extends RPMRepository<RPMRepoPackage> {
     private String generateConfig() throws IOException {
         StringBuilder sb = new StringBuilder();
         sb.append(FileUtils.readFileToString(
-                        FileSystems.getDefault().getPath("/etc", "yum.conf").toFile())
+                        FileSystems.getDefault().getPath("/etc", "yum.conf").toFile(),
+                        StandardCharsets.UTF_8)
         );
         sb.append(String.format("%nreposdir=%n%n"));
 
@@ -338,7 +340,8 @@ public class YumRepository extends RPMRepository<RPMRepoPackage> {
 
             // create config file and store its contents
             Path configFile = Files.createTempFile(tmpDirectory, "tmp-yum", ".conf");
-            FileUtils.writeStringToFile(configFile.toFile(), repo.generateConfig());
+            FileUtils.writeStringToFile(configFile.toFile(),
+                                        repo.generateConfig(), StandardCharsets.UTF_8);
             LOGGER.debug("wrote the yum config to file: {}", configFile.toString());
             repo.configFile = configFile;
             CONFIG_FILES.put(configHash, configFile);
