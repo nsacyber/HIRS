@@ -4,11 +4,8 @@ apply plugin: 'findbugs'
 apply plugin: 'java'
 apply plugin: 'jacoco'
 apply plugin: 'pmd'
-// DONT DELETE the next two plugins, maven and signing.
-// They're used for maven publishing.
-// But can cause build issues if certain gradle.properties are not set.
-//apply plugin: 'maven'
-//apply plugin: 'signing'
+apply plugin: 'maven'
+apply plugin: 'signing'
 
 ext.configDir = new File(projectDir, 'config')
 
@@ -147,6 +144,16 @@ publishing {
 // Maven packaging and signing
 group = 'io.github.nsacyber.hirs'
 version = '2.1.3beta'
+project.gradle.taskGraph.whenReady { graph ->
+    project.tasks.findAll().forEach { task ->
+      if (task.name.contains("signArchives") || task.name.contains("uploadArchives")) {
+          // If this is set to true, the signing and maven
+          // properties in gradle.properties must be set.
+          task.enabled = false 
+    }
+  }
+}
+
 tasks.withType(Javadoc) {
     failOnError false
 }

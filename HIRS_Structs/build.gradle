@@ -1,10 +1,7 @@
 apply plugin: 'java'
 apply plugin: 'checkstyle'
-// DONT DELETE the next two plugins, maven and signing.
-// They're used for maven publishing.
-// But can cause build issues if certain gradle.properties are not set.
-//apply plugin: 'maven'
-//apply plugin: 'signing'
+apply plugin: 'maven'
+apply plugin: 'signing'
 
 sourceCompatibility = 1.8
 
@@ -38,6 +35,16 @@ publishing {
 // Maven packaging and signing
 group = 'io.github.nsacyber.hirs'
 version = '1.1.1'
+project.gradle.taskGraph.whenReady { graph ->
+    project.tasks.findAll().forEach { task ->
+      if (task.name.contains("signArchives") || task.name.contains("uploadArchives")) {
+          // If this is set to true, the signing and maven
+          // properties in gradle.properties must be set.
+          task.enabled = false 
+    }
+  }
+}
+
 tasks.withType(Javadoc) {
     failOnError false
 }
