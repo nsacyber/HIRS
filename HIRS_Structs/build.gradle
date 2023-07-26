@@ -1,7 +1,10 @@
 apply plugin: 'java'
 apply plugin: 'checkstyle'
-apply plugin: 'maven'
-apply plugin: 'signing'
+// DONT DELETE the next two plugins, maven and signing.
+// They're used for maven publishing.
+// But can cause build issues if certain gradle.properties are not set.
+//apply plugin: 'maven'
+//apply plugin: 'signing'
 
 sourceCompatibility = 1.8
 
