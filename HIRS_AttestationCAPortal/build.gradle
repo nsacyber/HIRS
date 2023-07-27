@@ -3,7 +3,7 @@ plugins {
     id 'java'
     id 'war'
     id "nebula.ospackage" version "9.1.1"
-    id 'org.springframework.boot' version '3.0.6'
+    id 'org.springframework.boot' version '3.1.2'
     id 'io.spring.dependency-management' version '1.1.0'
 }
 
@@ -47,8 +47,6 @@ dependencies {
     implementation 'org.apache.logging.log4j:log4j-spring-boot'
     implementation 'org.projectlombok:lombok'
     implementation 'commons-fileupload:commons-fileupload:1.5'
-    implementation 'org.junit.jupiter:junit-jupiter:5.4.2'
-    implementation 'org.junit.jupiter:junit-jupiter:5.4.2'
     implementation 'org.apache.tomcat.embed:tomcat-embed-jasper:10.1.5'
 
     compileOnly 'org.projectlombok:lombok'
@@ -56,8 +54,9 @@ dependencies {
     annotationProcessor 'org.projectlombok:lombok'
     providedRuntime 'org.springframework.boot:spring-boot-starter-tomcat'
 
+    testImplementation 'org.junit.jupiter:junit-jupiter:5.9.3'
+    testImplementation 'org.hamcrest:hamcrest:2.2'
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
-    testImplementation libs.testng
 }
 
 war {

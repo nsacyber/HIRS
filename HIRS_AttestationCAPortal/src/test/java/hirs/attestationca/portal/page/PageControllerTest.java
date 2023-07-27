@@ -1,8 +1,9 @@
 package hirs.attestationca.portal.page;
 
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.test.context.testng.AbstractTestNGSpringContextTests;
-import org.springframework.test.context.web.WebAppConfiguration;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
@@ -10,9 +11,9 @@ import org.springframework.web.context.WebApplicationContext;
 /**
  * Base class for PageController tests.
  */
-@WebAppConfiguration
-//@ContextConfiguration(classes = PageTestConfiguration.class)
-public class PageControllerTest extends AbstractTestNGSpringContextTests {
+@ExtendWith(SpringExtension.class)
+@SpringBootTest
+public class PageControllerTest {
 
     @Autowired
     private WebApplicationContext webApplicationContext;
