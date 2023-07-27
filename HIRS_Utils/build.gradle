@@ -139,7 +139,7 @@ publishing {
 
 // Maven packaging and signing
 group = 'io.github.nsacyber.hirs'
-version = '2.1.3beta'
+version = '2.2.0'
 project.gradle.taskGraph.whenReady { graph ->
     project.tasks.findAll().forEach { task ->
       if (task.name.contains("signArchives") || task.name.contains("uploadArchives")) {
