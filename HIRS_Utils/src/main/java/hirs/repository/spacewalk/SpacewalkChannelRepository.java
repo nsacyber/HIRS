@@ -5,8 +5,10 @@ import hirs.repository.RPMRepository;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.file.Path;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -156,14 +158,9 @@ public class SpacewalkChannelRepository extends RPMRepository<SpacewalkPackage> 
             throw new RepositoryException("Spacewalk authentication has not been provided");
         }
 
-        try {
-            List<SpacewalkPackage> packageList =
-                    SpacewalkService.getPackages(auth, getBaseUrl(), channelLabel, this);
-            return new HashSet<>(packageList);
-        } catch (SpacewalkException e) {
-            LOGGER.error("Error getting packages from Spacewalk.", e);
-            throw new RepositoryException(e);
-        }
+        List<SpacewalkPackage> packageList = Arrays.asList();
+                //SpacewalkService.getPackages(auth, getBaseUrl(), channelLabel, this);
+        return new HashSet<>(packageList);
     }
 
     @Override
@@ -254,9 +251,8 @@ public class SpacewalkChannelRepository extends RPMRepository<SpacewalkPackage> 
 
         URL downloadUrl;
         try {
-            downloadUrl =
-                    SpacewalkService.getPackageDownloadUrl(auth, getBaseUrl(), spacewalkPackage);
-        } catch (SpacewalkException e) {
+            downloadUrl = new URL("localhost");
+        } catch (MalformedURLException e) {
             throw new RepositoryException("Error getting Package download URL", e);
         }
         try {
