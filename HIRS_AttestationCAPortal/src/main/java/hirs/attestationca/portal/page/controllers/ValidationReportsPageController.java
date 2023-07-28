@@ -6,8 +6,10 @@ import hirs.attestationca.persist.CriteriaModifier;
 import hirs.attestationca.persist.FilteredRecordsList;
 import hirs.attestationca.persist.entity.manager.CertificateRepository;
 import hirs.attestationca.persist.entity.manager.DeviceRepository;
+import hirs.attestationca.persist.entity.manager.PlatformCertificateRepository;
 import hirs.attestationca.persist.entity.manager.SupplyChainValidationSummaryRepository;
 import hirs.attestationca.persist.entity.userdefined.Certificate;
+import hirs.attestationca.persist.entity.userdefined.Device;
 import hirs.attestationca.persist.entity.userdefined.SupplyChainValidationSummary;
 import hirs.attestationca.persist.entity.userdefined.certificate.PlatformCredential;
 import hirs.attestationca.persist.entity.userdefined.certificate.attributes.ComponentIdentifier;
@@ -62,6 +64,7 @@ public class ValidationReportsPageController extends PageController<NoPageParams
     private final SupplyChainValidationSummaryRepository supplyChainValidatorSummaryRepository;
     private final CertificateRepository certificateRepository;
     private final DeviceRepository deviceRepository;
+    private final PlatformCertificateRepository platformCertificateRepository;
     @Autowired(required = false)
     private EntityManager entityManager;
 
@@ -78,16 +81,19 @@ public class ValidationReportsPageController extends PageController<NoPageParams
      * @param supplyChainValidatorSummaryRepository the manager
      * @param certificateRepository the certificate manager
      * @param deviceRepository the device manager
+     * @param platformCertificateRepository the platform certificate manager
      */
     @Autowired
     public ValidationReportsPageController(
             final SupplyChainValidationSummaryRepository supplyChainValidatorSummaryRepository,
             final CertificateRepository certificateRepository,
-            final DeviceRepository deviceRepository) {
+            final DeviceRepository deviceRepository,
+            final PlatformCertificateRepository platformCertificateRepository) {
         super(Page.VALIDATION_REPORTS);
         this.supplyChainValidatorSummaryRepository = supplyChainValidatorSummaryRepository;
         this.certificateRepository = certificateRepository;
         this.deviceRepository = deviceRepository;
+        this.platformCertificateRepository = platformCertificateRepository;
     }
 
     /**
@@ -281,8 +287,8 @@ public class ValidationReportsPageController extends PageController<NoPageParams
             if ((createTimes.get(i).isAfter(startDate) || createTimes.get(i).isEqual(startDate))
                     && (createTimes.get(i).isBefore(endDate)
                     || createTimes.get(i).isEqual(endDate))) {
-                UUID deviceId = deviceRepository.findByName(deviceNames[i]).getId();
-                PlatformCredential pc = certificateRepository.findByDeviceId(deviceId);
+                Device device = deviceRepository.findByName(deviceNames[i]);
+                PlatformCredential pc = platformCertificateRepository.findByDeviceId(device.getId()).get(0);
                 if (jsonVersion) {
                     jsonReportData.add(assembleJsonContent(pc, parseComponents(pc),
                             company, contractNumber));
@@ -304,7 +310,7 @@ public class ValidationReportsPageController extends PageController<NoPageParams
                                     + pc.getModel() + ","
                                     + pc.getPlatformSerial() + ","
                                     + LocalDateTime.now().toString() + ","
-                                    + pc.getDevice().getSupplyChainValidationStatus() + ",");
+                                    + device.getSupplyChainValidationStatus() + ",");
                         }
                         if (!systemOnly) {
                             ArrayList<ArrayList<String>> parsedComponents = parseComponents(pc);
@@ -353,6 +359,8 @@ public class ValidationReportsPageController extends PageController<NoPageParams
                                            final String company,
                                            final String contractNumber) {
         JsonObject systemData = new JsonObject();
+        String deviceName = deviceRepository.findById((pc)
+                .getDeviceId()).get().getName();
 
         systemData.addProperty("Company", company);
         systemData.addProperty("Contract number", contractNumber);
@@ -360,7 +368,8 @@ public class ValidationReportsPageController extends PageController<NoPageParams
         systemData.addProperty("Model", pc.getModel());
         systemData.addProperty("SN", pc.getPlatformSerial());
         systemData.addProperty("Verification Date", LocalDateTime.now().toString());
-        systemData.addProperty("Device Status", pc.getDevice().getSupplyChainValidationStatus().toString());
+        systemData.addProperty("Device Status", deviceRepository.findByName(deviceName)
+                .getSupplyChainValidationStatus().toString());
 
         JsonArray components = new JsonArray();
         for (ArrayList<String> componentData : parsedComponents) {

@@ -1,15 +1,13 @@
 package hirs.attestationca.persist.entity.userdefined.info;
 
-import hirs.attestationca.persist.entity.userdefined.report.DeviceInfoReport;
 import hirs.utils.StringValidator;
+import hirs.utils.enums.DeviceInfoEnums;
 import jakarta.persistence.Column;
 import jakarta.persistence.Embeddable;
 import jakarta.xml.bind.annotation.XmlElement;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
-import lombok.ToString;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import lombok.extern.log4j.Log4j2;
 
 import java.io.Serializable;
 
@@ -17,30 +15,29 @@ import java.io.Serializable;
  * This class is used to represent the OS info of a device.
  */
 @EqualsAndHashCode
-@ToString
 @Getter
+@Log4j2
 @Embeddable
 public class OSInfo implements Serializable {
-    private static final Logger LOGGER = LogManager.getLogger(OSInfo.class);
 
     @XmlElement
-    @Column(length = DeviceInfoReport.LONG_STRING_LENGTH, nullable = false)
+    @Column(length = DeviceInfoEnums.LONG_STRING_LENGTH, nullable = false)
     private final String osName;
 
     @XmlElement
-    @Column(length = DeviceInfoReport.LONG_STRING_LENGTH, nullable = false)
+    @Column(length = DeviceInfoEnums.LONG_STRING_LENGTH, nullable = false)
     private final String osVersion;
 
     @XmlElement
-    @Column(length = DeviceInfoReport.SHORT_STRING_LENGTH, nullable = false)
+    @Column(length = DeviceInfoEnums.SHORT_STRING_LENGTH, nullable = false)
     private final String osArch;
 
     @XmlElement
-    @Column(length = DeviceInfoReport.SHORT_STRING_LENGTH, nullable = true)
+    @Column(length = DeviceInfoEnums.SHORT_STRING_LENGTH, nullable = true)
     private final String distribution;
 
     @XmlElement
-    @Column(length = DeviceInfoReport.SHORT_STRING_LENGTH, nullable = true)
+    @Column(length = DeviceInfoEnums.SHORT_STRING_LENGTH, nullable = true)
     private final String distributionRelease;
 
     /**
@@ -64,36 +61,36 @@ public class OSInfo implements Serializable {
     public OSInfo(final String osName, final String osVersion,
                   final String osArch, final String distribution,
                   final String distributionRelease) {
-        LOGGER.debug("setting OS name information to: {}", osName);
+        log.debug("setting OS name information to: {}", osName);
         this.osName = StringValidator.check(osName, "osName")
-                .notNull().maxLength(DeviceInfoReport.LONG_STRING_LENGTH).getValue();
+                .notNull().maxLength(DeviceInfoEnums.LONG_STRING_LENGTH).getValue();
 
-        LOGGER.debug("setting OS version information to: {}", osVersion);
+        log.debug("setting OS version information to: {}", osVersion);
         this.osVersion = StringValidator.check(osVersion, "osVersion")
-                .notNull().maxLength(DeviceInfoReport.LONG_STRING_LENGTH).getValue();
+                .notNull().maxLength(DeviceInfoEnums.LONG_STRING_LENGTH).getValue();
 
-        LOGGER.debug("setting OS arch information to: {}", osArch);
+        log.debug("setting OS arch information to: {}", osArch);
         this.osArch = StringValidator.check(osArch, "osArch")
-                .notNull().maxLength(DeviceInfoReport.SHORT_STRING_LENGTH).getValue();
+                .notNull().maxLength(DeviceInfoEnums.SHORT_STRING_LENGTH).getValue();
 
-        LOGGER.debug("setting OS distribution information to: {}", distribution);
+        log.debug("setting OS distribution information to: {}", distribution);
         this.distribution = StringValidator.check(distribution, "distribution")
-                .maxLength(DeviceInfoReport.SHORT_STRING_LENGTH).getValue();
+                .maxLength(DeviceInfoEnums.SHORT_STRING_LENGTH).getValue();
 
-        LOGGER.debug("setting OS distribution release information to: {}",
+        log.debug("setting OS distribution release information to: {}",
                 distributionRelease);
         this.distributionRelease = StringValidator.check(distributionRelease, "distributionRelease")
-                .maxLength(DeviceInfoReport.SHORT_STRING_LENGTH).getValue();
+                .maxLength(DeviceInfoEnums.SHORT_STRING_LENGTH).getValue();
     }
 
     /**
      * Default constructor necessary for marshalling/unmarshalling XML objects.
      */
     public OSInfo() {
-        this(DeviceInfoReport.NOT_SPECIFIED,
-                DeviceInfoReport.NOT_SPECIFIED,
-                DeviceInfoReport.NOT_SPECIFIED,
-                DeviceInfoReport.NOT_SPECIFIED,
-                DeviceInfoReport.NOT_SPECIFIED);
+        this(DeviceInfoEnums.NOT_SPECIFIED,
+                DeviceInfoEnums.NOT_SPECIFIED,
+                DeviceInfoEnums.NOT_SPECIFIED,
+                DeviceInfoEnums.NOT_SPECIFIED,
+                DeviceInfoEnums.NOT_SPECIFIED);
     }
 }

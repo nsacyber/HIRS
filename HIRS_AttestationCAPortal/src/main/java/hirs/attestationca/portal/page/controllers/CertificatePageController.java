@@ -47,6 +47,8 @@ import org.springframework.web.servlet.view.RedirectView;
 import java.io.IOException;
 import java.lang.ref.Reference;
 import java.net.URISyntaxException;
+import java.security.cert.CertificateEncodingException;
+import java.security.cert.X509Certificate;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -94,16 +96,15 @@ public class CertificatePageController extends PageController<NoPageParams> {
      * @param endorsementCredentialRepository the endorsement credential manager
      * @param issuedCertificateRepository the issued certificate manager
      * @param caCredentialRepository the ca credential manager
-//     * @param acaCertificate the ACA's X509 certificate
+     * @param acaCertificate the ACA's X509 certificate
      */
     @Autowired
     public CertificatePageController(final CertificateRepository certificateRepository,
                                      final PlatformCertificateRepository platformCertificateRepository,
                                      final EndorsementCredentialRepository endorsementCredentialRepository,
                                      final IssuedCertificateRepository issuedCertificateRepository,
-                                     final CACredentialRepository caCredentialRepository
-//            final X509Certificate acaCertificate
-    ) {
+                                     final CACredentialRepository caCredentialRepository,
+            final X509Certificate acaCertificate) {
         super(Page.TRUST_CHAIN);
         this.certificateRepository = certificateRepository;
         this.platformCertificateRepository = platformCertificateRepository;
@@ -111,14 +112,14 @@ public class CertificatePageController extends PageController<NoPageParams> {
         this.issuedCertificateRepository = issuedCertificateRepository;
         this.caCredentialRepository = caCredentialRepository;
 
-//        try {
-            certificateAuthorityCredential = null;
-//                    = new CertificateAuthorityCredential(acaCertificate.getEncoded());
-//        } catch (IOException ioEx) {
-//            log.error("Failed to read ACA certificate", ioEx);
-//        } catch (CertificateEncodingException ceEx) {
-//            log.error("Error getting encoded ACA certificate", ceEx);
-//        }
+        try {
+            certificateAuthorityCredential
+                    = new CertificateAuthorityCredential(acaCertificate.getEncoded());
+        } catch (IOException ioEx) {
+            log.error("Failed to read ACA certificate", ioEx);
+        } catch (CertificateEncodingException ceEx) {
+            log.error("Error getting encoded ACA certificate", ceEx);
+        }
     }
 
     /**
@@ -238,7 +239,7 @@ public class CertificatePageController extends PageController<NoPageParams> {
                     PlatformCredential pc = (PlatformCredential) records.get(i);
                     // find the EC using the PC's "holder serial number"
                     associatedEC = this.endorsementCredentialRepository
-                            .getEcByHolderSerialNumber(pc.getHolderSerialNumber());
+                            .findByHolderSerialNumber(pc.getHolderSerialNumber());
 
                     if (associatedEC != null) {
                         log.debug("EC ID for holder s/n " + pc

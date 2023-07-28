@@ -14,4 +14,5 @@ public interface IssuedCertificateRepository extends JpaRepository<IssuedAttesta
     @Query(value = "SELECT * FROM Certificate where DTYPE='IssuedAttestationCertificate'", nativeQuery = true)
     @Override
     List<IssuedAttestationCertificate> findAll();
+    List<IssuedAttestationCertificate> findByDeviceId(UUID deviceId);
 }
