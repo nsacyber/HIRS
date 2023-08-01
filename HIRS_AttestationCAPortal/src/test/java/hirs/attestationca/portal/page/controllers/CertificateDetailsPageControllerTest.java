@@ -14,6 +14,7 @@ import hirs.attestationca.persist.enums.HealthStatus;
 import hirs.attestationca.portal.page.PageControllerTest;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 
+import org.junit.jupiter.api.TestInstance;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
@@ -46,7 +47,7 @@ import org.junit.jupiter.api.Test;
 /**
  * Integration tests that test the URL End Points of CertificateDetailsPageController.
  */
-@DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_CLASS)
+@TestInstance(TestInstance.Lifecycle.PER_CLASS)
 public class CertificateDetailsPageControllerTest extends PageControllerTest {
 
     @Autowired

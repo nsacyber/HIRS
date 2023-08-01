@@ -18,6 +18,10 @@ java {
     }
 }
 
+test {
+    useJUnitPlatform()
+}
+
 configurations {
     compileOnly {
         extendsFrom annotationProcessor
