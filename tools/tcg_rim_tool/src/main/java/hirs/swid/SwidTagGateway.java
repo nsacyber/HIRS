@@ -815,6 +815,8 @@ public class SwidTagGateway {
         switch (timestampFormat.toUpperCase()) {
             case "RFC2315":
                 try {
+                    timeStampElement =
+                            doc.createElement(SwidTagConstants.RFC2315_PFX + ":timestamp");
                     byte[] counterSignature = Base64.getEncoder().encode(
                             Files.readAllBytes(Paths.get(timestampArgument)));
                     timeStampElement.setAttributeNS("http://www.w3.org/2000/xmlns/",
