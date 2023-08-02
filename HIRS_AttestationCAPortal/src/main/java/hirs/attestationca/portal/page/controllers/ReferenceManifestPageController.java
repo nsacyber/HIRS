@@ -110,6 +110,7 @@ public class ReferenceManifestPageController extends PageController<NoPageParams
      * @return the data tables response, including the result set and paging
      * information
      */
+    @ResponseBody
     @RequestMapping(value = "/list",
             produces = MediaType.APPLICATION_JSON_VALUE,
             method = RequestMethod.GET)
