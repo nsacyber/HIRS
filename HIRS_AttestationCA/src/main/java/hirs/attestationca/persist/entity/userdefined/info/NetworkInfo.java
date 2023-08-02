@@ -1,14 +1,12 @@
 package hirs.attestationca.persist.entity.userdefined.info;
 
-import hirs.attestationca.persist.entity.userdefined.report.DeviceInfoReport;
+import hirs.utils.enums.DeviceInfoEnums;
 import jakarta.persistence.Column;
 import jakarta.persistence.Embeddable;
 import jakarta.xml.bind.annotation.XmlElement;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
-import lombok.Setter;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import lombok.extern.log4j.Log4j2;
 
 import java.io.Serializable;
 import java.net.InetAddress;
@@ -17,26 +15,22 @@ import java.net.InetAddress;
  * This class is used to represent the network info of a device.
  */
 @EqualsAndHashCode
+@Log4j2
 @Embeddable
 public class NetworkInfo implements Serializable {
-
-    private static final Logger LOGGER = LogManager
-            .getLogger(NetworkInfo.class);
 
     private static final int NUM_MAC_ADDRESS_BYTES = 6;
 
     @XmlElement
-    @Setter
     @Getter
-    @Column(length = DeviceInfoReport.LONG_STRING_LENGTH, nullable = true)
+    @Column(length = DeviceInfoEnums.LONG_STRING_LENGTH, nullable = true)
     private String hostname;
 
     @XmlElement
-//    @XmlJavaTypeAdapter(value = InetAddressXmlAdapter.class)
-    @Setter
     @Getter
-    @Column(length = DeviceInfoReport.SHORT_STRING_LENGTH, nullable = true)
-//    @Convert(converter = hirs.attestationca.persist.type.InetAddressType.class)
+//    @XmlJavaTypeAdapter(value = InetAddressXmlAdapter.class)
+    @Column(length = DeviceInfoEnums.SHORT_STRING_LENGTH, nullable = true)
+//    @JsonSubTypes.Type(type = "hirs.data.persist.type.InetAddressType")
     private InetAddress ipAddress;
 
     @XmlElement
@@ -87,13 +81,23 @@ public class NetworkInfo implements Serializable {
         }
     }
 
+    private void setHostname(final String hostname) {
+        log.debug("setting hostname to: {}", hostname);
+        this.hostname = hostname;
+    }
+
+    private void setIpAddress(final InetAddress ipAddress) {
+        log.debug("setting IP address to: {}", ipAddress);
+        this.ipAddress = ipAddress;
+    }
+
     private void setMacAddress(final byte[] macAddress) {
         StringBuilder sb;
         if (macAddress == null) {
             sb = null;
         } else {
             if (macAddress.length != NUM_MAC_ADDRESS_BYTES) {
-                LOGGER.error(
+                log.error(
                         "MAC address is only {} bytes, must be {} bytes or "
                                 + "null", macAddress.length,
                         NUM_MAC_ADDRESS_BYTES);
@@ -105,7 +109,7 @@ public class NetworkInfo implements Serializable {
                 sb.append(String.format("%02X ", b));
             }
         }
-        LOGGER.debug("setting MAC address to: {}", sb);
+        log.debug("setting MAC address to: {}", sb);
         this.macAddress = macAddress;
     }
 }

@@ -106,73 +106,6 @@ public class EndorsementCredential extends DeviceAssociatedCertificate {
     private static final int EK_CERT_HEADER_BYTE_COUNT = 7;
 
     /**
-     * This class enables the retrieval of EndorsementCredential by their attributes.
-     */
-//    public static class Selector extends CertificateSelector<EndorsementCredential> {
-//        /**
-//         * Construct a new CertificateSelector that will use the given {@link CertificateManager} to
-//         * retrieve one or many EndorsementCredentials.
-//         *
-//         * @param certificateManager the certificate manager to be used to retrieve certificates
-//         */
-//        public Selector(final CertificateManager certificateManager) {
-//            super(certificateManager, EndorsementCredential.class);
-//        }
-//
-//        /**
-//         * Specify a manufacturer that certificates must have to be considered as matching.
-//         * @param manufacturer the manufacturer to query, not empty or null
-//         * @return this instance (for chaining further calls)
-//         */
-//        public Selector byManufacturer(final String manufacturer) {
-//            setFieldValue(MANUFACTURER_FIELD, manufacturer);
-//            return this;
-//        }
-//
-//        /**
-//         * Specify a model that certificates must have to be considered as matching.
-//         * @param model the model to query, not empty or null
-//         * @return this instance (for chaining further calls)
-//         */
-//        public Selector byModel(final String model) {
-//            setFieldValue(MODEL_FIELD, model);
-//            return this;
-//        }
-//
-//        /**
-//         * Specify a version that certificates must have to be considered as matching.
-//         * @param version the version to query, not empty or null
-//         * @return this instance (for chaining further calls)
-//         */
-//        public Selector byVersion(final String version) {
-//            setFieldValue(VERSION_FIELD, version);
-//            return this;
-//        }
-//
-//        /**
-//         * Specify a device id that certificates must have to be considered
-//         * as matching.
-//         *
-//         * @param device the device id to query
-//         * @return this instance (for chaining further calls)
-//         */
-//        public Selector byDeviceId(final UUID device) {
-//            setFieldValue(DEVICE_ID_FIELD, device);
-//            return this;
-//        }
-//    }
-//
-//    /**
-//     * Get a Selector for use in retrieving EndorsementCredentials.
-//     *
-//     * @param certMan the CertificateManager to be used to retrieve persisted certificates
-//     * @return a EndorsementCredential.Selector instance to use for retrieving certificates
-//     */
-//    public static Selector select(final CertificateManager certMan) {
-//        return new Selector(certMan);
-//    }
-
-    /**
      * this field is part of the TCG EC specification, but has not yet been found in
      * manufacturer-provided ECs, and is therefore not currently parsed
      */
@@ -180,17 +113,14 @@ public class EndorsementCredential extends DeviceAssociatedCertificate {
     @Column
     private String credentialType = "TCPA Trusted Platform Module Endorsement";
 
-    private static final String MANUFACTURER_FIELD = "manufacturer";
     @Getter
     @Column
     private String manufacturer = null;
 
-    private static final String MODEL_FIELD = "model";
     @Getter
     @Column
     private String model = null;
 
-    private static final String VERSION_FIELD = "version";
     @Getter
     @Column
     private String version = null;

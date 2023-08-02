@@ -7,6 +7,7 @@ import jakarta.persistence.Embeddable;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import jakarta.xml.bind.annotation.XmlElement;
+import lombok.Getter;
 import org.apache.commons.codec.DecoderException;
 import org.apache.commons.codec.binary.Hex;
 
@@ -61,6 +62,7 @@ public final class Digest extends AbstractDigest {
     @XmlElement
     @Column(nullable = false)
     @Enumerated(EnumType.ORDINAL)
+    @Getter
     private final DigestAlgorithm algorithm;
 
     /**
@@ -91,17 +93,6 @@ public final class Digest extends AbstractDigest {
     protected Digest() {
         this.algorithm = null;
         this.digest = null;
-    }
-
-    /**
-     * Retrieves the <code>DigestAlgorithm</code> that identifies which hash
-     * function generated the digest.
-     *
-     * @return digest algorithm
-     */
-    @Override
-    public DigestAlgorithm getAlgorithm() {
-        return this.algorithm;
     }
 
     /**

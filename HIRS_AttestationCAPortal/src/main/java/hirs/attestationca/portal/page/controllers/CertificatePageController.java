@@ -1,6 +1,7 @@
 package hirs.attestationca.portal.page.controllers;
 
 import hirs.attestationca.persist.CriteriaModifier;
+import hirs.attestationca.persist.DBManagerException;
 import hirs.attestationca.persist.DBServiceException;
 import hirs.attestationca.persist.FilteredRecordsList;
 import hirs.attestationca.persist.entity.manager.CACredentialRepository;
@@ -47,7 +48,10 @@ import org.springframework.web.servlet.view.RedirectView;
 import java.io.IOException;
 import java.lang.ref.Reference;
 import java.net.URISyntaxException;
+import java.security.cert.CertificateEncodingException;
+import java.security.cert.X509Certificate;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -94,16 +98,15 @@ public class CertificatePageController extends PageController<NoPageParams> {
      * @param endorsementCredentialRepository the endorsement credential manager
      * @param issuedCertificateRepository the issued certificate manager
      * @param caCredentialRepository the ca credential manager
-//     * @param acaCertificate the ACA's X509 certificate
+     * @param acaCertificate the ACA's X509 certificate
      */
     @Autowired
     public CertificatePageController(final CertificateRepository certificateRepository,
                                      final PlatformCertificateRepository platformCertificateRepository,
                                      final EndorsementCredentialRepository endorsementCredentialRepository,
                                      final IssuedCertificateRepository issuedCertificateRepository,
-                                     final CACredentialRepository caCredentialRepository
-//            final X509Certificate acaCertificate
-    ) {
+                                     final CACredentialRepository caCredentialRepository,
+            final X509Certificate acaCertificate) {
         super(Page.TRUST_CHAIN);
         this.certificateRepository = certificateRepository;
         this.platformCertificateRepository = platformCertificateRepository;
@@ -111,14 +114,14 @@ public class CertificatePageController extends PageController<NoPageParams> {
         this.issuedCertificateRepository = issuedCertificateRepository;
         this.caCredentialRepository = caCredentialRepository;
 
-//        try {
-            certificateAuthorityCredential = null;
-//                    = new CertificateAuthorityCredential(acaCertificate.getEncoded());
-//        } catch (IOException ioEx) {
-//            log.error("Failed to read ACA certificate", ioEx);
-//        } catch (CertificateEncodingException ceEx) {
-//            log.error("Error getting encoded ACA certificate", ceEx);
-//        }
+        try {
+            certificateAuthorityCredential
+                    = new CertificateAuthorityCredential(acaCertificate.getEncoded());
+        } catch (IOException ioEx) {
+            log.error("Failed to read ACA certificate", ioEx);
+        } catch (CertificateEncodingException ceEx) {
+            log.error("Error getting encoded ACA certificate", ceEx);
+        }
     }
 
     /**
@@ -238,7 +241,7 @@ public class CertificatePageController extends PageController<NoPageParams> {
                     PlatformCredential pc = (PlatformCredential) records.get(i);
                     // find the EC using the PC's "holder serial number"
                     associatedEC = this.endorsementCredentialRepository
-                            .getEcByHolderSerialNumber(pc.getHolderSerialNumber());
+                            .findByHolderSerialNumber(pc.getHolderSerialNumber());
 
                     if (associatedEC != null) {
                         log.debug("EC ID for holder s/n " + pc
@@ -299,6 +302,72 @@ public class CertificatePageController extends PageController<NoPageParams> {
         return redirectTo(getCertificatePage(certificateType), new NoPageParams(), model, attr);
     }
 
+    /**
+     * Archives (soft delete) the credential.
+     *
+     * @param certificateType String containing the certificate type
+     * @param id the UUID of the cert to delete
+     * @param attr RedirectAttributes used to forward data back to the original
+     * page.
+     * @return redirect to this page
+     * @throws URISyntaxException if malformed URI
+     */
+    @RequestMapping(value = "/{certificateType}/delete", method = RequestMethod.POST)
+    public RedirectView delete(
+            @PathVariable("certificateType") final String certificateType,
+            @RequestParam final String id,
+            final RedirectAttributes attr) throws URISyntaxException {
+        log.info("Handling request to delete " + id);
+
+        Map<String, Object> model = new HashMap<>();
+        PageMessages messages = new PageMessages();
+
+        try {
+            UUID uuid = UUID.fromString(id);
+            Certificate certificate = getCertificateById(certificateType, uuid);
+            if (certificate == null) {
+                // Use the term "record" here to avoid user confusion b/t cert and cred
+                String notFoundMessage = "Unable to locate record with ID: " + uuid;
+                messages.addError(notFoundMessage);
+                log.warn(notFoundMessage);
+            } else {
+                if (certificateType.equals(PLATFORMCREDENTIAL)) {
+                    PlatformCredential platformCertificate = (PlatformCredential) certificate;
+                    if (platformCertificate.isPlatformBase()) {
+                        // only do this if the base is being deleted.
+                        List<PlatformCredential> sharedCertificates = getCertificateByBoardSN(
+                                certificateType,
+                                platformCertificate.getPlatformSerial());
+
+                        for (PlatformCredential pc : sharedCertificates) {
+                            if (!pc.isPlatformBase()) {
+                                pc.archive();
+                                certificateRepository.delete(pc);
+                            }
+                        }
+                    }
+                }
+
+                certificate.archive();
+                certificateRepository.delete(certificate);
+
+                String deleteCompletedMessage = "Certificate successfully deleted";
+                messages.addInfo(deleteCompletedMessage);
+                log.info(deleteCompletedMessage);
+            }
+        } catch (IllegalArgumentException ex) {
+            String uuidError = "Failed to parse ID from: " + id;
+            messages.addError(uuidError);
+            log.error(uuidError, ex);
+        } catch (DBManagerException ex) {
+            String dbError = "Failed to archive cert: " + id;
+            messages.addError(dbError);
+            log.error(dbError, ex);
+        }
+
+        model.put(MESSAGES_ATTRIBUTE, messages);
+        return redirectTo(getCertificatePage(certificateType), new NoPageParams(), model, attr);
+    }
 
     /**
      * Handles request to download the cert by writing it to the response stream
@@ -614,14 +683,30 @@ public class CertificatePageController extends PageController<NoPageParams> {
     private List<PlatformCredential> getCertificateByBoardSN(
             final String certificateType,
             final String serialNumber) {
+        List<PlatformCredential> associatedCertificates = new LinkedList<>();
 
-        if (serialNumber == null) {
-            return null;
+        if (serialNumber != null){
+            switch (certificateType) {
+                case PLATFORMCREDENTIAL:
+                    associatedCertificates.addAll(this.certificateRepository
+                            .byBoardSerialNumber(serialNumber));
+                default:
+            }
         }
 
+        return associatedCertificates;
+    }
+
+    private Certificate getCertificateById(final String certificateType, final UUID uuid) {
         switch (certificateType) {
             case PLATFORMCREDENTIAL:
-                return this.certificateRepository.byBoardSerialNumber(serialNumber);
+                return this.platformCertificateRepository.getReferenceById(uuid);
+            case ENDORSEMENTCREDENTIAL:
+                return this.endorsementCredentialRepository.getReferenceById(uuid);
+            case ISSUEDCERTIFICATES:
+                return this.issuedCertificateRepository.getReferenceById(uuid);
+            case TRUSTCHAIN:
+                return this.caCredentialRepository.getReferenceById(uuid);
             default:
                 return null;
         }

@@ -1,12 +1,16 @@
 package hirs.attestationca.portal;
 
+import jakarta.annotation.PostConstruct;
 import lombok.extern.log4j.Log4j2;
+import org.bouncycastle.jce.provider.BouncyCastleProvider;
+import org.springframework.beans.factory.BeanInitializationException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.PropertySource;
+import org.springframework.context.annotation.PropertySources;
 import org.springframework.core.env.Environment;
 import org.springframework.dao.annotation.PersistenceExceptionTranslationPostProcessor;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
@@ -23,6 +27,14 @@ import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 import javax.sql.DataSource;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.security.KeyStore;
+import java.security.KeyStoreException;
+import java.security.Security;
 import java.security.cert.X509Certificate;
 import java.util.Properties;
 
@@ -37,21 +49,27 @@ import java.util.Properties;
 @Configuration
 @EnableWebMvc
 @EnableTransactionManagement
-@PropertySource({ "classpath:hibernate.properties", "classpath:portal.properties" })
+@PropertySources({
+        @PropertySource(value = "classpath:hibernate.properties"),
+
+        // detects if file exists, if not, ignore errors
+        @PropertySource(value = "file:/etc/hirs/aca/application.properties",
+                ignoreResourceNotFound = true)
+})
 @ComponentScan({"hirs.attestationca.portal", "hirs.attestationca.portal.page.controllers", "hirs.attestationca.persist.entity"})
 @EnableJpaRepositories(basePackages = "hirs.attestationca.persist.entity.manager")
 public class PersistenceJPAConfig implements WebMvcConfigurer {
 
-    @Value("${aca.directories.certificates}")
-    private String certificatesLocation;
+//    @Value("${aca.directories.certificates}")
+//    private String certificatesLocation;
 
-    @Value("${aca.keyStore.location}")
+    @Value("${server.ssl.key-store}")
     private String keyStoreLocation;
 
-    @Value("${aca.keyStore.password:''}")
+    @Value("${server.ssl.key-store-password:''}")
     private String keyStorePassword;
 
-    @Value("${aca.keyStore.alias}")
+    @Value("${server.ssl.key-alias}")
     private String keyAlias;
 
     @Autowired
@@ -87,12 +105,12 @@ public class PersistenceJPAConfig implements WebMvcConfigurer {
      * methods as required. This method is intended to be invoked by the Spring
      * application context.
      */
-//    @PostConstruct
-//    void initialize() {
-//        // ensure that Bouncy Castle is registered as a security provider
-//        Security.addProvider(new BouncyCastleProvider());
-//
-//        // obtain path to ACA configuration
+    @PostConstruct
+    void initialize() {
+        // ensure that Bouncy Castle is registered as a security provider
+        Security.addProvider(new BouncyCastleProvider());
+
+        // obtain path to ACA configuration
 //        Path certificatesPath = Paths.get(certificatesLocation);
 //
 //        // create base directories if they do not exist
@@ -102,76 +120,64 @@ public class PersistenceJPAConfig implements WebMvcConfigurer {
 //            throw new BeanInitializationException(
 //                    "Encountered error while initializing ACA directories: " + ioEx.getMessage(), ioEx);
 //        }
-//
-//        // create the ACA key store if it doesn't exist
+
+        // create the ACA key store if it doesn't exist
 //        Path keyStorePath = Paths.get(keyStoreLocation);
-////        if (!Files.exists(keyStorePath)) {
-////            throw new IllegalStateException(
-////                    String.format("ACA Key Store not found at %s. Consult the HIRS User "
-////                            + "Guide for ACA installation instructions.", keyStoreLocation));
-////        }
-//    }
+//        if (!Files.exists(keyStorePath)) {
+//            throw new IllegalStateException(
+//                    String.format("ACA Key Store not found at %s. Consult the HIRS User "
+//                            + "Guide for ACA installation instructions.", keyStoreLocation));
+//        }
+    }
 
     /**
      * @return the {@link X509Certificate} of the ACA
      */
-//    @Bean
-//    public X509Certificate acaCertificate() {
-//        KeyStore keyStore = keyStore();
-//
-//        try {
-//            X509Certificate acaCertificate = (X509Certificate) keyStore.getCertificate(keyAlias);
-//
-//            // break early if the certificate is not available.
-//            if (acaCertificate == null) {
-//                throw new BeanInitializationException(String.format("Certificate with alias "
-//                        + "%s was not in KeyStore %s. Ensure that the KeyStore has the "
-//                        + "specified certificate. ", keyAlias, keyStoreLocation));
-//            }
-//
-//            return acaCertificate;
-//        } catch (KeyStoreException ksEx) {
-//            throw new BeanInitializationException("Encountered error loading ACA certificate "
-//                    + "from key store: " + ksEx.getMessage(), ksEx);
-//        }
-//    }
+    @Bean
+    public X509Certificate acaCertificate() {
+        KeyStore keyStore = keyStore();
+
+        try {
+            X509Certificate acaCertificate = (X509Certificate) keyStore.getCertificate(keyAlias);
+
+            // break early if the certificate is not available.
+            if (acaCertificate == null) {
+                throw new BeanInitializationException(String.format("Certificate with alias "
+                        + "%s was not in KeyStore %s. Ensure that the KeyStore has the "
+                        + "specified certificate. ", keyAlias, keyStoreLocation));
+            }
+
+            return acaCertificate;
+        } catch (KeyStoreException ksEx) {
+            throw new BeanInitializationException("Encountered error loading ACA certificate "
+                    + "from key store: " + ksEx.getMessage(), ksEx);
+        }
+    }
 
     /**
      * @return the {@link java.security.KeyStore} that contains the certificates
      * for the ACA.
      */
-//    @Bean
-//    public KeyStore keyStore() {
-//        Path keyStorePath = Paths.get(keyStoreLocation);
-//
-//        // creating empty store
-//        String storePassword = "storePassword";
-//        String storeName = "emptyStore.jks";
-//        String storeType = "jks";
-//
-//        // attempt to open the key store. if that fails, log a meaningful message before failing.
-////        try {
-////            KeyStore keyStore = KeyStore.getInstance("JKS");
-////            keyStore.load(Files.newInputStream(keyStorePath), keyStorePassword.toCharArray());
-//
-//            // empty
-//            try (FileOutputStream fileOutputStream = new FileOutputStream(storeName)) {
-//                KeyStore keyStore = KeyStore.getInstance(storeType);
-//                keyStore.load(null, storePassword.toCharArray());
-////                keyStore.setCertificateEntry(keyAlias,);
-//                keyStore.store(fileOutputStream, storePassword.toCharArray());
-//
-//
-//            return keyStore;
-//        } catch (Exception e) {
-//            log.error(String.format(
-//                    "Encountered error while loading ACA key store. The most common issue is "
-//                            + "that configured password does not work on the configured key"
-//                            + " store %s.", keyStorePath));
-//            log.error(String.format("Exception message: %s", e.getMessage()));
-//            throw new BeanInitializationException(e.getMessage(), e);
-//        }
-//    }
+    @Bean
+    public KeyStore keyStore() {
+        Path keyStorePath = Paths.get(keyStoreLocation);
+
+        // attempt to open the key store. if that fails, log a meaningful message before failing.
+        // empty
+        try {
+            KeyStore keyStore = KeyStore.getInstance("JKS");
+            keyStore.load(Files.newInputStream(keyStorePath), keyStorePassword.toCharArray());
+
+            return keyStore;
+        } catch (Exception e) {
+            log.error(String.format(
+                    "Encountered error while loading ACA key store. The most common issue is "
+                            + "that configured password does not work on the configured key"
+                            + " store %s.", keyStorePath));
+            log.error(String.format("Exception message: %s", e.getMessage()));
+            throw new BeanInitializationException(e.getMessage(), e);
+        }
+    }
 
     @Bean
     public PlatformTransactionManager transactionManager() {
