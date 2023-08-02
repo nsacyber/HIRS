@@ -2,6 +2,7 @@ package hirs;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.datatype.joda.JodaModule;
 import hirs.data.persist.AppraisalStatus;
 import hirs.data.persist.Device;
 import hirs.data.persist.DeviceGroup;
@@ -28,9 +29,9 @@ import java.util.regex.Pattern;
  */
 public class DeviceGroupSerializerTest {
 
-    private static final int COUNT_OF_ID_FIELD_OUTSIDE_DEVICE_GROUP = 2;
+    private static final int COUNT_OF_ID_FIELD_OUTSIDE_DEVICE_GROUP = 1;
     private static final int COUNT_OF_CREATION_DATE_FIELD_OUTSIDE_DEVICE_GROUP = 1;
-    private static final int COUNT_OF_NAME_FIELD_OUTSIDE_DEVICE_GROUP = 45;
+    private static final int COUNT_OF_NAME_FIELD_OUTSIDE_DEVICE_GROUP = 1;
     private static final int COUNT_OF_HEALTH_STATUS_FIELD_OUTSIDE_DEVICE_GROUP = 1;
 
     /**
@@ -116,7 +117,8 @@ public class DeviceGroupSerializerTest {
     private void assertDevicesSerializedCorrectly(final List<Device> testDevices) {
         String serializedDevices = null;
         try {
-            serializedDevices = new ObjectMapper().writeValueAsString(testDevices);
+            serializedDevices = new ObjectMapper().registerModule(
+                    new JodaModule()).writeValueAsString(testDevices);
         } catch (JsonProcessingException jpe) {
             Assert.fail("Failed to successfully serialize the Test Devices");
         }

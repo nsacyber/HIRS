@@ -1,8 +1,8 @@
 package hirs.attestationca;
 
-import org.bouncycastle.asn1.DERSequence;
-import org.bouncycastle.asn1.DERSet;
-import org.bouncycastle.asn1.DERTaggedObject;
+import org.bouncycastle.asn1.ASN1Sequence;
+import org.bouncycastle.asn1.ASN1Set;
+import org.bouncycastle.asn1.ASN1TaggedObject;
 import org.bouncycastle.asn1.DLSequence;
 import org.bouncycastle.asn1.x509.Extension;
 import org.testng.annotations.Test;
@@ -188,16 +188,16 @@ public class IssuedCertificateAttributeHelperTest {
         Map<String, String> subjectAlternativeNameAttrMap = new HashMap<>();
 
         DLSequence dlSequence = (DLSequence) subjectAlternativeName.getParsedValue();
-        DERTaggedObject derTaggedObject = (DERTaggedObject) dlSequence.getObjectAt(0);
-        DERSequence derSequence = (DERSequence) derTaggedObject.getObject();
+        ASN1TaggedObject asn1TaggedObject = (ASN1TaggedObject) dlSequence.getObjectAt(0);
+        ASN1Sequence asn1Sequence = (ASN1Sequence) asn1TaggedObject.getObject();
 
-        Enumeration enumeration = derSequence.getObjects();
+        Enumeration enumeration = asn1Sequence.getObjects();
         while (enumeration.hasMoreElements()) {
-            DERSet set = (DERSet) enumeration.nextElement();
-            DERSequence innerDerSequence = (DERSequence) set.getObjectAt(0);
+            ASN1Set set = (ASN1Set) enumeration.nextElement();
+            ASN1Sequence innerAsn1Sequence = (ASN1Sequence) set.getObjectAt(0);
 
-            subjectAlternativeNameAttrMap.put(innerDerSequence.getObjectAt(0).toString(),
-                    innerDerSequence.getObjectAt(1).toString());
+            subjectAlternativeNameAttrMap.put(innerAsn1Sequence.getObjectAt(0).toString(),
+                    innerAsn1Sequence.getObjectAt(1).toString());
         }
         return subjectAlternativeNameAttrMap;
     }

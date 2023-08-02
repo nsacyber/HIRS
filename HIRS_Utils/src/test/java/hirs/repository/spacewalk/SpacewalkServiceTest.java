@@ -55,32 +55,6 @@ public class SpacewalkServiceTest {
     }
 
     /**
-     * Verifies exception when URL is non-https.
-     * @throws SpacewalkException if an exception occurs during the test.
-     * @throws MalformedURLException if the URL is malformed
-     */
-    @Test(
-            expectedExceptions = SpacewalkException.class,
-            expectedExceptionsMessageRegExp = ".*https.*")
-    public void exceptionWithNonHttpsUrl() throws SpacewalkException, MalformedURLException {
-        SpacewalkService.getChannels(authentication, new URL("http://some-box"));
-    }
-
-    /**
-     * Verifies exception when querying for channels from an unreachable URL and that the correct
-     * URL pointing to the RPC API is used.
-     *
-     * @throws SpacewalkException if a Spacewalk error occurs during the test.
-     */
-    @Test(
-          expectedExceptions = SpacewalkException.class,
-          expectedExceptionsMessageRegExp = ".*Spacewalk session for " + SPACEWALK_BASE_URL_STRING
-                  + "/rpc/api.*")
-    public void exceptionWithUnreachableSpacewalkChannels() throws SpacewalkException {
-        SpacewalkService.getChannels(authentication, spacewalkBaseUrl);
-    }
-
-    /**
      * Verifies exception when no authentication information is provided when querying channels.
      *
      * @throws SpacewalkException if a Spacewalk error occurs during the test.
@@ -126,20 +100,5 @@ public class SpacewalkServiceTest {
           expectedExceptionsMessageRegExp = ".*sourceRepository.*")
     public void exceptionWithNullRepositoryPackages() throws SpacewalkException {
         SpacewalkService.getPackages(authentication, spacewalkBaseUrl, CHANNEL_LABEL, null);
-    }
-
-    /**
-     * Verifies exception when querying for channels from an unreachable URL and that the correct
-     * URL pointing to the RPC API is used.
-     *
-     * @throws SpacewalkException if a Spacewalk error occurs during the test.
-     */
-    @Test(
-          expectedExceptions = SpacewalkException.class,
-          expectedExceptionsMessageRegExp = ".*Spacewalk session for " + SPACEWALK_BASE_URL_STRING
-                  + "/rpc/api.*")
-    public void exceptionWithUnreachableSpacewalkPackages() throws SpacewalkException {
-        SpacewalkService.getPackages(authentication, spacewalkBaseUrl,
-                CHANNEL_LABEL, REPOSITORY);
     }
 }

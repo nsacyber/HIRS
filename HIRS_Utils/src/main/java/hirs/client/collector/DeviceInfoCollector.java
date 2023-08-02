@@ -123,10 +123,10 @@ public class DeviceInfoCollector extends AbstractCollector {
                  InputStream processErrorStream = process.getErrorStream()) {
 
                 if (returnCode == 0) {
-                    return IOUtils.toString(processInputStream);
+                    return IOUtils.toString(processInputStream, StandardCharsets.UTF_8);
                 }
 
-                errorAsString = IOUtils.toString(processErrorStream);
+                errorAsString = IOUtils.toString(processErrorStream, StandardCharsets.UTF_8);
             }
         } catch (IOException | InterruptedException e) {
             errorAsString = e.getMessage();

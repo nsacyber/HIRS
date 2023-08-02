@@ -32,7 +32,7 @@ jar.dependsOn copyVersion
 ext.configDir = new File(projectDir, 'config')
 ext.checkstyleConfigDir = "$configDir/checkstyle"
 checkstyle {
-    toolVersion = '5.7'
+    toolVersion = '8.45.1'
     configFile = checkstyleConfigFile
     configProperties.put('basedir', checkstyleConfigDir)
     ignoreFailures = false

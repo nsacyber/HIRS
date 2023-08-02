@@ -27,6 +27,7 @@ import javax.xml.bind.DatatypeConverter;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 import java.text.ParseException;
 import java.util.Set;
 
@@ -96,7 +97,8 @@ public final class CSVGeneratorTest {
     public void testImaBlacklistBaselineWithDescriptionsToCsv() throws IOException {
         Assert.assertEquals(
                 CSVGenerator.blacklistToCsv(getTestImaBlacklistBaselineWithDescriptions()),
-                IOUtils.toString(getClass().getResource("/ima/IMABlacklistBaseline.csv"))
+                IOUtils.toString(getClass().getResource("/ima/IMABlacklistBaseline.csv"),
+                                 StandardCharsets.UTF_8)
         );
     }
 
@@ -111,7 +113,8 @@ public final class CSVGeneratorTest {
         Assert.assertEquals(
                 CSVGenerator.blacklistToCsv(getTestImaBlacklistBaselineWithoutDescriptions()),
                 IOUtils.toString(
-                        getClass().getResource("/ima/IMABlacklistBaselineNoDescriptions.csv")
+                        getClass().getResource("/ima/IMABlacklistBaselineNoDescriptions.csv"),
+                        StandardCharsets.UTF_8
                 )
         );
     }

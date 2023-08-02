@@ -4,6 +4,8 @@ apply plugin: 'findbugs'
 apply plugin: 'java'
 apply plugin: 'jacoco'
 apply plugin: 'pmd'
+apply plugin: 'maven'
+apply plugin: 'signing'
 
 ext.configDir = new File(projectDir, 'config')
 
@@ -30,7 +32,6 @@ dependencies {
     compile libs.commons_exec
     compile libs.commons_io
     compile libs.commons_lang
-    compile libs.commons_http
     compile libs.commons_valid
     compile libs.hibernate
     compile libs.hikari
@@ -45,11 +46,8 @@ dependencies {
     compile libs.spring_core
     compile libs.spring_retry
     compile libs.minimal_json
-    compile (libs.xml_rpc_client) {
-        exclude group: 'junit'
-    }
     compile 'org.jboss.logging:jboss-logging:3.2.0.Final'
-    compile 'org.apache.commons:commons-text:1.9'
+    compile 'org.apache.commons:commons-text:1.10.0'
 
     // add spring plugin, but do not pull transitive dependencies (causes conflicts)
     compile(libs.spring_plugin) {
@@ -97,7 +95,7 @@ task integrationTest(type: Test) {
 ext.checkstyleConfigDir = "$configDir/checkstyle"
 
 checkstyle {
-    toolVersion = '8.10.1'
+    toolVersion = '8.45.1'
     configFile = checkstyleConfigFile
     configProperties.put('basedir', checkstyleConfigDir)
     ignoreFailures = false
@@ -135,6 +133,84 @@ publishing {
         testResources(MavenPublication) {
             artifactId 'hirs-utils-test'
             artifact utilsTestJar
+        }
+    }
+}
+
+// Maven packaging and signing
+group = 'io.github.nsacyber.hirs'
+version = '2.2.0'
+project.gradle.taskGraph.whenReady { graph ->
+    project.tasks.findAll().forEach { task ->
+      if (task.name.contains("signArchives") || task.name.contains("uploadArchives")) {
+          // If this is set to true, the signing and maven
+          // properties in gradle.properties must be set.
+          task.enabled = false 
+    }
+  }
+}
+
+tasks.withType(Javadoc) {
+    failOnError false
+}
+task javadocJar(type: Jar) {
+    classifier = 'javadoc'
+    from javadoc
+}
+
+task sourcesJar(type: Jar) {
+    classifier = 'sources'
+    from sourceSets.main.allSource
+}
+
+artifacts {
+    archives javadocJar, sourcesJar
+}
+
+signing {
+    sign configurations.archives
+}
+
+uploadArchives {
+    repositories {
+        mavenDeployer {
+            pom.project {
+                name 'HIRS_Utils'
+                packaging 'jar'
+                // optionally artifactId can be defined here
+                description 'Core utilities for the HIRS ACA.'
+                url 'https://github.com/nsacyber/hirs'
+
+                scm {
+                  connection 'scm:git:git://github.com:nsacyber/hirs.git'
+                  developerConnection 'scm:git:git://github.com:nsacyber/hirs.git'
+                  url 'https://github.com/nsacyber/hirs'
+                }
+                licenses {
+                    license {
+                        name 'The Apache Software License, Version 2.0'
+                        url 'http://www.apache.org/licenses/LICENSE-2.0.txt'
+                        distribution 'repo'
+                    }
+                }
+                developers {
+                    developer {
+                      id 'iadgovuser29'
+                      name 'iadgovuser29'
+                      email '33426478+iadgovuser29@users.noreply.github.com'
+                      organization 'NSA Cybersecurity Directorate'
+                      organizationUrl 'https://github.com/nsacyber'
+                    }
+                }
+            }
+            beforeDeployment { MavenDeployment deployment -> signing.signPom(deployment) }
+
+            repository(url: "https://${sonatypeDomain}/service/local/staging/deploy/maven2/") {
+                authentication(userName: ossrhUsername, password: ossrhPassword)
+            }
+            snapshotRepository(url: "https://${sonatypeDomain}/content/repositories/snapshots/") {
+                authentication(userName: ossrhUsername, password: ossrhPassword)
+            }
         }
     }
 }

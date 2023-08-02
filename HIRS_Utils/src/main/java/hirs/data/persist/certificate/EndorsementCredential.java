@@ -31,7 +31,6 @@ import org.bouncycastle.asn1.DERIA5String;
 import org.bouncycastle.asn1.DERNumericString;
 import org.bouncycastle.asn1.DERPrintableString;
 import org.bouncycastle.asn1.DERT61String;
-import org.bouncycastle.asn1.DERTaggedObject;
 import org.bouncycastle.asn1.DERUTF8String;
 import org.bouncycastle.asn1.DERUniversalString;
 import org.bouncycastle.asn1.DERVisibleString;
@@ -419,10 +418,10 @@ public class EndorsementCredential extends DeviceAssociatedCertificate {
             LOGGER.debug("Found TPM Assertions: " + tpmSecurityAssertions.toString());
             // Iterate through remaining fields to set optional attributes
             int tag;
-            DERTaggedObject obj;
+            ASN1TaggedObject obj;
             for (int i = seqPosition; i < seq.size(); i++) {
-                if (seq.getObjectAt(i) instanceof DERTaggedObject) {
-                    obj = (DERTaggedObject) seq.getObjectAt(i);
+                if (seq.getObjectAt(i) instanceof ASN1TaggedObject) {
+                    obj = (ASN1TaggedObject) seq.getObjectAt(i);
                     tag = obj.getTagNo();
                     if (tag == EK_TYPE_TAG) {
                         int ekGenTypeVal = ((ASN1Enumerated) obj.getObject()).getValue().intValue();

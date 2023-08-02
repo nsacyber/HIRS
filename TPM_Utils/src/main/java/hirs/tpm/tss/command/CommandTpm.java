@@ -12,6 +12,7 @@ import org.springframework.util.Assert;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 
 /**
  * Implementation of a {@link Tpm} that uses the TPM_MODULE command as the interface to the TPM.
@@ -222,7 +223,7 @@ public class CommandTpm implements Tpm {
 
             try (InputStream processInputStream = process.getInputStream()) {
                 // grab the command output
-                String output = IOUtils.toString(processInputStream);
+                String output = IOUtils.toString(processInputStream, StandardCharsets.UTF_8);
 
                 // construct the command result
                 CommandResult result = new CommandResult(output, returnCode);

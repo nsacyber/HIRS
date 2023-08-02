@@ -2,6 +2,7 @@ package hirs.tpm.eventlog;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 import java.security.NoSuchAlgorithmException;
 import java.security.cert.CertificateException;
 import java.util.Arrays;
@@ -92,7 +93,7 @@ public class TCGEventLogTest {
      TCGEventLog evlog = new TCGEventLog(rawLogBytes, false, false, false);
      String[] pcrFromLog = evlog.getExpectedPCRValues();
      pcrs = this.getClass().getResourceAsStream(DEFAULT_EXPECTED_PCRS);
-     Object[] pcrObj = IOUtils.readLines(pcrs).toArray();
+     Object[] pcrObj = IOUtils.readLines(pcrs, StandardCharsets.UTF_8).toArray();
      String[] pcrTxt = Arrays.copyOf(pcrObj, pcrObj.length, String[].class);
      // Test 1 get all PCRs
      for (int i = 0; i < 24; i++) {
@@ -130,7 +131,7 @@ public class TCGEventLogTest {
       TCGEventLog evlog =  new TCGEventLog(rawLogBytes, false, false, false);
       String[] pcrFromLog = evlog.getExpectedPCRValues();
       pcrs = this.getClass().getResourceAsStream(SHA1_EXPECTED_PCRS);
-      Object[] pcrObj = IOUtils.readLines(pcrs).toArray();
+      Object[] pcrObj = IOUtils.readLines(pcrs, StandardCharsets.UTF_8).toArray();
       String[] pcrTxt = Arrays.copyOf(pcrObj, pcrObj.length, String[].class);
       // Test 1 get all PCRs
        for (int i = 0; i < 24; i++) {
