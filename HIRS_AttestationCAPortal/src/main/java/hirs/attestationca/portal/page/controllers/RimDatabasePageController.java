@@ -108,15 +108,16 @@ public class RimDatabasePageController extends PageController<NoPageParams> {
 
         log.info("Querying with the following datatableinput: " + input.toString());
         FilteredRecordsList<ReferenceDigestValue> referenceDigestValues = new FilteredRecordsList<>();
-        Pageable paging = PageRequest.of(input.getStart(), input.getLength(), Sort.by(orderColumnName));
 
+        int currentPage = input.getStart() / input.getLength();
+        Pageable paging = PageRequest.of(currentPage, input.getLength(), Sort.by(orderColumnName));
         org.springframework.data.domain.Page<ReferenceDigestValue> pagedResult = referenceDigestValueRepository.findAll(paging);
 
         if (pagedResult.hasContent()) {
             referenceDigestValues.addAll(pagedResult.getContent());
         }
-        referenceDigestValues.setRecordsTotal(referenceDigestValueRepository.count());
-        referenceDigestValues.setRecordsFiltered(input.getLength());
+        referenceDigestValues.setRecordsTotal(input.getLength());
+        referenceDigestValues.setRecordsFiltered(referenceDigestValueRepository.count());
 
 //        FilteredRecordsList<ReferenceDigestValue> referenceDigestValues =
 //                OrderedListQueryDataTableAdapter.getOrderedList(

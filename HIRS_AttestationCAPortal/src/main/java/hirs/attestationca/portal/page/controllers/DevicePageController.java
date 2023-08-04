@@ -20,6 +20,9 @@ import hirs.attestationca.portal.page.PageController;
 import hirs.attestationca.portal.page.params.NoPageParams;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -80,16 +83,26 @@ public class DevicePageController extends PageController<NoPageParams> {
         log.info("Ordering on column: " + orderColumnName);
 
         // get all the devices
-        FilteredRecordsList<Device> deviceList =
-                OrderedListQueryDataTableAdapter.getOrderedList(
-                        Device.class,
-                        deviceRepository,
-                        input, orderColumnName);
+        FilteredRecordsList<Device> deviceList = new FilteredRecordsList<>();
+//                OrderedListQueryDataTableAdapter.getOrderedList(
+//                        Device.class,
+//                        deviceRepository,
+//                        input, orderColumnName);
 
-        FilteredRecordsList<HashMap<String, Object>> record
+        int currentPage = input.getStart() / input.getLength();
+        Pageable paging = PageRequest.of(currentPage, input.getLength(), Sort.by(orderColumnName));
+        org.springframework.data.domain.Page<Device> pagedResult = deviceRepository.findAll(paging);
+
+        if (pagedResult.hasContent()) {
+            deviceList.addAll(pagedResult.getContent());
+        }
+        deviceList.setRecordsTotal(input.getLength());
+        deviceList.setRecordsFiltered(deviceRepository.count());
+
+        FilteredRecordsList<HashMap<String, Object>> records
                 = retrieveDevicesAndAssociatedCertificates(deviceList);
 
-        return new DataTableResponse<>(record, input);
+        return new DataTableResponse<>(records, input);
     }
 
     /**
