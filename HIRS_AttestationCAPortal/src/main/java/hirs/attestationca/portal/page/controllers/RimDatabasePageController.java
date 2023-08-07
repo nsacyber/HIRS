@@ -106,7 +106,8 @@ public class RimDatabasePageController extends PageController<NoPageParams> {
             }
         };
 
-        log.info("Querying with the following datatableinput: " + input.toString());
+        log.info("Querying with the following dataTableInput: " + input.toString());
+
         FilteredRecordsList<ReferenceDigestValue> referenceDigestValues = new FilteredRecordsList<>();
 
         int currentPage = input.getStart() / input.getLength();
@@ -141,6 +142,7 @@ public class RimDatabasePageController extends PageController<NoPageParams> {
             }
         }
 
+        log.debug("Returning list of size: " + referenceDigestValues.size());
         return new DataTableResponse<>(referenceDigestValues, input);
     }
 }

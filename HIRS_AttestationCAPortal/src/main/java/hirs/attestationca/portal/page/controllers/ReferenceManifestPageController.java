@@ -136,6 +136,8 @@ public class ReferenceManifestPageController extends PageController<NoPageParams
             }
         };
 
+        log.info("Querying with the following dataTableInput: " + input.toString());
+
         FilteredRecordsList<ReferenceManifest> records = new FilteredRecordsList<>();
         int currentPage = input.getStart() / input.getLength();
         Pageable paging = PageRequest.of(currentPage, input.getLength(), Sort.by(orderColumnName));
