@@ -16,7 +16,6 @@ import org.bouncycastle.jce.provider.BouncyCastleProvider;
 
 import org.junit.jupiter.api.TestInstance;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 
 import java.io.IOException;
@@ -278,7 +277,7 @@ public class CertificateDetailsPageControllerTest extends PageControllerTest {
                 .getModel()
                 .get(PolicyPageController.INITIAL_DATA);
         Assertions.assertEquals(platformCredential.getIssuer(), initialData.get("issuer"));
-        Assertions.assertEquals(((PlatformCredential) platformCredential).getCredentialType(),
+        Assertions.assertEquals(platformCredential.getCredentialType(),
                 initialData.get("credentialType"));
 
     }
@@ -307,7 +306,7 @@ public class CertificateDetailsPageControllerTest extends PageControllerTest {
                 .getModel()
                 .get(PolicyPageController.INITIAL_DATA);
         Assertions.assertEquals(platformCredential2.getIssuer(), initialData.get("issuer"));
-        Assertions.assertEquals(((PlatformCredential) platformCredential2).getCredentialType(),
+        Assertions.assertEquals(platformCredential2.getCredentialType(),
                 initialData.get("credentialType"));
         // Check component identifier
         Assertions.assertNotNull(initialData.get("componentsIdentifier"));
@@ -473,19 +472,14 @@ public class CertificateDetailsPageControllerTest extends PageControllerTest {
             throw new IOException("Could not resolve path URI", e);
         }
 
-        switch (certificateClass.getSimpleName()) {
-            case "EndorsementCredential":
-                return new EndorsementCredential(fPath);
-            case "PlatformCredential":
-                return new PlatformCredential(fPath);
-            case "CertificateAuthorityCredential":
-                return new CertificateAuthorityCredential(fPath);
-            case "IssuedAttestationCertificate":
-                return new IssuedAttestationCertificate(fPath, ekCert, pcCert);
-            default:
-                throw new IllegalArgumentException(
-                        String.format("Unknown certificate class %s", certificateClass.getName())
-                );
-        }
+        return switch (certificateClass.getSimpleName()) {
+            case "EndorsementCredential" -> new EndorsementCredential(fPath);
+            case "PlatformCredential" -> new PlatformCredential(fPath);
+            case "CertificateAuthorityCredential" -> new CertificateAuthorityCredential(fPath);
+            case "IssuedAttestationCertificate" -> new IssuedAttestationCertificate(fPath, ekCert, pcCert);
+            default -> throw new IllegalArgumentException(
+                    String.format("Unknown certificate class %s", certificateClass.getName())
+            );
+        };
     }
 }
