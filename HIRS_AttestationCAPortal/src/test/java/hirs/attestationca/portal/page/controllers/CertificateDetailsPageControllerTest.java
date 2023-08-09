@@ -98,7 +98,7 @@ public class CertificateDetailsPageControllerTest extends PageControllerTest {
         Set<PlatformCredential> pcCertSet = new HashSet<>();
 
         //Create new device and save it
-        Device device = new Device("tested", HealthStatus.TRUSTED, AppraisalStatus.Status.PASS,
+        Device device = new Device("tested", null, HealthStatus.TRUSTED, AppraisalStatus.Status.PASS,
                 new Timestamp(0), false, null, null);
         device = deviceManager.save(device);
 
@@ -169,7 +169,8 @@ public class CertificateDetailsPageControllerTest extends PageControllerTest {
                         ISSUED_CLIENT_CERT,
                         endorsementCredential,
                         pcCertSet);
-        issuedCredential.setDevice(device);
+        issuedCredential.setDeviceId(device.getId());
+        issuedCredential.setDeviceName(device.getName());
         certificateManager.save(issuedCredential);
     }
 
