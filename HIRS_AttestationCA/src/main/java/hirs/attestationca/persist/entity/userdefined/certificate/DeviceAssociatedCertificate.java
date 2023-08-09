@@ -28,6 +28,10 @@ public abstract class DeviceAssociatedCertificate extends Certificate {
     @JdbcTypeCode(java.sql.Types.VARCHAR)
     @Column
     private UUID deviceId;
+    @Getter
+    @Setter
+    @Column
+    private String deviceName;
 
     /**
      * Holds the name of the entity 'DEVICE_ID' field.

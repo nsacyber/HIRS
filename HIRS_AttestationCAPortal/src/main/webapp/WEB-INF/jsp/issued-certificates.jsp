@@ -44,14 +44,14 @@
                 var url = pagePath + '/list';
                 var columns = [
                         {
-                            data: 'device.name',
+                            data: 'deviceName',
                             render: function (data, type, full, meta) {
                                 // if there's a device, display its name, otherwise
                                 // display nothing
                                 if (full.device) {
                                     // TODO render a link to a device details page,
                                     // passing the device.id
-                                    return full.device.name;
+                                    return full.deviceName;
                                 }
                                 return '';
                             }

@@ -29,6 +29,9 @@ import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.log4j.Log4j2;
 import org.hibernate.Session;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -121,23 +124,13 @@ public class ValidationReportsPageController extends PageController<NoPageParams
             final DataTableInput input) {
 
         log.debug("Handling request for summary list: " + input);
-
         // attempt to get the column property based on the order index.
         String orderColumnName = input.getOrderColumnName();
-
         log.debug("Ordering on column: " + orderColumnName);
 
         // define an alias so the composite object, device, can be used by the
         // datatables / query. This is necessary so the device.name property can
         // be used.
-//        CriteriaModifier criteriaModifier = new CriteriaModifier() {
-//            @Override
-//            public void modify(final Criteria criteria) {
-//                criteria.add(RowMutationOperations.Restrictions.isNull(Certificate.ARCHIVE_FIELD));
-//                criteria.createAlias("device", "device");
-//            }
-//        };
-
         CriteriaModifier criteriaModifier = new CriteriaModifier() {
             @Override
             public void modify(final CriteriaQuery criteriaQuery) {
@@ -149,11 +142,22 @@ public class ValidationReportsPageController extends PageController<NoPageParams
             }
         };
 
-        FilteredRecordsList<SupplyChainValidationSummary> records =
-                OrderedListQueryDataTableAdapter.getOrderedList(
-                        SupplyChainValidationSummary.class,
-                        supplyChainValidatorSummaryRepository, input, orderColumnName,
-                        criteriaModifier);
+        FilteredRecordsList<SupplyChainValidationSummary> records = new FilteredRecordsList<>();
+        int currentPage = input.getStart() / input.getLength();
+        Pageable paging = PageRequest.of(currentPage, input.getLength(), Sort.by(orderColumnName));
+        org.springframework.data.domain.Page<SupplyChainValidationSummary> pagedResult = supplyChainValidatorSummaryRepository.findAll(paging);
+
+        if (pagedResult.hasContent()) {
+            records.addAll(pagedResult.getContent());
+        }
+        records.setRecordsTotal(input.getLength());
+        records.setRecordsFiltered(supplyChainValidatorSummaryRepository.count());
+
+//        FilteredRecordsList<SupplyChainValidationSummary> records =
+//                OrderedListQueryDataTableAdapter.getOrderedList(
+//                        SupplyChainValidationSummary.class,
+//                        supplyChainValidatorSummaryRepository, input, orderColumnName,
+//                        criteriaModifier);
 
         return new DataTableResponse<>(records, input);
     }

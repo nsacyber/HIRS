@@ -312,7 +312,7 @@ public class ReferenceManifestDetailsPageController extends PageController<Refer
                 }
             }
         } catch (NullPointerException e) {
-            log.error("Unable to link signing certificate: " + e.getMessage());
+            log.warn("Unable to link signing certificate: " + e.getMessage());
         }
         return data;
     }

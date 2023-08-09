@@ -31,6 +31,9 @@ import lombok.extern.log4j.Log4j2;
 import org.bouncycastle.util.encoders.DecoderException;
 import org.hibernate.Session;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -57,9 +60,6 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
-
-//import java.security.cert.CertificateEncodingException;
-//import java.security.cert.X509Certificate;
 
 // note uploading base64 certs, old or new having decode issues check ACA channel
 
@@ -220,19 +220,24 @@ public class CertificatePageController extends PageController<NoPageParams> {
             }
         };
 
+        int currentPage = input.getStart() / input.getLength();
+        Pageable paging = PageRequest.of(currentPage, input.getLength(), Sort.by(orderColumnName));
 
-        /**
-         * Ok I think what I will do is make repositories for each certificate type to I can
-         * tell it what the type T is.
-         */
-        FilteredRecordsList<Certificate> records = new FilteredRecordsList<>();
         // special parsing for platform credential
         // Add the EndorsementCredential for each PlatformCredential based on the
         // serial number. (pc.HolderSerialNumber = ec.SerialNumber)
         if (certificateType.equals(PLATFORMCREDENTIAL)) {
-            records = OrderedListQueryDataTableAdapter.getOrderedList(
-                    getCertificateClass(certificateType), platformCertificateRepository,
-                    input, orderColumnName, criteriaModifier);
+//            records = OrderedListQueryDataTableAdapter.getOrderedList(
+//                    getCertificateClass(certificateType), platformCertificateRepository,
+//                    input, orderColumnName, criteriaModifier);
+            FilteredRecordsList<PlatformCredential> records = new FilteredRecordsList<>();
+
+            org.springframework.data.domain.Page<PlatformCredential> pagedResult = this.platformCertificateRepository.findAll(paging);
+            if (pagedResult.hasContent()) {
+                records.addAll(pagedResult.getContent());
+            }
+            records.setRecordsTotal(input.getLength());
+            records.setRecordsFiltered(platformCertificateRepository.count());
             EndorsementCredential associatedEC;
 
             if (!records.isEmpty()) {
@@ -251,18 +256,53 @@ public class CertificatePageController extends PageController<NoPageParams> {
                     pc.setEndorsementCredential(associatedEC);
                 }
             }
+
+            log.debug("Returning list of size: " + records.size());
+            return new DataTableResponse<>(records, input);
         } else if (certificateType.equals(ENDORSEMENTCREDENTIAL)) {
-            records = OrderedListQueryDataTableAdapter.getOrderedList(
-                    getCertificateClass(certificateType), endorsementCredentialRepository,
-                    input, orderColumnName, criteriaModifier);
+//            records = OrderedListQueryDataTableAdapter.getOrderedList(
+//                    getCertificateClass(certificateType), endorsementCredentialRepository,
+//                    input, orderColumnName, criteriaModifier);
+            FilteredRecordsList<EndorsementCredential> records = new FilteredRecordsList<>();
+            org.springframework.data.domain.Page<EndorsementCredential> pagedResult = this.endorsementCredentialRepository.findAll(paging);
+            if (pagedResult.hasContent()) {
+                records.addAll(pagedResult.getContent());
+            }
+
+            records.setRecordsTotal(input.getLength());
+            records.setRecordsFiltered(endorsementCredentialRepository.count());
+
+            log.debug("Returning list of size: " + records.size());
+            return new DataTableResponse<>(records, input);
         } else if (certificateType.equals(TRUSTCHAIN)) {
-            records = OrderedListQueryDataTableAdapter.getOrderedList(
-                    getCertificateClass(certificateType), caCredentialRepository,
-                    input, orderColumnName, criteriaModifier);
+//            records = OrderedListQueryDataTableAdapter.getOrderedList(
+//                    getCertificateClass(certificateType), caCredentialRepository,
+//                    input, orderColumnName, criteriaModifier);
+            FilteredRecordsList<CertificateAuthorityCredential> records = new FilteredRecordsList<>();
+            org.springframework.data.domain.Page<CertificateAuthorityCredential> pagedResult = this.caCredentialRepository.findAll(paging);
+
+            if (pagedResult.hasContent()) {
+                records.addAll(pagedResult.getContent());
+            }
+            records.setRecordsTotal(input.getLength());
+            records.setRecordsFiltered(caCredentialRepository.count());
+
+            log.debug("Returning list of size: " + records.size());
+            return new DataTableResponse<>(records, input);
+        } else if (certificateType.equals(ISSUEDCERTIFICATES)) {
+            FilteredRecordsList<IssuedAttestationCertificate> records = new FilteredRecordsList<>();
+            org.springframework.data.domain.Page<IssuedAttestationCertificate> pagedResult = this.issuedCertificateRepository.findAll(paging);
+            if (pagedResult.hasContent()) {
+                records.addAll(pagedResult.getContent());
+            }
+            records.setRecordsTotal(input.getLength());
+            records.setRecordsFiltered(issuedCertificateRepository.count());
+
+            log.debug("Returning list of size: " + records.size());
+            return new DataTableResponse<>(records, input);
         }
 
-        log.debug("Returning list of size: " + records.size());
-        return new DataTableResponse<>(records, input);
+        return new DataTableResponse<Certificate>(new FilteredRecordsList<>(), input);
     }
 
     /**
