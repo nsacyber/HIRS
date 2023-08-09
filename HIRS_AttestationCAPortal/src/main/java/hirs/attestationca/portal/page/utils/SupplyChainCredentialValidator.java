@@ -15,6 +15,7 @@ import hirs.attestationca.persist.entity.userdefined.report.DeviceInfoReport;
 import hirs.attestationca.persist.enums.AppraisalStatus;
 import hirs.attestationca.persist.validation.CredentialValidator;
 import hirs.attestationca.persist.validation.SupplyChainValidatorException;
+import hirs.utils.enums.DeviceInfoEnums;
 import lombok.NoArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.codec.digest.DigestUtils;
@@ -362,7 +363,7 @@ public final class SupplyChainCredentialValidator implements CredentialValidator
         Map<String, String> deviceInfoSerialNumbers = new HashMap<>();
 
         if (StringUtils.isEmpty(deviceBaseboardSerialNumber)
-                || DeviceInfoReport.NOT_SPECIFIED.equalsIgnoreCase(deviceBaseboardSerialNumber)) {
+                || DeviceInfoEnums.NOT_SPECIFIED.equalsIgnoreCase(deviceBaseboardSerialNumber)) {
             log.error("Failed to retrieve device baseboard serial number");
             deviceBaseboardSerialNumber = null;
         } else {
@@ -372,7 +373,7 @@ public final class SupplyChainCredentialValidator implements CredentialValidator
         }
 
         if (StringUtils.isEmpty(deviceChassisSerialNumber)
-                || DeviceInfoReport.NOT_SPECIFIED.equalsIgnoreCase(deviceChassisSerialNumber)) {
+                || DeviceInfoEnums.NOT_SPECIFIED.equalsIgnoreCase(deviceChassisSerialNumber)) {
             log.error("Failed to retrieve device chassis serial number");
         } else {
             deviceInfoSerialNumbers.put("chassis serial number", deviceChassisSerialNumber);
@@ -380,7 +381,7 @@ public final class SupplyChainCredentialValidator implements CredentialValidator
                     + deviceChassisSerialNumber);
         }
         if (StringUtils.isEmpty(deviceSystemSerialNumber)
-                || DeviceInfoReport.NOT_SPECIFIED.equalsIgnoreCase(deviceSystemSerialNumber)) {
+                || DeviceInfoEnums.NOT_SPECIFIED.equalsIgnoreCase(deviceSystemSerialNumber)) {
             log.error("Failed to retrieve device system serial number");
         } else {
             deviceInfoSerialNumbers.put("system serial number", deviceSystemSerialNumber);

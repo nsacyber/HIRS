@@ -28,6 +28,9 @@ import jakarta.validation.Valid;
 import lombok.extern.log4j.Log4j2;
 import org.hibernate.Session;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -132,11 +135,24 @@ public class ReferenceManifestPageController extends PageController<NoPageParams
                 criteriaQuery.select(rimRoot).distinct(true).where(cb.isNull(rimRoot.get(Certificate.ARCHIVE_FIELD)));
             }
         };
-        FilteredRecordsList<ReferenceManifest> records
-                = OrderedListQueryDataTableAdapter.getOrderedList(
-                ReferenceManifest.class,
-                this.referenceManifestRepository,
-                input, orderColumnName, criteriaModifier);
+
+        log.info("Querying with the following dataTableInput: " + input.toString());
+
+        FilteredRecordsList<ReferenceManifest> records = new FilteredRecordsList<>();
+        int currentPage = input.getStart() / input.getLength();
+        Pageable paging = PageRequest.of(currentPage, input.getLength(), Sort.by(orderColumnName));
+        org.springframework.data.domain.Page<ReferenceManifest> pagedResult = referenceManifestRepository.findAll(paging);
+
+        if (pagedResult.hasContent()) {
+            records.addAll(pagedResult.getContent());
+        }
+        records.setRecordsTotal(input.getLength());
+        records.setRecordsFiltered(referenceManifestRepository.count());
+//        FilteredRecordsList<ReferenceManifest> records
+//                = OrderedListQueryDataTableAdapter.getOrderedList(
+//                ReferenceManifest.class,
+//                this.referenceManifestRepository,
+//                input, orderColumnName, criteriaModifier);
 
         log.debug("Returning list of size: " + records.size());
         return new DataTableResponse<>(records, input);

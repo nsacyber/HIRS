@@ -50,7 +50,7 @@
                             searchable:false,
                             render: function(data, type, full, meta) {
                                 var html = '';
-                                switch(full.device.supplyChainStatus){
+                                switch(full.device.supplyChainValidationStatus){
                                     case "PASS":
                                         html= '<img src="${passIcon}" title="${passText}">';
                                         break;

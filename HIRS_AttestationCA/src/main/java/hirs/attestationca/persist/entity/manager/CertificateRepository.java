@@ -21,8 +21,6 @@ public interface CertificateRepository<T extends Certificate> extends JpaReposit
     List<Certificate> findBySubjectSorted(String issuedSort, String dType);
     @Query(value = "SELECT * FROM Certificate where DTYPE = ?1", nativeQuery = true)
     List<T> findByAll(String dType);
-    @Query(value = "SELECT * FROM Certificate where device.id = ?1 AND DTYPE = 'PlatformCredential'", nativeQuery = true)
-    PlatformCredential findByDeviceId(UUID deviceId);
     @Query(value = "SELECT * FROM Certificate where serialNumber = ?1 AND DTYPE = ?2", nativeQuery = true)
     Certificate findBySerialNumber(BigInteger serialNumber, String dType);
     @Query(value = "SELECT * FROM Certificate where platformSerial = ?1 AND DTYPE = 'PlatformCredential'", nativeQuery = true)

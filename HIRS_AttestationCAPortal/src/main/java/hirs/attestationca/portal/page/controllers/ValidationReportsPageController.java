@@ -6,8 +6,10 @@ import hirs.attestationca.persist.CriteriaModifier;
 import hirs.attestationca.persist.FilteredRecordsList;
 import hirs.attestationca.persist.entity.manager.CertificateRepository;
 import hirs.attestationca.persist.entity.manager.DeviceRepository;
+import hirs.attestationca.persist.entity.manager.PlatformCertificateRepository;
 import hirs.attestationca.persist.entity.manager.SupplyChainValidationSummaryRepository;
 import hirs.attestationca.persist.entity.userdefined.Certificate;
+import hirs.attestationca.persist.entity.userdefined.Device;
 import hirs.attestationca.persist.entity.userdefined.SupplyChainValidationSummary;
 import hirs.attestationca.persist.entity.userdefined.certificate.PlatformCredential;
 import hirs.attestationca.persist.entity.userdefined.certificate.attributes.ComponentIdentifier;
@@ -27,6 +29,9 @@ import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.log4j.Log4j2;
 import org.hibernate.Session;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -62,6 +67,7 @@ public class ValidationReportsPageController extends PageController<NoPageParams
     private final SupplyChainValidationSummaryRepository supplyChainValidatorSummaryRepository;
     private final CertificateRepository certificateRepository;
     private final DeviceRepository deviceRepository;
+    private final PlatformCertificateRepository platformCertificateRepository;
     @Autowired(required = false)
     private EntityManager entityManager;
 
@@ -78,16 +84,19 @@ public class ValidationReportsPageController extends PageController<NoPageParams
      * @param supplyChainValidatorSummaryRepository the manager
      * @param certificateRepository the certificate manager
      * @param deviceRepository the device manager
+     * @param platformCertificateRepository the platform certificate manager
      */
     @Autowired
     public ValidationReportsPageController(
             final SupplyChainValidationSummaryRepository supplyChainValidatorSummaryRepository,
             final CertificateRepository certificateRepository,
-            final DeviceRepository deviceRepository) {
+            final DeviceRepository deviceRepository,
+            final PlatformCertificateRepository platformCertificateRepository) {
         super(Page.VALIDATION_REPORTS);
         this.supplyChainValidatorSummaryRepository = supplyChainValidatorSummaryRepository;
         this.certificateRepository = certificateRepository;
         this.deviceRepository = deviceRepository;
+        this.platformCertificateRepository = platformCertificateRepository;
     }
 
     /**
@@ -115,23 +124,13 @@ public class ValidationReportsPageController extends PageController<NoPageParams
             final DataTableInput input) {
 
         log.debug("Handling request for summary list: " + input);
-
         // attempt to get the column property based on the order index.
         String orderColumnName = input.getOrderColumnName();
-
         log.debug("Ordering on column: " + orderColumnName);
 
         // define an alias so the composite object, device, can be used by the
         // datatables / query. This is necessary so the device.name property can
         // be used.
-//        CriteriaModifier criteriaModifier = new CriteriaModifier() {
-//            @Override
-//            public void modify(final Criteria criteria) {
-//                criteria.add(RowMutationOperations.Restrictions.isNull(Certificate.ARCHIVE_FIELD));
-//                criteria.createAlias("device", "device");
-//            }
-//        };
-
         CriteriaModifier criteriaModifier = new CriteriaModifier() {
             @Override
             public void modify(final CriteriaQuery criteriaQuery) {
@@ -143,11 +142,22 @@ public class ValidationReportsPageController extends PageController<NoPageParams
             }
         };
 
-        FilteredRecordsList<SupplyChainValidationSummary> records =
-                OrderedListQueryDataTableAdapter.getOrderedList(
-                        SupplyChainValidationSummary.class,
-                        supplyChainValidatorSummaryRepository, input, orderColumnName,
-                        criteriaModifier);
+        FilteredRecordsList<SupplyChainValidationSummary> records = new FilteredRecordsList<>();
+        int currentPage = input.getStart() / input.getLength();
+        Pageable paging = PageRequest.of(currentPage, input.getLength(), Sort.by(orderColumnName));
+        org.springframework.data.domain.Page<SupplyChainValidationSummary> pagedResult = supplyChainValidatorSummaryRepository.findAll(paging);
+
+        if (pagedResult.hasContent()) {
+            records.addAll(pagedResult.getContent());
+        }
+        records.setRecordsTotal(input.getLength());
+        records.setRecordsFiltered(supplyChainValidatorSummaryRepository.count());
+
+//        FilteredRecordsList<SupplyChainValidationSummary> records =
+//                OrderedListQueryDataTableAdapter.getOrderedList(
+//                        SupplyChainValidationSummary.class,
+//                        supplyChainValidatorSummaryRepository, input, orderColumnName,
+//                        criteriaModifier);
 
         return new DataTableResponse<>(records, input);
     }
@@ -281,8 +291,8 @@ public class ValidationReportsPageController extends PageController<NoPageParams
             if ((createTimes.get(i).isAfter(startDate) || createTimes.get(i).isEqual(startDate))
                     && (createTimes.get(i).isBefore(endDate)
                     || createTimes.get(i).isEqual(endDate))) {
-                UUID deviceId = deviceRepository.findByName(deviceNames[i]).getId();
-                PlatformCredential pc = certificateRepository.findByDeviceId(deviceId);
+                Device device = deviceRepository.findByName(deviceNames[i]);
+                PlatformCredential pc = platformCertificateRepository.findByDeviceId(device.getId()).get(0);
                 if (jsonVersion) {
                     jsonReportData.add(assembleJsonContent(pc, parseComponents(pc),
                             company, contractNumber));
@@ -304,7 +314,7 @@ public class ValidationReportsPageController extends PageController<NoPageParams
                                     + pc.getModel() + ","
                                     + pc.getPlatformSerial() + ","
                                     + LocalDateTime.now().toString() + ","
-                                    + pc.getDevice().getSupplyChainValidationStatus() + ",");
+                                    + device.getSupplyChainValidationStatus() + ",");
                         }
                         if (!systemOnly) {
                             ArrayList<ArrayList<String>> parsedComponents = parseComponents(pc);
@@ -353,6 +363,8 @@ public class ValidationReportsPageController extends PageController<NoPageParams
                                            final String company,
                                            final String contractNumber) {
         JsonObject systemData = new JsonObject();
+        String deviceName = deviceRepository.findById((pc)
+                .getDeviceId()).get().getName();
 
         systemData.addProperty("Company", company);
         systemData.addProperty("Contract number", contractNumber);
@@ -360,7 +372,8 @@ public class ValidationReportsPageController extends PageController<NoPageParams
         systemData.addProperty("Model", pc.getModel());
         systemData.addProperty("SN", pc.getPlatformSerial());
         systemData.addProperty("Verification Date", LocalDateTime.now().toString());
-        systemData.addProperty("Device Status", pc.getDevice().getSupplyChainValidationStatus().toString());
+        systemData.addProperty("Device Status", deviceRepository.findByName(deviceName)
+                .getSupplyChainValidationStatus().toString());
 
         JsonArray components = new JsonArray();
         for (ArrayList<String> componentData : parsedComponents) {

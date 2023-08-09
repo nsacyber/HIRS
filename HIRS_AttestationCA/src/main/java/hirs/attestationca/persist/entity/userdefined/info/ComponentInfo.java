@@ -8,22 +8,22 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.xml.bind.annotation.XmlElement;
+import lombok.Data;
 import lombok.NoArgsConstructor;
+import lombok.extern.log4j.Log4j2;
 import org.apache.commons.lang3.StringUtils;
-import org.hibernate.annotations.DiscriminatorOptions;
-import org.springframework.util.Assert;
 
 import java.io.Serializable;
-import java.util.Objects;
 
 /**
  * ComponentInfo is a class to hold Hardware component information
  * such as manufacturer, model, serial number and version.
  */
+@Log4j2
 @NoArgsConstructor
+@Data
 @Entity
 @DiscriminatorColumn(name = "componentTypeEnum", discriminatorType = DiscriminatorType.STRING)
-@DiscriminatorOptions(force = true)
 public class ComponentInfo implements Serializable {
 
     @Id
@@ -52,46 +52,6 @@ public class ComponentInfo implements Serializable {
     private String componentClass;
 
     /**
-     * Get the Component's Manufacturer.
-     * @return the Component's Manufacturer
-     */
-    public String getComponentManufacturer() {
-        return componentManufacturer;
-    }
-
-    /**
-     * Get the Component's Model.
-     * @return the Component's Model
-     */
-    public String getComponentModel() {
-        return componentModel;
-    }
-
-    /**
-     * Get the Component's Serial Number.
-     * @return the Component's Serial Number
-     */
-    public String getComponentSerial() {
-        return componentSerial;
-    }
-
-    /**
-     * Get the Component's Revision.
-     * @return the Component's Revision
-     */
-    public String getComponentRevision() {
-        return componentRevision;
-    }
-
-    /**
-     * Get the Component's Class Registry.
-     * @return the Component's Class
-     */
-    public String getComponentClass() {
-        return componentClass;
-    }
-
-    /**
      * Constructor.
      * @param componentManufacturer Component Manufacturer (must not be null)
      * @param componentModel Component Model (must not be null)
@@ -102,13 +62,16 @@ public class ComponentInfo implements Serializable {
                          final String componentModel,
                          final String componentSerial,
                          final String componentRevision) {
-        Assert.state(isComplete(
+        if (isComplete(
                 componentManufacturer,
                 componentModel,
                 componentSerial,
-                componentRevision),
-                "ComponentInfo: manufacturer and/or "
-                        + "model can not be null");
+                componentRevision)) {
+            log.error("ComponentInfo: manufacturer and/or "
+                    + "model can not be null");
+            throw new NullPointerException("ComponentInfo: manufacturer and/or "
+                    + "model can not be null");
+        }
         this.componentManufacturer = componentManufacturer.trim();
         this.componentModel = componentModel.trim();
         if (componentSerial != null) {
@@ -136,13 +99,16 @@ public class ComponentInfo implements Serializable {
                          final String componentSerial,
                          final String componentRevision,
                          final String componentClass) {
-        Assert.state(isComplete(
+        if (isComplete(
                 componentManufacturer,
                 componentModel,
                 componentSerial,
-                componentRevision),
-                "ComponentInfo: manufacturer and/or "
-                        + "model can not be null");
+                componentRevision)) {
+            log.error("ComponentInfo: manufacturer and/or "
+                    + "model can not be null");
+            throw new NullPointerException("ComponentInfo: manufacturer and/or "
+                    + "model can not be null");
+        }
         this.componentManufacturer = componentManufacturer.trim();
         this.componentModel = componentModel.trim();
         if (componentSerial != null) {
@@ -181,41 +147,5 @@ public class ComponentInfo implements Serializable {
                                      final String componentRevision) {
         return !(StringUtils.isEmpty(componentManufacturer)
                 || StringUtils.isEmpty(componentModel));
-    }
-
-    @Override
-    public boolean equals(final Object o) {
-        if (this == o) {
-            return true;
-        }
-        if (o == null || getClass() != o.getClass()) {
-            return false;
-        }
-        ComponentInfo that = (ComponentInfo) o;
-        return Objects.equals(id, that.id)
-                && Objects.equals(componentManufacturer, that.componentManufacturer)
-                && Objects.equals(componentModel, that.componentModel)
-                && Objects.equals(componentSerial, that.componentSerial)
-                && Objects.equals(componentRevision, that.componentRevision)
-                && Objects.equals(componentClass, that.componentClass);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(id, componentManufacturer, componentModel,
-                componentSerial, componentRevision, componentClass);
-    }
-
-    @Override
-    public String toString() {
-        return String.format("ComponentInfo{"
-                        + "componentManufacturer='%s'"
-                        + ", componentModel='%s'"
-                        + ", componentSerial='%s'"
-                        + ", componentRevision='%s'"
-                        + ", componentClass='%s'}",
-                componentManufacturer,
-                componentModel, componentSerial,
-                componentRevision, componentClass);
     }
 }

@@ -1,16 +1,18 @@
 package hirs.attestationca.persist.entity.userdefined.info;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import hirs.attestationca.persist.entity.userdefined.report.DeviceInfoReport;
 import hirs.utils.StringValidator;
+import hirs.utils.X509CertificateAdapter;
+import hirs.utils.enums.DeviceInfoEnums;
 import jakarta.persistence.Column;
 import jakarta.persistence.Embeddable;
 import jakarta.persistence.Lob;
 import jakarta.xml.bind.annotation.XmlElement;
+import jakarta.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import lombok.ToString;
+import lombok.extern.log4j.Log4j2;
 
 import java.io.Serializable;
 import java.security.cert.X509Certificate;
@@ -20,13 +22,15 @@ import java.security.cert.X509Certificate;
  */
 @Getter
 @EqualsAndHashCode
+@ToString
+@Log4j2
 @Embeddable
 public class TPMInfo implements Serializable {
-    private static final Logger LOGGER = LogManager.getLogger(TPMInfo.class);
-    private static final int MAX_BLOB_SIZE = 55535;
+
+    private static final int MAX_BLOB_SIZE = 65535;
 
     @XmlElement
-    @Column(length = DeviceInfoReport.MED_STRING_LENGTH, nullable = true)
+    @Column(length = DeviceInfoEnums.MED_STRING_LENGTH, nullable = true)
     private String tpmMake;
 
     @XmlElement
@@ -46,22 +50,19 @@ public class TPMInfo implements Serializable {
     private short tpmVersionRevMinor;
 
     @XmlElement
-//    @XmlJavaTypeAdapter(X509CertificateAdapter.class)
+    @XmlJavaTypeAdapter(X509CertificateAdapter.class)
     @Lob
-//    @Type(type = "hirs.attestationca.persist.type.X509CertificateType")
+//    @Type(type = "hirs.data.persist.type.X509CertificateType")
     @JsonIgnore
     private X509Certificate identityCertificate;
 
-    @Column(nullable = true, length = MAX_BLOB_SIZE)
-    @Lob
+    @Column(nullable = true, columnDefinition = "blob")
     private byte[] pcrValues;
 
-    @Column(nullable = true, length = MAX_BLOB_SIZE)
-    @Lob
+    @Column(nullable = true, columnDefinition = "blob")
     private byte[] tpmQuoteHash;
 
-    @Column(nullable = true, length = MAX_BLOB_SIZE)
-    @Lob
+    @Column(nullable = true, columnDefinition = "blob")
     private byte[] tpmQuoteSignature;
 
     /**
@@ -196,7 +197,7 @@ public class TPMInfo implements Serializable {
      * Default constructor used for marshalling/unmarshalling XML objects.
      */
     public TPMInfo() {
-        this(DeviceInfoReport.NOT_SPECIFIED,
+        this(DeviceInfoEnums.NOT_SPECIFIED,
                 (short) 0,
                 (short) 0,
                 (short) 0,
@@ -232,53 +233,53 @@ public class TPMInfo implements Serializable {
     }
 
     private void setTPMMake(final String tpmMake) {
-        LOGGER.debug("setting TPM make info: {}", tpmMake);
+        log.debug("setting TPM make info: {}", tpmMake);
         this.tpmMake = StringValidator.check(tpmMake, "tpmMake")
-                .notNull().maxLength(DeviceInfoReport.MED_STRING_LENGTH).getValue();
+                .notNull().maxLength(DeviceInfoEnums.MED_STRING_LENGTH).getValue();
     }
 
     private void setTPMVersionMajor(final short tpmVersionMajor) {
         if (tpmVersionMajor < 0) {
-            LOGGER.error("TPM major version number cannot be negative: {}",
+            log.error("TPM major version number cannot be negative: {}",
                     tpmVersionMajor);
             throw new IllegalArgumentException(
                     "negative TPM major version number");
         }
-        LOGGER.debug("setting TPM major version number: {}", tpmVersionMajor);
+        log.debug("setting TPM major version number: {}", tpmVersionMajor);
         this.tpmVersionMajor = tpmVersionMajor;
     }
 
     private void setTPMVersionMinor(final short tpmVersionMinor) {
         if (tpmVersionMinor < 0) {
-            LOGGER.error("TPM minor version number cannot be negative: {}",
+            log.error("TPM minor version number cannot be negative: {}",
                     tpmVersionMinor);
             throw new IllegalArgumentException(
                     "negative TPM minor version number");
         }
-        LOGGER.debug("setting TPM minor version number: {}", tpmVersionMinor);
+        log.debug("setting TPM minor version number: {}", tpmVersionMinor);
         this.tpmVersionMinor = tpmVersionMinor;
     }
 
     private void setTPMVersionRevMajor(final short tpmVersionRevMajor) {
         if (tpmVersionRevMajor < 0) {
-            LOGGER.error("TPM major revision number cannot be negative: {}",
+            log.error("TPM major revision number cannot be negative: {}",
                     tpmVersionRevMajor);
             throw new IllegalArgumentException(
                     "negative TPM major revision number");
         }
-        LOGGER.debug("setting TPM major revision version number: {}",
+        log.debug("setting TPM major revision version number: {}",
                 tpmVersionRevMajor);
         this.tpmVersionRevMajor = tpmVersionRevMajor;
     }
 
     private void setTPMVersionRevMinor(final short tpmVersionRevMinor) {
         if (tpmVersionRevMinor < 0) {
-            LOGGER.error("TPM minor revision number cannot be negative: {}",
+            log.error("TPM minor revision number cannot be negative: {}",
                     tpmVersionRevMinor);
             throw new IllegalArgumentException(
                     "negative TPM minor revision number");
         }
-        LOGGER.debug("setting TPM minor revision version number: {}",
+        log.debug("setting TPM minor revision version number: {}",
                 tpmVersionRevMinor);
         this.tpmVersionRevMinor = tpmVersionRevMinor;
     }
@@ -286,10 +287,10 @@ public class TPMInfo implements Serializable {
     private void setIdentityCertificate(
             final X509Certificate identityCertificate) {
         if (identityCertificate == null) {
-            LOGGER.error("identity certificate cannot be null");
+            log.error("identity certificate cannot be null");
             throw new NullPointerException("identityCertificate");
         }
-        LOGGER.debug("setting identity certificate");
+        log.debug("setting identity certificate");
         this.identityCertificate = identityCertificate;
     }
 

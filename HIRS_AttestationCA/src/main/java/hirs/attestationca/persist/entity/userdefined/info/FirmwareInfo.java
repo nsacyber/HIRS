@@ -1,7 +1,7 @@
 package hirs.attestationca.persist.entity.userdefined.info;
 
-import hirs.attestationca.persist.entity.userdefined.report.DeviceInfoReport;
 import hirs.utils.StringValidator;
+import hirs.utils.enums.DeviceInfoEnums;
 import jakarta.persistence.Column;
 import jakarta.xml.bind.annotation.XmlElement;
 import lombok.EqualsAndHashCode;
@@ -13,21 +13,21 @@ import java.io.Serializable;
 /**
  * Used for representing the firmware info of a device, such as the BIOS information.
  */
-@ToString
-@EqualsAndHashCode
 @Getter
+@EqualsAndHashCode
+@ToString
 public class FirmwareInfo implements Serializable {
 
     @XmlElement
-    @Column(length = DeviceInfoReport.LONG_STRING_LENGTH, nullable = false)
+    @Column(length = DeviceInfoEnums.LONG_STRING_LENGTH, nullable = false)
     private final String biosVendor;
 
     @XmlElement
-    @Column(length = DeviceInfoReport.LONG_STRING_LENGTH, nullable = false)
+    @Column(length = DeviceInfoEnums.LONG_STRING_LENGTH, nullable = false)
     private final String biosVersion;
 
     @XmlElement
-    @Column(length = DeviceInfoReport.SHORT_STRING_LENGTH, nullable = false)
+    @Column(length = DeviceInfoEnums.SHORT_STRING_LENGTH, nullable = false)
     private final String biosReleaseDate;
 
     /**
@@ -40,21 +40,21 @@ public class FirmwareInfo implements Serializable {
     public FirmwareInfo(final String biosVendor, final String biosVersion,
                         final String biosReleaseDate) {
         this.biosVendor = StringValidator.check(biosVendor, "biosVendor")
-                .notBlank().maxLength(DeviceInfoReport.LONG_STRING_LENGTH).getValue();
+                .notBlank().maxLength(DeviceInfoEnums.LONG_STRING_LENGTH).getValue();
 
         this.biosVersion = StringValidator.check(biosVersion, "biosVersion")
-                .notBlank().maxLength(DeviceInfoReport.LONG_STRING_LENGTH).getValue();
+                .notBlank().maxLength(DeviceInfoEnums.LONG_STRING_LENGTH).getValue();
 
         this.biosReleaseDate = StringValidator.check(biosReleaseDate, "biosReleaseDate")
-                .notBlank().maxLength(DeviceInfoReport.SHORT_STRING_LENGTH).getValue();
+                .notBlank().maxLength(DeviceInfoEnums.SHORT_STRING_LENGTH).getValue();
     }
 
     /**
      * Default constructor, useful for hibernate and marshalling and unmarshalling.
      */
     public FirmwareInfo() {
-        this(DeviceInfoReport.NOT_SPECIFIED,
-                DeviceInfoReport.NOT_SPECIFIED,
-                DeviceInfoReport.NOT_SPECIFIED);
+        this(DeviceInfoEnums.NOT_SPECIFIED,
+                DeviceInfoEnums.NOT_SPECIFIED,
+                DeviceInfoEnums.NOT_SPECIFIED);
     }
 }

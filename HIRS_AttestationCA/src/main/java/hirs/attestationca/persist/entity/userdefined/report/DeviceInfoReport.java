@@ -1,81 +1,62 @@
 package hirs.attestationca.persist.entity.userdefined.report;
 
-import hirs.attestationca.persist.entity.userdefined.Report;
+import hirs.attestationca.persist.entity.AbstractEntity;
 import hirs.attestationca.persist.entity.userdefined.info.FirmwareInfo;
 import hirs.attestationca.persist.entity.userdefined.info.HardwareInfo;
 import hirs.attestationca.persist.entity.userdefined.info.NetworkInfo;
 import hirs.attestationca.persist.entity.userdefined.info.OSInfo;
 import hirs.attestationca.persist.entity.userdefined.info.TPMInfo;
 import hirs.utils.VersionHelper;
+import hirs.utils.enums.DeviceInfoEnums;
 import jakarta.persistence.Column;
 import jakarta.persistence.Embedded;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Transient;
+import jakarta.xml.bind.annotation.XmlElement;
 import lombok.Getter;
-import lombok.Setter;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import lombok.NoArgsConstructor;
+import lombok.extern.log4j.Log4j2;
 
 import java.io.Serializable;
-
 
 /**
  * A <code>DeviceInfoReport</code> is a <code>Report</code> used to transfer the
  * information about the device. This <code>Report</code> includes the network,
  * OS, and TPM information.
  */
+@Log4j2
+@Getter
+@NoArgsConstructor
 @Entity
-public class DeviceInfoReport extends Report implements Serializable {
+public class DeviceInfoReport extends AbstractEntity implements Serializable {
 
-    private static final Logger LOGGER = LogManager.getLogger(DeviceInfoReport.class);
-
-    /**
-     * A variable used to describe unavailable hardware, firmware, or OS info.
-     */
-    public static final String NOT_SPECIFIED = "Not Specified";
-    /**
-     * Constant variable representing the various Short sized strings.
-     */
-    public static final int SHORT_STRING_LENGTH = 32;
-    /**
-     * Constant variable representing the various Medium sized strings.
-     */
-    public static final int MED_STRING_LENGTH = 64;
-    /**
-     * Constant variable representing the various Long sized strings.
-     */
-    public static final int LONG_STRING_LENGTH = 255;
-
+    @XmlElement
     @Embedded
     private NetworkInfo networkInfo;
 
+    @XmlElement
     @Embedded
     private OSInfo osInfo;
 
+    @XmlElement
     @Embedded
     private FirmwareInfo firmwareInfo;
 
+    @XmlElement
     @Embedded
     private HardwareInfo hardwareInfo;
 
+    @XmlElement
     @Embedded
     private TPMInfo tpmInfo;
 
-    @Getter
+    @XmlElement
     @Column(nullable = false)
     private String clientApplicationVersion;
 
-    @Getter
-    @Setter
+    @XmlElement
     @Transient
     private String paccorOutputString;
-
-    /**
-     * Default constructor necessary for marshalling/unmarshalling.
-     */
-    public DeviceInfoReport() {
-        /* do nothing */
-    }
 
     /**
      * Constructor used to create a <code>DeviceInfoReport</code>. The
@@ -160,8 +141,9 @@ public class DeviceInfoReport extends Report implements Serializable {
          * without null may be returned, which this interface does not support
          */
         if (osInfo == null) {
-            osInfo = new OSInfo(NOT_SPECIFIED, NOT_SPECIFIED,
-                    NOT_SPECIFIED, NOT_SPECIFIED, NOT_SPECIFIED);
+            osInfo = new OSInfo(DeviceInfoEnums.NOT_SPECIFIED, DeviceInfoEnums.NOT_SPECIFIED,
+                    DeviceInfoEnums.NOT_SPECIFIED, DeviceInfoEnums.NOT_SPECIFIED,
+                    DeviceInfoEnums.NOT_SPECIFIED);
         }
         return osInfo;
     }
@@ -178,8 +160,8 @@ public class DeviceInfoReport extends Report implements Serializable {
          * without null may be returned, which this interface does not support
          */
         if (firmwareInfo == null) {
-            firmwareInfo = new FirmwareInfo(NOT_SPECIFIED,
-                    NOT_SPECIFIED, NOT_SPECIFIED);
+            firmwareInfo = new FirmwareInfo(DeviceInfoEnums.NOT_SPECIFIED,
+                    DeviceInfoEnums.NOT_SPECIFIED, DeviceInfoEnums.NOT_SPECIFIED);
         }
         return firmwareInfo;
     }
@@ -197,63 +179,20 @@ public class DeviceInfoReport extends Report implements Serializable {
          */
         if (hardwareInfo == null) {
             hardwareInfo = new HardwareInfo(
-                    NOT_SPECIFIED,
-                    NOT_SPECIFIED,
-                    NOT_SPECIFIED,
-                    NOT_SPECIFIED,
-                    NOT_SPECIFIED,
-                    NOT_SPECIFIED
+                    DeviceInfoEnums.NOT_SPECIFIED,
+                    DeviceInfoEnums.NOT_SPECIFIED,
+                    DeviceInfoEnums.NOT_SPECIFIED,
+                    DeviceInfoEnums.NOT_SPECIFIED,
+                    DeviceInfoEnums.NOT_SPECIFIED,
+                    DeviceInfoEnums.NOT_SPECIFIED
             );
         }
         return hardwareInfo;
     }
 
-    /**
-     * Retrieves the TPMInfo for this <code>DeviceInfoReport</code>. TPMInfo may
-     * be null if a TPM is not available on the device.
-     *
-     * @return tpmInfo, may be null if a TPM is not available on the device
-     */
-    public TPMInfo getTPMInfo() {
-        return tpmInfo;
-    }
-
-    @Override
-    public String getReportType() {
-        return this.getClass().getName();
-    }
-
-    /**
-     * Searches the given set of TPMBaselines for matching device info fields that
-     * are determined critical to detecting a kernel update.
-     * @param tpmBaselines Iterable&lt;TPMBaseline&gt; set of TPMBaseline objects.
-     * @return True, if one of the TPM baselines in the set has the same kernel-specific
-     * info as this DeviceInfoReport.
-     */
-    public final boolean matchesKernelInfo() { //final Iterable<TpmWhiteListBaseline> tpmBaselines) {
-        boolean match = false;
-
-//        if (tpmBaselines != null) {
-            // Retrieve the fields which indicate a kernel update
-//            final OSInfo kernelOSInfo = getOSInfo();
-
-            // perform the search
-//            for (final TpmWhiteListBaseline baseline : tpmBaselines) {
-//                final OSInfo baselineOSInfo = baseline.getOSInfo();
-//                if(baselineOSInfo.getOSName().equalsIgnoreCase(kernelOSInfo.getOSName())
-//                        && baselineOSInfo.getOSVersion().equalsIgnoreCase(kernelOSInfo.getOSVersion())) {
-//                    match = true;
-//                    break;
-//                }
-//            }
-//        }
-
-        return match;
-    }
-
     private void setNetworkInfo(NetworkInfo networkInfo) {
         if (networkInfo == null) {
-            LOGGER.error("NetworkInfo cannot be null");
+            log.error("NetworkInfo cannot be null");
             throw new NullPointerException("network info");
         }
         this.networkInfo = networkInfo;
@@ -261,7 +200,7 @@ public class DeviceInfoReport extends Report implements Serializable {
 
     private void setOSInfo(OSInfo osInfo) {
         if (osInfo == null) {
-            LOGGER.error("OSInfo cannot be null");
+            log.error("OSInfo cannot be null");
             throw new NullPointerException("os info");
         }
         this.osInfo = osInfo;
@@ -269,7 +208,7 @@ public class DeviceInfoReport extends Report implements Serializable {
 
     private void setFirmwareInfo(FirmwareInfo firmwareInfo) {
         if (firmwareInfo == null) {
-            LOGGER.error("FirmwareInfo cannot be null");
+            log.error("FirmwareInfo cannot be null");
             throw new NullPointerException("firmware info");
         }
         this.firmwareInfo = firmwareInfo;
@@ -277,7 +216,7 @@ public class DeviceInfoReport extends Report implements Serializable {
 
     private void setHardwareInfo(HardwareInfo hardwareInfo) {
         if (hardwareInfo == null) {
-            LOGGER.error("HardwareInfo cannot be null");
+            log.error("HardwareInfo cannot be null");
             throw new NullPointerException("hardware info");
         }
         this.hardwareInfo = hardwareInfo;

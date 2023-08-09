@@ -17,7 +17,6 @@ public interface ReferenceDigestValueRepository extends JpaRepository<ReferenceD
     List<ReferenceDigestValue> findByManufacturer(String manufacturer);
     @Query(value = "SELECT * FROM ReferenceDigestValue WHERE baseRimId = '?1' OR supportRimId = '?1'", nativeQuery = true)
     List<ReferenceDigestValue> getValuesByRimId(UUID associatedRimId);
-    @Query(value = "SELECT * FROM ReferenceDigestValue WHERE supportRimId = '?1'", nativeQuery = true)
     List<ReferenceDigestValue> findBySupportRimId(UUID supportRimId);
     List<ReferenceDigestValue> findBySupportRimHash(String supportRimHash);
 }

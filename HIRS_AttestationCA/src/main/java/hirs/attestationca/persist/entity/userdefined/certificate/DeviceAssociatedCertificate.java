@@ -1,17 +1,17 @@
 package hirs.attestationca.persist.entity.userdefined.certificate;
 
 import hirs.attestationca.persist.entity.userdefined.Certificate;
-import hirs.attestationca.persist.entity.userdefined.Device;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
+import jakarta.persistence.Column;
 import jakarta.persistence.MappedSuperclass;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.hibernate.annotations.JdbcTypeCode;
 
 import java.io.IOException;
 import java.nio.file.Path;
+import java.util.UUID;
 
 /**
  * A Certificate that is associated with a single device.
@@ -25,14 +25,18 @@ public abstract class DeviceAssociatedCertificate extends Certificate {
     // a device can have multiple certs of this type.
     @Getter
     @Setter
-    @ManyToOne
-    @JoinColumn(name = "device_id")
-    private Device device;
+    @JdbcTypeCode(java.sql.Types.VARCHAR)
+    @Column
+    private UUID deviceId;
+    @Getter
+    @Setter
+    @Column
+    private String deviceName;
 
     /**
      * Holds the name of the entity 'DEVICE_ID' field.
      */
-    protected static final String DEVICE_ID_FIELD = "device.id";
+    protected static final String DEVICE_ID_FIELD = "device_id";
 
     /**
      * Construct a new Certificate by parsing the file at the given path.  The given certificate
@@ -54,16 +58,5 @@ public abstract class DeviceAssociatedCertificate extends Certificate {
      */
     DeviceAssociatedCertificate(final byte[] certificateBytes) throws IOException {
         super(certificateBytes);
-    }
-
-    @Override
-    public String toString() {
-        StringBuilder sb = new StringBuilder();
-        sb.append(super.toString());
-        if (device != null) {
-            sb.append(String.format("%nDevice -> %s", getDevice().toString()));
-        }
-
-        return sb.toString();
     }
 }
