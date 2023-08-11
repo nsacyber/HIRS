@@ -22,12 +22,29 @@ echo "HIRS ACA Setup initiated on $(date +%Y-%m-%d)" > "$LOG_FILE"
 
 pushd $SCRIPT_DIR &>/dev/null
 
+# Set HIRS PKI  password
+if [ -z $HIRS_PKI_PWD ]; then
+   # Create a 32 character random password
+   PKI_PASS=$(head -c 64 /dev/urandom | md5sum | tr -dc 'a-zA-Z0-9')
+   echo "Using randomly generated password for the PKI key password" | tee -a "$LOG_FILE"
+  else
+   PKI_PASS=$HIRS_PKI_PWD
+   echo "Using system supplied password for the PKI key password" | tee -a "$LOG_FILE"
+fi
 
 # Copy HIRS configuration and data files if not a package install
 if [ -f $SPRING_PROP_FILE ]; then
    cp -n $SPRING_PROP_FILE $HIRS_CONF_DIR/.
    cp -n $COMP_JSON $HIRS_PROP_DIR/.
    cp -n $VENDOR_TABLE $HIRS_PROP_DIR/.
+fi
+
+sh ../pki/pki_setup.sh $LOG_FILE $PKI_PASS
+if [ $? -eq 0 ]; then 
+      echo "ACA PKI  setup complete" | tee -a "$LOG_FILE"
+  else
+    echo "Error setting up ACA PKI" | tee -a "$LOG_FILE"
+    exit 1
 fi
 
 sh ../db/db_create.sh $LOG_FILE
@@ -37,13 +54,7 @@ if [ $? -eq 0 ]; then
     echo "Error setting up ACA DB" | tee -a "$LOG_FILE"
     exit 1
 fi
-sh ../pki/pki_setup.sh $LOG_FILE
-if [ $? -eq 0 ]; then 
-      echo "ACA PKI  setup complete" | tee -a "$LOG_FILE"
-  else
-    echo "Error setting up ACA PKI" | tee -a "$LOG_FILE"
-    exit 1
-fi
+
 
  echo "ACA setup complete" | tee -a "$LOG_FILE"
 

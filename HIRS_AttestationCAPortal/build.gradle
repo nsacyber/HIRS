@@ -149,7 +149,7 @@ ospackage {
     postInstall 'cp /tmp/aca/default-properties/* /opt/hirs/default-properties/.'
     postInstall 'rm -rf /tmp/aca/'
  //  postInstall file('../package/scripts/install_tomcat.sh')
-     
+
     postInstall 'sh /opt/tomcat/bin/catalina.sh start'
 
     // Post Uninstall
@@ -165,4 +165,11 @@ ospackage {
     buildDeb {
         arch = 'amd64'
     }
+
+bootRun {
+    if ( project.hasProperty('jvmArgs') ) {
+        jvmArgs = (project.jvmArgs.split("\\s+") as List)
+
+    }
+}
 }

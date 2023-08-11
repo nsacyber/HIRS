@@ -26,7 +26,7 @@
         <SpringProfile name="!development, !production">
             <Logger name="hirs.attestationca" level="trace" />
         </SpringProfile>
-        <Logger name="org.hibernate" level="WARN" />
+        <Logger name="org.hibernate" level="DEBUG" />
     </Loggers>
     <!-- prevents an out-of-memory exception caused by  the debug logging of very large inserts -->
     <category name="org.hibernate.event.def.AbstractFlushingEventListener">
