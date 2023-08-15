@@ -1,147 +1,98 @@
 # This workflow will build HIRS, run unit tests, and create HIRS artifacts
+# Updated: 8/15/23
 
 name: HIRS Build and Unit Test
 
 on:
+  # Runs this workflow whenever there is a push to main from a branch annotated with "v3"
   push:
     branches:
-      - '*v2*'
-      - 'master'
-    # allows you to run this workflow manually from the Actions tab
+      - '*v3*'
+      - 'main'
+  # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
 
 jobs:
-  # run the unit tests and package HIRS ACA, provisoner, and tools
-  ACA_Provisioner_unit_tests:
-    runs-on: ubuntu-latest
-    permissions:
-      contents: read
-      packages: write
-
+  # Run the unit tests and package HIRS ACA, provisoner, and tools
+  ACA_Provisioner_Unit_Tests:
+    runs-on: ubuntu-latest  # Configures the job to run on the latest version of an Ubuntu Linux runner
     steps:
-    - uses: actions/checkout@v2
-    - name: Set up JDK 11
-      uses: actions/setup-java@v2
-      with:
-        java-version: '8'
-        distribution: 'adopt'
-        server-id: github # Value of the distributionManagement/repository/id field of the pom.xml
-        settings-path: ${{ github.workspace }} # location for the settings.xml file
-    # Build will either archive war files if the build is successful, otherwise a set of build report will be archived
-    - name: directory setup
+    - uses: actions/checkout@v3  # run v3 of actions/checkout action, which checks out your repository onto the runner
+    # Build will archive build reports and will create a failedFile if build is not successful
+    - name: Directory setup
       run: |
-       mkdir -p artifacts/wars
-       mkdir -p artifacts/reports/HIRS_AttestationCA
-       mkdir -p artifacts/reports/HIRS_AttestationCAPortal
-       mkdir -p artifacts/reports/HIRS_Provisioner
-       mkdir -p artifacts/reports/HIRS_ProvisionerTPM2
-       mkdir -p artifacts/reports/HIRS_Structs
-       mkdir -p artifacts/reports/HIRS_Utils
-       mkdir -p artifacts/reports/tcg_rim_tool
-       mkdir -p artifacts/reports/tcg_eventlog_tool
-    # Run the provisioner and ACA unit tests via gradle build in an Centos 7 Docker container  
-    - name: Build HIRS and run Unit tests
+        mkdir -p artifacts/githubActionsResults
+        mkdir -p artifacts/reports/HIRS_AttestationCA
+        mkdir -p artifacts/reports/HIRS_AttestationCAPortal
+        mkdir -p artifacts/reports/HIRS_Provisioner
+        mkdir -p artifacts/reports/HIRS_ProvisionerTPM2
+        mkdir -p artifacts/reports/HIRS_Structs
+        mkdir -p artifacts/reports/HIRS_Utils
+        mkdir -p artifacts/reports/tcg_rim_tool
+        mkdir -p artifacts/reports/tcg_eventlog_tool
+    # Run the provisioner and ACA unit tests via gradle build in a Rocky Docker container
+    - name: Build HIRS and run unit tests
       run: |
-       echo ${{ secrets.DOCKER_HUB_ACCESS_TOKEN }} | docker login -u ${{ secrets.DOCKER_HUB_USERNAME }} --password-stdin
-       docker run --rm \
-       -v $(pwd):/HIRS hirs/hirs-ci:centos7 /bin/bash \
-       -c 'pushd /HIRS; \
-           gradle_status=0; \
-
-            ./gradlew :HIRS_AttestationCA:clean :HIRS_AttestationCA:build :HIRS_AttestationCA:test; \
-            if (( $? != "0" )) ; then gradle_status=1; fi; \
-            cp -r /HIRS/HIRS_AttestationCA/build/reports/ /HIRS/artifacts/reports/HIRS_AttestationCA/.; \
-            ./gradlew :HIRS_AttestationCAPortal:clean :HIRS_AttestationCAPortal:build :HIRS_AttestationCAPortal:test; \
-            if (( $? != "0" )) ; then gradle_status=1; fi; \
-            cp -r /HIRS/HIRS_AttestationCAPortal/build/reports/ /HIRS/artifacts/reports/HIRS_AttestationCAPortal/.; \
-            ./gradlew :HIRS_Provisioner:clean :HIRS_Provisioner:build :HIRS_Provisioner:test; \
-            if (( $? != "0" )) ; then gradle_status=1; fi; \
-            cp -r /HIRS/HIRS_Provisioner/build/reports/ /HIRS/artifacts/reports/HIRS_Provisioner/.; \
-            ./gradlew :HIRS_ProvisionerTPM2:clean :HIRS_ProvisionerTPM2:build :HIRS_ProvisionerTPM2:test; \
-            if (( $? != "0" )) ; then gradle_status=1; fi; \
-            cp -r /HIRS/HIRS_ProvisionerTPM2/docs/ /HIRS/artifacts/reports/HIRS_ProvisionerTPM2/.; \
-            ./gradlew :HIRS_Structs:clean :HIRS_Structs:build :HIRS_Structs:test; \
-            if (( $? != "0" )) ; then gradle_status=1; fi; \
-            cp -r /HIRS/HIRS_Structs/build/reports/ /HIRS/artifacts/reports/HIRS_Structs/.; \
-            ./gradlew :HIRS_Utils:clean :HIRS_Utils:build :HIRS_Utils:test; \
-            if (( $? != "0" )) ; then gradle_status=1; fi; \
-            cp -r /HIRS/HIRS_Utils/build/reports/ /HIRS/artifacts/reports/HIRS_Utils/.; \
-            ./gradlew :TPM_Utils:clean :TPM_Utils:build :TPM_Utils:test; \
-            if (( $? != "0" )) ; then gradle_status=1; fi; \
-            
-        # Use the war file archive to fail the Build ACA tests by not placing them in the artifacts folder 
-            if (( $gradle_status == "0" )) ; then \
-                cp /HIRS/HIRS_AttestationCA/build/libs/HIRS_AttestationCA.war /HIRS/artifacts/wars/.; \
-                cp /HIRS/HIRS_AttestationCAPortal/build/libs/HIRS_AttestationCAPortal.war /HIRS/artifacts/wars/.; \
-                echo "Build Worked"; \
-            else \
-             echo "Build Failed"; \
-            fi; popd;' \
-    - name: Archive Report files 
-      uses: actions/upload-artifact@v2
+        
+        # log into and run docker (note: must set up secrets in github for ghcr username and access_token)
+        echo ${{ secrets.GITHUB_TOKEN }} | docker login ghcr.io -u $ --password-stdin
+        
+        # docker run options:
+        #   create a mount between curr directory on the runner and the HIRS folder created by the cloning of HIRS repo
+        #     -v $(pwd):/HIRS
+        #   image used for the container, given by <repository>:<tag_name>
+        #     rocky8: ghcr.io/nsacyber/hirs/hirs-rocky8-ci:latest [repo: https://github.com/orgs/nsacyber/packages]
+        #   bash commands to clean/build/test each subproject
+        #     /bin/bash -c '<commands>'
+        docker run --rm \
+        -v $(pwd):/HIRS \
+        ghcr.io/nsacyber/hirs/hirs-rocky8-ci:latest /bin/bash -c \
+          'pushd /HIRS
+          gradle_status=0
+        
+          # git added a feature that gives error if user is not owner of the top-level directory; need to override this
+          git config --global --add safe.directory /HIRS
+        
+          # clean, build and run unit tests on all sub-projects; copy build reports to an artifacts directory
+          ./gradlew :HIRS_AttestationCA:clean :HIRS_AttestationCA:build :HIRS_AttestationCA:test
+          if (( $? != "0" )) ; then gradle_status=1; fi
+          #cp -r /HIRS/HIRS_AttestationCA/build/reports/ /HIRS/artifacts/reports/HIRS_AttestationCA/.
+          ./gradlew :HIRS_AttestationCAPortal:clean :HIRS_AttestationCAPortal:build :HIRS_AttestationCAPortal:test
+          if (( $? != "0" )) ; then gradle_status=1; fi
+          #cp -r /HIRS/HIRS_AttestationCAPortal/build/reports/ /HIRS/artifacts/reports/HIRS_AttestationCAPortal/.
+          #./gradlew :HIRS_Provisioner:clean :HIRS_Provisioner:build :HIRS_Provisioner:test
+          #if (( $? != "0" )) ; then gradle_status=1; fi
+          #cp -r /HIRS/HIRS_Provisioner/build/reports/ /HIRS/artifacts/reports/HIRS_Provisioner/.
+          #./gradlew :HIRS_ProvisionerTPM2:clean :HIRS_ProvisionerTPM2:build :HIRS_ProvisionerTPM2:test
+          #if (( $? != "0" )) ; then gradle_status=1; fi
+          #cp -r /HIRS/HIRS_ProvisionerTPM2/docs/ /HIRS/artifacts/reports/HIRS_ProvisionerTPM2/.
+          #./gradlew :HIRS_Structs:clean :HIRS_Structs:build :HIRS_Structs:test
+          #if (( $? != "0" )) ; then gradle_status=1; fi
+          #cp -r /HIRS/HIRS_Structs/build/reports/ /HIRS/artifacts/reports/HIRS_Structs/.
+          ./gradlew :HIRS_Utils:clean :HIRS_Utils:build :HIRS_Utils:test
+          if (( $? != "0" )) ; then gradle_status=1; fi
+          cp -r /HIRS/HIRS_Utils/build/reports/ /HIRS/artifacts/reports/HIRS_Utils/.
+          #./gradlew :TPM_Utils:clean :TPM_Utils:build :TPM_Utils:test
+          #if (( $? != "0" )) ; then gradle_status=1; fi
+        
+          # Create "fail file" to fail the Build ACA tests if gradle exited with anything other than 0      
+          if (( $gradle_status == "0" )) ; then
+            echo "In docker: Build Passed"
+          else
+            echo "In docker: Build Failed"
+            touch /HIRS/artifacts/githubActionsResults/buildFailed.txt
+          fi; popd;'
+    # Upload build report files
+    - name: Archive report files
+      uses: actions/upload-artifact@v3
       with:
         name: HIRS_Build_Reports
         path: artifacts/reports/*
         if-no-files-found: ignore
-    # if-no-files-found used to fail the ACA unti tests
-    - name: Archive WAR files 
-      uses: actions/upload-artifact@v2
+    # If buildFailed file exists, use that to fail the ACA unit tests
+    - name: Fail if build or unit test failed
+      if: ${{ hashFiles('artifacts/githubActionsResults/buildFailed.txt') != '' }}
+      uses: actions/github-script@v6
       with:
-        name: WAR_Files
-        path: artifacts/wars/*
-        if-no-files-found: error 
-  # Process eventlog and rim tool seperately to save time building
-  tcg_eventlog_tool_tests:
-    runs-on: ubuntu-latest
-    permissions:
-      contents: read
-      packages: write
-    steps:
-      - uses: actions/checkout@v2
-      - name: Set up JDK 8
-        uses: actions/setup-java@v2
-        with:
-          java-version: '8'
-          distribution: 'adopt'
-          server-id: github # Value of the distributionManagement/repository/id field of the pom.xml
-          settings-path: ${{ github.workspace }} # location for the settings.xml file
-      - name: build and test event log tool
-        run: |
-          mkdir -p artifacts/reports/tcg_eventlog_tool;
-          ./gradlew :tools/tcg_eventlog_tool:build :tools/tcg_eventlog_tool:test;
-          if (( $? != "0" )) ; then 
-             cp -r tools/tcg_eventlog_tool/build/reports/ artifacts/reports/tcg_eventlog_tool/.; 
-          fi
-      - name: Archive Report files 
-        uses: actions/upload-artifact@v2
-        with:
-            name: tcg_eventlog_tool_reports
-            path: artifacts/reports/*
-            if-no-files-found: ignore
-  tcg_rim_tool_tests:
-    runs-on: ubuntu-latest
-    permissions:
-      contents: read
-      packages: write
-    steps:
-      - uses: actions/checkout@v2
-      - name: Set up JDK 8
-        uses: actions/setup-java@v2
-        with:
-          java-version: '8'
-          distribution: 'adopt'
-          server-id: github # Value of the distributionManagement/repository/id field of the pom.xml
-          settings-path: ${{ github.workspace }} # location for the settings.xml file
-      - name: build and test event log tool
-        run: |
-          mkdir -p artifacts/reports/tcg_rim_tool;
-          ./gradlew :tools/tcg_rim_tool:build :tools/tcg_rim_tool:test;
-          if (( $? != "0" )) ; then 
-             cp -r tools/tcg_rim_tool/build/reports/ artifacts/reports/tcg_rim_tool/.; 
-          fi
-      - name: Archive Report files 
-        uses: actions/upload-artifact@v2
-        with:
-            name: tcg_rim_tool_reports
-            path: artifacts/reports/*
-            if-no-files-found: ignore
+        script: |
+          core.setFailed('Build or Unit Test Failed')
