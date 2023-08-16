@@ -1,7 +1,7 @@
 FROM rockylinux:8.8
 
 # Purpose: This image is designed for HIRS ci testing on Rocky Linux
-# Date Modified: 8/10/23
+# Date Modified: 8/16/23
 # Notes:
 #   * This image installs java, installs project dependencies, and runs gradlew to download gradlew
 #     dependencies. This saves time during a docker run. This also means the image should be
@@ -23,10 +23,6 @@ RUN dnf -y update
 
 # Install Java 17
 RUN dnf -y install java-17-openjdk-devel
-
-# Set Environment Variables
-#ENV JAVA_HOME=/usr/lib/jvm/java-17-openjdk
-#ENV PATH="$JAVA_HOME/bin:$PATH"
 
 # Ports needed for system-level tests
 EXPOSE 8080
@@ -52,7 +48,6 @@ RUN dnf -y install mariadb-server initscripts firewalld policycoreutils net-tool
 # RUN dnf makecache
 # RUN dnf -y install dotnet-sdk-6.0
 # RUN dotnet tool install --global dotnet-rpm
-# ?? need this?: RUN PATH="~/.dotnet/tools:${PATH}"
 
 # Checkout HIRS main branch and run gradlew to install gradlew dependencies, then delete HIRS
 # Use '--depth=1' so as to not download the history of all commits
