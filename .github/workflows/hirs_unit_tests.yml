@@ -22,14 +22,14 @@ jobs:
     - name: Directory setup
       run: |
         mkdir -p artifacts/githubActionsResults
-        mkdir -p artifacts/reports/HIRS_AttestationCA
-        mkdir -p artifacts/reports/HIRS_AttestationCAPortal
-        mkdir -p artifacts/reports/HIRS_Provisioner
-        mkdir -p artifacts/reports/HIRS_ProvisionerTPM2
-        mkdir -p artifacts/reports/HIRS_Structs
-        mkdir -p artifacts/reports/HIRS_Utils
-        mkdir -p artifacts/reports/tcg_rim_tool
-        mkdir -p artifacts/reports/tcg_eventlog_tool
+        mkdir -p artifacts/upload_reports/HIRS_AttestationCA
+        mkdir -p artifacts/upload_reports/HIRS_AttestationCAPortal
+        mkdir -p artifacts/upload_reports/HIRS_Provisioner
+        mkdir -p artifacts/upload_reports/HIRS_ProvisionerTPM2
+        mkdir -p artifacts/upload_reports/HIRS_Structs
+        mkdir -p artifacts/upload_reports/HIRS_Utils
+        mkdir -p artifacts/upload_reports/tcg_rim_tool
+        mkdir -p artifacts/upload_reports/tcg_eventlog_tool
     # Run the provisioner and ACA unit tests via gradle build in a Rocky Docker container
     - name: Build HIRS and run unit tests
       run: |
@@ -56,22 +56,22 @@ jobs:
           # clean, build and run unit tests on all sub-projects; copy build reports to an artifacts directory
           ./gradlew :HIRS_AttestationCA:clean :HIRS_AttestationCA:build :HIRS_AttestationCA:test
           if (( $? != "0" )) ; then gradle_status=1; fi
-          #cp -r /HIRS/HIRS_AttestationCA/build/reports/ /HIRS/artifacts/reports/HIRS_AttestationCA/.
+          #cp -r /HIRS/HIRS_AttestationCA/build/reports/ /HIRS/artifacts/upload_reports/HIRS_AttestationCA/.
           ./gradlew :HIRS_AttestationCAPortal:clean :HIRS_AttestationCAPortal:build :HIRS_AttestationCAPortal:test
           if (( $? != "0" )) ; then gradle_status=1; fi
-          #cp -r /HIRS/HIRS_AttestationCAPortal/build/reports/ /HIRS/artifacts/reports/HIRS_AttestationCAPortal/.
+          #cp -r /HIRS/HIRS_AttestationCAPortal/build/reports/ /HIRS/artifacts/upload_reports/HIRS_AttestationCAPortal/.
           #./gradlew :HIRS_Provisioner:clean :HIRS_Provisioner:build :HIRS_Provisioner:test
           #if (( $? != "0" )) ; then gradle_status=1; fi
-          #cp -r /HIRS/HIRS_Provisioner/build/reports/ /HIRS/artifacts/reports/HIRS_Provisioner/.
+          #cp -r /HIRS/HIRS_Provisioner/build/reports/ /HIRS/artifacts/upload_reports/HIRS_Provisioner/.
           #./gradlew :HIRS_ProvisionerTPM2:clean :HIRS_ProvisionerTPM2:build :HIRS_ProvisionerTPM2:test
           #if (( $? != "0" )) ; then gradle_status=1; fi
-          #cp -r /HIRS/HIRS_ProvisionerTPM2/docs/ /HIRS/artifacts/reports/HIRS_ProvisionerTPM2/.
+          #cp -r /HIRS/HIRS_ProvisionerTPM2/docs/ /HIRS/artifacts/upload_reports/HIRS_ProvisionerTPM2/.
           #./gradlew :HIRS_Structs:clean :HIRS_Structs:build :HIRS_Structs:test
           #if (( $? != "0" )) ; then gradle_status=1; fi
-          #cp -r /HIRS/HIRS_Structs/build/reports/ /HIRS/artifacts/reports/HIRS_Structs/.
+          #cp -r /HIRS/HIRS_Structs/build/reports/ /HIRS/artifacts/upload_reports/HIRS_Structs/.
           ./gradlew :HIRS_Utils:clean :HIRS_Utils:build :HIRS_Utils:test
           if (( $? != "0" )) ; then gradle_status=1; fi
-          cp -r /HIRS/HIRS_Utils/build/reports/ /HIRS/artifacts/reports/HIRS_Utils/.
+          cp -r /HIRS/HIRS_Utils/build/reports/ /HIRS/artifacts/upload_reports/HIRS_Utils/.
           #./gradlew :TPM_Utils:clean :TPM_Utils:build :TPM_Utils:test
           #if (( $? != "0" )) ; then gradle_status=1; fi
         
@@ -87,7 +87,7 @@ jobs:
       uses: actions/upload-artifact@v3
       with:
         name: HIRS_Build_Reports
-        path: artifacts/reports/*
+        path: artifacts/upload_reports/*
         if-no-files-found: ignore
     # If buildFailed file exists, use that to fail the ACA unit tests
     - name: Fail if build or unit test failed
