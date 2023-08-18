@@ -14,7 +14,7 @@ SCRIPT_DIR=$( dirname -- "$( readlink -f -- "$0"; )"; )
 SPRING_PROP_FILE="/etc/hirs/aca/application.properties"
 ACA_PROP_FILE="/etc/hirs/aca/aca.properties"
 DB_ADMIN_PWD=""
-DB_USER="hirs_db"
+#DB_USER="hirs_db"
 # Db Configuration files
 DB_SRV_CONF="/etc/my.cnf.d/mariadb-server.cnf"
 DB_CLIENT_CONF="/etc/my.cnf.d/client.cnf"
@@ -35,55 +35,7 @@ touch $LOG_FILE
 mkdir -p /etc/hirs/aca/
 mkdir -p /var/log/hirs/
 
-check_for_container () {
-  # Check if we're in a Docker container
-  if [[ $(cat /proc/1/sched | head -n 1) == *"bash"* ]]; then  
-  #if [ -f /.dockerenv ]; then
-    DOCKER_CONTAINER=true
-    echo "ACA is running in a container..." | tee -a "$LOG_FILE"
-  else
-    DOCKER_CONTAINER=false
-    echo "ACA is not running in a container..." | tee -a "$LOG_FILE"
-  fi
-  if [ -d /opt/hirs/scripts/db ]; then
-    MYSQL_DIR="/opt/hirs/scripts/db"
-  else
-   MYSQL_DIR="$SCRIPT_DIR/../db"
-  fi
-  echo "Mysql script directory is $MYSQL_DIR"
-}
-
-start_mysqlsd () {
-   # Check if mysql is already running, if not initialize
-   if [[ $(pgrep -c -u mysql mysqld) -eq 0 ]]; then
-   # Check if running in a container
-      if [ $DOCKER_CONTAINER  = true ]; then
-      # if in Docker container, avoid services that invoke the D-Bus
-      echo "ACA is running in a container..."
-         # Check if mariadb is setup
-         if [ ! -d "/var/lib/mysql/mysql/" ]; then
-           echo "Installing mariadb"
-           /usr/bin/mysql_install_db > "$LOG_FILE"
-           chown -R mysql:mysql /var/lib/mysql/
-         fi
-       echo "Starting mysql...."
-       chown -R mysql:mysql /var/log/mariadb
-       /usr/bin/mysqld_safe &
-     else
-       SQL_SERVICE="mariadb"
-       systemctl $SQL_SERVICE enable
-       systemctl $SQL_SERVICE start
-     fi
-   fi  # mysql not running 
-
-  # Wait for mysql to start before continuing.
-  echo "Checking mysqld status..."| tee -a "$LOG_FILE"
-  while ! mysqladmin ping -h "$localhost" --silent; do
-  sleep 1;
-  done
-
-  echo "mysqld is running."| tee -a "$LOG_FILE"
-}
+source start_mysqld.sh
 
 check_mysql_root_pwd () {
   # Check if DB root password needs to be obtained
@@ -111,17 +63,17 @@ check_mysql_root_pwd () {
 
 set_mysql_server_tls () {
   # Check DB server setup. If ssl params dont exist then we need to add them.
-  if [[ $(cat "$DB_SRV_CONF" | grep -c "ssl") < 1 ]]; then 
+  if [[ $(cat "$DB_SRV_CONF" | grep -c "ssl") < 1 ]]; then
     # Add TLS files to my.cnf
     echo "Updating $DB_SRV_CONF with ssl parameters..." | tee -a "$LOG_FILE"
     echo "ssl_ca=$SSL_DB_SRV_CHAIN" >> "$DB_SRV_CONF"
     echo "ssl_cert=$SSL_DB_SRV_CERT" >> "$DB_SRV_CONF"
     echo "ssl_key=$SSL_DB_SRV_KEY" >> "$DB_SRV_CONF"
-    # Make sure mysql can access them 
+    # Make sure mysql can access them
     chown mysql $SSL_DB_SRV_CHAIN $SSL_DB_SRV_CERT $SSL_DB_SRV_KEY
   else
        echo "mysql.cnf contians existing entry for ssl, skipping..." | tee -a "$LOG_FILE"
-  fi   
+  fi
 }
 
 set_mysql_client_tls () {

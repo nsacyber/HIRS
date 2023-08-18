@@ -29,6 +29,7 @@ SERVER_DN="/C=US/ST=MD/L=Columbia/O="$ACTOR"/CN="$ACTOR" aca"
 # Capture location of the script to allow from invocation from any location
 SCRIPT_DIR=$( dirname -- "$( readlink -f -- "$0"; )"; )
 TRUSTSTORE=TrustStore.jks
+TRUSTSTORE_P12=TrustStore.p12
 KEYSTORE=KeyStore.jks
 
 # Parameter check 
@@ -216,11 +217,15 @@ create_cert_chain () {
    
    # Make JKS files for the mysql DB connector. P12 first then JKS...
    openssl pkcs12 -export -in $DB_CLIENT.pem -inkey $DB_CLIENT.key -aes256 \
-        -passin pass:"$PASS" -aes256 -passout pass:$PASS \
+        -passin pass:"$PASS"-passout pass:$PASS -aes256  \
         -name "mysqlclientkey" -out $DB_CLIENT.p12
 
-   keytool -importkeystore -srckeystore $DB_CLIENT.p12 -srcstoretype pkcs12 \
+   keytool -importkeystore -srckeystore $DB_CLIENT.p12 -srcstoretype PKCS12 \
          -srcstorepass $PASS -destkeystore $DB_CLIENT.jks -deststoretype JKS -deststorepass $PASS
+         
+   # Make a p12 TrustStore 
+   keytool -importkeystore -srckeystore $TRUSTSTORE -destkeystore $TRUSTSTORE_P12 \
+         -srcstoretype JKS -deststoretype PKCS12 -srcstorepass $pass -deststorepass $pass -noprompt
 }
 
 if [ "$ASYM_ALG" == "rsa" ]; then

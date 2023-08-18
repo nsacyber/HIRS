@@ -1,8 +1,0 @@
-#begin-hirs-cfg
-ssl-ca=/etc/hirs/certificates/mysql/hirs.ca.cert
-ssl-cert=/etc/hirs/certificates/mysql/hirs-cert.pem
-ssl-key=/etc/hirs/certificates/mysql/hirs-key.pem
-innodb_large_prefix=1
-innodb_file_format=BARRACUDA
-innodb_file_per_table=1
-#end-hirs-cfg

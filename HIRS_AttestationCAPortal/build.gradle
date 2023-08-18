@@ -52,7 +52,7 @@ dependencies {
     implementation 'org.apache.tomcat.embed:tomcat-embed-jasper:10.1.5'
 
     compileOnly 'org.projectlombok:lombok'
-    runtimeOnly 'org.mariadb.jdbc:mariadb-java-client'
+    runtimeOnly 'org.mariadb.jdbc:mariadb-java-client:3.1.0'
     annotationProcessor 'org.projectlombok:lombok'
     providedRuntime 'org.springframework.boot:spring-boot-starter-tomcat'
 
@@ -166,10 +166,4 @@ ospackage {
         arch = 'amd64'
     }
 
-bootRun {
-    if ( project.hasProperty('jvmArgs') ) {
-        jvmArgs = (project.jvmArgs.split("\\s+") as List)
-
-    }
-}
 }

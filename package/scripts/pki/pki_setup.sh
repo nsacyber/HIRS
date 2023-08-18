@@ -7,6 +7,7 @@
 ############################################################################################
 
 PROP_FILE=/etc/hirs/aca/application.properties
+ACA_PROP=/etc/hirs/aca/aca.properties
 LOG_FILE=$1
 PKI_PASS=$2
 LOG_FILE_NAME="hirs_aca_install_"$(date +%Y-%m-%d).log
@@ -30,7 +31,7 @@ fi
 
 # Check for sudo or root user 
 if [ "$EUID" -ne 0 ]
-        then echo "The first time this script is run, this script requires root.  Please run as root" | tee -a "$LOG_FILE"
+        then echo "This script requires root.  Please run as root" | tee -a "$LOG_FILE"
         exit 1
 fi
 
@@ -64,6 +65,7 @@ if [ ! -d "/etc/hirs/certificates" ]; then
   echo "server.ssl.key-alias=hirs_aca_tls_rsa_3k_sha384">> $PROP_FILE
   echo "server.ssl.key-store-password="$PKI_PASS >> $PROP_FILE
   echo "server.ssl.trust-store-password="$PKI_PASS >> $PROP_FILE
+  echo "hirs_pki_password="$PKI_PASS >>  $ACA_PROP
 else 
   echo "/etc/hirs/certificates exists, skipping" | tee -a "$LOG_FILE"
 fi
