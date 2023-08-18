@@ -90,7 +90,7 @@ jobs:
         path: artifacts/upload_reports/*
         if-no-files-found: ignore
     # If buildFailed file exists, use that to fail the ACA unit tests
-    - name: Fail if build or unit test failed
+    - name: Check if build/test passed or failed
       if: ${{ hashFiles('artifacts/githubActionsResults/buildFailed.txt') != '' }}
       uses: actions/github-script@v6
       with:
