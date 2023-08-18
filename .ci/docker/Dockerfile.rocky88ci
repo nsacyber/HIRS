@@ -1,0 +1,58 @@
+FROM rockylinux:8.8
+
+# Purpose: This image is designed for HIRS ci testing on Rocky Linux
+# Date Modified: 8/16/23
+# Notes:
+#   * This image installs java, installs project dependencies, and runs gradlew to download gradlew
+#     dependencies. This saves time during a docker run. This also means the image should be
+#     re-built and re-posted to github each time the following occurs:
+#       1) add/update a dependency
+#       2) update gradle
+#     If not re-built, the docker run will still work, but will take longer as it downloads updates
+#   * Steps to login to registry, build image, tag image with ghcr.io registry, and push to registry:
+#     $ cat pat.txt | docker login ghcr.io -u iadgovuser## --password-stdin
+#       Note: pat requires permissions "upload packages from GitHub Package Registry" and possibly "repo"
+#     $ docker build . -f Dockerfile.rocky88ci -t hirs-rocky8-ci:latest
+#       Note: may need to use --no-cache when building, if 'git clone HIRS' or 'gradlew' is cached
+#             (bc need any updated dependencies)
+#     $ docker image tag hirs-rocky8-ci:latest ghcr.io/nsacyber/hirs/hirs-rocky8-ci:latest
+#     $ docker push ghcr.io/nsacyber/hirs/hirs-rocky8-ci:latest
+
+# Update package installer
+RUN dnf -y update
+
+# Install Java 17
+RUN dnf -y install java-17-openjdk-devel
+
+# Ports needed for system-level tests
+EXPOSE 8080
+EXPOSE 8443
+
+# Install HIRS dependencies
+RUN dnf -y install mariadb-server initscripts firewalld policycoreutils net-tools git && dnf clean all
+# maybe: libtool cmake make gcc-c++ sudo vim wget openssl openssl-devel protobuf tpm2-tools libcurl-devel libssh-devel
+# prob not: rpmdevtools tpm2-tss-devel tpm2-abrmd  protobuf-compiler protobuf-devel python36 log4cplus-devel re2-devel tpm2-tss-devel tpm2-abrmd-devel
+
+# Install PACCOR for Device Info Gathering
+# RUN mkdir paccor && pushd paccor && wget https://github.com/nsacyber/paccor/releases/download/v1.1.4r6/paccor-1.1.4-6.noarch.rpm && yum -y install paccor-*.rpm && popd
+
+# Install TPM Emulator for Provisioning
+# RUN mkdir ibmtpm && pushd ibmtpm && wget --no-check-certificate https://downloads.sourceforge.net/project/ibmswtpm2/ibmtpm1332.tar.gz && tar -zxvf ibmtpm1332.tar.gz && cd src && make -j5 && popd
+
+# Install Microsoft dotnet and rpm  package tool
+# RUN wget https://dot.net/v1/dotnet-install.sh
+# RUN sh dotnet-install.sh --os linux --channel LTS
+# ENV PATH="/root/.dotnet:${PATH}"
+# RUN wget https://packages.microsoft.com/rhel/8/prod/packages-microsoft-prod.rpm
+# RUN dnf -y install packages-microsoft-prod.rpm
+# RUN dnf makecache
+# RUN dnf -y install dotnet-sdk-6.0
+# RUN dotnet tool install --global dotnet-rpm
+
+# Checkout HIRS main branch and run gradlew to install gradlew dependencies, then delete HIRS
+# Use '--depth=1' so as to not download the history of all commits
+RUN git clone -b main --depth=1 https://github.com/nsacyber/HIRS.git /hirsTemp
+WORKDIR "/hirsTemp"
+RUN /bin/bash -c './gradlew clean build'
+WORKDIR "/"
+RUN rm -rf /hirsTemp
