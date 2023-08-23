@@ -172,7 +172,7 @@ create_cert () {
    # remove csr file
    rm -f "$CERT_PATH".csr
    # Add the cert and key to the key store. make a p12 file to import into te keystore
-   openssl pkcs12 -export -in "$CERT_PATH".pem -inkey "$CERT_PATH".key -out tmpkey.p12 -passin pass:"$PASS" -aes256 -passout pass:$PASS  >> "$LOG_FILE" 2>&1
+   openssl pkcs12 -export -in "$CERT_PATH".pem -inkey "$CERT_PATH".key -out tmpkey.p12 -passin pass:$PASS -aes256 -passout pass:$PASS  >> "$LOG_FILE" 2>&1
    # Use the p12 file to import into a java keystore via keytool
    keytool -importkeystore -srckeystore tmpkey.p12 -destkeystore $KEYSTORE -srcstoretype pkcs12 -srcstorepass $PASS -deststoretype jks -deststorepass $PASS -noprompt -alias 1 -destalias -J-Dcom.redhat.fips=false "$ALIAS" >> "$LOG_FILE" 2>&1 
    # Import the cert into a java trust store via keytool
@@ -212,20 +212,16 @@ create_cert_chain () {
    # Create Cert trust store by adding the Intermediate and root certs 
    cat "$PKI_CA1.pem" "$PKI_CA2.pem" "$PKI_CA3.pem" "$PKI_INT.pem" "$PKI_ROOT.pem" >  "$TRUST_STORE_FILE"
 
- # echo "Checking signer cert using tust store..." 
+   # echo "Checking signer cert using tust store..." 
    openssl verify -CAfile "$TRUST_STORE_FILE" $RIM_SIGNER.pem | tee -a "$LOG_FILE"
-   
+
    # Make JKS files for the mysql DB connector. P12 first then JKS...
    openssl pkcs12 -export -in $DB_CLIENT.pem -inkey $DB_CLIENT.key -aes256 \
-        -passin pass:"$PASS"-passout pass:$PASS -aes256  \
-        -name "mysqlclientkey" -out $DB_CLIENT.p12
+        -passin pass:$PASS -passout pass:$PASS -aes256  \
+        -name "mysqlclientkey" -out $DB_CLIENT.p12 >> "$LOG_FILE" 2>&1
 
    keytool -importkeystore -srckeystore $DB_CLIENT.p12 -srcstoretype PKCS12 \
-         -srcstorepass $PASS -destkeystore $DB_CLIENT.jks -deststoretype JKS -deststorepass $PASS
-         
-   # Make a p12 TrustStore 
-   keytool -importkeystore -srckeystore $TRUSTSTORE -destkeystore $TRUSTSTORE_P12 \
-         -srcstoretype JKS -deststoretype PKCS12 -srcstorepass $pass -deststorepass $pass -noprompt
+         -srcstorepass $PASS -destkeystore $DB_CLIENT.jks -deststoretype JKS -deststorepass $PASS >> "$LOG_FILE" 2>&1
 }
 
 if [ "$ASYM_ALG" == "rsa" ]; then

@@ -6,7 +6,7 @@
 #
 ############################################################################################
 
-PROP_FILE=/etc/hirs/aca/application.properties
+#PROP_FILE=/etc/hirs/aca/application.properties
 ACA_PROP=/etc/hirs/aca/aca.properties
 LOG_FILE=$1
 PKI_PASS=$2
@@ -39,10 +39,10 @@ fi
 if [ ! -d "/etc/hirs/certificates" ]; then
   
    if [ -d "/opt/hirs/scripts/pki" ]; then
-            PKI_SETUP_DIR="/opt/hirs/scripts/pki"
-         else
-            PKI_SETUP_DIR="$SCRIPT_DIR"
-      fi
+         PKI_SETUP_DIR="/opt/hirs/scripts/pki"
+      else
+         PKI_SETUP_DIR="$SCRIPT_DIR"
+   fi
       echo "PKI_SETUP_DIR is $PKI_SETUP_DIR" | tee -a "$LOG_FILE"
 
   mkdir -p /etc/hirs/certificates/ | tee -a "$LOG_FILE"
@@ -54,17 +54,17 @@ if [ ! -d "/etc/hirs/certificates" ]; then
   popd &> /dev/null
 
   # Add tomcat TLS support to the application.properties file 
-  echo "# Tomcat TLS support">> $PROP_FILE
-  echo "server.port=8443">> $PROP_FILE
-  echo "server.ssl.enabled=true">> $PROP_FILE
-  echo "server.ssl.trust-store-type=JKS">> $PROP_FILE
-  echo "server.ssl.trust-store=/etc/hirs/certificates/HIRS/TrustStore.jks">> $PROP_FILE
-  echo "server.ssl.trust-alias=hirs_aca_tls_rsa_3k_sha384">> $PROP_FILE
-  echo "server.ssl.key-store-type=JKS">> $PROP_FILE
-  echo "server.ssl.key-store=/etc/hirs/certificates/HIRS/KeyStore.jks">> $PROP_FILE
-  echo "server.ssl.key-alias=hirs_aca_tls_rsa_3k_sha384">> $PROP_FILE
-  echo "server.ssl.key-store-password="$PKI_PASS >> $PROP_FILE
-  echo "server.ssl.trust-store-password="$PKI_PASS >> $PROP_FILE
+  #echo "# Tomcat TLS support">> $PROP_FILE
+  #echo "server.port=8443">> $PROP_FILE
+  #echo "server.ssl.enabled=true">> $PROP_FILE
+  #echo "server.ssl.trust-store-type=JKS">> $PROP_FILE
+  #echo "server.ssl.trust-store=/etc/hirs/certificates/HIRS/TrustStore.jks">> $PROP_FILE
+  #echo "server.ssl.trust-alias=hirs_aca_tls_rsa_3k_sha384">> $PROP_FILE
+  #echo "server.ssl.key-store-type=JKS">> $PROP_FILE
+  #echo "server.ssl.key-store=/etc/hirs/certificates/HIRS/KeyStore.jks">> $PROP_FILE
+  #echo "server.ssl.key-alias=hirs_aca_tls_rsa_3k_sha384">> $PROP_FILE
+  #echo "server.ssl.key-store-password="$PKI_PASS >> $PROP_FILE
+  #echo "server.ssl.trust-store-password="$PKI_PASS >> $PROP_FILE
   echo "hirs_pki_password="$PKI_PASS >>  $ACA_PROP
 else 
   echo "/etc/hirs/certificates exists, skipping" | tee -a "$LOG_FILE"

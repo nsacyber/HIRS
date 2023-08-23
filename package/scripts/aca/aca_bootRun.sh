@@ -13,6 +13,8 @@ RSA_PATH=rsa_3k_sha384_certs
 ECC_PATH=ecc_512_sha384_certs
 SCRIPT_DIR=$( dirname -- "$( readlink -f -- "$0"; )"; )
 LOG_FILE=/dev/null
+GRADLE_WRAPPER="./gradlew"
+
 source $SCRIPT_DIR/../db/start_mysqld.sh
 
 if [ $ALG = "RSA" ]; then 
@@ -41,39 +43,37 @@ if [ ! -d "$CERT_PATH" ]; then
      exit 1;
 fi
 
+if [ ! -f "$GRADLE_WRAPPER" ]; then
+    echo "This script needs to be run from the HIRS top level project directory. Exiting."
+    exit 1;
+fi
+
 echo "Starting HIRS ACA on https://localhost:8443/HIRS_AttestationCAPortal/portal/index"
 
 source /etc/hirs/aca/aca.properties;
-
-echo "Client Keystore is $CLIENT_DB_P12"
-echo "DB using $hirs_db_username user and user password $hirs_db_password"
-echo "Server PKI chain is $CERT_CHAIN"
-echo "Server password is $hirs_pki_password"
-echo "Tomcat key alias is $ALIAS"
 
 # Run the embedded tomcat server with Web TLS enabled and database client TLS enabled by overrding critical parameters
 # Note "&" is a sub parameter continuation, space represents a new parameter. Spaces and quotes matter.
 # hibernate.connection.url is used for the DB connector which established DB TLS connectivity
 # server.ssl arguments support the embeded tomcats use of TLS for the ACA Portal
-ARGS="--hibernate.connection.url=\"jdbc:mariadb://localhost:3306/hirs_db?autoReconnect=true&\
-user=\"$hirs_db_username\"&\
-password=\"$hirs_db_password\"&\
+CONNECTOR_PARAMS="--hibernate.connection.url=jdbc:mariadb://localhost:3306/hirs_db?autoReconnect=true&\
+user=$hirs_db_username&\
+password=$hirs_db_password&\
 sslMode=VERIFY_CA&\
 serverSslCert=$CERT_CHAIN&\
 keyStoreType=PKCS12&\
-keyStorePassword=\"$hirs_pki_password\"&\
-keyStore="$CLIENT_DB_P12" \
---server.ssl.key-store-password=\"$hirs_pki_password\" \
---server.ssl.trust-store-password=\"$hirs_pki_password\"\""
+keyStorePassword=$hirs_pki_password&\
+keyStore="$CLIENT_DB_P12" "
 
-# --hibernate.connection.driver_class=\"org.mariadb.jdbc.Driver\" \
+WEB_TLS_PARAMS="--server.ssl.key-store-password=$hirs_pki_password \
+--server.ssl.trust-store-password=$hirs_pki_password"
 
-echo "--args="$ARGS""
+echo "--args=\"$CONNECTOR_PARAMS $WEB_TLS_PARAMS\""
 
 if [ "$USE_WAR" == "war" ]; then
     echo "Booting the ACA from a $USE_WAR file..."
-    java -jar HIRS_AttestationCAPortal/build/libs/HIRS_AttestationCAPortal.war $ARGS
+    java -jar HIRS_AttestationCAPortal/build/libs/HIRS_AttestationCAPortal.war $CONNECTOR_PARAMS$WEB_TLS_PARAMS
 else 
    echo "Booting the ACA from local build..."
-   ./gradlew bootRun --args="\"$ARGS\""
+ ./gradlew bootRun --args="$CONNECTOR_PARAMS$WEB_TLS_PARAMS"
 fi

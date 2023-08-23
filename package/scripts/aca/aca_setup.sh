@@ -5,12 +5,15 @@ SPRING_PROP_FILE='../../../HIRS_AttestationCAPortal/src/main/resources/applicati
 HIRS_CONF_DIR=/etc/hirs/aca
 LOG_FILE_NAME="hirs_aca_install_"$(date +%Y-%m-%d).log 
 LOG_DIR="/var/log/hirs/"
+LOG_FILE="$LOG_DIR$LOG_FILE_NAME"
 HIRS_PROP_DIR="/opt/hirs/default-properties"
 COMP_JSON='../../../HIRS_AttestationCA/src/main/resources/component-class.json'
 VENDOR_TABLE='../../../HIRS_AttestationCA/src/main/resources/vendor-table.json'
-LOG_FILE="$LOG_DIR$LOG_FILE_NAME"
+
 echo "LOG_FILE is $LOG_FILE"
 
+ echo "HIRS_MYSQL_ROOT_PWD is $HIRS_MYSQL_ROOT_PWD"
+ 
 if [ "$EUID" -ne 0 ]
       then echo "This script requires root.  Please run as root"
       exit 1
@@ -26,6 +29,10 @@ while [[ $# -gt 0 ]]; do
   case $1 in
     --skip-db)
       ARG_SKIP_DB=YES
+      shift # past argument
+      ;;
+    --skip-pki)
+      ARG_SKIP_PKI=YES
       shift # past argument
       ;;
     -*|--*)
@@ -61,7 +68,7 @@ if [ -f $SPRING_PROP_FILE ]; then
    cp -n $VENDOR_TABLE $HIRS_PROP_DIR/.
 fi
 
-if [ -z "${ARG_SKIP_DB}" ]; then
+if [ -z "${ARG_SKIP_PKI}" ]; then
    sh ../pki/pki_setup.sh $LOG_FILE $PKI_PASS
    if [ $? -eq 0 ]; then 
         echo "ACA PKI  setup complete" | tee -a "$LOG_FILE"
@@ -69,15 +76,20 @@ if [ -z "${ARG_SKIP_DB}" ]; then
         echo "Error setting up ACA PKI" | tee -a "$LOG_FILE"
       exit 1
    fi
-   echo "Warning: Database setup not run due to command line argument: $@" | tee -a "$LOG_FILE"
+   else
+      echo "Warning: Database setup not run due to command line argument: $@" | tee -a "$LOG_FILE"
 fi
 
-sh ../db/db_create.sh $LOG_FILE
-if [ $? -eq 0 ]; then
-    echo "ACA database setup complete" | tee -a "$LOG_FILE"
-  else
-    echo "Error setting up ACA DB" | tee -a "$LOG_FILE"
+if [ -z "${ARG_SKIP_DB}" ]; then
+   sh ../db/db_create.sh $LOG_FILE
+   if [ $? -eq 0 ]; then
+      echo "ACA database setup complete" | tee -a "$LOG_FILE"
+    else
+      echo "Error setting up ACA DB" | tee -a "$LOG_FILE"
     exit 1
+   fi
+   else
+      echo "Warning: Database setup not run due to command line argument: $@" | tee -a "$LOG_FILE"
 fi
 
  echo "ACA setup complete" | tee -a "$LOG_FILE"

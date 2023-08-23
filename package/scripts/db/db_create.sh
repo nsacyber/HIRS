@@ -29,21 +29,30 @@ SSL_DB_CLIENT_KEY="/etc/hirs/certificates/HIRS/rsa_3k_sha384_certs/HIRS_db_clien
 
 touch $ACA_PROP_FILE
 touch $LOG_FILE
-#touch /.dockerenv
+touch $DB_SRV_CONF
 
 # Make sure required paths exist
 mkdir -p /etc/hirs/aca/
 mkdir -p /var/log/hirs/
 
-source start_mysqld.sh
+source $SCRIPT_DIR/start_mysqld.sh
+source $ACA_PROP_FILE 
 
 check_mysql_root_pwd () {
   # Check if DB root password needs to be obtained
+  echo "HIRS_MYSQL_ROOT_PWD is $HIRS_MYSQL_ROOT_PWD"
   if [ -z $HIRS_MYSQL_ROOT_PWD ]; then
 	 # Create a 32 character random password
 	 echo "Using randomly generated password for the DB admin" | tee -a "$LOG_FILE"
 	 DB_ADMIN_PWD=$(head -c 64 /dev/urandom | md5sum | tr -dc 'a-zA-Z0-9')
-	 echo "DB Admin will be set to $DB_ADMIN_PWD, please make note for next mysql use."
+	 echo "DB Admin will be set to $DB_ADMIN_PWD , please make note for next mysql use."
+	 read -p "Do you wish to save this password to the aca.properties file? " confirm
+	 if [[ $confirm == [yY] || $confirm == [yY][eE][sS] ]]; then
+	    echo "mysql_admin_password=$DB_ADMIN_PWD" >> $ACA_PROP_FILE
+	    echo "Password saved."
+	   else
+	    echo "Password not saved."
+	 fi
 	 mysqladmin --user=root password "$DB_ADMIN_PWD"
   else
     DB_ADMIN_PWD=$HIRS_MYSQL_ROOT_PWD
@@ -83,30 +92,30 @@ if [[ $(cat "$DB_CLIENT_CONF" | grep -c "ssl") < 1 ]]; then
   echo "ssl_ca=$SSL_DB_CLIENT_CHAIN" >> $DB_CLIENT_CONF
   echo "ssl_cert=$SSL_DB_CLIENT_CERT" >> $DB_CLIENT_CONF
   echo "ssl_key=$SSL_DB_CLIENT_KEY" >> $DB_CLIENT_CONF
+  chown mysql $SSL_DB_CLIENT_CHAIN $SSL_DB_CLIENT_CERT $SSL_DB_CLIENT_KEY 
 fi
 }
 
-# Process HIRS DB USER ...
+# Process HIRS DB USER
 set_hirs_db_pwd () {
-# Check if Mysql HIRS DB  password set by system variable or set to random number
-  if [ -z $HIRS_DB_PWD ]; then
-     HIRS_DB_PWD=$(head -c 64 /dev/urandom | md5sum | tr -dc 'a-zA-Z0-9')
+
+   RESULT="$(mysql -u root --password=$DB_ADMIN_PWD -e "SELECT EXISTS(SELECT 1 FROM mysql.user WHERE user = 'hirs_db')")"
+   if [ "$RESULT" = 1 ]; then
+      echo "hirs-db user exists"
+      HIRS_DB_PWD=$hirs_db_password
+   else   
+   # Check if Mysql HIRS DB  password set by system variable or set to random number
+     if [ -z $HIRS_DB_PWD ]; then
+       HIRS_DB_PWD=$(head -c 64 /dev/urandom | md5sum | tr -dc 'a-zA-Z0-9')
+     fi
+
+     echo "hirs_db_username=hirs_db" >> $ACA_PROP_FILE
+     echo "hirs_db_password=$HIRS_DB_PWD" >> $ACA_PROP_FILE
   fi
 
-  # Remove any existing password for hirs db
-  if [ -f $ACA_PROP_FILE ];then
-     sed -i '/hirs_db_username/d' $ACA_PROP_FILE &>/dev/null
-     sed -i '/hirs_db_password/d' $ACA_PROP_FILE &>/dev/null
-  fi
-
-  echo "hirs_db_username=hirs_db" >> $ACA_PROP_FILE
-  echo "hirs_db_password=$HIRS_DB_PWD" >> $ACA_PROP_FILE
-
-  echo "hir_db user password is $HIRS_DB_PWD"
-  echo "mysql root password is $DB_ADMIN_PWD"
 }
 
-# Create a hirs_db user with client side TLS enabled
+# Create a hirs_db with client side TLS enabled
 create_hirs_db_with_tls () {
   # Check if hirs_db not created and create it if it wasn't
   mysqlshow --user=root --password="$DB_ADMIN_PWD" | grep "hirs_db" > /dev/null 2>&1
@@ -120,10 +129,11 @@ create_hirs_db_with_tls () {
 }
 
 # HIRS ACA Mysqld processing ...
+check_mariadb_install
 check_for_container
 set_mysql_server_tls
 set_mysql_client_tls
-set_hirs_db_pwd
 start_mysqlsd
 check_mysql_root_pwd
+set_hirs_db_pwd
 create_hirs_db_with_tls

@@ -24,6 +24,16 @@ check_for_container () {
   echo "Mysql script directory is $MYSQL_DIR"
 }
 
+check_mariadb_install () {
+   type mysql >/dev/null 2>&1 && installed=true || installed=false
+   if [ $installed = true ]; then
+      echo "mysql has been installed"
+    else
+      echo "mysql has NOT been installed, aborting install"
+      exit 1;
+   fi 
+}
+
 start_mysqlsd () {
    # Check if mysql is already running, if not initialize
    if [[ $(pgrep -c -u mysql mysqld) -eq 0 ]]; then
@@ -40,12 +50,14 @@ start_mysqlsd () {
        echo "Starting mysql...."
        chown -R mysql:mysql /var/log/mariadb
        /usr/bin/mysqld_safe &
-     else
+     else #not a container
        SQL_SERVICE="mariadb"
-       systemctl $SQL_SERVICE enable
-       systemctl $SQL_SERVICE start
+       systemctl enable $SQL_SERVICE 
+       systemctl start $SQL_SERVICE 
      fi
-   fi  # mysql not running 
+     else # mysql running
+     echo "mysql process running.."
+   fi   
 
   # Wait for mysql to start before continuing.
   echo "Checking mysqld status..."| tee -a "$LOG_FILE"
@@ -55,3 +67,4 @@ start_mysqlsd () {
 
   echo "mysqld is running."| tee -a "$LOG_FILE"
 }
+
