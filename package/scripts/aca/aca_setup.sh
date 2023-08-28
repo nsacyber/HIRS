@@ -22,7 +22,7 @@ fi
 mkdir -p $HIRS_CONF_DIR $LOG_DIR $HIRS_PROP_DIR
 
 # Process parameters
-# Argument handling https://stackoverflow.com/questions/192249/how-do-i-parse-command-line-arguments-in-bash
+# Argument handling 
 POSITIONAL_ARGS=()
 
 while [[ $# -gt 0 ]]; do

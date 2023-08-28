@@ -21,10 +21,11 @@ echo "DB_ADMIN_PWD is $DB_ADMIN_PWD"
 
 # check if hirs_db user exists
 RESULT="$(mysql -u root --password=$DB_ADMIN_PWD -sse "SELECT EXISTS(SELECT 1 FROM mysql.user WHERE user = 'hirs_db')")"
-
 if [ "$RESULT" = 1 ]; then
   echo "hirs_db user found, dropping hirs-db user"
-  mysql -u root --password=$DB_ADMIN_PWD -e "DROP USER 'hirs_db'@'localhost'"
+  mysql -u root --password=$DB_ADMIN_PWD -e "SET PASSWORD FOR "hirs_db@localhost" = PASSWORD('');"
+  mysql -u root --password=$DB_ADMIN_PWD -e "DROP USER 'hirs_db'@'localhost';"
+
   if [ $? -ne 0 ]; then
      echo "Removing the existing hirs_db user failed"
      else
@@ -34,12 +35,26 @@ if [ "$RESULT" = 1 ]; then
   echo "no hirs_db user found, creating one..."
 fi
 
+mysql -u root --password=$mysql_admin_password -e "Select user from mysql.user;"
 echo "Creating hirs_db user"
+#mysql -u root --password=$DB_ADMIN_PWD < $SCRIPT_DIR/db_create.sql
+#mysql -u root --password=$mysql_admin_password -e "FLUSH PRIVILEGES;"
+
 mysql -u root --password=$DB_ADMIN_PWD -e "CREATE USER 'hirs_db'@'localhost' IDENTIFIED BY 'hirs_db';" 
-mysql -u root --password=$DB_ADMIN_PWD -e "ALTER USER 'hirs_db'@'localhost' IDENTIFIED BY '"$HIRS_DB_PWD"'; FLUSH PRIVILEGES;"
+mysql -u root --password=$DB_ADMIN_PWD -e "ALTER USER 'hirs_db'@'localhost' IDENTIFIED BY '$HIRS_DB_PWD'; FLUSH PRIVILEGES;"
 mysql -u root --password=$DB_ADMIN_PWD -e "GRANT ALL ON hirs_db.* TO 'hirs_db'@'localhost' REQUIRE X509;"
 mysql -u root --password=$DB_ADMIN_PWD -e "FLUSH PRIVILEGES;"
 
+mysql -u root --password=$mysql_admin_password -e "show databases;"
+
+mysql -u root --password=$mysql_admin_password -e  "CHECK TABLE mysql.user;"
+
+mysql -u root --password=$mysql_admin_password -e "Select user from mysql.user;"
+#mysql -u root --password=$mysql_admin_password -e "SHOW CREATE USER 'hirs_db'@'localhost';"
+mysql -u root --password=$mysql_admin_password -e "SHOW GRANTS FOR 'hirs_db'@'localhost'" 
+
+
+echo "HIRS_DB_PWD is $HIRS_DB_PWD"
 echo "Checking hirs_db user..."
 # check user
 mysql -u hirs_db --password=$HIRS_DB_PWD -e "SHOW DATABASES;";

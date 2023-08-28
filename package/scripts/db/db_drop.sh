@@ -29,10 +29,13 @@ fi
 echo "dropping hirs_db database"
 
 if pgrep  mysqld >/dev/null 2>&1; then
-    mysql -u "root" --password=$DB_ADMIN_PWD < $MYSQL_DIR/db_drop.sql
-    echo "hirs_db databse and hirs_db user removed"
+   # mysql -u "root" --password=$DB_ADMIN_PWD < $MYSQL_DIR/db_drop.sql
+     mysql -u root --password=$DB_ADMIN_PWD  -e "FLUSH HOSTS; FLUSH LOGS; FLUSH STATUS; FLUSH PRIVILEGES; FLUSH USER_RESOURCES"
+     mysql -u root --password=$DB_ADMIN_PWD -e "DROP USER 'hirs_db'@'localhost';"
+     mysql -u root --password=$DB_ADMIN_PWD -e "DROP DATABASE IF EXISTS hirs_db;"
+     echo "hirs_db database and hirs_db user removed"
    else
- echo "mysql is not running. DB was not removed." 
+     echo "mysql is not running. DB was not removed."
 fi
 
 # reset the mysql root if the password was left in the properties fiel
@@ -40,6 +43,7 @@ if [ ! -z $mysql_admin_password ]; then
      echo "Resetting mysql root password to empty"
      mysql -u root --password=$mysql_admin_password -e "SET PASSWORD FOR "root@localhost" = PASSWORD('');"
      echo "Current list of databases:"
+     mysql -u "root" -e "FLUSH LOGS;"
      mysql -u "root" -e "SHOW DATABASES;"
      echo "Current list of users:"
      mysql -u root -e "Select user from mysql.user;"
@@ -54,7 +58,10 @@ grep -v "hirs" $SRV_CNF > tmpfile && mv tmpfile $SRV_CNF
 grep -v "hirs" $CLIENT_CNF > tmpfile && mv tmpfile $CLIENT_CNF
 
 echo "restarting mariadb"
-pkill mysql
-sleep 2;
+
+mysql -u root -e "SHUTDOWN"
+sleep 2
 check_for_container
 start_mysqlsd
+
+mysql -u root -e "SHOW VARIABLES LIKE '%ssl%'"

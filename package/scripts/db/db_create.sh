@@ -79,7 +79,10 @@ set_mysql_server_tls () {
     echo "ssl_cert=$SSL_DB_SRV_CERT" >> "$DB_SRV_CONF"
     echo "ssl_key=$SSL_DB_SRV_KEY" >> "$DB_SRV_CONF"
     # Make sure mysql can access them
-    chown mysql $SSL_DB_SRV_CHAIN $SSL_DB_SRV_CERT $SSL_DB_SRV_KEY
+    chown mysql:mysql $SSL_DB_SRV_CHAIN $SSL_DB_SRV_CERT $SSL_DB_SRV_KEY
+     # Make selinux contexts for configu file
+    semanage fcontext -a -t mysqld_etc_t $DB_SRV_CONF  > /dev/null #adds the context type to file
+    restorecon -v -F $DB_SRV_CONF                           # changes the file's context type
   else
        echo "mysql.cnf contians existing entry for ssl, skipping..." | tee -a "$LOG_FILE"
   fi
@@ -92,7 +95,10 @@ if [[ $(cat "$DB_CLIENT_CONF" | grep -c "ssl") < 1 ]]; then
   echo "ssl_ca=$SSL_DB_CLIENT_CHAIN" >> $DB_CLIENT_CONF
   echo "ssl_cert=$SSL_DB_CLIENT_CERT" >> $DB_CLIENT_CONF
   echo "ssl_key=$SSL_DB_CLIENT_KEY" >> $DB_CLIENT_CONF
-  chown mysql $SSL_DB_CLIENT_CHAIN $SSL_DB_CLIENT_CERT $SSL_DB_CLIENT_KEY 
+  chown mysql:mysql $SSL_DB_CLIENT_CHAIN $SSL_DB_CLIENT_CERT $SSL_DB_CLIENT_KEY 
+  # Make selinux contexts for configu file
+  semanage fcontext -a -t mysqld_etc_t $DB_CLIENT_CONFf > /dev/null  #adds the context type to file
+  restorecon -F $DB_CLIENT_CONF                           #changes the file's context type
 fi
 }
 
@@ -137,3 +143,8 @@ start_mysqlsd
 check_mysql_root_pwd
 set_hirs_db_pwd
 create_hirs_db_with_tls
+# reboot mysql server
+mysql -u root --password=$DB_ADMIN_PWD -e "SHUTDOWN"
+sleep 2
+check_for_container
+start_mysqlsd

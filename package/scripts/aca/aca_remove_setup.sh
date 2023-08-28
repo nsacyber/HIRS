@@ -14,6 +14,10 @@ if [ "$EUID" -ne 0 ]; then
       echo "This script requires root.  ACA setup not removed. Please run as root."
       exit 1
 fi
+if [ ! -f /etc/hirs/aca/aca.properties ]; then
+      echo "aca.properties does not exist, aborting."
+      exit 1
+fi
 
 # remove the hrs-db and hirs_db user
 pushd $SCRIPT_DIR/../db/
