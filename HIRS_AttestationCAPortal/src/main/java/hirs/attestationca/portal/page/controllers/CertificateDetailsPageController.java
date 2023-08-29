@@ -90,15 +90,15 @@ public class CertificateDetailsPageController extends PageController<Certificate
                         break;
                     case "endorsement":
                         data.putAll(CertificateStringMapBuilder.getEndorsementInformation(uuid,
-                                certificateRepository));
+                                certificateRepository, caCredentialRepository));
                         break;
                     case "platform":
                         data.putAll(CertificateStringMapBuilder.getPlatformInformation(uuid,
-                                certificateRepository, componentResultRepository));
+                                certificateRepository, componentResultRepository, caCredentialRepository));
                         break;
                     case "issued":
                         data.putAll(CertificateStringMapBuilder.getIssuedInformation(uuid,
-                                certificateRepository));
+                                certificateRepository, caCredentialRepository));
                         break;
                     default:
                         String typeError = "Invalid certificate type: " + params.getType();

@@ -1,39 +1,236 @@
 package hirs.attestationca.persist.service;
 
+import hirs.attestationca.persist.entity.ArchivableEntity;
+import hirs.attestationca.persist.DBManagerException;
+import hirs.attestationca.persist.entity.manager.CACredentialRepository;
 import hirs.attestationca.persist.entity.manager.CertificateRepository;
-import hirs.attestationca.persist.entity.manager.SupplyChainValidationRepository;
+import hirs.attestationca.persist.entity.manager.ComponentResultRepository;
+import hirs.attestationca.persist.entity.manager.PolicyRepository;
+import hirs.attestationca.persist.entity.manager.ReferenceDigestValueRepository;
+import hirs.attestationca.persist.entity.manager.ReferenceManifestRepository;
+import hirs.attestationca.persist.entity.manager.SupplyChainValidationSummaryRepository;
 import hirs.attestationca.persist.entity.userdefined.Certificate;
+import hirs.attestationca.persist.entity.userdefined.Device;
+import hirs.attestationca.persist.entity.userdefined.PolicySettings;
 import hirs.attestationca.persist.entity.userdefined.SupplyChainValidation;
+import hirs.attestationca.persist.entity.userdefined.SupplyChainValidationSummary;
 import hirs.attestationca.persist.entity.userdefined.certificate.CertificateAuthorityCredential;
+import hirs.attestationca.persist.entity.userdefined.certificate.EndorsementCredential;
 import hirs.attestationca.persist.entity.userdefined.certificate.PlatformCredential;
+import hirs.attestationca.persist.entity.userdefined.record.TPMMeasurementRecord;
+import hirs.attestationca.persist.entity.userdefined.rim.EventLogMeasurements;
+import hirs.attestationca.persist.entity.userdefined.rim.SupportReferenceManifest;
+import hirs.attestationca.persist.enums.AppraisalStatus;
+import hirs.attestationca.persist.validation.CredentialValidator;
+import hirs.attestationca.persist.validation.PcrValidator;
+import hirs.attestationca.persist.validation.SupplyChainCredentialValidator;
 import hirs.utils.BouncyCastleUtils;
 import lombok.extern.log4j.Log4j2;
 import org.bouncycastle.util.encoders.Hex;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 import java.io.IOException;
 import java.security.KeyStore;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.security.cert.CertificateException;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
+import org.apache.logging.log4j.Level;
+
+import static hirs.attestationca.persist.enums.AppraisalStatus.Status.FAIL;
+import static hirs.attestationca.persist.enums.AppraisalStatus.Status.PASS;
 
 @Log4j2
-//@Service
-public class SupplyChainValidationServiceImpl extends DefaultDbService<SupplyChainValidation> {
+@Service
+public class SupplyChainValidationServiceImpl implements SupplyChainValidationService {
 
-    @Autowired
-    SupplyChainValidationRepository repository;
-    @Autowired
+    private CACredentialRepository caCredentialRepository;
+    private PolicyRepository policyRepository;
+    private ReferenceManifestRepository referenceManifestRepository;
+    private ReferenceDigestValueRepository referenceDigestValueRepository;
+    private ComponentResultRepository componentResultRepository;
     private CertificateRepository certificateRepository;
+    private CredentialValidator supplyChainCredentialValidator;
+    private SupplyChainValidationSummaryRepository supplyChainValidationSummaryRepository;
 
+    /**
+     * Constructor to set just the CertificateRepository, so that cert chain validating
+     * methods can be called from outside classes.
+     *
+     * @param certificateRepository the cert repository
+     */
     public SupplyChainValidationServiceImpl(final CertificateRepository certificateRepository) {
-        super();
         this.certificateRepository = certificateRepository;
+    }
+
+    /**
+     * Constructor.
+     *
+     * @param caCredentialRepository    ca credential repository
+     * @param policyRepository                      the policy manager
+     * @param certificateRepository                 the cert manager
+     * @param componentResultRepository             the comp result manager
+     * @param referenceManifestRepository           the RIM manager
+     * @param supplyChainValidationSummaryRepository the summary manager
+     * @param supplyChainCredentialValidator     the credential validator
+     * @param referenceDigestValueRepository              the even manager
+     */
+    @Autowired
+    @SuppressWarnings("ParameterNumberCheck")
+    public SupplyChainValidationServiceImpl(
+            final CACredentialRepository caCredentialRepository,
+            final PolicyRepository policyRepository,
+            final CertificateRepository certificateRepository,
+            final ComponentResultRepository componentResultRepository,
+            final ReferenceManifestRepository referenceManifestRepository,
+            final SupplyChainValidationSummaryRepository supplyChainValidationSummaryRepository,
+            final CredentialValidator supplyChainCredentialValidator,
+            final ReferenceDigestValueRepository referenceDigestValueRepository) {
+        this.caCredentialRepository = caCredentialRepository;
+        this.policyRepository = policyRepository;
+        this.certificateRepository = certificateRepository;
+        this.componentResultRepository = componentResultRepository;
+        this.referenceManifestRepository = referenceManifestRepository;
+        this.supplyChainValidationSummaryRepository = supplyChainValidationSummaryRepository;
+        this.supplyChainCredentialValidator = supplyChainCredentialValidator;
+        this.referenceDigestValueRepository = referenceDigestValueRepository;
+    }
+
+    @Override
+    public SupplyChainValidationSummary validateSupplyChain(final EndorsementCredential ec,
+                                                            final List<PlatformCredential> pc,
+                                                            final Device device) {
+        return null;
+    }
+
+    /**
+     * A supplemental method that handles validating just the quote post main validation.
+     *
+     * @param device the associated device.
+     * @return True if validation is successful, false otherwise.
+     */
+    @Override
+    public SupplyChainValidationSummary validateQuote(final Device device) {
+        SupplyChainValidation quoteScv = null;
+        SupplyChainValidationSummary summary = null;
+        Level level = Level.ERROR;
+        AppraisalStatus fwStatus = new AppraisalStatus(FAIL,
+                "Unknown exception caught during quote validation.");
+        SupportReferenceManifest sRim = null;
+        EventLogMeasurements eventLog = null;
+
+        // check if the policy is enabled
+        if (getPolicySettings().isFirmwareValidationEnabled()) {
+            String[] baseline = new String[Integer.SIZE];
+            String deviceName = device.getDeviceInfo()
+                    .getNetworkInfo().getHostname();
+
+            try {
+                List<SupportReferenceManifest> supportRims = referenceManifestRepository.getSupportByManufacturerModel(
+                        device.getDeviceInfo().getHardwareInfo().getManufacturer(),
+                        device.getDeviceInfo().getHardwareInfo().getProductName());
+                for (SupportReferenceManifest support : supportRims) {
+                    if (support.isBaseSupport()) {
+                        sRim = support;
+                    }
+                }
+                eventLog = (EventLogMeasurements) referenceManifestRepository
+                        .findByHexDecHash(sRim.getEventLogHash());
+
+                if (sRim == null) {
+                    fwStatus = new AppraisalStatus(FAIL,
+                            String.format("Firmware Quote validation failed: "
+                                            + "No associated Support RIM file "
+                                            + "could be found for %s",
+                                    deviceName));
+                } else if (eventLog == null) {
+                    fwStatus = new AppraisalStatus(FAIL,
+                            String.format("Firmware Quote validation failed: "
+                                            + "No associated Client Log file "
+                                            + "could be found for %s",
+                                    deviceName));
+                } else {
+                    baseline = sRim.getExpectedPCRList();
+                    String[] storedPcrs = eventLog.getExpectedPCRList();
+                    PcrValidator pcrValidator = new PcrValidator(baseline);
+                    // grab the quote
+                    byte[] hash = device.getDeviceInfo().getTpmInfo().getTpmQuoteHash();
+                    if (pcrValidator.validateQuote(hash, storedPcrs, getPolicySettings())) {
+                        level = Level.INFO;
+                        fwStatus = new AppraisalStatus(PASS,
+                                SupplyChainCredentialValidator.FIRMWARE_VALID);
+                        fwStatus.setMessage("Firmware validation of TPM Quote successful.");
+                    } else {
+                        fwStatus.setMessage("Firmware validation of TPM Quote failed."
+                                + "\nPCR hash and Quote hash do not match.");
+                    }
+                    eventLog.setOverallValidationResult(fwStatus.getAppStatus());
+                    this.referenceManifestRepository.save(eventLog);
+                }
+            } catch (Exception ex) {
+                log.error(ex);
+            }
+
+            quoteScv = buildValidationRecord(SupplyChainValidation
+                            .ValidationType.FIRMWARE,
+                    fwStatus.getAppStatus(), fwStatus.getMessage(), eventLog, level);
+
+            // Generate validation summary, save it, and return it.
+            List<SupplyChainValidation> validations = new ArrayList<>();
+            SupplyChainValidationSummary previous
+                    = this.supplyChainValidationSummaryRepository.findByDevice(deviceName);
+            for (SupplyChainValidation scv : previous.getValidations()) {
+                if (scv.getValidationType() != SupplyChainValidation.ValidationType.FIRMWARE) {
+                    validations.add(buildValidationRecord(scv.getValidationType(),
+                            scv.getValidationResult(), scv.getMessage(),
+                            scv.getCertificatesUsed().get(0), Level.INFO));
+                }
+            }
+            validations.add(quoteScv);
+            previous.archive();
+            supplyChainValidationSummaryRepository.save(previous);
+            summary = new SupplyChainValidationSummary(device, validations);
+
+            // try removing the supply chain validation as well and resaving that
+            try {
+                supplyChainValidationSummaryRepository.save(summary);
+            } catch (DBManagerException dbEx) {
+                log.error("Failed to save Supply Chain Summary", dbEx);
+            }
+        }
+
+        return summary;
+    }
+
+    /**
+     * Creates a supply chain validation record and logs the validation message
+     * at the specified log level.
+     *
+     * @param validationType   the type of validation
+     * @param result           the appraisal status
+     * @param message          the validation message to include in the summary and log
+     * @param archivableEntity the archivableEntity associated with the
+     *                         validation
+     * @param logLevel         the log level
+     * @return a SupplyChainValidation
+     */
+    private SupplyChainValidation buildValidationRecord(
+            final SupplyChainValidation.ValidationType validationType,
+            final AppraisalStatus.Status result, final String message,
+            final ArchivableEntity archivableEntity, final Level logLevel) {
+        List<ArchivableEntity> aeList = new ArrayList<>();
+        if (archivableEntity != null) {
+            aeList.add(archivableEntity);
+        }
+
+        log.log(logLevel, message);
+        return new SupplyChainValidation(validationType, result, aeList, message);
     }
 
     /**
@@ -94,35 +291,32 @@ public class SupplyChainValidationServiceImpl extends DefaultDbService<SupplyCha
         if (credential.getAuthorityKeyIdentifier() != null
                 && !credential.getAuthorityKeyIdentifier().isEmpty()) {
             byte[] bytes = Hex.decode(credential.getAuthorityKeyIdentifier());
-            skiCA = (CertificateAuthorityCredential) certificateRepository.findBySubjectKeyIdentifier(bytes);
+            // CYRUS is SKI unique?
+            skiCA = caCredentialRepository.findBySubjectKeyIdentifier(bytes);
         }
 
         if (skiCA == null) {
             if (credential.getIssuerSorted() == null
                     || credential.getIssuerSorted().isEmpty()) {
-                certAuthsWithMatchingIssuer = certificateRepository.findBySubject(credential.getHolderIssuer(),
-                        "CertificateAuthorityCredential");
+                certAuthsWithMatchingIssuer = caCredentialRepository.findBySubject(credential.getIssuer());
             } else {
                 //Get certificates by subject organization
-                certAuthsWithMatchingIssuer = certificateRepository.findBySubjectSorted(credential.getIssuerSorted(),
-                        "CertificateAuthorityCredential");
-
+                certAuthsWithMatchingIssuer = caCredentialRepository.findBySubjectSorted(credential.getIssuerSorted());
             }
         } else {
             certAuthsWithMatchingIssuer.add(skiCA);
         }
         Set<String> queriedOrganizations = new HashSet<>(previouslyQueriedSubjects);
-        queriedOrganizations.add(credential.getHolderIssuer());
+        queriedOrganizations.add(credential.getIssuer());
 
         HashSet<CertificateAuthorityCredential> caCreds = new HashSet<>();
         for (CertificateAuthorityCredential cred : certAuthsWithMatchingIssuer) {
             caCreds.add(cred);
-            if (!BouncyCastleUtils.x500NameCompare(cred.getHolderIssuer(),
+            if (!BouncyCastleUtils.x500NameCompare(cred.getIssuer(),
                     cred.getSubject())) {
                 caCreds.addAll(getCaChainRec(cred, queriedOrganizations));
             }
         }
-
         return caCreds;
     }
 
@@ -141,23 +335,43 @@ public class SupplyChainValidationServiceImpl extends DefaultDbService<SupplyCha
         return keyStore;
     }
 
-    private boolean checkForMultipleBaseCredentials(final String platformSerialNumber) {
-        boolean multiple = false;
-        PlatformCredential baseCredential = null;
+    private String[] buildStoredPcrs(final String pcrContent, final int algorithmLength) {
+        // we have a full set of PCR values
+        String[] pcrSet = pcrContent.split("\\n");
+        String[] storedPcrs = new String[TPMMeasurementRecord.MAX_PCR_ID + 1];
 
-        if (platformSerialNumber != null) {
-            List<PlatformCredential> chainCertificates = certificateRepository
-                    .byBoardSerialNumber(platformSerialNumber);
+        // we need to scroll through the entire list until we find
+        // a matching hash length
+        int offset = 1;
 
-            for (PlatformCredential pc : chainCertificates) {
-                if (baseCredential != null && pc.isPlatformBase()) {
-                    multiple = true;
-                } else if (pc.isPlatformBase()) {
-                    baseCredential = pc;
+        for (int i = 0; i < pcrSet.length; i++) {
+            if (pcrSet[i].contains("sha")) {
+                // entered a new set, check size
+                if (pcrSet[i + offset].split(":")[1].trim().length()
+                        == algorithmLength) {
+                    // found the matching set
+                    for (int j = 0; j <= TPMMeasurementRecord.MAX_PCR_ID; j++) {
+                        storedPcrs[j] = pcrSet[++i].split(":")[1].trim();
+                    }
+                    break;
                 }
             }
         }
 
-        return multiple;
+        return storedPcrs;
+    }
+
+    /**
+     * Helper function to get a fresh load of the default policy from the DB.
+     *
+     * @return The default Supply Chain Policy
+     */
+    private PolicySettings getPolicySettings() {
+        PolicySettings defaultSettings = this.policyRepository.findByName("Default");
+
+        if (defaultSettings == null) {
+            defaultSettings = new PolicySettings("Default", "Settings are configured for no validation flags set.");
+        }
+        return defaultSettings;
     }
 }

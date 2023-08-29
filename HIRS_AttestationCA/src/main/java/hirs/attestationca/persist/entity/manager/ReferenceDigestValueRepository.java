@@ -19,4 +19,5 @@ public interface ReferenceDigestValueRepository extends JpaRepository<ReferenceD
     List<ReferenceDigestValue> getValuesByRimId(UUID associatedRimId);
     List<ReferenceDigestValue> findBySupportRimId(UUID supportRimId);
     List<ReferenceDigestValue> findBySupportRimHash(String supportRimHash);
+    List<ReferenceDigestValue> findByManufacturerAndModel(String manufacturer, String model);
 }

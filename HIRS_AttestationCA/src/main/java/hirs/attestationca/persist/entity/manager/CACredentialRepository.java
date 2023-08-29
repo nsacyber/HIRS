@@ -14,4 +14,7 @@ public interface CACredentialRepository extends JpaRepository<CertificateAuthori
     @Query(value = "SELECT * FROM Certificate where DTYPE='CertificateAuthorityCredential'", nativeQuery = true)
     @Override
     List<CertificateAuthorityCredential> findAll();
+    List<CertificateAuthorityCredential> findBySubject(String subject);
+    List<CertificateAuthorityCredential> findBySubjectSorted(String subject);
+    CertificateAuthorityCredential findBySubjectKeyIdentifier(byte[] subjectKeyIdentifier);
 }

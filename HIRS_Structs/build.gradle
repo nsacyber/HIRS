@@ -1,33 +1,45 @@
-apply plugin: 'java'
-apply plugin: 'checkstyle'
-
-sourceCompatibility = 1.8
-
-dependencies {
-    compile libs.commons_lang
-
-    testCompile libs.mockito
-    testCompile libs.testng
+plugins {
+    id 'java'
+//    id 'checkstyle'
 }
 
-ext.configDir = new File(projectDir, 'config')
-ext.checkstyleConfigDir = "$configDir/checkstyle"
-
-checkstyle {
-    toolVersion = '5.7'
-    configFile = checkstyleConfigFile
-    configProperties.put('basedir', checkstyleConfigDir)
-    ignoreFailures = false
-    showViolations = true
-}
-
-publishing {
-    publications {
-        maven(MavenPublication) {
-            artifactId 'hirs-structs'
-            from components.java
-        }
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(17)
     }
 }
+
+repositories {
+    mavenCentral()
+
+    flatDir { dirs "lib" }
+}
+
+dependencies {
+    implementation 'org.apache.commons:commons-lang3:3.13.0'
+
+//    testCompile libs.mockito
+    testImplementation libs.testng
+}
+
+//ext.configDir = new File(projectDir, 'config')
+//ext.checkstyleConfigDir = "$configDir/checkstyle"
+
+//checkstyle {
+//    toolVersion = '5.7'
+//    configFile = checkstyleConfigFile
+//    configProperties.put('basedir', checkstyleConfigDir)
+//    ignoreFailures = false
+//    showViolations = true
+//}
+//
+//publishing {
+//    publications {
+//        maven(MavenPublication) {
+//            artifactId 'hirs-structs'
+//            from components.java
+//        }
+//    }
+//}
 
 

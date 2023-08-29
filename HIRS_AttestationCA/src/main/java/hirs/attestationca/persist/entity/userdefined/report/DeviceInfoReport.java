@@ -15,6 +15,7 @@ import jakarta.persistence.Transient;
 import jakarta.xml.bind.annotation.XmlElement;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 import lombok.extern.log4j.Log4j2;
 
 import java.io.Serializable;
@@ -54,6 +55,7 @@ public class DeviceInfoReport extends AbstractEntity implements Serializable {
     @Column(nullable = false)
     private String clientApplicationVersion;
 
+    @Setter
     @XmlElement
     @Transient
     private String paccorOutputString;

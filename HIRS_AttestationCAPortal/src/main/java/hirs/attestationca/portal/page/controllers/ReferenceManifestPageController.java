@@ -491,9 +491,10 @@ public class ReferenceManifestPageController extends PageController<NoPageParams
     private ReferenceManifest findBaseRim(final SupportReferenceManifest supportRim) {
         if (supportRim != null && (supportRim.getId() != null
                 && !supportRim.getId().toString().equals(""))) {
-            List<BaseReferenceManifest> baseRims = this.referenceManifestRepository
+            List<BaseReferenceManifest> baseRims = new LinkedList<>();
+            baseRims.add(this.referenceManifestRepository
                     .getBaseByManufacturerModel(supportRim.getPlatformManufacturer(),
-                            supportRim.getPlatformModel());
+                            supportRim.getPlatformModel()));
 
             for (BaseReferenceManifest base : baseRims) {
                 if (base.isBase()) {

@@ -15,11 +15,12 @@ import java.util.UUID;
 public interface ReferenceManifestRepository extends JpaRepository<ReferenceManifest, UUID> {
 
     ReferenceManifest findByHexDecHash(String hexDecHash);
+    ReferenceManifest findByBase64Hash(String base64Hash);
     ReferenceManifest findByHexDecHashAndRimType(String hexDecHash, String rimType);
     @Query(value = "SELECT * FROM ReferenceManifest WHERE platformManufacturer = ?1 AND platformModel = ?2 AND rimType = 'Base'", nativeQuery = true)
-    List<BaseReferenceManifest> getBaseByManufacturerModel(String manufacturer, String model);
+    BaseReferenceManifest getBaseByManufacturerModel(String manufacturer, String model);
     @Query(value = "SELECT * FROM ReferenceManifest WHERE platformManufacturer = ?1 AND DTYPE = ?2", nativeQuery = true)
-    ReferenceManifest getByManufacturer(String manufacturer, String dType);
+    List<BaseReferenceManifest> getByManufacturer(String manufacturer, String dType);
     @Query(value = "SELECT * FROM ReferenceManifest WHERE platformModel = ?1 AND DTYPE = ?2", nativeQuery = true)
     ReferenceManifest getByModel(String model, String dType);
     @Query(value = "SELECT * FROM ReferenceManifest WHERE DTYPE = 'BaseReferenceManifest'", nativeQuery = true)
@@ -34,4 +35,8 @@ public interface ReferenceManifestRepository extends JpaRepository<ReferenceMani
     EventLogMeasurements getEventLogRimEntityById(UUID uuid);
     @Query(value = "SELECT * FROM ReferenceManifest WHERE deviceName = ?1 AND DTYPE = 'SupportReferenceManifest'", nativeQuery = true)
     List<SupportReferenceManifest> byDeviceName(String deviceName);
+    @Query(value = "SELECT * FROM ReferenceManifest WHERE deviceName = ?1 AND DTYPE = 'EventLogMeasurements'", nativeQuery = true)
+    EventLogMeasurements byMeasurementDeviceName(String deviceName);
+    @Query(value = "SELECT * FROM ReferenceManifest WHERE platformManufacturer = ?1 AND platformModel = ?2 AND rimType = 'Support'", nativeQuery = true)
+    List<SupportReferenceManifest> getSupportByManufacturerModel(String manufacturer, String model);
 }
