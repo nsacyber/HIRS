@@ -15,6 +15,12 @@ SCRIPT_DIR=$( dirname -- "$( readlink -f -- "$0"; )"; )
 LOG_FILE=/dev/null
 GRADLE_WRAPPER="./gradlew"
 
+# Check for sudo or root user 
+if [ "$EUID" -ne 0 ]
+     then echo "This script requires root.  Please run as root" 
+     exit 1
+fi
+
 source $SCRIPT_DIR/../db/start_mysqld.sh
 
 if [ $ALG = "RSA" ]; then 
@@ -32,11 +38,7 @@ fi
 check_for_container
 start_mysqlsd
 
-# Check for sudo or root user 
-if [ "$EUID" -ne 0 ]
-     then echo "This script requires root.  Please run as root" 
-     exit 1
-fi
+
 
 if [ ! -d "$CERT_PATH" ]; then
      echo "$CERT_PATH directory does not exist. Please run aca_setup.sh and try again."
