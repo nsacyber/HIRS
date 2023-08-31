@@ -82,7 +82,7 @@ set_mysql_server_tls () {
     chown mysql:mysql $SSL_DB_SRV_CHAIN $SSL_DB_SRV_CERT $SSL_DB_SRV_KEY
     # Make selinux contexts for config files, if selinux is enabled
     selinuxenabled
-    if [ $? -eq 0 ]
+    if [ $? -eq 0 ]; then
        semanage fcontext -a -t mysqld_etc_t $DB_SRV_CONF  > /dev/null #adds the context type to file
        restorecon -v -F $DB_SRV_CONF                           # changes the file's context type
     fi
@@ -101,7 +101,7 @@ if [[ $(cat "$DB_CLIENT_CONF" | grep -c "ssl") < 1 ]]; then
   chown mysql:mysql $SSL_DB_CLIENT_CHAIN $SSL_DB_CLIENT_CERT $SSL_DB_CLIENT_KEY 
   # Make selinux contexts for config files, if selinux is enabled
   selinuxenabled
-  if [ $? -eq 0 ]
+  if [ $? -eq 0 ]; then
       semanage fcontext -a -t mysqld_etc_t $DB_CLIENT_CONFf > /dev/null  #adds the context type to file
       restorecon -F $DB_CLIENT_CONF                                     #changes the file's context type
   fi                           
@@ -138,13 +138,6 @@ create_hirs_db_with_tls () {
      mysql -u root --password=$DB_ADMIN_PWD < $MYSQL_DIR/secure_mysql.sql
      mysql -u root --password=$DB_ADMIN_PWD -e "ALTER USER 'hirs_db'@'localhost' IDENTIFIED BY '"$HIRS_DB_PWD"'; FLUSH PRIVILEGES;";
   fi
-}
-
-set_selinux_context () {
-
-
-
-
 }
 
 
