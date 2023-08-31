@@ -216,8 +216,9 @@ create_cert_chain () {
    openssl verify -CAfile "$TRUST_STORE_FILE" $RIM_SIGNER.pem | tee -a "$LOG_FILE"
 
    # Make JKS files for the mysql DB connector. P12 first then JKS...
-   openssl pkcs12 -export -in $DB_CLIENT.pem -inkey $DB_CLIENT.key -aes256 \
-        -passin pass:$PASS -passout pass:$PASS -aes256  \
+   openssl pkcs12 -export -in $DB_CLIENT.pem -inkey $DB_CLIENT.key \
+        -aes256 -macalg SHA256 -keypbe AES-256-CBC -certpbe AES-256-CBC \
+        -passin pass:$PASS -passout pass:$PASS \
         -name "mysqlclientkey" -out $DB_CLIENT.p12 >> "$LOG_FILE" 2>&1
 
    keytool -importkeystore -srckeystore $DB_CLIENT.p12 -srcstoretype PKCS12 \
@@ -227,8 +228,9 @@ create_cert_chain () {
 if [ "$ASYM_ALG" == "rsa" ]; then
    # Create Root CA key pair and self signed cert
    echo "Generating RSA Root CA ...." | tee -a "$LOG_FILE"
-   openssl genrsa -out "$PKI_ROOT".key -aes256 -passout pass:"$PASS" "$ASYM_SIZE" >> "$LOG_FILE" 2>&1
-   
+   #openssl genrsa -out "$PKI_ROOT".key -aes256 -passout pass:"$PASS" "$ASYM_SIZE" >> "$LOG_FILE" 2>&1
+   openssl genpkey -algorithm RSA -pkeyopt rsa_keygen_bits:3072 -aes256 --pass "pass:$PASS" -out "$PKI_ROOT".key >> "$LOG_FILE" 2>&1
+    
    # Create a self signed CA certificate
    openssl req -new -config ca.conf -x509 -days 3650 -key "$PKI_ROOT".key -subj "$ROOT_DN" \
           -extensions ca_extensions -out "$PKI_ROOT".pem \
