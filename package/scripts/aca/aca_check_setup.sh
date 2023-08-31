@@ -1,7 +1,7 @@
 #!/bin/bash
 ############################################################################################
 # Checks the setup for the ACA:
-# 
+#  takes a -v option to provide verbose output
 ############################################################################################
 
 SCRIPT_DIR=$( dirname -- "$( readlink -f -- "$0"; )"; )
@@ -71,13 +71,14 @@ while [[ $# -gt 0 ]]; do
 done
 
 source /etc/hirs/aca/aca.properties;
+source $SCRIPT_DIR/../db/start_mysqld.sh
 
 check_pwds () {
 
 PRESENT=true
-echo "Checking if ACA passwords are in aca.properties"
+echo "Checking if ACA passwords are present..."
  if [ -z $hirs_pki_password ]; then
-   echo "hirs pki password not set" 
+   echo "ACA pki password not set" 
    PRESENT=false 
  fi
  if [ -z $hirs_db_username ]; then
@@ -85,34 +86,20 @@ echo "Checking if ACA passwords are in aca.properties"
    PRESENT=false 
  fi
  if [ -z $hirs_db_password ]; then
-   echo "hirs db password not set"
+   echo "hirs db user password not set"
    PRESENT=false  
  fi
  if [ $PRESENT ]; then
-   echo "   HIRS passwords were created"
+   echo "   ACA passwords were found"
   else
-   echo "   ERROR finding HIRS passwords"
+   echo "   ERROR finding ACA passwords"
    ALL_CHECKS_PASSED=false
  fi
 }
 
-check_mysql () {
-  echo "Checking mysqld status..."
-  if [[ $(pgrep -c -u mysql mysqld) -ne 0 ]]; then
-      echo "   mysql process exists..."
-    else
-      echo "   mysqld process does NOT exist, attempting to restart mysql..."
-    /usr/bin/mysqld_safe &
-  fi
-
- # Wait for mysql to start before continuing.
-
-  while ! mysqladmin ping -h "$localhost" --silent; do
-     sleep 1;
-  done
-
-  echo "   mysqld is running."
-
+check_mysql_setup () {
+  # make sure mysql is running and restart if its not...
+  check_mysql
   # Check DB server/client TLS setup.
   if [[ $(cat "$DB_SRV_CONF" | grep -c "ssl") < 1 ]]; then
      echo "   Mysql server ($DB_SRV_CONF) is NOT configured for Server Side TLS"
@@ -153,7 +140,7 @@ fi
 }
 
 check_pki () {
- echo "Checking HIRS PKI certificates"
+ echo "Checking ACA PKI certificates..."
   if [ ! -d "/etc/hirs/certificates" ]; then
      echo "/etc/hirs/certificates doesn't exists, was aca_setup.sh run ? /
            Skipping PKI Checks." 
@@ -205,7 +192,7 @@ check_pki () {
 }
 
 check_db () {
-  echo "Check DB server TLS config..."
+  echo "Checking DB server TLS configuration..."
   RESULT=$(mysql -u root --password=$mysql_admin_password -e "SHOW VARIABLES LIKE '%have_ssl%'" |  grep -o YES )
   if [ "$RESULT" == "YES" ]; then
       echo "   Mysql Server side TLS is enabled:"
@@ -242,25 +229,35 @@ check_selinux () {
    SELINUXSTATUS=$(getenforce)
    DB_SRV_CONTEXT=$(ls -Z $DB_SRV_CONF)
    DB_CLIENT_CONTEXT=$(ls -Z $DB_CLIENT_CONF)
-   
+   echo "Checking device selinux status..."
    if [[ "$SELINUXSTATUS" == *"Enforcing"* ]]; then
+     echo "   Selinux is in Enforcing mode."
      if [[ "$DB_SRV_CONTEXT" == *"mysqld_etc_t"* &&  "$DB_CLIENT_CONTEXT" == *"mysqld_etc_t"* ]]; then
-         echo "Selinux status is $SELINUXSTATUS and both $DB_SRV_CONF and $DB_SRV_CONF contexts are correct"
+         echo "   Selinux status is $SELINUXSTATUS and both $DB_SRV_CONF and $DB_CLIENT_CONF contexts are correct"
      elif [[ "$DB_CLIENT_CONTEXT" == *"mysqld_etc_t"* ]]; then
-        echo "Selinux status is $SELINUXSTATUS and $DB_SRV_CONF context is incorrect: $DB_SRV_CONTEXT"
+        echo "   Selinux status is $SELINUXSTATUS and $DB_CLIENT_CONF context is incorrect: $DB_CLIENT_CONTEXT"
         ALL_CHECKS_PASSED=false
      else
-        echo "Selinux status is $SELINUXSTATUS and $DB_CLIENT_CONF context is incorrect: $DB_CLIENT_CONTEXT"
+        echo "   Selinux status is $SELINUXSTATUS and $DB_SRV_CONF context is incorrect: $DB_SRV_CONTEXT"
         ALL_CHECKS_PASSED=false
      fi
+     else
+     echo "   Selinux is in NOT in Enforcing mode."
    fi
 }
 
+check_fips () {
+   echo "Checking FIPS mode on this device..."
+   echo "   "$(sysctl -a | grep crypto.fips_enabled)
+}
+
+check_for_container
 check_pwds
 check_pki
-check_mysql
+check_mysql_setup
 check_db
 check_selinux
+check_fips
 
 if [ $ALL_CHECKS_PASSED = true  ]; then
   echo "ACA setup checks passed!"

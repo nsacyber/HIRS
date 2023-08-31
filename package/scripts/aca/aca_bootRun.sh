@@ -38,8 +38,6 @@ fi
 check_for_container
 start_mysqlsd
 
-
-
 if [ ! -d "$CERT_PATH" ]; then
      echo "$CERT_PATH directory does not exist. Please run aca_setup.sh and try again."
      exit 1;

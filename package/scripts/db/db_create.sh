@@ -8,13 +8,13 @@
 ################################################################################
 
 LOG_FILE=$1
+UNATTENDED=$2
 # LOG_FILE="/var/log/hirs/hirs_aca_install_$(date +%Y-%m-%d).log"
 # Capture location of the script to allow from invocation from any location
 SCRIPT_DIR=$( dirname -- "$( readlink -f -- "$0"; )"; )
 SPRING_PROP_FILE="/etc/hirs/aca/application.properties"
 ACA_PROP_FILE="/etc/hirs/aca/aca.properties"
 DB_ADMIN_PWD=""
-#DB_USER="hirs_db"
 # Db Configuration files
 DB_SRV_CONF="/etc/my.cnf.d/mariadb-server.cnf"
 DB_CLIENT_CONF="/etc/my.cnf.d/client.cnf"
@@ -40,18 +40,24 @@ source $ACA_PROP_FILE
 
 check_mysql_root_pwd () {
   # Check if DB root password needs to be obtained
-  echo "HIRS_MYSQL_ROOT_PWD is $HIRS_MYSQL_ROOT_PWD"
+ 
   if [ -z $HIRS_MYSQL_ROOT_PWD ]; then
 	 # Create a 32 character random password
 	 echo "Using randomly generated password for the DB admin" | tee -a "$LOG_FILE"
 	 DB_ADMIN_PWD=$(head -c 64 /dev/urandom | md5sum | tr -dc 'a-zA-Z0-9')
 	 echo "DB Admin will be set to $DB_ADMIN_PWD , please make note for next mysql use."
-	 read -p "Do you wish to save this password to the aca.properties file? " confirm
-	 if [[ $confirm == [yY] || $confirm == [yY][eE][sS] ]]; then
-	    echo "mysql_admin_password=$DB_ADMIN_PWD" >> $ACA_PROP_FILE
-	    echo "Password saved."
-	   else
-	    echo "Password not saved."
+     # Check i UNATTENDED flag set m if not then prompt user for permission ot store mysql root password
+	 if [ -z $UNATTENDED ]; then
+	   read -p "Do you wish to save this password to the aca.properties file? " confirm
+	   if [[ $confirm == [yY] || $confirm == [yY][eE][sS] ]]; then
+	      echo "mysql_admin_password=$DB_ADMIN_PWD" >> $ACA_PROP_FILE
+	      echo "Mysql root password saved locally"
+	    else
+	      echo "Mysql root password not saved locally"
+	   fi
+	 else
+	   echo "mysql_admin_password=$DB_ADMIN_PWD" >> $ACA_PROP_FILE
+	   echo "Mysql root password has been saved locally."
 	 fi
 	 mysqladmin --user=root password "$DB_ADMIN_PWD"
   else
@@ -84,7 +90,7 @@ set_mysql_server_tls () {
     selinuxenabled
     if [ $? -eq 0 ]; then
        semanage fcontext -a -t mysqld_etc_t $DB_SRV_CONF  > /dev/null #adds the context type to file
-       restorecon -v -F $DB_SRV_CONF                           # changes the file's context type
+       restorecon -v -F $DB_SRV_CONF      > /dev/null                 # changes the file's context type
     fi
   else
        echo "mysql.cnf contians existing entry for ssl, skipping..." | tee -a "$LOG_FILE"
@@ -103,7 +109,7 @@ if [[ $(cat "$DB_CLIENT_CONF" | grep -c "ssl") < 1 ]]; then
   selinuxenabled
   if [ $? -eq 0 ]; then
       semanage fcontext -a -t mysqld_etc_t $DB_CLIENT_CONFf > /dev/null  #adds the context type to file
-      restorecon -F $DB_CLIENT_CONF                                     #changes the file's context type
+      restorecon -F $DB_CLIENT_CONF                         > /dev/null #changes the file's context type
   fi                           
 fi
 }
@@ -140,7 +146,6 @@ create_hirs_db_with_tls () {
   fi
 }
 
-
 # HIRS ACA Mysqld processing ...
 check_mariadb_install
 check_for_container
@@ -150,8 +155,4 @@ start_mysqlsd
 check_mysql_root_pwd
 set_hirs_db_pwd
 create_hirs_db_with_tls
-# reboot mysql server
-mysql -u root --password=$DB_ADMIN_PWD -e "SHUTDOWN"
-sleep 2
-check_for_container
-start_mysqlsd
+mysqld_reboot

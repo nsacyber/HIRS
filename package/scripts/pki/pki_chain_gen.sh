@@ -110,9 +110,9 @@ add_to_stores () {
    # Add the cert and key to the key store. make a p12 file to import into te keystore
    openssl pkcs12 -export -in "$CERT_PATH".pem -inkey "$CERT_PATH".key -out tmpkey.p12 -passin pass:"$PASS" -aes256 -passout pass:$PASS  >> "$LOG_FILE" 2>&1
    # Use the p12 file to import into a java keystore via keytool
-   keytool -importkeystore -srckeystore tmpkey.p12 -destkeystore $KEYSTORE -srcstoretype pkcs12 -srcstorepass $PASS -deststoretype jks -deststorepass $PASS -noprompt -alias 1 -destalias -J-Dcom.redhat.fips=false "$ALIAS" >> "$LOG_FILE" 2>&1 
+   keytool -importkeystore -srckeystore tmpkey.p12 -destkeystore $KEYSTORE -srcstoretype pkcs12 -srcstorepass $PASS -deststoretype jks -deststorepass $PASS -noprompt -alias 1 -destalias "$ALIAS" >> "$LOG_FILE" 2>&1 
    # Import the cert into a java trust store via keytool
-   keytool -import -keystore $TRUSTSTORE -storepass $PASS -file "$CERT_PATH".pem  -noprompt -alias "$ALIAS" -J-Dcom.redhat.fips=false >> "$LOG_FILE" 2>&1
+   keytool -import -keystore $TRUSTSTORE -storepass $PASS -file "$CERT_PATH".pem  -noprompt -alias "$ALIAS" >> "$LOG_FILE" 2>&1
    # Remove the temp p1 file.
    rm tmpkey.p12
 } 
@@ -174,9 +174,9 @@ create_cert () {
    # Add the cert and key to the key store. make a p12 file to import into te keystore
    openssl pkcs12 -export -in "$CERT_PATH".pem -inkey "$CERT_PATH".key -out tmpkey.p12 -passin pass:$PASS -aes256 -passout pass:$PASS  >> "$LOG_FILE" 2>&1
    # Use the p12 file to import into a java keystore via keytool
-   keytool -importkeystore -srckeystore tmpkey.p12 -destkeystore $KEYSTORE -srcstoretype pkcs12 -srcstorepass $PASS -deststoretype jks -deststorepass $PASS -noprompt -alias 1 -destalias -J-Dcom.redhat.fips=false "$ALIAS" >> "$LOG_FILE" 2>&1 
+   keytool -importkeystore -srckeystore tmpkey.p12 -destkeystore $KEYSTORE -srcstoretype pkcs12 -srcstorepass $PASS -deststoretype jks -deststorepass $PASS -noprompt -alias 1 -destalias "$ALIAS" >> "$LOG_FILE" 2>&1 
    # Import the cert into a java trust store via keytool
-   keytool -import -keystore $TRUSTSTORE -storepass $PASS -file "$CERT_PATH".pem  -noprompt -alias "$ALIAS" -J-Dcom.redhat.fips=false >> "$LOG_FILE" 2>&1
+   keytool -import -keystore $TRUSTSTORE -storepass $PASS -file "$CERT_PATH".pem  -noprompt -alias "$ALIAS" >> "$LOG_FILE" 2>&1
    # Remove the temp p1 file.
    rm -f tmpkey.p12 &>/dev/null
 }
