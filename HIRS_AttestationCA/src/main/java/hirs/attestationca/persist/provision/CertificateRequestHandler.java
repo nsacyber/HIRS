@@ -15,6 +15,7 @@ import hirs.attestationca.persist.entity.userdefined.info.TPMInfo;
 import hirs.attestationca.persist.entity.userdefined.report.DeviceInfoReport;
 import hirs.attestationca.persist.enums.AppraisalStatus;
 import hirs.attestationca.persist.exceptions.CertificateProcessingException;
+import hirs.attestationca.persist.provision.helper.ProvisionUtils;
 import hirs.attestationca.persist.service.SupplyChainValidationService;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.lang3.ArrayUtils;
@@ -87,13 +88,13 @@ public class CertificateRequestHandler extends AbstractRequestHandler {
         if (tpm2ProvisionerState != null) {
             // Reparse Identity Claim to gather necessary components
             byte[] identityClaim = tpm2ProvisionerState.getIdentityClaim();
-            ProvisionerTpm2.IdentityClaim claim = parseIdentityClaim(identityClaim);
+            ProvisionerTpm2.IdentityClaim claim = ProvisionUtils.parseIdentityClaim(identityClaim);
 
             // Get endorsement public key
-            RSAPublicKey ekPub = parsePublicKey(claim.getEkPublicArea().toByteArray());
+            RSAPublicKey ekPub = ProvisionUtils.parsePublicKey(claim.getEkPublicArea().toByteArray());
 
             // Get attestation public key
-            RSAPublicKey akPub = parsePublicKey(claim.getAkPublicArea().toByteArray());
+            RSAPublicKey akPub = ProvisionUtils.parsePublicKey(claim.getAkPublicArea().toByteArray());
 
             // Get Endorsement Credential if it exists or was uploaded
             EndorsementCredential endorsementCredential = parseEcFromIdentityClaim(claim, ekPub, certificateRepository);
@@ -109,7 +110,6 @@ public class CertificateRequestHandler extends AbstractRequestHandler {
             // Parse through the Provisioner supplied TPM Quote and pcr values
             // these fields are optional
             if (request.getQuote() != null && !request.getQuote().isEmpty()) {
-                parseTPMQuote(request.getQuote().toStringUtf8());
                 TPMInfo savedInfo = device.getDeviceInfo().getTpmInfo();
                 TPMInfo tpmInfo = new TPMInfo(savedInfo.getTpmMake(),
                         savedInfo.getTpmVersionMajor(),
@@ -117,8 +117,10 @@ public class CertificateRequestHandler extends AbstractRequestHandler {
                         savedInfo.getTpmVersionRevMajor(),
                         savedInfo.getTpmVersionRevMinor(),
                         savedInfo.getPcrValues(),
-                        getTpmQuoteHash().getBytes(StandardCharsets.UTF_8),
-                        getTpmQuoteSignature().getBytes(StandardCharsets.UTF_8));
+                        ProvisionUtils.parseTPMQuoteHash(request.getQuote().toStringUtf8())
+                                .getBytes(StandardCharsets.UTF_8),
+                        ProvisionUtils.parseTPMQuoteSignature(request.getQuote().toStringUtf8())
+                                .getBytes(StandardCharsets.UTF_8));
 
                 DeviceInfoReport dvReport = new DeviceInfoReport(
                         device.getDeviceInfo().getNetworkInfo(),
@@ -136,7 +138,7 @@ public class CertificateRequestHandler extends AbstractRequestHandler {
                 // Create signed, attestation certificate
                 X509Certificate attestationCertificate = generateCredential(akPub,
                         endorsementCredential, platformCredentials, deviceName, acaCertificate);
-                byte[] derEncodedAttestationCertificate = getDerEncodedCertificate(
+                byte[] derEncodedAttestationCertificate = ProvisionUtils.getDerEncodedCertificate(
                         attestationCertificate);
 
                 // We validated the nonce and made use of the identity claim so state can be deleted

@@ -27,6 +27,7 @@ import hirs.attestationca.persist.entity.userdefined.rim.ReferenceDigestValue;
 import hirs.attestationca.persist.entity.userdefined.rim.SupportReferenceManifest;
 import hirs.attestationca.persist.enums.AppraisalStatus;
 import hirs.attestationca.persist.exceptions.IdentityProcessingException;
+import hirs.attestationca.persist.provision.helper.ProvisionUtils;
 import hirs.attestationca.persist.service.SupplyChainValidationService;
 import hirs.utils.HexUtils;
 import hirs.utils.SwidResource;
@@ -37,28 +38,15 @@ import lombok.extern.log4j.Log4j2;
 import org.apache.commons.codec.binary.Hex;
 import org.apache.commons.lang3.ArrayUtils;
 
-import javax.crypto.BadPaddingException;
-import javax.crypto.Cipher;
-import javax.crypto.IllegalBlockSizeException;
-import javax.crypto.Mac;
-import javax.crypto.NoSuchPaddingException;
-import javax.crypto.spec.IvParameterSpec;
-import javax.crypto.spec.OAEPParameterSpec;
-import javax.crypto.spec.PSource;
-import javax.crypto.spec.SecretKeySpec;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
-import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
-import java.security.InvalidAlgorithmParameterException;
-import java.security.InvalidKeyException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.PublicKey;
 import java.security.cert.CertificateException;
 import java.security.interfaces.RSAPublicKey;
-import java.security.spec.MGF1ParameterSpec;
 import java.util.ArrayList;
 import java.util.Base64;
 import java.util.HashMap;
@@ -126,11 +114,11 @@ public class IdentityClaimHandler extends AbstractRequestHandler {
         }
 
         // attempt to deserialize Protobuf IdentityClaim
-        ProvisionerTpm2.IdentityClaim claim = parseIdentityClaim(identityClaim);
+        ProvisionerTpm2.IdentityClaim claim = ProvisionUtils.parseIdentityClaim(identityClaim);
 
         // parse the EK Public key from the IdentityClaim once for use in supply chain validation
         // and later tpm20MakeCredential function
-        RSAPublicKey ekPub = parsePublicKey(claim.getEkPublicArea().toByteArray());
+        RSAPublicKey ekPub = ProvisionUtils.parsePublicKey(claim.getEkPublicArea().toByteArray());
         AppraisalStatus.Status validationResult = AppraisalStatus.Status.FAIL;
 
         try {
@@ -143,9 +131,9 @@ public class IdentityClaimHandler extends AbstractRequestHandler {
 
         ByteString blobStr = ByteString.copyFrom(new byte[]{});
         if (validationResult == AppraisalStatus.Status.PASS) {
-            RSAPublicKey akPub = parsePublicKey(claim.getAkPublicArea().toByteArray());
-            byte[] nonce = generateRandomBytes(NONCE_LENGTH);
-            blobStr = tpm20MakeCredential(ekPub, akPub, nonce);
+            RSAPublicKey akPub = ProvisionUtils.parsePublicKey(claim.getAkPublicArea().toByteArray());
+            byte[] nonce = ProvisionUtils.generateRandomBytes(NONCE_LENGTH);
+            blobStr = ProvisionUtils.tpm20MakeCredential(ekPub, akPub, nonce);
             PolicyRepository scp = this.getPolicyRepository();
             PolicySettings policySettings = scp.findByName("Default");
             String pcrQuoteMask = PCR_QUOTE_MASK;
@@ -223,7 +211,6 @@ public class IdentityClaimHandler extends AbstractRequestHandler {
 
     private Device processDeviceInfo(final ProvisionerTpm2.IdentityClaim claim) {
         DeviceInfoReport deviceInfoReport = null;
-        String deviceName = deviceInfoReport.getNetworkInfo().getHostname();
 
         try {
             deviceInfoReport = parseDeviceInfo(claim);
@@ -239,7 +226,7 @@ public class IdentityClaimHandler extends AbstractRequestHandler {
 
         log.info("Processing Device Info Report");
         // store device and device info report.
-        Device device = this.deviceRepository.findByName(deviceName);
+        Device device = this.deviceRepository.findByName(deviceInfoReport.getNetworkInfo().getHostname());
         device.setDeviceInfo(deviceInfoReport);
         return this.deviceRepository.save(device);
     }
@@ -261,8 +248,8 @@ public class IdentityClaimHandler extends AbstractRequestHandler {
         InetAddress ip = null;
         try {
             ip = InetAddress.getByName(nwProto.getIpAddress());
-        } catch (UnknownHostException e) {
-            log.error("Unable to parse IP address: ", e);
+        } catch (UnknownHostException uhEx) {
+            log.error("Unable to parse IP address: ", uhEx);
         }
         String[] macAddressParts = nwProto.getMacAddress().split(":");
 
@@ -486,10 +473,16 @@ public class IdentityClaimHandler extends AbstractRequestHandler {
         }
 
          // Get TPM info, currently unimplemented
-        TPMInfo tpm = createTpmInfo(pcrValues);
+        TPMInfo tpmInfo = new TPMInfo(DeviceInfoEnums.NOT_SPECIFIED,
+                (short) 0,
+                (short) 0,
+                (short) 0,
+                (short) 0,
+                pcrValues.getBytes(StandardCharsets.UTF_8),
+                null, null);
 
         // Create final report
-        DeviceInfoReport dvReport = new DeviceInfoReport(nw, os, fw, hw, tpm,
+        DeviceInfoReport dvReport = new DeviceInfoReport(nw, os, fw, hw, tpmInfo,
                 claim.getClientVersion());
         dvReport.setPaccorOutputString(claim.getPaccorOutput());
 
@@ -602,214 +595,25 @@ public class IdentityClaimHandler extends AbstractRequestHandler {
         return true;
     }
 
-    /**
-     * Performs the first step of the TPM 2.0 identity claim process. Takes an ek, ak, and secret
-     * and then generates a seed that is used to generate AES and HMAC keys. Parses the ak name.
-     * Encrypts the seed with the public ek. Uses the AES key to encrypt the secret. Uses the HMAC
-     * key to generate an HMAC to cover the encrypted secret and the ak name. The output is an
-     * encrypted blob that acts as the first part of a challenge-response authentication mechanism
-     * to validate an identity claim.
-     *
-     * Equivalent to calling tpm2_makecredential using tpm2_tools.
-     *
-     * @param ek endorsement key in the identity claim
-     * @param ak attestation key in the identity claim
-     * @param secret a nonce
-     * @return the encrypted blob forming the identity claim challenge
-     */
-    protected ByteString tpm20MakeCredential(final RSAPublicKey ek, final RSAPublicKey ak,
-                                             final byte[] secret) {
-        // check size of the secret
-        if (secret.length > MAX_SECRET_LENGTH) {
-            throw new IllegalArgumentException("Secret must be " + MAX_SECRET_LENGTH
-                    + " bytes or smaller.");
-        }
 
-        // generate a random 32 byte seed
-        byte[] seed = generateRandomBytes(SEED_LENGTH);
 
-        try {
-            // encrypt seed with pubEk
-            Cipher asymCipher = Cipher.getInstance("RSA/ECB/OAEPWithSHA-256AndMGF1Padding");
-            OAEPParameterSpec oaepSpec = new OAEPParameterSpec("SHA-256", "MGF1",
-                    MGF1ParameterSpec.SHA256, new PSource.PSpecified("IDENTITY\0".getBytes()));
-            asymCipher.init(Cipher.PUBLIC_KEY, ek, oaepSpec);
-            asymCipher.update(seed);
-            byte[] encSeed = asymCipher.doFinal();
+    private List<PlatformCredential> getPlatformCredentials(final CertificateRepository certificateRepository,
+                                                            final EndorsementCredential ec) {
+        List<PlatformCredential> credentials = null;
 
-            // generate ak name from akMod
-            byte[] akModTemp = ak.getModulus().toByteArray();
-            byte[] akMod = new byte[RSA_MODULUS_LENGTH];
-            int startpos = 0;
-            // BigIntegers are signed, so a modulus that has a first bit of 1
-            // will be padded with a zero byte that must be removed
-            if (akModTemp[0] == 0x00) {
-                startpos = 1;
+        if (ec == null) {
+            log.warn("Cannot look for platform credential(s).  Endorsement credential was null.");
+        } else {
+            log.debug("Searching for platform credential(s) based on holder serial number: "
+                    + ec.getSerialNumber());
+            credentials = certificateRepository.getByHolderSerialNumber(ec.getSerialNumber());
+            if (credentials == null || credentials.isEmpty()) {
+                log.warn("No platform credential(s) found");
+            } else {
+                log.debug("Platform Credential(s) found: " + credentials.size());
             }
-            System.arraycopy(akModTemp, startpos, akMod, 0, RSA_MODULUS_LENGTH);
-            byte[] akName = generateAkName(akMod);
-
-            // generate AES and HMAC keys from seed
-            byte[] aesKey = cryptKDFa(seed, "STORAGE", akName, AES_KEY_LENGTH_BYTES);
-            byte[] hmacKey = cryptKDFa(seed, "INTEGRITY", null, HMAC_KEY_LENGTH_BYTES);
-
-            // use two bytes to add a size prefix on secret
-            ByteBuffer b;
-            b = ByteBuffer.allocate(2);
-            b.putShort((short) (secret.length));
-            byte[] secretLength = b.array();
-            byte[] secretBytes = new byte[secret.length + 2];
-            System.arraycopy(secretLength, 0, secretBytes, 0, 2);
-            System.arraycopy(secret, 0, secretBytes, 2, secret.length);
-
-            // encrypt size prefix + secret with AES key
-            Cipher symCipher = Cipher.getInstance("AES/CFB/NoPadding");
-            byte[] defaultIv = HexUtils.hexStringToByteArray("00000000000000000000000000000000");
-            IvParameterSpec ivSpec = new IvParameterSpec(defaultIv);
-            symCipher.init(Cipher.ENCRYPT_MODE, new SecretKeySpec(aesKey, "AES"), ivSpec);
-            byte[] encSecret = symCipher.doFinal(secretBytes);
-
-            // generate HMAC covering encrypted secret and ak name
-            Mac integrityHmac = Mac.getInstance("HmacSHA256");
-            SecretKeySpec integrityKey = new SecretKeySpec(hmacKey, integrityHmac.getAlgorithm());
-            integrityHmac.init(integrityKey);
-            byte[] message = new byte[encSecret.length + akName.length];
-            System.arraycopy(encSecret, 0, message, 0, encSecret.length);
-            System.arraycopy(akName, 0, message, encSecret.length, akName.length);
-            integrityHmac.update(message);
-            byte[] integrity = integrityHmac.doFinal();
-            b = ByteBuffer.allocate(2);
-            b.putShort((short) (HMAC_SIZE_LENGTH_BYTES + HMAC_KEY_LENGTH_BYTES + encSecret.length));
-            byte[] topSize = b.array();
-
-            // return ordered blob of assembled credentials
-            byte[] bytesToReturn = assembleCredential(topSize, integrity, encSecret, encSeed);
-            return ByteString.copyFrom(bytesToReturn);
-
-        } catch (BadPaddingException | IllegalBlockSizeException | NoSuchAlgorithmException
-                | InvalidKeyException | InvalidAlgorithmParameterException
-                | NoSuchPaddingException e) {
-            throw new IdentityProcessingException(
-                    "Encountered error while making the identity claim challenge: "
-                            + e.getMessage(), e);
         }
-    }
 
-    @SuppressWarnings("magicnumber")
-    private byte[] assembleCredential(final byte[] topSize, final byte[] integrityHmac,
-                                      final byte[] encryptedSecret,
-                                      final byte[] encryptedSeed) {
-        /*
-         * Credential structure breakdown with endianness:
-         * 0-1 topSize (2), LE
-         * 2-3 hashsize (2), BE always 0x0020
-         * 4-35 integrity HMac (32)
-         * 36-133 (98 = 32*3 +2) of zeros, copy over from encSecret starting at [36]
-         * 134-135 (2) LE size, always 0x0001
-         * 136-391 (256) copy over with encSeed
-         * */
-        byte[] credentialBlob = new byte[TPM2_CREDENTIAL_BLOB_SIZE];
-        credentialBlob[0] = topSize[1];
-        credentialBlob[1] = topSize[0];
-        credentialBlob[2] = 0x00;
-        credentialBlob[3] = 0x20;
-        System.arraycopy(integrityHmac, 0, credentialBlob, 4, 32);
-        for (int i = 0; i < 98; i++) {
-            credentialBlob[36 + i] = 0x00;
-        }
-        System.arraycopy(encryptedSecret, 0, credentialBlob, 36, encryptedSecret.length);
-        credentialBlob[134] = 0x00;
-        credentialBlob[135] = 0x01;
-        System.arraycopy(encryptedSeed, 0, credentialBlob, 136, 256);
-        // return the result
-        return credentialBlob;
-    }
-
-    /**
-     * Determines the AK name from the AK Modulus.
-     * @param akModulus modulus of an attestation key
-     * @return the ak name byte array
-     * @throws NoSuchAlgorithmException Underlying SHA256 method used a bad algorithm
-     */
-    byte[] generateAkName(final byte[] akModulus) throws NoSuchAlgorithmException {
-        byte[] namePrefix = HexUtils.hexStringToByteArray(AK_NAME_PREFIX);
-        byte[] hashPrefix = HexUtils.hexStringToByteArray(AK_NAME_HASH_PREFIX);
-        byte[] toHash = new byte[hashPrefix.length + akModulus.length];
-        System.arraycopy(hashPrefix, 0, toHash, 0, hashPrefix.length);
-        System.arraycopy(akModulus, 0, toHash, hashPrefix.length, akModulus.length);
-        byte[] nameHash = sha256hash(toHash);
-        byte[] toReturn = new byte[namePrefix.length + nameHash.length];
-        System.arraycopy(namePrefix, 0, toReturn, 0, namePrefix.length);
-        System.arraycopy(nameHash, 0, toReturn, namePrefix.length, nameHash.length);
-        return toReturn;
-    }
-
-    /**
-     * This replicates the TPM 2.0 CryptKDFa function to an extent. It will only work for generation
-     * that uses SHA-256, and will only generate values of 32 B or less. Counters above zero and
-     * multiple contexts are not supported in this implementation. This should work for all uses of
-     * the KDF for TPM2_MakeCredential.
-     *
-     * @param seed random value used to generate the key
-     * @param label first portion of message used to generate key
-     * @param context second portion of message used to generate key
-     * @param sizeInBytes size of key to generate in bytes
-     * @return the derived key
-     * @throws NoSuchAlgorithmException Wrong crypto algorithm selected
-     * @throws InvalidKeyException Invalid key used
-     */
-    @SuppressWarnings("magicnumber")
-    private byte[] cryptKDFa(final byte[] seed, final String label, final byte[] context,
-                             final int sizeInBytes)
-            throws NoSuchAlgorithmException, InvalidKeyException {
-        ByteBuffer b = ByteBuffer.allocate(4);
-        b.putInt(1);
-        byte[] counter = b.array();
-        // get the label
-        String labelWithEnding = label;
-        if (label.charAt(label.length() - 1) != "\0".charAt(0)) {
-            labelWithEnding = label + "\0";
-        }
-        byte[] labelBytes = labelWithEnding.getBytes();
-        b = ByteBuffer.allocate(4);
-        b.putInt(sizeInBytes * 8);
-        byte[] desiredSizeInBits = b.array();
-        int sizeOfMessage = 8 + labelBytes.length;
-        if (context != null) {
-            sizeOfMessage += context.length;
-        }
-        byte[] message = new byte[sizeOfMessage];
-        int marker = 0;
-        System.arraycopy(counter, 0, message, marker, 4);
-        marker += 4;
-        System.arraycopy(labelBytes, 0, message, marker, labelBytes.length);
-        marker += labelBytes.length;
-        if (context != null) {
-            System.arraycopy(context, 0, message, marker, context.length);
-            marker += context.length;
-        }
-        System.arraycopy(desiredSizeInBits, 0, message, marker, 4);
-        Mac hmac;
-        byte[] toReturn = new byte[sizeInBytes];
-
-        hmac = Mac.getInstance("HmacSHA256");
-        SecretKeySpec hmacKey = new SecretKeySpec(seed, hmac.getAlgorithm());
-        hmac.init(hmacKey);
-        hmac.update(message);
-        byte[] hmacResult = hmac.doFinal();
-        System.arraycopy(hmacResult, 0, toReturn, 0, sizeInBytes);
-        return toReturn;
-    }
-
-    /**
-     * Computes the sha256 hash of the given blob.
-     * @param blob byte array to take the hash of
-     * @return sha256 hash of blob
-     * @throws NoSuchAlgorithmException improper algorithm selected
-     */
-    private byte[] sha256hash(final byte[] blob) throws NoSuchAlgorithmException {
-        MessageDigest md = MessageDigest.getInstance("SHA-256");
-        md.update(blob);
-        return md.digest();
+        return credentials;
     }
 }
