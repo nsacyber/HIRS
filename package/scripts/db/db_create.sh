@@ -9,7 +9,6 @@
 
 LOG_FILE=$1
 UNATTENDED=$2
-# LOG_FILE="/var/log/hirs/hirs_aca_install_$(date +%Y-%m-%d).log"
 # Capture location of the script to allow from invocation from any location
 SCRIPT_DIR=$( dirname -- "$( readlink -f -- "$0"; )"; )
 SPRING_PROP_FILE="/etc/hirs/aca/application.properties"
@@ -46,7 +45,7 @@ check_mysql_root_pwd () {
 	 echo "Using randomly generated password for the DB admin" | tee -a "$LOG_FILE"
 	 DB_ADMIN_PWD=$(head -c 64 /dev/urandom | md5sum | tr -dc 'a-zA-Z0-9')
 	 echo "DB Admin will be set to $DB_ADMIN_PWD , please make note for next mysql use."
-     # Check i UNATTENDED flag set m if not then prompt user for permission ot store mysql root password
+     # Check UNATTENDED flag set m if not then prompt user for permission ot store mysql root password
 	 if [ -z $UNATTENDED ]; then
 	   read -p "Do you wish to save this password to the aca.properties file? " confirm
 	   if [[ $confirm == [yY] || $confirm == [yY][eE][sS] ]]; then

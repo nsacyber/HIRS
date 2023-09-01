@@ -1,14 +1,11 @@
 #!/bin/bash
 # Capture location of the script to allow from invocation from any location
 SCRIPT_DIR=$( dirname -- "$( readlink -f -- "$0"; )"; )
-#SPRING_PROP_FILE='../../../HIRS_AttestationCAPortal/src/main/resources/application.properties'
 HIRS_CONF_DIR=/etc/hirs/aca
 LOG_FILE_NAME="hirs_aca_install_"$(date +%Y-%m-%d).log 
 LOG_DIR="/var/log/hirs/"
 LOG_FILE="$LOG_DIR$LOG_FILE_NAME"
 HIRS_PROP_DIR="/opt/hirs/default-properties"
-#COMP_JSON='../../../HIRS_AttestationCA/src/main/resources/component-class.json'
-#VENDOR_TABLE='../../../HIRS_AttestationCA/src/main/resources/vendor-table.json'
 
 help () {
   echo "  Setup script for the HIRS ACA"
@@ -62,12 +59,6 @@ mkdir -p $HIRS_CONF_DIR $LOG_DIR $HIRS_PROP_DIR
 
 echo "ACA setup log file is $LOG_FILE"
 
-#if [ -z $HIRS_MYSQL_ROOT_PWD ]; then 
-#    echo "HIRS_MYSQL_ROOT_PWD is not set, using locally generated mysql root password"
-#  else 
-#    echo "HIRS_MYSQL_ROOT_PWD is set, using previously set mysql root password"
-#fi
-
 if [ "$EUID" -ne 0 ]
       then echo "This script requires root.  Please run as root"
       exit 1
@@ -87,13 +78,6 @@ if [ -z $HIRS_PKI_PWD ]; then
    PKI_PASS=$HIRS_PKI_PWD
    echo "Using system supplied password for the PKI key password" | tee -a "$LOG_FILE"
 fi
-
-# Copy HIRS configuration and data files if not a package install
-#if [ -f $SPRING_PROP_FILE ]; then
-#   cp -n $SPRING_PROP_FILE $HIRS_CONF_DIR/.
-#   cp -n $COMP_JSON $HIRS_PROP_DIR/.
-#   cp -n $VENDOR_TABLE $HIRS_PROP_DIR/.
-#fi
 
 if [ -z "${ARG_SKIP_PKI}" ]; then
    sh ../pki/pki_setup.sh $LOG_FILE $PKI_PASS $ARG_UNATTEND

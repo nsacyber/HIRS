@@ -68,7 +68,8 @@ keyStore="$CLIENT_DB_P12" "
 WEB_TLS_PARAMS="--server.ssl.key-store-password=$hirs_pki_password \
 --server.ssl.trust-store-password=$hirs_pki_password"
 
-echo "--args=\"$CONNECTOR_PARAMS $WEB_TLS_PARAMS\""
+# uncomment to show spring boot and hibernate properties used as gradle argumanets
+#echo "--args=\"$CONNECTOR_PARAMS $WEB_TLS_PARAMS\""
 
 if [ "$USE_WAR" == "war" ]; then
     echo "Booting the ACA from a $USE_WAR file..."
