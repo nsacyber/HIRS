@@ -3,28 +3,26 @@ package hirs.attestationca.persist.entity;
 import jakarta.persistence.Column;
 import jakarta.persistence.MappedSuperclass;
 import lombok.AllArgsConstructor;
-import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
+import lombok.NonNull;
 
 /**
  * An abstract archivable entity that can be given a user-defined name and description.
  */
 @Getter
 @Setter
-@EqualsAndHashCode(callSuper = false)
 @AllArgsConstructor
 @MappedSuperclass
 public abstract class UserDefinedEntity extends ArchivableEntity {
 
     @Column(nullable = false, unique = true)
-    private String name;
+    @NonNull private String name;
 
     @ToString.Exclude
-    @EqualsAndHashCode.Exclude
     @Column(nullable = false, unique = false)
-    private String description = "";
+    @NonNull private String description = "";
 
     /**
      * Default empty constructor is required for Hibernate. It is protected to
@@ -41,6 +39,41 @@ public abstract class UserDefinedEntity extends ArchivableEntity {
      */
     public UserDefinedEntity(final String name) {
         this(name, "");
+    }
+
+    /**
+     * Returns a boolean if other is equal to this. <code>UserDefinedEntity</code>s are
+     * identified by their name, so this returns true if <code>other</code> is
+     * an instance of <code>UserDefinedEntity</code> and its name is the same as this
+     * <code>UserDefinedEntity</code>. Otherwise this returns false.
+     *
+     * @param other
+     *            other object to test for equals
+     * @return true if other is <code>Baseline</code> and has same name
+     */
+    @Override
+    public boolean equals(final Object other) {
+        if (this == other) {
+            return true;
+        }
+        if (!(other instanceof UserDefinedEntity)) {
+            return false;
+        }
+
+        final UserDefinedEntity entity = (UserDefinedEntity) other;
+        return this.getName().equals(entity.getName());
+    }
+
+    /**
+     * Returns the hash code for this <code>UserDefinedEntity</code>.
+     * <code>UserDefinedEntity</code>s are identified by their name, so the returned hash
+     * is the hash of the name.
+     *
+     * @return hash
+     */
+    @Override
+    public int hashCode() {
+        return name.hashCode();
     }
 }
 

@@ -45,6 +45,7 @@ dependencies {
     testImplementation 'org.junit.jupiter:junit-jupiter:5.9.3'
     testImplementation 'org.junit.platform:junit-platform-launcher:1.9.3'
     testImplementation 'org.hamcrest:hamcrest:2.2'
+    testImplementation project(path: ':HIRS_AttestationCA')
 
     compileOnly libs.lombok
     annotationProcessor libs.lombok
