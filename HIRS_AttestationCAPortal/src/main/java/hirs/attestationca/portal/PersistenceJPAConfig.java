@@ -58,7 +58,7 @@ import java.util.Properties;
         @PropertySource(value = "file:/etc/hirs/aca/application.properties",
                 ignoreResourceNotFound = true)
 })
-@ComponentScan({"hirs.attestationca.portal", "hirs.attestationca.portal.page.controllers", "hirs.attestationca.persist.entity", "hirs.attestationca.persist.service"})
+@ComponentScan({"hirs.attestationca.portal", "hirs.attestationca.portal.page.controllers", "hirs.attestationca.persist", "hirs.attestationca.persist.entity", "hirs.attestationca.persist.service"})
 @EnableJpaRepositories(basePackages = "hirs.attestationca.persist.entity.manager")
 public class PersistenceJPAConfig implements WebMvcConfigurer {
 
