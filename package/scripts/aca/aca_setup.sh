@@ -23,7 +23,7 @@ help () {
 
 # Process parameters Argument handling 
 POSITIONAL_ARGS=()
-
+ORIGINAL_ARGS=("$@")
 while [[ $# -gt 0 ]]; do
   case $1 in
     -sd|--skip-db)
@@ -62,18 +62,19 @@ mkdir -p $HIRS_CONF_DIR $LOG_DIR $HIRS_PROP_DIR
 
 echo "ACA setup log file is $LOG_FILE"
 
-if [ -z $HIRS_MYSQL_ROOT_PWD ]; then 
-    echo "HIRS_MYSQL_ROOT_PWD is not set, using locally generated mysql root password"
-  else 
-    echo "HIRS_MYSQL_ROOT_PWD is set, using previously set mysql root password"
-fi
+#if [ -z $HIRS_MYSQL_ROOT_PWD ]; then 
+#    echo "HIRS_MYSQL_ROOT_PWD is not set, using locally generated mysql root password"
+#  else 
+#    echo "HIRS_MYSQL_ROOT_PWD is set, using previously set mysql root password"
+#fi
 
 if [ "$EUID" -ne 0 ]
       then echo "This script requires root.  Please run as root"
       exit 1
 fi
 
-echo "HIRS ACA Setup initiated on $(date +%Y-%m-%d)" > "$LOG_FILE"
+touch "$LOG_FILE"
+echo "HIRS ACA Setup initiated on $(date +%Y-%m-%d)" >> "$LOG_FILE"
 
 pushd $SCRIPT_DIR &>/dev/null
 
@@ -103,7 +104,7 @@ if [ -z "${ARG_SKIP_PKI}" ]; then
       exit 1
    fi
    else
-      echo "Warning: Database setup not run due to command line argument: $@" | tee -a "$LOG_FILE"
+      echo "ACA PKI setup not run due to command line argument: $ORIGINAL_ARGS" | tee -a "$LOG_FILE"
 fi
 
 if [ -z "${ARG_SKIP_DB}" ]; then
@@ -115,7 +116,7 @@ if [ -z "${ARG_SKIP_DB}" ]; then
     exit 1
    fi
    else
-      echo "Warning: Database setup not run due to command line argument: $@" | tee -a "$LOG_FILE"
+      echo "ACA Database setup not run due to command line argument: $ORIGINAL_ARGS" | tee -a "$LOG_FILE"
 fi
 
 echo "ACA setup complete" | tee -a "$LOG_FILE"
