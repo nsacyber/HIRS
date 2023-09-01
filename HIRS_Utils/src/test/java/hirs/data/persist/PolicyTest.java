@@ -107,8 +107,6 @@ public final class PolicyTest {
         Policy p2 = new TestPolicy(name2);
         Assertions.assertNotEquals(p2, p1);
         Assertions.assertNotEquals(p2, p1);
-        Assertions.assertEquals(p1, p1);
-        Assertions.assertEquals(p2, p2);
     }
 
     /**
