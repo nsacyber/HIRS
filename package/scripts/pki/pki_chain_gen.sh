@@ -106,9 +106,9 @@ fi
 add_to_stores () {
    CERT_PATH=$1
    ALIAS=${CERT_PATH#*/}    # Use filename without path as an alias
-   echo "Addding $ALIAS to the $TRUSTSTORE and $KEYSTORE" | tee -a "$LOG_FILE" 
+   echo "Adding $ALIAS to the $TRUSTSTORE and $KEYSTORE" | tee -a "$LOG_FILE" 
    # Add the cert and key to the key store. make a p12 file to import into te keystore
-   openssl pkcs12 -export -in "$CERT_PATH".pem -inkey "$CERT_PATH".key -out tmpkey.p12 -passin pass:"$PASS" -aes256 -passout pass:$PASS  >> "$LOG_FILE" 2>&1
+   openssl pkcs12 -export -in "$CERT_PATH".pem -inkey "$CERT_PATH".key -out tmpkey.p12 -passin pass:"$PASS" -aes256 -macalg SHA256 -keypbe AES-256-CBC -certpbe AES-256-CBC -passout pass:$PASS  >> "$LOG_FILE" 2>&1
    # Use the p12 file to import into a java keystore via keytool
    keytool -importkeystore -srckeystore tmpkey.p12 -destkeystore $KEYSTORE -srcstoretype pkcs12 -srcstorepass $PASS -deststoretype jks -deststorepass $PASS -noprompt -alias 1 -destalias "$ALIAS" >> "$LOG_FILE" 2>&1 
    # Import the cert into a java trust store via keytool
@@ -172,7 +172,7 @@ create_cert () {
    # remove csr file
    rm -f "$CERT_PATH".csr
    # Add the cert and key to the key store. make a p12 file to import into te keystore
-   openssl pkcs12 -export -in "$CERT_PATH".pem -inkey "$CERT_PATH".key -out tmpkey.p12 -passin pass:$PASS -aes256 -passout pass:$PASS  >> "$LOG_FILE" 2>&1
+   openssl pkcs12 -export -in "$CERT_PATH".pem -inkey "$CERT_PATH".key -out tmpkey.p12 -passin pass:$PASS -aes256 -macalg SHA256 -keypbe AES-256-CBC -certpbe AES-256-CBC -passout pass:$PASS  >> "$LOG_FILE" 2>&1
    # Use the p12 file to import into a java keystore via keytool
    keytool -importkeystore -srckeystore tmpkey.p12 -destkeystore $KEYSTORE -srcstoretype pkcs12 -srcstorepass $PASS -deststoretype jks -deststorepass $PASS -noprompt -alias 1 -destalias "$ALIAS" >> "$LOG_FILE" 2>&1 
    # Import the cert into a java trust store via keytool
