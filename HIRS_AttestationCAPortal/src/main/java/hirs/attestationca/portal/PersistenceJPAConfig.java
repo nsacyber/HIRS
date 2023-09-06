@@ -1,7 +1,5 @@
 package hirs.attestationca.portal;
 
-import hirs.attestationca.persist.service.SupplyChainValidationService;
-import hirs.attestationca.persist.service.SupplyChainValidationServiceImpl;
 import jakarta.annotation.PostConstruct;
 import lombok.extern.log4j.Log4j2;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
@@ -28,7 +26,6 @@ import org.springframework.web.servlet.config.annotation.DefaultServletHandlerCo
 import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
-//import javax.sql.DataSource;
 import javax.sql.DataSource;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -89,11 +86,6 @@ public class PersistenceJPAConfig implements WebMvcConfigurer {
 
         return entityManagerBean;
     }
-
-//    @Bean
-//    public SupplyChainValidationService supplyChainValidationService() {
-//        return new SupplyChainValidationServiceImpl();
-//    }
 
     @Bean
     public DataSource dataSource() {
