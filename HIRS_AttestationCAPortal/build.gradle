@@ -52,7 +52,7 @@ dependencies {
     implementation 'org.apache.tomcat.embed:tomcat-embed-jasper:10.1.5'
 
     compileOnly 'org.projectlombok:lombok'
-    runtimeOnly 'org.mariadb.jdbc:mariadb-java-client'
+    implementation 'org.mariadb.jdbc:mariadb-java-client:3.1.4'
     annotationProcessor 'org.projectlombok:lombok'
     providedRuntime 'org.springframework.boot:spring-boot-starter-tomcat'
 
@@ -149,7 +149,7 @@ ospackage {
     postInstall 'cp /tmp/aca/default-properties/* /opt/hirs/default-properties/.'
     postInstall 'rm -rf /tmp/aca/'
  //  postInstall file('../package/scripts/install_tomcat.sh')
-     
+
     postInstall 'sh /opt/tomcat/bin/catalina.sh start'
 
     // Post Uninstall
@@ -165,4 +165,5 @@ ospackage {
     buildDeb {
         arch = 'amd64'
     }
+
 }

@@ -1,1 +1,0 @@
-cat /etc/redhat-release | grep -Eo "release [0-9]" | tail -c 2
