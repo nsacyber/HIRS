@@ -6,7 +6,6 @@
 #
 #####################################################################################
 
-USE_WAR=$1
 CONFIG_FILE="/etc/hirs/aca/application.properties"
 ALG=RSA
 RSA_PATH=rsa_3k_sha384_certs
@@ -20,6 +19,51 @@ if [ "$EUID" -ne 0 ]
      then echo "This script requires root.  Please run as root" 
      exit 1
 fi
+
+help () {
+  echo "  Setup script for the HIRS ACA"
+  echo "  Syntax: sh aca_setup.sh [-u|h|sb|sp|--skip-db|--skip-pki]"
+  echo "  options:"
+  echo "     -p  | --path   Path to the HIRS_AttestationCAPortal.war file"
+  echo "     -h  | --help   Print this Help."
+  echo
+}
+
+# Process parameters Argument handling 
+POSITIONAL_ARGS=()
+ORIGINAL_ARGS=("$@")
+while [[ $# -gt 0 ]]; do
+  case $1 in
+    -p|--path)
+      USE_WAR=YES
+      shift # past argument
+      WAR_PATH=$@
+      shift # past parameter
+      ;;
+    -h|--help)
+      help     
+      exit 0
+      shift # past argument
+      ;; 
+    -*|--*)
+      echo "aca_setup.sh: Unknown option $1"
+      help
+      exit 1
+      ;;
+    *)
+     POSITIONAL_ARGS+=("$1") # save positional arg
+     # shift # past argument
+     break
+      ;;
+  esac
+done
+
+if [ -z "${WAR_PATH}" ]; then
+  WAR_PATH="HIRS_AttestationCAPortal/build/libs/HIRS_AttestationCAPortal.war"
+  NOT_USING_RPM=true
+fi 
+
+set -- "${POSITIONAL_ARGS[@]}" # restore positional parameters
 
 source $SCRIPT_DIR/../db/start_mysqld.sh
 
@@ -43,9 +87,11 @@ if [ ! -d "$CERT_PATH" ]; then
      exit 1;
 fi
 
-if [ ! -f "$GRADLE_WRAPPER" ]; then
+if [ $NOT_USING_RPM = true ]; then
+  if [ ! -f "$GRADLE_WRAPPER" ]; then
     echo "This script needs to be run from the HIRS top level project directory. Exiting."
     exit 1;
+  fi
 fi
 
 echo "Starting HIRS ACA on https://localhost:8443/HIRS_AttestationCAPortal/portal/index"
@@ -71,10 +117,11 @@ WEB_TLS_PARAMS="--server.ssl.key-store-password=$hirs_pki_password \
 # uncomment to show spring boot and hibernate properties used as gradle argumanets
 #echo "--args=\"$CONNECTOR_PARAMS $WEB_TLS_PARAMS\""
 
-if [ "$USE_WAR" == "war" ]; then
-    echo "Booting the ACA from a $USE_WAR file..."
-    java -jar HIRS_AttestationCAPortal/build/libs/HIRS_AttestationCAPortal.war $CONNECTOR_PARAMS$WEB_TLS_PARAMS
+if [ -z "$USE_WAR" ]; then
+  echo "Booting the ACA from local build..."
+  ./gradlew bootRun --args="$CONNECTOR_PARAMS$WEB_TLS_PARAMS" 
 else 
-   echo "Booting the ACA from local build..."
- ./gradlew bootRun --args="$CONNECTOR_PARAMS$WEB_TLS_PARAMS"
+  echo "Booting the ACA from a $USE_WAR file..."
+  java -jar $WAR_PATH $CONNECTOR_PARAMS$WEB_TLS_PARAMS &
+  # Note add check for ACA to get started
 fi

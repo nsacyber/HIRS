@@ -89,7 +89,7 @@ check_mysql () {
        echo "mariadb not running , attempting to restart"
        systemctl start mariadb
     fi
-  fi 
+  fi
 
  # Wait for mysql to start before continuing.
 

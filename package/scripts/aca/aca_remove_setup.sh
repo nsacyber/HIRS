@@ -28,4 +28,6 @@ popd
 echo "Removing certificates and config files..."
 rm -rf /etc/hirs
 
+# Note add check for ACA running and stop the process if it is 
+
 echo "ACA setup removal complete."
