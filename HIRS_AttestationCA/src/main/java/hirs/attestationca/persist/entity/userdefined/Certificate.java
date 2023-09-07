@@ -415,12 +415,22 @@ public abstract class Certificate extends ArchivableEntity {
                     case CertificateVariables.RSA512_256_OID:
                         this.signatureAlgorithm = CertificateVariables.RSA512_256_STRING;
                         break;
-                    case CertificateVariables.ECDSA_OID:
-                        this.signatureAlgorithm = CertificateVariables.ECDSA_STRING;
+                    case CertificateVariables.ECDSA_SHA1_OID:
+                        this.signatureAlgorithm = CertificateVariables.ECDSA_SHA1_STRING;
                         break;
                     case CertificateVariables.ECDSA_SHA224_OID:
                         this.signatureAlgorithm = CertificateVariables.ECDSA_SHA224_STRING;
                         break;
+                    case CertificateVariables.ECDSA_SHA256_OID:
+                        this.signatureAlgorithm = CertificateVariables.ECDSA_SHA256_STRING;
+                        break;
+                    case CertificateVariables.ECDSA_SHA384_OID:
+                        this.signatureAlgorithm = CertificateVariables.ECDSA_SHA384_STRING;
+                        break;
+                    case CertificateVariables.ECDSA_SHA512_OID:
+                        this.signatureAlgorithm = CertificateVariables.ECDSA_SHA512_STRING;
+                        break;
+
                     default:
                         break;
                 }
