@@ -803,7 +803,7 @@ public class CertificatePageController extends PageController<NoPageParams> {
                                 storeCertificate(
                                         certificateType,
                                         file.getOriginalFilename(),
-                                        messages, (Certificate)i.next());
+                                        messages, new CertificateAuthorityCredential(((java.security.cert.Certificate)i.next()).getEncoded()));
                             }
 
                             // stop the main thread from saving/storing
