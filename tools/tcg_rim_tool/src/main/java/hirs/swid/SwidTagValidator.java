@@ -88,6 +88,22 @@ public class SwidTagValidator {
         this.trustStoreFile = trustStoreFile;
     }
 
+    /**
+     * Setter for the RIM to be validated.  The ReferenceManifest object is converted into a
+     * Document for processing.
+     *
+     * @param rim ReferenceManifest object
+     */
+    public void setRim(final ReferenceManifest rim) {
+        try {
+            Document doc = validateSwidtagSchema(removeXMLWhitespace(new StreamSource(
+                    new ByteArrayInputStream(rim.getRimBytes()))));
+            this.rim = doc;
+        } catch (IOException e) {
+            log.error("Error while unmarshalling rim bytes: " + e.getMessage());
+        }
+    }
+
     public SwidTagValidator() {
         try {
             JAXBContext jaxbContext = JAXBContext.newInstance(SwidTagConstants.SCHEMA_PACKAGE);
