@@ -28,6 +28,10 @@ popd
 echo "Removing certificates and config files..."
 rm -rf /etc/hirs
 
-# Note add check for ACA running and stop the process if it is 
-
+# Remove crontab and current ACA process
+echo "Removing the ACA crontab"
+sed -i '/aca_bootRun.sh/d' /etc/crontab
+echo "Shutting down the aca..."
+#pkill -f hirs/aca >/dev/null 2>&1;
+ps axf | grep HIRS_AttestationCAPortal.war | grep -v grep | awk '{print "kill " $1}' | sh  >/dev/null 2>&1
 echo "ACA setup removal complete."

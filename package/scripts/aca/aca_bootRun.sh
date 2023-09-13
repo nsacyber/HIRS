@@ -13,6 +13,7 @@ ECC_PATH=ecc_512_sha384_certs
 SCRIPT_DIR=$( dirname -- "$( readlink -f -- "$0"; )"; )
 LOG_FILE=/dev/null
 GRADLE_WRAPPER="./gradlew"
+DEPLOYED_WAR=false
 
 # Check for sudo or root user 
 if [ "$EUID" -ne 0 ]
@@ -25,7 +26,8 @@ help () {
   echo "  Syntax: sh aca_setup.sh [-u|h|sb|sp|--skip-db|--skip-pki]"
   echo "  options:"
   echo "     -p  | --path   Path to the HIRS_AttestationCAPortal.war file"
-  echo "     -h  | --help   Print this Help."
+  echo "     -w  | --war    Use deployed war file"
+  echo "     -h  | --help   Print this help"
   echo
 }
 
@@ -38,7 +40,14 @@ while [[ $# -gt 0 ]]; do
       USE_WAR=YES
       shift # past argument
       WAR_PATH=$@
+      DEPLOYED_WAR=true
       shift # past parameter
+      ;;
+    -w|--war)
+      USE_WAR=YES
+      shift # past argument
+      WAR_PATH="/opt/hirs/aca/HIRS_AttestationCAPortal.war"
+      DEPLOYED_WAR=true
       ;;
     -h|--help)
       help     
@@ -60,7 +69,6 @@ done
 
 if [ -z "${WAR_PATH}" ]; then
   WAR_PATH="HIRS_AttestationCAPortal/build/libs/HIRS_AttestationCAPortal.war"
-  NOT_USING_RPM=true
 fi 
 
 set -- "${POSITIONAL_ARGS[@]}" # restore positional parameters
@@ -87,7 +95,7 @@ if [ ! -d "$CERT_PATH" ]; then
      exit 1;
 fi
 
-if [ $NOT_USING_RPM = true ]; then
+if [ $DEPLOYED_WAR = false ]; then
   if [ ! -f "$GRADLE_WRAPPER" ]; then
     echo "This script needs to be run from the HIRS top level project directory. Exiting."
     exit 1;
@@ -123,5 +131,4 @@ if [ -z "$USE_WAR" ]; then
 else 
   echo "Booting the ACA from a $USE_WAR file..."
   java -jar $WAR_PATH $CONNECTOR_PARAMS$WEB_TLS_PARAMS &
-  # Note add check for ACA to get started
 fi

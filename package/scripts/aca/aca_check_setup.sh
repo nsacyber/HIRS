@@ -43,11 +43,6 @@ if [ "$EUID" -ne 0 ]; then
       echo "This script requires root.  Please run as root"
       exit 1
 fi
-# Check install setup pki files
-if [ ! -d $CERT_PATH ]; then
-  echo "$CERT_PATH directory does not exist. Please run aca_setup.sh and try again."
-     exit 1;
-fi
 
 # Argument handling 
 
@@ -69,6 +64,26 @@ while [[ $# -gt 0 ]]; do
       ;;
   esac
 done
+
+# Check if aca setup was performed
+  # Check is RPM was installed via RPM package 
+  rpm -q --quiet HIRS_AttestationCA
+  if [ $? -eq 0 ]; then
+      echo "HIRS ACA was installed via rpm package on this device"
+      if [[ $(cat /etc/crontab | grep -c hirs/aca) > 0 ]]; then 
+           echo "  HIRS ACA is set to start on boot via crontab file"
+        else
+           echo "  HIRS ACA is NOT set to start on boot via crontab file"
+      fi
+    else
+      echo "HIRS ACA was NOT installed via rpm package on this device" 
+  fi
+   # Check install setup pki files
+  if [ ! -d $CERT_PATH ]; then
+      echo "  $CERT_PATH directory does not exist. Exiting..."
+      echo "Please run aca_setup.sh and try again"
+      exit 1;
+  fi
 
 source /etc/hirs/aca/aca.properties;
 source $SCRIPT_DIR/../db/start_mysqld.sh
@@ -127,16 +142,16 @@ check_mysql_setup () {
 }
 
 check_cert () {
-TRUST_STORE=$1
-CERT=$2
-RESULT=$(openssl verify -CAfile "$TRUST_STORE" $CERT)
-if [ $? -ne 0 ]; then
-   ALL_CHECKS_PASSED=false
-   ALL_CERTS_PASSED=false
-fi
-if [ ! -z "${ARG_VERBOSE}" ]; then
+  TRUST_STORE=$1
+  CERT=$2
+  RESULT=$(openssl verify -CAfile "$TRUST_STORE" $CERT)
+  if [ $? -ne 0 ]; then
+     ALL_CHECKS_PASSED=false
+     ALL_CERTS_PASSED=false
+  fi
+  if [ ! -z "${ARG_VERBOSE}" ]; then
     echo "     "$RESULT
-fi
+  fi
 }
 
 check_pki () {
@@ -250,7 +265,7 @@ check_fips () {
    echo "Checking FIPS mode on this device..."
    echo "   "$(sysctl -a | grep crypto.fips_enabled)
 }
-
+# Run Checks
 check_for_container
 check_pwds
 check_pki

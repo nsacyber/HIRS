@@ -16,7 +16,7 @@ RUN dnf -y install java-17-openjdk-devel -y
 #RUN tar -xzf apache-tomcat-10.1.1.tar.gz -C /opt/tomcat --strip-components=1
 
 # Install HIRS dependencies
-RUN dnf install -y mariadb-server rpmdevtools initscripts firewalld policycoreutils net-tools libtool cmake make git gcc-c++ && yum clean all
+RUN dnf install -y mariadb-server rpmdevtools initscripts firewalld policycoreutils net-tools libtool cmake make git gcc-c++ cronie  && yum clean all
 RUN dnf install -y wget openssl openssl-devel protobuf tpm2-tss-devel tpm2-abrmd  libcurl-devel libssh-devel && yum clean all
 
 # Install PACCOR for Device Info Gathering

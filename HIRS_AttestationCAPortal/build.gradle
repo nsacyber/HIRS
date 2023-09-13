@@ -86,8 +86,11 @@ ospackage {
 
     // Post Install
     postInstall 'sh /opt/hirs/aca/scripts/aca/aca_setup.sh -u'
-    postInstall 'sh /opt/hirs/aca/scripts/aca/aca_bootRun.sh -p /opt/hirs/aca/HIRS_AttestationCAPortal.war'
-// Note need to add service or chron job to start on system boot
+    // add chrontab to run ACA at boot
+    postInstall 'echo "@reboot sh /opt/hirs/aca/scripts/aca/aca_bootRun.sh -w" >> /etc/crontab'
+    // run ACA after install
+    postInstall 'sh /opt/hirs/aca/scripts/aca/aca_bootRun.sh -w'
+    postInstall 'chmod +x /opt/hirs/aca/scripts/aca/aca_bootRun.sh'
 
     // Uninstall
     preUninstall 'sh /opt/hirs/aca/scripts/aca/aca_remove_setup.sh'
