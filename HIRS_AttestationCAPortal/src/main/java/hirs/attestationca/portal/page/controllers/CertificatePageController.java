@@ -14,6 +14,7 @@ import hirs.attestationca.persist.entity.userdefined.certificate.CertificateAuth
 import hirs.attestationca.persist.entity.userdefined.certificate.EndorsementCredential;
 import hirs.attestationca.persist.entity.userdefined.certificate.IssuedAttestationCertificate;
 import hirs.attestationca.persist.entity.userdefined.certificate.PlatformCredential;
+import hirs.attestationca.persist.util.CredentialHelper;
 import hirs.attestationca.portal.datatables.DataTableInput;
 import hirs.attestationca.portal.datatables.DataTableResponse;
 import hirs.attestationca.portal.datatables.OrderedListQueryDataTableAdapter;
@@ -48,12 +49,18 @@ import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import org.springframework.web.servlet.view.RedirectView;
 
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.lang.ref.Reference;
 import java.net.URISyntaxException;
+import java.nio.charset.StandardCharsets;
 import java.security.cert.CertificateEncodingException;
+import java.security.cert.CertificateException;
+import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
+import java.util.Collection;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -787,6 +794,24 @@ public class CertificatePageController extends PageController<NoPageParams> {
                 case ENDORSEMENTCREDENTIAL:
                     return new EndorsementCredential(fileBytes);
                 case TRUSTCHAIN:
+                    if (CredentialHelper.isMultiPEM(new String(fileBytes, StandardCharsets.UTF_8))) {
+                        try (ByteArrayInputStream certInputStream = new ByteArrayInputStream(fileBytes)) {
+                            CertificateFactory cf = CertificateFactory.getInstance("X.509");
+                            Collection c = cf.generateCertificates(certInputStream);
+                            Iterator i = c.iterator();
+                            while (i.hasNext()) {
+                                storeCertificate(
+                                        certificateType,
+                                        file.getOriginalFilename(),
+                                        messages, new CertificateAuthorityCredential(((java.security.cert.Certificate)i.next()).getEncoded()));
+                            }
+
+                            // stop the main thread from saving/storing
+                            return null;
+                        } catch (CertificateException e) {
+                            throw new IOException("Cannot construct X509Certificate from the input stream", e);
+                        }
+                    }
                     return new CertificateAuthorityCredential(fileBytes);
                 default:
                     final String failMessage = String.format("Failed to parse uploaded file "

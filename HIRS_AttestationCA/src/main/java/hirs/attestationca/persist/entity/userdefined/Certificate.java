@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.common.base.Preconditions;
 import hirs.attestationca.persist.entity.ArchivableEntity;
 import hirs.attestationca.persist.entity.userdefined.certificate.CertificateVariables;
+import hirs.attestationca.persist.util.CredentialHelper;
 import hirs.utils.HexUtils;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -71,7 +72,6 @@ import java.util.Date;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.Objects;
-
 
 /**
  * This class enables the persistence of a single X509 certificates or X509 attribute certificate.
@@ -312,16 +312,12 @@ public abstract class Certificate extends ArchivableEntity {
 
         // check for and handle possible PEM base 64 encoding
         String possiblePem = new String(certificateBytes, StandardCharsets.UTF_8);
-        if (isPEM(possiblePem)) {
-            possiblePem = possiblePem.replace(CertificateVariables.PEM_HEADER, "");
-            possiblePem = possiblePem.replace(CertificateVariables.PEM_FOOTER, "");
-            possiblePem = possiblePem.replace(CertificateVariables.PEM_ATTRIBUTE_HEADER, "");
-            possiblePem = possiblePem.replace(CertificateVariables.PEM_ATTRIBUTE_FOOTER, "");
-            this.certificateBytes = Base64.decode(possiblePem);
+        if (CredentialHelper.isPEM(possiblePem)) {
+            this.certificateBytes = CredentialHelper.stripPemHeaderFooter(possiblePem);
         }
 
         AuthorityKeyIdentifier authKeyIdentifier;
-        this.certificateBytes = trimCertificate(this.certificateBytes);
+        this.certificateBytes = CredentialHelper.trimCertificate(this.certificateBytes);
 
         // Extract certificate data
         switch (getCertificateType()) {
@@ -345,8 +341,8 @@ public abstract class Certificate extends ArchivableEntity {
                 this.beginValidity = x509Certificate.getNotBefore();
                 this.endValidity = x509Certificate.getNotAfter();
                 this.holderSerialNumber = BigInteger.ZERO;
-                this.issuerSorted = parseSortDNs(this.issuer);
-                this.subjectSorted = parseSortDNs(this.subject);
+                this.issuerSorted = CredentialHelper.parseSortDNs(this.issuer);
+                this.subjectSorted = CredentialHelper.parseSortDNs(this.subject);
                 this.policyConstraints = x509Certificate
                         .getExtensionValue(POLICY_CONSTRAINTS);
                 authKeyIdentifier = AuthorityKeyIdentifier
@@ -438,7 +434,7 @@ public abstract class Certificate extends ArchivableEntity {
                 this.signature = attCert.getSignatureValue().getBytes();
                 this.issuer = getAttributeCertificateIssuerNames(
                         attCertInfo.getIssuer())[0].toString();
-                this.issuerSorted = parseSortDNs(this.issuer);
+                this.issuerSorted = CredentialHelper.parseSortDNs(this.issuer);
 
                 // Parse notBefore and notAfter dates
                 this.beginValidity = recoverDate(attCertInfo
@@ -466,53 +462,6 @@ public abstract class Certificate extends ArchivableEntity {
 
         this.certificateHash = Arrays.hashCode(this.certificateBytes);
         this.certAndTypeHash = Objects.hash(certificateHash, getClass().getSimpleName());
-    }
-
-    @SuppressWarnings("magicnumber")
-    private byte[] trimCertificate(final byte[] certificateBytes) {
-        int certificateStart = 0;
-        int certificateLength = 0;
-        ByteBuffer certificateByteBuffer = ByteBuffer.wrap(certificateBytes);
-
-        StringBuilder malformedCertStringBuilder = new StringBuilder(CertificateVariables.MALFORMED_CERT_MESSAGE);
-        while (certificateByteBuffer.hasRemaining()) {
-            // Check if there isn't an ASN.1 structure in the provided bytes
-            if (certificateByteBuffer.remaining() <= 2) {
-                throw new IllegalArgumentException(malformedCertStringBuilder
-                        .append(" No certificate length field could be found.").toString());
-            }
-
-            // Look for first ASN.1 Sequence marked by the two bytes (0x30) and (0x82)
-            // The check advances our position in the ByteBuffer by one byte
-            int currentPosition = certificateByteBuffer.position();
-            if (certificateByteBuffer.get() == (byte) 0x30
-                    && certificateByteBuffer.get(currentPosition + 1) == (byte) 0x82) {
-                // Check if we have anything more in the buffer than an ASN.1 Sequence header
-                if (certificateByteBuffer.remaining() <= 3) {
-                    throw new IllegalArgumentException(malformedCertStringBuilder
-                            .append(" Certificate is nothing more than ASN.1 Sequence.")
-                            .toString());
-                }
-                // Mark the start of the first ASN.1 Sequence / Certificate Body
-                certificateStart = currentPosition;
-
-                // Parse the length as the 2-bytes following the start of the ASN.1 Sequence
-                certificateLength = Short.toUnsignedInt(
-                        certificateByteBuffer.getShort(currentPosition + 2));
-                // Add the 4 bytes that comprise the start of the ASN.1 Sequence and the length
-                certificateLength += 4;
-                break;
-            }
-        }
-
-        if (certificateStart + certificateLength > certificateBytes.length) {
-            throw new IllegalArgumentException(malformedCertStringBuilder
-                    .append(" Value of certificate length field extends beyond length")
-                    .append(" of provided certificate.").toString());
-        }
-        // Return bytes representing the main certificate body
-        return Arrays.copyOfRange(certificateBytes, certificateStart,
-                certificateStart + certificateLength);
     }
 
     /**
@@ -674,10 +623,6 @@ public abstract class Certificate extends ArchivableEntity {
         return CertificateType.INVALID_CERTIFICATE;
     }
 
-    private boolean isPEM(final String possiblePEM) {
-        return possiblePEM.contains(CertificateVariables.PEM_HEADER)
-                || possiblePEM.contains(CertificateVariables.PEM_ATTRIBUTE_HEADER);
-    }
 
     private String parseKeyUsage(final boolean[] bools) {
         StringBuilder sb = new StringBuilder();
@@ -685,55 +630,12 @@ public abstract class Certificate extends ArchivableEntity {
         if (bools != null) {
             for (int i = 0; i < bools.length; i++) {
                 if (bools[i]) {
-                    sb.append(getKeyUsageString(i));
+                    sb.append(CredentialHelper.getKeyUsageString(i));
                 }
             }
         }
 
         return sb.toString();
-    }
-
-    /**
-     * Return the string associated with the boolean slot.
-     * @param bit associated with the location in the array.
-     * @return string value of the bit set.
-     */
-    private String getKeyUsageString(final int bit) {
-        String tempStr = "";
-
-        switch (bit) {
-            case CertificateVariables.KEY_USAGE_BIT0:
-                tempStr = String.format("%s%n", CertificateVariables.KEY_USAGE_DS);
-                break;
-            case CertificateVariables.KEY_USAGE_BIT1:
-                tempStr = String.format("%s%n", CertificateVariables.KEY_USAGE_NR);
-                break;
-            case CertificateVariables.KEY_USAGE_BIT2:
-                tempStr = String.format("%s%n", CertificateVariables.KEY_USAGE_KE);
-                break;
-            case CertificateVariables.KEY_USAGE_BIT3:
-                tempStr = String.format("%s%n", CertificateVariables.KEY_USAGE_DE);
-                break;
-            case CertificateVariables.KEY_USAGE_BIT4:
-                tempStr = String.format("%s%n", CertificateVariables.KEY_USAGE_KA);
-                break;
-            case CertificateVariables.KEY_USAGE_BIT5:
-                tempStr = String.format("%s%n", CertificateVariables.KEY_USAGE_KC);
-                break;
-            case CertificateVariables.KEY_USAGE_BIT6:
-                tempStr = String.format("%s%n", CertificateVariables.KEY_USAGE_CS);
-                break;
-            case CertificateVariables.KEY_USAGE_BIT7:
-                tempStr = String.format("%s%n", CertificateVariables.KEY_USAGE_EO);
-                break;
-            case CertificateVariables.KEY_USAGE_BIT8:
-                tempStr = String.format("%s%n", CertificateVariables.KEY_USAGE_DO);
-                break;
-            default:
-                break;
-        }
-
-        return tempStr;
     }
 
     /**
@@ -826,35 +728,6 @@ public abstract class Certificate extends ArchivableEntity {
         return sb.toString();
     }
 
-    /**
-     * This method is to take the DNs from certificates and sort them in an order
-     * that will be used to lookup issuer certificates.  This will not be stored in
-     * the certificate, just the DB for lookup.
-     * @param distinguishedName the original DN string.
-     * @return a modified string of sorted DNs
-     */
-    public static String parseSortDNs(final String distinguishedName) {
-        StringBuilder sb = new StringBuilder();
-        String dnsString;
-
-        if (distinguishedName == null || distinguishedName.isEmpty()) {
-            sb.append("BLANK");
-        } else {
-            dnsString = distinguishedName.trim();
-            dnsString = dnsString.toLowerCase();
-            List<String> dnValArray = Arrays.asList(dnsString.split(","));
-            Collections.sort(dnValArray);
-            ListIterator<String> dnListIter = dnValArray.listIterator();
-            while (dnListIter.hasNext()) {
-                sb.append(dnListIter.next());
-                if (dnListIter.hasNext()) {
-                    sb.append(",");
-                }
-            }
-        }
-
-        return sb.toString();
-    }
 
     /**
      * Retrieve the original X509 attribute certificate.

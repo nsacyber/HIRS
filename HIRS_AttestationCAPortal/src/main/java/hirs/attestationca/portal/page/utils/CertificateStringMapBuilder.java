@@ -47,7 +47,7 @@ public final class CertificateStringMapBuilder {
         HashMap<String, String> data = new HashMap<>();
 
         if (certificate != null) {
-            data.put("issuer", certificate.getHolderIssuer());
+            data.put("issuer", certificate.getIssuer());
             //Serial number in hex value
             data.put("serialNumber", Hex.toHexString(certificate.getSerialNumber().toByteArray()));
             if (!certificate.getAuthoritySerialNumber().equals(BigInteger.ZERO)) {
@@ -66,9 +66,9 @@ public final class CertificateStringMapBuilder {
 
             if (certificate.getSubject() != null) {
                 data.put("subject", certificate.getSubject());
-                if (certificate.getHolderIssuer() != null) {
+                if (certificate.getIssuer() != null) {
                     data.put("isSelfSigned",
-                            String.valueOf(certificate.getHolderIssuer().equals(certificate.getSubject())));
+                            String.valueOf(certificate.getIssuer().equals(certificate.getSubject())));
                 } else {
                     data.put("isSelfSigned", "false");
                 }
@@ -107,7 +107,7 @@ public final class CertificateStringMapBuilder {
 
                 if (missingCert != null) {
                     data.put("missingChainIssuer", String.format("Missing %s from the chain.",
-                            missingCert.getHolderIssuer()));
+                            missingCert.getIssuer()));
                 }
                 List<Certificate> certificates = certificateRepository.findBySubjectSorted(
                         certificate.getIssuerSorted(), "CertificateAuthorityCredential");
