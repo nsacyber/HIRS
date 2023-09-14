@@ -25,9 +25,20 @@ dependencies {
     implementation libs.glassfish.json
     implementation libs.glassfish.jaxb.runtime
     implementation libs.jcommander
+	implementation libs.jakarta.api
+	implementation libs.jakarta.xml
+	implementation libs.commons.codec
+	implementation libs.hibernate.core
+	implementation libs.jackson.databind
+	implementation 'org.apache.logging.log4j:log4j-core:2.19.0'
+	implementation libs.guava
 //    implementation libs.javax.json
  //   implementation libs.javax.jaxb
 //    implementation libs.javax.annotation
+
+	compileOnly libs.lombok
+    implementation libs.lombok
+    annotationProcessor libs.lombok
 
     testImplementation libs.testng
 }
