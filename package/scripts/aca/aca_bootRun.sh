@@ -127,8 +127,8 @@ WEB_TLS_PARAMS="--server.ssl.key-store-password=$hirs_pki_password \
 
 if [ -z "$USE_WAR" ]; then
   echo "Booting the ACA from local build..."
-  ./gradlew bootRun --args="$CONNECTOR_PARAMS$WEB_TLS_PARAMS" 
+  ./gradlew bootRun --args="$CONNECTOR_PARAMS$WEB_TLS_PARAMS"
 else 
-  echo "Booting the ACA from a $USE_WAR file..."
+  echo "Booting the ACA from a war file..."
   java -jar $WAR_PATH $CONNECTOR_PARAMS$WEB_TLS_PARAMS &
 fi

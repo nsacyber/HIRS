@@ -87,10 +87,10 @@ ospackage {
     // Post Install
     postInstall 'sh /opt/hirs/aca/scripts/aca/aca_setup.sh -u'
     // add chrontab to run ACA at boot
-    postInstall 'echo "@reboot sh /opt/hirs/aca/scripts/aca/aca_bootRun.sh -w" >> /etc/crontab'
+    postInstall 'echo "@reboot root /opt/hirs/aca/scripts/aca/aca_bootRun.sh -w" >> /etc/crontab'
     // run ACA after install
-    postInstall 'sh /opt/hirs/aca/scripts/aca/aca_bootRun.sh -w'
-    postInstall 'chmod +x /opt/hirs/aca/scripts/aca/aca_bootRun.sh'
+    postInstall '/opt/hirs/aca/scripts/aca/aca_bootRun.sh -w'
+    postInstall 'chmod +x /opt/hirs/aca/scripts/aca/*'
 
     // Uninstall
     preUninstall 'sh /opt/hirs/aca/scripts/aca/aca_remove_setup.sh'

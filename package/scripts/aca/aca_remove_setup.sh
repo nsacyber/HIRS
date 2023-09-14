@@ -32,6 +32,5 @@ rm -rf /etc/hirs
 echo "Removing the ACA crontab"
 sed -i '/aca_bootRun.sh/d' /etc/crontab
 echo "Shutting down the aca..."
-#pkill -f hirs/aca >/dev/null 2>&1;
 ps axf | grep HIRS_AttestationCAPortal.war | grep -v grep | awk '{print "kill " $1}' | sh  >/dev/null 2>&1
 echo "ACA setup removal complete."
