@@ -66,7 +66,6 @@ echo "----> Downloading truststore" | tee -a $PROVISIONER_LOG_FILE
 wget https://"$ATTESTATION_CA_FQDN":"$ATTESTATION_CA_PORT"/HIRS_AttestationCA/client-files/TrustStore.jks --no-check-certificate -P ${CERTIFICATES} >/dev/null 2>/dev/null
 if [ ! -f "${CERTIFICATES}/TrustStore.jks" ]; then
     echo "----> ERROR: Truststore could not be downloaded from $ATTESTATION_CA_FQDN" | tee -a $PROVISIONER_LOG_FILE
-    exit 1
 fi
 
 sed -i "s/provisioner\.aca\.host\s*=\s*.*/provisioner.aca.host            = $ATTESTATION_CA_FQDN/" $PROVISIONER_PROPERTIES

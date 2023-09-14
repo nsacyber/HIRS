@@ -8,9 +8,9 @@ import hirs.attestationca.persist.entity.manager.PolicyRepository;
 import hirs.attestationca.persist.entity.manager.ReferenceDigestValueRepository;
 import hirs.attestationca.persist.entity.manager.ReferenceManifestRepository;
 import hirs.attestationca.persist.entity.manager.TPM2ProvisionerStateRepository;
-import hirs.attestationca.persist.entity.userdefined.certificate.IssuedAttestationCertificate;
 import hirs.attestationca.persist.service.SupplyChainValidationService;
 import hirs.structs.converters.StructConverter;
+import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.PropertySource;
@@ -31,7 +31,7 @@ import java.security.cert.X509Certificate;
 @PropertySource(value = "file:/etc/hirs/aca/application.properties",
         ignoreResourceNotFound = true)
 @RestController
-@RequestMapping("/")
+@RequestMapping("/client")
 public class RestfulAttestationCertificateAuthority extends AttestationCertificateAuthority implements RestfulInterface {
 
     /**
