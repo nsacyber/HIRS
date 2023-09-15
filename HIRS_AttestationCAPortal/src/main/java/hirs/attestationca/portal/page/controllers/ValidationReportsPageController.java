@@ -61,7 +61,7 @@ import java.util.regex.Pattern;
  */
 @Log4j2
 @Controller
-@RequestMapping("/validation-reports")
+@RequestMapping("/HIRS_AttestationCAPortal/portal/validation-reports")
 public class ValidationReportsPageController extends PageController<NoPageParams> {
 
     private final SupplyChainValidationSummaryRepository supplyChainValidatorSummaryRepository;

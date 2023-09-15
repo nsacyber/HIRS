@@ -39,7 +39,7 @@ import java.lang.ref.Reference;
  */
 @Log4j2
 @Controller
-@RequestMapping("/rim-database")
+@RequestMapping("/HIRS_AttestationCAPortal/portal/rim-database")
 public class RimDatabasePageController extends PageController<NoPageParams> {
 
     @Autowired(required = false)

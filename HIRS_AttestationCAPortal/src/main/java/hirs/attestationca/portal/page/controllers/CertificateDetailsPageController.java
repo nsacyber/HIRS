@@ -24,7 +24,7 @@ import java.util.UUID;
  */
 @Log4j2
 @Controller
-@RequestMapping("/certificate-details")
+@RequestMapping("/HIRS_AttestationCAPortal/portal/certificate-details")
 public class CertificateDetailsPageController extends PageController<CertificateDetailsPageParams> {
 
     /**

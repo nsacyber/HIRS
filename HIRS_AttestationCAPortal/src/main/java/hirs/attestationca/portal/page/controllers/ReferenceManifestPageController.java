@@ -66,7 +66,7 @@ import java.util.zip.ZipOutputStream;
  */
 @Log4j2
 @Controller
-@RequestMapping("/reference-manifests")
+@RequestMapping("/HIRS_AttestationCAPortal/portal/reference-manifests")
 public class ReferenceManifestPageController extends PageController<NoPageParams> {
 
     private static final String LOG_FILE_PATTERN = "([^\\s]+(\\.(?i)(rimpcr|rimel|bin|log))$)";

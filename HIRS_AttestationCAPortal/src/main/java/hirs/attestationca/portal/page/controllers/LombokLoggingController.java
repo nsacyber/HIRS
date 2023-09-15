@@ -8,7 +8,7 @@ import org.springframework.web.bind.annotation.RestController;
 @Log4j2
 public class LombokLoggingController {
 
-    @RequestMapping("/lombok")
+    @RequestMapping("/HIRS_AttestationCAPortal/portal/lombok")
     public String index() {
         log.trace("A TRACE Message");
         log.debug("A DEBUG Message");
