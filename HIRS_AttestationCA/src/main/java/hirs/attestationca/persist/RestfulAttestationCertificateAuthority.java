@@ -31,7 +31,7 @@ import java.security.cert.X509Certificate;
 @PropertySource(value = "file:/etc/hirs/aca/application.properties",
         ignoreResourceNotFound = true)
 @RestController
-@RequestMapping("/client")
+@RequestMapping("/HIRS_AttestationCA")
 public class RestfulAttestationCertificateAuthority extends AttestationCertificateAuthority implements RestfulInterface {
 
     /**

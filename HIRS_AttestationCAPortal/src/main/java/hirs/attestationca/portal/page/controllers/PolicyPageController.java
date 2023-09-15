@@ -28,7 +28,7 @@ import java.util.Map;
  */
 @Log4j2
 @Controller
-@RequestMapping("/policy")
+@RequestMapping("/HIRS_AttestationCAPortal/portal/policy")
 public class PolicyPageController extends PageController<NoPageParams> {
 
     /**

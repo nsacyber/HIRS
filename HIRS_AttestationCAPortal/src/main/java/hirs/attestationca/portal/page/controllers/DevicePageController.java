@@ -43,7 +43,7 @@ import java.util.UUID;
  */
 @Log4j2
 @Controller
-@RequestMapping("/devices")
+@RequestMapping("/HIRS_AttestationCAPortal/portal/devices")
 public class DevicePageController extends PageController<NoPageParams> {
 
     private final DeviceRepository deviceRepository;
