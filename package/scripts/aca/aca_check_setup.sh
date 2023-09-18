@@ -37,6 +37,7 @@ DB_SRV_CONF="/etc/my.cnf.d/mariadb-server.cnf"
 DB_CLIENT_CONF="/etc/my.cnf.d/client.cnf"
 ALL_CHECKS_PASSED=true
 ALL_CERTS_PASSED=true
+source $SCRIPT_DIR/../db/mysql_util.sh
 
 # Check for Admin privileges
 if [ "$EUID" -ne 0 ]; then
@@ -65,6 +66,7 @@ while [[ $# -gt 0 ]]; do
   esac
 done
 
+echo "Checking HIRS ACA Setup on this device..."
 # Check if aca setup was performed
   # Check is RPM was installed via RPM package 
   rpm -q --quiet HIRS_AttestationCA
@@ -78,15 +80,18 @@ done
     else
       echo "HIRS ACA was NOT installed via rpm package on this device" 
   fi
-   # Check install setup pki files
+
+# Check install setup pki files
   if [ ! -d $CERT_PATH ]; then
-      echo "  $CERT_PATH directory does not exist. Exiting..."
+      check_db_cleared
+      echo "  $CERT_PATH directory does not exist."
+      echo " Exiting..."
       echo "Please run aca_setup.sh and try again"
       exit 1;
   fi
 
 source /etc/hirs/aca/aca.properties;
-source $SCRIPT_DIR/../db/start_mysqld.sh
+
 
 check_pwds () {
 
@@ -266,7 +271,7 @@ check_fips () {
    echo "   "$(sysctl -a | grep crypto.fips_enabled)
 }
 # Run Checks
-check_for_container
+check_for_container -p
 check_pwds
 check_pki
 check_mysql_setup

@@ -73,7 +73,7 @@ fi
 
 set -- "${POSITIONAL_ARGS[@]}" # restore positional parameters
 
-source $SCRIPT_DIR/../db/start_mysqld.sh
+source $SCRIPT_DIR/../db/mysql_util.sh
 
 if [ $ALG = "RSA" ]; then 
    CERT_PATH="/etc/hirs/certificates/HIRS/$RSA_PATH"
