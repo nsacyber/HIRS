@@ -29,9 +29,9 @@ EXPOSE 8080
 EXPOSE 8443
 
 # Install HIRS dependencies
-RUN dnf -y install mariadb-server initscripts firewalld policycoreutils net-tools git && dnf clean all
+RUN dnf -y install mariadb-server initscripts firewalld policycoreutils net-tools git protobuf-compiler cronie && dnf clean all
 # maybe: libtool cmake make gcc-c++ sudo vim wget openssl openssl-devel protobuf tpm2-tools libcurl-devel libssh-devel
-# prob not: rpmdevtools tpm2-tss-devel tpm2-abrmd  protobuf-compiler protobuf-devel python36 log4cplus-devel re2-devel tpm2-tss-devel tpm2-abrmd-devel
+# prob not: rpmdevtools tpm2-tss-devel tpm2-abrmd protobuf-devel python36 log4cplus-devel re2-devel tpm2-tss-devel tpm2-abrmd-devel
 
 # Install PACCOR for Device Info Gathering
 # RUN mkdir paccor && pushd paccor && wget https://github.com/nsacyber/paccor/releases/download/v1.1.4r6/paccor-1.1.4-6.noarch.rpm && yum -y install paccor-*.rpm && popd
