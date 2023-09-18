@@ -43,7 +43,8 @@ public final class CertificateStringMapBuilder {
      * @return a hash map with the general certificate information.
      */
     public static HashMap<String, String> getGeneralCertificateInfo(
-            final Certificate certificate, final CertificateRepository certificateRepository) {
+            final Certificate certificate, final CertificateRepository certificateRepository,
+            final CACredentialRepository caCertificateRepository) {
         HashMap<String, String> data = new HashMap<>();
 
         if (certificate != null) {
@@ -102,7 +103,7 @@ public final class CertificateStringMapBuilder {
             //Get issuer ID if not self signed
             if (data.get("isSelfSigned").equals("false")) {
                 //Get the missing certificate chain for not self sign
-                Certificate missingCert = containsAllChain(certificate, certificateRepository);
+                Certificate missingCert = containsAllChain(certificate, certificateRepository, caCertificateRepository);
                 String issuerResult;
 
                 if (missingCert != null) {
@@ -145,7 +146,8 @@ public final class CertificateStringMapBuilder {
      */
     public static Certificate containsAllChain(
             final Certificate certificate,
-            final CertificateRepository certificateRepository) {
+            final CertificateRepository certificateRepository,
+            final CACredentialRepository caCredentialRepository) {
         List<CertificateAuthorityCredential> issuerCertificates = new LinkedList<>();
         CertificateAuthorityCredential skiCA = null;
         String issuerResult;
@@ -154,7 +156,7 @@ public final class CertificateStringMapBuilder {
         if (certificate.getAuthorityKeyIdentifier() != null
                 && !certificate.getAuthorityKeyIdentifier().isEmpty()) {
             byte[] bytes = Hex.decode(certificate.getAuthorityKeyIdentifier());
-            skiCA = (CertificateAuthorityCredential) certificateRepository.findBySubjectKeyIdentifier(bytes);
+            skiCA = caCredentialRepository.findBySubjectKeyIdentifier(bytes);
         } else {
             log.error(String.format("Certificate (%s) for %s has no authority key identifier.",
                     certificate.getClass().toString(), certificate.getSubject()));
@@ -185,7 +187,7 @@ public final class CertificateStringMapBuilder {
                             issuerCert.getSubject())) {
                         return null;
                     }
-                    return containsAllChain(issuerCert, certificateRepository);
+                    return containsAllChain(issuerCert, certificateRepository, caCredentialRepository);
                 }
             } catch (IOException ioEx) {
                 log.error(ioEx);
@@ -237,7 +239,7 @@ public final class CertificateStringMapBuilder {
         HashMap<String, String> data = new HashMap<>();
 
         if (certificate != null) {
-            data.putAll(getGeneralCertificateInfo(certificate, certificateRepository));
+            data.putAll(getGeneralCertificateInfo(certificate, certificateRepository, caCertificateRepository));
             data.put("subjectKeyIdentifier",
                     Arrays.toString(certificate.getSubjectKeyIdentifier()));
             //x509 credential version
@@ -258,12 +260,13 @@ public final class CertificateStringMapBuilder {
      * @return a hash map with the endorsement certificate information.
      */
     public static HashMap<String, String> getEndorsementInformation(final UUID uuid,
-                                                                    final CertificateRepository certificateRepository) {
+                                                                    final CertificateRepository certificateRepository,
+                                                                    final CACredentialRepository caCertificateRepository) {
         HashMap<String, String> data = new HashMap<>();
         EndorsementCredential certificate = (EndorsementCredential) certificateRepository.getCertificate(uuid);
 
         if (certificate != null) {
-            data.putAll(getGeneralCertificateInfo(certificate, certificateRepository));
+            data.putAll(getGeneralCertificateInfo(certificate, certificateRepository, caCertificateRepository));
             // Set extra fields
             data.put("manufacturer", certificate.getManufacturer());
             data.put("model", certificate.getModel());
@@ -302,13 +305,14 @@ public final class CertificateStringMapBuilder {
      */
     public static HashMap<String, Object> getPlatformInformation(final UUID uuid,
                                                                  final CertificateRepository certificateRepository,
-                                                                 final ComponentResultRepository componentResultRepository)
+                                                                 final ComponentResultRepository componentResultRepository,
+                                                                 final CACredentialRepository caCertificateRepository)
             throws IllegalArgumentException, IOException {
         HashMap<String, Object> data = new HashMap<>();
         PlatformCredential certificate = (PlatformCredential) certificateRepository.getCertificate(uuid);
 
         if (certificate != null) {
-            data.putAll(getGeneralCertificateInfo(certificate, certificateRepository));
+            data.putAll(getGeneralCertificateInfo(certificate, certificateRepository, caCertificateRepository));
             data.put("credentialType", certificate.getCredentialType());
             data.put("platformType", certificate.getPlatformChainType());
             data.put("manufacturer", certificate.getManufacturer());
@@ -463,12 +467,13 @@ public final class CertificateStringMapBuilder {
      * @return a hash map with the endorsement certificate information.
      */
     public static HashMap<String, String> getIssuedInformation(final UUID uuid,
-                                                               final CertificateRepository certificateRepository) {
+                                                               final CertificateRepository certificateRepository,
+                                                               final CACredentialRepository caCredentialRepository) {
         HashMap<String, String> data = new HashMap<>();
         IssuedAttestationCertificate certificate = (IssuedAttestationCertificate) certificateRepository.getCertificate(uuid);
 
         if (certificate != null) {
-            data.putAll(getGeneralCertificateInfo(certificate, certificateRepository));
+            data.putAll(getGeneralCertificateInfo(certificate, certificateRepository, caCredentialRepository));
 
             // add endorsement credential ID if not null
             if (certificate.getEndorsementCredential() != null) {

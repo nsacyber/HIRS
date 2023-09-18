@@ -1,6 +1,7 @@
 rootProject.name = 'HIRS'
 
 include 'HIRS_Utils',
+        'HIRS_Structs',
         'HIRS_AttestationCA',
         'HIRS_AttestationCAPortal',
         ':tools:tcg_eventlog_tool',
@@ -13,13 +14,14 @@ dependencyResolutionManagement {
             version('jackson', '2.14.2')
             library('commons-codec', 'commons-codec:commons-codec:1.15')
             library('commons_io',    'commons-io:commons-io:2.11.0')
-            library('commons-lang3', 'org.apache.commons:commons-lang3:3.12.0')
+            library('commons-lang3', 'org.apache.commons:commons-lang3:3.13.0')
             library('bouncycastle', 'org.bouncycastle:bcmail-jdk15on:1.70')
             library('glassfish_json',   'org.glassfish:javax.json:1.1.4')
             library('glassfish_jaxb_runtime',   'org.glassfish.jaxb:jaxb-runtime:2.3.1')
             library('gson', 'com.google.code.gson:gson:2.10.1')
             library('guava', 'com.google.guava:guava:31.1-jre')
             library('minimal-json', 'com.eclipsesource.minimal-json:minimal-json:0.9.5')
+            library('protobuf-java', 'com.google.protobuf:protobuf-java:3.24.1')
             library('jakarta-servlet', 'org.glassfish.web:jakarta.servlet.jsp.jstl:3.0.0')
             library('jakarta-api', 'jakarta.persistence:jakarta.persistence-api:3.1.0')
             library('jakarta-xml', 'jakarta.xml.bind:jakarta.xml.bind-api:4.0.0')

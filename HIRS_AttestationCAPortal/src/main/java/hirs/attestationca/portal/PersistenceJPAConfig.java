@@ -27,13 +27,12 @@ import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 import javax.sql.DataSource;
-import java.io.FileOutputStream;
-import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.security.KeyStore;
 import java.security.KeyStoreException;
+import java.security.PrivateKey;
 import java.security.Security;
 import java.security.cert.X509Certificate;
 import java.util.Properties;
@@ -56,7 +55,7 @@ import java.util.Properties;
         @PropertySource(value = "file:/etc/hirs/aca/application.properties",
                 ignoreResourceNotFound = true)
 })
-@ComponentScan({"hirs.attestationca.portal", "hirs.attestationca.portal.page.controllers", "hirs.attestationca.persist.entity"})
+@ComponentScan({"hirs.attestationca.portal", "hirs.attestationca.portal.page.controllers", "hirs.attestationca.persist", "hirs.attestationca.persist.entity", "hirs.attestationca.persist.service"})
 @EnableJpaRepositories(basePackages = "hirs.attestationca.persist.entity.manager")
 public class PersistenceJPAConfig implements WebMvcConfigurer {
 
@@ -131,6 +130,34 @@ public class PersistenceJPAConfig implements WebMvcConfigurer {
     }
 
     /**
+     * @return the {@link PrivateKey} of the ACA
+     */
+    @Bean
+    public PrivateKey privateKey() {
+
+        // obtain the key store
+        KeyStore keyStore = keyStore();
+
+        try {
+
+            // load the key from the key store
+            PrivateKey acaKey = (PrivateKey) keyStore.getKey(keyAlias,
+                    keyStorePassword.toCharArray());
+
+            // break early if the certificate is not available.
+            if (acaKey == null) {
+                throw new BeanInitializationException(String.format("Key with alias "
+                        + "%s was not in KeyStore %s. Ensure that the KeyStore has the "
+                        + "specified certificate. ", keyAlias, keyStoreLocation));
+            }
+            return acaKey;
+        } catch (Exception ex) {
+            throw new BeanInitializationException("Encountered error loading ACA private key "
+                    + "from key store: " + ex.getMessage(), ex);
+        }
+    }
+
+    /**
      * @return the {@link X509Certificate} of the ACA
      */
     @Bean
@@ -169,13 +196,13 @@ public class PersistenceJPAConfig implements WebMvcConfigurer {
             keyStore.load(Files.newInputStream(keyStorePath), keyStorePassword.toCharArray());
 
             return keyStore;
-        } catch (Exception e) {
+        } catch (Exception ex) {
             log.error(String.format(
                     "Encountered error while loading ACA key store. The most common issue is "
                             + "that configured password does not work on the configured key"
                             + " store %s.", keyStorePath));
-            log.error(String.format("Exception message: %s", e.getMessage()));
-            throw new BeanInitializationException(e.getMessage(), e);
+            log.error(String.format("Exception message: %s", ex.getMessage()));
+            throw new BeanInitializationException(ex.getMessage(), ex);
         }
     }
 

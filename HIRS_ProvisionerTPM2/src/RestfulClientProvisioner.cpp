@@ -65,7 +65,8 @@ string RestfulClientProvisioner::sendIdentityClaim(
     // Send serialized Identity Claim to ACA
     LOGGER.info("Sending Serialized Identity Claim Binary");
     auto r = cpr::Post(cpr::Url{"https://" + acaAddress + ":" + to_string(port)
-                                + "/HIRS_AttestationCA/identity-claim-tpm2/"
+                                + "/HIRS_AttestationCA/portal/"
+                                + "client/identity-claim-tpm2/"
                                 + "process"},
                        cpr::Body{identityClaimByteString},
                        cpr::Header{{"Content-Type",
@@ -121,7 +122,7 @@ string RestfulClientProvisioner::sendAttestationCertificateRequest(
     // Send serialized certificate request to ACA
     LOGGER.info("Sending Serialized DeviceInfo Binary");
     auto r = cpr::Post(cpr::Url{"https://" + acaAddress + ":" + to_string(port)
-                                + "/HIRS_AttestationCA"
+                                + "/HIRS_AttestationCA/portal/client"
                                 + "/request-certificate-tpm2"},
                        cpr::Body{certificateRequestByteString},
                        cpr::Header{{"Content-Type",

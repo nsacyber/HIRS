@@ -75,7 +75,7 @@ import java.util.zip.ZipOutputStream;
  */
 @Log4j2
 @Controller
-@RequestMapping("/certificate-request")
+@RequestMapping("/HIRS_AttestationCAPortal/portal/certificate-request")
 public class CertificatePageController extends PageController<NoPageParams> {
     @Autowired(required = false)
     private EntityManager entityManager;

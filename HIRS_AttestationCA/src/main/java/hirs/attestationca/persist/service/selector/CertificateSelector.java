@@ -2,7 +2,6 @@ package hirs.attestationca.persist.service.selector;
 
 import com.google.common.base.Preconditions;
 import hirs.attestationca.persist.entity.userdefined.Certificate;
-import hirs.attestationca.persist.service.CertificateServiceImpl;
 import jakarta.persistence.criteria.CriteriaBuilder;
 import jakarta.persistence.criteria.CriteriaQuery;
 import jakarta.persistence.criteria.Predicate;
@@ -17,17 +16,13 @@ import java.security.KeyStore;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.security.cert.CertificateException;
-import java.security.cert.X509Certificate;
-import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Map;
-import java.util.Set;
 import java.util.UUID;
 
 /**
  * This class is used to select one or many certificates in conjunction
- * with a {@link CertificateServiceImpl}.  To make use of this object,
+ * with a {@link }.  To make use of this object,
  * use (some CertificateImpl).select(CertificateManager).
  *
  * This class loosely follows the builder pattern.  It is instantiated with
@@ -76,47 +71,36 @@ import java.util.UUID;
  */
 public abstract class CertificateSelector<T extends Certificate> {
 
-    private final CertificateServiceImpl certificateService;
     private final Class<T> certificateClass;
 
     private final Map<String, Object> fieldValueSelections;
     private boolean excludeArchivedCertificates;
 
     /**
-     * Construct a new CertificateSelector that will use the given {@link CertificateServiceImpl} to
+     * Construct a new CertificateSelector that will use the given {@link } to
      * retrieve certificates of the given type.
      *
-     * @param certificateService the certificate manager to be used to retrieve certificates
      * @param certificateClass the class of certificate to be retrieved
      */
     public CertificateSelector(
-            final CertificateServiceImpl certificateService,
             final Class<T> certificateClass) {
-        this(certificateService, certificateClass, true);
+        this(certificateClass, true);
     }
 
     /**
-     * Construct a new CertificateSelector that will use the given {@link CertificateServiceImpl } to
+     * Construct a new CertificateSelector that will use the given {@link  } to
      * retrieve certificates of the given type.
      *
-     * @param certificateService the certificate manager to be used to retrieve certificates
      * @param certificateClass the class of certificate to be retrieved
      * @param excludeArchivedCertificates true if excluding archived certificates
      */
     public CertificateSelector(
-            final CertificateServiceImpl certificateService,
             final Class<T> certificateClass, final boolean excludeArchivedCertificates) {
-        Preconditions.checkArgument(
-                certificateService != null,
-                "certificate manager cannot be null"
-        );
-
         Preconditions.checkArgument(
                 certificateClass != null,
                 "type cannot be null"
         );
 
-        this.certificateService = certificateService;
         this.certificateClass = certificateClass;
         this.fieldValueSelections = new HashMap<>();
         this.excludeArchivedCertificates = excludeArchivedCertificates;
@@ -338,70 +322,6 @@ public abstract class CertificateSelector<T extends Certificate> {
     }
 
     /**
-     * Retrieve the result set as a single {@link Certificate}.
-     * This method is best used when selecting on a unique attribute.
-     * If the result set contains more than one certificate, one is chosen
-     * arbitrarily and returned.  If no matching certificates are found,
-     * this method returns null.
-     *
-     * @return a matching certificate or null if none is found
-     */
-    public T getCertificate() {
-        Set<T> certs = execute();
-        if (certs.size() == 0) {
-            return null;
-        }
-        return certs.iterator().next();
-    }
-
-    /**
-     * Retrieve the result set as a set of {@link Certificate}s.
-     * This method is best used when selecting on non-unique attributes.
-     * Certificates are populated into the set in no specific order.
-     * If no matching certificates are found, the returned Set will be empty.
-     *
-     * @return a Set of matching Certificates, possibly empty
-     */
-    public Set<T> getCertificates() {
-        return Collections.unmodifiableSet(new HashSet<>(execute()));
-    }
-
-    /**
-     * Retrieve the result set as a single {@link X509Certificate}.
-     * This method is best used when selecting on a unique attribute.
-     * If the result set contains more than one certificate, one is chosen
-     * arbitrarily and returned.  If no matching certificates are found,
-     * this method returns null.
-     *
-     * @return a matching certificate or null if none is found
-     * @throws IOException if there is a problem reconstructing the X509Certificate
-     */
-    public X509Certificate getX509Certificate() throws IOException {
-        Certificate cert = getCertificate();
-        if (cert == null) {
-            return null;
-        }
-        return cert.getX509Certificate();
-    }
-
-    /**
-     * Retrieve the result set as a set of {@link X509Certificate}s.
-     * This method is best used when selecting on non-unique attributes.
-     * Certificates are populated into the set in no specific order.
-     * If no matching certificates are found, the returned Set will be empty.
-     *
-     * @return a Set of matching Certificates, possibly empty
-     * @throws IOException if there is a problem reconstructing the X509Certificates
-     */
-    public Set<X509Certificate> getX509Certificates() throws IOException {
-        Set<X509Certificate> certs = new HashSet<>();
-        for (Certificate cert : getCertificates()) {
-            certs.add(cert.getX509Certificate());
-        }
-        return Collections.unmodifiableSet(certs);
-    }
-
-    /**
      * Retrieve the result set populated into a {@link KeyStore}.
      * Certificates are populated into a JKS-formatted KeyStore, with their aliases
      * set to their unique identifiers.
@@ -415,9 +335,9 @@ public abstract class CertificateSelector<T extends Certificate> {
         KeyStore keyStore = KeyStore.getInstance("JKS");
         try {
             keyStore.load(null, "".toCharArray());
-            for (Certificate cert : getCertificates()) {
-                keyStore.setCertificateEntry(cert.getId().toString(), cert.getX509Certificate());
-            }
+//            for (Certificate cert : getCertificates()) {
+//                keyStore.setCertificateEntry(cert.getId().toString(), cert.getX509Certificate());
+//            }
         } catch (IOException | CertificateException | NoSuchAlgorithmException e) {
             throw new IOException("Could not create and populate keystore", e);
         }
@@ -454,11 +374,6 @@ public abstract class CertificateSelector<T extends Certificate> {
      */
     public Class<T> getCertificateClass() {
         return certificateClass;
-    }
-
-    // construct and execute query
-    private Set<T> execute() {
-        return certificateService.get(this);
     }
 
     /**

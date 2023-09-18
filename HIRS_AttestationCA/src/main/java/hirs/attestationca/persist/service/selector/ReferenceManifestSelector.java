@@ -3,7 +3,6 @@ package hirs.attestationca.persist.service.selector;
 import com.google.common.base.Preconditions;
 import hirs.attestationca.persist.entity.userdefined.Certificate;
 import hirs.attestationca.persist.entity.userdefined.ReferenceManifest;
-import hirs.attestationca.persist.service.ReferenceManifestServiceImpl;
 import jakarta.persistence.criteria.CriteriaBuilder;
 import jakarta.persistence.criteria.CriteriaQuery;
 import jakarta.persistence.criteria.Predicate;
@@ -20,7 +19,7 @@ import java.util.UUID;
 
 /**
  * This class is used to select one or many RIMs in conjunction
- * with a {@link ReferenceManifestServiceImpl}.  To make use of this object,
+ * with a manger.   To make use of this object,
  * use (some ReferenceManifest).select(ReferenceManifestManager).
  *
  * @param <T> the type of Reference Integrity Manifest that will be retrieved.
@@ -44,7 +43,6 @@ public abstract class ReferenceManifestSelector<T extends ReferenceManifest> {
     public static final String RIM_FILENAME_FIELD = "fileName";
     private static final String RIM_TYPE_FIELD = "rimType";
 
-    private final ReferenceManifestServiceImpl referenceManifestManager;
     private final Class<T> referenceTypeClass;
 
     private final Map<String, Object> fieldValueSelections;
@@ -53,35 +51,25 @@ public abstract class ReferenceManifestSelector<T extends ReferenceManifest> {
     /**
      * Default Constructor.
      *
-     * @param referenceManifestManager the RIM manager to be used to retrieve RIMs
      * @param referenceTypeClass the type of Reference Manifest to process.
      */
-    public ReferenceManifestSelector(final ReferenceManifestServiceImpl referenceManifestManager,
-                                     final Class<T> referenceTypeClass) {
-        this(referenceManifestManager, referenceTypeClass, true);
+    public ReferenceManifestSelector(final Class<T> referenceTypeClass) {
+        this(referenceTypeClass, true);
     }
 
     /**
      * Standard Constructor for the Selector.
      *
-     * @param referenceManifestManager the RIM manager to be used to retrieve RIMs
      * @param referenceTypeClass the type of Reference Manifest to process.
      * @param excludeArchivedRims true if excluding archived RIMs
      */
-    public ReferenceManifestSelector(final ReferenceManifestServiceImpl referenceManifestManager,
-                                     final Class<T> referenceTypeClass,
+    public ReferenceManifestSelector(final Class<T> referenceTypeClass,
                                      final boolean excludeArchivedRims) {
-        Preconditions.checkArgument(
-                referenceManifestManager != null,
-                "reference manifest manager cannot be null"
-        );
-
         Preconditions.checkArgument(
                 referenceTypeClass != null,
                 "type cannot be null"
         );
 
-        this.referenceManifestManager = referenceManifestManager;
         this.referenceTypeClass = referenceTypeClass;
         this.excludeArchivedRims = excludeArchivedRims;
         this.fieldValueSelections = new HashMap<>();
@@ -154,36 +142,6 @@ public abstract class ReferenceManifestSelector<T extends ReferenceManifest> {
     }
 
     /**
-     * Retrieve the result set as a single
-     * {@link ReferenceManifest}. This method is best used
-     * when selecting on a unique attribute. If the result set contains more
-     * than one RIM, one is chosen arbitrarily and returned. If no matching RIMs
-     * are found, this method returns null.
-     *
-     * @return a matching RIM or null if none is found
-     */
-    public T getRIM() {
-        List<T> rims = execute();
-        if (rims.isEmpty()) {
-            return null;
-        }
-        return rims.iterator().next();
-    }
-
-    /**
-     * Retrieve the result set as a set of
-     * {@link ReferenceManifest}s. This method is best used
-     * when selecting on non-unique attributes. ReferenceManifests are populated
-     * into the set in no specific order. If no matching certificates are found,
-     * the returned Set will be empty.
-     *
-     * @return a Set of matching RIMs, possibly empty
-     */
-    public Set<T> getRIMs() {
-        return Set.copyOf(execute());
-    }
-
-    /**
      * Construct the criterion that can be used to query for rims matching the
      * configuration of this {@link ReferenceManifestSelector}.
      *
@@ -212,12 +170,6 @@ public abstract class ReferenceManifestSelector<T extends ReferenceManifest> {
      */
     public Class<T> getReferenceManifestClass() {
         return this.referenceTypeClass;
-    }
-
-    // construct and execute query
-    private List<T> execute() {
-        List<T> results = this.referenceManifestManager.get(this);
-        return results;
     }
 
     /**

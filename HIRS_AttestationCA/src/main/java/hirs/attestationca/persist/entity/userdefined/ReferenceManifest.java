@@ -21,6 +21,7 @@ import org.hibernate.annotations.JdbcTypeCode;
 import javax.xml.XMLConstants;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.util.Base64;
 import java.util.UUID;
 
 /**
@@ -104,6 +105,9 @@ public class ReferenceManifest  extends ArchivableEntity {
     private String hexDecHash = "";
     @Column
     private String eventLogHash = "";
+    @Column
+    @JsonIgnore
+    private String base64Hash = "";
 
     /**
      * Default constructor necessary for Hibernate.
@@ -137,6 +141,14 @@ public class ReferenceManifest  extends ArchivableEntity {
         try {
             digest = MessageDigest.getInstance("SHA-256");
             this.hexDecHash = Hex.encodeHexString(
+                    digest.digest(rimBytes));
+        } catch (NoSuchAlgorithmException noSaEx) {
+            log.error(noSaEx);
+        }
+        this.base64Hash = "";
+        try {
+            digest = MessageDigest.getInstance("SHA-256");
+            this.base64Hash = Base64.getEncoder().encodeToString(
                     digest.digest(rimBytes));
         } catch (NoSuchAlgorithmException noSaEx) {
             log.error(noSaEx);
