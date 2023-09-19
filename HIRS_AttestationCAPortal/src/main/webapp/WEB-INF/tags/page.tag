@@ -13,7 +13,7 @@
 <c:set var="icons" value="${images}/icons" scope="session" />
 <c:set var="common" value="${baseURL}/common" scope="session" />
 <c:set var="lib" value="${baseURL}/lib" scope="session" />
-<c:set var="portal" value="${baseURL}/portal" scope="session" />
+<c:set var="portal" value="${baseURL}/HIRS_AttestationCAPortal/portal" scope="session" />
 <c:set var="pagePath" value="${portal}/${page.prefixPath}${page.viewName}" scope="session" />
 <c:set var="certificateRequest" value="${portal}/certificate-request" scope="session" />
 

@@ -7,7 +7,6 @@ import hirs.attestationca.persist.entity.userdefined.certificate.attributes.Plat
 import hirs.attestationca.persist.entity.userdefined.certificate.attributes.TBBSecurityAssertion;
 import hirs.attestationca.persist.entity.userdefined.certificate.attributes.URIReference;
 import hirs.attestationca.persist.entity.userdefined.certificate.attributes.V2.PlatformConfigurationV2;
-import hirs.attestationca.persist.service.CertificateServiceImpl;
 import hirs.attestationca.persist.service.selector.CertificateSelector;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -128,93 +127,6 @@ public class PlatformCredential extends DeviceAssociatedCertificate {
      */
     public static final String CERTIFICATE_TYPE_2_0 = "TCG Trusted Platform Endorsement";
 
-    /**
-     * This class enables the retrieval of PlatformCredentials by their attributes.
-     */
-    public static class Selector extends CertificateSelector<PlatformCredential> {
-        /**
-         * Construct a new CertificateSelector that will use the given {@link CertificateServiceImpl} to
-         * retrieve one or many PlatformCredentials.
-         *
-         * @param certificateService the certificate manager to be used to retrieve certificates
-         */
-        public Selector(final CertificateServiceImpl certificateService) {
-            super(certificateService, PlatformCredential.class);
-        }
-
-        /**
-         * Specify a manufacturer that certificates must have to be considered as matching.
-         * @param manufacturer the manufacturer to query, not empty or null
-         * @return this instance (for chaining further calls)
-         */
-        public Selector byManufacturer(final String manufacturer) {
-            setFieldValue(MANUFACTURER_FIELD, manufacturer);
-            return this;
-        }
-
-        /**
-         * Specify a model that certificates must have to be considered as matching.
-         * @param model the model to query, not empty or null
-         * @return this instance (for chaining further calls)
-         */
-        public Selector byModel(final String model) {
-            setFieldValue(MODEL_FIELD, model);
-            return this;
-        }
-
-        /**
-         * Specify a version that certificates must have to be considered as matching.
-         * @param version the version to query, not empty or null
-         * @return this instance (for chaining further calls)
-         */
-        public Selector byVersion(final String version) {
-            setFieldValue(VERSION_FIELD, version);
-            return this;
-        }
-
-        /**
-         * Specify a serial number that certificates must have to be considered as matching.
-         * @param serialNumber the serial number to query, not empty or null
-         * @return this instance (for chaining further calls)
-         */
-        public Selector bySerialNumber(final String serialNumber) {
-            setFieldValue(SERIAL_NUMBER_FIELD, serialNumber);
-            return this;
-        }
-
-        /**
-         * Specify a board serial number that certificates must have to be considered as matching.
-         * @param boardSerialNumber the board serial number to query, not empty or null
-         * @return this instance (for chaining further calls)
-         */
-        public Selector byBoardSerialNumber(final String boardSerialNumber) {
-            setFieldValue(PLATFORM_SERIAL_FIELD, boardSerialNumber);
-            return this;
-        }
-
-        /**
-         * Specify a chassis serial number that certificates must have to be considered as matching.
-         * @param chassisSerialNumber the board serial number to query, not empty or null
-         * @return this instance (for chaining further calls)
-         */
-        public Selector byChassisSerialNumber(final String chassisSerialNumber) {
-            setFieldValue(CHASSIS_SERIAL_NUMBER_FIELD, chassisSerialNumber);
-            return this;
-        }
-
-        /**
-         * Specify a device id that certificates must have to be considered
-         * as matching.
-         *
-         * @param device the device id to query
-         * @return this instance (for chaining further calls)
-         */
-        public Selector byDeviceId(final UUID device) {
-            setFieldValue(DEVICE_ID_FIELD, device);
-            return this;
-        }
-    }
-
     @Column
     private String credentialType = null;
 
@@ -270,17 +182,6 @@ public class PlatformCredential extends DeviceAssociatedCertificate {
 
     private String platformChainType = Strings.EMPTY;
     private boolean isDeltaChain = false;
-
-
-    /**
-     * Get a Selector for use in retrieving PlatformCredentials.
-     *
-     * @param certificateService the CertificateManager to be used to retrieve persisted certificates
-     * @return a PlatformCredential.Selector instance to use for retrieving certificates
-     */
-    public static Selector select(final CertificateServiceImpl certificateService) {
-        return new Selector(certificateService);
-    }
 
     /**
      * Construct a new PlatformCredential given its binary contents.  ParseFields is

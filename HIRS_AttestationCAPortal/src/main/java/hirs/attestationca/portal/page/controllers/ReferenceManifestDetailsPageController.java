@@ -46,7 +46,7 @@ import java.util.UUID;
  */
 @Log4j2
 @Controller
-@RequestMapping("/rim-details")
+@RequestMapping("/HIRS_AttestationCAPortal/portal/rim-details")
 public class ReferenceManifestDetailsPageController extends PageController<ReferenceManifestDetailsPageParams> {
 
     private final ReferenceManifestRepository referenceManifestRepository;

@@ -66,7 +66,7 @@ import java.util.zip.ZipOutputStream;
  */
 @Log4j2
 @Controller
-@RequestMapping("/reference-manifests")
+@RequestMapping("/HIRS_AttestationCAPortal/portal/reference-manifests")
 public class ReferenceManifestPageController extends PageController<NoPageParams> {
 
     private static final String LOG_FILE_PATTERN = "([^\\s]+(\\.(?i)(rimpcr|rimel|bin|log))$)";
@@ -491,9 +491,10 @@ public class ReferenceManifestPageController extends PageController<NoPageParams
     private ReferenceManifest findBaseRim(final SupportReferenceManifest supportRim) {
         if (supportRim != null && (supportRim.getId() != null
                 && !supportRim.getId().toString().equals(""))) {
-            List<BaseReferenceManifest> baseRims = this.referenceManifestRepository
+            List<BaseReferenceManifest> baseRims = new LinkedList<>();
+            baseRims.add(this.referenceManifestRepository
                     .getBaseByManufacturerModel(supportRim.getPlatformManufacturer(),
-                            supportRim.getPlatformModel());
+                            supportRim.getPlatformModel()));
 
             for (BaseReferenceManifest base : baseRims) {
                 if (base.isBase()) {

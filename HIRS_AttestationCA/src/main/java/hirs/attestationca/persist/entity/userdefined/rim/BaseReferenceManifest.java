@@ -1,6 +1,5 @@
 package hirs.attestationca.persist.entity.userdefined.rim;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import hirs.attestationca.persist.entity.userdefined.ReferenceManifest;
 import hirs.utils.SwidResource;
 import hirs.utils.swid.SwidTagConstants;
@@ -32,10 +31,7 @@ import javax.xml.validation.SchemaFactory;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
-import java.util.Base64;
 import java.util.List;
 
 /**
@@ -54,9 +50,6 @@ public class BaseReferenceManifest extends ReferenceManifest {
 
     private static JAXBContext jaxbContext;
 
-    @Column
-    @JsonIgnore
-    private String base64Hash = "";
     @Column
     private String swidName = null;
     @Column
@@ -119,16 +112,6 @@ public class BaseReferenceManifest extends ReferenceManifest {
         Element meta;
         Element entity;
         Element link;
-
-        MessageDigest digest = null;
-        this.base64Hash = "";
-        try {
-            digest = MessageDigest.getInstance("SHA-256");
-            this.base64Hash = Base64.getEncoder().encodeToString(
-                    digest.digest(rimBytes));
-        } catch (NoSuchAlgorithmException noSaEx) {
-            log.error(noSaEx);
-        }
 
         // begin parsing valid swid tag
         if (document != null) {

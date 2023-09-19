@@ -6,6 +6,9 @@ LOG_FILE_NAME="hirs_aca_install_"$(date +%Y-%m-%d).log
 LOG_DIR="/var/log/hirs/"
 LOG_FILE="$LOG_DIR$LOG_FILE_NAME"
 HIRS_PROP_DIR="/opt/hirs/default-properties"
+HIRS_JSON_DIR="/etc/hirs/aca/default-properties"
+COMP_JSON='../../../HIRS_AttestationCA/src/main/resources/component-class.json'
+VENDOR_TABLE='../../../HIRS_AttestationCA/src/main/resources/vendor-table.json'
 
 help () {
   echo "  Setup script for the HIRS ACA"
@@ -55,7 +58,10 @@ done
 
 set -- "${POSITIONAL_ARGS[@]}" # restore positional parameters
 
-mkdir -p $HIRS_CONF_DIR $LOG_DIR $HIRS_PROP_DIR
+mkdir -p $HIRS_CONF_DIR $LOG_DIR $HIRS_PROP_DIR $HIRS_JSON_DIR
+
+cp -n $COMP_JSON $HIRS_JSON_DIR/
+cp -n $VENDOR_TABLE $HIRS_JSON_DIR/
 
 echo "ACA setup log file is $LOG_FILE"
 

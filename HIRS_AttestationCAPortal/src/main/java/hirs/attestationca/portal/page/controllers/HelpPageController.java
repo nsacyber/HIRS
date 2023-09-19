@@ -20,7 +20,7 @@ import static hirs.attestationca.portal.page.Page.HELP;
  */
 @Log4j2
 @Controller
-@RequestMapping("/help")
+@RequestMapping("/HIRS_AttestationCAPortal/portal/help")
 public class HelpPageController extends PageController<NoPageParams> {
 
     @Autowired

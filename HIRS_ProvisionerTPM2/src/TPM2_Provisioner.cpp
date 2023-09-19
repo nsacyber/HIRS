@@ -62,12 +62,12 @@ int provision() {
 
     // get platform credential
     cout << "----> Collecting platform credential from TPM" << endl;
-    string platformCredential = tpm2.getPlatformCredentialDefault();
+    // string platformCredential = tpm2.getPlatformCredentialDefault();
     std::vector<string> platformCredentials;
 
     // if platformCredential is empty, not in TPM
     // pull from properties file
-    if (platformCredential.empty()) {
+    // if (platformCredential.empty()) {
         const std::string& cert_dir =
                     props.get(
                         "tcg.cert.dir",
@@ -78,9 +78,9 @@ int provision() {
         } catch (HirsRuntimeException& hirsRuntimeException) {
             logger.error(hirsRuntimeException.what());
         }
-    } else {
-        platformCredentials.push_back(platformCredential);
-    }
+//    } else {
+//        platformCredentials.push_back(platformCredential);
+//    }
 
     // collect device info
     cout << "----> Collecting device information" << endl;
