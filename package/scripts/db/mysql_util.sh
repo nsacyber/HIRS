@@ -7,15 +7,18 @@
 #####################################################################################
 SQL_SERVICE="mariadb"
 
+# Checks to see if running in a container
+# -p to print status
 check_for_container () {
+  PRINT_STATUS=$1
   # Check if we're in a Docker container
   if [[ $(cat /proc/1/sched | head -n 1) == *"bash"* ]]; then  
   #if [ -f /.dockerenv ]; then
     DOCKER_CONTAINER=true
-    echo "ACA is running in a container..." | tee -a "$LOG_FILE"
+    if [[ $PRINT_STATUS == "-p" ]]; then echo "ACA is running in a container..." | tee -a "$LOG_FILE"; fi
   else
     DOCKER_CONTAINER=false
-    echo "ACA is not running in a container..." | tee -a "$LOG_FILE"
+    if [[ $PRINT_STATUS == "-p" ]]; then  echo "ACA is not running in a container..." | tee -a "$LOG_FILE"; fi
   fi
   if [ -d /opt/hirs/scripts/db ]; then
     MYSQL_DIR="/opt/hirs/scripts/db"
@@ -36,24 +39,24 @@ check_mariadb_install () {
 }
 # Starts mariadb during intial install 
 start_mysqlsd () {
+  PRINT_STATUS=$1
    # Check if mysql is already running, if not initialize
    if [[ $(pgrep -c -u mysql mysqld) -eq 0 ]]; then
    # Check if running in a container
       if [ $DOCKER_CONTAINER  = true ]; then
       # if in Docker container, avoid services that invoke the D-Bus
-      echo "ACA is running in a container..."
          # Check if mariadb is setup
          if [ ! -d "/var/lib/mysql/mysql/" ]; then
            echo "Installing mariadb"
-           /usr/bin/mysql_install_db > "$LOG_FILE"
-           chown -R mysql:mysql /var/lib/mysql/
+           /usr/bin/mysql_install_db & >> "$LOG_FILE"
+           chown -R mysql:mysql /var/lib/mysql/ & >> "$LOG_FILE"
          fi
-         echo "Starting mysql...."
-         chown -R mysql:mysql /var/log/mariadb
-         /usr/bin/mysqld_safe &
+          if [[ $PRINT_STATUS == "-p" ]]; then echo "Starting mysql..."; fi
+         chown -R mysql:mysql /var/log/mariadb >> "$LOG_FILE";
+         /usr/bin/mysqld_safe & >> "$LOG_FILE"; 
        else #not a container
-         systemctl enable $SQL_SERVICE 
-         systemctl start $SQL_SERVICE 
+         systemctl enable $SQL_SERVICE & >> "$LOG_FILE";
+         systemctl start $SQL_SERVICE & >> "$LOG_FILE";
        fi
      else # mysql process is running
      # check if mysql service is running 
@@ -61,18 +64,18 @@ start_mysqlsd () {
      DB_STATUS=$(systemctl status mysql |grep 'running' | wc -l )
        if [ $DB_STATUS -eq 0 ]; then 
          echo "mariadb not running , attempting to restart"
-         systemctl start mariadb
+         systemctl start mariadb & >> "$LOG_FILE";
        fi
      fi
    fi   
 
   # Wait for mysql to start before continuing.
-  echo "Checking mysqld status..."| tee -a "$LOG_FILE"
+  if [[ $PRINT_STATUS == "-p" ]]; then  echo "Checking mysqld status..."| tee -a "$LOG_FILE"; fi
   while ! mysqladmin ping -h "$localhost" --silent; do
   sleep 1;
   done
 
-  echo "mysqld is running."| tee -a "$LOG_FILE"
+ if [[ $PRINT_STATUS == "-p" ]]; then  echo "mysqld is running."| tee -a "$LOG_FILE"; fi
 }
 
 # Basic check for marai db status, attempts restart if not running
@@ -81,7 +84,7 @@ check_mysql () {
   if [ $DOCKER_CONTAINER  = true ]; then
        if [[ $(pgrep -c -u mysql mysqld) -eq 0 ]]; then
           echo "mariadb not running , attempting to restart"
-          /usr/bin/mysqld_safe &
+          /usr/bin/mysqld_safe & >> "$LOG_FILE"
        fi
   else  # not in a contianer
     DB_STATUS=$(systemctl status mysql |grep 'running' | wc -l )
@@ -89,18 +92,69 @@ check_mysql () {
        echo "mariadb not running , attempting to restart"
        systemctl start mariadb
     fi
-  fi 
+  fi
 
  # Wait for mysql to start before continuing.
 
   while ! mysqladmin ping -h "$localhost" --silent; do
      sleep 1;
   done
-
   echo "   Mariadb is running."
-
 }
 
+# Check for mysql root password , abort if not available 
+check_mysql_root () {
+  if [ -z $HIRS_MYSQL_ROOT_PWD ]; then
+    if [ ! -f /etc/hirs/aca/aca.properties ]; then
+      echo "aca.properties does not exist."
+    else
+      source /etc/hirs/aca/aca.properties;
+      DB_ADMIN_PWD=$mysql_admin_password
+    fi
+  else  #HIRS_MYSQL_ROOT_PWD set
+  DB_ADMIN_PWD=$HIRS_MYSQL_ROOT_PWD
+fi
+
+# Allow user to enter password if not using env variabel or file
+if [ -z $DB_ADMIN_PWD ]; then
+  read -p "Enter mysql root password" DB_ADMIN_PWD
+  else 
+      DB_ADMIN_PWD=$mysql_admin_password
+fi
+
+# Make sure root password is correct
+$(mysql -u root -p$DB_ADMIN_PWD -e 'quit'  &> /dev/null);
+  if [ $? -eq 0 ]; then
+     echo "root password verified"  | tee -a "$LOG_FILE"
+  else
+     echo "MYSQL root password was not the default, not supplied,  or was incorrect"
+     echo "      please set the HIRS_MYSQL_ROOT_PWD system variable and retry."
+     echo "      ********** ACA Mysql setup aborted ********" ;
+     exit 1;
+  fi
+}
+
+check_db_cleared () {
+   $(mysql -u root -e 'quit'  &> /dev/null);
+   if [ $? -eq 0 ]; then
+     echo "  Empty root password verified"  | tee -a "$LOG_FILE"
+   else
+     echo "  Mysql Root password is not empty"
+   fi
+   HIRS_DB_USER_EXISTS="$(mysql -uroot -sse "SELECT EXISTS(SELECT 1 FROM mysql.user WHERE user = 'hirs_db')")"
+   if [ $HIRS_DB_USER_EXISTS = 1 ]; then
+     echo "  hirs_db user exists"
+     else
+     echo "  hirs_db user does not exist"
+     
+   fi
+   HIRS_DB_EXISTS=`mysql -uroot -e "SHOW DATABASES" | grep hirs_db`
+   if [[ $HIRS_DB_EXISTS == "hirs_db" ]]; then 
+      echo "  hirs_db databse exists"
+    else 
+      echo "  hirs_db database does not exists"
+   fi
+}
 # restart maraidb
 mysqld_reboot () {
   # reboot mysql server

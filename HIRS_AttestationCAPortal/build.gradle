@@ -2,7 +2,7 @@ plugins {
     id 'application'
     id 'java'
     id 'war'
-    id "nebula.ospackage" version "9.1.1"
+    id 'com.netflix.nebula.ospackage' version '11.4.0'
     id 'org.springframework.boot' version '3.0.6'
     id 'io.spring.dependency-management' version '1.1.0'
 }
@@ -60,14 +60,6 @@ dependencies {
     testImplementation libs.testng
 }
 
-war {
-    from(buildDir) {
-        include 'VERSION'
-        into 'WEB-INF/classes'
-    }
-    archiveFileName = 'HIRS_AttestationCAPortal.war'
-}
-
 ospackage {
     packageName = 'HIRS_AttestationCA'
     os = LINUX
@@ -78,85 +70,30 @@ ospackage {
     user 'root'
     fileMode = 0755
 
-    def tpath="/opt"
-
     addParentDirs = true
     createDirectoryEntry true 
 
-    preInstall "rm -rf /opt/hirs/default-properties"
-    preInstall "mkdir -p /opt/hirs/default-properties/"
-    preInstall "mkdir -p /tmp/hirs/default-properties/"
-
-    // Setup /etc/hirs
-    into ('/etc/hirs/aca/') {
-      from '../HIRS_AttestationCA/src/main/resources/defaults.properties'
-      rename {'aca.properties'}
+    // copy setup scripts to /opt/hirs/aca
+    into ('/opt/hirs/aca/scripts/') {
+         from '../package/scripts/'
     }
-    into ('/etc/hirs/') {
-       from '../HIRS_Utils/src/main/resources/banner.properties'
-       from '../HIRS_Utils/src/main/resources/persistence.properties'
-       from '../HIRS_Utils/src/main/resources/logging.properties'
-    }
-    // Setup tomcat files
-    // Create and package HIRS_AttestationCA:war
-    into ("${tpath}/tomcat/webapps") {
-       from war.outputs.files
-       from '../HIRS_AttestationCA/build/libs/HIRS_AttestationCA.war'
-       user 'root'
-       fileMode = 0755
-    }
-    into ("${tpath}/tomcat/lib") {
-      from 'libs' 
-      from configurations.runtimeClasspath 
-    }
-    into ("/opt/hirs/scripts/aca/") {
-     from '../package/conf/tomcat.service'
-     from '../package/scripts/install_tomcat.sh'
-     from '../package/scripts/aca/aca_property_setup.sh'
-     from '../package/scripts/aca/aca_setup.sh'
-    }
-    into ("/opt/hirs/scripts/pki/") {
-     from '../package/scripts/pki/ca.conf'
-     from '../package/scripts/pki/pki_setup.sh'
-     from '../package/scripts/pki/pki_chain_gen.sh'
-    }
-    into ("/opt/hirs/scripts/db/") {
-     from '../package/scripts/db/db_create.sh'
-     from '../package/scripts/db/db_create.sql'
-     from '../package/scripts/db/db_drop.sh'
-     from '../package/scripts/db/db_drop.sql'
-     from '../package/scripts/db/secure_mysql.sql'
-    }
-    into ("/opt/hirs/scripts/common") {
-     from '../package/scripts/common/'
-    }
-    into ('/opt/hirs/extras/aca/') {
-      from '../package/extras/aca/'
+    // copy the war file into /opt/hirs/aca
+    into ('/opt/hirs/aca/') {
+         from '../HIRS_AttestationCAPortal/build/libs/HIRS_AttestationCAPortal.war'
+         user 'root'
+         fileMode = 0755
     }
 
-    // Copy json files to /tmp and move into /opt/hirs in postInstall section
-    // Allows HIRS tools to be installed using the same files
-    into ('/tmp/aca/default-properties/') {
-       from '../HIRS_AttestationCA/src/main/resources/vendor-table.json'
-       from '../HIRS_AttestationCA/src/main/resources/component-class.json'
-    }
-  // Post Install
+    // Post Install
+    postInstall 'sh /opt/hirs/aca/scripts/aca/aca_setup.sh -u'
+    // add chrontab to run ACA at boot
+    postInstall 'echo "@reboot root /opt/hirs/aca/scripts/aca/aca_bootRun.sh -w" >> /etc/crontab'
+    // run ACA after install
+    postInstall '/opt/hirs/aca/scripts/aca/aca_bootRun.sh -w'
+    postInstall 'chmod +x /opt/hirs/aca/scripts/aca/*'
 
-    postInstall file('../package/scripts/db/db_create.sh')
-    postInstall file('../package/scripts/pki/pki_setup.sh')
-
-    postInstall 'mkdir -p /etc/hirs/aca/certificates'
-    postInstall 'cp /tmp/aca/default-properties/* /opt/hirs/default-properties/.'
-    postInstall 'rm -rf /tmp/aca/'
- //  postInstall file('../package/scripts/install_tomcat.sh')
-
-    postInstall 'sh /opt/tomcat/bin/catalina.sh start'
-
-    // Post Uninstall
-    // Copy files to /tmp that package manager will be expecting them there
-    preUninstall 'mkdir -p /tmp/aca/default-properties/'
-    preUninstall 'cp -f /opt/hirs/default-properties/* /tmp/aca/default-properties/.'
-    preUninstall file('../package/scripts/db/db_drop.sh')
+    // Uninstall
+    preUninstall 'sh /opt/hirs/aca/scripts/aca/aca_remove_setup.sh'
 
     buildRpm {
         arch = X86_64
@@ -165,5 +102,4 @@ ospackage {
     buildDeb {
         arch = 'amd64'
     }
-
 }

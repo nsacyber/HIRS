@@ -34,7 +34,7 @@ touch $DB_SRV_CONF
 mkdir -p /etc/hirs/aca/
 mkdir -p /var/log/hirs/
 
-source $SCRIPT_DIR/start_mysqld.sh
+source $SCRIPT_DIR/mysql_util.sh
 source $ACA_PROP_FILE 
 
 check_mysql_root_pwd () {
@@ -66,7 +66,7 @@ check_mysql_root_pwd () {
   # Make sure root password is correct
   $(mysql -u root -p$DB_ADMIN_PWD -e 'quit'  &> /dev/null);
   if [ $? -eq 0 ]; then
-     echo "root password verified"  | tee -a "$LOG_FILE"
+     echo "Mysql root password verified"  | tee -a "$LOG_FILE"
   else
      echo "MYSQL root password was not the default, not supplied,  or was incorrect"
      echo "      please set the HIRS_MYSQL_ROOT_PWD system variable and retry."
@@ -147,7 +147,7 @@ create_hirs_db_with_tls () {
 
 # HIRS ACA Mysqld processing ...
 check_mariadb_install
-check_for_container
+check_for_container -p
 set_mysql_server_tls
 set_mysql_client_tls
 start_mysqlsd

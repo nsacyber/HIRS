@@ -6,7 +6,6 @@
 #
 #####################################################################################
 
-USE_WAR=$1
 CONFIG_FILE="/etc/hirs/aca/application.properties"
 ALG=RSA
 RSA_PATH=rsa_3k_sha384_certs
@@ -14,6 +13,7 @@ ECC_PATH=ecc_512_sha384_certs
 SCRIPT_DIR=$( dirname -- "$( readlink -f -- "$0"; )"; )
 LOG_FILE=/dev/null
 GRADLE_WRAPPER="./gradlew"
+DEPLOYED_WAR=false
 
 # Check for sudo or root user 
 if [ "$EUID" -ne 0 ]
@@ -21,7 +21,59 @@ if [ "$EUID" -ne 0 ]
      exit 1
 fi
 
-source $SCRIPT_DIR/../db/start_mysqld.sh
+help () {
+  echo "  Setup script for the HIRS ACA"
+  echo "  Syntax: sh aca_setup.sh [-u|h|sb|sp|--skip-db|--skip-pki]"
+  echo "  options:"
+  echo "     -p  | --path   Path to the HIRS_AttestationCAPortal.war file"
+  echo "     -w  | --war    Use deployed war file"
+  echo "     -h  | --help   Print this help"
+  echo
+}
+
+# Process parameters Argument handling 
+POSITIONAL_ARGS=()
+ORIGINAL_ARGS=("$@")
+while [[ $# -gt 0 ]]; do
+  case $1 in
+    -p|--path)
+      USE_WAR=YES
+      shift # past argument
+      WAR_PATH=$@
+      DEPLOYED_WAR=true
+      shift # past parameter
+      ;;
+    -w|--war)
+      USE_WAR=YES
+      shift # past argument
+      WAR_PATH="/opt/hirs/aca/HIRS_AttestationCAPortal.war"
+      DEPLOYED_WAR=true
+      ;;
+    -h|--help)
+      help     
+      exit 0
+      shift # past argument
+      ;; 
+    -*|--*)
+      echo "aca_setup.sh: Unknown option $1"
+      help
+      exit 1
+      ;;
+    *)
+     POSITIONAL_ARGS+=("$1") # save positional arg
+     # shift # past argument
+     break
+      ;;
+  esac
+done
+
+if [ -z "${WAR_PATH}" ]; then
+  WAR_PATH="HIRS_AttestationCAPortal/build/libs/HIRS_AttestationCAPortal.war"
+fi 
+
+set -- "${POSITIONAL_ARGS[@]}" # restore positional parameters
+
+source $SCRIPT_DIR/../db/mysql_util.sh
 
 if [ $ALG = "RSA" ]; then 
    CERT_PATH="/etc/hirs/certificates/HIRS/$RSA_PATH"
@@ -43,9 +95,11 @@ if [ ! -d "$CERT_PATH" ]; then
      exit 1;
 fi
 
-if [ ! -f "$GRADLE_WRAPPER" ]; then
+if [ $DEPLOYED_WAR = false ]; then
+  if [ ! -f "$GRADLE_WRAPPER" ]; then
     echo "This script needs to be run from the HIRS top level project directory. Exiting."
     exit 1;
+  fi
 fi
 
 echo "Starting HIRS ACA on https://localhost:8443/HIRS_AttestationCAPortal/portal/index"
@@ -71,10 +125,10 @@ WEB_TLS_PARAMS="--server.ssl.key-store-password=$hirs_pki_password \
 # uncomment to show spring boot and hibernate properties used as gradle argumanets
 #echo "--args=\"$CONNECTOR_PARAMS $WEB_TLS_PARAMS\""
 
-if [ "$USE_WAR" == "war" ]; then
-    echo "Booting the ACA from a $USE_WAR file..."
-    java -jar HIRS_AttestationCAPortal/build/libs/HIRS_AttestationCAPortal.war $CONNECTOR_PARAMS$WEB_TLS_PARAMS
+if [ -z "$USE_WAR" ]; then
+  echo "Booting the ACA from local build..."
+  ./gradlew bootRun --args="$CONNECTOR_PARAMS$WEB_TLS_PARAMS"
 else 
-   echo "Booting the ACA from local build..."
- ./gradlew bootRun --args="$CONNECTOR_PARAMS$WEB_TLS_PARAMS"
+  echo "Booting the ACA from a war file..."
+  java -jar $WAR_PATH $CONNECTOR_PARAMS$WEB_TLS_PARAMS &
 fi

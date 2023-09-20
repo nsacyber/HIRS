@@ -17,7 +17,7 @@ help () {
   echo "     -u  | --unattended   Run unattended"
   echo "     -h  | --help   Print this Help."
   echo "     -sp | --skip-pki run the setup without pki setup."
-  echo "     -sb | --skip-db run the setup without databse setup."
+  echo "     -sb | --skip-db run the setup without database setup."
   echo
 }
 
