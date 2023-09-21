@@ -198,6 +198,7 @@ public class CertificateRequestHandler extends AbstractRequestHandler {
      * @return the {@link AppraisalStatus} of the supply chain validation
      */
     private AppraisalStatus.Status doQuoteValidation(final Device device) {
+        log.info("Beginning Quote Validation...");
         // perform supply chain validation
         SupplyChainValidationSummary scvs = supplyChainValidationService.validateQuote(
                 device);

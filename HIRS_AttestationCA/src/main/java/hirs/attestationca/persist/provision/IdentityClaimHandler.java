@@ -124,6 +124,7 @@ public class IdentityClaimHandler extends AbstractRequestHandler {
         try {
             validationResult = doSupplyChainValidation(claim, ekPub);
         } catch (Exception ex) {
+            log.error(ex.getMessage());
             for (StackTraceElement ste : ex.getStackTrace()) {
                 log.error(ste.toString());
             }
@@ -191,12 +192,15 @@ public class IdentityClaimHandler extends AbstractRequestHandler {
         // this is to check what is in the platform object and pull
         // additional information from the DB if information exists
         if (platformCredentials.size() == 1) {
+            List<PlatformCredential> tempList = new LinkedList<>();
             for (PlatformCredential pc : platformCredentials) {
                 if (pc != null && pc.getPlatformSerial() != null) {
-                    platformCredentials.addAll(certificateRepository
+                    tempList.addAll(certificateRepository
                             .byBoardSerialNumber(pc.getPlatformSerial()));
                 }
             }
+
+            platformCredentials.addAll(tempList);
         }
         // perform supply chain validation
         SupplyChainValidationSummary summary = supplyChainValidationService.validateSupplyChain(
@@ -227,6 +231,9 @@ public class IdentityClaimHandler extends AbstractRequestHandler {
         log.info("Processing Device Info Report");
         // store device and device info report.
         Device device = this.deviceRepository.findByName(deviceInfoReport.getNetworkInfo().getHostname());
+        if (device == null) {
+            device = new Device(deviceInfoReport);
+        }
         device.setDeviceInfo(deviceInfoReport);
         return this.deviceRepository.save(device);
     }

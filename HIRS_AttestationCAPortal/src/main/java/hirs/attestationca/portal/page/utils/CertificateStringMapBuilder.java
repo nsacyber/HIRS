@@ -12,6 +12,7 @@ import hirs.attestationca.persist.entity.userdefined.certificate.PlatformCredent
 import hirs.attestationca.persist.entity.userdefined.certificate.attributes.ComponentIdentifier;
 import hirs.attestationca.persist.entity.userdefined.certificate.attributes.PlatformConfiguration;
 import hirs.utils.BouncyCastleUtils;
+import hirs.attestationca.persist.util.PciIds;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import lombok.extern.log4j.Log4j2;

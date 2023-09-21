@@ -1,6 +1,7 @@
 package hirs.attestationca.portal.page.controllers;
 
 import hirs.attestationca.persist.DBServiceException;
+import hirs.attestationca.persist.entity.manager.CACredentialRepository;
 import hirs.attestationca.persist.entity.manager.CertificateRepository;
 import hirs.attestationca.persist.entity.manager.ReferenceDigestValueRepository;
 import hirs.attestationca.persist.entity.manager.ReferenceManifestRepository;
@@ -10,14 +11,14 @@ import hirs.attestationca.persist.entity.userdefined.rim.BaseReferenceManifest;
 import hirs.attestationca.persist.entity.userdefined.rim.EventLogMeasurements;
 import hirs.attestationca.persist.entity.userdefined.rim.ReferenceDigestValue;
 import hirs.attestationca.persist.entity.userdefined.rim.SupportReferenceManifest;
-import hirs.attestationca.persist.service.SupplyChainValidationServiceImpl;
+import hirs.attestationca.persist.service.ValidationManager;
 import hirs.attestationca.persist.validation.ReferenceManifestValidator;
+import hirs.attestationca.persist.validation.SupplyChainCredentialValidator;
 import hirs.attestationca.persist.validation.SupplyChainValidatorException;
 import hirs.attestationca.portal.page.Page;
 import hirs.attestationca.portal.page.PageController;
 import hirs.attestationca.portal.page.PageMessages;
 import hirs.attestationca.portal.page.params.ReferenceManifestDetailsPageParams;
-import hirs.attestationca.portal.page.utils.SupplyChainCredentialValidator;
 import hirs.utils.SwidResource;
 import hirs.utils.tpm.eventlog.TCGEventLog;
 import hirs.utils.tpm.eventlog.TpmPcrEvent;
@@ -52,6 +53,7 @@ public class ReferenceManifestDetailsPageController extends PageController<Refer
     private final ReferenceManifestRepository referenceManifestRepository;
     private final ReferenceDigestValueRepository referenceDigestValueRepository;
     private final CertificateRepository certificateRepository;
+    private final CACredentialRepository caCertificateRepository;
     private static final ReferenceManifestValidator RIM_VALIDATOR
             = new ReferenceManifestValidator();
 
@@ -61,15 +63,18 @@ public class ReferenceManifestDetailsPageController extends PageController<Refer
      * @param referenceManifestRepository the repository for RIM.
      * @param referenceDigestValueRepository    the reference event manager.
      * @param certificateRepository       the certificate manager.
+     * @param caCertificateRepository       the CA certificate manager.
      */
     @Autowired
     public ReferenceManifestDetailsPageController(final ReferenceManifestRepository referenceManifestRepository,
                                                   final ReferenceDigestValueRepository referenceDigestValueRepository,
-                                                  final CertificateRepository certificateRepository) {
+                                                  final CertificateRepository certificateRepository,
+                                                  final CACredentialRepository caCertificateRepository) {
         super(Page.RIM_DETAILS);
         this.referenceManifestRepository = referenceManifestRepository;
         this.referenceDigestValueRepository = referenceDigestValueRepository;
         this.certificateRepository = certificateRepository;
+        this.caCertificateRepository = caCertificateRepository;
     }
 
     /**
@@ -100,7 +105,8 @@ public class ReferenceManifestDetailsPageController extends PageController<Refer
             try {
                 UUID uuid = UUID.fromString(params.getId());
                 data.putAll(getRimDetailInfo(uuid, referenceManifestRepository,
-                        referenceDigestValueRepository, certificateRepository));
+                        referenceDigestValueRepository, certificateRepository,
+                        caCertificateRepository));
             } catch (IllegalArgumentException iaEx) {
                 String uuidError = "Failed to parse ID from: " + params.getId();
                 messages.addError(uuidError);
@@ -130,6 +136,7 @@ public class ReferenceManifestDetailsPageController extends PageController<Refer
      * @param referenceManifestRepository the reference manifest manager.
      * @param referenceDigestValueRepository    the reference event manager.
      * @param certificateRepository       the certificate manager.
+     * @param caCertificateRepository       the certificate manager.
      * @return mapping of the RIM information from the database.
      * @throws java.io.IOException      error for reading file bytes.
      * @throws NoSuchAlgorithmException If an unknown Algorithm is encountered.
@@ -138,7 +145,8 @@ public class ReferenceManifestDetailsPageController extends PageController<Refer
     public static HashMap<String, Object> getRimDetailInfo(final UUID uuid,
                                                            final ReferenceManifestRepository referenceManifestRepository,
                                                            final ReferenceDigestValueRepository referenceDigestValueRepository,
-                                                           final CertificateRepository certificateRepository)
+                                                           final CertificateRepository certificateRepository,
+                                                           final CACredentialRepository caCertificateRepository)
             throws IOException,
             CertificateException, NoSuchAlgorithmException {
         HashMap<String, Object> data = new HashMap<>();
@@ -146,7 +154,7 @@ public class ReferenceManifestDetailsPageController extends PageController<Refer
         BaseReferenceManifest bRim = referenceManifestRepository.getBaseRimEntityById(uuid);
 
         if (bRim != null) {
-            data.putAll(getBaseRimInfo(bRim, referenceManifestRepository, certificateRepository));
+            data.putAll(getBaseRimInfo(bRim, referenceManifestRepository, certificateRepository, caCertificateRepository));
         }
 
         SupportReferenceManifest sRim = referenceManifestRepository.getSupportRimEntityById(uuid);
@@ -172,6 +180,7 @@ public class ReferenceManifestDetailsPageController extends PageController<Refer
      * @param baseRim                  established ReferenceManifest Type.
      * @param referenceManifestRepository the reference manifest manager.
      * @param certificateRepository       the certificate manager.
+     * @param caCertificateRepository       the certificate manager.
      * @return mapping of the RIM information from the database.
      * @throws java.io.IOException      error for reading file bytes.
      * @throws NoSuchAlgorithmException If an unknown Algorithm is encountered.
@@ -180,7 +189,8 @@ public class ReferenceManifestDetailsPageController extends PageController<Refer
     private static HashMap<String, Object> getBaseRimInfo(
             final BaseReferenceManifest baseRim,
             final ReferenceManifestRepository referenceManifestRepository,
-            final CertificateRepository certificateRepository)
+            final CertificateRepository certificateRepository,
+            final CACredentialRepository caCertificateRepository)
             throws IOException, CertificateException, NoSuchAlgorithmException {
         HashMap<String, Object> data = new HashMap<>();
 
@@ -288,9 +298,7 @@ public class ReferenceManifestDetailsPageController extends PageController<Refer
         //Report invalid signature unless RIM_VALIDATOR validates it and cert path is valid
         data.put("signatureValid", false);
         for (CertificateAuthorityCredential cert : certificates) {
-            SupplyChainValidationServiceImpl scvsImpl =
-                    new SupplyChainValidationServiceImpl(certificateRepository);
-            KeyStore keystore = scvsImpl.getCaChain(cert);
+            KeyStore keystore = ValidationManager.getCaChain(cert, caCertificateRepository);
             if (RIM_VALIDATOR.validateXmlSignature(cert)) {
                 try {
                     if (SupplyChainCredentialValidator.verifyCertificate(

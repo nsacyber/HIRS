@@ -23,7 +23,7 @@ public class UefiGuid {
      */
     private static final int UUID_EPOCH_DIVISOR = 10000;
 
-    private static final Path JSON_PATH = FileSystems.getDefault().getPath("/opt",
+    private static final Path JSON_PATH = FileSystems.getDefault().getPath("/etc",
             "hirs/aca", "default-properties", "vendor-table.json");
     private JsonObject uefiVendorRef;
     /**
