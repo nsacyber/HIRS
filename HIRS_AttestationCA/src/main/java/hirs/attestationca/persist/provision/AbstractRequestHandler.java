@@ -233,8 +233,8 @@ public class AbstractRequestHandler {
                                             final Device device) {
         IssuedAttestationCertificate issuedAc;
         boolean generateCertificate = true;
-        PolicyRepository scp = this.getPolicyRepository();
-        PolicySettings policySettings = scp.findByName("Default");
+        PolicyRepository scp = getPolicyRepository();
+        PolicySettings policySettings;
         Date currentDate = new Date();
         int days;
         try {
@@ -243,6 +243,7 @@ public class AbstractRequestHandler {
                     derEncodedAttestationCertificate, endorsementCredential, platformCredentials);
 
             if (scp != null) {
+                policySettings = scp.findByName("Default");
                 issuedAc = certificateRepository.findByDeviceId(device.getId());
 
                 generateCertificate = policySettings.isIssueAttestationCertificate();

@@ -105,9 +105,9 @@ public class SupplyChainValidationService {
                 .ValidationType.PLATFORM_CREDENTIAL;
         log.info("Beginning Supply Chain Validation...");
 
-        log.info("Beginning Endorsement Credential Validation...");
         // Validate the Endorsement Credential
         if (getPolicySettings().isEcValidationEnabled()) {
+            log.info("Beginning Endorsement Credential Validation...");
             validations.add(ValidationManager.evaluateEndorsementCredentialStatus(ec, this.caCredentialRepository, acceptExpiredCerts));
             // store the device with the credential
             if (ec != null) {
@@ -116,9 +116,9 @@ public class SupplyChainValidationService {
             }
         }
 
-        log.info("Beginning Platform Credential Validation...");
         // Validate Platform Credential signatures
         if (getPolicySettings().isPcValidationEnabled()) {
+            log.info("Beginning Platform Credential Validation...");
             // Ensure there are platform credentials to validate
             if (pcs == null || pcs.isEmpty()) {
                 log.error("There were no Platform Credentials to validate.");
@@ -143,7 +143,6 @@ public class SupplyChainValidationService {
                     }
                     pc.setDeviceId(device.getId());
                     this.certificateRepository.save(pc);
-
                 }
 
                 // check that the delta certificates validity date is after
@@ -179,10 +178,10 @@ public class SupplyChainValidationService {
             }
         }
 
-        log.info("Beginning Platform Attributes Validation...");
         // Validate Platform Credential attributes
         if (getPolicySettings().isPcAttributeValidationEnabled()
                 && pcErrorMessage.isEmpty()) {
+            log.info("Beginning Platform Attributes Validation...");
             // Ensure there are platform credentials to validate
             SupplyChainValidation attributeScv = null;
             String attrErrorMessage = "";
@@ -233,8 +232,8 @@ public class SupplyChainValidationService {
             }
         }
 
-        log.info("Beginning Firmware Validation...");
         if (getPolicySettings().isFirmwareValidationEnabled()) {
+            log.info("Beginning Firmware Validation...");
             // may need to associated with device to pull the correct info
             // compare tpm quote with what is pulled from RIM associated file
             validations.add(ValidationManager.evaluateFirmwareStatus(device, getPolicySettings(),

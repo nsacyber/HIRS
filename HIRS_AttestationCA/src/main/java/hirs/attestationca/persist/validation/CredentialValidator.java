@@ -47,6 +47,19 @@ public class CredentialValidator extends SupplyChainCredentialValidator {
             return new AppraisalStatus(FAIL, message);
         }
 
+        boolean keyInStore = false;
+        try {
+            keyInStore = trustStore.size() < 1;
+        } catch (KeyStoreException ksEx) {
+            log.error(ksEx.getMessage());
+        }
+
+        if (keyInStore) {
+            message = baseErrorMessage + "keys in the trust store";
+            log.error(message);
+            return new AppraisalStatus(FAIL, message);
+        }
+
         try {
             X509Certificate verifiableCert = ec.getX509Certificate();
 
