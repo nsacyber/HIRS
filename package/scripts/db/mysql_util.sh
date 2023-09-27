@@ -48,27 +48,28 @@ start_mysqlsd () {
          # Check if mariadb is setup
          if [ ! -d "/var/lib/mysql/mysql/" ]; then
            echo "Installing mariadb"
-           /usr/bin/mysql_install_db & >> "$LOG_FILE"
-           chown -R mysql:mysql /var/lib/mysql/ & >> "$LOG_FILE"
+           /usr/bin/mysql_install_db >> "$LOG_FILE"
+           chown -R mysql:mysql /var/lib/mysql/ >> "$LOG_FILE"
          fi
-          if [[ $PRINT_STATUS == "-p" ]]; then echo "Starting mysql..."; fi
-         chown -R mysql:mysql /var/log/mariadb >> "$LOG_FILE";
-         /usr/bin/mysqld_safe & >> "$LOG_FILE"; 
-       else #not a container
-         systemctl enable $SQL_SERVICE & >> "$LOG_FILE";
-         systemctl start $SQL_SERVICE & >> "$LOG_FILE";
-       fi
+         if [[ $PRINT_STATUS == "-p" ]]; then echo "Starting mysql..."; fi
+           touch /var/log/mariadb/mariadb.log
+           chown mysql:mysql /var/log/mariadb/mariadb.log >> "$LOG_FILE";
+           /usr/bin/mysqld_safe & >> "$LOG_FILE"; 
+           echo "Attempting to start mariadb"
+         else #not a container
+           systemctl enable $SQL_SERVICE & >> "$LOG_FILE";
+            systemctl start $SQL_SERVICE & >> "$LOG_FILE";
+         fi
      else # mysql process is running
-     # check if mysql service is running 
+     # check if mysql service is running
      if [ ! $DOCKER_CONTAINER  = true ]; then
-     DB_STATUS=$(systemctl status mysql |grep 'running' | wc -l )
+      DB_STATUS=$(systemctl status mysql |grep 'running' | wc -l )
        if [ $DB_STATUS -eq 0 ]; then 
          echo "mariadb not running , attempting to restart"
-         systemctl start mariadb & >> "$LOG_FILE";
+         systemctl start mariadb >> "$LOG_FILE";
        fi
-     fi
+     fi # non contanier mysql start
    fi   
-
   # Wait for mysql to start before continuing.
   if [[ $PRINT_STATUS == "-p" ]]; then  echo "Checking mysqld status..."| tee -a "$LOG_FILE"; fi
   while ! mysqladmin ping -h "$localhost" --silent; do
@@ -142,7 +143,7 @@ check_db_cleared () {
      echo "  Mysql Root password is not empty"
    fi
    HIRS_DB_USER_EXISTS="$(mysql -uroot -sse "SELECT EXISTS(SELECT 1 FROM mysql.user WHERE user = 'hirs_db')")"
-   if [ $HIRS_DB_USER_EXISTS = 1 ]; then
+   if [[ $HIRS_DB_USER_EXISTS == 1 ]]; then
      echo "  hirs_db user exists"
      else
      echo "  hirs_db user does not exist"
@@ -155,6 +156,7 @@ check_db_cleared () {
       echo "  hirs_db database does not exists"
    fi
 }
+
 # restart maraidb
 mysqld_reboot () {
   # reboot mysql server

@@ -25,9 +25,11 @@ pushd $SCRIPT_DIR/../db/  &>/dev/null
 sh db_drop.sh $DB_ADMIN_PWD
 popd  &>/dev/null
 
-# remove pki files and config files
+# remove pki files and config files if not installed by rpm
 echo "Removing certificates and config files..."
-rm -rf /etc/hirs
+if [ ! -d /opt/hirs/aca ]; then 
+    rm -rf /etc/hirs
+fi
 
 # Remove crontab and current ACA process
 echo "Removing the ACA crontab"
