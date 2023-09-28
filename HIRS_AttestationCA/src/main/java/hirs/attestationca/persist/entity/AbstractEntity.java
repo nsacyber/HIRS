@@ -67,6 +67,9 @@ public abstract class AbstractEntity implements Serializable {
      * @return creation time
      */
     public Date getCreateTime() {
+        if (createTime == null) {
+            createTime = new Date();
+        }
         return (Date) createTime.clone();
     }
 

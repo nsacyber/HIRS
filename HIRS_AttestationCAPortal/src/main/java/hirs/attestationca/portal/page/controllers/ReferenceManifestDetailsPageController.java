@@ -266,8 +266,8 @@ public class ReferenceManifestDetailsPageController extends PageController<Refer
                 baseRim.setAssociatedRim(support.getId());
             }
         } else {
-            support = (SupportReferenceManifest) referenceManifestRepository
-                    .getReferenceById(baseRim.getAssociatedRim());
+            support = referenceManifestRepository
+                    .getSupportRimEntityById(baseRim.getAssociatedRim());
         }
         // going to have to pull the filename and grab that from the DB
         // to get the id to make the link
@@ -319,8 +319,8 @@ public class ReferenceManifestDetailsPageController extends PageController<Refer
                     data.put("issuerID", cert.getId().toString());
                 }
             }
-        } catch (NullPointerException e) {
-            log.warn("Unable to link signing certificate: " + e.getMessage());
+        } catch (NullPointerException npEx) {
+            log.warn("Unable to link signing certificate: " + npEx.getMessage());
         }
         return data;
     }

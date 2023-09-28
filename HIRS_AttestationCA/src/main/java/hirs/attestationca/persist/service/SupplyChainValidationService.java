@@ -8,6 +8,7 @@ import hirs.attestationca.persist.entity.manager.ComponentResultRepository;
 import hirs.attestationca.persist.entity.manager.PolicyRepository;
 import hirs.attestationca.persist.entity.manager.ReferenceDigestValueRepository;
 import hirs.attestationca.persist.entity.manager.ReferenceManifestRepository;
+import hirs.attestationca.persist.entity.manager.SupplyChainValidationRepository;
 import hirs.attestationca.persist.entity.manager.SupplyChainValidationSummaryRepository;
 import hirs.attestationca.persist.entity.userdefined.Device;
 import hirs.attestationca.persist.entity.userdefined.PolicySettings;
@@ -47,6 +48,7 @@ public class SupplyChainValidationService {
     private ReferenceDigestValueRepository referenceDigestValueRepository;
     private ComponentResultRepository componentResultRepository;
     private CertificateRepository certificateRepository;
+    private SupplyChainValidationRepository supplyChainValidationRepository;
     private SupplyChainValidationSummaryRepository supplyChainValidationSummaryRepository;
 
     /**
@@ -57,6 +59,7 @@ public class SupplyChainValidationService {
      * @param certificateRepository                 the cert manager
      * @param componentResultRepository             the comp result manager
      * @param referenceManifestRepository           the RIM manager
+     * @param supplyChainValidationRepository       the scv manager
      * @param supplyChainValidationSummaryRepository the summary manager
      * @param referenceDigestValueRepository              the even manager
      */
@@ -68,6 +71,7 @@ public class SupplyChainValidationService {
             final CertificateRepository certificateRepository,
             final ComponentResultRepository componentResultRepository,
             final ReferenceManifestRepository referenceManifestRepository,
+            final SupplyChainValidationRepository supplyChainValidationRepository,
             final SupplyChainValidationSummaryRepository supplyChainValidationSummaryRepository,
             final ReferenceDigestValueRepository referenceDigestValueRepository) {
         this.caCredentialRepository = caCredentialRepository;
@@ -75,6 +79,7 @@ public class SupplyChainValidationService {
         this.certificateRepository = certificateRepository;
         this.componentResultRepository = componentResultRepository;
         this.referenceManifestRepository = referenceManifestRepository;
+        this.supplyChainValidationRepository = supplyChainValidationRepository;
         this.supplyChainValidationSummaryRepository = supplyChainValidationSummaryRepository;
         this.referenceDigestValueRepository = referenceDigestValueRepository;
     }
