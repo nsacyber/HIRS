@@ -137,7 +137,8 @@ public class AbstractRequestHandler {
         if (identityClaim.hasEndorsementCredential()) {
             endorsementCredential = CredentialManagementHelper.storeEndorsementCredential(
                     certificateRepository,
-                    identityClaim.getEndorsementCredential().toByteArray());
+                    identityClaim.getEndorsementCredential().toByteArray(),
+                    identityClaim.getDv().getNw().getHostname());
         } else if (ekPub != null) {
             log.warn("Endorsement Cred was not in the identity claim from the client."
                     + " Checking for uploads.");
@@ -261,6 +262,7 @@ public class AbstractRequestHandler {
                 }
             }
             if (generateCertificate) {
+                attCert.setDeviceId(device.getId());
                 attCert.setDeviceName(device.getName());
                 certificateRepository.save(attCert);
             }

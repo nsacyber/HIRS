@@ -131,10 +131,11 @@ public class DevicePageController extends PageController<NoPageParams> {
                 issuedCertificateList.addAll(issuedCertificateRepository.findByDeviceId(id));
             }
 
+            HashMap<String, List<Object>> certificatePropertyMap;
             // loop all the devices
             for (Device device : deviceList) {
                 // hashmap containing the list of certificates based on the certificate type
-                HashMap<String, List<Object>> certificatePropertyMap = new HashMap<>();
+                certificatePropertyMap = new HashMap<>();
 
                 deviceCertMap.put("device", device);
                 String deviceName;
@@ -179,8 +180,7 @@ public class DevicePageController extends PageController<NoPageParams> {
                 }
 
                 for (IssuedAttestationCertificate ic : issuedCertificateList) {
-                    deviceName = deviceRepository.findById(ic.getDeviceId()).get().getName();
-
+                    deviceName = ic.getDeviceName();
                     // set the certificate if it's the same ID
                     if (device.getName().equals(deviceName)) {
                         String certificateId = IssuedAttestationCertificate.class.getSimpleName();

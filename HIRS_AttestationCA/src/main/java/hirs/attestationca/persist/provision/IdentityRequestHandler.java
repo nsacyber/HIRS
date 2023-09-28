@@ -110,7 +110,7 @@ public class IdentityRequestHandler extends AbstractRequestHandler {
         byte[] ecBytesFromIdentityRequest = proof.getEndorsementCredential();
         if (ArrayUtils.isNotEmpty(ecBytesFromIdentityRequest)) {
             endorsementCredential = CredentialManagementHelper.storeEndorsementCredential(
-                    this.certificateRepository, ecBytesFromIdentityRequest);
+                    this.certificateRepository, ecBytesFromIdentityRequest, "");
             try {
                 BigInteger publicKeyModulus = Certificate.getPublicKeyModulus(
                         endorsementCredential.getX509Certificate());

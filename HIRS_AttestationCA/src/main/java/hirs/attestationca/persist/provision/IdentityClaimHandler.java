@@ -105,7 +105,7 @@ public class IdentityClaimHandler extends AbstractRequestHandler {
      * @return an identity claim response for the specified request containing a wrapped blob
      */
     public byte[] processIdentityClaimTpm2(final byte[] identityClaim) {
-        log.error("Identity Claim received...");
+        log.info("Identity Claim received...");
 
         if (ArrayUtils.isEmpty(identityClaim)) {
             log.error("Identity claim empty throwing exception.");

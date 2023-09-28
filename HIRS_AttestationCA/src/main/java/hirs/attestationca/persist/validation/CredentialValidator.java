@@ -109,13 +109,13 @@ public class CredentialValidator extends SupplyChainCredentialValidator {
         String message;
         String certVerifyMsg;
         if (pc == null) {
-            message = baseErrorMessage + "a platform credential\n";
+            message = baseErrorMessage + "a platform credential";
             log.error(message);
             return new AppraisalStatus(FAIL, message);
         }
         try {
             if (trustStore == null || trustStore.size() == 0) {
-                message = baseErrorMessage + "an Issuer Cert in the Trust Store\n";
+                message = baseErrorMessage + "an Issuer Cert in the Trust Store";
                 log.error(message);
                 return new AppraisalStatus(FAIL, message);
             }

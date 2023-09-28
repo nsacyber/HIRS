@@ -45,10 +45,9 @@ public class FirmwareScvValidator extends SupplyChainCredentialValidator {
         boolean passed = true;
         String[] baseline = new String[Integer.SIZE];
         AppraisalStatus fwStatus = null;
+        String hostName = device.getDeviceInfo().getNetworkInfo().getHostname();
         String manufacturer = device.getDeviceInfo()
                 .getHardwareInfo().getManufacturer();
-        String model = device.getDeviceInfo()
-                .getHardwareInfo().getProductName();
         ReferenceManifest validationObject;
         List<BaseReferenceManifest> baseReferenceManifests = null;
         BaseReferenceManifest baseReferenceManifest = null;
@@ -58,7 +57,7 @@ public class FirmwareScvValidator extends SupplyChainCredentialValidator {
         baseReferenceManifests = referenceManifestRepository.findAllBaseRims();
 
         for (BaseReferenceManifest bRim : baseReferenceManifests) {
-            if (bRim.getPlatformManufacturer().equals(manufacturer)
+            if (bRim.getDeviceName().equals(hostName)
                     && !bRim.isSwidSupplemental() && !bRim.isSwidPatch()) {
                 baseReferenceManifest = bRim;
             }
@@ -73,8 +72,8 @@ public class FirmwareScvValidator extends SupplyChainCredentialValidator {
                     baseReferenceManifest.getEventLogHash());
 
             if (measurement == null) {
-                measurement = referenceManifestRepository.getLogByModel(
-                        baseReferenceManifest.getPlatformModel());
+                measurement = referenceManifestRepository.byMeasurementDeviceName(
+                        baseReferenceManifest.getDeviceName());
             }
         }
 
@@ -111,10 +110,10 @@ public class FirmwareScvValidator extends SupplyChainCredentialValidator {
                                     "Firmware validation failed: invalid certificate path.");
                             validationObject = baseReferenceManifest;
                         }
-                    } catch (IOException e) {
-                        log.error("Error getting X509 cert from manager: " + e.getMessage());
-                    } catch (SupplyChainValidatorException e) {
-                        log.error("Error validating cert against keystore: " + e.getMessage());
+                    } catch (IOException ioEx) {
+                        log.error("Error getting X509 cert from manager: " + ioEx.getMessage());
+                    } catch (SupplyChainValidatorException scvEx) {
+                        log.error("Error validating cert against keystore: " + scvEx.getMessage());
                         fwStatus = new AppraisalStatus(FAIL,
                                 "Firmware validation failed: invalid certificate path.");
                     }
@@ -199,7 +198,7 @@ public class FirmwareScvValidator extends SupplyChainCredentialValidator {
                         List<ReferenceDigestValue> eventValue;
                         HashMap<String, ReferenceDigestValue> eventValueMap = new HashMap<>();
                         try {
-                            if (measurement.getPlatformManufacturer().equals(manufacturer)) {
+                            if (measurement.getDeviceName().equals(hostName)) {
                                 tcgMeasurementLog = new TCGEventLog(measurement.getRimBytes());
                                 eventValue = referenceDigestValueRepository
                                         .findValuesByBaseRimId(baseReferenceManifest.getId());
@@ -246,7 +245,7 @@ public class FirmwareScvValidator extends SupplyChainCredentialValidator {
             referenceManifestRepository.save(eventLog);
         } else {
             fwStatus = new AppraisalStatus(FAIL, String.format("Firmware Validation failed: "
-                    + "%s for %s can not be found", failedString, manufacturer));
+                    + "%s for %s can not be found", failedString, hostName));
             if (measurement != null) {
                 measurement.setOverallValidationResult(fwStatus.getAppStatus());
                 referenceManifestRepository.save(measurement);
