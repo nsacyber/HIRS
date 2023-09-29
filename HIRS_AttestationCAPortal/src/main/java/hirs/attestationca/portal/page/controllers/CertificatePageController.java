@@ -832,11 +832,11 @@ public class CertificatePageController extends PageController<NoPageParams> {
             log.error(failMessage, dEx);
             messages.addError(failMessage + dEx.getMessage());
             return null;
-        } catch (IllegalArgumentException e) {
+        } catch (IllegalArgumentException iaEx) {
             final String failMessage = String.format(
                     "Certificate format not recognized(%s): ", fileName);
-            log.error(failMessage, e);
-            messages.addError(failMessage + e.getMessage());
+            log.error(failMessage, iaEx);
+            messages.addError(failMessage + iaEx.getMessage());
             return null;
         }
     }
@@ -864,11 +864,11 @@ public class CertificatePageController extends PageController<NoPageParams> {
             existingCertificate = getCertificateByHash(
                     certificateType,
                     certificate.getCertificateHash());
-        } catch (DBServiceException e) {
+        } catch (DBServiceException dbsEx) {
             final String failMessage = "Querying for existing certificate failed ("
                     + fileName + "): ";
-            messages.addError(failMessage + e.getMessage());
-            log.error(failMessage, e);
+            messages.addError(failMessage + dbsEx.getMessage());
+            log.error(failMessage, dbsEx);
             return;
         }
 
@@ -924,11 +924,11 @@ public class CertificatePageController extends PageController<NoPageParams> {
                 log.info(successMsg);
                 return;
             }
-        } catch (DBServiceException e) {
+        } catch (DBServiceException dbsEx) {
             final String failMessage = String.format("Storing new certificate failed (%s): ",
                     fileName);
-            messages.addError(failMessage + e.getMessage());
-            log.error(failMessage, e);
+            messages.addError(failMessage + dbsEx.getMessage());
+            log.error(failMessage, dbsEx);
             return;
         }
 
@@ -946,12 +946,12 @@ public class CertificatePageController extends PageController<NoPageParams> {
                 log.info(successMsg);
                 return;
             }
-        } catch (DBServiceException e) {
+        } catch (DBServiceException dbsEx) {
             final String failMessage = String.format("Found an identical"
                     + " pre-existing certificate in the "
                     + "archive, but failed to unarchive it (%s): ", fileName);
-            messages.addError(failMessage + e.getMessage());
-            log.error(failMessage, e);
+            messages.addError(failMessage + dbsEx.getMessage());
+            log.error(failMessage, dbsEx);
             return;
         }
 

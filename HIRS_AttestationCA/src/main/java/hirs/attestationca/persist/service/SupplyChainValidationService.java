@@ -117,6 +117,7 @@ public class SupplyChainValidationService {
             // store the device with the credential
             if (ec != null) {
                 ec.setDeviceId(device.getId());
+                ec.setDeviceName(device.getDeviceInfo().getNetworkInfo().getHostname());
                 this.certificateRepository.save(ec);
             }
         }
@@ -147,6 +148,7 @@ public class SupplyChainValidationService {
                         deltaMapping.put(pc, null);
                     }
                     pc.setDeviceId(device.getId());
+                    pc.setDeviceName(device.getDeviceInfo().getNetworkInfo().getHostname());
                     this.certificateRepository.save(pc);
                 }
 

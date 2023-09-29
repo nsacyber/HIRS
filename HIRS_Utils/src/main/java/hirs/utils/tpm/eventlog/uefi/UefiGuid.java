@@ -23,8 +23,8 @@ public class UefiGuid {
      */
     private static final int UUID_EPOCH_DIVISOR = 10000;
 
-    private static final Path JSON_PATH = FileSystems.getDefault().getPath("/opt",
-            "hirs", "default-properties", "vendor-table.json");
+    private static final Path JSON_PATH = FileSystems.getDefault().getPath("/etc",
+            "hirs", "aca", "default-properties", "vendor-table.json");
     private JsonObject uefiVendorRef;
     /**
      * guid byte array.
@@ -175,10 +175,7 @@ public class UefiGuid {
      * @return true if the uuid is the Empty UUID, false if not
      */
     public boolean isUnknownUUID() {
-        if (getVendorTableReference().equals("Unknown GUID reference")) {
-            return true;
-        }
-        return false;
+        return getVendorTableReference().equals("Unknown GUID reference");
     }
 
     /**
