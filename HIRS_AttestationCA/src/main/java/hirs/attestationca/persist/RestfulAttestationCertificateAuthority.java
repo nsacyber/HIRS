@@ -28,8 +28,14 @@ import java.security.cert.X509Certificate;
  * Restful implementation of the {@link AttestationCertificateAuthority}.
  * Exposes the ACA methods as REST endpoints.
  */
-@PropertySource(value = "file:/etc/hirs/aca/application.properties",
-        ignoreResourceNotFound = true)
+@PropertySources({
+        // detects if file exists, if not, ignore errors
+        @PropertySource(value = "file:/etc/hirs/aca/application.properties",
+                ignoreResourceNotFound = true),
+                
+        @PropertySource(value = "file:C:/ProgramData/hirs/aca/application.win.properties",
+                ignoreResourceNotFound = true)
+})
 @RestController
 @RequestMapping("/HIRS_AttestationCA")
 public class RestfulAttestationCertificateAuthority extends AttestationCertificateAuthority implements RestfulInterface {
