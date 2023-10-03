@@ -1,24 +1,21 @@
 package hirs.attestationca.persist.validation;
 
 import hirs.attestationca.persist.entity.manager.CACredentialRepository;
-import hirs.attestationca.persist.entity.manager.CertificateRepository;
 import hirs.attestationca.persist.entity.manager.ReferenceDigestValueRepository;
 import hirs.attestationca.persist.entity.manager.ReferenceManifestRepository;
 import hirs.attestationca.persist.entity.userdefined.Device;
 import hirs.attestationca.persist.entity.userdefined.PolicySettings;
 import hirs.attestationca.persist.entity.userdefined.ReferenceManifest;
-import hirs.attestationca.persist.entity.userdefined.SupplyChainValidation;
 import hirs.attestationca.persist.entity.userdefined.certificate.CertificateAuthorityCredential;
 import hirs.attestationca.persist.entity.userdefined.rim.BaseReferenceManifest;
 import hirs.attestationca.persist.entity.userdefined.rim.EventLogMeasurements;
 import hirs.attestationca.persist.entity.userdefined.rim.ReferenceDigestValue;
 import hirs.attestationca.persist.enums.AppraisalStatus;
-import hirs.attestationca.persist.service.ValidationManager;
+import hirs.attestationca.persist.service.ValidationService;
 import hirs.utils.SwidResource;
 import hirs.utils.tpm.eventlog.TCGEventLog;
 import hirs.utils.tpm.eventlog.TpmPcrEvent;
 import lombok.extern.log4j.Log4j2;
-import org.apache.logging.log4j.Level;
 
 import java.io.IOException;
 import java.security.KeyStore;
@@ -99,7 +96,7 @@ public class FirmwareScvValidator extends SupplyChainCredentialValidator {
             CertificateAuthorityCredential signingCert = null;
             for (CertificateAuthorityCredential cert : allCerts) {
                 signingCert = cert;
-                KeyStore keyStore = ValidationManager.getCaChain(signingCert,
+                KeyStore keyStore = ValidationService.getCaChain(signingCert,
                         caCredentialRepository);
                 if (referenceManifestValidator.validateXmlSignature(signingCert)) {
                     try {

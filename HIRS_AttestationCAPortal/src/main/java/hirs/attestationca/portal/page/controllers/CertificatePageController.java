@@ -389,14 +389,14 @@ public class CertificatePageController extends PageController<NoPageParams> {
                         for (PlatformCredential pc : sharedCertificates) {
                             if (!pc.isPlatformBase()) {
                                 pc.archive();
-                                certificateRepository.delete(pc);
+                                certificateRepository.save(pc);
                             }
                         }
                     }
                 }
 
                 certificate.archive();
-                certificateRepository.delete(certificate);
+                certificateRepository.save(certificate);
 
                 String deleteCompletedMessage = "Certificate successfully deleted";
                 messages.addInfo(deleteCompletedMessage);

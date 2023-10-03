@@ -38,7 +38,7 @@ import java.util.Map;
 import java.util.Set;
 
 @Log4j2
-public class ValidationManager {
+public class ValidationService {
 
     public static SupplyChainValidation evaluateEndorsementCredentialStatus(
             final EndorsementCredential ec,

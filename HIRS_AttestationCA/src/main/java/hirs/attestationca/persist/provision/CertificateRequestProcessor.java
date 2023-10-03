@@ -27,7 +27,7 @@ import java.security.interfaces.RSAPublicKey;
 import java.util.List;
 
 @Log4j2
-public class CertificateRequestHandler extends AbstractRequestHandler {
+public class CertificateRequestProcessor extends AbstractProcessor {
 
     private SupplyChainValidationService supplyChainValidationService;
     private CertificateRepository certificateRepository;
@@ -42,13 +42,13 @@ public class CertificateRequestHandler extends AbstractRequestHandler {
      * @param validDays int for the time in which a certificate is valid.
      * @param tpm2ProvisionerStateRepository db connector for provisioner state.
      */
-    public CertificateRequestHandler(final SupplyChainValidationService supplyChainValidationService,
-                                     final CertificateRepository certificateRepository,
-                                     final DeviceRepository deviceRepository,
-                                     final PrivateKey privateKey,
-                                     final X509Certificate acaCertificate,
-                                     final int validDays,
-                                     final TPM2ProvisionerStateRepository tpm2ProvisionerStateRepository) {
+    public CertificateRequestProcessor(final SupplyChainValidationService supplyChainValidationService,
+                                       final CertificateRepository certificateRepository,
+                                       final DeviceRepository deviceRepository,
+                                       final PrivateKey privateKey,
+                                       final X509Certificate acaCertificate,
+                                       final int validDays,
+                                       final TPM2ProvisionerStateRepository tpm2ProvisionerStateRepository) {
         super(privateKey, validDays);
         this.supplyChainValidationService = supplyChainValidationService;
         this.certificateRepository = certificateRepository;

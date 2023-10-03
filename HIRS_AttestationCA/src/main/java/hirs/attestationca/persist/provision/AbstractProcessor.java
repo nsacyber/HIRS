@@ -41,7 +41,7 @@ import java.util.List;
 
 @Log4j2
 @NoArgsConstructor
-public class AbstractRequestHandler {
+public class AbstractProcessor {
 
     @Getter
     private int validDays;
@@ -51,8 +51,8 @@ public class AbstractRequestHandler {
     @Getter
     private PolicyRepository policyRepository;
 
-    public AbstractRequestHandler(final PrivateKey privateKey,
-                                  final int validDays) {
+    public AbstractProcessor(final PrivateKey privateKey,
+                             final int validDays) {
         this.privateKey = privateKey;
         this.validDays = validDays;
     }

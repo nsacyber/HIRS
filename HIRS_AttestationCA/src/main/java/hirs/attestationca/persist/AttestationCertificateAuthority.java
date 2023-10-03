@@ -8,9 +8,8 @@ import hirs.attestationca.persist.entity.manager.PolicyRepository;
 import hirs.attestationca.persist.entity.manager.ReferenceDigestValueRepository;
 import hirs.attestationca.persist.entity.manager.ReferenceManifestRepository;
 import hirs.attestationca.persist.entity.manager.TPM2ProvisionerStateRepository;
-import hirs.attestationca.persist.provision.CertificateRequestHandler;
-import hirs.attestationca.persist.provision.IdentityClaimHandler;
-import hirs.attestationca.persist.provision.IdentityRequestHandler;
+import hirs.attestationca.persist.provision.CertificateRequestProcessor;
+import hirs.attestationca.persist.provision.IdentityClaimProcessor;
 import hirs.attestationca.persist.service.SupplyChainValidationService;
 import hirs.structs.converters.StructConverter;
 import lombok.extern.log4j.Log4j2;
@@ -62,9 +61,8 @@ public abstract class AttestationCertificateAuthority {
     private final PolicyRepository policyRepository;
     private final TPM2ProvisionerStateRepository tpm2ProvisionerStateRepository;
 
-    private CertificateRequestHandler certificateRequestHandler;
-    private IdentityClaimHandler identityClaimHandler;
-    private IdentityRequestHandler identityRequestHandler;
+    private CertificateRequestProcessor certificateRequestHandler;
+    private IdentityClaimProcessor identityClaimHandler;
 
     /**
      * Constructor.
@@ -109,19 +107,13 @@ public abstract class AttestationCertificateAuthority {
         this.policyRepository = policyRepository;
         this.tpm2ProvisionerStateRepository = tpm2ProvisionerStateRepository;
 
-        this.certificateRequestHandler = new CertificateRequestHandler(supplyChainValidationService,
+        this.certificateRequestHandler = new CertificateRequestProcessor(supplyChainValidationService,
                 certificateRepository, deviceRepository,
                 privateKey, acaCertificate, validDays, tpm2ProvisionerStateRepository);
-        this.identityClaimHandler = new IdentityClaimHandler(supplyChainValidationService,
+        this.identityClaimHandler = new IdentityClaimProcessor(supplyChainValidationService,
                 certificateRepository, referenceManifestRepository,
                 referenceDigestValueRepository,
                 deviceRepository, tpm2ProvisionerStateRepository, policyRepository);
-        this.identityRequestHandler = new IdentityRequestHandler(structConverter, certificateRepository,
-                deviceRepository, supplyChainValidationService, privateKey, validDays, acaCertificate);
-    }
-
-    byte[] processIdentityRequest(final byte[] identityRequest) {
-        return this.identityRequestHandler.processIdentityRequest(identityRequest);
     }
 
     byte[] processIdentityClaimTpm2(final byte[] identityClaim) {

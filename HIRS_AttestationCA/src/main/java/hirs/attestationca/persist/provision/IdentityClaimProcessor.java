@@ -57,7 +57,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 @Log4j2
-public class IdentityClaimHandler extends AbstractRequestHandler {
+public class IdentityClaimProcessor extends AbstractProcessor {
     private static final String PCR_QUOTE_MASK = "0,1,2,3,4,5,6,7,8,9,10,11,12,13,"
             + "14,15,16,17,18,19,20,21,22,23";
 
@@ -78,7 +78,7 @@ public class IdentityClaimHandler extends AbstractRequestHandler {
     /**
      * Constructor
      */
-    public IdentityClaimHandler(
+    public IdentityClaimProcessor(
             final SupplyChainValidationService supplyChainValidationService,
             final CertificateRepository certificateRepository,
             final ReferenceManifestRepository referenceManifestRepository,

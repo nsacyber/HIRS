@@ -11,7 +11,7 @@ import hirs.attestationca.persist.entity.userdefined.rim.BaseReferenceManifest;
 import hirs.attestationca.persist.entity.userdefined.rim.EventLogMeasurements;
 import hirs.attestationca.persist.entity.userdefined.rim.ReferenceDigestValue;
 import hirs.attestationca.persist.entity.userdefined.rim.SupportReferenceManifest;
-import hirs.attestationca.persist.service.ValidationManager;
+import hirs.attestationca.persist.service.ValidationService;
 import hirs.attestationca.persist.validation.ReferenceManifestValidator;
 import hirs.attestationca.persist.validation.SupplyChainCredentialValidator;
 import hirs.attestationca.persist.validation.SupplyChainValidatorException;
@@ -298,7 +298,7 @@ public class ReferenceManifestDetailsPageController extends PageController<Refer
         //Report invalid signature unless RIM_VALIDATOR validates it and cert path is valid
         data.put("signatureValid", false);
         for (CertificateAuthorityCredential cert : certificates) {
-            KeyStore keystore = ValidationManager.getCaChain(cert, caCertificateRepository);
+            KeyStore keystore = ValidationService.getCaChain(cert, caCertificateRepository);
             if (RIM_VALIDATOR.validateXmlSignature(cert)) {
                 try {
                     if (SupplyChainCredentialValidator.verifyCertificate(

@@ -113,7 +113,7 @@ public class SupplyChainValidationService {
         // Validate the Endorsement Credential
         if (getPolicySettings().isEcValidationEnabled()) {
             log.info("Beginning Endorsement Credential Validation...");
-            validations.add(ValidationManager.evaluateEndorsementCredentialStatus(ec, this.caCredentialRepository, acceptExpiredCerts));
+            validations.add(ValidationService.evaluateEndorsementCredentialStatus(ec, this.caCredentialRepository, acceptExpiredCerts));
             // store the device with the credential
             if (ec != null) {
                 ec.setDeviceId(device.getId());
@@ -131,8 +131,8 @@ public class SupplyChainValidationService {
                 pcErrorMessage = "Platform credential(s) missing\n";
             } else {
                 for (PlatformCredential pc : pcs) {
-                    KeyStore trustedCa = ValidationManager.getCaChain(pc, caCredentialRepository);
-                    platformScv = ValidationManager.evaluatePlatformCredentialStatus(
+                    KeyStore trustedCa = ValidationService.getCaChain(pc, caCredentialRepository);
+                    platformScv = ValidationService.evaluatePlatformCredentialStatus(
                             pc, trustedCa, acceptExpiredCerts);
 
                     if (platformScv.getValidationResult() == AppraisalStatus.Status.FAIL) {
@@ -147,6 +147,7 @@ public class SupplyChainValidationService {
                         chkDeltas = true;
                         deltaMapping.put(pc, null);
                     }
+                    pc.setEndorsementCredential(ec);
                     pc.setDeviceId(device.getId());
                     pc.setDeviceName(device.getDeviceInfo().getNetworkInfo().getHostname());
                     this.certificateRepository.save(pc);
@@ -196,7 +197,7 @@ public class SupplyChainValidationService {
             // need to check if there are deltas, if not then just verify
             // components of the base
             if (baseCredential == null) {
-                validations.add(ValidationManager.buildValidationRecord(
+                validations.add(ValidationService.buildValidationRecord(
                         SupplyChainValidation.ValidationType.PLATFORM_CREDENTIAL,
                         AppraisalStatus.Status.FAIL,
                         "Base Platform credential missing."
@@ -209,7 +210,7 @@ public class SupplyChainValidationService {
                     while (it.hasNext()) {
                         PlatformCredential pc = it.next();
                         if (pc != null && !pc.isPlatformBase()) {
-                            attributeScv = ValidationManager.evaluateDeltaAttributesStatus(
+                            attributeScv = ValidationService.evaluateDeltaAttributesStatus(
                                     pc, device.getDeviceInfo(),
                                     baseCredential, deltaMapping, certificateRepository);
                             if (attributeScv.getValidationResult() == AppraisalStatus.Status.FAIL) {
@@ -222,7 +223,7 @@ public class SupplyChainValidationService {
                     aes.add(baseCredential);
                     validations.remove(platformScv);
                     // if there are no deltas, just check base credential
-                    platformScv = ValidationManager.evaluatePCAttributesStatus(
+                    platformScv = ValidationService.evaluatePCAttributesStatus(
                             baseCredential, device.getDeviceInfo(), ec,
                             certificateRepository, componentResultRepository);
                     validations.add(new SupplyChainValidation(
@@ -243,7 +244,7 @@ public class SupplyChainValidationService {
             log.info("Beginning Firmware Validation...");
             // may need to associated with device to pull the correct info
             // compare tpm quote with what is pulled from RIM associated file
-            validations.add(ValidationManager.evaluateFirmwareStatus(device, getPolicySettings(),
+            validations.add(ValidationService.evaluateFirmwareStatus(device, getPolicySettings(),
                     referenceManifestRepository, referenceDigestValueRepository,
                     caCredentialRepository));
         }
@@ -329,7 +330,7 @@ public class SupplyChainValidationService {
                 log.error(ex);
             }
 
-            quoteScv = ValidationManager.buildValidationRecord(SupplyChainValidation
+            quoteScv = ValidationService.buildValidationRecord(SupplyChainValidation
                             .ValidationType.FIRMWARE,
                     fwStatus.getAppStatus(), fwStatus.getMessage(), eventLog, level);
 
@@ -339,7 +340,7 @@ public class SupplyChainValidationService {
                     = this.supplyChainValidationSummaryRepository.findByDevice(deviceName);
             for (SupplyChainValidation scv : previous.getValidations()) {
                 if (scv.getValidationType() != SupplyChainValidation.ValidationType.FIRMWARE) {
-                    validations.add(ValidationManager.buildValidationRecord(scv.getValidationType(),
+                    validations.add(ValidationService.buildValidationRecord(scv.getValidationType(),
                             scv.getValidationResult(), scv.getMessage(),
                             scv.getCertificatesUsed().get(0), Level.INFO));
                 }
