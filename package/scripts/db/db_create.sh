@@ -8,7 +8,10 @@
 ################################################################################
 
 LOG_FILE=$1
-UNATTENDED=$2
+PKI_PASS=$2
+UNATTENDED=$3
+RSA_PATH=rsa_3k_sha384_certs
+ECC_PATH=ecc_512_sha384_certs
 # Capture location of the script to allow from invocation from any location
 SCRIPT_DIR=$( dirname -- "$( readlink -f -- "$0"; )"; )
 SPRING_PROP_FILE="/etc/hirs/aca/application.properties"
@@ -128,6 +131,8 @@ set_hirs_db_pwd () {
 
      echo "hirs_db_username=hirs_db" >> $ACA_PROP_FILE
      echo "hirs_db_password=$HIRS_DB_PWD" >> $ACA_PROP_FILE
+     echo "hibernate.connection.username=hirs_db" >> $SPRING_PROP_FILE
+     echo "hibernate.connection.password=$HIRS_DB_PWD" >> $SPRING_PROP_FILE
   fi
 
 }
@@ -145,6 +150,35 @@ create_hirs_db_with_tls () {
   fi
 }
 
+# Create a JDBC connector used by hibernate and place in Springs application.properties
+create_hibernate_url () {
+ ALG=$1
+ db_username=$2
+
+  if [ $ALG = "RSA" ]; then 
+    CERT_PATH="/etc/hirs/certificates/HIRS/$RSA_PATH"
+    CERT_CHAIN="$CERT_PATH/HIRS_rsa_3k_sha384_Cert_Chain.pem"
+    CLIENT_DB_P12=$CERT_PATH/HIRS_db_client_rsa_3k_sha384.p12
+    ALIAS="hirs_aca_tls_rsa_3k_sha384"
+  else
+    CERT_PATH="/etc/hirs/certificates/HIRS/$ECC_PATH"
+    CERT_CHAIN="$CERT_PATH/HIRS_ecc_512_sha384_Cert_Chain.pem"
+    CLIENT_DB_P12=$CERT_PATH/HIRS_db_client_ecc_512_sha384.p12
+    ALIAS="hirs_aca_tls_ecc_512_sha384"
+  fi
+
+CONNECTOR_URL="hibernate.connection.url=jdbc:mariadb://localhost:3306/hirs_db?autoReconnect=true&\
+user=$db_username&\
+password=$HIRS_DB_PWD&\
+sslMode=VERIFY_CA&\
+serverSslCert=$CERT_CHAIN&\
+keyStoreType=PKCS12&\
+keyStorePassword=$PKI_PASS&\
+keyStore="$CLIENT_DB_P12" "
+
+echo $CONNECTOR_URL >> $SPRING_PROP_FILE
+
+}
 # HIRS ACA Mysqld processing ...
 check_mariadb_install
 check_for_container -p
@@ -154,4 +188,5 @@ start_mysqlsd
 check_mysql_root_pwd
 set_hirs_db_pwd
 create_hirs_db_with_tls
+create_hibernate_url "RSA" "hirs_db"
 mysqld_reboot

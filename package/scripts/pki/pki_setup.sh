@@ -8,6 +8,7 @@
 
 #PROP_FILE=/etc/hirs/aca/application.properties
 ACA_PROP=/etc/hirs/aca/aca.properties
+SPRING_PROP_FILE="/etc/hirs/aca/application.properties"
 LOG_FILE=$1
 PKI_PASS=$2
 UNATTENDED=$3
@@ -56,6 +57,8 @@ if [ ! -d "/etc/hirs/certificates" ]; then
   popd &> /dev/null
 
   echo "hirs_pki_password="$PKI_PASS >>  $ACA_PROP
+  echo "server.ssl.key-store-password="$PKI_PASS >> $SPRING_PROP_FILE
+  echo "server.ssl.trust-store-password="$PKI_PASS >> $SPRING_PROP_FILE
 else 
   echo "/etc/hirs/certificates exists, skipping" | tee -a "$LOG_FILE"
 fi
