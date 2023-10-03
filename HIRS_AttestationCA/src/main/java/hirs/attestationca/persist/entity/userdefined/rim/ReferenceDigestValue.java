@@ -1,6 +1,6 @@
 package hirs.attestationca.persist.entity.userdefined.rim;
 
-import hirs.attestationca.persist.entity.AbstractEntity;
+import hirs.utils.AbstractEntity;
 import jakarta.persistence.Access;
 import jakarta.persistence.AccessType;
 import jakarta.persistence.Column;

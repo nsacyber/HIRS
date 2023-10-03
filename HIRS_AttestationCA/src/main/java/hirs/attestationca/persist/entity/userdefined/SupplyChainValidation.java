@@ -1,7 +1,9 @@
 package hirs.attestationca.persist.entity.userdefined;
 
 import com.google.common.base.Preconditions;
-import hirs.attestationca.persist.entity.ArchivableEntity;
+import hirs.utils.ArchivableEntity;
+import hirs.utils.Certificate;
+import hirs.utils.rim.ReferenceManifest;
 import hirs.attestationca.persist.enums.AppraisalStatus;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;

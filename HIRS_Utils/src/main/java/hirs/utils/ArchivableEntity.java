@@ -1,4 +1,4 @@
-package hirs.attestationca.persist.entity;
+package hirs.utils;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.MappedSuperclass;

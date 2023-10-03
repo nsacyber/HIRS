@@ -4,7 +4,7 @@ import com.google.protobuf.ByteString;
 import hirs.attestationca.configuration.provisionerTpm2.ProvisionerTpm2;
 import hirs.attestationca.persist.entity.manager.CertificateRepository;
 import hirs.attestationca.persist.entity.manager.PolicyRepository;
-import hirs.attestationca.persist.entity.userdefined.Certificate;
+import hirs.utils.Certificate;
 import hirs.attestationca.persist.entity.userdefined.Device;
 import hirs.attestationca.persist.entity.userdefined.PolicySettings;
 import hirs.attestationca.persist.entity.userdefined.certificate.EndorsementCredential;

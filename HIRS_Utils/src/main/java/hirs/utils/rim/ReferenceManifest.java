@@ -1,8 +1,8 @@
-package hirs.attestationca.persist.entity.userdefined;
+package hirs.utils.rim;
 
+import hirs.utils.ArchivableEntity;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.common.base.Preconditions;
-import hirs.attestationca.persist.entity.ArchivableEntity;
 import jakarta.persistence.Access;
 import jakarta.persistence.AccessType;
 import jakarta.persistence.Column;

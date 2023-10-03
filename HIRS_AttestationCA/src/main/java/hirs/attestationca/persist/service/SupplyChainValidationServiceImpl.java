@@ -1,6 +1,6 @@
 package hirs.attestationca.persist.service;
 
-import hirs.attestationca.persist.entity.ArchivableEntity;
+import hirs.utils.ArchivableEntity;
 import hirs.attestationca.persist.DBManagerException;
 import hirs.attestationca.persist.entity.manager.CACredentialRepository;
 import hirs.attestationca.persist.entity.manager.CertificateRepository;
@@ -9,12 +9,12 @@ import hirs.attestationca.persist.entity.manager.PolicyRepository;
 import hirs.attestationca.persist.entity.manager.ReferenceDigestValueRepository;
 import hirs.attestationca.persist.entity.manager.ReferenceManifestRepository;
 import hirs.attestationca.persist.entity.manager.SupplyChainValidationSummaryRepository;
-import hirs.attestationca.persist.entity.userdefined.Certificate;
+import hirs.utils.Certificate;
 import hirs.attestationca.persist.entity.userdefined.Device;
 import hirs.attestationca.persist.entity.userdefined.PolicySettings;
 import hirs.attestationca.persist.entity.userdefined.SupplyChainValidation;
 import hirs.attestationca.persist.entity.userdefined.SupplyChainValidationSummary;
-import hirs.attestationca.persist.entity.userdefined.certificate.CertificateAuthorityCredential;
+import hirs.utils.CertificateAuthorityCredential;
 import hirs.attestationca.persist.entity.userdefined.certificate.EndorsementCredential;
 import hirs.attestationca.persist.entity.userdefined.certificate.PlatformCredential;
 import hirs.attestationca.persist.entity.userdefined.record.TPMMeasurementRecord;

@@ -8,7 +8,7 @@ import hirs.attestationca.persist.entity.manager.CertificateRepository;
 import hirs.attestationca.persist.entity.manager.DeviceRepository;
 import hirs.attestationca.persist.entity.manager.PlatformCertificateRepository;
 import hirs.attestationca.persist.entity.manager.SupplyChainValidationSummaryRepository;
-import hirs.attestationca.persist.entity.userdefined.Certificate;
+import hirs.utils.Certificate;
 import hirs.attestationca.persist.entity.userdefined.Device;
 import hirs.attestationca.persist.entity.userdefined.SupplyChainValidationSummary;
 import hirs.attestationca.persist.entity.userdefined.certificate.PlatformCredential;

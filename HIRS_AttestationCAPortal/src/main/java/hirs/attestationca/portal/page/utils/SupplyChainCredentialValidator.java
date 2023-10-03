@@ -3,7 +3,7 @@ package hirs.attestationca.portal.page.utils;
 import com.fasterxml.jackson.core.JsonFactory;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import hirs.attestationca.persist.entity.ArchivableEntity;
+import hirs.utils.ArchivableEntity;
 import hirs.attestationca.persist.entity.userdefined.SupplyChainValidation;
 import hirs.attestationca.persist.entity.userdefined.certificate.EndorsementCredential;
 import hirs.attestationca.persist.entity.userdefined.certificate.PlatformCredential;

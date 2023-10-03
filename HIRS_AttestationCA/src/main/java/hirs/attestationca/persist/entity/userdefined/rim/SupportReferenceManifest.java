@@ -1,7 +1,7 @@
 package hirs.attestationca.persist.entity.userdefined.rim;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import hirs.attestationca.persist.entity.userdefined.ReferenceManifest;
+import hirs.utils.rim.ReferenceManifest;
 import hirs.utils.tpm.eventlog.TCGEventLog;
 import hirs.utils.tpm.eventlog.TpmPcrEvent;
 import jakarta.persistence.Column;
