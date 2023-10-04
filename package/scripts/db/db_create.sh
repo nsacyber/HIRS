@@ -41,8 +41,19 @@ source $SCRIPT_DIR/mysql_util.sh
 source $ACA_PROP_FILE 
 
 check_mysql_root_pwd () {
-  # Check if DB root password needs to be obtained
  
+  # Check if DB root password needs to be obtained via env variable or existing property file
+  if [ -z "$HIRS_MYSQL_ROOT_PWD" ]; then
+     # Check if property file exists and look for properties
+     if [ -f $ACA_PROP_FILE ]; then
+        echo "Found existing aca.properties, using existing variables..."
+        source $ACA_PROP_FILE
+        if [ ! -z $hirs_pki_password ]; then PKI_PASS=$hirs_pki_password; fi
+        if [ ! -z $mysql_admin_password ]; then HIRS_MYSQL_ROOT_PWD=$mysql_admin_password; fi
+        if [ ! -z $hirs_db_password ]; then HIRS_DB_PWD=$hirs_db_password; fi
+     fi
+  fi
+
   if [ -z $HIRS_MYSQL_ROOT_PWD ]; then
 	 # Create a 32 character random password
 	 echo "Using randomly generated password for the DB admin" | tee -a "$LOG_FILE"
