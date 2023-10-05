@@ -37,7 +37,15 @@ DB_SRV_CONF="/etc/my.cnf.d/mariadb-server.cnf"
 DB_CLIENT_CONF="/etc/my.cnf.d/client.cnf"
 ALL_CHECKS_PASSED=true
 ALL_CERTS_PASSED=true
+
 source $SCRIPT_DIR/../db/mysql_util.sh
+source /etc/os-release 
+
+# Setup distro specifc paths and variables
+if [ $ID = "ubuntu" ]; then 
+   DB_SRV_CONF="/etc/mysql/mariadb.conf.d/50-server.cnf"
+   DB_CLIENT_CONF="/etc/mysql/mariadb.conf.d/50-client.cnf"
+fi
 
 # Check for Admin privileges
 if [ "$EUID" -ne 0 ]; then
@@ -69,16 +77,24 @@ done
 echo "Checking HIRS ACA Setup on this device..."
 # Check if aca setup was performed
   # Check is RPM was installed via RPM package 
-  rpm -q --quiet HIRS_AttestationCA
+  if [ $ID = "rhel" ]; then
+     echo "RHEL distro detected"
+     rpm -q --quiet HIRS_AttestationCA
+    elif [ $ID = 'ubuntu' ]; then
+     echo "Ubuntu distro detected"
+     dpkg -l "HIRS_AttestationCA" > /dev/null
+   else
+    echo "Unsupported OS Distro encountered"
+  fi
   if [ $? -eq 0 ]; then
-      echo "HIRS ACA was installed via rpm package on this device"
+      echo "HIRS ACA was installed via an OS package on this device"
       if [[ $(cat /etc/crontab | grep -c hirs/aca) > 0 ]]; then 
            echo "  HIRS ACA is set to start on boot via crontab file"
         else
            echo "  HIRS ACA is NOT set to start on boot via crontab file"
       fi
     else
-      echo "HIRS ACA was NOT installed via rpm package on this device" 
+      echo "HIRS ACA was NOT installed via an OS package on this device" 
   fi
 
 # Check install setup pki files
@@ -91,7 +107,6 @@ echo "Checking HIRS ACA Setup on this device..."
   fi
 
 source /etc/hirs/aca/aca.properties;
-
 
 check_pwds () {
 
@@ -121,13 +136,13 @@ check_mysql_setup () {
   # make sure mysql is running and restart if its not...
   check_mysql
   # Check DB server/client TLS setup.
-  if [[ $(cat "$DB_SRV_CONF" | grep -c "ssl") < 1 ]]; then
+  if [[ $(cat "$DB_SRV_CONF" | grep -c "HIRS") < 1 ]]; then
      echo "   Mysql server ($DB_SRV_CONF) is NOT configured for Server Side TLS"
      ALL_CHECKS_PASSED=false
    else
      echo "   Mysql server ($DB_SRV_CONF) is configured for Server Side TLS"
   fi
-  if [[ $(cat "$DB_CLIENT_CONF" | grep -c "ssl") < 1 ]]; then
+  if [[ $(cat "$DB_CLIENT_CONF" | grep -c "HIRS") < 1 ]]; then
       echo "   Mysql client ($DB_CLIENT_CONF)is NOT configured for command line use of TLS without provding key/cert ino the commandline"
       ALL_CHECKS_PASSED=false
     else
@@ -240,12 +255,18 @@ check_db () {
     mysql -u hirs_db --password=$hirs_db_password -e "SHOW DATABASES;";
     echo "Privileges for the hirs_db user:"
     mysql -u hirs_db --password=$hirs_db_password -e "SHOW GRANTS FOR 'hirs_db'@'localhost'" 
+    echo "MYSQL Log:"
+    mysql -u root --password=$mysql_admin_password -e "SHOW GLOBAL VARIABLES LIKE 'log_error'" 
   fi
   
 }
 
 # Check selinux status and files that require specific contexts
 check_selinux () {
+   if [ $ID = "ubuntu" ]; then
+     echo "Skipping selinux check on ubuntu"
+     return
+   fi
    SELINUXSTATUS=$(getenforce)
    DB_SRV_CONTEXT=$(ls -Z $DB_SRV_CONF)
    DB_CLIENT_CONTEXT=$(ls -Z $DB_CLIENT_CONF)

@@ -33,8 +33,8 @@ if [ -z "$2" ]; then
 fi
 
 # Check for sudo or root user 
-if [ "$EUID" -ne 0 ]
-        then echo "This script requires root.  Please run as root" | tee -a "$LOG_FILE"
+if [ "$EUID" -ne 0 ]; then 
+   echo "This script requires root.  Please run as root" | tee -a "$LOG_FILE"
         exit 1
 fi
 
@@ -52,8 +52,8 @@ if [ ! -d "/etc/hirs/certificates" ]; then
 
   pushd  /etc/hirs/certificates/ &> /dev/null
   cp $PKI_SETUP_DIR/ca.conf .
-  sh $PKI_SETUP_DIR/pki_chain_gen.sh "HIRS" "rsa" "3072" "sha384" "$PKI_PASS" "$LOG_FILE"
-  sh $PKI_SETUP_DIR/pki_chain_gen.sh "HIRS" "ecc" "512" "sha384" "$PKI_PASS" "$LOG_FILE"
+    $PKI_SETUP_DIR/pki_chain_gen.sh "HIRS" "rsa" "3072" "sha384" "$PKI_PASS" "$LOG_FILE"
+    $PKI_SETUP_DIR/pki_chain_gen.sh "HIRS" "ecc" "512" "sha384" "$PKI_PASS" "$LOG_FILE"
   popd &> /dev/null
 
   echo "hirs_pki_password="$PKI_PASS >>  $ACA_PROP

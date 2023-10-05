@@ -17,7 +17,7 @@ SCRIPT_DIR=$( dirname -- "$( readlink -f -- "$0"; )"; )
 SPRING_PROP_FILE="/etc/hirs/aca/application.properties"
 ACA_PROP_FILE="/etc/hirs/aca/aca.properties"
 DB_ADMIN_PWD=""
-# Db Configuration files
+# Db Configuration fileis, use RHELpaths as default
 DB_SRV_CONF="/etc/my.cnf.d/mariadb-server.cnf"
 DB_CLIENT_CONF="/etc/my.cnf.d/client.cnf"
 # Default Server Side Certificates
@@ -39,6 +39,14 @@ mkdir -p /var/log/hirs/
 
 source $SCRIPT_DIR/mysql_util.sh
 source $ACA_PROP_FILE 
+source /etc/os-release 
+
+# Setup distro specifc paths and variables
+if [ $ID = "ubuntu" ]; then 
+   DB_SRV_CONF="/etc/mysql/mariadb.conf.d/50-server.cnf"
+   DB_CLIENT_CONF="/etc/mysql/mariadb.conf.d/50-client.cnf"
+   echo log_error=/var/log/mysql/mariadb.log >> $DB_SRV_CONF
+fi
 
 check_mysql_root_pwd () {
   # Check if DB root password needs to be obtained
@@ -79,8 +87,8 @@ check_mysql_root_pwd () {
 }
 
 set_mysql_server_tls () {
-  # Check DB server setup. If ssl params dont exist then we need to add them.
-  if [[ $(cat "$DB_SRV_CONF" | grep -c "ssl") < 1 ]]; then
+  # Check DB server setup. If HIRS ssl params dont exist then we need to add them.
+  if [[ $(cat "$DB_SRV_CONF" | grep -c "HIRS") < 1 ]]; then
     # Add TLS files to my.cnf
     echo "Updating $DB_SRV_CONF with ssl parameters..." | tee -a "$LOG_FILE"
     echo "ssl_ca=$SSL_DB_SRV_CHAIN" >> "$DB_SRV_CONF"
@@ -101,7 +109,7 @@ set_mysql_server_tls () {
 
 set_mysql_client_tls () {
 # Update ACA property file with client cert info, if not there already
-if [[ $(cat "$DB_CLIENT_CONF" | grep -c "ssl") < 1 ]]; then 
+if [[ $(cat "$DB_CLIENT_CONF" | grep -c "HIRS") < 1 ]]; then 
   echo "Updating $DB_CLIENT_CONF with ssl parameters..." | tee -a "$LOG_FILE"
   echo "ssl_ca=$SSL_DB_CLIENT_CHAIN" >> $DB_CLIENT_CONF
   echo "ssl_cert=$SSL_DB_CLIENT_CERT" >> $DB_CLIENT_CONF
