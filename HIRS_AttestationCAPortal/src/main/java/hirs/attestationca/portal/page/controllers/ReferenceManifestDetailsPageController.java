@@ -32,6 +32,7 @@ import org.springframework.web.servlet.ModelAndView;
 import java.io.IOException;
 import java.security.KeyStore;
 import java.security.NoSuchAlgorithmException;
+import java.security.PublicKey;
 import java.security.cert.CertificateException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -306,17 +307,19 @@ public class ReferenceManifestDetailsPageController extends PageController<Refer
                         data.replace("signatureValid", true);
                         break;
                     }
-                } catch (SupplyChainValidatorException e) {
-                    log.error("Error verifying cert chain: " + e.getMessage());
+                } catch (SupplyChainValidatorException scvEx) {
+                    log.error("Error verifying cert chain: " + scvEx.getMessage());
                 }
             }
         }
         data.put("skID", RIM_VALIDATOR.getSubjectKeyIdentifier());
         try {
-            for (CertificateAuthorityCredential cert : certificates) {
-                if (Arrays.equals(cert.getEncodedPublicKey(),
-                        RIM_VALIDATOR.getPublicKey().getEncoded())) {
-                    data.put("issuerID", cert.getId().toString());
+            if (RIM_VALIDATOR.getPublicKey() != null) {
+                for (CertificateAuthorityCredential cert : certificates) {
+                    if (Arrays.equals(cert.getEncodedPublicKey(),
+                            RIM_VALIDATOR.getPublicKey().getEncoded())) {
+                        data.put("issuerID", cert.getId().toString());
+                    }
                 }
             }
         } catch (NullPointerException npEx) {

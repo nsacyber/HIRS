@@ -38,12 +38,10 @@ public class CredentialValidator extends SupplyChainCredentialValidator {
         String message;
         if (ec == null) {
             message = baseErrorMessage + "an endorsement credential";
-            log.error(message);
             return new AppraisalStatus(FAIL, message);
         }
         if (trustStore == null) {
             message = baseErrorMessage + "a trust store";
-            log.error(message);
             return new AppraisalStatus(FAIL, message);
         }
 
@@ -56,7 +54,6 @@ public class CredentialValidator extends SupplyChainCredentialValidator {
 
         if (keyInStore) {
             message = baseErrorMessage + "keys in the trust store";
-            log.error(message);
             return new AppraisalStatus(FAIL, message);
         }
 
@@ -77,19 +74,15 @@ public class CredentialValidator extends SupplyChainCredentialValidator {
             }
         } catch (IOException e) {
             message = "Couldn't retrieve X509 certificate from endorsement credential";
-            log.error(message, e);
             return new AppraisalStatus(ERROR, message + " " + e.getMessage());
         } catch (SupplyChainValidatorException e) {
             message = "An error occurred indicating the credential is not valid";
-            log.warn(message, e);
             return new AppraisalStatus(ERROR, message + " " + e.getMessage());
         } catch (CertificateExpiredException e) {
             message = "The endorsement credential is expired";
-            log.warn(message, e);
             return new AppraisalStatus(FAIL, message + " " + e.getMessage());
         } catch (CertificateNotYetValidException e) {
             message = "The endorsement credential is not yet valid";
-            log.warn(message, e);
             return new AppraisalStatus(FAIL, message + " " + e.getMessage());
         }
     }
@@ -110,18 +103,15 @@ public class CredentialValidator extends SupplyChainCredentialValidator {
         String certVerifyMsg;
         if (pc == null) {
             message = baseErrorMessage + "a platform credential";
-            log.error(message);
             return new AppraisalStatus(FAIL, message);
         }
         try {
             if (trustStore == null || trustStore.size() == 0) {
                 message = baseErrorMessage + "an Issuer Cert in the Trust Store";
-                log.error(message);
                 return new AppraisalStatus(FAIL, message);
             }
         } catch (KeyStoreException e) {
             message = baseErrorMessage + "an initialized trust store";
-            log.error(message);
             return new AppraisalStatus(FAIL, message);
         }
 
@@ -139,7 +129,7 @@ public class CredentialValidator extends SupplyChainCredentialValidator {
         if (!acceptExpired && !pc.isValidOn(new Date())) {
             message = "Platform credential has expired";
             // if not valid at the current time
-            log.warn(message);
+            log.debug(message);
             return new AppraisalStatus(FAIL, message);
         }
 
@@ -148,12 +138,12 @@ public class CredentialValidator extends SupplyChainCredentialValidator {
             certVerifyMsg = verifyCertificate(attributeCert, trustStore);
             if (certVerifyMsg.isEmpty()) {
                 message = PLATFORM_VALID;
-                log.info(message);
+                log.debug(message);
                 return new AppraisalStatus(PASS, message);
             } else {
                 message = String.format("Platform credential failed verification%n%s",
                         certVerifyMsg);
-                log.error(message);
+                log.debug(message);
                 return new AppraisalStatus(FAIL, message);
             }
         } catch (SupplyChainValidatorException scvEx) {
@@ -180,17 +170,14 @@ public class CredentialValidator extends SupplyChainCredentialValidator {
         String message;
         if (platformCredential == null) {
             message = baseErrorMessage + "a platform credential";
-            log.error(message);
             return new AppraisalStatus(FAIL, message);
         }
         if (deviceInfoReport == null) {
             message = baseErrorMessage + "a device info report";
-            log.error(message);
             return new AppraisalStatus(FAIL, message);
         }
         if (endorsementCredential == null) {
             message = baseErrorMessage + "an endorsement credential";
-            log.error(message);
             return new AppraisalStatus(FAIL, message);
         }
 
@@ -199,7 +186,6 @@ public class CredentialValidator extends SupplyChainCredentialValidator {
                 .equals(platformCredential.getHolderSerialNumber())) {
             message = "Platform Credential holder serial number does not match "
                     + "the Endorsement Credential's serial number";
-            log.error(message);
             return new AppraisalStatus(FAIL, message);
         }
 
