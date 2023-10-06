@@ -228,6 +228,7 @@ public class CertificatePageController extends PageController<NoPageParams> {
         };
 
         int currentPage = input.getStart() / input.getLength();
+        int itemCount = 0;
         Pageable paging = PageRequest.of(currentPage, input.getLength(), Sort.by(orderColumnName));
 
         // special parsing for platform credential
@@ -242,9 +243,10 @@ public class CertificatePageController extends PageController<NoPageParams> {
             org.springframework.data.domain.Page<PlatformCredential> pagedResult = this.platformCertificateRepository.findAll(paging);
             if (pagedResult.hasContent()) {
                 records.addAll(pagedResult.getContent());
+                itemCount = records.size();
             }
-            records.setRecordsTotal(input.getLength());
-            records.setRecordsFiltered(platformCertificateRepository.count());
+            records.setRecordsTotal(platformCertificateRepository.count());
+            records.setRecordsFiltered(itemCount);
             EndorsementCredential associatedEC;
 
             if (!records.isEmpty()) {
@@ -274,10 +276,11 @@ public class CertificatePageController extends PageController<NoPageParams> {
             org.springframework.data.domain.Page<EndorsementCredential> pagedResult = this.endorsementCredentialRepository.findAll(paging);
             if (pagedResult.hasContent()) {
                 records.addAll(pagedResult.getContent());
+                itemCount = records.size();
             }
 
-            records.setRecordsTotal(input.getLength());
-            records.setRecordsFiltered(endorsementCredentialRepository.count());
+            records.setRecordsTotal(endorsementCredentialRepository.count());
+            records.setRecordsFiltered(itemCount);
 
             log.debug("Returning list of size: " + records.size());
             return new DataTableResponse<>(records, input);
@@ -290,9 +293,10 @@ public class CertificatePageController extends PageController<NoPageParams> {
 
             if (pagedResult.hasContent()) {
                 records.addAll(pagedResult.getContent());
+                itemCount = records.size();
             }
-            records.setRecordsTotal(input.getLength());
-            records.setRecordsFiltered(caCredentialRepository.count());
+            records.setRecordsTotal(caCredentialRepository.count());
+            records.setRecordsFiltered(itemCount);
 
             log.debug("Returning list of size: " + records.size());
             return new DataTableResponse<>(records, input);
@@ -301,9 +305,10 @@ public class CertificatePageController extends PageController<NoPageParams> {
             org.springframework.data.domain.Page<IssuedAttestationCertificate> pagedResult = this.issuedCertificateRepository.findAll(paging);
             if (pagedResult.hasContent()) {
                 records.addAll(pagedResult.getContent());
+                itemCount = records.size();
             }
-            records.setRecordsTotal(input.getLength());
-            records.setRecordsFiltered(issuedCertificateRepository.count());
+            records.setRecordsTotal(issuedCertificateRepository.count());
+            records.setRecordsFiltered(itemCount);
 
             log.debug("Returning list of size: " + records.size());
             return new DataTableResponse<>(records, input);

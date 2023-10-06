@@ -464,8 +464,8 @@ public class IdentityClaimProcessor extends AbstractProcessor {
                 if (baseRim != null) {
                     // pull the base versions of the swidtag and rimel and set the
                     // event log hash for use during provision
-                    SupportReferenceManifest sBaseRim = (SupportReferenceManifest) referenceManifestRepository
-                            .findByBase64Hash(baseRim.getBase64Hash());
+                    SupportReferenceManifest sBaseRim = referenceManifestRepository
+                            .getSupportRimEntityById(baseRim.getAssociatedRim());
                     baseRim.setEventLogHash(temp.getHexDecHash());
                     sBaseRim.setEventLogHash(temp.getHexDecHash());
                     referenceManifestRepository.save(baseRim);

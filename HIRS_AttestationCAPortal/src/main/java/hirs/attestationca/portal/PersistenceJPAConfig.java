@@ -52,7 +52,7 @@ import java.util.Properties;
         @PropertySource(value = "classpath:hibernate.properties"),
 
         // detects if file exists, if not, ignore errors
-        @PropertySource(value = "file:/etc/hirs/aca/application.properties",
+        @PropertySource(value = "file:/etc/hirs/aca/aca.properties",
                 ignoreResourceNotFound = true)
 })
 @ComponentScan({"hirs.attestationca.portal", "hirs.attestationca.portal.page.controllers", "hirs.attestationca.persist", "hirs.attestationca.persist.entity", "hirs.attestationca.persist.service"})
