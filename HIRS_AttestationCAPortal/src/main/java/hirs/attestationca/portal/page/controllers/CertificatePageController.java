@@ -235,18 +235,14 @@ public class CertificatePageController extends PageController<NoPageParams> {
         // Add the EndorsementCredential for each PlatformCredential based on the
         // serial number. (pc.HolderSerialNumber = ec.SerialNumber)
         if (certificateType.equals(PLATFORMCREDENTIAL)) {
-//            records = OrderedListQueryDataTableAdapter.getOrderedList(
-//                    getCertificateClass(certificateType), platformCertificateRepository,
-//                    input, orderColumnName, criteriaModifier);
             FilteredRecordsList<PlatformCredential> records = new FilteredRecordsList<>();
 
             org.springframework.data.domain.Page<PlatformCredential> pagedResult = this.platformCertificateRepository.findAll(paging);
             if (pagedResult.hasContent()) {
                 records.addAll(pagedResult.getContent());
-                itemCount = records.size();
             }
-            records.setRecordsTotal(platformCertificateRepository.count());
-            records.setRecordsFiltered(itemCount);
+            records.setRecordsTotal(input.getLength());
+            records.setRecordsFiltered(platformCertificateRepository.count());
             EndorsementCredential associatedEC;
 
             if (!records.isEmpty()) {
@@ -269,34 +265,26 @@ public class CertificatePageController extends PageController<NoPageParams> {
             log.debug("Returning list of size: " + records.size());
             return new DataTableResponse<>(records, input);
         } else if (certificateType.equals(ENDORSEMENTCREDENTIAL)) {
-//            records = OrderedListQueryDataTableAdapter.getOrderedList(
-//                    getCertificateClass(certificateType), endorsementCredentialRepository,
-//                    input, orderColumnName, criteriaModifier);
             FilteredRecordsList<EndorsementCredential> records = new FilteredRecordsList<>();
             org.springframework.data.domain.Page<EndorsementCredential> pagedResult = this.endorsementCredentialRepository.findAll(paging);
             if (pagedResult.hasContent()) {
                 records.addAll(pagedResult.getContent());
-                itemCount = records.size();
             }
 
-            records.setRecordsTotal(endorsementCredentialRepository.count());
-            records.setRecordsFiltered(itemCount);
+            records.setRecordsTotal(input.getLength());
+            records.setRecordsFiltered(endorsementCredentialRepository.count());
 
             log.debug("Returning list of size: " + records.size());
             return new DataTableResponse<>(records, input);
         } else if (certificateType.equals(TRUSTCHAIN)) {
-//            records = OrderedListQueryDataTableAdapter.getOrderedList(
-//                    getCertificateClass(certificateType), caCredentialRepository,
-//                    input, orderColumnName, criteriaModifier);
             FilteredRecordsList<CertificateAuthorityCredential> records = new FilteredRecordsList<>();
             org.springframework.data.domain.Page<CertificateAuthorityCredential> pagedResult = this.caCredentialRepository.findAll(paging);
 
             if (pagedResult.hasContent()) {
                 records.addAll(pagedResult.getContent());
-                itemCount = records.size();
             }
-            records.setRecordsTotal(caCredentialRepository.count());
-            records.setRecordsFiltered(itemCount);
+            records.setRecordsTotal(input.getLength());
+            records.setRecordsFiltered(caCredentialRepository.count());
 
             log.debug("Returning list of size: " + records.size());
             return new DataTableResponse<>(records, input);
@@ -305,10 +293,9 @@ public class CertificatePageController extends PageController<NoPageParams> {
             org.springframework.data.domain.Page<IssuedAttestationCertificate> pagedResult = this.issuedCertificateRepository.findAll(paging);
             if (pagedResult.hasContent()) {
                 records.addAll(pagedResult.getContent());
-                itemCount = records.size();
             }
-            records.setRecordsTotal(issuedCertificateRepository.count());
-            records.setRecordsFiltered(itemCount);
+            records.setRecordsTotal(input.getLength());
+            records.setRecordsFiltered(issuedCertificateRepository.count());
 
             log.debug("Returning list of size: " + records.size());
             return new DataTableResponse<>(records, input);
