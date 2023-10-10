@@ -40,8 +40,13 @@ check_mariadb_install () {
 # Starts mariadb during intial install 
 start_mysqlsd () {
   PRINT_STATUS=$1
+  PROCESS="mysqld"
+  source /etc/os-release 
+  if [ $ID = "ubuntu" ]; then 
+     PROCESS="mariadb"
+  fi
    # Check if mysql is already running, if not initialize
-   if [[ $(pgrep -c -u mysql mysqld) -eq 0 ]]; then
+   if [[ $(pgrep -c -u mysql $PROCESS) -eq 0 ]]; then
    # Check if running in a container
       if [ $DOCKER_CONTAINER  = true ]; then
       # if in Docker container, avoid services that invoke the D-Bus
@@ -70,13 +75,6 @@ start_mysqlsd () {
        fi
      fi # non contanier mysql start
    fi   
-  # Wait for mysql to start before continuing.
-  if [[ $PRINT_STATUS == "-p" ]]; then  echo "Checking mysqld status..."| tee -a "$LOG_FILE"; fi
-  while ! mysqladmin ping -h "$localhost" --silent; do
-  sleep 1;
-  done
-
- if [[ $PRINT_STATUS == "-p" ]]; then  echo "mysqld is running."| tee -a "$LOG_FILE"; fi
 }
 
 # Basic check for marai db status, attempts restart if not running
@@ -95,12 +93,23 @@ check_mysql () {
     fi
   fi
 
- # Wait for mysql to start before continuing.
 
-  while ! mysqladmin ping -h "$localhost" --silent; do
-     sleep 1;
+# Wait for mysql to start before continuing.
+  count=1;
+  if [[ $PRINT_STATUS == "-p" ]]; then  echo "Checking mysqld status..."| tee -a "$LOG_FILE"; fi
+
+  until mysqladmin ping -h "localhost" --silent ; do
+  ((count++))
+  if [[ $count -gt 20 ]]; then
+     break;
+  fi
+  sleep 1;
   done
-  echo "   Mariadb is running."
+   if [[ $count -gt 20 ]]; then
+     echo "Timed out waiting for Mariadb to respond"
+   else
+     echo "Mariadb started"
+  fi
 }
 
 # Check for mysql root password , abort if not available 

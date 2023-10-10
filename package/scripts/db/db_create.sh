@@ -45,7 +45,7 @@ source /etc/os-release
 if [ $ID = "ubuntu" ]; then 
    DB_SRV_CONF="/etc/mysql/mariadb.conf.d/50-server.cnf"
    DB_CLIENT_CONF="/etc/mysql/mariadb.conf.d/50-client.cnf"
-   echo log_error=/var/log/mysql/mariadb.log >> $DB_SRV_CONF
+   echo log_error=/var/log/mysql/mysqld.log >> $DB_SRV_CONF
 fi
 
 check_mysql_root_pwd () {
@@ -97,10 +97,12 @@ set_mysql_server_tls () {
     # Make sure mysql can access them
     chown mysql:mysql $SSL_DB_SRV_CHAIN $SSL_DB_SRV_CERT $SSL_DB_SRV_KEY
     # Make selinux contexts for config files, if selinux is enabled
-    selinuxenabled
-    if [ $? -eq 0 ]; then
-       semanage fcontext -a -t mysqld_etc_t $DB_SRV_CONF  > /dev/null #adds the context type to file
-       restorecon -v -F $DB_SRV_CONF      > /dev/null                 # changes the file's context type
+    if [ $ID = "rhel" ]; then 
+        selinuxenabled
+        if [ $? -eq 0 ]; then
+           semanage fcontext -a -t mysqld_etc_t $DB_SRV_CONF  > /dev/null #adds the context type to file
+           restorecon -v -F $DB_SRV_CONF      > /dev/null                 # changes the file's context type
+       fi
     fi
   else
        echo "mysql.cnf contians existing entry for ssl, skipping..." | tee -a "$LOG_FILE"
@@ -116,10 +118,12 @@ if [[ $(cat "$DB_CLIENT_CONF" | grep -c "HIRS") < 1 ]]; then
   echo "ssl_key=$SSL_DB_CLIENT_KEY" >> $DB_CLIENT_CONF
   chown mysql:mysql $SSL_DB_CLIENT_CHAIN $SSL_DB_CLIENT_CERT $SSL_DB_CLIENT_KEY 
   # Make selinux contexts for config files, if selinux is enabled
-  selinuxenabled
-  if [ $? -eq 0 ]; then
-      semanage fcontext -a -t mysqld_etc_t $DB_CLIENT_CONFf > /dev/null  #adds the context type to file
-      restorecon -F $DB_CLIENT_CONF                         > /dev/null #changes the file's context type
+   if [ $ID = "rhel" ]; then 
+      selinuxenabled
+      if [ $? -eq 0 ]; then
+          semanage fcontext -a -t mysqld_etc_t $DB_CLIENT_CONFf > /dev/null  #adds the context type to file
+         restorecon -F $DB_CLIENT_CONF                         > /dev/null #changes the file's context type
+      fi
   fi                           
 fi
 }
@@ -193,6 +197,7 @@ check_for_container -p
 set_mysql_server_tls
 set_mysql_client_tls
 start_mysqlsd
+check_mysql
 check_mysql_root_pwd
 set_hirs_db_pwd
 create_hirs_db_with_tls
