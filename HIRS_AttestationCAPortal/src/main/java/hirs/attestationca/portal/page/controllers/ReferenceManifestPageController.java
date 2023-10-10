@@ -119,7 +119,6 @@ public class ReferenceManifestPageController extends PageController<NoPageParams
         log.info("Querying with the following dataTableInput: " + input.toString());
 
         FilteredRecordsList<ReferenceManifest> records = new FilteredRecordsList<>();
-        int itemCount = 0;
         int currentPage = input.getStart() / input.getLength();
         Pageable paging = PageRequest.of(currentPage, input.getLength(), Sort.by(orderColumnName));
         org.springframework.data.domain.Page<ReferenceManifest> pagedResult = referenceManifestRepository.findAll(paging);
@@ -128,12 +127,11 @@ public class ReferenceManifestPageController extends PageController<NoPageParams
             for (ReferenceManifest manifest : pagedResult.getContent()) {
                 if (!manifest.getRimType().equals(ReferenceManifest.MEASUREMENT_RIM)) {
                     records.add(manifest);
-                    itemCount++;
                 }
             }
         }
-        records.setRecordsTotal(referenceManifestRepository.count());
-        records.setRecordsFiltered(itemCount);
+        records.setRecordsTotal(input.getLength());
+        records.setRecordsFiltered(referenceManifestRepository.count());
 
         log.debug("Returning list of size: " + records.size());
         return new DataTableResponse<>(records, input);

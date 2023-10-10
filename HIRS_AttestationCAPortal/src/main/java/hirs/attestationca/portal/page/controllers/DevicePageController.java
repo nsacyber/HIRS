@@ -96,8 +96,8 @@ public class DevicePageController extends PageController<NoPageParams> {
         if (pagedResult.hasContent()) {
             deviceList.addAll(pagedResult.getContent());
         }
-        deviceList.setRecordsTotal(deviceRepository.count());
-        deviceList.setRecordsFiltered(deviceList.size());
+        deviceList.setRecordsTotal(input.getLength());
+        deviceList.setRecordsFiltered(deviceRepository.count());
 
         FilteredRecordsList<HashMap<String, Object>> records
                 = retrieveDevicesAndAssociatedCertificates(deviceList);

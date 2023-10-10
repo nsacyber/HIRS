@@ -117,8 +117,8 @@ public class RimDatabasePageController extends PageController<NoPageParams> {
         if (pagedResult.hasContent()) {
             referenceDigestValues.addAll(pagedResult.getContent());
         }
-        referenceDigestValues.setRecordsTotal(referenceDigestValueRepository.count());
-        referenceDigestValues.setRecordsFiltered(referenceDigestValues.size());
+        referenceDigestValues.setRecordsTotal(input.getLength());
+        referenceDigestValues.setRecordsFiltered(referenceDigestValueRepository.count());
 
 //        FilteredRecordsList<ReferenceDigestValue> referenceDigestValues =
 //                OrderedListQueryDataTableAdapter.getOrderedList(
