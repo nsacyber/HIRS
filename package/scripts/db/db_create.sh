@@ -45,7 +45,11 @@ source /etc/os-release
 if [ $ID = "ubuntu" ]; then 
    DB_SRV_CONF="/etc/mysql/mariadb.conf.d/50-server.cnf"
    DB_CLIENT_CONF="/etc/mysql/mariadb.conf.d/50-client.cnf"
-   echo log_error=/var/log/mysql/mysqld.log >> $DB_SRV_CONF
+   if [[ $(cat "$DB_SRV_CONF" | grep -c "log-error") < 1 ]]; then
+       echo log-error=/var/log/mysql/mysqld.log >> $DB_SRV_CONF
+       echo "ssl-cipher=TLSv1.3" >> $DB_SRV_CONF
+       echo "ssl=on" >> $DB_SRV_CONF
+  fi
 fi
 
 check_mysql_root_pwd () {
@@ -131,7 +135,8 @@ fi
 # Process HIRS DB USER
 set_hirs_db_pwd () {
 
-   RESULT="$(mysql -u root --password=$DB_ADMIN_PWD -e "SELECT EXISTS(SELECT 1 FROM mysql.user WHERE user = 'hirs_db')")"
+  RESULT="$(mysql -u root --password=$DB_ADMIN_PWD -e "SELECT EXISTS(SELECT 1 FROM mysql.user WHERE user = 'hirs_db')")"
+
    if [ "$RESULT" = 1 ]; then
       echo "hirs-db user exists"
       HIRS_DB_PWD=$hirs_db_password
@@ -158,7 +163,8 @@ create_hirs_db_with_tls () {
   else
      mysql -u root --password=$DB_ADMIN_PWD < $MYSQL_DIR/db_create.sql
      mysql -u root --password=$DB_ADMIN_PWD < $MYSQL_DIR/secure_mysql.sql
-     mysql -u root --password=$DB_ADMIN_PWD -e "ALTER USER 'hirs_db'@'localhost' IDENTIFIED BY '"$HIRS_DB_PWD"'; FLUSH PRIVILEGES;";
+#     mysql -u root --password=$DB_ADMIN_PWD -e "ALTER USER 'hirs_db'@'localhost' IDENTIFIED BY '"$HIRS_DB_PWD"'; FLUSH PRIVILEGES;";
+     mysql -u root --password=$DB_ADMIN_PWD -e "SET PASSWORD FOR 'hirs_db'@'localhost' = PASSWORD('"$HIRS_DB_PWD"'); FLUSH PRIVILEGES;";
   fi
 }
 

@@ -82,7 +82,7 @@ echo "Checking HIRS ACA Setup on this device..."
      rpm -q --quiet HIRS_AttestationCA
     elif [ $ID = 'ubuntu' ]; then
      echo "Ubuntu distro detected"
-     dpkg -l "HIRS_AttestationCA" > /dev/null
+     dpkg -l "hirs-attestationca" > /dev/null
    else
     echo "Unsupported OS Distro encountered"
   fi

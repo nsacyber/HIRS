@@ -79,9 +79,15 @@ start_mysqlsd () {
 
 # Basic check for marai db status, attempts restart if not running
 check_mysql () {
+ PROCESS="mysqld"
+   source /etc/os-release 
+   if [ $ID = "ubuntu" ]; then 
+       PROCESS="mariadb"
+   fi
+
  echo "Checking mysqld status..."
   if [ $DOCKER_CONTAINER  = true ]; then
-       if [[ $(pgrep -c -u mysql mysqld) -eq 0 ]]; then
+       if [[ $(pgrep -c -u mysql $PROCESS ) -eq 0 ]]; then
           echo "mariadb not running , attempting to restart"
           /usr/bin/mysqld_safe & >> "$LOG_FILE"
        fi
@@ -96,7 +102,7 @@ check_mysql () {
 
 # Wait for mysql to start before continuing.
   count=1;
-  if [[ $PRINT_STATUS == "-p" ]]; then  echo "Checking mysqld status..."| tee -a "$LOG_FILE"; fi
+  if [[ $PRINT_STATUS == "-p" ]]; then  echo "Testing mysqld connection..."| tee -a "$LOG_FILE"; fi
 
   until mysqladmin ping -h "localhost" --silent ; do
   ((count++))

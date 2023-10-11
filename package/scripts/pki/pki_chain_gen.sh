@@ -225,6 +225,9 @@ create_cert_chain () {
          -srcstorepass $PASS -destkeystore $DB_CLIENT.jks -deststoretype JKS -deststorepass $PASS >> "$LOG_FILE" 2>&1
 }
 
+# Needed for older versions of openssl
+   #openssl rand -writerand .rnd
+
 if [ "$ASYM_ALG" == "rsa" ]; then
    # Create Root CA key pair and self signed cert
    echo "Generating RSA Root CA ...." | tee -a "$LOG_FILE"
