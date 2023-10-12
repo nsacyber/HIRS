@@ -1,0 +1,75 @@
+FROM rockylinux:9
+LABEL org.opencontainers.image.vendor NSA Laboratory for Advanced Cybersecurity Research
+LABEL org.opencontainers.image.source https://github.com/nsacyber/hirs
+LABEL org.opencontainers.image.description NSA\'s HIRS Attestation Certificate Authority. Expose port 8443 to access the portal from outside the container.
+
+SHELL ["/bin/bash", "-c"]
+
+# Rocky 9 has a different channel for some apps
+RUN dnf install -y 'dnf-command(config-manager)' && dnf config-manager --set-enabled crb
+
+# Update and install OS-dependencies
+RUN dnf update -y
+# Dependencies were selected for these reasons:
+#   OS setup/Unknown direct impact for HIRS
+ENV HIRS_DNF_OS_SETUP="initscripts firewalld policycoreutils policycoreutils-python-utils net-tools" 
+#   OS tools
+ENV HIRS_DNF_OS_TOOLS="git sudo vim wget"
+#   ACA compile
+ENV HIRS_DNF_ACA_COMPILE="java-17-openjdk-devel"
+#   ACA run
+ENV HIRS_DNF_ACA_RUN="mariadb-server"
+#   IBM TPM simulator compile
+ENV HIRS_DNF_TPM_COMPILE="tpm2-tools gcc cmake openssl-devel"
+# Download and install all dependencies at one time
+RUN dnf -y install $(echo "$HIRS_DNF_OS_SETUP") $(echo "$HIRS_DNF_OS_TOOLS") $(echo "$HIRS_DNF_ACA_COMPILE") $(echo "$HIRS_DNF_ACA_RUN") $(echo "$HIRS_DNF_TPM_COMPILE")
+
+# Set up TPM Simulator
+RUN git clone https://github.com/kgoldman/ibmswtpm2 /ibmswtpm2
+WORKDIR /ibmswtpm2/src
+RUN make
+# The following script allows the TPM to be set up in the docker image.
+# This will install an empty TPM. 
+RUN echo "#!/bin/bash" > /tmp/tpm_config && \
+    echo "/ibmswtpm2/src/tpm_server &" >> /tmp/tpm_config && \
+    echo "sleep 5" >> /tmp/tpm_config && \
+    echo "tpm2_startup -c" >> /tmp/tpm_config && \
+    bash /tmp/tpm_config && \
+    rm -rf /tmp/tpm_config
+
+#EXPOSE 8080 # Only needed if TLS is not working.
+EXPOSE 8443
+
+# Checkout HIRS
+RUN git clone -b main https://github.com/nsacyber/HIRS.git /repo
+
+# Defensive copy of the repo so it's easy to start fresh if needed
+RUN mkdir /hirs
+WORKDIR /repo
+RUN cp -r . /hirs
+
+# Run bootwar to cache build artifacts
+WORKDIR /hirs
+RUN ./gradlew bootWar
+
+# Add ACA TLS certification path to container OS
+# Allows the curl command in the HEALTHCHECK to work with TLS
+# These commands are placed into a script that can be run after aca_setup.sh on container launch.
+RUN echo "#!/bin/bash" > /tmp/hirs_add_aca_tls_path_to_os.sh && \
+    echo "cp /etc/hirs/certificates/HIRS/rsa_3k_sha384_certs/HIRS_intermediate_ca_rsa_3k_sha384.pem /etc/pki/ca-trust/source/anchors/" >> /tmp/hirs_add_aca_tls_path_to_os.sh && \
+    echo "cp /etc/hirs/certificates/HIRS/ecc_512_sha384_certs/HIRS_intermediate_ca_ecc_512_sha384.pem /etc/pki/ca-trust/source/anchors/" >> /tmp/hirs_add_aca_tls_path_to_os.sh && \
+    echo "cp /etc/hirs/certificates/HIRS/rsa_3k_sha384_certs/HIRS_root_ca_rsa_3k_sha384.pem /etc/pki/ca-trust/source/anchors/" >> /tmp/hirs_add_aca_tls_path_to_os.sh && \
+    echo "cp /etc/hirs/certificates/HIRS/ecc_512_sha384_certs/HIRS_root_ca_ecc_512_sha384.pem /etc/pki/ca-trust/source/anchors/"  >> /tmp/hirs_add_aca_tls_path_to_os.sh && \
+    echo "cp /etc/hirs/certificates/HIRS/rsa_3k_sha384_certs/HIRS_leaf_ca3_rsa_3k_sha384.pem /etc/pki/ca-trust/source/anchors/" >> /tmp/hirs_add_aca_tls_path_to_os.sh && \
+    echo "cp /etc/hirs/certificates/HIRS/ecc_512_sha384_certs/HIRS_leaf_ca3_ecc_512_sha384.pem /etc/pki/ca-trust/source/anchors/" >> /tmp/hirs_add_aca_tls_path_to_os.sh && \
+    echo "update-ca-trust" >> /tmp/hirs_add_aca_tls_path_to_os.sh
+RUN chmod +x /tmp/hirs_add_aca_tls_path_to_os.sh
+  
+# The container will report a health state based on when embedded tomcat finishes loading. If the ACA isn't loaded after the timeout, the container will report that it is unhealthy.
+HEALTHCHECK --start-period=50s --interval=1s --timeout=90s CMD curl -f https://localhost:8443/HIRS_AttestationCAPortal/portal/index
+
+# Reset working directory
+WORKDIR /hirs
+
+# On container launch, the database will be set up. Then bootRun should utilize build artifacts stored in the image.
+CMD ["bash", "-c", "/hirs/package/scripts/aca/aca_setup.sh --unattended && /tmp/hirs_add_aca_tls_path_to_os.sh && /hirs/package/scripts/aca/aca_bootRun.sh"]

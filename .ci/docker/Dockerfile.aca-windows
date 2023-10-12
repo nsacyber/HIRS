@@ -1,0 +1,80 @@
+FROM mcr.microsoft.com/powershell:latest
+LABEL org.opencontainers.image.vendor NSA Laboratory for Advanced Cybersecurity Research
+LABEL org.opencontainers.image.source https://github.com/nsacyber/hirs
+LABEL org.opencontainers.image.description NSA\'s HIRS Attestation Certificate Authority in a Windows-native image. Expose port 8443 to access the portal from outside the container.
+
+SHELL ["pwsh", "-Command"]
+
+# Output Powershell Version
+# This Dockerfile requires Powershell 7+.
+RUN $PSVersionTable
+
+# Set up logging area
+RUN mkdir -p C:/ProgramData/hirs/aca
+RUN mkdir -p C:/ProgramData/hirs/log
+
+# Download and install Java 17
+RUN ((New-Object System.Net.WebClient).DownloadFile('https://download.oracle.com/java/17/archive/jdk-17.0.8_windows-x64_bin.exe', 'C:/jdk-17.0.8_windows-x64_bin.exe'))
+RUN Write-Host "Installing JDK..."
+RUN ./jdk-17.0.8_windows-x64_bin.exe /s
+RUN Write-Host "Finished installing JDK."
+
+RUN ls 'C:\Program Files\Java'
+RUN ls 'C:\Program Files\Java\jdk-17\'
+
+# Download and install Mariadb as a service
+RUN ((New-Object System.Net.WebClient).DownloadFile('https://ftp.osuosl.org/pub/mariadb/mariadb-11.1.2/winx64-packages/mariadb-11.1.2-winx64.msi', 'C:/mariadb-11.1.2-winx64.msi'))
+RUN Write-Host "Installing MariaDB..."
+# mariadb silent install options https://mariadb.com/kb/en/installing-mariadb-msi-packages-on-windows/
+RUN Start-Process -Wait -FilePath msiexec.exe -ArgumentList @('/i', 'C:\mariadb-11.1.2-winx64.msi', 'ADDLOCAL=ALL', 'REMOVE=HeidiSQL', 'SERVICENAME=MariaDB', '/qn', '/L*V', 'C:/ProgramData/hirs/log/mariadb_install.log')
+RUN Write-Host "Finished installing mariadb."
+
+RUN ls 'C:\Program Files'
+RUN ls 'C:\Program Files\MariaDB 11.1'
+
+# Download and install Git
+RUN ((New-Object System.Net.WebClient).DownloadFile('https://github.com/git-for-windows/git/releases/download/v2.42.0.windows.2/Git-2.42.0.2-64-bit.exe', 'C:/Git-2.42.0.2-64-bit.exe'))
+RUN Write-Host "Installing Git..."
+RUN Start-Process -FilePath 'C:/Git-2.42.0.2-64-bit.exe' -ArgumentList \"/VERYSILENT /NORESTART /NOCANCEL /SP- /CLOSEAPPLICATIONS /RESTARTAPPLICATIONS /o:PathOption=CmdTools /o:BashTerminalOption=ConHost /o:EnableSymlinks=Enabled /COMPONENTS=gitlfs\" -Wait -PassThru
+# Disable GCM machine-wide
+RUN [Environment]::SetEnvironmentVariable('GCM_INTERACTIVE', 'Never', [System.EnvironmentVariableTarget]::Machine)
+RUN Write-Host "Finished installing Git."
+
+# Expose ACA Port
+EXPOSE 8443 8080
+
+# Set Environment Variables
+RUN setx JAVA_HOME 'C:\Program Files\Java\jdk-17'
+RUN setx GIT_HOME 'C:\Program Files\Git'
+RUN setx PATH '%JAVA_HOME%\bin;C:\Program Files\MariaDB 11.1\bin;%GIT_HOME%\bin;%PATH%'
+
+# Echo System Variables
+RUN echo $Env:PATH
+RUN echo $Env:GIT_HOME
+RUN echo $Env:JAVA_HOME
+
+# Clone HIRS main
+WORKDIR C:/
+RUN git config --global --add core.autocrlf false
+RUN git config --global --add safe.directory '*'
+RUN git clone -b main https://github.com/nsacyber/hirs.git C:/repo
+
+# Defensive copy of the repo so it's easy to start fresh if needed
+RUN mkdir C:/hirs
+WORKDIR C:/repo
+RUN cp -Recurse -Force . C:/hirs
+
+# Ensure Windows configuration files are in place before build.
+RUN pwsh -ExecutionPolicy Bypass ./package/win/aca/aca_win_config.ps1
+
+# Run bootWar to cache build objects and dependencies
+WORKDIR C:/hirs
+RUN setx GRADLE_OPTS '-Dorg.gradle.daemon=false'
+RUN ./gradlew.bat clean bootWar 2>&1 | tee -a C:/ProgramData/hirs/log/hirs_build.log
+RUN cp ./HIRS_AttestationCAPortal/src/main/resources/application.win.properties C:/ProgramData/hirs/aca/
+
+# Run ACA Setup- PKI and DB
+WORKDIR C:/hirs
+RUN pwsh -ExecutionPolicy Bypass ./package/win/aca/aca_setup.ps1 -unattended
+
+CMD ["pwsh", "-Command", "pwsh -ExecutionPolicy Bypass C:/hirs/package/win/aca/aca_bootRun.ps1"]
