@@ -26,12 +26,9 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 /**
  * Integration tests that test the URL End Points of DevicePageController.
  */
-//@WebAppConfiguration
-//@DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_CLASS)
 public class DevicePageControllerTest extends PageControllerTest {
 
     private static final String DEVICE_NAME = "Test Device - dell-lat-l-02";
-    //private static final String DEVICE_GROUP_NAME = "Test Device Group";
     private static final String TEST_ENDORSEMENT_CREDENTIAL
             = "/endorsement_credentials/tpmcert.pem";
     private static final String TEST_ENDORSEMENT_CREDENTIAL_2
@@ -62,11 +59,6 @@ public class DevicePageControllerTest extends PageControllerTest {
 
         device = new Device(DEVICE_NAME,null, HealthStatus.TRUSTED, AppraisalStatus.Status.PASS,null,false,"tmp_overrideReason", "tmp_summId");
         device = deviceRepository.save(device);
-
-        System.out.println("\nUUID:" + device.getId());
-        System.out.println("Number of devices:" + deviceRepository.count());
-        System.out.println("List of info for each device:");
-        System.out.println(deviceRepository.findAll());
 
         //Upload and save EK Cert
         EndorsementCredential ec = (EndorsementCredential)
