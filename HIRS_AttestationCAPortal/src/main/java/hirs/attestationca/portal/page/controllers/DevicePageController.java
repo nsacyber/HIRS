@@ -84,10 +84,6 @@ public class DevicePageController extends PageController<NoPageParams> {
 
         // get all the devices
         FilteredRecordsList<Device> deviceList = new FilteredRecordsList<>();
-//                OrderedListQueryDataTableAdapter.getOrderedList(
-//                        Device.class,
-//                        deviceRepository,
-//                        input, orderColumnName);
 
         int currentPage = input.getStart() / input.getLength();
         Pageable paging = PageRequest.of(currentPage, input.getLength(), Sort.by(orderColumnName));
@@ -95,8 +91,10 @@ public class DevicePageController extends PageController<NoPageParams> {
 
         if (pagedResult.hasContent()) {
             deviceList.addAll(pagedResult.getContent());
+            deviceList.setRecordsTotal(pagedResult.getContent().size());
+        } else {
+            deviceList.setRecordsTotal(input.getLength());
         }
-        deviceList.setRecordsTotal(input.getLength());
         deviceList.setRecordsFiltered(deviceRepository.count());
 
         FilteredRecordsList<HashMap<String, Object>> records

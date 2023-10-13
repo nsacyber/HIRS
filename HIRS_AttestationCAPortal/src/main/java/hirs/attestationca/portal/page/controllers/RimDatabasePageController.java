@@ -116,14 +116,11 @@ public class RimDatabasePageController extends PageController<NoPageParams> {
 
         if (pagedResult.hasContent()) {
             referenceDigestValues.addAll(pagedResult.getContent());
+            referenceDigestValues.setRecordsTotal(pagedResult.getContent().size());
+        } else {
+            referenceDigestValues.setRecordsTotal(input.getLength());
         }
-        referenceDigestValues.setRecordsTotal(input.getLength());
         referenceDigestValues.setRecordsFiltered(referenceDigestValueRepository.count());
-
-//        FilteredRecordsList<ReferenceDigestValue> referenceDigestValues =
-//                OrderedListQueryDataTableAdapter.getOrderedList(
-//                        referenceDigestValueRepository,
-//                        input, orderColumnName, criteriaModifier, entityManager);
 
         // might be able to get rid of this, maybe right a query that looks for not updated
         SupportReferenceManifest support;

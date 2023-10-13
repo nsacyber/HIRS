@@ -115,22 +115,26 @@ public class ReferenceManifestPageController extends PageController<NoPageParams
 
         String orderColumnName = input.getOrderColumnName();
         log.info("Ordering on column: " + orderColumnName);
-
         log.info("Querying with the following dataTableInput: " + input.toString());
 
         FilteredRecordsList<ReferenceManifest> records = new FilteredRecordsList<>();
         int currentPage = input.getStart() / input.getLength();
         Pageable paging = PageRequest.of(currentPage, input.getLength(), Sort.by(orderColumnName));
         org.springframework.data.domain.Page<ReferenceManifest> pagedResult = referenceManifestRepository.findAll(paging);
+        int rimCount = 0;
 
         if (pagedResult.hasContent()) {
             for (ReferenceManifest manifest : pagedResult.getContent()) {
                 if (!manifest.getRimType().equals(ReferenceManifest.MEASUREMENT_RIM)) {
                     records.add(manifest);
+                    rimCount++;
                 }
             }
+            records.setRecordsTotal(rimCount);
+        } else {
+            records.setRecordsTotal(input.getLength());
         }
-        records.setRecordsTotal(input.getLength());
+
         records.setRecordsFiltered(referenceManifestRepository.count());
 
         log.debug("Returning list of size: " + records.size());

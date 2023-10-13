@@ -126,8 +126,11 @@ public class ValidationReportsPageController extends PageController<NoPageParams
 
         if (pagedResult.hasContent()) {
             records.addAll(pagedResult.getContent());
+            records.setRecordsTotal(pagedResult.getContent().size());
+        } else {
+            records.setRecordsTotal(input.getLength());
         }
-        records.setRecordsTotal(input.getLength());
+
         records.setRecordsFiltered(supplyChainValidatorSummaryRepository.count());
 
         return new DataTableResponse<>(records, input);
