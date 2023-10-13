@@ -57,13 +57,12 @@ start_mysqlsd () {
            chown -R mysql:mysql /var/lib/mysql/ >> "$LOG_FILE"
          fi
          if [[ $PRINT_STATUS == "-p" ]]; then echo "Starting mysql..."; fi
-           touch /var/log/mariadb/mariadb.log
-           chown mysql:mysql /var/log/mariadb/mariadb.log >> "$LOG_FILE";
-           /usr/bin/mysqld_safe & >> "$LOG_FILE"; 
-           echo "Attempting to start mariadb"
+         /usr/bin/mysqld_safe  --skip-syslog & >> "$LOG_FILE"; 
+         chown -R mysql:mysql /var/lib/mysql/ >> "$LOG_FILE"
+         echo "Attempting to start mariadb"
          else #not a container
            systemctl enable $SQL_SERVICE & >> "$LOG_FILE";
-            systemctl start $SQL_SERVICE & >> "$LOG_FILE";
+           systemctl start $SQL_SERVICE & >> "$LOG_FILE";
          fi
      else # mysql process is running
      # check if mysql service is running
@@ -89,7 +88,8 @@ check_mysql () {
   if [ $DOCKER_CONTAINER  = true ]; then
        if [[ $(pgrep -c -u mysql $PROCESS ) -eq 0 ]]; then
           echo "mariadb not running , attempting to restart"
-          /usr/bin/mysqld_safe & >> "$LOG_FILE"
+          chown mysql:mysql /var/log/mariadb/mariadb.log >> "$LOG_FILE";
+          /usr/bin/mysqld_safe  --skip-syslog & >> "$LOG_FILE"
        fi
   else  # not in a contianer
     DB_STATUS=$(systemctl status mysql |grep 'running' | wc -l )
@@ -113,6 +113,7 @@ check_mysql () {
   done
    if [[ $count -gt 20 ]]; then
      echo "Timed out waiting for Mariadb to respond"
+     exit 1;
    else
      echo "Mariadb started"
   fi

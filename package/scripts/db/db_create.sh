@@ -8,6 +8,7 @@
 ################################################################################
 
 LOG_FILE=$1
+DB_LOG_FILE="/var/log/mariadb/mariadb.log"
 PKI_PASS=$2
 UNATTENDED=$3
 RSA_PATH=rsa_3k_sha384_certs
@@ -29,10 +30,6 @@ SSL_DB_CLIENT_CHAIN="/etc/hirs/certificates/HIRS/rsa_3k_sha384_certs/HIRS_rsa_3k
 SSL_DB_CLIENT_CERT="/etc/hirs/certificates/HIRS/rsa_3k_sha384_certs/HIRS_db_client_rsa_3k_sha384.pem"; 
 SSL_DB_CLIENT_KEY="/etc/hirs/certificates/HIRS/rsa_3k_sha384_certs/HIRS_db_client_rsa_3k_sha384.key";
 
-touch $ACA_PROP_FILE
-touch $LOG_FILE
-touch $DB_SRV_CONF
-
 # Make sure required paths exist
 mkdir -p /etc/hirs/aca/
 mkdir -p /var/log/hirs/
@@ -45,12 +42,17 @@ source /etc/os-release
 if [ $ID = "ubuntu" ]; then 
    DB_SRV_CONF="/etc/mysql/mariadb.conf.d/50-server.cnf"
    DB_CLIENT_CONF="/etc/mysql/mariadb.conf.d/50-client.cnf"
+   mkdir -p /var/log/mariadb >> /dev/null
    if [[ $(cat "$DB_SRV_CONF" | grep -c "log-error") < 1 ]]; then
-       echo log-error=/var/log/mysql/mysqld.log >> $DB_SRV_CONF
-       echo "ssl-cipher=TLSv1.3" >> $DB_SRV_CONF
-       echo "ssl=on" >> $DB_SRV_CONF
+       echo "log_error=/var/log/mariadb/mariadb.log" >> $DB_SRV_CONF
+       echo "tls_version = TLSv1.2,TLSv1.3" >> $DB_SRV_CONF
   fi
 fi
+
+touch $ACA_PROP_FILE
+touch $LOG_FILE
+touch $DB_SRV_CONF
+touch $DB_LOG_FILE
 
 check_mysql_root_pwd () {
   # Check if DB root password needs to be obtained
