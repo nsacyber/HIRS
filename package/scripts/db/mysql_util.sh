@@ -57,7 +57,7 @@ start_mysqlsd () {
            chown -R mysql:mysql /var/lib/mysql/ >> "$LOG_FILE"
          fi
          if [[ $PRINT_STATUS == "-p" ]]; then echo "Starting mysql..."; fi
-         /usr/bin/mysqld_safe  --skip-syslog & >> "$LOG_FILE"; 
+         /usr/bin/mysqld_safe  --skip-syslog  >> "$LOG_FILE" &
          chown -R mysql:mysql /var/lib/mysql/ >> "$LOG_FILE"
          echo "Attempting to start mariadb"
          else #not a container
@@ -89,7 +89,7 @@ check_mysql () {
        if [[ $(pgrep -c -u mysql $PROCESS ) -eq 0 ]]; then
           echo "mariadb not running , attempting to restart"
           chown mysql:mysql /var/log/mariadb/mariadb.log >> "$LOG_FILE";
-          /usr/bin/mysqld_safe  --skip-syslog & >> "$LOG_FILE"
+          /usr/bin/mysqld_safe  --skip-syslog  >> "$LOG_FILE" &
        fi
   else  # not in a contianer
     DB_STATUS=$(systemctl status mysql |grep 'running' | wc -l )
@@ -179,5 +179,5 @@ mysqld_reboot () {
   mysql -u root --password=$DB_ADMIN_PWD -e "SHUTDOWN"
   sleep 2
   check_for_container
-  start_mysqlsd
+  start_mysqlsd >> "$LOG_FILE";
 }
