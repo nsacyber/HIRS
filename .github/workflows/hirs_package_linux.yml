@@ -37,9 +37,6 @@ jobs:
       uses: gradle/gradle-build-action@v2
     - name: Execute Gradle build
       run: |
-          pwd
-          ls
-          echo "build starts here ....."
           ./gradlew build;
           ./gradlew bootWar;
           ./gradlew buildDeb;
