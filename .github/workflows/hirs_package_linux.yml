@@ -50,7 +50,9 @@ jobs:
       uses: gradle/gradle-build-action@v2
     - name: Execute Gradle build
       run: |
-          pushd /HIRS
+          pwd
+          ls
+          echo "build starts here ....."
           ./gradlew build;
           ./gradlew bootWar;
           ./gradlew buildDeb;
@@ -62,7 +64,6 @@ jobs:
           cp HIRS_AttestationCAPortal/build/libs/HIRS_AttestationCAPortal.war /HIRS/artifacts/wars/. 
           cp HIRS_AttestationCAPortal/build/distributions/*.rpm /HIRS/artifacts/rpms/.
           cp HIRS_AttestationCAPortal/build/distributions/*.deb /HIRS/artifacts/debs/.
-          popd
     - name: Archive RPM files
       uses: actions/upload-artifact@v2
       with:
