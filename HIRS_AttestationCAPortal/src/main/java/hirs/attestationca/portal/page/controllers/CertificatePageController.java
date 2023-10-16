@@ -234,16 +234,16 @@ public class CertificatePageController extends PageController<NoPageParams> {
         // Add the EndorsementCredential for each PlatformCredential based on the
         // serial number. (pc.HolderSerialNumber = ec.SerialNumber)
         if (certificateType.equals(PLATFORMCREDENTIAL)) {
-//            records = OrderedListQueryDataTableAdapter.getOrderedList(
-//                    getCertificateClass(certificateType), platformCertificateRepository,
-//                    input, orderColumnName, criteriaModifier);
             FilteredRecordsList<PlatformCredential> records = new FilteredRecordsList<>();
-
             org.springframework.data.domain.Page<PlatformCredential> pagedResult = this.platformCertificateRepository.findAll(paging);
+
             if (pagedResult.hasContent()) {
                 records.addAll(pagedResult.getContent());
+                records.setRecordsTotal(pagedResult.getContent().size());
+            } else {
+                records.setRecordsTotal(input.getLength());
             }
-            records.setRecordsTotal(input.getLength());
+
             records.setRecordsFiltered(platformCertificateRepository.count());
             EndorsementCredential associatedEC;
 
@@ -267,31 +267,31 @@ public class CertificatePageController extends PageController<NoPageParams> {
             log.debug("Returning list of size: " + records.size());
             return new DataTableResponse<>(records, input);
         } else if (certificateType.equals(ENDORSEMENTCREDENTIAL)) {
-//            records = OrderedListQueryDataTableAdapter.getOrderedList(
-//                    getCertificateClass(certificateType), endorsementCredentialRepository,
-//                    input, orderColumnName, criteriaModifier);
             FilteredRecordsList<EndorsementCredential> records = new FilteredRecordsList<>();
             org.springframework.data.domain.Page<EndorsementCredential> pagedResult = this.endorsementCredentialRepository.findAll(paging);
+
             if (pagedResult.hasContent()) {
                 records.addAll(pagedResult.getContent());
+                records.setRecordsTotal(pagedResult.getContent().size());
+            } else {
+                records.setRecordsTotal(input.getLength());
             }
 
-            records.setRecordsTotal(input.getLength());
             records.setRecordsFiltered(endorsementCredentialRepository.count());
 
             log.debug("Returning list of size: " + records.size());
             return new DataTableResponse<>(records, input);
         } else if (certificateType.equals(TRUSTCHAIN)) {
-//            records = OrderedListQueryDataTableAdapter.getOrderedList(
-//                    getCertificateClass(certificateType), caCredentialRepository,
-//                    input, orderColumnName, criteriaModifier);
             FilteredRecordsList<CertificateAuthorityCredential> records = new FilteredRecordsList<>();
             org.springframework.data.domain.Page<CertificateAuthorityCredential> pagedResult = this.caCredentialRepository.findAll(paging);
 
             if (pagedResult.hasContent()) {
                 records.addAll(pagedResult.getContent());
+                records.setRecordsTotal(pagedResult.getContent().size());
+            } else {
+                records.setRecordsTotal(input.getLength());
             }
-            records.setRecordsTotal(input.getLength());
+
             records.setRecordsFiltered(caCredentialRepository.count());
 
             log.debug("Returning list of size: " + records.size());
@@ -299,10 +299,14 @@ public class CertificatePageController extends PageController<NoPageParams> {
         } else if (certificateType.equals(ISSUEDCERTIFICATES)) {
             FilteredRecordsList<IssuedAttestationCertificate> records = new FilteredRecordsList<>();
             org.springframework.data.domain.Page<IssuedAttestationCertificate> pagedResult = this.issuedCertificateRepository.findAll(paging);
+
             if (pagedResult.hasContent()) {
                 records.addAll(pagedResult.getContent());
+                records.setRecordsTotal(pagedResult.getContent().size());
+            } else {
+                records.setRecordsTotal(input.getLength());
             }
-            records.setRecordsTotal(input.getLength());
+
             records.setRecordsFiltered(issuedCertificateRepository.count());
 
             log.debug("Returning list of size: " + records.size());
@@ -389,14 +393,14 @@ public class CertificatePageController extends PageController<NoPageParams> {
                         for (PlatformCredential pc : sharedCertificates) {
                             if (!pc.isPlatformBase()) {
                                 pc.archive();
-                                certificateRepository.delete(pc);
+                                certificateRepository.save(pc);
                             }
                         }
                     }
                 }
 
                 certificate.archive();
-                certificateRepository.delete(certificate);
+                certificateRepository.save(certificate);
 
                 String deleteCompletedMessage = "Certificate successfully deleted";
                 messages.addInfo(deleteCompletedMessage);
@@ -832,11 +836,11 @@ public class CertificatePageController extends PageController<NoPageParams> {
             log.error(failMessage, dEx);
             messages.addError(failMessage + dEx.getMessage());
             return null;
-        } catch (IllegalArgumentException e) {
+        } catch (IllegalArgumentException iaEx) {
             final String failMessage = String.format(
                     "Certificate format not recognized(%s): ", fileName);
-            log.error(failMessage, e);
-            messages.addError(failMessage + e.getMessage());
+            log.error(failMessage, iaEx);
+            messages.addError(failMessage + iaEx.getMessage());
             return null;
         }
     }
@@ -864,11 +868,11 @@ public class CertificatePageController extends PageController<NoPageParams> {
             existingCertificate = getCertificateByHash(
                     certificateType,
                     certificate.getCertificateHash());
-        } catch (DBServiceException e) {
+        } catch (DBServiceException dbsEx) {
             final String failMessage = "Querying for existing certificate failed ("
                     + fileName + "): ";
-            messages.addError(failMessage + e.getMessage());
-            log.error(failMessage, e);
+            messages.addError(failMessage + dbsEx.getMessage());
+            log.error(failMessage, dbsEx);
             return;
         }
 
@@ -924,11 +928,11 @@ public class CertificatePageController extends PageController<NoPageParams> {
                 log.info(successMsg);
                 return;
             }
-        } catch (DBServiceException e) {
+        } catch (DBServiceException dbsEx) {
             final String failMessage = String.format("Storing new certificate failed (%s): ",
                     fileName);
-            messages.addError(failMessage + e.getMessage());
-            log.error(failMessage, e);
+            messages.addError(failMessage + dbsEx.getMessage());
+            log.error(failMessage, dbsEx);
             return;
         }
 
@@ -946,12 +950,12 @@ public class CertificatePageController extends PageController<NoPageParams> {
                 log.info(successMsg);
                 return;
             }
-        } catch (DBServiceException e) {
+        } catch (DBServiceException dbsEx) {
             final String failMessage = String.format("Found an identical"
                     + " pre-existing certificate in the "
                     + "archive, but failed to unarchive it (%s): ", fileName);
-            messages.addError(failMessage + e.getMessage());
-            log.error(failMessage, e);
+            messages.addError(failMessage + dbsEx.getMessage());
+            log.error(failMessage, dbsEx);
             return;
         }
 

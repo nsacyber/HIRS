@@ -68,17 +68,17 @@
 
                             // create status icon
                             var result = full.overallValidationResult;
-                            var ovallMessage = full.message;
+                            var overallMessage = full.message;
                             if (result) {
                                 switch (result) {
                                     case "PASS":
                                         html += '<img src="${passIcon}" title="${passText}"/>';
                                         break;
                                     case "FAIL":
-                                        html += '<img src="${failIcon}" title="' + ovallMessage + '"/>';
+                                        html += '<img src="${failIcon}" title="' + overallMessage + '"/>';
                                         break;
                                     case "ERROR":
-                                        html += '<img src="${errorIcon}" title="' + ovallMessage + '"/>';
+                                        html += '<img src="${errorIcon}" title="' + overallMessage + '"/>';
                                         break;
                                     default:
                                         html += unknownStatus;
@@ -183,7 +183,7 @@
                 // the validation_type.
                 for (var i = 0; i < full.validations.length; i++) {
                     var curValidation = full.validations[i];
-                    var curResult = curValidation.result;
+                    var curResult = curValidation.validationResult;
                     var curMessage = curValidation.message;
 
                     if (curValidation.validationType === validation_type) {

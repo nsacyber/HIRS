@@ -2,13 +2,11 @@ package hirs.attestationca.portal.page.controllers;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
-import hirs.attestationca.persist.CriteriaModifier;
 import hirs.attestationca.persist.FilteredRecordsList;
 import hirs.attestationca.persist.entity.manager.CertificateRepository;
 import hirs.attestationca.persist.entity.manager.DeviceRepository;
 import hirs.attestationca.persist.entity.manager.PlatformCertificateRepository;
 import hirs.attestationca.persist.entity.manager.SupplyChainValidationSummaryRepository;
-import hirs.attestationca.persist.entity.userdefined.Certificate;
 import hirs.attestationca.persist.entity.userdefined.Device;
 import hirs.attestationca.persist.entity.userdefined.SupplyChainValidationSummary;
 import hirs.attestationca.persist.entity.userdefined.certificate.PlatformCredential;
@@ -16,18 +14,13 @@ import hirs.attestationca.persist.entity.userdefined.certificate.attributes.Comp
 import hirs.attestationca.persist.entity.userdefined.certificate.attributes.V2.ComponentIdentifierV2;
 import hirs.attestationca.portal.datatables.DataTableInput;
 import hirs.attestationca.portal.datatables.DataTableResponse;
-import hirs.attestationca.portal.datatables.OrderedListQueryDataTableAdapter;
 import hirs.attestationca.portal.page.Page;
 import hirs.attestationca.portal.page.PageController;
 import hirs.attestationca.portal.page.params.NoPageParams;
 import jakarta.persistence.EntityManager;
-import jakarta.persistence.criteria.CriteriaBuilder;
-import jakarta.persistence.criteria.CriteriaQuery;
-import jakarta.persistence.criteria.Root;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.log4j.Log4j2;
-import org.hibernate.Session;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -43,7 +36,6 @@ import org.springframework.web.servlet.ModelAndView;
 import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
-import java.lang.ref.Reference;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -52,7 +44,6 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.List;
-import java.util.UUID;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -128,20 +119,6 @@ public class ValidationReportsPageController extends PageController<NoPageParams
         String orderColumnName = input.getOrderColumnName();
         log.debug("Ordering on column: " + orderColumnName);
 
-        // define an alias so the composite object, device, can be used by the
-        // datatables / query. This is necessary so the device.name property can
-        // be used.
-        CriteriaModifier criteriaModifier = new CriteriaModifier() {
-            @Override
-            public void modify(final CriteriaQuery criteriaQuery) {
-                Session session = entityManager.unwrap(Session.class);
-                CriteriaBuilder cb = session.getCriteriaBuilder();
-                Root<Certificate> scvRoot = criteriaQuery.from(Reference.class);
-
-                criteriaQuery.select(scvRoot).distinct(true).where(cb.isNull(scvRoot.get(Certificate.ARCHIVE_FIELD)));
-            }
-        };
-
         FilteredRecordsList<SupplyChainValidationSummary> records = new FilteredRecordsList<>();
         int currentPage = input.getStart() / input.getLength();
         Pageable paging = PageRequest.of(currentPage, input.getLength(), Sort.by(orderColumnName));
@@ -149,15 +126,12 @@ public class ValidationReportsPageController extends PageController<NoPageParams
 
         if (pagedResult.hasContent()) {
             records.addAll(pagedResult.getContent());
+            records.setRecordsTotal(pagedResult.getContent().size());
+        } else {
+            records.setRecordsTotal(input.getLength());
         }
-        records.setRecordsTotal(input.getLength());
-        records.setRecordsFiltered(supplyChainValidatorSummaryRepository.count());
 
-//        FilteredRecordsList<SupplyChainValidationSummary> records =
-//                OrderedListQueryDataTableAdapter.getOrderedList(
-//                        SupplyChainValidationSummary.class,
-//                        supplyChainValidatorSummaryRepository, input, orderColumnName,
-//                        criteriaModifier);
+        records.setRecordsFiltered(supplyChainValidatorSummaryRepository.count());
 
         return new DataTableResponse<>(records, input);
     }

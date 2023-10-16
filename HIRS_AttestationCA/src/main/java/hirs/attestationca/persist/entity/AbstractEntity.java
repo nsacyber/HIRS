@@ -40,7 +40,7 @@ public abstract class AbstractEntity implements Serializable {
     @Column (name = "create_time")
     @ColumnDefault(value = "CURRENT_TIMESTAMP")
     @Generated(GenerationTime.INSERT)
-    private Date createTime;
+    private Date createTime = new Date();
 
     /**
      * Default empty constructor is required for Hibernate. It is protected to
@@ -67,6 +67,9 @@ public abstract class AbstractEntity implements Serializable {
      * @return creation time
      */
     public Date getCreateTime() {
+        if (createTime == null) {
+            createTime = new Date();
+        }
         return (Date) createTime.clone();
     }
 

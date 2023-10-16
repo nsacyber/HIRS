@@ -57,7 +57,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 @Log4j2
-public class IdentityClaimHandler extends AbstractRequestHandler {
+public class IdentityClaimProcessor extends AbstractProcessor {
     private static final String PCR_QUOTE_MASK = "0,1,2,3,4,5,6,7,8,9,10,11,12,13,"
             + "14,15,16,17,18,19,20,21,22,23";
 
@@ -78,7 +78,7 @@ public class IdentityClaimHandler extends AbstractRequestHandler {
     /**
      * Constructor
      */
-    public IdentityClaimHandler(
+    public IdentityClaimProcessor(
             final SupplyChainValidationService supplyChainValidationService,
             final CertificateRepository certificateRepository,
             final ReferenceManifestRepository referenceManifestRepository,
@@ -105,7 +105,7 @@ public class IdentityClaimHandler extends AbstractRequestHandler {
      * @return an identity claim response for the specified request containing a wrapped blob
      */
     public byte[] processIdentityClaimTpm2(final byte[] identityClaim) {
-        log.error("Identity Claim received...");
+        log.info("Identity Claim received...");
 
         if (ArrayUtils.isEmpty(identityClaim)) {
             log.error("Identity claim empty throwing exception.");
@@ -124,6 +124,7 @@ public class IdentityClaimHandler extends AbstractRequestHandler {
         try {
             validationResult = doSupplyChainValidation(claim, ekPub);
         } catch (Exception ex) {
+            log.error(ex.getMessage());
             for (StackTraceElement ste : ex.getStackTrace()) {
                 log.error(ste.toString());
             }
@@ -191,12 +192,15 @@ public class IdentityClaimHandler extends AbstractRequestHandler {
         // this is to check what is in the platform object and pull
         // additional information from the DB if information exists
         if (platformCredentials.size() == 1) {
+            List<PlatformCredential> tempList = new LinkedList<>();
             for (PlatformCredential pc : platformCredentials) {
                 if (pc != null && pc.getPlatformSerial() != null) {
-                    platformCredentials.addAll(certificateRepository
+                    tempList.addAll(certificateRepository
                             .byBoardSerialNumber(pc.getPlatformSerial()));
                 }
             }
+
+            platformCredentials.addAll(tempList);
         }
         // perform supply chain validation
         SupplyChainValidationSummary summary = supplyChainValidationService.validateSupplyChain(
@@ -227,6 +231,9 @@ public class IdentityClaimHandler extends AbstractRequestHandler {
         log.info("Processing Device Info Report");
         // store device and device info report.
         Device device = this.deviceRepository.findByName(deviceInfoReport.getNetworkInfo().getHostname());
+        if (device == null) {
+            device = new Device(deviceInfoReport);
+        }
         device.setDeviceInfo(deviceInfoReport);
         return this.deviceRepository.save(device);
     }
@@ -457,8 +464,8 @@ public class IdentityClaimHandler extends AbstractRequestHandler {
                 if (baseRim != null) {
                     // pull the base versions of the swidtag and rimel and set the
                     // event log hash for use during provision
-                    SupportReferenceManifest sBaseRim = (SupportReferenceManifest) referenceManifestRepository
-                            .findByBase64Hash(baseRim.getBase64Hash());
+                    SupportReferenceManifest sBaseRim = referenceManifestRepository
+                            .getSupportRimEntityById(baseRim.getAssociatedRim());
                     baseRim.setEventLogHash(temp.getHexDecHash());
                     sBaseRim.setEventLogHash(temp.getHexDecHash());
                     referenceManifestRepository.save(baseRim);
