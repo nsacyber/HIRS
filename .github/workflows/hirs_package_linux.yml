@@ -58,13 +58,13 @@ jobs:
         path: artifacts/rpms/*
         if-no-files-found: error
     - name: Archive DEB files
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v3
       with:
         name: DEB_Files
         path: artifacts/debs/*
         if-no-files-found: error
     - name: Archive Jar files
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v3
       with:
         name: JAR_Files
         path: artifacts/jars/
