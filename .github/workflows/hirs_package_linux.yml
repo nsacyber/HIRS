@@ -52,7 +52,7 @@ jobs:
           cp HIRS_AttestationCAPortal/build/distributions/*.rpm artifacts/rpms/.
           cp HIRS_AttestationCAPortal/build/distributions/*.deb artifacts/debs/.
     - name: Archive RPM files
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v3
       with:
         name: RPM_Files
         path: artifacts/rpms/*
