@@ -1,0 +1,81 @@
+name: HIRS packages for centos
+on:
+  push:
+    branches:
+      - '*v3*'
+      - 'main'
+    workflow_dispatch:
+
+jobs:
+  # run the package script for HIRS ACA, Provisioners, tcg_rim_tool, and tcg_eventlog_tool
+  Package:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: Set up JDK 17
+      uses: actions/setup-java@v2
+      with:
+        java-version: '17'
+        distribution: 'adopt'
+        server-id: github # Value of the distributionManagement/repository/id field of the pom.xml
+        settings-path: ${{ github.workspace }} # location for the settings.xml file
+
+  package_linux:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    steps:
+    - uses: actions/checkout@v2
+    - name: directory setup
+      run: |
+       mkdir -p artifacts/jars
+       mkdir -p artifacts/wars
+       mkdir -p artifacts/rpms
+       mkdir -p artifacts/debs
+    - name: Create HIRS packages
+      uses: actions/setup-java@v3
+      with:
+        java-version: 17
+    - name: install dependencies
+      run: |
+        sudo apt-get update
+        sudo apt-get install git curl nano cron mariadb-server
+    - name: Setup Gradle
+    - uses: gradle/gradle-build-action@v2
+    - name: Execute Gradle build
+      run: |
+          pushd /HIRS
+          ./gradlew build;
+          ./gradlew bootWar;
+          ./gradlew buildDeb;
+          ./gradlew buildRpm;
+          cp HIRS_AttestationCAPortal/build/libs/*.jar /HIRS/artifacts/jars/. 
+          cp HIRS_AttestationCA/build/libs/*.jar /HIRS/artifacts/jars/.
+          cp HIRS_Utils/build/libs/*.jar /HIRS/artifacts/jars/.
+          cp HIRS_Structs/build/libs/*.jar /HIRS/artifacts/jars/.
+          cp HIRS_AttestationCAPortal/build/libs/HIRS_AttestationCAPortal.war /HIRS/artifacts/wars/. 
+          cp HIRS_AttestationCAPortal/build/distributions/*.rpm /HIRS/artifacts/rpms/.
+          cp HIRS_AttestationCAPortal/build/distributions/*.deb /HIRS/artifacts/debs/.
+          popd
+    - name: Archive RPM files
+      uses: actions/upload-artifact@v2
+      with:
+        name: RPM_Files
+        path: artifacts/rpms/*
+        if-no-files-found: error
+    - name: Archive DEB files
+      uses: actions/upload-artifact@v2
+      with:
+        name: DEB_Files
+        path: artifacts/debs/*
+        if-no-files-found: error
+    - name: Archive Jar files
+      uses: actions/upload-artifact@v2
+      with:
+        name: JAR_Files
+        path: artifacts/jars/
