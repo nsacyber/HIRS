@@ -57,13 +57,13 @@ jobs:
           ./gradlew bootWar;
           ./gradlew buildDeb;
           ./gradlew buildRpm;
-          cp HIRS_AttestationCAPortal/build/libs/*.jar /HIRS/artifacts/jars/. 
-          cp HIRS_AttestationCA/build/libs/*.jar /HIRS/artifacts/jars/.
-          cp HIRS_Utils/build/libs/*.jar /HIRS/artifacts/jars/.
-          cp HIRS_Structs/build/libs/*.jar /HIRS/artifacts/jars/.
-          cp HIRS_AttestationCAPortal/build/libs/HIRS_AttestationCAPortal.war /HIRS/artifacts/wars/. 
-          cp HIRS_AttestationCAPortal/build/distributions/*.rpm /HIRS/artifacts/rpms/.
-          cp HIRS_AttestationCAPortal/build/distributions/*.deb /HIRS/artifacts/debs/.
+          cp HIRS_AttestationCAPortal/build/libs/*.jar artifacts/jars/. 
+          cp HIRS_AttestationCA/build/libs/*.jar artifacts/jars/.
+          cp HIRS_Utils/build/libs/*.jar artifacts/jars/.
+          cp HIRS_Structs/build/libs/*.jar artifacts/jars/.
+          cp HIRS_AttestationCAPortal/build/libs/HIRS_AttestationCAPortal.war artifacts/wars/. 
+          cp HIRS_AttestationCAPortal/build/distributions/*.rpm artifacts/rpms/.
+          cp HIRS_AttestationCAPortal/build/distributions/*.deb artifacts/debs/.
     - name: Archive RPM files
       uses: actions/upload-artifact@v2
       with:
