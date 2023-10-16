@@ -8,7 +8,7 @@ on:
 
 jobs:
   # run the package script for HIRS ACA, Provisioners, tcg_rim_tool, and tcg_eventlog_tool
-  Package:
+ Package_linux:
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -23,13 +23,6 @@ jobs:
         distribution: 'temurin'
         server-id: github # Value of the distributionManagement/repository/id field of the pom.xml
         settings-path: ${{ github.workspace }} # location for the settings.xml file
-
-  package_linux:
-    runs-on: ubuntu-latest
-    permissions:
-      contents: read
-      packages: write
-    steps:
     - name: directory setup
       run: |
        mkdir -p artifacts/jars
