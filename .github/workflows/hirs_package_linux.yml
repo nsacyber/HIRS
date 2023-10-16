@@ -15,12 +15,12 @@ jobs:
       packages: write
 
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v4
     - name: Set up JDK 17
-      uses: actions/setup-java@v2
+      uses: actions/setup-java@v3
       with:
         java-version: '17'
-        distribution: 'adopt'
+        distribution: 'temurin'
         server-id: github # Value of the distributionManagement/repository/id field of the pom.xml
         settings-path: ${{ github.workspace }} # location for the settings.xml file
 
@@ -30,18 +30,12 @@ jobs:
       contents: read
       packages: write
     steps:
-    - uses: actions/checkout@v2
     - name: directory setup
       run: |
        mkdir -p artifacts/jars
        mkdir -p artifacts/wars
        mkdir -p artifacts/rpms
        mkdir -p artifacts/debs
-    - name: Create HIRS packages
-      uses: actions/setup-java@v3
-      with:
-        java-version: 17
-        distribution: oracle
     - name: install dependencies
       run: |
         sudo apt-get update
