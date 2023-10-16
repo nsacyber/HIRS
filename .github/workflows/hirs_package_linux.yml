@@ -1,4 +1,4 @@
-name: HIRS packages for centos
+name: HIRS build and packages for Linux
 on:
   push:
     branches:
@@ -46,7 +46,7 @@ jobs:
         sudo apt-get update
         sudo apt-get install git curl nano cron mariadb-server
     - name: Setup Gradle
-    - uses: gradle/gradle-build-action@v2
+      uses: gradle/gradle-build-action@v2
     - name: Execute Gradle build
       run: |
           pushd /HIRS
