@@ -41,6 +41,7 @@ jobs:
       uses: actions/setup-java@v3
       with:
         java-version: 17
+        distribution: oracle
     - name: install dependencies
       run: |
         sudo apt-get update
