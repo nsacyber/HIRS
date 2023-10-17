@@ -2,6 +2,9 @@ package hirs.attestationca.portal.page;
 
 import hirs.attestationca.portal.PageConfiguration;
 import hirs.attestationca.persist.entity.userdefined.certificate.CertificateAuthorityCredential;
+import jakarta.xml.bind.DatatypeConverter;
+import org.hibernate.AssertionFailure;
+import org.springframework.beans.factory.BeanInitializationException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.context.annotation.*;
@@ -14,14 +17,19 @@ import org.springframework.orm.jpa.JpaVendorAdapter;
 import org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean;
 import org.springframework.orm.jpa.vendor.HibernateJpaVendorAdapter;
 import org.springframework.transaction.PlatformTransactionManager;
+import org.yaml.snakeyaml.external.biz.base64Coder.Base64Coder;
 
 import javax.sql.DataSource;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.security.*;
 import java.security.cert.X509Certificate;
+import java.security.spec.PKCS8EncodedKeySpec;
+import java.util.Base64;
 import java.util.Properties;
+import java.util.*;
 
 /**
  * A configuration class for testing Attestation CA Portal classes that require a database.
@@ -108,6 +116,8 @@ public class PageTestConfiguration {
         return hibernateProperties;
     }
 
+
+
     /**
      * Generates JPA transaction manager.
      *
@@ -118,5 +128,35 @@ public class PageTestConfiguration {
         final JpaTransactionManager transactionManager = new JpaTransactionManager();
         transactionManager.setEntityManagerFactory(entityManagerFactory().getObject());
         return transactionManager;
+    }
+
+    @Bean
+    public PrivateKey privateKey() {
+        try {
+            KeyPairGenerator keyGenerator = KeyPairGenerator.getInstance("RSA");
+            PrivateKey dummy_privKey = keyGenerator.generateKeyPair().getPrivate();
+            return dummy_privKey;
+        }
+        catch (GeneralSecurityException e) {
+            throw new AssertionError(e);
+        }
+    }
+
+    /**
+     * @return a blank {@link java.security.KeyStore}
+     * this function is only used to override the PersistenceJPAConfig keyStore bean during test
+     */
+    @Bean
+    public KeyStore keyStore() {
+        // attempt to create the key store. if that fails, print a message before failing.
+        try {
+            KeyStore dummy_keyStore = KeyStore.getInstance("JKS");
+            dummy_keyStore.load(null);
+
+            return dummy_keyStore;
+        } catch (Exception ex) {
+            System.out.println("\nEncountered error while creating a fake (blank) key store for testing");
+            throw new BeanInitializationException(ex.getMessage(), ex);
+        }
     }
 }

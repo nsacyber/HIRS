@@ -26,7 +26,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
  */
 public class DevicePageControllerTest extends PageControllerTest {
 
-    private static final String DEVICE_NAME = "Test Device - dell-lat-l-02";
+    private static final String DEVICE_NAME = "Test Device";
     private static final String TEST_ENDORSEMENT_CREDENTIAL
             = "/endorsement_credentials/tpmcert.pem";
     private static final String TEST_ENDORSEMENT_CREDENTIAL_2
