@@ -84,10 +84,6 @@ public class DevicePageController extends PageController<NoPageParams> {
 
         // get all the devices
         FilteredRecordsList<Device> deviceList = new FilteredRecordsList<>();
-//                OrderedListQueryDataTableAdapter.getOrderedList(
-//                        Device.class,
-//                        deviceRepository,
-//                        input, orderColumnName);
 
         int currentPage = input.getStart() / input.getLength();
         Pageable paging = PageRequest.of(currentPage, input.getLength(), Sort.by(orderColumnName));
@@ -95,8 +91,10 @@ public class DevicePageController extends PageController<NoPageParams> {
 
         if (pagedResult.hasContent()) {
             deviceList.addAll(pagedResult.getContent());
+            deviceList.setRecordsTotal(pagedResult.getContent().size());
+        } else {
+            deviceList.setRecordsTotal(input.getLength());
         }
-        deviceList.setRecordsTotal(input.getLength());
         deviceList.setRecordsFiltered(deviceRepository.count());
 
         FilteredRecordsList<HashMap<String, Object>> records
@@ -131,10 +129,11 @@ public class DevicePageController extends PageController<NoPageParams> {
                 issuedCertificateList.addAll(issuedCertificateRepository.findByDeviceId(id));
             }
 
+            HashMap<String, List<Object>> certificatePropertyMap;
             // loop all the devices
             for (Device device : deviceList) {
                 // hashmap containing the list of certificates based on the certificate type
-                HashMap<String, List<Object>> certificatePropertyMap = new HashMap<>();
+                certificatePropertyMap = new HashMap<>();
 
                 deviceCertMap.put("device", device);
                 String deviceName;
@@ -179,8 +178,7 @@ public class DevicePageController extends PageController<NoPageParams> {
                 }
 
                 for (IssuedAttestationCertificate ic : issuedCertificateList) {
-                    deviceName = deviceRepository.findById(ic.getDeviceId()).get().getName();
-
+                    deviceName = ic.getDeviceName();
                     // set the certificate if it's the same ID
                     if (device.getName().equals(deviceName)) {
                         String certificateId = IssuedAttestationCertificate.class.getSimpleName();

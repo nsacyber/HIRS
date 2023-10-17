@@ -36,8 +36,8 @@ public final class BouncyCastleUtils {
         X500Name x500Name2;
 
         try {
-            x500Name1 = new X500Name(nameValue1.replace(SEPARATOR_PLUS, SEPARATOR_COMMA));
-            x500Name2 = new X500Name(nameValue2.replace(SEPARATOR_PLUS, SEPARATOR_COMMA));
+            x500Name1 = new X500Name(nameValue1);
+            x500Name2 = new X500Name(nameValue2);
             result = x500Name1.equals(x500Name2);
         } catch (IllegalArgumentException iaEx) {
             log.error(iaEx.toString());

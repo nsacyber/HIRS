@@ -8,6 +8,7 @@
 
 #PROP_FILE=/etc/hirs/aca/application.properties
 ACA_PROP=/etc/hirs/aca/aca.properties
+SPRING_PROP_FILE="/etc/hirs/aca/application.properties"
 LOG_FILE=$1
 PKI_PASS=$2
 UNATTENDED=$3
@@ -20,20 +21,29 @@ SCRIPT_DIR=$( dirname -- "$( readlink -f -- "$0"; )"; )
 mkdir -p $HIRS_CONF_DIR $LOG_DIR
 echo "SCRIPT_DIR is $SCRIPT_DIR" | tee -a "$LOG_FILE"
 
-if [ -z "$1" ]; then
+if [ -z "$LOG_FILE" ]; then
    LOG_FILE="$LOG_DIR$LOG_FILE_NAME"
    echo "using log file $LOG_FILE" | tee -a "$LOG_FILE"
 fi
 
-if [ -z "$2" ]; then
-   PKI_PASS=$(head -c 64 /dev/urandom | md5sum | tr -dc 'a-zA-Z0-9')
-   echo "Using randomly generated password for the PKI key password" | tee -a "$LOG_FILE"
-   echo "Using pki password=$PKI_PASS"
+if [ -z "$PKI_PASS" ]; then
+   if [ -f $ACA_PROP ]; then
+      source $ACA_PROP
+      if [ ! -z $hirs_pki_password ]; then
+           PKI_PASS=$hirs_pki_password
+      fi
+   fi
+fi
+
+if [ -z "$PKI_PASS" ]; then
+    PKI_PASS=$(head -c 64 /dev/urandom | md5sum | tr -dc 'a-zA-Z0-9')
+    echo "Using randomly generated password for the PKI key password" | tee -a "$LOG_FILE"
+    echo "Using pki password=$PKI_PASS"
 fi
 
 # Check for sudo or root user 
-if [ "$EUID" -ne 0 ]
-        then echo "This script requires root.  Please run as root" | tee -a "$LOG_FILE"
+if [ "$EUID" -ne 0 ]; then 
+   echo "This script requires root.  Please run as root" | tee -a "$LOG_FILE"
         exit 1
 fi
 
@@ -51,11 +61,13 @@ if [ ! -d "/etc/hirs/certificates" ]; then
 
   pushd  /etc/hirs/certificates/ &> /dev/null
   cp $PKI_SETUP_DIR/ca.conf .
-  sh $PKI_SETUP_DIR/pki_chain_gen.sh "HIRS" "rsa" "3072" "sha384" "$PKI_PASS" "$LOG_FILE"
-  sh $PKI_SETUP_DIR/pki_chain_gen.sh "HIRS" "ecc" "512" "sha384" "$PKI_PASS" "$LOG_FILE"
+    $PKI_SETUP_DIR/pki_chain_gen.sh "HIRS" "rsa" "3072" "sha384" "$PKI_PASS" "$LOG_FILE"
+    $PKI_SETUP_DIR/pki_chain_gen.sh "HIRS" "ecc" "512" "sha384" "$PKI_PASS" "$LOG_FILE"
   popd &> /dev/null
 
   echo "hirs_pki_password="$PKI_PASS >>  $ACA_PROP
+  echo "server.ssl.key-store-password="$PKI_PASS >> $SPRING_PROP_FILE
+  echo "server.ssl.trust-store-password="$PKI_PASS >> $SPRING_PROP_FILE
 else 
   echo "/etc/hirs/certificates exists, skipping" | tee -a "$LOG_FILE"
 fi

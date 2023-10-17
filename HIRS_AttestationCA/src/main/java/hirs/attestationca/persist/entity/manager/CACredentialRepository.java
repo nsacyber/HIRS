@@ -17,4 +17,5 @@ public interface CACredentialRepository extends JpaRepository<CertificateAuthori
     List<CertificateAuthorityCredential> findBySubject(String subject);
     List<CertificateAuthorityCredential> findBySubjectSorted(String subject);
     CertificateAuthorityCredential findBySubjectKeyIdentifier(byte[] subjectKeyIdentifier);
+    CertificateAuthorityCredential findBySubjectKeyIdString(String subjectKeyIdString);
 }

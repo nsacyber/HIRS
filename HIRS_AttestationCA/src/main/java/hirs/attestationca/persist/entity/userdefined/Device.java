@@ -58,6 +58,16 @@ public class Device extends AbstractEntity {
     @Column(name = "summary_id")
     private String summaryId;
 
+    public Device(final DeviceInfoReport deviceInfoReport) {
+        super();
+        if (deviceInfoReport != null) {
+            this.name = deviceInfoReport.getNetworkInfo().getHostname();
+            this.deviceInfo = deviceInfoReport;
+        } else {
+            name = "";
+        }
+    }
+
     public String toString() {
         return String.format("Device Name: %s%nStatus: %s%nSummary: %s",
                 name, healthStatus.getStatus(),

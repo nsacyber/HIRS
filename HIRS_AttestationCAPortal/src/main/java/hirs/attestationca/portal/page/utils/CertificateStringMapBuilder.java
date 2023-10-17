@@ -12,6 +12,7 @@ import hirs.attestationca.persist.entity.userdefined.certificate.PlatformCredent
 import hirs.attestationca.persist.entity.userdefined.certificate.attributes.ComponentIdentifier;
 import hirs.attestationca.persist.entity.userdefined.certificate.attributes.PlatformConfiguration;
 import hirs.utils.BouncyCastleUtils;
+import hirs.attestationca.persist.util.PciIds;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import lombok.extern.log4j.Log4j2;
@@ -19,6 +20,7 @@ import org.bouncycastle.util.encoders.Hex;
 
 import java.io.IOException;
 import java.math.BigInteger;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
@@ -148,15 +150,14 @@ public final class CertificateStringMapBuilder {
             final Certificate certificate,
             final CertificateRepository certificateRepository,
             final CACredentialRepository caCredentialRepository) {
-        List<CertificateAuthorityCredential> issuerCertificates = new LinkedList<>();
+        List<CertificateAuthorityCredential> issuerCertificates = new ArrayList<>();
         CertificateAuthorityCredential skiCA = null;
         String issuerResult;
 
         //Check if there is a subject organization
         if (certificate.getAuthorityKeyIdentifier() != null
                 && !certificate.getAuthorityKeyIdentifier().isEmpty()) {
-            byte[] bytes = Hex.decode(certificate.getAuthorityKeyIdentifier());
-            skiCA = caCredentialRepository.findBySubjectKeyIdentifier(bytes);
+            skiCA = caCredentialRepository.findBySubjectKeyIdString(certificate.getAuthorityKeyIdentifier());
         } else {
             log.error(String.format("Certificate (%s) for %s has no authority key identifier.",
                     certificate.getClass().toString(), certificate.getSubject()));
@@ -184,7 +185,7 @@ public final class CertificateStringMapBuilder {
                 if (issuerResult.isEmpty()) {
                     //Check if it's root certificate
                     if (BouncyCastleUtils.x500NameCompare(issuerCert.getIssuerSorted(),
-                            issuerCert.getSubject())) {
+                            issuerCert.getSubjectSorted())) {
                         return null;
                     }
                     return containsAllChain(issuerCert, certificateRepository, caCredentialRepository);

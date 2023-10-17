@@ -73,6 +73,15 @@ ospackage {
     addParentDirs = true
     createDirectoryEntry true 
 
+    // copy json tables
+    into ('/etc/hirs/aca/default-properties') {
+         from '../HIRS_AttestationCA/src/main/resources/component-class.json'
+         from '../HIRS_AttestationCA/src/main/resources/vendor-table.json'
+    }
+    // copy springboot property file
+    into ('/etc/hirs/aca/') {
+         from '../HIRS_AttestationCAPortal/src/main/resources/application.properties'
+    }
     // copy setup scripts to /opt/hirs/aca
     into ('/opt/hirs/aca/scripts/') {
          from '../package/scripts/'
@@ -85,21 +94,24 @@ ospackage {
     }
 
     // Post Install
-    postInstall 'sh /opt/hirs/aca/scripts/aca/aca_setup.sh -u'
+    postInstall 'bash /opt/hirs/aca/scripts/aca/aca_setup.sh -u'
     // add chrontab to run ACA at boot
     postInstall 'echo "@reboot root /opt/hirs/aca/scripts/aca/aca_bootRun.sh -w" >> /etc/crontab'
     // run ACA after install
-    postInstall '/opt/hirs/aca/scripts/aca/aca_bootRun.sh -w'
+    postInstall '/opt/hirs/aca/scripts/aca/aca_bootRun.sh -w &'
     postInstall 'chmod +x /opt/hirs/aca/scripts/aca/*'
+    postInstall 'bash /opt/hirs/aca/scripts/aca/check_for_aca.sh'
 
     // Uninstall
-    preUninstall 'sh /opt/hirs/aca/scripts/aca/aca_remove_setup.sh'
+    preUninstall 'bash /opt/hirs/aca/scripts/aca/aca_remove_setup.sh'
+    postUninstall 'rm -rf /etc/hirs'
 
     buildRpm {
         arch = X86_64
     }
 
     buildDeb {
+        packageName = 'hirs-attestationca'
         arch = 'amd64'
     }
 }

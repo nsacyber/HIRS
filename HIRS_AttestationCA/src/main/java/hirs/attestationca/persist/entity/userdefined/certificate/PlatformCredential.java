@@ -176,6 +176,8 @@ public class PlatformCredential extends DeviceAssociatedCertificate {
 
     @Column(length = MAX_MESSAGE_LENGTH)
     private String componentFailures = Strings.EMPTY;
+    @Column(length = MAX_MESSAGE_LENGTH)
+    private String componentFailureMessage = Strings.EMPTY;
 
     @Transient
     private EndorsementCredential endorsementCredential = null;

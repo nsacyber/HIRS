@@ -1,12 +1,20 @@
 #!/bin/bash
+#####################################################################################
+#
+# Script to create ACA setup files and configure the hirs_db database.
+# 
+#
+#####################################################################################
 # Capture location of the script to allow from invocation from any location
 SCRIPT_DIR=$( dirname -- "$( readlink -f -- "$0"; )"; )
 HIRS_CONF_DIR=/etc/hirs/aca
 LOG_FILE_NAME="hirs_aca_install_"$(date +%Y-%m-%d).log 
 LOG_DIR="/var/log/hirs/"
 LOG_FILE="$LOG_DIR$LOG_FILE_NAME"
-HIRS_PROP_DIR="/opt/hirs/default-properties"
 HIRS_JSON_DIR="/etc/hirs/aca/default-properties"
+ACA_PROP_FILE="/etc/hirs/aca/aca.properties"
+SPRING_PROP_FILE="/etc/hirs/aca/application.properties"
+PROP_FILE='../../../HIRS_AttestationCAPortal/src/main/resources/application.properties'
 COMP_JSON='../../../HIRS_AttestationCA/src/main/resources/component-class.json'
 VENDOR_TABLE='../../../HIRS_AttestationCA/src/main/resources/vendor-table.json'
 
@@ -17,7 +25,7 @@ help () {
   echo "     -u  | --unattended   Run unattended"
   echo "     -h  | --help   Print this Help."
   echo "     -sp | --skip-pki run the setup without pki setup."
-  echo "     -sb | --skip-db run the setup without database setup."
+  echo "     -sd | --skip-db run the setup without database setup."
   echo
 }
 
@@ -58,10 +66,16 @@ done
 
 set -- "${POSITIONAL_ARGS[@]}" # restore positional parameters
 
-mkdir -p $HIRS_CONF_DIR $LOG_DIR $HIRS_PROP_DIR $HIRS_JSON_DIR
+mkdir -p $HIRS_CONF_DIR $LOG_DIR $HIRS_JSON_DIR
+touch "$LOG_FILE"
 
-cp -n $COMP_JSON $HIRS_JSON_DIR/
-cp -n $VENDOR_TABLE $HIRS_JSON_DIR/
+pushd $SCRIPT_DIR &>/dev/null
+# Check if build environment is being used and set up property files
+if [ -f  $PROP_FILE ]; then
+   cp -n $PROP_FILE $HIRS_CONF_DIR/
+   cp -n $COMP_JSON $HIRS_JSON_DIR/
+   cp -n $VENDOR_TABLE $HIRS_JSON_DIR/
+fi
 
 echo "ACA setup log file is $LOG_FILE"
 
@@ -70,10 +84,7 @@ if [ "$EUID" -ne 0 ]
       exit 1
 fi
 
-touch "$LOG_FILE"
 echo "HIRS ACA Setup initiated on $(date +%Y-%m-%d)" >> "$LOG_FILE"
-
-pushd $SCRIPT_DIR &>/dev/null
 
 # Set HIRS PKI  password
 if [ -z $HIRS_PKI_PWD ]; then
@@ -86,7 +97,7 @@ if [ -z $HIRS_PKI_PWD ]; then
 fi
 
 if [ -z "${ARG_SKIP_PKI}" ]; then
-   sh ../pki/pki_setup.sh $LOG_FILE $PKI_PASS $ARG_UNATTEND
+   ../pki/pki_setup.sh $LOG_FILE $PKI_PASS $ARG_UNATTEND
    if [ $? -eq 0 ]; then 
         echo "ACA PKI  setup complete" | tee -a "$LOG_FILE"
       else
@@ -98,7 +109,7 @@ if [ -z "${ARG_SKIP_PKI}" ]; then
 fi
 
 if [ -z "${ARG_SKIP_DB}" ]; then
-   sh ../db/db_create.sh $LOG_FILE $ARG_UNATTEND
+   ../db/db_create.sh $LOG_FILE $PKI_PASS $ARG_UNATTEND
    if [ $? -eq 0 ]; then
       echo "ACA database setup complete" | tee -a "$LOG_FILE"
     else

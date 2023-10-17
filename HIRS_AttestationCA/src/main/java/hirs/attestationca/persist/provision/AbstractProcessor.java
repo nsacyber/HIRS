@@ -41,7 +41,7 @@ import java.util.List;
 
 @Log4j2
 @NoArgsConstructor
-public class AbstractRequestHandler {
+public class AbstractProcessor {
 
     @Getter
     private int validDays;
@@ -51,8 +51,8 @@ public class AbstractRequestHandler {
     @Getter
     private PolicyRepository policyRepository;
 
-    public AbstractRequestHandler(final PrivateKey privateKey,
-                                  final int validDays) {
+    public AbstractProcessor(final PrivateKey privateKey,
+                             final int validDays) {
         this.privateKey = privateKey;
         this.validDays = validDays;
     }
@@ -137,7 +137,8 @@ public class AbstractRequestHandler {
         if (identityClaim.hasEndorsementCredential()) {
             endorsementCredential = CredentialManagementHelper.storeEndorsementCredential(
                     certificateRepository,
-                    identityClaim.getEndorsementCredential().toByteArray());
+                    identityClaim.getEndorsementCredential().toByteArray(),
+                    identityClaim.getDv().getNw().getHostname());
         } else if (ekPub != null) {
             log.warn("Endorsement Cred was not in the identity claim from the client."
                     + " Checking for uploads.");
@@ -233,8 +234,8 @@ public class AbstractRequestHandler {
                                             final Device device) {
         IssuedAttestationCertificate issuedAc;
         boolean generateCertificate = true;
-        PolicyRepository scp = this.getPolicyRepository();
-        PolicySettings policySettings = scp.findByName("Default");
+        PolicyRepository scp = getPolicyRepository();
+        PolicySettings policySettings;
         Date currentDate = new Date();
         int days;
         try {
@@ -243,6 +244,7 @@ public class AbstractRequestHandler {
                     derEncodedAttestationCertificate, endorsementCredential, platformCredentials);
 
             if (scp != null) {
+                policySettings = scp.findByName("Default");
                 issuedAc = certificateRepository.findByDeviceId(device.getId());
 
                 generateCertificate = policySettings.isIssueAttestationCertificate();
@@ -260,6 +262,7 @@ public class AbstractRequestHandler {
                 }
             }
             if (generateCertificate) {
+                attCert.setDeviceId(device.getId());
                 attCert.setDeviceName(device.getName());
                 certificateRepository.save(attCert);
             }

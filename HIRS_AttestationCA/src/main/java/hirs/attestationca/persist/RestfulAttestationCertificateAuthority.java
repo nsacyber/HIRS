@@ -72,28 +72,6 @@ public class RestfulAttestationCertificateAuthority extends AttestationCertifica
     }
 
     /**
-     * Processes a given IdentityRequestEnvelope and
-     * generates a IdentityResponseEnvelope. In most cases,
-     * a client will generate the request using the TPM "Collate Identity" process.
-     *
-     * Wrap the {@link AttestationCertificateAuthority#processIdentityRequest(byte[])}
-     * with a Spring {@link org.springframework.web.bind.annotation.RequestMapping}. Effectively, this method then will allow spring to
-     * serialize and deserialize the request and responses on method invocation and
-     * return, respectively.
-     *
-     * @param identityRequest generated during the collate identity process with a Tpm
-     * @return response for the request
-     */
-    @Override
-    @ResponseBody
-    @RequestMapping(value = "/identity-request/process",
-            method = RequestMethod.POST,
-            consumes = MediaType.APPLICATION_OCTET_STREAM_VALUE)
-    public byte[] processIdentityRequest(@RequestBody final byte[] identityRequest) {
-        return super.processIdentityRequest(identityRequest);
-    }
-
-    /**
      * Listener for identity requests from TPM 2.0 provisioning.
      *
      * Processes a given IdentityClaim and generates a response

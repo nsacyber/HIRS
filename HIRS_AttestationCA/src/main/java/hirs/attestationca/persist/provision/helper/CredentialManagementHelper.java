@@ -27,12 +27,13 @@ public final class CredentialManagementHelper {
      * it is unarchived.
      * @param certificateRepository the certificate manager used for storage
      * @param endorsementBytes the raw EK bytes used for parsing
+     * @param deviceName the host name
      * @return the parsed, valid EK
      * @throws IllegalArgumentException if the provided bytes are not a valid EK.
      */
     public static EndorsementCredential storeEndorsementCredential(
             final CertificateRepository certificateRepository,
-            final byte[] endorsementBytes) throws IllegalArgumentException {
+            final byte[] endorsementBytes, final String deviceName) throws IllegalArgumentException {
 
         if (certificateRepository == null) {
             throw new IllegalArgumentException("null certificate manager");
@@ -64,6 +65,7 @@ public final class CredentialManagementHelper {
                 .findByCertificateHash(certificateHash);
         if (existingCredential == null) {
             log.info("No Endorsement Credential found with hash: " + certificateHash);
+            endorsementCredential.setDeviceName(deviceName);
             return (EndorsementCredential) certificateRepository.save(endorsementCredential);
         } else if (existingCredential.isArchived()) {
             // if the EK is stored in the DB and it's archived, unarchive.

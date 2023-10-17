@@ -226,4 +226,30 @@ public class PcrValidator {
 
         return validated;
     }
+
+    public static String[] buildStoredPcrs(final String pcrContent, final int algorithmLength) {
+        // we have a full set of PCR values
+        String[] pcrSet = pcrContent.split("\\n");
+        String[] storedPcrs = new String[TPMMeasurementRecord.MAX_PCR_ID + 1];
+
+        // we need to scroll through the entire list until we find
+        // a matching hash length
+        int offset = 1;
+
+        for (int i = 0; i < pcrSet.length; i++) {
+            if (pcrSet[i].contains("sha")) {
+                // entered a new set, check size
+                if (pcrSet[i + offset].split(":")[1].trim().length()
+                        == algorithmLength) {
+                    // found the matching set
+                    for (int j = 0; j <= TPMMeasurementRecord.MAX_PCR_ID; j++) {
+                        storedPcrs[j] = pcrSet[++i].split(":")[1].trim();
+                    }
+                    break;
+                }
+            }
+        }
+
+        return storedPcrs;
+    }
 }

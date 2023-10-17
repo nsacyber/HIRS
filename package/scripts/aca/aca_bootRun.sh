@@ -6,7 +6,7 @@
 #
 #####################################################################################
 
-CONFIG_FILE="/etc/hirs/aca/application.properties"
+SPRING_PROP_FILE="/etc/hirs/aca/application.properties"
 ALG=RSA
 RSA_PATH=rsa_3k_sha384_certs
 ECC_PATH=ecc_512_sha384_certs
@@ -108,7 +108,7 @@ source /etc/hirs/aca/aca.properties;
 
 # Run the embedded tomcat server with Web TLS enabled and database client TLS enabled by overrding critical parameters
 # Note "&" is a sub parameter continuation, space represents a new parameter. Spaces and quotes matter.
-# hibernate.connection.url is used for the DB connector which established DB TLS connectivity
+# hibernate.connection.url is used fo    r the DB connector which established DB TLS connectivity
 # server.ssl arguments support the embeded tomcats use of TLS for the ACA Portal
 CONNECTOR_PARAMS="--hibernate.connection.url=jdbc:mariadb://localhost:3306/hirs_db?autoReconnect=true&\
 user=$hirs_db_username&\
@@ -127,8 +127,10 @@ WEB_TLS_PARAMS="--server.ssl.key-store-password=$hirs_pki_password \
 
 if [ -z "$USE_WAR" ]; then
   echo "Booting the ACA from local build..."
-  ./gradlew bootRun --args="$CONNECTOR_PARAMS$WEB_TLS_PARAMS"
+ # ./gradlew bootRun --args="$CONNECTOR_PARAMS$WEB_TLS_PARAMS"
+ ./gradlew bootRun --args="--spring.config.location=$SPRING_PROP_FILE"
 else 
   echo "Booting the ACA from a war file..."
-  java -jar $WAR_PATH $CONNECTOR_PARAMS$WEB_TLS_PARAMS &
+ # java -jar $WAR_PATH $CONNECTOR_PARAMS$WEB_TLS_PARAMS &
+java -jar  $WAR_PATH --spring.config.location=$SPRING_PROP_FILE
 fi

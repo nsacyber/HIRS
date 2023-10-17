@@ -1,6 +1,7 @@
 plugins {
     id 'java'
     id 'io.spring.dependency-management' version '1.1.0'
+    id 'com.google.protobuf' version '0.9.4'
 }
 
 java {
@@ -36,6 +37,7 @@ dependencies {
     implementation libs.jakarta.api
     implementation libs.jakarta.xml
     implementation libs.hibernate.core
+    implementation libs.pci
     implementation libs.guava
     implementation libs.jackson.core
     implementation libs.jackson.databind
@@ -43,20 +45,29 @@ dependencies {
     implementation libs.protobuf.java
     implementation 'org.apache.logging.log4j:log4j-core:2.19.0'
     implementation 'org.apache.logging.log4j:log4j-api:2.19.0'
-    
+
+    testImplementation 'org.junit.jupiter:junit-jupiter:5.9.3'
+    testImplementation 'org.junit.platform:junit-platform-launcher:1.9.3'
+    testImplementation 'org.hamcrest:hamcrest:2.2'
+
     // spring management
     compileOnly libs.lombok
     implementation libs.lombok
     annotationProcessor libs.lombok
 }
 
-task generateProtoBuf(type:Exec) {
-    workingDir 'config'
-
-    commandLine './genJavaProtoBuf.sh'
+protobuf {
+  protoc {
+    artifact = 'com.google.protobuf:protoc:3.24.3'
+  }
 }
-
-compileJava.dependsOn generateProtoBuf
+sourceSets {
+  main {
+    proto {
+      srcDir '../HIRS_ProvisionerTPM2/src'
+    }
+  }
+}
 
 test {
     useJUnitPlatform()
