@@ -3,7 +3,7 @@ version: "3.1"
 services:
   aca:
     image: ghcr.io/nsacyber/hirs/aca:alpha1
-    container_name: hirs-aca
+    container_name: aca
     ports:
        - 8443:8443
   hat:
@@ -21,8 +21,8 @@ services:
 networks:
   hat_network:
     driver: transparent
+    name: hat_network
     ipam:
-      driver: default
       config:
         - subnet: 172.16.1.0/24
           gateway: 172.16.1.1
