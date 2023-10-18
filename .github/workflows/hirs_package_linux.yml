@@ -26,9 +26,6 @@ jobs:
     - name: directory setup
       run: |
        mkdir -p artifacts/jars
-       mkdir -p artifacts/wars
-       mkdir -p artifacts/rpms
-       mkdir -p artifacts/debs
     - name: install dependencies
       run: |
         sudo apt-get update
@@ -45,23 +42,28 @@ jobs:
           cp HIRS_AttestationCA/build/libs/*.jar artifacts/jars/.
           cp HIRS_Utils/build/libs/*.jar artifacts/jars/.
           cp HIRS_Structs/build/libs/*.jar artifacts/jars/.
-          cp HIRS_AttestationCAPortal/build/libs/HIRS_AttestationCAPortal.war artifacts/wars/. 
-          cp HIRS_AttestationCAPortal/build/distributions/*.rpm artifacts/rpms/.
-          cp HIRS_AttestationCAPortal/build/distributions/*.deb artifacts/debs/.
     - name: Archive RPM files
       uses: actions/upload-artifact@v3
       with:
         name: RPM_Files
-        path: artifacts/rpms/*
+        path: HIRS_AttestationCAPortal/build/distributions/*.rpm
         if-no-files-found: error
     - name: Archive DEB files
       uses: actions/upload-artifact@v3
       with:
         name: DEB_Files
-        path: artifacts/debs/*
+        path: HIRS_AttestationCAPortal/build/distributions/*.deb
         if-no-files-found: error
-    - name: Archive Jar files
+    - name: War files
+      uses: actions/upload-artifact@v3
+      with:
+        name: WAR_Files
+        path: HIRS_AttestationCAPortal/build/libs/HIRS_AttestationCAPortal.war
+        if-no-files-found: error
+    - name: JAR_Files
       uses: actions/upload-artifact@v3
       with:
         name: JAR_Files
         path: artifacts/jars/
+        if-no-files-found: error
+        
