@@ -1,0 +1,31 @@
+FROM python:3.11
+
+SHELL ["/bin/bash", "-c"]
+
+RUN pip install pypxe
+
+WORKDIR /usr/local/lib/python3.11/site-packages/pypxe/
+RUN sed -i 's/if os.getuid()/###if os.getuid()/g' /usr/local/lib/python3.11/site-packages/pypxe/server.py
+RUN sed -i 's/print(sys.stderr/###print(sys.stderr/g' /usr/local/lib/python3.11/site-packages/pypxe/server.py
+RUN sed -i 's/chainload.kpxe/ipxe.efi/g' /usr/local/lib/python3.11/site-packages/pypxe/dhcp.py
+
+WORKDIR /
+RUN mkdir mypypxe
+WORKDIR /mypypxe
+
+COPY pxe.config.template /mypypxe/pxe.config
+
+RUN mkdir netboot
+WORKDIR /mypypxe/netboot
+COPY boot.http.ipxe /mypypxe/netboot/
+COPY ipxe.efi /mypypxe/netboot/
+RUN mkdir boot
+WORKDIR /mypypxe/netboot/boot
+COPY boot/vmlinuz0 /mypypxe/netboot/boot/
+COPY boot/initrd0.img /mypypxe/netboot/boot/
+
+WORKDIR /mypypxe
+RUN sed -i 's/HIRS_SERVER_IP_FULL/172.16.1.3/g' pxe.config
+RUN sed -i 's/HIRS_SERVER_IP_ROOT/172.16.1/g' pxe.config
+
+CMD ["bash", "-c", "python3 -m pypxe.server --config pxe.config"]
