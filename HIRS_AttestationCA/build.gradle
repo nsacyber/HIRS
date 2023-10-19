@@ -37,6 +37,7 @@ dependencies {
     implementation libs.jakarta.api
     implementation libs.jakarta.xml
     implementation libs.hibernate.core
+    implementation libs.pci
     implementation libs.guava
     implementation libs.jackson.core
     implementation libs.jackson.databind

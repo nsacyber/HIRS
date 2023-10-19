@@ -5,8 +5,6 @@ package hirs.attestationca.persist;
  */
 public interface RestfulInterface {
 
-    byte[] processIdentityRequest(byte[] identityRequest);
-
     byte[] processIdentityClaimTpm2(byte[] identityClaim);
 
     byte[] processCertificateRequest(byte[] certificateRequest);

@@ -39,4 +39,6 @@ public interface ReferenceManifestRepository extends JpaRepository<ReferenceMani
     EventLogMeasurements byMeasurementDeviceName(String deviceName);
     @Query(value = "SELECT * FROM ReferenceManifest WHERE platformManufacturer = ?1 AND platformModel = ?2 AND rimType = 'Support'", nativeQuery = true)
     List<SupportReferenceManifest> getSupportByManufacturerModel(String manufacturer, String model);
+    @Query(value = "SELECT * FROM ReferenceManifest WHERE platformModel = ?1 AND DTYPE = 'EventLogMeasurements'", nativeQuery = true)
+    EventLogMeasurements getLogByModel(String model);
 }

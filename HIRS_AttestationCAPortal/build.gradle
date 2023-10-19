@@ -97,16 +97,16 @@ ospackage {
     }
 
     // Post Install
-    postInstall 'sh /opt/hirs/aca/scripts/aca/aca_setup.sh -u'
+    postInstall 'bash /opt/hirs/aca/scripts/aca/aca_setup.sh -u'
     // add chrontab to run ACA at boot
     postInstall 'echo "@reboot root /opt/hirs/aca/scripts/aca/aca_bootRun.sh -w" >> /etc/crontab'
     // run ACA after install
     postInstall '/opt/hirs/aca/scripts/aca/aca_bootRun.sh -w &'
     postInstall 'chmod +x /opt/hirs/aca/scripts/aca/*'
-    postInstall 'sh /opt/hirs/aca/scripts/aca/check_for_aca.sh'
+    postInstall 'bash /opt/hirs/aca/scripts/aca/check_for_aca.sh'
 
     // Uninstall
-    preUninstall 'sh /opt/hirs/aca/scripts/aca/aca_remove_setup.sh'
+    preUninstall 'bash /opt/hirs/aca/scripts/aca/aca_remove_setup.sh'
     postUninstall 'rm -rf /etc/hirs'
 
     buildRpm {
@@ -114,6 +114,7 @@ ospackage {
     }
 
     buildDeb {
+        packageName = 'hirs-attestationca'
         arch = 'amd64'
     }
 }

@@ -1,18 +1,25 @@
 #!/bin/bash
 
-SRV_CNF=/etc/my.cnf.d/mariadb-server.cnf
-CLIENT_CNF=/etc/my.cnf.d/client.cnf
+DB_SRV_CONF=/etc/my.cnf.d/mariadb-server.cnf
+DB_CLIENT_CONF=/etc/my.cnf.d/client.cnf
 SCRIPT_DIR=$( dirname -- "$( readlink -f -- "$0"; )";)
 LOG_FILE=/dev/null
 DB_ADMIN_PWD=$1
 
 #source /etc/hirs/aca/aca.properties;
 source $SCRIPT_DIR/mysql_util.sh
+source /etc/os-release 
 
 # Check for sudo or root user, not actually needed but a good idea 
 if [ "$EUID" -ne 0 ]
      then echo "This script requires root.  Please run as root" 
      exit 1
+fi
+
+# Setup distro specifc paths and variables
+if [ $ID = "ubuntu" ]; then 
+   DB_SRV_CONF="/etc/mysql/mariadb.conf.d/50-server.cnf"
+   DB_CLIENT_CONF="/etc/mysql/mariadb.conf.d/50-client.cnf"
 fi
 
 if [ -d /opt/hirs/scripts/db ]; then
@@ -44,8 +51,8 @@ fi
 # Remove key , cert and truststore entries from client.cnf andf mariadb.cnf
 
 echo "Removing hirs cert references from mariadb configuration files"
-grep -v "hirs" $SRV_CNF > tmpfile && mv tmpfile $SRV_CNF
-grep -v "hirs" $CLIENT_CNF > tmpfile && mv tmpfile $CLIENT_CNF
+grep -v "hirs" $DB_SRV_CONF > tmpfile && mv tmpfile $DB_SRV_CONF
+grep -v "hirs" $DB_CLIENT_CONF > tmpfile && mv tmpfile $DB_CLIENT_CONF
 
 echo "restarting mariadb"
 

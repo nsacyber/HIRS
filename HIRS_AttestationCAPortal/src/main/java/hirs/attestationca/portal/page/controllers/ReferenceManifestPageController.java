@@ -1,18 +1,15 @@
 package hirs.attestationca.portal.page.controllers;
 
-import hirs.attestationca.persist.CriteriaModifier;
 import hirs.attestationca.persist.DBManagerException;
 import hirs.attestationca.persist.FilteredRecordsList;
 import hirs.attestationca.persist.entity.manager.ReferenceDigestValueRepository;
 import hirs.attestationca.persist.entity.manager.ReferenceManifestRepository;
-import hirs.attestationca.persist.entity.userdefined.Certificate;
 import hirs.attestationca.persist.entity.userdefined.ReferenceManifest;
 import hirs.attestationca.persist.entity.userdefined.rim.BaseReferenceManifest;
 import hirs.attestationca.persist.entity.userdefined.rim.ReferenceDigestValue;
 import hirs.attestationca.persist.entity.userdefined.rim.SupportReferenceManifest;
 import hirs.attestationca.portal.datatables.DataTableInput;
 import hirs.attestationca.portal.datatables.DataTableResponse;
-import hirs.attestationca.portal.datatables.OrderedListQueryDataTableAdapter;
 import hirs.attestationca.portal.page.Page;
 import hirs.attestationca.portal.page.PageController;
 import hirs.attestationca.portal.page.PageMessages;
@@ -20,13 +17,9 @@ import hirs.attestationca.portal.page.params.NoPageParams;
 import hirs.utils.tpm.eventlog.TCGEventLog;
 import hirs.utils.tpm.eventlog.TpmPcrEvent;
 import jakarta.persistence.EntityManager;
-import jakarta.persistence.criteria.CriteriaBuilder;
-import jakarta.persistence.criteria.CriteriaQuery;
-import jakarta.persistence.criteria.Root;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.extern.log4j.Log4j2;
-import org.hibernate.Session;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -45,7 +38,6 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import org.springframework.web.servlet.view.RedirectView;
 
 import java.io.IOException;
-import java.lang.ref.Reference;
 import java.net.URISyntaxException;
 import java.nio.charset.StandardCharsets;
 import java.security.NoSuchAlgorithmException;
@@ -123,36 +115,27 @@ public class ReferenceManifestPageController extends PageController<NoPageParams
 
         String orderColumnName = input.getOrderColumnName();
         log.info("Ordering on column: " + orderColumnName);
-
-        // check that the alert is not archived and that it is in the specified report
-        CriteriaModifier criteriaModifier = new CriteriaModifier() {
-            @Override
-            public void modify(final CriteriaQuery criteriaQuery) {
-                Session session = entityManager.unwrap(Session.class);
-                CriteriaBuilder cb = session.getCriteriaBuilder();
-                Root<ReferenceManifest> rimRoot = criteriaQuery.from(Reference.class);
-
-                criteriaQuery.select(rimRoot).distinct(true).where(cb.isNull(rimRoot.get(Certificate.ARCHIVE_FIELD)));
-            }
-        };
-
         log.info("Querying with the following dataTableInput: " + input.toString());
 
         FilteredRecordsList<ReferenceManifest> records = new FilteredRecordsList<>();
         int currentPage = input.getStart() / input.getLength();
         Pageable paging = PageRequest.of(currentPage, input.getLength(), Sort.by(orderColumnName));
         org.springframework.data.domain.Page<ReferenceManifest> pagedResult = referenceManifestRepository.findAll(paging);
+        int rimCount = 0;
 
         if (pagedResult.hasContent()) {
-            records.addAll(pagedResult.getContent());
+            for (ReferenceManifest manifest : pagedResult.getContent()) {
+                if (!manifest.getRimType().equals(ReferenceManifest.MEASUREMENT_RIM)) {
+                    records.add(manifest);
+                    rimCount++;
+                }
+            }
+            records.setRecordsTotal(rimCount);
+        } else {
+            records.setRecordsTotal(input.getLength());
         }
-        records.setRecordsTotal(input.getLength());
+
         records.setRecordsFiltered(referenceManifestRepository.count());
-//        FilteredRecordsList<ReferenceManifest> records
-//                = OrderedListQueryDataTableAdapter.getOrderedList(
-//                ReferenceManifest.class,
-//                this.referenceManifestRepository,
-//                input, orderColumnName, criteriaModifier);
 
         log.debug("Returning list of size: " + records.size());
         return new DataTableResponse<>(records, input);

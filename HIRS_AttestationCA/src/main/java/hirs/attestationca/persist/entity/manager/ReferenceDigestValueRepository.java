@@ -11,12 +11,9 @@ import java.util.UUID;
 @Repository
 public interface ReferenceDigestValueRepository extends JpaRepository<ReferenceDigestValue, UUID> {
 
-    @Query(value = "SELECT * FROM ReferenceDigestValue", nativeQuery = true)
-    List<ReferenceDigestValue> listAll();
     List<ReferenceDigestValue> findByModel(String model);
     List<ReferenceDigestValue> findByManufacturer(String manufacturer);
-    @Query(value = "SELECT * FROM ReferenceDigestValue WHERE baseRimId = '?1' OR supportRimId = '?1'", nativeQuery = true)
-    List<ReferenceDigestValue> getValuesByRimId(UUID associatedRimId);
+    List<ReferenceDigestValue> findValuesByBaseRimId(UUID associatedRimId);
     List<ReferenceDigestValue> findBySupportRimId(UUID supportRimId);
     List<ReferenceDigestValue> findBySupportRimHash(String supportRimHash);
     List<ReferenceDigestValue> findByManufacturerAndModel(String manufacturer, String model);

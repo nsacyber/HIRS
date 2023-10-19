@@ -25,7 +25,7 @@ help () {
   echo "     -u  | --unattended   Run unattended"
   echo "     -h  | --help   Print this Help."
   echo "     -sp | --skip-pki run the setup without pki setup."
-  echo "     -sb | --skip-db run the setup without database setup."
+  echo "     -sd | --skip-db run the setup without database setup."
   echo
 }
 
@@ -97,7 +97,7 @@ if [ -z $HIRS_PKI_PWD ]; then
 fi
 
 if [ -z "${ARG_SKIP_PKI}" ]; then
-   sh ../pki/pki_setup.sh $LOG_FILE $PKI_PASS $ARG_UNATTEND
+   ../pki/pki_setup.sh $LOG_FILE $PKI_PASS $ARG_UNATTEND
    if [ $? -eq 0 ]; then 
         echo "ACA PKI  setup complete" | tee -a "$LOG_FILE"
       else
@@ -109,7 +109,7 @@ if [ -z "${ARG_SKIP_PKI}" ]; then
 fi
 
 if [ -z "${ARG_SKIP_DB}" ]; then
-   sh ../db/db_create.sh $LOG_FILE $PKI_PASS $ARG_UNATTEND
+   ../db/db_create.sh $LOG_FILE $PKI_PASS $ARG_UNATTEND
    if [ $? -eq 0 ]; then
       echo "ACA database setup complete" | tee -a "$LOG_FILE"
     else

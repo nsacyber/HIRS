@@ -22,7 +22,7 @@ check_mysql_root
 
 # remove the hrs-db and hirs_db user
 pushd $SCRIPT_DIR/../db/  &>/dev/null
-sh db_drop.sh $DB_ADMIN_PWD
+./db_drop.sh $DB_ADMIN_PWD
 popd  &>/dev/null
 
 # remove pki files and config files if not installed by rpm

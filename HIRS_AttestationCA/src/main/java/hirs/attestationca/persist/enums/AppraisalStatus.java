@@ -60,5 +60,4 @@ public class AppraisalStatus {
         this.message = message;
         this.additionalInfo = additionalInfo;
     }
-
 }
