@@ -13,6 +13,7 @@ import hirs.attestationca.persist.entity.userdefined.rim.ReferenceDigestValue;
 import hirs.attestationca.persist.enums.AppraisalStatus;
 import hirs.attestationca.persist.service.ValidationService;
 import hirs.utils.SwidResource;
+import hirs.utils.swid.validation.ReferenceManifestValidator;
 import hirs.utils.tpm.eventlog.TCGEventLog;
 import hirs.utils.tpm.eventlog.TpmPcrEvent;
 import lombok.extern.log4j.Log4j2;
@@ -89,7 +90,7 @@ public class FirmwareScvValidator extends SupplyChainCredentialValidator {
             // verify signatures
             ReferenceManifestValidator referenceManifestValidator =
                     new ReferenceManifestValidator();
-            referenceManifestValidator.setRim(baseReferenceManifest);
+            referenceManifestValidator.setRim(baseReferenceManifest.getRimBytes());
 
             //Validate signing cert
             List<CertificateAuthorityCredential> allCerts = caCredentialRepository.findAll();
@@ -98,24 +99,26 @@ public class FirmwareScvValidator extends SupplyChainCredentialValidator {
                 signingCert = cert;
                 KeyStore keyStore = ValidationService.getCaChain(signingCert,
                         caCredentialRepository);
-                if (referenceManifestValidator.validateXmlSignature(signingCert)) {
-                    try {
+                try {
+                    if (referenceManifestValidator.validateXmlSignature(signingCert.getEncodedPublicKey(),
+                            signingCert.getSubjectKeyIdString(),
+                            signingCert.getX509Certificate().getPublicKey())) {
                         if (!SupplyChainCredentialValidator.verifyCertificate(
                                 signingCert.getX509Certificate(), keyStore)) {
                             passed = false;
                             fwStatus = new AppraisalStatus(FAIL,
-                                    "Firmware validation failed: invalid certificate path.");
+                                "Firmware validation failed: invalid certificate path.");
                             validationObject = baseReferenceManifest;
                         }
-                    } catch (IOException ioEx) {
-                        log.error("Error getting X509 cert from manager: " + ioEx.getMessage());
-                    } catch (SupplyChainValidatorException scvEx) {
-                        log.error("Error validating cert against keystore: " + scvEx.getMessage());
-                        fwStatus = new AppraisalStatus(FAIL,
-                                "Firmware validation failed: invalid certificate path.");
                     }
-                    break;
+                } catch (IOException ioEx) {
+                    log.error("Error getting X509 cert from manager: " + ioEx.getMessage());
+                } catch (SupplyChainValidatorException scvEx) {
+                    log.error("Error validating cert against keystore: " + scvEx.getMessage());
+                    fwStatus = new AppraisalStatus(FAIL,
+                                "Firmware validation failed: invalid certificate path.");
                 }
+                break;
             }
 
             for (SwidResource swidRes : resources) {

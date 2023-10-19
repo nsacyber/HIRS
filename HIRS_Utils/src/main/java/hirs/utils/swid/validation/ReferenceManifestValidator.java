@@ -1,7 +1,5 @@
-package hirs.attestationca.persist.validation;
+package hirs.utils.swid.validation;
 
-import hirs.attestationca.persist.entity.userdefined.ReferenceManifest;
-import hirs.attestationca.persist.entity.userdefined.certificate.CertificateAuthorityCredential;
 import jakarta.xml.bind.JAXBContext;
 import jakarta.xml.bind.JAXBException;
 import jakarta.xml.bind.UnmarshalException;
@@ -79,12 +77,12 @@ public class ReferenceManifestValidator {
      * Setter for the RIM to be validated.  The ReferenceManifest object is converted into a
      * Document for processing.
      *
-     * @param rim ReferenceManifest object
+     * @param rimBytes ReferenceManifest object's byte content
      */
-    public void setRim(final ReferenceManifest rim) {
+    public void setRim(final byte[] rimBytes) {
         try {
             Document doc = validateSwidtagSchema(removeXMLWhitespace(new StreamSource(
-                    new ByteArrayInputStream(rim.getRimBytes()))));
+                    new ByteArrayInputStream(rimBytes))));
             this.rim = doc;
         } catch (IOException e) {
             log.error("Error while unmarshalling rim bytes: " + e.getMessage());
@@ -153,11 +151,14 @@ public class ReferenceManifestValidator {
      * or the RIM's subject key identifier.  If the cert is matched then validation proceeds,
      * otherwise validation ends.
      *
-     * @param cert the cert to be checked against the RIM
+     * @param caEncodedPublicKey the cert to be checked against the RIM
+     * @param caSubjectKeyId the cert to be checked against the RIM
+     * @param caPublicKey the cert to be checked against the RIM
      * @return true if the signature element is validated, false otherwise
      */
     @SuppressWarnings("magicnumber")
-    public boolean validateXmlSignature(final CertificateAuthorityCredential cert) {
+    public boolean validateXmlSignature(final byte[] caEncodedPublicKey,
+                                        final String caSubjectKeyId, final PublicKey caPublicKey) {
         DOMValidateContext context = null;
         try {
             NodeList nodes = rim.getElementsByTagNameNS(XMLSignature.XMLNS, "Signature");
@@ -172,19 +173,19 @@ public class ReferenceManifestValidator {
                 if (embeddedCert != null) {
                     subjectKeyIdentifier = getCertificateSubjectKeyIdentifier(embeddedCert);
                     if (Arrays.equals(embeddedCert.getPublicKey().getEncoded(),
-                            cert.getEncodedPublicKey())) {
+                            caEncodedPublicKey)) {
                         context = new DOMValidateContext(new X509KeySelector(), nodes.item(0));
                     }
                 }
             } else {
                 subjectKeyIdentifier = getKeyName(rim);
-                if (subjectKeyIdentifier.equals(cert.getSubjectKeyIdString())) {
-                    context = new DOMValidateContext(cert.getX509Certificate().getPublicKey(),
+                if (subjectKeyIdentifier.equals(caSubjectKeyId)) {
+                    context = new DOMValidateContext(caPublicKey,
                             nodes.item(0));
                 }
             }
             if (context != null) {
-                publicKey = cert.getX509Certificate().getPublicKey();
+                publicKey = caPublicKey;
                 signatureValid = validateSignedXMLDocument(context);
                 return signatureValid;
             }

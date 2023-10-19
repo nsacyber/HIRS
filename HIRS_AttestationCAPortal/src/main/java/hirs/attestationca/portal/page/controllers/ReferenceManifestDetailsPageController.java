@@ -12,7 +12,7 @@ import hirs.attestationca.persist.entity.userdefined.rim.EventLogMeasurements;
 import hirs.attestationca.persist.entity.userdefined.rim.ReferenceDigestValue;
 import hirs.attestationca.persist.entity.userdefined.rim.SupportReferenceManifest;
 import hirs.attestationca.persist.service.ValidationService;
-import hirs.attestationca.persist.validation.ReferenceManifestValidator;
+import hirs.utils.swid.validation.ReferenceManifestValidator;
 import hirs.attestationca.persist.validation.SupplyChainCredentialValidator;
 import hirs.attestationca.persist.validation.SupplyChainValidatorException;
 import hirs.attestationca.portal.page.Page;
@@ -32,7 +32,6 @@ import org.springframework.web.servlet.ModelAndView;
 import java.io.IOException;
 import java.security.KeyStore;
 import java.security.NoSuchAlgorithmException;
-import java.security.PublicKey;
 import java.security.cert.CertificateException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -272,7 +271,7 @@ public class ReferenceManifestDetailsPageController extends PageController<Refer
         }
         // going to have to pull the filename and grab that from the DB
         // to get the id to make the link
-        RIM_VALIDATOR.setRim(baseRim);
+        RIM_VALIDATOR.setRim(baseRim.getRimBytes());
         for (SwidResource swidRes : resources) {
             if (support != null && swidRes.getHashValue()
                     .equalsIgnoreCase(support.getHexDecHash())) {
@@ -300,7 +299,8 @@ public class ReferenceManifestDetailsPageController extends PageController<Refer
         data.put("signatureValid", false);
         for (CertificateAuthorityCredential cert : certificates) {
             KeyStore keystore = ValidationService.getCaChain(cert, caCertificateRepository);
-            if (RIM_VALIDATOR.validateXmlSignature(cert)) {
+            if (RIM_VALIDATOR.validateXmlSignature(cert.getEncodedPublicKey(), cert.getSubjectKeyIdString(),
+                    cert.getX509Certificate().getPublicKey())) {
                 try {
                     if (SupplyChainCredentialValidator.verifyCertificate(
                             cert.getX509Certificate(), keystore)) {
