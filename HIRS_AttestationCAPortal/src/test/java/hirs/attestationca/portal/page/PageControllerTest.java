@@ -21,17 +21,33 @@ import static org.hamcrest.Matchers.equalTo;
  */
 
 @SpringBootTest
-@ActiveProfiles("test")
-@TestInstance(TestInstance.Lifecycle.PER_CLASS)  // needed to use non-static BeforeAll
-@ContextConfiguration(classes = PageTestConfiguration.class)
+@ContextConfiguration(classes = PageTestConfiguration.class) // configuration class for db setup
+@ActiveProfiles("test")                                      // sets profile for test to allow bean overriding
+@TestInstance(TestInstance.Lifecycle.PER_CLASS)              // needed to use non-static BeforeAll
 public abstract class PageControllerTest {
 
+    /**
+     * Pre-prefix path for all the Controllers.
+     * There's an option in Page to add prefix path used for some Controllers.
+     */
     private String prePrefixPath = "HIRS_AttestationCAPortal/portal/";
 
+    /**
+     * Contains server-side support for testing Spring MVC applications
+     * via WebTestClient with MockMvc for server request handling.
+     */
     @Autowired
     private WebApplicationContext webApplicationContext;
 
+    /**
+     * Used to set up mocked servlet environment to test the HTTP controller
+     * endpoints without the need to launch the embedded servlet container.
+     */
     private MockMvc mockMvc;
+
+    /**
+     * Represents the Page for the Controller under test.
+     */
     private final Page page;
 
     /**

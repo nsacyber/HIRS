@@ -2,8 +2,6 @@ package hirs.attestationca.portal.page;
 
 import hirs.attestationca.portal.PageConfiguration;
 import hirs.attestationca.persist.entity.userdefined.certificate.CertificateAuthorityCredential;
-import jakarta.xml.bind.DatatypeConverter;
-import org.hibernate.AssertionFailure;
 import org.springframework.beans.factory.BeanInitializationException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.TestConfiguration;
@@ -17,7 +15,6 @@ import org.springframework.orm.jpa.JpaVendorAdapter;
 import org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean;
 import org.springframework.orm.jpa.vendor.HibernateJpaVendorAdapter;
 import org.springframework.transaction.PlatformTransactionManager;
-import org.yaml.snakeyaml.external.biz.base64Coder.Base64Coder;
 
 import javax.sql.DataSource;
 import java.io.IOException;
@@ -26,16 +23,16 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.security.*;
 import java.security.cert.X509Certificate;
-import java.security.spec.PKCS8EncodedKeySpec;
-import java.util.Base64;
 import java.util.Properties;
-import java.util.*;
 
 /**
  * A configuration class for testing Attestation CA Portal classes that require a database.
- * This apparently is needed to appease spring tests in the TestNG runner.
+ * This class sets up a temporary in-memory database that is used for testing.
+ * This class also creates beans that override beans in main class PersistenceJPAConfig.
+ * A few 'dummy' beans had to be created to override PersistenceJPAConfig beans that were
+ *    not needed and would interfere with the tests.
  */
-@Import({ PageConfiguration.class })
+//@Import({ PageConfiguration.class })
 @TestConfiguration
 @EnableJpaRepositories(basePackages = "hirs.attestationca.persist.entity.manager")
 public class PageTestConfiguration {
@@ -45,6 +42,10 @@ public class PageTestConfiguration {
      */
     public static final String FAKE_ROOT_CA = "/certificates/fakeCA.pem";
 
+    /**
+     * Represents the environment in which the current application is running.
+     * Models 2 aspects: profiles and properties (application-test.properties)
+     */
     @Autowired
     private Environment environment;
 
@@ -64,7 +65,6 @@ public class PageTestConfiguration {
         return credential.getX509Certificate();
     }
 
-
     /**
      * Overrides the {@link DataSource} with one that is configured against an in-memory HSQL DB.
      *
@@ -82,12 +82,14 @@ public class PageTestConfiguration {
      * Enables auto scanning of annotations such that entities do not need to be registered in a
      * hibernate configuration file.
      *
-     * @return session factory
+     * @return entity manager factory, which provides instances of EntityManager for connecting
+     *         to same database.
      */
     @Bean
     public LocalContainerEntityManagerFactoryBean entityManagerFactory() {
 
-        final LocalContainerEntityManagerFactoryBean entityManagerBean = new LocalContainerEntityManagerFactoryBean();
+        final LocalContainerEntityManagerFactoryBean entityManagerBean =
+                new LocalContainerEntityManagerFactoryBean();
         entityManagerBean.setDataSource(dataSource());
         entityManagerBean.setPackagesToScan("hirs.attestationca.persist.entity");
         JpaVendorAdapter vendorAdapter = new HibernateJpaVendorAdapter();
@@ -116,20 +118,22 @@ public class PageTestConfiguration {
         return hibernateProperties;
     }
 
-
-
     /**
      * Generates JPA transaction manager.
      *
      * @return transaction manager
      */
-    @Bean
-    public PlatformTransactionManager transactionManager() {
-        final JpaTransactionManager transactionManager = new JpaTransactionManager();
-        transactionManager.setEntityManagerFactory(entityManagerFactory().getObject());
-        return transactionManager;
-    }
+//    @Bean
+//    public PlatformTransactionManager transactionManager() {
+//        final JpaTransactionManager transactionManager = new JpaTransactionManager();
+//        transactionManager.setEntityManagerFactory(entityManagerFactory().getObject());
+//        return transactionManager;
+//    }
 
+    /**
+     * @return a blank {@link PrivateKey}
+     * this function is only used to override the PersistenceJPAConfig privateKey bean during test
+     */
     @Bean
     public PrivateKey privateKey() {
         try {

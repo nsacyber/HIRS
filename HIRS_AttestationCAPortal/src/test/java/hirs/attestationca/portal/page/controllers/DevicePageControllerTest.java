@@ -26,7 +26,14 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
  */
 public class DevicePageControllerTest extends PageControllerTest {
 
+    /**
+     * Name of device
+     */
     private static final String DEVICE_NAME = "Test Device";
+
+    /**
+     * Location of test credentials for device
+     */
     private static final String TEST_ENDORSEMENT_CREDENTIAL
             = "/endorsement_credentials/tpmcert.pem";
     private static final String TEST_ENDORSEMENT_CREDENTIAL_2
@@ -34,14 +41,22 @@ public class DevicePageControllerTest extends PageControllerTest {
     private static final String TEST_PLATFORM_CREDENTIAL
             = "/platform_credentials/Intel_pc.cer";
 
+    /**
+     * Device object to be stored in db for test
+     */
     private Device device;
 
+    /**
+     * Repository manager to handle data access between device entity and data storage (db).
+     */
     @Autowired
     private DeviceRepository deviceRepository;
 
+    /**
+     * Repository manager to handle data access between certificate entity and data storage (db).
+     */
     @Autowired
     private CertificateRepository certificateRepository;
-
 
     /**
      * Constructor providing the Page's display and routing specification.
@@ -55,10 +70,12 @@ public class DevicePageControllerTest extends PageControllerTest {
     @BeforeAll
     public void beforeMethod() throws IOException {
 
-        device = new Device(DEVICE_NAME,null, HealthStatus.TRUSTED, AppraisalStatus.Status.PASS,null,false,"tmp_overrideReason", "tmp_summId");
+        // Create new device to be used in test and save it to db
+        device = new Device(DEVICE_NAME,null, HealthStatus.TRUSTED, AppraisalStatus.Status.PASS,
+                null,false,"tmp_overrideReason", "tmp_summId");
         device = deviceRepository.save(device);
 
-        //Upload and save EK Cert
+        // Upload and save EK Cert
         EndorsementCredential ec = (EndorsementCredential)
                     getTestCertificate(EndorsementCredential.class,
                     TEST_ENDORSEMENT_CREDENTIAL);
@@ -117,7 +134,7 @@ public class DevicePageControllerTest extends PageControllerTest {
     @Test
     public void getDeviceList() throws Exception {
 
-        // Add prefix path for page verification
+        // Add pre-prefix and prefix path for page verification
         String pagePath = "/" + getPrePrefixPath() + getPage().getPrefixPath() + getPage().getViewName() + "/list";
         if (getPage().getPrefixPath() == null) {
             pagePath = "/" + getPrePrefixPath() + getPage().getViewName() + "/list";
