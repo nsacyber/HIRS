@@ -5,21 +5,28 @@
     </PropertyGroup>
     <Move SourceFiles="$(OUTDIR)publish\$(AssemblyName)" DestinationFiles="$(OUTDIR)publish\tpm_aca_provision" />
     <Message Text="Renamed linux binary file." Importance="high" />
+    <PropertyGroup>
+      <Prefix>/usr/share/hirs</Prefix>
+      <PostInstallScript>/usr/bin/chmod 644 /usr/share/hirs/appsettings.json; /usr/bin/ln -s /usr/share/hirs/tpm_aca_provision /usr/bin/tpm_aca_provision</PostInstallScript>
+      <PostRemoveScript>rm -f /usr/bin/tpm_aca_provision; rm -rf /usr/share/hirs</PostRemoveScript>
+    </PropertyGroup>
+    <Message Text="Set installed directory prefix to $(PREFIX)." Importance="high" />
   </Target>
   <Target Name="RenameBeforePublishWindows" BeforeTargets="SetWixPath" Condition="$(RuntimeIdentifier.Contains('win'))">
     <Move SourceFiles="$(OUTDIR)publish\$(AssemblyName).exe" DestinationFiles="$(OUTDIR)publish\tpm_aca_provision.exe" />
     <Message Text="Renamed exe binary file." Importance="high" />
+    <PropertyGroup>
+      <Prefix>C:/Progra~1/hirs</Prefix>
+    </PropertyGroup>
+    <Message Text="Set installed directory prefix to $(PREFIX)." Importance="high" />
   </Target>
-  <PropertyGroup>
-    <PostInstallScript>"/bin/sh -c \"chmod 664 /usr/share/hirs/appsettings.json\""</PostInstallScript>
-  </PropertyGroup>
   <Target Name="SetWixPath" BeforeTargets="Msi">
     <PropertyGroup>
-        <ProductSourceFilePath>$(MSBuildThisFileDirectory)\Resources\Product.wxs</ProductSourceFilePath>
-        <WixInstallPath>$(NuGetPackageRoot)wix\3.11.2\tools\</WixInstallPath>
-        <Heat>$(WixInstallPath)heat.exe</Heat>
-        <Candle>$(WixInstallPath)candle.exe</Candle>
-        <Light>$(WixInstallPath)light.exe</Light>
+      <ProductSourceFilePath>$(MSBuildThisFileDirectory)\Resources\Product.wxs</ProductSourceFilePath>
+      <WixInstallPath>$(NuGetPackageRoot)wix\3.11.2\tools\</WixInstallPath>
+      <Heat>$(WixInstallPath)heat.exe</Heat>
+      <Candle>$(WixInstallPath)candle.exe</Candle>
+      <Light>$(WixInstallPath)light.exe</Light>
     </PropertyGroup>
   </Target>
   <Target Name="DeletePDB" AfterTargets="RenameBeforePublishLinux;RenameBeforePublishWindows">
@@ -37,22 +44,23 @@
       SourceFiles="@(PaccorScriptsDll)"
       DestinationFolder="$(PublishDir)plugins"
     />
-	<ItemGroup> 
+<!--
+    <ItemGroup> 
       <PaccorScriptsLinux Include="$(PublishDir)scripts\*"/>
-	  <PaccorScriptsWindows Include="$(PublishDir)scripts\windows\*"/>
-	</ItemGroup>
-	<Move
+      <PaccorScriptsWindows Include="$(PublishDir)scripts\windows\*"/>
+    </ItemGroup>
+    <Move
       SourceFiles="@(PaccorScriptsLinux)"
       DestinationFolder="$(PublishDir)plugins/scripts"
     />
-	<Move
+    <Move
       SourceFiles="@(PaccorScriptsWindows)"
       DestinationFolder="$(PublishDir)plugins/scripts/windows"
     />
-	<RemoveDir Directories="$(PublishDir)scripts" />
+    <RemoveDir Directories="$(PublishDir)scripts" />
+-->
   </Target>
-  
-<ItemGroup>
+  <ItemGroup>
     <Content Include="plugins\**\*.*">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
       <CopyToPublishDirectory>Always</CopyToPublishDirectory>
