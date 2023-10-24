@@ -44,27 +44,5 @@
       SourceFiles="@(PaccorScriptsDll)"
       DestinationFolder="$(PublishDir)plugins"
     />
-<!--
-    <ItemGroup> 
-      <PaccorScriptsLinux Include="$(PublishDir)scripts\*"/>
-      <PaccorScriptsWindows Include="$(PublishDir)scripts\windows\*"/>
-    </ItemGroup>
-    <Move
-      SourceFiles="@(PaccorScriptsLinux)"
-      DestinationFolder="$(PublishDir)plugins/scripts"
-    />
-    <Move
-      SourceFiles="@(PaccorScriptsWindows)"
-      DestinationFolder="$(PublishDir)plugins/scripts/windows"
-    />
-    <RemoveDir Directories="$(PublishDir)scripts" />
--->
   </Target>
-  <ItemGroup>
-    <Content Include="plugins\**\*.*">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-      <CopyToPublishDirectory>Always</CopyToPublishDirectory>
-      <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
-    </Content>  
-  </ItemGroup>
 </Project>
