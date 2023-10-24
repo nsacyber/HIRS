@@ -87,7 +87,8 @@
       <PaccorScriptsLinux Include="$(dotnet_paccor_scripts_directory)/*" />
       <PaccorScriptsWindows Include="$(dotnet_paccor_scripts_windows_directory)/*" />
     </ItemGroup>
-    <Message Text="Blah @(PaccorScriptsLinux)" Importance="high" />
+    <Message Text="Adding files to plugins/scripts: @(PaccorScriptsLinux)" Importance="high" />
+	<Message Text="Adding files to plugins/scripts/windows: @(PaccorScriptsWindows)" Importance="high" />
     <Copy SourceFiles="@(PaccorScriptsLinux)" DestinationFolder="$(ProjectDir)/plugins/scripts/" />
     <Copy SourceFiles="@(PaccorScriptsWindows)" DestinationFolder="$(ProjectDir)/plugins/scripts/windows/" />
     <ItemGroup>

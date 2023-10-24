@@ -15,10 +15,6 @@
   <Target Name="RenameBeforePublishWindows" BeforeTargets="SetWixPath" Condition="$(RuntimeIdentifier.Contains('win'))">
     <Move SourceFiles="$(OUTDIR)publish\$(AssemblyName).exe" DestinationFiles="$(OUTDIR)publish\tpm_aca_provision.exe" />
     <Message Text="Renamed exe binary file." Importance="high" />
-    <PropertyGroup>
-      <Prefix>C:/Progra~1/hirs</Prefix>
-    </PropertyGroup>
-    <Message Text="Set installed directory prefix to $(PREFIX)." Importance="high" />
   </Target>
   <Target Name="SetWixPath" BeforeTargets="Msi">
     <PropertyGroup>
