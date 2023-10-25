@@ -1,6 +1,5 @@
-package hirs.attestationca.persist.entity.userdefined.certificate;
+package hirs.utils;
 
-import hirs.attestationca.persist.entity.userdefined.Certificate;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import lombok.Getter;

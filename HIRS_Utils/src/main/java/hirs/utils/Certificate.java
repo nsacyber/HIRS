@@ -1,11 +1,7 @@
-package hirs.attestationca.persist.entity.userdefined;
+package hirs.utils;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.common.base.Preconditions;
-import hirs.attestationca.persist.entity.ArchivableEntity;
-import hirs.attestationca.persist.entity.userdefined.certificate.CertificateVariables;
-import hirs.attestationca.persist.util.CredentialHelper;
-import hirs.utils.HexUtils;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Inheritance;

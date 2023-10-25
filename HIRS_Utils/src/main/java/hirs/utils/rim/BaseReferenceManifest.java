@@ -1,6 +1,5 @@
-package hirs.attestationca.persist.entity.userdefined.rim;
+package hirs.utils.rim;
 
-import hirs.attestationca.persist.entity.userdefined.ReferenceManifest;
 import hirs.utils.SwidResource;
 import hirs.utils.swid.SwidTagConstants;
 import jakarta.persistence.Column;

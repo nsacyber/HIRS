@@ -1,7 +1,6 @@
-package hirs.attestationca.persist.validation;
+package hirs.utils.rim;
 
-import hirs.attestationca.persist.entity.userdefined.ReferenceManifest;
-import hirs.attestationca.persist.entity.userdefined.certificate.CertificateAuthorityCredential;
+import hirs.utils.CertificateAuthorityCredential;
 import jakarta.xml.bind.JAXBContext;
 import jakarta.xml.bind.JAXBException;
 import jakarta.xml.bind.UnmarshalException;
