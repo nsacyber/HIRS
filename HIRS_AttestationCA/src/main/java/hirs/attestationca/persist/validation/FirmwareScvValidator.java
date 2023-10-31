@@ -90,7 +90,7 @@ public class FirmwareScvValidator extends SupplyChainCredentialValidator {
             // verify signatures
             ReferenceManifestValidator referenceManifestValidator =
                     new ReferenceManifestValidator();
-            referenceManifestValidator.setRim(baseReferenceManifest);
+            referenceManifestValidator.setRim(baseReferenceManifest.getRimBytes());
 
             //Validate signing cert
             List<CertificateAuthorityCredential> allCerts = caCredentialRepository.findAll();
@@ -99,23 +99,28 @@ public class FirmwareScvValidator extends SupplyChainCredentialValidator {
                 signingCert = cert;
                 KeyStore keyStore = ValidationService.getCaChain(signingCert,
                         caCredentialRepository);
-                if (referenceManifestValidator.validateXmlSignature(signingCert)) {
-                    try {
-                        if (!SupplyChainCredentialValidator.verifyCertificate(
+                try {
+                    if (referenceManifestValidator.validateXmlSignature(signingCert.getX509Certificate().getPublicKey(),
+                        signingCert.getSubjectKeyIdString(), signingCert.getEncodedPublicKey())) {
+                        try {
+                            if (!SupplyChainCredentialValidator.verifyCertificate(
                                 signingCert.getX509Certificate(), keyStore)) {
-                            passed = false;
+                                passed = false;
+                                fwStatus = new AppraisalStatus(FAIL,
+                                    "Firmware validation failed: invalid certificate path.");
+                                validationObject = baseReferenceManifest;
+                            }
+                        } catch (IOException ioEx) {
+                            log.error("Error getting X509 cert from manager: " + ioEx.getMessage());
+                        } catch (SupplyChainValidatorException scvEx) {
+                            log.error("Error validating cert against keystore: " + scvEx.getMessage());
                             fwStatus = new AppraisalStatus(FAIL,
                                     "Firmware validation failed: invalid certificate path.");
-                            validationObject = baseReferenceManifest;
                         }
-                    } catch (IOException ioEx) {
-                        log.error("Error getting X509 cert from manager: " + ioEx.getMessage());
-                    } catch (SupplyChainValidatorException scvEx) {
-                        log.error("Error validating cert against keystore: " + scvEx.getMessage());
-                        fwStatus = new AppraisalStatus(FAIL,
-                                "Firmware validation failed: invalid certificate path.");
+                        break;
                     }
-                    break;
+                } catch (IOException ioEx) {
+                    log.error("Error getting X509 cert from manager: " + ioEx.getMessage());
                 }
             }
 
