@@ -272,7 +272,7 @@ public class ReferenceManifestDetailsPageController extends PageController<Refer
         }
         // going to have to pull the filename and grab that from the DB
         // to get the id to make the link
-        RIM_VALIDATOR.setRim(baseRim);
+        RIM_VALIDATOR.setRim(baseRim.getRimBytes());
         for (SwidResource swidRes : resources) {
             if (support != null && swidRes.getHashValue()
                     .equalsIgnoreCase(support.getHexDecHash())) {
@@ -300,7 +300,8 @@ public class ReferenceManifestDetailsPageController extends PageController<Refer
         data.put("signatureValid", false);
         for (CertificateAuthorityCredential cert : certificates) {
             KeyStore keystore = ValidationService.getCaChain(cert, caCertificateRepository);
-            if (RIM_VALIDATOR.validateXmlSignature(cert)) {
+            if (RIM_VALIDATOR.validateXmlSignature(cert.getX509Certificate().getPublicKey(),
+                    cert.getSubjectKeyIdString(), cert.getEncodedPublicKey())) {
                 try {
                     if (SupplyChainCredentialValidator.verifyCertificate(
                             cert.getX509Certificate(), keystore)) {

@@ -1,6 +1,5 @@
 package hirs.utils.rim;
 
-import hirs.utils.CertificateAuthorityCredential;
 import jakarta.xml.bind.JAXBContext;
 import jakarta.xml.bind.JAXBException;
 import jakarta.xml.bind.UnmarshalException;
@@ -78,12 +77,12 @@ public class ReferenceManifestValidator {
      * Setter for the RIM to be validated.  The ReferenceManifest object is converted into a
      * Document for processing.
      *
-     * @param rim ReferenceManifest object
+     * @param rimBytes ReferenceManifest object bytes
      */
-    public void setRim(final ReferenceManifest rim) {
+    public void setRim(final byte[] rimBytes) {
         try {
             Document doc = validateSwidtagSchema(removeXMLWhitespace(new StreamSource(
-                    new ByteArrayInputStream(rim.getRimBytes()))));
+                    new ByteArrayInputStream(rimBytes))));
             this.rim = doc;
         } catch (IOException e) {
             log.error("Error while unmarshalling rim bytes: " + e.getMessage());
@@ -152,11 +151,15 @@ public class ReferenceManifestValidator {
      * or the RIM's subject key identifier.  If the cert is matched then validation proceeds,
      * otherwise validation ends.
      *
-     * @param cert the cert to be checked against the RIM
+     * @param publicKey public key from the CA credential
+     * @param subjectKeyIdString string version of the subjet key id of the CA credential
+     * @param encodedPublicKey the encoded public key
      * @return true if the signature element is validated, false otherwise
      */
     @SuppressWarnings("magicnumber")
-    public boolean validateXmlSignature(final CertificateAuthorityCredential cert) {
+    public boolean validateXmlSignature(final PublicKey publicKey,
+                                        final String subjectKeyIdString,
+                                        final byte[] encodedPublicKey) {
         DOMValidateContext context = null;
         try {
             NodeList nodes = rim.getElementsByTagNameNS(XMLSignature.XMLNS, "Signature");
@@ -171,19 +174,19 @@ public class ReferenceManifestValidator {
                 if (embeddedCert != null) {
                     subjectKeyIdentifier = getCertificateSubjectKeyIdentifier(embeddedCert);
                     if (Arrays.equals(embeddedCert.getPublicKey().getEncoded(),
-                            cert.getEncodedPublicKey())) {
+                            encodedPublicKey)) {
                         context = new DOMValidateContext(new X509KeySelector(), nodes.item(0));
                     }
                 }
             } else {
                 subjectKeyIdentifier = getKeyName(rim);
-                if (subjectKeyIdentifier.equals(cert.getSubjectKeyIdString())) {
-                    context = new DOMValidateContext(cert.getX509Certificate().getPublicKey(),
+                if (subjectKeyIdentifier.equals(subjectKeyIdString)) {
+                    context = new DOMValidateContext(publicKey,
                             nodes.item(0));
                 }
             }
             if (context != null) {
-                publicKey = cert.getX509Certificate().getPublicKey();
+                this.publicKey = publicKey;
                 signatureValid = validateSignedXMLDocument(context);
                 return signatureValid;
             }
