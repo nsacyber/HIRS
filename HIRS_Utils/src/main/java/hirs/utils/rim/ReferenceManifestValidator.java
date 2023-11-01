@@ -1,5 +1,6 @@
 package hirs.utils.rim;
 
+import hirs.utils.swid.SwidTagConstants;
 import jakarta.xml.bind.JAXBContext;
 import jakarta.xml.bind.JAXBException;
 import jakarta.xml.bind.UnmarshalException;
@@ -7,10 +8,12 @@ import jakarta.xml.bind.Unmarshaller;
 import lombok.extern.log4j.Log4j2;
 import org.bouncycastle.asn1.x509.Extension;
 import org.bouncycastle.cert.jcajce.JcaX509ExtensionUtils;
+import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.w3c.dom.Document;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
+import javax.security.auth.x500.X500Principal;
 import javax.xml.XMLConstants;
 import javax.xml.crypto.AlgorithmMethod;
 import javax.xml.crypto.KeySelector;
@@ -24,6 +27,7 @@ import javax.xml.crypto.dsig.XMLSignatureException;
 import javax.xml.crypto.dsig.XMLSignatureFactory;
 import javax.xml.crypto.dsig.dom.DOMValidateContext;
 import javax.xml.crypto.dsig.keyinfo.KeyInfo;
+import javax.xml.crypto.dsig.keyinfo.KeyValue;
 import javax.xml.crypto.dsig.keyinfo.X509Data;
 import javax.xml.transform.Source;
 import javax.xml.transform.Transformer;
@@ -34,19 +38,14 @@ import javax.xml.transform.dom.DOMResult;
 import javax.xml.transform.stream.StreamSource;
 import javax.xml.validation.Schema;
 import javax.xml.validation.SchemaFactory;
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.UnsupportedEncodingException;
-import java.security.Key;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
-import java.security.PublicKey;
+import java.io.*;
+import java.security.*;
 import java.security.cert.CertificateException;
 import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
 import java.util.Arrays;
 import java.util.Iterator;
+import java.util.List;
 
 /**
  * This class handles validation functions of RIM files.
@@ -71,6 +70,9 @@ public class ReferenceManifestValidator {
     private PublicKey publicKey;
     private Schema schema;
     private String subjectKeyIdentifier;
+    private String rimEventLog;
+    private String trustStoreFile;
+    private List<X509Certificate> trustStore;
     private boolean signatureValid, supportRimValid;
 
     /**
@@ -126,6 +128,22 @@ public class ReferenceManifestValidator {
     }
 
     /**
+     * Setter for the truststore file path.
+     * @param trustStoreFile the truststore
+     */
+    public void setTrustStoreFile(String trustStoreFile) {
+        this.trustStoreFile = trustStoreFile;
+    }
+
+    /**
+     * Setter for rimel file path.
+     * @param rimEventLog the rimel file
+     */
+    public void setRimEventLog(String rimEventLog) {
+        this.rimEventLog = rimEventLog;
+    }
+
+    /**
      * This default constructor creates the Schema object from SCHEMA_URL immediately to save
      * time during validation calls later.
      */
@@ -167,6 +185,7 @@ public class ReferenceManifestValidator {
                 log.error("Cannot validate RIM, signature element not found!");
                 return false;
             }
+            trustStore = parseCertificatesFromPem(trustStoreFile);
             NodeList certElement = rim.getElementsByTagName("X509Certificate");
             if (certElement.getLength() > 0) {
                 X509Certificate embeddedCert = parseCertFromPEMString(
@@ -260,7 +279,9 @@ public class ReferenceManifestValidator {
      * It is passed as a parameter to a DOMValidateContext that uses it to validate
      * an XML signature.
      */
-    public static class X509KeySelector extends KeySelector {
+    public class X509KeySelector extends KeySelector {
+        PublicKey publicKey;
+        X509Certificate signingCert;
         /**
          * This method selects a public key for validation.
          * PKs are parsed preferentially from the following elements:
@@ -290,13 +311,40 @@ public class ReferenceManifestValidator {
                     while (dataItr.hasNext()) {
                         Object object = dataItr.next();
                         if (object instanceof X509Certificate) {
-                            final PublicKey publicKey = ((X509Certificate) object).getPublicKey();
-                            if (areAlgorithmsEqual(algorithm.getAlgorithm(),
-                                    publicKey.getAlgorithm())) {
-                                return new ReferenceManifestValidator.X509KeySelector
-                                        .RIMKeySelectorResult(publicKey);
+                            X509Certificate embeddedCert = (X509Certificate) object;
+                            try {
+                                if (isCertChainValid(embeddedCert)) {
+                                    publicKey = ((X509Certificate) embeddedCert).getPublicKey();
+                                    signingCert = embeddedCert;
+                                    System.out.println("Certificate chain validity: true");
+                                }
+                            } catch (Exception e) {
+                                System.out.println("Certificate chain invalid: "
+                                        + e.getMessage());
                             }
                         }
+                    }
+                } else if (element instanceof KeyValue) {
+                    try {
+                        PublicKey pk = ((KeyValue) element).getPublicKey();
+                        if (isPublicKeyTrusted(pk)) {
+                            publicKey = pk;
+                            try {
+                                System.out.println("Certificate chain validity: "
+                                        + isCertChainValid(signingCert));
+                            } catch (Exception e) {
+                                System.out.println("Certificate chain invalid: "
+                                        + e.getMessage());
+                            }
+                        }
+                    } catch (KeyException e) {
+                        System.out.println("Unable to convert KeyValue data to PK.");
+                    }
+                }
+                if (publicKey != null) {
+                    if (areAlgorithmsEqual(algorithm.getAlgorithm(), publicKey.getAlgorithm())) {
+                        return new ReferenceManifestValidator.X509KeySelector
+                                        .RIMKeySelectorResult(publicKey);
                     }
                 }
             }
@@ -304,14 +352,131 @@ public class ReferenceManifestValidator {
         }
 
         /**
-         * This method checks if two strings refer to the same algorithm.
-         *
-         * @param uri  string 1
-         * @param name string 2
-         * @return true if equal, false if not
+         * This method checks that the signature and public key algorithms match.
+         * @param uri to match the signature algorithm
+         * @param name to match the public key algorithm
+         * @return true if both match, false otherwise
          */
-        public boolean areAlgorithmsEqual(final String uri, final String name) {
-            return uri.equals(SIGNATURE_ALGORITHM_RSA_SHA256) && name.equalsIgnoreCase("RSA");
+        public boolean areAlgorithmsEqual(String uri, String name) {
+            return uri.equals(SwidTagConstants.SIGNATURE_ALGORITHM_RSA_SHA256)
+                    && name.equalsIgnoreCase("RSA");
+        }
+
+        /**
+         * This method validates the cert chain for a given certificate. The truststore is iterated
+         * over until a root CA is found, otherwise an error is returned.
+         * @param cert the certificate at the start of the chain
+         * @return true if the chain is valid
+         * @throws Exception if a valid chain is not found in the truststore
+         */
+        private boolean isCertChainValid(final X509Certificate cert)
+                throws Exception {
+            if (cert == null || trustStore == null) {
+                throw new Exception("Null certificate or truststore received");
+            } else if (trustStore.size() == 0) {
+                throw new Exception("Truststore is empty");
+            }
+
+            final String INT_CA_ERROR = "Intermediate CA found, searching for root CA";
+            String errorMessage = "";
+            X509Certificate startOfChain = cert;
+            do {
+                for (X509Certificate trustedCert : trustStore) {
+                    boolean isIssuer = areYouMyIssuer(startOfChain, trustedCert);
+                    boolean isSigner = areYouMySigner(startOfChain, trustedCert);
+                    if (isIssuer && isSigner) {
+                        if (isSelfSigned(trustedCert)) {
+                            return true;
+                        } else {
+                            startOfChain = trustedCert;
+                            errorMessage = INT_CA_ERROR;
+                            break;
+                        }
+                    } else {
+                        if (!isIssuer) {
+                            errorMessage = "Issuer cert not found";
+                        } else if (!isSigner) {
+                            errorMessage = "Signing cert not found";
+                        }
+                    }
+                }
+            } while (errorMessage.equals(INT_CA_ERROR));
+
+            throw new Exception("Error while validating cert chain: " + errorMessage);
+        }
+
+        /**
+         * This method checks if cert's issuerDN matches issuer's subjectDN.
+         * @param cert the signed certificate
+         * @param issuer the signing certificate
+         * @return true if they match, false if not
+         * @throws Exception if either argument is null
+         */
+        private boolean areYouMyIssuer(final X509Certificate cert, final X509Certificate issuer)
+                throws Exception {
+            if (cert == null || issuer == null) {
+                throw new Exception("Cannot verify issuer, null certificate received");
+            }
+            X500Principal issuerDN = new X500Principal(cert.getIssuerX500Principal().getName());
+            return issuer.getSubjectX500Principal().equals(issuerDN);
+        }
+
+        /**
+         * This method checks if cert's signature matches signer's public key.
+         * @param cert the signed certificate
+         * @param signer the signing certificate
+         * @return true if they match
+         * @throws Exception if an error occurs or there is no match
+         */
+        private boolean areYouMySigner(final X509Certificate cert, final X509Certificate signer)
+                throws Exception {
+            if (cert == null || signer == null) {
+                throw new Exception("Cannot verify signature, null certificate received");
+            }
+            try {
+                cert.verify(signer.getPublicKey(), BouncyCastleProvider.PROVIDER_NAME);
+                return true;
+            } catch (NoSuchAlgorithmException e) {
+                throw new Exception("Signing algorithm in signing cert not supported");
+            } catch (InvalidKeyException e) {
+                throw new Exception("Signing certificate key does not match signature");
+            } catch (NoSuchProviderException e) {
+                throw new Exception("Error with BouncyCastleProvider: " + e.getMessage());
+            } catch (SignatureException e) {
+                String error = "Error with signature: " + e.getMessage()
+                        + System.lineSeparator()
+                        + "Certificate needed for verification is missing: "
+                        + signer.getSubjectX500Principal().getName();
+                throw new Exception(error);
+            } catch (CertificateException e) {
+                throw new Exception("Encoding error: " + e.getMessage());
+            }
+        }
+
+        /**
+         * This method checks if a given certificate is self signed or not.
+         * @param cert the cert to check
+         * @return true if self signed, false if not
+         */
+        private boolean isSelfSigned(final X509Certificate cert) {
+            return cert.getIssuerX500Principal().equals(cert.getSubjectX500Principal());
+        }
+
+        /**
+         * This method compares a public key against those in the truststore.
+         * @param pk a public key
+         * @return true if pk is found in the trust store, false otherwise
+         */
+        private boolean isPublicKeyTrusted(final PublicKey pk) {
+            for (X509Certificate trustedCert : trustStore) {
+                if (Arrays.equals(trustedCert.getPublicKey().getEncoded(),
+                        pk.getEncoded())) {
+                    signingCert = trustedCert;
+                    return true;
+                }
+            }
+
+            return false;
         }
 
         /**
@@ -357,6 +522,52 @@ public class ReferenceManifestValidator {
         }
 
         return null;
+    }
+
+    /**
+     * This method returns the X509Certificate found in a PEM file.
+     * Unchecked type case warnings are suppressed because the CertificateFactory
+     * implements X509Certificate objects explicitly.
+     * @param filename pem file
+     * @return a list containing all X509Certificates extracted
+     */
+    @SuppressWarnings("unchecked")
+    private List<X509Certificate> parseCertificatesFromPem(String filename) {
+        List<X509Certificate> certificates = null;
+        FileInputStream fis = null;
+        BufferedInputStream bis = null;
+        try {
+            fis = new FileInputStream(filename);
+            bis = new BufferedInputStream(fis);
+            CertificateFactory certificateFactory = CertificateFactory.getInstance("X.509");
+
+            while (bis.available() > 0) {
+                certificates =
+                        (List<X509Certificate>) certificateFactory.generateCertificates(bis);
+            }
+
+            if (certificates.size() < 1) {
+                System.out.println("ERROR: No certificates parsed from " + filename);
+            }
+            bis.close();
+        } catch (CertificateException e) {
+            System.out.println("Error in certificate factory: " + e.getMessage());
+        } catch (IOException e) {
+            System.out.println("Error reading from input stream: " + e.getMessage());
+        } finally {
+            try {
+                if (fis != null) {
+                    fis.close();
+                }
+                if (bis != null) {
+                    bis.close();
+                }
+            } catch (IOException e) {
+                System.out.println("Error closing input stream: " + e.getMessage());
+            }
+        }
+
+        return certificates;
     }
 
     /**
