@@ -1,4 +1,4 @@
-package hirs.attestationca.persist.validation;
+package hirs.utils.rim;
 
 import jakarta.xml.bind.JAXBContext;
 import jakarta.xml.bind.JAXBException;
