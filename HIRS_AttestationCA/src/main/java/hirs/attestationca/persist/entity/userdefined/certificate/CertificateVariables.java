@@ -1,4 +1,4 @@
-package hirs.utils;
+package hirs.attestationca.persist.entity.userdefined.certificate;
 
 public class CertificateVariables {
 

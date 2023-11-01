@@ -1,6 +1,6 @@
 package hirs.attestationca.persist.entity.userdefined.report;
 
-import hirs.utils.AbstractEntity;
+import hirs.attestationca.persist.entity.AbstractEntity;
 import hirs.attestationca.persist.entity.userdefined.info.FirmwareInfo;
 import hirs.attestationca.persist.entity.userdefined.info.HardwareInfo;
 import hirs.attestationca.persist.entity.userdefined.info.NetworkInfo;

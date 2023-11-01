@@ -1,7 +1,7 @@
 package hirs.attestationca.persist.entity.manager;
 
-import hirs.utils.rim.ReferenceManifest;
-import hirs.utils.rim.BaseReferenceManifest;
+import hirs.attestationca.persist.entity.userdefined.ReferenceManifest;
+import hirs.attestationca.persist.entity.userdefined.rim.BaseReferenceManifest;
 import hirs.attestationca.persist.entity.userdefined.rim.EventLogMeasurements;
 import hirs.attestationca.persist.entity.userdefined.rim.SupportReferenceManifest;
 import org.springframework.data.jpa.repository.JpaRepository;

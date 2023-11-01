@@ -1,6 +1,5 @@
-package hirs.utils.rim;
+package hirs.swid;
 
-import hirs.utils.ArchivableEntity;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.common.base.Preconditions;
 import jakarta.persistence.Access;
@@ -21,7 +20,6 @@ import org.hibernate.annotations.JdbcTypeCode;
 import javax.xml.XMLConstants;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
-import java.util.Base64;
 import java.util.UUID;
 
 /**
@@ -35,7 +33,7 @@ import java.util.UUID;
 @Inheritance(strategy = InheritanceType.SINGLE_TABLE)
 @Table(name = "ReferenceManifest")
 @Access(AccessType.FIELD)
-public class ReferenceManifest  extends ArchivableEntity {
+public class ReferenceManifest {
 
     /**
      * Holds the name of the 'hexDecHash' field.
@@ -105,9 +103,6 @@ public class ReferenceManifest  extends ArchivableEntity {
     private String hexDecHash = "";
     @Column
     private String eventLogHash = "";
-    @Column
-    @JsonIgnore
-    private String base64Hash = "";
 
     /**
      * Default constructor necessary for Hibernate.
@@ -141,14 +136,6 @@ public class ReferenceManifest  extends ArchivableEntity {
         try {
             digest = MessageDigest.getInstance("SHA-256");
             this.hexDecHash = Hex.encodeHexString(
-                    digest.digest(rimBytes));
-        } catch (NoSuchAlgorithmException noSaEx) {
-            log.error(noSaEx);
-        }
-        this.base64Hash = "";
-        try {
-            digest = MessageDigest.getInstance("SHA-256");
-            this.base64Hash = Base64.getEncoder().encodeToString(
                     digest.digest(rimBytes));
         } catch (NoSuchAlgorithmException noSaEx) {
             log.error(noSaEx);

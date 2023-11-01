@@ -1,6 +1,6 @@
 package hirs.attestationca.persist.entity.userdefined;
 
-import hirs.utils.AbstractEntity;
+import hirs.attestationca.persist.entity.AbstractEntity;
 import hirs.attestationca.persist.entity.userdefined.report.DeviceInfoReport;
 import hirs.attestationca.persist.enums.AppraisalStatus;
 import hirs.attestationca.persist.enums.HealthStatus;

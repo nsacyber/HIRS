@@ -1,6 +1,6 @@
 package hirs.attestationca.persist.validation;
 
-import hirs.utils.ArchivableEntity;
+import hirs.attestationca.persist.entity.ArchivableEntity;
 import hirs.attestationca.persist.entity.userdefined.SupplyChainValidation;
 import hirs.attestationca.persist.entity.userdefined.certificate.ComponentResult;
 import hirs.attestationca.persist.entity.userdefined.certificate.PlatformCredential;

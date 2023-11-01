@@ -1,4 +1,4 @@
-package hirs.utils;
+package hirs.attestationca.persist.entity;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.GeneratedValue;

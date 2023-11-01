@@ -1,6 +1,6 @@
 package hirs.attestationca.persist.entity.manager;
 
-import hirs.utils.CertificateAuthorityCredential;
+import hirs.attestationca.persist.entity.userdefined.certificate.CertificateAuthorityCredential;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
