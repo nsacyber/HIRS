@@ -1,13 +1,16 @@
 package hirs.attestationca.persist.service;
 
+import hirs.attestationca.persist.entity.ArchivableEntity;
 import hirs.attestationca.persist.entity.manager.CACredentialRepository;
 import hirs.attestationca.persist.entity.manager.CertificateRepository;
 import hirs.attestationca.persist.entity.manager.ComponentResultRepository;
 import hirs.attestationca.persist.entity.manager.ReferenceDigestValueRepository;
 import hirs.attestationca.persist.entity.manager.ReferenceManifestRepository;
+import hirs.attestationca.persist.entity.userdefined.Certificate;
 import hirs.attestationca.persist.entity.userdefined.Device;
 import hirs.attestationca.persist.entity.userdefined.PolicySettings;
 import hirs.attestationca.persist.entity.userdefined.SupplyChainValidation;
+import hirs.attestationca.persist.entity.userdefined.certificate.CertificateAuthorityCredential;
 import hirs.attestationca.persist.entity.userdefined.certificate.ComponentResult;
 import hirs.attestationca.persist.entity.userdefined.certificate.EndorsementCredential;
 import hirs.attestationca.persist.entity.userdefined.certificate.PlatformCredential;
@@ -16,10 +19,7 @@ import hirs.attestationca.persist.enums.AppraisalStatus;
 import hirs.attestationca.persist.validation.CertificateAttributeScvValidator;
 import hirs.attestationca.persist.validation.CredentialValidator;
 import hirs.attestationca.persist.validation.FirmwareScvValidator;
-import hirs.utils.ArchivableEntity;
 import hirs.utils.BouncyCastleUtils;
-import hirs.utils.Certificate;
-import hirs.utils.CertificateAuthorityCredential;
 import lombok.extern.log4j.Log4j2;
 import org.apache.logging.log4j.Level;
 import org.bouncycastle.util.encoders.Hex;

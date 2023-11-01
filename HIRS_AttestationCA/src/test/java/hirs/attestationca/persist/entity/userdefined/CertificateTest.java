@@ -1,4 +1,6 @@
-package hirs.utils;
+package hirs.attestationca.persist.entity.userdefined;
+
+import hirs.attestationca.persist.entity.ArchivableEntity;
 
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -28,30 +30,6 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
  */
 public class CertificateTest {
     /**
-     * Location of another, slightly different platform attribute cert.
-     */
-    public static final String TEST_PLATFORM_CERT_3 =
-            "/validation/platform_credentials/Intel_pc3.cer";
-
-    /**
-     * Platform cert with comma separated baseboard and chassis serial number.
-     */
-    public static final String TEST_PLATFORM_CERT_4 =
-            "/validation/platform_credentials/Intel_pc4.pem";
-
-    /**
-     * Another platform cert with comma separated baseboard and chassis serial number.
-     */
-    public static final String TEST_PLATFORM_CERT_5 =
-            "/validation/platform_credentials/Intel_pc5.pem";
-
-    /**
-     * Location of another, slightly different platform attribute cert.
-     */
-    public static final String TEST_PLATFORM_CERT_6 =
-            "/validation/platform_credentials/TPM_INTC_Platform_Cert_RSA.txt";
-
-    /**
      * Location of a test (fake) root CA certificate.
      */
     public static final String FAKE_ROOT_CA_FILE = "/certificates/fakeRootCA.cer";
@@ -73,7 +51,58 @@ public class CertificateTest {
      */
     public static final String FAKE_SGI_INT_CA_FILE = "/certificates/fakeSGIIntermediateCA.cer";
 
+    /**
+     * Location of another test self-signed certificate.
+     */
+    public static final String ANOTHER_SELF_SIGNED_FILE =
+            "/certificates/fakeSelfSigned.cer";
+
+    /**
+     * Location of the NUC EC.
+     */
+    public static final String STM_NUC1_EC = "/certificates/nuc-1/tpmcert.pem";
+
+    /**
+     * Location of the ST Micro Intermediate 02 CA certificate.
+     */
+    public static final String STM_INT_02_CA = "/certificates/stMicroCaCerts/stmtpmekint02.crt";
+
+    /**
+     * Location of the ST Micro Root CA certificate.
+     */
+    public static final String STM_ROOT_CA = "/certificates/stMicroCaCerts/stmtpmekroot.crt";
+
+    /**
+     * Location of the GlobalSign Root CA certificate.
+     */
+    public static final String GS_ROOT_CA = "/certificates/stMicroCaCerts/gstpmroot.crt";
+
+    /**
+     * Hex-encoded subject key identifier for the FAKE_ROOT_CA_FILE.
+     */
+    public static final String FAKE_ROOT_CA_SUBJECT_KEY_IDENTIFIER_HEX =
+            "58ec313a1699f94c1c8c4e2c6412402b258f0177";
+
+    /**
+     * Location of a test STM endorsement credential.
+     */
+    public static final String TEST_EC = "/certificates/ab21ccf2-tpmcert.pem";
+
+    /**
+     * Location of a test client cert.
+     */
+    public static final String ISSUED_CLIENT_CERT =
+            "/tpm/sample_identity_cert.cer";
+
     private static final String INT_CA_CERT02 = "/certificates/fakestmtpmekint02.pem";
+
+    private static final String RDN_COMMA_SEPARATED =
+            "CN=STM TPM EK Intermediate CA 02, O=STMicroelectronics NV, C=CH";
+    private static final String RDN_MULTIVALUE =
+            "CN=Nuvoton TPM Root CA 2010+O=Nuvoton Technology Corporation+C=TW";
+
+    private static final String RDN_COMMA_SEPARATED_ORGANIZATION = "STMicroelectronics NV";
+    private static final String RDN_MULTIVALUE_ORGANIZATION = "Nuvoton Technology Corporation";
 
     private static final String EK_CERT_WITH_PADDED_BYTES =
             "/certificates/ek_cert_with_padded_bytes.cer";
@@ -168,11 +197,11 @@ public class CertificateTest {
 
         assertNotEquals(getTestCertificate(
                         PlatformCredential.class,
-                        TEST_PLATFORM_CERT_3).getCertificateType(),
+                        PlatformCredentialTest.TEST_PLATFORM_CERT_3).getCertificateType(),
                 Certificate.CertificateType.X509_CERTIFICATE);
         assertEquals(getTestCertificate(
                         PlatformCredential.class,
-                        TEST_PLATFORM_CERT_3).getCertificateType(),
+                        PlatformCredentialTest.TEST_PLATFORM_CERT_3).getCertificateType(),
                 Certificate.CertificateType.ATTRIBUTE_CERTIFICATE);
 
     }
@@ -186,7 +215,7 @@ public class CertificateTest {
     @Test
     public void testImportPem() throws IOException {
         Certificate platformCredential = getTestCertificate(
-                PlatformCredential.class, TEST_PLATFORM_CERT_4
+                PlatformCredential.class, PlatformCredentialTest.TEST_PLATFORM_CERT_4
         );
 
         assertEquals(platformCredential.getCertificateType(),
@@ -197,7 +226,7 @@ public class CertificateTest {
         );
 
         platformCredential = getTestCertificate(
-                PlatformCredential.class, TEST_PLATFORM_CERT_5
+                PlatformCredential.class, PlatformCredentialTest.TEST_PLATFORM_CERT_5
         );
 
         assertEquals(platformCredential.getCertificateType(),
@@ -257,12 +286,12 @@ public class CertificateTest {
     public void testX509AttributeCertificateParsing() throws IOException, URISyntaxException {
         Certificate platformCert = getTestCertificate(
                 PlatformCredential.class,
-                TEST_PLATFORM_CERT_3
+                PlatformCredentialTest.TEST_PLATFORM_CERT_3
         );
 
         X509AttributeCertificateHolder attrCertHolder = new X509AttributeCertificateHolder(
                 Files.readAllBytes(Paths.get(this.getClass().getResource(
-                        TEST_PLATFORM_CERT_3
+                        PlatformCredentialTest.TEST_PLATFORM_CERT_3
                 ).toURI()))
         );
 
@@ -292,7 +321,7 @@ public class CertificateTest {
     public void testX509AttributeCertificateParsingExtended()
             throws IOException, URISyntaxException {
         Certificate platformCert = getTestCertificate(
-                PlatformCredential.class, TEST_PLATFORM_CERT_6);
+                PlatformCredential.class, PlatformCredentialTest.TEST_PLATFORM_CERT_6);
 
         assertEquals(platformCert.getAuthorityInfoAccess(),
                 "https://trustedservices.intel.com/"

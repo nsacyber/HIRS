@@ -3,16 +3,11 @@ package hirs.attestationca.persist.entity.userdefined;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
-import hirs.utils.ArchivableEntity;
-import hirs.utils.CertificateAuthorityCredential;
+import hirs.attestationca.persist.entity.ArchivableEntity;
 import hirs.attestationca.persist.enums.AppraisalStatus;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
-import java.net.URISyntaxException;
-import java.nio.file.Paths;
-import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -22,40 +17,6 @@ import java.util.List;
 class SupplyChainValidationTest {
     private static final String MESSAGE = "Some message.";
 
-    /**
-     * Location of a test (fake) root CA certificate.
-     */
-    public static final String FAKE_ROOT_CA_FILE = "/certificates/fakeRootCA.cer";
-
-    /**
-     * Location of a test (fake) Intel intermediate CA certificate.
-     */
-    public static final String FAKE_INTEL_INT_CA_FILE =
-            "/certificates/fakeIntelIntermediateCA.cer";
-
-    /**
-     * Location of a test (fake) SGI intermediate CA certificate.
-     */
-    public static final String FAKE_SGI_INT_CA_FILE = "/certificates/fakeSGIIntermediateCA.cer";
-    private static final List<ArchivableEntity> allTestCertificates =
-            new ArrayList<ArchivableEntity>(3);
-
-    @BeforeAll
-    private static void setAllTestCertificates() throws URISyntaxException, IOException {
-        allTestCertificates.add(
-                new CertificateAuthorityCredential(
-                        Paths.get(SupplyChainValidationTest.class.getResource(
-                                FAKE_SGI_INT_CA_FILE).toURI())));
-        allTestCertificates.add(
-                new CertificateAuthorityCredential(
-                        Paths.get(SupplyChainValidationTest.class.getResource(
-                                FAKE_INTEL_INT_CA_FILE).toURI())));
-        allTestCertificates.add(
-                new CertificateAuthorityCredential(
-                        Paths.get(SupplyChainValidationTest.class.getResource(
-                                FAKE_ROOT_CA_FILE).toURI())));
-    }
-    
     /**
      * Test that this class' getter methods work properly.
      *
@@ -70,7 +31,7 @@ class SupplyChainValidationTest {
         );
         assertEquals(
                 validation.getCertificatesUsed(),
-                allTestCertificates
+                CertificateTest.getAllTestCertificates()
         );
         assertEquals(validation.getMessage(), MESSAGE);
     }
@@ -86,7 +47,7 @@ class SupplyChainValidationTest {
                 new SupplyChainValidation(
                         null,
                         AppraisalStatus.Status.PASS,
-                        allTestCertificates,
+                        CertificateTest.getAllTestCertificates(),
                         MESSAGE
                 ));
     }
@@ -117,7 +78,7 @@ class SupplyChainValidationTest {
         new SupplyChainValidation(
                 SupplyChainValidation.ValidationType.ENDORSEMENT_CREDENTIAL,
                 AppraisalStatus.Status.PASS,
-                allTestCertificates,
+                CertificateTest.getAllTestCertificates(),
                 MESSAGE
         );
     }
@@ -134,7 +95,7 @@ class SupplyChainValidationTest {
         return getTestSupplyChainValidation(
                 SupplyChainValidation.ValidationType.ENDORSEMENT_CREDENTIAL,
                 AppraisalStatus.Status.PASS,
-                allTestCertificates
+                CertificateTest.getAllTestCertificates()
         );
     }
 

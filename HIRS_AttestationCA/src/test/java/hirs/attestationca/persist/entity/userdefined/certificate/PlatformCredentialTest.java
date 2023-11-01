@@ -1,7 +1,6 @@
 package hirs.attestationca.persist.entity.userdefined.certificate;
 
-import hirs.utils.Certificate;
-import hirs.utils.CertificateAuthorityCredential;
+import hirs.attestationca.persist.entity.userdefined.Certificate;
 import hirs.attestationca.persist.entity.userdefined.certificate.attributes.ComponentIdentifier;
 import hirs.attestationca.persist.entity.userdefined.certificate.attributes.PlatformConfiguration;
 import hirs.attestationca.persist.entity.userdefined.certificate.attributes.PlatformProperty;

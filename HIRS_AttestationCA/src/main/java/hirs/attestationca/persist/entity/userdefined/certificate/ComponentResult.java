@@ -1,6 +1,6 @@
 package hirs.attestationca.persist.entity.userdefined.certificate;
 
-import hirs.utils.AbstractEntity;
+import hirs.attestationca.persist.entity.AbstractEntity;
 import jakarta.persistence.Entity;
 import lombok.AccessLevel;
 import lombok.EqualsAndHashCode;

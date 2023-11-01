@@ -1,5 +1,6 @@
-package hirs.utils;
+package hirs.attestationca.persist.util;
 
+import hirs.attestationca.persist.entity.userdefined.certificate.CertificateVariables;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import lombok.extern.log4j.Log4j2;

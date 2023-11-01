@@ -1,7 +1,7 @@
 package hirs.attestationca.persist.service.selector;
 
 import com.google.common.base.Preconditions;
-import hirs.utils.Certificate;
+import hirs.attestationca.persist.entity.userdefined.Certificate;
 import jakarta.persistence.criteria.CriteriaBuilder;
 import jakarta.persistence.criteria.CriteriaQuery;
 import jakarta.persistence.criteria.Predicate;
