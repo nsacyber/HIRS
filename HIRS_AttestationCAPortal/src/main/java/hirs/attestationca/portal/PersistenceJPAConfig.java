@@ -52,7 +52,8 @@ import java.util.Properties;
         @PropertySource(value = "classpath:hibernate.properties"),
 
         // detects if file exists, if not, ignore errors
-        @PropertySource(value = "file:/etc/hirs/aca/aca.properties"),
+        @PropertySource(value = "file:/etc/hirs/aca/aca.properties",
+                ignoreResourceNotFound = true),
         @PropertySource(value = "file:/etc/hirs/aca/application.properties",
                 ignoreResourceNotFound = true),
 	@PropertySource(value = "file:C:/ProgramData/hirs/aca/application.win.properties",
