@@ -10,8 +10,8 @@ $ACA_COMMON_SCRIPT=(Join-Path $APP_HOME 'aca_common.ps1')
 # Set up paths to configuration files
 $global:HIRS_REL_PORTAL_LOG4J_SPRING_XML=(Join-Path -Resolve $global:HIRS_REL_PACKAGE_HOME .. HIRS_AttestationCAPortal src main resources log4j2-spring.xml)
 $global:HIRS_REL_PORTAL_APPLICATION_PROPERTIES=(Join-Path -Resolve $global:HIRS_REL_PACKAGE_HOME .. HIRS_AttestationCAPortal src main resources application.properties)
-$global:HIRS_REL_PORTAL_LOG4J_SPRING_LINUX_XML=(Join-Path -Resolve $global:HIRS_REL_PACKAGE_HOME .. HIRS_AttestationCAPortal src main resources log4j2-spring.linux.xml)
-$global:HIRS_REL_PORTAL_APPLICATION_LINUX_PROPERTIES=(Join-Path -Resolve $global:HIRS_REL_PACKAGE_HOME .. HIRS_AttestationCAPortal src main resources application.linux.properties)
+$global:HIRS_REL_PORTAL_LOG4J_SPRING_LINUX_XML=(Join-Path $global:HIRS_REL_PACKAGE_HOME .. HIRS_AttestationCAPortal src main resources log4j2-spring.linux.xml)
+$global:HIRS_REL_PORTAL_APPLICATION_LINUX_PROPERTIES=(Join-Path $global:HIRS_REL_PACKAGE_HOME .. HIRS_AttestationCAPortal src main resources application.linux.properties)
 $global:HIRS_REL_PORTAL_LOG4J_SPRING_WIN_XML=(Join-Path -Resolve $global:HIRS_REL_PACKAGE_HOME .. HIRS_AttestationCAPortal src main resources log4j2-spring.win.xml)
 $global:HIRS_REL_PORTAL_APPLICATION_WIN_PROPERTIES=(Join-Path -Resolve $global:HIRS_REL_PACKAGE_HOME .. HIRS_AttestationCAPortal src main resources application.win.properties)
 
