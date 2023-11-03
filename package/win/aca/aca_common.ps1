@@ -62,8 +62,8 @@ $global:SSL_DB_CLIENT_KEY=(Join-Path $global:HIRS_DATA_CERTIFICATES_HIRS_RSA_PAT
 #               pki_chain_gen.ps1
 #               pki_setup.ps1
 $global:HIRS_REL_WIN_ACA_HOME=(Split-Path -parent $PSCommandPath)
-$global:HIRS_REL_WIN_HOME=(Join-Path -Resolve $global:HIRS_REL_SCRIPTS_ACA_HOME ..)
-$global:HIRS_REL_PACKAGE_HOME=(Join-Path -Resolve $global:HIRS_REL_SCRIPTS_HOME ..)
+$global:HIRS_REL_WIN_HOME=(Join-Path -Resolve $global:HIRS_REL_WIN_ACA_HOME ..)
+$global:HIRS_REL_PACKAGE_HOME=(Join-Path -Resolve $global:HIRS_REL_WIN_HOME ..)
 $global:HIRS_REL_SCRIPTS_HOME=(Join-Path -Resolve $global:HIRS_REL_PACKAGE_HOME 'scripts')
 $global:HIRS_REL_SCRIPTS_ACA_HOME=(Join-Path -Resolve $global:HIRS_REL_SCRIPTS_HOME 'aca')
 $global:HIRS_REL_SCRIPTS_DB_HOME=(Join-Path -Resolve $global:HIRS_REL_SCRIPTS_HOME 'db')
