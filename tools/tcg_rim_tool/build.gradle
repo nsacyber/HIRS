@@ -21,10 +21,12 @@ repositories {
 }
 
 dependencies {
+	implementation project(':HIRS_Utils')
+
 	implementation libs.bouncycastle
-    implementation libs.glassfish.json
-    implementation libs.glassfish.jaxb.runtime
-    implementation libs.jcommander
+	implementation libs.glassfish.json
+	implementation libs.glassfish.jaxb.runtime
+	implementation libs.jcommander
 	implementation libs.jakarta.api
 	implementation libs.jakarta.xml
 	implementation libs.commons.codec
@@ -51,9 +53,12 @@ jar {
     exclude 'META-INF/*.SF', 'META-INF/*.DSA', 'META-INF/*.RSA', 'META-INF/*.MF'
     duplicatesStrategy = DuplicatesStrategy.EXCLUDE
 	manifest {
-		attributes("Main-Class": "hirs.swid.Main",
-			    'Class-Path':configurations.runtimeClasspath.files.collect { it.getName() }.join(' ')
-			  )
+		attributes "Main-Class": "hirs.swid.Main"
+			  
+	}
+
+	from {
+		configurations.runtimeClasspath.collect { it.isDirectory() ? it : zipTree(it) }
 	}
      //jar name format: [archiveBaseName]-[archiveAppendix]-[archiveVersion]-[archiveClassifier].[archiveExtension]
      archiveVersion = jarVersion

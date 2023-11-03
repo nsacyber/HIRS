@@ -10,6 +10,7 @@ import org.bouncycastle.asn1.x509.Extension;
 import org.bouncycastle.cert.jcajce.JcaX509ExtensionUtils;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.w3c.dom.Document;
+import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
@@ -39,6 +40,8 @@ import javax.xml.transform.stream.StreamSource;
 import javax.xml.validation.Schema;
 import javax.xml.validation.SchemaFactory;
 import java.io.*;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.security.*;
 import java.security.cert.CertificateException;
 import java.security.cert.CertificateFactory;
@@ -85,6 +88,22 @@ public class ReferenceManifestValidator {
         try {
             Document doc = validateSwidtagSchema(removeXMLWhitespace(new StreamSource(
                     new ByteArrayInputStream(rimBytes))));
+            this.rim = doc;
+        } catch (IOException e) {
+            log.error("Error while unmarshalling rim bytes: " + e.getMessage());
+        }
+    }
+
+    /**
+     * Setter for the swidtag XML to be validated.  The XML is passed in via a filepath
+     * and converted into a Document for processing.
+     *
+     * @param path String filepath
+     */
+    public void setRim(final String path) {
+        File swidtagFile = new File(path);
+        try {
+            Document doc = validateSwidtagSchema(removeXMLWhitespace(new StreamSource(swidtagFile)));
             this.rim = doc;
         } catch (IOException e) {
             log.error("Error while unmarshalling rim bytes: " + e.getMessage());
@@ -219,6 +238,32 @@ public class ReferenceManifestValidator {
     }
 
     /**
+     * This method validates a signed swidtag XML file.
+     * @param path to the swidtag XML
+     */
+    public boolean validateSwidtagFile(String path) {
+        Element fileElement = (Element) rim.getElementsByTagName("File").item(0);
+        X509Certificate signingCert = null;
+        try {
+            signingCert = getCertFromTruststore();
+        } catch (IOException e) {
+            log.warn("Error while parsing signing cert from truststore: " + e.getMessage());
+            return false;
+        }
+        String subjectKeyIdentifier = "";
+        try {
+            subjectKeyIdentifier = getCertificateSubjectKeyIdentifier(signingCert);
+        } catch (IOException e) {
+            log.warn("Error while parsing certificate data: " + e.getMessage());
+            return false;
+        }
+        return validateXmlSignature(signingCert.getPublicKey(),
+                                    subjectKeyIdentifier,
+                                    signingCert.getPublicKey().getEncoded())
+                                    && validateFile(fileElement);
+    }
+
+    /**
      * This method calculates the SHA256 hash of the input byte array and compares it against
      * the value passed in.
      *
@@ -234,6 +279,66 @@ public class ReferenceManifestValidator {
         }
     }
 
+    /**
+     * This method validates a hirs.swid.xjc.File from an indirect payload
+     */
+    private boolean validateFile(final Element file) {
+        String filepath;
+        if (!rimEventLog.isEmpty()) {
+            filepath = rimEventLog;
+        } else {
+            filepath = file.getAttribute(SwidTagConstants.NAME);
+        }
+        System.out.println("Support rim found at " + filepath);
+        if (getHashValue(filepath, "SHA256").equals(
+                file.getAttribute(SwidTagConstants._SHA256_HASH.getPrefix() + ":" +
+                        SwidTagConstants._SHA256_HASH.getLocalPart()))) {
+            System.out.println("Support RIM hash verified!" + System.lineSeparator());
+            return true;
+        } else {
+            System.out.println("Support RIM hash does not match Base RIM!" + System.lineSeparator());
+            return false;
+        }
+    }
+
+    /**
+     * This method pulls the signing certificate from the truststore based on the
+     * SKID parsed from this instance's swidtag XML.
+     *
+     * @return X509Certificate signing cert
+     */
+    private X509Certificate getCertFromTruststore() throws IOException {
+        String subjectKeyIdentifier = getKeyName(rim);
+        for (X509Certificate trustedCert : trustStore) {
+            String trustedSubjectKeyIdentifier = getCertificateSubjectKeyIdentifier(trustedCert);
+            if (subjectKeyIdentifier.equals(trustedSubjectKeyIdentifier)) {
+                return trustedCert;
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * This method calculates the digest of the file at filepath based on algorithm sha
+     *
+     * @param filepath the file to hash
+     * @param sha the algorithm to use
+     * @return String digest
+     */
+    private String getHashValue(final String filepath, final String sha) {
+        try {
+            MessageDigest md = MessageDigest.getInstance(sha);
+            byte[] bytes = md.digest(Files.readAllBytes(Paths.get(filepath)));
+            return getHashValue(bytes, sha);
+        } catch (NoSuchAlgorithmException e) {
+            log.warn(e.getMessage());
+        } catch (IOException e) {
+            log.warn("Error reading " + filepath + " for hashing: " + e.getMessage());
+        }
+
+        return null;
+    }
     /**
      * This method calculates the digest of a byte array based on the hashing algorithm passed in.
      *

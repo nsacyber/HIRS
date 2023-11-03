@@ -1,8 +1,9 @@
 package hirs.swid;
 
 import hirs.swid.utils.Commander;
-import com.beust.jcommander.JCommander;
 import hirs.swid.utils.TimestampArgumentValidator;
+import hirs.utils.rim.ReferenceManifestValidator;
+import com.beust.jcommander.JCommander;
 
 import java.util.List;
 
@@ -13,14 +14,14 @@ public class Main {
         JCommander jc = JCommander.newBuilder().addObject(commander).build();
         jc.parse(args);
         SwidTagGateway gateway;
-        SwidTagValidator validator;
+        ReferenceManifestValidator validator;
 
         if (commander.isHelp()) {
             jc.usage();
             System.out.println(commander.printHelpExamples());
         } else {
             if (!commander.getVerifyFile().isEmpty()) {
-                validator = new SwidTagValidator();
+                validator = new ReferenceManifestValidator();
                 System.out.println(commander.toString());
                 String verifyFile = commander.getVerifyFile();
                 String rimel = commander.getRimEventLog();
@@ -37,7 +38,7 @@ public class Main {
                         System.out.println("A single cert cannot be used for verification. " +
                                 "The signing cert will be searched for in the trust store.");
                     }
-                    validator.validateSwidTag(verifyFile);
+                    validator.validateSwidtagFile(verifyFile);
                 } else {
                     System.out.println("Need a RIM file to validate!");
                     System.exit(1);
