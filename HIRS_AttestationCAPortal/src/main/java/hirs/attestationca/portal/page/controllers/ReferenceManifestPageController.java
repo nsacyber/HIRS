@@ -475,7 +475,7 @@ public class ReferenceManifestPageController extends PageController<NoPageParams
         if (supportRim != null && (supportRim.getId() != null
                 && !supportRim.getId().toString().equals(""))) {
             List<BaseReferenceManifest> baseRims = new LinkedList<>();
-            baseRims.add(this.referenceManifestRepository
+            baseRims.addAll(this.referenceManifestRepository
                     .getBaseByManufacturerModel(supportRim.getPlatformManufacturer(),
                             supportRim.getPlatformModel()));
 

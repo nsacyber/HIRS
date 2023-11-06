@@ -448,7 +448,7 @@ public class IdentityClaimProcessor extends AbstractProcessor {
                     referenceManifestRepository.delete(measurements);
                 }
 
-                BaseReferenceManifest baseRim = referenceManifestRepository
+                List<BaseReferenceManifest> baseRims = referenceManifestRepository
                         .getBaseByManufacturerModel(dv.getHw().getManufacturer(),
                                 dv.getHw().getProductName());
                 measurements = temp;
@@ -456,20 +456,20 @@ public class IdentityClaimProcessor extends AbstractProcessor {
                 measurements.setPlatformModel(dv.getHw().getProductName());
                 measurements.setTagId(tagId);
                 measurements.setDeviceName(dv.getNw().getHostname());
-                if (baseRim != null) {
-                    measurements.setAssociatedRim(baseRim.getAssociatedRim());
-                }
+
                 this.referenceManifestRepository.save(measurements);
 
-                if (baseRim != null) {
-                    // pull the base versions of the swidtag and rimel and set the
-                    // event log hash for use during provision
-                    SupportReferenceManifest sBaseRim = referenceManifestRepository
-                            .getSupportRimEntityById(baseRim.getAssociatedRim());
-                    baseRim.setEventLogHash(temp.getHexDecHash());
-                    sBaseRim.setEventLogHash(temp.getHexDecHash());
-                    referenceManifestRepository.save(baseRim);
-                    referenceManifestRepository.save(sBaseRim);
+                for (BaseReferenceManifest baseRim : baseRims) {
+                    if (baseRim != null) {
+                        // pull the base versions of the swidtag and rimel and set the
+                        // event log hash for use during provision
+                        SupportReferenceManifest sBaseRim = referenceManifestRepository
+                                .getSupportRimEntityById(baseRim.getAssociatedRim());
+                        baseRim.setEventLogHash(temp.getHexDecHash());
+                        sBaseRim.setEventLogHash(temp.getHexDecHash());
+                        referenceManifestRepository.save(baseRim);
+                        referenceManifestRepository.save(sBaseRim);
+                    }
                 }
             } catch (IOException ioEx) {
                 log.error(ioEx);
