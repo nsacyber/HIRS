@@ -97,6 +97,7 @@ Function read_aca_properties () {
 		$file_content=(Get-Content $file -Raw)
 		if ($file_content) { # File is not empty
             $file_content=([Regex]::Escape($file_content) -replace "(\\r)?\\n",[Environment]::NewLine)
+            $file_content=([Regex]::Escape($file_content) -replace "[ \\t]*#.*","")
             $global:ACA_PROPERTIES=(ConvertFrom-StringData($file_content))
 		} else { # File is empty
 		    # Initialize empty hash table
