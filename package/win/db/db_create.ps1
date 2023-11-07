@@ -152,6 +152,27 @@ Function create_hirs_db_with_tls () {
 	}
 }
 
+Function create_hibernate_url () {
+    param (
+        [string]$ALG = $null
+    )
+    
+    if ($ALG -eq "RSA") {
+       $CERT_CHAIN=(Join-Path $global:HIRS_DATA_CERTIFICATES_HIRS_RSA_PATH 'HIRS_rsa_3k_sha384_Cert_Chain.pem')
+       $CLIENT_DB_P12=(Join-Path $global:HIRS_DATA_CERTIFICATES_HIRS_RSA_PATH 'HIRS_db_client_rsa_3k_sha384.p12')
+       $ALIAS="hirs_aca_tls_rsa_3k_sha384"
+    } elseif ($ALG -eq "ECC") {
+       $CERT_CHAIN=(Join-Path $global:HIRS_DATA_CERTIFICATES_HIRS_ECC_PATH 'HIRS_ecc_512_sha384_Cert_Chain.pem')
+       $CLIENT_DB_P12=(Join-Path $global:HIRS_DATA_CERTIFICATES_HIRS_ECC_PATH 'HIRS_db_client_ecc_512_sha384.p12')
+       $ALIAS="hirs_aca_tls_ecc_512_sha384"
+    }
+    
+    $CONNECTOR_URL="hibernate.connection.url=jdbc:mariadb://localhost:3306/hirs_db?autoReconnect=true&user="+$global:ACA_PROPERTIES.'hirs_db_username'+"&password="+$global:ACA_PROPERTIES.'hirs_db_password'+"&sslMode=VERIFY_CA&serverSslCert=$CERT_CHAIN&keyStoreType=PKCS12&keyStorePassword="+$global:ACA_PROPERTIES.'hirs_pki_password'+"&keyStore=$CLIENT_DB_P12" | ChangeBackslashToForwardSlash
+    
+    # Save connector information to the application properties file.
+    add_new_aca_property "$global:HIRS_DATA_SPRING_PROP_FILE" "$CONNECTOR_URL"
+}
+
 # HIRS ACA Mysqld processing ...
 check_mariadb_install -p
 check_for_container -p
@@ -160,4 +181,5 @@ start_mysqlsd -p
 $DB_ADMIN_PWD=check_mysql_root_pwd
 $HIRS_PASS=set_hirs_db_pwd -DB_ADMIN_PWD:"$DB_ADMIN_PWD"
 create_hirs_db_with_tls -DB_ADMIN_PWD:"$DB_ADMIN_PWD" -HIRS_PASS:"$HIRS_PASS"
+create_hibernate_url -ALG:"RSA"
 mysqld_reboot -p
