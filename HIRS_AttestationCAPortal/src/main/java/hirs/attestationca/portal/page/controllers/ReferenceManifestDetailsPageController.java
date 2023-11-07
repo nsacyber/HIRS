@@ -112,9 +112,16 @@ public class ReferenceManifestDetailsPageController extends PageController<Refer
                 String uuidError = "Failed to parse ID from: " + params.getId();
                 messages.addError(uuidError);
                 log.error(uuidError, iaEx);
-            } catch (Exception ioEx) {
+            } catch (CertificateException cEx) {
+                log.error(cEx);
+            } catch (NoSuchAlgorithmException nsEx) {
+                log.error(nsEx);
+            } catch (IOException ioEx) {
                 log.error(ioEx);
+            } catch (Exception ex) {
+                log.error(ex);
             }
+
             if (data.isEmpty()) {
                 String notFoundMessage = "Unable to find RIM with ID: " + params.getId();
                 messages.addError(notFoundMessage);
@@ -259,23 +266,15 @@ public class ReferenceManifestDetailsPageController extends PageController<Refer
         TCGEventLog logProcessor = null;
         SupportReferenceManifest support = null;
 
-        if (baseRim.getAssociatedRim() == null) {
-            support = (SupportReferenceManifest) referenceManifestRepository
-                    .getByManufacturer(baseRim.getPlatformManufacturer(),
-                    "SupportReferenceManifest");
-            if (support != null) {
-                baseRim.setAssociatedRim(support.getId());
-            }
-        } else {
-            support = referenceManifestRepository
-                    .getSupportRimEntityById(baseRim.getAssociatedRim());
-        }
         // going to have to pull the filename and grab that from the DB
         // to get the id to make the link
         RIM_VALIDATOR.setRim(baseRim.getRimBytes());
         for (SwidResource swidRes : resources) {
+            support = (SupportReferenceManifest) referenceManifestRepository.findByHexDecHash(swidRes.getHashValue());
+
             if (support != null && swidRes.getHashValue()
                     .equalsIgnoreCase(support.getHexDecHash())) {
+                baseRim.setAssociatedRim(support.getId());
                 RIM_VALIDATOR.validateSupportRimHash(support.getRimBytes(),
                         swidRes.getHashValue());
                 if (RIM_VALIDATOR.isSupportRimValid()) {
