@@ -89,132 +89,134 @@ $global:SPRING_PROPERTIES=$null
 
 # Common utility functions
 Function read_aca_properties () {
-	# This converts the ACA properties file into a hash table
-	# Values are accessed by key like this: $propertyValue=$global:ACA_PROPERTIES.'example.property.key'
+    # This converts the ACA properties file into a hash table
+    # Values are accessed by key like this: $propertyValue=$global:ACA_PROPERTIES.'example.property.key'
     param (
         [string]$file = $null
     )
-	if (!$global:ACA_PROPERTIES -and $file -and [System.IO.File]::Exists($file)) {
-		$file_content=(Get-Content $file -Raw)
-		if ($file_content) { # File is not empty
-            $file_content=([Regex]::Escape($file_content) -replace "(\\r)?\\n",[Environment]::NewLine)
-            $global:ACA_PROPERTIES=(ConvertFrom-StringData($file_content))
-		} else { # File is empty
-		    # Initialize empty hash table
-		    $global:ACA_PROPERTIES=@{}
-		}
+    if (!$global:ACA_PROPERTIES -and $file -and [System.IO.File]::Exists($file)) {
+        $file_content=(Get-Content $file -Raw)
+        if ($file_content) { # File is not empty
+            # $file_content=([Regex]::Escape($file_content) -replace "(\\r)?\\n",[Environment]::NewLine)
+            # $global:ACA_PROPERTIES=(ConvertFrom-StringData($file_content))
+            $global:ACA_PROPERTIES=(Get-Content -Path $file -Raw | ConvertFrom-StringData)
+        } else { # File is empty
+            # Initialize empty hash table
+            $global:ACA_PROPERTIES=@{}
+        }
     } elseif ($file -and ![System.IO.File]::Exists($file)) {
-		$msg="Warning: ACA properties file not found. The path provided was: $file"
-		if ($global:LOG_FILE) {
-			echo "$msg" | WriteAndLog
-		} else {
-			Write-Host "$msg"
-		}
-	}
+        $msg="Warning: ACA properties file not found. The path provided was: $file"
+        if ($global:LOG_FILE) {
+            echo "$msg" | WriteAndLog
+        } else {
+            Write-Host "$msg"
+        }
+    }
 }
 
 Function add_new_aca_property () {
     param (
         [string]$file = $null,
-		[string]$newKeyAndValue = $null
+        [string]$newKeyAndValue = $null
     )
-	if ($global:ACA_PROPERTIES -and $file -and $newKeyAndValue -and [System.IO.File]::Exists($file)) {
-		$msg="Writing KeyValue pair to $file"
-		if ($global:LOG_FILE) {
-			echo "$msg" | WriteAndLog
-		} else {
-			Write-Host "$msg"
-		}
-		Write-Host "NOT LOGGED: KeyValue pair: $newKeyAndValue to file $file"
-		echo "$newKeyAndValue" >> $file
+    if ($global:ACA_PROPERTIES -and $file -and $newKeyAndValue -and [System.IO.File]::Exists($file)) {
+        $msg="Writing KeyValue pair to $file"
+        if ($global:LOG_FILE) {
+            echo "$msg" | WriteAndLog
+        } else {
+            Write-Host "$msg"
+        }
+        Write-Host "NOT LOGGED: KeyValue pair: $newKeyAndValue to file $file"
+        echo "$newKeyAndValue" >> $file
         $global:ACA_PROPERTIES=$null
         read_aca_properties $file
-	}
+    }
 }
 
 Function read_spring_properties () {
-	# This converts the application properties file into a hash table
-	# Values are accessed by key like this: $propertyValue=$global:SPRING_PROPERTIES.'example.property.key'
+    # This converts the application properties file into a hash table
+    # Values are accessed by key like this: $propertyValue=$global:SPRING_PROPERTIES.'example.property.key'
     param (
         [string]$file = $null
     )
-	if (!$global:SPRING_PROPERTIES -and $file -and [System.IO.File]::Exists($file)) {
-		$file_content=(Get-Content $file -Raw)
-		if ($file_content) { # File is not empty
-            $file_content=([Regex]::Escape($file_content) -replace "(\\r)?\\n",[Environment]::NewLine)
-            $global:SPRING_PROPERTIES=(ConvertFrom-StringData($file_content))
-		} else { # File is empty
-		    # Initialize empty hash table
-		    $global:SPRING_PROPERTIES=@{}
-		}
+    if (!$global:SPRING_PROPERTIES -and $file -and [System.IO.File]::Exists($file)) {
+        $file_content=(Get-Content $file -Raw)
+        if ($file_content) { # File is not empty
+            #$file_content=([Regex]::Escape($file_content) -replace "(\\r)?\\n",[Environment]::NewLine)
+            #$global:SPRING_PROPERTIES=(ConvertFrom-StringData($file_content))
+            $global:SPRING_PROPERTIES=(Get-Content -Path $file -Raw | ConvertFrom-StringData)
+        } else { # File is empty
+            # Initialize empty hash table
+            $global:SPRING_PROPERTIES=@{}
+        }
     } elseif ($file -and ![System.IO.File]::Exists($file)) {
-		$msg="Warning: Spring properties file not found. The path provided was: $file"
-		if ($global:LOG_FILE) {
-			echo "$msg" | WriteAndLog
-		} else {
-			Write-Host "$msg"
-		}
-	}
+        $msg="Warning: Spring properties file not found. The path provided was: $file"
+        if ($global:LOG_FILE) {
+            echo "$msg" | WriteAndLog
+        } else {
+            Write-Host "$msg"
+        }
+    }
 }
 
 Function add_new_spring_property () {
     param (
         [string]$file = $null,
-		[string]$newKeyAndValue = $null
+        [string]$newKeyAndValue = $null
     )
-	if ($global:SPRING_PROPERTIES -and $file -and $newKeyAndValue -and [System.IO.File]::Exists($file)) {
-		$msg="Writing KeyValue pair to $file"
-		if ($global:LOG_FILE) {
-			echo "$msg" | WriteAndLog
-		} else {
-			Write-Host "$msg"
-		}
-		Write-Host "NOT LOGGED: KeyValue pair: $newKeyAndValue to file $file"
-		echo "$newKeyAndValue" >> $file
-	    $global:SPRING_PROPERTIES=$null
+    if ($global:SPRING_PROPERTIES -and $file -and $newKeyAndValue -and [System.IO.File]::Exists($file)) {
+        $msg="Writing KeyValue pair to $file"
+        if ($global:LOG_FILE) {
+            echo "$msg" | WriteAndLog
+        } else {
+            Write-Host "$msg"
+        }
+        Write-Host "NOT LOGGED: KeyValue pair: $newKeyAndValue to file $file"
+        echo "$newKeyAndValue" >> $file
+        $global:SPRING_PROPERTIES=$null
         read_spring_properties $file
-	}
+    }
 }
 
 Function create_random () {
-	return (1..100 | % { Get-Random } | sha512sum | tr -dc 'a-zA-Z0-9')
+    return (1..100 | % { Get-Random } | sha512sum | tr -dc 'a-zA-Z0-9')
 }
 
 Function set_up_log () {
     if (![System.IO.Directory]::Exists($global:HIRS_DATA_LOG_DIR)) {
-		mkdir -p $global:HIRS_DATA_LOG_DIR 2>&1 > $null
-	}
-	$global:LOG_FILE=$global:HIRS_DATA_INSTALL_LOG_NAME
-	touch $global:LOG_FILE
+        mkdir -p $global:HIRS_DATA_LOG_DIR 2>&1 > $null
+    }
+    $global:LOG_FILE=$global:HIRS_DATA_INSTALL_LOG_NAME
+    touch $global:LOG_FILE
 }
 
 Function print_all_variables () {
-	# intended for debugging
-	# this will print all variables and their values in the current context
-	Get-Variable | Out-String
+    # intended for debugging
+    # this will print all variables and their values in the current context
+    Get-Variable | Out-String
 }
 
 Function WriteAndLog () {
-	param(
-	    [Parameter(Mandatory = $true, ValueFromPipeline = $true, Position=0)]
-	    [string]$msg
-	)
-	# EXPECTS set_up_log() to be run and $global:LOG_FILE to be defined
-	Write-Host "$msg"
-	"$msg" >> "$global:LOG_FILE"
+    param(
+        [Parameter(Mandatory = $true, ValueFromPipeline = $true, Position=0)]
+        [string]$msg
+    )
+    # EXPECTS set_up_log() to be run and $global:LOG_FILE to be defined
+    Write-Host "$msg"
+    "$msg" >> "$global:LOG_FILE"
 }
 
 Function ChangeBackslashToForwardSlash () {
-	param(
-	    [Parameter(Mandatory = $true, ValueFromPipeline = $true, Position=0)]
-	    [string]$msg
-	)
-	echo ($msg -replace "\\","/")
+    param(
+        [Parameter(Mandatory = $true, ValueFromPipeline = $true, Position=0)]
+        [string]$msg
+    )
+    echo ($msg -replace "\\","/")
 }
 
 Function ChangeFileBackslashToForwardSlash () {
-	param(
-	    [string]$file = $null
-	)
-	(Get-Content $file) -replace "\\","/" | Set-Content $file
+    param(
+        [string]$file = $null
+    )
+    (Get-Content $file) -replace "\\","/" | Set-Content $file
 }

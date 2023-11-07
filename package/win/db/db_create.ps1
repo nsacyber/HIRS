@@ -52,13 +52,13 @@ Function check_mysql_root_pwd () {
 	    if (!$unattended) {
 			$confirm=Read-Host 'Do you wish to save this password to the aca.properties file?'
 			if (($confirm -eq "y") -or ($confirm -eq "yes")) { # case-insensitive
-			    add_new_aca_property "$global:HIRS_DATA_ACA_PROPERTIES_FILE" "mysql_admin_password=$DB_ADMIN_PWD"
+			    add_new_aca_property -file:"$global:HIRS_DATA_ACA_PROPERTIES_FILE" -newKeyAndValue:"mysql_admin_password=$DB_ADMIN_PWD"
 	            echo "Mysql root password saved locally" | WriteAndLog
 			} else {
 	            echo "Mysql root password not saved locally" | WriteAndLog
 			}
 		} else { # unattended install
-	        add_new_aca_property "$global:HIRS_DATA_ACA_PROPERTIES_FILE" "mysql_admin_password=$DB_ADMIN_PWD"
+	        add_new_aca_property -file:"$global:HIRS_DATA_ACA_PROPERTIES_FILE" -newKeyAndValue:"mysql_admin_password=$DB_ADMIN_PWD"
 	        echo "Mysql root password has been saved locally." | WriteAndLog
 		}
 	    mysqladmin --user=root password "$DB_ADMIN_PWD"
@@ -117,8 +117,8 @@ Function set_hirs_db_pwd () {
 	} else {
 		echo "Using randomly generated password for the DB key password" | WriteAndLog
 		$HIRS_PASS=(create_random)
-		add_new_aca_property "$global:HIRS_DATA_ACA_PROPERTIES_FILE" "hirs_db_username=hirs_db"
-		add_new_aca_property "$global:HIRS_DATA_ACA_PROPERTIES_FILE" "hirs_db_password=$HIRS_PASS"
+		add_new_aca_property -file:"$global:HIRS_DATA_ACA_PROPERTIES_FILE" -newKeyAndValue:"hirs_db_username=hirs_db"
+		add_new_aca_property -file:"$global:HIRS_DATA_ACA_PROPERTIES_FILE" -newKeyAndValue:"hirs_db_password=$HIRS_PASS"
 		echo "Stored hirs_db password in the ACA properties file $global:HIRS_DATA_ACA_PROPERTIES_FILE" | WriteAndLog
 	}
 
