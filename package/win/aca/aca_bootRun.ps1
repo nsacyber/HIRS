@@ -86,12 +86,14 @@ $CONNECTOR_PARAMS="--hibernate.connection.url=jdbc:mariadb://localhost:3306/hirs
 
 $WEB_TLS_PARAMS="--server.ssl.key-store-password="+$global:ACA_PROPERTIES.'hirs_pki_password'+ 
 " --server.ssl.trust-store-password="+$global:ACA_PROPERTIES.'hirs_pki_password' | ChangeBackslashToForwardSlash
+
+$SPRING_PROP_FILE_FORWARDSLASHES=($SPRING_PROP_FILE | ChangeBackslashToForwardSlash)
 echo $CONNECTOR_PARAMS
 echo $WEB_TLS_PARAMS
 if ($w -or $war) {
 	echo "Booting the ACA from a war file..." | WriteAndLog
-	java -jar $DEPLOYED_WAR --spring.config.location=$SPRING_PROP_FILE
+	java -jar $DEPLOYED_WAR --spring.config.location=$SPRING_PROP_FILE_FORWARDSLASHES
 } else  {
     echo "Booting the ACA from local build..." | WriteAndLog
-	./gradlew bootRun --args="--spring.config.location=$SPRING_PROP_FILE"
+	./gradlew bootRun --args="--spring.config.location=$SPRING_PROP_FILE_FORWARDSLASHES"
 }

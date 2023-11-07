@@ -14,6 +14,7 @@ $global:HIRS_REL_PORTAL_LOG4J_SPRING_LINUX_XML=(Join-Path $global:HIRS_REL_PACKA
 $global:HIRS_REL_PORTAL_APPLICATION_LINUX_PROPERTIES=(Join-Path $global:HIRS_REL_PACKAGE_HOME .. HIRS_AttestationCAPortal src main resources application.linux.properties)
 $global:HIRS_REL_PORTAL_LOG4J_SPRING_WIN_XML=(Join-Path -Resolve $global:HIRS_REL_PACKAGE_HOME .. HIRS_AttestationCAPortal src main resources log4j2-spring.win.xml)
 $global:HIRS_REL_PORTAL_APPLICATION_WIN_PROPERTIES=(Join-Path -Resolve $global:HIRS_REL_PACKAGE_HOME .. HIRS_AttestationCAPortal src main resources application.win.properties)
+$global:HIRS_REL_WIN_PKI_CA_CONF=(Join-Path -Resolve $global:HIRS_REL_WIN_PKI_HOME 'ca.conf')
 
 # Back up linux configuration files
 mv $global:HIRS_REL_PORTAL_LOG4J_SPRING_XML $global:HIRS_REL_PORTAL_LOG4J_SPRING_LINUX_XML
@@ -22,3 +23,6 @@ mv $global:HIRS_REL_PORTAL_APPLICATION_PROPERTIES $global:HIRS_REL_PORTAL_APPLIC
 # Copy windows configuration files in place
 cp $global:HIRS_REL_PORTAL_LOG4J_SPRING_WIN_XML $global:HIRS_REL_PORTAL_LOG4J_SPRING_XML
 cp $global:HIRS_REL_PORTAL_APPLICATION_WIN_PROPERTIES $global:HIRS_REL_PORTAL_APPLICATION_PROPERTIES
+
+# Make a copy of the ca.conf file local to the windows scripts
+cp $global:HIRS_REL_SCRIPTS_PKI_CA_CONF $global:HIRS_REL_WIN_PKI_CA_CONF
