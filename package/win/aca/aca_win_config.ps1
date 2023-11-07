@@ -14,7 +14,7 @@ $global:HIRS_REL_PORTAL_LOG4J_SPRING_LINUX_XML=(Join-Path $global:HIRS_REL_PACKA
 $global:HIRS_REL_PORTAL_APPLICATION_LINUX_PROPERTIES=(Join-Path $global:HIRS_REL_PACKAGE_HOME .. HIRS_AttestationCAPortal src main resources application.linux.properties)
 $global:HIRS_REL_PORTAL_LOG4J_SPRING_WIN_XML=(Join-Path -Resolve $global:HIRS_REL_PACKAGE_HOME .. HIRS_AttestationCAPortal src main resources log4j2-spring.win.xml)
 $global:HIRS_REL_PORTAL_APPLICATION_WIN_PROPERTIES=(Join-Path -Resolve $global:HIRS_REL_PACKAGE_HOME .. HIRS_AttestationCAPortal src main resources application.win.properties)
-$global:HIRS_REL_WIN_PKI_CA_CONF=(Join-Path -Resolve $global:HIRS_REL_WIN_PKI_HOME 'ca.conf')
+$global:HIRS_REL_WIN_PKI_CA_CONF=(Join-Path $global:HIRS_REL_WIN_PKI_HOME 'ca.conf')
 
 # Back up linux configuration files
 mv $global:HIRS_REL_PORTAL_LOG4J_SPRING_XML $global:HIRS_REL_PORTAL_LOG4J_SPRING_LINUX_XML
