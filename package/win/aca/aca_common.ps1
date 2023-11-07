@@ -162,7 +162,7 @@ Function add_new_spring_property () {
         [string]$file = $null,
 		[string]$newKeyAndValue = $null
     )
-	if ($global:ACA_PROPERTIES -and $file -and $newKeyAndValue -and [System.IO.File]::Exists($file)) {
+	if ($global:SPRING_PROPERTIES -and $file -and $newKeyAndValue -and [System.IO.File]::Exists($file)) {
 		$msg="Writing KeyValue pair to $file"
 		if ($global:LOG_FILE) {
 			echo "$msg" | WriteAndLog

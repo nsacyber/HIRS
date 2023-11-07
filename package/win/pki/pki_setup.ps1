@@ -71,8 +71,8 @@ if (![System.IO.Directory]::Exists($global:HIRS_DATA_CERTIFICATES_DIR)) {
 	add_new_aca_property "$global:HIRS_DATA_ACA_PROPERTIES_FILE" "hirs_pki_password=$PKI_PASS"
     
     # Save connector information to the application properties file.
-    add_new_aca_property "$global:HIRS_DATA_SPRING_PROP_FILE" "server.ssl.key-store-password=$PKI_PASS"
-    add_new_aca_property "$global:HIRS_DATA_SPRING_PROP_FILE" "server.ssl.trust-store-password=$PKI_PASS"
+    add_new_spring_property "$global:HIRS_DATA_SPRING_PROP_FILE" "server.ssl.key-store-password=$PKI_PASS"
+    add_new_spring_property "$global:HIRS_DATA_SPRING_PROP_FILE" "server.ssl.trust-store-password=$PKI_PASS"
 } else {
     echo "$global:HIRS_DATA_CERTIFICATES_DIR exists, skipping" | WriteAndLog
 }
