@@ -28,6 +28,10 @@ mkdir -F -p $global:HIRS_DATA_LOG_DIR 2>&1 > $null
 touch $global:HIRS_DATA_ACA_PROPERTIES_FILE  # create it, if it doesn't exist
 read_aca_properties $global:HIRS_DATA_ACA_PROPERTIES_FILE
 
+# Read spring application.properties
+touch $global:HIRS_DATA_SPRING_PROP_FILE  # create it, if it doesn't exist
+read_spring_properties $global:HIRS_DATA_SPRING_PROP_FILE
+
 # Parameter Consolidation
 $skipdb=$sd -or ${skip-db}
 $skippki=$sp -or ${skip-pki}

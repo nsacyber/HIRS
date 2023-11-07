@@ -85,6 +85,7 @@ $global:HIRS_REL_WIN_PKI_SETUP=(Join-Path -Resolve $global:HIRS_REL_WIN_PKI_HOME
 # $Env:HIRS_MYSQL_ROOT_PWD
 # $Env:HIRS_PKI_PWD
 $global:ACA_PROPERTIES=$null
+$global:SPRING_PROPERTIES=$null
 
 # Common utility functions
 Function read_aca_properties () {
@@ -97,7 +98,6 @@ Function read_aca_properties () {
 		$file_content=(Get-Content $file -Raw)
 		if ($file_content) { # File is not empty
             $file_content=([Regex]::Escape($file_content) -replace "(\\r)?\\n",[Environment]::NewLine)
-            $file_content=([Regex]::Escape($file_content) -replace "[ \\t]*#.*","")
             $global:ACA_PROPERTIES=(ConvertFrom-StringData($file_content))
 		} else { # File is empty
 		    # Initialize empty hash table
@@ -129,6 +129,50 @@ Function add_new_aca_property () {
 		echo "$newKeyAndValue" >> $file
 	    $global:ACA_PROPERTIES=$null
         read_aca_properties $file
+	}
+}
+
+Function read_spring_properties () {
+	# This converts the application properties file into a hash table
+	# Values are accessed by key like this: $propertyValue=$global:SPRING_PROPERTIES.'example.property.key'
+    param (
+        [string]$file = $null
+    )
+	if (!$global:SPRING_PROPERTIES -and $file -and [System.IO.File]::Exists($file)) {
+		$file_content=(Get-Content $file -Raw)
+		if ($file_content) { # File is not empty
+            $file_content=([Regex]::Escape($file_content) -replace "(\\r)?\\n",[Environment]::NewLine)
+            $global:SPRING_PROPERTIES=(ConvertFrom-StringData($file_content))
+		} else { # File is empty
+		    # Initialize empty hash table
+		    $global:SPRING_PROPERTIES=@{}
+		}
+    } elseif ($file -and ![System.IO.File]::Exists($file)) {
+		$msg="Warning: Spring properties file not found. The path provided was: $file"
+		if ($global:LOG_FILE) {
+			echo "$msg" | WriteAndLog
+		} else {
+			Write-Host "$msg"
+		}
+	}
+}
+
+Function add_new_spring_property () {
+    param (
+        [string]$file = $null,
+		[string]$newKeyAndValue = $null
+    )
+	if ($global:ACA_PROPERTIES -and $file -and $newKeyAndValue -and [System.IO.File]::Exists($file)) {
+		$msg="Writing KeyValue pair to $file"
+		if ($global:LOG_FILE) {
+			echo "$msg" | WriteAndLog
+		} else {
+			Write-Host "$msg"
+		}
+		Write-Host "NOT LOGGED: KeyValue pair: $newKeyAndValue"
+		echo "$newKeyAndValue" >> $file
+	    $global:SPRING_PROPERTIES=$null
+        read_spring_properties $file
 	}
 }
 

@@ -19,6 +19,9 @@ set_up_log
 # Read aca.properties
 read_aca_properties $global:HIRS_DATA_ACA_PROPERTIES_FILE
 
+# Read spring application.properties
+read_spring_properties $global:HIRS_DATA_SPRING_PROP_FILE
+
 echo "-----------------------------------------------------------" | WriteAndLog
 echo ("Running with these arguments: "+($PSBoundParameters | Out-String)) | WriteAndLog
 

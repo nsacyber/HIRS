@@ -21,6 +21,9 @@ $ACA_COMMON_SCRIPT=(Join-Path "$APP_HOME" .. aca aca_common.ps1)
 # Read aca.properties
 read_aca_properties $global:HIRS_DATA_ACA_PROPERTIES_FILE
 
+# Read spring application.properties
+read_spring_properties $global:HIRS_DATA_SPRING_PROP_FILE
+
 # Parameter check
 if ($LOG_FILE) {
 	touch $LOG_FILE
