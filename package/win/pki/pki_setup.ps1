@@ -68,11 +68,11 @@ if (![System.IO.Directory]::Exists($global:HIRS_DATA_CERTIFICATES_DIR)) {
     pwsh -ExecutionPolicy Bypass $PKI_SETUP_DIR/pki_chain_gen.ps1 "HIRS" "ecc" "512" "sha384" "$PKI_PASS" "$global:LOG_FILE"
 
     # Save the password to the ACA properties file.
-	add_new_aca_property "$global:HIRS_DATA_ACA_PROPERTIES_FILE" "hirs_pki_password=$PKI_PASS"
+	add_new_aca_property -file:"$global:HIRS_DATA_ACA_PROPERTIES_FILE" -newKeyAndValue:"hirs_pki_password=$PKI_PASS"
     
     # Save connector information to the application properties file.
-    add_new_spring_property "$global:HIRS_DATA_SPRING_PROP_FILE" "server.ssl.key-store-password=$PKI_PASS"
-    add_new_spring_property "$global:HIRS_DATA_SPRING_PROP_FILE" "server.ssl.trust-store-password=$PKI_PASS"
+    add_new_spring_property -file:"$global:HIRS_DATA_SPRING_PROP_FILE" -newKeyAndValue:"server.ssl.key-store-password=$PKI_PASS"
+    add_new_spring_property -file:"$global:HIRS_DATA_SPRING_PROP_FILE" -newKeyAndValue:"server.ssl.trust-store-password=$PKI_PASS"
 } else {
     echo "$global:HIRS_DATA_CERTIFICATES_DIR exists, skipping" | WriteAndLog
 }

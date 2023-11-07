@@ -173,7 +173,7 @@ Function create_hibernate_url () {
     $CONNECTOR_URL="hibernate.connection.url=jdbc:mariadb://localhost:3306/hirs_db?autoReconnect=true&user="+$global:ACA_PROPERTIES.'hirs_db_username'+"&password="+$global:ACA_PROPERTIES.'hirs_db_password'+"&sslMode=VERIFY_CA&serverSslCert=$CERT_CHAIN&keyStoreType=PKCS12&keyStorePassword="+$global:ACA_PROPERTIES.'hirs_pki_password'+"&keyStore=$CLIENT_DB_P12" | ChangeBackslashToForwardSlash
     
     # Save connector information to the application properties file.
-    add_new_spring_property "$global:HIRS_DATA_SPRING_PROP_FILE" "$CONNECTOR_URL"
+    add_new_spring_property -file:"$global:HIRS_DATA_SPRING_PROP_FILE" -newKeyAndValue:"$CONNECTOR_URL"
 }
 
 # HIRS ACA Mysqld processing ...

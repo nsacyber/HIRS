@@ -125,9 +125,9 @@ Function add_new_aca_property () {
 		} else {
 			Write-Host "$msg"
 		}
-		Write-Host "NOT LOGGED: KeyValue pair: $newKeyAndValue"
+		Write-Host "NOT LOGGED: KeyValue pair: $newKeyAndValue to file $file"
 		echo "$newKeyAndValue" >> $file
-	    $global:ACA_PROPERTIES=$null
+        $global:ACA_PROPERTIES=$null
         read_aca_properties $file
 	}
 }
@@ -169,7 +169,7 @@ Function add_new_spring_property () {
 		} else {
 			Write-Host "$msg"
 		}
-		Write-Host "NOT LOGGED: KeyValue pair: $newKeyAndValue"
+		Write-Host "NOT LOGGED: KeyValue pair: $newKeyAndValue to file $file"
 		echo "$newKeyAndValue" >> $file
 	    $global:SPRING_PROPERTIES=$null
         read_spring_properties $file
