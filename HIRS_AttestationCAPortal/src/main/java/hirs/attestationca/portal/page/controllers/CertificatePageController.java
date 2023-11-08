@@ -399,7 +399,7 @@ public class CertificatePageController extends PageController<NoPageParams> {
                     }
                 }
 
-                certificate.archive();
+                certificate.archive("User requested deletion via UI");
                 certificateRepository.save(certificate);
 
                 String deleteCompletedMessage = "Certificate successfully deleted";
@@ -512,7 +512,7 @@ public class CertificatePageController extends PageController<NoPageParams> {
 
         try (ZipOutputStream zipOut = new ZipOutputStream(response.getOutputStream())) {
             // get all files
-            bulkDownload(zipOut, this.certificateRepository.findByAll("CertificateAuthorityCredential"), singleFileName);
+            bulkDownload(zipOut, this.certificateRepository.findByType("CertificateAuthorityCredential"), singleFileName);
             // write cert to output stream
         } catch (IllegalArgumentException ex) {
             String uuidError = "Failed to parse ID from: ";
@@ -544,7 +544,7 @@ public class CertificatePageController extends PageController<NoPageParams> {
 
         try (ZipOutputStream zipOut = new ZipOutputStream(response.getOutputStream())) {
             // get all files
-            bulkDownload(zipOut, this.certificateRepository.findByAll("PlatformCredential"), singleFileName);
+            bulkDownload(zipOut, this.certificateRepository.findByType("PlatformCredential"), singleFileName);
             // write cert to output stream
         } catch (IllegalArgumentException ex) {
             String uuidError = "Failed to parse ID from: ";
@@ -576,7 +576,7 @@ public class CertificatePageController extends PageController<NoPageParams> {
 
         try (ZipOutputStream zipOut = new ZipOutputStream(response.getOutputStream())) {
             // get all files
-            bulkDownload(zipOut, this.certificateRepository.findByAll("IssuedAttestationCertificate"), singleFileName);
+            bulkDownload(zipOut, this.certificateRepository.findByType("IssuedAttestationCertificate"), singleFileName);
             // write cert to output stream
         } catch (IllegalArgumentException ex) {
             String uuidError = "Failed to parse ID from: ";
@@ -607,7 +607,7 @@ public class CertificatePageController extends PageController<NoPageParams> {
 
         try (ZipOutputStream zipOut = new ZipOutputStream(response.getOutputStream())) {
             // get all files
-            bulkDownload(zipOut, this.certificateRepository.findByAll("EndorsementCredential"), singleFileName);
+            bulkDownload(zipOut, this.certificateRepository.findByType("EndorsementCredential"), singleFileName);
             // write cert to output stream
         } catch (IllegalArgumentException ex) {
             String uuidError = "Failed to parse ID from: ";

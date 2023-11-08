@@ -13,7 +13,6 @@ import java.util.Date;
  * An abstract archivable entity that can be deleted.
  */
 @ToString
-@Getter
 @MappedSuperclass
 public abstract class ArchivableEntity extends AbstractEntity {
 
@@ -76,6 +75,21 @@ public abstract class ArchivableEntity extends AbstractEntity {
             return true;
         } else {
             return false;
+        }
+    }
+
+    /**
+     * Returns the timestamp of when the entity was archived if applicable. If the
+     * entity has not been resolved, then null is returned.
+     *
+     * @return archivedTime
+     *      If entity was archived, timestamp of the occurrence, null otherwise.
+     */
+    public final Date getArchivedTime() {
+        if (archivedTime == null) {
+            return null;
+        } else {
+            return (Date) archivedTime.clone();
         }
     }
 

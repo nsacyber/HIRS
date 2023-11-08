@@ -5,6 +5,7 @@ import hirs.attestationca.persist.entity.manager.CACredentialRepository;
 import hirs.attestationca.persist.entity.manager.CertificateRepository;
 import hirs.attestationca.persist.entity.manager.ReferenceDigestValueRepository;
 import hirs.attestationca.persist.entity.manager.ReferenceManifestRepository;
+import hirs.attestationca.persist.entity.userdefined.Certificate;
 import hirs.attestationca.persist.entity.userdefined.ReferenceManifest;
 import hirs.attestationca.persist.entity.userdefined.certificate.CertificateAuthorityCredential;
 import hirs.attestationca.persist.entity.userdefined.rim.BaseReferenceManifest;
@@ -293,17 +294,19 @@ public class ReferenceManifestDetailsPageController extends PageController<Refer
             data.put("pcrList", support.getExpectedPCRList());
         }
 
-        List<CertificateAuthorityCredential> certificates = certificateRepository
-                .findByAll("CertificateAuthorityCredential");
+        List<Certificate> certificates = certificateRepository
+                .findByType("CertificateAuthorityCredential");
+        CertificateAuthorityCredential caCert;
         //Report invalid signature unless RIM_VALIDATOR validates it and cert path is valid
         data.put("signatureValid", false);
-        for (CertificateAuthorityCredential cert : certificates) {
-            KeyStore keystore = ValidationService.getCaChain(cert, caCertificateRepository);
-            if (RIM_VALIDATOR.validateXmlSignature(cert.getX509Certificate().getPublicKey(),
-                    cert.getSubjectKeyIdString(), cert.getEncodedPublicKey())) {
+        for (Certificate certificate : certificates) {
+            caCert = (CertificateAuthorityCredential) certificate;
+            KeyStore keystore = ValidationService.getCaChain(caCert, caCertificateRepository);
+            if (RIM_VALIDATOR.validateXmlSignature(caCert.getX509Certificate().getPublicKey(),
+                    caCert.getSubjectKeyIdString(), caCert.getEncodedPublicKey())) {
                 try {
                     if (SupplyChainCredentialValidator.verifyCertificate(
-                            cert.getX509Certificate(), keystore)) {
+                            caCert.getX509Certificate(), keystore)) {
                         data.replace("signatureValid", true);
                         break;
                     }
@@ -315,10 +318,11 @@ public class ReferenceManifestDetailsPageController extends PageController<Refer
         data.put("skID", RIM_VALIDATOR.getSubjectKeyIdentifier());
         try {
             if (RIM_VALIDATOR.getPublicKey() != null) {
-                for (CertificateAuthorityCredential cert : certificates) {
-                    if (Arrays.equals(cert.getEncodedPublicKey(),
+                for (Certificate certificate : certificates) {
+                    caCert = (CertificateAuthorityCredential) certificate;
+                    if (Arrays.equals(caCert.getEncodedPublicKey(),
                             RIM_VALIDATOR.getPublicKey().getEncoded())) {
-                        data.put("issuerID", cert.getId().toString());
+                        data.put("issuerID", caCert.getId().toString());
                     }
                 }
             }
