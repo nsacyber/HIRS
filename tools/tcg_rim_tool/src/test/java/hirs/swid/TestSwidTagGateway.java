@@ -1,5 +1,7 @@
 package hirs.swid;
 
+import hirs.utils.rim.ReferenceManifestValidator;
+
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -12,7 +14,7 @@ import org.testng.annotations.Test;
 
 public class TestSwidTagGateway {
 	private SwidTagGateway gateway;
-	private SwidTagValidator validator;
+	private ReferenceManifestValidator validator;
 	private final String DEFAULT_OUTPUT = "generated_swidTag.swidtag";
 	private final String BASE_USER_CERT = "generated_user_cert.swidtag";
 	private final String BASE_USER_CERT_EMBED = "generated_user_cert_embed.swidtag";
@@ -40,7 +42,7 @@ public class TestSwidTagGateway {
 		gateway = new SwidTagGateway();
 		gateway.setRimEventLog(SUPPORT_RIM_FILE);
 		gateway.setAttributesFile(ATTRIBUTES_FILE);
-		validator = new SwidTagValidator();
+		validator = new ReferenceManifestValidator();
 		validator.setRimEventLog(SUPPORT_RIM_FILE);
 		validator.setTrustStoreFile(CA_CHAIN_FILE);
 	}
@@ -67,7 +69,7 @@ public class TestSwidTagGateway {
 		expectedFile = TestSwidTagGateway.class.getClassLoader()
 				.getResourceAsStream(BASE_USER_CERT);
 		Assert.assertTrue(compareFileBytesToExpectedFile(DEFAULT_OUTPUT));
-		Assert.assertTrue(validator.validateSwidTag(DEFAULT_OUTPUT));
+		Assert.assertTrue(validator.validateSwidtagFile(DEFAULT_OUTPUT));
 	}
 
 	/**
@@ -86,7 +88,7 @@ public class TestSwidTagGateway {
 		expectedFile = TestSwidTagGateway.class.getClassLoader()
 				.getResourceAsStream(BASE_USER_CERT_EMBED);
 		Assert.assertTrue(compareFileBytesToExpectedFile(DEFAULT_OUTPUT));
-		Assert.assertTrue(validator.validateSwidTag(DEFAULT_OUTPUT));
+		Assert.assertTrue(validator.validateSwidtagFile(DEFAULT_OUTPUT));
 	}
 
 	/**
@@ -101,7 +103,7 @@ public class TestSwidTagGateway {
 		expectedFile = TestSwidTagGateway.class.getClassLoader()
 				.getResourceAsStream(BASE_DEFAULT_CERT);
 		Assert.assertTrue(compareFileBytesToExpectedFile(DEFAULT_OUTPUT));
-		Assert.assertTrue(validator.validateSwidTag(DEFAULT_OUTPUT));
+		Assert.assertTrue(validator.validateSwidtagFile(DEFAULT_OUTPUT));
 	}
 
 	/**
@@ -118,7 +120,7 @@ public class TestSwidTagGateway {
 		expectedFile = TestSwidTagGateway.class.getClassLoader()
 				.getResourceAsStream(BASE_RFC3339_TIMESTAMP);
 		Assert.assertTrue(compareFileBytesToExpectedFile(DEFAULT_OUTPUT));
-		Assert.assertTrue(validator.validateSwidTag(DEFAULT_OUTPUT));
+		Assert.assertTrue(validator.validateSwidtagFile(DEFAULT_OUTPUT));
 	}
 
 	/**
@@ -135,7 +137,7 @@ public class TestSwidTagGateway {
 		expectedFile = TestSwidTagGateway.class.getClassLoader()
 				.getResourceAsStream(BASE_RFC3852_TIMESTAMP);
 		Assert.assertTrue(compareFileBytesToExpectedFile(DEFAULT_OUTPUT));
-		Assert.assertTrue(validator.validateSwidTag(DEFAULT_OUTPUT));
+		Assert.assertTrue(validator.validateSwidtagFile(DEFAULT_OUTPUT));
 	}
 
 	/**
@@ -143,11 +145,11 @@ public class TestSwidTagGateway {
 	 * -v <path>
 	 */
 
-	public void testValidateSwidTag() {
+	public void testvalidateSwidtagFile() {
 		String filepath = TestSwidTagGateway.class.getClassLoader()
 				.getResource(BASE_USER_CERT).getPath();
 		System.out.println("Validating file at " + filepath);
-		Assert.assertTrue(validator.validateSwidTag(filepath));
+		Assert.assertTrue(validator.validateSwidtagFile(filepath));
 	}
 
 	/**
