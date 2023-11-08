@@ -8,7 +8,9 @@
     <PublishSingleFile>true</PublishSingleFile>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
-  </PropertyGroup>
+    <PackageVersion>2.2.0</PackageVersion>
+    <Release></Release> 
+</PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
     <DefineConstants>DEBUG;TRACE</DefineConstants>
@@ -32,7 +34,7 @@
     <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
     <PackageReference Include="paccor.HardwareManifestPlugin" Version="1.0.0" />
     <PackageReference Include="paccor.HardwareManifestPluginManager" Version="1.0.0" />
-    <PackageReference Include="paccor.paccor_scripts" Version="1.0.0" />
+    <PackageReference Include="paccor.paccor_scripts" Version="1.0.1" />
     <PackageReference Include="Packaging.Targets" Version="0.1.220">
       <PrivateAssets>all</PrivateAssets> <!-- These assets will be consumed but won't flow to the parent project -->
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
@@ -71,12 +73,30 @@
         <protoc Condition="'$([System.Runtime.InteropServices.RuntimeInformation]::IsOSPlatform($([System.Runtime.InteropServices.OSPlatform]::OSX)))' And '$([System.Runtime.InteropServices.RuntimeInformation]::OSArchitecture)'=='X86'">$(protoc_macosx86)</protoc>
         <protoc Condition="'$([System.Runtime.InteropServices.RuntimeInformation]::IsOSPlatform($([System.Runtime.InteropServices.OSPlatform]::Windows)))' And '$([System.Runtime.InteropServices.RuntimeInformation]::OSArchitecture)'=='X64'">$(protoc_windows64)</protoc>
         <protoc Condition="'$([System.Runtime.InteropServices.RuntimeInformation]::IsOSPlatform($([System.Runtime.InteropServices.OSPlatform]::Windows)))' And '$([System.Runtime.InteropServices.RuntimeInformation]::OSArchitecture)'=='X86'">$(protoc_windows86)</protoc>
-    </PropertyGroup>
+    </PropertyGroup>    
    <ItemGroup>
     <Compile Condition="!Exists('$(FOLDER_OUT)')" Include="generated/ProvisionerTpm2.cs" /> <!-- Necessary to include the proto file(s) compiled during this prebuild phase, if they didn't exist before. CANNOT use wildcards! -->
   </ItemGroup>   
     <Exec Condition="!Exists('$(FOLDER_OUT)')" Command="mkdir $(FOLDER_OUT)" />
     <Exec Condition="'$([System.Runtime.InteropServices.RuntimeInformation]::IsOSPlatform($([System.Runtime.InteropServices.OSPlatform]::Windows)))'" Command="for /f %%i in ('dir /s /b $(FOLDER_PROTO)\*.proto') do (  $(protoc) -I=$(FOLDER_PROTO) --csharp_out=$(FOLDER_OUT) %%i )" />
     <Exec Condition="'$([System.Runtime.InteropServices.RuntimeInformation]::IsOSPlatform($([System.Runtime.InteropServices.OSPlatform]::Linux)))'" Command="for file in `ls -1R $(FOLDER_PROTO)/*.proto` ; do $(protoc) -I=$(FOLDER_PROTO) --csharp_out=$(FOLDER_OUT) $file; done " />
+  </Target>
+  <Import Project="$(NuGetPackageRoot)paccor.paccor_scripts/1.0.1/contentFiles/any/net6.0/resources/paccor.paccor_scripts.targets" Condition="Exists('$(NuGetPackageRoot)paccor.paccor_scripts/1.0.1/contentFiles/any/net6.0/resources/paccor.paccor_scripts.targets')" />
+  <Target Name="ImportPaccorScripts" BeforeTargets="PreBuildEvent">
+    <ItemGroup>
+      <PaccorScriptsLinux Include="$(dotnet_paccor_scripts_directory)/*" />
+      <PaccorScriptsWindows Include="$(dotnet_paccor_scripts_windows_directory)/*" />
+    </ItemGroup>
+    <Message Text="Adding files to plugins/scripts: @(PaccorScriptsLinux)" Importance="high" />
+	<Message Text="Adding files to plugins/scripts/windows: @(PaccorScriptsWindows)" Importance="high" />
+    <Copy SourceFiles="@(PaccorScriptsLinux)" DestinationFolder="$(ProjectDir)/plugins/scripts/" />
+    <Copy SourceFiles="@(PaccorScriptsWindows)" DestinationFolder="$(ProjectDir)/plugins/scripts/windows/" />
+    <ItemGroup>
+      <Content Include="plugins\**\*.*">
+        <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+        <CopyToPublishDirectory>Always</CopyToPublishDirectory>
+        <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
+      </Content>
+    </ItemGroup>
   </Target>
 </Project>

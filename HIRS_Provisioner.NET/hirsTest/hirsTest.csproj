@@ -30,7 +30,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\hirs\hirs.csproj" />
+    <ProjectReference Include="..\hirs\HIRS_Provisioner.NET.csproj" />
   </ItemGroup>
 
   <ProjectExtensions><VisualStudio><UserProperties resources_4settings_3test_4appsettings_1json__JsonSchema="" /></VisualStudio></ProjectExtensions>
