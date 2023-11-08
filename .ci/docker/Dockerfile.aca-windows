@@ -57,15 +57,15 @@ RUN echo $Env:JAVA_HOME
 WORKDIR C:/
 RUN git config --global --add core.autocrlf false
 RUN git config --global --add safe.directory '*'
-RUN git clone -b main https://github.com/nsacyber/hirs.git C:/repo
+RUN git clone -b v3_windows-package-scripts https://github.com/nsacyber/hirs.git C:/repo
 
 # Defensive copy of the repo so it's easy to start fresh if needed
-RUN mkdir C:/hirs
 WORKDIR C:/repo
-RUN cp -Recurse -Force . C:/hirs
+RUN cp -Recurse -Force C:/repo C:/hirs
 
 # Ensure Windows configuration files are in place before build.
-RUN pwsh -ExecutionPolicy Bypass ./package/win/aca/aca_win_config.ps1
+WORKDIR C:/hirs
+RUN pwsh -Command pwsh -ExecutionPolicy Bypass ./package/win/aca/aca_win_config.ps1
 
 # Run bootWar to cache build objects and dependencies
 WORKDIR C:/hirs
@@ -75,6 +75,6 @@ RUN cp ./HIRS_AttestationCAPortal/src/main/resources/application.win.properties 
 
 # Run ACA Setup- PKI and DB
 WORKDIR C:/hirs
-RUN pwsh -ExecutionPolicy Bypass ./package/win/aca/aca_setup.ps1 -unattended
+RUN pwsh -Command pwsh -ExecutionPolicy Bypass ./package/win/aca/aca_setup.ps1 -unattended
 
 CMD ["pwsh", "-Command", "pwsh -ExecutionPolicy Bypass C:/hirs/package/win/aca/aca_bootRun.ps1"]
