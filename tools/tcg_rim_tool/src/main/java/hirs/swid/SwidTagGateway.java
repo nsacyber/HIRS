@@ -1,13 +1,13 @@
 package hirs.swid;
 
 import hirs.swid.utils.HashSwid;
-import hirs.swid.xjc.Directory;
-import hirs.swid.xjc.Entity;
-import hirs.swid.xjc.Link;
-import hirs.swid.xjc.ObjectFactory;
-import hirs.swid.xjc.ResourceCollection;
-import hirs.swid.xjc.SoftwareIdentity;
-import hirs.swid.xjc.SoftwareMeta;
+import hirs.utils.xjc.Directory;
+import hirs.utils.xjc.Entity;
+import hirs.utils.xjc.Link;
+import hirs.utils.xjc.ObjectFactory;
+import hirs.utils.xjc.ResourceCollection;
+import hirs.utils.xjc.SoftwareIdentity;
+import hirs.utils.xjc.SoftwareMeta;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
@@ -15,10 +15,10 @@ import javax.json.Json;
 import javax.json.JsonException;
 import javax.json.JsonObject;
 import javax.json.JsonReader;
-import javax.xml.bind.JAXBContext;
-import javax.xml.bind.JAXBElement;
-import javax.xml.bind.JAXBException;
-import javax.xml.bind.Marshaller;
+import jakarta.xml.bind.JAXBContext;
+import jakarta.xml.bind.JAXBElement;
+import jakarta.xml.bind.JAXBException;
+import jakarta.xml.bind.Marshaller;
 import javax.xml.crypto.MarshalException;
 import javax.xml.crypto.XMLStructure;
 import javax.xml.crypto.dom.DOMStructure;
@@ -228,7 +228,7 @@ public class SwidTagGateway {
                     configProperties.getJsonObject(SwidTagConstants.PAYLOAD)
                             .getJsonObject(SwidTagConstants.DIRECTORY));
             //File
-            hirs.swid.xjc.File file = createFile(
+            hirs.utils.xjc.File file = createFile(
                     configProperties.getJsonObject(SwidTagConstants.PAYLOAD)
                             .getJsonObject(SwidTagConstants.DIRECTORY)
                             .getJsonObject(SwidTagConstants.FILE));
@@ -489,15 +489,15 @@ public class SwidTagGateway {
     }
 
     /**
-     * This method creates a hirs.swid.xjc.File from an indirect payload type
+     * This method creates a hirs.utils.xjc.File from an indirect payload type
      * using parameters read in from a properties file and then
      * calculating the hash of a given event log support RIM.
      *
      * @param jsonObject the Properties object containing parameters from file
      * @return File object created from the properties
      */
-    private hirs.swid.xjc.File createFile(JsonObject jsonObject) throws Exception {
-        hirs.swid.xjc.File file = objectFactory.createFile();
+    private hirs.utils.xjc.File createFile(JsonObject jsonObject) throws Exception {
+        hirs.utils.xjc.File file = objectFactory.createFile();
         file.setName(jsonObject.getString(SwidTagConstants.NAME, ""));
         Map<QName, String> attributes = file.getOtherAttributes();
         String supportRimFormat = jsonObject.getString(SwidTagConstants.SUPPORT_RIM_FORMAT,
@@ -549,16 +549,27 @@ public class SwidTagGateway {
      * This method signs a SoftwareIdentity with an xmldsig in compatibility mode.
      * Current assumptions: digest method SHA256, signature method SHA256, enveloped signature
      */
-    private Document signXMLDocument(JAXBElement<SoftwareIdentity> swidTag) throws Exception {
+    private Document signXMLDocument(JAXBElement<SoftwareIdentity> swidTag) {
         Document doc = null;
         try {
             doc = DocumentBuilderFactory.newInstance().newDocumentBuilder().newDocument();
             marshaller.marshal(swidTag, doc);
-            XMLSignatureFactory sigFactory = XMLSignatureFactory.getInstance("DOM");
-            List xmlObjectList = null;
-            String signatureId = null;
+        } catch (ParserConfigurationException e) {
+            System.out.println("Error instantiating Document object for parsing swidtag: "
+                    + e.getMessage());
+            System.exit(1);
+        } catch (JAXBException e) {
+            System.out.println("Error while marshaling swidtag: " + e.getMessage());
+            e.printStackTrace();
+            System.exit(1);
+        }
+        XMLSignatureFactory sigFactory = XMLSignatureFactory.getInstance("DOM");
+        List xmlObjectList = null;
+        String signatureId = null;
 
-            Reference documentRef = sigFactory.newReference(
+        Reference documentRef = null;
+        try {
+            documentRef = sigFactory.newReference(
                     "",
                     sigFactory.newDigestMethod(DigestMethod.SHA256, null),
                     Collections.singletonList(sigFactory.newTransform(Transform.ENVELOPED,
@@ -566,78 +577,97 @@ public class SwidTagGateway {
                     null,
                     null
             );
+        } catch (NoSuchAlgorithmException | InvalidAlgorithmParameterException e) {
+            System.out.println("Error while creating enveloped signature Reference: "
+                    + e.getMessage());
+            System.exit(1);
+        }
 
-            List<Reference> refList = new ArrayList<Reference>();
-            refList.add(documentRef);
+        List<Reference> refList = new ArrayList<Reference>();
+        refList.add(documentRef);
 
-            if (!timestampFormat.isEmpty()) {
-                Reference timestampRef = sigFactory.newReference(
+        if (!timestampFormat.isEmpty()) {
+            Reference timestampRef = null;
+            try {
+                timestampRef = sigFactory.newReference(
                         "#TST",
                         sigFactory.newDigestMethod(DigestMethod.SHA256, null)
                 );
-                refList.add(timestampRef);
-                xmlObjectList = Collections.singletonList(createXmlTimestamp(doc, sigFactory));
-                signatureId = "RimSignature";
+            } catch (NoSuchAlgorithmException | InvalidAlgorithmParameterException e) {
+                System.out.println("Error while creating timestamp Reference: "
+                        + e.getMessage());
+                System.exit(1);
             }
-
-            SignedInfo signedInfo = sigFactory.newSignedInfo(
+            refList.add(timestampRef);
+            xmlObjectList = Collections.singletonList(createXmlTimestamp(doc, sigFactory));
+            signatureId = "RimSignature";
+        }
+        SignedInfo signedInfo = null;
+        try {
+            signedInfo = sigFactory.newSignedInfo(
                     sigFactory.newCanonicalizationMethod(CanonicalizationMethod.INCLUSIVE,
                             (C14NMethodParameterSpec) null),
                     sigFactory.newSignatureMethod(SwidTagConstants.SIGNATURE_ALGORITHM_RSA_SHA256,
                             null),
                     refList
             );
-            List<XMLStructure> keyInfoElements = new ArrayList<XMLStructure>();
+        } catch (NoSuchAlgorithmException | InvalidAlgorithmParameterException e) {
+            System.out.println("Error while creating SignedInfo: " + e.getMessage());
+            System.exit(1);
+        }
+        List<XMLStructure> keyInfoElements = new ArrayList<XMLStructure>();
 
-            KeyInfoFactory kiFactory = sigFactory.getKeyInfoFactory();
-            PrivateKey privateKey;
-            CredentialParser cp = new CredentialParser();
-            if (defaultCredentials) {
-                cp.parseJKSCredentials(jksTruststoreFile);
-                privateKey = cp.getPrivateKey();
-                KeyName keyName = kiFactory.newKeyName(cp.getCertificateSubjectKeyIdentifier());
-                keyInfoElements.add(keyName);
-            } else {
+        KeyInfoFactory kiFactory = sigFactory.getKeyInfoFactory();
+        PrivateKey privateKey;
+        CredentialParser cp = new CredentialParser();
+        if (defaultCredentials) {
+            cp.parseJKSCredentials(jksTruststoreFile);
+            privateKey = cp.getPrivateKey();
+            KeyName keyName = null;
+            try {
+                keyName = kiFactory.newKeyName(cp.getCertificateSubjectKeyIdentifier());
+            } catch (IOException e) {
+                System.out.println("Error while getting SKID: " + e.getMessage());
+                System.exit(1);
+            }
+            keyInfoElements.add(keyName);
+        } else {
+            try {
                 cp.parsePEMCredentials(pemCertificateFile, pemPrivateKeyFile);
-                X509Certificate certificate = cp.getCertificate();
-                privateKey = cp.getPrivateKey();
-                if (embeddedCert) {
-                    ArrayList<Object> x509Content = new ArrayList<Object>();
-                    x509Content.add(certificate.getSubjectX500Principal().getName());
-                    x509Content.add(certificate);
-                    X509Data data = kiFactory.newX509Data(x509Content);
-                    keyInfoElements.add(data);
-                } else {
+            } catch (Exception e) {
+                System.out.println("Error while parsing PEM files: " + e.getMessage());
+                System.exit(1);
+            }
+            X509Certificate certificate = cp.getCertificate();
+            privateKey = cp.getPrivateKey();
+            if (embeddedCert) {
+                ArrayList<Object> x509Content = new ArrayList<Object>();
+                x509Content.add(certificate.getSubjectX500Principal().getName());
+                x509Content.add(certificate);
+                X509Data data = kiFactory.newX509Data(x509Content);
+                keyInfoElements.add(data);
+            } else {
+                try {
                     keyInfoElements.add(kiFactory.newKeyValue(certificate.getPublicKey()));
+                } catch (KeyException e) {
+                    System.out.println("Error while creating KeyValue: " + e.getMessage());
                 }
             }
-            KeyInfo keyinfo = kiFactory.newKeyInfo(keyInfoElements);
+        }
+        KeyInfo keyinfo = kiFactory.newKeyInfo(keyInfoElements);
 
-            DOMSignContext context = new DOMSignContext(privateKey, doc.getDocumentElement());
-            XMLSignature signature = sigFactory.newXMLSignature(
-                    signedInfo,
-                    keyinfo,
-                    xmlObjectList,
-                    signatureId,
-                    null
-            );
+        DOMSignContext context = new DOMSignContext(privateKey, doc.getDocumentElement());
+        XMLSignature signature = sigFactory.newXMLSignature(
+                signedInfo,
+                keyinfo,
+                xmlObjectList,
+                signatureId,
+                null
+        );
+        try {
             signature.sign(context);
-        } catch (FileNotFoundException e) {
-            System.out.println("Keystore not found! " + e.getMessage());
-        } catch (IOException e) {
-            System.out.println("Error loading keystore: " + e.getMessage());
-        } catch (NoSuchAlgorithmException | InvalidAlgorithmParameterException |
-                ParserConfigurationException e) {
-            System.out.println(e.getMessage());
-        } catch (CertificateException e) {
-            System.out.println(e.getMessage());
-        } catch (JAXBException e) {
-            System.out.println("Error marshaling signed swidtag: " + e.getMessage());
         } catch (MarshalException | XMLSignatureException e) {
-            System.out.println("Error while signing SoftwareIdentity: " + e.getMessage());
-        } catch (KeyException e) {
-            System.out.println("Public key algorithm not recognized or supported: "
-                    + e.getMessage());
+            System.out.println("Error while signing the swidtag: " + e.getMessage());
         }
 
         return doc;
