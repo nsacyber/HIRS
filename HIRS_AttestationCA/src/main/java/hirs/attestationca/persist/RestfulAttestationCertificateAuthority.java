@@ -14,6 +14,7 @@ import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.PropertySource;
+import org.springframework.context.annotation.PropertySources;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -28,8 +29,14 @@ import java.security.cert.X509Certificate;
  * Restful implementation of the {@link AttestationCertificateAuthority}.
  * Exposes the ACA methods as REST endpoints.
  */
-@PropertySource(value = "file:/etc/hirs/aca/application.properties",
-        ignoreResourceNotFound = true)
+@PropertySources({
+        // detects if file exists, if not, ignore errors
+        @PropertySource(value = "file:/etc/hirs/aca/application.properties",
+                ignoreResourceNotFound = true),
+                
+        @PropertySource(value = "file:C:/ProgramData/hirs/aca/application.win.properties",
+                ignoreResourceNotFound = true)
+})
 @RestController
 @RequestMapping("/HIRS_AttestationCA")
 public class RestfulAttestationCertificateAuthority extends AttestationCertificateAuthority implements RestfulInterface {

@@ -1,0 +1,31 @@
+version: "3.9"
+services:
+  aca:  # policy settings not saved, will have a clean database/default policy on each boot for now
+    image: ghcr.io/nsacyber/hirs/aca:alpha2
+    container_name: aca
+    ports:
+      - "8443:8443"
+    networks:
+      hat_network:
+        ipv4_address: 172.16.1.75
+  hat:
+    image: ghcr.io/nsacyber/hirs/hat:alpha4
+    container_name: hat
+    ports:
+       - 53:53/tcp
+       - 53:53/udp
+       - 67:67/udp
+       - 68:68/udp
+       - 69:69
+       - 80:80
+    networks:
+      hat_network:
+        ipv4_address: 172.16.1.3
+networks:
+  hat_network:
+    driver: transparent
+    name: hat_network
+    ipam:
+      config:
+        - subnet: 172.16.1.0/24
+          gateway: 172.16.1.1
