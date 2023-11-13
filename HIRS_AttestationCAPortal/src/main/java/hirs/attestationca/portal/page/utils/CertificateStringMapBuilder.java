@@ -150,7 +150,7 @@ public final class CertificateStringMapBuilder {
             final Certificate certificate,
             final CertificateRepository certificateRepository,
             final CACredentialRepository caCredentialRepository) {
-        List<CertificateAuthorityCredential> issuerCertificates = new ArrayList<>();
+        List<Certificate> issuerCertificates = new ArrayList<>();
         CertificateAuthorityCredential skiCA = null;
         String issuerResult;
 

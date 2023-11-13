@@ -3,6 +3,7 @@ package hirs.attestationca.persist.entity;
 import jakarta.persistence.Column;
 import jakarta.persistence.MappedSuperclass;
 import lombok.Getter;
+import lombok.Setter;
 import lombok.ToString;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
@@ -20,6 +21,11 @@ public abstract class ArchivableEntity extends AbstractEntity {
      * Defining the size of a message field for error display.
      */
     public static final int MAX_MESSAGE_LENGTH = 2400;
+
+    @Getter
+    @Setter
+    @Column(nullable = false)
+    private boolean archiveFlag = false;
 
     @Column(name = "archived_time")
     private Date archivedTime;
@@ -54,6 +60,7 @@ public abstract class ArchivableEntity extends AbstractEntity {
      *      false is archived time is already set, signifying the entity has been archived.
      */
     public final boolean archive() {
+        this.archiveFlag = !archiveFlag;
         if (this.archivedTime == null) {
             this.archivedTime = new Date();
             return true;

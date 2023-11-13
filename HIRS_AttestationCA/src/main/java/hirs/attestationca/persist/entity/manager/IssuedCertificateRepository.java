@@ -11,7 +11,7 @@ import java.util.UUID;
 @Repository
 public interface IssuedCertificateRepository extends JpaRepository<IssuedAttestationCertificate, UUID> {
 
-    @Query(value = "SELECT * FROM Certificate where DTYPE='IssuedAttestationCertificate'", nativeQuery = true)
+    @Query(value = "SELECT * FROM Certificate WHERE DTYPE='IssuedAttestationCertificate' AND archiveFlag=false", nativeQuery = true)
     @Override
     List<IssuedAttestationCertificate> findAll();
     List<IssuedAttestationCertificate> findByDeviceId(UUID deviceId);

@@ -11,7 +11,7 @@ import java.util.UUID;
 @Repository
 public interface CACredentialRepository extends JpaRepository<CertificateAuthorityCredential, UUID> {
 
-    @Query(value = "SELECT * FROM Certificate where DTYPE='CertificateAuthorityCredential'", nativeQuery = true)
+    @Query(value = "SELECT * FROM Certificate WHERE DTYPE='CertificateAuthorityCredential' AND archiveFlag=false", nativeQuery = true)
     @Override
     List<CertificateAuthorityCredential> findAll();
     List<CertificateAuthorityCredential> findBySubject(String subject);

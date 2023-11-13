@@ -120,15 +120,13 @@ public class ReferenceManifestPageController extends PageController<NoPageParams
         FilteredRecordsList<ReferenceManifest> records = new FilteredRecordsList<>();
         int currentPage = input.getStart() / input.getLength();
         Pageable paging = PageRequest.of(currentPage, input.getLength(), Sort.by(orderColumnName));
-        org.springframework.data.domain.Page<ReferenceManifest> pagedResult = referenceManifestRepository.findAll(paging);
+        org.springframework.data.domain.Page<ReferenceManifest> pagedResult = referenceManifestRepository.findByArchiveFlag(false, paging);
         int rimCount = 0;
 
         if (pagedResult.hasContent()) {
             for (ReferenceManifest manifest : pagedResult.getContent()) {
-                if (!manifest.getRimType().equals(ReferenceManifest.MEASUREMENT_RIM)) {
-                    records.add(manifest);
-                    rimCount++;
-                }
+                records.add(manifest);
+                rimCount++;
             }
             records.setRecordsTotal(rimCount);
         } else {
@@ -220,7 +218,6 @@ public class ReferenceManifestPageController extends PageController<NoPageParams
 
         try {
             ReferenceManifest referenceManifest = getRimFromDb(id);
-            List<ReferenceDigestValue> values = new LinkedList<>();
 
             if (referenceManifest == null) {
                 String notFoundMessage = "Unable to locate RIM with ID: " + id;
@@ -228,14 +225,8 @@ public class ReferenceManifestPageController extends PageController<NoPageParams
                 log.warn(notFoundMessage);
             } else {
                 // if support rim, update associated events
-                values = referenceDigestValueRepository.findBySupportRimHash(
-                        referenceManifest.getHexDecHash());
-
-                for (ReferenceDigestValue value : values) {
-                    referenceDigestValueRepository.delete(value);
-                }
-
-                referenceManifestRepository.delete(referenceManifest);
+                referenceManifest.archive();
+                referenceManifestRepository.save(referenceManifest);
                 String deleteCompletedMessage = "RIM successfully deleted";
                 messages.addInfo(deleteCompletedMessage);
                 log.info(deleteCompletedMessage);

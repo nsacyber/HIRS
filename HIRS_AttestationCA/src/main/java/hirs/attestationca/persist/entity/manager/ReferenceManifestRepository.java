@@ -4,6 +4,8 @@ import hirs.attestationca.persist.entity.userdefined.ReferenceManifest;
 import hirs.attestationca.persist.entity.userdefined.rim.BaseReferenceManifest;
 import hirs.attestationca.persist.entity.userdefined.rim.EventLogMeasurements;
 import hirs.attestationca.persist.entity.userdefined.rim.SupportReferenceManifest;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
@@ -41,4 +43,5 @@ public interface ReferenceManifestRepository extends JpaRepository<ReferenceMani
     List<SupportReferenceManifest> getSupportByManufacturerModel(String manufacturer, String model);
     @Query(value = "SELECT * FROM ReferenceManifest WHERE platformModel = ?1 AND DTYPE = 'EventLogMeasurements'", nativeQuery = true)
     EventLogMeasurements getLogByModel(String model);
+    Page<ReferenceManifest> findByArchiveFlag(boolean archiveFlag, Pageable pageable);
 }

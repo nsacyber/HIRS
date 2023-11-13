@@ -313,7 +313,7 @@ public class CertificatePageController extends PageController<NoPageParams> {
             return new DataTableResponse<>(records, input);
         }
 
-        return new DataTableResponse<Certificate>(new FilteredRecordsList<>(), input);
+        return new DataTableResponse<>(new FilteredRecordsList<>(), input);
     }
 
     /**
@@ -375,7 +375,7 @@ public class CertificatePageController extends PageController<NoPageParams> {
 
         try {
             UUID uuid = UUID.fromString(id);
-            Certificate certificate = getCertificateById(certificateType, uuid);
+            Certificate certificate = certificateRepository.getReferenceById(uuid);
             if (certificate == null) {
                 // Use the term "record" here to avoid user confusion b/t cert and cred
                 String notFoundMessage = "Unable to locate record with ID: " + uuid;
@@ -392,7 +392,7 @@ public class CertificatePageController extends PageController<NoPageParams> {
 
                         for (PlatformCredential pc : sharedCertificates) {
                             if (!pc.isPlatformBase()) {
-                                pc.archive();
+                                pc.archive("User requested deletion via UI of the base certificate");
                                 certificateRepository.save(pc);
                             }
                         }
@@ -746,21 +746,6 @@ public class CertificatePageController extends PageController<NoPageParams> {
         }
 
         return associatedCertificates;
-    }
-
-    private Certificate getCertificateById(final String certificateType, final UUID uuid) {
-        switch (certificateType) {
-            case PLATFORMCREDENTIAL:
-                return this.platformCertificateRepository.getReferenceById(uuid);
-            case ENDORSEMENTCREDENTIAL:
-                return this.endorsementCredentialRepository.getReferenceById(uuid);
-            case ISSUEDCERTIFICATES:
-                return this.issuedCertificateRepository.getReferenceById(uuid);
-            case TRUSTCHAIN:
-                return this.caCredentialRepository.getReferenceById(uuid);
-            default:
-                return null;
-        }
     }
 
     /**

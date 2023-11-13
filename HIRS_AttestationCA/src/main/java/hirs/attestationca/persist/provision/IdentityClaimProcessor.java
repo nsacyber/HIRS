@@ -456,6 +456,7 @@ public class IdentityClaimProcessor extends AbstractProcessor {
                 measurements.setPlatformModel(dv.getHw().getProductName());
                 measurements.setTagId(tagId);
                 measurements.setDeviceName(dv.getNw().getHostname());
+                measurements.archive();
 
                 this.referenceManifestRepository.save(measurements);
 

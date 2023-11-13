@@ -13,6 +13,7 @@ import java.util.UUID;
 @Repository
 public interface EndorsementCredentialRepository extends JpaRepository<EndorsementCredential, UUID> {
 
+    @Query(value = "SELECT * FROM Certificate WHERE DTYPE='EndorsementCredential' AND archiveFlag=false", nativeQuery = true)
     @Override
     List<EndorsementCredential> findAll();
     EndorsementCredential findByHolderSerialNumber(BigInteger holderSerialNumber);
