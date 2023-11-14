@@ -60,9 +60,10 @@ public abstract class ArchivableEntity extends AbstractEntity {
      *      false is archived time is already set, signifying the entity has been archived.
      */
     public final boolean archive() {
-        this.archiveFlag = !archiveFlag;
+        this.archiveFlag = false;
         if (this.archivedTime == null) {
             this.archivedTime = new Date();
+            archiveFlag = true;
             return true;
         }
         return false;
@@ -112,6 +113,7 @@ public abstract class ArchivableEntity extends AbstractEntity {
         if (this.archivedTime != null) {
             this.archivedTime = null;
             this.archivedDescription = null;
+            archiveFlag = false;
             return true;
         }
         return false;

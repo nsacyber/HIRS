@@ -1,9 +1,9 @@
 package hirs.attestationca.persist.entity.manager;
 
 import hirs.attestationca.persist.entity.userdefined.certificate.EndorsementCredential;
-import hirs.attestationca.persist.entity.userdefined.certificate.PlatformCredential;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
 import java.math.BigInteger;
@@ -13,9 +13,8 @@ import java.util.UUID;
 @Repository
 public interface EndorsementCredentialRepository extends JpaRepository<EndorsementCredential, UUID> {
 
-    @Query(value = "SELECT * FROM Certificate WHERE DTYPE='EndorsementCredential' AND archiveFlag=false", nativeQuery = true)
-    @Override
-    List<EndorsementCredential> findAll();
+    List<EndorsementCredential> findByArchiveFlag(boolean archiveFlag);
+    Page<EndorsementCredential> findByArchiveFlag(boolean archiveFlag, Pageable pageable);
     EndorsementCredential findByHolderSerialNumber(BigInteger holderSerialNumber);
     List<EndorsementCredential> findByDeviceId(UUID deviceId);
 }

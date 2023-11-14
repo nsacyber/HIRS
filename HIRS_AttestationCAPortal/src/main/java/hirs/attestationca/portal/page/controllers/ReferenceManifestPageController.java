@@ -133,7 +133,7 @@ public class ReferenceManifestPageController extends PageController<NoPageParams
             records.setRecordsTotal(input.getLength());
         }
 
-        records.setRecordsFiltered(referenceManifestRepository.count());
+        records.setRecordsFiltered(referenceManifestRepository.findByArchiveFlag(false).size());
 
         log.debug("Returning list of size: " + records.size());
         return new DataTableResponse<>(records, input);
@@ -413,7 +413,7 @@ public class ReferenceManifestPageController extends PageController<NoPageParams
                     baseRims.add(baseRim);
                 }
             }
-        } catch (IOException ioEx) {
+        } catch (IOException | NullPointerException ioEx) {
             final String failMessage
                     = String.format("Failed to parse uploaded file (%s): ", fileName);
             log.error(failMessage, ioEx);
