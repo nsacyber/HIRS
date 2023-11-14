@@ -842,6 +842,12 @@ public class CertificatePageController extends PageController<NoPageParams> {
             log.error(failMessage, iaEx);
             messages.addError(failMessage + iaEx.getMessage());
             return null;
+        } catch (IllegalStateException isEx) {
+            final String failMessage = String.format(
+                    "Unexpected object while parsing %s ", fileName);
+            log.error(failMessage, isEx);
+            messages.addError(failMessage + isEx.getMessage());
+            return null;
         }
     }
 
