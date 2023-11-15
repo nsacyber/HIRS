@@ -57,16 +57,6 @@ if ($path) {
     $DEPLOYED_WAR = $path
 }
 
-# if ($ALG -eq "RSA") {
-   # $CERT_CHAIN=(Join-Path $global:HIRS_DATA_CERTIFICATES_HIRS_RSA_PATH 'HIRS_rsa_3k_sha384_Cert_Chain.pem')
-   # $CLIENT_DB_P12=(Join-Path $global:HIRS_DATA_CERTIFICATES_HIRS_RSA_PATH 'HIRS_db_client_rsa_3k_sha384.p12')
-   # $ALIAS="hirs_aca_tls_rsa_3k_sha384"
-# } elseif ($ALG -eq "ECC") {
-   # $CERT_CHAIN=(Join-Path $global:HIRS_DATA_CERTIFICATES_HIRS_ECC_PATH 'HIRS_ecc_512_sha384_Cert_Chain.pem')
-   # $CLIENT_DB_P12=(Join-Path $global:HIRS_DATA_CERTIFICATES_HIRS_ECC_PATH 'HIRS_db_client_ecc_512_sha384.p12')
-   # $ALIAS="hirs_aca_tls_ecc_512_sha384"
-# }
-
 if (![System.IO.Directory]::Exists($global:HIRS_DATA_CERTIFICATES_HIRS_DIR)) {
      echo "$global:HIRS_DATA_CERTIFICATES_HIRS_DIR directory does not exist. Please run aca_setup\.ps1 and try again."
      exit 1;
@@ -80,19 +70,7 @@ if (!$DEPLOYED_WAR) {
 	$DEPLOYED_WAR='./HIRS_AttestationCAPortal/build/libs/HIRS_AttestationCAPortal.war'
 }
 
-# Run the embedded tomcat server with Web TLS enabled and database client TLS enabled by overrding critical parameters
-# Note "&" is a sub parameter continuation, space represents a new parameter. Spaces and quotes matter.
-# hibernate.connection.url is used for the DB connector which established DB TLS connectivity
-# server.ssl arguments support the embeded tomcats use of TLS for the ACA Portal
-
-#$CONNECTOR_PARAMS="--hibernate.connection.url=jdbc:mariadb://localhost:3306/hirs_db?autoReconnect=true&user="+$global:ACA_PROPERTIES.'hirs_db_username'+"&password="+$global:ACA_PROPERTIES.'hirs_db_password'+"&sslMode=VERIFY_CA&serverSslCert=$CERT_CHAIN&keyStoreType=PKCS12&keyStorePassword="+$global:ACA_PROPERTIES.'hirs_pki_password'+"&keyStore=$CLIENT_DB_P12" | ChangeBackslashToForwardSlash
-
-#$WEB_TLS_PARAMS="--server.ssl.key-store-password="+$global:ACA_PROPERTIES.'hirs_pki_password'+ 
-#" --server.ssl.trust-store-password="+$global:ACA_PROPERTIES.'hirs_pki_password' | ChangeBackslashToForwardSlash
-
 $SPRING_PROP_FILE_FORWARDSLASHES=($global:HIRS_DATA_SPRING_PROP_FILE | ChangeBackslashToForwardSlash)
-#echo $CONNECTOR_PARAMS
-#echo $WEB_TLS_PARAMS
 if ($w -or $war) {
 	echo "Booting the ACA from a war file..." | WriteAndLog
 	java -jar $DEPLOYED_WAR --spring.config.location=$SPRING_PROP_FILE_FORWARDSLASHES
