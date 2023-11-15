@@ -87,6 +87,6 @@ RUN Get-Item "C:/ProgramData/hirs/certificates/HIRS/rsa_3k_sha384_certs/HIRS_lea
 RUN Get-Item "C:/ProgramData/hirs/certificates/HIRS/ecc_512_sha384_certs/HIRS_leaf_ca3_ecc_512_sha384.pem" | Import-Certificate -CertStoreLocation "Cert:\LocalMachine\Root"
 
 # The container will report a health state based on when embedded tomcat finishes loading. If the ACA isn't loaded after the timeout, the container will report that it is unhealthy.
-HEALTHCHECK --start-period=50s --interval=1s --timeout=90s CMD curl -Uri https://localhost:8443/HIRS_AttestationCAPortal/portal/index
+HEALTHCHECK --start-period=50s --interval=1s --timeout=90s CMD Invoke-WebRequest -Uri https://localhost:8443/HIRS_AttestationCAPortal/portal/index
 
 CMD ["pwsh", "-Command", "pwsh -ExecutionPolicy Bypass C:/hirs/package/win/aca/aca_bootRun.ps1"]
