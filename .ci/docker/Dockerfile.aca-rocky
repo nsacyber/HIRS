@@ -24,19 +24,6 @@ ENV HIRS_DNF_TPM_COMPILE="tpm2-tools gcc cmake openssl-devel"
 # Download and install all dependencies at one time
 RUN dnf -y install $(echo "$HIRS_DNF_OS_SETUP") $(echo "$HIRS_DNF_OS_TOOLS") $(echo "$HIRS_DNF_ACA_COMPILE") $(echo "$HIRS_DNF_ACA_RUN") $(echo "$HIRS_DNF_TPM_COMPILE")
 
-# Set up TPM Simulator
-RUN git clone https://github.com/kgoldman/ibmswtpm2 /ibmswtpm2
-WORKDIR /ibmswtpm2/src
-RUN make
-# The following script allows the TPM to be set up in the docker image.
-# This will install an empty TPM. 
-RUN echo "#!/bin/bash" > /tmp/tpm_config && \
-    echo "/ibmswtpm2/src/tpm_server &" >> /tmp/tpm_config && \
-    echo "sleep 5" >> /tmp/tpm_config && \
-    echo "tpm2_startup -c" >> /tmp/tpm_config && \
-    bash /tmp/tpm_config && \
-    rm -rf /tmp/tpm_config
-
 #EXPOSE 8080 # Only needed if TLS is not working.
 EXPOSE 8443
 

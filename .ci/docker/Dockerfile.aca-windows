@@ -57,7 +57,7 @@ RUN echo $Env:JAVA_HOME
 WORKDIR C:/
 RUN git config --global --add core.autocrlf false
 RUN git config --global --add safe.directory '*'
-RUN git clone -b v3_windows-package-scripts https://github.com/nsacyber/hirs.git C:/repo
+RUN git clone -b main https://github.com/nsacyber/hirs.git C:/repo
 
 # Defensive copy of the repo so it's easy to start fresh if needed
 WORKDIR C:/repo
