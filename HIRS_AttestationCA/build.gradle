@@ -50,6 +50,8 @@ dependencies {
     testImplementation 'org.junit.platform:junit-platform-launcher:1.9.3'
     testImplementation 'org.hamcrest:hamcrest:2.2'
 
+    testImplementation 'org.mockito:mockito-core:4.2.0'
+
     // spring management
     compileOnly libs.lombok
     implementation libs.lombok
