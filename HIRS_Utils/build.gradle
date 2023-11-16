@@ -47,6 +47,8 @@ dependencies {
     testImplementation 'org.hamcrest:hamcrest:2.2'
     testImplementation project(path: ':HIRS_AttestationCA')
 
+    testImplementation 'org.mockito:mockito-core:4.2.0'
+
     compileOnly libs.lombok
     annotationProcessor libs.lombok
 
