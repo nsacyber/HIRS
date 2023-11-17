@@ -126,15 +126,13 @@ public class RimDatabasePageController extends PageController<NoPageParams> {
         SupportReferenceManifest support;
         for (ReferenceDigestValue rdv : referenceDigestValues) {
             // We are updating the base rim ID field if necessary and
-            if (rdv.getBaseRimId() == null) {
+            if (rdv.getBaseRimId() == null && referenceManifestRepository.existsById(rdv.getSupportRimId())) {
                 support = (SupportReferenceManifest) referenceManifestRepository.getReferenceById(rdv.getSupportRimId());
-                if (support != null) {
-                    rdv.setBaseRimId(support.getAssociatedRim());
-                    try {
-                        referenceDigestValueRepository.save(rdv);
-                    } catch (DBManagerException e) {
-                        log.error("Failed to update TPM Event with Base RIM ID");
-                    }
+                rdv.setBaseRimId(support.getAssociatedRim());
+                try {
+                    referenceDigestValueRepository.save(rdv);
+                } catch (DBManagerException dbMEx) {
+                    log.error("Failed to update TPM Event with Base RIM ID");
                 }
             }
         }
