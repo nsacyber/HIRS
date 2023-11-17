@@ -235,7 +235,7 @@ public class CertificatePageController extends PageController<NoPageParams> {
         // serial number. (pc.HolderSerialNumber = ec.SerialNumber)
         if (certificateType.equals(PLATFORMCREDENTIAL)) {
             FilteredRecordsList<PlatformCredential> records = new FilteredRecordsList<>();
-            org.springframework.data.domain.Page<PlatformCredential> pagedResult = this.platformCertificateRepository.findAll(paging);
+            org.springframework.data.domain.Page<PlatformCredential> pagedResult = this.platformCertificateRepository.findByArchiveFlag(false, paging);
 
             if (pagedResult.hasContent()) {
                 records.addAll(pagedResult.getContent());
@@ -244,7 +244,7 @@ public class CertificatePageController extends PageController<NoPageParams> {
                 records.setRecordsTotal(input.getLength());
             }
 
-            records.setRecordsFiltered(platformCertificateRepository.count());
+            records.setRecordsFiltered(platformCertificateRepository.findByArchiveFlag(false).size());
             EndorsementCredential associatedEC;
 
             if (!records.isEmpty()) {
@@ -268,7 +268,7 @@ public class CertificatePageController extends PageController<NoPageParams> {
             return new DataTableResponse<>(records, input);
         } else if (certificateType.equals(ENDORSEMENTCREDENTIAL)) {
             FilteredRecordsList<EndorsementCredential> records = new FilteredRecordsList<>();
-            org.springframework.data.domain.Page<EndorsementCredential> pagedResult = this.endorsementCredentialRepository.findAll(paging);
+            org.springframework.data.domain.Page<EndorsementCredential> pagedResult = this.endorsementCredentialRepository.findByArchiveFlag(false, paging);
 
             if (pagedResult.hasContent()) {
                 records.addAll(pagedResult.getContent());
@@ -277,13 +277,13 @@ public class CertificatePageController extends PageController<NoPageParams> {
                 records.setRecordsTotal(input.getLength());
             }
 
-            records.setRecordsFiltered(endorsementCredentialRepository.count());
+            records.setRecordsFiltered(endorsementCredentialRepository.findByArchiveFlag(false).size());
 
             log.debug("Returning list of size: " + records.size());
             return new DataTableResponse<>(records, input);
         } else if (certificateType.equals(TRUSTCHAIN)) {
             FilteredRecordsList<CertificateAuthorityCredential> records = new FilteredRecordsList<>();
-            org.springframework.data.domain.Page<CertificateAuthorityCredential> pagedResult = this.caCredentialRepository.findAll(paging);
+            org.springframework.data.domain.Page<CertificateAuthorityCredential> pagedResult = this.caCredentialRepository.findByArchiveFlag(false, paging);
 
             if (pagedResult.hasContent()) {
                 records.addAll(pagedResult.getContent());
@@ -292,13 +292,13 @@ public class CertificatePageController extends PageController<NoPageParams> {
                 records.setRecordsTotal(input.getLength());
             }
 
-            records.setRecordsFiltered(caCredentialRepository.count());
+            records.setRecordsFiltered(caCredentialRepository.findByArchiveFlag(false).size());
 
             log.debug("Returning list of size: " + records.size());
             return new DataTableResponse<>(records, input);
         } else if (certificateType.equals(ISSUEDCERTIFICATES)) {
             FilteredRecordsList<IssuedAttestationCertificate> records = new FilteredRecordsList<>();
-            org.springframework.data.domain.Page<IssuedAttestationCertificate> pagedResult = this.issuedCertificateRepository.findAll(paging);
+            org.springframework.data.domain.Page<IssuedAttestationCertificate> pagedResult = this.issuedCertificateRepository.findByArchiveFlag(false, paging);
 
             if (pagedResult.hasContent()) {
                 records.addAll(pagedResult.getContent());
@@ -307,13 +307,13 @@ public class CertificatePageController extends PageController<NoPageParams> {
                 records.setRecordsTotal(input.getLength());
             }
 
-            records.setRecordsFiltered(issuedCertificateRepository.count());
+            records.setRecordsFiltered(issuedCertificateRepository.findByArchiveFlag(false).size());
 
             log.debug("Returning list of size: " + records.size());
             return new DataTableResponse<>(records, input);
         }
 
-        return new DataTableResponse<Certificate>(new FilteredRecordsList<>(), input);
+        return new DataTableResponse<>(new FilteredRecordsList<>(), input);
     }
 
     /**
@@ -375,7 +375,7 @@ public class CertificatePageController extends PageController<NoPageParams> {
 
         try {
             UUID uuid = UUID.fromString(id);
-            Certificate certificate = getCertificateById(certificateType, uuid);
+            Certificate certificate = certificateRepository.getReferenceById(uuid);
             if (certificate == null) {
                 // Use the term "record" here to avoid user confusion b/t cert and cred
                 String notFoundMessage = "Unable to locate record with ID: " + uuid;
@@ -392,14 +392,14 @@ public class CertificatePageController extends PageController<NoPageParams> {
 
                         for (PlatformCredential pc : sharedCertificates) {
                             if (!pc.isPlatformBase()) {
-                                pc.archive();
+                                pc.archive("User requested deletion via UI of the base certificate");
                                 certificateRepository.save(pc);
                             }
                         }
                     }
                 }
 
-                certificate.archive();
+                certificate.archive("User requested deletion via UI");
                 certificateRepository.save(certificate);
 
                 String deleteCompletedMessage = "Certificate successfully deleted";
@@ -512,7 +512,7 @@ public class CertificatePageController extends PageController<NoPageParams> {
 
         try (ZipOutputStream zipOut = new ZipOutputStream(response.getOutputStream())) {
             // get all files
-            bulkDownload(zipOut, this.certificateRepository.findByAll("CertificateAuthorityCredential"), singleFileName);
+            bulkDownload(zipOut, this.certificateRepository.findByType("CertificateAuthorityCredential"), singleFileName);
             // write cert to output stream
         } catch (IllegalArgumentException ex) {
             String uuidError = "Failed to parse ID from: ";
@@ -544,7 +544,7 @@ public class CertificatePageController extends PageController<NoPageParams> {
 
         try (ZipOutputStream zipOut = new ZipOutputStream(response.getOutputStream())) {
             // get all files
-            bulkDownload(zipOut, this.certificateRepository.findByAll("PlatformCredential"), singleFileName);
+            bulkDownload(zipOut, this.certificateRepository.findByType("PlatformCredential"), singleFileName);
             // write cert to output stream
         } catch (IllegalArgumentException ex) {
             String uuidError = "Failed to parse ID from: ";
@@ -576,7 +576,7 @@ public class CertificatePageController extends PageController<NoPageParams> {
 
         try (ZipOutputStream zipOut = new ZipOutputStream(response.getOutputStream())) {
             // get all files
-            bulkDownload(zipOut, this.certificateRepository.findByAll("IssuedAttestationCertificate"), singleFileName);
+            bulkDownload(zipOut, this.certificateRepository.findByType("IssuedAttestationCertificate"), singleFileName);
             // write cert to output stream
         } catch (IllegalArgumentException ex) {
             String uuidError = "Failed to parse ID from: ";
@@ -607,7 +607,7 @@ public class CertificatePageController extends PageController<NoPageParams> {
 
         try (ZipOutputStream zipOut = new ZipOutputStream(response.getOutputStream())) {
             // get all files
-            bulkDownload(zipOut, this.certificateRepository.findByAll("EndorsementCredential"), singleFileName);
+            bulkDownload(zipOut, this.certificateRepository.findByType("EndorsementCredential"), singleFileName);
             // write cert to output stream
         } catch (IllegalArgumentException ex) {
             String uuidError = "Failed to parse ID from: ";
@@ -748,21 +748,6 @@ public class CertificatePageController extends PageController<NoPageParams> {
         return associatedCertificates;
     }
 
-    private Certificate getCertificateById(final String certificateType, final UUID uuid) {
-        switch (certificateType) {
-            case PLATFORMCREDENTIAL:
-                return this.platformCertificateRepository.getReferenceById(uuid);
-            case ENDORSEMENTCREDENTIAL:
-                return this.endorsementCredentialRepository.getReferenceById(uuid);
-            case ISSUEDCERTIFICATES:
-                return this.issuedCertificateRepository.getReferenceById(uuid);
-            case TRUSTCHAIN:
-                return this.caCredentialRepository.getReferenceById(uuid);
-            default:
-                return null;
-        }
-    }
-
     /**
      * Parses an uploaded file into a certificate and populates the given model
      * with error messages if parsing fails.
@@ -836,7 +821,7 @@ public class CertificatePageController extends PageController<NoPageParams> {
             log.error(failMessage, dEx);
             messages.addError(failMessage + dEx.getMessage());
             return null;
-        } catch (IllegalArgumentException iaEx) {
+        } catch (IllegalArgumentException | IllegalStateException iaEx) {
             final String failMessage = String.format(
                     "Certificate format not recognized(%s): ", fileName);
             log.error(failMessage, iaEx);

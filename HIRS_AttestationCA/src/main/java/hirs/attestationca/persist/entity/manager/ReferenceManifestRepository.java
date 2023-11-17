@@ -4,6 +4,8 @@ import hirs.attestationca.persist.entity.userdefined.ReferenceManifest;
 import hirs.attestationca.persist.entity.userdefined.rim.BaseReferenceManifest;
 import hirs.attestationca.persist.entity.userdefined.rim.EventLogMeasurements;
 import hirs.attestationca.persist.entity.userdefined.rim.SupportReferenceManifest;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
@@ -18,7 +20,7 @@ public interface ReferenceManifestRepository extends JpaRepository<ReferenceMani
     ReferenceManifest findByBase64Hash(String base64Hash);
     ReferenceManifest findByHexDecHashAndRimType(String hexDecHash, String rimType);
     @Query(value = "SELECT * FROM ReferenceManifest WHERE platformManufacturer = ?1 AND platformModel = ?2 AND rimType = 'Base'", nativeQuery = true)
-    BaseReferenceManifest getBaseByManufacturerModel(String manufacturer, String model);
+    List<BaseReferenceManifest> getBaseByManufacturerModel(String manufacturer, String model);
     @Query(value = "SELECT * FROM ReferenceManifest WHERE platformManufacturer = ?1 AND DTYPE = ?2", nativeQuery = true)
     List<BaseReferenceManifest> getByManufacturer(String manufacturer, String dType);
     @Query(value = "SELECT * FROM ReferenceManifest WHERE platformModel = ?1 AND DTYPE = ?2", nativeQuery = true)
@@ -41,4 +43,6 @@ public interface ReferenceManifestRepository extends JpaRepository<ReferenceMani
     List<SupportReferenceManifest> getSupportByManufacturerModel(String manufacturer, String model);
     @Query(value = "SELECT * FROM ReferenceManifest WHERE platformModel = ?1 AND DTYPE = 'EventLogMeasurements'", nativeQuery = true)
     EventLogMeasurements getLogByModel(String model);
+    List<ReferenceManifest> findByArchiveFlag(boolean archiveFlag);
+    Page<ReferenceManifest> findByArchiveFlag(boolean archiveFlag, Pageable pageable);
 }

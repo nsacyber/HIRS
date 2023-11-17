@@ -3,6 +3,7 @@ package hirs.attestationca.persist.entity;
 import jakarta.persistence.Column;
 import jakarta.persistence.MappedSuperclass;
 import lombok.Getter;
+import lombok.Setter;
 import lombok.ToString;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
@@ -13,7 +14,6 @@ import java.util.Date;
  * An abstract archivable entity that can be deleted.
  */
 @ToString
-@Getter
 @MappedSuperclass
 public abstract class ArchivableEntity extends AbstractEntity {
 
@@ -21,6 +21,11 @@ public abstract class ArchivableEntity extends AbstractEntity {
      * Defining the size of a message field for error display.
      */
     public static final int MAX_MESSAGE_LENGTH = 2400;
+
+    @Getter
+    @Setter
+    @Column(nullable = false)
+    private boolean archiveFlag = false;
 
     @Column(name = "archived_time")
     private Date archivedTime;
@@ -55,8 +60,10 @@ public abstract class ArchivableEntity extends AbstractEntity {
      *      false is archived time is already set, signifying the entity has been archived.
      */
     public final boolean archive() {
+        this.archiveFlag = false;
         if (this.archivedTime == null) {
             this.archivedTime = new Date();
+            archiveFlag = true;
             return true;
         }
         return false;
@@ -80,6 +87,21 @@ public abstract class ArchivableEntity extends AbstractEntity {
     }
 
     /**
+     * Returns the timestamp of when the entity was archived if applicable. If the
+     * entity has not been resolved, then null is returned.
+     *
+     * @return archivedTime
+     *      If entity was archived, timestamp of the occurrence, null otherwise.
+     */
+    public final Date getArchivedTime() {
+        if (archivedTime == null) {
+            return null;
+        } else {
+            return (Date) archivedTime.clone();
+        }
+    }
+
+    /**
      * Sets the archivedTime to null.  The archivedTime being null signifies that the entity has
      * not been archived.  If the time is already null then this call was unnecessary.
      *
@@ -91,6 +113,7 @@ public abstract class ArchivableEntity extends AbstractEntity {
         if (this.archivedTime != null) {
             this.archivedTime = null;
             this.archivedDescription = null;
+            archiveFlag = false;
             return true;
         }
         return false;

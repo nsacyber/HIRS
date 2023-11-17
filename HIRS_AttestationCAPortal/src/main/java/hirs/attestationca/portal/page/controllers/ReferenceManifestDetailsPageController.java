@@ -5,6 +5,7 @@ import hirs.attestationca.persist.entity.manager.CACredentialRepository;
 import hirs.attestationca.persist.entity.manager.CertificateRepository;
 import hirs.attestationca.persist.entity.manager.ReferenceDigestValueRepository;
 import hirs.attestationca.persist.entity.manager.ReferenceManifestRepository;
+import hirs.attestationca.persist.entity.userdefined.Certificate;
 import hirs.attestationca.persist.entity.userdefined.ReferenceManifest;
 import hirs.attestationca.persist.entity.userdefined.certificate.CertificateAuthorityCredential;
 import hirs.attestationca.persist.entity.userdefined.rim.BaseReferenceManifest;
@@ -112,9 +113,16 @@ public class ReferenceManifestDetailsPageController extends PageController<Refer
                 String uuidError = "Failed to parse ID from: " + params.getId();
                 messages.addError(uuidError);
                 log.error(uuidError, iaEx);
-            } catch (Exception ioEx) {
+            } catch (CertificateException cEx) {
+                log.error(cEx);
+            } catch (NoSuchAlgorithmException nsEx) {
+                log.error(nsEx);
+            } catch (IOException ioEx) {
                 log.error(ioEx);
+            } catch (Exception ex) {
+                log.error(ex);
             }
+
             if (data.isEmpty()) {
                 String notFoundMessage = "Unable to find RIM with ID: " + params.getId();
                 messages.addError(notFoundMessage);
@@ -259,23 +267,15 @@ public class ReferenceManifestDetailsPageController extends PageController<Refer
         TCGEventLog logProcessor = null;
         SupportReferenceManifest support = null;
 
-        if (baseRim.getAssociatedRim() == null) {
-            support = (SupportReferenceManifest) referenceManifestRepository
-                    .getByManufacturer(baseRim.getPlatformManufacturer(),
-                    "SupportReferenceManifest");
-            if (support != null) {
-                baseRim.setAssociatedRim(support.getId());
-            }
-        } else {
-            support = referenceManifestRepository
-                    .getSupportRimEntityById(baseRim.getAssociatedRim());
-        }
         // going to have to pull the filename and grab that from the DB
         // to get the id to make the link
         RIM_VALIDATOR.setRim(baseRim.getRimBytes());
         for (SwidResource swidRes : resources) {
+            support = (SupportReferenceManifest) referenceManifestRepository.findByHexDecHash(swidRes.getHashValue());
+
             if (support != null && swidRes.getHashValue()
                     .equalsIgnoreCase(support.getHexDecHash())) {
+                baseRim.setAssociatedRim(support.getId());
                 RIM_VALIDATOR.validateSupportRimHash(support.getRimBytes(),
                         swidRes.getHashValue());
                 if (RIM_VALIDATOR.isSupportRimValid()) {
@@ -294,17 +294,19 @@ public class ReferenceManifestDetailsPageController extends PageController<Refer
             data.put("pcrList", support.getExpectedPCRList());
         }
 
-        List<CertificateAuthorityCredential> certificates = certificateRepository
-                .findByAll("CertificateAuthorityCredential");
+        List<Certificate> certificates = certificateRepository
+                .findByType("CertificateAuthorityCredential");
+        CertificateAuthorityCredential caCert;
         //Report invalid signature unless RIM_VALIDATOR validates it and cert path is valid
         data.put("signatureValid", false);
-        for (CertificateAuthorityCredential cert : certificates) {
-            KeyStore keystore = ValidationService.getCaChain(cert, caCertificateRepository);
-            if (RIM_VALIDATOR.validateXmlSignature(cert.getX509Certificate().getPublicKey(),
-                    cert.getSubjectKeyIdString(), cert.getEncodedPublicKey())) {
+        for (Certificate certificate : certificates) {
+            caCert = (CertificateAuthorityCredential) certificate;
+            KeyStore keystore = ValidationService.getCaChain(caCert, caCertificateRepository);
+            if (RIM_VALIDATOR.validateXmlSignature(caCert.getX509Certificate().getPublicKey(),
+                    caCert.getSubjectKeyIdString(), caCert.getEncodedPublicKey())) {
                 try {
                     if (SupplyChainCredentialValidator.verifyCertificate(
-                            cert.getX509Certificate(), keystore)) {
+                            caCert.getX509Certificate(), keystore)) {
                         data.replace("signatureValid", true);
                         break;
                     }
@@ -316,10 +318,11 @@ public class ReferenceManifestDetailsPageController extends PageController<Refer
         data.put("skID", RIM_VALIDATOR.getSubjectKeyIdentifier());
         try {
             if (RIM_VALIDATOR.getPublicKey() != null) {
-                for (CertificateAuthorityCredential cert : certificates) {
-                    if (Arrays.equals(cert.getEncodedPublicKey(),
+                for (Certificate certificate : certificates) {
+                    caCert = (CertificateAuthorityCredential) certificate;
+                    if (Arrays.equals(caCert.getEncodedPublicKey(),
                             RIM_VALIDATOR.getPublicKey().getEncoded())) {
-                        data.put("issuerID", cert.getId().toString());
+                        data.put("issuerID", caCert.getId().toString());
                     }
                 }
             }

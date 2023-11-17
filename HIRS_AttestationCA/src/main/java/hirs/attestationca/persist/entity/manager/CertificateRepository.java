@@ -13,7 +13,7 @@ import java.util.List;
 import java.util.UUID;
 
 @Repository
-public interface CertificateRepository<T extends Certificate> extends JpaRepository<Certificate, UUID> {
+public interface CertificateRepository extends JpaRepository<Certificate, UUID> {
 
     @Query(value = "SELECT * FROM Certificate where id = ?1", nativeQuery = true)
     Certificate getCertificate(UUID uuid);
@@ -22,7 +22,7 @@ public interface CertificateRepository<T extends Certificate> extends JpaReposit
     @Query(value = "SELECT * FROM Certificate where issuerSorted = ?1 AND  DTYPE = ?2", nativeQuery = true)
     List<Certificate> findBySubjectSorted(String issuedSort, String dType);
     @Query(value = "SELECT * FROM Certificate where DTYPE = ?1", nativeQuery = true)
-    List<T> findByAll(String dType);
+    List<Certificate> findByType(String dType);
     @Query(value = "SELECT * FROM Certificate where serialNumber = ?1 AND DTYPE = ?2", nativeQuery = true)
     Certificate findBySerialNumber(BigInteger serialNumber, String dType);
     @Query(value = "SELECT * FROM Certificate where platformSerial = ?1 AND DTYPE = 'PlatformCredential'", nativeQuery = true)
@@ -32,7 +32,7 @@ public interface CertificateRepository<T extends Certificate> extends JpaReposit
     @Query(value = "SELECT * FROM Certificate where holderSerialNumber = ?1 AND DTYPE = 'PlatformCredential'", nativeQuery = true)
     List<PlatformCredential> getByHolderSerialNumber(BigInteger holderSerialNumber);
     @Query(value = "SELECT * FROM Certificate where certificateHash = ?1 AND DTYPE = ?2", nativeQuery = true)
-    T findByCertificateHash(int certificateHash, String dType);
+    Certificate findByCertificateHash(int certificateHash, String dType);
     EndorsementCredential findByPublicKeyModulusHexValue(String publicKeyModulusHexValue);
     IssuedAttestationCertificate findByDeviceId(UUID deviceId);
     Certificate findByCertificateHash(int certificateHash);
