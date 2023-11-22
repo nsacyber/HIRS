@@ -375,7 +375,8 @@ public class CertificatePageController extends PageController<NoPageParams> {
 
         try {
             UUID uuid = UUID.fromString(id);
-            Certificate certificate = certificateRepository.getReferenceById(uuid);
+            Certificate certificate = getCertificateById(certificateType, uuid);
+
             if (certificate == null) {
                 // Use the term "record" here to avoid user confusion b/t cert and cred
                 String notFoundMessage = "Unable to locate record with ID: " + uuid;
@@ -748,6 +749,29 @@ public class CertificatePageController extends PageController<NoPageParams> {
         return associatedCertificates;
     }
 
+    private Certificate getCertificateById(final String certificateType, final UUID uuid) {
+        switch (certificateType) {
+            case PLATFORMCREDENTIAL:
+                if (platformCertificateRepository.existsById(uuid)) {
+                    return platformCertificateRepository.getReferenceById(uuid);
+                }
+            case ENDORSEMENTCREDENTIAL:
+                if (endorsementCredentialRepository.existsById(uuid)) {
+                    return endorsementCredentialRepository.getReferenceById(uuid);
+                }
+            case ISSUEDCERTIFICATES:
+                if (issuedCertificateRepository.existsById(uuid)) {
+                    return issuedCertificateRepository.getReferenceById(uuid);
+                }
+            case TRUSTCHAIN:
+                if (caCredentialRepository.existsById(uuid)) {
+                    return caCredentialRepository.getReferenceById(uuid);
+                }
+            default:
+                return null;
+        }
+    }
+
     /**
      * Parses an uploaded file into a certificate and populates the given model
      * with error messages if parsing fails.
@@ -821,7 +845,7 @@ public class CertificatePageController extends PageController<NoPageParams> {
             log.error(failMessage, dEx);
             messages.addError(failMessage + dEx.getMessage());
             return null;
-        } catch (IllegalArgumentException | IllegalStateException iaEx) {
+        } catch (IllegalArgumentException iaEx) {
             final String failMessage = String.format(
                     "Certificate format not recognized(%s): ", fileName);
             log.error(failMessage, iaEx);

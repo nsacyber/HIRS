@@ -350,20 +350,12 @@ public class ReferenceManifestPageController extends PageController<NoPageParams
      */
     private ReferenceManifest getRimFromDb(final String id) throws IllegalArgumentException {
         UUID uuid = UUID.fromString(id);
-//        ReferenceManifest rim = BaseReferenceManifest.select(referenceManifestManager)
-//                .byEntityId(uuid).getRIM();
-//
-//        if (rim == null) {
-//            rim = SupportReferenceManifest.select(referenceManifestManager)
-//                    .byEntityId(uuid).getRIM();
-//        }
-//
-//        if (rim == null) {
-//            rim = EventLogMeasurements.select(referenceManifestManager)
-//                    .byEntityId(uuid).getRIM();
-//        }
 
-        return this.referenceManifestRepository.getReferenceById(uuid);
+        if (referenceManifestRepository.existsById(uuid)) {
+            return referenceManifestRepository.getReferenceById(uuid);
+        } else {
+            return null;
+        }
     }
 
     /**

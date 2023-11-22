@@ -150,7 +150,7 @@ public final class CertificateStringMapBuilder {
             final Certificate certificate,
             final CertificateRepository certificateRepository,
             final CACredentialRepository caCredentialRepository) {
-        List<Certificate> issuerCertificates = new ArrayList<>();
+        List<CertificateAuthorityCredential> issuerCertificates = new ArrayList<>();
         CertificateAuthorityCredential skiCA = null;
         String issuerResult;
 
@@ -167,12 +167,10 @@ public final class CertificateStringMapBuilder {
             if (certificate.getIssuerSorted() == null
                     || certificate.getIssuerSorted().isEmpty()) {
                 //Get certificates by subject
-                issuerCertificates = certificateRepository.findBySubject(certificate.getIssuer(),
-                        "CertificateAuthorityCredential");
+                issuerCertificates = caCredentialRepository.findBySubject(certificate.getIssuer());
             } else {
                 //Get certificates by subject organization
-                issuerCertificates = certificateRepository.findBySubjectSorted(certificate.getIssuerSorted(),
-                        "CertificateAuthorityCredential");
+                issuerCertificates = caCredentialRepository.findBySubjectSorted(certificate.getIssuerSorted());
             }
         } else {
             issuerCertificates.add(skiCA);
@@ -209,6 +207,9 @@ public final class CertificateStringMapBuilder {
     public static HashMap<String, String> getCertificateAuthorityInformation(final UUID uuid,
                                                                              final CertificateRepository certificateRepository,
                                                                              final CACredentialRepository caCertificateRepository) {
+        if (!caCertificateRepository.existsById(uuid)) {
+            return new HashMap<>();
+        }
         CertificateAuthorityCredential certificate = caCertificateRepository.getReferenceById(uuid);
 
         String notFoundMessage = "Unable to find Certificate Authority "

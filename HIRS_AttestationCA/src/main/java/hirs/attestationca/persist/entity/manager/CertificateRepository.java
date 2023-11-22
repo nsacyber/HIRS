@@ -17,10 +17,10 @@ public interface CertificateRepository extends JpaRepository<Certificate, UUID> 
 
     @Query(value = "SELECT * FROM Certificate where id = ?1", nativeQuery = true)
     Certificate getCertificate(UUID uuid);
-    @Query(value = "SELECT * FROM Certificate where issuer = ?1 AND DTYPE = ?2", nativeQuery = true)
-    List<Certificate> findBySubject(String issuer, String dType);
-    @Query(value = "SELECT * FROM Certificate where issuerSorted = ?1 AND  DTYPE = ?2", nativeQuery = true)
-    List<Certificate> findBySubjectSorted(String issuedSort, String dType);
+    @Query(value = "SELECT * FROM Certificate where subject = ?1 AND DTYPE = ?2", nativeQuery = true)
+    List<Certificate> findBySubject(String subject, String dType);
+    @Query(value = "SELECT * FROM Certificate where subjectSorted = ?1 AND  DTYPE = ?2", nativeQuery = true)
+    List<Certificate> findBySubjectSorted(String subjectSorted, String dType);
     @Query(value = "SELECT * FROM Certificate where DTYPE = ?1", nativeQuery = true)
     List<Certificate> findByType(String dType);
     @Query(value = "SELECT * FROM Certificate where serialNumber = ?1 AND DTYPE = ?2", nativeQuery = true)
