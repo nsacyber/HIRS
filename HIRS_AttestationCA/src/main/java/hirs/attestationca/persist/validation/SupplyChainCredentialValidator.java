@@ -342,7 +342,7 @@ public class SupplyChainCredentialValidator  {
 
     private static String getJSONNodeValueAsText(final JsonNode node, final String fieldName) {
         if (node.hasNonNull(fieldName)) {
-            return node.findValue(fieldName).asText();
+            return node.findValue(fieldName).textValue();
         }
         return null;
     }

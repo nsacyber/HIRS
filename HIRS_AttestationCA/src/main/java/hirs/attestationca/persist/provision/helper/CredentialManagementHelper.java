@@ -82,11 +82,12 @@ public final class CredentialManagementHelper {
      * it is unarchived.
      * @param certificateRepository the certificate manager used for storage
      * @param platformBytes the raw PC bytes used for parsing
+     * @param deviceName the host name of the associated machine
      * @return the parsed, valid PC, or null if the provided bytes are not a valid EK.
      */
     public static PlatformCredential storePlatformCredential(
             final CertificateRepository certificateRepository,
-            final byte[] platformBytes) {
+            final byte[] platformBytes, final String deviceName) {
 
         if (certificateRepository == null) {
             throw new IllegalArgumentException("null certificate manager");
@@ -130,6 +131,7 @@ public final class CredentialManagementHelper {
                         }
                     }
                 }
+                platformCredential.setDeviceName(deviceName);
                 return (PlatformCredential) certificateRepository.save(platformCredential);
             } else if (existingCredential.isArchived()) {
                 // if the PC is stored in the DB and it's archived, unarchive.

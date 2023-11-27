@@ -187,6 +187,7 @@ public class IdentityClaimProcessor extends AbstractProcessor {
         // Parse and save device info
         Device device = processDeviceInfo(claim);
 
+        device.getDeviceInfo().setPaccorOutputString(claim.getPaccorOutput());
         // There are situations in which the claim is sent with no PCs
         // or a PC from the tpm which will be deprecated
         // this is to check what is in the platform object and pull
@@ -318,8 +319,9 @@ public class IdentityClaimProcessor extends AbstractProcessor {
         if (dv.getLogfileCount() > 0) {
             for (ByteString logFile : dv.getLogfileList()) {
                 try {
-                    support = (SupportReferenceManifest) referenceManifestRepository.findByHexDecHash(
-                                    Hex.encodeHexString(messageDigest.digest(logFile.toByteArray())));
+                    support = (SupportReferenceManifest) referenceManifestRepository.findByHexDecHashAndRimType(
+                                    Hex.encodeHexString(messageDigest.digest(logFile.toByteArray())),
+                            ReferenceManifest.SUPPORT_RIM);
                     if (support == null) {
                         support = new SupportReferenceManifest(
                                 String.format("%s.rimel",
@@ -346,8 +348,7 @@ public class IdentityClaimProcessor extends AbstractProcessor {
                 } catch (IOException ioEx) {
                     log.error(ioEx);
                 } catch (Exception ex) {
-                    log.error(String.format("Failed to load support rim: %s", messageDigest.digest(
-                            logFile.toByteArray()).toString()));
+                    log.error(String.format("Failed to load support rim: %s", ex.getMessage()));
                 }
             }
         } else {
@@ -381,6 +382,7 @@ public class IdentityClaimProcessor extends AbstractProcessor {
                             this.referenceManifestRepository.save(dbBaseRim);
                         }
                     }
+                    tagId = dbBaseRim.getTagId();
                 } catch (IOException ioEx) {
                     log.error(ioEx);
                 }
@@ -409,7 +411,7 @@ public class IdentityClaimProcessor extends AbstractProcessor {
 
                     // now update support rim
                     SupportReferenceManifest dbSupport = (SupportReferenceManifest) referenceManifestRepository
-                            .findByHexDecHash(swid.getHashValue());
+                            .findByHexDecHashAndRimType(swid.getHashValue(), ReferenceManifest.SUPPORT_RIM);
                     if (dbSupport != null) {
                         dbSupport.setFileName(swid.getName());
                         dbSupport.setSwidTagVersion(dbBaseRim.getSwidTagVersion());
