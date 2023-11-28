@@ -39,7 +39,13 @@ import javax.xml.transform.dom.DOMResult;
 import javax.xml.transform.stream.StreamSource;
 import javax.xml.validation.Schema;
 import javax.xml.validation.SchemaFactory;
-import java.io.*;
+import java.io.BufferedInputStream;
+import java.io.ByteArrayInputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.UnsupportedEncodingException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.security.*;
@@ -204,7 +210,9 @@ public class ReferenceManifestValidator {
                 log.error("Cannot validate RIM, signature element not found!");
                 return false;
             }
-            trustStore = parseCertificatesFromPem(trustStoreFile);
+            if (!trustStoreFile.isEmpty()) {
+                trustStore = parseCertificatesFromPem(trustStoreFile);
+            }
             NodeList certElement = rim.getElementsByTagName("X509Certificate");
             if (certElement.getLength() > 0) {
                 X509Certificate embeddedCert = parseCertFromPEMString(

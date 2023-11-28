@@ -145,7 +145,7 @@ public class ComponentInfo implements Serializable {
                                      final String componentModel,
                                      final String componentSerial,
                                      final String componentRevision) {
-        return !(StringUtils.isEmpty(componentManufacturer)
+        return (StringUtils.isEmpty(componentManufacturer)
                 || StringUtils.isEmpty(componentModel));
     }
 }

@@ -66,8 +66,8 @@ public class FirmwareScvValidator extends SupplyChainCredentialValidator {
             failedString = "Base Reference Integrity Manifest\n";
             passed = false;
         } else {
-            measurement = (EventLogMeasurements) referenceManifestRepository.findByHexDecHash(
-                    baseReferenceManifest.getEventLogHash());
+            measurement = (EventLogMeasurements) referenceManifestRepository.findByHexDecHashAndRimType(
+                    baseReferenceManifest.getEventLogHash(), ReferenceManifest.MEASUREMENT_RIM);
 
             if (measurement == null) {
                 measurement = referenceManifestRepository.byMeasurementDeviceName(
@@ -125,8 +125,8 @@ public class FirmwareScvValidator extends SupplyChainCredentialValidator {
             }
 
             for (SwidResource swidRes : resources) {
-                supportReferenceManifest = referenceManifestRepository.findByHexDecHash(
-                        swidRes.getHashValue());
+                supportReferenceManifest = referenceManifestRepository.findByHexDecHashAndRimType(
+                        swidRes.getHashValue(), ReferenceManifest.SUPPORT_RIM);
                 if (supportReferenceManifest != null) {
                     // Removed the filename check from this if statement
                     referenceManifestValidator.validateSupportRimHash(
