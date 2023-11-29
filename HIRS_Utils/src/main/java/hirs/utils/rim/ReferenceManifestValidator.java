@@ -210,7 +210,7 @@ public class ReferenceManifestValidator {
                 log.error("Cannot validate RIM, signature element not found!");
                 return false;
             }
-            if (!trustStoreFile.isEmpty()) {
+            if (trustStoreFile != null && !trustStoreFile.isEmpty()) {
                 trustStore = parseCertificatesFromPem(trustStoreFile);
             }
             NodeList certElement = rim.getElementsByTagName("X509Certificate");
