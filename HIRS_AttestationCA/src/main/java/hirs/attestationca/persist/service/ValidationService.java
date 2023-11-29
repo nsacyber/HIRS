@@ -9,6 +9,7 @@ import hirs.attestationca.persist.entity.manager.ReferenceManifestRepository;
 import hirs.attestationca.persist.entity.userdefined.Certificate;
 import hirs.attestationca.persist.entity.userdefined.Device;
 import hirs.attestationca.persist.entity.userdefined.PolicySettings;
+import hirs.attestationca.persist.entity.userdefined.ReferenceManifest;
 import hirs.attestationca.persist.entity.userdefined.SupplyChainValidation;
 import hirs.attestationca.persist.entity.userdefined.certificate.CertificateAuthorityCredential;
 import hirs.attestationca.persist.entity.userdefined.certificate.ComponentResult;
@@ -187,6 +188,13 @@ public class ValidationService {
         final SupplyChainValidation.ValidationType validationType
                 = SupplyChainValidation.ValidationType.FIRMWARE;
 
+        List<ReferenceManifest> rims = rimRepo.findByDeviceName(device.getName());
+        ReferenceManifest baseRim = null;
+        for (ReferenceManifest rim : rims) {
+            if (rim.getRimType().equals(ReferenceManifest.BASE_RIM)) {
+                baseRim = rim;
+            }
+        }
         AppraisalStatus result = FirmwareScvValidator.validateFirmware(device, policySettings,
                 rimRepo, rdvRepo, caRepo);
         Level logLevel;
@@ -203,7 +211,7 @@ public class ValidationService {
                 logLevel = Level.ERROR;
         }
         return buildValidationRecord(validationType, result.getAppStatus(),
-                result.getMessage(), null, logLevel);
+                result.getMessage(), baseRim, logLevel);
     }
 
     /**
