@@ -2,6 +2,7 @@ package hirs.attestationca.persist.entity.userdefined;
 
 import com.google.common.base.Preconditions;
 import hirs.attestationca.persist.entity.ArchivableEntity;
+import hirs.attestationca.persist.entity.userdefined.rim.BaseReferenceManifest;
 import hirs.attestationca.persist.enums.AppraisalStatus;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -104,7 +105,7 @@ public class SupplyChainValidation extends ArchivableEntity {
         this.certificatesUsed = new ArrayList<>();
         this.rimId = "";
         for (ArchivableEntity ae : certificatesUsed) {
-            if (ae instanceof ReferenceManifest) {
+            if (ae instanceof BaseReferenceManifest) {
                 this.rimId = ae.getId().toString();
                 break;
             } else {

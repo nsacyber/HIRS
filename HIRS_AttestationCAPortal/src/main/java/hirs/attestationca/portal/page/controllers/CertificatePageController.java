@@ -375,7 +375,7 @@ public class CertificatePageController extends PageController<NoPageParams> {
 
         try {
             UUID uuid = UUID.fromString(id);
-            Certificate certificate = getCertificateById(certificateType, uuid);
+            Certificate certificate = certificateRepository.getCertificate(uuid);
 
             if (certificate == null) {
                 // Use the term "record" here to avoid user confusion b/t cert and cred
@@ -747,29 +747,6 @@ public class CertificatePageController extends PageController<NoPageParams> {
         }
 
         return associatedCertificates;
-    }
-
-    private Certificate getCertificateById(final String certificateType, final UUID uuid) {
-        switch (certificateType) {
-            case PLATFORMCREDENTIAL:
-                if (platformCertificateRepository.existsById(uuid)) {
-                    return platformCertificateRepository.getReferenceById(uuid);
-                }
-            case ENDORSEMENTCREDENTIAL:
-                if (endorsementCredentialRepository.existsById(uuid)) {
-                    return endorsementCredentialRepository.getReferenceById(uuid);
-                }
-            case ISSUEDCERTIFICATES:
-                if (issuedCertificateRepository.existsById(uuid)) {
-                    return issuedCertificateRepository.getReferenceById(uuid);
-                }
-            case TRUSTCHAIN:
-                if (caCredentialRepository.existsById(uuid)) {
-                    return caCredentialRepository.getReferenceById(uuid);
-                }
-            default:
-                return null;
-        }
     }
 
     /**

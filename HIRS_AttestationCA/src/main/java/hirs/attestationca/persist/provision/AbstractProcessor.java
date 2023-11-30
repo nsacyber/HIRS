@@ -170,7 +170,8 @@ public class AbstractProcessor {
             for (ByteString platformCredential : identityClaim.getPlatformCredentialList()) {
                 if (!platformCredential.isEmpty()) {
                     platformCredentials.add(CredentialManagementHelper.storePlatformCredential(
-                            certificateRepository, platformCredential.toByteArray()));
+                            certificateRepository, platformCredential.toByteArray(),
+                            identityClaim.getDv().getNw().getHostname()));
                 }
             }
         } else if (endorsementCredential != null) {

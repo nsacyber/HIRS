@@ -43,6 +43,7 @@ public interface ReferenceManifestRepository extends JpaRepository<ReferenceMani
     List<SupportReferenceManifest> getSupportByManufacturerModel(String manufacturer, String model);
     @Query(value = "SELECT * FROM ReferenceManifest WHERE platformModel = ?1 AND DTYPE = 'EventLogMeasurements'", nativeQuery = true)
     EventLogMeasurements getLogByModel(String model);
+    List<ReferenceManifest> findByDeviceName(String deviceName);
     List<ReferenceManifest> findByArchiveFlag(boolean archiveFlag);
     Page<ReferenceManifest> findByArchiveFlag(boolean archiveFlag, Pageable pageable);
 }

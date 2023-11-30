@@ -271,7 +271,8 @@ public class ReferenceManifestDetailsPageController extends PageController<Refer
         // to get the id to make the link
         RIM_VALIDATOR.setRim(baseRim.getRimBytes());
         for (SwidResource swidRes : resources) {
-            support = (SupportReferenceManifest) referenceManifestRepository.findByHexDecHash(swidRes.getHashValue());
+            support = (SupportReferenceManifest) referenceManifestRepository.findByHexDecHashAndRimType(
+                    swidRes.getHashValue(), ReferenceManifest.SUPPORT_RIM);
 
             if (support != null && swidRes.getHashValue()
                     .equalsIgnoreCase(support.getHexDecHash())) {
