@@ -1,21 +1,6 @@
 package hirs.attestationca.portal.page;
 
-import hirs.attestationca.portal.PageConfiguration;
 import hirs.attestationca.persist.entity.userdefined.certificate.CertificateAuthorityCredential;
-import org.springframework.beans.factory.BeanInitializationException;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.TestConfiguration;
-import org.springframework.context.annotation.*;
-import org.springframework.core.env.Environment;
-import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
-import org.springframework.jdbc.datasource.embedded.EmbeddedDatabaseBuilder;
-import org.springframework.jdbc.datasource.embedded.EmbeddedDatabaseType;
-import org.springframework.orm.jpa.JpaTransactionManager;
-import org.springframework.orm.jpa.JpaVendorAdapter;
-import org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean;
-import org.springframework.orm.jpa.vendor.HibernateJpaVendorAdapter;
-import org.springframework.transaction.PlatformTransactionManager;
-
 import javax.sql.DataSource;
 import java.io.IOException;
 import java.net.URISyntaxException;
@@ -24,6 +9,17 @@ import java.nio.file.Paths;
 import java.security.*;
 import java.security.cert.X509Certificate;
 import java.util.Properties;
+import org.springframework.beans.factory.BeanInitializationException;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.TestConfiguration;
+import org.springframework.context.annotation.*;
+import org.springframework.core.env.Environment;
+import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
+import org.springframework.jdbc.datasource.embedded.EmbeddedDatabaseBuilder;
+import org.springframework.jdbc.datasource.embedded.EmbeddedDatabaseType;
+import org.springframework.orm.jpa.JpaVendorAdapter;
+import org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean;
+import org.springframework.orm.jpa.vendor.HibernateJpaVendorAdapter;
 
 /**
  * A configuration class for testing Attestation CA Portal classes that require a database.
@@ -32,7 +28,6 @@ import java.util.Properties;
  * A few 'dummy' beans had to be created to override PersistenceJPAConfig beans that were
  *    not needed and would interfere with the tests.
  */
-//@Import({ PageConfiguration.class })
 @TestConfiguration
 @EnableJpaRepositories(basePackages = "hirs.attestationca.persist.entity.manager")
 public class PageTestConfiguration {
@@ -117,18 +112,6 @@ public class PageTestConfiguration {
 
         return hibernateProperties;
     }
-
-    /**
-     * Generates JPA transaction manager.
-     *
-     * @return transaction manager
-     */
-//    @Bean
-//    public PlatformTransactionManager transactionManager() {
-//        final JpaTransactionManager transactionManager = new JpaTransactionManager();
-//        transactionManager.setEntityManagerFactory(entityManagerFactory().getObject());
-//        return transactionManager;
-//    }
 
     /**
      * @return a blank {@link PrivateKey}
