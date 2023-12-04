@@ -34,11 +34,11 @@ Push-Location  .\hirs\ | out-null
 Write-Host "Reteiving Configuration Files"
 wget https://raw.githubusercontent.com/nsacyber/HIRS/v3_issue_645/.ci/docker/compose-acceptance-test.yml -o compose-acceptance-test.yml
 Write-Host "Retreiving Trust Stores"
-wget https://raw.githubusercontent.com/nsacyber/HIRS/v3_issue_645/.ci/setup/oem_certs.zip
+wget https://raw.githubusercontent.com/nsacyber/HIRS/v3_issue_645/.ci/setup/certs/oem_certs.zip -o oem_certs.zip
 #Copy-Item -Path ..\projects\github\HIRS\.ci\setup\certs\oem_certs.zip -Destination .
-wget https://raw.githubusercontent.com/nsacyber/HIRS/v3_issue_645/scripts/start_hat.ps1
+wget https://raw.githubusercontent.com/nsacyber/HIRS/v3_issue_645/scripts/start_hat.ps1 -o start_hat.ps1
 #Copy-Item -Path ..\projects\github\HIRS\scripts\start_hat.ps1 -Destination .
-wget https://raw.githubusercontent.com/nsacyber/HIRS/v3_issue_645/scripts/remove_hat.ps1
+wget https://raw.githubusercontent.com/nsacyber/HIRS/v3_issue_645/scripts/remove_hat.ps1 -o remove_hat.ps1
 #Copy-Item -Path ..\projects\github\HIRS\scripts\remove_hat.ps1 -Destination .
 Expand-Archive -Path oem_certs.zip
 Write-Host "Downloading images (This can take a while)"

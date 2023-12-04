@@ -11,7 +11,13 @@ if ($Service.Status -ne 'Running') {
 } else {
       Write-Host "Docker is running, continuing HAT removal..."
 }
-
+$CurrntDir = Split-Path -Path (Get-Location) -Leaf
+if ($CurrentDir -ne 'hirs') {
+	Write-Host "Please run this script from the hirs directory"
+	Write-Host "Exiting without removing the HAT. Hit Any Key to exit"
+    $Host.UI.RawUI.ReadKey("NoEcho,IncludeKeyDown")
+  Exit;
+}
 # remove Firewall Rules
 Write-Host "Removing HAT FW Rule ACA HTTPS"
 netsh advfirewall firewall delete rule name="ACA HTTPS"
