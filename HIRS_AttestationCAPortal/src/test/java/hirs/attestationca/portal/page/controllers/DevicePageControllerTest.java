@@ -2,38 +2,40 @@ package hirs.attestationca.portal.page.controllers;
 
 import hirs.attestationca.persist.entity.manager.CertificateRepository;
 import hirs.attestationca.persist.entity.manager.DeviceRepository;
-import hirs.attestationca.persist.entity.userdefined.Certificate;
 import hirs.attestationca.persist.entity.userdefined.certificate.EndorsementCredential;
 import hirs.attestationca.persist.entity.userdefined.certificate.PlatformCredential;
+import hirs.attestationca.persist.entity.userdefined.Device;
 import hirs.attestationca.persist.enums.AppraisalStatus;
 import hirs.attestationca.persist.enums.HealthStatus;
 import hirs.attestationca.portal.page.PageControllerTest;
-import hirs.attestationca.persist.entity.userdefined.Device;
-import static hirs.attestationca.portal.page.Page.DEVICES;
+import java.io.IOException;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
-import java.io.IOException;
-import java.net.URISyntaxException;
-import java.nio.file.Path;
-import java.nio.file.Paths;
+import static hirs.attestationca.portal.page.Page.DEVICES;
 import static org.hamcrest.Matchers.hasSize;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 /**
  * Integration tests that test the URL End Points of DevicePageController.
  */
+@DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_CLASS)
 public class DevicePageControllerTest extends PageControllerTest {
 
-    /**
-     * Name of device
-     */
-    private static final String DEVICE_NAME = "Test Device";
+    // Base path for the page
+    private String pagePath;
 
-    /**
-     * Location of test credentials for device
-     */
+    // Repository manager to handle data access between device entity and data storage in db
+    @Autowired
+    private DeviceRepository deviceRepository;
+
+    // Repository manager to handle data access between certificate entity and data storage in db
+    @Autowired
+    private CertificateRepository certificateRepository;
+
+    // Location of test certs
     private static final String TEST_ENDORSEMENT_CREDENTIAL
             = "/endorsement_credentials/tpmcert.pem";
     private static final String TEST_ENDORSEMENT_CREDENTIAL_2
@@ -41,44 +43,34 @@ public class DevicePageControllerTest extends PageControllerTest {
     private static final String TEST_PLATFORM_CREDENTIAL
             = "/platform_credentials/Intel_pc.cer";
 
-    /**
-     * Device object to be stored in db for test
-     */
-    private Device device;
-
-    /**
-     * Repository manager to handle data access between device entity and data storage (db).
-     */
-    @Autowired
-    private DeviceRepository deviceRepository;
-
-    /**
-     * Repository manager to handle data access between certificate entity and data storage (db).
-     */
-    @Autowired
-    private CertificateRepository certificateRepository;
 
     /**
      * Constructor providing the Page's display and routing specification.
      */
-    public DevicePageControllerTest() { super(DEVICES); }
+    public DevicePageControllerTest() {
+        super(DEVICES);
+        pagePath = getPagePath();
+    }
 
     /**
      * Prepares a testing environment.
      * @throws IOException if there is a problem constructing the test certificate
      */
     @BeforeAll
-    public void beforeMethod() throws IOException {
+    public void prepareTests() throws IOException {
+
+        // Fake device to store in db for test
+        Device device;
 
         // Create new device to be used in test and save it to db
-        device = new Device(DEVICE_NAME,null, HealthStatus.TRUSTED, AppraisalStatus.Status.PASS,
+        device = new Device("Test Device",null, HealthStatus.TRUSTED, AppraisalStatus.Status.PASS,
                 null,false,"tmp_overrideReason", "tmp_summId");
         device = deviceRepository.save(device);
 
         // Upload and save EK Cert
         EndorsementCredential ec = (EndorsementCredential)
-                    getTestCertificate(EndorsementCredential.class,
-                    TEST_ENDORSEMENT_CREDENTIAL);
+                getTestCertificate(EndorsementCredential.class,
+                        TEST_ENDORSEMENT_CREDENTIAL);
         ec.setDeviceId(device.getId());
         certificateRepository.save(ec);
 
@@ -95,60 +87,19 @@ public class DevicePageControllerTest extends PageControllerTest {
     }
 
     /**
-     * Construct a test certificate from the given parameters.
-     * @param <T> the type of Certificate that will be created
-     * @param certificateClass the class of certificate to generate
-     * @param filename the location of the certificate to be used
-     * @return the newly-constructed Certificate
-     * @throws IOException if there is a problem constructing the test certificate
-     */
-    public <T extends Certificate> Certificate getTestCertificate(
-            final Class<T> certificateClass,
-            final String filename)
-            throws IOException {
-
-        Path fPath;
-        try {
-            fPath = Paths.get(this.getClass().getResource(filename).toURI());
-        } catch (URISyntaxException e) {
-            throw new IOException("Could not resolve path URI", e);
-        }
-
-        switch (certificateClass.getSimpleName()) {
-            case "EndorsementCredential":
-                return new EndorsementCredential(fPath);
-            case "PlatformCredential":
-                return new PlatformCredential(fPath);
-            default:
-                throw new IllegalArgumentException(
-                        String.format("Unknown certificate class %s", certificateClass.getName())
-                );
-        }
-    }
-
-    /**
-     * Tests retrieving the device list using a mocked device manager.
+     * Tests retrieving the device list using a mocked device repository.
      *
      * @throws Exception if test fails
      */
     @Test
     public void getDeviceList() throws Exception {
 
-        // Add pre-prefix and prefix path for page verification
-        String pagePath = "/" + getPrePrefixPath() + getPage().getPrefixPath() + getPage().getViewName() + "/list";
-        if (getPage().getPrefixPath() == null) {
-            pagePath = "/" + getPrePrefixPath() + getPage().getViewName() + "/list";
-        }
-
         // perform test
         getMockMvc()
-                .perform(MockMvcRequestBuilders.get(pagePath))
+                .perform(MockMvcRequestBuilders.get(pagePath + "/list"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.data", hasSize(1)))
-                .andReturn()
-        ;
+                .andReturn();
     }
 
 }
-
-
