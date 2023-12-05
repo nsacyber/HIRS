@@ -1,7 +1,13 @@
-FROM mcr.microsoft.com/powershell:latest
+# By default the latest powershell image will be used. That will make the image only compatible with Win11.
+# POWERSHELL_VERSION can be specified as a docker build argument to choose different tag.
+# List of available tags for Microsoft's powershell docker image: https://mcr.microsoft.com/v2/powershell/tags/list.
+# This Dockerfile requires Powershell 7+. e.g. lts-windowsservercore-1809
+ARG POWERSHELL_VERSION=latest
+FROM mcr.microsoft.com/powershell:${POWERSHELL_VERSION}
 LABEL org.opencontainers.image.vendor NSA Laboratory for Advanced Cybersecurity Research
 LABEL org.opencontainers.image.source https://github.com/nsacyber/hirs
 LABEL org.opencontainers.image.description NSA\'s HIRS Attestation Certificate Authority in a Windows-native image. Expose port 8443 to access the portal from outside the container.
+LABEL org.opencontainers.image.base.name mcr.microsoft.com/powershell:${POWERSHELL_VERSION}
 
 SHELL ["pwsh", "-Command"]
 
@@ -23,7 +29,7 @@ RUN ls 'C:\Program Files\Java'
 RUN ls 'C:\Program Files\Java\jdk-17\'
 
 # Download and install Mariadb as a service
-RUN ((New-Object System.Net.WebClient).DownloadFile('https://ftp.osuosl.org/pub/mariadb/mariadb-11.1.2/winx64-packages/mariadb-11.1.2-winx64.msi', 'C:/mariadb-11.1.2-winx64.msi'))
+RUN ((New-Object System.Net.WebClient).DownloadFile('https://archive.mariadb.org/mariadb-11.1.2/winx64-packages/mariadb-11.1.2-winx64.msi', 'C:/mariadb-11.1.2-winx64.msi'))
 RUN Write-Host "Installing MariaDB..."
 # mariadb silent install options https://mariadb.com/kb/en/installing-mariadb-msi-packages-on-windows/
 RUN Start-Process -Wait -FilePath msiexec.exe -ArgumentList @('/i', 'C:\mariadb-11.1.2-winx64.msi', 'ADDLOCAL=ALL', 'REMOVE=HeidiSQL', 'SERVICENAME=MariaDB', '/qn', '/L*V', 'C:/ProgramData/hirs/log/mariadb_install.log')
@@ -54,8 +60,8 @@ RUN C:/vs_buildtools.exe --quiet --wait --norestart --nocache --channelUri C:/vs
 RUN Write-Host "Finished installing Visual Studio Build Tools."
 
 # Download and extract pre-built openssl
-RUN ((New-Object System.Net.WebClient).DownloadFile('https://download.firedaemon.com/FireDaemon-OpenSSL/openssl-3.1.2.zip', 'C:/openssl-3.1.2.zip'))
-RUN Expand-Archive C:/openssl-3.1.2.zip -DestinationPath C:/openssl_files
+RUN ((New-Object System.Net.WebClient).DownloadFile('https://download.firedaemon.com/FireDaemon-OpenSSL/openssl-3.1.4.zip', 'C:/openssl-3.1.zip'))
+RUN Expand-Archive C:/openssl-3.1.zip -DestinationPath C:/openssl_files
 WORKDIR C:/openssl_files/openssl-3
 RUN cp -Recurse -Force C:/openssl_files/openssl-3/x64 'C:/Program Files/openssl'
 
@@ -115,7 +121,7 @@ RUN pwsh -Command pwsh -ExecutionPolicy Bypass ./package/win/aca/aca_win_config.
 # Run bootWar to cache build objects and dependencies
 WORKDIR C:/hirs
 RUN setx GRADLE_OPTS '-Dorg.gradle.daemon=false'
-RUN ./gradlew.bat clean bootWar 2>&1 | tee -a C:/ProgramData/hirs/log/hirs_build.log
+RUN ./gradlew.bat clean bootWar
 RUN cp ./HIRS_AttestationCAPortal/src/main/resources/application.win.properties C:/ProgramData/hirs/aca/
 
 # Run ACA Setup- PKI and DB
@@ -123,7 +129,7 @@ WORKDIR C:/hirs
 RUN pwsh -Command pwsh -ExecutionPolicy Bypass ./package/win/aca/aca_setup.ps1 -unattended
 
 # Add ACA TLS certification path to container OS
-# Allows the curl command in the HEALTHCHECK to work with TLS
+# Allows the Invoke-WebRequest command in the HEALTHCHECK to work with TLS
 RUN Get-Item "C:/ProgramData/hirs/certificates/HIRS/rsa_3k_sha384_certs/HIRS_intermediate_ca_rsa_3k_sha384.pem" | Import-Certificate -CertStoreLocation "Cert:\LocalMachine\Root"
 RUN Get-Item "C:/ProgramData/hirs/certificates/HIRS/ecc_512_sha384_certs/HIRS_intermediate_ca_ecc_512_sha384.pem" | Import-Certificate -CertStoreLocation "Cert:\LocalMachine\Root"
 RUN Get-Item "C:/ProgramData/hirs/certificates/HIRS/rsa_3k_sha384_certs/HIRS_root_ca_rsa_3k_sha384.pem" | Import-Certificate -CertStoreLocation "Cert:\LocalMachine\Root"
@@ -132,6 +138,11 @@ RUN Get-Item "C:/ProgramData/hirs/certificates/HIRS/rsa_3k_sha384_certs/HIRS_lea
 RUN Get-Item "C:/ProgramData/hirs/certificates/HIRS/ecc_512_sha384_certs/HIRS_leaf_ca3_ecc_512_sha384.pem" | Import-Certificate -CertStoreLocation "Cert:\LocalMachine\Root"
 
 # The container will report a health state based on when embedded tomcat finishes loading. If the ACA isn't loaded after the timeout, the container will report that it is unhealthy.
-HEALTHCHECK --start-period=50s --interval=1s --timeout=90s CMD pwsh -Command Invoke-WebRequest -Uri https://localhost:8443/HIRS_AttestationCAPortal/portal/index
+HEALTHCHECK --start-period=50s --interval=1s --timeout=90s CMD pwsh -Command `
+try { `
+    $response = Invoke-WebRequest -Uri https://localhost:8443; `
+    if ($response.StatusCode -eq 200) { return 0 } `
+    else { return 1 }; `
+} catch { return 1 }
 
 CMD ["pwsh", "-Command", "pwsh -ExecutionPolicy Bypass C:/hirs/package/win/aca/aca_bootRun.ps1"]
