@@ -1,13 +1,13 @@
 # By default the latest powershell image will be used. That will make the image only compatible with Win11.
-# POWERSHELL_VERSION can be specified as a docker build argument to choose different tag.
+# IMAGE_VERSION can be specified as a docker build argument to choose different tag.
 # List of available tags for Microsoft's powershell docker image: https://mcr.microsoft.com/v2/powershell/tags/list.
 # This Dockerfile requires Powershell 7+. e.g. lts-windowsservercore-1809
-ARG POWERSHELL_VERSION=latest
-FROM mcr.microsoft.com/powershell:${POWERSHELL_VERSION}
+ARG IMAGE_VERSION=latest
+FROM mcr.microsoft.com/powershell:${IMAGE_VERSION}
 LABEL org.opencontainers.image.vendor NSA Laboratory for Advanced Cybersecurity Research
 LABEL org.opencontainers.image.source https://github.com/nsacyber/hirs
 LABEL org.opencontainers.image.description NSA\'s HIRS Attestation Certificate Authority in a Windows-native image. Expose port 8443 to access the portal from outside the container.
-LABEL org.opencontainers.image.base.name mcr.microsoft.com/powershell:${POWERSHELL_VERSION}
+LABEL org.opencontainers.image.base.name mcr.microsoft.com/powershell:${IMAGE_VERSION}
 
 SHELL ["pwsh", "-Command"]
 
@@ -138,11 +138,6 @@ RUN Get-Item "C:/ProgramData/hirs/certificates/HIRS/rsa_3k_sha384_certs/HIRS_lea
 RUN Get-Item "C:/ProgramData/hirs/certificates/HIRS/ecc_512_sha384_certs/HIRS_leaf_ca3_ecc_512_sha384.pem" | Import-Certificate -CertStoreLocation "Cert:\LocalMachine\Root"
 
 # The container will report a health state based on when embedded tomcat finishes loading. If the ACA isn't loaded after the timeout, the container will report that it is unhealthy.
-HEALTHCHECK --start-period=50s --interval=1s --timeout=90s CMD pwsh -Command `
-try { `
-    $response = Invoke-WebRequest -Uri https://localhost:8443; `
-    if ($response.StatusCode -eq 200) { return 0 } `
-    else { return 1 }; `
-} catch { return 1 }
+HEALTHCHECK --start-period=50s --interval=1s --timeout=90s CMD pwsh -Command try { $response = Invoke-WebRequest -Uri https://localhost:8443; if ($response.StatusCode -eq 200) { return 0 } else { return 1 }; } catch { return 1 }
 
 CMD ["pwsh", "-Command", "pwsh -ExecutionPolicy Bypass C:/hirs/package/win/aca/aca_bootRun.ps1"]
