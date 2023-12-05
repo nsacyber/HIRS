@@ -1,13 +1,13 @@
 # By default the latest powershell image will be used. That will make the image only compatible with Win11.
-# IMAGE_VERSION can be specified as a docker build argument to choose different tag.
+# BASE_IMAGE_TAG can be specified as a docker build argument to choose different tag.
 # List of available tags for Microsoft's powershell docker image: https://mcr.microsoft.com/v2/powershell/tags/list.
 # This Dockerfile requires Powershell 7+. e.g. lts-windowsservercore-1809
-ARG IMAGE_VERSION=latest
-FROM mcr.microsoft.com/powershell:${IMAGE_VERSION}
+ARG BASE_IMAGE_TAG=latest
+FROM mcr.microsoft.com/powershell:${BASE_IMAGE_TAG}
 LABEL org.opencontainers.image.vendor NSA Laboratory for Advanced Cybersecurity Research
 LABEL org.opencontainers.image.source https://github.com/nsacyber/hirs
 LABEL org.opencontainers.image.description NSA\'s HIRS Attestation Certificate Authority in a Windows-native image. Expose port 8443 to access the portal from outside the container.
-LABEL org.opencontainers.image.base.name mcr.microsoft.com/powershell:${IMAGE_VERSION}
+LABEL org.opencontainers.image.base.name mcr.microsoft.com/powershell:${BASE_IMAGE_TAG}
 
 SHELL ["pwsh", "-Command"]
 
