@@ -44,7 +44,6 @@ dependencies {
 
     testImplementation libs.testng
 }
-
 test {
 	testLogging.showStandardStreams true
 }
