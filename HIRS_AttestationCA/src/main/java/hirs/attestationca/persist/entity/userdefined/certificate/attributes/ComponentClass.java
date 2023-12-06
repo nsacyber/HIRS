@@ -29,8 +29,11 @@ import java.nio.file.Path;
 public class ComponentClass {
     private static final String TCG_COMPONENT_REGISTRY = "2.23.133.18.3.1";
     private static final String SMBIOS_COMPONENT_REGISTRY = "2.23.133.18.3.3";
-    private static final Path JSON_PATH = FileSystems.getDefault()
-            .getPath("/etc", "hirs", "aca", "default-properties", "component-class.json");
+    private static final Path WINDOWS_JSON_PATH = FileSystems.getDefault().getPath(
+                "C:/", "ProgramData", "hirs", "aca", "default-properties", "component-class.json");
+    private static final Path JSON_PATH = WINDOWS_JSON_PATH.toFile().exists() ? WINDOWS_JSON_PATH :
+            FileSystems.getDefault().getPath(
+                "/etc", "hirs", "aca", "default-properties", "component-class.json");
 
     private static final String OTHER_STRING = "Other";
     private static final String UNKNOWN_STRING = "Unknown";

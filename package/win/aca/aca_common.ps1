@@ -30,7 +30,7 @@ $global:HIRS_DATA_CERTIFICATES_HIRS_RSA_PATH=(Join-Path $HIRS_DATA_CERTIFICATES_
 $global:HIRS_DATA_CERTIFICATES_HIRS_ECC_PATH=(Join-Path $HIRS_DATA_CERTIFICATES_HIRS_DIR "ecc_512_sha384_certs")
 $global:HIRS_DATA_LOG_DIR=(Join-Path $global:HIRS_DATA_DIR "log")
 $global:HIRS_DATA_INSTALL_LOG_NAME=(Join-Path $global:HIRS_DATA_LOG_DIR ("hirs_aca_install_"+(Get-Date -Format "yyyy-MM-dd")+'.log'))
-$global:HIRS_DATA_JSON_DIR=(Join-Path $global:HIRS_DATA_DIR "json")
+$global:HIRS_CONF_DEFAULT_PROPERTIES_DIR=(Join-Path $global:HIRS_CONF_DIR "default-properties")
 #         Db Configuration files
 $global:DB_CONF=(Join-Path $Env:ProgramFiles 'MariaDB 11.1' 'data' 'my.ini')
 #         Default Server Side Certificates

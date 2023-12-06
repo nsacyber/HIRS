@@ -1,7 +1,13 @@
-FROM mcr.microsoft.com/powershell:latest
+# By default the latest powershell image will be used. That will make the image only compatible with Win11.
+# BASE_IMAGE_TAG can be specified as a docker build argument to choose different tag.
+# List of available tags for Microsoft's powershell docker image: https://mcr.microsoft.com/v2/powershell/tags/list.
+# This Dockerfile requires Powershell 7+. e.g. lts-windowsservercore-1809
+ARG BASE_IMAGE_TAG=latest
+FROM mcr.microsoft.com/powershell:${BASE_IMAGE_TAG}
 LABEL org.opencontainers.image.vendor NSA Laboratory for Advanced Cybersecurity Research
 LABEL org.opencontainers.image.source https://github.com/nsacyber/hirs
 LABEL org.opencontainers.image.description NSA\'s HIRS Attestation Certificate Authority in a Windows-native image. Expose port 8443 to access the portal from outside the container.
+LABEL org.opencontainers.image.base.name mcr.microsoft.com/powershell:${BASE_IMAGE_TAG}
 
 SHELL ["pwsh", "-Command"]
 
@@ -23,7 +29,7 @@ RUN ls 'C:\Program Files\Java'
 RUN ls 'C:\Program Files\Java\jdk-17\'
 
 # Download and install Mariadb as a service
-RUN ((New-Object System.Net.WebClient).DownloadFile('https://ftp.osuosl.org/pub/mariadb/mariadb-11.1.2/winx64-packages/mariadb-11.1.2-winx64.msi', 'C:/mariadb-11.1.2-winx64.msi'))
+RUN ((New-Object System.Net.WebClient).DownloadFile('https://archive.mariadb.org/mariadb-11.1.2/winx64-packages/mariadb-11.1.2-winx64.msi', 'C:/mariadb-11.1.2-winx64.msi'))
 RUN Write-Host "Installing MariaDB..."
 # mariadb silent install options https://mariadb.com/kb/en/installing-mariadb-msi-packages-on-windows/
 RUN Start-Process -Wait -FilePath msiexec.exe -ArgumentList @('/i', 'C:\mariadb-11.1.2-winx64.msi', 'ADDLOCAL=ALL', 'REMOVE=HeidiSQL', 'SERVICENAME=MariaDB', '/qn', '/L*V', 'C:/ProgramData/hirs/log/mariadb_install.log')
@@ -40,24 +46,69 @@ RUN Start-Process -FilePath 'C:/Git-2.42.0.2-64-bit.exe' -ArgumentList \"/VERYSI
 RUN [Environment]::SetEnvironmentVariable('GCM_INTERACTIVE', 'Never', [System.EnvironmentVariableTarget]::Machine)
 RUN Write-Host "Finished installing Git."
 
+# Download and install .NET SDK 6
+RUN ((New-Object System.Net.WebClient).DownloadFile('https://dotnet.microsoft.com/download/dotnet/scripts/v1/dotnet-install.ps1', 'C:/dotnet-install.ps1'))
+RUN Write-Host "Installing .NET SDK..."
+RUN pwsh -ExecutionPolicy Bypass C:/dotnet-install.ps1 --channel 6.0
+RUN Write-Host "Finished installing .NET SDK."
+
+# Download and install VS Build Tools from Microsoft
+RUN ((New-Object System.Net.WebClient).DownloadFile('https://aka.ms/vs/17/release/vs_buildtools.exe', 'C:/vs_buildtools.exe'))
+RUN ((New-Object System.Net.WebClient).DownloadFile('https://aka.ms/vs/17/release/channel', 'C:/vs_channel.chman'))
+RUN Write-Host "Installing Visual Studio Build Tools..."
+RUN C:/vs_buildtools.exe --quiet --wait --norestart --nocache --channelUri C:/vs_channel.chman --installChannelUri C:/vs_channel.chman --add Microsoft.VisualStudio.Workload.VCTools --includeRecommended --installPath C:/vsbuildtools
+RUN Write-Host "Finished installing Visual Studio Build Tools."
+
+# Download and extract pre-built openssl
+RUN ((New-Object System.Net.WebClient).DownloadFile('https://download.firedaemon.com/FireDaemon-OpenSSL/openssl-3.1.4.zip', 'C:/openssl-3.1.zip'))
+RUN Expand-Archive C:/openssl-3.1.zip -DestinationPath C:/openssl_files
+WORKDIR C:/openssl_files/openssl-3
+RUN cp -Recurse -Force C:/openssl_files/openssl-3/x64 'C:/Program Files/openssl'
+
+RUN ls 'C:\Program Files\openssl'
+
 # Expose ACA Port
-EXPOSE 8443 8080
+EXPOSE 8443
 
 # Set Environment Variables
 RUN setx JAVA_HOME 'C:\Program Files\Java\jdk-17'
 RUN setx GIT_HOME 'C:\Program Files\Git'
-RUN setx PATH '%JAVA_HOME%\bin;C:\Program Files\MariaDB 11.1\bin;%GIT_HOME%\bin;%PATH%'
+RUN setx PATH '%JAVA_HOME%\bin;C:\Program Files\MariaDB 11.1\bin;%GIT_HOME%\bin;C:\vsbuildtools\MSBuild\Current\Bin;%LOCALAPPDATA%\Microsoft\dotnet;%PATH%'
 
 # Echo System Variables
 RUN echo $Env:PATH
 RUN echo $Env:GIT_HOME
 RUN echo $Env:JAVA_HOME
 
+# Clone ibmswtpm2 and build
+RUN git clone https://github.com/kgoldman/ibmswtpm2.git C:/ibmswtpm2
+## tpm_server.sln is looking for the openssl crypto lib in a fixed location
+RUN cp 'C:/Program Files/openssl/lib/libcrypto.lib' 'C:/ibmswtpm2/tpmvstudio/tpm_server/libcrypto64md.lib'
+WORKDIR C:/ibmswtpm2/tpmvstudio/tpm_server
+#IF MSBUILD NOT ON PATH: RUN /vsbuildtools/MSBuild/Current/Bin/MSBuild.exe .\tpm_server.sln -t:Build -p:Configuration=Release -p:Platform=x64
+RUN MSBuild.exe .\tpm_server.sln -t:Build -p:Configuration=Release -p:Platform=x64
+# RUN Start-Process "C:/ibmswtpm2/tpmvstudio/tpm_server/x64/Release/tpm_server.exe" -WindowStyle Hidden
+
+# Clone ibmtss and build
+RUN git clone https://github.com/kgoldman/ibmtss.git C:/ibmtss
+## Again, This VS project is looking for the openssl crypto library in a fixed location. The paths are imported into multiple subprojects. Easier to edit the paths than attempt to copy the library everywhere.
+RUN ((Get-Content C:/ibmtss/tpmutils/CommonPropertiesx64.props) -replace 'libcrypto64mdd','C:/program files/openssl/lib/libcrypto') | Set-Content C:/ibmtss/tpmutils/CommonPropertiesx64.props
+RUN ((Get-Content C:/ibmtss/tpmutils/CommonPropertiesx64Release.props) -replace 'libcrypto64md','C:/program files/openssl/lib/libcrypto') | Set-Content C:/ibmtss/tpmutils/CommonPropertiesx64Release.props
+WORKDIR C:/ibmtss/tpmutils
+# IF MSBUILD NOT ON PATH: RUN /vsbuildtools/MSBuild/Current/Bin/MSBuild.exe .\tpmutils.sln -t:Build -p:Configuration=Release -p:Platform=x64
+RUN MSBuild.exe .\tpmutils.sln -t:Build -p:Configuration=Release -p:Platform=x64
+
+# Update path with the ibmtss utilities; Have to include previous additions as well
+RUN setx PATH '%JAVA_HOME%\bin;C:\Program Files\MariaDB 11.1\bin;%GIT_HOME%\bin;C:\vsbuildtools\MSBuild\Current\Bin;%LOCALAPPDATA%\Microsoft\dotnet;C:\ibmswtpm2\tpmvstudio\tpm_server\x64\Release;C:\ibmtss\tpmutils\x64\Release;%PATH%'
+
+# Echo PATH after update
+RUN echo $Env:PATH
+
 # Clone HIRS main
 WORKDIR C:/
 RUN git config --global --add core.autocrlf false
 RUN git config --global --add safe.directory '*'
-RUN git clone -b v3_windows-package-scripts https://github.com/nsacyber/hirs.git C:/repo
+RUN git clone -b main https://github.com/nsacyber/hirs.git C:/repo
 
 # Defensive copy of the repo so it's easy to start fresh if needed
 WORKDIR C:/repo
@@ -70,11 +121,23 @@ RUN pwsh -Command pwsh -ExecutionPolicy Bypass ./package/win/aca/aca_win_config.
 # Run bootWar to cache build objects and dependencies
 WORKDIR C:/hirs
 RUN setx GRADLE_OPTS '-Dorg.gradle.daemon=false'
-RUN ./gradlew.bat clean bootWar 2>&1 | tee -a C:/ProgramData/hirs/log/hirs_build.log
+RUN ./gradlew.bat clean bootWar
 RUN cp ./HIRS_AttestationCAPortal/src/main/resources/application.win.properties C:/ProgramData/hirs/aca/
 
 # Run ACA Setup- PKI and DB
 WORKDIR C:/hirs
 RUN pwsh -Command pwsh -ExecutionPolicy Bypass ./package/win/aca/aca_setup.ps1 -unattended
+
+# Add ACA TLS certification path to container OS
+# Allows the Invoke-WebRequest command in the HEALTHCHECK to work with TLS
+RUN Get-Item "C:/ProgramData/hirs/certificates/HIRS/rsa_3k_sha384_certs/HIRS_intermediate_ca_rsa_3k_sha384.pem" | Import-Certificate -CertStoreLocation "Cert:\LocalMachine\Root"
+RUN Get-Item "C:/ProgramData/hirs/certificates/HIRS/ecc_512_sha384_certs/HIRS_intermediate_ca_ecc_512_sha384.pem" | Import-Certificate -CertStoreLocation "Cert:\LocalMachine\Root"
+RUN Get-Item "C:/ProgramData/hirs/certificates/HIRS/rsa_3k_sha384_certs/HIRS_root_ca_rsa_3k_sha384.pem" | Import-Certificate -CertStoreLocation "Cert:\LocalMachine\Root"
+RUN Get-Item "C:/ProgramData/hirs/certificates/HIRS/ecc_512_sha384_certs/HIRS_root_ca_ecc_512_sha384.pem" | Import-Certificate -CertStoreLocation "Cert:\LocalMachine\Root"
+RUN Get-Item "C:/ProgramData/hirs/certificates/HIRS/rsa_3k_sha384_certs/HIRS_leaf_ca3_rsa_3k_sha384.pem" | Import-Certificate -CertStoreLocation "Cert:\LocalMachine\Root"
+RUN Get-Item "C:/ProgramData/hirs/certificates/HIRS/ecc_512_sha384_certs/HIRS_leaf_ca3_ecc_512_sha384.pem" | Import-Certificate -CertStoreLocation "Cert:\LocalMachine\Root"
+
+# The container will report a health state based on when embedded tomcat finishes loading. If the ACA isn't loaded after the timeout, the container will report that it is unhealthy.
+HEALTHCHECK --start-period=50s --interval=1s --timeout=90s CMD pwsh -Command try { $response = Invoke-WebRequest -Uri https://localhost:8443; if ($response.StatusCode -eq 200) { return 0 } else { return 1 }; } catch { return 1 }
 
 CMD ["pwsh", "-Command", "pwsh -ExecutionPolicy Bypass C:/hirs/package/win/aca/aca_bootRun.ps1"]

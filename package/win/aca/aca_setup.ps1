@@ -21,10 +21,10 @@ echo ("Running with these arguments: "+($PSBoundParameters | Out-String)) | Writ
 
 # Read aca.properties
 mkdir -F -p $global:HIRS_CONF_DIR 2>&1 > $null
-mkdir -F -p $global:HIRS_DATA_JSON_DIR 2>&1 > $null
+mkdir -F -p $global:HIRS_CONF_DEFAULT_PROPERTIES_DIR 2>&1 > $null
 mkdir -F -p $global:HIRS_DATA_LOG_DIR 2>&1 > $null
-#cp $COMP_JSON $global:HIRS_JSON_DIR
-#cp $VENDOR_TABLE $global:HIRS_JSON_DIR
+cp $COMP_JSON $global:HIRS_CONF_DEFAULT_PROPERTIES_DIR
+cp $VENDOR_TABLE $global:HIRS_CONF_DEFAULT_PROPERTIES_DIR
 touch $global:HIRS_DATA_ACA_PROPERTIES_FILE  # create it, if it doesn't exist
 read_aca_properties $global:HIRS_DATA_ACA_PROPERTIES_FILE
 
