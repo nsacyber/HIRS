@@ -15,6 +15,7 @@ import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 
 import hirs.attestationca.persist.entity.userdefined.certificate.*;
 import org.bouncycastle.cert.X509AttributeCertificateHolder;
@@ -118,11 +119,11 @@ public class CertificateTest {
     public void testConstructCertFromByteArray() throws IOException, URISyntaxException {
         Certificate certificate = new CertificateAuthorityCredential(
                 Files.readAllBytes(
-                        Paths.get(this.getClass().getResource(FAKE_ROOT_CA_FILE).toURI())
+                        Paths.get(Objects.requireNonNull(this.getClass().getResource(FAKE_ROOT_CA_FILE)).toURI())
                 )
         );
         assertEquals(
-                certificate.getX509Certificate().getIssuerDN().getName(),
+                certificate.getX509Certificate().getIssuerX500Principal().getName(),
                 "CN=Fake Root CA"
         );
     }
@@ -162,10 +163,10 @@ public class CertificateTest {
     @Test
     public void testConstructCertFromPath() throws URISyntaxException, IOException {
         Certificate certificate = new CertificateAuthorityCredential(
-                Paths.get(this.getClass().getResource(FAKE_ROOT_CA_FILE).toURI())
+                Paths.get(Objects.requireNonNull(this.getClass().getResource(FAKE_ROOT_CA_FILE)).toURI())
         );
         assertEquals(
-                certificate.getX509Certificate().getIssuerDN().getName(),
+                certificate.getX509Certificate().getIssuerX500Principal().getName(),
                 "CN=Fake Root CA"
         );
     }
@@ -290,9 +291,9 @@ public class CertificateTest {
         );
 
         X509AttributeCertificateHolder attrCertHolder = new X509AttributeCertificateHolder(
-                Files.readAllBytes(Paths.get(this.getClass().getResource(
+                Files.readAllBytes(Paths.get(Objects.requireNonNull(this.getClass().getResource(
                         PlatformCredentialTest.TEST_PLATFORM_CERT_3
-                ).toURI()))
+                )).toURI()))
         );
 
         assertEquals(
@@ -338,8 +339,8 @@ public class CertificateTest {
      */
     @Test
     public void testCertificateTrim() throws IOException, URISyntaxException {
-        byte[] rawFileBytes = Files.readAllBytes(Paths.get(CertificateTest.class
-                .getResource(EK_CERT_WITH_PADDED_BYTES).toURI()));
+        byte[] rawFileBytes = Files.readAllBytes(Paths.get(Objects.requireNonNull(CertificateTest.class
+                .getResource(EK_CERT_WITH_PADDED_BYTES)).toURI()));
         byte[] expectedCertBytes = Arrays.copyOfRange(rawFileBytes, 0, 908);
         Certificate ekCert = getTestCertificate(EndorsementCredential.class,
                 EK_CERT_WITH_PADDED_BYTES);
@@ -360,8 +361,8 @@ public class CertificateTest {
     @Test
     public void testCertificateTrimThrowsWhenNoLengthFieldFound() throws IOException,
             URISyntaxException {
-        byte[] rawFileBytes = Files.readAllBytes(Paths.get(CertificateTest.class
-                .getResource(EK_CERT_WITH_PADDED_BYTES).toURI()));
+        byte[] rawFileBytes = Files.readAllBytes(Paths.get(Objects.requireNonNull(CertificateTest.class
+                .getResource(EK_CERT_WITH_PADDED_BYTES)).toURI()));
         assertThrows(IllegalArgumentException.class, () ->
                         new EndorsementCredential(Arrays.copyOfRange(rawFileBytes, 0, 2)),
                 ".* No certificate length field could be found\\.");
@@ -377,8 +378,8 @@ public class CertificateTest {
     @Test
     public void testCertificateTrimThrowsWhenOnlyASN1Sequence() throws IOException,
             URISyntaxException {
-        byte[] rawFileBytes = Files.readAllBytes(Paths.get(CertificateTest.class
-                .getResource(EK_CERT_WITH_PADDED_BYTES).toURI()));
+        byte[] rawFileBytes = Files.readAllBytes(Paths.get(Objects.requireNonNull(CertificateTest.class
+                .getResource(EK_CERT_WITH_PADDED_BYTES)).toURI()));
         assertThrows(IllegalArgumentException.class, () ->
                         new EndorsementCredential(Arrays.copyOfRange(rawFileBytes, 0, 4)),
                 ".* Certificate is nothing more than ASN.1 Sequence\\\\.");
@@ -394,8 +395,8 @@ public class CertificateTest {
     @Test
     public void testCertificateTrimThrowsWhenLengthIsTooLarge() throws IOException,
             URISyntaxException {
-        byte[] rawFileBytes = Files.readAllBytes(Paths.get(CertificateTest.class
-                .getResource(EK_CERT_WITH_PADDED_BYTES).toURI()));
+        byte[] rawFileBytes = Files.readAllBytes(Paths.get(Objects.requireNonNull(CertificateTest.class
+                .getResource(EK_CERT_WITH_PADDED_BYTES)).toURI()));
         assertThrows(IllegalArgumentException.class, () ->
                         new EndorsementCredential(Arrays.copyOfRange(rawFileBytes, 0, 42)),
                 ".* Value of certificate length field extends beyond"
@@ -419,11 +420,11 @@ public class CertificateTest {
 
         assertEquals(
                 new CertificateAuthorityCredential(
-                        Paths.get(this.getClass().getResource(FAKE_ROOT_CA_FILE).toURI())
+                        Paths.get(Objects.requireNonNull(this.getClass().getResource(FAKE_ROOT_CA_FILE)).toURI())
                 ),
                 new CertificateAuthorityCredential(
                         Files.readAllBytes(
-                                Paths.get(this.getClass().getResource(FAKE_ROOT_CA_FILE).toURI())
+                                Paths.get(Objects.requireNonNull(this.getClass().getResource(FAKE_ROOT_CA_FILE)).toURI())
                         )
                 )
         );
@@ -480,11 +481,11 @@ public class CertificateTest {
 
         assertEquals(
                 new CertificateAuthorityCredential(
-                        Paths.get(this.getClass().getResource(FAKE_ROOT_CA_FILE).toURI())
+                        Paths.get(Objects.requireNonNull(this.getClass().getResource(FAKE_ROOT_CA_FILE)).toURI())
                 ).hashCode(),
                 new CertificateAuthorityCredential(
                         Files.readAllBytes(
-                                Paths.get(this.getClass().getResource(FAKE_ROOT_CA_FILE).toURI())
+                                Paths.get(Objects.requireNonNull(this.getClass().getResource(FAKE_ROOT_CA_FILE)).toURI())
                         )
                 ).hashCode()
         );
@@ -546,7 +547,7 @@ public class CertificateTest {
 
         Path certPath;
         try {
-            certPath = Paths.get(CertificateTest.class.getResource(filename).toURI());
+            certPath = Paths.get(Objects.requireNonNull(CertificateTest.class.getResource(filename)).toURI());
         } catch (URISyntaxException e) {
             throw new IOException("Could not resolve path URI", e);
         }
@@ -595,7 +596,7 @@ public class CertificateTest {
         }
 
         try (FileInputStream certInputStream = new FileInputStream(
-                Paths.get(CertificateTest.class.getResource(resourceName).toURI()).toFile()
+                Paths.get(Objects.requireNonNull(CertificateTest.class.getResource(resourceName)).toURI()).toFile()
         )) {
             return (X509Certificate) cf.generateCertificate(certInputStream);
         } catch (CertificateException | URISyntaxException e) {
