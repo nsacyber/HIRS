@@ -4,11 +4,11 @@ services:
     image: ghcr.io/nsacyber/hirs/aca
     container_name: aca
     ports:
-      - "8443:8443"
+      - 8443:8443
     networks:
       hat_network:
         ipv4_address: 172.16.1.75
-      nat:
+      default:
   hat:
     image: ghcr.io/nsacyber/hirs/hat
     container_name: hat
@@ -24,11 +24,11 @@ services:
         ipv4_address: 172.16.1.3
 networks:
   hat_network:
-    driver: transparent
+    driver: macvlan
     name: hat_network
+    driver_opts:
+      parent: eno2
     ipam:
       config:
         - subnet: 172.16.1.0/24
           gateway: 172.16.1.1
-  nat:
-    external: true
