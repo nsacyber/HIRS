@@ -7,9 +7,6 @@ import jakarta.persistence.MappedSuperclass;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.ToString;
-import org.hibernate.annotations.ColumnDefault;
-import org.hibernate.annotations.Generated;
-import org.hibernate.annotations.GenerationTime;
 import org.hibernate.annotations.UuidGenerator;
 
 import java.io.Serializable;
@@ -38,9 +35,7 @@ public abstract class AbstractEntity implements Serializable {
     private UUID id;
 
     @Column (name = "create_time")
-    @ColumnDefault(value = "CURRENT_TIMESTAMP")
-    @Generated(GenerationTime.INSERT)
-    private Date createTime = new Date();
+    private Date createTime;
 
     /**
      * Default empty constructor is required for Hibernate. It is protected to
@@ -48,6 +43,7 @@ public abstract class AbstractEntity implements Serializable {
      */
     protected AbstractEntity() {
         super();
+        createTime = new Date();
     }
 
     /**
