@@ -13,7 +13,7 @@ import lombok.NoArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.bouncycastle.asn1.ASN1ApplicationSpecific;
+//import org.bouncycastle.asn1.ASN1ApplicationSpecific;
 import org.bouncycastle.asn1.ASN1BitString;
 import org.bouncycastle.asn1.ASN1Boolean;
 import org.bouncycastle.asn1.ASN1Encodable;
@@ -532,8 +532,8 @@ public class EndorsementCredential extends DeviceAssociatedCertificate {
                 }
             }
 
-        } else if (component instanceof ASN1ApplicationSpecific) {
-            parseSingle(((ASN1ApplicationSpecific) component).getObject(), addToMapping, key);
+        //} else if (component instanceof ASN1ApplicationSpecific) {
+        //    parseSingle(((ASN1ApplicationSpecific) component).getObject(), addToMapping, key);
 
         } else if (component instanceof DERBMPString) {
             if (addToMapping) {
