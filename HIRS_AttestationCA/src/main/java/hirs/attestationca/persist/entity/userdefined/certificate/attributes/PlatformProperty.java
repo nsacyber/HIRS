@@ -4,7 +4,7 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
 import org.bouncycastle.asn1.ASN1Sequence;
-import org.bouncycastle.asn1.DERUTF8String;
+import org.bouncycastle.asn1.ASN1UTF8String;
 
 /**
  *
@@ -28,15 +28,15 @@ public class PlatformProperty {
      */
     protected static final int IDENTIFIER_NUMBER = 2;
 
-    private DERUTF8String propertyName;
-    private DERUTF8String propertyValue;
+    private ASN1UTF8String propertyName;
+    private ASN1UTF8String propertyValue;
 
     /**
      * Default constructor.
      */
     public PlatformProperty() {
-        this.propertyName = new DERUTF8String(NOT_SPECIFIED);
-        this.propertyValue = new DERUTF8String(NOT_SPECIFIED);
+        this.propertyName = ASN1UTF8String.getInstance(NOT_SPECIFIED);
+        this.propertyValue = ASN1UTF8String.getInstance(NOT_SPECIFIED);
     }
 
     /**
@@ -53,8 +53,8 @@ public class PlatformProperty {
                     + "the required fields.");
         }
 
-        this.propertyName = DERUTF8String.getInstance(sequence.getObjectAt(0));
-        this.propertyValue = DERUTF8String.getInstance(sequence.getObjectAt(1));
+        this.propertyName = ASN1UTF8String.getInstance(sequence.getObjectAt(0));
+        this.propertyValue = ASN1UTF8String.getInstance(sequence.getObjectAt(1));
     }
 
     @Override

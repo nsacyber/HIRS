@@ -4,10 +4,10 @@ import lombok.Getter;
 import lombok.Setter;
 import org.bouncycastle.asn1.ASN1Boolean;
 import org.bouncycastle.asn1.ASN1Enumerated;
+import org.bouncycastle.asn1.ASN1IA5String;
 import org.bouncycastle.asn1.ASN1ObjectIdentifier;
 import org.bouncycastle.asn1.ASN1Sequence;
 import org.bouncycastle.asn1.ASN1TaggedObject;
-import org.bouncycastle.asn1.DERIA5String;
 
 /**
  * Basic class that handle CommonCriteriaMeasures for the Platform Certificate
@@ -167,7 +167,7 @@ public class CommonCriteriaMeasures {
         }
     }
 
-    private DERIA5String version;
+    private ASN1IA5String version;
     private EvaluationAssuranceLevel assuranceLevel;
     private EvaluationStatus evaluationStatus;
     private ASN1Boolean plus;
@@ -201,7 +201,7 @@ public class CommonCriteriaMeasures {
 
         //Get all the mandatory values
         int index = 0;
-        version = DERIA5String.getInstance(sequence.getObjectAt(index));
+        version = ASN1IA5String.getInstance(sequence.getObjectAt(index));
         ++index;
         ASN1Enumerated enumarated = ASN1Enumerated.getInstance(sequence.getObjectAt(index));
         ++index;
