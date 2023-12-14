@@ -210,7 +210,7 @@ public class ReferenceManifestValidator {
                 log.error("Cannot validate RIM, signature element not found!");
                 return false;
             }
-            if (trustStoreFile != null && !trustStoreFile.isEmpty()) {
+            if (trustStore == null && trustStoreFile != null && !trustStoreFile.isEmpty()) {
                 trustStore = parseCertificatesFromPem(trustStoreFile);
             }
             NodeList certElement = rim.getElementsByTagName("X509Certificate");
@@ -251,6 +251,9 @@ public class ReferenceManifestValidator {
      */
     public boolean validateSwidtagFile(String path) {
         Element fileElement = (Element) rim.getElementsByTagName("File").item(0);
+        if (trustStoreFile != null && !trustStoreFile.isEmpty()) {
+            trustStore = parseCertificatesFromPem(trustStoreFile);
+        }
         X509Certificate signingCert = null;
         try {
             signingCert = getCertFromTruststore();
@@ -337,7 +340,7 @@ public class ReferenceManifestValidator {
     private String getHashValue(final String filepath, final String sha) {
         try {
             MessageDigest md = MessageDigest.getInstance(sha);
-            byte[] bytes = md.digest(Files.readAllBytes(Paths.get(filepath)));
+            byte[] bytes = Files.readAllBytes(Paths.get(filepath));
             return getHashValue(bytes, sha);
         } catch (NoSuchAlgorithmException e) {
             log.warn(e.getMessage());

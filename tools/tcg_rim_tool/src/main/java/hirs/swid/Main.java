@@ -28,6 +28,7 @@ public class Main {
                 String certificateFile = commander.getPublicCertificate();
                 String trustStore = commander.getTruststoreFile();
                 if (!verifyFile.isEmpty()) {
+                    validator.setRim(verifyFile);
                     if (!rimel.isEmpty()) {
                         validator.setRimEventLog(rimel);
                     }
