@@ -8,7 +8,7 @@ services:
     networks:
       hat_network:
         ipv4_address: 172.16.1.75
-      default:
+      nat:
   hat:
     image: ghcr.io/nsacyber/hirs/hat
     container_name: hat
@@ -30,3 +30,5 @@ networks:
       config:
         - subnet: 172.16.1.0/24
           gateway: 172.16.1.1
+  nat:
+    external: true
