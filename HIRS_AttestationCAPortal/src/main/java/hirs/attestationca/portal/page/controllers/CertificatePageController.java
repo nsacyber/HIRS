@@ -632,7 +632,7 @@ public class CertificatePageController extends PageController<NoPageParams> {
 
         try {
             pc = new PlatformCredential(fileBytes);
-        } catch (IOException | IllegalArgumentException ex) {
+        } catch (IOException | IllegalArgumentException | IllegalStateException ex) {
             pc = getX509AttributeCredential(fileBytes);
         }
 
@@ -643,7 +643,8 @@ public class CertificatePageController extends PageController<NoPageParams> {
         PlatformCredential pc = null;
         try {
             pc = new X509AttributeCredential(fileBytes);
-        } catch (IOException ioEx) {
+        } catch (IOException | IllegalStateException ioEx) {
+            log.error(ioEx.getMessage());
             return null;
         }
         return pc;
