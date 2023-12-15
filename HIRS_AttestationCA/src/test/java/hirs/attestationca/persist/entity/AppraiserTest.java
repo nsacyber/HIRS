@@ -1,11 +1,8 @@
 package hirs.attestationca.persist.entity;
 
 import org.junit.jupiter.api.Test;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.junit.jupiter.api.Assertions.assertNotEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 /**
  * Unit tests for the class <code>Appraiser</code>.
@@ -28,7 +25,7 @@ public final class AppraiserTest {
     public void testGetName() {
         final String name = "Test Appraiser";
         final Appraiser appraiser = new TestAppraiser(name);
-        assertEquals(appraiser.getName(), name);
+        assertEquals(name, appraiser.getName());
     }
 
     /**
@@ -38,10 +35,10 @@ public final class AppraiserTest {
     public void testSetName() {
         final String originalName = "Test Appraiser";
         final Appraiser appraiser = new TestAppraiser(originalName);
-        assertEquals(appraiser.getName(), originalName);
+        assertEquals(originalName, appraiser.getName());
         final String newName = "Awesome Test Appraiser";
         appraiser.setName(newName);
-        assertEquals(appraiser.getName(), newName);
+        assertEquals(newName, appraiser.getName());
     }
 
     /**
@@ -51,7 +48,7 @@ public final class AppraiserTest {
     public void testEqualsNull() {
         final String name = "Test Appraiser";
         final Appraiser appraiser = new TestAppraiser(name);
-        assertNotEquals(null, appraiser);
+        assertFalse(appraiser.equals(null));
     }
 
     /**
@@ -72,8 +69,8 @@ public final class AppraiserTest {
         final String name = "Test Appraiser";
         final Appraiser appraiser1 = new TestAppraiser(name);
         final Appraiser appraiser2 = new TestAppraiser(name);
-        assertEquals(appraiser1, appraiser2);
-        assertEquals(appraiser2, appraiser1);
+        assertTrue(appraiser1.equals(appraiser2));
+        assertTrue(appraiser2.equals(appraiser1));
     }
 
     /**
@@ -85,9 +82,9 @@ public final class AppraiserTest {
         final Appraiser appraiser1 = new TestAppraiser(name);
         final Appraiser appraiser2 = new TestAppraiser(name);
         final Appraiser appraiser3 = new TestAppraiser(name);
-        assertEquals(appraiser1, appraiser2);
-        assertEquals(appraiser2, appraiser3);
-        assertEquals(appraiser1, appraiser3);
+        assertTrue(appraiser1.equals(appraiser2));
+        assertTrue(appraiser2.equals(appraiser3));
+        assertTrue(appraiser1.equals(appraiser3));
     }
 
     /**
@@ -99,8 +96,8 @@ public final class AppraiserTest {
         final String name2 = "Other Appraiser";
         final Appraiser appraiser1 = new TestAppraiser(name1);
         final Appraiser appraiser2 = new TestAppraiser(name2);
-        assertNotEquals(appraiser1, appraiser2);
-        assertNotEquals(appraiser2, appraiser1);
+        assertFalse(appraiser1.equals(appraiser2));
+        assertFalse(appraiser2.equals(appraiser1));
     }
 
     /**
@@ -111,8 +108,8 @@ public final class AppraiserTest {
         final String name = "Test Appraiser";
         final Appraiser appraiser1 = new TestAppraiser(name);
         final Appraiser appraiser2 = new TestAppraiser(name);
-        assertEquals(appraiser1, appraiser2);
-        assertEquals(appraiser2, appraiser1);
+        assertTrue(appraiser1.equals(appraiser2));
+        assertTrue(appraiser2.equals(appraiser1));
         assertEquals(appraiser1.hashCode(), appraiser2.hashCode());
         assertEquals(appraiser2.hashCode(), appraiser1.hashCode());
     }
@@ -126,8 +123,8 @@ public final class AppraiserTest {
         final String name2 = "Other Appraiser";
         final Appraiser appraiser1 = new TestAppraiser(name1);
         final Appraiser appraiser2 = new TestAppraiser(name2);
-        assertNotEquals(appraiser1, appraiser2);
-        assertNotEquals(appraiser2, appraiser1);
+        assertFalse(appraiser1.equals(appraiser2));
+        assertFalse(appraiser2.equals(appraiser1));
         assertNotEquals(appraiser1.hashCode(), appraiser2.hashCode());
         assertNotEquals(appraiser2.hashCode(), appraiser1.hashCode());
     }
