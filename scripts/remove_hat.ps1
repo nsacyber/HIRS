@@ -11,8 +11,9 @@ if ($Service.Status -ne 'Running') {
 } else {
       Write-Host "Docker is running, continuing HAT removal..."
 }
-$CurrntDir = Split-Path -Path (Get-Location) -Leaf
-if ($CurrentDir -ne 'hirs') {
+$CurrentDir = Split-Path -Path (Get-Location) -Leaf
+
+if ($CurrentDir -eq 'hirs') {
 	Write-Host "Please run this script from the hirs directory"
 	Write-Host "Exiting without removing the HAT. Hit Any Key to exit"
     $Host.UI.RawUI.ReadKey("NoEcho,IncludeKeyDown")
@@ -26,15 +27,23 @@ netsh advfirewall firewall delete rule name="ACA HTTPS"
 $IsAcaRunning = docker container inspect -f '{{.State.Running}}' aca 2>&1 | out-null
 $IsHatRunning = docker container inspect -f '{{.State.Running}}' hat 2>&1 | out-null
 
-if ($IsHatRunning -eq $TRUE) {
+if ($IsHatRunning -eq "true") {
   Write-Host "Shutting down the HAT container"
   docker stop hat
 }
 
-if ($IsAcaRunning -eq $TRUE) {
+if ($IsAcaRunning -eq "true") {
   Write-Host "Shutting down the ACA container"
   docker stop aca
 }
+Write-Host "Removing HAT Containers"
+docker stop aca
+docker stop hat
+docker rm aca
+docker rm hat
+
+Write-Host "Remove HAT docker network"
+docker network rm hat_network
 
 Write-Host "Removing HAT images"
 
@@ -42,7 +51,7 @@ Write-Host "Removing HAT images"
 #docker image rm ghcr.io/nsacyber/hirs/hat:alpha6
 
 Write-Host "Removing local HAT folder and files"
-cd ..
+
 if (Test-Path -LiteralPath hirs) {
   Remove-Item -LiteralPath hirs -Recurse
 }

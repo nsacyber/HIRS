@@ -43,7 +43,7 @@ wget https://raw.githubusercontent.com/nsacyber/HIRS/v3_issue_645/scripts/remove
 Expand-Archive -Path oem_certs.zip
 Write-Host "Downloading images (This can take a while)"
 docker pull ghcr.io/nsacyber/hirs/aca:latest
-docker pull ghcr.io/nsacyber/hirs/hat:alpha6
+docker pull ghcr.io/nsacyber/hirs/hat:latest
 Write-Host "Creating shortcut for starting the Acceptance Test (HAT start)"
 
 # Create a shortcut to the start_hat.ps1 script
@@ -52,6 +52,26 @@ $Shortcut = $WshShell.CreateShortcut("$Home\Desktop\start_hat.lnk")
 $Shortcut.Targetpath = "C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe"
 $Shortcut.Arguments = "-ExecutionPolicy bypass  $Home\hirs\start_hat.ps1"
 $Shortcut.Save()
+
+# Warn Admin that device needs to be attached for the next step
+Write-Host "Please attach ethernet cable to this device and target device for the next step . Hit Any Key to Continue"
+$Host.UI.RawUI.ReadKey("NoEcho,IncludeKeyDown")
+# Start up the containers in a detached mode
+ docker compose -f $Home\hirs\compose-acceptance-test.yml up --detach
+# Wait for ACA to start
+Write-Host "Waiting for ACA to start up on local host port 8443 ..."
+Start-Sleep -seconds 10  
+  while ((Test-NetConnection -computername localhost -Port 8443 ).TcpTestSucceeded -eq $FALSE )  {   Start-Sleep -seconds 5  }
+Write-Host "ACA is up!"
+# Upload all files in the upload folder
+Write-Host "Uploading OEM Certificates Chains to the ACA..."
+Get-ChildItem ".\oem_certs\upload\"  | 
+foreach-Object {
+    $filename = $_.FullName
+    Write-Host "Uploading $filename"
+    curl.exe -k -F "file=@$filename" `
+    "https://127.0.0.1:8443/HIRS_AttestationCAPortal/portal/certificate-request/trust-chain/upload"
+}
 
 # Done
 Write-Host "HIRS Acceptance Test Installation complete."
