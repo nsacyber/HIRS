@@ -123,8 +123,8 @@ public class CertificateTest {
                 )
         );
         assertEquals(
-                certificate.getX509Certificate().getIssuerX500Principal().getName(),
-                "CN=Fake Root CA"
+                "CN=Fake Root CA",
+                certificate.getX509Certificate().getIssuerX500Principal().getName()
         );
     }
 
@@ -166,8 +166,8 @@ public class CertificateTest {
                 Paths.get(Objects.requireNonNull(this.getClass().getResource(FAKE_ROOT_CA_FILE)).toURI())
         );
         assertEquals(
-                certificate.getX509Certificate().getIssuerX500Principal().getName(),
-                "CN=Fake Root CA"
+                "CN=Fake Root CA",
+                certificate.getX509Certificate().getIssuerX500Principal().getName()
         );
     }
 
@@ -191,19 +191,23 @@ public class CertificateTest {
      */
     @Test
     public void testGetCertificateType() throws IOException {
-        assertEquals(getTestCertificate(FAKE_ROOT_CA_FILE).getCertificateType(),
-                Certificate.CertificateType.X509_CERTIFICATE);
-        assertNotEquals(getTestCertificate(FAKE_ROOT_CA_FILE).getCertificateType(),
-                Certificate.CertificateType.ATTRIBUTE_CERTIFICATE);
+        assertEquals(
+                Certificate.CertificateType.X509_CERTIFICATE,
+                getTestCertificate(FAKE_ROOT_CA_FILE).getCertificateType());
+        assertNotEquals(
+                Certificate.CertificateType.ATTRIBUTE_CERTIFICATE,
+                getTestCertificate(FAKE_ROOT_CA_FILE).getCertificateType());
 
-        assertNotEquals(getTestCertificate(
+        assertNotEquals(
+                Certificate.CertificateType.X509_CERTIFICATE,
+                getTestCertificate(
                         PlatformCredential.class,
-                        PlatformCredentialTest.TEST_PLATFORM_CERT_3).getCertificateType(),
-                Certificate.CertificateType.X509_CERTIFICATE);
-        assertEquals(getTestCertificate(
+                        PlatformCredentialTest.TEST_PLATFORM_CERT_3).getCertificateType());
+        assertEquals(
+                Certificate.CertificateType.ATTRIBUTE_CERTIFICATE,
+                getTestCertificate(
                         PlatformCredential.class,
-                        PlatformCredentialTest.TEST_PLATFORM_CERT_3).getCertificateType(),
-                Certificate.CertificateType.ATTRIBUTE_CERTIFICATE);
+                        PlatformCredentialTest.TEST_PLATFORM_CERT_3).getCertificateType());
 
     }
 
@@ -219,22 +223,24 @@ public class CertificateTest {
                 PlatformCredential.class, PlatformCredentialTest.TEST_PLATFORM_CERT_4
         );
 
-        assertEquals(platformCredential.getCertificateType(),
-                Certificate.CertificateType.ATTRIBUTE_CERTIFICATE);
         assertEquals(
-                ((PlatformCredential) platformCredential).getPlatformSerial(),
-                "GETY421001GV"
+                Certificate.CertificateType.ATTRIBUTE_CERTIFICATE,
+                platformCredential.getCertificateType());
+        assertEquals(
+                "GETY421001GV",
+                ((PlatformCredential) platformCredential).getPlatformSerial()
         );
 
         platformCredential = getTestCertificate(
                 PlatformCredential.class, PlatformCredentialTest.TEST_PLATFORM_CERT_5
         );
 
-        assertEquals(platformCredential.getCertificateType(),
-                Certificate.CertificateType.ATTRIBUTE_CERTIFICATE);
         assertEquals(
-                ((PlatformCredential) platformCredential).getPlatformSerial(),
-                "GETY42100160"
+                Certificate.CertificateType.ATTRIBUTE_CERTIFICATE,
+                platformCredential.getCertificateType());
+        assertEquals(
+                "GETY42100160",
+                ((PlatformCredential) platformCredential).getPlatformSerial()
         );
 
     }
@@ -249,16 +255,16 @@ public class CertificateTest {
         Certificate rootCert = getTestCertificate(FAKE_ROOT_CA_FILE);
         X509Certificate certificate = readX509Certificate(FAKE_ROOT_CA_FILE);
 
-        assertEquals(rootCert.getSerialNumber(), certificate.getSerialNumber());
-        assertEquals(rootCert.getIssuer(),
-                certificate.getIssuerX500Principal().getName());
-        assertEquals(rootCert.getSubject(),
-                certificate.getSubjectX500Principal().getName());
-        assertArrayEquals(rootCert.getEncodedPublicKey(),
-                certificate.getPublicKey().getEncoded());
-        assertArrayEquals(rootCert.getSignature(), certificate.getSignature());
-        assertEquals(rootCert.getBeginValidity(), certificate.getNotBefore());
-        assertEquals(rootCert.getEndValidity(), certificate.getNotAfter());
+        assertEquals(certificate.getSerialNumber(), rootCert.getSerialNumber());
+        assertEquals(certificate.getIssuerX500Principal().getName(),
+                rootCert.getIssuer());
+        assertEquals(certificate.getSubjectX500Principal().getName(),
+                rootCert.getSubject());
+        assertArrayEquals(certificate.getPublicKey().getEncoded(),
+                rootCert.getEncodedPublicKey());
+        assertArrayEquals(certificate.getSignature(), rootCert.getSignature());
+        assertEquals(certificate.getNotBefore(), rootCert.getBeginValidity());
+        assertEquals(certificate.getNotAfter(), rootCert.getEndValidity());
     }
 
     /**
@@ -269,11 +275,13 @@ public class CertificateTest {
     @Test
     public void testX509CertificateParsingExtended() throws IOException {
         Certificate rootCert = getTestCertificate(INTEL_INT_CA_FILE);
-        assertEquals(rootCert.getAuthorityInfoAccess(),
+        assertEquals(
                 "https://trustedservices.intel.com/"
-                        + "content/TSC/certs/TSC_SS_RootCA_Certificate.cer\n");
-        assertEquals(rootCert.getAuthorityKeyIdentifier(),
-                "b56f72cdfd66ce839e1fdb40498f07291f5b99b7");
+                        + "content/TSC/certs/TSC_SS_RootCA_Certificate.cer\n",
+                rootCert.getAuthorityInfoAccess());
+        assertEquals(
+                "b56f72cdfd66ce839e1fdb40498f07291f5b99b7",
+                rootCert.getAuthorityKeyIdentifier());
     }
 
     /**
@@ -297,18 +305,18 @@ public class CertificateTest {
         );
 
         assertEquals(
-                platformCert.getSerialNumber(),
-                attrCertHolder.getSerialNumber()
+                attrCertHolder.getSerialNumber(),
+                platformCert.getSerialNumber()
         );
         assertEquals(
-                platformCert.getIssuer(),
-                attrCertHolder.getIssuer().getNames()[0].toString()
+                attrCertHolder.getIssuer().getNames()[0].toString(),
+                platformCert.getIssuer()
         );
-        assertEquals(platformCert.getSubject(), null);
-        assertArrayEquals(platformCert.getEncodedPublicKey(), null);
-        assertArrayEquals(platformCert.getSignature(), attrCertHolder.getSignature());
-        assertEquals(platformCert.getBeginValidity(), attrCertHolder.getNotBefore());
-        assertEquals(platformCert.getEndValidity(), attrCertHolder.getNotAfter());
+        assertEquals(null, platformCert.getSubject());
+        assertArrayEquals(null, platformCert.getEncodedPublicKey());
+        assertArrayEquals(attrCertHolder.getSignature(), platformCert.getSignature());
+        assertEquals(attrCertHolder.getNotBefore(), platformCert.getBeginValidity());
+        assertEquals(attrCertHolder.getNotAfter(), platformCert.getEndValidity());
     }
 
     /**
@@ -324,11 +332,11 @@ public class CertificateTest {
         Certificate platformCert = getTestCertificate(
                 PlatformCredential.class, PlatformCredentialTest.TEST_PLATFORM_CERT_6);
 
-        assertEquals(platformCert.getAuthorityInfoAccess(),
-                "https://trustedservices.intel.com/"
-                        + "content/TSC/certs/TSC_IssuingCAIKGF_TEST.cer\n");
-        assertEquals(platformCert.getAuthorityKeyIdentifier(),
-                "a5ecc6c07da02c6af8764d4e5c16483610a0b040");
+        assertEquals("https://trustedservices.intel.com/"
+                        + "content/TSC/certs/TSC_IssuingCAIKGF_TEST.cer\n",
+                platformCert.getAuthorityInfoAccess());
+        assertEquals("a5ecc6c07da02c6af8764d4e5c16483610a0b040",
+                platformCert.getAuthorityKeyIdentifier());
     }
 
     /**
@@ -344,11 +352,11 @@ public class CertificateTest {
         byte[] expectedCertBytes = Arrays.copyOfRange(rawFileBytes, 0, 908);
         Certificate ekCert = getTestCertificate(EndorsementCredential.class,
                 EK_CERT_WITH_PADDED_BYTES);
-        assertEquals(ekCert.getSerialNumber(), new BigInteger("16842032579184247954"));
-        assertEquals(ekCert.getIssuer(),
-                "CN=Nuvoton TPM Root CA 2010+O=Nuvoton Technology Corporation+C=TW");
-        assertEquals(ekCert.getSubject(), "");
-        assertArrayEquals(ekCert.getRawBytes(), expectedCertBytes);
+        assertEquals(new BigInteger("16842032579184247954"), ekCert.getSerialNumber());
+        assertEquals("CN=Nuvoton TPM Root CA 2010+O=Nuvoton Technology Corporation+C=TW",
+                ekCert.getIssuer());
+        assertEquals("", ekCert.getSubject());
+        assertArrayEquals(expectedCertBytes, ekCert.getRawBytes());
     }
 
     /**
@@ -440,9 +448,9 @@ public class CertificateTest {
         );
 
         assertNotEquals(
-                getTestCertificate(CertificateAuthorityCredential.class, FAKE_ROOT_CA_FILE),
-                null
-        );
+                null,
+                getTestCertificate(CertificateAuthorityCredential.class, FAKE_ROOT_CA_FILE)
+       );
     }
 
     /**
@@ -460,7 +468,7 @@ public class CertificateTest {
         Certificate issuerCert = getTestCertificate(FAKE_ROOT_CA_FILE);
         Certificate cert = getTestCertificate(INT_CA_CERT02);
 
-        assertEquals(issuerCert.isIssuer(cert), "Certificate signature failed to verify");
+        assertEquals("Certificate signature failed to verify", issuerCert.isIssuer(cert));
         assertTrue(cert.isIssuer(issuerCert).isEmpty());
     }
 
