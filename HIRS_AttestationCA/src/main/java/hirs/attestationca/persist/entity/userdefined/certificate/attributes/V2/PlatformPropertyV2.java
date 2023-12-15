@@ -5,7 +5,7 @@ import lombok.Getter;
 import lombok.Setter;
 import org.bouncycastle.asn1.ASN1Enumerated;
 import org.bouncycastle.asn1.ASN1Sequence;
-import org.bouncycastle.asn1.DERUTF8String;
+import org.bouncycastle.asn1.ASN1UTF8String;
 
 /**
  *
@@ -39,7 +39,7 @@ public class PlatformPropertyV2 extends PlatformProperty {
      * @param propertyValue string containing the property value
      * @param attributeStatus enumerated object with the status of the property
      */
-    public PlatformPropertyV2(final DERUTF8String propertyName, final DERUTF8String propertyValue,
+    public PlatformPropertyV2(final ASN1UTF8String propertyName, final ASN1UTF8String propertyValue,
                               final AttributeStatus attributeStatus) {
         super(propertyName, propertyValue);
         this.attributeStatus = attributeStatus;
@@ -59,8 +59,8 @@ public class PlatformPropertyV2 extends PlatformProperty {
                     + "the required fields.");
         }
 
-        setPropertyName(DERUTF8String.getInstance(sequence.getObjectAt(0)));
-        setPropertyValue(DERUTF8String.getInstance(sequence.getObjectAt(1)));
+        setPropertyName(ASN1UTF8String.getInstance(sequence.getObjectAt(0)));
+        setPropertyValue(ASN1UTF8String.getInstance(sequence.getObjectAt(1)));
 
         // optional value which is a placeholder for now
         if (sequence.size() > IDENTIFIER_NUMBER
