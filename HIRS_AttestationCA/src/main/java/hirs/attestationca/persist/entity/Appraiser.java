@@ -6,12 +6,7 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
-import lombok.AccessLevel;
-import lombok.EqualsAndHashCode;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
-import lombok.ToString;
+import lombok.*;
 
 /**
  * The <code>Appraiser</code> class represents an appraiser that can appraise a <code>Report</code>.
@@ -67,7 +62,6 @@ public class Appraiser {
     private Long id;
 
     @Getter
-    @Setter
     @Column(nullable = false, unique = true)
     private String name;
 
@@ -83,6 +77,19 @@ public class Appraiser {
      * @param name unique name
      */
     public Appraiser(final String name) {
+        setName(name);
+    }
+
+    /**
+     * Sets the name that uniquely identifies this <code>Appraiser</code>. The name may not be
+     * null.
+     *
+     * @param name unique name for this <code>Appraiser</code>
+     */
+    public final void setName(final String name) {
+        if (name == null) {
+            throw new NullPointerException("name");
+        }
         this.name = name;
     }
 }
