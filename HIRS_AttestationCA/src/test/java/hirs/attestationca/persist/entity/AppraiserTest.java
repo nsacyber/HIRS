@@ -1,6 +1,10 @@
 package hirs.attestationca.persist.entity;
 
+import hirs.attestationca.persist.entity.userdefined.certificate.CertificateAuthorityCredential;
 import org.junit.jupiter.api.Test;
+
+import java.io.IOException;
+import java.security.cert.CertificateException;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -16,6 +20,16 @@ public final class AppraiserTest {
     public void testAppraiser() {
         final String name = "Test Appraiser";
         new TestAppraiser(name);
+    }
+
+    /**
+     * Tests that <code>Appraiser</code> throws a <code>NullPointerException</code> if a name is not
+     * provided.
+     */
+    @Test
+    public void testAppraiserNullName() {
+        assertThrows(NullPointerException.class, () ->
+                new TestAppraiser(null));
     }
 
     /**
@@ -39,6 +53,24 @@ public final class AppraiserTest {
         final String newName = "Awesome Test Appraiser";
         appraiser.setName(newName);
         assertEquals(newName, appraiser.getName());
+    }
+
+    /**
+     * Tests that a <code>NullPointerException</code> is thrown if the name is null.
+     */
+    @Test
+    public void testSetNameNull() {
+        final String name = "Test Appraiser";
+        final Appraiser appraiser = new TestAppraiser(name);
+        assertEquals(name, appraiser.getName());
+        NullPointerException expected = null;
+        try {
+            appraiser.setName(null);
+        } catch (NullPointerException e) {
+            expected = e;
+        }
+        assertNotNull(expected, "NullPointerException not caught");
+        assertEquals(name, appraiser.getName());
     }
 
     /**
