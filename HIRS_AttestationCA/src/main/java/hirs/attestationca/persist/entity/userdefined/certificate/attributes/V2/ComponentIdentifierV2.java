@@ -42,6 +42,7 @@ import java.util.stream.Collectors;
 @EqualsAndHashCode(callSuper = false)
 public class ComponentIdentifierV2 extends ComponentIdentifier {
 
+    private static final int UNKNOWN_INDEX = 9;
     private static final int MANDATORY_ELEMENTS = 3;
     // Additional optional identifiers for version 2
     private static final int COMPONENT_PLATFORM_CERT = 5;
@@ -160,6 +161,39 @@ public class ComponentIdentifierV2 extends ComponentIdentifier {
                 default:
                     throw new IllegalArgumentException("Component identifier contains "
                             + "invalid tagged object.");
+            }
+        }
+    }
+
+    /**
+     * Constructor given the SEQUENCE that contains Component Identifier.
+     * @param asn1Sequence containing the the component identifier
+     * @param pkcFormat indicator for how to process
+     * @throws IllegalArgumentException if there was an error on the parsing
+     */
+    public ComponentIdentifierV2(final ASN1Sequence asn1Sequence, final boolean pkcFormat)
+            throws IllegalArgumentException {
+        super();
+
+        int tag = 0;
+        // Mandatory values
+        this.setComponentManufacturer(ASN1UTF8String.getInstance(asn1Sequence.getObjectAt(tag++)));
+        this.setComponentModel(ASN1UTF8String.getInstance(asn1Sequence.getObjectAt(tag++)));
+        for (int i = tag; i < asn1Sequence.size(); i++) {
+            asn1Sequence.getObjectAt(i);
+            ASN1TaggedObject taggedObj = ASN1TaggedObject.getInstance(asn1Sequence.getObjectAt(i));
+            switch (taggedObj.getTagNo()) {
+                case COMPONENT_SERIAL:
+                    this.setComponentSerial(ASN1UTF8String.getInstance(taggedObj, false));
+                    break;
+                case COMPONENT_REVISION:
+                    this.setComponentRevision(ASN1UTF8String.getInstance(taggedObj, false));
+                    break;
+                case UNKNOWN_INDEX:
+                    // not sure what this information is yet
+                    break;
+                default:
+                    break;
             }
         }
     }

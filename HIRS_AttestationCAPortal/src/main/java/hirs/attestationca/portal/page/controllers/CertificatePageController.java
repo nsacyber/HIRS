@@ -14,6 +14,7 @@ import hirs.attestationca.persist.entity.userdefined.certificate.CertificateAuth
 import hirs.attestationca.persist.entity.userdefined.certificate.EndorsementCredential;
 import hirs.attestationca.persist.entity.userdefined.certificate.IssuedAttestationCertificate;
 import hirs.attestationca.persist.entity.userdefined.certificate.PlatformCredential;
+import hirs.attestationca.persist.entity.userdefined.certificate.X509AttributeCredential;
 import hirs.attestationca.persist.util.CredentialHelper;
 import hirs.attestationca.portal.datatables.DataTableInput;
 import hirs.attestationca.portal.datatables.DataTableResponse;
@@ -618,6 +619,36 @@ public class CertificatePageController extends PageController<NoPageParams> {
         }
     }
 
+    /**
+     * The purpose of this method is to return the type of sub child object
+     * that has a parent of Platform Certificate depending on the status of
+     * the object throwing an error.
+     *
+     * @param fileBytes encoded byte stream
+     * @return an object of type PlatformCredential
+     */
+    private PlatformCredential getPlatformType(final byte[] fileBytes) {
+        PlatformCredential pc;
+
+        try {
+            pc = new PlatformCredential(fileBytes);
+        } catch (IOException | IllegalArgumentException ex) {
+            pc = getX509AttributeCredential(fileBytes);
+        }
+
+        return pc;
+    }
+
+    private PlatformCredential getX509AttributeCredential(final byte[] fileBytes) {
+        PlatformCredential pc = null;
+        try {
+            pc = new X509AttributeCredential(fileBytes);
+        } catch (IOException ioEx) {
+            return null;
+        }
+        return pc;
+    }
+
     private ZipOutputStream bulkDownload(final ZipOutputStream zipOut,
                               final List<Certificate> certificates,
                               final String singleFileName) throws IOException {
@@ -780,7 +811,8 @@ public class CertificatePageController extends PageController<NoPageParams> {
         try {
             switch (certificateType) {
                 case PLATFORMCREDENTIAL:
-                    return new PlatformCredential(fileBytes);
+//                    return new PlatformCredential(fileBytes);
+                    return getPlatformType(fileBytes);
                 case ENDORSEMENTCREDENTIAL:
                     return new EndorsementCredential(fileBytes);
                 case TRUSTCHAIN:

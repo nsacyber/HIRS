@@ -75,10 +75,22 @@ public class PlatformCredential extends DeviceAssociatedCertificate {
     private static final String PLATFORM_BASEBOARD_CHASSIS_COMBINED = "2.23.133.5.1.6";
 
     // OID for TCG Platform Class Common Attributes
-    private static final String PLATFORM_MANUFACTURER_2_0 = "2.23.133.5.1.1";
-    private static final String PLATFORM_MODEL_2_0 = "2.23.133.5.1.4";
-    private static final String PLATFORM_VERSION_2_0 = "2.23.133.5.1.5";
-    private static final String PLATFORM_SERIAL_2_0 = "2.23.133.5.1.6";
+    /**
+     * OID for the 2.0 Platform manufacturer.
+     */
+    protected static final String PLATFORM_MANUFACTURER_2_0 = "2.23.133.5.1.1";
+    /**
+     * OID for the 2.0 Platform model.
+     */
+    protected static final String PLATFORM_MODEL_2_0 = "2.23.133.5.1.4";
+    /**
+     * OID for the 2.0 Platform version.
+     */
+    protected static final String PLATFORM_VERSION_2_0 = "2.23.133.5.1.5";
+    /**
+     * OID for the 2.0 Platform serial.
+     */
+    protected static final String PLATFORM_SERIAL_2_0 = "2.23.133.5.1.6";
 
     // OID for Certificate Attributes
     private static final String TCG_PLATFORM_SPECIFICATION = "2.23.133.2.17";

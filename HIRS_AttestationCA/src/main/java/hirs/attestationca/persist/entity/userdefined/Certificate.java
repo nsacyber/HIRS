@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.common.base.Preconditions;
 import hirs.attestationca.persist.entity.ArchivableEntity;
 import hirs.attestationca.persist.entity.userdefined.certificate.CertificateVariables;
+import hirs.attestationca.persist.entity.userdefined.certificate.attributes.PublicKeyAttributeCredential;
 import hirs.attestationca.persist.util.CredentialHelper;
 import hirs.utils.HexUtils;
 import jakarta.persistence.Column;
@@ -872,6 +873,20 @@ public abstract class Certificate extends ArchivableEntity {
             log.info("No RSA Key Detected in certificate");
             return null;
         }
+    }
+
+    /**
+     * Retrieve the original Attribute Certificate.
+     *
+     * @return the original Attribute Certificate
+     * @throws IOException if there is a problem deserializing the certificate as an X509
+     *                     attribute cert
+     */
+    @JsonIgnore
+    public PublicKeyAttributeCredential getAttributeCertificatePkc() throws IOException {
+        PublicKeyAttributeCredential certificatePkc = PublicKeyAttributeCredential
+                .getInstance(ASN1Primitive.fromByteArray(getRawBytes()));
+        return certificatePkc;
     }
 
     /**
