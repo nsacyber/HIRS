@@ -36,8 +36,8 @@ public class TPM2ProvisionerStateTest {
 
         TPM2ProvisionerState state = new TPM2ProvisionerState(nonce, identityClaim);
 
-        assertArrayEquals(state.getNonce(), nonce);
-        assertArrayEquals(state.getIdentityClaim(), identityClaim);
+        assertArrayEquals(nonce, state.getNonce());
+        assertArrayEquals(identityClaim, state.getIdentityClaim());
     }
 
     /**
@@ -112,7 +112,7 @@ public class TPM2ProvisionerStateTest {
         TPM2ProvisionerState tpm2ProvisionerState
                 = TPM2ProvisionerState.getTPM2ProvisionerState(tpm2ProvisionerStateRepository, nonce);
         assertNotNull(tpm2ProvisionerState);
-        assertArrayEquals(tpm2ProvisionerState.getIdentityClaim(), value.getIdentityClaim());
+        assertArrayEquals(value.getIdentityClaim(), tpm2ProvisionerState.getIdentityClaim());
     }
 
     /**
