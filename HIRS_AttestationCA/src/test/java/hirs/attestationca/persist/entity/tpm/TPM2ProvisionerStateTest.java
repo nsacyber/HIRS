@@ -18,7 +18,7 @@ import java.util.Random;
 /**
  * Contains unit tests for {@link TPM2ProvisionerState}.
  */
-public class TestTPM2ProvisionerState {
+public class TPM2ProvisionerStateTest {
 
     /**
      * Tests that the values passed to the constructor are equal to the values
