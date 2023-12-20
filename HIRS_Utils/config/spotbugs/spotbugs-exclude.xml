@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Docs at http://findbugs.sourceforge.net/manual/filter.html -->
+<FindBugsFilter>
+    <Match>
+	<Package name="~hirs\.utils.*" />
+    </Match>
+
+</FindBugsFilter>
+
