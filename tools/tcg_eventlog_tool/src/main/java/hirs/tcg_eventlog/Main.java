@@ -88,6 +88,7 @@ final class Main {
             System.exit(1);
         }   // End commander processing
 
+        handleEventLog();
     }
 
     private static void handleEventLog() {
