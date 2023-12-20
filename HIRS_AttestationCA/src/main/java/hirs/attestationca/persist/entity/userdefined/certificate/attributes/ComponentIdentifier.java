@@ -5,12 +5,12 @@ import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
-import org.apache.commons.lang3.StringUtils;
 import org.bouncycastle.asn1.ASN1Boolean;
 import org.bouncycastle.asn1.ASN1ObjectIdentifier;
 import org.bouncycastle.asn1.ASN1Sequence;
 import org.bouncycastle.asn1.ASN1TaggedObject;
 import org.bouncycastle.asn1.ASN1UTF8String;
+import org.bouncycastle.asn1.DERUTF8String;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -88,10 +88,10 @@ public class ComponentIdentifier {
      * Default constructor.
      */
     public ComponentIdentifier() {
-        componentManufacturer = ASN1UTF8String.getInstance(NOT_SPECIFIED_COMPONENT);
+        componentManufacturer = new DERUTF8String(NOT_SPECIFIED_COMPONENT);
         componentModel = ASN1UTF8String.getInstance(NOT_SPECIFIED_COMPONENT);
-        componentSerial = ASN1UTF8String.getInstance(StringUtils.EMPTY);
-        componentRevision = ASN1UTF8String.getInstance(StringUtils.EMPTY);
+        componentSerial = ASN1UTF8String.getInstance(EMPTY_COMPONENT);
+        componentRevision = ASN1UTF8String.getInstance(EMPTY_COMPONENT);
         componentManufacturerId = null;
         fieldReplaceable = null;
         componentAddress = new ArrayList<>();

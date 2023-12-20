@@ -5,6 +5,7 @@ import lombok.Getter;
 import lombok.Setter;
 import org.bouncycastle.asn1.ASN1Sequence;
 import org.bouncycastle.asn1.ASN1UTF8String;
+import org.bouncycastle.asn1.DERUTF8String;
 
 /**
  *
@@ -35,8 +36,8 @@ public class PlatformProperty {
      * Default constructor.
      */
     public PlatformProperty() {
-        this.propertyName = ASN1UTF8String.getInstance(NOT_SPECIFIED);
-        this.propertyValue = ASN1UTF8String.getInstance(NOT_SPECIFIED);
+        this.propertyName = new DERUTF8String(NOT_SPECIFIED);
+        this.propertyValue = new DERUTF8String(NOT_SPECIFIED);
     }
 
     /**
