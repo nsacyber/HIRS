@@ -253,7 +253,7 @@ public class CertificatePageController extends PageController<NoPageParams> {
                     PlatformCredential pc = (PlatformCredential) records.get(i);
                     // find the EC using the PC's "holder serial number"
                     associatedEC = this.endorsementCredentialRepository
-                            .findByHolderSerialNumber(pc.getHolderSerialNumber());
+                            .findBySerialNumber(pc.getHolderSerialNumber());
 
                     if (associatedEC != null) {
                         log.debug("EC ID for holder s/n " + pc

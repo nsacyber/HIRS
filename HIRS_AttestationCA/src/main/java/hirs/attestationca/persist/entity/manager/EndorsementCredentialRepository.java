@@ -16,5 +16,6 @@ public interface EndorsementCredentialRepository extends JpaRepository<Endorseme
     List<EndorsementCredential> findByArchiveFlag(boolean archiveFlag);
     Page<EndorsementCredential> findByArchiveFlag(boolean archiveFlag, Pageable pageable);
     EndorsementCredential findByHolderSerialNumber(BigInteger holderSerialNumber);
+    EndorsementCredential findBySerialNumber(BigInteger serialNumber);
     List<EndorsementCredential> findByDeviceId(UUID deviceId);
 }
