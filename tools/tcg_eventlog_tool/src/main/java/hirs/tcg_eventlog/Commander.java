@@ -446,7 +446,7 @@ public class Commander {
      */
     public static boolean isValidPath(final String filepath) {
         System.out.println("Checking for a valid creation path...");
-        if (filepath != null) {
+        if (filepath == null) {
             return false;
         }
         try {
