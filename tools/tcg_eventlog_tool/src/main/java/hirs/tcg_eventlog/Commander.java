@@ -59,10 +59,10 @@ public class Commander {
         if (hasArguments) {
             parseArguments(args);
         } else {
-            String[] defualtArgs = new String[1];
-            defualtArgs[0] = "-e";
+            String[] defaultArgs = new String[1];
+            defaultArgs[0] = "-e";
             hasArguments = true;
-            parseArguments(defualtArgs);
+            parseArguments(defaultArgs);
         }
     }
 
@@ -445,14 +445,17 @@ public class Commander {
      * @return true if path is valid
      */
     public static boolean isValidPath(final String filepath) {
+        System.out.println("Checking for a valid creation path...");
+        if (filepath != null) {
+            return false;
+        }
         try {
-            System.out.println("Checking for a valid creation path...");
             File file = new File(filepath);
             boolean test = file.createNewFile();
             if (!test) {
                 return false;
             }
-        } catch (IOException | InvalidPathException | NullPointerException ex) {
+        } catch (IOException | InvalidPathException ex) {
             return false;
         }
         return true;
