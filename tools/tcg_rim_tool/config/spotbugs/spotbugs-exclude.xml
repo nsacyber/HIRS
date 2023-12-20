@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Docs at http://findbugs.sourceforge.net/manual/filter.html -->
+<FindBugsFilter>
+
+    <Match>
+	<!-- To suppress false warnings in unit-tests for lambdas not using return values. -->
+        <Package name="~com\.company\.service\.interfaces\.types\.contacts"/>
+        <Bug pattern="RV_RETURN_VALUE_IGNORED"/>
+    </Match>
+    <Match>
+	<Package name="~hirs\.swid.*" />
+    </Match>
+
+</FindBugsFilter>
