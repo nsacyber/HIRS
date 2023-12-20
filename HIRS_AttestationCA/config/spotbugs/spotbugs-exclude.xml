@@ -4,6 +4,15 @@
     <Match>
         <Package name="~hirs\.attestationca.*" />
     </Match>
+    <Match>
+        <!-- https://github.com/spotbugs/spotbugs/pull/2748 -->
+        <Bug pattern="CT_CONSTRUCTOR_THROW" />
+    </Match>
 
+    <!--    <Match>-->
+    <!--        &lt;!&ndash; To suppress false warnings in unit-tests for lambdas not using return values. &ndash;&gt;-->
+    <!--        <Package name="~com\.company\.service\.interfaces\.types\.contacts"/>-->
+    <!--        <Bug pattern="RV_RETURN_VALUE_IGNORED"/>-->
+    <!--    </Match>-->
 </FindBugsFilter>
 
