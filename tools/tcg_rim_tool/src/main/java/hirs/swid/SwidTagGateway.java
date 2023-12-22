@@ -623,14 +623,6 @@ public class SwidTagGateway {
         if (defaultCredentials) {
             cp.parseJKSCredentials(jksTruststoreFile);
             privateKey = cp.getPrivateKey();
-            KeyName keyName = null;
-            try {
-                keyName = kiFactory.newKeyName(cp.getCertificateSubjectKeyIdentifier());
-            } catch (IOException e) {
-                System.out.println("Error while getting SKID: " + e.getMessage());
-                System.exit(1);
-            }
-            keyInfoElements.add(keyName);
         } else {
             try {
                 cp.parsePEMCredentials(pemCertificateFile, pemPrivateKeyFile);
@@ -653,6 +645,13 @@ public class SwidTagGateway {
                     System.out.println("Error while creating KeyValue: " + e.getMessage());
                 }
             }
+        }
+        try {
+            KeyName keyName = kiFactory.newKeyName(cp.getCertificateSubjectKeyIdentifier());
+            keyInfoElements.add(keyName);
+        } catch (IOException e) {
+            System.out.println("Error while getting SKID: " + e.getMessage());
+            System.exit(1);
         }
         KeyInfo keyinfo = kiFactory.newKeyInfo(keyInfoElements);
 
