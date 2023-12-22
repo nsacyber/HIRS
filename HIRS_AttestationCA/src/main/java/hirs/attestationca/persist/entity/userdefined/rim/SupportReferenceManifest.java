@@ -16,6 +16,7 @@ import java.security.cert.CertificateException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Objects;
 
 /**
  * Sub class that will just focus on PCR Values and Events.
@@ -118,5 +119,19 @@ public class SupportReferenceManifest extends ReferenceManifest {
      */
     public boolean isBaseSupport() {
         return !this.isSwidSupplemental() && !this.isSwidPatch();
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        if (!super.equals(o)) return false;
+        SupportReferenceManifest that = (SupportReferenceManifest) o;
+        return pcrHash == that.pcrHash && updated == that.updated && processed == that.processed;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(super.hashCode(), pcrHash, updated, processed);
     }
 }

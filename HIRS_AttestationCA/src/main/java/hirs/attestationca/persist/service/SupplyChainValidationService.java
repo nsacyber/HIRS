@@ -279,7 +279,6 @@ public class SupplyChainValidationService {
 
         // check if the policy is enabled
         if (getPolicySettings().isFirmwareValidationEnabled()) {
-            String[] baseline = new String[Integer.SIZE];
             String deviceName = device.getDeviceInfo()
                     .getNetworkInfo().getHostname();
 
@@ -293,8 +292,6 @@ public class SupplyChainValidationService {
                         sRim = support;
                     }
                 }
-                eventLog = (EventLogMeasurements) referenceManifestRepository
-                        .findByHexDecHash(sRim.getEventLogHash());
 
                 if (sRim == null) {
                     fwStatus = new AppraisalStatus(FAIL,
@@ -302,16 +299,19 @@ public class SupplyChainValidationService {
                                             + "No associated Support RIM file "
                                             + "could be found for %s",
                                     deviceName));
-                } else if (eventLog == null) {
+                } else {
+                    eventLog = (EventLogMeasurements) referenceManifestRepository
+                            .findByHexDecHash(sRim.getEventLogHash());
+                }
+                if (eventLog == null) {
                     fwStatus = new AppraisalStatus(FAIL,
                             String.format("Firmware Quote validation failed: "
                                             + "No associated Client Log file "
                                             + "could be found for %s",
                                     deviceName));
                 } else {
-                    baseline = sRim.getExpectedPCRList();
                     String[] storedPcrs = eventLog.getExpectedPCRList();
-                    PcrValidator pcrValidator = new PcrValidator(baseline);
+                    PcrValidator pcrValidator = new PcrValidator(sRim.getExpectedPCRList());
                     // grab the quote
                     byte[] hash = device.getDeviceInfo().getTpmInfo().getTpmQuoteHash();
                     if (pcrValidator.validateQuote(hash, storedPcrs, getPolicySettings())) {
