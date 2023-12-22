@@ -70,7 +70,6 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
-import java.util.ListIterator;
 import java.util.Objects;
 
 /**
@@ -593,8 +592,8 @@ public abstract class Certificate extends ArchivableEntity {
             CertificateFactory cf = CertificateFactory.getInstance("X.509");
             parsedX509Cert = (X509Certificate) cf.generateCertificate(certInputStream);
             return parsedX509Cert;
-        } catch (CertificateException e) {
-            throw new IOException("Cannot construct X509Certificate from the input stream", e);
+        } catch (CertificateException cEx) {
+            throw new IOException("Cannot construct X509Certificate from the input stream", cEx);
         }
     }
 

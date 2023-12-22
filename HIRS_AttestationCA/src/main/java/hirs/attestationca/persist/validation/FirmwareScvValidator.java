@@ -19,6 +19,7 @@ import hirs.utils.tpm.eventlog.TpmPcrEvent;
 import lombok.extern.log4j.Log4j2;
 
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.security.KeyStore;
 import java.security.NoSuchAlgorithmException;
 import java.security.cert.CertificateException;
@@ -178,7 +179,8 @@ public class FirmwareScvValidator extends SupplyChainCredentialValidator {
 
                 if (baseline.length > 0) {
                     String pcrContent = "";
-                    pcrContent = new String(device.getDeviceInfo().getTpmInfo().getPcrValues());
+                    pcrContent = new String(device.getDeviceInfo().getTpmInfo().getPcrValues(),
+                            StandardCharsets.UTF_8);
 
                     if (pcrContent.isEmpty()) {
                         fwStatus = new AppraisalStatus(FAIL,

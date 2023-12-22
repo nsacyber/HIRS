@@ -198,8 +198,12 @@ public class BaseReferenceManifest extends ReferenceManifest {
      * and tagId attributes, otherwise a generic error message is printed.
      *
      */
-    private Element getDirectoryTag() {
-        return getDirectoryTag(new ByteArrayInputStream(getRimBytes()));
+    private Element getDirectoryTag(final byte[] rimBytes) {
+        if (rimBytes == null || rimBytes.length == 0) {
+            return getDirectoryTag(new ByteArrayInputStream(getRimBytes()));
+        } else {
+            return getDirectoryTag(new ByteArrayInputStream(rimBytes));
+        }
     }
 
     /**
@@ -238,7 +242,7 @@ public class BaseReferenceManifest extends ReferenceManifest {
      *
      */
     public List<SwidResource> getFileResources(final byte[] rimBytes) {
-        Element directoryTag = getDirectoryTag(new ByteArrayInputStream(rimBytes));
+        Element directoryTag = getDirectoryTag(rimBytes);
         List<SwidResource> validHashes = new ArrayList<>();
         NodeList fileNodeList = directoryTag.getChildNodes();
         Element file = null;

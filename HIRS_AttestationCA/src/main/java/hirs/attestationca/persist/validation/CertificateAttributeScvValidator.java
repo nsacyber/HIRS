@@ -12,8 +12,6 @@ import hirs.attestationca.persist.entity.userdefined.report.DeviceInfoReport;
 import hirs.attestationca.persist.enums.AppraisalStatus;
 import hirs.attestationca.persist.util.PciIds;
 import hirs.utils.enums.DeviceInfoEnums;
-import lombok.Getter;
-import lombok.Setter;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -44,9 +42,23 @@ import static hirs.attestationca.persist.enums.AppraisalStatus.Status.PASS;
 @Log4j2
 public class CertificateAttributeScvValidator extends SupplyChainCredentialValidator {
 
-    @Setter
-    @Getter
     private static List<ComponentResult> componentResultList = new LinkedList<>();
+
+    /**
+     * Setter for the list of components to verify.
+     * @param componentResultList list object for the components
+     */
+    public void setComponentResultList(final List<ComponentResult> componentResultList) {
+        this.componentResultList = componentResultList.stream().toList();
+    }
+
+    /**
+     * Getter for the list of components to verify.
+     * @return a collection of components
+     */
+    public static List<ComponentResult> getComponentResultList() {
+        return Collections.unmodifiableList(componentResultList);
+    }
 
     /**
      * Checks if the delta credential's attributes are valid.

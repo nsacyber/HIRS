@@ -22,23 +22,26 @@ import java.sql.Timestamp;
 
 @Entity
 @Table(name = "Device")
-@Getter
 @Setter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
 public class Device extends AbstractEntity {
 
+    @Getter
     @Column(name = "name", unique = true)
     private String name;
 
+    @Getter
     @OneToOne(cascade = CascadeType.ALL, fetch = FetchType.EAGER,
             optional = true, orphanRemoval = true)
     private DeviceInfoReport deviceInfo;
 
+    @Getter
     @Column
     @Enumerated(EnumType.ORDINAL)
     private HealthStatus healthStatus;
 
+    @Getter
     @Column
     @Enumerated(EnumType.ORDINAL)
     private AppraisalStatus.Status supplyChainValidationStatus;
@@ -49,12 +52,15 @@ public class Device extends AbstractEntity {
     @Column(name = "last_report_timestamp")
     private Timestamp lastReportTimestamp;
 
+    @Getter
     @Column(name = "is_state_overridden")
     private boolean isStateOverridden;
 
+    @Getter
     @Column(name = "state_override_reason")
     private String overrideReason;
 
+    @Getter
     @Column(name = "summary_id")
     private String summaryId;
 
@@ -66,6 +72,14 @@ public class Device extends AbstractEntity {
         } else {
             name = "";
         }
+    }
+
+    /**
+     * Getter for the report time stamp.
+     * @return a cloned version
+     */
+    public Timestamp getLastReportTimestamp() {
+        return (Timestamp) lastReportTimestamp.clone();
     }
 
     public String toString() {

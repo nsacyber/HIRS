@@ -111,6 +111,14 @@ public class ReferenceDigestValue extends AbstractEntity {
     }
 
     /**
+     * the object that contains the raw bytes for this RDV.
+     * @return the raw bytes
+     */
+    public byte[] getContentBlob() {
+        return Arrays.clone(contentBlob);
+    }
+
+    /**
      * Helper method to update the attributes of this object.
      * @param support the associated RIM.
      * @param baseRimId the main id to update
