@@ -88,9 +88,13 @@ final class Main {
             System.exit(1);
         }   // End commander processing
 
+        handleEventLog();
+    }
+
+    private static void handleEventLog() {
         try {
-           eventLog = openLog(commander.getInFileName());
-           // Main Event processing
+            eventLog = openLog(commander.getInFileName());
+            // Main Event processing
             TCGEventLog evLog = new TCGEventLog(eventLog, bEventFlag, bContentFlag, bHexEvent);
             if (bPcrFlag) {
                 String[] pcrs = evLog.getExpectedPCRValues();

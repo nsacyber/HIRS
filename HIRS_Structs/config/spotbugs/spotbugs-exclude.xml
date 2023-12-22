@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Docs at http://findbugs.sourceforge.net/manual/filter.html -->
+<FindBugsFilter>
+    <Match>
+        <Package name="~hirs\.structs.*" />
+    </Match>
+    <Match>
+        <!-- https://github.com/spotbugs/spotbugs/pull/2748 -->
+        <Bug pattern="CT_CONSTRUCTOR_THROW" />
+    </Match>
+
+    <!--    <Match>-->
+    <!--        &lt;!&ndash; To suppress false warnings in unit-tests for lambdas not using return values. &ndash;&gt;-->
+    <!--        <Package name="~com\.company\.service\.interfaces\.types\.contacts"/>-->
+    <!--        <Bug pattern="RV_RETURN_VALUE_IGNORED"/>-->
+    <!--    </Match>-->
+</FindBugsFilter>
+

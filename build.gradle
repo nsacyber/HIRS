@@ -4,16 +4,33 @@ import org.gradle.api.tasks.Copy
 plugins {
     // Apply the application plugin to add support for building a CLI application in Java.
     id 'application'
+    id 'com.github.spotbugs' version '6.0.4' apply false
 }
 
 // Global checkstyle file
     ext.checkstyleConfigFile = new File(rootDir, "/config/checkstyle/sun_checks.xml")
 
+subprojects {
+    apply plugin: "com.github.spotbugs"
+
+    spotbugs {
+        excludeFilter = file('config/spotbugs/spotbugs-exclude.xml')
+    }
+
+    tasks.withType(com.github.spotbugs.snom.SpotBugsTask) {
+        reports {
+            html {
+                enabled = true
+            }
+        }
+    }
+}
+
 dependencies {
     repositories {
-          // Use Maven Central for resolving dependencies.
-             mavenCentral()
-         }
+        // Use Maven Central for resolving dependencies.
+        mavenCentral()
+    }
 }
 
 def projectVersion = rootProject.file('VERSION').text.trim()
