@@ -6,6 +6,7 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.Lob;
 import lombok.NoArgsConstructor;
+import lombok.extern.log4j.Log4j2;
 import org.bouncycastle.util.Arrays;
 
 import java.io.ByteArrayInputStream;
@@ -17,6 +18,7 @@ import java.util.Date;
  * This class is for saving the Identity Claim and the Nonce between the two passes of the
  * TPM 2.0 Provisioner.
  */
+@Log4j2
 @NoArgsConstructor
 @Entity
 public class TPM2ProvisionerState {
@@ -100,11 +102,13 @@ public class TPM2ProvisionerState {
         try (DataInputStream dis
                      = new DataInputStream(new ByteArrayInputStream(nonce))) {
             long firstPartOfNonce = dis.readLong();
-            TPM2ProvisionerState stateFound = tpm2ProvisionerStateRepository.findByFirstPartOfNonce(firstPartOfNonce);
-            if (Arrays.areEqual(stateFound.getNonce(), nonce)) {
+            TPM2ProvisionerState stateFound = tpm2ProvisionerStateRepository
+                    .findByFirstPartOfNonce(firstPartOfNonce);
+            if (stateFound != null && Arrays.areEqual(stateFound.getNonce(), nonce)) {
                 return stateFound;
             }
-        } catch (IOException | NullPointerException e) {
+        } catch (IOException ioEx) {
+            log.error(ioEx.getMessage());
             return null;
         }
         return null;

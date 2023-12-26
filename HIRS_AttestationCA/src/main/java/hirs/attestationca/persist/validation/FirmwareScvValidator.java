@@ -45,9 +45,7 @@ public class FirmwareScvValidator extends SupplyChainCredentialValidator {
         String[] baseline = new String[Integer.SIZE];
         AppraisalStatus fwStatus = null;
         String hostName = device.getDeviceInfo().getNetworkInfo().getHostname();
-        String manufacturer = device.getDeviceInfo()
-                .getHardwareInfo().getManufacturer();
-        ReferenceManifest validationObject;
+//        ReferenceManifest validationObject;
         List<BaseReferenceManifest> baseReferenceManifests = null;
         BaseReferenceManifest baseReferenceManifest = null;
         ReferenceManifest supportReferenceManifest = null;
@@ -80,7 +78,6 @@ public class FirmwareScvValidator extends SupplyChainCredentialValidator {
             failedString += "Bios measurement";
             passed = false;
         }
-        validationObject = measurement;
 
         if (passed) {
             List<SwidResource> resources =
@@ -109,7 +106,6 @@ public class FirmwareScvValidator extends SupplyChainCredentialValidator {
                                 passed = false;
                                 fwStatus = new AppraisalStatus(FAIL,
                                     "Firmware validation failed: invalid certificate path.");
-                                validationObject = baseReferenceManifest;
                             }
                         } catch (IOException ioEx) {
                             log.error("Error getting X509 cert from manager: " + ioEx.getMessage());
@@ -224,7 +220,6 @@ public class FirmwareScvValidator extends SupplyChainCredentialValidator {
 
                         if (!tpmPcrEvents.isEmpty()) {
                             StringBuilder sb = new StringBuilder();
-                            validationObject = measurement;
                             sb.append(String.format("%d digest(s) were not found:%n",
                                     tpmPcrEvents.size()));
                             for (TpmPcrEvent tpe : tpmPcrEvents) {

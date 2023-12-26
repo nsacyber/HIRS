@@ -45,14 +45,6 @@ public class CertificateAttributeScvValidator extends SupplyChainCredentialValid
     private static List<ComponentResult> componentResultList = new LinkedList<>();
 
     /**
-     * Setter for the list of components to verify.
-     * @param componentResultList list object for the components
-     */
-    public void setComponentResultList(final List<ComponentResult> componentResultList) {
-        this.componentResultList = componentResultList.stream().toList();
-    }
-
-    /**
      * Getter for the list of components to verify.
      * @return a collection of components
      */

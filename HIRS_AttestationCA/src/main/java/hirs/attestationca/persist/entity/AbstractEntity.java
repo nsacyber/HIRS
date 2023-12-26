@@ -79,4 +79,27 @@ public abstract class AbstractEntity implements Serializable {
     public void resetCreateTime() {
         createTime.setTime(new Date().getTime());
     }
+
+    @Override
+    public int hashCode() {
+        if (id != null) {
+            return id.hashCode();
+        }
+        return super.hashCode();
+    }
+
+    @Override
+    public boolean equals(final Object object) {
+        if (this == object) {
+            return true;
+        }
+        if (object == null) {
+            return false;
+        }
+        if (!(this.getClass().equals(object.getClass()))) {
+            return false;
+        }
+        return this.hashCode() == object.hashCode();
+    }
+
 }
