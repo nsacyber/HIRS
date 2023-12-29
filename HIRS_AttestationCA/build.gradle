@@ -29,6 +29,7 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-data-jpa:3.0.1'
     implementation 'com.github.darrachequesne:spring-data-jpa-datatables:6.0.1'
     implementation 'org.springframework.retry:spring-retry:2.0.0'
+    implementation 'org.springframework:spring-test:6.0.11'
     implementation libs.springdatajpa
 
     implementation libs.bouncycastle
