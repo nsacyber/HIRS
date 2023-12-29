@@ -2,7 +2,7 @@
 <!-- Docs at http://findbugs.sourceforge.net/manual/filter.html -->
 <FindBugsFilter>
     <Match>
-        <Package name="~hirs\.attestationca\.configuration*" />
+        <Package name="~hirs\.attestationca\.configuration.*" />
     </Match>
     <Match>
         <!-- https://github.com/spotbugs/spotbugs/pull/2748 -->

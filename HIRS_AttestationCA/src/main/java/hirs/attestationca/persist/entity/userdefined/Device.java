@@ -31,7 +31,6 @@ public class Device extends AbstractEntity {
     @Column(name = "name", unique = true)
     private String name;
 
-    @Getter
     @OneToOne(cascade = CascadeType.ALL, fetch = FetchType.EAGER,
             optional = true, orphanRemoval = true)
     private DeviceInfoReport deviceInfo;
@@ -72,6 +71,19 @@ public class Device extends AbstractEntity {
         } else {
             name = "";
         }
+    }
+
+    /**
+     * Returns a report with information about this device. This may return null
+     * if this property has not been set.
+     *
+     * @return device info report
+     */
+    public final DeviceInfoReport getDeviceInfo() {
+        return new DeviceInfoReport(deviceInfo.getNetworkInfo(),
+                deviceInfo.getOSInfo(), deviceInfo.getFirmwareInfo(),
+                deviceInfo.getHardwareInfo(), deviceInfo.getTpmInfo(),
+                deviceInfo.getClientApplicationVersion());
     }
 
     /**

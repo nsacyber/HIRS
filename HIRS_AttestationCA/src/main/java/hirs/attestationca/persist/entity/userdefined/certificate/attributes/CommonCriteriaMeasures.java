@@ -173,9 +173,10 @@ public class CommonCriteriaMeasures {
     private ASN1Boolean plus;
     private StrengthOfFunction strengthOfFunction;
     private ASN1ObjectIdentifier profileOid;
-    private URIReference profileUri;
     private ASN1ObjectIdentifier targetOid;
+    private URIReference profileUri;
     private URIReference targetUri;
+    private ASN1Sequence sequence;
 
     /**
      * Default constructor.
@@ -187,8 +188,8 @@ public class CommonCriteriaMeasures {
         this.plus = ASN1Boolean.FALSE;
         this.strengthOfFunction = null;
         this.profileOid = null;
-        this.profileUri = null;
         this.targetOid = null;
+        this.profileUri = null;
         this.targetUri = null;
     }
 
@@ -198,7 +199,6 @@ public class CommonCriteriaMeasures {
      * @throws IllegalArgumentException if there was an error on the parsing
      */
     public CommonCriteriaMeasures(final ASN1Sequence sequence) throws IllegalArgumentException {
-
         //Get all the mandatory values
         int index = 0;
         version = DERIA5String.getInstance(sequence.getObjectAt(index));
@@ -261,8 +261,25 @@ public class CommonCriteriaMeasures {
                             + "invalid tagged object.");
             }
         }
+
+        this.sequence = ASN1Sequence.getInstance(sequence);
     }
 
+    public URIReference getProfileUri() {
+        return new URIReference(profileUri.getSequence());
+    }
+
+    public void setProfileUri(final URIReference profileUri) {
+        this.profileUri = new URIReference(profileUri.getSequence());
+    }
+
+    public URIReference getTargetUri() {
+        return new URIReference(targetUri.getSequence());
+    }
+
+    public void setTargetUri(final URIReference targetUri) {
+        this.targetUri = new URIReference(targetUri.getSequence());
+    }
 
     @Override
     public String toString() {
