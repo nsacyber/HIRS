@@ -1,8 +1,6 @@
 package hirs.attestationca.persist.entity.userdefined.certificate.attributes;
 
 import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.Setter;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -15,10 +13,8 @@ import java.util.List;
 @AllArgsConstructor
 public abstract class PlatformConfiguration {
     private List<ComponentIdentifier> componentIdentifier;
-    @Getter @Setter
     private URIReference componentIdentifierUri;
     private List<PlatformProperty> platformProperties;
-    @Getter @Setter
     private URIReference platformPropertiesUri;
 
     /**
@@ -43,9 +39,25 @@ public abstract class PlatformConfiguration {
     public PlatformConfiguration(final List<ComponentIdentifier> componentIdentifier,
                                  final List<PlatformProperty> platformProperties,
                                  final URIReference platformPropertiesUri) {
-        this.componentIdentifier = componentIdentifier;
-        this.platformProperties = platformProperties;
-        this.platformPropertiesUri = platformPropertiesUri;
+        this.componentIdentifier = componentIdentifier.stream().toList();
+        this.platformProperties = platformProperties.stream().toList();
+        this.platformPropertiesUri = new URIReference(platformPropertiesUri.getSequence());
+    }
+
+    public URIReference getComponentIdentifierUri() {
+        return new URIReference(componentIdentifierUri.getSequence());
+    }
+
+    public void setComponentIdentifierUri(final URIReference componentIdentifierUri) {
+        this.componentIdentifierUri = new URIReference(componentIdentifierUri.getSequence());
+    }
+
+    public URIReference getPlatformPropertiesUri() {
+        return new URIReference(platformPropertiesUri.getSequence());
+    }
+
+    public void setPlatformPropertiesUri(final URIReference platformPropertiesUri) {
+        this.platformPropertiesUri = new URIReference(platformPropertiesUri.getSequence());
     }
 
     /**
