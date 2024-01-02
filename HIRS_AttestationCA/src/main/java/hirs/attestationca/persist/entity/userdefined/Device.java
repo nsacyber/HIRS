@@ -94,6 +94,14 @@ public class Device extends AbstractEntity {
         return (Timestamp) lastReportTimestamp.clone();
     }
 
+    /**
+     * Setter for the report time stamp.
+     * @param lastReportTimestamp
+     */
+    public void setLastReportTimestamp(final Timestamp lastReportTimestamp) {
+        this.lastReportTimestamp = (Timestamp) lastReportTimestamp.clone();
+    }
+
     public String toString() {
         return String.format("Device Name: %s%nStatus: %s%nSummary: %s",
                 name, healthStatus.getStatus(),

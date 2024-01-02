@@ -1,8 +1,7 @@
 package hirs.attestationca.persist.entity.userdefined.certificate.attributes;
 
-import lombok.AllArgsConstructor;
-
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
@@ -11,18 +10,18 @@ import java.util.List;
  * the Platform Certificate Attribute.
  */
 public abstract class PlatformConfiguration {
-    private List<ComponentIdentifier> componentIdentifier;
+    private List<ComponentIdentifier> componentIdentifier = new ArrayList<>();
     private URIReference componentIdentifierUri;
-    private List<PlatformProperty> platformProperties;
+    private List<PlatformProperty> platformProperties = new ArrayList<>();
     private URIReference platformPropertiesUri;
 
     /**
      * Default constructor.
      */
     public PlatformConfiguration() {
-        this.componentIdentifier = new ArrayList<>();
+        this.componentIdentifier = Collections.EMPTY_LIST;
         this.componentIdentifierUri = null;
-        this.platformProperties = new ArrayList<>();
+        this.platformProperties = Collections.EMPTY_LIST;
         this.platformPropertiesUri = null;
     }
     /**
@@ -103,7 +102,7 @@ public abstract class PlatformConfiguration {
      * @param componentIdentifier the componentIdentifier to set
      */
     public void setComponentIdentifier(final List<ComponentIdentifier> componentIdentifier) {
-        this.componentIdentifier = Collections.unmodifiableList(componentIdentifier);
+        this.componentIdentifier.addAll(componentIdentifier);
     }
 
     /**
@@ -130,6 +129,6 @@ public abstract class PlatformConfiguration {
      * @param platformProperties the platformProperties to set
      */
     public void setPlatformProperties(final List<PlatformProperty> platformProperties) {
-        this.platformProperties = platformProperties.stream().toList();
+        this.platformProperties.addAll(platformProperties);
     }
 }

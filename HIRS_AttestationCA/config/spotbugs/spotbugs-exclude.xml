@@ -8,5 +8,12 @@
         <!-- https://github.com/spotbugs/spotbugs/pull/2748 -->
         <Bug pattern="CT_CONSTRUCTOR_THROW" />
     </Match>
+    <!-- roughly 55 instances of this appear -->
+    <Match>
+        <Bug pattern="EI_EXPOSE_REP" />
+    </Match>
+    <Match>
+        <Bug pattern="EI_EXPOSE_REP2" />
+    </Match>
 </FindBugsFilter>
 
