@@ -32,6 +32,7 @@ public class PortalInfo {
     @Getter
     @Column(unique = true, nullable = false)
     private String name;
+    @Getter
     @Column
     private InetAddress ipAddress;
     @Getter

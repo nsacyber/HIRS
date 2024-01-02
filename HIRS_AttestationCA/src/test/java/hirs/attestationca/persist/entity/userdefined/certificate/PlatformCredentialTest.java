@@ -393,7 +393,7 @@ public class PlatformCredentialTest {
      * @throws URISyntaxException if there is a problem constructing the cert's URI
      */
     @Test
-    public final void testIsIssuer() throws IOException, URISyntaxException {
+    public final void testIsIssuer() throws IOException, URISyntaxException, UnsupportedOperationException {
 
         URL resource = this.getClass().getResource(TEST_PLATFORM_CERT2_1);
         Path certPath = Paths.get(resource.toURI());
@@ -414,7 +414,7 @@ public class PlatformCredentialTest {
      * @throws URISyntaxException if there is a problem constructing the cert's URI
      */
     @Test
-    public final void testPlatformConfiguration() throws IOException, URISyntaxException {
+    public final void testPlatformConfiguration() throws IOException, URISyntaxException, UnsupportedOperationException {
 
         URL resource = this.getClass().getResource(TEST_PLATFORM_CERT2_1);
         Path certPath = Paths.get(resource.toURI());
@@ -502,7 +502,7 @@ public class PlatformCredentialTest {
      * @throws URISyntaxException if there is a problem constructing the cert's URI
      */
     @Test
-    public final void testPlatformConfiguration2() throws IOException, URISyntaxException {
+    public final void testPlatformConfiguration2() throws IOException, URISyntaxException, UnsupportedOperationException {
 
         URL resource = this.getClass().getResource(TEST_PLATFORM_CERT2_2);
         Path certPath = Paths.get(resource.toURI());
@@ -540,7 +540,7 @@ public class PlatformCredentialTest {
      * @throws URISyntaxException if there is a problem constructing the cert's URI
      */
     @Test
-    public final void testPlatformConfiguration3() throws IOException, URISyntaxException {
+    public final void testPlatformConfiguration3() throws IOException, URISyntaxException, UnsupportedOperationException {
 
         URL resource = this.getClass().getResource(TEST_PLATFORM_CERT2_3);
         Path certPath = Paths.get(resource.toURI());
@@ -613,7 +613,7 @@ public class PlatformCredentialTest {
      * @throws URISyntaxException if there is a problem constructing the cert's URI
      */
     @Test
-    public final void testPlatformConfiguration4() throws IOException, URISyntaxException {
+    public final void testPlatformConfiguration4() throws IOException, URISyntaxException, UnsupportedOperationException {
 
         URL resource = this.getClass().getResource(TEST_PLATFORM_CERT2_4);
         Path certPath = Paths.get(resource.toURI());
@@ -686,7 +686,7 @@ public class PlatformCredentialTest {
      * @throws URISyntaxException if there is a problem constructing the cert's URI
      */
     @Test
-    public final void testPlatformConfiguration5() throws IOException, URISyntaxException {
+    public final void testPlatformConfiguration5() throws IOException, URISyntaxException, UnsupportedOperationException {
 
         URL resource = this.getClass().getResource(TEST_PLATFORM_CERT2_SPEC2);
         Path certPath = Paths.get(resource.toURI());
@@ -731,7 +731,7 @@ public class PlatformCredentialTest {
      * @throws URISyntaxException if there is a problem constructing the cert's URI
      */
     @Test
-    public final void testPlatformConfiguration6() throws IOException, URISyntaxException {
+    public final void testPlatformConfiguration6() throws IOException, URISyntaxException, UnsupportedOperationException {
 
         URL resource = this.getClass().getResource(TEST_BASE_PLATFORM_CERT_1);
         Path certPath = Paths.get(resource.toURI());
@@ -758,7 +758,7 @@ public class PlatformCredentialTest {
      * @throws IOException if there is a problem reading the cert file
      */
     @Test
-    public final void testSmallNewPlatformCredential() throws URISyntaxException, IOException {
+    public final void testSmallNewPlatformCredential() throws URISyntaxException, IOException, UnsupportedOperationException {
         Path path = Paths.get(this.getClass().getResource(
                 "/validation/platform_credentials_2/small_attribute_cert_2187.pem").toURI());
         PlatformCredential credential = new PlatformCredential(path);
@@ -772,7 +772,7 @@ public class PlatformCredentialTest {
      * @throws URISyntaxException if there is a problem constructing the cert's URI
      */
     @Test
-    public final void testMediumNewPlatformCredential() throws URISyntaxException, IOException {
+    public final void testMediumNewPlatformCredential() throws URISyntaxException, IOException, UnsupportedOperationException {
         Path path = Paths.get(this.getClass().getResource(
                 "/validation/platform_credentials_2/medium_attribute_cert_2187.pem").toURI());
         PlatformCredential credential = new PlatformCredential(path);
@@ -786,7 +786,7 @@ public class PlatformCredentialTest {
      * @throws URISyntaxException if there is a problem constructing the cert's URI
      */
     @Test
-    public final void testLargeNewPlatformCredential() throws URISyntaxException, IOException {
+    public final void testLargeNewPlatformCredential() throws URISyntaxException, IOException, UnsupportedOperationException {
         Path path = Paths.get(this.getClass().getResource(
                 "/validation/platform_credentials_2/large_attribute_cert_2187.pem").toURI());
         PlatformCredential credential = new PlatformCredential(path);
@@ -800,7 +800,7 @@ public class PlatformCredentialTest {
      * @throws URISyntaxException if there is a problem constructing the cert's URI
      */
     @Test
-    public final void testFlawedNewPlatformCredential() throws URISyntaxException, IOException {
+    public final void testFlawedNewPlatformCredential() throws URISyntaxException, IOException, UnsupportedOperationException {
         Path path = Paths.get(this.getClass().getResource(
                 "/validation/platform_credentials_2/flawed_attribute_cert_2187.pem").toURI());
         PlatformCredential credential = new PlatformCredential(path);

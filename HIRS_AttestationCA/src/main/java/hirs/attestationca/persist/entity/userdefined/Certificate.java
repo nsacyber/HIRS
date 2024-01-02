@@ -172,7 +172,6 @@ public abstract class Certificate extends ArchivableEntity {
     @Column(length = CertificateVariables.MAX_PUB_KEY_MODULUS_HEX_LENGTH, nullable = true)
     private final String publicKeyModulusHexValue;
 
-    @Getter
     @Column(length = CertificateVariables.MAX_CERT_LENGTH_BYTES, nullable = false)
     private final byte[] signature;
 

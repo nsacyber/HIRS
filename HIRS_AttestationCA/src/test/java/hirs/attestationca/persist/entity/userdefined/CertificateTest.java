@@ -328,7 +328,7 @@ public class CertificateTest {
      */
     @Test
     public void testX509AttributeCertificateParsingExtended()
-            throws IOException, URISyntaxException {
+            throws IOException, URISyntaxException, UnsupportedOperationException {
         Certificate platformCert = getTestCertificate(
                 PlatformCredential.class, PlatformCredentialTest.TEST_PLATFORM_CERT_6);
 
@@ -551,7 +551,7 @@ public class CertificateTest {
             final Class<T> certificateClass, final String filename,
             final EndorsementCredential endorsementCredential,
             final List<PlatformCredential> platformCredentials)
-            throws IOException {
+            throws IOException, UnsupportedOperationException {
 
         Path certPath;
         try {

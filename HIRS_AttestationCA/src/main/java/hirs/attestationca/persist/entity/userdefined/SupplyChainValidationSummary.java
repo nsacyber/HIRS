@@ -40,7 +40,6 @@ import java.util.UUID;
 @Entity
 public class SupplyChainValidationSummary extends ArchivableEntity {
 
-    @Getter
     @ManyToOne
     @JoinColumn(name = "device_id")
     private final Device device;
