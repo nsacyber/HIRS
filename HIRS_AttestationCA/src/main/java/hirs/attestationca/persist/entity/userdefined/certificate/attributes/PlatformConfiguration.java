@@ -10,7 +10,6 @@ import java.util.List;
  * Abstract class that provides base info for Platform Configuration of
  * the Platform Certificate Attribute.
  */
-@AllArgsConstructor
 public abstract class PlatformConfiguration {
     private List<ComponentIdentifier> componentIdentifier;
     private URIReference componentIdentifierUri;
@@ -25,6 +24,22 @@ public abstract class PlatformConfiguration {
         this.componentIdentifierUri = null;
         this.platformProperties = new ArrayList<>();
         this.platformPropertiesUri = null;
+    }
+    /**
+     * Constructor given the Platform Configuration values.
+     *
+     * @param componentIdentifier list containing all the components inside the
+     *          Platform Configuration.
+     * @param platformProperties list containing all the properties inside the
+     *          Platform Configuration.
+     * @param platformPropertiesUri object containing the URI Reference
+     */
+    public PlatformConfiguration(final List<ComponentIdentifier> componentIdentifier,
+                                 final List<PlatformProperty> platformProperties,
+                                 final URIReference platformPropertiesUri,
+                                 final URIReference componentIdentifierUri) {
+        this(componentIdentifier, platformProperties, platformPropertiesUri);
+        this.componentIdentifierUri = new URIReference(componentIdentifierUri.getSequence());
     }
 
     /**
@@ -49,7 +64,9 @@ public abstract class PlatformConfiguration {
     }
 
     public void setComponentIdentifierUri(final URIReference componentIdentifierUri) {
-        this.componentIdentifierUri = new URIReference(componentIdentifierUri.getSequence());
+        if (platformPropertiesUri != null) {
+            this.componentIdentifierUri = new URIReference(componentIdentifierUri.getSequence());
+        }
     }
 
     public URIReference getPlatformPropertiesUri() {
@@ -57,7 +74,9 @@ public abstract class PlatformConfiguration {
     }
 
     public void setPlatformPropertiesUri(final URIReference platformPropertiesUri) {
-        this.platformPropertiesUri = new URIReference(platformPropertiesUri.getSequence());
+        if (platformPropertiesUri != null) {
+            this.platformPropertiesUri = new URIReference(platformPropertiesUri.getSequence());
+        }
     }
 
     /**
@@ -84,7 +103,7 @@ public abstract class PlatformConfiguration {
      * @param componentIdentifier the componentIdentifier to set
      */
     public void setComponentIdentifier(final List<ComponentIdentifier> componentIdentifier) {
-        this.componentIdentifier = componentIdentifier;
+        this.componentIdentifier = componentIdentifier.stream().toList();
     }
 
     /**
@@ -111,6 +130,6 @@ public abstract class PlatformConfiguration {
      * @param platformProperties the platformProperties to set
      */
     public void setPlatformProperties(final List<PlatformProperty> platformProperties) {
-        this.platformProperties = platformProperties;
+        this.platformProperties = platformProperties.stream().toList();
     }
 }

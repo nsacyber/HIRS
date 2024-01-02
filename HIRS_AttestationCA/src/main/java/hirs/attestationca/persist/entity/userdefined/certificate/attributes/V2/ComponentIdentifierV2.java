@@ -164,6 +164,20 @@ public class ComponentIdentifierV2 extends ComponentIdentifier {
     }
 
     /**
+     * @return the componentPlatformUri.
+     */
+    public URIReference getComponentPlatformUri() {
+        return new URIReference(componentPlatformUri.getSequence());
+    }
+
+    /**
+     * @param componentPlatformUri the componentPlatformUri to set.
+     */
+    public void setComponentPlatformUri(final URIReference componentPlatformUri) {
+        this.componentPlatformUri = new URIReference(componentPlatformUri.getSequence());
+    }
+
+    /**
      * @return true if the component has been modified.
      */
     public final boolean isAdded() {

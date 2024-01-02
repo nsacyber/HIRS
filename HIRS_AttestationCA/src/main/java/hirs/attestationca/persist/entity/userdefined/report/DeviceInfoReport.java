@@ -128,7 +128,8 @@ public class DeviceInfoReport extends AbstractEntity implements Serializable {
         if (networkInfo == null) {
             networkInfo = new NetworkInfo(null, null, null);
         }
-        return networkInfo;
+        return new NetworkInfo(networkInfo.getHostname(),
+                networkInfo.getIpAddress(), networkInfo.getMacAddress());
     }
 
     /**

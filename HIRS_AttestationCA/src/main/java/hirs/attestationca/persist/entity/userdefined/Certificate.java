@@ -44,12 +44,10 @@ import org.bouncycastle.asn1.x509.V2Form;
 import org.bouncycastle.cert.X509AttributeCertificateHolder;
 import org.bouncycastle.cert.X509CertificateHolder;
 import org.bouncycastle.cert.jcajce.JcaX509ExtensionUtils;
-import org.bouncycastle.util.encoders.Base64;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.math.BigInteger;
-import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -67,7 +65,6 @@ import java.security.cert.X509Certificate;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.Objects;
@@ -751,6 +748,13 @@ public abstract class Certificate extends ArchivableEntity {
     public AttributeCertificate getAttributeCertificate() throws IOException {
         return AttributeCertificate
                 .getInstance(ASN1Primitive.fromByteArray(certificateBytes));
+    }
+
+    /**
+     * @return this certificate's signature
+     */
+    public byte[] getSignature() {
+        return signature.clone();
     }
 
     /**

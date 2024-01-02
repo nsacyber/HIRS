@@ -28,7 +28,7 @@ import java.util.UUID;
  * This class represents the Reference Integrity Manifest object that will be
  * loaded into the DB and displayed in the ACA.
  */
-@Getter @Setter @ToString
+@Getter @ToString
 @EqualsAndHashCode(onlyExplicitlyIncluded = true, callSuper = false)
 @Log4j2
 @Entity
@@ -75,36 +75,51 @@ public class ReferenceManifest  extends ArchivableEntity {
     @EqualsAndHashCode.Include
     @Column(columnDefinition = "mediumblob", nullable = false)
     private byte[] rimBytes;
+    @Setter
     @EqualsAndHashCode.Include
     @Column(nullable = false)
     private String rimType = "Base";
+    @Setter
     @Column
     private String tagId = null;
+    @Setter
     @Column
     private boolean swidPatch = false;
+    @Setter
     @Column
     private boolean swidSupplemental = false;
+    @Setter
     @Column
     private String platformManufacturer = null;
+    @Setter
     @Column
     private String platformManufacturerId = null;
+    @Setter
     @Column
     private String swidTagVersion = null;
+    @Setter
     @Column
     private String swidVersion = null;
+    @Setter
     @Column
     private String platformModel = null;
+    @Setter
     @Column(nullable = false)
     private String fileName = null;
+    @Setter
     @JdbcTypeCode(java.sql.Types.VARCHAR)
     @Column
     private UUID associatedRim;
+    @Setter
     @Column
     private String deviceName;
+    @Setter
     @Column
     private String hexDecHash = "";
+    @Setter
     @Column
     private String eventLogHash = "";
+    @Setter
     @Column
     @JsonIgnore
     private String base64Hash = "";

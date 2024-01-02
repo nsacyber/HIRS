@@ -19,26 +19,25 @@ import java.net.UnknownHostException;
  * Store information about the Portal into the database.
  */
 @NoArgsConstructor
-@Getter
 @Entity
 @Table(name = "PortalInfo")
 @Access(AccessType.FIELD)
 public class PortalInfo {
 
     @Id
+    @Getter
     @Column
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
-
+    @Getter
     @Column(unique = true, nullable = false)
     private String name;
-
     @Column
     private InetAddress ipAddress;
-
+    @Getter
     @Column
     private int port = 0;
-
+    @Getter
     @Column
     private String context;
 

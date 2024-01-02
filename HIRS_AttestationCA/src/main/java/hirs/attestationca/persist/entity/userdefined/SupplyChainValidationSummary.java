@@ -205,6 +205,15 @@ public class SupplyChainValidationSummary extends ArchivableEntity {
     }
 
     /**
+     * This retrieves the device associated with the supply chain validation summaries.
+     *
+     * @return the validated device
+     */
+    public Device getDevice() {
+        return new Device(this.device.getDeviceInfo());
+    }
+
+    /**
      * @return the overall appraisal result
      */
     public AppraisalStatus.Status getOverallValidationResult() {
