@@ -211,13 +211,7 @@ public class PlatformCredentialTest {
         URL resource = this.getClass().getResource(TEST_PLATFORM_CERT_2);
         Path certPath = Paths.get(resource.toURI());
 
-        PlatformCredential credential = null;
-        try {
-            credential = new PlatformCredential(certPath);
-        } catch (UnsupportedOperationException uoEx) {
-
-        }
-        Assertions.assertNotNull(credential);
+        PlatformCredential credential = new PlatformCredential(certPath);
         Calendar calendar = Calendar.getInstance();
         calendar.setTimeZone(TimeZone.getTimeZone("UTC"));
         calendar.set(2017, 2, 23, 22, 34, 33);
@@ -233,7 +227,8 @@ public class PlatformCredentialTest {
         Assertions.assertEquals(sigStr.toUpperCase(), EXPECTED_CERT_SIGNATURE_FOR_CERT_2);
 
         String issuer = Certificate.getAttributeCertificateIssuerNames(
-                credential.getAttributeCertificate().getAcinfo().getIssuer())[0].toString();
+                credential.getAttributeCertificate().getAcinfo().getIssuer()
+        )[0].toString();
 
         Assertions.assertEquals(credential.getManufacturer(), "Intel");
         Assertions.assertEquals(credential.getModel(), "DE3815TYKH");
@@ -265,13 +260,7 @@ public class PlatformCredentialTest {
         URL resource = this.getClass().getResource(TEST_PLATFORM_CERT_3);
         Path certPath = Paths.get(resource.toURI());
 
-        PlatformCredential credential = null;
-        try {
-            credential = new PlatformCredential(certPath);
-        } catch (UnsupportedOperationException uoEx) {
-
-        }
-        Assertions.assertNotNull(credential);
+        PlatformCredential credential = new PlatformCredential(certPath);
         Calendar calendar = Calendar.getInstance();
         calendar.setTimeZone(TimeZone.getTimeZone("UTC"));
         calendar.set(2017, 2, 23, 22, 34, 33);
@@ -319,13 +308,7 @@ public class PlatformCredentialTest {
         URL resource = this.getClass().getResource(TEST_PLATFORM_CERT_4);
         Path certPath = Paths.get(resource.toURI());
 
-        PlatformCredential credential = null;
-        try {
-            credential = new PlatformCredential(certPath);
-        } catch (UnsupportedOperationException uoEx) {
-
-        }
-        Assertions.assertNotNull(credential);
+        PlatformCredential credential = new PlatformCredential(certPath);
 
         Calendar calendar = Calendar.getInstance();
         calendar.setTimeZone(TimeZone.getTimeZone("UTC"));
@@ -342,7 +325,8 @@ public class PlatformCredentialTest {
         Assertions.assertEquals(sigStr.toUpperCase(), EXPECTED_CERT_SIGNATURE_FOR_CERT_4);
 
         String issuer = Certificate.getAttributeCertificateIssuerNames(
-                credential.getAttributeCertificate().getAcinfo().getIssuer())[0].toString();
+                credential.getAttributeCertificate().getAcinfo().getIssuer()
+        )[0].toString();
 
         Assertions.assertEquals(credential.getManufacturer(), "Intel");
         Assertions.assertEquals(credential.getModel(), "DE3815TYKH");
@@ -369,13 +353,7 @@ public class PlatformCredentialTest {
         URL resource = this.getClass().getResource(TEST_PLATFORM_CERT_5);
         Path certPath = Paths.get(resource.toURI());
 
-        PlatformCredential credential = null;
-        try {
-            credential = new PlatformCredential(certPath);
-        } catch (UnsupportedOperationException uoEx) {
-
-        }
-        Assertions.assertNotNull(credential);
+        PlatformCredential credential = new PlatformCredential(certPath);
 
         Calendar calendar = Calendar.getInstance();
         calendar.setTimeZone(TimeZone.getTimeZone("UTC"));
@@ -392,7 +370,8 @@ public class PlatformCredentialTest {
         Assertions.assertEquals(sigStr.toUpperCase(), EXPECTED_CERT_SIGNATURE_FOR_CERT_5);
 
         String issuer = Certificate.getAttributeCertificateIssuerNames(
-                credential.getAttributeCertificate().getAcinfo().getIssuer())[0].toString();
+                credential.getAttributeCertificate().getAcinfo().getIssuer()
+        )[0].toString();
 
         Assertions.assertEquals(credential.getManufacturer(), "Intel");
         Assertions.assertEquals(credential.getModel(), "DE3815TYKH");
@@ -419,13 +398,7 @@ public class PlatformCredentialTest {
         URL resource = this.getClass().getResource(TEST_PLATFORM_CERT2_1);
         Path certPath = Paths.get(resource.toURI());
 
-        PlatformCredential platformCert = null;
-        try {
-            platformCert = new PlatformCredential(certPath);
-        } catch (UnsupportedOperationException uoEx) {
-
-        }
-        Assertions.assertNotNull(platformCert);
+        PlatformCredential platformCert = new PlatformCredential(certPath);
 
         Certificate issuer = new CertificateAuthorityCredential(
                 Base64.decode(EXPECTED_CERT_SIGNATURE_FOR_CERT2_1));
@@ -446,13 +419,7 @@ public class PlatformCredentialTest {
         URL resource = this.getClass().getResource(TEST_PLATFORM_CERT2_1);
         Path certPath = Paths.get(resource.toURI());
 
-        PlatformCredential platformCert = null;
-        try {
-            platformCert = new PlatformCredential(certPath);
-        } catch (UnsupportedOperationException uoEx) {
-
-        }
-        Assertions.assertNotNull(platformCert);
+        PlatformCredential platformCert = new PlatformCredential(certPath);
         PlatformConfiguration platformConfig = platformCert.getPlatformConfiguration();
 
         //Check component identifier
@@ -540,13 +507,7 @@ public class PlatformCredentialTest {
         URL resource = this.getClass().getResource(TEST_PLATFORM_CERT2_2);
         Path certPath = Paths.get(resource.toURI());
 
-        PlatformCredential platformCert = null;
-        try {
-            platformCert = new PlatformCredential(certPath);
-        } catch (UnsupportedOperationException uoEx) {
-
-        }
-        Assertions.assertNotNull(platformCert);
+        PlatformCredential platformCert = new PlatformCredential(certPath);
         PlatformConfiguration platformConfig = platformCert.getPlatformConfiguration();
 
         //Check component identifier
@@ -584,13 +545,7 @@ public class PlatformCredentialTest {
         URL resource = this.getClass().getResource(TEST_PLATFORM_CERT2_3);
         Path certPath = Paths.get(resource.toURI());
 
-        PlatformCredential platformCert = null;
-        try {
-            platformCert = new PlatformCredential(certPath);
-        } catch (UnsupportedOperationException uoEx) {
-
-        }
-        Assertions.assertNotNull(platformCert);
+        PlatformCredential platformCert = new PlatformCredential(certPath);
         PlatformConfiguration platformConfig = platformCert.getPlatformConfiguration();
 
         //Check component identifier
@@ -663,13 +618,7 @@ public class PlatformCredentialTest {
         URL resource = this.getClass().getResource(TEST_PLATFORM_CERT2_4);
         Path certPath = Paths.get(resource.toURI());
 
-        PlatformCredential platformCert = null;
-        try {
-            platformCert = new PlatformCredential(certPath);
-        } catch (UnsupportedOperationException uoEx) {
-
-        }
-        Assertions.assertNotNull(platformCert);
+        PlatformCredential platformCert = new PlatformCredential(certPath);
         PlatformConfiguration platformConfig = platformCert.getPlatformConfiguration();
 
         //Check component identifier
@@ -742,13 +691,7 @@ public class PlatformCredentialTest {
         URL resource = this.getClass().getResource(TEST_PLATFORM_CERT2_SPEC2);
         Path certPath = Paths.get(resource.toURI());
 
-        PlatformCredential platformCert = null;
-        try {
-            platformCert = new PlatformCredential(certPath);
-        } catch (UnsupportedOperationException uoEx) {
-
-        }
-        Assertions.assertNotNull(platformCert);
+        PlatformCredential platformCert = new PlatformCredential(certPath);
         PlatformConfiguration platformConfig = platformCert.getPlatformConfiguration();
 
         //Check component identifier
@@ -793,13 +736,7 @@ public class PlatformCredentialTest {
         URL resource = this.getClass().getResource(TEST_BASE_PLATFORM_CERT_1);
         Path certPath = Paths.get(resource.toURI());
 
-        PlatformCredential platformCert = null;
-        try {
-            platformCert = new PlatformCredential(certPath);
-        } catch (UnsupportedOperationException uoEx) {
-
-        }
-        Assertions.assertNotNull(platformCert);
+        PlatformCredential platformCert = new PlatformCredential(certPath);
         PlatformConfiguration platformConfig = platformCert.getPlatformConfiguration();
 
         Assertions.assertTrue(platformConfig instanceof PlatformConfigurationV2);
@@ -824,12 +761,7 @@ public class PlatformCredentialTest {
     public final void testSmallNewPlatformCredential() throws URISyntaxException, IOException {
         Path path = Paths.get(this.getClass().getResource(
                 "/validation/platform_credentials_2/small_attribute_cert_2187.pem").toURI());
-        PlatformCredential credential = null;
-        try {
-            credential = new PlatformCredential(path);
-        } catch (UnsupportedOperationException uoEx) {
-
-        }
+        PlatformCredential credential = new PlatformCredential(path);
         Assertions.assertNotNull(credential);
     }
 
@@ -843,12 +775,7 @@ public class PlatformCredentialTest {
     public final void testMediumNewPlatformCredential() throws URISyntaxException, IOException {
         Path path = Paths.get(this.getClass().getResource(
                 "/validation/platform_credentials_2/medium_attribute_cert_2187.pem").toURI());
-        PlatformCredential credential = null;
-        try {
-            credential = new PlatformCredential(path);
-        } catch (UnsupportedOperationException uoEx) {
-
-        }
+        PlatformCredential credential = new PlatformCredential(path);
         Assertions.assertNotNull(credential);
     }
 
@@ -862,12 +789,7 @@ public class PlatformCredentialTest {
     public final void testLargeNewPlatformCredential() throws URISyntaxException, IOException {
         Path path = Paths.get(this.getClass().getResource(
                 "/validation/platform_credentials_2/large_attribute_cert_2187.pem").toURI());
-        PlatformCredential credential = null;
-        try {
-            credential = new PlatformCredential(path);
-        } catch (UnsupportedOperationException uoEx) {
-
-        }
+        PlatformCredential credential = new PlatformCredential(path);
         Assertions.assertNotNull(credential);
     }
 
@@ -881,12 +803,7 @@ public class PlatformCredentialTest {
     public final void testFlawedNewPlatformCredential() throws URISyntaxException, IOException {
         Path path = Paths.get(this.getClass().getResource(
                 "/validation/platform_credentials_2/flawed_attribute_cert_2187.pem").toURI());
-        PlatformCredential credential = null;
-        try {
-            credential = new PlatformCredential(path);
-        } catch (UnsupportedOperationException uoEx) {
-
-        }
+        PlatformCredential credential = new PlatformCredential(path);
         Assertions.assertNotNull(credential);
     }
 }

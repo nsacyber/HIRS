@@ -103,7 +103,7 @@ public abstract class PlatformConfiguration {
      * @param componentIdentifier the componentIdentifier to set
      */
     public void setComponentIdentifier(final List<ComponentIdentifier> componentIdentifier) {
-        this.componentIdentifier = componentIdentifier.stream().toList();
+        this.componentIdentifier = Collections.unmodifiableList(componentIdentifier);
     }
 
     /**

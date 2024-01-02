@@ -551,7 +551,7 @@ public class CertificateTest {
             final Class<T> certificateClass, final String filename,
             final EndorsementCredential endorsementCredential,
             final List<PlatformCredential> platformCredentials)
-            throws IOException, UnsupportedOperationException {
+            throws IOException {
 
         Path certPath;
         try {
