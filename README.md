@@ -51,7 +51,7 @@ To support the TCG RIM concept a new [tools folder](https://github.com/nsacyber/
   * Verifies TCG/UEFI boot variables (e.g. BIOS setup data) have not been altered (e.g secure boot).
 ## Requirements
 
-The HIRS Attestation Certificate Authority (ACA) currently supports installation on CentOS 7 instances only. To simlify installation a ACA Docker image is now automatically created for each [release]https://github.com/orgs/nsacyber/packages?repo_name=HIRS).  Please refer to the Dicussion entitled "[HIRS development changes](https://github.com/nsacyber/HIRS/discussions/498)" for work on OS migration and OS support.
+The HIRS Attestation Certificate Authority (ACA) currently supports installation on CentOS 7 instances only. To simlify installation a ACA Docker image is now automatically created for each [release](https://github.com/orgs/nsacyber/packages?repo_name=HIRS).  Please refer to the Dicussion entitled "[HIRS development changes](https://github.com/nsacyber/HIRS/discussions/498)" for work on OS migration and OS support.
 
 The HIRS Provisioner supports 2.0. on Windows (10 and 11), Linux Centos 7,  RHEL 7+ and derivatives (e.g. Rocky7+) as well as Ubuntu(18+). 
 
