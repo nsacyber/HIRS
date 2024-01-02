@@ -328,7 +328,7 @@ public class CertificateTest {
      */
     @Test
     public void testX509AttributeCertificateParsingExtended()
-            throws IOException, URISyntaxException, UnsupportedOperationException {
+            throws IOException, URISyntaxException {
         Certificate platformCert = getTestCertificate(
                 PlatformCredential.class, PlatformCredentialTest.TEST_PLATFORM_CERT_6);
 
