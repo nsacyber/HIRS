@@ -186,28 +186,44 @@ public class TBBSecurityAssertion {
      * @return the ccInfo
      */
     public CommonCriteriaMeasures getCcInfo() {
-        return new CommonCriteriaMeasures(ccInfo.getSequence());
+        if (ccInfo != null) {
+            return new CommonCriteriaMeasures(ccInfo.getSequence());
+        } else {
+            return null;
+        }
     }
 
     /**
      * @param ccInfo the ccInfo to set
      */
     public void setCcInfo(final CommonCriteriaMeasures ccInfo) {
-        this.ccInfo = new CommonCriteriaMeasures(ccInfo.getSequence());
+        if (ccInfo != null) {
+            this.ccInfo = new CommonCriteriaMeasures(ccInfo.getSequence());
+        } else {
+            this.ccInfo = new CommonCriteriaMeasures();
+        }
     }
 
     /**
      * @return the fipsLevel
      */
     public FIPSLevel getFipsLevel() {
-        return new FIPSLevel(fipsLevel.getAsn1Sequence());
+        if (fipsLevel != null) {
+            return new FIPSLevel(fipsLevel.getAsn1Sequence());
+        } else {
+            return null;
+        }
     }
 
     /**
      * @param fipsLevel the fipsLevel to set
      */
     public void setFipsLevel(final FIPSLevel fipsLevel) {
-        this.fipsLevel = new FIPSLevel(fipsLevel.getAsn1Sequence());
+        if (fipsLevel != null) {
+            this.fipsLevel = new FIPSLevel(fipsLevel.getAsn1Sequence());
+        } else {
+            this.fipsLevel = new FIPSLevel();
+        }
     }
 
     /**

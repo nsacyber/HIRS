@@ -266,19 +266,35 @@ public class CommonCriteriaMeasures {
     }
 
     public URIReference getProfileUri() {
-        return new URIReference(profileUri.getSequence());
+        if (profileUri != null) {
+            return new URIReference(profileUri.getSequence());
+        } else {
+            return null;
+        }
     }
 
     public void setProfileUri(final URIReference profileUri) {
-        this.profileUri = new URIReference(profileUri.getSequence());
+        if (profileUri != null) {
+            this.profileUri = new URIReference(profileUri.getSequence());
+        } else {
+            this.profileUri = new URIReference();
+        }
     }
 
     public URIReference getTargetUri() {
-        return new URIReference(targetUri.getSequence());
+        if (targetUri != null) {
+            return new URIReference(targetUri.getSequence());
+        } else {
+            return null;
+        }
     }
 
     public void setTargetUri(final URIReference targetUri) {
-        this.targetUri = new URIReference(targetUri.getSequence());
+        if (targetUri != null) {
+            this.targetUri = new URIReference(targetUri.getSequence());
+        } else {
+            this.targetUri = new URIReference();
+        }
     }
 
     @Override

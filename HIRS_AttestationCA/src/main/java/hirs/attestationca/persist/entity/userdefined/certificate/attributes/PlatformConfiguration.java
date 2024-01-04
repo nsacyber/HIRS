@@ -1,7 +1,6 @@
 package hirs.attestationca.persist.entity.userdefined.certificate.attributes;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
@@ -10,18 +9,18 @@ import java.util.List;
  * the Platform Certificate Attribute.
  */
 public abstract class PlatformConfiguration {
-    private List<ComponentIdentifier> componentIdentifier = new ArrayList<>();
+    private ArrayList<ComponentIdentifier> componentIdentifier = new ArrayList<>();
     private URIReference componentIdentifierUri;
-    private List<PlatformProperty> platformProperties = new ArrayList<>();
+    private ArrayList<PlatformProperty> platformProperties = new ArrayList<>();
     private URIReference platformPropertiesUri;
 
     /**
      * Default constructor.
      */
     public PlatformConfiguration() {
-        this.componentIdentifier = Collections.EMPTY_LIST;
+        this.componentIdentifier = new ArrayList<>();
         this.componentIdentifierUri = null;
-        this.platformProperties = Collections.EMPTY_LIST;
+        this.platformProperties = new ArrayList<>();
         this.platformPropertiesUri = null;
     }
     /**
@@ -53,28 +52,40 @@ public abstract class PlatformConfiguration {
     public PlatformConfiguration(final List<ComponentIdentifier> componentIdentifier,
                                  final List<PlatformProperty> platformProperties,
                                  final URIReference platformPropertiesUri) {
-        this.componentIdentifier = componentIdentifier.stream().toList();
-        this.platformProperties = platformProperties.stream().toList();
+        this.componentIdentifier = new ArrayList<>(componentIdentifier);
+        this.platformProperties = new ArrayList<>(platformProperties);
         this.platformPropertiesUri = new URIReference(platformPropertiesUri.getSequence());
     }
 
     public URIReference getComponentIdentifierUri() {
-        return new URIReference(componentIdentifierUri.getSequence());
+        if (componentIdentifierUri != null) {
+            return new URIReference(componentIdentifierUri.getSequence());
+        } else {
+            return null;
+        }
     }
 
     public void setComponentIdentifierUri(final URIReference componentIdentifierUri) {
-        if (platformPropertiesUri != null) {
+        if (componentIdentifierUri != null) {
             this.componentIdentifierUri = new URIReference(componentIdentifierUri.getSequence());
+        } else {
+            this.componentIdentifierUri = new URIReference();
         }
     }
 
     public URIReference getPlatformPropertiesUri() {
-        return new URIReference(platformPropertiesUri.getSequence());
+        if (platformPropertiesUri != null) {
+            return new URIReference(platformPropertiesUri.getSequence());
+        } else {
+            return null;
+        }
     }
 
     public void setPlatformPropertiesUri(final URIReference platformPropertiesUri) {
         if (platformPropertiesUri != null) {
             this.platformPropertiesUri = new URIReference(platformPropertiesUri.getSequence());
+        } else {
+            this.platformPropertiesUri = new URIReference();
         }
     }
 
@@ -102,7 +113,7 @@ public abstract class PlatformConfiguration {
      * @param componentIdentifier the componentIdentifier to set
      */
     public void setComponentIdentifier(final List<ComponentIdentifier> componentIdentifier) {
-        this.componentIdentifier.addAll(componentIdentifier);
+        this.componentIdentifier = new ArrayList<>(componentIdentifier);
     }
 
     /**
@@ -129,6 +140,6 @@ public abstract class PlatformConfiguration {
      * @param platformProperties the platformProperties to set
      */
     public void setPlatformProperties(final List<PlatformProperty> platformProperties) {
-        this.platformProperties.addAll(platformProperties);
+        this.platformProperties = new ArrayList<>(platformProperties);
     }
 }
