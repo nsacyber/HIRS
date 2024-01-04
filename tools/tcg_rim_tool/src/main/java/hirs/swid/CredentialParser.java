@@ -29,7 +29,7 @@ public class CredentialParser {
     private static final String JKS = "JKS";
     private static final String PEM = "PEM";
     private static final String PKCS1_HEADER = "-----BEGIN RSA PRIVATE KEY-----";
-    private static final String PKCS1_FOOTER = "-----END RSA PRIVATE KEY-----";
+    private static final String EC_HEADER = "-----BEGIN EC PRIVATE KEY-----";
     private static final String PKCS8_HEADER = "-----BEGIN PRIVATE KEY-----";
     private static final String PKCS8_FOOTER = "-----END PRIVATE KEY-----";
     private static final String CERTIFICATE_HEADER = "-----BEGIN CERTIFICATE-----";
@@ -175,8 +175,9 @@ public class CredentialParser {
             dis.close();
 
             String privateKeyStr = new String(key);
-            if (privateKeyStr.contains(PKCS1_HEADER)) {
-                privateKey = getPKCS1KeyPair(filename).getPrivate();
+            if (privateKeyStr.contains(PKCS1_HEADER) ||
+                privateKeyStr.contains(EC_HEADER)) {
+                privateKey = parseBase64KeyPair(filename).getPrivate();
             } else if (privateKeyStr.contains(PKCS8_HEADER)) {
                 privateKeyStr = privateKeyStr.replace(PKCS8_HEADER, "");
                 privateKeyStr = privateKeyStr.replace(PKCS8_FOOTER, "");
@@ -217,11 +218,11 @@ public class CredentialParser {
     }
 
     /**
-     * This method reads a PKCS1 keypair from a PEM file.
+     * This method reads a base64 PEM string to parse a key pair.
      * @param filename
      * @return
      */
-    private KeyPair getPKCS1KeyPair(String filename) throws IOException {
+    private KeyPair parseBase64KeyPair(String filename) throws IOException {
         Security.addProvider(new BouncyCastleProvider());
         PEMParser pemParser = new PEMParser(new FileReader(filename));
         JcaPEMKeyConverter converter = new JcaPEMKeyConverter().setProvider("BC");
