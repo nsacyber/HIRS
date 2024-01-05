@@ -6,6 +6,7 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToMany;
 import jakarta.persistence.ManyToOne;
 import lombok.AccessLevel;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import java.io.IOException;
@@ -17,6 +18,7 @@ import java.util.List;
  * Represents an issued attestation certificate to a HIRS Client.
  */
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
+@Getter
 @Entity
 public class IssuedAttestationCertificate extends DeviceAssociatedCertificate {
 
@@ -45,11 +47,7 @@ public class IssuedAttestationCertificate extends DeviceAssociatedCertificate {
                                         final List<PlatformCredential> platformCredentials)
             throws IOException {
         super(certificateBytes);
-        if (endorsementCredential != null) {
-            this.endorsementCredential = new EndorsementCredential(endorsementCredential.getRawBytes());
-        } else {
-            this.endorsementCredential = null;
-        }
+        this.endorsementCredential = endorsementCredential;
         this.platformCredentials = new ArrayList<>(platformCredentials);
     }
 
@@ -65,14 +63,6 @@ public class IssuedAttestationCertificate extends DeviceAssociatedCertificate {
                                         final List<PlatformCredential> platformCredentials)
             throws IOException {
         this(readBytes(certificatePath), endorsementCredential, platformCredentials);
-    }
-
-    public EndorsementCredential getEndorsementCredential() {
-        try {
-            return new EndorsementCredential(endorsementCredential.getRawBytes());
-        } catch (IOException ioEx) {
-            return null;
-        }
     }
 
     public List<PlatformCredential> getPlatformCredentials() {
