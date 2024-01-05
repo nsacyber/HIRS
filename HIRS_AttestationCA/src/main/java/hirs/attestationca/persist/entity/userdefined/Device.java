@@ -19,6 +19,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.sql.Timestamp;
+import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "Device")
@@ -80,10 +81,14 @@ public class Device extends AbstractEntity {
      * @return device info report
      */
     public final DeviceInfoReport getDeviceInfo() {
-        return new DeviceInfoReport(deviceInfo.getNetworkInfo(),
-                deviceInfo.getOSInfo(), deviceInfo.getFirmwareInfo(),
-                deviceInfo.getHardwareInfo(), deviceInfo.getTpmInfo(),
-                deviceInfo.getClientApplicationVersion());
+        if (deviceInfo != null) {
+            return new DeviceInfoReport(deviceInfo.getNetworkInfo(),
+                    deviceInfo.getOSInfo(), deviceInfo.getFirmwareInfo(),
+                    deviceInfo.getHardwareInfo(), deviceInfo.getTpmInfo(),
+                    deviceInfo.getClientApplicationVersion());
+        } else {
+            return null;
+        }
     }
 
     /**
@@ -91,7 +96,11 @@ public class Device extends AbstractEntity {
      * @return a cloned version
      */
     public Timestamp getLastReportTimestamp() {
-        return (Timestamp) lastReportTimestamp.clone();
+        if (lastReportTimestamp != null) {
+            return (Timestamp) lastReportTimestamp.clone();
+        } else {
+            return Timestamp.valueOf(LocalDateTime.MAX);
+        }
     }
 
     /**

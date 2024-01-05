@@ -48,6 +48,9 @@ public class URIReference {
      * @throws IllegalArgumentException if there was an error on the parsing
      */
     public URIReference(final ASN1Sequence sequence) throws IllegalArgumentException {
+        if (sequence == null) {
+            return ;
+        }
         //Check if the sequence contains the two values required
         if (sequence.size() > PLATFORM_PROPERTIES_URI_MAX
                 || sequence.size() < PLATFORM_PROPERTIES_URI_MIN) {
@@ -78,7 +81,10 @@ public class URIReference {
     public String toString() {
         StringBuilder sb = new StringBuilder();
         sb.append("URIReference{");
-        sb.append("uniformResourceIdentifier=").append(uniformResourceIdentifier.getString());
+        sb.append("uniformResourceIdentifier=");
+        if (uniformResourceIdentifier != null) {
+            sb.append(uniformResourceIdentifier.getString());
+        }
         //Check of optional values are not null
         sb.append(", hashAlgorithm=");
         if (hashAlgorithm != null) {

@@ -19,6 +19,7 @@ import lombok.Setter;
 import lombok.extern.log4j.Log4j2;
 
 import java.io.Serializable;
+import java.net.InetAddress;
 
 /**
  * A <code>DeviceInfoReport</code> is a <code>Report</code> used to transfer the
@@ -126,7 +127,8 @@ public class DeviceInfoReport extends AbstractEntity implements Serializable {
          * without null may be returned, which this interface does not support
          */
         if (networkInfo == null) {
-            networkInfo = new NetworkInfo(null, null, null);
+            networkInfo = new NetworkInfo(DeviceInfoEnums.NOT_SPECIFIED,
+                    InetAddress.getLoopbackAddress(), new byte[0]);
         }
         return new NetworkInfo(networkInfo.getHostname(),
                 networkInfo.getIpAddress(), networkInfo.getMacAddress());

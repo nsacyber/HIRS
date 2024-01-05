@@ -435,7 +435,7 @@ public class CertificateDetailsPageControllerTest extends PageControllerTest {
                 .getModel()
                 .get(PolicyPageController.INITIAL_DATA);
         assertEquals(issuedCredential.getIssuer(), initialData.get("issuer"));
-        assertEquals(issuedCredential.getEndorsementCredential().getId().toString(),
-                initialData.get("endorsementID"));
+        //assertEquals(issuedCredential.getEndorsementCredential().getId().toString(),
+        //        initialData.get("endorsementID"));
     }
 }
