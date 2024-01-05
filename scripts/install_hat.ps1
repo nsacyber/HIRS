@@ -37,16 +37,17 @@ if (Test-Path -Path hirs) {
 # Warn Admin that device needs to be attached for the next step and wait for connection
 Write-Host "Please attach an Ethernet cable between this device and a powered target device for the next step. Hit Any Key to Continue"
 $Host.UI.RawUI.ReadKey("NoEcho,IncludeKeyDown") | out-null
-Write-Host "Testing connection"
-$adapter=Get-NetAdapter Ethernet -Physical
-if ($adapter.status -ne "Up") {
+Write-Host "Testing wired Ethernet connection..."
+$ethernet=Get-NetAdapter -Physical | Where {$_.Status -eq 'Up' -and $_.MediaType -eq 802.3} 
+if (!$ethernet) {
+  Write-Host "Wired Ethernet connection not found, Please connect"
   do {
-    $adapter=Get-NetAdapter Ethernet -Physical
+    $ethernet=Get-NetAdapter -Physical | Where {$_.Status -eq 'Up' -and $_.MediaType -eq 802.3}
     Start-Sleep -seconds 10
     Write-Host "Waiting for an Ethernet connection..."
-  } until ($adapter.status -eq "Up")
+  } until ($ethernet)
 }
-
+Write-Host "Wired Ethernet connection found, continuing..."
 # Make Firwall Rules for ACA to operate
 Write-Host "Adding Firewall rules"
 netsh advfirewall firewall add rule name="ACA HTTPS" dir=in action=allow protocol=TCP localport=8443 | out-null
@@ -57,7 +58,9 @@ mkdir hirs | out-null
 Push-Location  .\hirs\ | out-null
 
 Write-Host "Retreiving Configuration Files"
-wget https://raw.githubusercontent.com/nsacyber/HIRS/main/.ci/docker/compose-acceptance-test.yml -o compose-acceptance-test.yml
+wget https://raw.githubusercontent.com/nsacyber/HIRS/main/.ci/docker/compose-acceptance-test-windows.yml -o compose-acceptance-test-windows.yml
+#wget https://raw.githubusercontent.com/nsacyber/HIRS/v3_hat-compose/.ci/docker/compose-acceptance-test-windows.yml -o compose-acceptance-test-windows.yml
+
 Write-Host "Retreiving Trust Stores"
 wget https://raw.githubusercontent.com/nsacyber/HIRS/main/.ci/setup/certs/oem_certs.zip -o oem_certs.zip
 wget https://raw.githubusercontent.com/nsacyber/HIRS/main/scripts/start_hat.ps1 -o start_hat.ps1
@@ -80,7 +83,7 @@ $Shortcut.Arguments = "-ExecutionPolicy bypass  $Home\hirs\start_hat.ps1"
 $Shortcut.Save()
 
 # Start up the containers in a detached mode
- docker compose -f $Home\hirs\compose-acceptance-test.yml up --detach
+ docker compose -f $Home\hirs\compose-acceptance-test-windows.yml up --detach
 # Wait for ACA to start
 Write-Host "Waiting for ACA to start up on local host port 8443 ..."
 Write-Host " Note that several TCP connect failure notices are expectred while the container boots up."

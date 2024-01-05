@@ -28,7 +28,7 @@ if ( ($IsHatRunning -eq $TRUE) -and ($IsAcaRunning -eq $TRUE) ) {
   exit
  } else {
    Write-Host "Starting ACA and HAT containers..."
-   docker compose -f $Home\hirs\compose-acceptance-test.yml up --detach
+   docker compose -f $Home\hirs\compose-acceptance-test-windows.yml up --detach
  }
 
 Write-Host "HIRS Acceptance Test Servers Have been started."
