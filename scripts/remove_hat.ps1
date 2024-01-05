@@ -13,10 +13,10 @@ if ($Service.Status -ne 'Running') {
 }
 $CurrentDir = Split-Path -Path (Get-Location) -Leaf
 
-if ($CurrentDir -eq 'hirs') {
+if ($CurrentDir -ne 'hirs') {
 	Write-Host "Please run this script from the hirs directory"
 	Write-Host "Exiting without removing the HAT. Hit Any Key to exit"
-    $Host.UI.RawUI.ReadKey("NoEcho,IncludeKeyDown")
+  $Host.UI.RawUI.ReadKey("NoEcho,IncludeKeyDown")
   Exit;
 }
 # remove Firewall Rules
@@ -48,9 +48,10 @@ docker network rm hat_network
 Write-Host "Removing HAT images"
 
 #docker image rm ghcr.io/nsacyber/hirs/aca:latest
-#docker image rm ghcr.io/nsacyber/hirs/hat:alpha6
+#docker image rm ghcr.io/nsacyber/hirs/hat:latest
 
 Write-Host "Removing local HAT folder and files"
+cd ..
 
 if (Test-Path -LiteralPath hirs) {
   Remove-Item -LiteralPath hirs -Recurse
