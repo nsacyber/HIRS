@@ -96,7 +96,11 @@ public class ComponentIdentifierV2 extends ComponentIdentifier {
         this.componentClass = componentClass;
         // additional optional component identifiers
         this.certificateIdentifier = certificateIdentifier;
-        this.componentPlatformUri = new URIReference(componentPlatformUri.getSequence());
+        if (componentPlatformUri != null) {
+            this.componentPlatformUri = new URIReference(componentPlatformUri.getSequence());
+        } else {
+            this.componentPlatformUri = new URIReference();
+        }
         this.attributeStatus = attributeStatus;
     }
 
