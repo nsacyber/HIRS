@@ -151,4 +151,27 @@ public final class DeviceTest {
         final Device other = new Device(otherName, deviceInfo, HealthStatus.UNKNOWN, AppraisalStatus.Status.UNKNOWN, null, false, null, null);
         assertEquals(device, other);
     }
+
+    /**
+     * Tests that the default setting of the supply chain validation status is unknown.
+     */
+    @Test
+    public void testGetDefaultSupplyChainStatus() {
+        String name = "my-laptop";
+        DeviceInfoReport deviceInfo = DeviceInfoReportTest.getTestReport();
+        final Device device = new Device(name, deviceInfo, HealthStatus.UNKNOWN, AppraisalStatus.Status.UNKNOWN, null, false, null, null);
+        assertEquals(AppraisalStatus.Status.UNKNOWN, device.getSupplyChainValidationStatus());
+    }
+
+    /**
+     * Tests that the supply chain validation status getters and setters work.
+     */
+    @Test
+    public void testSetAndGetSupplyChainStatus() {
+        String name = "my-laptop";
+        DeviceInfoReport deviceInfo = DeviceInfoReportTest.getTestReport();
+        final Device device = new Device(name, deviceInfo, HealthStatus.UNKNOWN, AppraisalStatus.Status.UNKNOWN, null, false, null, null);
+        device.setSupplyChainValidationStatus(AppraisalStatus.Status.PASS);
+        assertEquals(AppraisalStatus.Status.PASS, device.getSupplyChainValidationStatus());
+    }
 }
