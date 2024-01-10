@@ -1,0 +1,100 @@
+syntax = "proto2";
+
+package hirs.pb;
+option java_package="hirs.attestationca.configuration.provisionerTpm2";
+
+message FirmwareInfo {
+  required string biosVendor = 1;
+  required string biosVersion = 2;
+  required string biosReleaseDate = 3;
+}
+
+message HardwareInfo {
+  required string manufacturer = 1;
+  required string productName = 2;
+  required string productVersion = 3;
+  required string systemSerialNumber = 4;
+  repeated ComponentInfo chassisInfo = 5;
+  repeated ComponentInfo baseboardInfo = 6;
+  repeated ComponentInfo processorInfo = 7;
+  repeated ComponentInfo biosOrUefiInfo = 8;
+  repeated ComponentInfo nicInfo = 9;
+  repeated ComponentInfo hardDriveInfo = 10;
+  repeated ComponentInfo memoryInfo = 11;
+}
+
+message ComponentInfo {
+  required string manufacturer = 1;
+  required string model = 2;
+  optional string serialNumber = 3;
+  optional string revision = 4;
+}
+
+message NetworkInfo {
+  required string hostname = 1;
+  required string ipAddress = 2;
+  required string macAddress = 3;
+}
+
+message OsInfo {
+  required string osName = 1;
+  required string osVersion = 2;
+  required string osArch = 3;
+  required string distribution = 4;
+  required string distributionRelease = 5;
+}
+
+message TpmInfo {
+  required string tpmMake = 1;
+  required string tpmVersionMajor = 2;
+  required string tpmVersionMinor = 3;
+  required string tpmRevMajor = 4;
+  required string tpmRevMinor = 5;
+}
+
+message DeviceInfo {
+  required FirmwareInfo fw = 1;
+  required HardwareInfo hw = 2;
+  required NetworkInfo nw = 3;
+  required OsInfo os = 4;
+  optional bytes pcrslist = 5;
+  repeated bytes logfile = 6;
+  repeated bytes swidfile = 7;
+  optional bytes livelog = 8;
+}
+
+message IdentityClaim {
+  required DeviceInfo dv = 1;
+  required bytes ak_public_area = 2;
+  required bytes ek_public_area = 3;
+  optional bytes endorsement_credential = 4;
+  repeated bytes platform_credential = 5;
+  optional string client_version = 6;
+  optional string paccorOutput = 7;
+}
+
+message TpmQuote {
+  required string success = 1;
+}
+
+enum ResponseStatus {
+  PASS = 0;
+  FAIL = 1;
+}
+
+message IdentityClaimResponse {
+  optional bytes credential_blob = 1;
+  optional string pcr_mask = 2;
+  optional ResponseStatus status = 3 [default = FAIL];
+}
+
+message CertificateRequest {
+  required bytes nonce = 1;
+  optional bytes quote = 2;
+}
+
+message CertificateResponse {
+  optional bytes certificate = 1;
+  optional ResponseStatus status = 2 [default = FAIL];
+}
+

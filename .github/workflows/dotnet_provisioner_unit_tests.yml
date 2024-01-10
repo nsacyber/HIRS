@@ -1,0 +1,144 @@
+name: Dotnet Provisioner Unit Tests
+
+on:
+  # Runs this workflow whenever there is a push to main from a branch annotated with "v3"
+  push:
+    branches:
+      - '*v3*'
+      - 'main'
+  # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:
+
+env:
+  DOTNET_VERSION: '6.0'
+jobs:
+  dotnet_provisioner_unit_tests:
+    name: Restore and Run Unit Tests
+    continue-on-error: true
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        include:
+          - os: windows-2022
+          - os: ubuntu-20.04
+          # - os: windows-2019 Cannot Target windows-2019 because the .NET 6 SDK won't receive security patches for this image
+    steps:
+      - name: Set git to use LF
+        run: |
+          git config --global core.autocrlf false
+          git config --global core.eol lf
+
+      - name: Checkout repo
+        uses: actions/checkout@v3
+        with:
+          submodules: recursive
+
+      - name: Restore Project
+        working-directory: HIRS_Provisioner.NET
+        run: |
+          dotnet restore
+
+      - name: Build on Windows
+        working-directory: HIRS_Provisioner.NET
+        if: contains(matrix.os, 'windows')
+        run: |
+          cd hirs
+          dotnet build -r win-x64 --configuration Release --no-restore
+          cd ..
+
+      - name: Build on Ubuntu
+        working-directory: HIRS_Provisioner.NET
+        if: contains(matrix.os, 'ubuntu')
+        run: |
+          dotnet build --configuration Release --no-restore
+
+      - name: Run Unit Tests and Save Logs - Windows
+        id: window_result
+        if: contains(matrix.os, 'windows') && always()
+        working-directory: HIRS_Provisioner.NET
+        run: |
+          $logs = dotnet test /p:PublishSingleFile=false --no-restore -v m
+          $results = [string]$logs
+          $results = $results.Contains("Passed!")
+          if($results) { $results = "Pass" } else { $results = "Fail"}
+          echo "::set-output name=result::$results"
+          $logName = "${{matrix.os}}-unit-tests-" + $results + ".log"
+          New-Item $logName
+          Set-Content $logName $logs
+          Get-Content $logName
+
+      - name: Run Unit Tests Ubuntu
+        if: contains(matrix.os, 'ubuntu')
+        working-directory: HIRS_Provisioner.NET
+        run: |
+          logName="${{matrix.os}}-unit-tests.log"
+          dotnet test --no-restore -v m > $logName
+
+      - name: Extract Ubuntu Unit Test Results
+        id: ubuntu_result
+        if: contains(matrix.os, 'ubuntu') && always()
+        working-directory: HIRS_Provisioner.NET
+        run: |
+          logName="${{matrix.os}}-unit-tests.log"
+          if grep -rnw $logName -e "Passed\!" ; 
+          then 
+            result="Pass"
+          else
+            result="Fail"
+          fi
+          echo "::set-output name=result::$result"
+          more $logName
+
+      - name: Upload Logs Ubuntu
+        uses: actions/upload-artifact@v2
+        if: contains(matrix.os, 'ubuntu') && always()
+        with:
+          name: "${{matrix.os}}-unit-tests-${{steps.ubuntu_result.outputs.result}}.log"
+          path: HIRS_Provisioner.NET/*.log
+
+      - name: Upload Logs Windows
+        uses: actions/upload-artifact@v2
+        if: contains(matrix.os, 'windows') && always()
+        with:
+          name: "${{matrix.os}}-unit-tests-${{steps.window_result.outputs.result}}.log"
+          path: HIRS_Provisioner.NET/*.log
+
+  Evaluator:
+    name: Evaluate Tests
+    needs: [dotnet_provisioner_unit_tests]
+    runs-on: ubuntu-latest
+    continue-on-error: false
+    steps:
+
+      - uses: actions/checkout@v2
+        with:
+          submodules: recursive
+
+      - name: Make artifact directory
+        run: |
+          mkdir artifacts
+
+      - uses: actions/download-artifact@v3
+        with:
+          path: artifacts
+
+      - name: Determine if a test failed
+        working-directory: artifacts
+        run: |
+          result="" 
+          suffix="-unit-tests-Fail.log"
+          msg=" OS did not pass all the unit tests."
+          
+          # Generate Annotations and Console Output
+          for file in *.log; do
+              if [[ "$file" == *"Fail"* ]]; then
+                title=${file%"$suffix"}
+                echo "::error title=$title Unit Tests Failed::The $title $msg"
+                result="Failed"
+              fi
+          done
+          
+          if [ -n "$result" ]
+          then
+              exit 1
+          fi
