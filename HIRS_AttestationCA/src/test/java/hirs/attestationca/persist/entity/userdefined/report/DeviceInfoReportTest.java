@@ -1,6 +1,5 @@
 package hirs.attestationca.persist.entity.userdefined.report;
 
-import hirs.attestationca.persist.SpringPersistenceTest;
 import hirs.attestationca.persist.entity.userdefined.info.OSInfo;
 import hirs.attestationca.persist.entity.userdefined.info.TPMInfo;
 import hirs.attestationca.persist.entity.userdefined.info.NetworkInfo;
@@ -24,7 +23,7 @@ import java.security.cert.X509Certificate;
 /**
  * DeviceInfoReportTest is a unit test class for DeviceInfoReports.
  */
-public class DeviceInfoReportTest extends SpringPersistenceTest {
+public class DeviceInfoReportTest {
     private final NetworkInfo networkInfo = createTestNetworkInfo();
     private final OSInfo osInfo = createTestOSInfo();
     private final FirmwareInfo firmwareInfo = createTestFirmwareInfo();
