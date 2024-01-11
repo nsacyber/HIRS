@@ -65,9 +65,9 @@ Write-Host "Retreiving Trust Stores"
 wget https://raw.githubusercontent.com/nsacyber/HIRS/main/.ci/setup/certs/oem_certs.zip -o oem_certs.zip
 wget https://raw.githubusercontent.com/nsacyber/HIRS/main/scripts/start_hat.ps1 -o start_hat.ps1
 wget https://raw.githubusercontent.com/nsacyber/HIRS/main/scripts/remove_hat.ps1 -o remove_hat.ps1
-#wget https://raw.githubusercontent.com/nsacyber/HIRS/v3_issue_645/.ci/setup/certs/oem_certs.zip -o oem_certs.zip
-#wget https://raw.githubusercontent.com/nsacyber/HIRS/v3_issue_645/scripts/start_hat.ps1 -o start_hat.ps1
-#wget https://raw.githubusercontent.com/nsacyber/HIRS/v3_issue_645/scripts/remove_hat.ps1 -o remove_hat.ps1
+#wget https://raw.githubusercontent.com/nsacyber/HIRS/v3_issue_645-hatSetup/.ci/setup/certs/oem_certs.zip -o oem_certs.zip
+#wget https://raw.githubusercontent.com/nsacyber/HIRS/v3_issue_645-hatSetup/scripts/start_hat.ps1 -o start_hat.ps1
+#wget https://raw.githubusercontent.com/nsacyber/HIRS/v3_issue_645-hatSetup/scripts/remove_hat.ps1 -o remove_hat.ps1
 
 Expand-Archive -Path oem_certs.zip
 Write-Host "Downloading images (This can take a while)"
