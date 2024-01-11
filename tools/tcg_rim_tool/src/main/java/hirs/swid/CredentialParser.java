@@ -17,7 +17,9 @@ import java.security.*;
 import java.security.cert.CertificateException;
 import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
+import java.security.spec.ECPrivateKeySpec;
 import java.security.spec.InvalidKeySpecException;
+import java.security.spec.KeySpec;
 import java.security.spec.PKCS8EncodedKeySpec;
 import java.util.List;
 
@@ -28,8 +30,12 @@ public class CredentialParser {
     private static final String X509 = "X.509";
     private static final String JKS = "JKS";
     private static final String PEM = "PEM";
+    private static final String RSA = "RSA";
+    private static final String EC = "EC";
     private static final String PKCS1_HEADER = "-----BEGIN RSA PRIVATE KEY-----";
+    private static final String PKCS1_FOOTER = "-----END RSA PRIVATE KEY-----";
     private static final String EC_HEADER = "-----BEGIN EC PRIVATE KEY-----";
+    private static final String EC_FOOTER = "-----END EC PRIVATE KEY-----";
     private static final String PKCS8_HEADER = "-----BEGIN PRIVATE KEY-----";
     private static final String PKCS8_FOOTER = "-----END PRIVATE KEY-----";
     private static final String CERTIFICATE_HEADER = "-----BEGIN CERTIFICATE-----";
@@ -70,7 +76,7 @@ public class CredentialParser {
         if (certificate.getIssuerX500Principal().equals(certificate.getSubjectX500Principal())) {
             throw new CertificateException("Signing certificate cannot be self-signed!");
         }
-        privateKey = parsePEMPrivateKey(privateKeyFile, "RSA");
+        privateKey = parsePEMPrivateKey(privateKeyFile);
         publicKey = certificate.getPublicKey();
     }
 
@@ -161,11 +167,12 @@ public class CredentialParser {
      * @param filename
      * @return
      */
-    private PrivateKey parsePEMPrivateKey(String filename, String algorithm) throws Exception {
+    private PrivateKey parsePEMPrivateKey(String filename) throws Exception {
         PrivateKey privateKey = null;
         FileInputStream fis = null;
         DataInputStream dis = null;
         String errorMessage = "";
+        String algorithm = "";
         try {
             File file = new File(filename);
             fis = new FileInputStream(file);
@@ -173,31 +180,31 @@ public class CredentialParser {
             byte[] key = new byte[(int) file.length()];
             dis.readFully(key);
             dis.close();
-
             String privateKeyStr = new String(key);
-            if (privateKeyStr.contains(PKCS1_HEADER) ||
-                privateKeyStr.contains(EC_HEADER)) {
-                privateKey = parseBase64KeyPair(filename).getPrivate();
+
+            if (privateKeyStr.contains(EC_HEADER)) {
+                privateKeyStr = privateKeyStr.replace(EC_HEADER, "");
+                privateKeyStr = privateKeyStr.replace(EC_FOOTER, "");
+                privateKey = generatePrivateKeyFromString(privateKeyStr, EC);
+            } else if (privateKeyStr.contains(PKCS1_HEADER)) {
+                privateKeyStr = privateKeyStr.replace(PKCS1_HEADER, "");
+                privateKeyStr = privateKeyStr.replace(PKCS1_FOOTER, "");
+                privateKey = generatePrivateKeyFromString(privateKeyStr, RSA);
             } else if (privateKeyStr.contains(PKCS8_HEADER)) {
                 privateKeyStr = privateKeyStr.replace(PKCS8_HEADER, "");
                 privateKeyStr = privateKeyStr.replace(PKCS8_FOOTER, "");
-
-                byte[] decodedKey = Base64.decode(privateKeyStr);
-                PKCS8EncodedKeySpec spec = new PKCS8EncodedKeySpec(decodedKey);
-                KeyFactory keyFactory = KeyFactory.getInstance(algorithm);
-
-                privateKey = keyFactory.generatePrivate(spec);
+                privateKey = generatePrivateKeyFromString(privateKeyStr, RSA);
+            }
+            if (privateKey == null) {
+                errorMessage += "Generated private key is null!";
             }
         } catch (FileNotFoundException e) {
             errorMessage += "Unable to locate private key file: " + filename;
         } catch (DecoderException e) {
             errorMessage += "Failed to parse uploaded pem file: " + e.getMessage();
-        } catch (NoSuchAlgorithmException e) {
             errorMessage += "Unable to instantiate KeyFactory with algorithm: " + algorithm;
         } catch (IOException e) {
             errorMessage += "IOException: " + e.getMessage();
-        } catch (InvalidKeySpecException e) {
-            errorMessage += "Error instantiating PKCS8EncodedKeySpec object: " + e.getMessage();
         } finally {
             try {
                 if (fis != null) {
@@ -217,6 +224,42 @@ public class CredentialParser {
         return privateKey;
     }
 
+    /**
+     * This method generates a private key based on the given data string and algorithm.
+     * As of 1/10/2024 the following formats are supported: PKCS1, PKCS8, EC.
+     *
+     * @param keyString base64 decoded string containing key data
+     * @param algorithm the resulting PrivateKey's algorithm
+     * @return PrivateKey
+     */
+    private PrivateKey generatePrivateKeyFromString(final String keyString,
+                                                    final String algorithm) {
+        byte[] decodedKey = Base64.decode(keyString);
+        KeySpec keySpec = null;
+        switch (algorithm) {
+            case RSA:
+                keySpec = new PKCS8EncodedKeySpec(decodedKey);
+                break;
+            case EC:
+                keySpec = ECPrivateKeySpec();
+                break;
+        }
+        try {
+            KeyFactory keyFactory = KeyFactory.getInstance(algorithm);
+            if (keySpec != null) {
+                return keyFactory.generatePrivate(keySpec);
+            } else {
+                return null;
+            }
+        } catch (NoSuchAlgorithmException e) {
+            System.out.println("Error instantiating KeyFactory for "
+                    + algorithm + ": " + e.getMessage());
+        } catch (InvalidKeySpecException e) {
+            System.out.println("KeySpec is inappropriate for " + algorithm);
+        }
+
+        return null;
+    }
     /**
      * This method reads a base64 PEM string to parse a key pair.
      * @param filename
