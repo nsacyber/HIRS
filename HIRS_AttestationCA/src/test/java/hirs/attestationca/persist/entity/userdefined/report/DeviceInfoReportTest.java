@@ -94,13 +94,12 @@ public class DeviceInfoReportTest {
     public final void testGetters() {
         DeviceInfoReport deviceInfoReport =
                 new DeviceInfoReport(networkInfo, osInfo, firmwareInfo, hardwareInfo, tpmInfo);
-        assertEquals(deviceInfoReport.getNetworkInfo(), networkInfo);
-        assertEquals(deviceInfoReport.getOSInfo(), osInfo);
-        assertEquals(deviceInfoReport.getFirmwareInfo(), firmwareInfo);
-        assertEquals(deviceInfoReport.getHardwareInfo(), hardwareInfo);
-        assertEquals(deviceInfoReport.getTpmInfo(), tpmInfo);
-        assertEquals(deviceInfoReport.getClientApplicationVersion(),
-                EXPECTED_CLIENT_VERSION);
+        assertEquals(networkInfo, deviceInfoReport.getNetworkInfo());
+        assertEquals(osInfo, deviceInfoReport.getOSInfo());
+        assertEquals(firmwareInfo, deviceInfoReport.getFirmwareInfo());
+        assertEquals(hardwareInfo, deviceInfoReport.getHardwareInfo());
+        assertEquals(tpmInfo, deviceInfoReport.getTpmInfo());
+        assertEquals(EXPECTED_CLIENT_VERSION, deviceInfoReport.getClientApplicationVersion());
     }
 
     /**

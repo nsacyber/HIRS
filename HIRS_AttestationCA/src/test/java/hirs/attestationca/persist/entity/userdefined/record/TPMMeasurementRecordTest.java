@@ -1,5 +1,6 @@
 package hirs.attestationca.persist.entity.userdefined.record;
 
+import hirs.attestationca.persist.entity.userdefined.ExaminableRecord;
 import hirs.utils.digest.Digest;
 import hirs.utils.digest.DigestAlgorithm;
 import org.apache.commons.codec.DecoderException;
@@ -25,6 +26,7 @@ public class TPMMeasurementRecordTest {
     private static final int DEFAULT_PCR_ID = 3;
     private static final String DEFAULT_HASH =
             "3d5f3c2f7f3003d2e4baddc46ed4763a4954f648";
+    private static final ExaminableRecord.ExamineState DEFAULT_STATE = ExaminableRecord.ExamineState.UNEXAMINED;
 
     /**
      * Tests instantiation of new <code>PCRMeasurementRecord</code>.
@@ -88,6 +90,15 @@ public class TPMMeasurementRecordTest {
                 getDigest(DEFAULT_HASH));
         id = pcrRecord.getPcrId();
         assertNotNull(id);
+    }
+
+    /**
+     * Tests that <code>getExamineState</code> returns the correct state.
+     */
+    @Test
+    public final void getExamineState() {
+        final TPMMeasurementRecord record = getDefaultRecord();
+        assertEquals(DEFAULT_STATE, record.getExamineState());
     }
 
     /**
@@ -212,6 +223,48 @@ public class TPMMeasurementRecordTest {
         final int pcrId = 35;
         assertThrows(IllegalArgumentException.class, () ->
                 TPMMeasurementRecord.checkForValidPcrId(pcrId));
+    }
+
+    /**
+     * Tests that the ExamineState can be successfully set to EXAMINED.
+     */
+    @Test
+    public final void testSetExamineStateExamined() {
+        final ExaminableRecord.ExamineState state = ExaminableRecord.ExamineState.EXAMINED;
+        TPMMeasurementRecord r1 = getDefaultRecord();
+        r1.setExamineState(state);
+        assertEquals(state, r1.getExamineState());
+    }
+
+    /**
+     * Tests that the ExamineState can be successfully set to IGNORED.
+     */
+    @Test
+    public final void testSetExamineStateIgnored() {
+        final ExaminableRecord.ExamineState state = ExaminableRecord.ExamineState.IGNORED;
+        TPMMeasurementRecord r1 = getDefaultRecord();
+        r1.setExamineState(state);
+        assertEquals(state, r1.getExamineState());
+    }
+
+    /**
+     * Tests that the ExamineState is successfully initialized to UNEXAMINED.
+     */
+    @Test
+    public final void testSetExamineStateInitial() {
+        TPMMeasurementRecord r1 = getDefaultRecord();
+        assertEquals(ExaminableRecord.ExamineState.UNEXAMINED, r1.getExamineState());
+    }
+
+    /**
+     * Tests that setting the ExamineState to UNEXAMINED throws an IllegalArgumentException.
+     */
+    @Test
+    public final void testSetExamineStateUnexamined() {
+        final ExaminableRecord.ExamineState state = ExaminableRecord.ExamineState.UNEXAMINED;
+        TPMMeasurementRecord r1 = getDefaultRecord();
+        assertThrows(IllegalArgumentException.class, () ->
+                r1.setExamineState(state));
     }
 
     private TPMMeasurementRecord getDefaultRecord() {
