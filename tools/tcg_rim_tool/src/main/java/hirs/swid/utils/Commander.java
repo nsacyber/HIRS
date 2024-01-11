@@ -17,6 +17,11 @@ public class Commander {
     @Parameter(names = {"-c", "--create \"base\""}, order = 0,
             description = "The type of RIM to create. A base RIM will be created by default.")
     private String createType = "";
+    @Parameter(names = {"-v", "--verify <path>"}, order = 3,
+            description = "Specify a RIM file to verify.")
+    private String verifyFile = "";
+    @Parameter(names = {"-V", "--version"}, description = "Output the current version.")
+    private boolean version = false;
     @Parameter(names = {"-a", "--attributes <path>"}, order = 1,
             description = "The configuration file holding attributes "
             + "to populate the base RIM with.")
@@ -25,9 +30,6 @@ public class Commander {
             description = "The file to write the RIM out to. "
             + "The RIM will be written to stdout by default.")
     private String outFile = "";
-    @Parameter(names = {"-v", "--verify <path>"}, order = 3,
-            description = "Specify a RIM file to verify.")
-    private String verifyFile = "";
     @Parameter(names = {"-t", "--truststore <path>"}, order = 4,
             description = "The truststore to sign the base RIM created "
             + "or to validate the signed base RIM.")
@@ -62,16 +64,19 @@ public class Commander {
         return createType;
     }
 
+    public String getVerifyFile() {
+        return verifyFile;
+    }
+
+    public boolean isVersion() {
+        return version;
+    }
     public String getAttributesFile() {
         return attributesFile;
     }
 
     public String getOutFile() {
         return outFile;
-    }
-
-    public String getVerifyFile() {
-        return verifyFile;
     }
 
     public String getTruststoreFile() { return truststoreFile; }
