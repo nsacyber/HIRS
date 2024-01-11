@@ -99,6 +99,15 @@ foreach-Object {
     curl.exe -k -F "file=@$filename" `
     "https://127.0.0.1:8443/HIRS_AttestationCAPortal/portal/certificate-request/trust-chain/upload"
 }
+# Set ACA Policy to perform EK and Platform Cert validation
+$Properties=docker exec aca powershell -command "Get-Content C:\ProgramData\hirs\aca\aca.properties"
+$Props=echo $Properties | Out-String | ConvertFrom-StringData
+$Prop=$Props.hirs_db_password
+docker exec aca mysql -u hirs_db -D hirs_db --password=$Prop -e `
+"Update policysettings set ecValidationEnabled=1, pcValidationEnabled=1, `
+pcAttributeValidationEnabled=1, utcValidationEnabled=0, firmwareValidationEnabled=0, `
+ expiredCertificateValidationEnabled=0, ignoreGptEnabled=1, `
+ignoreImaEnabled=0, ignoretBootEnabled=0, ignoreOsEvtEnabled=1;"
 
 # Done
 Write-Host "HIRS Acceptance Test Installation complete."
