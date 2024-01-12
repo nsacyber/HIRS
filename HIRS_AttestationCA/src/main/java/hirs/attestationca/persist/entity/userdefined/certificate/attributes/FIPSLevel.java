@@ -5,8 +5,8 @@ import lombok.Getter;
 import lombok.Setter;
 import org.bouncycastle.asn1.ASN1Boolean;
 import org.bouncycastle.asn1.ASN1Enumerated;
+import org.bouncycastle.asn1.ASN1IA5String;
 import org.bouncycastle.asn1.ASN1Sequence;
-import org.bouncycastle.asn1.DERIA5String;
 
 /**
  * Basic class that handle FIPS Level.
@@ -71,7 +71,7 @@ public class FIPSLevel {
     }
 
     @Getter @Setter
-    private DERIA5String version;
+    private ASN1IA5String version;
     @Getter @Setter
     private SecurityLevel level;
     @Getter @Setter
@@ -94,15 +94,15 @@ public class FIPSLevel {
      */
     public FIPSLevel(final ASN1Sequence sequence) throws IllegalArgumentException {
         //Get version
-        version = DERIA5String.getInstance(sequence.getObjectAt(0));
+        version = ASN1IA5String.getInstance(sequence.getObjectAt(0));
         //Get and validate level
-        ASN1Enumerated enumarated = ASN1Enumerated.getInstance(sequence.getObjectAt(1));
+        ASN1Enumerated enumerated = ASN1Enumerated.getInstance(sequence.getObjectAt(1));
         //Throw exception when is not between 1 and 7
-        if (enumarated.getValue().intValue() <= 0
-                || enumarated.getValue().intValue() > SecurityLevel.values().length) {
+        if (enumerated.getValue().intValue() <= 0
+                || enumerated.getValue().intValue() > SecurityLevel.values().length) {
             throw new IllegalArgumentException("Invalid security level on FIPSLevel.");
         }
-        level = SecurityLevel.values()[enumarated.getValue().intValue() - 1];
+        level = SecurityLevel.values()[enumerated.getValue().intValue() - 1];
 
         //Check if there is another value on the sequence for the plus
         plus = ASN1Boolean.FALSE;   //Default to false

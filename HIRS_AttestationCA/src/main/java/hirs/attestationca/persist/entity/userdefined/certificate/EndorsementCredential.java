@@ -353,21 +353,21 @@ public class EndorsementCredential extends DeviceAssociatedCertificate {
                     obj = (ASN1TaggedObject) seq.getObjectAt(i);
                     tag = obj.getTagNo();
                     if (tag == EK_TYPE_TAG) {
-                        int ekGenTypeVal = ((ASN1Enumerated) obj.getObject()).getValue().intValue();
+                        int ekGenTypeVal = ((ASN1Enumerated) obj.getBaseUniversal(true, tag)).getValue().intValue();
                         if (ekGenTypeVal >= EK_TYPE_VAL_MIN && ekGenTypeVal <= EK_TYPE_VAL_MAX) {
                             TPMSecurityAssertions.EkGenerationType ekGenType
                                     = TPMSecurityAssertions.EkGenerationType.values()[ekGenTypeVal];
                             tpmSecurityAssertions.setEkGenType(ekGenType);
                         }
                     } else if (tag == EK_LOC_TAG) {
-                        int ekGenLocVal = ((ASN1Enumerated) obj.getObject()).getValue().intValue();
+                        int ekGenLocVal = ((ASN1Enumerated) obj.getBaseUniversal(true, tag)).getValue().intValue();
                         if (ekGenLocVal >= EK_LOC_VAL_MIN && ekGenLocVal <= EK_LOC_VAL_MAX) {
                             TPMSecurityAssertions.EkGenerationLocation ekGenLocation
                                     = TPMSecurityAssertions.EkGenerationLocation.values()[ekGenLocVal];
                             tpmSecurityAssertions.setEkGenerationLocation(ekGenLocation);
                         }
                     } else if (tag == EK_CERT_LOC_TAG) {
-                        int ekCertGenLocVal = ((ASN1Enumerated) obj.getObject())
+                        int ekCertGenLocVal = ((ASN1Enumerated) obj.getBaseUniversal(true, tag))
                                 .getValue().intValue();
                         if (ekCertGenLocVal >= EK_LOC_VAL_MIN
                                 && ekCertGenLocVal <= EK_LOC_VAL_MAX) {
@@ -426,7 +426,7 @@ public class EndorsementCredential extends DeviceAssociatedCertificate {
 
         } else if (component instanceof ASN1TaggedObject) {
             ASN1TaggedObject taggedObj = (ASN1TaggedObject) component;
-            parseSingle(taggedObj.getObject(), addToMapping, key);
+            parseSingle(taggedObj.getLoadedObject(), addToMapping, key);
 
         } else if (component instanceof ASN1OctetString) {
             // this may contain parseable data or may just be a OID key-pair value
