@@ -12,7 +12,6 @@ import javax.xml.namespace.QName;
  */
 public class SwidTagConstants {
 
-    public static final String RIMTOOL_VERSION = "2.1.3";
     public static final String DEFAULT_KEYSTORE_FILE = "/opt/hirs/rimtool/data/keystore.jks";
     public static final String DEFAULT_KEYSTORE_PASSWORD = "password";
     public static final String DEFAULT_PRIVATE_KEY_ALIAS = "selfsigned";

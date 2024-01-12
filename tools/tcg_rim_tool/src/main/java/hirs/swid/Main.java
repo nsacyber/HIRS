@@ -19,8 +19,6 @@ public class Main {
         if (commander.isHelp()) {
             jc.usage();
             System.out.println(commander.printHelpExamples());
-        } else if (commander.isVersion()) {
-            System.out.println("tcg_rim_tool " + SwidTagConstants.RIMTOOL_VERSION);
         } else {
             if (!commander.getVerifyFile().isEmpty()) {
                 validator = new ReferenceManifestValidator();
