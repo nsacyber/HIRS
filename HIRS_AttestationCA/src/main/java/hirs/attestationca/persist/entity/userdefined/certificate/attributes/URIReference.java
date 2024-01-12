@@ -27,7 +27,6 @@ public class URIReference {
     private AlgorithmIdentifier hashAlgorithm;
     @JsonIgnore
     private DERBitString hashValue;
-    private ASN1Sequence sequence;
 
     private static final int PLATFORM_PROPERTIES_URI_MAX = 3;
     private static final int PLATFORM_PROPERTIES_URI_MIN = 1;
@@ -48,9 +47,6 @@ public class URIReference {
      * @throws IllegalArgumentException if there was an error on the parsing
      */
     public URIReference(final ASN1Sequence sequence) throws IllegalArgumentException {
-        if (sequence == null) {
-            return ;
-        }
         //Check if the sequence contains the two values required
         if (sequence.size() > PLATFORM_PROPERTIES_URI_MAX
                 || sequence.size() < PLATFORM_PROPERTIES_URI_MIN) {
@@ -73,8 +69,6 @@ public class URIReference {
                         + sequence.getObjectAt(j).getClass().getName() + " found at index " + j + ".");
             }
         }
-
-        this.sequence = ASN1Sequence.getInstance(sequence);
     }
 
     @Override
