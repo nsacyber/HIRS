@@ -96,11 +96,7 @@ public class ComponentIdentifierV2 extends ComponentIdentifier {
         this.componentClass = componentClass;
         // additional optional component identifiers
         this.certificateIdentifier = certificateIdentifier;
-        if (componentPlatformUri != null) {
-            this.componentPlatformUri = new URIReference(componentPlatformUri.getSequence());
-        } else {
-            this.componentPlatformUri = new URIReference();
-        }
+        this.componentPlatformUri = componentPlatformUri;
         this.attributeStatus = attributeStatus;
     }
 
@@ -164,28 +160,6 @@ public class ComponentIdentifierV2 extends ComponentIdentifier {
                     throw new IllegalArgumentException("Component identifier contains "
                             + "invalid tagged object.");
             }
-        }
-    }
-
-    /**
-     * @return the componentPlatformUri.
-     */
-    public URIReference getComponentPlatformUri() {
-        if (this.componentPlatformUri != null) {
-            return new URIReference(componentPlatformUri.getSequence());
-        } else {
-            return null;
-        }
-    }
-
-    /**
-     * @param componentPlatformUri the componentPlatformUri to set.
-     */
-    public void setComponentPlatformUri(final URIReference componentPlatformUri) {
-        if (componentPlatformUri != null) {
-            this.componentPlatformUri = new URIReference(componentPlatformUri.getSequence());
-        } else {
-            this.componentPlatformUri = new URIReference();
         }
     }
 

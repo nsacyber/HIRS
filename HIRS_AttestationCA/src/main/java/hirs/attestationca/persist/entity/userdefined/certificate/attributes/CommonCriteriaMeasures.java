@@ -176,7 +176,6 @@ public class CommonCriteriaMeasures {
     private ASN1ObjectIdentifier targetOid;
     private URIReference profileUri;
     private URIReference targetUri;
-    private ASN1Sequence sequence;
 
     /**
      * Default constructor.
@@ -261,41 +260,8 @@ public class CommonCriteriaMeasures {
                             + "invalid tagged object.");
             }
         }
-
-        this.sequence = ASN1Sequence.getInstance(sequence);
     }
 
-    public URIReference getProfileUri() {
-        if (profileUri != null) {
-            return new URIReference(profileUri.getSequence());
-        } else {
-            return null;
-        }
-    }
-
-    public void setProfileUri(final URIReference profileUri) {
-        if (profileUri != null) {
-            this.profileUri = new URIReference(profileUri.getSequence());
-        } else {
-            this.profileUri = new URIReference();
-        }
-    }
-
-    public URIReference getTargetUri() {
-        if (targetUri != null) {
-            return new URIReference(targetUri.getSequence());
-        } else {
-            return null;
-        }
-    }
-
-    public void setTargetUri(final URIReference targetUri) {
-        if (targetUri != null) {
-            this.targetUri = new URIReference(targetUri.getSequence());
-        } else {
-            this.targetUri = new URIReference();
-        }
-    }
 
     @Override
     public String toString() {
