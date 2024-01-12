@@ -2,6 +2,7 @@ package hirs.attestationca.persist.entity.userdefined.certificate.attributes;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.Setter;
 import org.bouncycastle.asn1.ASN1Boolean;
 import org.bouncycastle.asn1.ASN1Enumerated;
 import org.bouncycastle.asn1.ASN1Integer;
@@ -85,7 +86,9 @@ public class TBBSecurityAssertion {
     }
 
     private ASN1Integer version;
+    @Getter @Setter
     private CommonCriteriaMeasures ccInfo;
+    @Getter @Setter
     private FIPSLevel fipsLevel;
     private MeasurementRootType rtmType;
     private ASN1Boolean iso9000Certified;
@@ -180,50 +183,6 @@ public class TBBSecurityAssertion {
      */
     public void setVersion(final ASN1Integer version) {
         this.version = version;
-    }
-
-    /**
-     * @return the ccInfo
-     */
-    public CommonCriteriaMeasures getCcInfo() {
-        if (ccInfo != null) {
-            return new CommonCriteriaMeasures(ccInfo.getSequence());
-        } else {
-            return null;
-        }
-    }
-
-    /**
-     * @param ccInfo the ccInfo to set
-     */
-    public void setCcInfo(final CommonCriteriaMeasures ccInfo) {
-        if (ccInfo != null) {
-            this.ccInfo = new CommonCriteriaMeasures(ccInfo.getSequence());
-        } else {
-            this.ccInfo = new CommonCriteriaMeasures();
-        }
-    }
-
-    /**
-     * @return the fipsLevel
-     */
-    public FIPSLevel getFipsLevel() {
-        if (fipsLevel != null) {
-            return new FIPSLevel(fipsLevel.getAsn1Sequence());
-        } else {
-            return null;
-        }
-    }
-
-    /**
-     * @param fipsLevel the fipsLevel to set
-     */
-    public void setFipsLevel(final FIPSLevel fipsLevel) {
-        if (fipsLevel != null) {
-            this.fipsLevel = new FIPSLevel(fipsLevel.getAsn1Sequence());
-        } else {
-            this.fipsLevel = new FIPSLevel();
-        }
     }
 
     /**
