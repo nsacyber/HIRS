@@ -76,8 +76,6 @@ public class FIPSLevel {
     private SecurityLevel level;
     @Getter @Setter
     private ASN1Boolean plus;
-    @Getter
-    private ASN1Sequence asn1Sequence;
 
     /**
      * Default constructor.
@@ -111,8 +109,6 @@ public class FIPSLevel {
         if (sequence.size() == MAX_SEQUENCE_SIZE) {
             plus = ASN1Boolean.getInstance(sequence.getObjectAt(2));
         }
-
-        this.asn1Sequence = sequence;
     }
 
     @Override

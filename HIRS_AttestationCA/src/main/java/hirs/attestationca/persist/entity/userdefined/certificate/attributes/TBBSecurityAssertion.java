@@ -2,7 +2,6 @@ package hirs.attestationca.persist.entity.userdefined.certificate.attributes;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
-import lombok.Setter;
 import org.bouncycastle.asn1.ASN1Boolean;
 import org.bouncycastle.asn1.ASN1Enumerated;
 import org.bouncycastle.asn1.ASN1Integer;
@@ -86,9 +85,7 @@ public class TBBSecurityAssertion {
     }
 
     private ASN1Integer version;
-    @Getter @Setter
     private CommonCriteriaMeasures ccInfo;
-    @Getter @Setter
     private FIPSLevel fipsLevel;
     private MeasurementRootType rtmType;
     private ASN1Boolean iso9000Certified;
@@ -183,6 +180,34 @@ public class TBBSecurityAssertion {
      */
     public void setVersion(final ASN1Integer version) {
         this.version = version;
+    }
+
+    /**
+     * @return the ccInfo
+     */
+    public CommonCriteriaMeasures getCcInfo() {
+        return ccInfo;
+    }
+
+    /**
+     * @param ccInfo the ccInfo to set
+     */
+    public void setCcInfo(final CommonCriteriaMeasures ccInfo) {
+        this.ccInfo = ccInfo;
+    }
+
+    /**
+     * @return the fipsLevel
+     */
+    public FIPSLevel getFipsLevel() {
+        return fipsLevel;
+    }
+
+    /**
+     * @param fipsLevel the fipsLevel to set
+     */
+    public void setFipsLevel(final FIPSLevel fipsLevel) {
+        this.fipsLevel = fipsLevel;
     }
 
     /**
