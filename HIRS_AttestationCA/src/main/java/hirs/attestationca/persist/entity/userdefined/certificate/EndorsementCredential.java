@@ -426,7 +426,7 @@ public class EndorsementCredential extends DeviceAssociatedCertificate {
 
         } else if (component instanceof ASN1TaggedObject) {
             ASN1TaggedObject taggedObj = (ASN1TaggedObject) component;
-            parseSingle(taggedObj.getLoadedObject(), addToMapping, key);
+            parseSingle(taggedObj.getBaseObject().toASN1Primitive(), addToMapping, key);
 
         } else if (component instanceof ASN1OctetString) {
             // this may contain parseable data or may just be a OID key-pair value
