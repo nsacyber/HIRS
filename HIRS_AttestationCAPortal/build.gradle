@@ -97,6 +97,7 @@ ospackage {
     }
 
     // Post Install
+    postInstall "echo ${jarVersion} > /opt/hirs/aca/VERSION"
     postInstall 'bash /opt/hirs/aca/scripts/aca/aca_setup.sh -u'
     // add chrontab to run ACA at boot
     postInstall 'echo "@reboot root /opt/hirs/aca/scripts/aca/aca_bootRun.sh -w" >> /etc/crontab'
