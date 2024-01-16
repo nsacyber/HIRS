@@ -19,6 +19,7 @@ import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.util.Strings;
 import org.bouncycastle.asn1.ASN1UTF8String;
+import org.bouncycastle.asn1.DERUTF8String;
 
 import java.io.IOException;
 import java.math.BigInteger;
@@ -725,19 +726,19 @@ public class CertificateAttributeScvValidator extends SupplyChainCredentialValid
         final List<ComponentIdentifier> pcComponents = new ArrayList<>();
         for (ComponentIdentifier component : untrimmedPcComponents) {
             if (component.getComponentManufacturer() != null) {
-                component.setComponentManufacturer(ASN1UTF8String.getInstance(
+                component.setComponentManufacturer((DERUTF8String) ASN1UTF8String.getInstance(
                         component.getComponentManufacturer().getString().trim()));
             }
             if (component.getComponentModel() != null) {
-                component.setComponentModel(ASN1UTF8String.getInstance(
+                component.setComponentModel((DERUTF8String) ASN1UTF8String.getInstance(
                         component.getComponentModel().getString().trim()));
             }
             if (component.getComponentSerial() != null) {
-                component.setComponentSerial(ASN1UTF8String.getInstance(
+                component.setComponentSerial((DERUTF8String) ASN1UTF8String.getInstance(
                         component.getComponentSerial().getString().trim()));
             }
             if (component.getComponentRevision() != null) {
-                component.setComponentRevision(ASN1UTF8String.getInstance(
+                component.setComponentRevision((DERUTF8String) ASN1UTF8String.getInstance(
                         component.getComponentRevision().getString().trim()));
             }
             pcComponents.add(component);

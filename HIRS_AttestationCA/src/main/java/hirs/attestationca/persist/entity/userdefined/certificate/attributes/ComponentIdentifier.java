@@ -1,6 +1,5 @@
 package hirs.attestationca.persist.entity.userdefined.certificate.attributes;
 
-
 import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
@@ -75,10 +74,10 @@ public class ComponentIdentifier {
      */
     protected static final int COMPONENT_ADDRESS = 4;
 
-    private ASN1UTF8String componentManufacturer;
-    private ASN1UTF8String componentModel;
-    private ASN1UTF8String componentSerial;
-    private ASN1UTF8String componentRevision;
+    private DERUTF8String componentManufacturer;
+    private DERUTF8String componentModel;
+    private DERUTF8String componentSerial;
+    private DERUTF8String componentRevision;
     private ASN1ObjectIdentifier componentManufacturerId;
     private ASN1Boolean fieldReplaceable;
     private List<ComponentAddress> componentAddress;
@@ -88,10 +87,10 @@ public class ComponentIdentifier {
      * Default constructor.
      */
     public ComponentIdentifier() {
-        componentManufacturer = ASN1UTF8String.getInstance(NOT_SPECIFIED_COMPONENT);
-        componentModel = ASN1UTF8String.getInstance(NOT_SPECIFIED_COMPONENT);
-        componentSerial = ASN1UTF8String.getInstance(EMPTY_COMPONENT);
-        componentRevision = ASN1UTF8String.getInstance(EMPTY_COMPONENT);
+        componentManufacturer = new DERUTF8String(NOT_SPECIFIED_COMPONENT);
+        componentModel = new DERUTF8String(NOT_SPECIFIED_COMPONENT);
+        componentSerial = new DERUTF8String(EMPTY_COMPONENT);
+        componentRevision = new DERUTF8String(EMPTY_COMPONENT);
         componentManufacturerId = null;
         fieldReplaceable = null;
         componentAddress = new ArrayList<>();
@@ -108,10 +107,10 @@ public class ComponentIdentifier {
      * @param fieldReplaceable represents if the component is replaceable
      * @param componentAddress represents a list of addresses
      */
-    public ComponentIdentifier(final ASN1UTF8String componentManufacturer,
-                               final ASN1UTF8String componentModel,
-                               final ASN1UTF8String componentSerial,
-                               final ASN1UTF8String componentRevision,
+    public ComponentIdentifier(final DERUTF8String componentManufacturer,
+                               final DERUTF8String componentModel,
+                               final DERUTF8String componentSerial,
+                               final DERUTF8String componentRevision,
                                final ASN1ObjectIdentifier componentManufacturerId,
                                final ASN1Boolean fieldReplaceable,
                                final List<ComponentAddress> componentAddress) {
@@ -138,18 +137,18 @@ public class ComponentIdentifier {
         }
 
         //Mandatory values
-        componentManufacturer = ASN1UTF8String.getInstance(sequence.getObjectAt(0));
-        componentModel = ASN1UTF8String.getInstance(sequence.getObjectAt(1));
+        componentManufacturer = (DERUTF8String) ASN1UTF8String.getInstance(sequence.getObjectAt(0));
+        componentModel = (DERUTF8String) ASN1UTF8String.getInstance(sequence.getObjectAt(1));
 
         //Continue reading the sequence if it does contain more than 2 values
         for (int i = 2; i < sequence.size(); i++) {
             ASN1TaggedObject taggedObj = ASN1TaggedObject.getInstance(sequence.getObjectAt(i));
             switch (taggedObj.getTagNo()) {
                 case COMPONENT_SERIAL:
-                    componentSerial = ASN1UTF8String.getInstance(taggedObj, false);
+                    componentSerial = (DERUTF8String) ASN1UTF8String.getInstance(taggedObj, false);
                     break;
                 case COMPONENT_REVISION:
-                    componentRevision = ASN1UTF8String.getInstance(taggedObj, false);
+                    componentRevision = (DERUTF8String) ASN1UTF8String.getInstance(taggedObj, false);
                     break;
                 case COMPONENT_MANUFACTURER_ID:
                     componentManufacturerId = ASN1ObjectIdentifier.getInstance(taggedObj, false);

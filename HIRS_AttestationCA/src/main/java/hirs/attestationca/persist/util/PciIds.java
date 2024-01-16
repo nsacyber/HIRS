@@ -9,6 +9,7 @@ import hirs.attestationca.persist.entity.userdefined.certificate.attributes.V2.C
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import org.bouncycastle.asn1.ASN1UTF8String;
+import org.bouncycastle.asn1.DERUTF8String;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -126,8 +127,8 @@ public final class PciIds {
             final String compClassValue = component.getComponentClass().getCategory();
             if (compClassValue.equals(COMPCLASS_TCG_CAT_NIC)
                     || compClassValue.equals(COMPCLASS_TCG_CAT_GFX)) {
-                ASN1UTF8String manufacturer = translateVendor(component.getComponentManufacturer());
-                ASN1UTF8String model = translateDevice(component.getComponentManufacturer(),
+                DERUTF8String manufacturer = (DERUTF8String) translateVendor(component.getComponentManufacturer());
+                DERUTF8String model = (DERUTF8String) translateDevice(component.getComponentManufacturer(),
                         component.getComponentModel());
 
                 newComponent = new ComponentIdentifierV2(component.getComponentClass(),
