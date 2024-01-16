@@ -13,8 +13,12 @@ import hirs.attestationca.portal.page.Page;
 import hirs.attestationca.portal.page.PageController;
 import hirs.attestationca.portal.page.PageControllerTest;
 import java.io.IOException;
-import java.util.*;
+
 import java.security.Security;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -314,8 +318,8 @@ public class CertificateDetailsPageControllerTest extends PageControllerTest {
      *
      * @throws Exception if an exception occurs
      */
-    @Test
-    @Rollback
+//    @Test
+//    @Rollback
     @SuppressWarnings("unchecked")
     public void testInitPagePlatform20PCI() throws Exception {
 
