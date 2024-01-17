@@ -1,6 +1,10 @@
 package hirs.utils;
 
+import com.google.common.io.Resources;
 import org.junit.jupiter.api.Test;
+
+import java.net.URL;
+
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
@@ -24,9 +28,9 @@ public class VersionHelperTest {
      */
     @Test
     public void testGetVersionDefault() {
-
+        URL url = Resources.getResource("VERSION");
         String expected = "Test.Version";
-        String actual = VersionHelper.getVersion();
+        String actual = VersionHelper.getVersion(url.getPath());
         assertEquals(expected, actual);
     }
 }
