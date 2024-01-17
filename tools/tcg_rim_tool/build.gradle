@@ -7,7 +7,6 @@ plugins {
 // Get version from main project gradle
 def packVersion = properties.get("packageVersion");
 def jarVersion = properties.get("jarVersion");
-//println "packageVersion is ${projVersion}"
 
 java {
     toolchain {
@@ -34,9 +33,6 @@ dependencies {
 	implementation libs.jackson.databind
 	implementation 'org.apache.logging.log4j:log4j-core:2.19.0'
 	implementation libs.guava
-//    implementation libs.javax.json
- //   implementation libs.javax.jaxb
-//    implementation libs.javax.annotation
 
 	compileOnly libs.lombok
     implementation libs.lombok
@@ -73,13 +69,13 @@ ospackage {
     user 'root'
     fileMode = 0755
 
-    into ('/opt/hirs/rimtool/lib') {
+    into ('/opt/rimtool/lib') {
         from jar.outputs.files
         from configurations.runtimeClasspath
         from 'libs'
     }
 
-    into ('/opt/hirs/rimtool/scripts') {
+    into ('/opt/rimtool/scripts') {
       from ('scripts') {
         exclude {
             FileTreeElement details ->
@@ -87,7 +83,7 @@ ospackage {
         }
       }
     }
-    into ('/opt/hirs/rimtool/docs') {
+    into ('/opt/rimtool/docs') {
       from('./') {
          include {
              FileTreeElement details ->
@@ -95,11 +91,16 @@ ospackage {
           }        
        }
        }
-    into ('/opt/hirs/rimtool/data') {
+    into ('/opt/rimtool/data') {
       from('src/test/resources/') {
        }
      }
-     link("/usr/local/bin/rim", "/opt/hirs/rimtool/scripts/rimtool.sh", 0x755)
+    link("/usr/local/bin/rim", "/opt/rimtool/scripts/rimtool.sh", 0x755)
+
+    // Post Install
+    postInstall "echo ${jarVersion} > /opt/rimtool/VERSION"
+    // Post Uninstall
+    postUninstall 'rm -rf /opt/rimtool'
 }
 
 buildRpm {
@@ -109,4 +110,3 @@ buildRpm {
 buildDeb {
     arch = 'amd64'
 }
-
