@@ -175,15 +175,6 @@ public class UefiSignatureList {
     }
 
     /**
-     * Returns an ArrayList of EFISignatureData objects.
-     *
-     * @return ArrayList of EFISignatureData objects.
-     */
-    public ArrayList<UefiSignatureData> getSignatureDataList() {
-        return sigList;
-    }
-
-    /**
      * Checks to see if GUID is listed on page 1729 of UEFI spec version 2.8.
      *
      * @param guid GUID of the has algorithm.
@@ -212,7 +203,7 @@ public class UefiSignatureList {
         StringBuilder sigInfo = new StringBuilder();
         sigInfo.append("UEFI Signature List Type = " + signatureType.toString() + "\n");
         sigInfo.append("Number if items = " + numberOfCerts + "\n");
-        sigList.iterator();
+
         for (int i = 0; i < sigList.size(); i++) {
             UefiSignatureData certData = sigList.get(i);
             sigInfo.append(certData.toString());

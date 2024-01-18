@@ -2,7 +2,7 @@
 <!-- Docs at http://findbugs.sourceforge.net/manual/filter.html -->
 <FindBugsFilter>
     <Match>
-	<Package name="~hirs\.utils.*" />
+	<Package name="~hirs\.utils.xjc.*" />
     </Match>
     <Match>
         <!-- https://github.com/spotbugs/spotbugs/pull/2748 -->

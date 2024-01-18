@@ -7,6 +7,7 @@ import lombok.Getter;
 
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Class to process the TCG_EfiSpecIDEvent.
@@ -80,7 +81,7 @@ public class EvEfiSpecIdEvent {
     /**
      * Algorithm list.
      */
-    private ArrayList<String> algList = new ArrayList<String>();
+    private List<String> algList = new ArrayList<String>();
 
     /**
      * EvEfiSpecIdEvent Constructor.

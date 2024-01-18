@@ -10,6 +10,7 @@ import java.nio.charset.StandardCharsets;
 import java.security.NoSuchAlgorithmException;
 import java.security.cert.CertificateException;
 import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Class to process a UEFI variable within a TPM Event.
@@ -32,7 +33,7 @@ public class UefiVariable {
      * List of Signature lists.
      */
     @Getter
-    private ArrayList<UefiSignatureList> certSuperList = new ArrayList<>();
+    private List<UefiSignatureList> certSuperList;
     /**
      * Name of the UEFI variable.
      */
@@ -67,6 +68,7 @@ public class UefiVariable {
      */
     public UefiVariable(final byte[] variableData)
             throws CertificateException, NoSuchAlgorithmException, IOException {
+        certSuperList = new ArrayList<>();
         byte[] guid = new byte[UefiConstants.SIZE_16];
         byte[] nameLength = new byte[UefiConstants.SIZE_8];
         byte[] nameTemp = null;
@@ -173,8 +175,8 @@ public class UefiVariable {
                     efiVariable.append("Data not provided   ");
                 }
         }
-        for (int i = 0; i < certSuperList.size(); i++) {
-            efiVariable.append(certSuperList.get(i).toString());
+        for (UefiSignatureList uefiSigList : certSuperList) {
+            efiVariable.append(uefiSigList.toString());
         }
         return efiVariable.toString();
     }

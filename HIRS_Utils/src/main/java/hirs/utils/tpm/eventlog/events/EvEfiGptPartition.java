@@ -8,6 +8,7 @@ import lombok.Getter;
 import java.io.UnsupportedEncodingException;
 import java.math.BigInteger;
 import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Class to process the PC Client Firmware profile defined EV_EFI_GPT_EVENT event.
@@ -69,7 +70,7 @@ public class EvEfiGptPartition {
      * List of Partitions.
      */
     @Getter
-    private ArrayList<UefiPartition> partitionList = new ArrayList<>();
+    private List<UefiPartition> partitionList;
 
     /**
      * GPT Partition Event Type constructor.
@@ -80,6 +81,7 @@ public class EvEfiGptPartition {
     public EvEfiGptPartition(final byte[] eventDataBytes) throws UnsupportedEncodingException {
         //byte[] eventDataBytes = event.getEventContent();
         // Process the partition header
+        partitionList = new ArrayList<>();
         System.arraycopy(eventDataBytes, 0, header, 0, UefiConstants.SIZE_8);  // Signature
         byte[] revision = new byte[UefiConstants.SIZE_4];
         System.arraycopy(eventDataBytes, UefiConstants.SIZE_8, revision, 0, UefiConstants.SIZE_4);
