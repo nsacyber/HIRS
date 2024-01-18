@@ -11,6 +11,7 @@ import java.io.InputStreamReader;
 import java.io.Reader;
 import java.net.URL;
 import java.nio.file.FileSystems;
+import java.nio.file.Files;
 import java.nio.file.Path;
 
 /**
@@ -19,20 +20,31 @@ import java.nio.file.Path;
 @Log4j2
 public final class VersionHelper {
 
-    private static final Path VERSION_PATH = FileSystems.getDefault().getPath(
-            "/opt", "hirs", "aca", "VERSION");
+    private static final String OPT_PREFIX = "/opt";
+    private static final String ETC_PREFIX = "/etc";
+    private static final String VERSION = "VERSION";
 
     private VersionHelper() {
         // intentionally blank, should never be instantiated
     }
 
     /**
-     * Get the current version of HIRS_Portal that is installed.
+     * Get the current version of HIRS_AttestationPortal that is installed.
      *
      * @return A string representing the current version.
      */
     public static String getVersion() {
-        return getVersion(VERSION_PATH);
+        if (Files.exists(FileSystems.getDefault().getPath(OPT_PREFIX,
+                "hirs", "aca", VERSION))) {
+            return getVersion(FileSystems.getDefault().getPath(OPT_PREFIX,
+                    "hirs", "aca", VERSION));
+        } else if (Files.exists(FileSystems.getDefault().getPath(ETC_PREFIX,
+                "hirs", "aca", VERSION))) {
+            return getVersion(FileSystems.getDefault().getPath(ETC_PREFIX,
+                    "hirs", "aca", VERSION));
+        }
+
+        return getVersion(VERSION);
     }
 
     /**
@@ -42,7 +54,15 @@ public final class VersionHelper {
      * @return A string representing the current version.
      */
     public static String getVersion(final Path filename) {
-        return getVersion(filename.toString());
+        String version;
+        try {
+            version = getFileContents(filename.toString());
+        } catch (IOException ioEx) {
+            log.error(ioEx.getMessage());
+            version = "";
+        }
+
+        return version;
     }
 
     /**
@@ -54,15 +74,12 @@ public final class VersionHelper {
     public static String getVersion(final String filename) {
         String version;
         try {
-            version = getFileContents(filename);
+            version = getResourceContents(filename);
         } catch (Exception ex) {
-            try {
-                version = getResourceContents(filename);
-            } catch (Exception e) {
-                version = "";
-                log.error(e.getMessage());
-            }
+            version = "";
+            log.error(ex.getMessage());
         }
+
         return version;
     }
 
