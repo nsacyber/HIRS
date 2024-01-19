@@ -96,13 +96,13 @@ public class FIPSLevel {
         //Get version
         version = DERIA5String.getInstance(sequence.getObjectAt(0));
         //Get and validate level
-        ASN1Enumerated enumarated = ASN1Enumerated.getInstance(sequence.getObjectAt(1));
+        ASN1Enumerated enumerated = ASN1Enumerated.getInstance(sequence.getObjectAt(1));
         //Throw exception when is not between 1 and 7
-        if (enumarated.getValue().intValue() <= 0
-                || enumarated.getValue().intValue() > SecurityLevel.values().length) {
+        if (enumerated.getValue().intValue() <= 0
+                || enumerated.getValue().intValue() > SecurityLevel.values().length) {
             throw new IllegalArgumentException("Invalid security level on FIPSLevel.");
         }
-        level = SecurityLevel.values()[enumarated.getValue().intValue() - 1];
+        level = SecurityLevel.values()[enumerated.getValue().intValue() - 1];
 
         //Check if there is another value on the sequence for the plus
         plus = ASN1Boolean.FALSE;   //Default to false

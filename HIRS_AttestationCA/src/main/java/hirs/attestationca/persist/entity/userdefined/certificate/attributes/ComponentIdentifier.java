@@ -35,7 +35,6 @@ import java.util.stream.Collectors;
  */
 @Getter
 @Setter
-@AllArgsConstructor
 @EqualsAndHashCode
 public class ComponentIdentifier {
 
@@ -121,7 +120,7 @@ public class ComponentIdentifier {
         this.componentRevision = componentRevision;
         this.componentManufacturerId = componentManufacturerId;
         this.fieldReplaceable = fieldReplaceable;
-        this.componentAddress = componentAddress;
+        this.componentAddress = componentAddress.stream().toList();
     }
 
     /**
@@ -198,6 +197,22 @@ public class ComponentIdentifier {
      */
     public boolean isVersion2() {
         return false;
+    }
+
+    /**
+     * Getter for the component addresses.
+     * @return a collection of component addresses
+     */
+    public List<ComponentAddress> getComponentAddress() {
+        return componentAddress.stream().toList();
+    }
+
+    /**
+     * Setter for the list of component addresses.
+     * @param componentAddress collection of addresses
+     */
+    public void setComponentAddress(List<ComponentAddress> componentAddress) {
+        this.componentAddress = componentAddress.stream().toList();
     }
 
     @Override

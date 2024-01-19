@@ -4,7 +4,6 @@ import hirs.attestationca.persist.entity.userdefined.certificate.attributes.Comp
 import hirs.attestationca.persist.entity.userdefined.certificate.attributes.ComponentClass;
 import hirs.attestationca.persist.entity.userdefined.certificate.attributes.ComponentIdentifier;
 import hirs.attestationca.persist.entity.userdefined.certificate.attributes.URIReference;
-import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
 import org.bouncycastle.asn1.ASN1Boolean;
@@ -16,6 +15,7 @@ import org.bouncycastle.asn1.DEROctetString;
 import org.bouncycastle.asn1.DERUTF8String;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 /**
@@ -39,7 +39,6 @@ import java.util.stream.Collectors;
  */
 @Getter
 @Setter
-@EqualsAndHashCode(callSuper = false)
 public class ComponentIdentifierV2 extends ComponentIdentifier {
 
     private static final int MANDATORY_ELEMENTS = 3;
@@ -198,6 +197,24 @@ public class ComponentIdentifierV2 extends ComponentIdentifier {
      */
     public boolean isVersion2() {
         return true;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        if (!super.equals(o)) return false;
+        ComponentIdentifierV2 that = (ComponentIdentifierV2) o;
+        return Objects.equals(componentClass, that.componentClass)
+                && Objects.equals(certificateIdentifier, that.certificateIdentifier)
+                && Objects.equals(componentPlatformUri, that.componentPlatformUri)
+                && attributeStatus == that.attributeStatus;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(super.hashCode(), componentClass,
+                certificateIdentifier, componentPlatformUri, attributeStatus);
     }
 
     @Override

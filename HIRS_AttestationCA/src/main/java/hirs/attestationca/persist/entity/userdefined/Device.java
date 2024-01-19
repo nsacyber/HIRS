@@ -19,15 +19,16 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.sql.Timestamp;
+import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "Device")
-@Getter
 @Setter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
 public class Device extends AbstractEntity {
 
+    @Getter
     @Column(name = "name", unique = true)
     private String name;
 
@@ -35,10 +36,12 @@ public class Device extends AbstractEntity {
             optional = true, orphanRemoval = true)
     private DeviceInfoReport deviceInfo;
 
+    @Getter
     @Column
     @Enumerated(EnumType.ORDINAL)
     private HealthStatus healthStatus;
 
+    @Getter
     @Column
     @Enumerated(EnumType.ORDINAL)
     private AppraisalStatus.Status supplyChainValidationStatus;
@@ -49,12 +52,15 @@ public class Device extends AbstractEntity {
     @Column(name = "last_report_timestamp")
     private Timestamp lastReportTimestamp;
 
+    @Getter
     @Column(name = "is_state_overridden")
     private boolean isStateOverridden;
 
+    @Getter
     @Column(name = "state_override_reason")
     private String overrideReason;
 
+    @Getter
     @Column(name = "summary_id")
     private String summaryId;
 
@@ -66,6 +72,43 @@ public class Device extends AbstractEntity {
         } else {
             name = "";
         }
+    }
+
+    /**
+     * Returns a report with information about this device. This may return null
+     * if this property has not been set.
+     *
+     * @return device info report
+     */
+    public final DeviceInfoReport getDeviceInfo() {
+        if (deviceInfo != null) {
+            return new DeviceInfoReport(deviceInfo.getNetworkInfo(),
+                    deviceInfo.getOSInfo(), deviceInfo.getFirmwareInfo(),
+                    deviceInfo.getHardwareInfo(), deviceInfo.getTpmInfo(),
+                    deviceInfo.getClientApplicationVersion());
+        } else {
+            return null;
+        }
+    }
+
+    /**
+     * Getter for the report time stamp.
+     * @return a cloned version
+     */
+    public Timestamp getLastReportTimestamp() {
+        if (lastReportTimestamp != null) {
+            return (Timestamp) lastReportTimestamp.clone();
+        } else {
+            return Timestamp.valueOf(LocalDateTime.MAX);
+        }
+    }
+
+    /**
+     * Setter for the report time stamp.
+     * @param lastReportTimestamp
+     */
+    public void setLastReportTimestamp(final Timestamp lastReportTimestamp) {
+        this.lastReportTimestamp = (Timestamp) lastReportTimestamp.clone();
     }
 
     public String toString() {

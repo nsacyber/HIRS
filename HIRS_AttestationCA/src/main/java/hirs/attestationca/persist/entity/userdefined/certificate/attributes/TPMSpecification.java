@@ -7,6 +7,7 @@ import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+import java.io.Serializable;
 import java.math.BigInteger;
 
 /**
@@ -23,7 +24,7 @@ import java.math.BigInteger;
 @NoArgsConstructor(access= AccessLevel.PROTECTED)
 @Getter
 @Embeddable
-public class TPMSpecification {
+public class TPMSpecification implements Serializable {
 
     @Column
     private String family;

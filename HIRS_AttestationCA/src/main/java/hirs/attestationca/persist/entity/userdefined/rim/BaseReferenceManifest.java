@@ -33,6 +33,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 /**
  *
@@ -198,8 +199,12 @@ public class BaseReferenceManifest extends ReferenceManifest {
      * and tagId attributes, otherwise a generic error message is printed.
      *
      */
-    private Element getDirectoryTag() {
-        return getDirectoryTag(new ByteArrayInputStream(getRimBytes()));
+    private Element getDirectoryTag(final byte[] rimBytes) {
+        if (rimBytes == null || rimBytes.length == 0) {
+            return getDirectoryTag(new ByteArrayInputStream(getRimBytes()));
+        } else {
+            return getDirectoryTag(new ByteArrayInputStream(rimBytes));
+        }
     }
 
     /**
@@ -238,7 +243,7 @@ public class BaseReferenceManifest extends ReferenceManifest {
      *
      */
     public List<SwidResource> getFileResources(final byte[] rimBytes) {
-        Element directoryTag = getDirectoryTag(new ByteArrayInputStream(rimBytes));
+        Element directoryTag = getDirectoryTag(rimBytes);
         List<SwidResource> validHashes = new ArrayList<>();
         NodeList fileNodeList = directoryTag.getChildNodes();
         Element file = null;
@@ -329,6 +334,43 @@ public class BaseReferenceManifest extends ReferenceManifest {
         }
 
         return document;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        if (!super.equals(o)) return false;
+        BaseReferenceManifest that = (BaseReferenceManifest) o;
+        return swidCorpus == that.swidCorpus && Objects.equals(swidName, that.swidName)
+                && Objects.equals(colloquialVersion, that.colloquialVersion)
+                && Objects.equals(product, that.product)
+                && Objects.equals(revision, that.revision)
+                && Objects.equals(edition, that.edition)
+                && Objects.equals(rimLinkHash, that.rimLinkHash)
+                && Objects.equals(bindingSpec, that.bindingSpec)
+                && Objects.equals(bindingSpecVersion, that.bindingSpecVersion)
+                && Objects.equals(platformVersion, that.platformVersion)
+                && Objects.equals(payloadType, that.payloadType)
+                && Objects.equals(pcURIGlobal, that.pcURIGlobal)
+                && Objects.equals(pcURILocal, that.pcURILocal)
+                && Objects.equals(entityName, that.entityName)
+                && Objects.equals(entityRegId, that.entityRegId)
+                && Objects.equals(entityRole, that.entityRole)
+                && Objects.equals(entityThumbprint, that.entityThumbprint)
+                && Objects.equals(linkHref, that.linkHref)
+                && Objects.equals(linkRel, that.linkRel);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(super.hashCode(), swidName,
+                swidCorpus, colloquialVersion, product,
+                revision, edition, rimLinkHash, bindingSpec,
+                bindingSpecVersion, platformVersion,
+                payloadType, pcURIGlobal, pcURILocal,
+                entityName, entityRegId, entityRole,
+                entityThumbprint, linkHref, linkRel);
     }
 
     @Override

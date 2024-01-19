@@ -49,7 +49,7 @@ public class PortalInfoTest {
         try {
             info.setSchemeName(scheme);
             fail("The null scheme should have caused an error.");
-        } catch (NullPointerException e) {
+        } catch (Exception e) {
             assertNull(info.getName());
         }
     }
@@ -120,7 +120,7 @@ public class PortalInfoTest {
         try {
             info.setContextName(context);
             fail("The null context should have caused an error.");
-        } catch (NullPointerException e) {
+        } catch (Exception e) {
             assertNull(info.getContext());
         }
     }

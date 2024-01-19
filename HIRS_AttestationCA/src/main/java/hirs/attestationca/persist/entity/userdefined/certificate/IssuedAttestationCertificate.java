@@ -11,6 +11,7 @@ import lombok.NoArgsConstructor;
 
 import java.io.IOException;
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -47,7 +48,7 @@ public class IssuedAttestationCertificate extends DeviceAssociatedCertificate {
             throws IOException {
         super(certificateBytes);
         this.endorsementCredential = endorsementCredential;
-        this.platformCredentials = platformCredentials;
+        this.platformCredentials = new ArrayList<>(platformCredentials);
     }
 
     /**
@@ -64,4 +65,7 @@ public class IssuedAttestationCertificate extends DeviceAssociatedCertificate {
         this(readBytes(certificatePath), endorsementCredential, platformCredentials);
     }
 
+    public List<PlatformCredential> getPlatformCredentials() {
+        return new ArrayList<>(platformCredentials);
+    }
 }

@@ -8,8 +8,10 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
-import lombok.Data;
+
 import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import lombok.Setter;
 import org.bouncycastle.util.Arrays;
 import org.hibernate.annotations.JdbcTypeCode;
 
@@ -19,7 +21,7 @@ import java.util.UUID;
  * This class represents that actual entry in the Support RIM.
  * Digest Value, Event Type, index, RIM Tagid
  */
-@Data
+@Getter
 @Builder
 @AllArgsConstructor
 @Entity
@@ -27,31 +29,41 @@ import java.util.UUID;
 @Table(name = "ReferenceDigestValue")
 @Access(AccessType.FIELD)
 public class ReferenceDigestValue extends AbstractEntity {
-
+    @Setter
     @JdbcTypeCode(java.sql.Types.VARCHAR)
     @Column
     private UUID baseRimId;
+    @Setter
     @JdbcTypeCode(java.sql.Types.VARCHAR)
     @Column
     private UUID supportRimId;
+    @Setter
     @Column(nullable = false)
     private String manufacturer;
+    @Setter
     @Column(nullable = false)
     private String model;
+    @Setter
     @Column(nullable = false)
     private int pcrIndex;
+    @Setter
     @Column(nullable = false)
     private String digestValue;
+    @Setter
     @Column(nullable = false)
     private String supportRimHash;
+    @Setter
     @Column(nullable = false)
     private String eventType;
     @Column(columnDefinition = "blob", nullable = true)
     private byte[] contentBlob;
+    @Setter
     @Column(nullable = false)
     private boolean matchFail;
+    @Setter
     @Column(nullable = false)
     private boolean patched;
+    @Setter
     @Column(nullable = false)
     private boolean updated;
 
@@ -108,6 +120,14 @@ public class ReferenceDigestValue extends AbstractEntity {
         this.patched = patched;
         this.updated = updated;
         this.contentBlob = Arrays.clone(contentBlob);
+    }
+
+    /**
+     * the object that contains the raw bytes for this RDV.
+     * @return the raw bytes
+     */
+    public byte[] getContentBlob() {
+        return Arrays.clone(contentBlob);
     }
 
     /**

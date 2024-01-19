@@ -19,6 +19,7 @@ import hirs.utils.tpm.eventlog.TpmPcrEvent;
 import lombok.extern.log4j.Log4j2;
 
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.security.KeyStore;
 import java.security.NoSuchAlgorithmException;
 import java.security.cert.CertificateException;
@@ -44,9 +45,7 @@ public class FirmwareScvValidator extends SupplyChainCredentialValidator {
         String[] baseline = new String[Integer.SIZE];
         AppraisalStatus fwStatus = null;
         String hostName = device.getDeviceInfo().getNetworkInfo().getHostname();
-        String manufacturer = device.getDeviceInfo()
-                .getHardwareInfo().getManufacturer();
-        ReferenceManifest validationObject;
+//        ReferenceManifest validationObject;
         List<BaseReferenceManifest> baseReferenceManifests = null;
         BaseReferenceManifest baseReferenceManifest = null;
         ReferenceManifest supportReferenceManifest = null;
@@ -79,7 +78,6 @@ public class FirmwareScvValidator extends SupplyChainCredentialValidator {
             failedString += "Bios measurement";
             passed = false;
         }
-        validationObject = measurement;
 
         if (passed) {
             List<SwidResource> resources =
@@ -108,7 +106,6 @@ public class FirmwareScvValidator extends SupplyChainCredentialValidator {
                                 passed = false;
                                 fwStatus = new AppraisalStatus(FAIL,
                                     "Firmware validation failed: invalid certificate path.");
-                                validationObject = baseReferenceManifest;
                             }
                         } catch (IOException ioEx) {
                             log.error("Error getting X509 cert from manager: " + ioEx.getMessage());
@@ -178,7 +175,8 @@ public class FirmwareScvValidator extends SupplyChainCredentialValidator {
 
                 if (baseline.length > 0) {
                     String pcrContent = "";
-                    pcrContent = new String(device.getDeviceInfo().getTpmInfo().getPcrValues());
+                    pcrContent = new String(device.getDeviceInfo().getTpmInfo().getPcrValues(),
+                            StandardCharsets.UTF_8);
 
                     if (pcrContent.isEmpty()) {
                         fwStatus = new AppraisalStatus(FAIL,
@@ -222,7 +220,6 @@ public class FirmwareScvValidator extends SupplyChainCredentialValidator {
 
                         if (!tpmPcrEvents.isEmpty()) {
                             StringBuilder sb = new StringBuilder();
-                            validationObject = measurement;
                             sb.append(String.format("%d digest(s) were not found:%n",
                                     tpmPcrEvents.size()));
                             for (TpmPcrEvent tpe : tpmPcrEvents) {

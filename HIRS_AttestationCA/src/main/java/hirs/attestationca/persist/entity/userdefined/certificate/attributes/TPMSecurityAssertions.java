@@ -8,6 +8,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.io.Serializable;
 import java.math.BigInteger;
 
 /**
@@ -24,7 +25,7 @@ import java.math.BigInteger;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Getter @Setter
 @Embeddable
-public class TPMSecurityAssertions {
+public class TPMSecurityAssertions implements Serializable {
 
     /**
      * A type to handle the different endorsement key generation types used in the TPM

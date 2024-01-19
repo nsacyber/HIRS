@@ -209,6 +209,15 @@ public class TPMInfo implements Serializable {
     }
 
     /**
+     * Used to retrieve the identity certificate for the device.
+     *
+     * @return a byte array holding the certificate information
+     */
+    public X509Certificate getIdentityCertificate() {
+        return identityCertificate;
+    }
+
+    /**
      * Getter for the tpmQuote passed up by the client.
      * @return a byte blob of quote
      */

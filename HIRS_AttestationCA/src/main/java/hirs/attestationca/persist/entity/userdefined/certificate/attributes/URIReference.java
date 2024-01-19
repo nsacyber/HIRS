@@ -75,7 +75,10 @@ public class URIReference {
     public String toString() {
         StringBuilder sb = new StringBuilder();
         sb.append("URIReference{");
-        sb.append("uniformResourceIdentifier=").append(uniformResourceIdentifier.getString());
+        sb.append("uniformResourceIdentifier=");
+        if (uniformResourceIdentifier != null) {
+            sb.append(uniformResourceIdentifier.getString());
+        }
         //Check of optional values are not null
         sb.append(", hashAlgorithm=");
         if (hashAlgorithm != null) {

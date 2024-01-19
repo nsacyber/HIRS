@@ -40,7 +40,6 @@ import java.util.UUID;
 @Entity
 public class SupplyChainValidationSummary extends ArchivableEntity {
 
-    @Getter
     @ManyToOne
     @JoinColumn(name = "device_id")
     private final Device device;
@@ -202,6 +201,15 @@ public class SupplyChainValidationSummary extends ArchivableEntity {
         this.overallValidationResult = status.getAppStatus();
         this.validations = new HashSet<>(validations);
         this.message = status.getMessage();
+    }
+
+    /**
+     * This retrieves the device associated with the supply chain validation summaries.
+     *
+     * @return the validated device
+     */
+    public Device getDevice() {
+        return new Device(this.device.getDeviceInfo());
     }
 
     /**
