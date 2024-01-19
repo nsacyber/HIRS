@@ -32,7 +32,6 @@ public class UefiVariable {
     /**
      * List of Signature lists.
      */
-    @Getter
     private List<UefiSignatureList> certSuperList;
     /**
      * Name of the UEFI variable.
