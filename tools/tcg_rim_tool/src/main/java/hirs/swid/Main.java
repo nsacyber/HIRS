@@ -5,7 +5,13 @@ import hirs.swid.utils.TimestampArgumentValidator;
 import hirs.utils.rim.ReferenceManifestValidator;
 import com.beust.jcommander.JCommander;
 
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class Main {
 
@@ -19,6 +25,24 @@ public class Main {
         if (commander.isHelp()) {
             jc.usage();
             System.out.println(commander.printHelpExamples());
+        } else if (commander.isVersion()) {
+            try {
+                byte[] content = Files.readAllBytes(Paths.get(SwidTagConstants.VERSION_FILE));
+                String version = new String(content);
+                System.out.println("TCG rimtool version: " + version);
+            } catch (IOException e) {
+                System.out.println("Installation file VERSION not found.");
+                String filename = new File(Main.class.getProtectionDomain()
+                        .getCodeSource()
+                        .getLocation()
+                        .getPath()).getName();
+                Pattern pattern = Pattern.compile("(?<=tcg_rim_tool-)[0-9]\\.[0-9]\\.[0-9]");
+                Matcher matcher = pattern.matcher(filename);
+                if (matcher.find()) {
+                    System.out.println("TCG rimtool version: " + matcher.group());
+                }
+
+            }
         } else {
             if (!commander.getVerifyFile().isEmpty()) {
                 validator = new ReferenceManifestValidator();

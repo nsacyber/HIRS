@@ -12,13 +12,18 @@ import javax.xml.namespace.QName;
  */
 public class SwidTagConstants {
 
-    public static final String DEFAULT_KEYSTORE_FILE = "/opt/hirs/rimtool/data/keystore.jks";
+    public static final String INSTALLATION_DIRECTORY = "/opt/rimtool";
+    public static final String VERSION_FILE = INSTALLATION_DIRECTORY + "/VERSION";
+    public static final String DEFAULT_KEYSTORE_FILE =
+            INSTALLATION_DIRECTORY + "/data/keystore.jks";
     public static final String DEFAULT_KEYSTORE_PASSWORD = "password";
     public static final String DEFAULT_PRIVATE_KEY_ALIAS = "selfsigned";
-    public static final String DEFAULT_ATTRIBUTES_FILE = "/opt/hirs/rimtool/data/rim_fields.json";
+    public static final String DEFAULT_ATTRIBUTES_FILE =
+            INSTALLATION_DIRECTORY + "/data/rim_fields.json";
     public static final String DEFAULT_ENGLISH = "en";
 
-    public static final String SIGNATURE_ALGORITHM_RSA_SHA256 = "http://www.w3.org/2001/04/xmldsig-more#rsa-sha256";
+    public static final String SIGNATURE_ALGORITHM_RSA_SHA256 =
+            "http://www.w3.org/2001/04/xmldsig-more#rsa-sha256";
 
     public static final String SCHEMA_PACKAGE = "hirs.utils.xjc";
     public static final String SCHEMA_LANGUAGE = XMLConstants.W3C_XML_SCHEMA_NS_URI;
