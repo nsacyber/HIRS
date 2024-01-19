@@ -69,7 +69,6 @@ public class EvEfiGptPartition {
     /**
      * List of Partitions.
      */
-    @Getter
     private List<UefiPartition> partitionList;
 
     /**
