@@ -12,7 +12,7 @@ LOG_FILE_NAME="hirs_aca_install_"$(date +%Y-%m-%d).log
 LOG_DIR="/var/log/hirs/"
 LOG_FILE="$LOG_DIR$LOG_FILE_NAME"
 HIRS_JSON_DIR="/etc/hirs/aca/default-properties"
-ACA_PROP_FILE="/etc/hirs/aca/aca.properties"
+ACA_OPT_DIR="/opt/hirs/aca/"
 ACA_VERSION_FILE="/opt/hirs/aca/VERSION"
 SPRING_PROP_FILE="/etc/hirs/aca/application.properties"
 PROP_FILE='../../../HIRS_AttestationCAPortal/src/main/resources/application.properties'
@@ -67,7 +67,7 @@ done
 
 set -- "${POSITIONAL_ARGS[@]}" # restore positional parameters
 
-mkdir -p $HIRS_CONF_DIR $LOG_DIR $HIRS_JSON_DIR
+mkdir -p $HIRS_CONF_DIR $LOG_DIR $HIRS_JSON_DIR $ACA_OPT_DIR
 touch "$LOG_FILE"
 
 pushd $SCRIPT_DIR &>/dev/null
