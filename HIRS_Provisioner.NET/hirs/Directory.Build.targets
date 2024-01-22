@@ -1,0 +1,44 @@
+<Project>
+  <Target Name="RenameBeforePublishLinux" BeforeTargets="CreatePackageProperties" Condition="$(RuntimeIdentifier.Contains('linux'))">
+    <PropertyGroup>
+        <SymlinkAppHostInBin Condition="'$(SymlinkAppHostInBin)' == ''">false</SymlinkAppHostInBin> <!-- If true, this will place a symlink in /usr/local/bin/, which is not on $PATH for root by default. We need the symlink in /bin or /sbin -->
+    </PropertyGroup>
+    <Move SourceFiles="$(OUTDIR)publish\$(AssemblyName)" DestinationFiles="$(OUTDIR)publish\tpm_aca_provision" />
+    <Message Text="Renamed linux binary file." Importance="high" />
+    <PropertyGroup>
+      <Prefix>/usr/share/hirs</Prefix>
+      <PostInstallScript>/usr/bin/chmod 644 /usr/share/hirs/appsettings.json; /usr/bin/ln -s /usr/share/hirs/tpm_aca_provision /usr/bin/tpm_aca_provision</PostInstallScript>
+      <PostRemoveScript>rm -f /usr/bin/tpm_aca_provision; rm -rf /usr/share/hirs</PostRemoveScript>
+    </PropertyGroup>
+    <Message Text="Set installed directory prefix to $(PREFIX)." Importance="high" />
+  </Target>
+  <Target Name="RenameBeforePublishWindows" BeforeTargets="SetWixPath" Condition="$(RuntimeIdentifier.Contains('win'))">
+    <Move SourceFiles="$(OUTDIR)publish\$(AssemblyName).exe" DestinationFiles="$(OUTDIR)publish\tpm_aca_provision.exe" />
+    <Message Text="Renamed exe binary file." Importance="high" />
+  </Target>
+  <Target Name="SetWixPath" BeforeTargets="Msi">
+    <PropertyGroup>
+      <ProductSourceFilePath>$(MSBuildThisFileDirectory)\Resources\Product.wxs</ProductSourceFilePath>
+      <WixInstallPath>$(NuGetPackageRoot)wix\3.11.2\tools\</WixInstallPath>
+      <Heat>$(WixInstallPath)heat.exe</Heat>
+      <Candle>$(WixInstallPath)candle.exe</Candle>
+      <Light>$(WixInstallPath)light.exe</Light>
+    </PropertyGroup>
+  </Target>
+  <Target Name="DeletePDB" AfterTargets="RenameBeforePublishLinux;RenameBeforePublishWindows">
+    <ItemGroup>
+      <PDBToDelete Include="$(PublishDir)*.pdb"/>
+    </ItemGroup>   
+    <Delete Files="@(PDBToDelete)" />
+    <Message Text="Deleted PDB files." Importance="high" />	
+  </Target>
+  <Target Name="CopyFiles" AfterTargets="DeletePDB">
+    <ItemGroup>
+      <PaccorScriptsDll Include="$(OUTDIR)paccor_scripts.dll"/>
+    </ItemGroup>
+    <Copy
+      SourceFiles="@(PaccorScriptsDll)"
+      DestinationFolder="$(PublishDir)plugins"
+    />
+  </Target>
+</Project>
