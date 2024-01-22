@@ -97,7 +97,6 @@ ospackage {
     }
 
     // Post Install
-    postInstall "echo ${jarVersion} > /opt/hirs/aca/VERSION"
     postInstall 'bash /opt/hirs/aca/scripts/aca/aca_setup.sh -u'
     // add chrontab to run ACA at boot
     postInstall 'echo "@reboot root /opt/hirs/aca/scripts/aca/aca_bootRun.sh -w" >> /etc/crontab'
@@ -105,6 +104,8 @@ ospackage {
     postInstall '/opt/hirs/aca/scripts/aca/aca_bootRun.sh -w &'
     postInstall 'chmod +x /opt/hirs/aca/scripts/aca/*'
     postInstall 'bash /opt/hirs/aca/scripts/aca/check_for_aca.sh'
+    postInstall 'mkdir -p /etc/hirs/aca && touch /etc/hirs/aca/VERSION'
+    postInstall "echo ${jarVersion} > /etc/hirs/aca/VERSION"
 
     // Uninstall
     preUninstall 'bash /opt/hirs/aca/scripts/aca/aca_remove_setup.sh'

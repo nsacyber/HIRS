@@ -13,7 +13,7 @@ LOG_DIR="/var/log/hirs/"
 LOG_FILE="$LOG_DIR$LOG_FILE_NAME"
 HIRS_JSON_DIR="/etc/hirs/aca/default-properties"
 ACA_PROP_FILE="/etc/hirs/aca/aca.properties"
-ACA_VERSION_FILE="/etc/hirs/aca/VERSION"
+ACA_VERSION_FILE="/opt/hirs/aca/VERSION"
 SPRING_PROP_FILE="/etc/hirs/aca/application.properties"
 PROP_FILE='../../../HIRS_AttestationCAPortal/src/main/resources/application.properties'
 COMP_JSON='../../../HIRS_AttestationCA/src/main/resources/component-class.json'
@@ -29,8 +29,6 @@ help () {
   echo "     -sd | --skip-db run the setup without database setup."
   echo
 }
-
-
 
 # Process parameters Argument handling 
 POSITIONAL_ARGS=()
