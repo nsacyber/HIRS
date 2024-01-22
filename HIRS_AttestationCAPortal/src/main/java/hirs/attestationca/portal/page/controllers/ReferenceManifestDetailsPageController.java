@@ -33,7 +33,6 @@ import org.springframework.web.servlet.ModelAndView;
 import java.io.IOException;
 import java.security.KeyStore;
 import java.security.NoSuchAlgorithmException;
-import java.security.PublicKey;
 import java.security.cert.CertificateException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -327,7 +326,7 @@ public class ReferenceManifestDetailsPageController extends PageController<Refer
                     }
                 }
             }
-        } catch (NullPointerException npEx) {
+        } catch (Exception npEx) {
             log.warn("Unable to link signing certificate: " + npEx.getMessage());
         }
         return data;

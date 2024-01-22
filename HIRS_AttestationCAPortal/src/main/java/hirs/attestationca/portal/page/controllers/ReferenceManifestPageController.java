@@ -44,6 +44,7 @@ import java.security.NoSuchAlgorithmException;
 import java.security.cert.CertificateException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Map.Entry;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -405,7 +406,7 @@ public class ReferenceManifestPageController extends PageController<NoPageParams
                     baseRims.add(baseRim);
                 }
             }
-        } catch (IOException | NullPointerException ioEx) {
+        } catch (Exception ioEx) {
             final String failMessage
                     = String.format("Failed to parse uploaded file (%s): ", fileName);
             log.error(failMessage, ioEx);
@@ -417,6 +418,7 @@ public class ReferenceManifestPageController extends PageController<NoPageParams
             final List<SupportReferenceManifest> dbSupportRims) {
         SupportReferenceManifest supportRim;
         String fileString;
+        String supportHash;
         Map<String, SupportReferenceManifest> updatedSupportRims = new HashMap<>();
         Map<String, SupportReferenceManifest> hashValues = new HashMap<>();
         for (SupportReferenceManifest support : dbSupportRims) {
@@ -424,11 +426,12 @@ public class ReferenceManifestPageController extends PageController<NoPageParams
         }
 
         for (BaseReferenceManifest dbBaseRim : referenceManifestRepository.findAllBaseRims()) {
-            for (String supportHash : hashValues.keySet()) {
+            for (Entry<String, SupportReferenceManifest> entry : hashValues.entrySet()) {
+                supportHash = entry.getKey();
                 fileString = new String(dbBaseRim.getRimBytes(), StandardCharsets.UTF_8);
 
                 if (fileString.contains(supportHash)) {
-                    supportRim = hashValues.get(supportHash);
+                    supportRim = entry.getValue();
                     // I have to assume the baseRim is from the database
                     // Updating the id values, manufacturer, model
                     if (supportRim != null && !supportRim.isUpdated()) {

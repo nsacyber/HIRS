@@ -63,6 +63,9 @@ import java.util.Properties;
 @EnableJpaRepositories(basePackages = "hirs.attestationca.persist.entity.manager")
 public class PersistenceJPAConfig implements WebMvcConfigurer {
 
+    private static final String HIBERNATE_HBM2DDL = "update";
+    private static final String HIBERNATE_DIALECT = "org.hibernate.dialect.MariaDBDialect";
+
 //    @Value("${aca.directories.certificates}")
 //    private String certificatesLocation;
 
@@ -224,10 +227,17 @@ public class PersistenceJPAConfig implements WebMvcConfigurer {
 
     final Properties additionalProperties() {
         final Properties hibernateProperties = new Properties();
-        hibernateProperties.setProperty("hibernate.hbm2ddl.auto",
-                environment.getProperty("hibernate.hbm2ddl.auto"));
-        hibernateProperties.setProperty("hibernate.dialect",
-                environment.getProperty("hibernate.dialect"));
+        if (environment == null) {
+            hibernateProperties.setProperty("hibernate.hbm2ddl.auto",
+                    HIBERNATE_HBM2DDL);
+            hibernateProperties.setProperty("hibernate.dialect",
+                    HIBERNATE_DIALECT);
+        } else {
+            hibernateProperties.setProperty("hibernate.hbm2ddl.auto",
+                    environment.getProperty("hibernate.hbm2ddl.auto"));
+            hibernateProperties.setProperty("hibernate.dialect",
+                    environment.getProperty("hibernate.dialect"));
+        }
         hibernateProperties.setProperty("hibernate.cache.use_second_level_cache",
                 "false");
 

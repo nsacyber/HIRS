@@ -209,23 +209,23 @@ public class CertificatePageController extends PageController<NoPageParams> {
         log.debug("Ordering on column: " + orderColumnName);
 
         // check that the alert is not archived and that it is in the specified report
-        CriteriaModifier criteriaModifier = new CriteriaModifier() {
-            @Override
-            public void modify(final CriteriaQuery criteriaQuery) {
-                Session session = entityManager.unwrap(Session.class);
-                CriteriaBuilder cb = session.getCriteriaBuilder();
-                Root<Certificate> rimRoot = criteriaQuery.from(Reference.class);
-                criteriaQuery.select(rimRoot).distinct(true).where(cb.isNull(rimRoot.get(Certificate.ARCHIVE_FIELD)));
-
-                // add a device alias if this query includes the device table
-                // for getting the device (e.g. device name).
-                // use left join, since device may be null. Query will return all
-                // Certs of this type, whether it has a Device or not (device field may be null)
-                if (hasDeviceTableToJoin(certificateType)) {
-//                    criteria.createAlias("device", "device", JoinType.LEFT_OUTER_JOIN);
-                }
-            }
-        };
+//        CriteriaModifier criteriaModifier = new CriteriaModifier() {
+//            @Override
+//            public void modify(final CriteriaQuery criteriaQuery) {
+//                Session session = entityManager.unwrap(Session.class);
+//                CriteriaBuilder cb = session.getCriteriaBuilder();
+//                Root<Certificate> rimRoot = criteriaQuery.from(Reference.class);
+//                criteriaQuery.select(rimRoot).distinct(true).where(cb.isNull(rimRoot.get(Certificate.ARCHIVE_FIELD)));
+//
+//                // add a device alias if this query includes the device table
+//                // for getting the device (e.g. device name).
+//                // use left join, since device may be null. Query will return all
+//                // Certs of this type, whether it has a Device or not (device field may be null)
+//                if (hasDeviceTableToJoin(certificateType)) {
+////                    criteria.createAlias("device", "device", JoinType.LEFT_OUTER_JOIN);
+//                }
+//            }
+//        };
 
         int currentPage = input.getStart() / input.getLength();
         Pageable paging = PageRequest.of(currentPage, input.getLength(), Sort.by(orderColumnName));
@@ -737,12 +737,10 @@ public class CertificatePageController extends PageController<NoPageParams> {
             final String serialNumber) {
         List<PlatformCredential> associatedCertificates = new LinkedList<>();
 
-        if (serialNumber != null){
-            switch (certificateType) {
-                case PLATFORMCREDENTIAL:
-                    associatedCertificates.addAll(this.certificateRepository
-                            .byBoardSerialNumber(serialNumber));
-                default:
+        if (serialNumber != null) {
+            if (certificateType.equals(PLATFORMCREDENTIAL)) {
+                associatedCertificates.addAll(this.certificateRepository
+                        .byBoardSerialNumber(serialNumber));
             }
         }
 

@@ -96,15 +96,15 @@ public class RimDatabasePageController extends PageController<NoPageParams> {
         log.info("Ordering on column: " + orderColumnName);
 
         // check that the alert is not archived and that it is in the specified report
-        CriteriaModifier criteriaModifier = new CriteriaModifier() {
-            @Override
-            public void modify(final CriteriaQuery criteriaQuery) {
-                Session session = entityManager.unwrap(Session.class);
-                CriteriaBuilder cb = session.getCriteriaBuilder();
-                Root<ReferenceDigestValue> rimRoot = criteriaQuery.from(Reference.class);
-                criteriaQuery.select(rimRoot).distinct(true).where(cb.isNull(rimRoot.get(Certificate.ARCHIVE_FIELD)));
-            }
-        };
+//        CriteriaModifier criteriaModifier = new CriteriaModifier() {
+//            @Override
+//            public void modify(final CriteriaQuery criteriaQuery) {
+//                Session session = entityManager.unwrap(Session.class);
+//                CriteriaBuilder cb = session.getCriteriaBuilder();
+//                Root<ReferenceDigestValue> rimRoot = criteriaQuery.from(Reference.class);
+//                criteriaQuery.select(rimRoot).distinct(true).where(cb.isNull(rimRoot.get(Certificate.ARCHIVE_FIELD)));
+//            }
+//        };
 
         log.info("Querying with the following dataTableInput: " + input.toString());
 
