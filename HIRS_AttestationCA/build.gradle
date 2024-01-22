@@ -51,6 +51,7 @@ dependencies {
     testImplementation 'org.hamcrest:hamcrest:2.2'
 
     testImplementation 'org.mockito:mockito-core:4.2.0'
+    testImplementation 'org.powermock:powermock-core:2.0.9'
 
     // spring management
     compileOnly libs.lombok
