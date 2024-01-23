@@ -20,6 +20,7 @@ import lombok.Setter;
 
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
+import java.util.Objects;
 
 @Entity
 @Table(name = "Device")
@@ -112,9 +113,33 @@ public class Device extends AbstractEntity {
     }
 
     public String toString() {
-        return String.format("Device Name: %s%nStatus: %s%nSummary: %s",
+        return String.format("Device Name: %s%nStatus: %s%nSummary: %s%n",
                 name, healthStatus.getStatus(),
                 supplyChainValidationStatus.toString(),
                 summaryId);
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof Device)) {
+            return false;
+        }
+
+        Device device = (Device) o;
+        return isStateOverridden == device.isStateOverridden
+                && Objects.equals(name, device.name)
+                && healthStatus == device.healthStatus
+                && supplyChainValidationStatus == device.supplyChainValidationStatus
+                && Objects.equals(lastReportTimestamp, device.lastReportTimestamp)
+                && Objects.equals(overrideReason, device.overrideReason)
+                && Objects.equals(summaryId, device.summaryId);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(super.hashCode(), name, healthStatus,
+                supplyChainValidationStatus, lastReportTimestamp,
+                isStateOverridden, overrideReason, summaryId);
     }
 }

@@ -10,11 +10,12 @@ import lombok.extern.log4j.Log4j2;
 
 import java.io.Serializable;
 import java.net.InetAddress;
+import java.util.Arrays;
+import java.util.Objects;
 
 /**
  * This class is used to represent the network info of a device.
  */
-@EqualsAndHashCode
 @Log4j2
 @Embeddable
 public class NetworkInfo implements Serializable {
@@ -111,5 +112,24 @@ public class NetworkInfo implements Serializable {
         }
         log.debug("setting MAC address to: {}", sb);
         this.macAddress = macAddress;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof NetworkInfo)) {
+            return false;
+        }
+        NetworkInfo that = (NetworkInfo) o;
+        return Objects.equals(hostname, that.hostname)
+                && Objects.equals(ipAddress, that.ipAddress)
+                && Arrays.equals(macAddress, that.macAddress);
+    }
+
+    @Override
+    public int hashCode() {
+        int result = Objects.hash(hostname, ipAddress);
+        result = 31 * result + Arrays.hashCode(macAddress);
+        return result;
     }
 }
