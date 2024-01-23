@@ -31,17 +31,7 @@ public class Main {
                 String version = new String(content);
                 System.out.println("TCG rimtool version: " + version);
             } catch (IOException e) {
-                System.out.println("Installation file VERSION not found.");
-                String filename = new File(Main.class.getProtectionDomain()
-                        .getCodeSource()
-                        .getLocation()
-                        .getPath()).getName();
-                Pattern pattern = Pattern.compile("(?<=tcg_rim_tool-)[0-9]\\.[0-9]\\.[0-9]");
-                Matcher matcher = pattern.matcher(filename);
-                if (matcher.find()) {
-                    System.out.println("TCG rimtool version: " + matcher.group());
-                }
-
+                parseVersionFromJar();
             }
         } else {
             if (!commander.getVerifyFile().isEmpty()) {
@@ -125,6 +115,23 @@ public class Main {
                         System.out.println("No create type given, nothing to do");
                 }
             }
+        }
+    }
+
+    /**
+     * This method parses the version number from the jar filename in the absence of
+     * the VERSION file expected with an rpm installation.
+     */
+    private static void parseVersionFromJar() {
+        System.out.println("Installation file VERSION not found.");
+        String filename = new File(Main.class.getProtectionDomain()
+                .getCodeSource()
+                .getLocation()
+                .getPath()).getName();
+        Pattern pattern = Pattern.compile("(?<=tcg_rim_tool-)[0-9]\\.[0-9]\\.[0-9]");
+        Matcher matcher = pattern.matcher(filename);
+        if (matcher.find()) {
+            System.out.println("TCG rimtool version: " + matcher.group());
         }
     }
 }
