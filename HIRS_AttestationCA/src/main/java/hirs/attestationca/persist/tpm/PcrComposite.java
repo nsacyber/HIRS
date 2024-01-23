@@ -86,7 +86,7 @@ public class PcrComposite {
             throw new NullPointerException("pcrValueList");
         }
         this.pcrSelection = pcrSelection;
-        this.pcrValueList = pcrValueList;
+        this.pcrValueList = pcrValueList.stream().toList();
     }
 
 

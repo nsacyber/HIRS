@@ -1,6 +1,7 @@
 package hirs.utils;
 
 import org.junit.jupiter.api.Test;
+
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
@@ -14,7 +15,6 @@ public class VersionHelperTest {
      */
     @Test
     public void testGetVersionFail() {
-
         String actual = VersionHelper.getVersion("somefile");
         assertTrue(actual.startsWith(""));
     }
@@ -24,9 +24,8 @@ public class VersionHelperTest {
      */
     @Test
     public void testGetVersionDefault() {
-
         String expected = "Test.Version";
-        String actual = VersionHelper.getVersion();
+        String actual = VersionHelper.getVersion("VERSION");
         assertEquals(expected, actual);
     }
 }

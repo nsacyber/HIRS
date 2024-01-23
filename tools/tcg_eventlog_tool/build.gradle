@@ -1,14 +1,11 @@
 import java.util.concurrent.TimeUnit
 plugins {
       id "java"
-//    id "findbugs"
-//    id "checkstyle"
       id "com.netflix.nebula.ospackage" version "11.4.0"
 }
 // Get version from main project gradle
 def packVersion = properties.get("packageVersion");
 def jarVersion = properties.get("jarVersion");
-//println "packageVersion is ${projVersion}"
 
 java {
     toolchain {
@@ -25,28 +22,9 @@ dependencies {
     implementation project(':HIRS_Utils')
     implementation libs.jcommander
     implementation libs.commons.io
-//    implementation libs.checkstyle
-//    implementation libs.findbugs
-//    testCompile libs.testng
 }
 
 ext.configDir = new File(projectDir, 'config')
-//ext.checkstyleConfigDir = "$configDir/checkstyle"
-//ext.findbugsConfigDir = "$configDir/findbugs"
-
-//checkstyle {
-//    toolVersion = '5.7'
-//    configFile = checkstyleConfigFile
-//    configProperties.put('basedir', checkstyleConfigDir)
-//    ignoreFailures = false
-//    showViolations = true
-//}
-
-//findbugs {
-//    toolVersion = '3.0.0'
-//    ignoreFailures = false
-//    effort = 'max'
-//}
 
 jar {
     // Keep jar clean:
@@ -73,11 +51,11 @@ ospackage {
     user 'root'
     fileMode = 0755
 
-   into ('/opt/hirs/eventlog/lib') {
+   into ('/opt/eltool/lib') {
        from jar.outputs.files
        from configurations.runtimeClasspath
     }
-    into ('/opt/hirs/eventlog/scripts') {
+    into ('/opt/eltool/scripts') {
       from ('scripts') {
         exclude {
             FileTreeElement details -> 
@@ -85,7 +63,7 @@ ospackage {
         }
       }
     }
-    into ('/opt/hirs/eventlog/docs') {
+    into ('/opt/eltool/docs') {
         from ('docs') {
            exclude {
                FileTreeElement details ->
@@ -100,7 +78,7 @@ ospackage {
        }
     }
     // Copy vendor-table into /tmp to avoid conflict with the ACA 
-    into('/tmp/elt/default-properties') {
+    into('/opt/eltool/default-properties') {
         from ('../../HIRS_Utils/src/main/resources/vendor-table.json') {
          fileMode 0664
          addParentDirs = true
@@ -108,19 +86,12 @@ ospackage {
     }
 
     // place elt link in system path to enable command line access
-    link("/usr/local/bin/elt", "/opt/hirs/eventlog/scripts/eventlog.sh", 0x755)
+    link("/usr/local/bin/elt", "/opt/eltool/scripts/eventlog.sh", 0x755)
 
-    // PostInstall
-     //postInstall "cp ../../HIRS_Utils/build/libs/* /opt/hirs/eventlog/lib/."
-    // Copy files from /opt/elt/default-properties/ to avoid conflicts with the ACA
-     postInstall "cp /tmp/elt/default-properties/* /opt/hirs/default-properties/."
-     postInstall "rm -rf /tmp/elt"
-
-    // Uninstall
-    // copy files to where package manager exspects them and remove project files
-     preUninstall "mkdir -p /tmp/elt/default-properties"
-     preUninstall "cp /opt/hirs/default-properties/vendor-table.json /tmp/elt/default-properties/."
-     postUninstall "rm -rf /tmp/elt"
+    // Post Install
+    postInstall "echo ${jarVersion} > /opt/eltool/VERSION"
+    // Post Uninstall
+    postUninstall 'rm -rf /opt/eltool'
 
     buildRpm {
         arch = X86_64

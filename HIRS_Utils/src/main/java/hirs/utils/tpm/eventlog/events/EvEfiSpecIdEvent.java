@@ -7,6 +7,7 @@ import lombok.Getter;
 
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Class to process the TCG_EfiSpecIDEvent.
@@ -47,40 +48,46 @@ import java.util.ArrayList;
  * 6. The version of the log is used to determine which format the Log
  * is to use (sha1 or Crypto Agile)
  */
-@Getter
 public class EvEfiSpecIdEvent {
     /**
      * Minor Version.
      */
+    @Getter
     private String versionMinor = "";
     /**
      * Major Version.
      */
+    @Getter
     private String versionMajor = "";
     /**
      * Specification errata version.
      */
+    @Getter
     private String errata = "";
     /**
      * Signature (text) data.
      */
+    @Getter
     private String signature = "";
     /**
      * Platform class.
      */
+    @Getter
     private String platformClass = "";
     /**
      * Algorithm count.
      */
+    @Getter
     private int numberOfAlg = 0;
     /**
      * True if event log uses Crypto Agile format.
      */
+    @Getter
     private boolean cryptoAgile = false;
     /**
      * Algorithm list.
      */
-    private ArrayList<String> algList = new ArrayList<String>();
+    private List<String> algList;
 
     /**
      * EvEfiSpecIdEvent Constructor.
@@ -88,6 +95,7 @@ public class EvEfiSpecIdEvent {
      * @param efiSpecId byte array holding the spec ID Event.
      */
     public EvEfiSpecIdEvent(final byte[] efiSpecId) {
+        algList = new ArrayList<>();
         byte[] signatureBytes = new byte[UefiConstants.SIZE_16];
         System.arraycopy(efiSpecId, 0, signatureBytes, 0, UefiConstants.SIZE_16);
         signature = HexUtils.byteArrayToHexString(signatureBytes);

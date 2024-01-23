@@ -4,9 +4,9 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
+import org.bouncycastle.asn1.ASN1BitString;
+import org.bouncycastle.asn1.ASN1IA5String;
 import org.bouncycastle.asn1.ASN1Sequence;
-import org.bouncycastle.asn1.DERBitString;
-import org.bouncycastle.asn1.DERIA5String;
 import org.bouncycastle.asn1.x509.AlgorithmIdentifier;
 
 /**
@@ -23,10 +23,10 @@ import org.bouncycastle.asn1.x509.AlgorithmIdentifier;
 @Getter @Setter
 @AllArgsConstructor
 public class URIReference {
-    private DERIA5String uniformResourceIdentifier;
+    private ASN1IA5String uniformResourceIdentifier;
     private AlgorithmIdentifier hashAlgorithm;
     @JsonIgnore
-    private DERBitString hashValue;
+    private ASN1BitString hashValue;
 
     private static final int PLATFORM_PROPERTIES_URI_MAX = 3;
     private static final int PLATFORM_PROPERTIES_URI_MIN = 1;
@@ -56,14 +56,14 @@ public class URIReference {
 
         //Get the Platform Configuration URI values
         for (int j = 0; j < sequence.size(); j++) {
-            if (sequence.getObjectAt(j) instanceof DERIA5String) {
-                this.uniformResourceIdentifier = DERIA5String.getInstance(sequence.getObjectAt(j));
+            if (sequence.getObjectAt(j) instanceof ASN1IA5String) {
+                this.uniformResourceIdentifier = ASN1IA5String.getInstance(sequence.getObjectAt(j));
             } else if ((sequence.getObjectAt(j) instanceof AlgorithmIdentifier)
                     || (sequence.getObjectAt(j) instanceof ASN1Sequence)) {
                 this.hashAlgorithm =
                         AlgorithmIdentifier.getInstance(sequence.getObjectAt(j));
-            } else if (sequence.getObjectAt(j) instanceof DERBitString) {
-                this.hashValue = DERBitString.getInstance(sequence.getObjectAt(j));
+            } else if (sequence.getObjectAt(j) instanceof ASN1BitString) {
+                this.hashValue = ASN1BitString.getInstance(sequence.getObjectAt(j));
             } else {
                 throw new IllegalArgumentException("Unexpected DER type found. "
                         + sequence.getObjectAt(j).getClass().getName() + " found at index " + j + ".");
@@ -75,7 +75,10 @@ public class URIReference {
     public String toString() {
         StringBuilder sb = new StringBuilder();
         sb.append("URIReference{");
-        sb.append("uniformResourceIdentifier=").append(uniformResourceIdentifier.getString());
+        sb.append("uniformResourceIdentifier=");
+        if (uniformResourceIdentifier != null) {
+            sb.append(uniformResourceIdentifier.getString());
+        }
         //Check of optional values are not null
         sb.append(", hashAlgorithm=");
         if (hashAlgorithm != null) {

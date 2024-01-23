@@ -314,7 +314,7 @@ public class IdentityClaimProcessor extends AbstractProcessor {
         Pattern pattern = Pattern.compile("([^\\s]+(\\.(?i)(rimpcr|rimel|bin|log))$)");
         Matcher matcher;
         MessageDigest messageDigest =  MessageDigest.getInstance("SHA-256");
-        List<ReferenceManifest> listOfSavedRims = new LinkedList<>();
+//        List<ReferenceManifest> listOfSavedRims = new LinkedList<>();
 
         if (dv.getLogfileCount() > 0) {
             for (ByteString logFile : dv.getLogfileList()) {
@@ -424,11 +424,11 @@ public class IdentityClaimProcessor extends AbstractProcessor {
                         dbSupport.setUpdated(true);
                         dbSupport.setAssociatedRim(dbBaseRim.getId());
                         this.referenceManifestRepository.save(dbSupport);
-                        listOfSavedRims.add(dbSupport);
+//                        listOfSavedRims.add(dbSupport);
                     }
                 }
                 this.referenceManifestRepository.save(dbBaseRim);
-                listOfSavedRims.add(dbBaseRim);
+//                listOfSavedRims.add(dbBaseRim);
             }
         }
 

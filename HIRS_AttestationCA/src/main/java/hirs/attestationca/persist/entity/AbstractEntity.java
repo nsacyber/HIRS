@@ -4,7 +4,6 @@ import jakarta.persistence.Column;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
 import jakarta.persistence.MappedSuperclass;
-import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.ToString;
 import org.hibernate.annotations.UuidGenerator;
@@ -16,7 +15,6 @@ import java.util.UUID;
 /**
  * An abstract database entity.
  */
-@EqualsAndHashCode
 @ToString
 @MappedSuperclass
 public abstract class AbstractEntity implements Serializable {
@@ -75,4 +73,27 @@ public abstract class AbstractEntity implements Serializable {
     public void resetCreateTime() {
         createTime.setTime(new Date().getTime());
     }
+
+    @Override
+    public int hashCode() {
+        if (id != null) {
+            return id.hashCode();
+        }
+        return super.hashCode();
+    }
+
+    @Override
+    public boolean equals(final Object object) {
+        if (this == object) {
+            return true;
+        }
+        if (object == null) {
+            return false;
+        }
+        if (!(this.getClass().equals(object.getClass()))) {
+            return false;
+        }
+        return this.hashCode() == object.hashCode();
+    }
+
 }

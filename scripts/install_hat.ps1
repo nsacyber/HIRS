@@ -70,6 +70,8 @@ Expand-Archive -Path oem_certs.zip
 # Make sure Docker is using Windows Containers
 & $Env:ProgramFiles\Docker\Docker\DockerCli.exe -SwitchWindowsEngine
 
+Expand-Archive -Path oem_certs.zip
+
 Write-Host "Downloading images (This can take a while)"
 docker pull ghcr.io/nsacyber/hirs/aca:latest
 docker pull ghcr.io/nsacyber/hirs/hat:latest
@@ -86,7 +88,9 @@ $Shortcut.Save()
  docker compose -f $Home\hirs\compose-acceptance-test-windows.yml up --detach
 # Wait for ACA to start
 Write-Host "Waiting for ACA to start up on local host port 8443 ..."
+
 Write-Host " Note that several TCP connect failure notices are expected while the container boots up."
+
 Start-Sleep -seconds 10  
   while ((Test-NetConnection -computername localhost -Port 8443 ).TcpTestSucceeded -eq $FALSE )  {   Start-Sleep -seconds 5  }
 Write-Host "ACA is up!"

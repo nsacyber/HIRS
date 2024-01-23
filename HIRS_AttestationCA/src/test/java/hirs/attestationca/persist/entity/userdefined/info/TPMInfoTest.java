@@ -40,7 +40,6 @@ public class TPMInfoTest {
                 new TPMInfo(TPM_MAKE, VERSION_MAJOR, VERSION_MINOR,
                         VERSION_REV_MAJOR, VERSION_REV_MINOR,
                         getTestIdentityCertificate());
-        String yea = tpmInfo.getTpmMake();
         assertEquals(tpmInfo.getTpmMake(), TPM_MAKE);
         assertEquals(tpmInfo.getTpmVersionMajor(), VERSION_MAJOR);
         assertEquals(tpmInfo.getTpmVersionMinor(), VERSION_MINOR);

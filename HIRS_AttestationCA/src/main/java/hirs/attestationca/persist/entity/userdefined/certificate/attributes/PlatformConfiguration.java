@@ -14,10 +14,10 @@ import java.util.List;
  */
 @AllArgsConstructor
 public abstract class PlatformConfiguration {
-    private List<ComponentIdentifier> componentIdentifier;
+    private ArrayList<ComponentIdentifier> componentIdentifier = new ArrayList<>();
     @Getter @Setter
     private URIReference componentIdentifierUri;
-    private List<PlatformProperty> platformProperties;
+    private ArrayList<PlatformProperty> platformProperties = new ArrayList<>();
     @Getter @Setter
     private URIReference platformPropertiesUri;
 
@@ -43,8 +43,8 @@ public abstract class PlatformConfiguration {
     public PlatformConfiguration(final List<ComponentIdentifier> componentIdentifier,
                                  final List<PlatformProperty> platformProperties,
                                  final URIReference platformPropertiesUri) {
-        this.componentIdentifier = componentIdentifier;
-        this.platformProperties = platformProperties;
+        this.componentIdentifier = new ArrayList<>(componentIdentifier);
+        this.platformProperties = new ArrayList<>(platformProperties);
         this.platformPropertiesUri = platformPropertiesUri;
     }
 
@@ -72,7 +72,7 @@ public abstract class PlatformConfiguration {
      * @param componentIdentifier the componentIdentifier to set
      */
     public void setComponentIdentifier(final List<ComponentIdentifier> componentIdentifier) {
-        this.componentIdentifier = componentIdentifier;
+        this.componentIdentifier = new ArrayList<>(componentIdentifier);
     }
 
     /**
@@ -99,6 +99,6 @@ public abstract class PlatformConfiguration {
      * @param platformProperties the platformProperties to set
      */
     public void setPlatformProperties(final List<PlatformProperty> platformProperties) {
-        this.platformProperties = platformProperties;
+        this.platformProperties = new ArrayList<>(platformProperties);
     }
 }

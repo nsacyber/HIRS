@@ -20,6 +20,8 @@ import java.util.Random;
  */
 public class TPM2ProvisionerStateTest {
 
+    private static final Random random = new Random();
+
     /**
      * Tests that the values passed to the constructor are equal to the values
      * returned by the getters.
@@ -28,11 +30,10 @@ public class TPM2ProvisionerStateTest {
      */
     @Test
     public final void testTPM2ProvisionerState() throws IOException {
-        Random rand = new Random();
         byte[] nonce = new byte[32];
         byte[] identityClaim = new byte[360];
-        rand.nextBytes(nonce);
-        rand.nextBytes(identityClaim);
+        random.nextBytes(nonce);
+        random.nextBytes(identityClaim);
 
         TPM2ProvisionerState state = new TPM2ProvisionerState(nonce, identityClaim);
 
@@ -48,12 +49,10 @@ public class TPM2ProvisionerStateTest {
      */
     @Test
     public final void testNullNonce() throws IOException {
-        Random rand = new Random();
-        byte[] nonce = null;
         byte[] identityClaim = new byte[360];
-        rand.nextBytes(identityClaim);
+        random.nextBytes(identityClaim);
         assertThrows(IllegalArgumentException.class, () ->
-                new TPM2ProvisionerState(nonce, identityClaim));
+                new TPM2ProvisionerState(null, identityClaim));
     }
 
     /**
@@ -64,12 +63,10 @@ public class TPM2ProvisionerStateTest {
      */
     @Test
     public final void testNullIdentityClaim() throws IOException {
-        Random rand = new Random();
         byte[] nonce = new byte[32];
-        byte[] identityClaim = null;
-        rand.nextBytes(nonce);
+        random.nextBytes(nonce);
         assertThrows(IllegalArgumentException.class, () ->
-                new TPM2ProvisionerState(nonce, identityClaim));
+                new TPM2ProvisionerState(nonce, null));
     }
 
     /**
@@ -80,11 +77,10 @@ public class TPM2ProvisionerStateTest {
      */
     @Test
     public final void testNonceToSmall() throws IOException {
-        Random rand = new Random();
         byte[] nonce = new byte[7];
         byte[] identityClaim = new byte[360];
-        rand.nextBytes(nonce);
-        rand.nextBytes(identityClaim);
+        random.nextBytes(nonce);
+        random.nextBytes(identityClaim);
         assertThrows(IllegalArgumentException.class, () ->
                 new TPM2ProvisionerState(nonce, identityClaim));
     }
@@ -98,11 +94,10 @@ public class TPM2ProvisionerStateTest {
     @Test
     public final void testGetTPM2ProvisionerStateNominal() throws IOException {
         TPM2ProvisionerStateRepository tpm2ProvisionerStateRepository = mock(TPM2ProvisionerStateRepository.class);
-        Random rand = new Random();
         byte[] nonce = new byte[32];
         byte[] identityClaim = new byte[360];
-        rand.nextBytes(nonce);
-        rand.nextBytes(identityClaim);
+        random.nextBytes(nonce);
+        random.nextBytes(identityClaim);
 
         DataInputStream dis = new DataInputStream(new ByteArrayInputStream(nonce));
         Long index = dis.readLong();
@@ -123,20 +118,17 @@ public class TPM2ProvisionerStateTest {
     @Test
     public final void testGetTPM2ProvisionerStateNullNonce() throws IOException {
         TPM2ProvisionerStateRepository tpm2ProvisionerStateRepository = mock(TPM2ProvisionerStateRepository.class);
-        Random rand = new Random();
         byte[] nonce = new byte[32];
         byte[] identityClaim = new byte[360];
-        rand.nextBytes(nonce);
-        rand.nextBytes(identityClaim);
+        random.nextBytes(nonce);
+        random.nextBytes(identityClaim);
         DataInputStream dis = new DataInputStream(new ByteArrayInputStream(nonce));
         Long index = dis.readLong();
         dis.close();
         TPM2ProvisionerState value = new TPM2ProvisionerState(nonce, identityClaim);
         when(tpm2ProvisionerStateRepository.findByFirstPartOfNonce(index)).thenReturn(value);
-        TPM2ProvisionerState tpm2ProvisionerState
-                = TPM2ProvisionerState.getTPM2ProvisionerState(tpm2ProvisionerStateRepository, null);
-        assertNull(tpm2ProvisionerState);
-
+        assertThrows(NullPointerException.class, () ->
+                TPM2ProvisionerState.getTPM2ProvisionerState(tpm2ProvisionerStateRepository, null));
     }
 
     /**
@@ -147,11 +139,10 @@ public class TPM2ProvisionerStateTest {
     @Test
     public final void testGetTPM2ProvisionerStateNonceTooSmall() throws IOException {
         TPM2ProvisionerStateRepository tpm2ProvisionerStateRepository = mock(TPM2ProvisionerStateRepository.class);
-        Random rand = new Random();
         byte[] nonce = new byte[32];
         byte[] identityClaim = new byte[360];
-        rand.nextBytes(nonce);
-        rand.nextBytes(identityClaim);
+        random.nextBytes(nonce);
+        random.nextBytes(identityClaim);
         DataInputStream dis = new DataInputStream(new ByteArrayInputStream(nonce));
         Long index = dis.readLong();
         dis.close();

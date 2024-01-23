@@ -70,6 +70,7 @@ public final class ProvisionUtils {
     private static final String AK_NAME_PREFIX = "000b";
     private static final String AK_NAME_HASH_PREFIX =
             "0001000b00050072000000100014000b0800000000000100";
+    private static final SecureRandom random = new SecureRandom();
 
     /**
      * Helper method to parse a byte array into an {@link hirs.attestationca.configuration.provisionerTpm2.ProvisionerTpm2.IdentityClaim}.
@@ -183,7 +184,7 @@ public final class ProvisionUtils {
                 case OAEP:
                     OAEPParameterSpec spec =
                             new OAEPParameterSpec("Sha1", "MGF1", MGF1ParameterSpec.SHA1,
-                                    new PSource.PSpecified("".getBytes()));
+                                    new PSource.PSpecified("".getBytes(StandardCharsets.UTF_8)));
 
                     cipher.init(Cipher.PRIVATE_KEY, privateKey, spec);
                     break;
@@ -283,7 +284,7 @@ public final class ProvisionUtils {
             // encrypt seed with pubEk
             Cipher asymCipher = Cipher.getInstance("RSA/ECB/OAEPWithSHA-256AndMGF1Padding");
             OAEPParameterSpec oaepSpec = new OAEPParameterSpec("SHA-256", "MGF1",
-                    MGF1ParameterSpec.SHA256, new PSource.PSpecified("IDENTITY\0".getBytes()));
+                    MGF1ParameterSpec.SHA256, new PSource.PSpecified("IDENTITY\0".getBytes(StandardCharsets.UTF_8)));
             asymCipher.init(Cipher.PUBLIC_KEY, ek, oaepSpec);
             asymCipher.update(seed);
             byte[] encSeed = asymCipher.doFinal();
@@ -371,7 +372,7 @@ public final class ProvisionUtils {
             // encrypt the asymmetric contents and return
             OAEPParameterSpec oaepSpec =
                     new OAEPParameterSpec("Sha1", "MGF1", MGF1ParameterSpec.SHA1,
-                            new PSource.PSpecified("TCPA".getBytes()));
+                            new PSource.PSpecified("TCPA".getBytes(StandardCharsets.UTF_8)));
 
             // initialize the asymmetric cipher using the default OAEP transformation
             Cipher cipher = Cipher.getInstance(EncryptionScheme.OAEP.toString());
@@ -545,7 +546,7 @@ public final class ProvisionUtils {
         if (label.charAt(label.length() - 1) != "\0".charAt(0)) {
             labelWithEnding = label + "\0";
         }
-        byte[] labelBytes = labelWithEnding.getBytes();
+        byte[] labelBytes = labelWithEnding.getBytes(StandardCharsets.UTF_8);
         b = ByteBuffer.allocate(4);
         b.putInt(sizeInBytes * 8);
         byte[] desiredSizeInBits = b.array();
@@ -630,7 +631,6 @@ public final class ProvisionUtils {
      */
     public static byte[] generateRandomBytes(final int numberOfBytes) {
         byte[] bytes = new byte[numberOfBytes];
-        SecureRandom random = new SecureRandom();
         random.nextBytes(bytes);
         return bytes;
     }

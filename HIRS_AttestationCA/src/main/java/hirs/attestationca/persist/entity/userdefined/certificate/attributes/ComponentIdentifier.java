@@ -1,15 +1,14 @@
 package hirs.attestationca.persist.entity.userdefined.certificate.attributes;
 
-
 import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
-import org.apache.commons.lang3.StringUtils;
 import org.bouncycastle.asn1.ASN1Boolean;
 import org.bouncycastle.asn1.ASN1ObjectIdentifier;
 import org.bouncycastle.asn1.ASN1Sequence;
 import org.bouncycastle.asn1.ASN1TaggedObject;
+import org.bouncycastle.asn1.ASN1UTF8String;
 import org.bouncycastle.asn1.DERUTF8String;
 
 import java.util.ArrayList;
@@ -35,7 +34,6 @@ import java.util.stream.Collectors;
  */
 @Getter
 @Setter
-@AllArgsConstructor
 @EqualsAndHashCode
 public class ComponentIdentifier {
 
@@ -90,8 +88,8 @@ public class ComponentIdentifier {
     public ComponentIdentifier() {
         componentManufacturer = new DERUTF8String(NOT_SPECIFIED_COMPONENT);
         componentModel = new DERUTF8String(NOT_SPECIFIED_COMPONENT);
-        componentSerial = new DERUTF8String(StringUtils.EMPTY);
-        componentRevision = new DERUTF8String(StringUtils.EMPTY);
+        componentSerial = new DERUTF8String(EMPTY_COMPONENT);
+        componentRevision = new DERUTF8String(EMPTY_COMPONENT);
         componentManufacturerId = null;
         fieldReplaceable = null;
         componentAddress = new ArrayList<>();
@@ -121,7 +119,7 @@ public class ComponentIdentifier {
         this.componentRevision = componentRevision;
         this.componentManufacturerId = componentManufacturerId;
         this.fieldReplaceable = fieldReplaceable;
-        this.componentAddress = componentAddress;
+        this.componentAddress = componentAddress.stream().toList();
     }
 
     /**
@@ -138,18 +136,18 @@ public class ComponentIdentifier {
         }
 
         //Mandatory values
-        componentManufacturer = DERUTF8String.getInstance(sequence.getObjectAt(0));
-        componentModel = DERUTF8String.getInstance(sequence.getObjectAt(1));
+        componentManufacturer = (DERUTF8String) ASN1UTF8String.getInstance(sequence.getObjectAt(0));
+        componentModel = (DERUTF8String) ASN1UTF8String.getInstance(sequence.getObjectAt(1));
 
         //Continue reading the sequence if it does contain more than 2 values
         for (int i = 2; i < sequence.size(); i++) {
             ASN1TaggedObject taggedObj = ASN1TaggedObject.getInstance(sequence.getObjectAt(i));
             switch (taggedObj.getTagNo()) {
                 case COMPONENT_SERIAL:
-                    componentSerial = DERUTF8String.getInstance(taggedObj, false);
+                    componentSerial = (DERUTF8String) ASN1UTF8String.getInstance(taggedObj, false);
                     break;
                 case COMPONENT_REVISION:
-                    componentRevision = DERUTF8String.getInstance(taggedObj, false);
+                    componentRevision = (DERUTF8String) ASN1UTF8String.getInstance(taggedObj, false);
                     break;
                 case COMPONENT_MANUFACTURER_ID:
                     componentManufacturerId = ASN1ObjectIdentifier.getInstance(taggedObj, false);
@@ -198,6 +196,22 @@ public class ComponentIdentifier {
      */
     public boolean isVersion2() {
         return false;
+    }
+
+    /**
+     * Getter for the component addresses.
+     * @return a collection of component addresses
+     */
+    public List<ComponentAddress> getComponentAddress() {
+        return componentAddress.stream().toList();
+    }
+
+    /**
+     * Setter for the list of component addresses.
+     * @param componentAddress collection of addresses
+     */
+    public void setComponentAddress(List<ComponentAddress> componentAddress) {
+        this.componentAddress = componentAddress.stream().toList();
     }
 
     @Override

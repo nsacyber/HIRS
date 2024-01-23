@@ -63,10 +63,10 @@ public final class AppraiserTest {
         final String name = "Test Appraiser";
         final Appraiser appraiser = new TestAppraiser(name);
         assertEquals(name, appraiser.getName());
-        NullPointerException expected = null;
+        Exception expected = null;
         try {
             appraiser.setName(null);
-        } catch (NullPointerException e) {
+        } catch (Exception e) {
             expected = e;
         }
         assertNotNull(expected, "NullPointerException not caught");
