@@ -20,6 +20,7 @@ import lombok.extern.log4j.Log4j2;
 
 import java.io.Serializable;
 import java.net.InetAddress;
+import java.util.Objects;
 
 /**
  * A <code>DeviceInfoReport</code> is a <code>Report</code> used to transfer the
@@ -229,5 +230,28 @@ public class DeviceInfoReport extends AbstractEntity implements Serializable {
 
     private void setTPMInfo(TPMInfo tpmInfo) {
         this.tpmInfo = tpmInfo;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof DeviceInfoReport)) {
+            return false;
+        }
+        DeviceInfoReport that = (DeviceInfoReport) o;
+        return Objects.equals(networkInfo, that.networkInfo)
+                && Objects.equals(osInfo, that.osInfo)
+                && Objects.equals(firmwareInfo, that.firmwareInfo)
+                && Objects.equals(hardwareInfo, that.hardwareInfo)
+                && Objects.equals(tpmInfo, that.tpmInfo)
+                && Objects.equals(clientApplicationVersion, that.clientApplicationVersion)
+                && Objects.equals(paccorOutputString, that.paccorOutputString);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(super.hashCode(), networkInfo, osInfo,
+                firmwareInfo, hardwareInfo, tpmInfo,
+                clientApplicationVersion, paccorOutputString);
     }
 }

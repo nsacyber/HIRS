@@ -100,11 +100,11 @@ public final class DeviceTest {
      * Tests that retrieving a null LastReportTimestamp will not trigger an exception.
      */
     @Test
-    public void testNullLastReportTimeStamp() {
+    public void testNotNullLastReportTimeStamp() {
         final String name = "my-laptop";
         final DeviceInfoReport deviceInfo = DeviceInfoReportTest.getTestReport();
         final Device device = new Device(name, deviceInfo, HealthStatus.UNKNOWN, AppraisalStatus.Status.UNKNOWN, null, false, null, null);
-        assertNull(device.getLastReportTimestamp());
+        assertNotNull(device.getLastReportTimestamp());
     }
 
     /**
