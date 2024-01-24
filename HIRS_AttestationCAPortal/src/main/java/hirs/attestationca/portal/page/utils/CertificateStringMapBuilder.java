@@ -157,7 +157,7 @@ public final class CertificateStringMapBuilder {
         //Check if there is a subject organization
         if (certificate.getAuthorityKeyIdentifier() != null
                 && !certificate.getAuthorityKeyIdentifier().isEmpty()) {
-            skiCA = caCredentialRepository.findBySubjectKeyIdString(certificate.getAuthorityKeyIdentifier());
+            skiCA = caCredentialRepository.findBySubjectKeyIdStringAndArchiveFlag(certificate.getAuthorityKeyIdentifier(), false);
         } else {
             log.error(String.format("Certificate (%s) for %s has no authority key identifier.",
                     certificate.getClass().toString(), certificate.getSubject()));
@@ -167,10 +167,10 @@ public final class CertificateStringMapBuilder {
             if (certificate.getIssuerSorted() == null
                     || certificate.getIssuerSorted().isEmpty()) {
                 //Get certificates by subject
-                issuerCertificates = caCredentialRepository.findBySubject(certificate.getIssuer());
+                issuerCertificates = caCredentialRepository.findBySubjectAndArchiveFlag(certificate.getIssuer(), false);
             } else {
                 //Get certificates by subject organization
-                issuerCertificates = caCredentialRepository.findBySubjectSorted(certificate.getIssuerSorted());
+                issuerCertificates = caCredentialRepository.findBySubjectSortedAndArchiveFlag(certificate.getIssuerSorted(), false);
             }
         } else {
             issuerCertificates.add(skiCA);

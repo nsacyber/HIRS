@@ -16,6 +16,8 @@ public interface CACredentialRepository extends JpaRepository<CertificateAuthori
     Page<CertificateAuthorityCredential> findByArchiveFlag(boolean archiveFlag, Pageable pageable);
     List<CertificateAuthorityCredential> findBySubject(String subject);
     List<CertificateAuthorityCredential> findBySubjectSorted(String subject);
+    List<CertificateAuthorityCredential> findBySubjectAndArchiveFlag(String subject, boolean archiveFlag);
+    List<CertificateAuthorityCredential> findBySubjectSortedAndArchiveFlag(String subject, boolean archiveFlag);
     CertificateAuthorityCredential findBySubjectKeyIdentifier(byte[] subjectKeyIdentifier);
-    CertificateAuthorityCredential findBySubjectKeyIdString(String subjectKeyIdString);
+    CertificateAuthorityCredential findBySubjectKeyIdStringAndArchiveFlag(String subjectKeyIdString, boolean archiveFlag);
 }
