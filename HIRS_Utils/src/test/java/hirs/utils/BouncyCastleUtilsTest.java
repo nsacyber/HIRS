@@ -1,6 +1,5 @@
 package hirs.utils;
 
-import lombok.extern.log4j.Log4j2;
 import org.apache.logging.log4j.util.Strings;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -9,7 +8,6 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 /**
  * Tests methods in the (@link BouncyCastleUtils) utility class.
  */
-@Log4j2
 public class BouncyCastleUtilsTest {
 
     private static final String VALID_RDN_STRING = "OU=PCTest,O=example.com,C=US";
@@ -28,6 +26,7 @@ public class BouncyCastleUtilsTest {
                 VALID_RDN_STRING, VALID_RDN_STRING_SWITCHED));
         assertTrue(BouncyCastleUtils.x500NameCompare(
                 VALID_RDN_STRING, VALID_RDN_STRING_UPPERCASE));
+        assertTrue(BouncyCastleUtils.x500NameCompare(Strings.EMPTY, Strings.EMPTY));
     }
 
     /**
@@ -40,7 +39,6 @@ public class BouncyCastleUtilsTest {
         // Error that aren't thrown but logged
         assertFalse(BouncyCastleUtils.x500NameCompare(VALID_RDN_STRING, Strings.EMPTY));
         assertFalse(BouncyCastleUtils.x500NameCompare(Strings.EMPTY, VALID_RDN_STRING));
-        assertFalse(BouncyCastleUtils.x500NameCompare(Strings.EMPTY, Strings.EMPTY));
         assertFalse(BouncyCastleUtils.x500NameCompare(
                 VALID_RDN_STRING, MALFORMED_RDN_STRING));
         assertFalse(BouncyCastleUtils.x500NameCompare(
