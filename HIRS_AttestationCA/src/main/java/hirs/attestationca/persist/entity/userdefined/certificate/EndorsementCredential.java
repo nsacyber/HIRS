@@ -13,7 +13,6 @@ import lombok.NoArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.bouncycastle.asn1.ASN1ApplicationSpecific;
 import org.bouncycastle.asn1.ASN1BitString;
 import org.bouncycastle.asn1.ASN1Boolean;
 import org.bouncycastle.asn1.ASN1Encodable;
@@ -55,7 +54,7 @@ import java.util.Set;
 
 /**
  *
- * This class persists Certificate Authority credentials by extending the base Certificate
+ * This class persists an Endorsement Credential by extending the base Certificate
  * class with fields unique to Endorsement credentials, as defined in the Trusted
  * Computing Group Credential Profiles, specification v.1.2.
  *
@@ -529,10 +528,6 @@ public class EndorsementCredential extends DeviceAssociatedCertificate {
                     e.printStackTrace();
                 }
             }
-
-        } else if (component instanceof ASN1ApplicationSpecific) {
-            parseSingle(((ASN1ApplicationSpecific) component).getObject(), addToMapping, key);
-
         } else if (component instanceof DERBMPString) {
             if (addToMapping) {
                 String bmpStr = ((DERBMPString) component).getString();
