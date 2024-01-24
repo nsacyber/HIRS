@@ -324,8 +324,7 @@ public class EndorsementCredential extends DeviceAssociatedCertificate {
             ASN1Integer ver;
             // Parse Security Assertions Version
             if (seq.getObjectAt(seqPosition) instanceof ASN1Integer) {
-                ver = (ASN1Integer) seq.getObjectAt(seqPosition);
-                seqPosition++;
+                ver = (ASN1Integer) seq.getObjectAt(seqPosition++);
             } else {
                 // Default value of 1 if field not found
                 ver = new ASN1Integer(BigInteger.ONE);
@@ -334,8 +333,7 @@ public class EndorsementCredential extends DeviceAssociatedCertificate {
             ASN1Boolean fieldUpgradeable;
             // Parse Security Assertions Field Upgradeable
             if (seq.getObjectAt(seqPosition) instanceof ASN1Boolean) {
-                fieldUpgradeable = (ASN1Boolean) seq.getObjectAt(seqPosition);
-                seqPosition++;
+                fieldUpgradeable = (ASN1Boolean) seq.getObjectAt(seqPosition++);
             } else {
                 // Default value of false if field not found
                 fieldUpgradeable = ASN1Boolean.getInstance(false);
