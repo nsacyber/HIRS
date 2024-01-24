@@ -19,7 +19,13 @@ dependencies {
     implementation 'org.apache.commons:commons-lang3:3.13.0'
 
 //    testCompile libs.mockito
-    testImplementation libs.testng
+    testImplementation 'org.junit.jupiter:junit-jupiter:5.9.3'
+    testImplementation 'org.junit.platform:junit-platform-launcher:1.9.3'
+    testImplementation 'org.hamcrest:hamcrest:2.2'
+}
+
+test {
+    useJUnitPlatform()
 }
 
 //ext.configDir = new File(projectDir, 'config')
