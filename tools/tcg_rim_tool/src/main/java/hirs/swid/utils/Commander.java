@@ -30,6 +30,11 @@ public class Commander {
             description = "The file to write the RIM out to. "
             + "The RIM will be written to stdout by default.")
     private String outFile = "";
+    @Parameter(names = {"--verbose"}, description = "Control output verbosity.")
+    private boolean verbose = false;
+    @Parameter(names = {"-v", "--verify <path>"}, order = 3,
+            description = "Specify a RIM file to verify.")
+    private String verifyFile = "";
     @Parameter(names = {"-t", "--truststore <path>"}, order = 4,
             description = "The truststore to sign the base RIM created "
             + "or to validate the signed base RIM.")
