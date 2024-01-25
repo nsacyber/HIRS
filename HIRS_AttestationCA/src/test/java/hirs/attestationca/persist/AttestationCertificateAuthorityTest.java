@@ -47,6 +47,8 @@ import javax.security.auth.x500.X500Principal;
 import java.io.IOException;
 import java.math.BigInteger;
 import java.net.URISyntaxException;
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -166,7 +168,6 @@ public class AttestationCertificateAuthorityTest {
                 null, null, null, null, null, null, 1,
                 null, null, null, null) {
         };
-//        provisionUtils = new ProvisionUtils();
         abstractProcessor = new AbstractProcessor();
 
         //BeforeClass
@@ -229,19 +230,61 @@ public class AttestationCertificateAuthorityTest {
         // test encryption transformation
         EncryptionScheme encryptionScheme = EncryptionScheme.PKCS1;
 
+
+
+//        //testj --------------------------------------------------
+//
+//        byte[] expected2 = "test".getBytes();
+//        System.out.println("XXXX ACATest: bytes expected2: " + expected2);
+//        Cipher cipherA = Cipher.getInstance(encryptionScheme.toString());
+//        cipherA.init(Cipher.ENCRYPT_MODE, keyPair.getPublic());
+//        byte[] encrypted2 = cipherA.doFinal(expected2);
+//        System.out.println("XXXX ACATest: bytes encrypted2: " + encrypted2);
+//
+//        Cipher cipherB = Cipher.getInstance(encryptionScheme.toString());
+//        cipherB.init(Cipher.DECRYPT_MODE, keyPair.getPrivate());
+//        cipherB.update(encrypted2);
+//
+//        byte[] decrypted2 = cipherB.doFinal();
+//        System.out.println("XXXX ACATest: bytes decrypted2: " + decrypted2);
+//
+//
+//        byte[] expected3 = "test".getBytes();
+//        System.out.println("XXXX ACATest: bytes expected3: " + expected3);
+//        byte[] expected4 = "test".getBytes();
+//        System.out.println("XXXX ACATest: bytes expected4: " + expected4);
+//        byte[] expected5 = "test".getBytes();
+//        System.out.println("XXXX ACATest: bytes expected5: " + expected5);
+//        //---- --------------------------------------------------
+
+
         // test variables
         byte[] expected = "test".getBytes();
 
-        System.out.println("XXXX bytes expected: " + expected);
+//        String expected_s = new String(expected, Charset.defaultCharset());
+//        System.out.println("XXXX ACATest: bytes expected: " + expected_s);
+
 
         // encrypt the expected value using same algorithm as the ACA.
         byte[] encrypted = encryptBlob(expected, encryptionScheme.toString());
 
-        //PrivateKey acaPrivateKey = privateKey();
-        PrivateKey testerAcaPrivateKey = keyPair.getPrivate();
+
+//        String encrypted_s = new String(encrypted, Charset.defaultCharset());
+//        System.out.println("\nXXXX ACATest: bytes encrypted: ");
+//        System.out.println(encrypted_s);
+//        System.out.println("XXXX\n");
+//
+//        byte[] decrypted = ProvisionUtils.decryptAsymmetricBlob(encrypted, encryptionScheme, keyPair.getPrivate());
+//        String decrypted_s = new String(decrypted, Charset.defaultCharset());
+//        System.out.println("XXXX ACATest: bytes decrypted: " + decrypted_s);
+//
+//
+//        //PrivateKey acaPrivateKey = privateKey();
+//        PrivateKey testerAcaPrivateKey = keyPair.getPrivate();
 
         // perform the decryption and assert that the decrypted bytes equal the expected bytes
-        assertEquals(expected, ProvisionUtils.decryptAsymmetricBlob(encrypted, encryptionScheme, testerAcaPrivateKey));
+        assertArrayEquals(expected, ProvisionUtils.decryptAsymmetricBlob(encrypted, encryptionScheme, keyPair.getPrivate()));
+
     }
 
     // work on later
@@ -426,7 +469,7 @@ public class AttestationCertificateAuthorityTest {
 //        verifyNoMoreInteractions(certificate, symmetricKey);
 //    }
 //
-    /**jamo
+    /**
      * Tests {@link AttestationCertificateAuthority#
      * AttestationCertificateAuthority(SupplyChainValidationService, PrivateKey,
      * X509Certificate, StructConverter, CertificateManager, DeviceRegister, int,
