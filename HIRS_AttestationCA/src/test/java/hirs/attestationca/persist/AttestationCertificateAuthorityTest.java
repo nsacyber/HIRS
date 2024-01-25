@@ -1,6 +1,5 @@
 package hirs.attestationca.persist;
 
-//import com.google.protobuf.ByteString;
 import com.google.protobuf.ByteString;
 import hirs.attestationca.persist.entity.userdefined.certificate.PlatformCredential;
 import hirs.attestationca.persist.provision.AbstractProcessor;
@@ -28,13 +27,9 @@ import hirs.utils.HexUtils;
 import org.apache.commons.codec.binary.Hex;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
-import org.springframework.beans.factory.BeanInitializationException;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.PropertySource;
-import org.springframework.context.annotation.PropertySources;
 import org.springframework.test.util.ReflectionTestUtils;
 
 import javax.crypto.Cipher;
@@ -47,8 +42,6 @@ import javax.security.auth.x500.X500Principal;
 import java.io.IOException;
 import java.math.BigInteger;
 import java.net.URISyntaxException;
-import java.nio.charset.Charset;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -71,17 +64,6 @@ import static org.mockito.Mockito.when;
 /**
  * Test suite for {@link AttestationCertificateAuthority}.
  */
-
-// -----------------------------------------------------------------------------------------------------
-// Testing Stuff
-//@PropertySources({
-//        // detects if file exists, if not, ignore errors
-//        @PropertySource(value = "file:/etc/hirs/aca/application.properties",
-//                ignoreResourceNotFound = true)
-//})
-// -----------------------------------------------------------------------------------------------------
-
-
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)              // needed to use non-static BeforeAll
 public class AttestationCertificateAuthorityTest {
 
@@ -230,101 +212,53 @@ public class AttestationCertificateAuthorityTest {
         // test encryption transformation
         EncryptionScheme encryptionScheme = EncryptionScheme.PKCS1;
 
-
-
-//        //testj --------------------------------------------------
-//
-//        byte[] expected2 = "test".getBytes();
-//        System.out.println("XXXX ACATest: bytes expected2: " + expected2);
-//        Cipher cipherA = Cipher.getInstance(encryptionScheme.toString());
-//        cipherA.init(Cipher.ENCRYPT_MODE, keyPair.getPublic());
-//        byte[] encrypted2 = cipherA.doFinal(expected2);
-//        System.out.println("XXXX ACATest: bytes encrypted2: " + encrypted2);
-//
-//        Cipher cipherB = Cipher.getInstance(encryptionScheme.toString());
-//        cipherB.init(Cipher.DECRYPT_MODE, keyPair.getPrivate());
-//        cipherB.update(encrypted2);
-//
-//        byte[] decrypted2 = cipherB.doFinal();
-//        System.out.println("XXXX ACATest: bytes decrypted2: " + decrypted2);
-//
-//
-//        byte[] expected3 = "test".getBytes();
-//        System.out.println("XXXX ACATest: bytes expected3: " + expected3);
-//        byte[] expected4 = "test".getBytes();
-//        System.out.println("XXXX ACATest: bytes expected4: " + expected4);
-//        byte[] expected5 = "test".getBytes();
-//        System.out.println("XXXX ACATest: bytes expected5: " + expected5);
-//        //---- --------------------------------------------------
-
-
         // test variables
         byte[] expected = "test".getBytes();
-
-//        String expected_s = new String(expected, Charset.defaultCharset());
-//        System.out.println("XXXX ACATest: bytes expected: " + expected_s);
-
 
         // encrypt the expected value using same algorithm as the ACA.
         byte[] encrypted = encryptBlob(expected, encryptionScheme.toString());
 
-
-//        String encrypted_s = new String(encrypted, Charset.defaultCharset());
-//        System.out.println("\nXXXX ACATest: bytes encrypted: ");
-//        System.out.println(encrypted_s);
-//        System.out.println("XXXX\n");
-//
-//        byte[] decrypted = ProvisionUtils.decryptAsymmetricBlob(encrypted, encryptionScheme, keyPair.getPrivate());
-//        String decrypted_s = new String(decrypted, Charset.defaultCharset());
-//        System.out.println("XXXX ACATest: bytes decrypted: " + decrypted_s);
-//
-//
-//        //PrivateKey acaPrivateKey = privateKey();
-//        PrivateKey testerAcaPrivateKey = keyPair.getPrivate();
-
         // perform the decryption and assert that the decrypted bytes equal the expected bytes
         assertArrayEquals(expected, ProvisionUtils.decryptAsymmetricBlob(encrypted, encryptionScheme, keyPair.getPrivate()));
-
     }
 
-    // work on later
-//    /**
-//     * Tests {@link ProvisionUtils#decryptSymmetricBlob(
-//     * byte[], byte[], byte[], String)}.
-//     *
-//     * @throws Exception during aca processing
-//     */
-//    @Test
-//    public void testDecryptSymmetricBlob() throws Exception {
-//        // test encryption transformation
-//        String transformation = "AES/CBC/PKCS5Padding";
-//
-//        // test variables
-//        byte[] expected = "test".getBytes();
-//
-//        // create a key generator to generate a "shared" secret
-//        KeyGenerator keyGenerator = KeyGenerator.getInstance("AES");
-//        keyGenerator.init(128);
-//
-//        // use some random bytes as the IV to encrypt and subsequently decrypt with
-//        byte[] randomBytes = new byte[16];
-//
-//        // generate the random bytes
-//        SecureRandom random = SecureRandom.getInstance("SHA1PRNG");
-//        random.nextBytes(randomBytes);
-//
-//        // the shared secret
-//        byte[] secretKey = keyGenerator.generateKey().getEncoded();
-//
-//        // encrypt the expected value with the private key being the shared secret
-//        byte[] encrypted = encryptBlob(expected, secretKey, randomBytes, transformation);
-//
-//        // perform the decryption using the generated shared secret, random bytes as an IV, and the
-//        // AES CBC transformation for the cipher. then assert the decrypted results are the same
-//        // as our expected value.
-//        assertEquals(expected,
-//                ProvisionUtils.decryptSymmetricBlob(encrypted, secretKey, randomBytes, transformation));
-//    }
+    /**
+     * Tests {@link ProvisionUtils#decryptSymmetricBlob(
+     * byte[], byte[], byte[], String)}.
+     *
+     * @throws Exception during aca processing
+     */
+    @Test
+    public void testDecryptSymmetricBlob() throws Exception {
+        // test encryption transformation
+        String transformation = "AES/CBC/PKCS5Padding";
+
+        // test variables
+        byte[] expected = "test".getBytes();
+
+        // create a key generator to generate a "shared" secret
+        KeyGenerator keyGenerator = KeyGenerator.getInstance("AES");
+        keyGenerator.init(128);
+
+        // use some random bytes as the IV to encrypt and subsequently decrypt with
+        byte[] randomBytes = new byte[16];
+
+        // generate the random bytes
+        SecureRandom random = SecureRandom.getInstance("SHA1PRNG");
+        random.nextBytes(randomBytes);
+
+        // the shared secret
+        byte[] secretKey = keyGenerator.generateKey().getEncoded();
+
+        // encrypt the expected value with the private key being the shared secret
+        byte[] encrypted = encryptBlob(expected, secretKey, randomBytes, transformation);
+
+        // perform the decryption using the generated shared secret, random bytes as an IV, and the
+        // AES CBC transformation for the cipher. then assert the decrypted results are the same
+        // as our expected value.
+        assertArrayEquals(expected,
+                ProvisionUtils.decryptSymmetricBlob(encrypted, secretKey, randomBytes, transformation));
+    }
 
     /**
      * Tests {@link ProvisionUtils#generateSymmetricKey()}.
@@ -340,135 +274,134 @@ public class AttestationCertificateAuthorityTest {
         assertTrue(symmetricKey.getKeySize() == symmetricKey.getKey().length);
     }
 
-    // work on later
-//    /**
-//     * Tests {@link ProvisionUtils#generateAsymmetricContents(
-//     * IdentityProof, SymmetricKey, PublicKey)}.
-//     *
-//     * @throws Exception during aca processing
-//     */
-//    @Test
-//    public void testGenerateAsymmetricContents() throws Exception {
-//
-//        // mocks for test
-//        IdentityProof proof = mock(IdentityProof.class);
-//        AsymmetricPublicKey publicKey = mock(AsymmetricPublicKey.class);
-//        StructConverter structConverter = mock(StructConverter.class);
-//        SymmetricKey symmetricKey = mock(SymmetricKey.class);
-//
-//        // assign the mocked struct converter to the test object
-//        ReflectionTestUtils.setField(aca, "structConverter", structConverter);
-//
-//        // "encoded" identity proof (returned by struct converter)
-//        byte[] identityProofEncoded = new byte[]{0, 0, 1, 1};
-//
-//        // generate a random session key to be used for encryption and decryption
-//        byte[] sessionKey = new byte[16];
-//        SecureRandom random = SecureRandom.getInstance("SHA1PRNG");
-//        random.nextBytes(sessionKey);
-//
-//        // when requesting the identity key from the proof, return the mocked public key
-//        when(proof.getIdentityKey()).thenReturn(publicKey);
-//
-//        // when requesting to convert the public key, return the encoded identity proof
-//        when(structConverter.convert(publicKey)).thenReturn(identityProofEncoded);
-//        when(structConverter.convert(symmetricKey)).thenReturn(sessionKey);
-//
-//        // perform the test
-//        byte[] result = aca.generateAsymmetricContents(proof, symmetricKey, keyPair.getPublic());
-//
-//        // verify mock interactions
-//        verify(proof).getIdentityKey();
-//        verify(structConverter).convert(publicKey);
-//        verify(structConverter).convert(symmetricKey);
-//        verifyZeroInteractions(proof, structConverter, publicKey, symmetricKey);
-//
-//        // decrypt the result
-//        byte[] decryptedResult = decryptBlob(result);
-//
-//        // create a SHA1 digest of the identity key
-//        MessageDigest md = MessageDigest.getInstance("SHA-1");
-//        md.update(identityProofEncoded);
-//
-//        // generate the digest
-//        byte[] identityDigest = md.digest();
-//
-//        // the decrypted asymmetric contents should be the session key and a SHA-1 hash of the
-//        // encoded identity proof.
-//        byte[] expected = ArrayUtils.addAll(sessionKey, identityDigest);
-//
-//        // compare the two byte arrays
-//        assertEquals(decryptedResult, expected);
-//    }
+    /**
+     * Tests {@link ProvisionUtils#generateAsymmetricContents(
+     * IdentityProof, SymmetricKey, PublicKey)}.
+     *
+     * @throws Exception during aca processing
+     */
+    @Test
+    public void testGenerateAsymmetricContents() throws Exception {
 
-    // work on later
-//    /**
-//     * Tests {@link ProvisionUtils#generateAttestation(X509Certificate,
-//     * SymmetricKey)}.
-//     *
-//     * @throws Exception during aca processing
-//     */
-//    @Test
-//    public void testGenerateAttestation() throws Exception {
-//
-//        // create some mocks for the unit tests
-//        X509Certificate certificate = mock(X509Certificate.class);
-//        SymmetricKey symmetricKey = mock(SymmetricKey.class);
-//
-//        // create a key generator to generate a secret key
-//        KeyGenerator keyGenerator = KeyGenerator.getInstance("AES");
-//        keyGenerator.init(128);
-//
-//        // obtain the key from the generator
-//        byte[] secretKey = keyGenerator.generateKey().getEncoded();
-//
-//        // use our public key for encryption
-//        when(symmetricKey.getKey()).thenReturn(secretKey);
-//
-//        // just use the existing public key for the credential
-//        when(certificate.getEncoded()).thenReturn(keyPair.getPublic().getEncoded());
-//
-//        // perform the actual test
-//        SymmetricAttestation attestation = ProvisionUtils.generateAttestation(certificate, symmetricKey);
-//
-//        // validate that the attestation is not null
-//        assertNotNull(attestation);
-//
-//        // validate the attestation algorithm
-//        assertNotNull(attestation.getAlgorithm());
-//        assertTrue(attestation.getAlgorithm().getAlgorithmId() == 6);
-//        assertTrue(attestation.getAlgorithm().getEncryptionScheme() == 0x1);
-//        assertTrue(attestation.getAlgorithm().getSignatureScheme() == 0);
-//        assertTrue(attestation.getAlgorithm().getParamsSize() == 0);
-//
-//        // validate the attestation credential
-//        assertNotNull(attestation.getCredential());
-//
-//        // validate that the credential size is the size of the actual credential block
-//        assertTrue(attestation.getCredential().length == attestation.getCredentialSize());
-//
-//        // create containers for the 2 parts of the credential
-//        byte[] iv = new byte[16];
-//        byte[] credential = new byte[attestation.getCredential().length - iv.length];
-//
-//        // siphon off the first 16 bytes for the IV
-//        System.arraycopy(attestation.getCredential(), 0, iv, 0, iv.length);
-//
-//        // the rest is the actual encrypted credential
-//        System.arraycopy(attestation.getCredential(), iv.length, credential, 0, credential.length);
-//
-//        // decrypt the credential
-//        byte[] decrypted = decryptBlob(credential, secretKey, iv, "AES/CBC/PKCS5Padding");
-//
-//        // assert that the decrypted credential is our public key
-//        assertEquals(keyPair.getPublic().getEncoded(), decrypted);
-//
-//        // verify that the mocks were interacted with appropriately
-//        verify(symmetricKey).getKey();
-//        verify(certificate).getEncoded();
-//        verifyNoMoreInteractions(certificate, symmetricKey);
-//    }
-//
+        // mocks for test
+        IdentityProof proof = mock(IdentityProof.class);
+        AsymmetricPublicKey publicKey = mock(AsymmetricPublicKey.class);
+        StructConverter structConverter = mock(StructConverter.class);
+        SymmetricKey symmetricKey = mock(SymmetricKey.class);
+
+        // assign the mocked struct converter to the test object
+        ReflectionTestUtils.setField(aca, "structConverter", structConverter);
+
+        // "encoded" identity proof (returned by struct converter)
+        byte[] identityProofEncoded = new byte[]{0, 0, 1, 1};
+
+        // generate a random session key to be used for encryption and decryption
+        byte[] sessionKey = new byte[16];
+        SecureRandom random = SecureRandom.getInstance("SHA1PRNG");
+        random.nextBytes(sessionKey);
+
+        // when requesting the identity key from the proof, return the mocked public key
+        when(proof.getIdentityKey()).thenReturn(publicKey);
+
+        // when requesting to convert the public key, return the encoded identity proof
+        when(structConverter.convert(publicKey)).thenReturn(identityProofEncoded);
+        when(structConverter.convert(symmetricKey)).thenReturn(sessionKey);
+
+        // perform the test
+        byte[] result = aca.generateAsymmetricContents(proof, symmetricKey, keyPair.getPublic());
+
+        // verify mock interactions
+        verify(proof).getIdentityKey();
+        verify(structConverter).convert(publicKey);
+        verify(structConverter).convert(symmetricKey);
+        verifyZeroInteractions(proof, structConverter, publicKey, symmetricKey);
+
+        // decrypt the result
+        byte[] decryptedResult = decryptBlob(result);
+
+        // create a SHA1 digest of the identity key
+        MessageDigest md = MessageDigest.getInstance("SHA-1");
+        md.update(identityProofEncoded);
+
+        // generate the digest
+        byte[] identityDigest = md.digest();
+
+        // the decrypted asymmetric contents should be the session key and a SHA-1 hash of the
+        // encoded identity proof.
+        byte[] expected = ArrayUtils.addAll(sessionKey, identityDigest);
+
+        // compare the two byte arrays
+        assertEquals(decryptedResult, expected);
+    }
+
+    /**
+     * Tests {@link ProvisionUtils#generateAttestation(X509Certificate,
+     * SymmetricKey)}.
+     *
+     * @throws Exception during aca processing
+     */
+    @Test
+    public void testGenerateAttestation() throws Exception {
+
+        // create some mocks for the unit tests
+        X509Certificate certificate = mock(X509Certificate.class);
+        SymmetricKey symmetricKey = mock(SymmetricKey.class);
+
+        // create a key generator to generate a secret key
+        KeyGenerator keyGenerator = KeyGenerator.getInstance("AES");
+        keyGenerator.init(128);
+
+        // obtain the key from the generator
+        byte[] secretKey = keyGenerator.generateKey().getEncoded();
+
+        // use our public key for encryption
+        when(symmetricKey.getKey()).thenReturn(secretKey);
+
+        // just use the existing public key for the credential
+        when(certificate.getEncoded()).thenReturn(keyPair.getPublic().getEncoded());
+
+        // perform the actual test
+        SymmetricAttestation attestation = ProvisionUtils.generateAttestation(certificate, symmetricKey);
+
+        // validate that the attestation is not null
+        assertNotNull(attestation);
+
+        // validate the attestation algorithm
+        assertNotNull(attestation.getAlgorithm());
+        assertTrue(attestation.getAlgorithm().getAlgorithmId() == 6);
+        assertTrue(attestation.getAlgorithm().getEncryptionScheme() == 0x1);
+        assertTrue(attestation.getAlgorithm().getSignatureScheme() == 0);
+        assertTrue(attestation.getAlgorithm().getParamsSize() == 0);
+
+        // validate the attestation credential
+        assertNotNull(attestation.getCredential());
+
+        // validate that the credential size is the size of the actual credential block
+        assertTrue(attestation.getCredential().length == attestation.getCredentialSize());
+
+        // create containers for the 2 parts of the credential
+        byte[] iv = new byte[16];
+        byte[] credential = new byte[attestation.getCredential().length - iv.length];
+
+        // siphon off the first 16 bytes for the IV
+        System.arraycopy(attestation.getCredential(), 0, iv, 0, iv.length);
+
+        // the rest is the actual encrypted credential
+        System.arraycopy(attestation.getCredential(), iv.length, credential, 0, credential.length);
+
+        // decrypt the credential
+        byte[] decrypted = decryptBlob(credential, secretKey, iv, "AES/CBC/PKCS5Padding");
+
+        // assert that the decrypted credential is our public key
+        assertArrayEquals(keyPair.getPublic().getEncoded(), decrypted);
+
+        // verify that the mocks were interacted with appropriately
+        verify(symmetricKey).getKey();
+        verify(certificate).getEncoded();
+        verifyNoMoreInteractions(certificate, symmetricKey);
+    }
+
+//testj
     /**
      * Tests {@link AttestationCertificateAuthority#
      * AttestationCertificateAuthority(SupplyChainValidationService, PrivateKey,
@@ -666,45 +599,44 @@ public class AttestationCertificateAuthorityTest {
         assertEquals(hex, realHex);
     }
 
-    // work on later
-//    /**
-//     * Method to generate a make credential output file for use in manual testing. Feed to
-//     * a TPM 2.0 or emulator using the activate credential command to ensure proper parsing.
-//     * Must be performed manually. To use, copy the TPM's ek and ak into
-//     * HIRS_AttestationCA/src/test/resources/tpm2/test/ and ensure the variables akPubPath
-//     * and ekPubPath are correct. Your output file will be
-//     * HIRS_AttestationCA/src/test/resources/tpm2/test/make.blob and the nonce used will be
-//     * output as HIRS_AttestationCA/src/test/resources/tpm2/test/secret.blob
-//     * @throws URISyntaxException invalid file path
-//     * @throws IOException unable to read file
-//     */
-//    @Test
-////    @Test(enabled = false)
-//    public void testMakeCredential() throws URISyntaxException, IOException {
-//        Path akPubPath = Paths.get(getClass().getResource(
-//                AK_PUBLIC_PATH).toURI());
-//        Path ekPubPath = Paths.get(getClass().getResource(
-//                EK_PUBLIC_PATH).toURI());
-//
-//        byte[] ekPubFile = Files.readAllBytes(ekPubPath);
-//        byte[] akPubFile = Files.readAllBytes(akPubPath);
-//
-//        RSAPublicKey ekPub = ProvisionUtils.parsePublicKey(ekPubFile);
-//        RSAPublicKey akPub = ProvisionUtils.parsePublicKey(akPubFile);
-//
-//        // prepare the nonce and wrap it with keys
-//        byte[] nonce = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20,
-//                21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31};
-//        ByteString blob = ProvisionUtils.tpm20MakeCredential(ekPub, akPub, nonce);
-//
-//        Path resources = Paths.get(getClass().getResource(
-//                "/").toURI()).getParent().getParent().getParent().getParent();
-//        Path makeBlob = resources.resolve("src/test/resources/tpm2/test/make.blob");
-//        Files.write(makeBlob, blob.toByteArray());
-//
-//        Path secretPath = resources.resolve("src/test/resources/tpm2/test/secret.blob");
-//        Files.write(secretPath, nonce);
-//    }
+    /**
+     * Method to generate a make credential output file for use in manual testing. Feed to
+     * a TPM 2.0 or emulator using the activate credential command to ensure proper parsing.
+     * Must be performed manually. To use, copy the TPM's ek and ak into
+     * HIRS_AttestationCA/src/test/resources/tpm2/test/ and ensure the variables akPubPath
+     * and ekPubPath are correct. Your output file will be
+     * HIRS_AttestationCA/src/test/resources/tpm2/test/make.blob and the nonce used will be
+     * output as HIRS_AttestationCA/src/test/resources/tpm2/test/secret.blob
+     * @throws URISyntaxException invalid file path
+     * @throws IOException unable to read file
+     */
+    @Disabled
+    @Test
+    public void testMakeCredential() throws URISyntaxException, IOException {
+        Path akPubPath = Paths.get(getClass().getResource(
+                AK_PUBLIC_PATH).toURI());
+        Path ekPubPath = Paths.get(getClass().getResource(
+                EK_PUBLIC_PATH).toURI());
+
+        byte[] ekPubFile = Files.readAllBytes(ekPubPath);
+        byte[] akPubFile = Files.readAllBytes(akPubPath);
+
+        RSAPublicKey ekPub = ProvisionUtils.parsePublicKey(ekPubFile);
+        RSAPublicKey akPub = ProvisionUtils.parsePublicKey(akPubFile);
+
+        // prepare the nonce and wrap it with keys
+        byte[] nonce = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20,
+                21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31};
+        ByteString blob = ProvisionUtils.tpm20MakeCredential(ekPub, akPub, nonce);
+
+        Path resources = Paths.get(getClass().getResource(
+                "/").toURI()).getParent().getParent().getParent().getParent();
+        Path makeBlob = resources.resolve("src/test/resources/tpm2/test/make.blob");
+        Files.write(makeBlob, blob.toByteArray());
+
+        Path secretPath = resources.resolve("src/test/resources/tpm2/test/secret.blob");
+        Files.write(secretPath, nonce);
+    }
 
     /**
      * Test helper method that encrypts a blob using the specified transformation and the test key
@@ -804,69 +736,5 @@ public class AttestationCertificateAuthorityTest {
         // return the cipher text
         return cipher.doFinal(blob);
     }
-
-
-
-    // -----------------------------------------------------------------------------------------------------
-    // Testing Stuff
-//    /**
-//     * @return the {@link PrivateKey} of the ACA
-//     *
-//     * 0.00.0
-//     */
-//    public PrivateKey privateKey() {
-//
-//        System.out.println("XXXXXXXX privatekey function");
-//
-//        // obtain the key store
-//        KeyStore keyStore = keyStore();
-//
-//        try {
-//
-//            // load the key from the key store
-//            PrivateKey acaKey = (PrivateKey) keyStore.getKey(keyAlias,
-//                    keyStorePassword.toCharArray());
-//
-//            // break early if the certificate is not available.
-//            if (acaKey == null) {
-//                throw new BeanInitializationException(String.format("Key with alias "
-//                        + "%s was not in KeyStore %s. Ensure that the KeyStore has the "
-//                        + "specified certificate. ", keyAlias, keyStoreLocation));
-//            }
-//            return acaKey;
-//        } catch (Exception ex) {
-//            throw new BeanInitializationException("Encountered error loading ACA private key "
-//                    + "from key store: " + ex.getMessage(), ex);
-//        }
-//    }
-//
-//    /**
-//     * @return the {@link java.security.KeyStore} that contains the certificates
-//     * for the ACA.
-//     */
-//    public KeyStore keyStore() {
-//
-//
-//        System.out.println("XXXXXXXX keystore function");
-//        System.out.println("XXXXXXXX keystore location: " + keyStoreLocation);
-//
-//        Path keyStorePath = Paths.get(keyStoreLocation);
-//
-//        System.out.println("XXXXXXXX keystore after paths.get location");
-//        // attempt to open the key store. if that fails, log a meaningful message before failing.
-//        // empty
-//        try {
-//            KeyStore keyStore = KeyStore.getInstance("JKS");
-//            keyStore.load(Files.newInputStream(keyStorePath), keyStorePassword.toCharArray());
-//            return keyStore;
-//        } catch (Exception ex) {
-////            log.error(String.format(
-////                    "Encountered error while loading ACA key store. The most common issue is "
-////                            + "that configured password does not work on the configured key"
-////                            + " store %s.", keyStorePath));
-////            log.error(String.format("Exception message: %s", ex.getMessage()));
-//            throw new BeanInitializationException(ex.getMessage(), ex);
-//        }
-//    }
 
 }
