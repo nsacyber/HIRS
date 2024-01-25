@@ -32,9 +32,6 @@ public class Commander {
     private String outFile = "";
     @Parameter(names = {"--verbose"}, description = "Control output verbosity.")
     private boolean verbose = false;
-    @Parameter(names = {"-v", "--verify <path>"}, order = 3,
-            description = "Specify a RIM file to verify.")
-    private String verifyFile = "";
     @Parameter(names = {"-t", "--truststore <path>"}, order = 4,
             description = "The truststore to sign the base RIM created "
             + "or to validate the signed base RIM.")
@@ -76,6 +73,7 @@ public class Commander {
     public boolean isVersion() {
         return version;
     }
+    public boolean isVerbose() { return verbose; }
     public String getAttributesFile() {
         return attributesFile;
     }

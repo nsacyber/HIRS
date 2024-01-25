@@ -36,7 +36,9 @@ public class Main {
         } else {
             if (!commander.getVerifyFile().isEmpty()) {
                 validator = new ReferenceManifestValidator();
-                System.out.println(commander.toString());
+                if (commander.isVerbose()) {
+                    System.out.println(commander.toString());
+                }
                 String verifyFile = commander.getVerifyFile();
                 String rimel = commander.getRimEventLog();
                 String certificateFile = commander.getPublicCertificate();
@@ -60,7 +62,9 @@ public class Main {
                 }
             } else {
                 gateway = new SwidTagGateway();
-                System.out.println(commander.toString());
+                if (commander.isVerbose()) {
+                    System.out.println(commander.toString());
+                }
                 String createType = commander.getCreateType().toUpperCase();
                 String attributesFile = commander.getAttributesFile();
                 String jksTruststoreFile = commander.getTruststoreFile();
