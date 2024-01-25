@@ -25,6 +25,7 @@ import hirs.structs.elements.tpm.SymmetricKey;
 //import org.bouncycastle.asn1.x509.TBSCertificate;
 import hirs.utils.HexUtils;
 import org.apache.commons.codec.binary.Hex;
+import org.apache.commons.lang3.ArrayUtils;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Disabled;
@@ -54,12 +55,9 @@ import java.util.LinkedList;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyNoMoreInteractions;
+import static org.mockito.Mockito.*;
 //import static org.mockito.Mockito.verifyZeroInteractions;
-import static org.mockito.Mockito.when;
+
 
 /**
  * Test suite for {@link AttestationCertificateAuthority}.
@@ -276,7 +274,7 @@ public class AttestationCertificateAuthorityTest {
 
     /**
      * Tests {@link ProvisionUtils#generateAsymmetricContents(
-     * IdentityProof, SymmetricKey, PublicKey)}.
+     * byte[], byte[], PublicKey)}.
      *
      * @throws Exception during aca processing
      */
@@ -301,20 +299,21 @@ public class AttestationCertificateAuthorityTest {
         random.nextBytes(sessionKey);
 
         // when requesting the identity key from the proof, return the mocked public key
-        when(proof.getIdentityKey()).thenReturn(publicKey);
+//        when(proof.getIdentityKey()).thenReturn(publicKey);
 
         // when requesting to convert the public key, return the encoded identity proof
-        when(structConverter.convert(publicKey)).thenReturn(identityProofEncoded);
-        when(structConverter.convert(symmetricKey)).thenReturn(sessionKey);
+//        when(structConverter.convert(publicKey)).thenReturn(identityProofEncoded);
+//        when(structConverter.convert(symmetricKey)).thenReturn(sessionKey);
 
         // perform the test
-        byte[] result = aca.generateAsymmetricContents(proof, symmetricKey, keyPair.getPublic());
+        byte[] result = ProvisionUtils.generateAsymmetricContents(identityProofEncoded, sessionKey, keyPair.getPublic());
 
         // verify mock interactions
-        verify(proof).getIdentityKey();
-        verify(structConverter).convert(publicKey);
-        verify(structConverter).convert(symmetricKey);
-        verifyZeroInteractions(proof, structConverter, publicKey, symmetricKey);
+//        verify(proof).getIdentityKey();
+//        verify(structConverter).convert(publicKey);
+//        verify(structConverter).convert(symmetricKey);
+// NEED TO FIX THIS:
+//        verifyNoInteractions(proof, structConverter, publicKey, symmetricKey);
 
         // decrypt the result
         byte[] decryptedResult = decryptBlob(result);
@@ -331,7 +330,7 @@ public class AttestationCertificateAuthorityTest {
         byte[] expected = ArrayUtils.addAll(sessionKey, identityDigest);
 
         // compare the two byte arrays
-        assertEquals(decryptedResult, expected);
+        assertArrayEquals(expected, decryptedResult);
     }
 
     /**
