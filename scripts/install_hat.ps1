@@ -48,19 +48,19 @@ if (!$ethernet) {
   } until ($ethernet)
 }
 Write-Host "Wired Ethernet connection found, continuing..."
-# Make Firwall Rules for ACA to operate
+# Make Firewall Rules for ACA to operate
 Write-Host "Adding Firewall rules"
 netsh advfirewall firewall add rule name="ACA HTTPS" dir=in action=allow protocol=TCP localport=8443 | out-null
 netsh advfirewall firewall add rule name="ACA HTTPS" dir=out action=allow protocol=TCP localport=8443 | out-null
 
 # Make folder for necessary files
 mkdir ~/hirs | out-null
-Push-Location  .\hirs\ | out-null
+Push-Location  ~/hirs | out-null
 
-Write-Host "Retreiving Configuration Files"
+Write-Host "Retrieving Configuration Files"
 wget https://raw.githubusercontent.com/nsacyber/HIRS/main/.ci/docker/compose-acceptance-test-windows.yml -o compose-acceptance-test-windows.yml
 
-Write-Host "Retreiving Trust Stores"
+Write-Host "Retrieving Trust Stores"
 wget https://raw.githubusercontent.com/nsacyber/HIRS/main/.ci/setup/certs/oem_certs.zip -o oem_certs.zip
 wget https://raw.githubusercontent.com/nsacyber/HIRS/main/scripts/start_hat.ps1 -o start_hat.ps1
 wget https://raw.githubusercontent.com/nsacyber/HIRS/main/scripts/remove_hat.ps1 -o remove_hat.ps1
