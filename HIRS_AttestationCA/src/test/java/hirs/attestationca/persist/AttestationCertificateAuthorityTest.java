@@ -699,7 +699,7 @@ public class AttestationCertificateAuthorityTest {
 
         // generate a secret key specification using the key and AES.
         SecretKeySpec keySpec = new SecretKeySpec(key, "AES");
-
+ 
         // create IV parameter for key specification
         IvParameterSpec ivParameterSpec = new IvParameterSpec(iv);
 
