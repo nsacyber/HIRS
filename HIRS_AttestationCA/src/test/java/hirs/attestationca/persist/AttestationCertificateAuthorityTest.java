@@ -1,6 +1,7 @@
 package hirs.attestationca.persist;
 
 import com.google.protobuf.ByteString;
+import hirs.attestationca.persist.entity.userdefined.certificate.EndorsementCredential;
 import hirs.attestationca.persist.entity.userdefined.certificate.PlatformCredential;
 import hirs.attestationca.persist.provision.AbstractProcessor;
 import hirs.attestationca.persist.provision.helper.IssuedCertificateAttributeHelper;
@@ -19,10 +20,7 @@ import org.bouncycastle.asn1.x509.Extension;
 import org.bouncycastle.asn1.x509.GeneralNames;
 import org.bouncycastle.asn1.x509.TBSCertificate;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.Disabled;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.TestInstance;
+import org.junit.jupiter.api.*;
 import org.springframework.test.util.ReflectionTestUtils;
 
 import javax.crypto.Cipher;
@@ -44,6 +42,7 @@ import java.security.interfaces.RSAPublicKey;
 import java.security.spec.MGF1ParameterSpec;
 import java.util.Calendar;
 import java.util.LinkedList;
+import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
@@ -55,9 +54,36 @@ import static org.mockito.Mockito.*;
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)              // needed to use non-static BeforeAll
 public class AttestationCertificateAuthorityTest {
 
+    /**
+     * This internal class handles setup for testing the function
+     * generateCredential() from class AbstractProcessor. Because the
+     * function is Protected and in a different package than the test,
+     * it cannot be accessed directly.
+     */
+    @Nested
+    public class AccessAbstractProcessor extends AbstractProcessor {
+        public AccessAbstractProcessor(final PrivateKey privateKey,
+                                       final int validDays) {
+            super(privateKey, validDays);
+        }
+
+        public X509Certificate accessGenerateCredential(final PublicKey publicKey,
+                                            final EndorsementCredential endorsementCredential,
+                                            final List<PlatformCredential> platformCredentials,
+                                            final String deviceName,
+                                            final X509Certificate acaCertificate) {
+
+            return generateCredential(publicKey,
+                                    endorsementCredential,
+                                    platformCredentials,
+                                    deviceName,
+                                    acaCertificate);
+        }
+    }
+
     // object in test
     private AttestationCertificateAuthority aca;
-    private AbstractProcessor abstractProcessor;
+    private AccessAbstractProcessor abstractProcessor;
 
     // test key pair
     private KeyPair keyPair;
@@ -109,7 +135,6 @@ public class AttestationCertificateAuthorityTest {
      * provider.
      */
     @BeforeAll
-//    public static void setupTests() throws Exception {
     public void setupTests() throws Exception {
 
         //BeforeSuite
@@ -122,10 +147,8 @@ public class AttestationCertificateAuthorityTest {
                 null, null, null, null, null, null, 1,
                 null, null, null, null) {
         };
-//        abstractProcessor = new AbstractProcessor();
-        abstractProcessor = new AbstractProcessor(keyPair.getPrivate(),1);
+        abstractProcessor = new AccessAbstractProcessor(keyPair.getPrivate(),1);
 
-        //BeforeClass
         Security.addProvider(new BouncyCastleProvider());
     }
 
@@ -171,7 +194,6 @@ public class AttestationCertificateAuthorityTest {
         // verify no other interactions with mocks
         verifyNoMoreInteractions(acaCertificate, publicKey);
     }
-
 
     /**
      * Tests {@link ProvisionUtils#decryptAsymmetricBlob(byte[],
@@ -353,7 +375,6 @@ public class AttestationCertificateAuthorityTest {
         verifyNoMoreInteractions(certificate, symmetricKey);
     }
 
-//testj
     /**
      * Tests {@link AttestationCertificateAuthority#
      * AttestationCertificateAuthority(SupplyChainValidationService, PrivateKey,
@@ -389,7 +410,7 @@ public class AttestationCertificateAuthorityTest {
         when(acaCertificate.getIssuerX500Principal()).thenReturn(principal);
 
         // perform the test
-        X509Certificate certificate = abstractProcessor.generateCredential(keyPair.getPublic(),
+        X509Certificate certificate = abstractProcessor.accessGenerateCredential(keyPair.getPublic(),
                 null,
                 new LinkedList<PlatformCredential>(),
                 "exampleIdLabel",

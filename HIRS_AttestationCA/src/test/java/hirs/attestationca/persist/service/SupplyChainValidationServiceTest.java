@@ -57,6 +57,7 @@
 ///**
 // * Tests for the {@see SupplyChainValidationService}.
 // */
+////@ExtendWith(MockitoExtension.class)
 //public class SupplyChainValidationServiceTest {
 //    private static final String NUC1_EC = "/certificates/nuc-1/tpmcert.pem";
 //    private static final String STM_ROOT_CA = "/certificates/stMicroCaCerts/stmtpmekroot.crt";
@@ -79,18 +80,18 @@
 //    @Mock
 //    private ComponentResultRepository componentResultRepository;
 //
-//    @Mock
-//    private CredentialValidator supplyChainCredentialValidator;
+////    @Mock
+////    private CredentialValidator supplyChainCredentialValidator;
 //
-//    @Mock
-//    private CrudManager<SupplyChainValidationSummary> supplyChainValidationSummaryDBManager;
+////    @Mock
+////    private CrudManager<SupplyChainValidationSummary> supplyChainValidationSummaryDBManager;
 //
 //    @Mock
 ////    private ReferenceDigestManager referenceDigestManager;
 //    private ReferenceDigestValueRepository referenceDigestValueRepository;
 //
-//    @Mock
-//    private ReferenceEventManager referenceEventManager;
+////    @Mock
+////    private ReferenceEventManager referenceEventManager;
 //
 //    @InjectMocks
 ////    private SupplyChainValidationServiceImpl service;
@@ -98,7 +99,7 @@
 //
 //    // mocked
 ////    private SupplyChainPolicy policy;
-//    private PolicySettings policySettings;
+//    private PolicySettings policy;
 //    private PlatformCredential pc;
 //    private PlatformCredential delta;
 //    private EndorsementCredential ec;
@@ -118,7 +119,7 @@
 //        device = mock(Device.class);
 //
 //        SupplyChainAppraiser appraiser = mock(SupplyChainAppraiser.class);
-//        policy = mock(SupplyChainPolicy.class);
+//        policy = mock(PolicySettings.class);
 //
 //        when(appraiserManager.getAppraiser(SupplyChainAppraiser.NAME)).thenReturn(appraiser);
 //        when(policyManager.getDefaultPolicy(appraiser)).thenReturn(policy);
