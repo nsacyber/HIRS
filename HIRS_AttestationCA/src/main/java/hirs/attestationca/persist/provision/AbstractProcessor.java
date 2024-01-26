@@ -66,7 +66,7 @@ public class AbstractProcessor {
      * @param deviceName The host name used in the subject alternative name
      * @return identity credential
      */
-    protected X509Certificate generateCredential(final PublicKey publicKey,
+    public X509Certificate generateCredential(final PublicKey publicKey,
                                        final EndorsementCredential endorsementCredential,
                                        final List<PlatformCredential> platformCredentials,
                                        final String deviceName, final X509Certificate acaCertificate) {

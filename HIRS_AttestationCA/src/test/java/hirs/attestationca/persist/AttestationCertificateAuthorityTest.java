@@ -3,29 +3,21 @@ package hirs.attestationca.persist;
 import com.google.protobuf.ByteString;
 import hirs.attestationca.persist.entity.userdefined.certificate.PlatformCredential;
 import hirs.attestationca.persist.provision.AbstractProcessor;
+import hirs.attestationca.persist.provision.helper.IssuedCertificateAttributeHelper;
 import hirs.attestationca.persist.provision.helper.ProvisionUtils;
-//import hirs.attestationca.persist.provision.helper.IssuedCertificateAttributeHelper;
-import hirs.structs.converters.StructConverter;
 import hirs.structs.elements.aca.SymmetricAttestation;
-//import hirs.structs.elements.tpm.AsymmetricKeyParams;
 import hirs.structs.elements.tpm.AsymmetricPublicKey;
 import hirs.structs.elements.tpm.EncryptionScheme;
 import hirs.structs.elements.tpm.IdentityProof;
-//import hirs.structs.elements.tpm.IdentityRequest;
 import hirs.structs.elements.tpm.StorePubKey;
 import hirs.structs.elements.tpm.SymmetricKey;
-//import hirs.structs.elements.tpm.SymmetricKeyParams;
-//import hirs.structs.elements.tpm.SymmetricSubParams;
-//import hirs.utils.HexUtils;
-//import org.apache.commons.codec.binary.Hex;
-//import org.apache.commons.lang3.ArrayUtils;
-//import org.bouncycastle.asn1.x500.X500Name;
-//import org.bouncycastle.asn1.x509.Extension;
-//import org.bouncycastle.asn1.x509.GeneralNames;
-//import org.bouncycastle.asn1.x509.TBSCertificate;
 import hirs.utils.HexUtils;
 import org.apache.commons.codec.binary.Hex;
 import org.apache.commons.lang3.ArrayUtils;
+import org.bouncycastle.asn1.x500.X500Name;
+import org.bouncycastle.asn1.x509.Extension;
+import org.bouncycastle.asn1.x509.GeneralNames;
+import org.bouncycastle.asn1.x509.TBSCertificate;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Disabled;
@@ -52,11 +44,9 @@ import java.security.interfaces.RSAPublicKey;
 import java.security.spec.MGF1ParameterSpec;
 import java.util.Calendar;
 import java.util.LinkedList;
-import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
-//import static org.mockito.Mockito.verifyZeroInteractions;
 
 
 /**
@@ -65,25 +55,9 @@ import static org.mockito.Mockito.*;
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)              // needed to use non-static BeforeAll
 public class AttestationCertificateAuthorityTest {
 
-    // -----------------------------------------------------------------------------------------------------
-    // Testing Stuff
-//    @Value("${server.ssl.key-store}")
-//    private String keyStoreLocation;
-//
-//    @Value("${server.ssl.key-store-password:''}")
-//    private String keyStorePassword;
-//
-//    @Value("${server.ssl.key-alias}")
-//    private String keyAlias;
-    // -----------------------------------------------------------------------------------------------------
-
-
-
     // object in test
     private AttestationCertificateAuthority aca;
-//    private ProvisionUtils provisionUtils;
     private AbstractProcessor abstractProcessor;
-//    private PersistenceJPAConfig persistenceJPAConfig;
 
     // test key pair
     private KeyPair keyPair;
@@ -148,7 +122,8 @@ public class AttestationCertificateAuthorityTest {
                 null, null, null, null, null, null, 1,
                 null, null, null, null) {
         };
-        abstractProcessor = new AbstractProcessor();
+//        abstractProcessor = new AbstractProcessor();
+        abstractProcessor = new AbstractProcessor(keyPair.getPrivate(),1);
 
         //BeforeClass
         Security.addProvider(new BouncyCastleProvider());
@@ -281,15 +256,6 @@ public class AttestationCertificateAuthorityTest {
     @Test
     public void testGenerateAsymmetricContents() throws Exception {
 
-        // mocks for test
-        IdentityProof proof = mock(IdentityProof.class);
-        AsymmetricPublicKey publicKey = mock(AsymmetricPublicKey.class);
-        StructConverter structConverter = mock(StructConverter.class);
-        SymmetricKey symmetricKey = mock(SymmetricKey.class);
-
-        // assign the mocked struct converter to the test object
-        ReflectionTestUtils.setField(aca, "structConverter", structConverter);
-
         // "encoded" identity proof (returned by struct converter)
         byte[] identityProofEncoded = new byte[]{0, 0, 1, 1};
 
@@ -298,22 +264,9 @@ public class AttestationCertificateAuthorityTest {
         SecureRandom random = SecureRandom.getInstance("SHA1PRNG");
         random.nextBytes(sessionKey);
 
-        // when requesting the identity key from the proof, return the mocked public key
-//        when(proof.getIdentityKey()).thenReturn(publicKey);
-
-        // when requesting to convert the public key, return the encoded identity proof
-//        when(structConverter.convert(publicKey)).thenReturn(identityProofEncoded);
-//        when(structConverter.convert(symmetricKey)).thenReturn(sessionKey);
-
         // perform the test
-        byte[] result = ProvisionUtils.generateAsymmetricContents(identityProofEncoded, sessionKey, keyPair.getPublic());
-
-        // verify mock interactions
-//        verify(proof).getIdentityKey();
-//        verify(structConverter).convert(publicKey);
-//        verify(structConverter).convert(symmetricKey);
-// NEED TO FIX THIS:
-//        verifyNoInteractions(proof, structConverter, publicKey, symmetricKey);
+        byte[] result = ProvisionUtils.generateAsymmetricContents(identityProofEncoded,
+                sessionKey, keyPair.getPublic());
 
         // decrypt the result
         byte[] decryptedResult = decryptBlob(result);
@@ -409,78 +362,78 @@ public class AttestationCertificateAuthorityTest {
      *
      * @throws Exception during subject alternative name checking if cert formatting is bad
      */
-//    @Test
-//    public void testGenerateCredential() throws Exception {
-//        // test variables
-//        final String identityProofLabelString = "label";
-//        byte[] identityProofLabel = identityProofLabelString.getBytes();
-//        byte[] modulus = ((RSAPublicKey) keyPair.getPublic()).getModulus().toByteArray();
-//        X500Principal principal = new X500Principal("CN=TEST, OU=TEST, O=TEST, C=TEST");
-//        int validDays = 1;
-//
-//        // create mocks for testing
-//        IdentityProof identityProof = mock(IdentityProof.class);
-//        AsymmetricPublicKey asymmetricPublicKey = mock(AsymmetricPublicKey.class);
-//        StorePubKey storePubKey = mock(StorePubKey.class);
-//        X509Certificate acaCertificate = mock(X509Certificate.class);
-//
-//        // assign ACA fields
-//        ReflectionTestUtils.setField(aca, "validDays", validDays);
-//        ReflectionTestUtils.setField(aca, "acaCertificate", acaCertificate);
-//
-//        // prepare identity proof interactions
-//        when(identityProof.getLabel()).thenReturn(identityProofLabel);
-//
-//        // prepare other mocks
-//        when(acaCertificate.getSubjectX500Principal()).thenReturn(principal);
-//        when(acaCertificate.getIssuerX500Principal()).thenReturn(principal);
-//
-//        // HERE - need acaCert to not be null
-//        // perform the test
-//        X509Certificate certificate = abstractProcessor.generateCredential(keyPair.getPublic(),
-//                null,
-//                new LinkedList<PlatformCredential>(),
-//                "exampleIdLabel",
-//                null);
-//
-//        // grab the modulus from the generate certificate
-//        byte[] resultMod = ((RSAPublicKey) certificate.getPublicKey()).getModulus().toByteArray();
-//
-//        // today and tomorrow, when the certificate should be valid for
-//        Calendar today = Calendar.getInstance();
-//        Calendar tomorrow = Calendar.getInstance();
-//        tomorrow.add(Calendar.DATE, 1);
-//
-//        // validate the certificate
-//        assertTrue(certificate.getIssuerX500Principal().toString().contains("CN=TEST"));
-//        assertTrue(certificate.getIssuerX500Principal().toString().contains("OU=TEST"));
-//        assertTrue(certificate.getIssuerX500Principal().toString().contains("O=TEST"));
-//        assertTrue(certificate.getIssuerX500Principal().toString().contains("C=TEST"));
-//
-//        // validate the format of the subject and subject alternative name
-//        assertEquals(certificate.getSubjectX500Principal().getName(), "");
-//        assertEquals(((X500Name) GeneralNames.fromExtensions(((TBSCertificate.getInstance(
-//                certificate.getTBSCertificate()).getExtensions())), Extension.
-//                subjectAlternativeName).getNames()[0].getName()).getRDNs(
-//                        IssuedCertificateAttributeHelper.TCPA_AT_TPM_ID_LABEL)[0].getFirst()
-//                .getValue().toString(), "exampleIdLabel");
-//
-//        assertEquals(resultMod, modulus);
-//
-//        // obtain the expiration dates from the certificate
-//        Calendar beforeDate = Calendar.getInstance();
-//        Calendar afterDate = Calendar.getInstance();
-//        beforeDate.setTime(certificate.getNotBefore());
-//        afterDate.setTime(certificate.getNotAfter());
-//
-//        // assert the dates are set correctly
-//        assertEquals(beforeDate.get(Calendar.DATE), today.get(Calendar.DATE));
-//        assertEquals(afterDate.get(Calendar.DATE), tomorrow.get(Calendar.DATE));
-//
-//        // validate mock interactions
-//        verify(acaCertificate).getSubjectX500Principal();
-//        verifyNoMoreInteractions(identityProof, asymmetricPublicKey, storePubKey, acaCertificate);
-//    }
+    @Test
+    public void testGenerateCredential() throws Exception {
+        // test variables
+        final String identityProofLabelString = "label";
+        byte[] identityProofLabel = identityProofLabelString.getBytes();
+        byte[] modulus = ((RSAPublicKey) keyPair.getPublic()).getModulus().toByteArray();
+        X500Principal principal = new X500Principal("CN=TEST, OU=TEST, O=TEST, C=TEST");
+        int validDays = 1;
+
+        // create mocks for testing
+        IdentityProof identityProof = mock(IdentityProof.class);
+        AsymmetricPublicKey asymmetricPublicKey = mock(AsymmetricPublicKey.class);
+        StorePubKey storePubKey = mock(StorePubKey.class);
+        X509Certificate acaCertificate = mock(X509Certificate.class);
+
+        // assign ACA fields
+        ReflectionTestUtils.setField(aca, "validDays", validDays);
+        ReflectionTestUtils.setField(aca, "acaCertificate", acaCertificate);
+
+        // prepare identity proof interactions
+        when(identityProof.getLabel()).thenReturn(identityProofLabel);
+
+        // prepare other mocks
+        when(acaCertificate.getSubjectX500Principal()).thenReturn(principal);
+        when(acaCertificate.getIssuerX500Principal()).thenReturn(principal);
+
+        // perform the test
+        X509Certificate certificate = abstractProcessor.generateCredential(keyPair.getPublic(),
+                null,
+                new LinkedList<PlatformCredential>(),
+                "exampleIdLabel",
+                acaCertificate);
+
+        // grab the modulus from the generate certificate
+        byte[] resultMod = ((RSAPublicKey) certificate.getPublicKey()).getModulus().toByteArray();
+
+        // today and tomorrow, when the certificate should be valid for
+        Calendar today = Calendar.getInstance();
+        Calendar tomorrow = Calendar.getInstance();
+        tomorrow.add(Calendar.DATE, 1);
+
+        // validate the certificate
+        assertTrue(certificate.getIssuerX500Principal().toString().contains("CN=TEST"));
+        assertTrue(certificate.getIssuerX500Principal().toString().contains("OU=TEST"));
+        assertTrue(certificate.getIssuerX500Principal().toString().contains("O=TEST"));
+        assertTrue(certificate.getIssuerX500Principal().toString().contains("C=TEST"));
+
+        // validate the format of the subject and subject alternative name
+        assertEquals("", certificate.getSubjectX500Principal().getName());
+        assertEquals("exampleIdLabel",
+                ((X500Name) GeneralNames.fromExtensions(((TBSCertificate.getInstance(
+                certificate.getTBSCertificate()).getExtensions())), Extension.
+                subjectAlternativeName).getNames()[0].getName()).getRDNs(
+                        IssuedCertificateAttributeHelper.TCPA_AT_TPM_ID_LABEL)[0].getFirst()
+                .getValue().toString());
+
+        assertArrayEquals(modulus, resultMod);
+
+        // obtain the expiration dates from the certificate
+        Calendar beforeDate = Calendar.getInstance();
+        Calendar afterDate = Calendar.getInstance();
+        beforeDate.setTime(certificate.getNotBefore());
+        afterDate.setTime(certificate.getNotAfter());
+
+        // assert the dates are set correctly
+        assertEquals(today.get(Calendar.DATE), beforeDate.get(Calendar.DATE));
+        assertEquals(tomorrow.get(Calendar.DATE), afterDate.get(Calendar.DATE));
+
+        // validate mock interactions
+        verify(acaCertificate).getSubjectX500Principal();
+        verifyNoMoreInteractions(identityProof, asymmetricPublicKey, storePubKey, acaCertificate);
+    }
 
     /**
      * Tests {@link ProvisionUtils#assemblePublicKey(byte[])}.
