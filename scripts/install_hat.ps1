@@ -70,8 +70,6 @@ Expand-Archive -Path oem_certs.zip
 # Make sure Docker is using Windows Containers
 & $Env:ProgramFiles\Docker\Docker\DockerCli.exe -SwitchWindowsEngine
 
-Expand-Archive -Path oem_certs.zip
-
 Write-Host "Downloading images (This can take a while)"
 docker pull ghcr.io/nsacyber/hirs/aca:latest
 docker pull ghcr.io/nsacyber/hirs/hat:latest
