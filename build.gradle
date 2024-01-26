@@ -5,6 +5,7 @@ plugins {
     // Apply the application plugin to add support for building a CLI application in Java.
     id 'application'
     id 'com.github.spotbugs' version '6.0.4' apply false
+    id 'checkstyle'
 }
 
 // Global checkstyle file
@@ -49,6 +50,13 @@ def gitHash = { ->
         standardOutput = stdout
     }
     return stdout.toString().trim()
+}
+
+tasks.withType(Checkstyle) {
+    reports {
+        xml.required = false
+        html.required = true
+    }
 }
 
 project.ext["jarVersion"] = "${projectVersion}.${buildTime}.${gitHash}"
