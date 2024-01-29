@@ -12,7 +12,6 @@ plugins {
 
 subprojects {
     apply plugin: "com.github.spotbugs"
-    //apply plugin: 'checkstyle'
 
     spotbugs {
         excludeFilter = file('config/spotbugs/spotbugs-exclude.xml')

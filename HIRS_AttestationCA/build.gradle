@@ -2,7 +2,7 @@ plugins {
     id 'java'
     id 'io.spring.dependency-management' version '1.1.0'
     id 'com.google.protobuf' version '0.9.4'
-    id 'checkstyle' version '10.12.7'
+    id 'checkstyle'
 }
 
 java {
@@ -59,6 +59,7 @@ dependencies {
     annotationProcessor libs.lombok
 }
 checkstyle {
+    toolVersion = '10.12.7'
     configFile file("${rootDir}/config/checkstyle/checkstyle.xml")
 }
 checkstyleMain {

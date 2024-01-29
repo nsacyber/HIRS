@@ -5,6 +5,7 @@ plugins {
     id 'com.netflix.nebula.ospackage' version '11.4.0'
     id 'org.springframework.boot' version '3.0.6'
     id 'io.spring.dependency-management' version '1.1.0'
+    id 'checkstyle'
 }
 
 // Get version from main project gradle
@@ -57,6 +58,23 @@ dependencies {
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
     testImplementation 'org.junit.jupiter:junit-jupiter:5.9.3'
     testImplementation 'org.hsqldb:hsqldb'
+}
+
+checkstyle {
+    toolVersion = '10.12.7'
+    configFile file("${rootDir}/config/checkstyle/checkstyle.xml")
+}
+checkstyleMain {
+    source ='src/main/java'
+}
+checkstyleTest {
+    source ='src/test/java'
+}
+tasks.withType(Checkstyle) {
+    reports {
+        xml.required = false
+        html.required = true
+    }
 }
 
 test {

@@ -1,5 +1,6 @@
 plugins {
     id 'java'
+    id 'checkstyle'
 }
 // Get version from main project gradle
 def packVersion = properties.get("packageVersion");
@@ -52,6 +53,23 @@ dependencies {
     compileOnly libs.lombok
     annotationProcessor libs.lombok
 
+}
+
+checkstyle {
+    toolVersion = '10.12.7'
+    configFile file("${rootDir}/config/checkstyle/checkstyle.xml")
+}
+checkstyleMain {
+    source ='src/main/java'
+}
+checkstyleTest {
+    source ='src/test/java'
+}
+tasks.withType(Checkstyle) {
+    reports {
+        xml.required = false
+        html.required = true
+    }
 }
 
 test {

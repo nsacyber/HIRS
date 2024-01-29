@@ -6,4 +6,6 @@
 
 <suppressions>
     <suppress checks="MagicNumber" files=".*[/\\]src[/\\]test[/\\]+" />
+    <suppress checks="FinalParameters" files=".*[/\\]src[/\\]test[/\\]+" />
+    <suppress checks="JavadocPackage" files=".*[/\\]src[/\\]test[/\\]+" />
 </suppressions>
