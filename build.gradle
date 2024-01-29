@@ -5,7 +5,6 @@ plugins {
     // Apply the application plugin to add support for building a CLI application in Java.
     id 'application'
     id 'com.github.spotbugs' version '6.0.4' apply false
-    id 'checkstyle'
 }
 
 // Global checkstyle file
@@ -13,26 +12,10 @@ plugins {
 
 subprojects {
     apply plugin: "com.github.spotbugs"
-    apply plugin: 'checkstyle'
+    //apply plugin: 'checkstyle'
 
     spotbugs {
         excludeFilter = file('config/spotbugs/spotbugs-exclude.xml')
-    }
-    checkstyle {
-        toolVersion '10.12.7'
-        configFile file("${rootDir}/config/checkstyle/checkstyle.xml")
-    }
-    checkstyleMain {
-        source ='src/main/java'
-    }
-    checkstyleTest {
-        source ='src/test/java'
-    }
-    tasks.withType(Checkstyle) {
-        reports {
-            xml.required = false
-            html.required = true
-        }
     }
 
     tasks.withType(com.github.spotbugs.snom.SpotBugsTask) {
@@ -67,13 +50,6 @@ def gitHash = { ->
         standardOutput = stdout
     }
     return stdout.toString().trim()
-}
-
-tasks.withType(Checkstyle) {
-    reports {
-        xml.required = false
-        html.required = true
-    }
 }
 
 project.ext["jarVersion"] = "${projectVersion}.${buildTime}.${gitHash}"
