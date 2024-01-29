@@ -8,6 +8,7 @@ import hirs.attestationca.persist.entity.userdefined.certificate.EndorsementCred
 import hirs.attestationca.persist.entity.userdefined.Device;
 import hirs.attestationca.persist.entity.userdefined.PolicySettings;
 import hirs.attestationca.persist.entity.userdefined.SupplyChainValidationSummary;
+import hirs.attestationca.persist.enums.AppraisalStatus;
 import hirs.attestationca.persist.validation.CredentialValidator;
 //import hirs.data.persist.AppraisalStatus;
 //import hirs.data.persist.DeviceInfoReport;
@@ -19,10 +20,7 @@ import hirs.attestationca.persist.validation.CredentialValidator;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.ArgumentCaptor;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
+import org.mockito.*;
 import org.springframework.data.repository.CrudRepository;
 
 import java.io.IOException;
@@ -37,10 +35,12 @@ import java.util.*;
 
 //import static hirs.data.persist.AppraisalStatus.Status.FAIL;
 //import static hirs.data.persist.AppraisalStatus.Status.PASS;
+import static hirs.attestationca.persist.enums.AppraisalStatus.Status.PASS;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
 //import static org.mockito.Matchers.anyMapOf;
 //import static org.mockito.Matchers.eq;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.atLeast;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
@@ -83,6 +83,7 @@ public class SupplyChainValidationServiceTest {
     @Mock
     private ComponentResultRepository componentResultRepository;
 
+    //jamo
     @Mock
     private CredentialValidator supplyChainCredentialValidator;
 
@@ -121,6 +122,9 @@ public class SupplyChainValidationServiceTest {
         MockitoAnnotations.initMocks(this);
 
         device = mock(Device.class);
+
+//        supplyChainCredentialValidator = mock(CredentialValidator.class);
+//        MockedStatic<CredentialValidator> supplyChainCredentialValidator = Mockito.mockStatic(CredentialValidator.class);
 
 //        SupplyChainAppraiser appraiser = mock(SupplyChainAppraiser.class);
 //        policy = mock(SupplyChainPolicy.class);
@@ -208,20 +212,21 @@ public class SupplyChainValidationServiceTest {
      */
     @Test
     public final void testFullSuccessfulValidation() {
-//        when(policy.isEcValidationEnabled()).thenReturn(true);
-//        when(policy.isPcValidationEnabled()).thenReturn(true);
-//        when(policy.isPcAttributeValidationEnabled()).thenReturn(true);
-//        when(policy.isExpiredCertificateValidationEnabled()).thenReturn(true);
-//
-//        doReturn(new AppraisalStatus(PASS, "")).when(supplyChainCredentialValidator).
-//                validateEndorsementCredential(eq(ec), any(KeyStore.class), eq(true));
+        when(policy.isEcValidationEnabled()).thenReturn(true);
+        when(policy.isPcValidationEnabled()).thenReturn(true);
+        when(policy.isPcAttributeValidationEnabled()).thenReturn(true);
+        when(policy.isExpiredCertificateValidationEnabled()).thenReturn(true);
+//jamo
+        doReturn(new AppraisalStatus(PASS, "")).when(supplyChainCredentialValidator).
+                validateEndorsementCredential(eq(ec), any(KeyStore.class), eq(true));
+
 //        doReturn(new AppraisalStatus(PASS, "")).when(supplyChainCredentialValidator)
 //                .validatePlatformCredential(eq(pc), any(KeyStore.class), eq(true));
 //        doReturn(new AppraisalStatus(PASS, "")).when(supplyChainCredentialValidator)
 //                .validatePlatformCredential(eq(delta), any(KeyStore.class), eq(true));
 //        doReturn(new AppraisalStatus(PASS, "")).when(supplyChainCredentialValidator)
 //                .validatePlatformCredentialAttributes(eq(pc), any(DeviceInfoReport.class),
-//                        any(EndorsementCredential.class));
+//       0                 any(EndorsementCredential.class));
 //        doReturn(new AppraisalStatus(PASS, "")).when(supplyChainCredentialValidator)
 //                .validateDeltaPlatformCredentialAttributes(eq(delta), any(DeviceInfoReport.class),
 //                        eq(pc), anyMapOf(PlatformCredential.class, SupplyChainValidation.class));
