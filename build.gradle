@@ -13,9 +13,26 @@ plugins {
 
 subprojects {
     apply plugin: "com.github.spotbugs"
+    apply plugin: 'checkstyle'
 
     spotbugs {
         excludeFilter = file('config/spotbugs/spotbugs-exclude.xml')
+    }
+    checkstyle {
+        toolVersion '10.12.7'
+        configFile file("${rootDir}/config/checkstyle/checkstyle.xml")
+    }
+    checkstyleMain {
+        source ='src/main/java'
+    }
+    checkstyleTest {
+        source ='src/test/java'
+    }
+    tasks.withType(Checkstyle) {
+        reports {
+            xml.required = false
+            html.required = true
+        }
     }
 
     tasks.withType(com.github.spotbugs.snom.SpotBugsTask) {
