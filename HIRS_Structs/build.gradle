@@ -16,7 +16,7 @@ repositories {
 }
 
 dependencies {
-    implementation 'org.apache.commons:commons-lang3:3.13.0'
+    implementation libs.commons.lang3
 
 //    testCompile libs.mockito
     testImplementation libs.testng
@@ -25,6 +25,12 @@ dependencies {
 checkstyle {
     toolVersion = '10.12.7'
     configFile file("${rootDir}/config/checkstyle/checkstyle.xml")
+}
+// https://github.com/checkstyle/checkstyle/issues/14211#issuecomment-1884129948
+configurations.checkstyle {
+    resolutionStrategy.capabilitiesResolution.withCapability("com.google.collections:google-collections") {
+        select("com.google.guava:guava:0")
+    }
 }
 checkstyleMain {
     source ='src/main/java'

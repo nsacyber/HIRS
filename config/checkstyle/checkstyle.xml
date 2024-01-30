@@ -71,6 +71,7 @@
     <module name="FileLength"/>
     <module name="LineLength">
         <property name="fileExtensions" value="java"/>
+        <property name="max" value="100"/>
     </module>
 
     <!-- Checks for whitespace                               -->
@@ -100,7 +101,9 @@
         <module name="InvalidJavadocPosition"/>
         <module name="JavadocMethod"/>
         <module name="JavadocType"/>
-        <module name="JavadocVariable"/>
+        <module name="JavadocVariable">
+            <property name="scope" value="public"/>
+        </module>
         <module name="JavadocStyle"/>
         <module name="MissingJavadocMethod"/>
 
