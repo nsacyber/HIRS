@@ -108,7 +108,8 @@ public class SupplyChainValidationServiceTest {
     private PlatformCredential pc;
     private PlatformCredential delta;
     private EndorsementCredential ec;
-    private HashSet<PlatformCredential> pcs;
+//    private HashSet<PlatformCredential> pcs;
+    private List<PlatformCredential> pcs;
     private Device device;
 
     /**
@@ -153,7 +154,8 @@ public class SupplyChainValidationServiceTest {
 //        when(pc.isBase()).thenReturn(true);
         when(pc.getBeginValidity()).thenReturn(new Date(System.currentTimeMillis()));
         when(pc.getSubjectSorted()).thenReturn("STMicroelectronics NV");
-        pcs = new HashSet<>();
+//        pcs = new HashSet<>();
+        pcs = new LinkedList<>();
         pcs.add(pc);
 
         //Mock delta platform credential
@@ -217,8 +219,8 @@ public class SupplyChainValidationServiceTest {
         when(policy.isPcAttributeValidationEnabled()).thenReturn(true);
         when(policy.isExpiredCertificateValidationEnabled()).thenReturn(true);
 //jamo
-        doReturn(new AppraisalStatus(PASS, "")).when(supplyChainCredentialValidator).
-                validateEndorsementCredential(eq(ec), any(KeyStore.class), eq(true));
+//        doReturn(new AppraisalStatus(PASS, "")).when(supplyChainCredentialValidator).
+//                validateEndorsementCredential(eq(ec), any(KeyStore.class), eq(true));
 
 //        doReturn(new AppraisalStatus(PASS, "")).when(supplyChainCredentialValidator)
 //                .validatePlatformCredential(eq(pc), any(KeyStore.class), eq(true));
@@ -231,10 +233,11 @@ public class SupplyChainValidationServiceTest {
 //                .validateDeltaPlatformCredentialAttributes(eq(delta), any(DeviceInfoReport.class),
 //                        eq(pc), anyMapOf(PlatformCredential.class, SupplyChainValidation.class));
 //
-//        Assert.assertEquals(service.validateSupplyChain(ec, pcs,
-//                device).getOverallValidationResult(), PASS);
+        assertEquals(PASS, service.validateSupplyChain(ec, pcs,
+                device).getOverallValidationResult());
 //        verify(supplyChainValidationSummaryDBManager).save(any(SupplyChainValidationSummary.class));
-//
+        verify(endorsementCredentialRepository).save(any(EndorsementCredential.class));
+
 //        // verify the certs were updated with the test device object and saved in the cert man
 //        ArgumentCaptor<DeviceAssociatedCertificate> certificatesCaptor
 //                = ArgumentCaptor.forClass(DeviceAssociatedCertificate.class);
