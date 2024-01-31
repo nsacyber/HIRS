@@ -33,6 +33,7 @@ import javax.security.auth.x500.X500Principal;
 import java.io.IOException;
 import java.math.BigInteger;
 import java.net.URISyntaxException;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -43,6 +44,7 @@ import java.security.spec.MGF1ParameterSpec;
 import java.util.Calendar;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Objects;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
@@ -185,7 +187,7 @@ public class AttestationCertificateAuthorityTest {
         when(publicKey.getEncoded()).thenReturn(encoded);
 
         // assert what the ACA returns is as expected
-        assertEquals(encoded, aca.getPublicKey());
+        assertArrayEquals(encoded, aca.getPublicKey());
 
         // verify mock interactions
         verify(acaCertificate).getPublicKey();
@@ -208,7 +210,7 @@ public class AttestationCertificateAuthorityTest {
         EncryptionScheme encryptionScheme = EncryptionScheme.PKCS1;
 
         // test variables
-        byte[] expected = "test".getBytes();
+        byte[] expected = "test".getBytes(StandardCharsets.UTF_8);
 
         // encrypt the expected value using same algorithm as the ACA.
         byte[] encrypted = encryptBlob(expected, encryptionScheme.toString());
@@ -229,7 +231,7 @@ public class AttestationCertificateAuthorityTest {
         String transformation = "AES/CBC/PKCS5Padding";
 
         // test variables
-        byte[] expected = "test".getBytes();
+        byte[] expected = "test".getBytes(StandardCharsets.UTF_8);
 
         // create a key generator to generate a "shared" secret
         KeyGenerator keyGenerator = KeyGenerator.getInstance("AES");
@@ -602,8 +604,8 @@ public class AttestationCertificateAuthorityTest {
                 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31};
         ByteString blob = ProvisionUtils.tpm20MakeCredential(ekPub, akPub, nonce);
 
-        Path resources = Paths.get(getClass().getResource(
-                "/").toURI()).getParent().getParent().getParent().getParent();
+        Path resources = Paths.get(Objects.requireNonNull(this.getClass().getResource(
+                "/").toURI())).getParent().getParent().getParent().getParent();
         Path makeBlob = resources.resolve("src/test/resources/tpm2/test/make.blob");
         Files.write(makeBlob, blob.toByteArray());
 
