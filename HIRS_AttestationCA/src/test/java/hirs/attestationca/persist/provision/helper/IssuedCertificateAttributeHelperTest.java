@@ -191,7 +191,7 @@ public class IssuedCertificateAttributeHelperTest {
 
         DLSequence dlSequence = (DLSequence) subjectAlternativeName.getParsedValue();
         ASN1TaggedObject asn1TaggedObject = (ASN1TaggedObject) dlSequence.getObjectAt(0);
-        ASN1Sequence asn1Sequence = (ASN1Sequence) asn1TaggedObject.getObject();
+        ASN1Sequence asn1Sequence = (ASN1Sequence) asn1TaggedObject.getBaseObject();
 
         Enumeration enumeration = asn1Sequence.getObjects();
         while (enumeration.hasMoreElements()) {
