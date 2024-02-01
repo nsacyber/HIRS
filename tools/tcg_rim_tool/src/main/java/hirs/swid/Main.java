@@ -53,7 +53,11 @@ public class Main {
                         System.out.println("A single cert cannot be used for verification. " +
                                 "The signing cert will be searched for in the trust store.");
                     }
-                    validator.validateSwidtagFile(verifyFile);
+                    if (validator.validateSwidtagFile(verifyFile)) {
+                        System.out.println("Successfully verified " + verifyFile);
+                    } else {
+                        System.out.println("Failed to verify " + verifyFile);
+                    }
                 } else {
                     System.out.println("Need a RIM file to validate!");
                     System.exit(1);
