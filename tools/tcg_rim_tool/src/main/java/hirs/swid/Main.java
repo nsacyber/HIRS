@@ -66,6 +66,7 @@ public class Main {
                         System.out.println("Successfully verified " + verifyFile);
                     } else {
                         System.out.println("Failed to verify " + verifyFile);
+                        System.exit(1);
                     }
             } else {
                 gateway = new SwidTagGateway();
