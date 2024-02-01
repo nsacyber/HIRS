@@ -21,8 +21,15 @@ public class Main {
         jc.parse(args);
         SwidTagGateway gateway;
         ReferenceManifestValidator validator;
+        List<String> unknownOpts = commander.getUnknownOptions();
 
-        if (commander.isHelp()) {
+        if (!unknownOpts.isEmpty()) {
+            StringBuilder sb = new StringBuilder("Unknown options encountered: ");
+            for (String opt : unknownOpts) {
+                sb.append(opt + ", ");
+            }
+            exitWithErrorCode(sb.substring(0,sb.lastIndexOf(",")));
+        } else if (commander.isHelp()) {
             jc.usage();
             System.out.println(commander.printHelpExamples());
         } else if (commander.isVersion()) {
@@ -57,8 +64,7 @@ public class Main {
                     }
                     validator.validateSwidtagFile(verifyFile);
                 } else {
-                    System.out.println("Need a RIM file to validate!");
-                    System.exit(1);
+                    exitWithErrorCode("A RIM file was not found for validation.");
                 }
             } else {
                 gateway = new SwidTagGateway();
@@ -92,13 +98,11 @@ public class Main {
                             gateway.setDefaultCredentials(true);
                             gateway.setJksTruststoreFile(SwidTagConstants.DEFAULT_KEYSTORE_FILE);
                         } else {
-                            System.out.println("A private key (-k) and public certificate (-p) " +
+                            exitWithErrorCode("A private key (-k) and public certificate (-p) " +
                                     "are required, or the default key (-d) must be indicated.");
-                            System.exit(1);
                         }
                         if (rimEventLog.isEmpty()) {
-                            System.out.println("Error: a support RIM is required!");
-                            System.exit(1);
+                            exitWithErrorCode("A support RIM is required.");
                         } else {
                             gateway.setRimEventLog(rimEventLog);
                         }
@@ -110,16 +114,26 @@ public class Main {
                                     gateway.setTimestampArgument(timestampArguments.get(1));
                                 }
                             } else {
-                                System.exit(1);
+                                exitWithErrorCode("The provided timestamp argument(s) " +
+                                        "is/are not valid.");
                             }
                         }
                         gateway.generateSwidTag(commander.getOutFile());
                         break;
                     default:
-                        System.out.println("No create type given, nothing to do");
+                        exitWithErrorCode("No create type given, nothing to do");
                 }
             }
         }
+    }
+
+    /**
+     * Use cases that exit with an error code are redirected here.
+     */
+    private static void exitWithErrorCode(String errorMessage) {
+        //TODO: log errorMessage
+        System.out.println(errorMessage);
+        System.exit(1);
     }
 
     /**

@@ -12,6 +12,8 @@ import java.util.List;
  */
 public class Commander {
 
+    @Parameter(description = "This parameter catches all unrecognized arguments.")
+    private List<String> unknownOptions = new ArrayList<>();
     @Parameter(names = {"-h", "--help"}, help = true, description = "Print this help text.")
     private boolean help;
     @Parameter(names = {"-c", "--create \"base\""}, order = 0,
@@ -57,6 +59,10 @@ public class Commander {
                     "Currently only RFC3339 and RFC3852 are supported:\n" +
                     "\tRFC3339 [yyyy-MM-ddThh:mm:ssZ]\n\tRFC3852 <counterSignature.bin>")
     private List<String> timestampArguments = new ArrayList<String>(2);
+
+    public List<String> getUnknownOptions() {
+        return unknownOptions;
+    }
 
     public boolean isHelp() {
         return help;
