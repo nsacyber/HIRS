@@ -8,6 +8,7 @@ import hirs.attestationca.persist.entity.userdefined.certificate.attributes.Comp
 import hirs.attestationca.persist.entity.userdefined.certificate.attributes.V2.ComponentIdentifierV2;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
+
 import org.bouncycastle.asn1.ASN1UTF8String;
 import org.bouncycastle.asn1.DERUTF8String;
 
@@ -159,7 +160,7 @@ public final class PciIds {
         if (manufacturer != null && manufacturer.getString().trim().matches("^[0-9A-Fa-f]{4}$")) {
             Vendor ven = DB.findVendor(manufacturer.getString().toLowerCase());
             if (ven != null && !Strings.isNullOrEmpty(ven.getName())) {
-                manufacturer = ASN1UTF8String.getInstance(ven.getName());
+                manufacturer = new DERUTF8String(ven.getName());
             }
         }
         return manufacturer;
@@ -184,7 +185,7 @@ public final class PciIds {
             Device dev = DB.findDevice(manufacturer.getString().toLowerCase(),
                     model.getString().toLowerCase());
             if (dev != null && !Strings.isNullOrEmpty(dev.getName())) {
-                model = ASN1UTF8String.getInstance(dev.getName());
+                model = new DERUTF8String(dev.getName());
             }
         }
         return model;
