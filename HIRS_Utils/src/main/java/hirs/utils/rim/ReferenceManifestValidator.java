@@ -257,6 +257,11 @@ public class ReferenceManifestValidator {
         X509Certificate signingCert = null;
         try {
             signingCert = getCertFromTruststore();
+            if (signingCert == null) {
+                log.error("Unable to locate the signing cert in the provided truststore "
+                        + trustStoreFile);
+                return false;
+            }
         } catch (IOException e) {
             log.warn("Error while parsing signing cert from truststore: " + e.getMessage());
             return false;
