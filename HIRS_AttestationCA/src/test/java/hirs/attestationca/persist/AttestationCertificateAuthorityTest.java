@@ -604,8 +604,9 @@ public class AttestationCertificateAuthorityTest {
                 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31};
         ByteString blob = ProvisionUtils.tpm20MakeCredential(ekPub, akPub, nonce);
 
-        Path resources = Paths.get(Objects.requireNonNull(this.getClass().getResource(
-                "/").toURI())).getParent().getParent().getParent().getParent();
+        Path resources = Objects.requireNonNull(Paths.get(Objects.requireNonNull(this.getClass().getResource(
+                "/").toURI()))
+                .getParent().getParent().getParent().getParent());
         Path makeBlob = resources.resolve("src/test/resources/tpm2/test/make.blob");
         Files.write(makeBlob, blob.toByteArray());
 
