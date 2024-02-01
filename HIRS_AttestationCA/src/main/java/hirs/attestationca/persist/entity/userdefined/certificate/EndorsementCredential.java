@@ -13,7 +13,6 @@ import lombok.NoArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.bouncycastle.asn1.ASN1ApplicationSpecific;
 import org.bouncycastle.asn1.ASN1BitString;
 import org.bouncycastle.asn1.ASN1Boolean;
 import org.bouncycastle.asn1.ASN1Encodable;
@@ -55,7 +54,7 @@ import java.util.Set;
 
 /**
  *
- * This class persists Certificate Authority credentials by extending the base Certificate
+ * This class persists an Endorsement Credential by extending the base Certificate
  * class with fields unique to Endorsement credentials, as defined in the Trusted
  * Computing Group Credential Profiles, specification v.1.2.
  *
@@ -324,8 +323,7 @@ public class EndorsementCredential extends DeviceAssociatedCertificate {
             ASN1Integer ver;
             // Parse Security Assertions Version
             if (seq.getObjectAt(seqPosition) instanceof ASN1Integer) {
-                ver = (ASN1Integer) seq.getObjectAt(seqPosition);
-                seqPosition++;
+                ver = (ASN1Integer) seq.getObjectAt(seqPosition++);
             } else {
                 // Default value of 1 if field not found
                 ver = new ASN1Integer(BigInteger.ONE);
@@ -334,8 +332,7 @@ public class EndorsementCredential extends DeviceAssociatedCertificate {
             ASN1Boolean fieldUpgradeable;
             // Parse Security Assertions Field Upgradeable
             if (seq.getObjectAt(seqPosition) instanceof ASN1Boolean) {
-                fieldUpgradeable = (ASN1Boolean) seq.getObjectAt(seqPosition);
-                seqPosition++;
+                fieldUpgradeable = (ASN1Boolean) seq.getObjectAt(seqPosition++);
             } else {
                 // Default value of false if field not found
                 fieldUpgradeable = ASN1Boolean.getInstance(false);
@@ -531,10 +528,6 @@ public class EndorsementCredential extends DeviceAssociatedCertificate {
                     e.printStackTrace();
                 }
             }
-
-        } else if (component instanceof ASN1ApplicationSpecific) {
-            parseSingle(((ASN1ApplicationSpecific) component).getObject(), addToMapping, key);
-
         } else if (component instanceof DERBMPString) {
             if (addToMapping) {
                 String bmpStr = ((DERBMPString) component).getString();
