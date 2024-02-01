@@ -389,7 +389,7 @@ public class AttestationCertificateAuthorityTest {
     public void testGenerateCredential() throws Exception {
         // test variables
         final String identityProofLabelString = "label";
-        byte[] identityProofLabel = identityProofLabelString.getBytes();
+        byte[] identityProofLabel = identityProofLabelString.getBytes(StandardCharsets.UTF_8);
         byte[] modulus = ((RSAPublicKey) keyPair.getPublic()).getModulus().toByteArray();
         X500Principal principal = new X500Principal("CN=TEST, OU=TEST, O=TEST, C=TEST");
         int validDays = 1;
@@ -604,14 +604,14 @@ public class AttestationCertificateAuthorityTest {
                 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31};
         ByteString blob = ProvisionUtils.tpm20MakeCredential(ekPub, akPub, nonce);
 
-        Path resources = Objects.requireNonNull(Paths.get(Objects.requireNonNull(this.getClass().getResource(
-                "/").toURI()))
-                .getParent().getParent().getParent().getParent());
-        Path makeBlob = resources.resolve("src/test/resources/tpm2/test/make.blob");
-        Files.write(makeBlob, blob.toByteArray());
-
-        Path secretPath = resources.resolve("src/test/resources/tpm2/test/secret.blob");
-        Files.write(secretPath, nonce);
+//        Path resources = Objects.requireNonNull(Paths.get(Objects.requireNonNull(this.getClass().getResource(
+//                "/").toURI()))
+//                .getParent().getParent().getParent().getParent());
+//        Path makeBlob = resources.resolve("src/test/resources/tpm2/test/make.blob");
+//        Files.write(makeBlob, blob.toByteArray());
+//
+//        Path secretPath = resources.resolve("src/test/resources/tpm2/test/secret.blob");
+//        Files.write(secretPath, nonce);
     }
 
     /**
@@ -675,7 +675,7 @@ public class AttestationCertificateAuthorityTest {
         Cipher cipher = Cipher.getInstance(EncryptionScheme.OAEP.toString());
 
         OAEPParameterSpec spec = new OAEPParameterSpec("Sha1", "MGF1",
-                MGF1ParameterSpec.SHA1, new PSource.PSpecified("TCPA".getBytes()));
+                MGF1ParameterSpec.SHA1, new PSource.PSpecified("TCPA".getBytes(StandardCharsets.UTF_8)));
 
         // use our generated public key to encrypt
         cipher.init(Cipher.PRIVATE_KEY, keyPair.getPrivate(), spec);
