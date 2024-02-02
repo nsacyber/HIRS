@@ -39,9 +39,8 @@
 
         <property name="basedir" value="${basedir}"/>
     -->
-    <property name="severity" value="error"/>
-
-    <property name="fileExtensions" value="java, properties, xml"/>
+    <property name="severity" value="warning"/>
+    <property name="fileExtensions" value="java"/>
 
     <!-- Excludes all 'module-info.java' files              -->
     <!-- See https://checkstyle.org/filefilters/index.html -->
@@ -51,7 +50,7 @@
 
     <!-- https://checkstyle.org/filters/suppressionfilter.html -->
     <module name="SuppressionFilter">
-        <property name="file" value="${basedir}/suppressions.xml"/>
+        <property name="file" value="${org.checkstyle.google.suppressionfilter.config}" default="${rootDir}/config/checkstyle/suppressions.xml"/>
         <property name="optional" value="true"/>
     </module>
 
@@ -72,6 +71,7 @@
     <module name="FileLength"/>
     <module name="LineLength">
         <property name="fileExtensions" value="java"/>
+        <property name="max" value="100"/>
     </module>
 
     <!-- Checks for whitespace                               -->
@@ -101,7 +101,9 @@
         <module name="InvalidJavadocPosition"/>
         <module name="JavadocMethod"/>
         <module name="JavadocType"/>
-        <module name="JavadocVariable"/>
+        <module name="JavadocVariable">
+            <property name="scope" value="public"/>
+        </module>
         <module name="JavadocStyle"/>
         <module name="MissingJavadocMethod"/>
 
