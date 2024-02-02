@@ -12,6 +12,7 @@ dependencyResolutionManagement {
         libs {
             version('springboot', '3.0.1')
             version('jackson', '2.14.2')
+            library('checkstyle', 'com.puppycrawl.tools:checkstyle:10.12.7')
             library('commons-codec', 'commons-codec:commons-codec:1.15')
             library('commons_io',    'commons-io:commons-io:2.11.0')
             library('commons-lang3', 'org.apache.commons:commons-lang3:3.13.0')
