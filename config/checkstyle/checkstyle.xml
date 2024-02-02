@@ -51,7 +51,7 @@
     <!-- https://checkstyle.org/filters/suppressionfilter.html -->
     <module name="SuppressionFilter">
         <property name="file" value="${org.checkstyle.google.suppressionfilter.config}" default="${rootDir}/config/checkstyle/suppressions.xml"/>
-        <property name="optional" value="true"/>
+        <property name="optional" value="false"/>
     </module>
 
     <!-- Checks that a package-info.java file exists for each package.     -->
