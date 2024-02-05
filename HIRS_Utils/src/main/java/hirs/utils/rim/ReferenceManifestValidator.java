@@ -253,25 +253,26 @@ public class ReferenceManifestValidator {
         Element fileElement = (Element) rim.getElementsByTagName("File").item(0);
         if (trustStoreFile != null && !trustStoreFile.isEmpty()) {
             trustStore = parseCertificatesFromPem(trustStoreFile);
+        } else {
+            return failWithError("File <" + trustStoreFile + "> is empty; " +
+                    "a valid, non-empty truststore file is required for validation.");
         }
         X509Certificate signingCert = null;
         try {
             signingCert = getCertFromTruststore();
             if (signingCert == null) {
-                log.error("Unable to locate the signing cert in the provided truststore "
-                        + trustStoreFile);
-                return false;
+                return failWithError("Unable to locate the signing cert in the provided " +
+                        "truststore " + trustStoreFile);
             }
         } catch (IOException e) {
-            log.warn("Error while parsing signing cert from truststore: " + e.getMessage());
-            return false;
+            return failWithError("Error while parsing signing cert from truststore: " +
+                    e.getMessage());
         }
         String subjectKeyIdentifier = "";
         try {
             subjectKeyIdentifier = getCertificateSubjectKeyIdentifier(signingCert);
         } catch (IOException e) {
-            log.warn("Error while parsing certificate data: " + e.getMessage());
-            return false;
+            return failWithError("Error while parsing certificate data: " + e.getMessage());
         }
         return validateXmlSignature(signingCert.getPublicKey(),
                                     subjectKeyIdentifier,
@@ -312,8 +313,7 @@ public class ReferenceManifestValidator {
             System.out.println("Support RIM hash verified!" + System.lineSeparator());
             return true;
         } else {
-            System.out.println("Support RIM hash does not match Base RIM!" + System.lineSeparator());
-            return false;
+            return failWithError("Support RIM hash does not match Base RIM!");
         }
     }
 
@@ -775,5 +775,15 @@ public class ReferenceManifestValidator {
         }
 
         return doc;
+    }
+
+    /**
+     * This method logs an error message and returns a false to signal failed validation.
+     * @param errorMessage String description of what went wrong
+     * @return false to represent failed validation
+     */
+    private boolean failWithError(String errorMessage) {
+        log.error(errorMessage);
+        return false;
     }
 }
