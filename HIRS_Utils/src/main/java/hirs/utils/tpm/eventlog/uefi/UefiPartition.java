@@ -49,7 +49,8 @@ public class UefiPartition {
         System.arraycopy(table, 0, partitionGuidBytes, 0, UefiConstants.SIZE_16);
         partitionTypeGUID = new UefiGuid(partitionGuidBytes);
         byte[] uniquePartGuidBytes = new byte[UefiConstants.SIZE_16];
-        System.arraycopy(table, UefiConstants.SIZE_16, uniquePartGuidBytes, 0, UefiConstants.SIZE_16);
+        System.arraycopy(table, UefiConstants.SIZE_16, uniquePartGuidBytes,
+                0, UefiConstants.SIZE_16);
         uniquePartitionGUID = new UefiGuid(uniquePartGuidBytes);
         byte[] attributeBytes = new byte[UefiConstants.SIZE_8];
         System.arraycopy(table, UefiConstants.ATTRIBUTE_LENGTH, attributeBytes,
