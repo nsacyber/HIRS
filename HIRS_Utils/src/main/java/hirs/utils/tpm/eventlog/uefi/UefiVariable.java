@@ -61,9 +61,12 @@ public class UefiVariable {
      * the class used to parse the data within the "VariableData".
      *
      * @param variableData byte array holding the UEFI Variable.
-     * @throws java.security.cert.CertificateException If there a problem parsing the X509 certificate.
-     * @throws java.security.NoSuchAlgorithmException  if there's a problem hashing the certificate.
-     * @throws java.io.IOException                     If there's a problem parsing the signature data.
+     * @throws java.security.cert.CertificateException If there a problem
+     *              parsing the X509 certificate.
+     * @throws java.security.NoSuchAlgorithmException  if there's a problem
+     *              hashing the certificate.
+     * @throws java.io.IOException                     If there's a problem
+     *              parsing the signature data.
      */
     public UefiVariable(final byte[] variableData)
             throws CertificateException, NoSuchAlgorithmException, IOException {
@@ -77,9 +80,11 @@ public class UefiVariable {
 
         System.arraycopy(variableData, 0, guid, 0, UefiConstants.SIZE_16);
         uefiVarGuid = new UefiGuid(guid);
-        System.arraycopy(variableData, UefiConstants.SIZE_16, nameLength, 0, UefiConstants.SIZE_8);
+        System.arraycopy(variableData, UefiConstants.SIZE_16, nameLength,
+                0, UefiConstants.SIZE_8);
         int nlength = HexUtils.leReverseInt(nameLength);
-        System.arraycopy(variableData, UefiConstants.OFFSET_24, dataLength, 0, UefiConstants.SIZE_8);
+        System.arraycopy(variableData, UefiConstants.OFFSET_24, dataLength,
+                0, UefiConstants.SIZE_8);
         nameTemp = new byte[nlength * UefiConstants.SIZE_2];
 
         System.arraycopy(variableData, UefiConstants.OFFSET_32,
@@ -120,9 +125,12 @@ public class UefiVariable {
      * Processes the data as a UEFI defined Signature List.
      *
      * @param data the bye array holding the Signature List.
-     * @throws java.security.cert.CertificateException If there a problem parsing the X509 certificate.
-     * @throws java.security.NoSuchAlgorithmException  if there's a problem hashing the certificate.
-     * @throws java.io.IOException                     If there's a problem parsing the signature data.
+     * @throws java.security.cert.CertificateException If there a problem
+     *          parsing the X509 certificate.
+     * @throws java.security.NoSuchAlgorithmException  if there's a problem
+     *          hashing the certificate.
+     * @throws java.io.IOException                     If there's a problem
+     *          parsing the signature data.
      */
     private void processSigList(final byte[] data)
             throws CertificateException, NoSuchAlgorithmException, IOException {
@@ -168,8 +176,8 @@ public class UefiVariable {
                 break;
             default:
                 if (!tmpName.isEmpty()) {
-                    efiVariable.append(String.format("Data not provided for UEFI variable named %s   ",
-                            tmpName));
+                    efiVariable.append(String.format("Data not provided for "
+                                    + "UEFI variable named %s   ", tmpName));
                 } else {
                     efiVariable.append("Data not provided   ");
                 }
@@ -190,7 +198,8 @@ public class UefiVariable {
     public String printCert(final byte[] data, final int offset) {
         String certInfo = "";
         byte[] certLength = new byte[UefiConstants.SIZE_2];
-        System.arraycopy(data, offset + UefiConstants.OFFSET_2, certLength, 0, UefiConstants.SIZE_2);
+        System.arraycopy(data, offset + UefiConstants.OFFSET_2, certLength,
+                0, UefiConstants.SIZE_2);
         int cLength = new BigInteger(certLength).intValue() + UefiConstants.SIZE_4;
         byte[] certData = new byte[cLength];
         System.arraycopy(data, offset, certData, 0, cLength);

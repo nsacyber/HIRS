@@ -49,10 +49,10 @@
     </module>
 
     <!-- https://checkstyle.org/filters/suppressionfilter.html -->
-<!--    <module name="SuppressionFilter">-->
-<!--        <property name="file" value="${org.checkstyle.google.suppressionfilter.config}" default="${rootDir}/config/checkstyle/suppressions.xml"/>-->
-<!--        <property name="optional" value="false"/>-->
-<!--    </module>-->
+    <module name="SuppressionFilter">
+        <property name="file" value="${config_loc}/suppressions.xml"/>
+        <property name="optional" value="false"/>
+    </module>
 
     <!-- Checks that a package-info.java file exists for each package.     -->
     <!-- See https://checkstyle.org/checks/javadoc/javadocpackage.html#JavadocPackage -->

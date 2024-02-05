@@ -59,11 +59,14 @@ public class UefiBootVariable {
         System.arraycopy(bootVar, UefiConstants.OFFSET_6, blob, 0, blobLength);
         int descLength = getChar16ArrayLength(blob);
         byte[] desc = new byte[descLength * UefiConstants.SIZE_2];
-        System.arraycopy(bootVar, UefiConstants.OFFSET_6, desc, 0, descLength * UefiConstants.SIZE_2);
-        description = new String(UefiDevicePath.convertChar16tobyteArray(desc), StandardCharsets.UTF_8);
+        System.arraycopy(bootVar, UefiConstants.OFFSET_6, desc, 0,
+                descLength * UefiConstants.SIZE_2);
+        description = new String(UefiDevicePath.convertChar16tobyteArray(desc),
+                StandardCharsets.UTF_8);
         // Data following the Description should be EFI Partition Data (EFI_DEVICE_PATH_PROTOCOL)
         int devPathLength = blobLength;
-        int devPathOffset = UefiConstants.OFFSET_6 + descLength;   //attributes+bloblength+desc+length+2
+        //attributes+bloblength+desc+length+2
+        int devPathOffset = UefiConstants.OFFSET_6 + descLength;
         byte[] devPath = new byte[devPathLength];
         System.arraycopy(bootVar, devPathOffset, devPath, 0, devPathLength);
         efiDevPath = new UefiDevicePath(devPath);
@@ -79,7 +82,8 @@ public class UefiBootVariable {
      */
     public String toString() {
         StringBuilder bootInfo = new StringBuilder("Description = ");
-        String bootVar = description.replaceAll("[^a-zA-Z_0-0\\s]", "");  // remove all non ascii chars
+        // remove all non ascii chars
+        String bootVar = description.replaceAll("[^a-zA-Z_0-0\\s]", "");
         bootInfo.append(bootVar + "\n" + efiDevPath.toString());
         return bootInfo.toString();
     }

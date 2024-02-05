@@ -5,11 +5,12 @@
         "http://www.puppycrawl.com/dtds/suppressions_1_2.dtd">
 
 <suppressions>
+    <!-- Ignore Auto generated files -->
+    <suppress files="[/\\]hirs[/\\]utils[/\\]xjc[/\\]" checks=".*" />
+    <suppress files="ProvisionerTpm2.java" checks=".*" />
 
-    <suppress checks="MagicNumber" files=".*[/\\]src[/\\]test[/\\]+" />
-    <suppress checks="FinalParameters" files=".*[/\\]src[/\\]test[/\\]+" />
-    <suppress checks="JavadocPackage" files=".*[/\\]src[/\\]test[/\\]+" />
-<!--    <suppress files="src/main/java/hirs/attestationca/configuration/provisionerTpm2/ProvisionerTpm2\.java" checks="[a-zA-Z0-9]*"/>-->
-    <suppress files="[\\/]hirs[\\/]attestationca[\\/]configuration[\\/]provisionerTpm2[\\/]ProvisionerTpm2" checks="."/>
-
+    <!-- HIRS_Utils -->
+    <!-- This ignores checking all public variable for a javadoc -->
+    <suppress files="SwidTagConstants.java" checks="LineLength" />
+    <suppress files="SwidTagConstants.java" checks="JavadocVariable" />
 </suppressions>
