@@ -27,7 +27,8 @@ public class UefiX509Cert {
      * @throws java.security.cert.CertificateException If the certificate cannot parse.
      * @throws java.security.NoSuchAlgorithmException  if a hash cannot be generated from the cert.
      */
-    public UefiX509Cert(final byte[] certData) throws CertificateException, NoSuchAlgorithmException {
+    public UefiX509Cert(final byte[] certData) throws CertificateException,
+            NoSuchAlgorithmException {
         CertificateFactory cf;
         cf = CertificateFactory.getInstance("X.509");
         InputStream targetStream = new ByteArrayInputStream(certData);
