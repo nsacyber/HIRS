@@ -255,15 +255,19 @@ public class UefiDevicePath {
     private String hardDriveSubType(final byte[] path, final int offset) {
         subType = "Partition Number = ";
         byte[] partnumber = new byte[UefiConstants.SIZE_4];
-        System.arraycopy(path, UefiConstants.OFFSET_4 + offset, partnumber, 0, UefiConstants.SIZE_4);
+        System.arraycopy(path, UefiConstants.OFFSET_4 + offset, partnumber,
+                0, UefiConstants.SIZE_4);
         subType += HexUtils.byteArrayToHexString(partnumber);
         byte[] data = new byte[UefiConstants.SIZE_8];
-        System.arraycopy(path, UefiConstants.OFFSET_8 + offset, data, 0, UefiConstants.SIZE_8);
+        System.arraycopy(path, UefiConstants.OFFSET_8 + offset, data, 0,
+                UefiConstants.SIZE_8);
         subType += " Partition Start = " + HexUtils.byteArrayToHexString(data);
-        System.arraycopy(path, UefiConstants.OFFSET_16 + offset, data, 0, UefiConstants.SIZE_8);
+        System.arraycopy(path, UefiConstants.OFFSET_16 + offset, data, 0,
+                UefiConstants.SIZE_8);
         subType += " Partition Size = " + HexUtils.byteArrayToHexString(data);
         byte[] signature = new byte[UefiConstants.SIZE_16];
-        System.arraycopy(path, UefiConstants.OFFSET_24 + offset, signature, 0, UefiConstants.SIZE_16);
+        System.arraycopy(path, UefiConstants.OFFSET_24 + offset, signature, 0,
+                UefiConstants.SIZE_16);
         subType += "\n       Partition Signature = ";
         if (path[UefiConstants.OFFSET_41 + offset] == UefiConstants.DRIVE_SIG_NONE) {
             subType += "None";
@@ -299,7 +303,8 @@ public class UefiDevicePath {
         System.arraycopy(path, 2 + offset, lengthBytes, 0, UefiConstants.SIZE_2);
         int subTypeLength = HexUtils.leReverseInt(lengthBytes);
         byte[] filePath = new byte[subTypeLength];
-        System.arraycopy(path, UefiConstants.OFFSET_4 + offset, filePath, 0, subTypeLength);
+        System.arraycopy(path, UefiConstants.OFFSET_4 + offset, filePath,
+                0, subTypeLength);
         byte[] fileName = convertChar16tobyteArray(filePath);
         subType += new String(fileName, StandardCharsets.UTF_8);
         return subType;
@@ -318,10 +323,12 @@ public class UefiDevicePath {
     private String vendorSubType(final byte[] path, final int offset) {
         subType = "Vendor Subtype GUID = ";
         byte[] lengthBytes = new byte[UefiConstants.SIZE_2];
-        System.arraycopy(path, UefiConstants.OFFSET_2 + offset, lengthBytes, 0, UefiConstants.SIZE_2);
+        System.arraycopy(path, UefiConstants.OFFSET_2 + offset, lengthBytes,
+                0, UefiConstants.SIZE_2);
         int subTypeLength = HexUtils.leReverseInt(lengthBytes);
         byte[] guidData = new byte[UefiConstants.SIZE_16];
-        System.arraycopy(path, UefiConstants.OFFSET_4 + offset, guidData, 0, UefiConstants.SIZE_16);
+        System.arraycopy(path, UefiConstants.OFFSET_4 + offset, guidData,
+                0, UefiConstants.SIZE_16);
         UefiGuid guid = new UefiGuid(guidData);
         subType += guid.toString() + " ";
         if (subTypeLength - UefiConstants.SIZE_16 > 0) {
@@ -348,10 +355,12 @@ public class UefiDevicePath {
         subType += " port = " + Integer.valueOf(path[offset + UefiConstants.OFFSET_4]);
         subType += " interface = " + Integer.valueOf(path[offset + UefiConstants.OFFSET_5]);
         byte[] lengthBytes = new byte[UefiConstants.SIZE_2];
-        System.arraycopy(path, UefiConstants.OFFSET_2 + offset, lengthBytes, 0, UefiConstants.SIZE_2);
+        System.arraycopy(path, UefiConstants.OFFSET_2 + offset, lengthBytes,
+                0, UefiConstants.SIZE_2);
         int subTypeLength = HexUtils.leReverseInt(lengthBytes);
         byte[] usbData = new byte[subTypeLength];
-        System.arraycopy(path, UefiConstants.OFFSET_4 + offset, usbData, 0, subTypeLength);
+        System.arraycopy(path, UefiConstants.OFFSET_4 + offset, usbData,
+                0, subTypeLength);
         // Todo add further USB processing ...
         return subType;
     }
@@ -370,10 +379,12 @@ public class UefiDevicePath {
     private String nvmSubType(final byte[] path, final int offset) {
         subType = "NVM Express Namespace = ";
         byte[] lengthBytes = new byte[UefiConstants.SIZE_2];
-        System.arraycopy(path, UefiConstants.OFFSET_2 + offset, lengthBytes, 0, UefiConstants.SIZE_2);
+        System.arraycopy(path, UefiConstants.OFFSET_2 + offset, lengthBytes,
+                0, UefiConstants.SIZE_2);
         int subTypeLength = HexUtils.leReverseInt(lengthBytes);
         byte[] nvmData = new byte[subTypeLength];
-        System.arraycopy(path, UefiConstants.OFFSET_4 + offset, nvmData, 0, subTypeLength);
+        System.arraycopy(path, UefiConstants.OFFSET_4 + offset, nvmData,
+                0, subTypeLength);
         subType += HexUtils.byteArrayToHexString(nvmData);
         return subType;
     }
@@ -385,6 +396,7 @@ public class UefiDevicePath {
      * Status bootHandler pointer, and description String pointer are ignored.
      *
      * @param path byte array holding the device path.
+     * @param offset
      * @return String that represents the UEFI defined BIOS Device Type.
      */
     private String biosDevicePath(final byte[] path, final int offset) {
@@ -436,7 +448,8 @@ public class UefiDevicePath {
     private String piwgFirmVolFile(final byte[] path, final int offset) {
         subType = "PIWG Firmware File ";
         byte[] guidData = new byte[UefiConstants.SIZE_16];
-        System.arraycopy(path, UefiConstants.OFFSET_4 + offset, guidData, 0, UefiConstants.SIZE_16);
+        System.arraycopy(path, UefiConstants.OFFSET_4 + offset, guidData,
+                0, UefiConstants.SIZE_16);
         UefiGuid guid = new UefiGuid(guidData);
         subType += guid.toString();
         return subType;
@@ -455,7 +468,8 @@ public class UefiDevicePath {
     private String piwgFirmVolPath(final byte[] path, final int offset) {
         subType = "PIWG Firmware Volume ";
         byte[] guidData = new byte[UefiConstants.SIZE_16];
-        System.arraycopy(path, UefiConstants.OFFSET_4 + offset, guidData, 0, UefiConstants.SIZE_16);
+        System.arraycopy(path, UefiConstants.OFFSET_4 + offset, guidData,
+                0, UefiConstants.SIZE_16);
         UefiGuid guid = new UefiGuid(guidData);
         subType += guid.toString();
         return subType;
