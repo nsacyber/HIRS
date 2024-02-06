@@ -6,6 +6,11 @@ import hirs.attestationca.persist.entity.userdefined.certificate.EndorsementCred
 import hirs.attestationca.persist.entity.userdefined.certificate.PlatformCredential;
 import hirs.attestationca.persist.entity.userdefined.CertificateTest;
 
+import hirs.attestationca.persist.entity.userdefined.info.*;
+import hirs.attestationca.persist.entity.userdefined.report.DeviceInfoReport;
+import hirs.attestationca.persist.enums.AppraisalStatus;
+import hirs.utils.enums.DeviceInfoEnums;
+import org.apache.logging.log4j.core.util.IOUtils;
 import org.bouncycastle.asn1.x500.X500Name;
 import org.bouncycastle.asn1.x509.SubjectPublicKeyInfo;
 import org.bouncycastle.cert.AttributeCertificateHolder;
@@ -21,14 +26,18 @@ import org.bouncycastle.openssl.PEMParser;
 import org.bouncycastle.operator.ContentSigner;
 import org.bouncycastle.operator.OperatorCreationException;
 import org.bouncycastle.operator.jcajce.JcaContentSignerBuilder;
+import org.powermock.api.mockito.PowerMockito;
 import org.powermock.core.classloader.annotations.PowerMockIgnore;
 import org.powermock.core.classloader.annotations.PrepareForTest;
+import static org.powermock.api.mockito.PowerMockito.mock;
+import static org.powermock.api.mockito.PowerMockito.when;
 
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.fail;
 
 import java.io.BufferedReader;
@@ -38,7 +47,10 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.math.BigInteger;
+import java.net.InetAddress;
 import java.net.URISyntaxException;
+import java.net.URL;
+import java.net.UnknownHostException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -72,8 +84,21 @@ import java.util.Set;
         "javax.security.auth.*" })
 public class SupplyChainCredentialValidatorTest {
 
+    private static final String JSON_FILE = "/config/component-class.json";
+    private static final String SAMPLE_PACCOR_OUTPUT_TXT = "sample_paccor_output.txt";
+    private static final String SAMPLE_PACCOR_OUTPUT_NOT_SPECIFIED_TXT
+            = "sample_paccor_output_not_specified_values.txt";
+    private static final String SAMPLE_TEST_PACCOR_CERT
+            = "/validation/platform_credentials_2/paccor_platform_cert.crt";
+
+    private static final String SAMPLE_PACCOR_OUTPUT_WITH_EXTRA_COMPONENT_TXT
+            = "sample_paccor_output_with_extra_component.txt";
+
     private final SupplyChainCredentialValidator supplyChainCredentialValidator =
             new SupplyChainCredentialValidator();
+
+    private final CredentialValidator credentialValidator =
+            new CredentialValidator();
 
     private static KeyStore keyStore;
     private static KeyStore emptyKeyStore;
@@ -90,16 +115,55 @@ public class SupplyChainCredentialValidatorTest {
 
     private static final String TEST_PLATFORM_CRED =
             "/validation/platform_credentials/plat_cert1.pem";
+    private static final String TEST_PLATFORM_CRED2 =
+            "/validation/platform_credentials/plat_cert2.pem";
+
+    private static final String TEST_PLATFORM_CRED_BASE_CHASIS_COMBO =
+            "/validation/platform_credentials/Intel_pc5.pem";
+
+    private static final String TEST_SERIAL_NUMBER = "BQKP52840678";
+    private static final String TEST_COMPONENT_MANUFACTURER = "Intel";
+    private static final String TEST_COMPONENT_MODEL = "platform2018";
+    private static final String TEST_COMPONENT_REVISION = "1.0";
+    private static final String BAD_SERIAL = "BAD_SERIAL";
 
     //-------Actual ST Micro Endorsement Credential Certificate Chain!--------------
     private static final String EK_CERT = "/certificates/ab21ccf2-tpmcert.pem";
     private static final String INT_CA_CERT02 = "/certificates/fakestmtpmekint02.pem";
 
     //-------Generated Intel Credential Certificate Chain--------------
+    private static final String INTEL_PLATFORM_CERT =
+            "/validation/platform_credentials/plat_cert3.pem";
     private static final String INTEL_INT_CA =
             "/validation/platform_credentials/intel_chain/root/intermediate1.crt";
+    private static final String FAKE_ROOT_CA =
+            "/validation/platform_credentials/intel_chain/root/rootca.crt";
+    private static final String PLATFORM_MANUFACTURER = "Intel";
+    private static final String PLATFORM_MODEL = "S2600KP";
+    private static final String PLATFORM_VERSION = "H76962-350";
+
+    //-------Original Intel Credential Certificate Chain--------------
+    private static final String INTEL_PLATFORM_CERT_ORIG =
+            "/certificates/fakeIntel_S2600KP_F00F00F00F00.pem";
+    private static final String INTEL_ORIG_INT_CA_ORIG =
+            "/certificates/fakeIntelIntermediateCA.pem";
+    private static final String FAKE_ROOT_CA_ORIG =
+            "/certificates/fakeCA.pem";
+
+    //-------Fake SGI Credential Certificate Chain--------------
+    private static final String SGI_PLATFORM_CERT = "/certificates/fakeSGI_J2_F00F00F0.pem";
+    private static final String SGI_INT_CA = "/certificates/fakeSGIIntermediateCA.pem";
+    private static final String SGI_CRED_SERIAL_NUMBER = "F00F00F0";
 
     //-------Actual Intel NUC Platform --------------
+    private static final String NUC_PLATFORM_CERT =
+            "/certificates/Intel_nuc_pc.pem";
+    private static final String NUC_PLATFORM_CERT_SERIAL_NUMBER = "GETY421001DY";
+
+    private static final String NUC_PLATFORM_CERT2 =
+            "/certificates/Intel_nuc_pc2.pem";
+    private static final String NUC_PLATFORM_CERT_SERIAL_NUMBER2 = "GETY4210001M";
+
     private static final String INTEL_SIGNING_KEY = "/certificates/IntelSigningKey_20April2017.pem";
 
     private static final String NEW_NUC1 =
@@ -145,6 +209,585 @@ public class SupplyChainCredentialValidatorTest {
         }
 
     }
+
+    /**
+     * Checks if the ST Micro Endorsement Credential can be validated against the
+     * ST/GlobalSIgn Certificate Chain.
+     * @throws IOException if error occurs while reading files
+     * @throws URISyntaxException if error occurs while reading files
+     * @throws CertificateException if error occurs while processing X509 Certs
+     * @throws KeyStoreException if error occurs while processing Keystore
+     */
+    @Test
+    public final void testValidateEndorsementCredential()
+            throws URISyntaxException, IOException, CertificateException, KeyStoreException {
+        Certificate rootcacert, intermediateca02cert;
+
+        EndorsementCredential ekcert = new EndorsementCredential(
+                Files.readAllBytes(Paths.get(getClass().getResource(EK_CERT).toURI()))
+        );
+
+        intermediateca02cert = new CertificateAuthorityCredential(
+                Files.readAllBytes(Paths.get(getClass().getResource(INT_CA_CERT02).toURI()))
+        );
+
+        rootcacert = new CertificateAuthorityCredential(
+                Files.readAllBytes(Paths.get(getClass().getResource(FAKE_ROOT_CA_ORIG).toURI()))
+        );
+
+        try {
+            keyStore.setCertificateEntry("CA cert", rootcacert.getX509Certificate());
+            keyStore.setCertificateEntry("Intel Intermediate Cert",
+                    intermediateca02cert.getX509Certificate());
+
+            AppraisalStatus result = credentialValidator.validateEndorsementCredential(
+                    ekcert, keyStore, true);
+            assertEquals(result.getAppStatus(), AppraisalStatus.Status.PASS);
+            assertEquals(result.getMessage(),
+                    SupplyChainCredentialValidator.ENDORSEMENT_VALID);
+        }  finally {
+            keyStore.deleteEntry("Intel Intermediate Cert");
+            keyStore.deleteEntry("CA cert");
+        }
+    }
+
+    /**
+     * Validates a generated cert chain pretending to be from Intel. Credential was generated
+     * with an intermediate CA. This tests the entire chain of validation back to the root CA.
+     *
+     * @throws IOException if error occurs while reading files
+     * @throws KeyStoreException if there's an issue string certs to the keystore
+     * @throws CertificateException if error occurs while ingesting a certificate
+     * @throws URISyntaxException if a URI can't be processed
+     */
+    @Test
+    public final void validateIntelPlatformCredentials()
+            throws URISyntaxException, IOException, CertificateException, KeyStoreException {
+        Certificate rootcacert, intermediatecacert;
+
+        intermediatecacert = new CertificateAuthorityCredential(
+                Files.readAllBytes(Paths.get(getClass().getResource(INTEL_INT_CA).toURI()))
+        );
+
+        rootcacert = new CertificateAuthorityCredential(
+                Files.readAllBytes(Paths.get(getClass().getResource(FAKE_ROOT_CA).toURI()))
+        );
+
+        try {
+            keyStore.setCertificateEntry("CA cert", rootcacert.getX509Certificate());
+            keyStore.setCertificateEntry("Intel Intermediate Cert",
+                    intermediatecacert.getX509Certificate());
+
+            byte[] certBytes = Files.readAllBytes(Paths.get(CertificateTest.class.
+                    getResource(INTEL_PLATFORM_CERT).toURI()));
+
+            PlatformCredential pc = new PlatformCredential(certBytes);
+
+            // The test certificate has expired. Test will accept expired certs.
+            AppraisalStatus result = credentialValidator.validatePlatformCredential(
+                    pc, keyStore, true);
+
+            assertEquals(result.getAppStatus(), AppraisalStatus.Status.PASS);
+            assertEquals(result.getMessage(), SupplyChainCredentialValidator.PLATFORM_VALID);
+        } finally {
+            keyStore.deleteEntry("Intel Intermediate Cert");
+            keyStore.deleteEntry("CA cert");
+        }
+    }
+
+
+    /**
+     * Checks if the generated Intel Platform Credential can be validated with its attributes.
+     *
+     * @throws Exception If there are errors.
+     */
+    @Test
+    public final void validateIntelPlatformCredentialAttributes()
+            throws Exception {
+
+        byte[] certBytes = Files.readAllBytes(Paths.get(Objects.requireNonNull(CertificateTest.class.
+                getResource(INTEL_PLATFORM_CERT)).toURI()));
+
+        PlatformCredential pc = new PlatformCredential(certBytes);
+
+        DeviceInfoReport deviceInfoReport = buildReport(
+                new HardwareInfo(PLATFORM_MANUFACTURER, PLATFORM_MODEL,
+                        PLATFORM_VERSION, TEST_SERIAL_NUMBER,
+                        DeviceInfoEnums.NOT_SPECIFIED, TEST_SERIAL_NUMBER));
+
+        EndorsementCredential ec = PowerMockito.spy(new EndorsementCredential(
+                Files.readAllBytes(Paths.get(Objects.requireNonNull(getClass().getResource(EK_CERT)).toURI()))));
+        PowerMockito.when(ec, "getSerialNumber").thenReturn(pc.getHolderSerialNumber());
+
+        AppraisalStatus result =
+                CredentialValidator.validatePlatformCredentialAttributes(pc,
+                        deviceInfoReport, ec);
+        assertEquals(result.getAppStatus(), AppraisalStatus.Status.PASS);
+        assertEquals(result.getMessage(),
+                SupplyChainCredentialValidator.PLATFORM_ATTRIBUTES_VALID);
+    }
+
+//    /**
+//     * Checks if the Platform Credential contains the serial number from
+//     * the device in the platform serial number field.
+//     * @throws Exception If there are errors.
+//     *
+//     * */
+//    @Test
+//    public final void validatePlatformCredentialWithDeviceBaseboard()
+//            throws Exception {
+//        DeviceInfoReport deviceInfoReport = buildReport(new HardwareInfo(
+//                PLATFORM_MANUFACTURER, PLATFORM_MODEL,
+//                PLATFORM_VERSION, DeviceInfoEnums.NOT_SPECIFIED,
+//                DeviceInfoEnums.NOT_SPECIFIED, TEST_SERIAL_NUMBER));
+//
+//        byte[] certBytes = Files.readAllBytes(Paths.get(CertificateTest.class.
+//                getResource(TEST_PLATFORM_CRED2).toURI()));
+//
+//        PlatformCredential pc = new PlatformCredential(certBytes);
+//
+//        EndorsementCredential ec = PowerMockito.spy(new EndorsementCredential(
+//                Files.readAllBytes(Paths.get(getClass().getResource(EK_CERT).toURI()))
+//        ));
+//
+//        PowerMockito.when(ec, "getSerialNumber").thenReturn(pc.getHolderSerialNumber());
+//
+//        AppraisalStatus result =
+//                credentialValidator.validatePlatformCredentialAttributes(pc,
+//                        deviceInfoReport, ec);
+//        assertEquals(result.getAppStatus(), AppraisalStatus.Status.PASS);
+//        assertEquals(result.getMessage(),
+//                SupplyChainCredentialValidator.PLATFORM_ATTRIBUTES_VALID);
+//    }
+//
+//    /**
+//     * Checks if the Platform Credential contains the serial number from
+//     * the device in the chassis serial number field.
+//     *
+//     * In the platform credential spec, how to place a chassis serial number
+//     * is poorly defined and there is no guidance on what a correct implementation
+//     * looks like. Unfortunately, there is also no generally accepted practice to
+//     * substitute for this spec. This test assumes that the Chassis is described
+//     * in a component field of the platform cred.
+//     * @throws Exception If there are errors.
+//     */
+//    @Test
+//    public final void validatePlatformCredentialWithDeviceChassis()
+//            throws Exception {
+//
+//        DeviceInfoReport deviceInfoReport = buildReport(
+//                new HardwareInfo(PLATFORM_MANUFACTURER, PLATFORM_MODEL,
+//                        PLATFORM_VERSION, DeviceInfoEnums.NOT_SPECIFIED,
+//                        TEST_SERIAL_NUMBER, TEST_SERIAL_NUMBER));
+//        deviceInfoReport = PowerMockito.spy(deviceInfoReport);
+//
+//        URL url = SupplyChainCredentialValidator.class.getResource(
+//                SAMPLE_PACCOR_OUTPUT_WITH_EXTRA_COMPONENT_TXT);
+//       // String paccorOutputString = IOUtils.toString(url, "UTF_8");
+//       // when(deviceInfoReport.getPaccorOutputString()).thenReturn(paccorOutputString);
+//
+//        byte[] certBytes = Files.readAllBytes(Paths.get(CertificateTest.class.
+//                getResource(TEST_PLATFORM_CRED).toURI()));
+//
+//        PlatformCredential pc = new PlatformCredential(certBytes);
+//
+//        EndorsementCredential ec = PowerMockito.spy(new EndorsementCredential(
+//                Files.readAllBytes(Paths.get(getClass().getResource(EK_CERT).toURI()))
+//        ));
+//        when(ec, "getSerialNumber").thenReturn(pc.getHolderSerialNumber());
+//
+//        AppraisalStatus result =
+//                credentialValidator.validatePlatformCredentialAttributes(
+//                        pc, deviceInfoReport, ec);
+//        assertEquals(result.getAppStatus(), AppraisalStatus.Status.PASS);
+//        assertEquals(result.getMessage(),
+//                SupplyChainCredentialValidator.PLATFORM_ATTRIBUTES_VALID);
+//    }
+//
+//
+//    /**
+//     * Checks if the NUC Platform Credential contains the serial number from
+//     * the device as a baseboard component in the serial number field.
+//     * @throws Exception If there are errors.
+//     */
+//    @Test
+//    public final void validatePlatformCredentialWithDeviceSystemSerialNumber()
+//            throws Exception {
+//
+//        DeviceInfoReport deviceInfoReport = buildReport(
+//                new HardwareInfo(PLATFORM_MANUFACTURER, PLATFORM_MODEL,
+//                        PLATFORM_VERSION, TEST_SERIAL_NUMBER,
+//                        DeviceInfoEnums.NOT_SPECIFIED, TEST_SERIAL_NUMBER));
+//
+//        deviceInfoReport = PowerMockito.spy(deviceInfoReport);
+//
+//        URL url = SupplyChainCredentialValidator.class.getResource(
+//                SAMPLE_PACCOR_OUTPUT_WITH_EXTRA_COMPONENT_TXT);
+//     //   String paccorOutputString = IOUtils.toString(url, StandardCharsets.UTF_8);
+//    //    when(deviceInfoReport.getPaccorOutputString()).thenReturn(paccorOutputString);
+//
+//        byte[] certBytes = Files.readAllBytes(Paths.get(CertificateTest.class.
+//                getResource(TEST_PLATFORM_CRED).toURI()));
+//
+//        PlatformCredential pc = new PlatformCredential(certBytes);
+//
+//        EndorsementCredential ec = PowerMockito.spy(new EndorsementCredential(
+//                Files.readAllBytes(Paths.get(getClass().getResource(EK_CERT).toURI()))
+//        ));
+//        PowerMockito.when(ec, "getSerialNumber").thenReturn(pc.getHolderSerialNumber());
+//
+//        AppraisalStatus result =
+//                credentialValidator.validatePlatformCredentialAttributes(
+//                        pc, deviceInfoReport, ec);
+//        assertEquals(result.getAppStatus(), AppraisalStatus.Status.PASS);
+//        assertEquals(result.getMessage(),
+//                SupplyChainCredentialValidator.PLATFORM_ATTRIBUTES_VALID);
+//    }
+//
+//    /**
+//     * Checks if the Platform Credential validator appropriately fails
+//     * when there are no serial numbers returned from the device.
+//     * @throws Exception If there are errors.
+//     */
+//    @Test
+//    public final void validatePlatformCredentialWithNoDeviceSerialNumbers()
+//            throws Exception {
+//
+//        DeviceInfoReport deviceInfoReport = buildReport(
+//                new HardwareInfo(DeviceInfoEnums.NOT_SPECIFIED, DeviceInfoEnums.NOT_SPECIFIED,
+//                        DeviceInfoEnums.NOT_SPECIFIED, DeviceInfoEnums.NOT_SPECIFIED,
+//                        DeviceInfoEnums.NOT_SPECIFIED, DeviceInfoEnums.NOT_SPECIFIED));
+//
+//        byte[] certBytes = Files.readAllBytes(Paths.get(CertificateTest.class.
+//                getResource(TEST_PLATFORM_CRED2).toURI()));
+//
+//        PlatformCredential pc = new PlatformCredential(certBytes);
+//
+//        EndorsementCredential ec = PowerMockito.spy(new EndorsementCredential(
+//                Files.readAllBytes(Paths.get(getClass().getResource(EK_CERT).toURI()))
+//        ));
+//        PowerMockito.when(ec, "getSerialNumber").thenReturn(pc.getHolderSerialNumber());
+//
+//        String expectedMessage = "Platform manufacturer did not match\n"
+//                + "Platform model did not match\n"
+//                + "Platform version did not match\n"
+//                + "Platform serial did not match\n"
+//                + "There are unmatched components:\n";
+//
+//        AppraisalStatus result =
+//                credentialValidator.validatePlatformCredentialAttributes(
+//                        pc, deviceInfoReport, ec);
+//        assertEquals(result.getAppStatus(), AppraisalStatus.Status.FAIL);
+//        assertEquals(result.getMessage(), expectedMessage);
+//    }
+//
+//
+//    /**
+//     * Checks if the Platform Credential validator passes
+//     * when the device info chassis number matches the platform chassis number.
+//     * @throws Exception If there are errors.
+//     */
+//    @Test
+//    public final void validatePlatformCredentialCombinedWithChassisSerialNumbersMatchedChassis()
+//            throws Exception {
+//
+//        DeviceInfoReport deviceInfoReport = buildReport(
+//                new HardwareInfo(DeviceInfoEnums.NOT_SPECIFIED, DeviceInfoEnums.NOT_SPECIFIED,
+//                        DeviceInfoEnums.NOT_SPECIFIED, DeviceInfoEnums.NOT_SPECIFIED,
+//                        "G6YK42300CB6", DeviceInfoEnums.NOT_SPECIFIED));
+//
+//        byte[] certBytes = Files.readAllBytes(Paths.get(CertificateTest.class.
+//                getResource(TEST_PLATFORM_CRED_BASE_CHASIS_COMBO).toURI()));
+//
+//        PlatformCredential pc = new PlatformCredential(certBytes);
+//
+//        EndorsementCredential ec = PowerMockito.spy(new EndorsementCredential(
+//                Files.readAllBytes(Paths.get(getClass().getResource(EK_CERT).toURI()))
+//        ));
+//        PowerMockito.when(ec, "getSerialNumber").thenReturn(pc.getHolderSerialNumber());
+//
+//        AppraisalStatus result =
+//                credentialValidator.validatePlatformCredentialAttributes(
+//                        pc, deviceInfoReport, ec);
+//        assertEquals(result.getAppStatus(), AppraisalStatus.Status.PASS);
+//        assertEquals(result.getMessage(),
+//                SupplyChainCredentialValidator.PLATFORM_ATTRIBUTES_VALID);
+//    }
+//
+//    /**
+//     * Checks if the Platform Credential validator passes
+//     * when the device info chassis number matches the platform baseboard number.
+//     * @throws Exception If there are errors.
+//     */
+//    @Test
+//    public final void validatePlatformCredentialCombinedWithChassisSerialNumbersMatchedBaseboard()
+//            throws Exception {
+//
+//        DeviceInfoReport deviceInfoReport = buildReport(
+//                new HardwareInfo(DeviceInfoEnums.NOT_SPECIFIED, DeviceInfoEnums.NOT_SPECIFIED,
+//                        DeviceInfoEnums.NOT_SPECIFIED, DeviceInfoEnums.NOT_SPECIFIED,
+//                        "GETY42100160", DeviceInfoEnums.NOT_SPECIFIED));
+//
+//        byte[] certBytes = Files.readAllBytes(Paths.get(CertificateTest.class.
+//                getResource(TEST_PLATFORM_CRED_BASE_CHASIS_COMBO).toURI()));
+//
+//        PlatformCredential pc = new PlatformCredential(certBytes);
+//
+//        EndorsementCredential ec = PowerMockito.spy(new EndorsementCredential(
+//                Files.readAllBytes(Paths.get(getClass().getResource(EK_CERT).toURI()))
+//        ));
+//        PowerMockito.when(ec, "getSerialNumber").thenReturn(pc.getHolderSerialNumber());
+//
+//        AppraisalStatus result =
+//                credentialValidator.validatePlatformCredentialAttributes(
+//                        pc, deviceInfoReport, ec);
+//        assertEquals(result.getAppStatus(), AppraisalStatus.Status.PASS);
+//        assertEquals(result.getMessage(),
+//                SupplyChainCredentialValidator.PLATFORM_ATTRIBUTES_VALID);
+//    }
+//
+//    /**
+//     * Checks if the Platform Credential validator passes
+//     * when the device info baseboard number matches the platform chassis number.
+//     * @throws Exception If there are errors.
+//     */
+//    @Test
+//    public final void
+//    validatePlatformCredentialCombinedWithChassisSerialNumbersMatchedDeviceBaseboard()
+//            throws Exception {
+//
+//        DeviceInfoReport deviceInfoReport = buildReport(
+//                new HardwareInfo(DeviceInfoEnums.NOT_SPECIFIED, DeviceInfoEnums.NOT_SPECIFIED,
+//                        DeviceInfoEnums.NOT_SPECIFIED, DeviceInfoEnums.NOT_SPECIFIED,
+//                        DeviceInfoEnums.NOT_SPECIFIED, "G6YK42300CB6"));
+//
+//        byte[] certBytes = Files.readAllBytes(Paths.get(CertificateTest.class.
+//                getResource(TEST_PLATFORM_CRED_BASE_CHASIS_COMBO).toURI()));
+//
+//        PlatformCredential pc = new PlatformCredential(certBytes);
+//
+//        EndorsementCredential ec = PowerMockito.spy(new EndorsementCredential(
+//                Files.readAllBytes(Paths.get(getClass().getResource(EK_CERT).toURI()))
+//        ));
+//        PowerMockito.when(ec, "getSerialNumber").thenReturn(pc.getHolderSerialNumber());
+//
+//        AppraisalStatus result =
+//                credentialValidator.validatePlatformCredentialAttributes(
+//                        pc, deviceInfoReport, ec);
+//        assertEquals(result.getAppStatus(), AppraisalStatus.Status.PASS);
+//        assertEquals(result.getMessage(),
+//                SupplyChainCredentialValidator.PLATFORM_ATTRIBUTES_VALID);
+//    }
+//
+//
+//    /**
+//     * Checks if the Platform Credential validator passes.
+//     * when the device info system number matches the platform chassis number
+//     * @throws Exception If there are errors.
+//     */
+//    @Test
+//    public final void
+//    validatePlatformCredentialCombinedWithChassisSerialNumbersMatchedDeviceSystem()
+//            throws Exception {
+//
+//        DeviceInfoReport deviceInfoReport = buildReport(
+//                new HardwareInfo(DeviceInfoEnums.NOT_SPECIFIED, DeviceInfoEnums.NOT_SPECIFIED,
+//                        DeviceInfoEnums.NOT_SPECIFIED, "G6YK42300CB6",
+//                        DeviceInfoEnums.NOT_SPECIFIED,
+//                        DeviceInfoEnums.NOT_SPECIFIED));
+//
+//        byte[] certBytes = Files.readAllBytes(Paths.get(CertificateTest.class.
+//                getResource(TEST_PLATFORM_CRED_BASE_CHASIS_COMBO).toURI()));
+//
+//        PlatformCredential pc = new PlatformCredential(certBytes);
+//
+//        EndorsementCredential ec = PowerMockito.spy(new EndorsementCredential(
+//                Files.readAllBytes(Paths.get(getClass().getResource(EK_CERT).toURI()))
+//        ));
+//        PowerMockito.when(ec, "getSerialNumber").thenReturn(pc.getHolderSerialNumber());
+//
+//        AppraisalStatus result =
+//                credentialValidator.validatePlatformCredentialAttributes(
+//                        pc, deviceInfoReport, ec);
+//        assertEquals(result.getAppStatus(), AppraisalStatus.Status.PASS);
+//        assertEquals(result.getMessage(),
+//                SupplyChainCredentialValidator.PLATFORM_ATTRIBUTES_VALID);
+//    }
+//
+//    /**
+//     * Checks if the Platform Credential validator appropriately fails
+//     * when there are no serial numbers returned from the device.
+//     * @throws Exception If there are errors.
+//     */
+//    @Test
+//    public final void validatePlatformCredentialCombinedWithNoDeviceSerialNumbers()
+//            throws Exception {
+//
+//        DeviceInfoReport deviceInfoReport = buildReport(
+//                new HardwareInfo(DeviceInfoEnums.NOT_SPECIFIED, DeviceInfoEnums.NOT_SPECIFIED,
+//                        DeviceInfoEnums.NOT_SPECIFIED, DeviceInfoEnums.NOT_SPECIFIED,
+//                        DeviceInfoEnums.NOT_SPECIFIED, DeviceInfoEnums.NOT_SPECIFIED));
+//
+//        byte[] certBytes = Files.readAllBytes(Paths.get(CertificateTest.class.
+//                getResource(TEST_PLATFORM_CRED_BASE_CHASIS_COMBO).toURI()));
+//
+//        PlatformCredential pc = new PlatformCredential(certBytes);
+//
+//        EndorsementCredential ec = PowerMockito.spy(new EndorsementCredential(
+//                Files.readAllBytes(Paths.get(getClass().getResource(EK_CERT).toURI()))
+//        ));
+//        PowerMockito.when(ec, "getSerialNumber").thenReturn(pc.getHolderSerialNumber());
+//
+//        String expectedMessage = "Platform serial did not match device info";
+//
+//        AppraisalStatus result =
+//                credentialValidator.validatePlatformCredentialAttributes(
+//                        pc, deviceInfoReport, ec);
+//        assertEquals(result.getAppStatus(), AppraisalStatus.Status.FAIL);
+//        assertEquals(result.getMessage(), expectedMessage);
+//    }
+//
+//
+//    /**
+//     * Checks if the Platform Credential validator appropriately fails
+//     * when there are no serial numbers matching any of the platform info from the device.
+//     * @throws Exception If there are errors.
+//     */
+//    @Test
+//    public final void validatePlatformCredentialCombinedWithNoMatchedDeviceSerialNumbers()
+//            throws Exception {
+//
+//        DeviceInfoReport deviceInfoReport = buildReport(
+//                new HardwareInfo(DeviceInfoEnums.NOT_SPECIFIED, DeviceInfoEnums.NOT_SPECIFIED,
+//                        DeviceInfoEnums.NOT_SPECIFIED, "zzz", "aaaa", "bbb"));
+//
+//        byte[] certBytes = Files.readAllBytes(Paths.get(CertificateTest.class.
+//                getResource(TEST_PLATFORM_CRED_BASE_CHASIS_COMBO).toURI()));
+//
+//        PlatformCredential pc = new PlatformCredential(certBytes);
+//
+//        EndorsementCredential ec = PowerMockito.spy(new EndorsementCredential(
+//                Files.readAllBytes(Paths.get(getClass().getResource(EK_CERT).toURI()))
+//        ));
+//        PowerMockito.when(ec, "getSerialNumber").thenReturn(pc.getHolderSerialNumber());
+//
+//        String expectedMessage = "Platform serial did not match device info";
+//
+//        AppraisalStatus result =
+//                credentialValidator.validatePlatformCredentialAttributes(
+//                        pc, deviceInfoReport, ec);
+//        assertEquals(credentialValidator.validatePlatformCredentialAttributes(
+//                pc, deviceInfoReport, ec).getAppStatus(), AppraisalStatus.Status.FAIL);
+//        assertEquals(result.getMessage(), expectedMessage);
+//    }
+//
+//
+//
+//    /**
+//     * Checks if the Intel NUC Platform Credential contains the SHA1 of the
+//     * device serial number in the certificate serial number field when the
+//     * Platform Credential does not have a board serial number.
+//     * @throws Exception If there are errors.
+//     */
+//    @Test
+//    public final void validateIntelNucPlatformCredentialWithDeviceBaseboardSHA1()
+//            throws Exception {
+//
+//        CredentialValidator cv = credentialValidator;
+//
+//        // Other tests will validate the cert chain
+//
+//        DeviceInfoReport deviceInfoReport = buildReport(
+//                new HardwareInfo(DeviceInfoEnums.NOT_SPECIFIED, DeviceInfoEnums.NOT_SPECIFIED,
+//                        DeviceInfoEnums.NOT_SPECIFIED, DeviceInfoEnums.NOT_SPECIFIED,
+//                        DeviceInfoEnums.NOT_SPECIFIED, NUC_PLATFORM_CERT_SERIAL_NUMBER));
+//
+//        byte[] certBytes = Files.readAllBytes(Paths.get(CertificateTest.class.
+//                getResource(NUC_PLATFORM_CERT).toURI()));
+//
+//        PlatformCredential pc = new PlatformCredential(certBytes, false);
+//
+//        EndorsementCredential ec = PowerMockito.spy(new EndorsementCredential(
+//                Files.readAllBytes(Paths.get(getClass().getResource(EK_CERT).toURI()))
+//        ));
+//        PowerMockito.when(ec, "getSerialNumber").thenReturn(pc.getHolderSerialNumber());
+//
+//        AppraisalStatus result =
+//                cv.validatePlatformCredentialAttributes(pc, deviceInfoReport, ec);
+//        assertEquals(result.getAppStatus(), AppraisalStatus.Status.PASS);
+//        assertEquals(result.getMessage(),
+//                SupplyChainCredentialValidator.PLATFORM_ATTRIBUTES_VALID);
+//    }
+//
+//    /**
+//     * Checks if the Intel NUC Platform Credential contains the truncated SHA1 of the
+//     * device serial number in the certificate serial number field when the
+//     * Platform Credential does not have a board serial number.
+//     * @throws Exception If there are errors.
+//     */
+//    @Test
+//    public final void validateIntelNucPlatformCredentialWithDeviceBaseboardTruncatedSHA1()
+//            throws Exception {
+//
+//        CredentialValidator cv = credentialValidator;
+//
+//        // Other tests will validate the cert chain
+//
+//        DeviceInfoReport deviceInfoReport = buildReport(
+//                new HardwareInfo(DeviceInfoEnums.NOT_SPECIFIED, DeviceInfoEnums.NOT_SPECIFIED,
+//                        DeviceInfoEnums.NOT_SPECIFIED, DeviceInfoEnums.NOT_SPECIFIED,
+//                        DeviceInfoEnums.NOT_SPECIFIED, NUC_PLATFORM_CERT_SERIAL_NUMBER2));
+//
+//        byte[] certBytes = Files.readAllBytes(Paths.get(CertificateTest.class.
+//                getResource(NUC_PLATFORM_CERT2).toURI()));
+//
+//        PlatformCredential pc = new PlatformCredential(certBytes, false);
+//
+//        EndorsementCredential ec = PowerMockito.spy(new EndorsementCredential(
+//                Files.readAllBytes(Paths.get(getClass().getResource(EK_CERT).toURI()))
+//        ));
+//        PowerMockito.when(ec, "getSerialNumber").thenReturn(pc.getHolderSerialNumber());
+//
+//        AppraisalStatus result =
+//                cv.validatePlatformCredentialAttributes(pc, deviceInfoReport, ec);
+//        assertEquals(result.getAppStatus(), AppraisalStatus.Status.PASS);
+//        assertEquals(result.getMessage(),
+//                SupplyChainCredentialValidator.PLATFORM_ATTRIBUTES_VALID);
+//    }
+//
+//    /**
+//     * Checks if the Intel NUC Platform Credential validator will appropriately
+//     * fail if the certificate serial number field does not contain a SHA1 hash of
+//     * the baseboard serial number on the device.
+//     * @throws Exception If there are errors.
+//     */
+//    @Test
+//    public final void validateIntelNucPlatformCredentialWithNoDeviceBaseboardSHA1()
+//            throws Exception {
+//        CredentialValidator cv = credentialValidator;
+//
+//        // Other tests will validate the cert chain
+//        DeviceInfoReport deviceInfoReport = buildReport(
+//                new HardwareInfo(DeviceInfoEnums.NOT_SPECIFIED, DeviceInfoEnums.NOT_SPECIFIED,
+//                        DeviceInfoEnums.NOT_SPECIFIED, DeviceInfoEnums.NOT_SPECIFIED,
+//                        DeviceInfoEnums.NOT_SPECIFIED, DeviceInfoEnums.NOT_SPECIFIED));
+//
+//        byte[] certBytes = Files.readAllBytes(Paths.get(CertificateTest.class.
+//                getResource(TEST_PLATFORM_CRED).toURI()));
+//        PlatformCredential pc = new PlatformCredential(certBytes, false);
+//
+//        EndorsementCredential ec = PowerMockito.spy(new EndorsementCredential(
+//                Files.readAllBytes(Paths.get(getClass().getResource(EK_CERT).toURI()))
+//        ));
+//        PowerMockito.when(ec, "getSerialNumber").thenReturn(pc.getHolderSerialNumber());
+//
+//        String expectedMessage = "Device Serial Number was null";
+//
+//        AppraisalStatus result = cv.validatePlatformCredentialAttributes(
+//                pc, deviceInfoReport, ec);
+//        assertEquals(result.getAppStatus(), AppraisalStatus.Status.FAIL);
+//        assertEquals(result.getMessage(), expectedMessage);
+//    }
 
     /**
      * Checks if a cert can be validated against the given public key.
@@ -676,4 +1319,23 @@ public class SupplyChainCredentialValidatorTest {
         return cert;
     }
 
+    private DeviceInfoReport buildReport(final HardwareInfo hardwareInfo) {
+        final InetAddress ipAddress = getTestIpAddress();
+        final byte[] macAddress = new byte[] {11, 22, 33, 44, 55, 66};
+
+        OSInfo osInfo = new OSInfo();
+        NetworkInfo networkInfo = new NetworkInfo("test", ipAddress, macAddress);
+        FirmwareInfo firmwareInfo = new FirmwareInfo();
+        TPMInfo tpmInfo = new TPMInfo();
+
+        return new DeviceInfoReport(networkInfo, osInfo,
+                firmwareInfo, hardwareInfo, tpmInfo);
+    }
+    private static InetAddress getTestIpAddress() {
+        try {
+            return InetAddress.getByAddress(new byte[] {127, 0, 0, 1});
+        } catch (UnknownHostException e) {
+            return null;
+        }
+    }
 }
