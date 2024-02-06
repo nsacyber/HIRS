@@ -19,9 +19,8 @@ import hirs.utils.tpm.eventlog.uefi.UefiVariable;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.Setter;
+import lombok.extern.log4j.Log4j2;
 import org.apache.commons.codec.binary.Hex;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -50,8 +49,8 @@ import java.util.Arrays;
  * UINT8         Event[EventSize];  //The event data
  * } TCG_PCR_EVENT;
  */
+@Log4j2
 public class TpmPcrEvent {
-    private static final Logger LOGGER = LogManager.getLogger(TpmPcrEvent.class);
     /**
      * Indent Offset.
      */
@@ -120,10 +119,10 @@ public class TpmPcrEvent {
     /**
      * Constructor.
      *
-     * @param is ByteArrayInputStream holding the event
+     * @param baIs ByteArrayInputStream holding the event
      * @throws java.io.IOException when event can't be parsed
      */
-    public TpmPcrEvent(final ByteArrayInputStream is) throws IOException {
+    public TpmPcrEvent(final ByteArrayInputStream baIs) throws IOException {
 
     }
 
@@ -131,12 +130,12 @@ public class TpmPcrEvent {
      * Sets the digest from a  TCG_PCR_EVENT digest field.
      * This can be SHA1 for older event structures or any algorithm for newer structure.
      *
-     * @param digestData cryptographic hash
-     * @param digestLength length of the cryptographic hash
+     * @param data cryptographic hash
+     * @param length length of the cryptographic hash
      */
-    protected void setEventDigest(final byte[] digestData, final int digestLength) {
-        digest = new byte[digestLength];
-        System.arraycopy(digestData, 0, digest, 0, digestLength);
+    protected void setEventDigest(final byte[] data, final int length) {
+        digest = new byte[length];
+        System.arraycopy(data, 0, digest, 0, length);
     }
 
     /**
@@ -264,7 +263,7 @@ public class TpmPcrEvent {
                         specErrataVersion = specID.getErrata();
                     }
                 } catch (UnsupportedEncodingException ueEx) {
-                    LOGGER.error(ueEx);
+                    log.error(ueEx);
                     sb.append(ueEx.toString());
                 }
                 break;
@@ -285,7 +284,7 @@ public class TpmPcrEvent {
                 try {
                     sb.append(new EvSCrtmVersion(eventContent).toString());
                 } catch (UnsupportedEncodingException ueEx) {
-                    LOGGER.error(ueEx);
+                    log.error(ueEx);
                     sb.append(ueEx.toString());
                 }
                 break;
@@ -297,7 +296,7 @@ public class TpmPcrEvent {
                 try {
                     sb.append(new EvCompactHash(eventContent).toString());
                 } catch (UnsupportedEncodingException ueEx) {
-                    LOGGER.error(ueEx);
+                    log.error(ueEx);
                     sb.append(ueEx.toString());
                 }
                 break;
@@ -319,13 +318,13 @@ public class TpmPcrEvent {
                     sb.append(efiVarDescription.substring(0,
                             efiVarDescription.length() - INDENT_3));
                 } catch (CertificateException cEx) {
-                    LOGGER.error(cEx);
+                    log.error(cEx);
                     sb.append(cEx.toString());
                 } catch (NoSuchAlgorithmException noSaEx) {
-                    LOGGER.error(noSaEx);
+                    log.error(noSaEx);
                     sb.append(noSaEx.toString());
                 } catch (IOException ioEx) {
-                    LOGGER.error(ioEx);
+                    log.error(ioEx);
                     sb.append(ioEx.toString());
                 }
                 break;
@@ -334,13 +333,13 @@ public class TpmPcrEvent {
                 try {
                     sb.append(new UefiVariable(eventContent).toString());
                 } catch (CertificateException cEx) {
-                    LOGGER.error(cEx);
+                    log.error(cEx);
                     sb.append(cEx.toString());
                 } catch (NoSuchAlgorithmException noSaEx) {
-                    LOGGER.error(noSaEx);
+                    log.error(noSaEx);
                     sb.append(noSaEx.toString());
                 } catch (IOException ioEx) {
-                    LOGGER.error(ioEx);
+                    log.error(ioEx);
                     sb.append(ioEx.toString());
                 }
                 break;
@@ -349,7 +348,7 @@ public class TpmPcrEvent {
                 try {
                     sb.append(new EvEfiBootServicesApp(eventContent).toString());
                 } catch (UnsupportedEncodingException ueEx) {
-                    LOGGER.error(ueEx);
+                    log.error(ueEx);
                     sb.append(ueEx.toString());
                 }
                 break;
@@ -359,7 +358,7 @@ public class TpmPcrEvent {
                 try {
                     sb.append(new EvEfiGptPartition(eventContent).toString());
                 } catch (UnsupportedEncodingException ueEx) {
-                    LOGGER.error(ueEx);
+                    log.error(ueEx);
                     sb.append(ueEx.toString());
                 }
                 break;
@@ -385,21 +384,21 @@ public class TpmPcrEvent {
     /**
      * Parses the event content and creates a human readable description of each event.
      *
-     * @param event        the byte array holding the event data.
-     * @param eventContent the byte array holding the event content.
-     * @param eventNumber  event position within the event log.
+     * @param eventData        the byte array holding the event data.
+     * @param content the byte array holding the event content.
+     * @param eventPosition  event position within the event log.
      * @param hashName     name of the hash algorithm used by the event log
      * @return String description of the event.
-     * @throws java.security.cert.CertificateException     if the event contains an event that cannot be processed.
-     * @throws java.security.NoSuchAlgorithmException if an event contains an unsupported algorithm.
-     * @throws java.io.IOException              if the event cannot be parsed.
+     * @throws CertificateException     if the event contains an event that cannot be processed.
+     * @throws NoSuchAlgorithmException if an event contains an unsupported algorithm.
+     * @throws java.io.IOException      if the event cannot be parsed.
      */
-    public String processEvent(final byte[] event, final byte[] eventContent, final int eventNumber,
-                                    final String hashName)
+    public String processEvent(final byte[] eventData, final byte[] content,
+                               final int eventPosition, final String hashName)
            throws CertificateException, NoSuchAlgorithmException, IOException {
         int eventID = (int) eventType;
-        this.eventNumber = eventNumber;
-        description += "Event# " + eventNumber + ": ";
+        this.eventNumber = eventPosition;
+        description += "Event# " + eventPosition + ": ";
         description += "Index PCR[" + getPcrIndex() + "]\n";
         description += "Event Type: 0x" + Long.toHexString(eventType) + " " + eventString(eventID);
         description += "\n";
@@ -412,7 +411,7 @@ public class TpmPcrEvent {
         } else if (hashName.compareToIgnoreCase("TPM_ALG_SHA512") == 0) {   // Digest
             description += "digest (SHA512): " + Hex.encodeHexString(this.digest);
         } else {
-            description += "Unsupported Hash Algorithm encoutered";
+            description += "Unsupported Hash Algorithm encountered";
         }
         if (eventID != UefiConstants.SIZE_4) {
             description += "\n";
@@ -420,10 +419,10 @@ public class TpmPcrEvent {
         // Calculate both the SHA1 and SHA256 on the event since this will equal the digest
         // field of about half the log messages.
         MessageDigest md1 = MessageDigest.getInstance("SHA-1");
-        md1.update(event);
+        md1.update(eventData);
         eventDataSha1hash = md1.digest();
         MessageDigest md2 = MessageDigest.getInstance("SHA-256");
-        md2.update(event);
+        md2.update(eventData);
         eventDataSha256hash = md2.digest();
 
         switch (eventID) {
@@ -431,13 +430,13 @@ public class TpmPcrEvent {
                 description += " EV_PREBOOT_CERT" + "\n";
                 break;
             case EvConstants.EV_POST_CODE:
-                EvPostCode postCode = new EvPostCode(eventContent);
+                EvPostCode postCode = new EvPostCode(content);
                 description += "Event Content:\n" + postCode.toString();
                 break;
             case EvConstants.EV_UNUSED:
                 break;
             case EvConstants.EV_NO_ACTION:
-                EvNoAction noAction = new EvNoAction(eventContent);
+                EvNoAction noAction = new EvNoAction(content);
                 description += "Event Content:\n" + noAction.toString();
                 if (noAction.isSpecIDEvent()) {
                     EvEfiSpecIdEvent specID = noAction.getSpecIDEvent();
@@ -446,27 +445,27 @@ public class TpmPcrEvent {
                 }
                 break;
             case EvConstants.EV_SEPARATOR:
-                if (EvPostCode.isAscii(eventContent)) {
-                    String separatorEventData = new String(eventContent, StandardCharsets.UTF_8);
-                    if (!this.isBlank(eventContent)) {
+                if (EvPostCode.isAscii(content)) {
+                    String separatorEventData = new String(content, StandardCharsets.UTF_8);
+                    if (!this.isBlank(content)) {
                         description += "Separator event content = " + separatorEventData;
                     }
                 }
                 break;
             case EvConstants.EV_ACTION:
                 description += "Event Content:\n"
-                        + new String(eventContent, StandardCharsets.UTF_8);
+                        + new String(content, StandardCharsets.UTF_8);
                 break;
             case EvConstants.EV_EVENT_TAG:
-                EvEventTag eventTag = new EvEventTag(eventContent);
+                EvEventTag eventTag = new EvEventTag(content);
                 description += eventTag.toString();
                 break;
             case EvConstants.EV_S_CRTM_CONTENTS:
-                EvSCrtmContents sCrtmContents = new EvSCrtmContents(eventContent);
+                EvSCrtmContents sCrtmContents = new EvSCrtmContents(content);
                 description += "Event Content:\n   " + sCrtmContents.toString();
                 break;
             case EvConstants.EV_S_CRTM_VERSION:
-                EvSCrtmVersion sCrtmVersion = new EvSCrtmVersion(eventContent);
+                EvSCrtmVersion sCrtmVersion = new EvSCrtmVersion(content);
                 description += "Event Content:\n" + sCrtmVersion.toString();
                 break;
             case EvConstants.EV_CPU_MICROCODE:
@@ -476,11 +475,11 @@ public class TpmPcrEvent {
             case EvConstants.EV_TABLE_OF_DEVICES:
                 break;
             case EvConstants.EV_COMPACT_HASH:
-                EvCompactHash compactHash = new EvCompactHash(eventContent);
+                EvCompactHash compactHash = new EvCompactHash(content);
                 description += "Event Content:\n" + compactHash.toString();
                 break;
             case EvConstants.EV_IPL:
-                EvIPL ipl = new EvIPL(eventContent);
+                EvIPL ipl = new EvIPL(content);
                 description += "Event Content:\n" + ipl.toString();
                 break;
             case EvConstants.EV_IPL_PARTITION_DATA:
@@ -496,42 +495,42 @@ public class TpmPcrEvent {
             case EvConstants.EV_EFI_EVENT_BASE:
                 break;
             case EvConstants.EV_EFI_VARIABLE_DRIVER_CONFIG:
-                UefiVariable efiVar = new UefiVariable(eventContent);
+                UefiVariable efiVar = new UefiVariable(content);
                 String efiVarDescription = efiVar.toString().replace("\n", "\n   ");
                 description += "Event Content:\n   " + efiVarDescription.substring(0,
                         efiVarDescription.length() - INDENT_3);
                 break;
             case EvConstants.EV_EFI_VARIABLE_BOOT:
-                description += "Event Content:\n" + new UefiVariable(eventContent).toString();
+                description += "Event Content:\n" + new UefiVariable(content).toString();
                 break;
             case EvConstants.EV_EFI_BOOT_SERVICES_APPLICATION:
-                EvEfiBootServicesApp bootServices = new EvEfiBootServicesApp(eventContent);
+                EvEfiBootServicesApp bootServices = new EvEfiBootServicesApp(content);
                 description += "Event Content:\n" + bootServices.toString();
                 break;
             case EvConstants.EV_EFI_BOOT_SERVICES_DRIVER: // same as EV_EFI_BOOT_SERVICES_APP
-                EvEfiBootServicesApp bootDriver = new EvEfiBootServicesApp(eventContent);
+                EvEfiBootServicesApp bootDriver = new EvEfiBootServicesApp(content);
                 description += "Event Content:\n" + bootDriver.toString();
                 break;
             case EvConstants.EV_EFI_RUNTIME_SERVICES_DRIVER:
                 break;
             case EvConstants.EV_EFI_GPT_EVENT:
-                description += "Event Content:\n" + new EvEfiGptPartition(eventContent).toString();
+                description += "Event Content:\n" + new EvEfiGptPartition(content).toString();
                 break;
             case EvConstants.EV_EFI_ACTION:
-                description += new String(eventContent, StandardCharsets.UTF_8);
+                description += new String(content, StandardCharsets.UTF_8);
                 break;
             case EvConstants.EV_EFI_PLATFORM_FIRMWARE_BLOB:
                 description += "Event Content:\n"
-                        + new UefiFirmware(eventContent).toString();
+                        + new UefiFirmware(content).toString();
                 break;
             case EvConstants.EV_EFI_HANDOFF_TABLES:
-                EvEfiHandoffTable efiTable = new EvEfiHandoffTable(eventContent);
+                EvEfiHandoffTable efiTable = new EvEfiHandoffTable(content);
                 description += "Event Content:\n" + efiTable.toString();
                 break;
             case EvConstants.EV_EFI_HCRTM_EVENT:
                 break;
             case EvConstants.EV_EFI_VARIABLE_AUTHORITY:
-                description += "Event Content:\n" + new UefiVariable(eventContent).toString();
+                description += "Event Content:\n" + new UefiVariable(content).toString();
                 break;
             default:
                 description += " Unknown Event found" + "\n";

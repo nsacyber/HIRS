@@ -23,6 +23,7 @@ public final class VersionHelper {
     private static final String OPT_PREFIX = "/opt";
     private static final String ETC_PREFIX = "/etc";
     private static final String VERSION = "VERSION";
+    private static final int FILE_BUFFER_SIZE = 8192;
 
     private VersionHelper() {
         // intentionally blank, should never be instantiated
@@ -91,7 +92,7 @@ public final class VersionHelper {
      * @throws IOException
      */
     private static String getFileContents(final String filename) throws IOException {
-        final char[] buffer = new char[8192];
+        final char[] buffer = new char[FILE_BUFFER_SIZE];
         final StringBuilder result = new StringBuilder();
         InputStream inputStream = new FileInputStream(filename);
 
