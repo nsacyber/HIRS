@@ -29,6 +29,7 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-data-jpa:3.0.1'
     implementation 'com.github.darrachequesne:spring-data-jpa-datatables:6.0.1'
     implementation 'org.springframework.retry:spring-retry:2.0.0'
+    implementation 'org.springframework:spring-test:6.0.11'
     implementation libs.springdatajpa
 
     implementation libs.bouncycastle
@@ -45,13 +46,15 @@ dependencies {
     implementation libs.protobuf.java
     implementation 'org.apache.logging.log4j:log4j-core:2.19.0'
     implementation 'org.apache.logging.log4j:log4j-api:2.19.0'
+    implementation 'org.hibernate:hibernate-core:5.6.15.Final'
 
     testImplementation 'org.junit.jupiter:junit-jupiter:5.9.3'
     testImplementation 'org.junit.platform:junit-platform-launcher:1.9.3'
     testImplementation 'org.hamcrest:hamcrest:2.2'
 
-    testImplementation 'org.mockito:mockito-core:4.2.0'
-    testImplementation 'org.powermock:powermock-core:2.0.9'
+    testImplementation 'org.mockito:mockito-core:1.10.19'
+    testImplementation 'org.powermock:powermock-core:1.6.3'
+    testImplementation 'org.powermock:powermock-api-mockito:1.6.3'
 
     // spring management
     compileOnly libs.lombok

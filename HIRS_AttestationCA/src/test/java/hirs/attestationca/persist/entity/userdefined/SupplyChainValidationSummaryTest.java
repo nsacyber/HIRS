@@ -1,8 +1,15 @@
 package hirs.attestationca.persist.entity.userdefined;
+import hirs.attestationca.persist.PersistenceConfiguration;
+import hirs.attestationca.persist.SpringPersistenceTest;
 import hirs.attestationca.persist.entity.ArchivableEntity;
+import hirs.attestationca.persist.entity.manager.CertificateRepository;
+import hirs.attestationca.persist.entity.manager.DeviceRepository;
 import hirs.attestationca.persist.enums.AppraisalStatus;
 
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.*;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.test.annotation.DirtiesContext;
+import org.springframework.test.context.ContextConfiguration;
 
 import java.util.List;
 import java.util.Collection;
@@ -17,9 +24,39 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
  * Tests the functionality in SupplyChainValidationSummary, as well as the persistence of
  * SupplyChainValidationSummary and SupplyChainValidation.
  */
-public class SupplyChainValidationSummaryTest {
-    private Device device = DeviceTest.getTestDevice("TestDevice");
-    private List<ArchivableEntity> certificates = CertificateTest.getAllTestCertificates();;
+@TestInstance(TestInstance.Lifecycle.PER_CLASS)
+public class SupplyChainValidationSummaryTest extends SpringPersistenceTest {
+    private Device device;
+    private List<ArchivableEntity> certificates;
+    private CertificateRepository certificateRepository;
+    private DeviceRepository deviceRepository;
+    /**
+     * Create a session factory to use for persistence testing and persist some certificates
+     * for use by these tests.
+     *
+     * @throws Exception if there is a problem deserializing certificates or creating test device
+     */
+    @BeforeAll
+    public void setup() throws Exception {
+        certificates = CertificateTest.getAllTestCertificates();
+        for (ArchivableEntity cert : certificates) {
+            certificateRepository.save((Certificate) cert);
+        }
+
+        device = DeviceTest.getTestDevice("TestDevice");
+        deviceRepository.save(device);
+    }
+
+    /**
+     * Remove test certificates and close the session factory.
+     */
+    @AfterAll
+    public void teardown() {
+        for (ArchivableEntity cert : certificates) {
+            certificateRepository.delete((Certificate) cert);
+        }
+        deviceRepository.delete(device);
+    }
 
     public SupplyChainValidationSummaryTest() throws Exception {
     }
