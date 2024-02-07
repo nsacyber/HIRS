@@ -1,6 +1,7 @@
 package hirs.swid;
 
 import hirs.swid.utils.Commander;
+import hirs.swid.utils.CredentialArgumentValidator;
 import hirs.swid.utils.TimestampArgumentValidator;
 import hirs.utils.rim.ReferenceManifestValidator;
 import com.beust.jcommander.JCommander;
@@ -27,6 +28,7 @@ public class Main {
         SwidTagGateway gateway;
         ReferenceManifestValidator validator;
         List<String> unknownOpts = commander.getUnknownOptions();
+        CredentialArgumentValidator credValidator;
 
         if (!unknownOpts.isEmpty()) {
             StringBuilder sb = new StringBuilder("Unknown options encountered: ");
@@ -53,7 +55,6 @@ public class Main {
                 }
                 String verifyFile = commander.getVerifyFile();
                 String rimel = commander.getRimEventLog();
-                String certificateFile = commander.getPublicCertificate();
                 String trustStore = commander.getTruststoreFile();
                     validator.setRim(verifyFile);
                     validator.setRimEventLog(rimel);
@@ -61,6 +62,13 @@ public class Main {
                     if (!certificateFile.isEmpty()) {
                         System.out.println("A single cert cannot be used for verification. " +
                                 "The signing cert will be searched for in the trust store.");
+                    credValidator = new CredentialArgumentValidator(trustStore,
+                            "","", true);
+                    if (credValidator.isValid()) {
+                        validator.setTrustStoreFile(trustStore);
+                    } else {
+                        System.out.println(credValidator.getErrorMessage());
+                        System.exit(1);
                     }
                     if (validator.validateSwidtagFile(verifyFile)) {
                         System.out.println("Successfully verified " + verifyFile);
@@ -75,7 +83,6 @@ public class Main {
                 }
                 String createType = commander.getCreateType().toUpperCase();
                 String attributesFile = commander.getAttributesFile();
-                String jksTruststoreFile = commander.getTruststoreFile();
                 String certificateFile = commander.getPublicCertificate();
                 String privateKeyFile = commander.getPrivateKeyFile();
                 boolean embeddedCert = commander.isEmbedded();
@@ -86,22 +93,26 @@ public class Main {
                         if (!attributesFile.isEmpty()) {
                             gateway.setAttributesFile(attributesFile);
                         }
-                        if (!jksTruststoreFile.isEmpty()) {
+                        if (!rimEventLog.isEmpty()) {
+                            gateway.setRimEventLog(rimEventLog);
+                        } else {
+                            System.out.println("Error: a support RIM is required!");
+                            System.exit(1);
+                        }
+                        credValidator = new CredentialArgumentValidator("" ,
+                                certificateFile, privateKeyFile, false);
+                        if (defaultKey){
                             gateway.setDefaultCredentials(true);
-                            gateway.setJksTruststoreFile(jksTruststoreFile);
-                        } else if (!certificateFile.isEmpty() && !privateKeyFile.isEmpty()) {
+                            gateway.setJksTruststoreFile(SwidTagConstants.DEFAULT_KEYSTORE_FILE);
+                        } else if (credValidator.isValid()) {
                             gateway.setDefaultCredentials(false);
                             gateway.setPemCertificateFile(certificateFile);
                             gateway.setPemPrivateKeyFile(privateKeyFile);
                             if (embeddedCert) {
                                 gateway.setEmbeddedCert(true);
                             }
-                        } else if (defaultKey){
-                            gateway.setDefaultCredentials(true);
-                            gateway.setJksTruststoreFile(SwidTagConstants.DEFAULT_KEYSTORE_FILE);
                         } else {
-                            exitWithErrorCode("A private key (-k) and public certificate (-p) " +
-                                    "are required, or the default key (-d) must be indicated.");
+                            exitWithErrorCode(credValidator.getErrorMessage());
                         }
                         if (rimEventLog.isEmpty()) {
                             exitWithErrorCode("A support RIM is required.");
