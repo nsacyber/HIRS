@@ -101,26 +101,17 @@ public class Commander {
 
     public String printHelpExamples() {
         StringBuilder sb = new StringBuilder();
-        sb.append("Create a base RIM using the values in attributes.json; " +
-                "sign it with the default keystore; ");
-        sb.append("and write the data to base_rim.swidtag:\n\n");
-        sb.append("\t\t-c base -a attributes.json -d -l support_rim.bin -o base_rim.swidtag" +
-                "\n\n\n");
-        sb.append("Create a base RIM using the default attribute values; ");
-        sb.append("sign it using privateKey.pem; embed cert.pem in the signature block; ");
-        sb.append("and write the data to console output:\n\n");
-        sb.append("\t\t-c base -l support_rim.bin -k privateKey.pem -p cert.pem -e\n\n\n");
-        sb.append("Create a base RIM using the values in attributes.json; " +
-                "sign it with the default keystore; add a RFC3852 timestamp; ");
-        sb.append("and write the data to base_rim.swidtag:\n\n");
-        sb.append("\t\t-c base -a attributes.json -d -l support_rim.bin " +
-                "--timestamp RFC3852 counterSignature.bin -o base_rim.swidtag\n\n\n");
-        sb.append("Validate a base RIM using an external support RIM to override the ");
-        sb.append("payload file:\n\n");
-        sb.append("\t\t-v base_rim.swidtag -l support_rim.bin\n\n\n");
-        sb.append("Validate a base RIM with its own payload file and a PEM truststore ");
-        sb.append("containing the signing cert:\n\n");
-        sb.append("\t\t-v base_rim.swidtag -t ca.crt\n\n\n");
+        sb.append("Create a base RIM: use the values in attributes.json; ");
+        sb.append("add support_rim.bin to the payload; ");
+        sb.append("sign it using privateKey.pem and cert.pem; embed cert.pem in the signature; ");
+        sb.append("add a RFC3852 timestamp; and write the data to base_rim.swidtag:\n\n");
+        sb.append("\t\t-c base -a attributes.json -l support_rim.bin "
+                + "-k privateKey.pem -p cert.pem -e --timestamp RFC3852 counterSignature.bin "
+                + "-o base_rim.swidtag\n\n\n");
+        sb.append("Validate base_rim.swidtag: "
+                + "the payload <File> is validated with support_rim.bin; "
+                + "and the signature is validated with ca.crt:\n\n");
+        sb.append("\t\t-v base_rim.swidtag -l support_rim.bin -t ca.crt\n\n\n");
 
         return sb.toString();
     }
