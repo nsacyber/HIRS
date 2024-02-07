@@ -99,7 +99,7 @@ public class SwidTagGateway {
         try {
             JAXBContext jaxbContext = JAXBContext.newInstance(SwidTagConstants.SCHEMA_PACKAGE);
             marshaller = jaxbContext.createMarshaller();
-            attributesFile = SwidTagConstants.DEFAULT_ATTRIBUTES_FILE;
+            attributesFile = "";
             defaultCredentials = true;
             pemCertificateFile = "";
             embeddedCert = false;

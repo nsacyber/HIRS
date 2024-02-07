@@ -24,7 +24,7 @@ public class Commander {
     private boolean version = false;
     @Parameter(names = {"-a", "--attributes <path>"}, order = 1,
             description = "The configuration file holding attributes "
-            + "to populate the base RIM with.")
+            + "to populate the base RIM with.  An example file can be found in /opt/rimtool/data.")
     private String attributesFile = "";
     @Parameter(names = {"-o", "--out <path>"}, order = 2,
             description = "The file to write the RIM out to. "
@@ -45,7 +45,7 @@ public class Commander {
             description = "Embed the provided certificate in the signed swidtag.")
     private boolean embedded = false;
     @Parameter(names = {"-d", "--default-key"}, order = 8,
-            description = "Use default signing credentials.")
+            description = "Use the JKS keystore installed in /opt/rimtool/data.")
     private boolean defaultKey = false;
     @Parameter(names = {"-l", "--rimel <path>"}, order = 9,
             description = "The TCG eventlog file to use as a support RIM.")

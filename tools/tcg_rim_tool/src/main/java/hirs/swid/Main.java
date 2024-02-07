@@ -82,11 +82,14 @@ public class Main {
                     case "BASE":
                         if (!attributesFile.isEmpty()) {
                             gateway.setAttributesFile(attributesFile);
+                        } else {
+                            System.out.println("An attribute file is required.");
+                            System.exit(1);
                         }
                         if (!rimEventLog.isEmpty()) {
                             gateway.setRimEventLog(rimEventLog);
                         } else {
-                            System.out.println("Error: a support RIM is required!");
+                            System.out.println("A support RIM is required.");
                             System.exit(1);
                         }
                         credValidator = new CredentialArgumentValidator("" ,
