@@ -3,7 +3,6 @@ package hirs.utils.tpm.eventlog.events;
 import hirs.utils.HexUtils;
 import hirs.utils.tpm.eventlog.uefi.UefiConstants;
 import hirs.utils.tpm.eventlog.uefi.UefiPartition;
-import lombok.Getter;
 
 import java.io.UnsupportedEncodingException;
 import java.math.BigInteger;
@@ -102,13 +101,13 @@ public class EvEfiGptPartition {
      * Processes an individual GPT partition entry.
      *
      * @param partitions           byte array holding partition data.
-     * @param numberOfPartitions number of partitions included in the data.
+     * @param numOfPartitions number of partitions included in the data.
      * @throws java.io.UnsupportedEncodingException if partition data fails to parse.
      */
-    private void processesPartitions(final byte[] partitions, final int numberOfPartitions)
+    private void processesPartitions(final byte[] partitions, final int numOfPartitions)
             throws UnsupportedEncodingException {
         byte[] partitionData = new byte[UefiConstants.SIZE_128];
-        for (int i = 0; i < numberOfPartitions; i++) {
+        for (int i = 0; i < numOfPartitions; i++) {
             System.arraycopy(partitions, i * partitonEntryLength, partitionData, 0,
                     partitonEntryLength);
             partitionList.add(new UefiPartition(partitionData));
