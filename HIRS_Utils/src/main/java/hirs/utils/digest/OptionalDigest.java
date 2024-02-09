@@ -36,15 +36,15 @@ public final class OptionalDigest extends AbstractDigest {
     /**
      * Creates a new <code>OptionalDigest</code>.
      *
-     * @param algorithm algorithm used to generate the digest
-     * @param digest digest value
+     * @param digestAlgorithm algorithm used to generate the digest
+     * @param optionalDigest digest value
      * @throws IllegalArgumentException if digest length does not match that of the algorithm
      */
-    public OptionalDigest(final DigestAlgorithm algorithm, final byte[] digest)
+    public OptionalDigest(final DigestAlgorithm digestAlgorithm, final byte[] optionalDigest)
             throws IllegalArgumentException {
-        validateInput(algorithm, digest);
-        this.algorithm = algorithm;
-        this.digest = Arrays.copyOf(digest, digest.length);
+        validateInput(digestAlgorithm, optionalDigest);
+        this.algorithm = digestAlgorithm;
+        this.digest = Arrays.copyOf(optionalDigest, optionalDigest.length);
     }
 
     /**

@@ -22,9 +22,10 @@ RUN mkdir -p C:/ProgramData/hirs/log
 # Download and install Java 17
 RUN ((New-Object System.Net.WebClient).DownloadFile('https://download.oracle.com/java/17/archive/jdk-17.0.8_windows-x64_bin.exe', 'C:/jdk-17.0.8_windows-x64_bin.exe'))
 RUN Write-Host "Installing JDK..."
-RUN ./jdk-17.0.8_windows-x64_bin.exe /s
+RUN Start-Process -filepath 'C:/jdk-17.0.8_windows-x64_bin.exe' -Wait -PassThru -ArgumentList "/s"
 RUN Write-Host "Finished installing JDK."
 
+RUN ls 'C:\Program Files'
 RUN ls 'C:\Program Files\Java'
 RUN ls 'C:\Program Files\Java\jdk-17\'
 
@@ -56,7 +57,7 @@ RUN Write-Host "Finished installing .NET SDK."
 RUN ((New-Object System.Net.WebClient).DownloadFile('https://aka.ms/vs/17/release/vs_buildtools.exe', 'C:/vs_buildtools.exe'))
 RUN ((New-Object System.Net.WebClient).DownloadFile('https://aka.ms/vs/17/release/channel', 'C:/vs_channel.chman'))
 RUN Write-Host "Installing Visual Studio Build Tools..."
-RUN C:/vs_buildtools.exe --quiet --wait --norestart --nocache --channelUri C:/vs_channel.chman --installChannelUri C:/vs_channel.chman --add Microsoft.VisualStudio.Workload.VCTools --includeRecommended --installPath C:/vsbuildtools
+RUN Start-Process -FilePath 'C:/vs_buildtools.exe' -ArgumentList \"--quiet --wait --norestart --nocache --channelUri C:/vs_channel.chman --installChannelUri C:/vs_channel.chman --add Microsoft.VisualStudio.Workload.VCTools --includeRecommended --installPath C:/vsbuildtools\" -Wait -PassThru
 RUN Write-Host "Finished installing Visual Studio Build Tools."
 
 # Download and extract pre-built openssl

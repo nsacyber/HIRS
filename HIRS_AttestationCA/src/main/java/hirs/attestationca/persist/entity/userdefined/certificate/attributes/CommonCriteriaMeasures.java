@@ -201,15 +201,15 @@ public class CommonCriteriaMeasures {
         //Get all the mandatory values
         int index = 0;
         version = ASN1IA5String.getInstance(sequence.getObjectAt(index++));
-        ASN1Enumerated enumarated = ASN1Enumerated.getInstance(sequence.getObjectAt(index++));
+        ASN1Enumerated enumerated = ASN1Enumerated.getInstance(sequence.getObjectAt(index++));
         //Throw exception when is not between 1 and 7
-        if (enumarated.getValue().intValue() <= 0
-                || enumarated.getValue().intValue() > EvaluationAssuranceLevel.values().length) {
+        if (enumerated.getValue().intValue() <= 0
+                || enumerated.getValue().intValue() > EvaluationAssuranceLevel.values().length) {
             throw new IllegalArgumentException("Invalid assurance level.");
         }
-        assuranceLevel = EvaluationAssuranceLevel.values()[enumarated.getValue().intValue() - 1];
-        enumarated = ASN1Enumerated.getInstance(sequence.getObjectAt(index++));
-        evaluationStatus = EvaluationStatus.values()[enumarated.getValue().intValue()];
+        assuranceLevel = EvaluationAssuranceLevel.values()[enumerated.getValue().intValue() - 1];
+        enumerated = ASN1Enumerated.getInstance(sequence.getObjectAt(index++));
+        evaluationStatus = EvaluationStatus.values()[enumerated.getValue().intValue()];
         //Default plus value
         plus = ASN1Boolean.FALSE;
 
@@ -233,9 +233,9 @@ public class CommonCriteriaMeasures {
             ASN1TaggedObject taggedObj = ASN1TaggedObject.getInstance(sequence.getObjectAt(index));
             switch (taggedObj.getTagNo()) {
                 case STRENGTH_OF_FUNCTION:
-                    enumarated = ASN1Enumerated.getInstance(taggedObj, false);
+                    enumerated = ASN1Enumerated.getInstance(taggedObj, false);
                     strengthOfFunction
-                            = StrengthOfFunction.values()[enumarated.getValue().intValue()];
+                            = StrengthOfFunction.values()[enumerated.getValue().intValue()];
                     break;
                 case PROFILE_OID:
                     profileOid = ASN1ObjectIdentifier.getInstance(taggedObj, false);

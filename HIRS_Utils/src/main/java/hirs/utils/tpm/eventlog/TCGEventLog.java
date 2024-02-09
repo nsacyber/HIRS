@@ -169,13 +169,13 @@ public final class TCGEventLog {
             }
     }
 
-    /**
-     * Creates a TPM baseline using the expected PCR Values.
-     * Expected PCR Values were Calculated from the EventLog (RIM Support file).
-     *
-     * @param name name to call the TPM Baseline
-     * @return whitelist baseline
-     */
+//    /**
+//     * Creates a TPM baseline using the expected PCR Values.
+//     * Expected PCR Values were Calculated from the EventLog (RIM Support file).
+//     *
+//     * @param name name to call the TPM Baseline
+//     * @return whitelist baseline
+//     */
 //    public TpmWhiteListBaseline createTPMBaseline(final String name) {
 //        TpmWhiteListBaseline baseline = new TpmWhiteListBaseline(name);
 //        TPMMeasurementRecord record;
@@ -300,21 +300,21 @@ public final class TCGEventLog {
 
     /**
      * Human readable string representing the contents of the Event Log.
-     * @param bEvent flag to set
-     * @param bHexEvent flag to set
-     * @param bContent flag to set
+     * @param event flag to set
+     * @param hexEvent flag to set
+     * @param content flag to set
      * @return Description of the log.
      */
-    public String toString(final boolean bEvent,
-                           final boolean bHexEvent,
-                           final boolean bContent) {
-        this.bEvent = bEvent;
-        this.bHexEvent = bHexEvent;
-        this.bContent = bContent;
+    public String toString(final boolean event,
+                           final boolean hexEvent,
+                           final boolean content) {
+        this.bEvent = event;
+        this.bHexEvent = hexEvent;
+        this.bContent = content;
 
         return this.toString();
     }
-    
+
     /**
      * Returns the TCG Algorithm Registry defined ID for the Digest Algorithm
      * used in the event log.

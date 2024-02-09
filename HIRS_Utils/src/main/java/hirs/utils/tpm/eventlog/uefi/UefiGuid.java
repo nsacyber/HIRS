@@ -65,6 +65,8 @@ public class UefiGuid {
      * Converts a GUID with a byte array to a RFC-1422 UUID object.
      * Assumes a MS format and converts to Big Endian format used by most others , including Linux
      * Matched uuids found in /sys/firmware/efi/efivars on Centos 7.
+     * @param guid byte array holding the guid data.
+     * @return UUID processed from the passed in guid
      */
     private static UUID processGuid(final byte[] guid) {
         byte[] msb1 = new byte[UefiConstants.SIZE_4];
@@ -181,10 +183,10 @@ public class UefiGuid {
     /**
      * Retrieves the timestamp within a time based GUID.
      *
-     * @param uuid uuid object
+     * @param uuidTimeStamp uuid object
      * @return long representing the time stamp from the GUID
      */
-    public long getTimeFromUUID(final UUID uuid) {
-        return (uuid.timestamp() - UUID_EPOCH_INTERVALS) / UUID_EPOCH_DIVISOR;
+    public long getTimeFromUUID(final UUID uuidTimeStamp) {
+        return (uuidTimeStamp.timestamp() - UUID_EPOCH_INTERVALS) / UUID_EPOCH_DIVISOR;
     }
 }

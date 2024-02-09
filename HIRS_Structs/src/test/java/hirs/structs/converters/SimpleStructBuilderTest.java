@@ -1,7 +1,8 @@
 package hirs.structs.converters;
 
-import static org.testng.Assert.assertEquals;
-import org.testng.annotations.Test;
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import org.junit.jupiter.api.Test;
 
 /**
  * Tests suite for {@link SimpleStructConverter}.
@@ -12,9 +13,9 @@ public class SimpleStructBuilderTest {
 
     /**
      * Tests {@link SimpleStructBuilder#build()}.
-     * @throws java.lang.NoSuchFieldException sometimes
-     * @throws java.lang.IllegalAccessException sometimes
-     * @throws java.lang.IllegalArgumentException sometimes
+     * @throws NoSuchFieldException sometimes
+     * @throws IllegalAccessException sometimes
+     * @throws IllegalArgumentException sometimes
      */
     @Test
     public final void testBuild() throws NoSuchFieldException, IllegalArgumentException,
@@ -31,15 +32,15 @@ public class SimpleStructBuilderTest {
                 .build())
             .build();
 
-        assertEquals(struct.getTestShort(), NUMBER);
-        assertEquals(struct.getTestByte(), NUMBER);
+        assertEquals(NUMBER, struct.getTestShort());
+        assertEquals(NUMBER, struct.getTestByte());
 
-        assertEquals(struct.getTestEmbeddedStruct().getEmbeddedShort(), NUMBER);
-        assertEquals(struct.getTestEmbeddedStruct().getEmbedded(), ARRAY);
-        assertEquals(struct.getTestEmbeddedStruct().getEmbeddedSize(), ARRAY.length);
+        assertEquals(NUMBER, struct.getTestEmbeddedStruct().getEmbeddedShort());
+        assertArrayEquals(ARRAY, struct.getTestEmbeddedStruct().getEmbedded());
+        assertEquals(ARRAY.length, struct.getTestEmbeddedStruct().getEmbeddedSize());
 
-        assertEquals(struct.getTestVariableStruct().getTestArray(), ARRAY);
-        assertEquals(struct.getTestVariableStructLength(), ARRAY.length);
+        assertArrayEquals(ARRAY, struct.getTestVariableStruct().getTestArray());
+        assertEquals(ARRAY.length, struct.getTestVariableStructLength());
     }
 
 }

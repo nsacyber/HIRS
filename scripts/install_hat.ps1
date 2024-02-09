@@ -26,7 +26,7 @@ if ($Service.Status -ne 'Running') {
       Write-Host "Docker is running, continuing installation..."
 }
 
-# Check for previos install 
+# Check for previous install 
 if (Test-Path -Path hirs) {
   Write-Host "The hirs folder exists under the current directory, aborting install."
   Write-Host "Exiting without installing HAT. Hit Any key to exit"
@@ -48,28 +48,28 @@ if (!$ethernet) {
   } until ($ethernet)
 }
 Write-Host "Wired Ethernet connection found, continuing..."
-# Make Firwall Rules for ACA to operate
+# Make Firewall Rules for ACA to operate
 Write-Host "Adding Firewall rules"
 netsh advfirewall firewall add rule name="ACA HTTPS" dir=in action=allow protocol=TCP localport=8443 | out-null
 netsh advfirewall firewall add rule name="ACA HTTPS" dir=out action=allow protocol=TCP localport=8443 | out-null
 
 # Make folder for necessary files
-mkdir hirs | out-null
-Push-Location  .\hirs\ | out-null
+mkdir ~/hirs | out-null
+Push-Location  ~/hirs | out-null
 
-Write-Host "Retreiving Configuration Files"
+Write-Host "Retrieving Configuration Files"
 wget https://raw.githubusercontent.com/nsacyber/HIRS/main/.ci/docker/compose-acceptance-test-windows.yml -o compose-acceptance-test-windows.yml
-#wget https://raw.githubusercontent.com/nsacyber/HIRS/v3_hat-compose/.ci/docker/compose-acceptance-test-windows.yml -o compose-acceptance-test-windows.yml
 
-Write-Host "Retreiving Trust Stores"
+Write-Host "Retrieving Trust Stores"
 wget https://raw.githubusercontent.com/nsacyber/HIRS/main/.ci/setup/certs/oem_certs.zip -o oem_certs.zip
 wget https://raw.githubusercontent.com/nsacyber/HIRS/main/scripts/start_hat.ps1 -o start_hat.ps1
 wget https://raw.githubusercontent.com/nsacyber/HIRS/main/scripts/remove_hat.ps1 -o remove_hat.ps1
-#wget https://raw.githubusercontent.com/nsacyber/HIRS/v3_issue_645-hatSetup/.ci/setup/certs/oem_certs.zip -o oem_certs.zip
-#wget https://raw.githubusercontent.com/nsacyber/HIRS/v3_issue_645-hatSetup/scripts/start_hat.ps1 -o start_hat.ps1
-#wget https://raw.githubusercontent.com/nsacyber/HIRS/v3_issue_645-hatSetup/scripts/remove_hat.ps1 -o remove_hat.ps1
 
 Expand-Archive -Path oem_certs.zip
+
+# Make sure Docker is using Windows Containers
+& $Env:ProgramFiles\Docker\Docker\DockerCli.exe -SwitchWindowsEngine
+
 Write-Host "Downloading images (This can take a while)"
 docker pull ghcr.io/nsacyber/hirs/aca:latest
 docker pull ghcr.io/nsacyber/hirs/hat:latest
@@ -86,7 +86,9 @@ $Shortcut.Save()
  docker compose -f $Home\hirs\compose-acceptance-test-windows.yml up --detach
 # Wait for ACA to start
 Write-Host "Waiting for ACA to start up on local host port 8443 ..."
-Write-Host " Note that several TCP connect failure notices are expectred while the container boots up."
+
+Write-Host " Note that several TCP connect failure notices are expected while the container boots up."
+
 Start-Sleep -seconds 10  
   while ((Test-NetConnection -computername localhost -Port 8443 ).TcpTestSucceeded -eq $FALSE )  {   Start-Sleep -seconds 5  }
 Write-Host "ACA is up!"

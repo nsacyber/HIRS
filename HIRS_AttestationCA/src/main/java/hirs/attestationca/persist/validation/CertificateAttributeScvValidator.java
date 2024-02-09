@@ -730,19 +730,19 @@ public class CertificateAttributeScvValidator extends SupplyChainCredentialValid
         final List<ComponentIdentifier> pcComponents = new ArrayList<>();
         for (ComponentIdentifier component : untrimmedPcComponents) {
             if (component.getComponentManufacturer() != null) {
-                component.setComponentManufacturer((DERUTF8String) ASN1UTF8String.getInstance(
+                component.setComponentManufacturer(new DERUTF8String(
                         component.getComponentManufacturer().getString().trim()));
             }
             if (component.getComponentModel() != null) {
-                component.setComponentModel((DERUTF8String) ASN1UTF8String.getInstance(
+                component.setComponentModel(new DERUTF8String(
                         component.getComponentModel().getString().trim()));
             }
             if (component.getComponentSerial() != null) {
-                component.setComponentSerial((DERUTF8String) ASN1UTF8String.getInstance(
+                component.setComponentSerial(new DERUTF8String(
                         component.getComponentSerial().getString().trim()));
             }
             if (component.getComponentRevision() != null) {
-                component.setComponentRevision((DERUTF8String) ASN1UTF8String.getInstance(
+                component.setComponentRevision(new DERUTF8String(
                         component.getComponentRevision().getString().trim()));
             }
             pcComponents.add(component);

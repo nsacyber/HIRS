@@ -1,7 +1,5 @@
 package hirs.utils;
 
-import lombok.AccessLevel;
-import lombok.NoArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.bouncycastle.asn1.x500.X500Name;
 
@@ -9,11 +7,14 @@ import org.bouncycastle.asn1.x500.X500Name;
  * Utilities class specific for additional Bouncy Castle functionality.
  */
 @Log4j2
-@NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class BouncyCastleUtils {
 
     private static final String SEPARATOR_COMMA = ",";
     private static final String SEPARATOR_PLUS = "+";
+
+    private BouncyCastleUtils() {
+        // intentionally blank, should never be instantiated
+    }
 
     /**
      * This method can be used to compare the distinguished names given from

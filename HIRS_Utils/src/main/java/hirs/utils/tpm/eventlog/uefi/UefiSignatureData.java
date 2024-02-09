@@ -119,7 +119,8 @@ public class UefiSignatureData {
     UefiSignatureData(final byte[] data) throws CertificateException, NoSuchAlgorithmException {
         System.arraycopy(data, 0, guid, 0, UefiConstants.SIZE_16);
         sigData = new byte[data.length - UefiConstants.SIZE_16];
-        System.arraycopy(data, UefiConstants.OFFSET_16, sigData, 0, data.length - UefiConstants.SIZE_16);
+        System.arraycopy(data, UefiConstants.OFFSET_16, sigData, 0,
+                data.length - UefiConstants.SIZE_16);
         cert = new UefiX509Cert(sigData);
         efiVarGuid = new UefiGuid(guid);
     }

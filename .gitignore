@@ -138,3 +138,12 @@ HIRS_ProvisionerTPM2/scripts/tpm_aca_provision
 
 # tcg_rim_tool files
 tools/tcg_rim_tool/generated_swidTag.swidtag
+
+### c# build files, visual studio files
+*.user
+*.cache
+HIRS_Provisioner.NET/**/.vs
+HIRS_Provisioner.NET/**/bin
+HIRS_Provisioner.NET/**/generated
+HIRS_Provisioner.NET/**/obj
+HIRS_Provisioner.NET/**/PublishProfiles
