@@ -1,20 +1,24 @@
 package hirs.attestationca.persist.entity.userdefined;
+
 import hirs.attestationca.persist.PersistenceConfiguration;
 import hirs.attestationca.persist.SpringPersistenceTest;
 import hirs.attestationca.persist.entity.ArchivableEntity;
 import hirs.attestationca.persist.entity.manager.CertificateRepository;
 import hirs.attestationca.persist.entity.manager.DeviceRepository;
+import hirs.attestationca.persist.entity.manager.SupplyChainValidationSummaryRepository;
+import hirs.attestationca.persist.entity.userdefined.report.DeviceInfoReport;
+import hirs.attestationca.persist.entity.userdefined.report.DeviceInfoReportTest;
 import hirs.attestationca.persist.enums.AppraisalStatus;
 
+import hirs.attestationca.persist.enums.HealthStatus;
 import org.junit.jupiter.api.*;
+import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ContextConfiguration;
 
-import java.util.List;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashSet;
+import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -24,12 +28,17 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
  * Tests the functionality in SupplyChainValidationSummary, as well as the persistence of
  * SupplyChainValidationSummary and SupplyChainValidation.
  */
-//@TestInstance(TestInstance.Lifecycle.PER_CLASS)
+@TestInstance(TestInstance.Lifecycle.PER_CLASS)
 public class SupplyChainValidationSummaryTest extends SpringPersistenceTest {
     private Device device;
     private List<ArchivableEntity> certificates;
-//    private CertificateRepository certificateRepository;
-//    private DeviceRepository deviceRepository;
+    @Mock
+    private CertificateRepository certificateRepository;
+    @Mock
+    private DeviceRepository deviceRepository;
+    @Mock
+    private SupplyChainValidationSummaryRepository supplyChainValidationSummaryRepository;
+
     /**
      * Create a session factory to use for persistence testing and persist some certificates
      * for use by these tests.
@@ -38,45 +47,52 @@ public class SupplyChainValidationSummaryTest extends SpringPersistenceTest {
      */
     @BeforeAll
     public void setup() throws Exception {
+
+        //DOES THIS NEED TO BE BEFORE EACH ??
+        MockitoAnnotations.initMocks(this);
+
         certificates = CertificateTest.getAllTestCertificates();
+
         for (ArchivableEntity cert : certificates) {
             certificateRepository.save((Certificate) cert);
         }
 
-        device = DeviceTest.getTestDevice("TestDevice");
+//        device = DeviceTest.getTestDevice("TestDevice");
+        device = AbstractUserdefinedEntityTest.getTestDevice("TestDevice");
+
         deviceRepository.save(device);
     }
 
-//    /**
-//     * Remove test certificates and close the session factory.
-//     */
-//    @AfterAll
-//    public void teardown() {
-//        for (ArchivableEntity cert : certificates) {
-//            certificateRepository.delete((Certificate) cert);
-//        }
+    /**
+     * Remove test certificates and close the session factory.
+     */
+    @AfterAll
+    public void teardown() {
+//        certificateRepository.deleteAll();
 //        deviceRepository.delete(device);
-//    }
+    }
 
-//    public SupplyChainValidationSummaryTest() throws Exception {
-//    }
-//
-//    /**
-//     * Tests that an empty summary behaves as expected.
-//     */
-//    @Test
-//    public void testEmptySummary() throws InterruptedException {
-//        SupplyChainValidationSummary emptySummary = getTestSummary(
-//                0,
-//                0,
-//                certificates
-//        );
-//
-////        assertEquals(emptySummary.getDevice(), device);
-//        assertEquals(emptySummary.getValidations(), Collections.EMPTY_SET);
-//        assertEquals(emptySummary.getOverallValidationResult(), AppraisalStatus.Status.PASS);
-//        assertNotNull(emptySummary.getCreateTime());
-//    }
+    @AfterEach
+    public void resetTestState() {
+        supplyChainValidationSummaryRepository.deleteAll();
+    }
+
+    /**
+     * Tests that an empty summary behaves as expected.
+     */
+    @Test
+    public void testEmptySummary() throws InterruptedException {
+        SupplyChainValidationSummary emptySummary = getTestSummary(
+                0,
+                0,
+                certificates
+        );
+
+        assertEquals(device.getDeviceInfo(), emptySummary.getDevice());
+        assertEquals(Collections.EMPTY_SET, emptySummary.getValidations());
+        assertEquals(AppraisalStatus.Status.PASS, emptySummary.getOverallValidationResult());
+        assertNotNull(emptySummary.getCreateTime());
+    }
 //
 //    /**
 //     * Test that a summary can't be created with a null validationIdentifier.
@@ -170,50 +186,52 @@ public class SupplyChainValidationSummaryTest extends SpringPersistenceTest {
 //        assertNotNull(twoBadValidations.getCreateTime());
 //    }
 //
-//    private SupplyChainValidationSummary getTestSummary(
-//            final int numberOfValidations,
-//            final int numFail,
-//            final List<ArchivableEntity> certificates
-//    ) throws InterruptedException {
-//        SupplyChainValidation.ValidationType[] validationTypes =
-//                SupplyChainValidation.ValidationType.values();
-//
-//        if (numberOfValidations > validationTypes.length) {
-//            throw new IllegalArgumentException(String.format(
-//                    "Cannot have more than %d validation types",
-//                    validationTypes.length
-//            ));
-//        }
-//
-//        if (numFail > numberOfValidations) {
-//            throw new IllegalArgumentException(String.format(
-//                    "Cannot have more than %d failed validations",
-//                    validationTypes.length
-//            ));
-//        }
-//
-//        Collection<SupplyChainValidation> validations = new HashSet<>();
-//        for (int i = 0; i < numberOfValidations; i++) {
-//            boolean successful = true;
-//            if (i >= (numberOfValidations - numFail)) {
-//                successful = false;
-//            }
-//
-//            AppraisalStatus.Status result = AppraisalStatus.Status.FAIL;
-//            if (successful) {
-//                result = AppraisalStatus.Status.PASS;
-//            }
-//
-//            validations.add(SupplyChainValidationTest.getTestSupplyChainValidation(
-//                    validationTypes[i],
-//                    result,
-//                    certificates
-//            ));
+
+    /**
+     *
+     */
+    private SupplyChainValidationSummary getTestSummary(
+            final int numberOfValidations,
+            final int numFail,
+            final List<ArchivableEntity> certificates
+    ) throws InterruptedException {
+        SupplyChainValidation.ValidationType[] validationTypes =
+                SupplyChainValidation.ValidationType.values();
+
+        if (numberOfValidations > validationTypes.length) {
+            throw new IllegalArgumentException(String.format(
+                    "Cannot have more than %d validation types",
+                    validationTypes.length
+            ));
+        }
+
+        if (numFail > numberOfValidations) {
+            throw new IllegalArgumentException(String.format(
+                    "Cannot have more than %d failed validations",
+                    validationTypes.length
+            ));
+        }
+
+        Collection<SupplyChainValidation> validations = new HashSet<>();
+        for (int i = 0; i < numberOfValidations; i++) {
+            boolean successful = true;
+            if (i >= (numberOfValidations - numFail)) {
+                successful = false;
+            }
+
+            AppraisalStatus.Status result = AppraisalStatus.Status.FAIL;
+            if (successful) {
+                result = AppraisalStatus.Status.PASS;
+            }
+
+            validations.add(SupplyChainValidationTest.getTestSupplyChainValidation(
+                    validationTypes[i],
+                    result,
+                    certificates
+            ));
 //            Thread.sleep(1);
-//        }
-//
-//
-//
-//        return new SupplyChainValidationSummary(device, validations);
-//    }
+        }
+
+        return new SupplyChainValidationSummary(device, validations);
+    }
 }
