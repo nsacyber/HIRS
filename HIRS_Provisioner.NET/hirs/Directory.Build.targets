@@ -19,7 +19,7 @@
   <Target Name="SetWixPath" BeforeTargets="Msi">
     <PropertyGroup>
       <ProductSourceFilePath>$(MSBuildThisFileDirectory)\Resources\Product.wxs</ProductSourceFilePath>
-      <WixInstallPath>$(NuGetPackageRoot)wix\3.11.2\tools\</WixInstallPath>
+      <WixInstallPath>$(NuGetPackageRoot)wix\3.14.0\tools\</WixInstallPath>
       <Heat>$(WixInstallPath)heat.exe</Heat>
       <Candle>$(WixInstallPath)candle.exe</Candle>
       <Light>$(WixInstallPath)light.exe</Light>
