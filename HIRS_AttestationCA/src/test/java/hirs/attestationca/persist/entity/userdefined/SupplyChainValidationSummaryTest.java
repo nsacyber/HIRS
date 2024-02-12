@@ -40,7 +40,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 //@SpringBootTest(Classes = PersistenceJPAConfig.class)
 //@ContextConfiguration
 //@ContextConfiguration(classes = SpringPersistenceTest.class)
-//@EnableJpaRepositories(basePackages = "hirs.attestationca.persist.entity.manager")
+@EnableJpaRepositories(basePackages = "hirs.attestationca.persist.entity.manager")
 //@ExtendWith(SpringExtension.class)
 //@ExtendWith(SpringExtension.class)
 //@DataJpaTest
@@ -49,14 +49,14 @@ public class SupplyChainValidationSummaryTest {
 //public class SupplyChainValidationSummaryTest extends SpringPersistenceTest {
     private Device device;
     private List<ArchivableEntity> certificates;
-    @Mock
-//    @Autowired
+//    @Mock
+    @Autowired
     private CertificateRepository certificateRepository;
-    @Mock
-//    @Autowired
+//    @Mock
+    @Autowired
     private DeviceRepository deviceRepository;
-    @Mock
-//    @Autowired
+//    @Mock
+    @Autowired
     private SupplyChainValidationSummaryRepository supplyChainValidationSummaryRepository;
 
     /**
