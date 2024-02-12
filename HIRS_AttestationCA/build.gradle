@@ -2,6 +2,7 @@ plugins {
     id 'java'
     id 'io.spring.dependency-management' version '1.1.0'
     id 'com.google.protobuf' version '0.9.4'
+    id 'checkstyle'
 }
 
 java {
@@ -51,13 +52,35 @@ dependencies {
     testImplementation 'org.junit.jupiter:junit-jupiter:5.9.3'
     testImplementation 'org.junit.platform:junit-platform-launcher:1.9.3'
     testImplementation 'org.mockito:mockito-core:4.2.0'
+    testImplementation 'org.springframework:spring-test:6.0.8'
 
     // spring management
     compileOnly libs.lombok
     implementation libs.lombok
     annotationProcessor libs.lombok
 }
-
+checkstyle {
+    toolVersion = '10.12.7'
+    configFile file("${rootDir}/config/checkstyle/checkstyle.xml")
+}
+// https://github.com/checkstyle/checkstyle/issues/14211#issuecomment-1884129948
+configurations.checkstyle {
+    resolutionStrategy.capabilitiesResolution.withCapability("com.google.collections:google-collections") {
+        select("com.google.guava:guava:0")
+    }
+}
+checkstyleMain {
+    source ='src/main/java'
+}
+checkstyleTest {
+    source ='src/test/java'
+}
+tasks.withType(Checkstyle) {
+    reports {
+        xml.required = false
+        html.required = true
+    }
+}
 protobuf {
   protoc {
     artifact = 'com.google.protobuf:protoc:3.24.3'

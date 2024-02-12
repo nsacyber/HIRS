@@ -1,6 +1,6 @@
 plugins {
     id 'java'
-//    id 'checkstyle'
+    id 'checkstyle'
 }
 
 java {
@@ -28,17 +28,33 @@ test {
     useJUnitPlatform()
 }
 
-//ext.configDir = new File(projectDir, 'config')
-//ext.checkstyleConfigDir = "$configDir/checkstyle"
+test {
+    useJUnitPlatform()
+}
 
-//checkstyle {
-//    toolVersion = '5.7'
-//    configFile = checkstyleConfigFile
-//    configProperties.put('basedir', checkstyleConfigDir)
-//    ignoreFailures = false
-//    showViolations = true
-//}
-//
+checkstyle {
+    toolVersion = '10.12.7'
+    configFile file("${rootDir}/config/checkstyle/checkstyle.xml")
+}
+// https://github.com/checkstyle/checkstyle/issues/14211#issuecomment-1884129948
+configurations.checkstyle {
+    resolutionStrategy.capabilitiesResolution.withCapability("com.google.collections:google-collections") {
+        select("com.google.guava:guava:0")
+    }
+}
+checkstyleMain {
+    source ='src/main/java'
+}
+checkstyleTest {
+    source ='src/test/java'
+}
+tasks.withType(Checkstyle) {
+    reports {
+        xml.required = false
+        html.required = true
+    }
+}
+
 //publishing {
 //    publications {
 //        maven(MavenPublication) {

@@ -70,15 +70,15 @@ public class TpmPcrEvent2 extends TpmPcrEvent {
      * @param eventNumber event position within the event log.
      * @throws java.io.IOException              if an error occurs in parsing the event
      * @throws java.security.NoSuchAlgorithmException if an undefined algorithm is encountered.
-     * @throws java.security.cert.CertificateException     If a certificate within an event can't be processed.
+     * @throws java.security.cert.CertificateException If a certificate within an event can't be processed.
      */
     public TpmPcrEvent2(final ByteArrayInputStream is, final int eventNumber)
             throws IOException, CertificateException, NoSuchAlgorithmException {
         super(is);
         setDigestLength(EvConstants.SHA256_LENGTH);
         setLogFormat(2);
-        /**  Event data. */
-        int eventDigestLength = 0;
+        // Event data.
+        // int eventDigestLength = 0;
         String hashName = "";
         byte[] event;
         byte[] rawIndex = new byte[UefiConstants.SIZE_4];
