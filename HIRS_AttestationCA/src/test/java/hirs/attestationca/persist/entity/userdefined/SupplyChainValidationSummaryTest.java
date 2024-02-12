@@ -17,12 +17,14 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
+import org.springframework.test.context.junit4.SpringRunner;
 
 import java.util.*;
 
@@ -34,25 +36,27 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
  * Tests the functionality in SupplyChainValidationSummary, as well as the persistence of
  * SupplyChainValidationSummary and SupplyChainValidation.
  */
-@ActiveProfiles("test")
-@SpringBootTest
+//@ActiveProfiles("test")
+//@SpringBootTest(Classes = PersistenceJPAConfig.class)
 //@ContextConfiguration
-@ContextConfiguration(classes = SpringPersistenceTest.class)
+//@ContextConfiguration(classes = SpringPersistenceTest.class)
 //@EnableJpaRepositories(basePackages = "hirs.attestationca.persist.entity.manager")
 //@ExtendWith(SpringExtension.class)
+//@ExtendWith(SpringExtension.class)
+//@DataJpaTest
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 public class SupplyChainValidationSummaryTest {
 //public class SupplyChainValidationSummaryTest extends SpringPersistenceTest {
     private Device device;
     private List<ArchivableEntity> certificates;
-//    @Mock
-    @Autowired
+    @Mock
+//    @Autowired
     private CertificateRepository certificateRepository;
-//    @Mock
-    @Autowired
+    @Mock
+//    @Autowired
     private DeviceRepository deviceRepository;
-//    @Mock
-    @Autowired
+    @Mock
+//    @Autowired
     private SupplyChainValidationSummaryRepository supplyChainValidationSummaryRepository;
 
     /**
@@ -65,7 +69,7 @@ public class SupplyChainValidationSummaryTest {
     public void setup() throws Exception {
 
         //DOES THIS NEED TO BE BEFORE EACH ??
-//        MockitoAnnotations.initMocks(this);
+        MockitoAnnotations.initMocks(this);
 
         certificates = CertificateTest.getAllTestCertificates();
 
@@ -75,12 +79,6 @@ public class SupplyChainValidationSummaryTest {
 
 //        device = DeviceTest.getTestDevice("TestDevice");
         device = AbstractUserdefinedEntityTest.getTestDevice("TestDevice");
-
-        System.out.println("/nXXXX beforeall: device: " + device);
-        System.out.println("XXXX beforeall: device.getName: " + device.getName());
-        System.out.println("XXXX beforeall: device.getDeviceInfo: " + device.getDeviceInfo());
-        System.out.println("/n");
-
         deviceRepository.save(device);
     }
 
@@ -125,89 +123,211 @@ public class SupplyChainValidationSummaryTest {
                 new SupplyChainValidationSummary(null, Collections.emptyList()));
     }
 
+    /**
+     * Test that a summary can't be created with a null validations list.
+     */
+    @Test
+    public void testNullValidationList() {
+        assertThrows(IllegalArgumentException.class, () ->
+                new SupplyChainValidationSummary(device, null));
+    }
+
+    /**
+     * Test that summaries with one and two component validations, which both represent successful
+     * validations, have getters that return the expected information.
+     */
+    @Test
+    public void testSuccessfulSummary() throws InterruptedException {
+        SupplyChainValidationSummary oneValidation = getTestSummary(
+                1,
+                0,
+                certificates
+        );
+
+        //assertEquals(device, oneValidation.getDevice());
+        assertEquals(device.getDeviceInfo(), oneValidation.getDevice().getDeviceInfo());
+        assertEquals(1, oneValidation.getValidations().size());
+        assertEquals(AppraisalStatus.Status.PASS, oneValidation.getOverallValidationResult());
+        assertNotNull(oneValidation.getCreateTime());
+
+        SupplyChainValidationSummary twoValidations = getTestSummary(
+                2,
+                0,
+                certificates
+        );
+
+        //assertEquals(device, twoValidations.getDevice());
+        assertEquals(device.getDeviceInfo(), twoValidations.getDevice().getDeviceInfo());
+        assertEquals(2, twoValidations.getValidations().size());
+        assertEquals(twoValidations.getOverallValidationResult(), AppraisalStatus.Status.PASS);
+        assertNotNull(twoValidations.getCreateTime());
+    }
+
+    /**
+     * Test that summaries with one and two component validations, of which one represents an
+     * unsuccessful validations, have getters that return the expected information.
+     */
+    @Test
+    public void testUnsuccessfulSummary() throws InterruptedException {
+        SupplyChainValidationSummary oneValidation = getTestSummary(
+                1,
+                1,
+                certificates
+        );
+
+        //assertEquals(device, oneValidation.getDevice());
+        assertEquals(device.getDeviceInfo(), oneValidation.getDevice().getDeviceInfo());
+        assertEquals(1, oneValidation.getValidations().size());
+        assertEquals(AppraisalStatus.Status.FAIL, oneValidation.getOverallValidationResult());
+        assertNotNull(oneValidation.getCreateTime());
+
+        SupplyChainValidationSummary twoValidations = getTestSummary(
+                2,
+                1,
+                certificates
+        );
+
+        //assertEquals(device, twoValidations.getDevice());
+        assertEquals(device.getDeviceInfo(), twoValidations.getDevice().getDeviceInfo());
+        assertEquals(2, twoValidations.getValidations().size());
+        assertEquals(AppraisalStatus.Status.FAIL, twoValidations.getOverallValidationResult());
+        assertNotNull(twoValidations.getCreateTime());
+
+        SupplyChainValidationSummary twoBadValidations = getTestSummary(
+                2,
+                2,
+                certificates
+        );
+
+        //assertEquals(device, twoBadValidations.getDevice());
+        assertEquals(device.getDeviceInfo(), twoBadValidations.getDevice().getDeviceInfo());
+        assertEquals(2, twoBadValidations.getValidations().size());
+        assertEquals(AppraisalStatus.Status.FAIL, twoBadValidations.getOverallValidationResult());
+        assertNotNull(twoBadValidations.getCreateTime());
+    }
+
+    /**
+     * Tests that a SupplyChainValidationSummary can be persisted.
+     */
+    @Test
+    public void testSave() throws InterruptedException {
+//        DBManager<SupplyChainValidationSummary> supplyMan = new DBManager<>(
+//                SupplyChainValidationSummary.class, sessionFactory
+//        );
+
+        SupplyChainValidationSummary summary = getTestSummary(
+                2,
+                1,
+                certificates
+        );
+        SupplyChainValidationSummary savedSummary = supplyChainValidationSummaryRepository.save(summary);
+//        SupplyChainValidationSummary savedSummary = supplyMan.save(summary);
+
+        System.out.println("XXXX testSave: summary.getDevice.getID: " + summary.getDevice().getId());
+        System.out.println("XXXX testSave: savedSummary.getDevice.getID: " + savedSummary.getDevice().getId());
+
+        assertEquals(summary, savedSummary);
+    }
+
 //    /**
-//     * Test that a summary can't be created with a null validations list.
+//     * Tests that an empty SupplyChainValidationSummary can be persisted and retrieved.
 //     */
 //    @Test
-//    public void testNullValidationList() {
-//        assertThrows(IllegalArgumentException.class, () ->
-//                new SupplyChainValidationSummary(device, null));
+//    public void testSaveAndGetEmpty() {
+//        DBManager<SupplyChainValidationSummary> supplyMan = new DBManager<>(
+//                SupplyChainValidationSummary.class, sessionFactory
+//        );
+//
+//        SupplyChainValidationSummary emptySummary = getTestSummary(
+//                0,
+//                0,
+//                Collections.emptyList()
+//        );
+//        SupplyChainValidationSummary savedEmptySummary = supplyMan.save(emptySummary);
+//
+//        SupplyChainValidationSummary retrievedEmptySummary =
+//                supplyMan.get(savedEmptySummary.getId());
+//        Assert.assertEquals(retrievedEmptySummary, emptySummary);
+//        Assert.assertEquals(retrievedEmptySummary.getValidations().size(), 0);
 //    }
 //
 //    /**
-//     * Test that summaries with one and two component validations, which both represent successful
-//     * validations, have getters that return the expected information.
+//     * Tests that a SupplyChainValidationSummary with a single validation can be persisted
+//     * and retrieved.
 //     */
 //    @Test
-//    public void testSuccessfulSummary() throws InterruptedException {
-//        SupplyChainValidationSummary oneValidation = getTestSummary(
+//    public void testSaveAndGetSmall() {
+//        DBManager<SupplyChainValidationSummary> supplyMan = new DBManager<>(
+//                SupplyChainValidationSummary.class, sessionFactory
+//        );
+//
+//        List<ArchivableEntity> singleCert = certificates.subList(0, 1);
+//
+//        SupplyChainValidationSummary smallSummary = getTestSummary(
 //                1,
 //                0,
-//                certificates
+//                singleCert
+//        );
+//        SupplyChainValidationSummary savedSmallSummary = supplyMan.save(smallSummary);
+//
+//        SupplyChainValidationSummary retrievedSmallSummary =
+//                supplyMan.get(savedSmallSummary.getId());
+//        Assert.assertEquals(retrievedSmallSummary, smallSummary);
+//        Assert.assertEquals(
+//                new ArrayList<>(retrievedSmallSummary.getValidations())
+//                        .get(0).getCertificatesUsed(),
+//                singleCert
 //        );
 //
-////        assertEquals(oneValidation.getDevice(), device);
-//        assertEquals(oneValidation.getValidations().size(), 1);
-//        assertEquals(oneValidation.getOverallValidationResult(),
-//                AppraisalStatus.Status.PASS);
-//        assertNotNull(oneValidation.getCreateTime());
-//
-//        SupplyChainValidationSummary twoValidations = getTestSummary(
-//                2,
-//                0,
-//                certificates
-//        );
-//
-////        assertEquals(twoValidations.getDevice(), device);
-//        assertEquals(2, twoValidations.getValidations().size());
-//        assertEquals(twoValidations.getOverallValidationResult(),
-//                AppraisalStatus.Status.PASS);
-//        assertNotNull(twoValidations.getCreateTime());
 //    }
 //
 //    /**
-//     * Test that summaries with one and two component validations, of which one represents an
-//     * unsuccessful validations, have getters that return the expected information.
+//     * Tests that a SupplyChainValidationSummary can be retrieved and that its fields are properly
+//     * restored.
 //     */
 //    @Test
-//    public void testUnsuccessfulSummary() throws InterruptedException {
-//        SupplyChainValidationSummary oneValidation = getTestSummary(
-//                1,
-//                1,
-//                certificates
+//    public void testGet() {
+//        DBManager<SupplyChainValidationSummary> supplyMan = new DBManager<>(
+//                SupplyChainValidationSummary.class, sessionFactory
 //        );
 //
-////        assertEquals(oneValidation.getDevice(), device);
-//        assertEquals(oneValidation.getValidations().size(), 1);
-//        assertEquals(oneValidation.getOverallValidationResult(),
-//                AppraisalStatus.Status.FAIL);
-//        assertNotNull(oneValidation.getCreateTime());
-//
-//        SupplyChainValidationSummary twoValidations = getTestSummary(
+//        SupplyChainValidationSummary summary = getTestSummary(
 //                2,
 //                1,
 //                certificates
 //        );
 //
-////        assertEquals(twoValidations.getDevice(), device);
-//        assertEquals(twoValidations.getValidations().size(), 2);
-//        assertEquals(twoValidations.getOverallValidationResult(),
-//                AppraisalStatus.Status.FAIL);
-//        assertNotNull(twoValidations.getCreateTime());
+//        SupplyChainValidationSummary savedSummary = supplyMan.save(summary);
+//        Assert.assertEquals(savedSummary, summary);
 //
-//        SupplyChainValidationSummary twoBadValidations = getTestSummary(
-//                2,
-//                2,
+//        SupplyChainValidationSummary retrievedSummary = supplyMan.get(savedSummary.getId());
+//        Assert.assertNotNull(retrievedSummary);
+//        Assert.assertEquals(
+//                retrievedSummary.getDevice(),
+//                summary.getDevice()
+//        );
+//        Assert.assertEquals(retrievedSummary.getCreateTime(), summary.getCreateTime());
+//        Assert.assertEquals(
+//                retrievedSummary.getOverallValidationResult(),
+//                summary.getOverallValidationResult()
+//        );
+//        Assert.assertEquals(retrievedSummary.getValidations(), summary.getValidations());
+//
+//        SupplyChainValidation failedValidation = null;
+//        for (SupplyChainValidation validation : retrievedSummary.getValidations()) {
+//            if (validation.getResult() != AppraisalStatus.Status.PASS) {
+//                failedValidation = validation;
+//                break;
+//            }
+//        }
+//
+//        Assert.assertNotNull(failedValidation);
+//        Assert.assertEquals(
+//                failedValidation.getCertificatesUsed(),
 //                certificates
 //        );
 //
-////        assertEquals(twoBadValidations.getDevice(), device);
-//        assertEquals(twoBadValidations.getValidations().size(), 2);
-//        assertEquals(twoBadValidations.getOverallValidationResult(),
-//                AppraisalStatus.Status.FAIL);
-//        assertNotNull(twoBadValidations.getCreateTime());
 //    }
-//
 
     /**
      *
