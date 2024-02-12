@@ -9,14 +9,20 @@ import hirs.attestationca.persist.entity.manager.SupplyChainValidationSummaryRep
 import hirs.attestationca.persist.entity.userdefined.report.DeviceInfoReport;
 import hirs.attestationca.persist.entity.userdefined.report.DeviceInfoReportTest;
 import hirs.attestationca.persist.enums.AppraisalStatus;
+//import hirs.attestationca.portal.PersistenceJPAConfig;
 
 import hirs.attestationca.persist.enums.HealthStatus;
 import org.junit.jupiter.api.*;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 import org.springframework.test.annotation.DirtiesContext;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import java.util.*;
 
@@ -28,15 +34,25 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
  * Tests the functionality in SupplyChainValidationSummary, as well as the persistence of
  * SupplyChainValidationSummary and SupplyChainValidation.
  */
+@ActiveProfiles("test")
+@SpringBootTest
+//@ContextConfiguration
+@ContextConfiguration(classes = SpringPersistenceTest.class)
+//@EnableJpaRepositories(basePackages = "hirs.attestationca.persist.entity.manager")
+//@ExtendWith(SpringExtension.class)
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
-public class SupplyChainValidationSummaryTest extends SpringPersistenceTest {
+public class SupplyChainValidationSummaryTest {
+//public class SupplyChainValidationSummaryTest extends SpringPersistenceTest {
     private Device device;
     private List<ArchivableEntity> certificates;
-    @Mock
+//    @Mock
+    @Autowired
     private CertificateRepository certificateRepository;
-    @Mock
+//    @Mock
+    @Autowired
     private DeviceRepository deviceRepository;
-    @Mock
+//    @Mock
+    @Autowired
     private SupplyChainValidationSummaryRepository supplyChainValidationSummaryRepository;
 
     /**
@@ -49,7 +65,7 @@ public class SupplyChainValidationSummaryTest extends SpringPersistenceTest {
     public void setup() throws Exception {
 
         //DOES THIS NEED TO BE BEFORE EACH ??
-        MockitoAnnotations.initMocks(this);
+//        MockitoAnnotations.initMocks(this);
 
         certificates = CertificateTest.getAllTestCertificates();
 
@@ -60,8 +76,10 @@ public class SupplyChainValidationSummaryTest extends SpringPersistenceTest {
 //        device = DeviceTest.getTestDevice("TestDevice");
         device = AbstractUserdefinedEntityTest.getTestDevice("TestDevice");
 
-        System.out.println("XXXX device created in beforeall: " + device);
-        System.out.println("XXXX device info created in beforeall: " + device.getDeviceInfo());
+        System.out.println("/nXXXX beforeall: device: " + device);
+        System.out.println("XXXX beforeall: device.getName: " + device.getName());
+        System.out.println("XXXX beforeall: device.getDeviceInfo: " + device.getDeviceInfo());
+        System.out.println("/n");
 
         deviceRepository.save(device);
     }
@@ -91,28 +109,22 @@ public class SupplyChainValidationSummaryTest extends SpringPersistenceTest {
                 certificates
         );
 
-
-//        System.out.println("device created in testEmptySummary(): " + emptySummary.getDevice().getId());
-//        System.out.println("device info created in testEmptySummary(): " + emptySummary.getDevice().getDeviceInfo());
-
-//        assertEquals(device, emptySummary.getDevice());
-
+        //assertEquals(device, emptySummary.getDevice());
         assertEquals(device.getDeviceInfo(), emptySummary.getDevice().getDeviceInfo());
-
         assertEquals(Collections.EMPTY_SET, emptySummary.getValidations());
         assertEquals(AppraisalStatus.Status.PASS, emptySummary.getOverallValidationResult());
         assertNotNull(emptySummary.getCreateTime());
     }
-//
-//    /**
-//     * Test that a summary can't be created with a null validationIdentifier.
-//     */
-//    @Test
-//    public void testNullValidationIdentifier() {
-//        assertThrows(IllegalArgumentException.class, () ->
-//                new SupplyChainValidationSummary(null, Collections.emptyList()));
-//    }
-//
+
+    /**
+     * Test that a summary can't be created with a null validationIdentifier.
+     */
+    @Test
+    public void testNullValidationIdentifier() {
+        assertThrows(IllegalArgumentException.class, () ->
+                new SupplyChainValidationSummary(null, Collections.emptyList()));
+    }
+
 //    /**
 //     * Test that a summary can't be created with a null validations list.
 //     */
