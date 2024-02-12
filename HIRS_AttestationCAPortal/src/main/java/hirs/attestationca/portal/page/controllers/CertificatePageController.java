@@ -4,16 +4,9 @@ import hirs.attestationca.persist.CriteriaModifier;
 import hirs.attestationca.persist.DBManagerException;
 import hirs.attestationca.persist.DBServiceException;
 import hirs.attestationca.persist.FilteredRecordsList;
-import hirs.attestationca.persist.entity.manager.CACredentialRepository;
-import hirs.attestationca.persist.entity.manager.CertificateRepository;
-import hirs.attestationca.persist.entity.manager.EndorsementCredentialRepository;
-import hirs.attestationca.persist.entity.manager.IssuedCertificateRepository;
-import hirs.attestationca.persist.entity.manager.PlatformCertificateRepository;
+import hirs.attestationca.persist.entity.manager.*;
 import hirs.attestationca.persist.entity.userdefined.Certificate;
-import hirs.attestationca.persist.entity.userdefined.certificate.CertificateAuthorityCredential;
-import hirs.attestationca.persist.entity.userdefined.certificate.EndorsementCredential;
-import hirs.attestationca.persist.entity.userdefined.certificate.IssuedAttestationCertificate;
-import hirs.attestationca.persist.entity.userdefined.certificate.PlatformCredential;
+import hirs.attestationca.persist.entity.userdefined.certificate.*;
 import hirs.attestationca.persist.util.CredentialHelper;
 import hirs.attestationca.portal.datatables.DataTableInput;
 import hirs.attestationca.portal.datatables.DataTableResponse;
@@ -86,9 +79,11 @@ public class CertificatePageController extends PageController<NoPageParams> {
     private final EndorsementCredentialRepository endorsementCredentialRepository;
     private final IssuedCertificateRepository issuedCertificateRepository;
     private final CACredentialRepository caCredentialRepository;
+    private final IDevIDCertificateRepository iDevIDCertificateRepository;
 
     private static final String TRUSTCHAIN = "trust-chain";
     private static final String PLATFORMCREDENTIAL = "platform-credentials";
+    private static final String IDEVIDCERTIFICATE = "idevid-certificates";
     private static final String ENDORSEMENTCREDENTIAL = "endorsement-key-credentials";
     private static final String ISSUEDCERTIFICATES = "issued-certificates";
 
@@ -113,6 +108,7 @@ public class CertificatePageController extends PageController<NoPageParams> {
                                      final EndorsementCredentialRepository endorsementCredentialRepository,
                                      final IssuedCertificateRepository issuedCertificateRepository,
                                      final CACredentialRepository caCredentialRepository,
+                                     final IDevIDCertificateRepository iDevIDCertificateRepository,
             final X509Certificate acaCertificate) {
         super(Page.TRUST_CHAIN);
         this.certificateRepository = certificateRepository;
@@ -120,6 +116,7 @@ public class CertificatePageController extends PageController<NoPageParams> {
         this.endorsementCredentialRepository = endorsementCredentialRepository;
         this.issuedCertificateRepository = issuedCertificateRepository;
         this.caCredentialRepository = caCredentialRepository;
+        this.iDevIDCertificateRepository = iDevIDCertificateRepository;
 
         try {
             certificateAuthorityCredential
@@ -164,6 +161,9 @@ public class CertificatePageController extends PageController<NoPageParams> {
         switch (certificateType) {
             case PLATFORMCREDENTIAL:
                 mav = getBaseModelAndView(Page.PLATFORM_CREDENTIALS);
+                break;
+            case IDEVIDCERTIFICATE:
+                mav = getBaseModelAndView(Page.IDEVID_CERTIFICATES);
                 break;
             case ENDORSEMENTCREDENTIAL:
                 mav = getBaseModelAndView(Page.ENDORSEMENT_KEY_CREDENTIALS);
@@ -308,6 +308,23 @@ public class CertificatePageController extends PageController<NoPageParams> {
             }
 
             records.setRecordsFiltered(issuedCertificateRepository.findByArchiveFlag(false).size());
+
+            log.debug("Returning list of size: " + records.size());
+            return new DataTableResponse<>(records, input);
+        }
+        else if (certificateType.equals(IDEVIDCERTIFICATE)) {
+            FilteredRecordsList<IDevIDCertificate> records = new FilteredRecordsList<IDevIDCertificate>();
+            org.springframework.data.domain.Page<IDevIDCertificate> pagedResult =
+                    this.iDevIDCertificateRepository.findByArchiveFlag(false, paging);
+
+            if (pagedResult.hasContent()) {
+                records.addAll(pagedResult.getContent());
+                records.setRecordsTotal(pagedResult.getContent().size());
+            } else {
+                records.setRecordsTotal(input.getLength());
+            }
+
+            records.setRecordsFiltered(iDevIDCertificateRepository.findByArchiveFlag(false).size());
 
             log.debug("Returning list of size: " + records.size());
             return new DataTableResponse<>(records, input);
@@ -669,6 +686,7 @@ public class CertificatePageController extends PageController<NoPageParams> {
             case PLATFORMCREDENTIAL -> Page.PLATFORM_CREDENTIALS;
             case ENDORSEMENTCREDENTIAL -> Page.ENDORSEMENT_KEY_CREDENTIALS;
             case ISSUEDCERTIFICATES -> Page.ISSUED_CERTIFICATES;
+            case IDEVIDCERTIFICATE ->  Page.IDEVID_CERTIFICATES;
             default -> Page.TRUST_CHAIN;
         };
     }
@@ -687,6 +705,8 @@ public class CertificatePageController extends PageController<NoPageParams> {
                 return EndorsementCredential.class;
             case ISSUEDCERTIFICATES:
                 return IssuedAttestationCertificate.class;
+            case IDEVIDCERTIFICATE:
+                return IDevIDCertificate.class;
             case TRUSTCHAIN:
                 return CertificateAuthorityCredential.class;
             default:
@@ -783,6 +803,8 @@ public class CertificatePageController extends PageController<NoPageParams> {
                     return new PlatformCredential(fileBytes);
                 case ENDORSEMENTCREDENTIAL:
                     return new EndorsementCredential(fileBytes);
+                case IDEVIDCERTIFICATE:
+                    return new IDevIDCertificate(fileBytes);
                 case TRUSTCHAIN:
                     if (CredentialHelper.isMultiPEM(new String(fileBytes, StandardCharsets.UTF_8))) {
                         try (ByteArrayInputStream certInputStream = new ByteArrayInputStream(fileBytes)) {

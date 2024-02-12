@@ -111,6 +111,10 @@ function certificateDetailsLink(type, id, sameType){
                 icon += "/ic_vpn_key_black_24dp.png";
                 title = "View Endorsement Certificate Details";
                 break;
+            case "idevid":
+                icon += "/ic_vpn_key_black_24dp.png";
+                title = "View IDevID Certificate Details";
+                break;
         }
     }
     var html = '<a href=' + href + '>'

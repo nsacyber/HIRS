@@ -3,12 +3,9 @@ package hirs.attestationca.portal.page.utils;
 import hirs.attestationca.persist.entity.manager.CACredentialRepository;
 import hirs.attestationca.persist.entity.manager.CertificateRepository;
 import hirs.attestationca.persist.entity.manager.ComponentResultRepository;
+import hirs.attestationca.persist.entity.manager.IDevIDCertificateRepository;
 import hirs.attestationca.persist.entity.userdefined.Certificate;
-import hirs.attestationca.persist.entity.userdefined.certificate.CertificateAuthorityCredential;
-import hirs.attestationca.persist.entity.userdefined.certificate.ComponentResult;
-import hirs.attestationca.persist.entity.userdefined.certificate.EndorsementCredential;
-import hirs.attestationca.persist.entity.userdefined.certificate.IssuedAttestationCertificate;
-import hirs.attestationca.persist.entity.userdefined.certificate.PlatformCredential;
+import hirs.attestationca.persist.entity.userdefined.certificate.*;
 import hirs.attestationca.persist.entity.userdefined.certificate.attributes.ComponentIdentifier;
 import hirs.attestationca.persist.entity.userdefined.certificate.attributes.PlatformConfiguration;
 import hirs.utils.BouncyCastleUtils;
@@ -530,6 +527,152 @@ public final class CertificateStringMapBuilder {
                     + "with ID: " + uuid;
             log.error(notFoundMessage);
         }
+        return data;
+    }
+
+    /**
+     * Returns the IDevID Certificate information.
+     *
+     * @param uuid ID for the certificate.
+     * @param iDevIDCertificateRepository the certificate manager for retrieving certs.
+     * @return a hash map with the endorsement certificate information.
+     */
+    public static HashMap<String, String> getIdevidInformation(final UUID uuid,
+                                                               final CertificateRepository certificateRepository,
+                                                               final IDevIDCertificateRepository iDevIDCertificateRepository) {
+        if (!iDevIDCertificateRepository.existsById(uuid)) {
+            return new HashMap<>();
+        }
+        IDevIDCertificate certificate = iDevIDCertificateRepository.getReferenceById(uuid);
+
+        String notFoundMessage = "Unable to find IDevID "
+                + "Certificate with ID: " + uuid;
+
+        return getIdevidInfoHelper(certificateRepository, iDevIDCertificateRepository, certificate, notFoundMessage);
+    }
+
+    private static HashMap<String, String> getIdevidInfoHelper (
+            final CertificateRepository certificateRepository,
+            final IDevIDCertificateRepository iDevIDCertificateRepository,
+            final IDevIDCertificate certificate, final String notFoundMessage) {
+        HashMap<String, String> data = new HashMap<>();
+
+        if (certificate != null) {
+            data.putAll(getGeneralDevidCertificateInfo(certificate, certificateRepository, iDevIDCertificateRepository));
+
+            // TODO: Populate below with DevID-specific fields
+            /*data.put("subjectKeyIdentifier",
+                    Arrays.toString(certificate.getSubjectKeyIdentifier()));
+            //x509 credential version
+            data.put("x509Version", Integer.toString(certificate
+                    .getX509CredentialVersion()));
+            data.put("credentialType", certificate.getCredentialType());*/
+        } else {
+            log.error(notFoundMessage);
+        }
+        return data;
+    }
+
+    /**
+     * Returns the general information.
+     *
+     * @param certificate certificate to get the general information.
+     * @param certificateRepository the certificate repository for retrieving certs.
+     * @return a hash map with the general certificate information.
+     */
+    public static HashMap<String, String> getGeneralDevidCertificateInfo (
+            final Certificate certificate, final CertificateRepository certificateRepository,
+            final IDevIDCertificateRepository iDevIDCertificateRepository) {
+        HashMap<String, String> data = new HashMap<>();
+
+        if (certificate != null) {
+            data.put("issuer", certificate.getIssuer());
+            //Serial number in hex value
+            data.put("serialNumber", Hex.toHexString(certificate.getSerialNumber().toByteArray()));
+            if (!certificate.getAuthoritySerialNumber().equals(BigInteger.ZERO)) {
+                data.put("authSerialNumber", Hex.toHexString(certificate
+                        .getAuthoritySerialNumber().toByteArray()));
+            }
+            if (certificate.getId() != null) {
+                data.put("certificateId", certificate.getId().toString());
+            }
+            data.put("authInfoAccess", certificate.getAuthorityInfoAccess());
+            data.put("beginValidity", certificate.getBeginValidity().toString());
+            data.put("endValidity", certificate.getEndValidity().toString());
+            data.put("signature", Arrays.toString(certificate.getSignature()));
+            data.put("signatureSize", Integer.toString(certificate.getSignature().length
+                    * Certificate.MIN_ATTR_CERT_LENGTH));
+
+            if (certificate.getSubject() != null) {
+                data.put("subject", certificate.getSubject());
+                if (certificate.getIssuer() != null) {
+                    data.put("isSelfSigned",
+                            String.valueOf(certificate.getIssuer().equals(certificate.getSubject())));
+                } else {
+                    data.put("isSelfSigned", "false");
+                }
+            } else {
+                data.put("isSelfSigned", "false");
+            }
+
+            data.put("authKeyId", certificate.getAuthorityKeyIdentifier());
+            data.put("crlPoints", certificate.getCrlPoints());
+            data.put("signatureAlgorithm", certificate.getSignatureAlgorithm());
+            if (certificate.getEncodedPublicKey() != null) {
+                data.put("encodedPublicKey",
+                        Arrays.toString(certificate.getEncodedPublicKey()));
+                data.put("publicKeyAlgorithm", certificate.getPublicKeyAlgorithm());
+            }
+
+            if (certificate.getPublicKeyModulusHexValue() != null) {
+                data.put("publicKeyValue", certificate.getPublicKeyModulusHexValue());
+                data.put("publicKeySize", String.valueOf(certificate.getPublicKeySize()));
+            }
+
+            if (certificate.getKeyUsage() != null) {
+                data.put("keyUsage", certificate.getKeyUsage());
+            }
+
+            if (certificate.getExtendedKeyUsage() != null
+                    && !certificate.getExtendedKeyUsage().isEmpty()) {
+                data.put("extendedKeyUsage", certificate.getExtendedKeyUsage());
+            }
+
+            //Get issuer ID if not self signed
+            // TODO: Possibly delete below
+            /*if (data.get("isSelfSigned").equals("false")) {
+                //Get the missing certificate chain for not self sign
+                Certificate missingCert = containsAllChain(certificate, certificateRepository, iDevIDCertificateRepository);
+                String issuerResult;
+
+                if (missingCert != null) {
+                    data.put("missingChainIssuer", String.format("Missing %s from the chain.",
+                            missingCert.getIssuer()));
+                }
+                List<Certificate> certificates = certificateRepository.findBySubjectSorted(
+                        certificate.getIssuerSorted(), "CertificateAuthorityCredential");
+                //Find all certificates that could be the issuer certificate based on subject name
+                for (Certificate issuerCert : certificates) {
+                    try {
+                        //Find the certificate that actually signed this cert
+                        issuerResult = certificate.isIssuer(issuerCert);
+                        if (issuerResult.isEmpty()) {
+                            data.put("issuerID", issuerCert.getId().toString());
+                            break;
+                        } else {
+                            data.put("issuerID", issuerCert.getId().toString());
+                            issuerResult = String.format("%s: %s", issuerResult,
+                                    issuerCert.getSubject());
+                            data.put("missingChainIssuer", issuerResult);
+                            break;
+                        }
+                    } catch (IOException e) {
+                        log.error(e);
+                    }
+                }
+            }*/
+        }
+
         return data;
     }
 }

@@ -37,6 +37,12 @@
                     <img src="${icons}/ic_file_download_black_24dp.png" title="Download Certificate">
                 </a>
             </c:when>
+            <c:when test="${param.type=='idevid'}">
+                IDevID Certificate
+                <a href="${portal}/certificate-request/idevid-certificates/download?id=${param.id}">
+                    <img src="${icons}/ic_file_download_black_24dp.png" title="Download Certificate">
+                </a>
+            </c:when>
             <c:otherwise>
                 Unknown Certificate
             </c:otherwise>

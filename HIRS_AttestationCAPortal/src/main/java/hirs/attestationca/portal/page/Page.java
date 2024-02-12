@@ -28,6 +28,11 @@ public enum Page {
     PLATFORM_CREDENTIALS("Platform Certificates", "ic_important_devices",
             null, "certificate-request/"),
     /**
+     * Page to display and manage IDevID certificates.
+     */
+    IDEVID_CERTIFICATES("IDevID Certificates", "ic_important_devices",
+            null, "certificate-request/"),
+    /**
      * Page to display issued certificates.
      */
     ISSUED_CERTIFICATES("Issued Certificates", "ic_library_books",
