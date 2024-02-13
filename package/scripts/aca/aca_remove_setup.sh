@@ -17,7 +17,9 @@ fi
 
 source $SCRIPT_DIR/../db/mysql_util.sh
 
-# Make sure myswl root password is available and set $DB_ADIM_PWD before continuing...
+# Make sure mysql root password is available and set $DB_ADIM_PWD before continuing...
+check_mariadb_install
+
 check_mysql_root
 
 # remove the hrs-db and hirs_db user
@@ -27,8 +29,12 @@ popd  &>/dev/null
 
 # remove pki files and config files if not installed by rpm
 echo "Removing certificates and config files..."
-if [ ! -d /opt/hirs/aca ]; then 
-    rm -rf /etc/hirs
+
+if [ -d "/etc/hirs" ]; then
+   rm -rf /etc/hirs >/dev/null 2>&1
+fi
+if [ -d "/opt/hirs" ]; then
+   rm -rf /opt/hirs >/dev/null 2>&1
 fi
 
 # Remove crontab and current ACA process

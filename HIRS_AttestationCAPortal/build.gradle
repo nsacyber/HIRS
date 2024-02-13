@@ -87,6 +87,13 @@ test {
     useJUnitPlatform()
 }
 
+build  {
+  doFirst{
+        def verFile = new File(projectDir, "build/VERSION")
+        verFile.write("${jarVersion}")
+        }
+ }
+    
 ospackage {
     packageName = 'HIRS_AttestationCA'
     os = LINUX
@@ -108,6 +115,7 @@ ospackage {
     // copy springboot property file
     into ('/etc/hirs/aca/') {
          from '../HIRS_AttestationCAPortal/src/main/resources/application.properties'
+         from 'build/VERSION'
     }
     // copy setup scripts to /opt/hirs/aca
     into ('/opt/hirs/aca/scripts/') {
@@ -117,7 +125,7 @@ ospackage {
     into ('/opt/hirs/aca/') {
          from '../HIRS_AttestationCAPortal/build/libs/HIRS_AttestationCAPortal.war'
          user 'root'
-         fileMode = 0755
+         fileMode = 0755 
     }
 
     // Post Install
@@ -128,18 +136,18 @@ ospackage {
     postInstall '/opt/hirs/aca/scripts/aca/aca_bootRun.sh -w &'
     postInstall 'chmod +x /opt/hirs/aca/scripts/aca/*'
     postInstall 'bash /opt/hirs/aca/scripts/aca/check_for_aca.sh'
-    postInstall 'mkdir -p /etc/hirs/aca && touch /etc/hirs/aca/VERSION'
-    postInstall "echo ${jarVersion} > /etc/hirs/aca/VERSION"
+    postInstall 'if [ -f /opt/hirs/aca/VERSION ]; then rm /opt/hirs/aca/VERSION; fi;'
 
     // Uninstall
     preUninstall 'bash /opt/hirs/aca/scripts/aca/aca_remove_setup.sh'
-    postUninstall 'rm -rf /etc/hirs'
 
     buildRpm {
+        dependsOn  ':build'
         arch = X86_64
     }
 
     buildDeb {
+        dependsOn  ':build'
         packageName = 'hirs-attestationca'
         arch = 'amd64'
     }

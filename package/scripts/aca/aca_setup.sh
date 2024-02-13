@@ -2,7 +2,7 @@
 #####################################################################################
 #
 # Script to create ACA setup files and configure the hirs_db database.
-# 
+#
 #
 #####################################################################################
 # Capture location of the script to allow from invocation from any location
@@ -59,7 +59,7 @@ while [[ $# -gt 0 ]]; do
       ;;
     *)
      POSITIONAL_ARGS+=("$1") # save positional arg
-     # shift # past argument
+     # shift # past argumfrom 'build/VERSION'ent
      break
       ;;
   esac
