@@ -2,6 +2,7 @@ package hirs.attestationca.persist;
 
 import org.hibernate.SessionFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 import org.springframework.test.annotation.DirtiesContext;
@@ -13,8 +14,10 @@ import org.springframework.test.context.junit4.AbstractJUnit4SpringContextTests;
  * any tests that need a database connection.
  */
 //@ContextConfiguration(classes = PersistenceConfiguration.class)
-@TestConfiguration
-@EnableJpaRepositories(basePackages = "hirs.attestationca.persist.entity.manager")
+//@ContextConfiguration(classes = PersistenceJPAConfig.class)
+//@TestConfiguration
+@SpringBootApplication
+//@EnableJpaRepositories(basePackages = "hirs.attestationca.persist.entity.manager")
 //@DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_CLASS)
 //public class SpringPersistenceTest extends AbstractJUnit4SpringContextTests {
     public class SpringPersistenceTest {

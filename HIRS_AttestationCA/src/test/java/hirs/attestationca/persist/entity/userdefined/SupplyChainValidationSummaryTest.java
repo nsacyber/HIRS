@@ -17,12 +17,14 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.context.junit4.SpringRunner;
 
@@ -33,17 +35,21 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 /**
- * Tests the functionality in SupplyChainValidationSummary, as well as the persistence of
- * SupplyChainValidationSummary and SupplyChainValidation.
+ * Integration test that tests the functionality in SupplyChainValidationSummary,
+ * as well as the persistence of SupplyChainValidationSummary and SupplyChainValidation.
  */
 //@ActiveProfiles("test")
 //@SpringBootTest(Classes = PersistenceJPAConfig.class)
 //@ContextConfiguration
 //@ContextConfiguration(classes = SpringPersistenceTest.class)
-@EnableJpaRepositories(basePackages = "hirs.attestationca.persist.entity.manager")
+//@EnableJpaRepositories(basePackages = "hirs.attestationca.persist.entity.manager")
 //@ExtendWith(SpringExtension.class)
 //@ExtendWith(SpringExtension.class)
-//@DataJpaTest
+@DataJpaTest
+@AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
+//@TestPropertySource(properties = {
+//        ""
+//})
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 public class SupplyChainValidationSummaryTest {
 //public class SupplyChainValidationSummaryTest extends SpringPersistenceTest {
