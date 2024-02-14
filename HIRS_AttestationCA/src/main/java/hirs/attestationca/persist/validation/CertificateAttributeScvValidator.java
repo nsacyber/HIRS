@@ -43,14 +43,14 @@ import static hirs.attestationca.persist.enums.AppraisalStatus.Status.PASS;
 @Log4j2
 public class CertificateAttributeScvValidator extends SupplyChainCredentialValidator {
 
-    private static List<ComponentResult> componentResultList = new LinkedList<>();
+    private static Map<ComponentIdentifier, List<ComponentResult>> componentResultMap = new HashMap<>();
 
     /**
      * Getter for the list of components to verify.
      * @return a collection of components
      */
-    public static List<ComponentResult> getComponentResultList() {
-        return Collections.unmodifiableList(componentResultList);
+    public static Map<ComponentIdentifier, List<ComponentResult>> getComponentResultMap() {
+        return Collections.unmodifiableMap(componentResultMap);
     }
 
     /**
@@ -881,6 +881,7 @@ public class CertificateAttributeScvValidator extends SupplyChainCredentialValid
                                    final ComponentIdentifier pcComponent,
                                    final ComponentInfo potentialMatch) {
         boolean matchesSoFar = true;
+        List<ComponentResult> componentResultList = new LinkedList<>();
 
         matchesSoFar &= isMatchOrEmptyInPlatformCert(
                 potentialMatch.getComponentManufacturer(),
@@ -888,7 +889,7 @@ public class CertificateAttributeScvValidator extends SupplyChainCredentialValid
         );
 
         if (matchesSoFar) {
-            componentResultList.add(new ComponentResult(certificateId, pcComponent.hashCode(),
+            componentResultList.add(new ComponentResult(certificateId,
                     potentialMatch.getComponentSerial(),
                     pcComponent.getComponentSerial().getString()));
         }
@@ -899,7 +900,7 @@ public class CertificateAttributeScvValidator extends SupplyChainCredentialValid
         );
 
         if (matchesSoFar) {
-            componentResultList.add(new ComponentResult(certificateId, pcComponent.hashCode(),
+            componentResultList.add(new ComponentResult(certificateId,
                     potentialMatch.getComponentSerial(),
                     pcComponent.getComponentSerial().getString()));
         }
@@ -910,7 +911,7 @@ public class CertificateAttributeScvValidator extends SupplyChainCredentialValid
         );
 
         if (matchesSoFar) {
-            componentResultList.add(new ComponentResult(certificateId, pcComponent.hashCode(),
+            componentResultList.add(new ComponentResult(certificateId,
                     potentialMatch.getComponentSerial(),
                     pcComponent.getComponentSerial().getString()));
         }
@@ -921,14 +922,15 @@ public class CertificateAttributeScvValidator extends SupplyChainCredentialValid
         );
 
         if (matchesSoFar) {
-            componentResultList.add(new ComponentResult(certificateId, pcComponent.hashCode(),
+            componentResultList.add(new ComponentResult(certificateId,
                     potentialMatch.getComponentSerial(),
                     pcComponent.getComponentSerial().getString()));
         }
 
+        componentResultMap.put(pcComponent, componentResultList);
+
         return matchesSoFar;
     }
-
 
     /**
      * Checks if the fields in the potentialMatch match the fields in the pcComponent,

@@ -12,5 +12,5 @@ import java.util.UUID;
 public interface ComponentResultRepository extends JpaRepository<ComponentResult, UUID> {
 
     @Query(value = "SELECT * FROM ComponentResult where certificateId = ?1", nativeQuery = true)
-    List<ComponentResult> getComponentResultsByCertificate(UUID certificateId);
+    List<ComponentResult> findByCertificateId(UUID certificateId);
 }

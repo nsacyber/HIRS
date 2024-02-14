@@ -93,15 +93,13 @@ public class SupplyChainCredentialValidator  {
             } else if (trustStore.size() == 0) {
                 throw new SupplyChainValidatorException("Truststore is empty");
             }
-        } catch (KeyStoreException e) {
-            log.error("Error accessing trust store: " + e.getMessage());
+        } catch (KeyStoreException ksEx) {
+            log.error("Error accessing trust store: " + ksEx.getMessage());
         }
 
         try {
             Set<X509Certificate> trustedCerts = new HashSet<>();
-
             Enumeration<String> alias = trustStore.aliases();
-
             while (alias.hasMoreElements()) {
                 trustedCerts.add((X509Certificate) trustStore.getCertificate(alias.nextElement()));
             }
@@ -111,8 +109,8 @@ public class SupplyChainCredentialValidator  {
                 log.error("Cert chain could not be validated");
             }
             return certChainValidated;
-        } catch (KeyStoreException e) {
-            throw new SupplyChainValidatorException("Error with the trust store", e);
+        } catch (KeyStoreException ksEx) {
+            throw new SupplyChainValidatorException("Error with the trust store", ksEx);
         }
     }
 
@@ -139,8 +137,8 @@ public class SupplyChainCredentialValidator  {
             } else if (trustStore.size() == 0) {
                 throw new SupplyChainValidatorException("Truststore is empty");
             }
-        } catch (KeyStoreException e) {
-            log.error("Error accessing trust store: " + e.getMessage());
+        } catch (KeyStoreException ksEx) {
+            log.error("Error accessing trust store: " + ksEx.getMessage());
         }
 
         try {
@@ -152,9 +150,9 @@ public class SupplyChainCredentialValidator  {
             }
 
             return validateCertChain(cert, trustedCerts).isEmpty();
-        } catch (KeyStoreException e) {
-            log.error("Error accessing keystore", e);
-            throw new SupplyChainValidatorException("Error with the trust store", e);
+        } catch (KeyStoreException ksEx) {
+            log.error("Error accessing keystore", ksEx);
+            throw new SupplyChainValidatorException("Error with the trust store", ksEx);
         }
     }
 
@@ -498,10 +496,10 @@ public class SupplyChainCredentialValidator  {
             PublicKey key = cert.getPublicKey();
             cert.verify(key);
             return true;
-        } catch (SignatureException | InvalidKeyException e) {
+        } catch (SignatureException | InvalidKeyException ex) {
             return false;
-        } catch (CertificateException | NoSuchAlgorithmException | NoSuchProviderException e) {
-            log.error("Exception occurred while checking if cert is self-signed", e);
+        } catch (CertificateException | NoSuchAlgorithmException | NoSuchProviderException ex) {
+            log.error("Exception occurred while checking if cert is self-signed", ex);
             return false;
         }
     }

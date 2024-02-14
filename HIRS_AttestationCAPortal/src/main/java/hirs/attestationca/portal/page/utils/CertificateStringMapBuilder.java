@@ -372,8 +372,9 @@ public final class CertificateStringMapBuilder {
                 for (ComponentResult componentResult : componentResultRepository.findAll()) {
                     if (componentResult.getCertificateId()
                             .equals(certificate.getId())) {
-                        results.put(componentResult.getComponentHash(),
-                                componentResult.getExpected());
+//                        results.put(componentResult.getComponentHash(),
+//                                componentResult.getExpected());
+                        log.error(componentResult.toString());
                     }
                 }
 

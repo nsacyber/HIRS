@@ -126,10 +126,7 @@ public class ValidationService {
                     pc.setComponentFailures(result.getAdditionalInfo());
                     pc.setComponentFailureMessage(result.getMessage());
                     certificateRepository.save(pc);
-                    for (ComponentResult componentResult
-                            : CertificateAttributeScvValidator.getComponentResultList()) {
-                        componentResultRepository.save(componentResult);
-                    }
+                    log.error(CertificateAttributeScvValidator.getComponentResultMap().size());
                 }
                 return buildValidationRecord(validationType, AppraisalStatus.Status.FAIL,
                         result.getMessage(), pc, Level.WARN);
