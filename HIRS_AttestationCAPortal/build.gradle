@@ -2,7 +2,7 @@ plugins {
     id 'application'
     id 'java'
     id 'war'
-    id 'com.netflix.nebula.ospackage' version '11.4.0'
+    id 'com.netflix.nebula.ospackage' version '11.8.0'
     id 'org.springframework.boot' version '3.0.6'
     id 'io.spring.dependency-management' version '1.1.0'
     id 'checkstyle'
@@ -93,14 +93,14 @@ build  {
         verFile.write("${jarVersion}")
         }
  }
-    
+
 ospackage {
     packageName = 'HIRS_AttestationCA'
     os = LINUX
     arch = NOARCH
     version = "$packVersion"
     release = '1'
-
+    
     user 'root'
     fileMode = 0755
 
@@ -144,11 +144,15 @@ ospackage {
     buildRpm {
         dependsOn  ':build'
         arch = X86_64
+        requires('java-17-openjdk', '17.0', GREATER|EQUAL)
+        requires('mariadb-server' , '10.3' , GREATER | EQUAL)
     }
 
     buildDeb {
         dependsOn  ':build'
         packageName = 'hirs-attestationca'
         arch = 'amd64'
+        requires('openjdk-17-jdk', '17.0', GREATER|EQUAL)
+        requires('mariadb-server' , '10.3' , GREATER|EQUAL)
     }
 }
