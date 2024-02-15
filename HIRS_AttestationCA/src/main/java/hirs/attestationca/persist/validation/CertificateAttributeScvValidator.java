@@ -2,7 +2,6 @@ package hirs.attestationca.persist.validation;
 
 import hirs.attestationca.persist.entity.ArchivableEntity;
 import hirs.attestationca.persist.entity.userdefined.SupplyChainValidation;
-import hirs.attestationca.persist.entity.userdefined.certificate.ComponentResult;
 import hirs.attestationca.persist.entity.userdefined.certificate.PlatformCredential;
 import hirs.attestationca.persist.entity.userdefined.certificate.attributes.ComponentIdentifier;
 import hirs.attestationca.persist.entity.userdefined.certificate.attributes.V2.ComponentIdentifierV2;
@@ -42,16 +41,6 @@ import static hirs.attestationca.persist.enums.AppraisalStatus.Status.PASS;
 
 @Log4j2
 public class CertificateAttributeScvValidator extends SupplyChainCredentialValidator {
-
-    private static Map<ComponentIdentifier, List<ComponentResult>> componentResultMap = new HashMap<>();
-
-    /**
-     * Getter for the list of components to verify.
-     * @return a collection of components
-     */
-    public static Map<ComponentIdentifier, List<ComponentResult>> getComponentResultMap() {
-        return Collections.unmodifiableMap(componentResultMap);
-    }
 
     /**
      * Checks if the delta credential's attributes are valid.
@@ -881,53 +870,53 @@ public class CertificateAttributeScvValidator extends SupplyChainCredentialValid
                                    final ComponentIdentifier pcComponent,
                                    final ComponentInfo potentialMatch) {
         boolean matchesSoFar = true;
-        List<ComponentResult> componentResultList = new LinkedList<>();
+//        List<ComponentResult> componentResultList = new LinkedList<>();
 
         matchesSoFar &= isMatchOrEmptyInPlatformCert(
                 potentialMatch.getComponentManufacturer(),
                 pcComponent.getComponentManufacturer()
         );
 
-        if (matchesSoFar) {
-            componentResultList.add(new ComponentResult(certificateId,
-                    potentialMatch.getComponentSerial(),
-                    pcComponent.getComponentSerial().getString()));
-        }
+//        if (matchesSoFar) {
+//            componentResultList.add(new ComponentResult(certificateId,
+//                    potentialMatch.getComponentSerial(),
+//                    pcComponent.getComponentSerial().getString()));
+//        }
 
         matchesSoFar &= isMatchOrEmptyInPlatformCert(
                 potentialMatch.getComponentModel(),
                 pcComponent.getComponentModel()
         );
 
-        if (matchesSoFar) {
-            componentResultList.add(new ComponentResult(certificateId,
-                    potentialMatch.getComponentSerial(),
-                    pcComponent.getComponentSerial().getString()));
-        }
+//        if (matchesSoFar) {
+//            componentResultList.add(new ComponentResult(certificateId,
+//                    potentialMatch.getComponentSerial(),
+//                    pcComponent.getComponentSerial().getString()));
+//        }
 
         matchesSoFar &= isMatchOrEmptyInPlatformCert(
                 potentialMatch.getComponentSerial(),
                 pcComponent.getComponentSerial()
         );
 
-        if (matchesSoFar) {
-            componentResultList.add(new ComponentResult(certificateId,
-                    potentialMatch.getComponentSerial(),
-                    pcComponent.getComponentSerial().getString()));
-        }
+//        if (matchesSoFar) {
+//            componentResultList.add(new ComponentResult(certificateId,
+//                    potentialMatch.getComponentSerial(),
+//                    pcComponent.getComponentSerial().getString()));
+//        }
 
         matchesSoFar &= isMatchOrEmptyInPlatformCert(
                 potentialMatch.getComponentRevision(),
                 pcComponent.getComponentRevision()
         );
 
-        if (matchesSoFar) {
-            componentResultList.add(new ComponentResult(certificateId,
-                    potentialMatch.getComponentSerial(),
-                    pcComponent.getComponentSerial().getString()));
-        }
+//        if (matchesSoFar) {
+//            componentResultList.add(new ComponentResult(certificateId,
+//                    potentialMatch.getComponentSerial(),
+//                    pcComponent.getComponentSerial().getString()));
+//        }
 
-        componentResultMap.put(pcComponent, componentResultList);
+//        componentResultMap.put(pcComponent, componentResultList);
 
         return matchesSoFar;
     }

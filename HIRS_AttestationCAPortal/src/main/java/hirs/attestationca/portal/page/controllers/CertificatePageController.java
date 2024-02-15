@@ -4,16 +4,10 @@ import hirs.attestationca.persist.CriteriaModifier;
 import hirs.attestationca.persist.DBManagerException;
 import hirs.attestationca.persist.DBServiceException;
 import hirs.attestationca.persist.FilteredRecordsList;
-import hirs.attestationca.persist.entity.manager.CACredentialRepository;
-import hirs.attestationca.persist.entity.manager.CertificateRepository;
-import hirs.attestationca.persist.entity.manager.EndorsementCredentialRepository;
-import hirs.attestationca.persist.entity.manager.IssuedCertificateRepository;
-import hirs.attestationca.persist.entity.manager.PlatformCertificateRepository;
+import hirs.attestationca.persist.entity.manager.*;
 import hirs.attestationca.persist.entity.userdefined.Certificate;
-import hirs.attestationca.persist.entity.userdefined.certificate.CertificateAuthorityCredential;
-import hirs.attestationca.persist.entity.userdefined.certificate.EndorsementCredential;
-import hirs.attestationca.persist.entity.userdefined.certificate.IssuedAttestationCertificate;
-import hirs.attestationca.persist.entity.userdefined.certificate.PlatformCredential;
+import hirs.attestationca.persist.entity.userdefined.certificate.*;
+import hirs.attestationca.persist.entity.userdefined.certificate.attributes.ComponentIdentifier;
 import hirs.attestationca.persist.util.CredentialHelper;
 import hirs.attestationca.portal.datatables.DataTableInput;
 import hirs.attestationca.portal.datatables.DataTableResponse;
@@ -83,6 +77,7 @@ public class CertificatePageController extends PageController<NoPageParams> {
     private CertificateAuthorityCredential certificateAuthorityCredential;
     private final CertificateRepository certificateRepository;
     private final PlatformCertificateRepository platformCertificateRepository;
+    private final ComponentResultRepository componentResultRepository;
     private final EndorsementCredentialRepository endorsementCredentialRepository;
     private final IssuedCertificateRepository issuedCertificateRepository;
     private final CACredentialRepository caCredentialRepository;
@@ -100,23 +95,26 @@ public class CertificatePageController extends PageController<NoPageParams> {
     /**
      * Constructor providing the Page's display and routing specification.
      *
-     * @param certificateRepository the general certificate manager
-     * @param platformCertificateRepository the platform credential manager
+     * @param certificateRepository           the general certificate manager
+     * @param platformCertificateRepository   the platform credential manager
+     * @param componentResultRepository       the component result repo
      * @param endorsementCredentialRepository the endorsement credential manager
-     * @param issuedCertificateRepository the issued certificate manager
-     * @param caCredentialRepository the ca credential manager
-     * @param acaCertificate the ACA's X509 certificate
+     * @param issuedCertificateRepository     the issued certificate manager
+     * @param caCredentialRepository          the ca credential manager
+     * @param acaCertificate                  the ACA's X509 certificate
      */
     @Autowired
     public CertificatePageController(final CertificateRepository certificateRepository,
                                      final PlatformCertificateRepository platformCertificateRepository,
+                                     final ComponentResultRepository componentResultRepository,
                                      final EndorsementCredentialRepository endorsementCredentialRepository,
                                      final IssuedCertificateRepository issuedCertificateRepository,
                                      final CACredentialRepository caCredentialRepository,
-            final X509Certificate acaCertificate) {
+                                     final X509Certificate acaCertificate) {
         super(Page.TRUST_CHAIN);
         this.certificateRepository = certificateRepository;
         this.platformCertificateRepository = platformCertificateRepository;
+        this.componentResultRepository = componentResultRepository;
         this.endorsementCredentialRepository = endorsementCredentialRepository;
         this.issuedCertificateRepository = issuedCertificateRepository;
         this.caCredentialRepository = caCredentialRepository;
@@ -135,8 +133,8 @@ public class CertificatePageController extends PageController<NoPageParams> {
      * Returns the path for the view and the data model for the page.
      *
      * @param params The object to map url parameters into.
-     * @param model The data model for the request. Can contain data from
-     * redirect.
+     * @param model  The data model for the request. Can contain data from
+     *               redirect.
      * @return the path for the view and data model for the page.
      */
     @Override
@@ -149,9 +147,9 @@ public class CertificatePageController extends PageController<NoPageParams> {
      * Returns the path for the view and the data model for the page.
      *
      * @param certificateType String containing the certificate type
-     * @param params The object to map url parameters into.
-     * @param model The data model for the request. Can contain data from
-     * redirect.
+     * @param params          The object to map url parameters into.
+     * @param model           The data model for the request. Can contain data from
+     *                        redirect.
      * @return the path for the view and data model for the page.
      */
     @RequestMapping("/{certificateType}")
@@ -192,7 +190,7 @@ public class CertificatePageController extends PageController<NoPageParams> {
      * with the records.
      *
      * @param certificateType String containing the certificate type
-     * @param input the DataTables search/query parameters
+     * @param input           the DataTables search/query parameters
      * @return the data table
      */
     @ResponseBody
@@ -320,8 +318,8 @@ public class CertificatePageController extends PageController<NoPageParams> {
      * Upload and processes a credential.
      *
      * @param certificateType String containing the certificate type
-     * @param files the files to process
-     * @param attr the redirection attributes
+     * @param files           the files to process
+     * @param attr            the redirection attributes
      * @return the redirection view
      * @throws URISyntaxException if malformed URI
      */
@@ -357,9 +355,9 @@ public class CertificatePageController extends PageController<NoPageParams> {
      * Archives (soft delete) the credential.
      *
      * @param certificateType String containing the certificate type
-     * @param id the UUID of the cert to delete
-     * @param attr RedirectAttributes used to forward data back to the original
-     * page.
+     * @param id              the UUID of the cert to delete
+     * @param attr            RedirectAttributes used to forward data back to the original
+     *                        page.
      * @return redirect to this page
      * @throws URISyntaxException if malformed URI
      */
@@ -426,9 +424,9 @@ public class CertificatePageController extends PageController<NoPageParams> {
      * for download.
      *
      * @param certificateType String containing the certificate type
-     * @param id the UUID of the cert to download
-     * @param response the response object (needed to update the header with the
-     * file name)
+     * @param id              the UUID of the cert to download
+     * @param response        the response object (needed to update the header with the
+     *                        file name)
      * @throws java.io.IOException when writing to response output stream
      */
     @RequestMapping(value = "/{certificateType}/download", method = RequestMethod.GET)
@@ -475,8 +473,7 @@ public class CertificatePageController extends PageController<NoPageParams> {
      * stream for download.
      *
      * @param response the response object (needed to update the header with the
-     * file name)
-     *
+     *                 file name)
      * @throws java.io.IOException when writing to response output stream
      */
     @ResponseBody
@@ -497,7 +494,7 @@ public class CertificatePageController extends PageController<NoPageParams> {
      * for download in bulk.
      *
      * @param response the response object (needed to update the header with the
-     * file name)
+     *                 file name)
      * @throws java.io.IOException when writing to response output stream
      */
     @RequestMapping(value = "/trust-chain/bulk", method = RequestMethod.GET)
@@ -528,7 +525,7 @@ public class CertificatePageController extends PageController<NoPageParams> {
      * for download in bulk.
      *
      * @param response the response object (needed to update the header with the
-     * file name)
+     *                 file name)
      * @throws java.io.IOException when writing to response output stream
      */
     @RequestMapping(value = "/platform-credentials/bulk", method = RequestMethod.GET)
@@ -560,7 +557,7 @@ public class CertificatePageController extends PageController<NoPageParams> {
      * for download in bulk.
      *
      * @param response the response object (needed to update the header with the
-     * file name)
+     *                 file name)
      * @throws java.io.IOException when writing to response output stream
      */
     @RequestMapping(value = "/issued-certificates/bulk", method = RequestMethod.GET)
@@ -592,7 +589,7 @@ public class CertificatePageController extends PageController<NoPageParams> {
      * for download in bulk.
      *
      * @param response the response object (needed to update the header with the
-     * file name)
+     *                 file name)
      * @throws java.io.IOException when writing to response output stream
      */
     @RequestMapping(value = "/endorsement-key-credentials/bulk", method = RequestMethod.GET)
@@ -619,8 +616,8 @@ public class CertificatePageController extends PageController<NoPageParams> {
     }
 
     private ZipOutputStream bulkDownload(final ZipOutputStream zipOut,
-                              final List<Certificate> certificates,
-                              final String singleFileName) throws IOException {
+                                         final List<Certificate> certificates,
+                                         final String singleFileName) throws IOException {
         String zipFileName;
         // get all files
         for (Certificate certificate : certificates) {
@@ -729,7 +726,7 @@ public class CertificatePageController extends PageController<NoPageParams> {
      * Gets the certificate by the platform serial number.
      *
      * @param certificateType String containing the certificate type
-     * @param serialNumber the platform serial number
+     * @param serialNumber    the platform serial number
      * @return the certificate or null if none is found
      */
     private List<PlatformCredential> getCertificateByBoardSN(
@@ -737,7 +734,7 @@ public class CertificatePageController extends PageController<NoPageParams> {
             final String serialNumber) {
         List<PlatformCredential> associatedCertificates = new LinkedList<>();
 
-        if (serialNumber != null){
+        if (serialNumber != null) {
             switch (certificateType) {
                 case PLATFORMCREDENTIAL:
                     associatedCertificates.addAll(this.certificateRepository
@@ -754,8 +751,8 @@ public class CertificatePageController extends PageController<NoPageParams> {
      * with error messages if parsing fails.
      *
      * @param certificateType String containing the certificate type
-     * @param file the file being uploaded from the portal
-     * @param messages contains any messages that will be display on the page
+     * @param file            the file being uploaded from the portal
+     * @param messages        contains any messages that will be display on the page
      * @return the parsed certificate or null if parsing failed.
      */
     private Certificate parseCertificate(
@@ -793,7 +790,7 @@ public class CertificatePageController extends PageController<NoPageParams> {
                                 storeCertificate(
                                         certificateType,
                                         file.getOriginalFilename(),
-                                        messages, new CertificateAuthorityCredential(((java.security.cert.Certificate)i.next()).getEncoded()));
+                                        messages, new CertificateAuthorityCredential(((java.security.cert.Certificate) i.next()).getEncoded()));
                             }
 
                             // stop the main thread from saving/storing
@@ -841,11 +838,10 @@ public class CertificatePageController extends PageController<NoPageParams> {
      * Store the given certificate in the database.
      *
      * @param certificateType String containing the certificate type
-     * @param fileName contain the name of the file of the certificate to
-     * be stored
-     * @param messages contains any messages that will be display on the page
-     * @param certificate the certificate to store
-     * @return the messages for the page
+     * @param fileName        contain the name of the file of the certificate to
+     *                        be stored
+     * @param messages        contains any messages that will be display on the page
+     * @param certificate     the certificate to store
      */
     private void storeCertificate(
             final String certificateType,
@@ -877,19 +873,16 @@ public class CertificatePageController extends PageController<NoPageParams> {
                         List<PlatformCredential> sharedCertificates = getCertificateByBoardSN(
                                 certificateType,
                                 platformCertificate.getPlatformSerial());
-
-                        if (sharedCertificates != null) {
-                            for (PlatformCredential pc : sharedCertificates) {
-                                if (pc.isPlatformBase()) {
-                                    final String failMessage = "Storing certificate failed: "
-                                            + "platform credential "
-                                            + "chain (" + pc.getPlatformSerial()
-                                            + ") base already exists in this chain ("
-                                            + fileName + ")";
-                                    messages.addError(failMessage);
-                                    log.error(failMessage);
-                                    return;
-                                }
+                        for (PlatformCredential pc : sharedCertificates) {
+                            if (pc.isPlatformBase()) {
+                                final String failMessage = "Storing certificate failed: "
+                                        + "platform credential "
+                                        + "chain (" + pc.getPlatformSerial()
+                                        + ") base already exists in this chain ("
+                                        + fileName + ")";
+                                messages.addError(failMessage);
+                                log.error(failMessage);
+                                return;
                             }
                         }
                     } /**else {
@@ -913,6 +906,7 @@ public class CertificatePageController extends PageController<NoPageParams> {
                 }
 
                 this.certificateRepository.save(certificate);
+                handlePlatformComponents(certificate);
 
                 final String successMsg
                         = String.format("New certificate successfully uploaded (%s): ", fileName);
@@ -957,5 +951,22 @@ public class CertificatePageController extends PageController<NoPageParams> {
                 + " certificate already exists (%s): ", fileName);
         messages.addError(failMessage);
         log.error(failMessage);
+    }
+
+    private int handlePlatformComponents(final Certificate certificate) {
+        PlatformCredential platformCredential;
+        int componentResults = 0;
+        if (certificate instanceof PlatformCredential) {
+            platformCredential = (PlatformCredential) certificate;
+            ComponentResult componentResult;
+            for (ComponentIdentifier componentIdentifier : platformCredential
+                    .getComponentIdentifiers()) {
+                componentResult = new ComponentResult(certificate.getSerialNumber(),
+                        componentIdentifier);
+                componentResultRepository.save(componentResult);
+                componentResults++;
+            }
+        }
+        return componentResults;
     }
 }

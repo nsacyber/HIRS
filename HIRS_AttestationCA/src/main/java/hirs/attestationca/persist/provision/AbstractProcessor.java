@@ -159,7 +159,7 @@ public class AbstractProcessor {
      * @param endorsementCredential an endorsement credential to check if platform credentials
      *                              exist
      * @param certificateRepository db connector from certificates
-     * @return the Set of Platform Credentials, if they exist, an empty set otherwise
+     * @return the List of Platform Credentials, if they exist, an empty set otherwise
      */
     protected List<PlatformCredential> parsePcsFromIdentityClaim(
             final ProvisionerTpm2.IdentityClaim identityClaim,

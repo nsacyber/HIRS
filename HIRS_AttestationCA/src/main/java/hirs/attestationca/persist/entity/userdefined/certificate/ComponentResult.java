@@ -1,16 +1,16 @@
 package hirs.attestationca.persist.entity.userdefined.certificate;
 
 import hirs.attestationca.persist.entity.AbstractEntity;
-import hirs.attestationca.persist.entity.userdefined.certificate.attributes.ComponentClass;
+import hirs.attestationca.persist.entity.userdefined.certificate.attributes.ComponentIdentifier;
 import hirs.attestationca.persist.entity.userdefined.certificate.attributes.V2.AttributeStatus;
+import hirs.attestationca.persist.entity.userdefined.certificate.attributes.V2.ComponentIdentifierV2;
 import jakarta.persistence.Entity;
 import lombok.AccessLevel;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
-import java.util.Objects;
-import java.util.UUID;
+import java.math.BigInteger;
 
 /**
  * A component result is a DO to hold the status of a component validation status.  This will
@@ -22,7 +22,7 @@ import java.util.UUID;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class ComponentResult extends AbstractEntity {
 
-    private UUID certificateId;
+    private BigInteger certificateSerialNumber;
     private String expected;
     private String actual;
     private boolean mismatched;
@@ -33,53 +33,30 @@ public class ComponentResult extends AbstractEntity {
     private String serialNumber;
     private String revisionNumber;
     private boolean fieldReplaceable;
-    private ComponentClass componentClass;
+    // this is a string because component class doesn't inherit serializable.
+    private String componentClass;
     private AttributeStatus attributeStatus;
 
-    /**
-     * default constructor.
-     * @param certificateId
-     * @param expected
-     * @param actual
-     * @param manufacturer
-     * @param model
-     * @param serialNumber
-     * @param revisionNumber
-     * @param fieldReplaceable
-     * @param componentClass
-     * @param attributeStatus
-     */
-    public ComponentResult(final UUID certificateId,
-                           final String expected, final String actual,
-                           final String manufacturer, final String model,
-                           final String serialNumber, final String revisionNumber,
-                           final boolean fieldReplaceable, final ComponentClass componentClass,
-                           final AttributeStatus attributeStatus) {
-        this.certificateId = certificateId;
-        this.expected = expected;
-        this.actual = actual;
-        this.mismatched = Objects.equals(expected, actual);
-        this.manufacturer = manufacturer;
-        this.model = model;
-        this.serialNumber = serialNumber;
-        this.revisionNumber = revisionNumber;
-        this.fieldReplaceable = fieldReplaceable;
-        this.componentClass = componentClass;
-        this.attributeStatus = attributeStatus;
-    }
 
     /**
-     * default constructor.
-     * @param certificateId
-     * @param expected
-     * @param actual
+     * Default constructor.
+     * @param certificateSerialNumber associated platform certificate serial number.
+     * @param componentIdentifier object with information from the platform certificate components.
      */
-    public ComponentResult(final UUID certificateId,
-                           final String expected, final String actual) {
-        this.certificateId = certificateId;
-        this.expected = expected;
-        this.actual = actual;
-        this.mismatched = Objects.equals(expected, actual);
+    public ComponentResult(final BigInteger certificateSerialNumber,
+                           final ComponentIdentifier componentIdentifier) {
+        this.certificateSerialNumber = certificateSerialNumber;
+        this.manufacturer = componentIdentifier.getComponentManufacturer().toString();
+        this.model = componentIdentifier.getComponentModel().toString();
+        this.serialNumber = componentIdentifier.getComponentSerial().toString();
+        this.revisionNumber = componentIdentifier.getComponentRevision().toString();
+        this.fieldReplaceable = componentIdentifier.getFieldReplaceable().isTrue();
+        // V2 fields
+        if (componentIdentifier.isVersion2()) {
+            ComponentIdentifierV2 ciV2 = (ComponentIdentifierV2) componentIdentifier;
+            this.componentClass = ciV2.getComponentClass().toString();
+            this.attributeStatus = ciV2.getAttributeStatus();
+        }
     }
 
     /**
@@ -87,7 +64,13 @@ public class ComponentResult extends AbstractEntity {
      * @return a string for the component result
      */
     public String toString() {
-        return String.format("ComponentResult: expected=[%s] actual=[%s]",
-                expected, actual);
+        if (mismatched) {
+            return String.format("ComponentResult: expected=[%s] actual=[%s]",
+                    expected, actual);
+        } else {
+            return String.format("ComponentResult: certificateSerialNumber=[%s] "
+                            + "manufacturer=[%s] model=[%s] componentClass=[%s]",
+                    certificateSerialNumber.toString(), manufacturer, model, componentClass);
+        }
     }
 }

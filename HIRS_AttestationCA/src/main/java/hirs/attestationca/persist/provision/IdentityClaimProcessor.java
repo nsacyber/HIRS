@@ -302,7 +302,7 @@ public class IdentityClaimProcessor extends AbstractProcessor {
             pcrValues = dv.getPcrslist().toStringUtf8();
         }
 
-        // check for RIM Base and Support files, if they don't exists in the database, load them
+        // check for RIM Base and Support files, if they don't exist in the database, load them
         String defaultClientName = String.format("%s_%s",
                 dv.getHw().getManufacturer(),
                 dv.getHw().getProductName());
@@ -314,7 +314,6 @@ public class IdentityClaimProcessor extends AbstractProcessor {
         Pattern pattern = Pattern.compile("([^\\s]+(\\.(?i)(rimpcr|rimel|bin|log))$)");
         Matcher matcher;
         MessageDigest messageDigest =  MessageDigest.getInstance("SHA-256");
-//        List<ReferenceManifest> listOfSavedRims = new LinkedList<>();
 
         if (dv.getLogfileCount() > 0) {
             for (ByteString logFile : dv.getLogfileList()) {
@@ -424,11 +423,9 @@ public class IdentityClaimProcessor extends AbstractProcessor {
                         dbSupport.setUpdated(true);
                         dbSupport.setAssociatedRim(dbBaseRim.getId());
                         this.referenceManifestRepository.save(dbSupport);
-//                        listOfSavedRims.add(dbSupport);
                     }
                 }
                 this.referenceManifestRepository.save(dbBaseRim);
-//                listOfSavedRims.add(dbBaseRim);
             }
         }
 

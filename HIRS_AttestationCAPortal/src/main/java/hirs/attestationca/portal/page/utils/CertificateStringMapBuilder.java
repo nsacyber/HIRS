@@ -368,17 +368,12 @@ public final class CertificateStringMapBuilder {
 
             if (!certificate.getComponentFailures().isEmpty()) {
                 data.put("failures", certificate.getComponentFailures());
-                HashMap<Integer, String> results = new HashMap<>();
+//                HashMap<Integer, String> results = new HashMap<>();
                 for (ComponentResult componentResult : componentResultRepository.findAll()) {
-                    if (componentResult.getCertificateId()
-                            .equals(certificate.getId())) {
-//                        results.put(componentResult.getComponentHash(),
-//                                componentResult.getExpected());
-                        log.error(componentResult.toString());
-                    }
+                    log.error(componentResult.toString());
                 }
 
-                data.put("componentResults", results);
+//                data.put("componentResults", results);
                 data.put("failureMessages", certificate.getComponentFailures());
             }
 

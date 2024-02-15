@@ -483,7 +483,7 @@ public class PlatformCredential extends DeviceAssociatedCertificate {
         Map<String, Object> attributes = new HashMap<>();
         ASN1Sequence attributeSequence;
         // Check all attributes for Platform Configuration
-        for (ASN1Encodable enc: getAttributeCertificate().getAcinfo().getAttributes().toArray()) {
+        for (ASN1Encodable enc : getAttributeCertificate().getAcinfo().getAttributes().toArray()) {
             Attribute attr = Attribute.getInstance(enc);
             attributeSequence
                     = ASN1Sequence.getInstance(attr.getAttrValues().getObjectAt(0));
