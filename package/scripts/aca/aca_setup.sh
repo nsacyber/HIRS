@@ -88,9 +88,7 @@ fi
 echo "HIRS ACA Setup initiated on $(date +%Y-%m-%d)" >> "$LOG_FILE"
 
 # Create a version file for bootRun to use
-git --version 2>&1 >/dev/null 
-GIT_AVAILABLE=$?
-if [ $GIT_AVAILABLE -eq 0 ]; then
+if  command -v git ; then 
    jarVersion=$(cat '../../../VERSION').$(date +%s).$(git rev-parse --short  HEAD)
    echo $jarVersion > $ACA_VERSION_FILE
 fi

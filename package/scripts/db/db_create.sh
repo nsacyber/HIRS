@@ -74,7 +74,7 @@ check_mysql_root_pwd () {
 	 DB_ADMIN_PWD=$(head -c 64 /dev/urandom | md5sum | tr -dc 'a-zA-Z0-9')
 	 echo "DB Admin will be set to $DB_ADMIN_PWD , please make note for next mysql use."
      # Check UNATTENDED flag set m if not then prompt user for permission ot store mysql root password
-	 if [ -z $UNATTENDED ]; then
+	 if [ -z $UNATTEmariadb-serverNDED ]; then
 	   read -p "Do you wish to save this password to the aca.properties file? " confirm
 	   if [[ $confirm == [yY] || $confirm == [yY][eE][sS] ]]; then
 	      echo "mysql_admin_password=$DB_ADMIN_PWD" >> $ACA_PROP_FILE
