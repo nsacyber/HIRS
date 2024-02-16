@@ -12,6 +12,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.util.LinkedList;
 import java.util.List;
 
 /**
@@ -26,9 +27,9 @@ public class ComponentResult extends ArchivableEntity {
 
     private String boardSerialNumber;
     @Setter
-    private String expected;
+    private String expected = "";
     @Setter
-    private String actual;
+    private String actual = "";
 
     // embedded component info
     private String manufacturer;
@@ -39,8 +40,9 @@ public class ComponentResult extends ArchivableEntity {
     // this is a string because component class doesn't inherit serializable.
     private String componentClass;
     private AttributeStatus attributeStatus;
-    private List<ComponentAddress> componentAddress;
+    private String componentAddress;
     private boolean version2 = false;
+    private boolean mismatched = false;
     private String certificateType;
 
 
@@ -60,7 +62,13 @@ public class ComponentResult extends ArchivableEntity {
         if (componentIdentifier.getFieldReplaceable() != null) {
             this.fieldReplaceable = componentIdentifier.getFieldReplaceable().isTrue();
         }
-        this.componentAddress.addAll(componentIdentifier.getComponentAddress());
+        StringBuilder sb = new StringBuilder();
+        for (ComponentAddress element : componentIdentifier.getComponentAddress()) {
+            sb.append(String.format("%s:%s;",element.getAddressTypeValue(),
+                    element.getAddressValue().toString()));
+        }
+        componentAddress = sb.toString();
+
         // V2 fields
         if (componentIdentifier.isVersion2()) {
             ComponentIdentifierV2 ciV2 = (ComponentIdentifierV2) componentIdentifier;
@@ -68,14 +76,30 @@ public class ComponentResult extends ArchivableEntity {
             this.attributeStatus = ciV2.getAttributeStatus();
             this.version2 = true;
         }
+
+        checkMatchedStatus();
     }
 
     /**
-     * This getting is used to set the component display to red.
-     * @return result of expected and actual string.
+     * This method is used to update the mismatched status flag for
+     * displaying red if there is a failure.
      */
-    public boolean isMismatched() {
-        return this.actual.equals(this.expected);
+    public void checkMatchedStatus() {
+        this.mismatched = this.actual.equals(this.expected);
+    }
+
+    public List<ComponentAddress> getComponentAddresses() {
+        List<ComponentAddress> addresses = new LinkedList<>();
+        ComponentAddress address;
+        if (componentAddress != null && !componentAddress.isEmpty()) {
+            for (String s : componentAddress.split(";", 0)) {
+                address = new ComponentAddress();
+                address.setAddressTypeString(s.split(":")[0]);
+                address.setAddressValueString(s.split(":")[1]);
+                addresses.add(address);
+            }
+        }
+        return addresses;
     }
 
     /**

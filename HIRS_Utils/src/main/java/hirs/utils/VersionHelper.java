@@ -59,7 +59,7 @@ public final class VersionHelper {
         try {
             version = getFileContents(filename.toString());
         } catch (IOException ioEx) {
-            log.error(ioEx.getMessage());
+            log.info(ioEx.getMessage());
             version = "";
         }
 

@@ -648,9 +648,9 @@
                                                                         <span class="fieldHeader">Revision:</span>
                                                                         <span class="fieldValue">${component.getRevisionNumber()}</span><br/>
                                                                     </c:if>
-                                                                    <c:forEach items="${component.getComponentAddress()}" var="address">
-                                                                        <span class="fieldHeader">${address.getAddressTypeValue()} address:</span>
-                                                                        <span class="fieldValue">${address.getAddressValue()}</span><br/>
+                                                                    <c:forEach items="${component.getComponentAddresses()}" var="address">
+                                                                        <span class="fieldHeader">${address.getAddressTypeString()} address:</span>
+                                                                        <span class="fieldValue">${address.getAddressValueString()}</span><br/>
                                                                     </c:forEach>
                                                                     <c:choose>
                                                                         <c:when test="${component.getFieldReplaceable()=='TRUE'}">

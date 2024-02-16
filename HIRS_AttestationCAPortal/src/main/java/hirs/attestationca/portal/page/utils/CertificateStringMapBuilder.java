@@ -366,6 +366,7 @@ public final class CertificateStringMapBuilder {
             data.put("componentResults", componentResultRepository
                     .findByBoardSerialNumber(certificate.getPlatformSerial()));
 
+
             //Get platform Configuration values and set map with it
             PlatformConfiguration platformConfiguration = certificate.getPlatformConfiguration();
             if (platformConfiguration != null) {

@@ -11,5 +11,4 @@ import java.util.UUID;
 public interface ComponentResultRepository extends JpaRepository<ComponentResult, UUID> {
 
     List<ComponentResult> findByBoardSerialNumber(String boardSerialNumber);
-    List<ComponentResult> findByCertificateSerialNumberAndMismatched(String boardSerialNumber, boolean mismatched);
 }
