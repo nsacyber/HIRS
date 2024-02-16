@@ -615,12 +615,11 @@
                                         <div id="componentIdentifiercollapse" class="panel-collapse collapse in" role="tabpanel" aria-labelledby="headingOne" aria-expanded="true">
                                             <div class="panel-body">
                                                 <div id="componentIdentifier" class="row">
-                                                    <c:forEach items="${initialData.componentsIdentifier}" var="component">
-                                                        <c:set var="combined" value="${component.hashCode()}" scope="page"/>
+                                                    <c:forEach items="${initialData.componentResults}" var="component">
                                                         <div class="component col col-md-4">
                                                             <div class="panel panel-default">
                                                                 <c:choose>
-                                                                    <c:when test="${fn:contains(initialData.failures, combined)}">
+                                                                    <c:when test="${fn:${component.isMismatched()=='TRUE'}">
                                                                         <div class="panel-heading" style="background-color: red; color: white">
                                                                     </c:when>
                                                                     <c:otherwise>
@@ -638,16 +637,16 @@
                                                                 </div>
                                                                 <div class="panel-body">
                                                                     <span class="fieldHeader">Manufacturer:</span>
-                                                                    <span class="fieldValue">${component.getComponentManufacturer()}</span><br/>
+                                                                    <span class="fieldValue">${component.getManufacturer()}</span><br/>
                                                                     <span class="fieldHeader">Model:</span>
-                                                                    <span class="fieldValue">${component.getComponentModel()}</span><br/>
-                                                                    <c:if test="${not empty fn:trim(component.getComponentSerial())}">
+                                                                    <span class="fieldValue">${component.getModel()}</span><br/>
+                                                                    <c:if test="${not empty fn:trim(component.getSerialNumber())}">
                                                                         <span class="fieldHeader">Serial Number:</span>
-                                                                        <span class="fieldValue">${component.getComponentSerial()}</span><br/>
+                                                                        <span class="fieldValue">${component.getSerialNumber()}</span><br/>
                                                                     </c:if>
-                                                                    <c:if test="${not empty fn:trim(component.getComponentRevision())}">
+                                                                    <c:if test="${not empty fn:trim(component.getRevisionNumber())}">
                                                                         <span class="fieldHeader">Revision:</span>
-                                                                        <span class="fieldValue">${component.getComponentRevision()}</span><br/>
+                                                                        <span class="fieldValue">${component.getRevisionNumber()}</span><br/>
                                                                     </c:if>
                                                                     <c:forEach items="${component.getComponentAddress()}" var="address">
                                                                         <span class="fieldHeader">${address.getAddressTypeValue()} address:</span>

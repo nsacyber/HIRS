@@ -5,14 +5,13 @@ import hirs.attestationca.persist.entity.manager.CertificateRepository;
 import hirs.attestationca.persist.entity.manager.ComponentResultRepository;
 import hirs.attestationca.persist.entity.userdefined.Certificate;
 import hirs.attestationca.persist.entity.userdefined.certificate.CertificateAuthorityCredential;
-import hirs.attestationca.persist.entity.userdefined.certificate.ComponentResult;
 import hirs.attestationca.persist.entity.userdefined.certificate.EndorsementCredential;
 import hirs.attestationca.persist.entity.userdefined.certificate.IssuedAttestationCertificate;
 import hirs.attestationca.persist.entity.userdefined.certificate.PlatformCredential;
 import hirs.attestationca.persist.entity.userdefined.certificate.attributes.ComponentIdentifier;
 import hirs.attestationca.persist.entity.userdefined.certificate.attributes.PlatformConfiguration;
-import hirs.utils.BouncyCastleUtils;
 import hirs.attestationca.persist.util.PciIds;
+import hirs.utils.BouncyCastleUtils;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import lombok.extern.log4j.Log4j2;
@@ -25,7 +24,6 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.UUID;
 
@@ -365,17 +363,8 @@ public final class CertificateStringMapBuilder {
             data.put("x509Version", certificate.getX509CredentialVersion());
             //CPSuri
             data.put("CPSuri", certificate.getCPSuri());
-
-            if (!certificate.getComponentFailures().isEmpty()) {
-                data.put("failures", certificate.getComponentFailures());
-//                HashMap<Integer, String> results = new HashMap<>();
-                for (ComponentResult componentResult : componentResultRepository.findAll()) {
-                    log.error(componentResult.toString());
-                }
-
-//                data.put("componentResults", results);
-                data.put("failureMessages", certificate.getComponentFailures());
-            }
+            data.put("componentResults", componentResultRepository
+                    .findByBoardSerialNumber(certificate.getPlatformSerial()));
 
             //Get platform Configuration values and set map with it
             PlatformConfiguration platformConfiguration = certificate.getPlatformConfiguration();

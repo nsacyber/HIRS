@@ -4,14 +4,22 @@ import hirs.attestationca.persist.CriteriaModifier;
 import hirs.attestationca.persist.DBManagerException;
 import hirs.attestationca.persist.DBServiceException;
 import hirs.attestationca.persist.FilteredRecordsList;
-import hirs.attestationca.persist.entity.manager.*;
+import hirs.attestationca.persist.entity.manager.CACredentialRepository;
+import hirs.attestationca.persist.entity.manager.CertificateRepository;
+import hirs.attestationca.persist.entity.manager.ComponentResultRepository;
+import hirs.attestationca.persist.entity.manager.EndorsementCredentialRepository;
+import hirs.attestationca.persist.entity.manager.IssuedCertificateRepository;
+import hirs.attestationca.persist.entity.manager.PlatformCertificateRepository;
 import hirs.attestationca.persist.entity.userdefined.Certificate;
-import hirs.attestationca.persist.entity.userdefined.certificate.*;
+import hirs.attestationca.persist.entity.userdefined.certificate.CertificateAuthorityCredential;
+import hirs.attestationca.persist.entity.userdefined.certificate.ComponentResult;
+import hirs.attestationca.persist.entity.userdefined.certificate.EndorsementCredential;
+import hirs.attestationca.persist.entity.userdefined.certificate.IssuedAttestationCertificate;
+import hirs.attestationca.persist.entity.userdefined.certificate.PlatformCredential;
 import hirs.attestationca.persist.entity.userdefined.certificate.attributes.ComponentIdentifier;
 import hirs.attestationca.persist.util.CredentialHelper;
 import hirs.attestationca.portal.datatables.DataTableInput;
 import hirs.attestationca.portal.datatables.DataTableResponse;
-import hirs.attestationca.portal.datatables.OrderedListQueryDataTableAdapter;
 import hirs.attestationca.portal.page.Page;
 import hirs.attestationca.portal.page.PageController;
 import hirs.attestationca.portal.page.PageMessages;
@@ -393,9 +401,11 @@ public class CertificatePageController extends PageController<NoPageParams> {
                             if (!pc.isPlatformBase()) {
                                 pc.archive("User requested deletion via UI of the base certificate");
                                 certificateRepository.save(pc);
+                                deleteComponentResults(pc.getPlatformSerial());
                             }
                         }
                     }
+                    deleteComponentResults(platformCertificate.getPlatformSerial());
                 }
 
                 certificate.archive("User requested deletion via UI");
@@ -930,6 +940,15 @@ public class CertificatePageController extends PageController<NoPageParams> {
                 existingCertificate.resetCreateTime();
                 this.certificateRepository.save(existingCertificate);
 
+                List<ComponentResult> componentResults = componentResultRepository
+                        .findByBoardSerialNumber(((PlatformCredential) existingCertificate)
+                                .getPlatformSerial());
+                for (ComponentResult componentResult : componentResults) {
+                    componentResult.restore();
+                    componentResult.resetCreateTime();
+                    this.componentResultRepository.save(componentResult);
+                }
+
                 final String successMsg = String.format("Pre-existing certificate "
                         + "found and unarchived (%s): ", fileName);
                 messages.addSuccess(successMsg);
@@ -961,12 +980,24 @@ public class CertificatePageController extends PageController<NoPageParams> {
             ComponentResult componentResult;
             for (ComponentIdentifier componentIdentifier : platformCredential
                     .getComponentIdentifiers()) {
-                componentResult = new ComponentResult(certificate.getSerialNumber(),
+
+                componentResult = new ComponentResult(platformCredential.getPlatformSerial(),
+                        platformCredential.getPlatformChainType(),
                         componentIdentifier);
                 componentResultRepository.save(componentResult);
                 componentResults++;
             }
         }
         return componentResults;
+    }
+
+    private void deleteComponentResults(final String platformSerial) {
+        List<ComponentResult> componentResults = componentResultRepository
+                .findByBoardSerialNumber(platformSerial);
+
+        for (ComponentResult componentResult : componentResults) {
+            componentResult.archive();
+            componentResultRepository.save(componentResult);
+        }
     }
 }

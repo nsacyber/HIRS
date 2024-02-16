@@ -3,18 +3,22 @@ package hirs.attestationca.persist.provision;
 import com.google.protobuf.ByteString;
 import hirs.attestationca.configuration.provisionerTpm2.ProvisionerTpm2;
 import hirs.attestationca.persist.entity.manager.CertificateRepository;
+import hirs.attestationca.persist.entity.manager.ComponentResultRepository;
 import hirs.attestationca.persist.entity.manager.DeviceRepository;
 import hirs.attestationca.persist.entity.manager.PolicyRepository;
 import hirs.attestationca.persist.entity.manager.ReferenceDigestValueRepository;
 import hirs.attestationca.persist.entity.manager.ReferenceManifestRepository;
 import hirs.attestationca.persist.entity.manager.TPM2ProvisionerStateRepository;
 import hirs.attestationca.persist.entity.tpm.TPM2ProvisionerState;
+import hirs.attestationca.persist.entity.userdefined.Certificate;
 import hirs.attestationca.persist.entity.userdefined.Device;
 import hirs.attestationca.persist.entity.userdefined.PolicySettings;
 import hirs.attestationca.persist.entity.userdefined.ReferenceManifest;
 import hirs.attestationca.persist.entity.userdefined.SupplyChainValidationSummary;
+import hirs.attestationca.persist.entity.userdefined.certificate.ComponentResult;
 import hirs.attestationca.persist.entity.userdefined.certificate.EndorsementCredential;
 import hirs.attestationca.persist.entity.userdefined.certificate.PlatformCredential;
+import hirs.attestationca.persist.entity.userdefined.certificate.attributes.ComponentIdentifier;
 import hirs.attestationca.persist.entity.userdefined.info.FirmwareInfo;
 import hirs.attestationca.persist.entity.userdefined.info.HardwareInfo;
 import hirs.attestationca.persist.entity.userdefined.info.NetworkInfo;
@@ -70,6 +74,7 @@ public class IdentityClaimProcessor extends AbstractProcessor {
 
     private SupplyChainValidationService supplyChainValidationService;
     private CertificateRepository certificateRepository;
+    private ComponentResultRepository componentResultRepository;
     private ReferenceManifestRepository referenceManifestRepository;
     private ReferenceDigestValueRepository referenceDigestValueRepository;
     private DeviceRepository deviceRepository;
@@ -81,6 +86,7 @@ public class IdentityClaimProcessor extends AbstractProcessor {
     public IdentityClaimProcessor(
             final SupplyChainValidationService supplyChainValidationService,
             final CertificateRepository certificateRepository,
+            final ComponentResultRepository componentResultRepository,
             final ReferenceManifestRepository referenceManifestRepository,
             final ReferenceDigestValueRepository referenceDigestValueRepository,
             final DeviceRepository deviceRepository,
@@ -88,6 +94,7 @@ public class IdentityClaimProcessor extends AbstractProcessor {
             final PolicyRepository policyRepository) {
         this.supplyChainValidationService = supplyChainValidationService;
         this.certificateRepository = certificateRepository;
+        this.componentResultRepository = componentResultRepository;
         this.referenceManifestRepository = referenceManifestRepository;
         this.referenceDigestValueRepository = referenceDigestValueRepository;
         this.deviceRepository = deviceRepository;
@@ -203,6 +210,15 @@ public class IdentityClaimProcessor extends AbstractProcessor {
 
             platformCredentials.addAll(tempList);
         }
+        // store component results objects
+        for (PlatformCredential platformCredential : platformCredentials) {
+            List<ComponentResult> componentResults = componentResultRepository
+                    .findByBoardSerialNumber(platformCredential.getPlatformSerial());
+            if (componentResults.isEmpty()) {
+                handlePlatformComponents(platformCredential);
+            }
+        }
+
         // perform supply chain validation
         SupplyChainValidationSummary summary = supplyChainValidationService.validateSupplyChain(
                 endorsementCredential, platformCredentials, device);
@@ -583,44 +599,35 @@ public class IdentityClaimProcessor extends AbstractProcessor {
                             log.error(String.format("Patching value does not exist (%s)",
                                     patchedValue));
                         } else {
-                            /**
-                             * Until we get patch examples, this is WIP
-                             */
+                             // WIP - Until we get patch examples
                             dbRdv.setPatched(true);
                         }
                     }
                 }
-            } catch (CertificateException cEx) {
-                log.error(cEx);
-            } catch (NoSuchAlgorithmException noSaEx) {
-                log.error(noSaEx);
-            } catch (IOException ioEx) {
-                log.error(ioEx);
+            } catch (CertificateException | NoSuchAlgorithmException | IOException ex) {
+                log.error(ex);
             }
         }
 
         return true;
     }
 
+    private int handlePlatformComponents(final Certificate certificate) {
+        PlatformCredential platformCredential;
+        int componentResults = 0;
+        if (certificate instanceof PlatformCredential) {
+            platformCredential = (PlatformCredential) certificate;
+            ComponentResult componentResult;
+            for (ComponentIdentifier componentIdentifier : platformCredential
+                    .getComponentIdentifiers()) {
 
-
-    private List<PlatformCredential> getPlatformCredentials(final CertificateRepository certificateRepository,
-                                                            final EndorsementCredential ec) {
-        List<PlatformCredential> credentials = null;
-
-        if (ec == null) {
-            log.warn("Cannot look for platform credential(s).  Endorsement credential was null.");
-        } else {
-            log.debug("Searching for platform credential(s) based on holder serial number: "
-                    + ec.getSerialNumber());
-            credentials = certificateRepository.getByHolderSerialNumber(ec.getSerialNumber());
-            if (credentials == null || credentials.isEmpty()) {
-                log.warn("No platform credential(s) found");
-            } else {
-                log.debug("Platform Credential(s) found: " + credentials.size());
+                componentResult = new ComponentResult(platformCredential.getPlatformSerial(),
+                        platformCredential.getPlatformChainType(),
+                        componentIdentifier);
+                componentResultRepository.save(componentResult);
+                componentResults++;
             }
         }
-
-        return credentials;
+        return componentResults;
     }
 }

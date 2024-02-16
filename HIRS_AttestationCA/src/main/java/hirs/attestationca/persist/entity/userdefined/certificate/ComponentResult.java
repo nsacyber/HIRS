@@ -1,6 +1,7 @@
 package hirs.attestationca.persist.entity.userdefined.certificate;
 
-import hirs.attestationca.persist.entity.AbstractEntity;
+import hirs.attestationca.persist.entity.ArchivableEntity;
+import hirs.attestationca.persist.entity.userdefined.certificate.attributes.ComponentAddress;
 import hirs.attestationca.persist.entity.userdefined.certificate.attributes.ComponentIdentifier;
 import hirs.attestationca.persist.entity.userdefined.certificate.attributes.V2.AttributeStatus;
 import hirs.attestationca.persist.entity.userdefined.certificate.attributes.V2.ComponentIdentifierV2;
@@ -9,8 +10,9 @@ import lombok.AccessLevel;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 
-import java.math.BigInteger;
+import java.util.List;
 
 /**
  * A component result is a DO to hold the status of a component validation status.  This will
@@ -20,12 +22,13 @@ import java.math.BigInteger;
 @Getter
 @Entity
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class ComponentResult extends AbstractEntity {
+public class ComponentResult extends ArchivableEntity {
 
-    private BigInteger certificateSerialNumber;
+    private String boardSerialNumber;
+    @Setter
     private String expected;
+    @Setter
     private String actual;
-    private boolean mismatched;
 
     // embedded component info
     private String manufacturer;
@@ -36,27 +39,43 @@ public class ComponentResult extends AbstractEntity {
     // this is a string because component class doesn't inherit serializable.
     private String componentClass;
     private AttributeStatus attributeStatus;
+    private List<ComponentAddress> componentAddress;
+    private boolean version2 = false;
+    private String certificateType;
 
 
     /**
      * Default constructor.
-     * @param certificateSerialNumber associated platform certificate serial number.
+     * @param boardSerialNumber associated platform certificate serial number.
      * @param componentIdentifier object with information from the platform certificate components.
      */
-    public ComponentResult(final BigInteger certificateSerialNumber,
+    public ComponentResult(final String boardSerialNumber, final String certificateType,
                            final ComponentIdentifier componentIdentifier) {
-        this.certificateSerialNumber = certificateSerialNumber;
+        this.boardSerialNumber = boardSerialNumber;
+        this.certificateType = certificateType;
         this.manufacturer = componentIdentifier.getComponentManufacturer().toString();
         this.model = componentIdentifier.getComponentModel().toString();
         this.serialNumber = componentIdentifier.getComponentSerial().toString();
         this.revisionNumber = componentIdentifier.getComponentRevision().toString();
-        this.fieldReplaceable = componentIdentifier.getFieldReplaceable().isTrue();
+        if (componentIdentifier.getFieldReplaceable() != null) {
+            this.fieldReplaceable = componentIdentifier.getFieldReplaceable().isTrue();
+        }
+        this.componentAddress.addAll(componentIdentifier.getComponentAddress());
         // V2 fields
         if (componentIdentifier.isVersion2()) {
             ComponentIdentifierV2 ciV2 = (ComponentIdentifierV2) componentIdentifier;
             this.componentClass = ciV2.getComponentClass().toString();
             this.attributeStatus = ciV2.getAttributeStatus();
+            this.version2 = true;
         }
+    }
+
+    /**
+     * This getting is used to set the component display to red.
+     * @return result of expected and actual string.
+     */
+    public boolean isMismatched() {
+        return this.actual.equals(this.expected);
     }
 
     /**
@@ -64,13 +83,13 @@ public class ComponentResult extends AbstractEntity {
      * @return a string for the component result
      */
     public String toString() {
-        if (mismatched) {
+        if (isMismatched()) {
             return String.format("ComponentResult: expected=[%s] actual=[%s]",
                     expected, actual);
         } else {
             return String.format("ComponentResult: certificateSerialNumber=[%s] "
                             + "manufacturer=[%s] model=[%s] componentClass=[%s]",
-                    certificateSerialNumber.toString(), manufacturer, model, componentClass);
+                    boardSerialNumber, manufacturer, model, componentClass);
         }
     }
 }
