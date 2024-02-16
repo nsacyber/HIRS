@@ -45,6 +45,10 @@ public class ComponentResult extends ArchivableEntity {
     private boolean mismatched = false;
     private String certificateType;
 
+    private String issuerDN;
+    private String certificateSerialNumber;
+    private String uniformResourceIdentifier;
+
 
     /**
      * Default constructor.
@@ -75,6 +79,15 @@ public class ComponentResult extends ArchivableEntity {
             this.componentClass = ciV2.getComponentClass().toString();
             this.attributeStatus = ciV2.getAttributeStatus();
             this.version2 = true;
+            if (ciV2.getCertificateIdentifier() != null) {
+                this.issuerDN = ciV2.getCertificateIdentifier().getIssuerDN().toString();
+                this.certificateSerialNumber = ciV2.getCertificateIdentifier()
+                        .getCertificateSerialNumber().toString();
+                if (ciV2.getComponentPlatformUri() != null) {
+                    this.uniformResourceIdentifier = ciV2.getComponentPlatformUri()
+                            .getUniformResourceIdentifier().toString();
+                }
+            }
         }
 
         checkMatchedStatus();

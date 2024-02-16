@@ -653,7 +653,7 @@
                                                                         <span class="fieldValue">${address.getAddressValueString()}</span><br/>
                                                                     </c:forEach>
                                                                     <c:choose>
-                                                                        <c:when test="${component.getFieldReplaceable()=='TRUE'}">
+                                                                        <c:when test="${component.isFieldReplaceable()=='TRUE'}">
                                                                             <span class="label label-success">Replaceable</span><br/>
                                                                         </c:when>
                                                                         <c:otherwise>
@@ -661,16 +661,16 @@
                                                                         </c:otherwise>
                                                                     </c:choose>
                                                                     <c:if test="${component.isVersion2()}">
-                                                                        <c:if test="${not empty component.getCertificateIdentifier()}">
+                                                                        <c:if test="${not empty component.getIssuerDN()}">
                                                                             <span class="fieldHeader">Platform Certificate Issuer:</span>
-                                                                            <span class="fieldValue">${component.getCertificateIdentifier().getIssuerDN()}</span><br />
+                                                                            <span class="fieldValue">${component.getIssuerDN()}</span><br />
                                                                             <span class="fieldHeader">Platform Certificate Serial Number:</span>
-                                                                            <span class="fieldValue">${component.getCertificateIdentifier().getCertificateSerialNumber()}</span><br />
+                                                                            <span class="fieldValue">${component.getCertificateSerialNumber()}</span><br />
                                                                             <span class="fieldHeader">Platform Certificate URI:</span>
                                                                         </c:if>
                                                                         <span class="fieldValue">
-                                                                            <a href="${component.getComponentPlatformUri().getUniformResourceIdentifier()}">
-                                                                                ${component.getComponentPlatformUri().getUniformResourceIdentifier()}
+                                                                            <a href="${component.getUniformResourceIdentifier()}">
+                                                                                ${component.getUniformResourceIdentifier()}
                                                                             </a>
                                                                         </span><br />
                                                                         <span class="fieldHeader">Status:</span>
