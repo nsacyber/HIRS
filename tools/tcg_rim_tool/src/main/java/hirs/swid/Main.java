@@ -4,6 +4,7 @@ import hirs.swid.utils.Commander;
 import hirs.swid.utils.TimestampArgumentValidator;
 import hirs.utils.rim.ReferenceManifestValidator;
 import com.beust.jcommander.JCommander;
+import lombok.extern.log4j.Log4j2;
 
 import java.io.File;
 import java.io.IOException;
@@ -12,13 +13,17 @@ import java.nio.file.Paths;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
+@Log4j2
 public class Main {
 
     public static void main(String[] args) {
         Commander commander = new Commander();
         JCommander jc = JCommander.newBuilder().addObject(commander).build();
-        jc.parse(args);
+        try {
+            jc.parse(args);
+        } catch (Exception e) {
+            exitWithErrorCode(e.getMessage());
+        }
         SwidTagGateway gateway;
         ReferenceManifestValidator validator;
         List<String> unknownOpts = commander.getUnknownOptions();
@@ -121,7 +126,7 @@ public class Main {
                         gateway.generateSwidTag(commander.getOutFile());
                         break;
                     default:
-                        exitWithErrorCode("No create type given, nothing to do");
+                        exitWithErrorCode("Create type not recognized.");
                 }
             }
         }
@@ -131,8 +136,7 @@ public class Main {
      * Use cases that exit with an error code are redirected here.
      */
     private static void exitWithErrorCode(String errorMessage) {
-        //TODO: log errorMessage
-        System.out.println(errorMessage);
+        log.error(errorMessage);
         System.exit(1);
     }
 
