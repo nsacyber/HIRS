@@ -70,6 +70,7 @@ start_mysqlsd () {
        if [ $DB_STATUS -eq 0 ]; then 
          echo "mariadb not running , attempting to restart"
          systemctl start mariadb >> "$LOG_FILE";
+         sleep 2
        fi
      fi # non contanier mysql start
    fi   

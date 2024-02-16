@@ -135,6 +135,7 @@ ospackage {
 
     buildRpm {
         dependsOn  ':build'
+        dependsOn  ':HIRS_AttestationCAPortal:bootWar'
         arch = X86_64
         // Required apps will be aut installed by dnf if not present
         requires('java-17-openjdk', '17.0', GREATER | EQUAL)
@@ -155,6 +156,7 @@ ospackage {
 
     buildDeb {
         dependsOn  ':build'
+        dependsOn  ':HIRS_AttestationCAPortal:bootWar'
         packageName = 'hirs-attestationca'
         arch = 'amd64'
         requires('openjdk-17-jdk', '17.0', GREATER | EQUAL)
@@ -163,9 +165,9 @@ ospackage {
         // Install after required packages
         postInstall 'bash /opt/hirs/aca/scripts/aca/aca_setup.sh -u'
         postInstall '/opt/hirs/aca/scripts/aca/aca_bootRun.sh -w &'
-        postTrans 'echo "@reboot root /opt/hirs/aca/scripts/aca/aca_bootRun.sh -w" >> /etc/crontab'
-        postTrans 'chmod +x /opt/hirs/aca/scripts/aca/*'
-        postTrans 'if [ -f /opt/hirs/aca/VERSION ]; then rm /opt/hirs/aca/VERSION; fi;'
+        postInstall 'echo "@reboot root /opt/hirs/aca/scripts/aca/aca_bootRun.sh -w" >> /etc/crontab'
+        postInstall 'chmod +x /opt/hirs/aca/scripts/aca/*'
+        postInstall 'if [ -f /opt/hirs/aca/VERSION ]; then rm /opt/hirs/aca/VERSION; fi;'
         // Wait for ACA to start up before finishing the install
         postInstall 'bash /opt/hirs/aca/scripts/aca/check_for_aca.sh'
     }
