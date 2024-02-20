@@ -877,9 +877,9 @@ public class CertificateAttributeScvValidator extends SupplyChainCredentialValid
      * @param potentialMatch the component info from a device info report
      * @return true if the fields match exactly (null is considered the same as an empty string)
      */
-    private static boolean isMatch(final UUID certificateId,
-                                   final ComponentIdentifier pcComponent,
-                                   final ComponentInfo potentialMatch) {
+    public static boolean isMatch(final UUID certificateId,
+                                  final ComponentIdentifier pcComponent,
+                                  final ComponentInfo potentialMatch) {
         boolean matchesSoFar = true;
 
         matchesSoFar &= isMatchOrEmptyInPlatformCert(

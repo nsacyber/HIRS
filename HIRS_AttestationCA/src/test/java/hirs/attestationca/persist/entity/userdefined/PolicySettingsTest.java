@@ -49,6 +49,6 @@ public class PolicySettingsTest {
         final String description = "A default policy";
         PolicySettings policy = new PolicySettings("Default Supply Chain Policy",
                 description);
-        assertEquals(policy.getDescription(), description);
+        assertEquals(description, policy.getDescription());
     }
 }
