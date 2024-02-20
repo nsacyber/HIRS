@@ -3,6 +3,7 @@ package hirs.attestationca.persist.service;
 import hirs.attestationca.persist.entity.ArchivableEntity;
 import hirs.attestationca.persist.entity.manager.CACredentialRepository;
 import hirs.attestationca.persist.entity.manager.CertificateRepository;
+import hirs.attestationca.persist.entity.manager.ComponentAttributeRepository;
 import hirs.attestationca.persist.entity.manager.ComponentResultRepository;
 import hirs.attestationca.persist.entity.manager.ReferenceDigestValueRepository;
 import hirs.attestationca.persist.entity.manager.ReferenceManifestRepository;
@@ -104,7 +105,8 @@ public class ValidationService {
             final PlatformCredential pc, final DeviceInfoReport deviceInfoReport,
             final EndorsementCredential ec,
             final CertificateRepository certificateRepository,
-            final ComponentResultRepository componentResultRepository) {
+            final ComponentResultRepository componentResultRepository,
+            final ComponentAttributeRepository componentAttributeRepository) {
         final SupplyChainValidation.ValidationType validationType
                 = SupplyChainValidation.ValidationType.PLATFORM_CREDENTIAL_ATTRIBUTES;
 
@@ -115,8 +117,12 @@ public class ValidationService {
                     null, Level.ERROR);
         }
         log.info("Validating platform credential attributes");
+        List<ComponentResult> componentResults = componentResultRepository
+                .findByCertificateSerialNumberAndBoardSerialNumber(
+                        pc.getSerialNumber().toString(), pc.getPlatformSerial());
         AppraisalStatus result = CredentialValidator.
-                validatePlatformCredentialAttributes(pc, deviceInfoReport, ec);
+                validatePlatformCredentialAttributes(pc, deviceInfoReport, ec,
+                        componentResultRepository, componentAttributeRepository);
         switch (result.getAppStatus()) {
             case PASS:
                 return buildValidationRecord(validationType, AppraisalStatus.Status.PASS,

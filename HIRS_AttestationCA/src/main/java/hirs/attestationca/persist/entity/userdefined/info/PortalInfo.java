@@ -19,26 +19,22 @@ import java.net.UnknownHostException;
  * Store information about the Portal into the database.
  */
 @NoArgsConstructor
+@Getter
 @Entity
 @Table(name = "PortalInfo")
 @Access(AccessType.FIELD)
 public class PortalInfo {
 
     @Id
-    @Getter
     @Column
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
-    @Getter
     @Column(unique = true, nullable = false)
     private String name;
-    @Getter
     @Column
     private InetAddress ipAddress;
-    @Getter
     @Column
     private int port = 0;
-    @Getter
     @Column
     private String context;
 
@@ -57,14 +53,14 @@ public class PortalInfo {
     /**
      * Stores the address of the portal.
      *
-     * @param newip address used by the portal.
+     * @param inetAddress address used by the portal.
      */
-    public void setIpAddress(final InetAddress newip) {
-        if (newip == null) {
+    public void setIpAddress(final InetAddress inetAddress) {
+        if (inetAddress == null) {
             throw new IllegalArgumentException("setIpAddress input was null.");
         }
 
-        ipAddress = newip;
+        this.ipAddress = inetAddress;
     }
 
     /**
@@ -74,18 +70,18 @@ public class PortalInfo {
      * @throws UnknownHostException For problems resolving or storing the host.
      */
     public void setIpAddress(final String host) throws UnknownHostException {
-        ipAddress = InetAddress.getByName(host);
+        this.ipAddress = InetAddress.getByName(host);
     }
 
     /**
      * Store the port of the portal.
      *
-     * @param newport port of the portal
+     * @param port port of the portal
      */
-    public void setPort(final int newport) {
+    public void setPort(final int port) {
         final int upperBound = 65535;
-        if (newport > 0 && newport <= upperBound) {
-            port = newport;
+        if (port > 0 && port <= upperBound) {
+            this.port = port;
         } else {
             throw new IllegalArgumentException("Failed to store portal port.  Provided number was"
                     + " outside of valid range (1 - " + upperBound + ")");

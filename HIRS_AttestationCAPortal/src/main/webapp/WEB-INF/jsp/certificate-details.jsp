@@ -619,7 +619,7 @@
                                                         <div class="component col col-md-4">
                                                             <div class="panel panel-default">
                                                                 <c:choose>
-                                                                    <c:when test="${fn:${component.isMismatched()=='TRUE'}">
+                                                                    <c:when test="${component.isMismatched()=='TRUE'}">
                                                                         <div class="panel-heading" style="background-color: red; color: white">
                                                                     </c:when>
                                                                     <c:otherwise>

@@ -4,6 +4,7 @@ import hirs.attestationca.persist.DBManagerException;
 import hirs.attestationca.persist.entity.ArchivableEntity;
 import hirs.attestationca.persist.entity.manager.CACredentialRepository;
 import hirs.attestationca.persist.entity.manager.CertificateRepository;
+import hirs.attestationca.persist.entity.manager.ComponentAttributeRepository;
 import hirs.attestationca.persist.entity.manager.ComponentResultRepository;
 import hirs.attestationca.persist.entity.manager.PolicyRepository;
 import hirs.attestationca.persist.entity.manager.ReferenceDigestValueRepository;
@@ -22,6 +23,7 @@ import hirs.attestationca.persist.enums.AppraisalStatus;
 import hirs.attestationca.persist.validation.PcrValidator;
 import hirs.attestationca.persist.validation.SupplyChainCredentialValidator;
 import lombok.extern.log4j.Log4j2;
+import org.apache.logging.log4j.Level;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -32,8 +34,6 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-
-import org.apache.logging.log4j.Level;
 
 import static hirs.attestationca.persist.enums.AppraisalStatus.Status.FAIL;
 import static hirs.attestationca.persist.enums.AppraisalStatus.Status.PASS;
@@ -47,6 +47,7 @@ public class SupplyChainValidationService {
     private ReferenceManifestRepository referenceManifestRepository;
     private ReferenceDigestValueRepository referenceDigestValueRepository;
     private ComponentResultRepository componentResultRepository;
+    private ComponentAttributeRepository componentAttributeRepository;
     private CertificateRepository certificateRepository;
     private SupplyChainValidationRepository supplyChainValidationRepository;
     private SupplyChainValidationSummaryRepository supplyChainValidationSummaryRepository;
@@ -70,6 +71,7 @@ public class SupplyChainValidationService {
             final PolicyRepository policyRepository,
             final CertificateRepository certificateRepository,
             final ComponentResultRepository componentResultRepository,
+            final ComponentAttributeRepository componentAttributeRepository,
             final ReferenceManifestRepository referenceManifestRepository,
             final SupplyChainValidationRepository supplyChainValidationRepository,
             final SupplyChainValidationSummaryRepository supplyChainValidationSummaryRepository,
@@ -78,6 +80,7 @@ public class SupplyChainValidationService {
         this.policyRepository = policyRepository;
         this.certificateRepository = certificateRepository;
         this.componentResultRepository = componentResultRepository;
+        this.componentAttributeRepository = componentAttributeRepository;
         this.referenceManifestRepository = referenceManifestRepository;
         this.supplyChainValidationRepository = supplyChainValidationRepository;
         this.supplyChainValidationSummaryRepository = supplyChainValidationSummaryRepository;
@@ -225,7 +228,8 @@ public class SupplyChainValidationService {
                     // if there are no deltas, just check base credential
                     platformScv = ValidationService.evaluatePCAttributesStatus(
                             baseCredential, device.getDeviceInfo(), ec,
-                            certificateRepository, componentResultRepository);
+                            certificateRepository, componentResultRepository,
+                            componentAttributeRepository);
                     validations.add(new SupplyChainValidation(
                             SupplyChainValidation.ValidationType.PLATFORM_CREDENTIAL,
                             platformScv.getValidationResult(), aes, platformScv.getMessage()));

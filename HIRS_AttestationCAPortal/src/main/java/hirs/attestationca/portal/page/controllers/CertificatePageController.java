@@ -982,6 +982,7 @@ public class CertificatePageController extends PageController<NoPageParams> {
                     .getComponentIdentifiers()) {
 
                 componentResult = new ComponentResult(platformCredential.getPlatformSerial(),
+                        platformCredential.getSerialNumber().toString(),
                         platformCredential.getPlatformChainType(),
                         componentIdentifier);
                 componentResultRepository.save(componentResult);

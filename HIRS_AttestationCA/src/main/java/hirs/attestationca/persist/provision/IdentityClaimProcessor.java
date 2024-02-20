@@ -213,7 +213,9 @@ public class IdentityClaimProcessor extends AbstractProcessor {
         // store component results objects
         for (PlatformCredential platformCredential : platformCredentials) {
             List<ComponentResult> componentResults = componentResultRepository
-                    .findByBoardSerialNumber(platformCredential.getPlatformSerial());
+                    .findByCertificateSerialNumberAndBoardSerialNumber(
+                            platformCredential.getSerialNumber().toString(),
+                            platformCredential.getPlatformSerial());
             if (componentResults.isEmpty()) {
                 handlePlatformComponents(platformCredential);
             }
@@ -622,6 +624,7 @@ public class IdentityClaimProcessor extends AbstractProcessor {
                     .getComponentIdentifiers()) {
 
                 componentResult = new ComponentResult(platformCredential.getPlatformSerial(),
+                        platformCredential.getSerialNumber().toString(),
                         platformCredential.getPlatformChainType(),
                         componentIdentifier);
                 componentResultRepository.save(componentResult);

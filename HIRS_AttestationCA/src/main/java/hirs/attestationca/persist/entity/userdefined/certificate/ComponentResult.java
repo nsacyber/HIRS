@@ -10,7 +10,6 @@ import lombok.AccessLevel;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
 
 import java.util.LinkedList;
 import java.util.List;
@@ -25,12 +24,6 @@ import java.util.List;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class ComponentResult extends ArchivableEntity {
 
-    private String boardSerialNumber;
-    @Setter
-    private String expected = "";
-    @Setter
-    private String actual = "";
-
     // embedded component info
     private String manufacturer;
     private String model;
@@ -42,11 +35,12 @@ public class ComponentResult extends ArchivableEntity {
     private AttributeStatus attributeStatus;
     private String componentAddress;
     private boolean version2 = false;
-    private boolean mismatched = false;
+    private boolean mismatched;
     private String certificateType;
 
     private String issuerDN;
     private String certificateSerialNumber;
+    private String boardSerialNumber;
     private String uniformResourceIdentifier;
 
 
@@ -55,9 +49,11 @@ public class ComponentResult extends ArchivableEntity {
      * @param boardSerialNumber associated platform certificate serial number.
      * @param componentIdentifier object with information from the platform certificate components.
      */
-    public ComponentResult(final String boardSerialNumber, final String certificateType,
+    public ComponentResult(final String boardSerialNumber, final String certificateSerialNumber,
+                           final String certificateType,
                            final ComponentIdentifier componentIdentifier) {
         this.boardSerialNumber = boardSerialNumber;
+        this.certificateSerialNumber = certificateSerialNumber;
         this.certificateType = certificateType;
         this.manufacturer = componentIdentifier.getComponentManufacturer().toString();
         this.model = componentIdentifier.getComponentModel().toString();
@@ -74,33 +70,32 @@ public class ComponentResult extends ArchivableEntity {
         componentAddress = sb.toString();
 
         // V2 fields
-        if (componentIdentifier.isVersion2()) {
+        if (componentIdentifier.isVersion2()
+                && componentIdentifier instanceof ComponentIdentifierV2) {
+            // this is a downside of findbugs, the code is set up to indicate if a CI is V2 or not
+            // but find bugs is throwing a flag because instanceof isn't being used.
             ComponentIdentifierV2 ciV2 = (ComponentIdentifierV2) componentIdentifier;
             this.componentClass = ciV2.getComponentClass().toString();
             this.attributeStatus = ciV2.getAttributeStatus();
             this.version2 = true;
             if (ciV2.getCertificateIdentifier() != null) {
                 this.issuerDN = ciV2.getCertificateIdentifier().getIssuerDN().toString();
-                this.certificateSerialNumber = ciV2.getCertificateIdentifier()
-                        .getCertificateSerialNumber().toString();
+//                this.certificateSerialNumber = ciV2.getCertificateIdentifier()
+//                        .getCertificateSerialNumber().toString();
                 if (ciV2.getComponentPlatformUri() != null) {
                     this.uniformResourceIdentifier = ciV2.getComponentPlatformUri()
                             .getUniformResourceIdentifier().toString();
                 }
             }
         }
-
-        checkMatchedStatus();
     }
 
     /**
-     * This method is used to update the mismatched status flag for
-     * displaying red if there is a failure.
+     * This method is only used by the certificate-details.jsp page. This
+     * method splits the compiled string of addresses into the component address
+     * object for display on the jsp page.
+     * @return a collection of component addresses.
      */
-    public void checkMatchedStatus() {
-        this.mismatched = this.actual.equals(this.expected);
-    }
-
     public List<ComponentAddress> getComponentAddresses() {
         List<ComponentAddress> addresses = new LinkedList<>();
         ComponentAddress address;
@@ -120,13 +115,8 @@ public class ComponentResult extends ArchivableEntity {
      * @return a string for the component result
      */
     public String toString() {
-        if (isMismatched()) {
-            return String.format("ComponentResult: expected=[%s] actual=[%s]",
-                    expected, actual);
-        } else {
-            return String.format("ComponentResult: certificateSerialNumber=[%s] "
-                            + "manufacturer=[%s] model=[%s] componentClass=[%s]",
-                    boardSerialNumber, manufacturer, model, componentClass);
-        }
+        return String.format("ComponentResult: certificateSerialNumber=[%s] "
+                        + "manufacturer=[%s] model=[%s] componentClass=[%s]",
+                boardSerialNumber, manufacturer, model, componentClass);
     }
 }

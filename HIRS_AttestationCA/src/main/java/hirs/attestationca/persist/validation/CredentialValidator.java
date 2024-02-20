@@ -1,5 +1,7 @@
 package hirs.attestationca.persist.validation;
 
+import hirs.attestationca.persist.entity.manager.ComponentAttributeRepository;
+import hirs.attestationca.persist.entity.manager.ComponentResultRepository;
 import hirs.attestationca.persist.entity.userdefined.certificate.EndorsementCredential;
 import hirs.attestationca.persist.entity.userdefined.certificate.PlatformCredential;
 import hirs.attestationca.persist.entity.userdefined.report.DeviceInfoReport;
@@ -165,7 +167,9 @@ public class CredentialValidator extends SupplyChainCredentialValidator {
     public static AppraisalStatus validatePlatformCredentialAttributes(
             final PlatformCredential platformCredential,
             final DeviceInfoReport deviceInfoReport,
-            final EndorsementCredential endorsementCredential) {
+            final EndorsementCredential endorsementCredential,
+            final ComponentResultRepository componentResultRepository,
+            final ComponentAttributeRepository componentAttributeRepository) {
         final String baseErrorMessage = "Can't validate platform credential attributes without ";
         String message;
         if (platformCredential == null) {
@@ -192,7 +196,8 @@ public class CredentialValidator extends SupplyChainCredentialValidator {
         String credentialType = platformCredential.getCredentialType();
         if (PlatformCredential.CERTIFICATE_TYPE_2_0.equals(credentialType)) {
             return CertificateAttributeScvValidator.validatePlatformCredentialAttributesV2p0(
-                    platformCredential, deviceInfoReport);
+                    platformCredential, deviceInfoReport, componentResultRepository,
+                    componentAttributeRepository);
         }
         return CertificateAttributeScvValidator.validatePlatformCredentialAttributesV1p2(
                 platformCredential, deviceInfoReport);
