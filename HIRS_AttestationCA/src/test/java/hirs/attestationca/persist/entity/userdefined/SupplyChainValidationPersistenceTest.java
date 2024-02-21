@@ -102,6 +102,30 @@ public class SupplyChainValidationPersistenceTest {
 //        supplyChainValidationSummaryRepository.deleteAll();
     }
 
+
+    /**
+     * Tests that a SupplyChainValidationSummary can be persisted.
+     */
+    @Test
+    public void testSave() throws InterruptedException {
+////        DBManager<SupplyChainValidationSummary> supplyMan = new DBManager<>(
+////                SupplyChainValidationSummary.class, sessionFactory
+////        );
+//
+//        SupplyChainValidationSummary summary = getTestSummary(
+//                2,
+//                1,
+//                certificates
+//        );
+//        SupplyChainValidationSummary savedSummary = supplyChainValidationSummaryRepository.save(summary);
+////        SupplyChainValidationSummary savedSummary = supplyMan.save(summary);
+//
+//        System.out.println("XXXX testSave: summary.getDevice.getID: " + summary.getDevice().getId());
+//        System.out.println("XXXX testSave: savedSummary.getDevice.getID: " + savedSummary.getDevice().getId());
+//
+//        assertEquals(summary, savedSummary);
+    }
+
 //    /**
 //     * Tests that an empty summary behaves as expected.
 //     */
@@ -211,29 +235,9 @@ public class SupplyChainValidationPersistenceTest {
 //        assertEquals(AppraisalStatus.Status.FAIL, twoBadValidations.getOverallValidationResult());
 //        assertNotNull(twoBadValidations.getCreateTime());
 //    }
-//
-//    /**
-//     * Tests that a SupplyChainValidationSummary can be persisted.
-//     */
-//    @Test
-//    public void testSave() throws InterruptedException {
-////        DBManager<SupplyChainValidationSummary> supplyMan = new DBManager<>(
-////                SupplyChainValidationSummary.class, sessionFactory
-////        );
-//
-//        SupplyChainValidationSummary summary = getTestSummary(
-//                2,
-//                1,
-//                certificates
-//        );
-//        SupplyChainValidationSummary savedSummary = supplyChainValidationSummaryRepository.save(summary);
-////        SupplyChainValidationSummary savedSummary = supplyMan.save(summary);
-//
-//        System.out.println("XXXX testSave: summary.getDevice.getID: " + summary.getDevice().getId());
-//        System.out.println("XXXX testSave: savedSummary.getDevice.getID: " + savedSummary.getDevice().getId());
-//
-//        assertEquals(summary, savedSummary);
-//    }
+
+
+    // TEST SAVE HERE
 
 //    /**
 //     * Tests that an empty SupplyChainValidationSummary can be persisted and retrieved.
