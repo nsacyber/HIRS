@@ -87,12 +87,12 @@ test {
     useJUnitPlatform()
 }
 
-build {
-  doFirst{
+task buildVersion() {
+    doLast {
         def verFile = new File(projectDir, "build/VERSION")
         verFile.write("${jarVersion}")
-        }
- }
+    }
+}
 
 ospackage {
     packageName = 'HIRS_AttestationCA'
@@ -127,23 +127,24 @@ ospackage {
          user 'root'
          fileMode = 0755 
     }
-    
+
     // Uninstall
     preUninstall 'bash /opt/hirs/aca/scripts/aca/aca_remove_setup.sh'
-    postUninstall 'rm -rf /etc/hirs'
-    postUninstall 'rm -rf /opt/hirs'
+    //postUninstall 'rm -rf /etc/hirs'
+    //postUninstall 'rm -rf /opt/hirs'
 
     buildRpm {
-        dependsOn  ':build'
+        dependsOn  ':HIRS_AttestationCAPortal:buildVersion'
         dependsOn  ':HIRS_AttestationCAPortal:bootWar'
         arch = X86_64
         // Required apps will be aut installed by dnf if not present
         requires('java-17-openjdk', '17.0', GREATER | EQUAL)
         requires('mariadb-server' , '10.3' , GREATER | EQUAL)
         requires('procps-ng', '3.3.15', GREATER | EQUAL)
-         
+        requires('alternatives', '1.19', GREATER | EQUAL)
         // Post Trans stage (Occurs after required app and postInstall stage)
         // Note postInstall wont wait forrequired apps
+        postTrans 'update-alternatives --set java java-17-openjdk.x86_64'
         postTrans 'bash /opt/hirs/aca/scripts/aca/aca_setup.sh -u'
         postTrans '/opt/hirs/aca/scripts/aca/aca_bootRun.sh -w &'
         // add chrontab to run ACA at boot
@@ -155,7 +156,7 @@ ospackage {
     }
 
     buildDeb {
-        dependsOn  ':build'
+        dependsOn  ':HIRS_AttestationCAPortal:buildVersion'
         dependsOn  ':HIRS_AttestationCAPortal:bootWar'
         packageName = 'hirs-attestationca'
         arch = 'amd64'

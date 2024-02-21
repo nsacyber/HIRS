@@ -32,7 +32,7 @@ help () {
 
 # Process parameters Argument handling 
 POSITIONAL_ARGS=()
-ORIGINAL_ARGS=("$@")
+ORIGINAL_ARGS=("$@")grep -i "hirs_db_password" /etc/hirs/aca/aca.properties
 while [[ $# -gt 0 ]]; do
   case $1 in
     -sd|--skip-db)

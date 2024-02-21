@@ -44,6 +44,8 @@ start_mysqlsd () {
   if [ $ID = "ubuntu" ]; then 
      PROCESS="mariadb"
   fi
+   # Make sure log file has correct permissions
+   chown -R mysql:mysql /var/lib/mysql/ >> "$LOG_FILE"
    # Check if mysql is already running, if not initialize
    if [[ $(pgrep -c -u mysql $PROCESS) -eq 0 ]]; then
    # Check if running in a container
@@ -53,7 +55,6 @@ start_mysqlsd () {
          if [ ! -d "/var/lib/mysql/mysql/" ]; then
            echo "Installing mariadb"
            /usr/bin/mysql_install_db >> "$LOG_FILE"
-           chown -R mysql:mysql /var/lib/mysql/ >> "$LOG_FILE"
          fi
          if [[ $PRINT_STATUS == "-p" ]]; then echo "Starting mysql..."; fi
          /usr/bin/mysqld_safe  --skip-syslog  >> "$LOG_FILE" &

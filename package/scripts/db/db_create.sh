@@ -158,13 +158,20 @@ set_hirs_db_pwd () {
      if [ -z $HIRS_DB_PWD ]; then
        HIRS_DB_PWD=$(head -c 64 /dev/urandom | md5sum | tr -dc 'a-zA-Z0-9')
      fi
-
-     echo "hirs_db_username=hirs_db" >> $ACA_PROP_FILE
-     echo "hirs_db_password=$HIRS_DB_PWD" >> $ACA_PROP_FILE
-     echo "hibernate.connection.username=hirs_db" >> $SPRING_PROP_FILE
-     echo "hibernate.connection.password=$HIRS_DB_PWD" >> $SPRING_PROP_FILE
+     # Add key/values only if they dont exist
+     if [[ $(sudo grep -c "hirs_db_username" $ACA_PROP_FILE) -eq 0 ]]; then  
+         echo "hirs_db_username=hirs_db" >> $ACA_PROP_FILE
+     fi
+     if [[ $(sudo grep -c "hirs_db_password" $ACA_PROP_FILE) -eq 0 ]]; then
+         echo "hirs_db_password=$HIRS_DB_PWD" >> $ACA_PROP_FILE
+     fi
+     if [[ $(sudo grep -c "hibernate.connection.username" $SPRING_PROP_FILE) -eq 0 ]]; then
+         echo "hibernate.connection.username=hirs_db" >> $SPRING_PROP_FILE
+     fi
+     if [[ $(sudo grep -c "hibernate.connection.password" $SPRING_PROP_FILE) -eq 0 ]]; then
+         echo "hibernate.connection.password=$HIRS_DB_PWD" >> $SPRING_PROP_FILE
+     fi
   fi
-
 }
 
 # Create a hirs_db with client side TLS enabled
@@ -207,7 +214,9 @@ keyStoreType=PKCS12&\
 keyStorePassword=$PKI_PASS&\
 keyStore="$CLIENT_DB_P12" "
 
-echo $CONNECTOR_URL >> $SPRING_PROP_FILE
+if [[ $(sudo grep -c "hibernate.connection.url" $SPRING_PROP_FILE) -eq 0 ]]; then
+     echo $CONNECTOR_URL >> $SPRING_PROP_FILE
+fi
 
 }
 # HIRS ACA Mysqld processing ...

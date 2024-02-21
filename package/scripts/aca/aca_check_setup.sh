@@ -83,8 +83,11 @@ echo "Checking HIRS ACA Setup on this device..."
     elif [ $ID = 'ubuntu' ]; then
      echo "Ubuntu distro detected"
      dpkg -l "hirs-attestationca" > /dev/null
+    elif [ $ID = 'rocky' ]; then
+     echo "Rocky distro detected"
+     rpm -q --quiet HIRS_AttestationCA
    else
-    echo "Unsupported OS Distro encountered"
+    echo "$ID OS distro encountered"
   fi
   if [ $? -eq 0 ]; then
       echo "HIRS ACA was installed via an OS package on this device"
@@ -102,7 +105,7 @@ echo "Checking HIRS ACA Setup on this device..."
       check_db_cleared
       echo "  $CERT_PATH directory does not exist."
       echo " Exiting..."
-      echo "Please run aca_setup.sh and try again"
+      echo "Please run aca_setup.sh or dnf/apt-get install HIRS_AttestationCA* and try again."
       exit 1;
   fi
 
@@ -150,6 +153,12 @@ check_mysql_setup () {
   fi
   
   if [ ! -z $mysql_admin_password ]; then
+    mysql -u root --password=$mysql_admin_password -e "STATUS;"  &> /dev/null
+    if [ $? -eq 0 ]; then
+        echo "Mysql Root password verified"
+       else 
+        echo "Mysql Root password verification failed!"
+    fi
     if [ ! -z "${ARG_VERBOSE}" ]; then
       echo "Mysql status:"
       mysql -u root --password=$mysql_admin_password -e "STATUS;"

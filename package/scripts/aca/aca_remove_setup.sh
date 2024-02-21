@@ -32,9 +32,9 @@ echo "Removing certificates and config files..."
 
 # Remove /opt/hirs only if not configured by a package basedd install:
 if [ ! -f /etc/hirs/aca/VERSION ]; then
-#  if [ -d "/etc/hirs" ]; then
-#     rm -rf /etc/hirs >/dev/null 2>&1
-#  fi
+  if [ -d "/etc/hirs" ]; then
+     rm -rf /etc/hirs >/dev/null 2>&1
+  fi
   if [ -d "/opt/hirs" ]; then
      rm -rf /opt/hirs >/dev/null 2>&1
   fi
