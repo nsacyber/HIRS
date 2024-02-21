@@ -363,8 +363,8 @@ public final class CertificateStringMapBuilder {
             data.put("x509Version", certificate.getX509CredentialVersion());
             //CPSuri
             data.put("CPSuri", certificate.getCPSuri());
-            data.put("componentResults", componentResultRepository
-                    .findByBoardSerialNumber(certificate.getPlatformSerial()));
+            data.put("componentResults", PciIds.translateResults(componentResultRepository
+                    .findByBoardSerialNumber(certificate.getPlatformSerial())));
 
 
             //Get platform Configuration values and set map with it

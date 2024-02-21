@@ -10,6 +10,7 @@ import lombok.AccessLevel;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 import java.util.LinkedList;
 import java.util.List;
@@ -25,7 +26,9 @@ import java.util.List;
 public class ComponentResult extends ArchivableEntity {
 
     // embedded component info
+    @Setter
     private String manufacturer;
+    @Setter
     private String model;
     private String serialNumber;
     private String revisionNumber;

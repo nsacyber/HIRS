@@ -460,7 +460,6 @@ public class CertificateAttributeScvValidator extends SupplyChainCredentialValid
             List<ComponentInfo> componentInfoList = getV2PaccorOutput(paccorOutputString);
             // this is what I want to rewrite
             unmatchedComponents = validateV2PlatformCredentialAttributes(
-                    certificateId,
                     baseCompList,
                     componentInfoList);
             fieldValidation &= unmatchedComponents.isEmpty();
@@ -496,7 +495,6 @@ public class CertificateAttributeScvValidator extends SupplyChainCredentialValid
     }
 
     private static String validateV2PlatformCredentialAttributes(
-            final UUID certificateId,
             final List<ComponentIdentifier> fullDeltaChainComponents,
             final List<ComponentInfo> allDeviceInfoComponents) {
         ComponentIdentifierV2 ciV2;

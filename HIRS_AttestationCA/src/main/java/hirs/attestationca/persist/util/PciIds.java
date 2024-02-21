@@ -4,11 +4,13 @@ import com.github.marandus.pciid.model.Device;
 import com.github.marandus.pciid.model.Vendor;
 import com.github.marandus.pciid.service.PciIdsDatabase;
 import com.google.common.base.Strings;
+import hirs.attestationca.persist.entity.userdefined.certificate.ComponentResult;
 import hirs.attestationca.persist.entity.userdefined.certificate.attributes.ComponentIdentifier;
 import hirs.attestationca.persist.entity.userdefined.certificate.attributes.V2.ComponentIdentifierV2;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 
+import lombok.extern.log4j.Log4j2;
 import org.bouncycastle.asn1.ASN1UTF8String;
 import org.bouncycastle.asn1.DERUTF8String;
 
@@ -23,6 +25,7 @@ import java.util.List;
 /**
  * Provide Java access to PCI IDs.
  */
+@Log4j2
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class PciIds {
     /**
@@ -52,6 +55,7 @@ public final class PciIds {
             String dbFile = null;
             for (final String path : PCI_IDS_PATH) {
                 if ((new File(path)).exists()) {
+                    log.info("PCI IDs file was found {}", path);
                     dbFile = path;
                     break;
                 }
@@ -114,6 +118,23 @@ public final class PciIds {
     }
 
     /**
+     * Iterate through all components and translate PCI hardware IDs as necessary.  It will only
+     * translate ComponentResults objects as it relies on Component Class information.
+     * @param componentResults List of ComponentResults.
+     * @return the translated list of ComponentResults.
+     */
+    public static List<ComponentResult> translateResults(final List<ComponentResult> componentResults) {
+        List<ComponentResult> newList = new ArrayList<>();
+        if (componentResults != null && !componentResults.isEmpty()) {
+            for (final ComponentResult componentResult : componentResults) {
+                newList.add(translateResult(componentResult));
+            }
+        }
+
+        return newList;
+    }
+
+    /**
      * Translate Vendor and Device IDs, if found, in ComponentIdentifierV2 objects.
      * It will only translate ID values, any other value will pass through.
      * @param component ComponentIdentifierV2 object.
@@ -150,6 +171,24 @@ public final class PciIds {
     }
 
     /**
+     * Translate Vendor and Device IDs, if found, in ComponentResult objects.
+     * It will only translate ID values, any other value will pass through.
+     * @param componentResult ComponentResult object.
+     * @return the translated ComponentResult object.
+     */
+    public static ComponentResult translateResult(final ComponentResult componentResult) {
+        ComponentResult newComponent = null;
+        if (componentResult != null) {
+            newComponent = componentResult;
+
+            newComponent.setManufacturer(translateVendor(componentResult.getManufacturer()));
+            newComponent.setModel(translateDevice(componentResult.getManufacturer(),
+                    componentResult.getModel()));
+        }
+        return newComponent;
+    }
+
+    /**
      * Look up the vendor name from the PCI IDs list, if the input string contains an ID.
      * If any part of this fails, return the original manufacturer value.
      * @param refManufacturer DERUTF8String, likely from a ComponentIdentifier
@@ -161,6 +200,23 @@ public final class PciIds {
             Vendor ven = DB.findVendor(manufacturer.getString().toLowerCase());
             if (ven != null && !Strings.isNullOrEmpty(ven.getName())) {
                 manufacturer = new DERUTF8String(ven.getName());
+            }
+        }
+        return manufacturer;
+    }
+
+    /**
+     * Look up the vendor name from the PCI IDs list, if the input string contains an ID.
+     * If any part of this fails, return the original manufacturer value.
+     * @param refManufacturer String, likely from a ComponentResult
+     * @return String with the discovered vendor name, or the original manufacturer value.
+     */
+    public static String translateVendor(final String refManufacturer) {
+        String manufacturer = refManufacturer;
+        if (manufacturer != null && manufacturer.trim().matches("^[0-9A-Fa-f]{4}$")) {
+            Vendor ven = DB.findVendor(manufacturer.toLowerCase());
+            if (ven != null && !Strings.isNullOrEmpty(ven.getName())) {
+                manufacturer = ven.getName();
             }
         }
         return manufacturer;
@@ -186,6 +242,31 @@ public final class PciIds {
                     model.getString().toLowerCase());
             if (dev != null && !Strings.isNullOrEmpty(dev.getName())) {
                 model = new DERUTF8String(dev.getName());
+            }
+        }
+        return model;
+    }
+
+    /**
+     * Look up the device name from the PCI IDs list, if the input strings contain IDs.
+     * The Device lookup requires the Vendor ID AND the Device ID to be valid values.
+     * If any part of this fails, return the original model value.
+     * @param refManufacturer String, likely from a ComponentResult
+     * @param refModel String, likely from a ComponentResult
+     * @return String with the discovered device name, or the original model value.
+     */
+    public static String translateDevice(final String refManufacturer,
+                                         final String refModel) {
+        String manufacturer = refManufacturer;
+        String model = refModel;
+        if (manufacturer != null
+                && model != null
+                && manufacturer.trim().matches("^[0-9A-Fa-f]{4}$")
+                && model.trim().matches("^[0-9A-Fa-f]{4}$")) {
+            Device dev = DB.findDevice(manufacturer.toLowerCase(),
+                    model.toLowerCase());
+            if (dev != null && !Strings.isNullOrEmpty(dev.getName())) {
+                model = dev.getName();
             }
         }
         return model;
