@@ -1,13 +1,14 @@
-package hirs.attestationca.persist.entity.userdefined;
+package hirs.attestationca.portal;
 
 import hirs.attestationca.persist.PersistenceConfiguration;
-import hirs.attestationca.persist.SpringPersistenceTest;
+import hirs.attestationca.portal.SpringPersistenceTest2;
 import hirs.attestationca.persist.entity.ArchivableEntity;
 import hirs.attestationca.persist.entity.manager.CertificateRepository;
 import hirs.attestationca.persist.entity.manager.DeviceRepository;
 import hirs.attestationca.persist.entity.manager.SupplyChainValidationSummaryRepository;
 import hirs.attestationca.persist.entity.userdefined.report.DeviceInfoReport;
-import hirs.attestationca.persist.entity.userdefined.report.DeviceInfoReportTest;
+//import hirs.attestationca.persist.entity.userdefined.report.DeviceInfoReportTest;
+import hirs.attestationca.persist.entity.userdefined.Device;
 import hirs.attestationca.persist.enums.AppraisalStatus;
 //import hirs.attestationca.portal.PersistenceJPAConfig;
 
@@ -52,7 +53,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 //})
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 //public class SupplyChainValidationPersistenceTest {
-public class SupplyChainValidationPersistenceTest extends SpringPersistenceTest {
+public class SupplyChainValidationPersistenceTest2 extends SpringPersistenceTest2 {
     private Device device;
     private List<ArchivableEntity> certificates;
     //    @Mock
@@ -84,7 +85,7 @@ public class SupplyChainValidationPersistenceTest extends SpringPersistenceTest 
 //        }
 //
 ////        device = DeviceTest.getTestDevice("TestDevice");
-        device = AbstractUserdefinedEntityTest.getTestDevice("TestDevice");
+//        device = AbstractUserdefinedEntityTest.getTestDevice("TestDevice");
         deviceRepository.save(device);
     }
 
