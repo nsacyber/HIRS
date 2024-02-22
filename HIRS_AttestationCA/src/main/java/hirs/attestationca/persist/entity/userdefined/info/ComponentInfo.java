@@ -1,19 +1,16 @@
 package hirs.attestationca.persist.entity.userdefined.info;
 
+import hirs.attestationca.persist.entity.ArchivableEntity;
+import hirs.attestationca.persist.entity.userdefined.certificate.attributes.ComponentIdentifier;
 import jakarta.persistence.Column;
 import jakarta.persistence.DiscriminatorColumn;
 import jakarta.persistence.DiscriminatorType;
 import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
 import jakarta.xml.bind.annotation.XmlElement;
-import lombok.Data;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.lang3.StringUtils;
-
-import java.io.Serializable;
 
 /**
  * ComponentInfo is a class to hold Hardware component information
@@ -21,16 +18,18 @@ import java.io.Serializable;
  */
 @Log4j2
 @NoArgsConstructor
-@Data
 @Entity
+@Getter
 @DiscriminatorColumn(name = "componentTypeEnum", discriminatorType = DiscriminatorType.STRING)
-public class ComponentInfo implements Serializable {
+public class ComponentInfo extends ArchivableEntity {
 
-    @Id
-    @Column(name = "componentInfo_id")
-    @GeneratedValue(strategy = GenerationType.AUTO)
-    private Long id;
+//    @Id
+//    @Column(name = "componentInfo_id")
+//    @GeneratedValue(strategy = GenerationType.AUTO)
+//    private Long id;
 
+    @Column(nullable = false)
+    private String deviceName;
     @XmlElement
     @Column(nullable = false)
     private String componentManufacturer;
@@ -53,12 +52,14 @@ public class ComponentInfo implements Serializable {
 
     /**
      * Constructor.
+     * @param deviceName the host machine associated with this component.
      * @param componentManufacturer Component Manufacturer (must not be null)
      * @param componentModel Component Model (must not be null)
      * @param componentSerial Component Serial Number (can be null)
      * @param componentRevision Component Revision or Version (can be null)
      */
-    public ComponentInfo(final String componentManufacturer,
+    public ComponentInfo(final String deviceName,
+                         final String componentManufacturer,
                          final String componentModel,
                          final String componentSerial,
                          final String componentRevision) {
@@ -77,50 +78,32 @@ public class ComponentInfo implements Serializable {
         if (componentSerial != null) {
             this.componentSerial = componentSerial.trim();
         } else {
-            this.componentSerial = StringUtils.EMPTY;
+            this.componentSerial = ComponentIdentifier.EMPTY_COMPONENT;
         }
         if (componentRevision != null) {
             this.componentRevision = componentRevision.trim();
         } else {
-            this.componentRevision = StringUtils.EMPTY;
+            this.componentRevision = ComponentIdentifier.EMPTY_COMPONENT;
         }
     }
 
     /**
      * Constructor.
+     * @param deviceName the host machine associated with this component.
      * @param componentManufacturer Component Manufacturer (must not be null)
      * @param componentModel Component Model (must not be null)
      * @param componentSerial Component Serial Number (can be null)
      * @param componentRevision Component Revision or Version (can be null)
      * @param componentClass Component Class (can be null)
      */
-    public ComponentInfo(final String componentManufacturer,
+    public ComponentInfo(final String deviceName,
+                         final String componentManufacturer,
                          final String componentModel,
                          final String componentSerial,
                          final String componentRevision,
                          final String componentClass) {
-        if (isComplete(
-                componentManufacturer,
-                componentModel,
-                componentSerial,
-                componentRevision)) {
-            log.error("ComponentInfo: manufacturer and/or "
-                    + "model can not be null");
-            throw new NullPointerException("ComponentInfo: manufacturer and/or "
-                    + "model can not be null");
-        }
-        this.componentManufacturer = componentManufacturer.trim();
-        this.componentModel = componentModel.trim();
-        if (componentSerial != null) {
-            this.componentSerial = componentSerial.trim();
-        } else {
-            this.componentSerial = StringUtils.EMPTY;
-        }
-        if (componentRevision != null) {
-            this.componentRevision = componentRevision.trim();
-        } else {
-            this.componentRevision = StringUtils.EMPTY;
-        }
+        this(deviceName, componentManufacturer, componentModel,
+                componentSerial, componentRevision);
 
         if (componentClass != null) {
             this.componentClass = componentClass;

@@ -7,7 +7,6 @@ import hirs.attestationca.persist.entity.userdefined.info.ComponentInfo;
 import lombok.NoArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.logging.log4j.util.Strings;
 import org.bouncycastle.asn1.x500.X500Name;
 import org.bouncycastle.cert.CertException;
 import org.bouncycastle.cert.X509AttributeCertificateHolder;
@@ -32,7 +31,6 @@ import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.Iterator;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 
@@ -275,11 +273,13 @@ public class SupplyChainCredentialValidator  {
 
     /**
      * Parses the output from PACCOR's allcomponents.sh script into ComponentInfo objects.
+     * @param the host machine associated with the component
      * @param paccorOutput the output from PACCOR's allcomoponents.sh
      * @return a list of ComponentInfo objects built from paccorOutput
      * @throws java.io.IOException if something goes wrong parsing the JSON
      */
-    public static List<ComponentInfo> getComponentInfoFromPaccorOutput(final String paccorOutput)
+    public static List<ComponentInfo> getComponentInfoFromPaccorOutput(final String hostName,
+                                                                       final String paccorOutput)
             throws IOException {
         List<ComponentInfo> componentInfoList = new ArrayList<>();
 
@@ -290,52 +290,32 @@ public class SupplyChainCredentialValidator  {
                     = rootNode.findValue("COMPONENTS").elements();
             while (jsonComponentNodes.hasNext()) {
                 JsonNode next = jsonComponentNodes.next();
-                componentInfoList.add(new ComponentInfo(
-                        getJSONNodeValueAsText(next, "MANUFACTURER"),
-                        getJSONNodeValueAsText(next, "MODEL"),
-                        getJSONNodeValueAsText(next, "SERIAL"),
-                        getJSONNodeValueAsText(next, "REVISION")));
+
+                List<JsonNode> compClassNodes = next.findValues("COMPONENTCLASS");
+                if (compClassNodes.isEmpty()) {
+                    componentInfoList.add(new ComponentInfo(hostName,
+                            getJSONNodeValueAsText(next, "MANUFACTURER"),
+                            getJSONNodeValueAsText(next, "MODEL"),
+                            getJSONNodeValueAsText(next, "SERIAL"),
+                            getJSONNodeValueAsText(next, "REVISION")));
+                } else {
+                    // version 2
+                    String componentClass = StringUtils.EMPTY;
+                    for (JsonNode subNode : compClassNodes) {
+                        componentClass = getJSONNodeValueAsText(subNode,
+                                "COMPONENTCLASSVALUE");
+                    }
+                    componentInfoList.add(new ComponentInfo(hostName,
+                            getJSONNodeValueAsText(next, "MANUFACTURER"),
+                            getJSONNodeValueAsText(next, "MODEL"),
+                            getJSONNodeValueAsText(next, "SERIAL"),
+                            getJSONNodeValueAsText(next, "REVISION"),
+                            componentClass));
+                }
             }
         }
 
         return componentInfoList;
-    }
-
-    /**
-     * Parses the output from PACCOR's allcomponents.sh script into ComponentInfo objects.
-     * @param paccorOutput the output from PACCOR's allcomoponents.sh
-     * @return a list of ComponentInfo objects built from paccorOutput
-     * @throws IOException if something goes wrong parsing the JSON
-     */
-    public static List<ComponentInfo> getV2PaccorOutput(
-            final String paccorOutput) throws IOException {
-        List<ComponentInfo> ciList = new LinkedList<>();
-        String manufacturer, model, serial, revision;
-        String componentClass = Strings.EMPTY;
-
-        if (StringUtils.isNotEmpty(paccorOutput)) {
-            ObjectMapper objectMapper = new ObjectMapper(new JsonFactory());
-            JsonNode rootNode = objectMapper.readTree(paccorOutput);
-            Iterator<JsonNode> jsonComponentNodes
-                    = rootNode.findValue("COMPONENTS").elements();
-            while (jsonComponentNodes.hasNext()) {
-                JsonNode next = jsonComponentNodes.next();
-                manufacturer = getJSONNodeValueAsText(next, "MANUFACTURER");
-                model = getJSONNodeValueAsText(next, "MODEL");
-                serial = getJSONNodeValueAsText(next, "SERIAL");
-                revision = getJSONNodeValueAsText(next, "REVISION");
-                List<JsonNode> compClassNodes = next.findValues("COMPONENTCLASS");
-
-                for (JsonNode subNode : compClassNodes) {
-                    componentClass = getJSONNodeValueAsText(subNode,
-                            "COMPONENTCLASSVALUE");
-                }
-                ciList.add(new ComponentInfo(manufacturer, model,
-                        serial, revision, componentClass));
-            }
-        }
-
-        return ciList;
     }
 
     private static String getJSONNodeValueAsText(final JsonNode node, final String fieldName) {

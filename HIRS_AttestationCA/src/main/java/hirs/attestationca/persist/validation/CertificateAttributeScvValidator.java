@@ -34,7 +34,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
-import java.util.UUID;
 import java.util.stream.Collectors;
 
 import static hirs.attestationca.persist.enums.AppraisalStatus.Status.ERROR;
@@ -88,7 +87,7 @@ public class CertificateAttributeScvValidator extends SupplyChainCredentialValid
         List<ComponentIdentifier> origPcComponents
                 = new LinkedList<>(basePlatformCredential.getComponentIdentifiers());
 
-        return validateDeltaAttributesChainV2p0(deltaPlatformCredential.getId(),
+        return validateDeltaAttributesChainV2p0(
                 deviceInfoReport, deltaMapping, origPcComponents);
     }
 
@@ -287,11 +286,20 @@ public class CertificateAttributeScvValidator extends SupplyChainCredentialValid
                         && identifier.getComponentModel() != null)
                 .collect(Collectors.toList());
 
+        /**
+         * 1. create a mapping for the CI and the Cinfo to the component class (all trimming should happen in the object class)
+         * 2. Run a look based on the component class and compare the items.
+         * 3. if something doesn't match create a componentattributestatus
+         * 4. pull all relevant information on the mapping side
+         * Note: have to considered component class pulls of more than one. like memory
+         *
+         */
         String paccorOutputString = deviceInfoReport.getPaccorOutputString();
         String unmatchedComponents;
         try {
             List<ComponentInfo> componentInfoList
-                    = getComponentInfoFromPaccorOutput(paccorOutputString);
+                    = getComponentInfoFromPaccorOutput(deviceInfoReport.getNetworkInfo().getHostname(),
+                    paccorOutputString);
             unmatchedComponents = validateV2p0PlatformCredentialComponentsExpectingExactMatch(
                     validPcComponents, componentInfoList);
             fieldValidation &= unmatchedComponents.isEmpty();
@@ -342,7 +350,6 @@ public class CertificateAttributeScvValidator extends SupplyChainCredentialValid
      */
     @SuppressWarnings("methodlength")
     static AppraisalStatus validateDeltaAttributesChainV2p0(
-            final UUID certificateId,
             final DeviceInfoReport deviceInfoReport,
             final Map<PlatformCredential, SupplyChainValidation> deltaMapping,
             final List<ComponentIdentifier> origPcComponents) {
@@ -457,7 +464,9 @@ public class CertificateAttributeScvValidator extends SupplyChainCredentialValid
         String unmatchedComponents;
         try {
             // compare based on component class
-            List<ComponentInfo> componentInfoList = getV2PaccorOutput(paccorOutputString);
+            List<ComponentInfo> componentInfoList = getComponentInfoFromPaccorOutput(
+                    deviceInfoReport.getNetworkInfo().getHostname(),
+                    paccorOutputString);
             // this is what I want to rewrite
             unmatchedComponents = validateV2PlatformCredentialAttributes(
                     baseCompList,
@@ -740,6 +749,7 @@ public class CertificateAttributeScvValidator extends SupplyChainCredentialValid
         log.info("Validating the following Platform Cert components...");
         pcComponents.forEach(component -> log.info(component.toString()));
         log.info("...against the the following DeviceInfoReport components:");
+        log.error(allDeviceInfoComponents.size());
         allDeviceInfoComponents.forEach(component -> log.info(component.toString()));
         Set<ASN1UTF8String> manufacturerSet = new HashSet<>();
         pcComponents.forEach(pcComp -> manufacturerSet.add(pcComp.getComponentManufacturer()));

@@ -1,6 +1,7 @@
 package hirs.attestationca.persist;
 
 import hirs.attestationca.persist.entity.manager.CertificateRepository;
+import hirs.attestationca.persist.entity.manager.ComponentInfoRepository;
 import hirs.attestationca.persist.entity.manager.ComponentResultRepository;
 import hirs.attestationca.persist.entity.manager.DeviceRepository;
 import hirs.attestationca.persist.entity.manager.IssuedCertificateRepository;
@@ -10,7 +11,6 @@ import hirs.attestationca.persist.entity.manager.ReferenceManifestRepository;
 import hirs.attestationca.persist.entity.manager.TPM2ProvisionerStateRepository;
 import hirs.attestationca.persist.service.SupplyChainValidationService;
 import hirs.structs.converters.StructConverter;
-import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.PropertySource;
@@ -63,6 +63,7 @@ public class RestfulAttestationCertificateAuthority extends AttestationCertifica
             final PrivateKey privateKey, final X509Certificate acaCertificate,
             final StructConverter structConverter,
             final ComponentResultRepository componentResultRepository,
+            final ComponentInfoRepository componentInfoRepository,
             final CertificateRepository certificateRepository,
             final IssuedCertificateRepository issuedCertificateRepository,
             final ReferenceManifestRepository referenceManifestRepository,
@@ -72,7 +73,8 @@ public class RestfulAttestationCertificateAuthority extends AttestationCertifica
             final PolicyRepository policyRepository,
             final TPM2ProvisionerStateRepository tpm2ProvisionerStateRepository) {
         super(supplyChainValidationService, privateKey, acaCertificate, structConverter,
-                componentResultRepository, certificateRepository, issuedCertificateRepository,
+                componentResultRepository, componentInfoRepository,
+                certificateRepository, issuedCertificateRepository,
                 referenceManifestRepository,
                 validDays, deviceRepository,
                 referenceDigestValueRepository, policyRepository, tpm2ProvisionerStateRepository);

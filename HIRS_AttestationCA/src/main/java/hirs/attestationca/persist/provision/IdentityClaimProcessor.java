@@ -3,6 +3,7 @@ package hirs.attestationca.persist.provision;
 import com.google.protobuf.ByteString;
 import hirs.attestationca.configuration.provisionerTpm2.ProvisionerTpm2;
 import hirs.attestationca.persist.entity.manager.CertificateRepository;
+import hirs.attestationca.persist.entity.manager.ComponentInfoRepository;
 import hirs.attestationca.persist.entity.manager.ComponentResultRepository;
 import hirs.attestationca.persist.entity.manager.DeviceRepository;
 import hirs.attestationca.persist.entity.manager.PolicyRepository;
@@ -19,6 +20,7 @@ import hirs.attestationca.persist.entity.userdefined.certificate.ComponentResult
 import hirs.attestationca.persist.entity.userdefined.certificate.EndorsementCredential;
 import hirs.attestationca.persist.entity.userdefined.certificate.PlatformCredential;
 import hirs.attestationca.persist.entity.userdefined.certificate.attributes.ComponentIdentifier;
+import hirs.attestationca.persist.entity.userdefined.info.ComponentInfo;
 import hirs.attestationca.persist.entity.userdefined.info.FirmwareInfo;
 import hirs.attestationca.persist.entity.userdefined.info.HardwareInfo;
 import hirs.attestationca.persist.entity.userdefined.info.NetworkInfo;
@@ -33,6 +35,7 @@ import hirs.attestationca.persist.enums.AppraisalStatus;
 import hirs.attestationca.persist.exceptions.IdentityProcessingException;
 import hirs.attestationca.persist.provision.helper.ProvisionUtils;
 import hirs.attestationca.persist.service.SupplyChainValidationService;
+import hirs.attestationca.persist.validation.SupplyChainCredentialValidator;
 import hirs.utils.HexUtils;
 import hirs.utils.SwidResource;
 import hirs.utils.enums.DeviceInfoEnums;
@@ -75,6 +78,7 @@ public class IdentityClaimProcessor extends AbstractProcessor {
     private SupplyChainValidationService supplyChainValidationService;
     private CertificateRepository certificateRepository;
     private ComponentResultRepository componentResultRepository;
+    private ComponentInfoRepository componentInfoRepository;
     private ReferenceManifestRepository referenceManifestRepository;
     private ReferenceDigestValueRepository referenceDigestValueRepository;
     private DeviceRepository deviceRepository;
@@ -87,6 +91,7 @@ public class IdentityClaimProcessor extends AbstractProcessor {
             final SupplyChainValidationService supplyChainValidationService,
             final CertificateRepository certificateRepository,
             final ComponentResultRepository componentResultRepository,
+            final ComponentInfoRepository componentInfoRepository,
             final ReferenceManifestRepository referenceManifestRepository,
             final ReferenceDigestValueRepository referenceDigestValueRepository,
             final DeviceRepository deviceRepository,
@@ -95,6 +100,7 @@ public class IdentityClaimProcessor extends AbstractProcessor {
         this.supplyChainValidationService = supplyChainValidationService;
         this.certificateRepository = certificateRepository;
         this.componentResultRepository = componentResultRepository;
+        this.componentInfoRepository = componentInfoRepository;
         this.referenceManifestRepository = referenceManifestRepository;
         this.referenceDigestValueRepository = referenceDigestValueRepository;
         this.deviceRepository = deviceRepository;
@@ -194,7 +200,9 @@ public class IdentityClaimProcessor extends AbstractProcessor {
         // Parse and save device info
         Device device = processDeviceInfo(claim);
 
-        device.getDeviceInfo().setPaccorOutputString(claim.getPaccorOutput());
+//        device.getDeviceInfo().setPaccorOutputString(claim.getPaccorOutput());
+        handleDeviceComponents(device.getName(),
+                claim.getPaccorOutput());
         // There are situations in which the claim is sent with no PCs
         // or a PC from the tpm which will be deprecated
         // this is to check what is in the platform object and pull
@@ -632,5 +640,21 @@ public class IdentityClaimProcessor extends AbstractProcessor {
             }
         }
         return componentResults;
+    }
+
+    private int handleDeviceComponents(final String hostName, final String paccorString) {
+        int deviceComponents = 0 ;
+        try {
+            List<ComponentInfo> componentInfos = SupplyChainCredentialValidator
+                    .getComponentInfoFromPaccorOutput(hostName, paccorString);
+
+            for (ComponentInfo componentInfo : componentInfos) {
+                this.componentInfoRepository.save(componentInfo);
+            }
+        } catch (IOException e) {
+            log.warn("Error parsing paccor string");
+        }
+
+        return deviceComponents;
     }
 }

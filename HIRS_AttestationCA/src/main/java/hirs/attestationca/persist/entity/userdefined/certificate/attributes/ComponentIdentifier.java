@@ -1,6 +1,5 @@
 package hirs.attestationca.persist.entity.userdefined.certificate.attributes;
 
-import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
@@ -130,7 +129,7 @@ public class ComponentIdentifier {
     public ComponentIdentifier(final ASN1Sequence sequence) throws IllegalArgumentException {
         // set all optional values to default in case they aren't set.
         this();
-        //Check if it have a valid number of identifiers
+        //Check if it has a valid number of identifiers
         if (sequence.size() < MANDATORY_ELEMENTS) {
             throw new IllegalArgumentException("Component identifier do not have required values.");
         }

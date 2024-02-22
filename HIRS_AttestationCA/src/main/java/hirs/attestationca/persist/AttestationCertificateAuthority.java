@@ -1,6 +1,7 @@
 package hirs.attestationca.persist;
 
 import hirs.attestationca.persist.entity.manager.CertificateRepository;
+import hirs.attestationca.persist.entity.manager.ComponentInfoRepository;
 import hirs.attestationca.persist.entity.manager.ComponentResultRepository;
 import hirs.attestationca.persist.entity.manager.DeviceRepository;
 import hirs.attestationca.persist.entity.manager.IssuedCertificateRepository;
@@ -52,6 +53,7 @@ public abstract class AttestationCertificateAuthority {
     private Integer validDays = 1;
 
     private final ComponentResultRepository componentResultRepository;
+    private ComponentInfoRepository componentInfoRepository;
     private final CertificateRepository certificateRepository;
     private final IssuedCertificateRepository issuedCertificateRepository;
     private final ReferenceManifestRepository referenceManifestRepository;
@@ -71,6 +73,7 @@ public abstract class AttestationCertificateAuthority {
      * @param acaCertificate the ACA certificate
      * @param structConverter the struct converter
      * @param componentResultRepository the component result manager
+     * @param componentInfoRepository the component info manager
      * @param certificateRepository the certificate manager
      * @param referenceManifestRepository the Reference Manifest manager
      * @param validDays the number of days issued certs are valid
@@ -85,6 +88,7 @@ public abstract class AttestationCertificateAuthority {
             final PrivateKey privateKey, final X509Certificate acaCertificate,
             final StructConverter structConverter,
             final ComponentResultRepository componentResultRepository,
+            final ComponentInfoRepository componentInfoRepository,
             final CertificateRepository certificateRepository,
             final IssuedCertificateRepository issuedCertificateRepository,
             final ReferenceManifestRepository referenceManifestRepository,
@@ -98,6 +102,7 @@ public abstract class AttestationCertificateAuthority {
         this.acaCertificate = acaCertificate;
         this.structConverter = structConverter;
         this.componentResultRepository = componentResultRepository;
+        this.componentInfoRepository = componentInfoRepository;
         this.certificateRepository = certificateRepository;
         this.issuedCertificateRepository = issuedCertificateRepository;
         this.referenceManifestRepository = referenceManifestRepository;
@@ -111,8 +116,8 @@ public abstract class AttestationCertificateAuthority {
                 certificateRepository, deviceRepository,
                 privateKey, acaCertificate, validDays, tpm2ProvisionerStateRepository);
         this.identityClaimHandler = new IdentityClaimProcessor(supplyChainValidationService,
-                certificateRepository, componentResultRepository, referenceManifestRepository,
-                referenceDigestValueRepository,
+                certificateRepository, componentResultRepository, componentInfoRepository,
+                referenceManifestRepository, referenceDigestValueRepository,
                 deviceRepository, tpm2ProvisionerStateRepository, policyRepository);
     }
 
