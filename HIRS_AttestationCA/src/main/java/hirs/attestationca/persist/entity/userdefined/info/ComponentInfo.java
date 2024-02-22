@@ -7,6 +7,7 @@ import jakarta.persistence.DiscriminatorColumn;
 import jakarta.persistence.DiscriminatorType;
 import jakarta.persistence.Entity;
 import jakarta.xml.bind.annotation.XmlElement;
+import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.extern.log4j.Log4j2;
@@ -17,9 +18,9 @@ import org.apache.commons.lang3.StringUtils;
  * such as manufacturer, model, serial number and version.
  */
 @Log4j2
-@NoArgsConstructor
 @Entity
 @Getter
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 @DiscriminatorColumn(name = "componentTypeEnum", discriminatorType = DiscriminatorType.STRING)
 public class ComponentInfo extends ArchivableEntity {
 
@@ -50,6 +51,20 @@ public class ComponentInfo extends ArchivableEntity {
     @Column
     private String componentClass;
 
+    /**
+     * Base constructor for children.
+     * @param componentManufacturer
+     * @param componentModel
+     * @param componentSerial
+     * @param componentRevision
+     */
+    public ComponentInfo(final String componentManufacturer,
+                         final String componentModel,
+                         final String componentSerial,
+                         final String componentRevision) {
+        this(StringUtils.EMPTY, componentManufacturer, componentModel,
+                componentSerial, componentRevision);
+    }
     /**
      * Constructor.
      * @param deviceName the host machine associated with this component.
