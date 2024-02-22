@@ -1,5 +1,7 @@
 package hirs.attestationca.persist.entity.userdefined;
 
+import hirs.attestationca.persist.entity.ArchivableEntity;
+import hirs.attestationca.persist.entity.userdefined.certificate.*;
 import hirs.attestationca.persist.entity.userdefined.info.*;
 import hirs.attestationca.persist.entity.userdefined.report.DeviceInfoReport;
 import hirs.attestationca.persist.entity.userdefined.report.DeviceInfoReportTest;
@@ -13,11 +15,43 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.InetAddress;
+import java.net.URISyntaxException;
 import java.net.UnknownHostException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Objects;
 
 public class AbstractUserdefinedEntityTest {
+
+
+    /**
+     * Location of a test (fake) SGI intermediate CA certificate.
+     */
+    public static final String FAKE_SGI_INT_CA_FILE = "/certificates/fakeSGIIntermediateCA.cer";
+
+    /**
+     * Location of a test (fake) Intel intermediate CA certificate.
+     */
+    public static final String FAKE_INTEL_INT_CA_FILE =
+            "/certificates/fakeIntelIntermediateCA.cer";
+
+    /**
+     * Location of a test (fake) root CA certificate.
+     */
+    public static final String FAKE_ROOT_CA_FILE = "/certificates/fakeRootCA.cer";
+
+    /**
+     * Hex-encoded subject key identifier for the FAKE_ROOT_CA_FILE.
+     */
+    //j
+    public static final String FAKE_ROOT_CA_SUBJECT_KEY_IDENTIFIER_HEX =
+            "58ec313a1699f94c1c8c4e2c6412402b258f0177";
+
+    private static final String TEST_IDENTITY_CERT = "/tpm/sample_identity_cert.cer";
 
     private final NetworkInfo networkInfo = createTestNetworkInfo();
     private final OSInfo osInfo = createTestOSInfo();
@@ -26,7 +60,79 @@ public class AbstractUserdefinedEntityTest {
     private final TPMInfo tpmInfo = createTPMInfo();
     private static final Logger LOGGER = LogManager.getLogger(DeviceInfoReportTest.class);
 
-    private static final String TEST_IDENTITY_CERT = "/tpm/sample_identity_cert.cer";
+
+    /**
+     * Construct a test certificate from the given parameters.
+     *
+     * @param <T>              the type of Certificate that will be created
+     * @param certificateClass the class of certificate to generate
+     * @param filename         the location of the certificate to be used
+     * @return the newly-constructed Certificate
+     * @throws IOException if there is a problem constructing the test certificate
+     */
+    public static <T extends ArchivableEntity> Certificate getTestCertificate(
+            final Class<T> certificateClass, final String filename)
+            throws IOException {
+        return getTestCertificate(certificateClass, filename, null, null);
+    }
+
+    /**
+     * Construct a test certificate from the given parameters.
+     *
+     * @param <T>                   the type of Certificate that will be created
+     * @param certificateClass      the class of certificate to generate
+     * @param filename              the location of the certificate to be used
+     * @param endorsementCredential the endorsement credentials (can be null)
+     * @param platformCredentials   the platform credentials (can be null)
+     * @return the newly-constructed Certificate
+     * @throws IOException if there is a problem constructing the test certificate
+     */
+    public static <T extends ArchivableEntity> Certificate getTestCertificate(
+            final Class<T> certificateClass, final String filename,
+            final EndorsementCredential endorsementCredential,
+            final List<PlatformCredential> platformCredentials)
+            throws IOException {
+
+        Path certPath;
+        try {
+            certPath = Paths.get(Objects.requireNonNull(AbstractUserdefinedEntityTest.class.getResource(filename)).toURI());
+//            certPath = Paths.get(Objects.requireNonNull(CertificateTest.class.getResource(filename)).toURI());
+        } catch (URISyntaxException e) {
+            throw new IOException("Could not resolve path URI", e);
+        }
+
+        switch (certificateClass.getSimpleName()) {
+            case "CertificateAuthorityCredential":
+                return new CertificateAuthorityCredential(certPath);
+            case "ConformanceCredential":
+                return new ConformanceCredential(certPath);
+            case "EndorsementCredential":
+                return new EndorsementCredential(certPath);
+            case "PlatformCredential":
+                return new PlatformCredential(certPath);
+            case "IssuedAttestationCertificate":
+                return new IssuedAttestationCertificate(certPath,
+                        endorsementCredential, platformCredentials);
+            default:
+                throw new IllegalArgumentException(
+                        String.format("Unknown certificate class %s", certificateClass.getName())
+                );
+        }
+    }
+
+    /**
+     * Return a list of all test certificates.
+     *
+     * @return a list of all test certificates
+     * @throws IOException if there is a problem deserializing certificates
+     */
+    public static List<ArchivableEntity> getAllTestCertificates() throws IOException {
+        return Arrays.asList(
+                getTestCertificate(CertificateAuthorityCredential.class, FAKE_SGI_INT_CA_FILE),
+                getTestCertificate(CertificateAuthorityCredential.class, FAKE_INTEL_INT_CA_FILE),
+                getTestCertificate(CertificateAuthorityCredential.class, FAKE_ROOT_CA_FILE)
+        );
+    }
 
     public static Device getTestDevice(final String name) {
         final DeviceInfoReport deviceInfo = AbstractUserdefinedEntityTest.getTestDeviceInfoReport();

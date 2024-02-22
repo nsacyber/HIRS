@@ -14,7 +14,7 @@ import java.util.List;
  * Simple tests for the {@link SupplyChainValidation} class.  Tests for the persistence of this
  * class are located in { SupplyChainValidationSummaryTest}.
  */
-class SupplyChainValidationTest {
+class SupplyChainValidationTest extends AbstractUserdefinedEntityTest {
     private static final String MESSAGE = "Some message.";
 
     /**
@@ -31,7 +31,7 @@ class SupplyChainValidationTest {
         );
         assertEquals(
                 validation.getCertificatesUsed(),
-                CertificateTest.getAllTestCertificates()
+                getAllTestCertificates()
         );
         assertEquals(validation.getMessage(), MESSAGE);
     }
@@ -47,7 +47,7 @@ class SupplyChainValidationTest {
                 new SupplyChainValidation(
                         null,
                         AppraisalStatus.Status.PASS,
-                        CertificateTest.getAllTestCertificates(),
+                        getAllTestCertificates(),
                         MESSAGE
                 ));
     }
@@ -78,7 +78,7 @@ class SupplyChainValidationTest {
         new SupplyChainValidation(
                 SupplyChainValidation.ValidationType.ENDORSEMENT_CREDENTIAL,
                 AppraisalStatus.Status.PASS,
-                CertificateTest.getAllTestCertificates(),
+                getAllTestCertificates(),
                 MESSAGE
         );
     }
@@ -95,7 +95,7 @@ class SupplyChainValidationTest {
         return getTestSupplyChainValidation(
                 SupplyChainValidation.ValidationType.ENDORSEMENT_CREDENTIAL,
                 AppraisalStatus.Status.PASS,
-                CertificateTest.getAllTestCertificates()
+                getAllTestCertificates()
         );
     }
 
