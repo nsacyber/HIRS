@@ -93,7 +93,10 @@ import java.util.Map;
 import java.util.HashMap;
 
 /**
- * Tests the SupplyChainValidator class.
+ * Tests the SupplyChainCredentialValidator and CredentialValidator class.
+ * Migration note: Tests specifically for test Intel Nuc Platform Credentials
+ * have been omitted, as there is no existing matching test Endorsement Credential
+ * in the project resources.
  */
 public class SupplyChainCredentialValidatorTest {
 
@@ -418,6 +421,93 @@ public class SupplyChainCredentialValidatorTest {
         DeviceInfoReport deviceInfoReport = buildReport(new HardwareInfo(
                 DeviceInfoEnums.NOT_SPECIFIED, DeviceInfoEnums.NOT_SPECIFIED,
                 DeviceInfoEnums.NOT_SPECIFIED, TEST_BOARD_SERIAL_NUMBER,
+                DeviceInfoEnums.NOT_SPECIFIED, DeviceInfoEnums.NOT_SPECIFIED));
+
+        byte[] certBytes = Files.readAllBytes(Paths.get(Objects.requireNonNull(CertificateTest.class.
+                getResource(INTEL_PLATFORM_CERT_2)).toURI()));
+
+        PlatformCredential pc = new PlatformCredential(certBytes);
+
+        EndorsementCredential ec = new EndorsementCredential(
+                Files.readAllBytes(Paths.get(Objects.requireNonNull(getClass().getResource(TEST_EK_CERT)).toURI())));
+
+        AppraisalStatus result =
+                CredentialValidator.validatePlatformCredentialAttributes(pc,
+                        deviceInfoReport, ec);
+        assertEquals(AppraisalStatus.Status.PASS, result.getAppStatus());
+        assertEquals(SupplyChainCredentialValidator.PLATFORM_ATTRIBUTES_VALID,
+                result.getMessage());
+    }
+
+    /**
+     * Checks if validation occurs when the Platform Credential baseboard
+     * serial number is in the device chassis serial number field.
+     */
+    @Test
+    public final void validatePlatformCredentialCombinedWithChassisSerialNumbersMatchedBaseboard()
+            throws Exception {
+
+        DeviceInfoReport deviceInfoReport = buildReport(new HardwareInfo(
+                DeviceInfoEnums.NOT_SPECIFIED, DeviceInfoEnums.NOT_SPECIFIED,
+                DeviceInfoEnums.NOT_SPECIFIED, DeviceInfoEnums.NOT_SPECIFIED,
+                TEST_BOARD_SERIAL_NUMBER, DeviceInfoEnums.NOT_SPECIFIED));
+
+        byte[] certBytes = Files.readAllBytes(Paths.get(Objects.requireNonNull(CertificateTest.class.
+                getResource(INTEL_PLATFORM_CERT_2)).toURI()));
+
+        PlatformCredential pc = new PlatformCredential(certBytes);
+
+        EndorsementCredential ec = new EndorsementCredential(
+                Files.readAllBytes(Paths.get(Objects.requireNonNull(getClass().getResource(TEST_EK_CERT)).toURI())));
+
+        AppraisalStatus result =
+                CredentialValidator.validatePlatformCredentialAttributes(pc,
+                        deviceInfoReport, ec);
+        assertEquals(AppraisalStatus.Status.PASS, result.getAppStatus());
+        assertEquals(SupplyChainCredentialValidator.PLATFORM_ATTRIBUTES_VALID,
+                result.getMessage());
+    }
+
+    /**
+     * Checks if validation occurs when the Platform Credential chassis
+     * serial number is in the device baseboard serial number field.
+     */
+    @Test
+    public final void validatePlatformCredentialCombinedWithBaseboardSerialNumbersMatchedChassis()
+            throws Exception {
+
+        DeviceInfoReport deviceInfoReport = buildReport(new HardwareInfo(
+                DeviceInfoEnums.NOT_SPECIFIED, DeviceInfoEnums.NOT_SPECIFIED,
+                DeviceInfoEnums.NOT_SPECIFIED, DeviceInfoEnums.NOT_SPECIFIED,
+                DeviceInfoEnums.NOT_SPECIFIED, TEST_CHASSIS_SERIAL_NUMBER));
+
+        byte[] certBytes = Files.readAllBytes(Paths.get(Objects.requireNonNull(CertificateTest.class.
+                getResource(INTEL_PLATFORM_CERT_2)).toURI()));
+
+        PlatformCredential pc = new PlatformCredential(certBytes);
+
+        EndorsementCredential ec = new EndorsementCredential(
+                Files.readAllBytes(Paths.get(Objects.requireNonNull(getClass().getResource(TEST_EK_CERT)).toURI())));
+
+        AppraisalStatus result =
+                CredentialValidator.validatePlatformCredentialAttributes(pc,
+                        deviceInfoReport, ec);
+        assertEquals(AppraisalStatus.Status.PASS, result.getAppStatus());
+        assertEquals(SupplyChainCredentialValidator.PLATFORM_ATTRIBUTES_VALID,
+                result.getMessage());
+    }
+
+    /**
+     * Checks if validation occurs when the Platform Credential chassis
+     * serial number is in the device system serial number field.
+     */
+    @Test
+    public final void validatePlatformCredentialCombinedWithSystemSerialNumbersMatchedChassis()
+            throws Exception {
+
+        DeviceInfoReport deviceInfoReport = buildReport(new HardwareInfo(
+                DeviceInfoEnums.NOT_SPECIFIED, DeviceInfoEnums.NOT_SPECIFIED,
+                DeviceInfoEnums.NOT_SPECIFIED, TEST_CHASSIS_SERIAL_NUMBER,
                 DeviceInfoEnums.NOT_SPECIFIED, DeviceInfoEnums.NOT_SPECIFIED));
 
         byte[] certBytes = Files.readAllBytes(Paths.get(Objects.requireNonNull(CertificateTest.class.
