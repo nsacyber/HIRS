@@ -56,26 +56,20 @@ public class Main {
                 String verifyFile = commander.getVerifyFile();
                 String rimel = commander.getRimEventLog();
                 String trustStore = commander.getTruststoreFile();
-                    validator.setRim(verifyFile);
-                    validator.setRimEventLog(rimel);
+                validator.setRim(verifyFile);
+                validator.setRimEventLog(rimel);
+                credValidator = new CredentialArgumentValidator(trustStore,
+                        "","", true);
+                if (credValidator.isValid()) {
                     validator.setTrustStoreFile(trustStore);
-                    if (!certificateFile.isEmpty()) {
-                        System.out.println("A single cert cannot be used for verification. " +
-                                "The signing cert will be searched for in the trust store.");
-                    credValidator = new CredentialArgumentValidator(trustStore,
-                            "","", true);
-                    if (credValidator.isValid()) {
-                        validator.setTrustStoreFile(trustStore);
-                    } else {
-                        System.out.println(credValidator.getErrorMessage());
-                        System.exit(1);
-                    }
-                    if (validator.validateSwidtagFile(verifyFile)) {
-                        System.out.println("Successfully verified " + verifyFile);
-                    } else {
-                        System.out.println("Failed to verify " + verifyFile);
-                        System.exit(1);
-                    }
+                } else {
+                    exitWithErrorCode(credValidator.getErrorMessage());
+                }
+                if (validator.validateSwidtagFile(verifyFile)) {
+                    System.out.println("Successfully verified " + verifyFile);
+                } else {
+                    exitWithErrorCode("Failed to verify " + verifyFile);
+                }
             } else {
                 gateway = new SwidTagGateway();
                 if (commander.isVerbose()) {
@@ -90,18 +84,8 @@ public class Main {
                 String rimEventLog = commander.getRimEventLog();
                 switch (createType) {
                     case "BASE":
-                        if (!attributesFile.isEmpty()) {
-                            gateway.setAttributesFile(attributesFile);
-                        } else {
-                            System.out.println("An attribute file is required.");
-                            System.exit(1);
-                        }
-                        if (!rimEventLog.isEmpty()) {
-                            gateway.setRimEventLog(rimEventLog);
-                        } else {
-                            System.out.println("A support RIM is required.");
-                            System.exit(1);
-                        }
+                        gateway.setAttributesFile(attributesFile);
+                        gateway.setRimEventLog(rimEventLog);
                         credValidator = new CredentialArgumentValidator("" ,
                                 certificateFile, privateKeyFile, false);
                         if (defaultKey){
@@ -116,11 +100,6 @@ public class Main {
                             }
                         } else {
                             exitWithErrorCode(credValidator.getErrorMessage());
-                        }
-                        if (rimEventLog.isEmpty()) {
-                            exitWithErrorCode("A support RIM is required.");
-                        } else {
-                            gateway.setRimEventLog(rimEventLog);
                         }
                         List<String> timestampArguments = commander.getTimestampArguments();
                         if (timestampArguments.size() > 0) {
