@@ -6,7 +6,6 @@ import hirs.attestationca.persist.entity.userdefined.SupplyChainValidation;
 import hirs.attestationca.persist.entity.userdefined.certificate.CertificateAuthorityCredential;
 import hirs.attestationca.persist.entity.userdefined.certificate.EndorsementCredential;
 import hirs.attestationca.persist.entity.userdefined.certificate.PlatformCredential;
-import hirs.attestationca.persist.entity.userdefined.CertificateTest;
 import hirs.attestationca.persist.entity.userdefined.certificate.attributes.ComponentClass;
 import hirs.attestationca.persist.entity.userdefined.certificate.attributes.V2.AttributeStatus;
 import hirs.attestationca.persist.entity.userdefined.info.ComponentInfo;
@@ -302,7 +301,7 @@ public class SupplyChainCredentialValidatorTest {
             keyStore.setCertificateEntry("Intel Intermediate Cert",
                     intermediatecacert.getX509Certificate());
 
-            byte[] certBytes = Files.readAllBytes(Paths.get(Objects.requireNonNull(CertificateTest.class.
+            byte[] certBytes = Files.readAllBytes(Paths.get(Objects.requireNonNull(SupplyChainCredentialValidatorTest.class.
                     getResource(INTEL_PLATFORM_CERT)).toURI()));
 
             PlatformCredential pc = new PlatformCredential(certBytes);
@@ -328,7 +327,7 @@ public class SupplyChainCredentialValidatorTest {
     public final void validateIntelPlatformCredentialAttributes()
             throws Exception {
 
-        byte[] certBytes = Files.readAllBytes(Paths.get(Objects.requireNonNull(CertificateTest.class.
+        byte[] certBytes = Files.readAllBytes(Paths.get(Objects.requireNonNull(SupplyChainCredentialValidatorTest.class.
                 getResource(INTEL_PLATFORM_CERT_2)).toURI()));
 
         PlatformCredential pc = new PlatformCredential(certBytes);
@@ -363,7 +362,7 @@ public class SupplyChainCredentialValidatorTest {
                 DeviceInfoEnums.NOT_SPECIFIED, DeviceInfoEnums.NOT_SPECIFIED,
                 DeviceInfoEnums.NOT_SPECIFIED, TEST_BOARD_SERIAL_NUMBER));
 
-        byte[] certBytes = Files.readAllBytes(Paths.get(Objects.requireNonNull(CertificateTest.class.
+        byte[] certBytes = Files.readAllBytes(Paths.get(Objects.requireNonNull(SupplyChainCredentialValidatorTest.class.
                 getResource(INTEL_PLATFORM_CERT_2)).toURI()));
 
         PlatformCredential pc = new PlatformCredential(certBytes);
@@ -392,7 +391,7 @@ public class SupplyChainCredentialValidatorTest {
                 DeviceInfoEnums.NOT_SPECIFIED, DeviceInfoEnums.NOT_SPECIFIED,
                 TEST_CHASSIS_SERIAL_NUMBER, DeviceInfoEnums.NOT_SPECIFIED));
 
-        byte[] certBytes = Files.readAllBytes(Paths.get(Objects.requireNonNull(CertificateTest.class.
+        byte[] certBytes = Files.readAllBytes(Paths.get(Objects.requireNonNull(SupplyChainCredentialValidatorTest.class.
                 getResource(INTEL_PLATFORM_CERT_2)).toURI()));
 
         PlatformCredential pc = new PlatformCredential(certBytes);
@@ -423,7 +422,7 @@ public class SupplyChainCredentialValidatorTest {
                 DeviceInfoEnums.NOT_SPECIFIED, TEST_BOARD_SERIAL_NUMBER,
                 DeviceInfoEnums.NOT_SPECIFIED, DeviceInfoEnums.NOT_SPECIFIED));
 
-        byte[] certBytes = Files.readAllBytes(Paths.get(Objects.requireNonNull(CertificateTest.class.
+        byte[] certBytes = Files.readAllBytes(Paths.get(Objects.requireNonNull(SupplyChainCredentialValidatorTest.class.
                 getResource(INTEL_PLATFORM_CERT_2)).toURI()));
 
         PlatformCredential pc = new PlatformCredential(certBytes);
@@ -452,7 +451,7 @@ public class SupplyChainCredentialValidatorTest {
                 DeviceInfoEnums.NOT_SPECIFIED, DeviceInfoEnums.NOT_SPECIFIED,
                 TEST_BOARD_SERIAL_NUMBER, DeviceInfoEnums.NOT_SPECIFIED));
 
-        byte[] certBytes = Files.readAllBytes(Paths.get(Objects.requireNonNull(CertificateTest.class.
+        byte[] certBytes = Files.readAllBytes(Paths.get(Objects.requireNonNull(SupplyChainCredentialValidatorTest.class.
                 getResource(INTEL_PLATFORM_CERT_2)).toURI()));
 
         PlatformCredential pc = new PlatformCredential(certBytes);
@@ -481,7 +480,7 @@ public class SupplyChainCredentialValidatorTest {
                 DeviceInfoEnums.NOT_SPECIFIED, DeviceInfoEnums.NOT_SPECIFIED,
                 DeviceInfoEnums.NOT_SPECIFIED, TEST_CHASSIS_SERIAL_NUMBER));
 
-        byte[] certBytes = Files.readAllBytes(Paths.get(Objects.requireNonNull(CertificateTest.class.
+        byte[] certBytes = Files.readAllBytes(Paths.get(Objects.requireNonNull(SupplyChainCredentialValidatorTest.class.
                 getResource(INTEL_PLATFORM_CERT_2)).toURI()));
 
         PlatformCredential pc = new PlatformCredential(certBytes);
@@ -510,7 +509,7 @@ public class SupplyChainCredentialValidatorTest {
                 DeviceInfoEnums.NOT_SPECIFIED, TEST_CHASSIS_SERIAL_NUMBER,
                 DeviceInfoEnums.NOT_SPECIFIED, DeviceInfoEnums.NOT_SPECIFIED));
 
-        byte[] certBytes = Files.readAllBytes(Paths.get(Objects.requireNonNull(CertificateTest.class.
+        byte[] certBytes = Files.readAllBytes(Paths.get(Objects.requireNonNull(SupplyChainCredentialValidatorTest.class.
                 getResource(INTEL_PLATFORM_CERT_2)).toURI()));
 
         PlatformCredential pc = new PlatformCredential(certBytes);
@@ -540,7 +539,7 @@ public class SupplyChainCredentialValidatorTest {
                         PLATFORM_VERSION, DeviceInfoEnums.NOT_SPECIFIED,
                         DeviceInfoEnums.NOT_SPECIFIED, DeviceInfoEnums.NOT_SPECIFIED));
 
-        byte[] certBytes = Files.readAllBytes(Paths.get(Objects.requireNonNull(CertificateTest.class.
+        byte[] certBytes = Files.readAllBytes(Paths.get(Objects.requireNonNull(SupplyChainCredentialValidatorTest.class.
                 getResource(INTEL_PLATFORM_CERT_2)).toURI()));
 
         PlatformCredential pc = new PlatformCredential(certBytes);
@@ -570,7 +569,7 @@ public class SupplyChainCredentialValidatorTest {
                 new HardwareInfo(DeviceInfoEnums.NOT_SPECIFIED, DeviceInfoEnums.NOT_SPECIFIED,
                         DeviceInfoEnums.NOT_SPECIFIED, "zzz", "aaa", "bbb"));
 
-        byte[] certBytes = Files.readAllBytes(Paths.get(Objects.requireNonNull(CertificateTest.class.
+        byte[] certBytes = Files.readAllBytes(Paths.get(Objects.requireNonNull(SupplyChainCredentialValidatorTest.class.
                 getResource(INTEL_PLATFORM_CERT_2)).toURI()));
 
         PlatformCredential pc = new PlatformCredential(certBytes);
@@ -884,7 +883,7 @@ public class SupplyChainCredentialValidatorTest {
     @Test
     public final void verifyPlatformCredentialWithBadKeyStore()
             throws URISyntaxException, IOException {
-        byte[] certBytes = Files.readAllBytes(Paths.get(Objects.requireNonNull(CertificateTest.class.getResource(
+        byte[] certBytes = Files.readAllBytes(Paths.get(Objects.requireNonNull(SupplyChainCredentialValidatorTest.class.getResource(
                 INTEL_PLATFORM_CERT)).toURI()));
 
         PlatformCredential pc = new PlatformCredential(certBytes);
@@ -923,7 +922,7 @@ public class SupplyChainCredentialValidatorTest {
     @Test
     public final void verifyPlatformCredentialNullKeyStore()
             throws URISyntaxException, IOException {
-        byte[] certBytes = Files.readAllBytes(Paths.get(Objects.requireNonNull(CertificateTest.class.getResource(
+        byte[] certBytes = Files.readAllBytes(Paths.get(Objects.requireNonNull(SupplyChainCredentialValidatorTest.class.getResource(
                 INTEL_PLATFORM_CERT)).toURI()));
 
         PlatformCredential pc = new PlatformCredential(certBytes);
@@ -947,7 +946,7 @@ public class SupplyChainCredentialValidatorTest {
     @Test
     public final void verifyPlatformCredentialNullDeviceInfoReport()
             throws URISyntaxException, IOException {
-        byte[] certBytes = Files.readAllBytes(Paths.get(Objects.requireNonNull(CertificateTest.class.getResource(
+        byte[] certBytes = Files.readAllBytes(Paths.get(Objects.requireNonNull(SupplyChainCredentialValidatorTest.class.getResource(
                 INTEL_PLATFORM_CERT_2)).toURI()));
 
         PlatformCredential pc = new PlatformCredential(certBytes);
@@ -981,7 +980,7 @@ public class SupplyChainCredentialValidatorTest {
                 Files.readAllBytes(Paths.get(Objects.requireNonNull(getClass().getResource(INTEL_SIGNING_KEY)).toURI()))
         );
 
-        byte[] certBytes = Files.readAllBytes(Paths.get(Objects.requireNonNull(CertificateTest.class.
+        byte[] certBytes = Files.readAllBytes(Paths.get(Objects.requireNonNull(SupplyChainCredentialValidator.class.
                 getResource(NEW_NUC1)).toURI()));
 
         PlatformCredential pc = new PlatformCredential(certBytes);
@@ -1010,7 +1009,7 @@ public class SupplyChainCredentialValidatorTest {
                 Files.readAllBytes(Paths.get(Objects.requireNonNull(getClass().getResource(INTEL_INT_CA)).toURI()))
         );
 
-        byte[] certBytes = Files.readAllBytes(Paths.get(Objects.requireNonNull(CertificateTest.class.
+        byte[] certBytes = Files.readAllBytes(Paths.get(Objects.requireNonNull(SupplyChainCredentialValidator.class.
                 getResource(NEW_NUC1)).toURI()));
 
         PlatformCredential pc = new PlatformCredential(certBytes);
@@ -1038,7 +1037,7 @@ public class SupplyChainCredentialValidatorTest {
                 Files.readAllBytes(Paths.get(Objects.requireNonNull(getClass().getResource(INT_CA_CERT02)).toURI()))
         );
 
-        byte[] certBytes = Files.readAllBytes(Paths.get(Objects.requireNonNull(CertificateTest.class.
+        byte[] certBytes = Files.readAllBytes(Paths.get(Objects.requireNonNull(SupplyChainCredentialValidator.class.
                 getResource(TEST_EK_CERT)).toURI()));
 
         EndorsementCredential ec = new EndorsementCredential(certBytes);
@@ -1067,7 +1066,7 @@ public class SupplyChainCredentialValidatorTest {
                 Files.readAllBytes(Paths.get(Objects.requireNonNull(getClass().getResource(INTEL_INT_CA)).toURI()))
         );
 
-        byte[] certBytes = Files.readAllBytes(Paths.get(Objects.requireNonNull(CertificateTest.class.
+        byte[] certBytes = Files.readAllBytes(Paths.get(Objects.requireNonNull(SupplyChainCredentialValidator.class.
                 getResource(TEST_EK_CERT)).toURI()));
 
         EndorsementCredential ec = new EndorsementCredential(certBytes);
@@ -1268,7 +1267,7 @@ public class SupplyChainCredentialValidatorTest {
             throws IOException, URISyntaxException {
         DeviceInfoReport deviceInfoReport = setupDeviceInfoReportWithNotSpecifiedComponents();
         PlatformCredential platformCredential = new PlatformCredential(
-                Files.readAllBytes(Paths.get(Objects.requireNonNull(CertificateTest.class.
+                Files.readAllBytes(Paths.get(Objects.requireNonNull(SupplyChainCredentialValidator.class.
                         getResource((SAMPLE_TEST_PACCOR_CERT))).toURI())));
 
         AppraisalStatus appraisalStatus = CertificateAttributeScvValidator
