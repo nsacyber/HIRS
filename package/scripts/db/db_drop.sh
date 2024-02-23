@@ -30,14 +30,11 @@ fi
 
 echo "dropping hirs_db database"
 
-#if pgrep  mysqld >/dev/null 2>&1; then
   mysql -u root --password=$DB_ADMIN_PWD -e "FLUSH HOSTS; FLUSH LOGS; FLUSH STATUS; FLUSH PRIVILEGES; FLUSH USER_RESOURCES"
   mysql -u root --password=$DB_ADMIN_PWD -e "DROP USER 'hirs_db'@'localhost';"
   mysql -u root --password=$DB_ADMIN_PWD -e "DROP DATABASE IF EXISTS hirs_db;"
   echo "hirs_db database and hirs_db user removed"
-#   else
-#     echo "mysql is not running. DB was not removed."
-#fi
+
 
 # reset the mysql root if the password was left in the properties fiel
 if [ ! -z $DB_ADMIN_PWD ]; then

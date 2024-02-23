@@ -174,6 +174,23 @@ check_db_cleared () {
    fi
 }
 
+clear_hirs_user () {
+$(mysql -u root -e 'quit'  &> /dev/null);
+   if [ $? -eq 0 ]; then
+       HIRS_DB_USER_EXISTS="$(mysql -uroot -sse "SELECT EXISTS(SELECT 1 FROM mysql.user WHERE user = 'hirs_db')")"
+       if [[ $HIRS_DB_USER_EXISTS == 1 ]]; then
+          mysql -u root --password=$DB_ADMIN_PWD -e "DROP USER 'hirs_db'@'localhost';"
+          echo "hirs_db user found and deleted"
+       fi
+   fi
+}
+
+clear_hirs_db () {
+$(mysql -u root -e 'quit'  &> /dev/null);
+   if [ $? -eq 0 ]; then
+      mysql -u root --password=$DB_ADMIN_PWD -e "DROP DATABASE IF EXISTS hirs_db;"
+   fi
+}
 # restart maraidb
 mysqld_reboot () {
   # reboot mysql server

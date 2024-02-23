@@ -67,6 +67,18 @@ done
 
 set -- "${POSITIONAL_ARGS[@]}" # restore positional parameters
 
+# Check for existing installation folders and exist if found
+if [ -z $ARG_UNATTEND ]; then
+  if [ -d "/etc/hirs" ]; then
+    echo "/etc/hirs exists, aborting install."
+    exit 1  
+  fi
+  if [ -d "/opt/hirs" ]; then
+    echo "/opt/hirs exists, aborting install."
+    exit 1  
+  fi
+fi
+
 mkdir -p $HIRS_CONF_DIR $LOG_DIR $HIRS_JSON_DIR $ACA_OPT_DIR
 touch "$LOG_FILE"
 

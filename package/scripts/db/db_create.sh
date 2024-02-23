@@ -74,7 +74,7 @@ check_mysql_root_pwd () {
 	 DB_ADMIN_PWD=$(head -c 64 /dev/urandom | md5sum | tr -dc 'a-zA-Z0-9')
 	 echo "DB Admin will be set to $DB_ADMIN_PWD , please make note for next mysql use."
      # Check UNATTENDED flag set m if not then prompt user for permission ot store mysql root password
-	 if [ -z $UNATTEmariadb-serverNDED ]; then
+	 if [ -z $UNATTENDED ]; then
 	   read -p "Do you wish to save this password to the aca.properties file? " confirm
 	   if [[ $confirm == [yY] || $confirm == [yY][eE][sS] ]]; then
 	      echo "mysql_admin_password=$DB_ADMIN_PWD" >> $ACA_PROP_FILE
@@ -159,16 +159,16 @@ set_hirs_db_pwd () {
        HIRS_DB_PWD=$(head -c 64 /dev/urandom | md5sum | tr -dc 'a-zA-Z0-9')
      fi
      # Add key/values only if they dont exist
-     if [[ $(sudo grep -c "hirs_db_username" $ACA_PROP_FILE) -eq 0 ]]; then  
+     if [[ $(grep -c "hirs_db_username" $ACA_PROP_FILE) -eq 0 ]]; then  
          echo "hirs_db_username=hirs_db" >> $ACA_PROP_FILE
      fi
-     if [[ $(sudo grep -c "hirs_db_password" $ACA_PROP_FILE) -eq 0 ]]; then
+     if [[ $(grep -c "hirs_db_password" $ACA_PROP_FILE) -eq 0 ]]; then
          echo "hirs_db_password=$HIRS_DB_PWD" >> $ACA_PROP_FILE
      fi
-     if [[ $(sudo grep -c "hibernate.connection.username" $SPRING_PROP_FILE) -eq 0 ]]; then
+     if [[ $(grep -c "hibernate.connection.username" $SPRING_PROP_FILE) -eq 0 ]]; then
          echo "hibernate.connection.username=hirs_db" >> $SPRING_PROP_FILE
      fi
-     if [[ $(sudo grep -c "hibernate.connection.password" $SPRING_PROP_FILE) -eq 0 ]]; then
+     if [[ $(grep -c "hibernate.connection.password" $SPRING_PROP_FILE) -eq 0 ]]; then
          echo "hibernate.connection.password=$HIRS_DB_PWD" >> $SPRING_PROP_FILE
      fi
   fi
@@ -183,7 +183,6 @@ create_hirs_db_with_tls () {
   else
      mysql -u root --password=$DB_ADMIN_PWD < $MYSQL_DIR/db_create.sql
      mysql -u root --password=$DB_ADMIN_PWD < $MYSQL_DIR/secure_mysql.sql
-#     mysql -u root --password=$DB_ADMIN_PWD -e "ALTER USER 'hirs_db'@'localhost' IDENTIFIED BY '"$HIRS_DB_PWD"'; FLUSH PRIVILEGES;";
      mysql -u root --password=$DB_ADMIN_PWD -e "SET PASSWORD FOR 'hirs_db'@'localhost' = PASSWORD('"$HIRS_DB_PWD"'); FLUSH PRIVILEGES;";
   fi
 }
@@ -214,7 +213,7 @@ keyStoreType=PKCS12&\
 keyStorePassword=$PKI_PASS&\
 keyStore="$CLIENT_DB_P12" "
 
-if [[ $(sudo grep -c "hibernate.connection.url" $SPRING_PROP_FILE) -eq 0 ]]; then
+if [[ $(grep -c "hibernate.connection.url" $SPRING_PROP_FILE) -eq 0 ]]; then
      echo $CONNECTOR_URL >> $SPRING_PROP_FILE
 fi
 
@@ -227,6 +226,8 @@ set_mysql_client_tls
 start_mysqlsd
 check_mysql
 check_mysql_root_pwd
+clear_hirs_user
+
 set_hirs_db_pwd
 create_hirs_db_with_tls
 create_hibernate_url "RSA" "hirs_db"

@@ -130,9 +130,8 @@ ospackage {
 
     // Uninstall
     preUninstall 'bash /opt/hirs/aca/scripts/aca/aca_remove_setup.sh'
-    //postUninstall 'rm -rf /etc/hirs'
-    //postUninstall 'rm -rf /opt/hirs'
-
+    postUninstall 'if [ -d /etc/hirs ]; then rm -rf /etc/hirs; fi;'
+    
     buildRpm {
         dependsOn  ':HIRS_AttestationCAPortal:buildVersion'
         dependsOn  ':HIRS_AttestationCAPortal:bootWar'
@@ -145,6 +144,8 @@ ospackage {
         // Post Trans stage (Occurs after required app and postInstall stage)
         // Note postInstall wont wait forrequired apps
         postTrans 'update-alternatives --set java java-17-openjdk.x86_64'
+        postTrans 'firewall-cmd --add-port=8443/tcp --permanent'
+        postTrans 'firewall-cmd --reload'
         postTrans 'bash /opt/hirs/aca/scripts/aca/aca_setup.sh -u'
         postTrans '/opt/hirs/aca/scripts/aca/aca_bootRun.sh -w &'
         // add chrontab to run ACA at boot
