@@ -646,7 +646,7 @@ public class SwidTagGateway {
             }
         }
         try {
-            KeyName keyName = kiFactory.newKeyName(cp.getCertificateSubjectKeyIdentifier());
+            KeyName keyName = kiFactory.newKeyName(cp.getCertificateAuthorityKeyIdentifier());
             keyInfoElements.add(keyName);
         } catch (IOException e) {
             System.out.println("Error while getting SKID: " + e.getMessage());
