@@ -19,12 +19,12 @@ public class Commander {
     @Parameter(names = {"-c", "--create \"base\""}, order = 0,
             description = "The type of RIM to create. A base RIM will be created by default.")
     private String createType = "";
-    @Parameter(names = {"-v", "--verify <path>"}, order = 3,
+    @Parameter(names = {"-v", "--verify <path>"}, validateWith = FileArgumentValidator.class,
             description = "Specify a RIM file to verify.")
     private String verifyFile = "";
     @Parameter(names = {"-V", "--version"}, description = "Output the current version.")
     private boolean version = false;
-    @Parameter(names = {"-a", "--attributes <path>"}, order = 1,
+    @Parameter(names = {"-a", "--attributes <path>"}, validateWith = FileArgumentValidator.class,
             description = "The configuration file holding attributes "
             + "to populate the base RIM with.")
     private String attributesFile = "";
@@ -34,14 +34,16 @@ public class Commander {
     private String outFile = "";
     @Parameter(names = {"--verbose"}, description = "Control output verbosity.")
     private boolean verbose = false;
-    @Parameter(names = {"-t", "--truststore <path>"}, order = 4,
+    @Parameter(names = {"-t", "--truststore <path>"}, validateWith = FileArgumentValidator.class,
             description = "The truststore to sign the base RIM created "
             + "or to validate the signed base RIM.")
     private String truststoreFile = "";
-    @Parameter(names = {"-k", "--privateKeyFile <path>"}, order = 5,
+    @Parameter(names = {"-k", "--privateKeyFile <path>"},
+            validateWith = FileArgumentValidator.class,
             description = "The private key used to sign the base RIM created by this tool.")
     private String privateKeyFile = "";
-    @Parameter(names = {"-p", "--publicCertificate <path>"}, order = 6,
+    @Parameter(names = {"-p", "--publicCertificate <path>"},
+            validateWith = FileArgumentValidator.class,
             description = "The public key certificate to embed in the base RIM created by "
             + "this tool.")
     private String publicCertificate = "";
@@ -51,7 +53,7 @@ public class Commander {
     @Parameter(names = {"-d", "--default-key"}, order = 8,
             description = "Use default signing credentials.")
     private boolean defaultKey = false;
-    @Parameter(names = {"-l", "--rimel <path>"}, order = 9,
+    @Parameter(names = {"-l", "--rimel <path>"}, validateWith = FileArgumentValidator.class,
             description = "The TCG eventlog file to use as a support RIM.")
     private String rimEventLog = "";
     @Parameter(names = {"--timestamp"}, order = 10, variableArity = true,

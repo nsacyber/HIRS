@@ -55,22 +55,14 @@ public class Main {
                 String rimel = commander.getRimEventLog();
                 String certificateFile = commander.getPublicCertificate();
                 String trustStore = commander.getTruststoreFile();
-                if (!verifyFile.isEmpty()) {
                     validator.setRim(verifyFile);
-                    if (!rimel.isEmpty()) {
-                        validator.setRimEventLog(rimel);
-                    }
-                    if (!trustStore.isEmpty()) {
-                        validator.setTrustStoreFile(trustStore);
-                    }
+                    validator.setRimEventLog(rimel);
+                    validator.setTrustStoreFile(trustStore);
                     if (!certificateFile.isEmpty()) {
                         System.out.println("A single cert cannot be used for verification. " +
                                 "The signing cert will be searched for in the trust store.");
                     }
                     validator.validateSwidtagFile(verifyFile);
-                } else {
-                    exitWithErrorCode("A RIM file was not found for validation.");
-                }
             } else {
                 gateway = new SwidTagGateway();
                 if (commander.isVerbose()) {
