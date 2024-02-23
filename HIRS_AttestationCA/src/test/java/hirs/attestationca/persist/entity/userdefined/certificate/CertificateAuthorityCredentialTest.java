@@ -1,6 +1,6 @@
 package hirs.attestationca.persist.entity.userdefined.certificate;
 
-import hirs.attestationca.persist.entity.userdefined.CertificateTest;
+import hirs.attestationca.persist.entity.userdefined.AbstractUserdefinedEntityTest;
 import org.apache.commons.codec.binary.Hex;
 import static org.mockito.Mockito.mock;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -17,7 +17,7 @@ import hirs.attestationca.persist.entity.manager.CertificateRepository;
 /**
  * Tests that CertificateAuthorityCredential properly parses its fields.
  */
-public class CertificateAuthorityCredentialTest {
+public class CertificateAuthorityCredentialTest extends AbstractUserdefinedEntityTest {
     private static final CertificateRepository CERT_MAN = mock(CertificateRepository.class);
 
     /**
@@ -33,7 +33,7 @@ public class CertificateAuthorityCredentialTest {
     public void testGetSubjectKeyIdentifier()
             throws CertificateException, IOException, URISyntaxException {
         Path testCertPath = Paths.get(
-                this.getClass().getResource(CertificateTest.FAKE_ROOT_CA_FILE).toURI()
+                this.getClass().getResource(FAKE_ROOT_CA_FILE).toURI()
         );
         CertificateAuthorityCredential caCred = new CertificateAuthorityCredential(testCertPath);
 
@@ -42,7 +42,7 @@ public class CertificateAuthorityCredentialTest {
         assertNotNull(subjectKeyIdentifier);
         assertEquals(
                 Hex.encodeHexString(subjectKeyIdentifier),
-                CertificateTest.FAKE_ROOT_CA_SUBJECT_KEY_IDENTIFIER_HEX
+                FAKE_ROOT_CA_SUBJECT_KEY_IDENTIFIER_HEX
         );
     }
 }

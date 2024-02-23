@@ -29,17 +29,18 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 /**
  * This class tests functionality of the {@link Certificate} class.
  */
-public class CertificateTest {
-    /**
-     * Location of a test (fake) root CA certificate.
-     */
-    public static final String FAKE_ROOT_CA_FILE = "/certificates/fakeRootCA.cer";
+public class CertificateTest extends AbstractUserdefinedEntityTest {
+//    /**
+//     * Location of a test (fake) root CA certificate.
+//     */
+//    //j
+//    public static final String FAKE_ROOT_CA_FILE = "/certificates/fakeRootCA.cer";
 
-    /**
-     * Location of a test (fake) Intel intermediate CA certificate.
-     */
-    public static final String FAKE_INTEL_INT_CA_FILE =
-            "/certificates/fakeIntelIntermediateCA.cer";
+//    /**
+//     * Location of a test (fake) Intel intermediate CA certificate.
+//     */
+//    public static final String FAKE_INTEL_INT_CA_FILE =
+//            "/certificates/fakeIntelIntermediateCA.cer";
 
     /**
      * Location of a test (fake) Intel intermediate CA certificate.
@@ -47,10 +48,10 @@ public class CertificateTest {
     public static final String INTEL_INT_CA_FILE =
             "/validation/platform_credentials/intel_chain/root/intermediate2.cer";
 
-    /**
-     * Location of a test (fake) SGI intermediate CA certificate.
-     */
-    public static final String FAKE_SGI_INT_CA_FILE = "/certificates/fakeSGIIntermediateCA.cer";
+//    /**
+//     * Location of a test (fake) SGI intermediate CA certificate.
+//     */
+//    public static final String FAKE_SGI_INT_CA_FILE = "/certificates/fakeSGIIntermediateCA.cer";
 
     /**
      * Location of another test self-signed certificate.
@@ -77,12 +78,13 @@ public class CertificateTest {
      * Location of the GlobalSign Root CA certificate.
      */
     public static final String GS_ROOT_CA = "/certificates/stMicroCaCerts/gstpmroot.crt";
-
-    /**
-     * Hex-encoded subject key identifier for the FAKE_ROOT_CA_FILE.
-     */
-    public static final String FAKE_ROOT_CA_SUBJECT_KEY_IDENTIFIER_HEX =
-            "58ec313a1699f94c1c8c4e2c6412402b258f0177";
+//
+//    /**
+//     * Hex-encoded subject key identifier for the FAKE_ROOT_CA_FILE.
+//     */
+//    //j
+//    public static final String FAKE_ROOT_CA_SUBJECT_KEY_IDENTIFIER_HEX =
+//            "58ec313a1699f94c1c8c4e2c6412402b258f0177";
 
     /**
      * Location of a test STM endorsement credential.
@@ -450,7 +452,7 @@ public class CertificateTest {
         assertNotEquals(
                 null,
                 getTestCertificate(CertificateAuthorityCredential.class, FAKE_ROOT_CA_FILE)
-       );
+        );
     }
 
     /**
@@ -518,79 +520,6 @@ public class CertificateTest {
     public static Certificate getTestCertificate(
             final String filename) throws IOException {
         return getTestCertificate(CertificateAuthorityCredential.class, filename);
-    }
-
-
-    /**
-     * Construct a test certificate from the given parameters.
-     *
-     * @param <T>              the type of Certificate that will be created
-     * @param certificateClass the class of certificate to generate
-     * @param filename         the location of the certificate to be used
-     * @return the newly-constructed Certificate
-     * @throws IOException if there is a problem constructing the test certificate
-     */
-    public static <T extends ArchivableEntity> Certificate getTestCertificate(
-            final Class<T> certificateClass, final String filename)
-            throws IOException {
-        return getTestCertificate(certificateClass, filename, null, null);
-    }
-
-    /**
-     * Construct a test certificate from the given parameters.
-     *
-     * @param <T>                   the type of Certificate that will be created
-     * @param certificateClass      the class of certificate to generate
-     * @param filename              the location of the certificate to be used
-     * @param endorsementCredential the endorsement credentials (can be null)
-     * @param platformCredentials   the platform credentials (can be null)
-     * @return the newly-constructed Certificate
-     * @throws IOException if there is a problem constructing the test certificate
-     */
-    public static <T extends ArchivableEntity> Certificate getTestCertificate(
-            final Class<T> certificateClass, final String filename,
-            final EndorsementCredential endorsementCredential,
-            final List<PlatformCredential> platformCredentials)
-            throws IOException {
-
-        Path certPath;
-        try {
-            certPath = Paths.get(Objects.requireNonNull(CertificateTest.class.getResource(filename)).toURI());
-        } catch (URISyntaxException e) {
-            throw new IOException("Could not resolve path URI", e);
-        }
-
-        switch (certificateClass.getSimpleName()) {
-            case "CertificateAuthorityCredential":
-                return new CertificateAuthorityCredential(certPath);
-            case "ConformanceCredential":
-                return new ConformanceCredential(certPath);
-            case "EndorsementCredential":
-                return new EndorsementCredential(certPath);
-            case "PlatformCredential":
-                return new PlatformCredential(certPath);
-            case "IssuedAttestationCertificate":
-                return new IssuedAttestationCertificate(certPath,
-                        endorsementCredential, platformCredentials);
-            default:
-                throw new IllegalArgumentException(
-                        String.format("Unknown certificate class %s", certificateClass.getName())
-                );
-        }
-    }
-
-    /**
-     * Return a list of all test certificates.
-     *
-     * @return a list of all test certificates
-     * @throws IOException if there is a problem deserializing certificates
-     */
-    public static List<ArchivableEntity> getAllTestCertificates() throws IOException {
-        return Arrays.asList(
-                getTestCertificate(CertificateAuthorityCredential.class, FAKE_SGI_INT_CA_FILE),
-                getTestCertificate(CertificateAuthorityCredential.class, FAKE_INTEL_INT_CA_FILE),
-                getTestCertificate(CertificateAuthorityCredential.class, FAKE_ROOT_CA_FILE)
-        );
     }
 
     private static X509Certificate readX509Certificate(final String resourceName)
