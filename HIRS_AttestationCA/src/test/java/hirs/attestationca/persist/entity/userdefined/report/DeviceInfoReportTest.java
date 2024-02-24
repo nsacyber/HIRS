@@ -13,13 +13,8 @@ import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.InputStream;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
-import java.security.cert.CertificateFactory;
-import java.security.cert.X509Certificate;
 
 /**
  * DeviceInfoReportTest is a unit test class for DeviceInfoReports.
@@ -30,7 +25,6 @@ public class DeviceInfoReportTest extends AbstractUserdefinedEntityTest {
     private final FirmwareInfo firmwareInfo = createTestFirmwareInfo();
     private final HardwareInfo hardwareInfo = createTestHardwareInfo();
     private final TPMInfo tpmInfo = createTPMInfo();
-//    private static final String TEST_IDENTITY_CERT = "/tpm/sample_identity_cert.cer";
 
     private static final Logger LOGGER = LogManager.getLogger(DeviceInfoReportTest.class);
 

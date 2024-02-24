@@ -1,11 +1,6 @@
 package hirs.attestationca.persist.entity.userdefined.info;
 
 import static hirs.utils.enums.DeviceInfoEnums.NOT_SPECIFIED;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.InputStream;
-import java.security.cert.CertificateFactory;
-import java.security.cert.X509Certificate;
 
 import hirs.attestationca.persist.entity.userdefined.AbstractUserdefinedEntityTest;
 import org.apache.commons.lang3.StringUtils;
@@ -23,8 +18,7 @@ public class TPMInfoTest extends AbstractUserdefinedEntityTest {
 
     private static final String TPM_MAKE = "test tpmMake";
     private static final String LONG_TPM_MAKE = StringUtils.rightPad("test tpmMake", 65);
-//    private static final String TEST_IDENTITY_CERT =
-//            "/tpm/sample_identity_cert.cer";
+
     private static final short VERSION_MAJOR = 1;
     private static final short VERSION_MINOR = 2;
     private static final short VERSION_REV_MAJOR = 3;
