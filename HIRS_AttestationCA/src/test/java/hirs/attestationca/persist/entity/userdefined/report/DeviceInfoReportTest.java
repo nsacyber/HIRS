@@ -1,5 +1,6 @@
 package hirs.attestationca.persist.entity.userdefined.report;
 
+import hirs.attestationca.persist.entity.userdefined.AbstractUserdefinedEntityTest;
 import hirs.attestationca.persist.entity.userdefined.info.OSInfo;
 import hirs.attestationca.persist.entity.userdefined.info.TPMInfo;
 import hirs.attestationca.persist.entity.userdefined.info.NetworkInfo;
@@ -23,13 +24,13 @@ import java.security.cert.X509Certificate;
 /**
  * DeviceInfoReportTest is a unit test class for DeviceInfoReports.
  */
-public class DeviceInfoReportTest {
+public class DeviceInfoReportTest extends AbstractUserdefinedEntityTest {
     private final NetworkInfo networkInfo = createTestNetworkInfo();
     private final OSInfo osInfo = createTestOSInfo();
     private final FirmwareInfo firmwareInfo = createTestFirmwareInfo();
     private final HardwareInfo hardwareInfo = createTestHardwareInfo();
     private final TPMInfo tpmInfo = createTPMInfo();
-    private static final String TEST_IDENTITY_CERT = "/tpm/sample_identity_cert.cer";
+//    private static final String TEST_IDENTITY_CERT = "/tpm/sample_identity_cert.cer";
 
     private static final Logger LOGGER = LogManager.getLogger(DeviceInfoReportTest.class);
 
@@ -131,7 +132,6 @@ public class DeviceInfoReportTest {
             LOGGER.error("error occurred while creating InetAddress");
             return null;
         }
-
     }
 
     /**
@@ -163,47 +163,5 @@ public class DeviceInfoReportTest {
                 "test really long serial number with many characters", "test really long chassis "
                 + "serial number with many characters",
                 "test really long baseboard serial number with many characters");
-    }
-
-    /**
-     * Creates a test instance of TPMInfo.
-     *
-     * @return TPM information for a fake device
-     */
-    public static final TPMInfo createTPMInfo() {
-        final short num1 = 1;
-        final short num2 = 2;
-        final short num3 = 3;
-        final short num4 = 4;
-        return new TPMInfo("test os make", num1, num2, num3, num4,
-                getTestIdentityCertificate());
-    }
-
-    private static X509Certificate getTestIdentityCertificate() {
-        X509Certificate certificateValue = null;
-        InputStream istream = null;
-        istream = DeviceInfoReportTest.class.getResourceAsStream(
-                TEST_IDENTITY_CERT
-        );
-        try {
-            if (istream == null) {
-                throw new FileNotFoundException(TEST_IDENTITY_CERT);
-            }
-            CertificateFactory cf = CertificateFactory.getInstance("X.509");
-            certificateValue = (X509Certificate) cf.generateCertificate(
-                    istream);
-
-        } catch (Exception e) {
-            return null;
-        } finally {
-            if (istream != null) {
-                try {
-                    istream.close();
-                } catch (IOException e) {
-                    LOGGER.error("test certificate file could not be closed");
-                }
-            }
-        }
-        return certificateValue;
     }
 }

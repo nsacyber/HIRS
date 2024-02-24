@@ -220,10 +220,10 @@ public class AbstractUserdefinedEntityTest {
                 getTestIdentityCertificate());
     }
 
-    private static X509Certificate getTestIdentityCertificate() {
+    public static X509Certificate getTestIdentityCertificate() {
         X509Certificate certificateValue = null;
         InputStream istream = null;
-        istream = DeviceInfoReportTest.class.getResourceAsStream(
+        istream = AbstractUserdefinedEntityTest.class.getResourceAsStream(
                 TEST_IDENTITY_CERT
         );
         try {
@@ -247,4 +247,5 @@ public class AbstractUserdefinedEntityTest {
         }
         return certificateValue;
     }
+
 }

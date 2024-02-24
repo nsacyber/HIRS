@@ -1,11 +1,11 @@
 package hirs.attestationca.persist.entity.userdefined;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-
 import hirs.attestationca.persist.entity.ArchivableEntity;
 import hirs.attestationca.persist.enums.AppraisalStatus;
 import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.io.IOException;
 import java.util.List;

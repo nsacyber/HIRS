@@ -1,7 +1,5 @@
 package hirs.attestationca.persist.entity.userdefined;
 
-import hirs.attestationca.persist.entity.ArchivableEntity;
-
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.math.BigInteger;
@@ -14,7 +12,6 @@ import java.security.cert.CertificateException;
 import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
 import java.util.Arrays;
-import java.util.List;
 import java.util.Objects;
 
 import hirs.attestationca.persist.entity.userdefined.certificate.*;
