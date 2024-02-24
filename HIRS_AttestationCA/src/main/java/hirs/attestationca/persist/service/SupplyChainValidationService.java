@@ -17,6 +17,7 @@ import hirs.attestationca.persist.entity.userdefined.SupplyChainValidation;
 import hirs.attestationca.persist.entity.userdefined.SupplyChainValidationSummary;
 import hirs.attestationca.persist.entity.userdefined.certificate.EndorsementCredential;
 import hirs.attestationca.persist.entity.userdefined.certificate.PlatformCredential;
+import hirs.attestationca.persist.entity.userdefined.info.ComponentInfo;
 import hirs.attestationca.persist.entity.userdefined.rim.EventLogMeasurements;
 import hirs.attestationca.persist.entity.userdefined.rim.SupportReferenceManifest;
 import hirs.attestationca.persist.enums.AppraisalStatus;
@@ -95,12 +96,14 @@ public class SupplyChainValidationService {
      * @param ec     The endorsement credential from the identity request.
      * @param pcs    The platform credentials from the identity request.
      * @param device The device to be validated.
+     * @param componentInfos list of components from the device
      * @return A summary of the validation results.
      */
     @SuppressWarnings("methodlength")
     public SupplyChainValidationSummary validateSupplyChain(final EndorsementCredential ec,
                                                             final List<PlatformCredential> pcs,
-                                                            final Device device) {
+                                                            final Device device,
+                                                            final List<ComponentInfo> componentInfos) {
         boolean acceptExpiredCerts = getPolicySettings().isExpiredCertificateValidationEnabled();
         PlatformCredential baseCredential = null;
         SupplyChainValidation platformScv = null;
@@ -208,6 +211,8 @@ public class SupplyChainValidationService {
                         null, Level.ERROR));
             } else {
                 if (chkDeltas) {
+                    // There are delta certificates, so the code need to build a new list of
+                    // certificate components to then compare against the device component list
                     aes.addAll(basePlatformScv.getCertificatesUsed());
                     Iterator<PlatformCredential> it = pcs.iterator();
                     while (it.hasNext()) {
@@ -223,13 +228,14 @@ public class SupplyChainValidationService {
                         }
                     }
                 } else {
+                    // validate attributes for a single base platform certificate
                     aes.add(baseCredential);
                     validations.remove(platformScv);
                     // if there are no deltas, just check base credential
                     platformScv = ValidationService.evaluatePCAttributesStatus(
                             baseCredential, device.getDeviceInfo(), ec,
                             certificateRepository, componentResultRepository,
-                            componentAttributeRepository);
+                            componentAttributeRepository, componentInfos);
                     validations.add(new SupplyChainValidation(
                             SupplyChainValidation.ValidationType.PLATFORM_CREDENTIAL,
                             platformScv.getValidationResult(), aes, platformScv.getMessage()));

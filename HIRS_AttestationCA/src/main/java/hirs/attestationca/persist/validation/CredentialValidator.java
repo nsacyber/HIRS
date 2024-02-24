@@ -4,6 +4,7 @@ import hirs.attestationca.persist.entity.manager.ComponentAttributeRepository;
 import hirs.attestationca.persist.entity.manager.ComponentResultRepository;
 import hirs.attestationca.persist.entity.userdefined.certificate.EndorsementCredential;
 import hirs.attestationca.persist.entity.userdefined.certificate.PlatformCredential;
+import hirs.attestationca.persist.entity.userdefined.info.ComponentInfo;
 import hirs.attestationca.persist.entity.userdefined.report.DeviceInfoReport;
 import hirs.attestationca.persist.enums.AppraisalStatus;
 import lombok.extern.log4j.Log4j2;
@@ -16,6 +17,7 @@ import java.security.cert.CertificateExpiredException;
 import java.security.cert.CertificateNotYetValidException;
 import java.security.cert.X509Certificate;
 import java.util.Date;
+import java.util.List;
 
 import static hirs.attestationca.persist.enums.AppraisalStatus.Status.ERROR;
 import static hirs.attestationca.persist.enums.AppraisalStatus.Status.FAIL;
@@ -162,6 +164,9 @@ public class CredentialValidator extends SupplyChainCredentialValidator {
      *                         serial number of the platform to be validated.
      * @param endorsementCredential The endorsement credential supplied from the same
      *          identity request as the platform credential.
+     * @param componentResultRepository db access to component result of mismatching
+     * @param componentAttributeRepository  db access to component attribute match status
+     * @param componentInfos list of device components
      * @return The result of the validation.
      */
     public static AppraisalStatus validatePlatformCredentialAttributes(
@@ -169,7 +174,8 @@ public class CredentialValidator extends SupplyChainCredentialValidator {
             final DeviceInfoReport deviceInfoReport,
             final EndorsementCredential endorsementCredential,
             final ComponentResultRepository componentResultRepository,
-            final ComponentAttributeRepository componentAttributeRepository) {
+            final ComponentAttributeRepository componentAttributeRepository,
+            final List<ComponentInfo> componentInfos) {
         final String baseErrorMessage = "Can't validate platform credential attributes without ";
         String message;
         if (platformCredential == null) {
@@ -182,6 +188,10 @@ public class CredentialValidator extends SupplyChainCredentialValidator {
         }
         if (endorsementCredential == null) {
             message = baseErrorMessage + "an endorsement credential";
+            return new AppraisalStatus(FAIL, message);
+        }
+        if (componentInfos.isEmpty()) {
+            message = baseErrorMessage + "a list of device components";
             return new AppraisalStatus(FAIL, message);
         }
 
@@ -197,7 +207,7 @@ public class CredentialValidator extends SupplyChainCredentialValidator {
         if (PlatformCredential.CERTIFICATE_TYPE_2_0.equals(credentialType)) {
             return CertificateAttributeScvValidator.validatePlatformCredentialAttributesV2p0(
                     platformCredential, deviceInfoReport, componentResultRepository,
-                    componentAttributeRepository);
+                    componentAttributeRepository, componentInfos);
         }
         return CertificateAttributeScvValidator.validatePlatformCredentialAttributesV1p2(
                 platformCredential, deviceInfoReport);

@@ -8,4 +8,5 @@ import java.util.UUID;
 
 public interface ComponentInfoRepository extends JpaRepository<ComponentInfo, UUID> {
     List<ComponentInfo> findByDeviceName(String deviceName);
+    List<ComponentInfo> findByDeviceNameAndComponentSerial(String deviceName, String componentSerial);
 }

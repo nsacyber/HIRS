@@ -79,8 +79,8 @@ public abstract class AttestationCertificateAuthority {
      * @param validDays the number of days issued certs are valid
      * @param deviceRepository the device manager
      * @param referenceDigestValueRepository the reference event manager
-     * @param policyRepository
-     * @param tpm2ProvisionerStateRepository
+     * @param policyRepository policy setting repository
+     * @param tpm2ProvisionerStateRepository tpm2 provisioner state repository
      */
     @SuppressWarnings("checkstyle:parameternumber")
     public AttestationCertificateAuthority(

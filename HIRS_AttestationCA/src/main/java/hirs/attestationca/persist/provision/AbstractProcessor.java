@@ -51,6 +51,11 @@ public class AbstractProcessor {
     @Getter
     private PolicyRepository policyRepository;
 
+    /**
+     * Default constructor that sets main class fields.
+     * @param privateKey private key used for communication authentication
+     * @param validDays property value to set for issued certificates
+     */
     public AbstractProcessor(final PrivateKey privateKey,
                              final int validDays) {
         this.privateKey = privateKey;
@@ -64,6 +69,7 @@ public class AbstractProcessor {
      * @param endorsementCredential the endorsement credential
      * @param platformCredentials the set of platform credentials
      * @param deviceName The host name used in the subject alternative name
+     * @param acaCertificate object used to create credential
      * @return identity credential
      */
     protected X509Certificate generateCredential(final PublicKey publicKey,
@@ -187,10 +193,12 @@ public class AbstractProcessor {
     /**
      * Gets the Endorsement Credential from the DB given the EK public key.
      * @param ekPublicKey the EK public key
+     * @param certificateRepository db store manager for certificates
      * @return the Endorsement credential, if found, otherwise null
      */
-    private EndorsementCredential getEndorsementCredential(final PublicKey ekPublicKey,
-                                                           final CertificateRepository certificateRepository) {
+    private EndorsementCredential getEndorsementCredential(
+            final PublicKey ekPublicKey,
+            final CertificateRepository certificateRepository) {
         log.debug("Searching for endorsement credential based on public key: " + ekPublicKey);
 
         if (ekPublicKey == null) {
@@ -220,6 +228,7 @@ public class AbstractProcessor {
      * Helper method to create an {@link IssuedAttestationCertificate} object, set its
      * corresponding device and persist it.
      *
+     * @param certificateRepository db store manager for certificates
      * @param derEncodedAttestationCertificate the byte array representing the Attestation
      *                                         certificate
      * @param endorsementCredential the endorsement credential used to generate the AC

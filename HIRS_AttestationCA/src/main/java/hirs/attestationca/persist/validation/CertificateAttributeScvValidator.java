@@ -4,7 +4,9 @@ import hirs.attestationca.persist.entity.ArchivableEntity;
 import hirs.attestationca.persist.entity.manager.ComponentAttributeRepository;
 import hirs.attestationca.persist.entity.manager.ComponentResultRepository;
 import hirs.attestationca.persist.entity.userdefined.SupplyChainValidation;
+import hirs.attestationca.persist.entity.userdefined.certificate.ComponentResult;
 import hirs.attestationca.persist.entity.userdefined.certificate.PlatformCredential;
+import hirs.attestationca.persist.entity.userdefined.certificate.attributes.ComponentAttributeResult;
 import hirs.attestationca.persist.entity.userdefined.certificate.attributes.ComponentIdentifier;
 import hirs.attestationca.persist.entity.userdefined.certificate.attributes.V2.ComponentIdentifierV2;
 import hirs.attestationca.persist.entity.userdefined.info.ComponentInfo;
@@ -191,13 +193,17 @@ public class CertificateAttributeScvValidator extends SupplyChainCredentialValid
      * Validates device info report against the new platform credential.
      * @param platformCredential the Platform Credential
      * @param deviceInfoReport the Device Info Report
+     * @param componentResultRepository db access to component result of mismatching
+     * @param componentAttributeRepository  db access to component attribute match status
+     * @param componentInfos list of device components
      * @return either PASS or FAIL
      */
     public static AppraisalStatus validatePlatformCredentialAttributesV2p0(
             final PlatformCredential platformCredential,
             final DeviceInfoReport deviceInfoReport,
             final ComponentResultRepository componentResultRepository,
-            final ComponentAttributeRepository componentAttributeRepository) {
+            final ComponentAttributeRepository componentAttributeRepository,
+            final List<ComponentInfo> componentInfos) {
         boolean passesValidation = true;
         StringBuilder resultMessage = new StringBuilder();
 
@@ -286,46 +292,92 @@ public class CertificateAttributeScvValidator extends SupplyChainCredentialValid
                         && identifier.getComponentModel() != null)
                 .collect(Collectors.toList());
 
-        /**
-         * 1. create a mapping for the CI and the Cinfo to the component class (all trimming should happen in the object class)
-         * 2. Run a look based on the component class and compare the items.
-         * 3. if something doesn't match create a componentattributestatus
-         * 4. pull all relevant information on the mapping side
-         * Note: have to considered component class pulls of more than one. like memory
-         *
-         */
         String paccorOutputString = deviceInfoReport.getPaccorOutputString();
         String unmatchedComponents;
-        try {
-            List<ComponentInfo> componentInfoList
-                    = getComponentInfoFromPaccorOutput(deviceInfoReport.getNetworkInfo().getHostname(),
-                    paccorOutputString);
-            unmatchedComponents = validateV2p0PlatformCredentialComponentsExpectingExactMatch(
-                    validPcComponents, componentInfoList);
-            fieldValidation &= unmatchedComponents.isEmpty();
-        } catch (IOException ioEx) {
-            final String baseErrorMessage = "Error parsing JSON output from PACCOR: ";
-            log.error(baseErrorMessage + ioEx);
-            log.error("PACCOR output string:\n" + paccorOutputString);
-            return new AppraisalStatus(ERROR, baseErrorMessage + ioEx.getMessage());
+
+        // START A NEW
+        // populate componentResults list
+        List<ComponentResult> componentResults = componentResultRepository
+                .findByCertificateSerialNumberAndBoardSerialNumber(
+                        platformCredential.getSerialNumber().toString(),
+                        platformCredential.getPlatformSerial());
+        // first create hash map based on hashCode
+        Map<Integer, List<ComponentInfo>> deviceHashMap = new HashMap<>();
+        componentInfos.stream().forEach((componentInfo) -> {
+            List<ComponentInfo> innerList;
+            Integer compInfoHash = componentInfo.hashCommonElements();
+            if (deviceHashMap.containsKey(compInfoHash)) {
+                innerList = deviceHashMap.get(compInfoHash);
+                innerList.add(componentInfo);
+            } else {
+                innerList = new ArrayList<>(0);
+                innerList.add(componentInfo);
+            }
+            deviceHashMap.put(compInfoHash, innerList);
+        });
+
+        // Look for hash code in device mapping
+        // if it exists, don't save the component
+        List<ComponentResult> remainingComponentResults = new ArrayList<>();
+        for (ComponentResult componentResult : componentResults) {
+            if (!deviceHashMap.containsKey(componentResult.hashCommonElements())) {
+                // didn't find the component result in the hashed mapping
+                remainingComponentResults.add(componentResult);
+            }
+        }
+        if (!remainingComponentResults.isEmpty()) {
+            // continue down the options, move to a different method.
+
+
+            // create component class mapping to component info
+            Map<String, List<ComponentInfo>> componentDeviceMap = new HashMap<>();
+            componentInfos.stream().forEach((componentInfo) -> {
+                List<ComponentInfo> innerList;
+                String componentClass = componentInfo.getComponentClass();
+                if (componentDeviceMap.containsKey(componentClass)) {
+                    innerList = componentDeviceMap.get(componentClass);
+                    innerList.add(componentInfo);
+                } else {
+                    innerList = new ArrayList<>(0);
+                    innerList.add(componentInfo);
+                }
+                componentDeviceMap.put(componentClass, innerList);
+            });
+
+            List<ComponentInfo> componentClassInfo;
+            for (ComponentResult componentResult : remainingComponentResults) {
+                componentClassInfo = componentDeviceMap.get(componentResult.getComponentClassValue());
+                if (componentClassInfo.size() > 1) {
+                    componentResult.setMismatched(!matchBasedOnClass(
+                            componentClassInfo, componentResult, componentAttributeRepository));
+                }
+            }
+
+            for (ComponentResult componentResult : remainingComponentResults) {
+                fieldValidation &= !componentResult.isMismatched();
+            }
         }
 
-        // WIP clean this up
+
+
+        // END
+//        try {
+//            List<ComponentInfo> componentInfoList
+//                    = getComponentInfoFromPaccorOutput(deviceInfoReport.getNetworkInfo().getHostname(),
+//                    paccorOutputString);
+//            unmatchedComponents = validateV2p0PlatformCredentialComponentsExpectingExactMatch(
+//                    validPcComponents, componentInfoList);
+//            fieldValidation &= unmatchedComponents.isEmpty();
+//        } catch (IOException ioEx) {
+//            final String baseErrorMessage = "Error parsing JSON output from PACCOR: ";
+//            log.error(baseErrorMessage + ioEx);
+//            return new AppraisalStatus(ERROR, baseErrorMessage + ioEx.getMessage());
+//        }
+//
+//        // WIP clean this up
         StringBuilder additionalInfo = new StringBuilder();
         if (!fieldValidation) {
-            resultMessage.append("There are unmatched components:\n");
-            resultMessage.append(unmatchedComponents);
-
-            // pass information of which ones failed in additionInfo
-            int counter = 0;
-            for (ComponentIdentifier ci : validPcComponents) {
-                counter++;
-                additionalInfo.append(String.format("%d;", ci.hashCode()));
-            }
-            if (counter > 0) {
-                additionalInfo.insert(0, "COMPID=");
-                additionalInfo.append(counter);
-            }
+            resultMessage.append("There are unmatched components...\n");
         }
 
         passesValidation &= fieldValidation;
@@ -335,6 +387,29 @@ public class CertificateAttributeScvValidator extends SupplyChainCredentialValid
         } else {
             return new AppraisalStatus(FAIL, resultMessage.toString(), additionalInfo.toString());
         }
+    }
+
+    private static boolean matchBasedOnClass(final List<ComponentInfo> componentInfos,
+                                   final ComponentResult componentResult,
+                                   final ComponentAttributeRepository componentAttributeRepository) {
+        // there are instances of components with the same class (ie hard disks, memory)
+        int listSize = componentInfos.size();
+        List<ComponentAttributeResult> attributeResults = new ArrayList<>();
+        boolean matched = true;
+        for (ComponentInfo componentInfo : componentInfos) {
+            // just do a single pass and save the values
+            attributeResults.add(new ComponentAttributeResult(componentResult.getId(), componentResult.getManufacturer(), componentInfo.getComponentManufacturer()));
+            attributeResults.add(new ComponentAttributeResult(componentResult.getId(), componentResult.getModel(), componentInfo.getComponentModel()));
+            attributeResults.add(new ComponentAttributeResult(componentResult.getId(), componentResult.getSerialNumber(), componentInfo.getComponentSerial()));
+            attributeResults.add(new ComponentAttributeResult(componentResult.getId(), componentResult.getRevisionNumber(), componentInfo.getComponentRevision()));
+        }
+
+        for (ComponentAttributeResult componentAttributeResult : attributeResults) {
+            componentAttributeRepository.save(componentAttributeResult);
+            matched &= componentAttributeResult.checkMatchedStatus();
+        }
+
+        return matched;
     }
 
     /**

@@ -14,14 +14,16 @@ import lombok.Setter;
 
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * A component result is a DO to hold the status of a component validation status.  This will
  * also be used to display this common information on the certificate details page.
  */
-@EqualsAndHashCode(callSuper=false)
+
 @Getter
 @Entity
+@EqualsAndHashCode(callSuper = false)
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class ComponentResult extends ArchivableEntity {
 
@@ -34,10 +36,13 @@ public class ComponentResult extends ArchivableEntity {
     private String revisionNumber;
     private boolean fieldReplaceable;
     // this is a string because component class doesn't inherit serializable.
-    private String componentClass;
+    @Setter
+    private String componentClassValue;
+    private String componentClassType;
     private AttributeStatus attributeStatus;
     private String componentAddress;
     private boolean version2 = false;
+    @Setter
     private boolean mismatched;
     private String certificateType;
 
@@ -78,13 +83,12 @@ public class ComponentResult extends ArchivableEntity {
             // this is a downside of findbugs, the code is set up to indicate if a CI is V2 or not
             // but find bugs is throwing a flag because instanceof isn't being used.
             ComponentIdentifierV2 ciV2 = (ComponentIdentifierV2) componentIdentifier;
-            this.componentClass = ciV2.getComponentClass().toString();
+            this.componentClassValue = ciV2.getComponentClass().getComponentIdentifier();
+            this.componentClassType = ciV2.getComponentClass().getRegistryType();
             this.attributeStatus = ciV2.getAttributeStatus();
             this.version2 = true;
             if (ciV2.getCertificateIdentifier() != null) {
                 this.issuerDN = ciV2.getCertificateIdentifier().getIssuerDN().toString();
-//                this.certificateSerialNumber = ciV2.getCertificateIdentifier()
-//                        .getCertificateSerialNumber().toString();
                 if (ciV2.getComponentPlatformUri() != null) {
                     this.uniformResourceIdentifier = ciV2.getComponentPlatformUri()
                             .getUniformResourceIdentifier().toString();
@@ -114,12 +118,21 @@ public class ComponentResult extends ArchivableEntity {
     }
 
     /**
+     * Returns a hash code that is associated with common fields for components.
+     * @return int value of the elements
+     */
+    public int hashCommonElements() {
+        return Objects.hash(manufacturer,
+                model, serialNumber, revisionNumber, componentClassValue);
+    }
+
+    /**
      * The string method for log entries.
      * @return a string for the component result
      */
     public String toString() {
         return String.format("ComponentResult: certificateSerialNumber=[%s] "
                         + "manufacturer=[%s] model=[%s] componentClass=[%s]",
-                boardSerialNumber, manufacturer, model, componentClass);
+                boardSerialNumber, manufacturer, model, componentClassValue);
     }
 }

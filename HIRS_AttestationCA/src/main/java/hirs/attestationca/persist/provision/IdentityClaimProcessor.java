@@ -85,7 +85,7 @@ public class IdentityClaimProcessor extends AbstractProcessor {
     private TPM2ProvisionerStateRepository tpm2ProvisionerStateRepository;
 
     /**
-     * Constructor
+     * Constructor.
      */
     public IdentityClaimProcessor(
             final SupplyChainValidationService supplyChainValidationService,
@@ -201,7 +201,7 @@ public class IdentityClaimProcessor extends AbstractProcessor {
         Device device = processDeviceInfo(claim);
 
 //        device.getDeviceInfo().setPaccorOutputString(claim.getPaccorOutput());
-        handleDeviceComponents(device.getName(),
+        handleDeviceComponents(device.getDeviceInfo().getNetworkInfo().getHostname(),
                 claim.getPaccorOutput());
         // There are situations in which the claim is sent with no PCs
         // or a PC from the tpm which will be deprecated
@@ -231,7 +231,8 @@ public class IdentityClaimProcessor extends AbstractProcessor {
 
         // perform supply chain validation
         SupplyChainValidationSummary summary = supplyChainValidationService.validateSupplyChain(
-                endorsementCredential, platformCredentials, device);
+                endorsementCredential, platformCredentials, device,
+                componentInfoRepository.findByDeviceName(device.getName()));
         device.setSummaryId(summary.getId().toString());
         // update the validation result in the device
         AppraisalStatus.Status validationResult = summary.getOverallValidationResult();
@@ -644,14 +645,27 @@ public class IdentityClaimProcessor extends AbstractProcessor {
 
     private int handleDeviceComponents(final String hostName, final String paccorString) {
         int deviceComponents = 0 ;
+        Map<Integer, ComponentInfo> componentInfoMap = new HashMap<>();
         try {
             List<ComponentInfo> componentInfos = SupplyChainCredentialValidator
                     .getComponentInfoFromPaccorOutput(hostName, paccorString);
 
+            // check the DB for like component infos
+            List<ComponentInfo> dbComponentInfos = this.componentInfoRepository.findByDeviceName(hostName);
+            dbComponentInfos.stream().forEach((infos) -> {
+                componentInfoMap.put(infos.hashCode(), infos);
+            });
+
+            for (ComponentInfo componentInfo : dbComponentInfos) {
+                if (componentInfoMap.containsKey(componentInfo.hashCode())) {
+                    componentInfos.remove(componentInfo);
+                }
+            }
+
             for (ComponentInfo componentInfo : componentInfos) {
                 this.componentInfoRepository.save(componentInfo);
             }
-        } catch (IOException e) {
+        } catch (IOException ioEx) {
             log.warn("Error parsing paccor string");
         }
 

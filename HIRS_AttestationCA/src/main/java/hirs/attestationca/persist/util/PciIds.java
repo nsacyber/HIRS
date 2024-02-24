@@ -5,6 +5,7 @@ import com.github.marandus.pciid.model.Vendor;
 import com.github.marandus.pciid.service.PciIdsDatabase;
 import com.google.common.base.Strings;
 import hirs.attestationca.persist.entity.userdefined.certificate.ComponentResult;
+import hirs.attestationca.persist.entity.userdefined.certificate.attributes.ComponentClass;
 import hirs.attestationca.persist.entity.userdefined.certificate.attributes.ComponentIdentifier;
 import hirs.attestationca.persist.entity.userdefined.certificate.attributes.V2.ComponentIdentifierV2;
 import lombok.AccessLevel;
@@ -178,9 +179,11 @@ public final class PciIds {
      */
     public static ComponentResult translateResult(final ComponentResult componentResult) {
         ComponentResult newComponent = null;
+        ComponentClass updateComponentClass;
         if (componentResult != null) {
             newComponent = componentResult;
-
+            updateComponentClass = new ComponentClass(componentResult.getComponentClassType(), componentResult.getComponentClassValue());
+            newComponent.setComponentClassValue(updateComponentClass.toString());
             newComponent.setManufacturer(translateVendor(componentResult.getManufacturer()));
             newComponent.setModel(translateDevice(componentResult.getManufacturer(),
                     componentResult.getModel()));

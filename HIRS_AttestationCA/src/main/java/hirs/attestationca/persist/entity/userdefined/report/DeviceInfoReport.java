@@ -14,7 +14,6 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.Transient;
 import jakarta.xml.bind.annotation.XmlElement;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.extern.log4j.Log4j2;
 
@@ -29,7 +28,6 @@ import java.util.Objects;
  */
 @Log4j2
 @Getter
-@NoArgsConstructor
 @Entity
 public class DeviceInfoReport extends AbstractEntity implements Serializable {
 
@@ -61,6 +59,14 @@ public class DeviceInfoReport extends AbstractEntity implements Serializable {
     @XmlElement
     @Transient
     private String paccorOutputString;
+
+    /**
+     * This constructor is used to populate the inner variables with blank entries so that
+     * a request on a blank object isn't null.
+     */
+    public DeviceInfoReport() {
+        this(null, null, null, null, null);
+    }
 
     /**
      * Constructor used to create a <code>DeviceInfoReport</code>. The

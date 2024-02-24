@@ -2,6 +2,7 @@ package hirs.attestationca.persist.entity.userdefined.info;
 
 import hirs.attestationca.persist.entity.ArchivableEntity;
 import hirs.attestationca.persist.entity.userdefined.certificate.attributes.ComponentIdentifier;
+import hirs.utils.enums.DeviceInfoEnums;
 import jakarta.persistence.Column;
 import jakarta.persistence.DiscriminatorColumn;
 import jakarta.persistence.DiscriminatorType;
@@ -12,6 +13,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.lang3.StringUtils;
+
+import java.util.Objects;
 
 /**
  * ComponentInfo is a class to hold Hardware component information
@@ -53,21 +56,21 @@ public class ComponentInfo extends ArchivableEntity {
 
     /**
      * Base constructor for children.
-     * @param componentManufacturer
-     * @param componentModel
-     * @param componentSerial
-     * @param componentRevision
+     * @param componentManufacturer Component Manufacturer (must not be null)
+     * @param componentModel Component Model (must not be null)
+     * @param componentSerial Component Serial Number (can be null)
+     * @param componentRevision Component Revision or Version (can be null)
      */
     public ComponentInfo(final String componentManufacturer,
                          final String componentModel,
                          final String componentSerial,
                          final String componentRevision) {
-        this(StringUtils.EMPTY, componentManufacturer, componentModel,
+        this(DeviceInfoEnums.NOT_SPECIFIED, componentManufacturer, componentModel,
                 componentSerial, componentRevision);
     }
     /**
      * Constructor.
-     * @param deviceName the host machine associated with this component.
+     * @param deviceName the host machine associated with this component. (must not be null)
      * @param componentManufacturer Component Manufacturer (must not be null)
      * @param componentModel Component Model (must not be null)
      * @param componentSerial Component Serial Number (can be null)
@@ -88,6 +91,7 @@ public class ComponentInfo extends ArchivableEntity {
             throw new NullPointerException("ComponentInfo: manufacturer and/or "
                     + "model can not be null");
         }
+        this.deviceName = deviceName;
         this.componentManufacturer = componentManufacturer.trim();
         this.componentModel = componentModel.trim();
         if (componentSerial != null) {
@@ -120,11 +124,7 @@ public class ComponentInfo extends ArchivableEntity {
         this(deviceName, componentManufacturer, componentModel,
                 componentSerial, componentRevision);
 
-        if (componentClass != null) {
-            this.componentClass = componentClass;
-        } else {
-            this.componentClass = StringUtils.EMPTY;
-        }
+        this.componentClass = Objects.requireNonNullElse(componentClass, StringUtils.EMPTY);
     }
 
     /**
@@ -145,5 +145,45 @@ public class ComponentInfo extends ArchivableEntity {
                                      final String componentRevision) {
         return (StringUtils.isEmpty(componentManufacturer)
                 || StringUtils.isEmpty(componentModel));
+    }
+
+    /**
+     * Equals for the component info that just uses this classes attributes.
+     * @param object the object to compare
+     * @return the boolean result
+     */
+    @Override
+    public boolean equals(Object object) {
+        if (this == object) return true;
+        if (object == null || getClass() != object.getClass()) return false;
+
+        ComponentInfo that = (ComponentInfo) object;
+        return Objects.equals(deviceName, that.deviceName)
+                && Objects.equals(componentManufacturer,
+                that.componentManufacturer)
+                && Objects.equals(componentModel, that.componentModel)
+                && Objects.equals(componentSerial, that.componentSerial)
+                && Objects.equals(componentRevision, that.componentRevision)
+                && Objects.equals(componentClass, that.componentClass);
+    }
+
+    /**
+     * Returns a hash code that is associated with common fields for components.
+     * @return int value of the elements
+     */
+    public int hashCommonElements() {
+        return Objects.hash(componentManufacturer, componentModel,
+                componentSerial, componentRevision, componentClass);
+    }
+
+    /**
+     * Hash method for the attributes of this class.
+     * @return int value that represents this class
+     */
+    @Override
+    public int hashCode() {
+        return Objects.hash(deviceName, componentManufacturer,
+                componentModel, componentSerial, componentRevision,
+                componentClass);
     }
 }

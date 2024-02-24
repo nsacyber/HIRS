@@ -13,9 +13,9 @@ import hirs.attestationca.persist.entity.userdefined.PolicySettings;
 import hirs.attestationca.persist.entity.userdefined.ReferenceManifest;
 import hirs.attestationca.persist.entity.userdefined.SupplyChainValidation;
 import hirs.attestationca.persist.entity.userdefined.certificate.CertificateAuthorityCredential;
-import hirs.attestationca.persist.entity.userdefined.certificate.ComponentResult;
 import hirs.attestationca.persist.entity.userdefined.certificate.EndorsementCredential;
 import hirs.attestationca.persist.entity.userdefined.certificate.PlatformCredential;
+import hirs.attestationca.persist.entity.userdefined.info.ComponentInfo;
 import hirs.attestationca.persist.entity.userdefined.report.DeviceInfoReport;
 import hirs.attestationca.persist.enums.AppraisalStatus;
 import hirs.attestationca.persist.validation.CertificateAttributeScvValidator;
@@ -106,7 +106,8 @@ public class ValidationService {
             final EndorsementCredential ec,
             final CertificateRepository certificateRepository,
             final ComponentResultRepository componentResultRepository,
-            final ComponentAttributeRepository componentAttributeRepository) {
+            final ComponentAttributeRepository componentAttributeRepository,
+            final List<ComponentInfo> componentInfos) {
         final SupplyChainValidation.ValidationType validationType
                 = SupplyChainValidation.ValidationType.PLATFORM_CREDENTIAL_ATTRIBUTES;
 
@@ -117,12 +118,12 @@ public class ValidationService {
                     null, Level.ERROR);
         }
         log.info("Validating platform credential attributes");
-        List<ComponentResult> componentResults = componentResultRepository
-                .findByCertificateSerialNumberAndBoardSerialNumber(
-                        pc.getSerialNumber().toString(), pc.getPlatformSerial());
+//        List<ComponentResult> componentResults = componentResultRepository
+//                .findByCertificateSerialNumberAndBoardSerialNumber(
+//                        pc.getSerialNumber().toString(), pc.getPlatformSerial());
         AppraisalStatus result = CredentialValidator.
                 validatePlatformCredentialAttributes(pc, deviceInfoReport, ec,
-                        componentResultRepository, componentAttributeRepository);
+                        componentResultRepository, componentAttributeRepository, componentInfos);
         switch (result.getAppStatus()) {
             case PASS:
                 return buildValidationRecord(validationType, AppraisalStatus.Status.PASS,

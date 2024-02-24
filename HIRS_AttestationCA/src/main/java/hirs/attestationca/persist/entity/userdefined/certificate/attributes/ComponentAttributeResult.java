@@ -14,10 +14,10 @@ import java.util.UUID;
  * of that component mismatched.
  */
 @Entity
+@Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class ComponentAttributeResult  extends ArchivableEntity {
 
-    @Getter
     private UUID componentId;
     private String expectedValue;
     private String actualValue;
