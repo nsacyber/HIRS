@@ -1,7 +1,9 @@
 package hirs.attestationca.persist.entity.userdefined;
 
 import hirs.attestationca.persist.entity.ArchivableEntity;
+import hirs.attestationca.persist.entity.userdefined.report.DeviceInfoReport;
 import hirs.attestationca.persist.enums.AppraisalStatus;
+import hirs.attestationca.persist.enums.HealthStatus;
 import org.junit.jupiter.api.*;
 
 import java.util.*;
@@ -11,26 +13,34 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 /**
- * Integration test that tests the functionality in SupplyChainValidationSummary,
- * as well as the persistence of SupplyChainValidationSummary and SupplyChainValidation.
+ * Tests the functionality in SupplyChainValidationSummary.
  */
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
-public class SupplyChainValidationSummaryTest {
+public class SupplyChainValidationSummaryTest extends AbstractUserdefinedEntityTest {
+
+    /**
+     * Test device
+     *
+     */
     private Device device;
+
+    /**
+     * List of test certificates
+     *
+     */
     private List<ArchivableEntity> certificates;
 
     /**
-     * Create a session factory to use for persistence testing and persist some certificates
-     * for use by these tests.
+     * Create a set of certificates and a device for use by these tests.
      *
      * @throws Exception if there is a problem deserializing certificates or creating test device
      */
     @BeforeAll
     public void setup() throws Exception {
 
-        certificates = CertificateTest.getAllTestCertificates();
-        device = AbstractUserdefinedEntityTest.getTestDevice("TestDevice");
+        certificates = getAllTestCertificates();
+        device = getTestDevice("TestDevice");
     }
 
     /**
@@ -141,6 +151,20 @@ public class SupplyChainValidationSummaryTest {
         assertEquals(2, twoBadValidations.getValidations().size());
         assertEquals(AppraisalStatus.Status.FAIL, twoBadValidations.getOverallValidationResult());
         assertNotNull(twoBadValidations.getCreateTime());
+    }
+
+    /**
+     * Utility method for getting a <code>Device</code> that can be used for
+     * testing.
+     *
+     * @param name name for the <code>Device</code>
+     *
+     * @return device
+     */
+    public static Device getTestDevice(final String name) {
+        final DeviceInfoReport deviceInfo = getTestDeviceInfoReport();
+        return new Device(name, deviceInfo, HealthStatus.UNKNOWN, AppraisalStatus.Status.UNKNOWN, null, false, null, null);
+
     }
 
     /**

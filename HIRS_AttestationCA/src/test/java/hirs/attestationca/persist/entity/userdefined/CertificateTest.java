@@ -27,28 +27,12 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
  * This class tests functionality of the {@link Certificate} class.
  */
 public class CertificateTest extends AbstractUserdefinedEntityTest {
-//    /**
-//     * Location of a test (fake) root CA certificate.
-//     */
-//    //j
-//    public static final String FAKE_ROOT_CA_FILE = "/certificates/fakeRootCA.cer";
-
-//    /**
-//     * Location of a test (fake) Intel intermediate CA certificate.
-//     */
-//    public static final String FAKE_INTEL_INT_CA_FILE =
-//            "/certificates/fakeIntelIntermediateCA.cer";
 
     /**
      * Location of a test (fake) Intel intermediate CA certificate.
      */
     public static final String INTEL_INT_CA_FILE =
             "/validation/platform_credentials/intel_chain/root/intermediate2.cer";
-
-//    /**
-//     * Location of a test (fake) SGI intermediate CA certificate.
-//     */
-//    public static final String FAKE_SGI_INT_CA_FILE = "/certificates/fakeSGIIntermediateCA.cer";
 
     /**
      * Location of another test self-signed certificate.
@@ -75,13 +59,6 @@ public class CertificateTest extends AbstractUserdefinedEntityTest {
      * Location of the GlobalSign Root CA certificate.
      */
     public static final String GS_ROOT_CA = "/certificates/stMicroCaCerts/gstpmroot.crt";
-//
-//    /**
-//     * Hex-encoded subject key identifier for the FAKE_ROOT_CA_FILE.
-//     */
-//    //j
-//    public static final String FAKE_ROOT_CA_SUBJECT_KEY_IDENTIFIER_HEX =
-//            "58ec313a1699f94c1c8c4e2c6412402b258f0177";
 
     /**
      * Location of a test STM endorsement credential.

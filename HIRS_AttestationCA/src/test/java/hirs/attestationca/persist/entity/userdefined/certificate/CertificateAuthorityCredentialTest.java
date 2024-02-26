@@ -2,7 +2,6 @@ package hirs.attestationca.persist.entity.userdefined.certificate;
 
 import hirs.attestationca.persist.entity.userdefined.AbstractUserdefinedEntityTest;
 import org.apache.commons.codec.binary.Hex;
-import static org.mockito.Mockito.mock;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import org.junit.jupiter.api.Test;
@@ -12,13 +11,11 @@ import java.net.URISyntaxException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.security.cert.CertificateException;
-import hirs.attestationca.persist.entity.manager.CertificateRepository;
 
 /**
  * Tests that CertificateAuthorityCredential properly parses its fields.
  */
 public class CertificateAuthorityCredentialTest extends AbstractUserdefinedEntityTest {
-    private static final CertificateRepository CERT_MAN = mock(CertificateRepository.class);
 
     /**
      * Tests that a CertificateAuthorityCredential can be created from an X.509 certificate and

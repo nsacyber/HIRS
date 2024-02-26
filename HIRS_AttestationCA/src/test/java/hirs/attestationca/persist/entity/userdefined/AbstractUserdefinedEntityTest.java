@@ -6,8 +6,6 @@ import hirs.attestationca.persist.entity.userdefined.info.*;
 import hirs.attestationca.persist.entity.userdefined.report.DeviceInfoReport;
 import hirs.attestationca.persist.entity.userdefined.report.DeviceInfoReportTest;
 import hirs.attestationca.persist.enums.AppraisalStatus;
-import hirs.attestationca.persist.enums.HealthStatus;
-
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -26,7 +24,7 @@ import java.util.List;
 import java.util.Objects;
 
 /**
- * Class with common functions for Userdefined Entity object tests.
+ * Class with definitions and functions common to multiple Userdefined Entity object tests.
  *
  */
 public class AbstractUserdefinedEntityTest {
@@ -54,15 +52,19 @@ public class AbstractUserdefinedEntityTest {
     public static final String FAKE_ROOT_CA_SUBJECT_KEY_IDENTIFIER_HEX =
             "58ec313a1699f94c1c8c4e2c6412402b258f0177";
 
+    /**
+     * Location of a test identity certificate.
+     */
     private static final String TEST_IDENTITY_CERT = "/tpm/sample_identity_cert.cer";
 
-    private final NetworkInfo networkInfo = createTestNetworkInfo();
-    private final OSInfo osInfo = createTestOSInfo();
-    private final FirmwareInfo firmwareInfo = createTestFirmwareInfo();
-    private final HardwareInfo hardwareInfo = createTestHardwareInfo();
-    private final TPMInfo tpmInfo = createTPMInfo();
+//    private final NetworkInfo networkInfo = createTestNetworkInfo();
+//    private final OSInfo osInfo = createTestOSInfo();
+//    private final FirmwareInfo firmwareInfo = createTestFirmwareInfo();
+//    private final HardwareInfo hardwareInfo = createTestHardwareInfo();
+//    private final TPMInfo tpmInfo = createTPMInfo();
     private static final Logger LOGGER = LogManager.getLogger(DeviceInfoReportTest.class);
 
+    public static final String VALIDATION_MESSAGE = "Some message.";
 
     /**
      * Construct a test certificate from the given parameters.
@@ -137,12 +139,6 @@ public class AbstractUserdefinedEntityTest {
         );
     }
 
-    public static Device getTestDevice(final String name) {
-        final DeviceInfoReport deviceInfo = AbstractUserdefinedEntityTest.getTestDeviceInfoReport();
-        return new Device(name, deviceInfo, HealthStatus.UNKNOWN, AppraisalStatus.Status.UNKNOWN, null, false, null, null);
-
-    }
-
     /**
      * Creates a DeviceInfoReport instance usable for testing.
      *
@@ -153,7 +149,6 @@ public class AbstractUserdefinedEntityTest {
                 createTestNetworkInfo(), createTestOSInfo(), createTestFirmwareInfo(),
                 createTestHardwareInfo(), createTPMInfo()
         );
-
     }
 
     /**
@@ -248,4 +243,23 @@ public class AbstractUserdefinedEntityTest {
         return certificateValue;
     }
 
+    /**
+     * Construct a SupplyChainValidation for use in tests according to the provided parameters.
+     *
+     * @param type the type of validation
+     * @param result the appraisal result
+     * @param certificates the certificates related to this validation
+     * @return the resulting SupplyChainValidation object
+     */
+    public static SupplyChainValidation getTestSupplyChainValidation(
+            final SupplyChainValidation.ValidationType type,
+            final AppraisalStatus.Status result,
+            final List<ArchivableEntity> certificates) {
+        return new SupplyChainValidation(
+                type,
+                result,
+                certificates,
+                VALIDATION_MESSAGE
+        );
+    }
 }

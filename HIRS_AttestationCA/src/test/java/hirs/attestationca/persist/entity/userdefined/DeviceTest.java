@@ -1,7 +1,6 @@
 package hirs.attestationca.persist.entity.userdefined;
 
 import hirs.attestationca.persist.entity.userdefined.report.DeviceInfoReport;
-import hirs.attestationca.persist.entity.userdefined.report.DeviceInfoReportTest;
 import hirs.attestationca.persist.enums.AppraisalStatus;
 import hirs.attestationca.persist.enums.HealthStatus;
 import org.junit.jupiter.api.Test;
@@ -15,18 +14,6 @@ import static org.junit.jupiter.api.Assertions.assertNull;
  *
  */
 public final class DeviceTest extends AbstractUserdefinedEntityTest {
-    /**
-     * Utility method for getting a <code>Device</code> that can be used for
-     * testing.
-     *
-     * @param name name for the <code>Device</code>
-     *
-     * @return device
-     */
-    public static Device getTestDevice(final String name) {
-        final DeviceInfoReport deviceInfo = getTestDeviceInfoReport();
-        return new Device(name, deviceInfo, HealthStatus.UNKNOWN, AppraisalStatus.Status.UNKNOWN, null, false, null, null);
-    }
 
     /**
      * Tests that the device constructor can take a name.

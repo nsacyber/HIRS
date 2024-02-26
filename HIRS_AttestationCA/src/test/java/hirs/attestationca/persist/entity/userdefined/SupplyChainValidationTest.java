@@ -1,21 +1,18 @@
 package hirs.attestationca.persist.entity.userdefined;
 
-import hirs.attestationca.persist.entity.ArchivableEntity;
 import hirs.attestationca.persist.enums.AppraisalStatus;
 import org.junit.jupiter.api.Test;
 
+import java.io.IOException;
+
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-
-import java.io.IOException;
-import java.util.List;
 
 /**
  * Simple tests for the {@link SupplyChainValidation} class.  Tests for the persistence of this
  * class are located in { SupplyChainValidationSummaryTest}.
  */
 class SupplyChainValidationTest extends AbstractUserdefinedEntityTest {
-    private static final String MESSAGE = "Some message.";
 
     /**
      * Test that this class' getter methods work properly.
@@ -33,7 +30,7 @@ class SupplyChainValidationTest extends AbstractUserdefinedEntityTest {
                 validation.getCertificatesUsed(),
                 getAllTestCertificates()
         );
-        assertEquals(validation.getMessage(), MESSAGE);
+        assertEquals(validation.getMessage(), VALIDATION_MESSAGE);
     }
 
     /**
@@ -48,7 +45,7 @@ class SupplyChainValidationTest extends AbstractUserdefinedEntityTest {
                         null,
                         AppraisalStatus.Status.PASS,
                         getAllTestCertificates(),
-                        MESSAGE
+                        VALIDATION_MESSAGE
                 ));
     }
 
@@ -64,7 +61,7 @@ class SupplyChainValidationTest extends AbstractUserdefinedEntityTest {
                         SupplyChainValidation.ValidationType.ENDORSEMENT_CREDENTIAL,
                         AppraisalStatus.Status.PASS,
                         null,
-                        MESSAGE
+                        VALIDATION_MESSAGE
                 ));
     }
 
@@ -79,7 +76,7 @@ class SupplyChainValidationTest extends AbstractUserdefinedEntityTest {
                 SupplyChainValidation.ValidationType.ENDORSEMENT_CREDENTIAL,
                 AppraisalStatus.Status.PASS,
                 getAllTestCertificates(),
-                MESSAGE
+                VALIDATION_MESSAGE
         );
     }
 
@@ -96,26 +93,6 @@ class SupplyChainValidationTest extends AbstractUserdefinedEntityTest {
                 SupplyChainValidation.ValidationType.ENDORSEMENT_CREDENTIAL,
                 AppraisalStatus.Status.PASS,
                 getAllTestCertificates()
-        );
-    }
-
-    /**
-     * Construct a SupplyChainValidation for use in tests according to the provided parameters.
-     *
-     * @param type the type of validation
-     * @param result the appraisal result
-     * @param certificates the certificates related to this validation
-     * @return the resulting SupplyChainValidation object
-     */
-    public static SupplyChainValidation getTestSupplyChainValidation(
-            final SupplyChainValidation.ValidationType type,
-            final AppraisalStatus.Status result,
-            final List<ArchivableEntity> certificates) {
-        return new SupplyChainValidation(
-                type,
-                result,
-                certificates,
-                MESSAGE
         );
     }
 }
