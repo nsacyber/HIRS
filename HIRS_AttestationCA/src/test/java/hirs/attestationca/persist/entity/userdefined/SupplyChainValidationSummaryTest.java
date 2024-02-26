@@ -4,9 +4,14 @@ import hirs.attestationca.persist.entity.ArchivableEntity;
 import hirs.attestationca.persist.entity.userdefined.report.DeviceInfoReport;
 import hirs.attestationca.persist.enums.AppraisalStatus;
 import hirs.attestationca.persist.enums.HealthStatus;
-import org.junit.jupiter.api.*;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInstance;
 
-import java.util.*;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -20,13 +25,13 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 public class SupplyChainValidationSummaryTest extends AbstractUserdefinedEntityTest {
 
     /**
-     * Test device
+     * Test device.
      *
      */
     private Device device;
 
     /**
-     * List of test certificates
+     * List of test certificates.
      *
      */
     private List<ArchivableEntity> certificates;
@@ -50,8 +55,7 @@ public class SupplyChainValidationSummaryTest extends AbstractUserdefinedEntityT
     public void testEmptySummary() throws InterruptedException {
         SupplyChainValidationSummary emptySummary = getTestSummary(
                 0,
-                0,
-                certificates
+                0
         );
 
         //assertEquals(device, emptySummary.getDevice());
@@ -87,8 +91,7 @@ public class SupplyChainValidationSummaryTest extends AbstractUserdefinedEntityT
     public void testSuccessfulSummary() throws InterruptedException {
         SupplyChainValidationSummary oneValidation = getTestSummary(
                 1,
-                0,
-                certificates
+                0
         );
 
         //assertEquals(device, oneValidation.getDevice());
@@ -99,8 +102,7 @@ public class SupplyChainValidationSummaryTest extends AbstractUserdefinedEntityT
 
         SupplyChainValidationSummary twoValidations = getTestSummary(
                 2,
-                0,
-                certificates
+                0
         );
 
         //assertEquals(device, twoValidations.getDevice());
@@ -118,8 +120,7 @@ public class SupplyChainValidationSummaryTest extends AbstractUserdefinedEntityT
     public void testUnsuccessfulSummary() throws InterruptedException {
         SupplyChainValidationSummary oneValidation = getTestSummary(
                 1,
-                1,
-                certificates
+                1
         );
 
         //assertEquals(device, oneValidation.getDevice());
@@ -130,8 +131,7 @@ public class SupplyChainValidationSummaryTest extends AbstractUserdefinedEntityT
 
         SupplyChainValidationSummary twoValidations = getTestSummary(
                 2,
-                1,
-                certificates
+                1
         );
 
         //assertEquals(device, twoValidations.getDevice());
@@ -142,8 +142,7 @@ public class SupplyChainValidationSummaryTest extends AbstractUserdefinedEntityT
 
         SupplyChainValidationSummary twoBadValidations = getTestSummary(
                 2,
-                2,
-                certificates
+                2
         );
 
         //assertEquals(device, twoBadValidations.getDevice());
@@ -163,17 +162,23 @@ public class SupplyChainValidationSummaryTest extends AbstractUserdefinedEntityT
      */
     public static Device getTestDevice(final String name) {
         final DeviceInfoReport deviceInfo = getTestDeviceInfoReport();
-        return new Device(name, deviceInfo, HealthStatus.UNKNOWN, AppraisalStatus.Status.UNKNOWN, null, false, null, null);
-
+        return new Device(name, deviceInfo, HealthStatus.UNKNOWN,
+                AppraisalStatus.Status.UNKNOWN, null,
+                false, null, null);
     }
 
     /**
+     * Utility method for getting a <code>SupplyChainValidationSummary</code> that can be used for
+     * testing.
      *
+     * @param numberOfValidations number of validations for the <code>SupplyChainValidationSummary</code>
+     * @param numFail number of failed validations
+     *
+     * @return device
      */
     private SupplyChainValidationSummary getTestSummary(
             final int numberOfValidations,
-            final int numFail,
-            final List<ArchivableEntity> certificates
+            final int numFail
     ) throws InterruptedException {
         SupplyChainValidation.ValidationType[] validationTypes =
                 SupplyChainValidation.ValidationType.values();

@@ -1,5 +1,12 @@
 package hirs.attestationca.persist.entity.userdefined;
 
+import hirs.attestationca.persist.entity.userdefined.certificate.CertificateAuthorityCredential;
+import hirs.attestationca.persist.entity.userdefined.certificate.ConformanceCredential;
+import hirs.attestationca.persist.entity.userdefined.certificate.EndorsementCredential;
+import hirs.attestationca.persist.entity.userdefined.certificate.PlatformCredential;
+import org.bouncycastle.cert.X509AttributeCertificateHolder;
+import org.junit.jupiter.api.Test;
+
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.math.BigInteger;
@@ -14,9 +21,6 @@ import java.security.cert.X509Certificate;
 import java.util.Arrays;
 import java.util.Objects;
 
-import hirs.attestationca.persist.entity.userdefined.certificate.*;
-import org.bouncycastle.cert.X509AttributeCertificateHolder;
-import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -95,7 +99,8 @@ public class CertificateTest extends AbstractUserdefinedEntityTest {
     public void testConstructCertFromByteArray() throws IOException, URISyntaxException {
         Certificate certificate = new CertificateAuthorityCredential(
                 Files.readAllBytes(
-                        Paths.get(Objects.requireNonNull(this.getClass().getResource(FAKE_ROOT_CA_FILE)).toURI())
+                        Paths.get(Objects.requireNonNull(this.getClass().getResource(
+                                FAKE_ROOT_CA_FILE)).toURI())
                 )
         );
         assertEquals(
@@ -139,7 +144,8 @@ public class CertificateTest extends AbstractUserdefinedEntityTest {
     @Test
     public void testConstructCertFromPath() throws URISyntaxException, IOException {
         Certificate certificate = new CertificateAuthorityCredential(
-                Paths.get(Objects.requireNonNull(this.getClass().getResource(FAKE_ROOT_CA_FILE)).toURI())
+                Paths.get(Objects.requireNonNull(this.getClass().getResource(
+                        FAKE_ROOT_CA_FILE)).toURI())
         );
         assertEquals(
                 "CN=Fake Root CA",
@@ -178,12 +184,12 @@ public class CertificateTest extends AbstractUserdefinedEntityTest {
                 Certificate.CertificateType.X509_CERTIFICATE,
                 getTestCertificate(
                         PlatformCredential.class,
-                        PlatformCredentialTest.TEST_PLATFORM_CERT_3).getCertificateType());
+                        TEST_PLATFORM_CERT_3).getCertificateType());
         assertEquals(
                 Certificate.CertificateType.ATTRIBUTE_CERTIFICATE,
                 getTestCertificate(
                         PlatformCredential.class,
-                        PlatformCredentialTest.TEST_PLATFORM_CERT_3).getCertificateType());
+                        TEST_PLATFORM_CERT_3).getCertificateType());
 
     }
 
@@ -196,7 +202,7 @@ public class CertificateTest extends AbstractUserdefinedEntityTest {
     @Test
     public void testImportPem() throws IOException {
         Certificate platformCredential = getTestCertificate(
-                PlatformCredential.class, PlatformCredentialTest.TEST_PLATFORM_CERT_4
+                PlatformCredential.class, TEST_PLATFORM_CERT_4
         );
 
         assertEquals(
@@ -208,7 +214,7 @@ public class CertificateTest extends AbstractUserdefinedEntityTest {
         );
 
         platformCredential = getTestCertificate(
-                PlatformCredential.class, PlatformCredentialTest.TEST_PLATFORM_CERT_5
+                PlatformCredential.class, TEST_PLATFORM_CERT_5
         );
 
         assertEquals(
@@ -271,13 +277,12 @@ public class CertificateTest extends AbstractUserdefinedEntityTest {
     public void testX509AttributeCertificateParsing() throws IOException, URISyntaxException {
         Certificate platformCert = getTestCertificate(
                 PlatformCredential.class,
-                PlatformCredentialTest.TEST_PLATFORM_CERT_3
+                TEST_PLATFORM_CERT_3
         );
 
         X509AttributeCertificateHolder attrCertHolder = new X509AttributeCertificateHolder(
                 Files.readAllBytes(Paths.get(Objects.requireNonNull(this.getClass().getResource(
-                        PlatformCredentialTest.TEST_PLATFORM_CERT_3
-                )).toURI()))
+                        TEST_PLATFORM_CERT_3)).toURI()))
         );
 
         assertEquals(
@@ -306,7 +311,7 @@ public class CertificateTest extends AbstractUserdefinedEntityTest {
     public void testX509AttributeCertificateParsingExtended()
             throws IOException, URISyntaxException {
         Certificate platformCert = getTestCertificate(
-                PlatformCredential.class, PlatformCredentialTest.TEST_PLATFORM_CERT_6);
+                PlatformCredential.class, TEST_PLATFORM_CERT_6);
 
         assertEquals("https://trustedservices.intel.com/"
                         + "content/TSC/certs/TSC_IssuingCAIKGF_TEST.cer\n",
@@ -404,11 +409,13 @@ public class CertificateTest extends AbstractUserdefinedEntityTest {
 
         assertEquals(
                 new CertificateAuthorityCredential(
-                        Paths.get(Objects.requireNonNull(this.getClass().getResource(FAKE_ROOT_CA_FILE)).toURI())
+                        Paths.get(Objects.requireNonNull(this.getClass().getResource(
+                                FAKE_ROOT_CA_FILE)).toURI())
                 ),
                 new CertificateAuthorityCredential(
                         Files.readAllBytes(
-                                Paths.get(Objects.requireNonNull(this.getClass().getResource(FAKE_ROOT_CA_FILE)).toURI())
+                                Paths.get(Objects.requireNonNull(this.getClass().getResource(
+                                        FAKE_ROOT_CA_FILE)).toURI())
                         )
                 )
         );
@@ -465,11 +472,13 @@ public class CertificateTest extends AbstractUserdefinedEntityTest {
 
         assertEquals(
                 new CertificateAuthorityCredential(
-                        Paths.get(Objects.requireNonNull(this.getClass().getResource(FAKE_ROOT_CA_FILE)).toURI())
+                        Paths.get(Objects.requireNonNull(this.getClass().getResource(
+                                FAKE_ROOT_CA_FILE)).toURI())
                 ).hashCode(),
                 new CertificateAuthorityCredential(
                         Files.readAllBytes(
-                                Paths.get(Objects.requireNonNull(this.getClass().getResource(FAKE_ROOT_CA_FILE)).toURI())
+                                Paths.get(Objects.requireNonNull(this.getClass().getResource(
+                                        FAKE_ROOT_CA_FILE)).toURI())
                         )
                 ).hashCode()
         );
@@ -506,8 +515,9 @@ public class CertificateTest extends AbstractUserdefinedEntityTest {
             throw new IOException("Cannot get X509 CertificateFactory instance", e);
         }
 
-        try (FileInputStream certInputStream = new FileInputStream(
-                Paths.get(Objects.requireNonNull(CertificateTest.class.getResource(resourceName)).toURI()).toFile()
+        try (FileInputStream certInputStream = new FileInputStream(Paths.get(
+                Objects.requireNonNull(CertificateTest.class.getResource(
+                        resourceName)).toURI()).toFile()
         )) {
             return (X509Certificate) cf.generateCertificate(certInputStream);
         } catch (CertificateException | URISyntaxException e) {

@@ -20,7 +20,11 @@ import org.bouncycastle.asn1.x509.Extension;
 import org.bouncycastle.asn1.x509.GeneralNames;
 import org.bouncycastle.asn1.x509.TBSCertificate;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
-import org.junit.jupiter.api.*;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Nested;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInstance;
 import org.springframework.test.util.ReflectionTestUtils;
 
 import javax.crypto.Cipher;
@@ -37,7 +41,14 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.security.*;
+import java.security.KeyPair;
+import java.security.KeyPairGenerator;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+import java.security.PrivateKey;
+import java.security.PublicKey;
+import java.security.SecureRandom;
+import java.security.Security;
 import java.security.cert.X509Certificate;
 import java.security.interfaces.RSAPublicKey;
 import java.security.spec.MGF1ParameterSpec;
@@ -89,6 +100,11 @@ public class AttestationCertificateAuthorityTest {
 
     // test key pair
     private KeyPair keyPair;
+
+    // length of IV used in PKI
+    private static final int ENCRYPTION_IV_LEN = 16;
+    // length of secret key used in PKI
+    private static final int SECRETKEY_LEN = 128;
 
     private static final String EK_PUBLIC_PATH = "/tpm2/ek.pub";
     private static final String AK_PUBLIC_PATH = "/tpm2/ak.pub";
@@ -235,10 +251,10 @@ public class AttestationCertificateAuthorityTest {
 
         // create a key generator to generate a "shared" secret
         KeyGenerator keyGenerator = KeyGenerator.getInstance("AES");
-        keyGenerator.init(128);
+        keyGenerator.init(SECRETKEY_LEN);
 
         // use some random bytes as the IV to encrypt and subsequently decrypt with
-        byte[] randomBytes = new byte[16];
+        byte[] randomBytes = new byte[ENCRYPTION_IV_LEN];
 
         // generate the random bytes
         SecureRandom random = SecureRandom.getInstance("SHA1PRNG");
@@ -284,7 +300,7 @@ public class AttestationCertificateAuthorityTest {
         byte[] identityProofEncoded = new byte[]{0, 0, 1, 1};
 
         // generate a random session key to be used for encryption and decryption
-        byte[] sessionKey = new byte[16];
+        byte[] sessionKey = new byte[ENCRYPTION_IV_LEN];
         SecureRandom random = SecureRandom.getInstance("SHA1PRNG");
         random.nextBytes(sessionKey);
 
@@ -325,7 +341,7 @@ public class AttestationCertificateAuthorityTest {
 
         // create a key generator to generate a secret key
         KeyGenerator keyGenerator = KeyGenerator.getInstance("AES");
-        keyGenerator.init(128);
+        keyGenerator.init(SECRETKEY_LEN);
 
         // obtain the key from the generator
         byte[] secretKey = keyGenerator.generateKey().getEncoded();
@@ -356,7 +372,7 @@ public class AttestationCertificateAuthorityTest {
         assertTrue(attestation.getCredential().length == attestation.getCredentialSize());
 
         // create containers for the 2 parts of the credential
-        byte[] iv = new byte[16];
+        byte[] iv = new byte[ENCRYPTION_IV_LEN];
         byte[] credential = new byte[attestation.getCredential().length - iv.length];
 
         // siphon off the first 16 bytes for the IV
@@ -700,9 +716,9 @@ public class AttestationCertificateAuthorityTest {
         // initialize a cipher using the specified transformation
         Cipher cipher = Cipher.getInstance(transformation);
 
-        // generate a secret key specification using the key and AES.
+        // generate a secret key specification using the key and AES
         SecretKeySpec keySpec = new SecretKeySpec(key, "AES");
- 
+
         // create IV parameter for key specification
         IvParameterSpec ivParameterSpec = new IvParameterSpec(iv);
 

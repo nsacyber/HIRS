@@ -1,5 +1,6 @@
 package hirs.attestationca.persist.entity.userdefined.certificate;
 
+import hirs.attestationca.persist.entity.userdefined.AbstractUserdefinedEntityTest;
 import hirs.attestationca.persist.entity.userdefined.Certificate;
 import hirs.attestationca.persist.entity.userdefined.certificate.attributes.ComponentIdentifier;
 import hirs.attestationca.persist.entity.userdefined.certificate.attributes.PlatformConfiguration;
@@ -25,42 +26,7 @@ import java.util.TimeZone;
 /**
  * Tests that a PlatformCredential parses its fields correctly.
  */
-public class PlatformCredentialTest {
-    /**
-     * Location of a test platform attribute cert.
-     */
-    public static final String TEST_PLATFORM_CERT_1 =
-            "/validation/platform_credentials/Intel_pc1.cer";
-
-    /**
-     * Location of another, slightly different platform attribute cert.
-     */
-    public static final String TEST_PLATFORM_CERT_2 =
-            "/validation/platform_credentials/Intel_pc2.cer";
-
-    /**
-     * Location of another, slightly different platform attribute cert.
-     */
-    public static final String TEST_PLATFORM_CERT_3 =
-            "/validation/platform_credentials/Intel_pc3.cer";
-
-    /**
-     * Platform cert with comma separated baseboard and chassis serial number.
-     */
-    public static final String TEST_PLATFORM_CERT_4 =
-            "/validation/platform_credentials/Intel_pc4.pem";
-
-    /**
-     * Another platform cert with comma separated baseboard and chassis serial number.
-     */
-    public static final String TEST_PLATFORM_CERT_5 =
-            "/validation/platform_credentials/Intel_pc5.pem";
-
-    /**
-     * Location of another, slightly different platform attribute cert.
-     */
-    public static final String TEST_PLATFORM_CERT_6 =
-            "/validation/platform_credentials/TPM_INTC_Platform_Cert_RSA.txt";
+public class PlatformCredentialTest extends AbstractUserdefinedEntityTest {
 
     /**
      * Platform Certificate 2.0 with all the expected data.

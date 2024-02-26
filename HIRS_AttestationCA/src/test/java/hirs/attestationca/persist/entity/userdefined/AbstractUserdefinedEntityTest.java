@@ -1,8 +1,16 @@
 package hirs.attestationca.persist.entity.userdefined;
 
 import hirs.attestationca.persist.entity.ArchivableEntity;
-import hirs.attestationca.persist.entity.userdefined.certificate.*;
-import hirs.attestationca.persist.entity.userdefined.info.*;
+import hirs.attestationca.persist.entity.userdefined.certificate.CertificateAuthorityCredential;
+import hirs.attestationca.persist.entity.userdefined.certificate.ConformanceCredential;
+import hirs.attestationca.persist.entity.userdefined.certificate.EndorsementCredential;
+import hirs.attestationca.persist.entity.userdefined.certificate.IssuedAttestationCertificate;
+import hirs.attestationca.persist.entity.userdefined.certificate.PlatformCredential;
+import hirs.attestationca.persist.entity.userdefined.info.FirmwareInfo;
+import hirs.attestationca.persist.entity.userdefined.info.HardwareInfo;
+import hirs.attestationca.persist.entity.userdefined.info.NetworkInfo;
+import hirs.attestationca.persist.entity.userdefined.info.OSInfo;
+import hirs.attestationca.persist.entity.userdefined.info.TPMInfo;
 import hirs.attestationca.persist.entity.userdefined.report.DeviceInfoReport;
 import hirs.attestationca.persist.entity.userdefined.report.DeviceInfoReportTest;
 import hirs.attestationca.persist.enums.AppraisalStatus;
@@ -48,7 +56,6 @@ public class AbstractUserdefinedEntityTest {
     /**
      * Hex-encoded subject key identifier for the FAKE_ROOT_CA_FILE.
      */
-    //j
     public static final String FAKE_ROOT_CA_SUBJECT_KEY_IDENTIFIER_HEX =
             "58ec313a1699f94c1c8c4e2c6412402b258f0177";
 
@@ -57,13 +64,47 @@ public class AbstractUserdefinedEntityTest {
      */
     private static final String TEST_IDENTITY_CERT = "/tpm/sample_identity_cert.cer";
 
-//    private final NetworkInfo networkInfo = createTestNetworkInfo();
-//    private final OSInfo osInfo = createTestOSInfo();
-//    private final FirmwareInfo firmwareInfo = createTestFirmwareInfo();
-//    private final HardwareInfo hardwareInfo = createTestHardwareInfo();
-//    private final TPMInfo tpmInfo = createTPMInfo();
+    /**
+     * Location of a test platform attribute cert.
+     */
+    public static final String TEST_PLATFORM_CERT_1 =
+            "/validation/platform_credentials/Intel_pc1.cer";
+
+    /**
+     * Location of another, slightly different platform attribute cert.
+     */
+    public static final String TEST_PLATFORM_CERT_2 =
+            "/validation/platform_credentials/Intel_pc2.cer";
+
+    /**
+     * Location of another, slightly different platform attribute cert.
+     */
+    public static final String TEST_PLATFORM_CERT_3 =
+            "/validation/platform_credentials/Intel_pc3.cer";
+
+    /**
+     * Platform cert with comma separated baseboard and chassis serial number.
+     */
+    public static final String TEST_PLATFORM_CERT_4 =
+            "/validation/platform_credentials/Intel_pc4.pem";
+
+    /**
+     * Another platform cert with comma separated baseboard and chassis serial number.
+     */
+    public static final String TEST_PLATFORM_CERT_5 =
+            "/validation/platform_credentials/Intel_pc5.pem";
+
+    /**
+     * Location of another, slightly different platform attribute cert.
+     */
+    public static final String TEST_PLATFORM_CERT_6 =
+            "/validation/platform_credentials/TPM_INTC_Platform_Cert_RSA.txt";
+
     private static final Logger LOGGER = LogManager.getLogger(DeviceInfoReportTest.class);
 
+    /**
+     * Dummy message for supply chain validation test
+     */
     public static final String VALIDATION_MESSAGE = "Some message.";
 
     /**
@@ -100,8 +141,10 @@ public class AbstractUserdefinedEntityTest {
 
         Path certPath;
         try {
-            certPath = Paths.get(Objects.requireNonNull(AbstractUserdefinedEntityTest.class.getResource(filename)).toURI());
-//            certPath = Paths.get(Objects.requireNonNull(CertificateTest.class.getResource(filename)).toURI());
+            certPath = Paths.get(Objects.requireNonNull(
+                    AbstractUserdefinedEntityTest.class.getResource(filename)).toURI());
+//            certPath = Paths.get(Objects.requireNonNull(
+//                  CertificateTest.class.getResource(filename)).toURI());
         } catch (URISyntaxException e) {
             throw new IOException("Could not resolve path URI", e);
         }
@@ -215,6 +258,11 @@ public class AbstractUserdefinedEntityTest {
                 getTestIdentityCertificate());
     }
 
+    /**
+     * Creates a test identity certificate.
+     *
+     * @return the test X509 certificate
+     */
     public static X509Certificate getTestIdentityCertificate() {
         X509Certificate certificateValue = null;
         InputStream istream = null;

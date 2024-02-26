@@ -21,7 +21,9 @@ public final class DeviceTest extends AbstractUserdefinedEntityTest {
     @Test
     public void testDevice() {
         final String name = "my-laptop";
-        final Device device = new Device(name, null, HealthStatus.UNKNOWN, AppraisalStatus.Status.UNKNOWN, null, false, null , null);
+        final Device device = new Device(name, null, HealthStatus.UNKNOWN,
+                AppraisalStatus.Status.UNKNOWN, null, false,
+                null, null);
         assertNotNull(device);
     }
 
@@ -33,7 +35,9 @@ public final class DeviceTest extends AbstractUserdefinedEntityTest {
     public void testDeviceNameAndInfo() {
         final String name = "my-laptop";
         final DeviceInfoReport deviceInfo = getTestDeviceInfoReport();
-        new Device(name, deviceInfo, HealthStatus.UNKNOWN, AppraisalStatus.Status.UNKNOWN, null, false, null, null);
+        new Device(name, deviceInfo, HealthStatus.UNKNOWN,
+                AppraisalStatus.Status.UNKNOWN, null, false,
+                null, null);
     }
 
     /**
@@ -43,7 +47,9 @@ public final class DeviceTest extends AbstractUserdefinedEntityTest {
     public void testDeviceNameAndNullInfo() {
         final String name = "my-laptop";
         final DeviceInfoReport deviceInfo = null;
-        new Device(name, deviceInfo, HealthStatus.UNKNOWN, AppraisalStatus.Status.UNKNOWN, null, false, null, null);
+        new Device(name, deviceInfo, HealthStatus.UNKNOWN,
+                AppraisalStatus.Status.UNKNOWN, null, false,
+                null, null);
     }
 
     /**
@@ -53,7 +59,9 @@ public final class DeviceTest extends AbstractUserdefinedEntityTest {
     public void testGetDeviceInfo() {
         final String name = "my-laptop";
         final DeviceInfoReport deviceInfo = getTestDeviceInfoReport();
-        final Device device = new Device(name, deviceInfo, HealthStatus.UNKNOWN, AppraisalStatus.Status.UNKNOWN, null, false, null, null);
+        final Device device = new Device(name, deviceInfo, HealthStatus.UNKNOWN,
+                AppraisalStatus.Status.UNKNOWN, null, false,
+                null, null);
         assertEquals(deviceInfo, device.getDeviceInfo());
     }
 
@@ -63,7 +71,9 @@ public final class DeviceTest extends AbstractUserdefinedEntityTest {
     @Test
     public void testSetDeviceInfo() {
         final String name = "my-laptop";
-        final Device device = new Device(name, null, HealthStatus.UNKNOWN, AppraisalStatus.Status.UNKNOWN, null, false, null, null);
+        final Device device = new Device(name, null, HealthStatus.UNKNOWN,
+                AppraisalStatus.Status.UNKNOWN, null, false,
+                null, null);
         assertNull(device.getDeviceInfo());
         final DeviceInfoReport deviceInfo = getTestDeviceInfoReport();
         device.setDeviceInfo(deviceInfo);
@@ -77,7 +87,9 @@ public final class DeviceTest extends AbstractUserdefinedEntityTest {
     public void testSetNullDeviceInfo() {
         final String name = "my-laptop";
         final DeviceInfoReport deviceInfo = getTestDeviceInfoReport();
-        final Device device = new Device(name, deviceInfo, HealthStatus.UNKNOWN, AppraisalStatus.Status.UNKNOWN, null, false, null, null);
+        final Device device = new Device(name, deviceInfo, HealthStatus.UNKNOWN,
+                AppraisalStatus.Status.UNKNOWN, null, false,
+                null, null);
         assertEquals(deviceInfo, device.getDeviceInfo());
         device.setDeviceInfo(null);
         assertNull(device.getDeviceInfo());
@@ -90,7 +102,9 @@ public final class DeviceTest extends AbstractUserdefinedEntityTest {
     public void testNotNullLastReportTimeStamp() {
         final String name = "my-laptop";
         final DeviceInfoReport deviceInfo = getTestDeviceInfoReport();
-        final Device device = new Device(name, deviceInfo, HealthStatus.UNKNOWN, AppraisalStatus.Status.UNKNOWN, null, false, null, null);
+        final Device device = new Device(name, deviceInfo, HealthStatus.UNKNOWN,
+                AppraisalStatus.Status.UNKNOWN, null, false,
+                null, null);
         assertNotNull(device.getLastReportTimestamp());
     }
 
@@ -99,7 +113,9 @@ public final class DeviceTest extends AbstractUserdefinedEntityTest {
      */
     @Test
     public void testSetHealthStatus() {
-        final Device device  = new Device("test-device", null, HealthStatus.UNKNOWN, AppraisalStatus.Status.UNKNOWN, null, false, null, null);
+        final Device device  = new Device("test-device", null, HealthStatus.UNKNOWN,
+                AppraisalStatus.Status.UNKNOWN, null, false,
+                null, null);
         device.setHealthStatus(HealthStatus.TRUSTED);
         assertEquals(HealthStatus.TRUSTED, device.getHealthStatus());
     }
@@ -112,8 +128,12 @@ public final class DeviceTest extends AbstractUserdefinedEntityTest {
         final String name = "my-laptop";
         final String otherName = "my-laptop";
         final DeviceInfoReport deviceInfo = getTestDeviceInfoReport();
-        final Device device = new Device(name, deviceInfo, HealthStatus.UNKNOWN, AppraisalStatus.Status.UNKNOWN, null, false, null, null);
-        final Device other = new Device(otherName, deviceInfo, HealthStatus.UNKNOWN, AppraisalStatus.Status.UNKNOWN, null, false, null, null);
+        final Device device = new Device(name, deviceInfo, HealthStatus.UNKNOWN,
+                AppraisalStatus.Status.UNKNOWN, null, false,
+                null, null);
+        final Device other = new Device(otherName, deviceInfo, HealthStatus.UNKNOWN,
+                AppraisalStatus.Status.UNKNOWN, null, false,
+                null, null);
         assertEquals(device, other);
     }
 
@@ -124,7 +144,9 @@ public final class DeviceTest extends AbstractUserdefinedEntityTest {
     public void testGetDefaultSupplyChainStatus() {
         String name = "my-laptop";
         final DeviceInfoReport deviceInfo = getTestDeviceInfoReport();
-        final Device device = new Device(name, deviceInfo, HealthStatus.UNKNOWN, AppraisalStatus.Status.UNKNOWN, null, false, null, null);
+        final Device device = new Device(name, deviceInfo, HealthStatus.UNKNOWN,
+                AppraisalStatus.Status.UNKNOWN, null, false,
+                null, null);
         assertEquals(AppraisalStatus.Status.UNKNOWN, device.getSupplyChainValidationStatus());
     }
 
@@ -135,7 +157,9 @@ public final class DeviceTest extends AbstractUserdefinedEntityTest {
     public void testSetAndGetSupplyChainStatus() {
         String name = "my-laptop";
         final DeviceInfoReport deviceInfo = getTestDeviceInfoReport();
-        final Device device = new Device(name, deviceInfo, HealthStatus.UNKNOWN, AppraisalStatus.Status.UNKNOWN, null, false, null, null);
+        final Device device = new Device(name, deviceInfo, HealthStatus.UNKNOWN,
+                AppraisalStatus.Status.UNKNOWN, null, false,
+                null, null);
         device.setSupplyChainValidationStatus(AppraisalStatus.Status.PASS);
         assertEquals(AppraisalStatus.Status.PASS, device.getSupplyChainValidationStatus());
     }

@@ -28,6 +28,8 @@ public class EndorsementCredentialTest {
     private static final String EK_CERT_WITH_SECURITY_ASSERTIONS =
             "/certificates/ek_cert_with_security_assertions.cer";
 
+    private static final int TPM_SPEC_REVISION_NUM = 116;
+
     /**
      * Tests the successful parsing of an EC using a test cert from STM.
      * @throws IOException test failed due to invalid certificate parsing
@@ -48,7 +50,7 @@ public class EndorsementCredentialTest {
         TPMSpecification spec = ec.getTpmSpecification();
         assertEquals(spec.getFamily(), "1.2");
         assertEquals(spec.getLevel(), BigInteger.valueOf(2));
-        assertEquals(spec.getRevision(), BigInteger.valueOf(116));
+        assertEquals(spec.getRevision(), BigInteger.valueOf(TPM_SPEC_REVISION_NUM));
 
         TPMSecurityAssertions asserts = ec.getTpmSecurityAssertions();
         assertEquals(asserts.getTpmSecAssertsVersion(), BigInteger.valueOf(0));
@@ -81,7 +83,7 @@ public class EndorsementCredentialTest {
         TPMSpecification spec = ec.getTpmSpecification();
         assertEquals(spec.getFamily(), "1.2");
         assertEquals(spec.getLevel(), BigInteger.valueOf(2));
-        assertEquals(spec.getRevision(), BigInteger.valueOf(116));
+        assertEquals(spec.getRevision(), BigInteger.valueOf(TPM_SPEC_REVISION_NUM));
 
         TPMSecurityAssertions asserts = ec.getTpmSecurityAssertions();
         assertEquals(asserts.getTpmSecAssertsVersion(), BigInteger.valueOf(0));
@@ -117,7 +119,7 @@ public class EndorsementCredentialTest {
         TPMSpecification spec = ec.getTpmSpecification();
         assertEquals(spec.getFamily(), "1.2");
         assertEquals(spec.getLevel(), BigInteger.valueOf(2));
-        assertEquals(spec.getRevision(), BigInteger.valueOf(116));
+        assertEquals(spec.getRevision(), BigInteger.valueOf(TPM_SPEC_REVISION_NUM));
 
         TPMSecurityAssertions asserts = ec.getTpmSecurityAssertions();
         assertEquals(asserts.getTpmSecAssertsVersion(), BigInteger.valueOf(0));
@@ -150,7 +152,7 @@ public class EndorsementCredentialTest {
         TPMSpecification spec = ec.getTpmSpecification();
         assertEquals(spec.getFamily(), "1.2");
         assertEquals(spec.getLevel(), BigInteger.valueOf(2));
-        assertEquals(spec.getRevision(), BigInteger.valueOf(116));
+        assertEquals(spec.getRevision(), BigInteger.valueOf(TPM_SPEC_REVISION_NUM));
 
         TPMSecurityAssertions asserts = ec.getTpmSecurityAssertions();
         assertEquals(asserts.getTpmSecAssertsVersion(), BigInteger.valueOf(0));
