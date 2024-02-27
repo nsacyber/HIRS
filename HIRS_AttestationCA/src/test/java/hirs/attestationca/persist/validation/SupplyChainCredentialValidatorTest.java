@@ -244,17 +244,16 @@ public class SupplyChainCredentialValidatorTest {
     @Test
     public final void testValidateEndorsementCredential()
             throws URISyntaxException, IOException, CertificateException, KeyStoreException {
-        Certificate rootcacert, intermediateca02cert;
 
         EndorsementCredential ekcert = new EndorsementCredential(Files.readAllBytes(
                 Paths.get(Objects.requireNonNull(getClass().getResource(TEST_EK_CERT)).toURI()))
         );
 
-        intermediateca02cert = new CertificateAuthorityCredential(Files.readAllBytes(Paths.get(
+        Certificate intermediateca02cert = new CertificateAuthorityCredential(Files.readAllBytes(Paths.get(
                 Objects.requireNonNull(getClass().getResource(INT_CA_CERT02)).toURI()))
         );
 
-        rootcacert = new CertificateAuthorityCredential(Files.readAllBytes(Paths.get(
+        Certificate rootcacert = new CertificateAuthorityCredential(Files.readAllBytes(Paths.get(
                 Objects.requireNonNull(getClass().getResource(FAKE_ROOT_CA_ORIG)).toURI()))
         );
 

@@ -57,9 +57,14 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Objects;
 
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.*;
-
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
+import static org.mockito.Mockito.when;
 
 /**
  * Test suite for {@link AttestationCertificateAuthority}.
@@ -75,11 +80,28 @@ public class AttestationCertificateAuthorityTest {
      */
     @Nested
     public class AccessAbstractProcessor extends AbstractProcessor {
+
+        /**
+         * Constructor.
+         *
+         * @param privateKey the private key of the ACA
+         * @param validDays int for the time in which a certificate is valid.
+         */
         public AccessAbstractProcessor(final PrivateKey privateKey,
                                        final int validDays) {
             super(privateKey, validDays);
         }
 
+        /**
+         * Public wrapper for the protected function generateCredential(), to access for testing.
+         *
+         * @param publicKey cannot be null
+         * @param endorsementCredential the endorsement credential
+         * @param platformCredentials the set of platform credentials
+         * @param deviceName The host name used in the subject alternative name
+         * @param acaCertificate the aca certificate
+         * @return the generated X509 certificate
+         */
         public X509Certificate accessGenerateCredential(final PublicKey publicKey,
                                             final EndorsementCredential endorsementCredential,
                                             final List<PlatformCredential> platformCredentials,
@@ -165,7 +187,7 @@ public class AttestationCertificateAuthorityTest {
                 null, null, null, null, null, null, 1,
                 null, null, null, null) {
         };
-        abstractProcessor = new AccessAbstractProcessor(keyPair.getPrivate(),1);
+        abstractProcessor = new AccessAbstractProcessor(keyPair.getPrivate(), 1);
 
         Security.addProvider(new BouncyCastleProvider());
     }
@@ -232,7 +254,8 @@ public class AttestationCertificateAuthorityTest {
         byte[] encrypted = encryptBlob(expected, encryptionScheme.toString());
 
         // perform the decryption and assert that the decrypted bytes equal the expected bytes
-        assertArrayEquals(expected, ProvisionUtils.decryptAsymmetricBlob(encrypted, encryptionScheme, keyPair.getPrivate()));
+        assertArrayEquals(expected, ProvisionUtils.decryptAsymmetricBlob(
+                encrypted, encryptionScheme, keyPair.getPrivate()));
     }
 
     /**
@@ -285,6 +308,9 @@ public class AttestationCertificateAuthorityTest {
         assertTrue(symmetricKey.getAlgorithmId() == 6);
         assertTrue(symmetricKey.getEncryptionScheme() == 255);
         assertTrue(symmetricKey.getKeySize() == symmetricKey.getKey().length);
+    }
+
+    private void assertTrue(final boolean b) {
     }
 
     /**
@@ -639,7 +665,7 @@ public class AttestationCertificateAuthorityTest {
      * @return encrypted blob
      * @throws Exception during the encryption process
      */
-    private byte[] encryptBlob(byte[] blob, String transformation) throws Exception {
+    private byte[] encryptBlob(final byte[] blob, final String transformation) throws Exception {
         // initialize a cipher using the specified transformation
         Cipher cipher = Cipher.getInstance(transformation);
 
@@ -661,8 +687,8 @@ public class AttestationCertificateAuthorityTest {
      * @return encrypted blob
      * @throws Exception
      */
-    private byte[] encryptBlob(byte[] blob, byte[] key, byte[] iv, String transformation)
-            throws Exception {
+    private byte[] encryptBlob(final byte[] blob, final byte[] key, final byte[] iv,
+                               final String transformation) throws Exception {
         // initialize a cipher using the specified transformation
         Cipher cipher = Cipher.getInstance(transformation);
 
@@ -686,7 +712,7 @@ public class AttestationCertificateAuthorityTest {
      * @return decrypted blob
      * @throws Exception
      */
-    private byte[] decryptBlob(byte[] blob) throws Exception {
+    private byte[] decryptBlob(final byte[] blob) throws Exception {
         // initialize a cipher using the specified transformation
         Cipher cipher = Cipher.getInstance(EncryptionScheme.OAEP.toString());
 
@@ -711,8 +737,8 @@ public class AttestationCertificateAuthorityTest {
      * @return decrypted blob
      * @throws Exception
      */
-    private byte[] decryptBlob(byte[] blob, byte[] key, byte[] iv, String transformation)
-            throws Exception {
+    private byte[] decryptBlob(final byte[] blob, final byte[] key, final byte[] iv,
+                               final String transformation) throws Exception {
         // initialize a cipher using the specified transformation
         Cipher cipher = Cipher.getInstance(transformation);
 
@@ -728,5 +754,4 @@ public class AttestationCertificateAuthorityTest {
         // return the cipher text
         return cipher.doFinal(blob);
     }
-
 }

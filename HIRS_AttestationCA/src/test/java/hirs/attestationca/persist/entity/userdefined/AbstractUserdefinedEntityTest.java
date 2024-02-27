@@ -103,7 +103,7 @@ public class AbstractUserdefinedEntityTest {
     private static final Logger LOGGER = LogManager.getLogger(DeviceInfoReportTest.class);
 
     /**
-     * Dummy message for supply chain validation test
+     * Dummy message for supply chain validation test.
      */
     public static final String VALIDATION_MESSAGE = "Some message.";
 

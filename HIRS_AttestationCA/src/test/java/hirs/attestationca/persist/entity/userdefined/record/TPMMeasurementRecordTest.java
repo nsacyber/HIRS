@@ -26,7 +26,8 @@ public class TPMMeasurementRecordTest {
     private static final int DEFAULT_PCR_ID = 3;
     private static final String DEFAULT_HASH =
             "3d5f3c2f7f3003d2e4baddc46ed4763a4954f648";
-    private static final ExaminableRecord.ExamineState DEFAULT_STATE = ExaminableRecord.ExamineState.UNEXAMINED;
+    private static final ExaminableRecord.ExamineState DEFAULT_STATE =
+            ExaminableRecord.ExamineState.UNEXAMINED;
 
     /**
      * Tests instantiation of new <code>PCRMeasurementRecord</code>.
