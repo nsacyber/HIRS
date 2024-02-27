@@ -292,10 +292,9 @@ public class CertificateAttributeScvValidator extends SupplyChainCredentialValid
                         && identifier.getComponentModel() != null)
                 .collect(Collectors.toList());
 
-        String paccorOutputString = deviceInfoReport.getPaccorOutputString();
-        String unmatchedComponents;
+//        String paccorOutputString = deviceInfoReport.getPaccorOutputString();
+//        String unmatchedComponents;
 
-        // START A NEW
         // populate componentResults list
         List<ComponentResult> componentResults = componentResultRepository
                 .findByCertificateSerialNumberAndBoardSerialNumber(
@@ -345,22 +344,23 @@ public class CertificateAttributeScvValidator extends SupplyChainCredentialValid
             });
 
             List<ComponentInfo> componentClassInfo;
+            List<ComponentAttributeResult> attributeResults = new ArrayList<>();
             for (ComponentResult componentResult : remainingComponentResults) {
                 componentClassInfo = componentDeviceMap.get(componentResult.getComponentClassValue());
-                if (componentClassInfo.size() > 1) {
-                    componentResult.setMismatched(!matchBasedOnClass(
-                            componentClassInfo, componentResult, componentAttributeRepository));
+                if (componentClassInfo.size() == 1) {
+                    attributeResults.addAll(generateComponentResults(componentClassInfo, componentResult));
+                } else {
+                    attributeResults.addAll(matchBasedOnAttributes(componentClassInfo, componentResult));
                 }
             }
 
-            for (ComponentResult componentResult : remainingComponentResults) {
-                fieldValidation &= !componentResult.isMismatched();
+            for (ComponentAttributeResult componentAttributeResult : attributeResults) {
+                componentAttributeRepository.save(componentAttributeResult);
+                fieldValidation &= componentAttributeResult.checkMatchedStatus();
             }
         }
 
 
-
-        // END
 //        try {
 //            List<ComponentInfo> componentInfoList
 //                    = getComponentInfoFromPaccorOutput(deviceInfoReport.getNetworkInfo().getHostname(),
@@ -389,27 +389,65 @@ public class CertificateAttributeScvValidator extends SupplyChainCredentialValid
         }
     }
 
-    private static boolean matchBasedOnClass(final List<ComponentInfo> componentInfos,
-                                   final ComponentResult componentResult,
-                                   final ComponentAttributeRepository componentAttributeRepository) {
+    private static List<ComponentAttributeResult> generateComponentResults(
+            final List<ComponentInfo> componentInfos,
+            final ComponentResult componentResult) {
         // there are instances of components with the same class (ie hard disks, memory)
-        int listSize = componentInfos.size();
         List<ComponentAttributeResult> attributeResults = new ArrayList<>();
-        boolean matched = true;
         for (ComponentInfo componentInfo : componentInfos) {
             // just do a single pass and save the values
-            attributeResults.add(new ComponentAttributeResult(componentResult.getId(), componentResult.getManufacturer(), componentInfo.getComponentManufacturer()));
-            attributeResults.add(new ComponentAttributeResult(componentResult.getId(), componentResult.getModel(), componentInfo.getComponentModel()));
-            attributeResults.add(new ComponentAttributeResult(componentResult.getId(), componentResult.getSerialNumber(), componentInfo.getComponentSerial()));
-            attributeResults.add(new ComponentAttributeResult(componentResult.getId(), componentResult.getRevisionNumber(), componentInfo.getComponentRevision()));
+            attributeResults.add(new ComponentAttributeResult(componentResult.getId(),
+                    componentResult.getManufacturer(), componentInfo.getComponentManufacturer()));
+            attributeResults.add(new ComponentAttributeResult(componentResult.getId(),
+                    componentResult.getModel(), componentInfo.getComponentModel()));
+            attributeResults.add(new ComponentAttributeResult(componentResult.getId(),
+                    componentResult.getSerialNumber(), componentInfo.getComponentSerial()));
+            attributeResults.add(new ComponentAttributeResult(componentResult.getId(),
+                    componentResult.getRevisionNumber(), componentInfo.getComponentRevision()));
         }
 
-        for (ComponentAttributeResult componentAttributeResult : attributeResults) {
-            componentAttributeRepository.save(componentAttributeResult);
-            matched &= componentAttributeResult.checkMatchedStatus();
+        return attributeResults;
+    }
+
+    private static List<ComponentAttributeResult> matchBasedOnAttributes(
+            final List<ComponentInfo> componentClassInfo,
+            final ComponentResult componentResult) {
+        // this list only has those of the same class type
+        List<ComponentAttributeResult> attributeResults = new ArrayList<>();
+        Map<String, ComponentInfo> componentSerialMap = new HashMap<>();
+        componentClassInfo.stream().forEach((componentInfo) -> {
+            componentSerialMap.put(componentInfo.getComponentSerial(), componentInfo);
+        });
+        // see if the serial exists
+        ComponentInfo componentInfo = componentSerialMap.get(componentResult.getSerialNumber());
+
+        if (componentInfo != null) {
+            // if the serial, create attribute result and move on
+            attributeResults.add(new ComponentAttributeResult(componentResult.getId(),
+                    componentResult.getManufacturer(), componentInfo.getComponentManufacturer()));
+            attributeResults.add(new ComponentAttributeResult(componentResult.getId(),
+                    componentResult.getModel(), componentInfo.getComponentModel()));
+            attributeResults.add(new ComponentAttributeResult(componentResult.getId(),
+                    componentResult.getSerialNumber(), componentInfo.getComponentSerial()));
+            attributeResults.add(new ComponentAttributeResult(componentResult.getId(),
+                    componentResult.getRevisionNumber(), componentInfo.getComponentRevision()));
+        } else {
+            // didn't find based on serial
+            // look for highest match; otherwise ignore
+            // I already know serial doesn't match
+            componentClassInfo.stream().forEach((ci) -> {
+                boolean manufacturerMatch, modelMatch, revisionMatch;
+                manufacturerMatch = ci.getComponentManufacturer().equals(componentResult.getManufacturer());
+                modelMatch = ci.getComponentModel().equals(componentResult.getModel());
+                revisionMatch = ci.getComponentRevision().equals(componentResult.getRevisionNumber());
+                if (manufacturerMatch && modelMatch && revisionMatch) {
+                    attributeResults.add(new ComponentAttributeResult(componentResult.getId(),
+                            componentResult.getSerialNumber(), ci.getComponentSerial()));
+                }
+            });
         }
 
-        return matched;
+        return attributeResults;
     }
 
     /**

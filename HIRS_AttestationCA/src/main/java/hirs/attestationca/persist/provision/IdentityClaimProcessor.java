@@ -636,6 +636,7 @@ public class IdentityClaimProcessor extends AbstractProcessor {
                         platformCredential.getSerialNumber().toString(),
                         platformCredential.getPlatformChainType(),
                         componentIdentifier);
+                componentResult.setMismatched(false);
                 componentResultRepository.save(componentResult);
                 componentResults++;
             }

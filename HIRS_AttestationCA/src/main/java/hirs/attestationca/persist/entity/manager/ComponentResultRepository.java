@@ -10,6 +10,19 @@ import java.util.UUID;
 @Repository
 public interface ComponentResultRepository extends JpaRepository<ComponentResult, UUID> {
 
+    /**
+     * Query based on the device serial number.
+     * @param boardSerialNumber variable holding the device serial number
+     * @return a list of component result.
+     */
     List<ComponentResult> findByBoardSerialNumber(String boardSerialNumber);
-    List<ComponentResult> findByCertificateSerialNumberAndBoardSerialNumber(String certificateSerialNumber, String boardSerialNumber);
+
+    /**
+     * Query based on certificate serial number and device serial number.
+     * @param certificateSerialNumber certificate specific serial number
+     * @param boardSerialNumber variable holding the device serial number
+     * @return a list of component result.
+     */
+    List<ComponentResult> findByCertificateSerialNumberAndBoardSerialNumber(
+            String certificateSerialNumber, String boardSerialNumber);
 }

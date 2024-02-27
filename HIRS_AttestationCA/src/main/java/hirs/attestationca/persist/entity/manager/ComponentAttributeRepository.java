@@ -7,5 +7,11 @@ import java.util.List;
 import java.util.UUID;
 
 public interface ComponentAttributeRepository extends JpaRepository<ComponentAttributeResult, UUID> {
+    /**
+     * Query to look up Attribute Results based on the PlatformCredential's
+     * db component id.
+     * @param componentId the unique id for the component identifier
+     * @return a list of attribute results
+     */
     List<ComponentAttributeResult> findByComponentId(UUID componentId);
 }

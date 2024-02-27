@@ -20,7 +20,6 @@ import java.util.Objects;
  * A component result is a DO to hold the status of a component validation status.  This will
  * also be used to display this common information on the certificate details page.
  */
-
 @Getter
 @Entity
 @EqualsAndHashCode(callSuper = false)
@@ -55,6 +54,8 @@ public class ComponentResult extends ArchivableEntity {
     /**
      * Default constructor.
      * @param boardSerialNumber associated platform certificate serial number.
+     * @param certificateSerialNumber unique number associated with header info.
+     * @param certificateType parameter holds version 1.2 or 2.0.
      * @param componentIdentifier object with information from the platform certificate components.
      */
     public ComponentResult(final String boardSerialNumber, final String certificateSerialNumber,
@@ -72,7 +73,7 @@ public class ComponentResult extends ArchivableEntity {
         }
         StringBuilder sb = new StringBuilder();
         for (ComponentAddress element : componentIdentifier.getComponentAddress()) {
-            sb.append(String.format("%s:%s;",element.getAddressTypeValue(),
+            sb.append(String.format("%s:%s;", element.getAddressTypeValue(),
                     element.getAddressValue().toString()));
         }
         componentAddress = sb.toString();

@@ -7,7 +7,6 @@ import hirs.attestationca.persist.entity.userdefined.certificate.attributes.Plat
 import hirs.attestationca.persist.entity.userdefined.certificate.attributes.TBBSecurityAssertion;
 import hirs.attestationca.persist.entity.userdefined.certificate.attributes.URIReference;
 import hirs.attestationca.persist.entity.userdefined.certificate.attributes.V2.PlatformConfigurationV2;
-import hirs.attestationca.persist.service.selector.CertificateSelector;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Transient;
