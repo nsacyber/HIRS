@@ -39,11 +39,13 @@ import java.util.stream.Collectors;
 import static hirs.attestationca.persist.enums.AppraisalStatus.Status.ERROR;
 import static hirs.attestationca.persist.enums.AppraisalStatus.Status.FAIL;
 import static hirs.attestationca.persist.enums.AppraisalStatus.Status.PASS;
+import static hirs.attestationca.persist.enums.AppraisalStatus.Status.UNKNOWN;
 
 @Log4j2
 public class CertificateAttributeScvValidator extends SupplyChainCredentialValidator {
 
     private static List<ComponentResult> componentResultList = new LinkedList<>();
+    private static final String LC_UNKNOWN = "unknown";
 
     /**
      * Getter for the list of components to verify.
@@ -236,16 +238,19 @@ public class CertificateAttributeScvValidator extends SupplyChainCredentialValid
 
         passesValidation &= fieldValidation;
 
-        fieldValidation = requiredPlatformCredentialFieldIsNonEmptyAndMatches(
-                "PlatformVersion",
-                platformCredential.getVersion(),
-                hardwareInfo.getVersion());
+        if (!isNotSpecifiedOrUnknown(platformCredential.getVersion())
+                && !isNotSpecifiedOrUnknown(hardwareInfo.getVersion())) {
+            fieldValidation = requiredPlatformCredentialFieldIsNonEmptyAndMatches(
+                    "PlatformVersion",
+                    platformCredential.getVersion(),
+                    hardwareInfo.getVersion());
 
-        if (!fieldValidation) {
-            resultMessage.append("Platform version did not match\n");
+            if (!fieldValidation) {
+                resultMessage.append("Platform version did not match\n");
+            }
+
+            passesValidation &= fieldValidation;
         }
-
-        passesValidation &= fieldValidation;
 
         // check PlatformSerial against both system-serial-number and baseboard-serial-number
         fieldValidation = (
@@ -1088,6 +1093,19 @@ public class CertificateAttributeScvValidator extends SupplyChainCredentialValid
             return true;
         }
         return false;
+    }
+
+    /**
+     * Per update to the provisioning via Issue 723, Not Specified and Unknown values
+     * are to be ignored.
+     * @param versionNumber string value of the device/platform version number
+     * @return true if they equal Not Specified or Unknown
+     */
+    public static boolean isNotSpecifiedOrUnknown(final String versionNumber) {
+        String fieldValue = versionNumber.toLowerCase();
+
+        return fieldValue.equals(DeviceInfoEnums.NOT_SPECIFIED.toLowerCase())
+                || fieldValue.equals(LC_UNKNOWN);
     }
 
     private static boolean platformCredentialFieldMatches(
