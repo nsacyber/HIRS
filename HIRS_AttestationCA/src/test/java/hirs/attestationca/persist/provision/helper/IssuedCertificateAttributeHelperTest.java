@@ -186,7 +186,7 @@ public class IssuedCertificateAttributeHelperTest {
     }
 
     private Map<String, String> getSubjectAlternativeNameAttributes(
-            Extension subjectAlternativeName) {
+            final Extension subjectAlternativeName) {
         Map<String, String> subjectAlternativeNameAttrMap = new HashMap<>();
 
         DLSequence dlSequence = (DLSequence) subjectAlternativeName.getParsedValue();

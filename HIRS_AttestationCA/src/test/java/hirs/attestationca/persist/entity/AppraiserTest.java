@@ -1,12 +1,14 @@
 package hirs.attestationca.persist.entity;
 
-import hirs.attestationca.persist.entity.userdefined.certificate.CertificateAuthorityCredential;
 import org.junit.jupiter.api.Test;
 
-import java.io.IOException;
-import java.security.cert.CertificateException;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import static org.junit.jupiter.api.Assertions.*;
 
 /**
  * Unit tests for the class <code>Appraiser</code>.
@@ -160,5 +162,4 @@ public final class AppraiserTest {
         assertNotEquals(appraiser1.hashCode(), appraiser2.hashCode());
         assertNotEquals(appraiser2.hashCode(), appraiser1.hashCode());
     }
-
 }

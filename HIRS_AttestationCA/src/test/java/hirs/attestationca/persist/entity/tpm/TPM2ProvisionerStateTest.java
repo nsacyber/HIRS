@@ -87,13 +87,16 @@ public class TPM2ProvisionerStateTest {
 
 
     /**
-     * Test that {@link TPM2ProvisionerState#getTPM2ProvisionerState(TPM2ProvisionerStateRepository, byte[])} works.
-     * {@link TPM2ProvisionerState#getTPM2ProvisionerState(TPM2ProvisionerStateRepository, byte[])}, null is returned.
+     * Test that {@link TPM2ProvisionerState#getTPM2ProvisionerState(
+     *        TPM2ProvisionerStateRepository, byte[])} works.
+     * {@link TPM2ProvisionerState#getTPM2ProvisionerState(
+     *        TPM2ProvisionerStateRepository, byte[])}, null is returned.
      * @throws IOException this will never happen
      */
     @Test
     public final void testGetTPM2ProvisionerStateNominal() throws IOException {
-        TPM2ProvisionerStateRepository tpm2ProvisionerStateRepository = mock(TPM2ProvisionerStateRepository.class);
+        TPM2ProvisionerStateRepository tpm2ProvisionerStateRepository =
+                mock(TPM2ProvisionerStateRepository.class);
         byte[] nonce = new byte[32];
         byte[] identityClaim = new byte[360];
         random.nextBytes(nonce);
@@ -112,12 +115,14 @@ public class TPM2ProvisionerStateTest {
 
     /**
      * Test that if a null is passed as a nonce to
-     * {@link TPM2ProvisionerState#getTPM2ProvisionerState(TPM2ProvisionerStateRepository, byte[])}, null is returned.
+     * {@link TPM2ProvisionerState#getTPM2ProvisionerState(
+     *        TPM2ProvisionerStateRepository, byte[])}, null is returned.
      * @throws IOException this will never happen
      */
     @Test
     public final void testGetTPM2ProvisionerStateNullNonce() throws IOException {
-        TPM2ProvisionerStateRepository tpm2ProvisionerStateRepository = mock(TPM2ProvisionerStateRepository.class);
+        TPM2ProvisionerStateRepository tpm2ProvisionerStateRepository =
+                mock(TPM2ProvisionerStateRepository.class);
         byte[] nonce = new byte[32];
         byte[] identityClaim = new byte[360];
         random.nextBytes(nonce);
@@ -133,12 +138,14 @@ public class TPM2ProvisionerStateTest {
 
     /**
      * Test that if a nonce that is less than 8 bytes is passed to
-     * {@link TPM2ProvisionerState#getTPM2ProvisionerState(TPM2ProvisionerStateRepository, byte[])}, null is returned.
+     * {@link TPM2ProvisionerState#getTPM2ProvisionerState(
+     *        TPM2ProvisionerStateRepository, byte[])}, null is returned.
      * @throws IOException this will never happen
      */
     @Test
     public final void testGetTPM2ProvisionerStateNonceTooSmall() throws IOException {
-        TPM2ProvisionerStateRepository tpm2ProvisionerStateRepository = mock(TPM2ProvisionerStateRepository.class);
+        TPM2ProvisionerStateRepository tpm2ProvisionerStateRepository =
+                mock(TPM2ProvisionerStateRepository.class);
         byte[] nonce = new byte[32];
         byte[] identityClaim = new byte[360];
         random.nextBytes(nonce);

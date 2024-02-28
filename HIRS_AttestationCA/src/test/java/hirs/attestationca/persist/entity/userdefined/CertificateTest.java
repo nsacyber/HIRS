@@ -1,6 +1,11 @@
 package hirs.attestationca.persist.entity.userdefined;
 
-import hirs.attestationca.persist.entity.ArchivableEntity;
+import hirs.attestationca.persist.entity.userdefined.certificate.CertificateAuthorityCredential;
+import hirs.attestationca.persist.entity.userdefined.certificate.ConformanceCredential;
+import hirs.attestationca.persist.entity.userdefined.certificate.EndorsementCredential;
+import hirs.attestationca.persist.entity.userdefined.certificate.PlatformCredential;
+import org.bouncycastle.cert.X509AttributeCertificateHolder;
+import org.junit.jupiter.api.Test;
 
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -14,12 +19,8 @@ import java.security.cert.CertificateException;
 import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
 import java.util.Arrays;
-import java.util.List;
 import java.util.Objects;
 
-import hirs.attestationca.persist.entity.userdefined.certificate.*;
-import org.bouncycastle.cert.X509AttributeCertificateHolder;
-import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -29,28 +30,13 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 /**
  * This class tests functionality of the {@link Certificate} class.
  */
-public class CertificateTest {
-    /**
-     * Location of a test (fake) root CA certificate.
-     */
-    public static final String FAKE_ROOT_CA_FILE = "/certificates/fakeRootCA.cer";
-
-    /**
-     * Location of a test (fake) Intel intermediate CA certificate.
-     */
-    public static final String FAKE_INTEL_INT_CA_FILE =
-            "/certificates/fakeIntelIntermediateCA.cer";
+public class CertificateTest extends AbstractUserdefinedEntityTest {
 
     /**
      * Location of a test (fake) Intel intermediate CA certificate.
      */
     public static final String INTEL_INT_CA_FILE =
             "/validation/platform_credentials/intel_chain/root/intermediate2.cer";
-
-    /**
-     * Location of a test (fake) SGI intermediate CA certificate.
-     */
-    public static final String FAKE_SGI_INT_CA_FILE = "/certificates/fakeSGIIntermediateCA.cer";
 
     /**
      * Location of another test self-signed certificate.
@@ -77,12 +63,6 @@ public class CertificateTest {
      * Location of the GlobalSign Root CA certificate.
      */
     public static final String GS_ROOT_CA = "/certificates/stMicroCaCerts/gstpmroot.crt";
-
-    /**
-     * Hex-encoded subject key identifier for the FAKE_ROOT_CA_FILE.
-     */
-    public static final String FAKE_ROOT_CA_SUBJECT_KEY_IDENTIFIER_HEX =
-            "58ec313a1699f94c1c8c4e2c6412402b258f0177";
 
     /**
      * Location of a test STM endorsement credential.
@@ -119,7 +99,8 @@ public class CertificateTest {
     public void testConstructCertFromByteArray() throws IOException, URISyntaxException {
         Certificate certificate = new CertificateAuthorityCredential(
                 Files.readAllBytes(
-                        Paths.get(Objects.requireNonNull(this.getClass().getResource(FAKE_ROOT_CA_FILE)).toURI())
+                        Paths.get(Objects.requireNonNull(this.getClass().getResource(
+                                FAKE_ROOT_CA_FILE)).toURI())
                 )
         );
         assertEquals(
@@ -163,7 +144,8 @@ public class CertificateTest {
     @Test
     public void testConstructCertFromPath() throws URISyntaxException, IOException {
         Certificate certificate = new CertificateAuthorityCredential(
-                Paths.get(Objects.requireNonNull(this.getClass().getResource(FAKE_ROOT_CA_FILE)).toURI())
+                Paths.get(Objects.requireNonNull(this.getClass().getResource(
+                        FAKE_ROOT_CA_FILE)).toURI())
         );
         assertEquals(
                 "CN=Fake Root CA",
@@ -202,12 +184,12 @@ public class CertificateTest {
                 Certificate.CertificateType.X509_CERTIFICATE,
                 getTestCertificate(
                         PlatformCredential.class,
-                        PlatformCredentialTest.TEST_PLATFORM_CERT_3).getCertificateType());
+                        TEST_PLATFORM_CERT_3).getCertificateType());
         assertEquals(
                 Certificate.CertificateType.ATTRIBUTE_CERTIFICATE,
                 getTestCertificate(
                         PlatformCredential.class,
-                        PlatformCredentialTest.TEST_PLATFORM_CERT_3).getCertificateType());
+                        TEST_PLATFORM_CERT_3).getCertificateType());
 
     }
 
@@ -220,7 +202,7 @@ public class CertificateTest {
     @Test
     public void testImportPem() throws IOException {
         Certificate platformCredential = getTestCertificate(
-                PlatformCredential.class, PlatformCredentialTest.TEST_PLATFORM_CERT_4
+                PlatformCredential.class, TEST_PLATFORM_CERT_4
         );
 
         assertEquals(
@@ -232,7 +214,7 @@ public class CertificateTest {
         );
 
         platformCredential = getTestCertificate(
-                PlatformCredential.class, PlatformCredentialTest.TEST_PLATFORM_CERT_5
+                PlatformCredential.class, TEST_PLATFORM_CERT_5
         );
 
         assertEquals(
@@ -295,13 +277,12 @@ public class CertificateTest {
     public void testX509AttributeCertificateParsing() throws IOException, URISyntaxException {
         Certificate platformCert = getTestCertificate(
                 PlatformCredential.class,
-                PlatformCredentialTest.TEST_PLATFORM_CERT_3
+                TEST_PLATFORM_CERT_3
         );
 
         X509AttributeCertificateHolder attrCertHolder = new X509AttributeCertificateHolder(
                 Files.readAllBytes(Paths.get(Objects.requireNonNull(this.getClass().getResource(
-                        PlatformCredentialTest.TEST_PLATFORM_CERT_3
-                )).toURI()))
+                        TEST_PLATFORM_CERT_3)).toURI()))
         );
 
         assertEquals(
@@ -330,7 +311,7 @@ public class CertificateTest {
     public void testX509AttributeCertificateParsingExtended()
             throws IOException, URISyntaxException {
         Certificate platformCert = getTestCertificate(
-                PlatformCredential.class, PlatformCredentialTest.TEST_PLATFORM_CERT_6);
+                PlatformCredential.class, TEST_PLATFORM_CERT_6);
 
         assertEquals("https://trustedservices.intel.com/"
                         + "content/TSC/certs/TSC_IssuingCAIKGF_TEST.cer\n",
@@ -428,11 +409,13 @@ public class CertificateTest {
 
         assertEquals(
                 new CertificateAuthorityCredential(
-                        Paths.get(Objects.requireNonNull(this.getClass().getResource(FAKE_ROOT_CA_FILE)).toURI())
+                        Paths.get(Objects.requireNonNull(this.getClass().getResource(
+                                FAKE_ROOT_CA_FILE)).toURI())
                 ),
                 new CertificateAuthorityCredential(
                         Files.readAllBytes(
-                                Paths.get(Objects.requireNonNull(this.getClass().getResource(FAKE_ROOT_CA_FILE)).toURI())
+                                Paths.get(Objects.requireNonNull(this.getClass().getResource(
+                                        FAKE_ROOT_CA_FILE)).toURI())
                         )
                 )
         );
@@ -450,7 +433,7 @@ public class CertificateTest {
         assertNotEquals(
                 null,
                 getTestCertificate(CertificateAuthorityCredential.class, FAKE_ROOT_CA_FILE)
-       );
+        );
     }
 
     /**
@@ -489,11 +472,13 @@ public class CertificateTest {
 
         assertEquals(
                 new CertificateAuthorityCredential(
-                        Paths.get(Objects.requireNonNull(this.getClass().getResource(FAKE_ROOT_CA_FILE)).toURI())
+                        Paths.get(Objects.requireNonNull(this.getClass().getResource(
+                                FAKE_ROOT_CA_FILE)).toURI())
                 ).hashCode(),
                 new CertificateAuthorityCredential(
                         Files.readAllBytes(
-                                Paths.get(Objects.requireNonNull(this.getClass().getResource(FAKE_ROOT_CA_FILE)).toURI())
+                                Paths.get(Objects.requireNonNull(this.getClass().getResource(
+                                        FAKE_ROOT_CA_FILE)).toURI())
                         )
                 ).hashCode()
         );
@@ -520,79 +505,6 @@ public class CertificateTest {
         return getTestCertificate(CertificateAuthorityCredential.class, filename);
     }
 
-
-    /**
-     * Construct a test certificate from the given parameters.
-     *
-     * @param <T>              the type of Certificate that will be created
-     * @param certificateClass the class of certificate to generate
-     * @param filename         the location of the certificate to be used
-     * @return the newly-constructed Certificate
-     * @throws IOException if there is a problem constructing the test certificate
-     */
-    public static <T extends ArchivableEntity> Certificate getTestCertificate(
-            final Class<T> certificateClass, final String filename)
-            throws IOException {
-        return getTestCertificate(certificateClass, filename, null, null);
-    }
-
-    /**
-     * Construct a test certificate from the given parameters.
-     *
-     * @param <T>                   the type of Certificate that will be created
-     * @param certificateClass      the class of certificate to generate
-     * @param filename              the location of the certificate to be used
-     * @param endorsementCredential the endorsement credentials (can be null)
-     * @param platformCredentials   the platform credentials (can be null)
-     * @return the newly-constructed Certificate
-     * @throws IOException if there is a problem constructing the test certificate
-     */
-    public static <T extends ArchivableEntity> Certificate getTestCertificate(
-            final Class<T> certificateClass, final String filename,
-            final EndorsementCredential endorsementCredential,
-            final List<PlatformCredential> platformCredentials)
-            throws IOException {
-
-        Path certPath;
-        try {
-            certPath = Paths.get(Objects.requireNonNull(CertificateTest.class.getResource(filename)).toURI());
-        } catch (URISyntaxException e) {
-            throw new IOException("Could not resolve path URI", e);
-        }
-
-        switch (certificateClass.getSimpleName()) {
-            case "CertificateAuthorityCredential":
-                return new CertificateAuthorityCredential(certPath);
-            case "ConformanceCredential":
-                return new ConformanceCredential(certPath);
-            case "EndorsementCredential":
-                return new EndorsementCredential(certPath);
-            case "PlatformCredential":
-                return new PlatformCredential(certPath);
-            case "IssuedAttestationCertificate":
-                return new IssuedAttestationCertificate(certPath,
-                        endorsementCredential, platformCredentials);
-            default:
-                throw new IllegalArgumentException(
-                        String.format("Unknown certificate class %s", certificateClass.getName())
-                );
-        }
-    }
-
-    /**
-     * Return a list of all test certificates.
-     *
-     * @return a list of all test certificates
-     * @throws IOException if there is a problem deserializing certificates
-     */
-    public static List<ArchivableEntity> getAllTestCertificates() throws IOException {
-        return Arrays.asList(
-                getTestCertificate(CertificateAuthorityCredential.class, FAKE_SGI_INT_CA_FILE),
-                getTestCertificate(CertificateAuthorityCredential.class, FAKE_INTEL_INT_CA_FILE),
-                getTestCertificate(CertificateAuthorityCredential.class, FAKE_ROOT_CA_FILE)
-        );
-    }
-
     private static X509Certificate readX509Certificate(final String resourceName)
             throws IOException {
 
@@ -603,8 +515,9 @@ public class CertificateTest {
             throw new IOException("Cannot get X509 CertificateFactory instance", e);
         }
 
-        try (FileInputStream certInputStream = new FileInputStream(
-                Paths.get(Objects.requireNonNull(CertificateTest.class.getResource(resourceName)).toURI()).toFile()
+        try (FileInputStream certInputStream = new FileInputStream(Paths.get(
+                Objects.requireNonNull(CertificateTest.class.getResource(
+                        resourceName)).toURI()).toFile()
         )) {
             return (X509Certificate) cf.generateCertificate(certInputStream);
         } catch (CertificateException | URISyntaxException e) {
