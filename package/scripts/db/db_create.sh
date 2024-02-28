@@ -114,7 +114,7 @@ set_mysql_server_tls () {
     # Make sure mysql can access them
     chown mysql:mysql $SSL_DB_SRV_CHAIN $SSL_DB_SRV_CERT $SSL_DB_SRV_KEY
     # Make selinux contexts for config files, if selinux is enabled
-    if [ $ID = "rhel" ]; then 
+    if [[ $ID = "rhel" ]] || [[ $ID = "rocky" ]] ||[[ $ID = "fedora" ]]; then 
         selinuxenabled
         if [ $? -eq 0 ]; then
            semanage fcontext -a -t mysqld_etc_t $DB_SRV_CONF  > /dev/null #adds the context type to file
@@ -135,7 +135,7 @@ if [[ $(cat "$DB_CLIENT_CONF" | grep -c "HIRS") < 1 ]]; then
   echo "ssl_key=$SSL_DB_CLIENT_KEY" >> $DB_CLIENT_CONF
   chown mysql:mysql $SSL_DB_CLIENT_CHAIN $SSL_DB_CLIENT_CERT $SSL_DB_CLIENT_KEY 
   # Make selinux contexts for config files, if selinux is enabled
-   if [ $ID = "rhel" ]; then 
+   if [[ $ID = "rhel" ]] || [[ $ID = "rocky" ]] ||[[ $ID = "fedora" ]]; then 
       selinuxenabled
       if [ $? -eq 0 ]; then
           semanage fcontext -a -t mysqld_etc_t $DB_CLIENT_CONFf > /dev/null  #adds the context type to file
