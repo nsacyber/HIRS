@@ -14,6 +14,7 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.Transient;
 import jakarta.xml.bind.annotation.XmlElement;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.extern.log4j.Log4j2;
 
@@ -27,6 +28,7 @@ import java.util.Objects;
  * OS, and TPM information.
  */
 @Log4j2
+@NoArgsConstructor
 @Getter
 @Entity
 public class DeviceInfoReport extends AbstractEntity implements Serializable {
@@ -59,14 +61,6 @@ public class DeviceInfoReport extends AbstractEntity implements Serializable {
     @XmlElement
     @Transient
     private String paccorOutputString;
-
-    /**
-     * This constructor is used to populate the inner variables with blank entries so that
-     * a request on a blank object isn't null.
-     */
-    public DeviceInfoReport() {
-        this(null, null, null, null, null);
-    }
 
     /**
      * Constructor used to create a <code>DeviceInfoReport</code>. The
@@ -202,7 +196,7 @@ public class DeviceInfoReport extends AbstractEntity implements Serializable {
         return hardwareInfo;
     }
 
-    private void setNetworkInfo(NetworkInfo networkInfo) {
+    private void setNetworkInfo(final NetworkInfo networkInfo) {
         if (networkInfo == null) {
             log.error("NetworkInfo cannot be null");
             throw new NullPointerException("network info");
@@ -210,7 +204,7 @@ public class DeviceInfoReport extends AbstractEntity implements Serializable {
         this.networkInfo = networkInfo;
     }
 
-    private void setOSInfo(OSInfo osInfo) {
+    private void setOSInfo(final OSInfo osInfo) {
         if (osInfo == null) {
             log.error("OSInfo cannot be null");
             throw new NullPointerException("os info");
@@ -218,7 +212,7 @@ public class DeviceInfoReport extends AbstractEntity implements Serializable {
         this.osInfo = osInfo;
     }
 
-    private void setFirmwareInfo(FirmwareInfo firmwareInfo) {
+    private void setFirmwareInfo(final FirmwareInfo firmwareInfo) {
         if (firmwareInfo == null) {
             log.error("FirmwareInfo cannot be null");
             throw new NullPointerException("firmware info");
@@ -226,7 +220,7 @@ public class DeviceInfoReport extends AbstractEntity implements Serializable {
         this.firmwareInfo = firmwareInfo;
     }
 
-    private void setHardwareInfo(HardwareInfo hardwareInfo) {
+    private void setHardwareInfo(final HardwareInfo hardwareInfo) {
         if (hardwareInfo == null) {
             log.error("HardwareInfo cannot be null");
             throw new NullPointerException("hardware info");
@@ -234,7 +228,7 @@ public class DeviceInfoReport extends AbstractEntity implements Serializable {
         this.hardwareInfo = hardwareInfo;
     }
 
-    private void setTPMInfo(TPMInfo tpmInfo) {
+    private void setTPMInfo(final TPMInfo tpmInfo) {
         this.tpmInfo = tpmInfo;
     }
 

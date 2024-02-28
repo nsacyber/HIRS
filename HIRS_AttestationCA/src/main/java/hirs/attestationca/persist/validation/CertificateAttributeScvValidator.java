@@ -287,10 +287,10 @@ public class CertificateAttributeScvValidator extends SupplyChainCredentialValid
 
         // There is no need to do comparisons with components that are invalid because
         // they did not have a manufacturer or model.
-        List<ComponentIdentifier> validPcComponents = allPcComponents.stream()
-                .filter(identifier -> identifier.getComponentManufacturer() != null
-                        && identifier.getComponentModel() != null)
-                .collect(Collectors.toList());
+//        List<ComponentIdentifier> validPcComponents = allPcComponents.stream()
+//                .filter(identifier -> identifier.getComponentManufacturer() != null
+//                        && identifier.getComponentModel() != null)
+//                .collect(Collectors.toList());
 
 //        String paccorOutputString = deviceInfoReport.getPaccorOutputString();
 //        String unmatchedComponents;

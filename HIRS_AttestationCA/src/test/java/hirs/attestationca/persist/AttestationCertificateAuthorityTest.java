@@ -146,7 +146,7 @@ public class AttestationCertificateAuthorityTest {
 
         //BeforeTest
         aca = new AttestationCertificateAuthority(null, keyPair.getPrivate(),
-                null, null, null, null, null, null, 1,
+                null, null, null, null, null, null, null, 1,
                 null, null, null, null) {
         };
         abstractProcessor = new AccessAbstractProcessor(keyPair.getPrivate(),1);

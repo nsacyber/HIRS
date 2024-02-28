@@ -258,7 +258,12 @@ public class IdentityClaimProcessor extends AbstractProcessor {
 
         log.info("Processing Device Info Report");
         // store device and device info report.
-        Device device = this.deviceRepository.findByName(deviceInfoReport.getNetworkInfo().getHostname());
+        Device device = null;
+        if (deviceInfoReport.getNetworkInfo() != null
+                && deviceInfoReport.getNetworkInfo().getHostname() != null
+                && !deviceInfoReport.getNetworkInfo().getHostname().isEmpty()) {
+            device = this.deviceRepository.findByName(deviceInfoReport.getNetworkInfo().getHostname());
+        }
         if (device == null) {
             device = new Device(deviceInfoReport);
         }

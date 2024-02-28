@@ -68,9 +68,8 @@ public class ComponentResult extends ArchivableEntity {
         this.model = componentIdentifier.getComponentModel().toString();
         this.serialNumber = componentIdentifier.getComponentSerial().toString();
         this.revisionNumber = componentIdentifier.getComponentRevision().toString();
-        if (componentIdentifier.getFieldReplaceable() != null) {
-            this.fieldReplaceable = componentIdentifier.getFieldReplaceable().isTrue();
-        }
+        this.fieldReplaceable = componentIdentifier.getFieldReplaceable().isTrue();
+
         StringBuilder sb = new StringBuilder();
         for (ComponentAddress element : componentIdentifier.getComponentAddress()) {
             sb.append(String.format("%s:%s;", element.getAddressTypeValue(),

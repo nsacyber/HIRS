@@ -19,6 +19,7 @@ import java.util.UUID;
 public class ComponentAttributeResult  extends ArchivableEntity {
 
     private UUID componentId;
+    private UUID validationId;
     private String expectedValue;
     private String actualValue;
 
