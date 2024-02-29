@@ -278,19 +278,17 @@ public class CredentialParser {
     }
 
     /**
-     * This method returns the authorityKeyIdentifier from the local X509Certificate.
-     * @return the String representation of the AKI
+     * This method returns the subjectKeyIdentifier from the local X509Certificate.
+     * @return the String representation of the subjectKeyIdentifier
      * @throws IOException
      */
-    public String getCertificateAuthorityKeyIdentifier() throws IOException {
+    public String getCertificateSubjectKeyIdentifier() throws IOException {
         String decodedValue = null;
-        byte[] extension = certificate.getExtensionValue(Extension.authorityKeyIdentifier.getId());
+        byte[] extension = certificate.getExtensionValue(Extension.subjectKeyIdentifier.getId());
         if (extension != null && extension.length > 0) {
             decodedValue = JcaX509ExtensionUtils.parseExtensionValue(extension).toString();
         }
-        //decodedValue above is of the form [[CONTEXT 0]#e0f...], parse out the extraneous chars
-        decodedValue = decodedValue.substring(decodedValue.indexOf("#")+1,decodedValue.length()-1);
-        return decodedValue;
+        return decodedValue.substring(1);//Drop the # at the beginning of the string
     }
 
     /**
