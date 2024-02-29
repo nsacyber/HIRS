@@ -250,6 +250,10 @@ public class CertificateAttributeScvValidator extends SupplyChainCredentialValid
             }
 
             passesValidation &= fieldValidation;
+        } else {
+            log.warn("The Platform Certificate System version was {} and the reported Device System Information "
+                    + "version was {}, therefore this check is skipped...",
+                    platformCredential.getVersion(), hardwareInfo.getVersion());
         }
 
         // check PlatformSerial against both system-serial-number and baseboard-serial-number
