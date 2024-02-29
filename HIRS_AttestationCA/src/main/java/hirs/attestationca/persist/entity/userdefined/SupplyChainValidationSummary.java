@@ -46,6 +46,7 @@ public class SupplyChainValidationSummary extends ArchivableEntity {
 
     private static final String DEVICE_ID_FIELD = "device.id";
 
+    @Getter
     @Column
     @Enumerated(EnumType.STRING)
     private final AppraisalStatus.Status overallValidationResult;
@@ -57,6 +58,9 @@ public class SupplyChainValidationSummary extends ArchivableEntity {
     @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER,
             targetEntity = SupplyChainValidation.class, orphanRemoval = true)
     private final Set<SupplyChainValidation> validations;
+
+    @Column
+    private UUID provisionSessionId;
 
     /**
      * Default constructor necessary for Hibernate.
@@ -182,6 +186,20 @@ public class SupplyChainValidationSummary extends ArchivableEntity {
      *
      * @param device device that underwent supply chain validation
      * @param validations a Collection of Validations that should comprise this summary; not null
+     * @param provisionSessionId randomly generated UUID to associate with results
+     */
+    public SupplyChainValidationSummary(final Device device,
+                                        final Collection<SupplyChainValidation> validations,
+                                        final UUID provisionSessionId) {
+        this(device, validations);
+        this.provisionSessionId = provisionSessionId;
+    }
+
+    /**
+     * Construct a new SupplyChainValidationSummary.
+     *
+     * @param device device that underwent supply chain validation
+     * @param validations a Collection of Validations that should comprise this summary; not null
      */
     public SupplyChainValidationSummary(final Device device,
                                         final Collection<SupplyChainValidation> validations) {
@@ -210,13 +228,6 @@ public class SupplyChainValidationSummary extends ArchivableEntity {
      */
     public Device getDevice() {
         return new Device(this.device.getDeviceInfo());
-    }
-
-    /**
-     * @return the overall appraisal result
-     */
-    public AppraisalStatus.Status getOverallValidationResult() {
-        return overallValidationResult;
     }
 
     /**

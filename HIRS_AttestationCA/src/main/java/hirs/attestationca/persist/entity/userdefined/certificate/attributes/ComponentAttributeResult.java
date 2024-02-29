@@ -5,6 +5,7 @@ import jakarta.persistence.Entity;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 import java.util.UUID;
 
@@ -19,12 +20,14 @@ import java.util.UUID;
 public class ComponentAttributeResult  extends ArchivableEntity {
 
     private UUID componentId;
-    private UUID validationId;
+    @Setter
+    private UUID provisionSessionId;
     private String expectedValue;
     private String actualValue;
 
     /**
      * Default constructor that populates the expected and actual values.
+     * @param componentId id associated with component result
      * @param expectedValue platform certificate value
      * @param actualValue paccor value from the device
      */

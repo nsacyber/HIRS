@@ -38,6 +38,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.UUID;
 
 @Log4j2
 public class ValidationService {
@@ -107,7 +108,8 @@ public class ValidationService {
             final CertificateRepository certificateRepository,
             final ComponentResultRepository componentResultRepository,
             final ComponentAttributeRepository componentAttributeRepository,
-            final List<ComponentInfo> componentInfos) {
+            final List<ComponentInfo> componentInfos,
+            final UUID provisionSessionId) {
         final SupplyChainValidation.ValidationType validationType
                 = SupplyChainValidation.ValidationType.PLATFORM_CREDENTIAL_ATTRIBUTES;
 
@@ -118,12 +120,10 @@ public class ValidationService {
                     null, Level.ERROR);
         }
         log.info("Validating platform credential attributes");
-//        List<ComponentResult> componentResults = componentResultRepository
-//                .findByCertificateSerialNumberAndBoardSerialNumber(
-//                        pc.getSerialNumber().toString(), pc.getPlatformSerial());
         AppraisalStatus result = CredentialValidator.
                 validatePlatformCredentialAttributes(pc, deviceInfoReport, ec,
-                        componentResultRepository, componentAttributeRepository, componentInfos);
+                        componentResultRepository, componentAttributeRepository,
+                        componentInfos, provisionSessionId);
         switch (result.getAppStatus()) {
             case PASS:
                 return buildValidationRecord(validationType, AppraisalStatus.Status.PASS,

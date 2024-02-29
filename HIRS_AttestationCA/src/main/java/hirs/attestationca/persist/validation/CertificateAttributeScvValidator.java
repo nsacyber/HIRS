@@ -36,6 +36,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 import static hirs.attestationca.persist.enums.AppraisalStatus.Status.ERROR;
@@ -196,6 +197,7 @@ public class CertificateAttributeScvValidator extends SupplyChainCredentialValid
      * @param componentResultRepository db access to component result of mismatching
      * @param componentAttributeRepository  db access to component attribute match status
      * @param componentInfos list of device components
+     * @param provisionSessionId UUID associated with the SCV Summary
      * @return either PASS or FAIL
      */
     public static AppraisalStatus validatePlatformCredentialAttributesV2p0(
@@ -203,7 +205,8 @@ public class CertificateAttributeScvValidator extends SupplyChainCredentialValid
             final DeviceInfoReport deviceInfoReport,
             final ComponentResultRepository componentResultRepository,
             final ComponentAttributeRepository componentAttributeRepository,
-            final List<ComponentInfo> componentInfos) {
+            final List<ComponentInfo> componentInfos,
+            final UUID provisionSessionId) {
         boolean passesValidation = true;
         StringBuilder resultMessage = new StringBuilder();
 
@@ -355,6 +358,7 @@ public class CertificateAttributeScvValidator extends SupplyChainCredentialValid
             }
 
             for (ComponentAttributeResult componentAttributeResult : attributeResults) {
+                componentAttributeResult.setProvisionSessionId(provisionSessionId);
                 componentAttributeRepository.save(componentAttributeResult);
                 fieldValidation &= componentAttributeResult.checkMatchedStatus();
             }

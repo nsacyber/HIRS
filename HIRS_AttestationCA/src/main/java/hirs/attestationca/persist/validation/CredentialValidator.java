@@ -18,6 +18,7 @@ import java.security.cert.CertificateNotYetValidException;
 import java.security.cert.X509Certificate;
 import java.util.Date;
 import java.util.List;
+import java.util.UUID;
 
 import static hirs.attestationca.persist.enums.AppraisalStatus.Status.ERROR;
 import static hirs.attestationca.persist.enums.AppraisalStatus.Status.FAIL;
@@ -175,7 +176,8 @@ public class CredentialValidator extends SupplyChainCredentialValidator {
             final EndorsementCredential endorsementCredential,
             final ComponentResultRepository componentResultRepository,
             final ComponentAttributeRepository componentAttributeRepository,
-            final List<ComponentInfo> componentInfos) {
+            final List<ComponentInfo> componentInfos,
+            final UUID provisionSessionId) {
         final String baseErrorMessage = "Can't validate platform credential attributes without ";
         String message;
         if (platformCredential == null) {
@@ -207,7 +209,7 @@ public class CredentialValidator extends SupplyChainCredentialValidator {
         if (PlatformCredential.CERTIFICATE_TYPE_2_0.equals(credentialType)) {
             return CertificateAttributeScvValidator.validatePlatformCredentialAttributesV2p0(
                     platformCredential, deviceInfoReport, componentResultRepository,
-                    componentAttributeRepository, componentInfos);
+                    componentAttributeRepository, componentInfos, provisionSessionId);
         }
         return CertificateAttributeScvValidator.validatePlatformCredentialAttributesV1p2(
                 platformCredential, deviceInfoReport);

@@ -5,6 +5,7 @@ import hirs.attestationca.persist.entity.manager.CertificateRepository;
 import hirs.attestationca.persist.entity.manager.ComponentResultRepository;
 import hirs.attestationca.persist.entity.userdefined.Certificate;
 import hirs.attestationca.persist.entity.userdefined.certificate.CertificateAuthorityCredential;
+import hirs.attestationca.persist.entity.userdefined.certificate.ComponentResult;
 import hirs.attestationca.persist.entity.userdefined.certificate.EndorsementCredential;
 import hirs.attestationca.persist.entity.userdefined.certificate.IssuedAttestationCertificate;
 import hirs.attestationca.persist.entity.userdefined.certificate.PlatformCredential;
@@ -363,8 +364,13 @@ public final class CertificateStringMapBuilder {
             data.put("x509Version", certificate.getX509CredentialVersion());
             //CPSuri
             data.put("CPSuri", certificate.getCPSuri());
-            data.put("componentResults", PciIds.translateResults(componentResultRepository
-                    .findByBoardSerialNumber(certificate.getPlatformSerial())));
+            List<ComponentResult> compResults = componentResultRepository
+                    .findByBoardSerialNumber(certificate.getPlatformSerial());
+            if (PciIds.DB.isReady()) {
+                data.put("componentResults", PciIds.translateResults(compResults));
+            } else {
+                data.put("componentResults", compResults);
+            }
 
             //Get platform Configuration values and set map with it
             PlatformConfiguration platformConfiguration = certificate.getPlatformConfiguration();

@@ -35,6 +35,7 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
 import static hirs.attestationca.persist.enums.AppraisalStatus.Status.FAIL;
 import static hirs.attestationca.persist.enums.AppraisalStatus.Status.PASS;
@@ -52,6 +53,7 @@ public class SupplyChainValidationService {
     private CertificateRepository certificateRepository;
     private SupplyChainValidationRepository supplyChainValidationRepository;
     private SupplyChainValidationSummaryRepository supplyChainValidationSummaryRepository;
+    private UUID provisionSessionId;
 
     /**
      * Constructor.
@@ -105,6 +107,7 @@ public class SupplyChainValidationService {
                                                             final Device device,
                                                             final List<ComponentInfo> componentInfos) {
         boolean acceptExpiredCerts = getPolicySettings().isExpiredCertificateValidationEnabled();
+        provisionSessionId = UUID.randomUUID();
         PlatformCredential baseCredential = null;
         SupplyChainValidation platformScv = null;
         SupplyChainValidation basePlatformScv = null;
@@ -235,7 +238,7 @@ public class SupplyChainValidationService {
                     platformScv = ValidationService.evaluatePCAttributesStatus(
                             baseCredential, device.getDeviceInfo(), ec,
                             certificateRepository, componentResultRepository,
-                            componentAttributeRepository, componentInfos);
+                            componentAttributeRepository, componentInfos, provisionSessionId);
                     validations.add(new SupplyChainValidation(
                             SupplyChainValidation.ValidationType.PLATFORM_CREDENTIAL,
                             platformScv.getValidationResult(), aes, platformScv.getMessage()));
@@ -262,7 +265,7 @@ public class SupplyChainValidationService {
         log.info("The validation finished, summarizing...");
         // Generate validation summary, save it, and return it.
         SupplyChainValidationSummary summary
-                = new SupplyChainValidationSummary(device, validations);
+                = new SupplyChainValidationSummary(device, validations, provisionSessionId);
         try {
             supplyChainValidationSummaryRepository.save(summary);
         } catch (DBManagerException dbMEx) {

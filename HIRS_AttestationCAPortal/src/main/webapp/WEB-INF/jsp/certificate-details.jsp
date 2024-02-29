@@ -628,7 +628,7 @@
                                                                 </c:choose>
                                                                     <c:choose>
                                                                         <c:when test="${component.isVersion2()=='TRUE'}">
-                                                                            <span data-toggle="tooltip" data-placement="top" title="Component Class">${component.getComponentClass()}</span>
+                                                                            <span data-toggle="tooltip" data-placement="top" title="Component Class">${component.getComponentClassValue()}</span>
                                                                         </c:when>
                                                                         <c:otherwise>
                                                                             <span data-toggle="tooltip" data-placement="top" title="Component Class">Platform Components</span>
