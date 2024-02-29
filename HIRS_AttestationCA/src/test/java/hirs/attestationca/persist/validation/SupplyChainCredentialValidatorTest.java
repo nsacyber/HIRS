@@ -1355,8 +1355,9 @@ public class SupplyChainCredentialValidatorTest {
         result = CertificateAttributeScvValidator
                 .validatePlatformCredentialAttributesV2p0(platformCredential,
                         deviceInfoReport);
-        assertEquals(AppraisalStatus.Status.FAIL, result.getAppStatus());
-        assertEquals("Platform version did not match\n", result.getMessage());
+        assertEquals(AppraisalStatus.Status.PASS, result.getAppStatus());
+        assertEquals(SupplyChainCredentialValidator.PLATFORM_ATTRIBUTES_VALID,
+                result.getMessage());
 
         platformCredential = setupMatchingPlatformCredential(deviceInfoReport);
         result = CertificateAttributeScvValidator

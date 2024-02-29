@@ -1102,6 +1102,9 @@ public class CertificateAttributeScvValidator extends SupplyChainCredentialValid
      * @return true if they equal Not Specified or Unknown
      */
     public static boolean isNotSpecifiedOrUnknown(final String versionNumber) {
+        if(versionNumber == null) {
+            return true;
+        }
         String fieldValue = versionNumber.toLowerCase();
 
         return fieldValue.equals(DeviceInfoEnums.NOT_SPECIFIED.toLowerCase())
