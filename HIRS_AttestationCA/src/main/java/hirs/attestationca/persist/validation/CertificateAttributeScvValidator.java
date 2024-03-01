@@ -326,8 +326,6 @@ public class CertificateAttributeScvValidator extends SupplyChainCredentialValid
             if (!deviceHashMap.containsKey(componentResult.hashCommonElements())) {
                 // didn't find the component result in the hashed mapping
                 remainingComponentResults.add(componentResult);
-            } else {
-                log.error("Found the component class value {}", componentResult.getComponentClassValue());
             }
         }
         if (!remainingComponentResults.isEmpty()) {
