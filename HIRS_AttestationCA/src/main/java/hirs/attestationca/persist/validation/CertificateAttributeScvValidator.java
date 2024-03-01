@@ -321,6 +321,7 @@ public class CertificateAttributeScvValidator extends SupplyChainCredentialValid
         // Look for hash code in device mapping
         // if it exists, don't save the component
         List<ComponentResult> remainingComponentResults = new ArrayList<>();
+        int numOfAttributes = 0;
         for (ComponentResult componentResult : componentResults) {
             if (!deviceHashMap.containsKey(componentResult.hashCommonElements())) {
                 // didn't find the component result in the hashed mapping
@@ -353,7 +354,7 @@ public class CertificateAttributeScvValidator extends SupplyChainCredentialValid
                 if (componentClassInfo.size() == 1) {
                     attributeResults.addAll(generateComponentResults(componentClassInfo.get(0), componentResult));
                 } else {
-                    attributeResults.addAll(matchBasedOnAttributes(componentClassInfo, componentResult));
+                    attributeResults.addAll(findMismatchedValues(componentClassInfo, componentResult));
                 }
             }
 
@@ -362,26 +363,15 @@ public class CertificateAttributeScvValidator extends SupplyChainCredentialValid
                 componentAttributeRepository.save(componentAttributeResult);
                 fieldValidation &= componentAttributeResult.checkMatchedStatus();
             }
+            numOfAttributes = attributeResults.size();
         }
 
-
-//        try {
-//            List<ComponentInfo> componentInfoList
-//                    = getComponentInfoFromPaccorOutput(deviceInfoReport.getNetworkInfo().getHostname(),
-//                    paccorOutputString);
-//            unmatchedComponents = validateV2p0PlatformCredentialComponentsExpectingExactMatch(
-//                    validPcComponents, componentInfoList);
-//            fieldValidation &= unmatchedComponents.isEmpty();
-//        } catch (IOException ioEx) {
-//            final String baseErrorMessage = "Error parsing JSON output from PACCOR: ";
-//            log.error(baseErrorMessage + ioEx);
-//            return new AppraisalStatus(ERROR, baseErrorMessage + ioEx.getMessage());
-//        }
-//
-//        // WIP clean this up
         StringBuilder additionalInfo = new StringBuilder();
-        if (!fieldValidation) {
-            resultMessage.append("There are unmatched components...\n");
+        if (!remainingComponentResults.isEmpty()) {
+            resultMessage.append(String.format("There are %d components not matched\n",
+                    remainingComponentResults.size()));
+            resultMessage.append(String.format("\twith %d total attributes mismatched.",
+                    numOfAttributes));
         }
 
         passesValidation &= fieldValidation;
@@ -428,11 +418,18 @@ public class CertificateAttributeScvValidator extends SupplyChainCredentialValid
         return attributeResults;
     }
 
-    private static List<ComponentAttributeResult> matchBasedOnAttributes(
+    /**
+     * This method is called when there are multiple components on the device that match
+     * the certificate component's component class type and there is either a mismatch or
+     * a status of not found to be assigned.
+     * @param componentClassInfo list of device components with the same class type
+     * @param componentResult the certificate component that is mismatched
+     * @return a list of attribute results, if all 4 attributes are never matched, it is not found
+     */
+    private static List<ComponentAttributeResult> findMismatchedValues(
             final List<ComponentInfo> componentClassInfo,
             final ComponentResult componentResult) {
         // this list only has those of the same class type
-        List<ComponentAttributeResult> attributeResults = new ArrayList<>();
         Map<String, ComponentInfo> componentSerialMap = new HashMap<>();
         componentClassInfo.stream().forEach((componentInfo) -> {
             componentSerialMap.put(componentInfo.getComponentSerial(), componentInfo);
@@ -440,33 +437,22 @@ public class CertificateAttributeScvValidator extends SupplyChainCredentialValid
         // see if the serial exists
         ComponentInfo componentInfo = componentSerialMap.get(componentResult.getSerialNumber());
 
-        if (componentInfo != null) {
-            // if the serial, create attribute result and move on
-            attributeResults.add(new ComponentAttributeResult(componentResult.getId(),
-                    componentResult.getManufacturer(), componentInfo.getComponentManufacturer()));
-            attributeResults.add(new ComponentAttributeResult(componentResult.getId(),
-                    componentResult.getModel(), componentInfo.getComponentModel()));
-            attributeResults.add(new ComponentAttributeResult(componentResult.getId(),
-                    componentResult.getSerialNumber(), componentInfo.getComponentSerial()));
-            attributeResults.add(new ComponentAttributeResult(componentResult.getId(),
-                    componentResult.getRevisionNumber(), componentInfo.getComponentRevision()));
+        if (componentInfo != null && componentInfo.getComponentManufacturer()
+                .equals(componentResult.getManufacturer())) {
+            // the serial matched and the manufacturer, create attribute result and move on
+            return generateComponentResults(componentInfo, componentResult);
         } else {
             // didn't find based on serial
             // look for highest match; otherwise ignore
             // I already know serial doesn't match
-            componentClassInfo.stream().forEach((ci) -> {
-                boolean manufacturerMatch, modelMatch, revisionMatch;
-                manufacturerMatch = ci.getComponentManufacturer().equals(componentResult.getManufacturer());
-                modelMatch = ci.getComponentModel().equals(componentResult.getModel());
-                revisionMatch = ci.getComponentRevision().equals(componentResult.getRevisionNumber());
-                if (manufacturerMatch && modelMatch && revisionMatch) {
-                    attributeResults.add(new ComponentAttributeResult(componentResult.getId(),
-                            componentResult.getSerialNumber(), ci.getComponentSerial()));
+            for (ComponentInfo ci : componentClassInfo) {
+                if (ci.getComponentManufacturer().equals(componentResult.getManufacturer())
+                        && ci.getComponentModel().equals(componentResult.getModel())) {
+                    return generateComponentResults(ci, componentResult);
                 }
-            });
+            }
         }
-
-        return attributeResults;
+        return Collections.emptyList();
     }
 
     /**

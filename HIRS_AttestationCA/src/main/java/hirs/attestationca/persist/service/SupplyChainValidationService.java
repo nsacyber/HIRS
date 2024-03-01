@@ -15,8 +15,10 @@ import hirs.attestationca.persist.entity.userdefined.Device;
 import hirs.attestationca.persist.entity.userdefined.PolicySettings;
 import hirs.attestationca.persist.entity.userdefined.SupplyChainValidation;
 import hirs.attestationca.persist.entity.userdefined.SupplyChainValidationSummary;
+import hirs.attestationca.persist.entity.userdefined.certificate.ComponentResult;
 import hirs.attestationca.persist.entity.userdefined.certificate.EndorsementCredential;
 import hirs.attestationca.persist.entity.userdefined.certificate.PlatformCredential;
+import hirs.attestationca.persist.entity.userdefined.certificate.attributes.ComponentAttributeResult;
 import hirs.attestationca.persist.entity.userdefined.info.ComponentInfo;
 import hirs.attestationca.persist.entity.userdefined.rim.EventLogMeasurements;
 import hirs.attestationca.persist.entity.userdefined.rim.SupportReferenceManifest;
@@ -386,5 +388,20 @@ public class SupplyChainValidationService {
             defaultSettings = new PolicySettings("Default", "Settings are configured for no validation flags set.");
         }
         return defaultSettings;
+    }
+
+    /**
+     * If the platform attributes policy is enabled, this method updates the matched
+     * status for the component result.  This is done so that the details page for the
+     * platform certificate highlights the title card red.
+     * @param componentResults list of associated component results
+     */
+    private void updateComponentStatus(final List<ComponentResult> componentResults) {
+        List<ComponentAttributeResult> componentAttributeResults;
+        for (ComponentResult componentResult : componentResults) {
+            componentAttributeResults = componentAttributeRepository.findByComponentId(componentResult.getId());
+            componentResult.setFailedValidation(!componentAttributeResults.isEmpty());
+            componentResultRepository.save(componentResult);
+        }
     }
 }

@@ -42,7 +42,7 @@ public class ComponentResult extends ArchivableEntity {
     private String componentAddress;
     private boolean version2 = false;
     @Setter
-    private boolean mismatched;
+    private boolean failedValidation;
     private String certificateType;
 
     private String issuerDN;

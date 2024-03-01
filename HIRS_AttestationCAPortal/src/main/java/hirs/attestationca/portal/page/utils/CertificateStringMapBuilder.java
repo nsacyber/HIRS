@@ -364,23 +364,17 @@ public final class CertificateStringMapBuilder {
             data.put("x509Version", certificate.getX509CredentialVersion());
             //CPSuri
             data.put("CPSuri", certificate.getCPSuri());
+            //Component Identifier - attempt to translate hardware IDs
             List<ComponentResult> compResults = componentResultRepository
                     .findByBoardSerialNumber(certificate.getPlatformSerial());
             if (PciIds.DB.isReady()) {
-                data.put("componentResults", PciIds.translateResults(compResults));
-            } else {
-                data.put("componentResults", compResults);
+                compResults = PciIds.translateResults(compResults);
             }
+            data.put("componentResults", compResults);
 
             //Get platform Configuration values and set map with it
             PlatformConfiguration platformConfiguration = certificate.getPlatformConfiguration();
             if (platformConfiguration != null) {
-                //Component Identifier - attempt to translate hardware IDs
-                List<ComponentIdentifier> comps = platformConfiguration.getComponentIdentifier();
-                if (PciIds.DB.isReady()) {
-                    comps = PciIds.translate(comps);
-                }
-                data.put("componentsIdentifier", comps);
                 //Component Identifier URI
                 data.put("componentsIdentifierURI", platformConfiguration
                         .getComponentIdentifierUri());

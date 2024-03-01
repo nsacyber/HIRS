@@ -123,7 +123,7 @@ public class ComponentIdentifier {
 
     /**
      * Constructor given the SEQUENCE that contains Component Identifier.
-     * @param sequence containing the the component identifier
+     * @param sequence containing the component identifier
      * @throws IllegalArgumentException if there was an error on the parsing
      */
     public ComponentIdentifier(final ASN1Sequence sequence) throws IllegalArgumentException {
