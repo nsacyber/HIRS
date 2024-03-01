@@ -12,7 +12,9 @@ SQL_SERVICE="mariadb"
 check_for_container () {
   PRINT_STATUS=$1
   # Check if we're in a Docker container
-  if [[ $(cat /proc/1/cgroup | head -n 1) == *"docker"* ]] || [[ -f /.dockerenv ]]; then  
+  command -v systemctl
+  if [[ $? -eq 0 ]]; then
+  #if [[ $(cat /proc/1/cgroup | head -n 1) == *"docker"* ]] || [[ -f /.dockerenv ]]; then  
     DOCKER_CONTAINER=true
     if [[ $PRINT_STATUS == "-p" ]]; then echo "ACA is running in a container..." | tee -a "$LOG_FILE"; fi
   else
