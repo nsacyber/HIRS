@@ -237,7 +237,7 @@ public class ComponentIdentifier {
             sb.append(fieldReplaceable.toString());
         }
         sb.append(", componentAddress=");
-        if (componentAddress.size() > 0) {
+        if (!componentAddress.isEmpty()) {
             sb.append(componentAddress
                     .stream()
                     .map(Object::toString)

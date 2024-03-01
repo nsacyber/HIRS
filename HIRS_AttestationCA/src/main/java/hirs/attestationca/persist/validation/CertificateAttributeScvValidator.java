@@ -325,12 +325,12 @@ public class CertificateAttributeScvValidator extends SupplyChainCredentialValid
             if (!deviceHashMap.containsKey(componentResult.hashCommonElements())) {
                 // didn't find the component result in the hashed mapping
                 remainingComponentResults.add(componentResult);
+            } else {
+                log.error("Found the component class value {}", componentResult.getComponentClassValue());
             }
         }
         if (!remainingComponentResults.isEmpty()) {
             // continue down the options, move to a different method.
-
-
             // create component class mapping to component info
             Map<String, List<ComponentInfo>> componentDeviceMap = new HashMap<>();
             componentInfos.stream().forEach((componentInfo) -> {
@@ -351,7 +351,7 @@ public class CertificateAttributeScvValidator extends SupplyChainCredentialValid
             for (ComponentResult componentResult : remainingComponentResults) {
                 componentClassInfo = componentDeviceMap.get(componentResult.getComponentClassValue());
                 if (componentClassInfo.size() == 1) {
-                    attributeResults.addAll(generateComponentResults(componentClassInfo, componentResult));
+                    attributeResults.addAll(generateComponentResults(componentClassInfo.get(0), componentResult));
                 } else {
                     attributeResults.addAll(matchBasedOnAttributes(componentClassInfo, componentResult));
                 }
@@ -393,19 +393,34 @@ public class CertificateAttributeScvValidator extends SupplyChainCredentialValid
         }
     }
 
+    /**
+     * This method produces component attribute results for a single device that was found
+     * by component class.
+     * @param componentInfo the device object
+     * @param componentResult the certificate expected object
+     * @return a list of attribute match results
+     */
     private static List<ComponentAttributeResult> generateComponentResults(
-            final List<ComponentInfo> componentInfos,
+            final ComponentInfo componentInfo,
             final ComponentResult componentResult) {
         // there are instances of components with the same class (ie hard disks, memory)
         List<ComponentAttributeResult> attributeResults = new ArrayList<>();
-        for (ComponentInfo componentInfo : componentInfos) {
-            // just do a single pass and save the values
+        if (!componentInfo.getComponentManufacturer().equals(componentResult.getManufacturer())) {
             attributeResults.add(new ComponentAttributeResult(componentResult.getId(),
                     componentResult.getManufacturer(), componentInfo.getComponentManufacturer()));
+        }
+
+        if (!componentInfo.getComponentModel().equals(componentResult.getModel())) {
             attributeResults.add(new ComponentAttributeResult(componentResult.getId(),
                     componentResult.getModel(), componentInfo.getComponentModel()));
+        }
+
+        if (!componentInfo.getComponentSerial().equals(componentResult.getSerialNumber())) {
             attributeResults.add(new ComponentAttributeResult(componentResult.getId(),
                     componentResult.getSerialNumber(), componentInfo.getComponentSerial()));
+        }
+
+        if (!componentInfo.getComponentRevision().equals(componentResult.getRevisionNumber())) {
             attributeResults.add(new ComponentAttributeResult(componentResult.getId(),
                     componentResult.getRevisionNumber(), componentInfo.getComponentRevision()));
         }

@@ -33,7 +33,7 @@ public class ComponentResult extends ArchivableEntity {
     private String model;
     private String serialNumber;
     private String revisionNumber;
-    private boolean fieldReplaceable;
+    private boolean fieldReplaceable = false;
     // this is a string because component class doesn't inherit serializable.
     @Setter
     private String componentClassValue;
@@ -68,7 +68,9 @@ public class ComponentResult extends ArchivableEntity {
         this.model = componentIdentifier.getComponentModel().toString();
         this.serialNumber = componentIdentifier.getComponentSerial().toString();
         this.revisionNumber = componentIdentifier.getComponentRevision().toString();
-        this.fieldReplaceable = componentIdentifier.getFieldReplaceable().isTrue();
+        if (componentIdentifier.getFieldReplaceable() != null) {
+            this.fieldReplaceable = componentIdentifier.getFieldReplaceable().isTrue();
+        }
 
         StringBuilder sb = new StringBuilder();
         for (ComponentAddress element : componentIdentifier.getComponentAddress()) {
