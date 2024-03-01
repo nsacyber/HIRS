@@ -245,6 +245,11 @@ public class SupplyChainValidationService {
                             SupplyChainValidation.ValidationType.PLATFORM_CREDENTIAL,
                             platformScv.getValidationResult(), aes, platformScv.getMessage()));
                 }
+
+                updateComponentStatus(componentResultRepository
+                        .findByCertificateSerialNumberAndBoardSerialNumber(
+                        baseCredential.getSerialNumber().toString(),
+                        baseCredential.getPlatformSerial()));
             }
             if (!attrErrorMessage.isEmpty()) {
                 //combine platform and platform attributes
@@ -397,10 +402,16 @@ public class SupplyChainValidationService {
      * @param componentResults list of associated component results
      */
     private void updateComponentStatus(final List<ComponentResult> componentResults) {
-        List<ComponentAttributeResult> componentAttributeResults;
+        List<ComponentAttributeResult> componentAttributeResults = componentAttributeRepository
+                .findByProvisionSessionId(provisionSessionId);
+        List<UUID> componentIdList = new ArrayList<>();
+
+        for (ComponentAttributeResult componentAttributeResult : componentAttributeResults) {
+            componentIdList.add(componentAttributeResult.getComponentId());
+        }
+
         for (ComponentResult componentResult : componentResults) {
-            componentAttributeResults = componentAttributeRepository.findByComponentId(componentResult.getId());
-            componentResult.setFailedValidation(!componentAttributeResults.isEmpty());
+            componentResult.setFailedValidation(componentIdList.contains(componentResult.getId()));
             componentResultRepository.save(componentResult);
         }
     }

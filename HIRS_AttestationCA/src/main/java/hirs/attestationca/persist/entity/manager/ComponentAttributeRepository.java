@@ -17,8 +17,16 @@ public interface ComponentAttributeRepository extends JpaRepository<ComponentAtt
 
     /**
      * Query to look up Attribute Results based on the validation id.
-     * @param provisionSessionId uuid for the supplychainvalidationsummary
+     * @param provisionSessionId unique id generated to link supply chain summary
      * @return a list of attribute results
      */
     List<ComponentAttributeResult> findByProvisionSessionId(UUID provisionSessionId);
+
+    /**
+     * Query to look up Attribute Results based on the component id and the session id.
+     * @param componentId the unique id for the component identifier
+     * @param provisionSessionId unique id generated to link supply chain summary
+     * @return a list of attribute results
+     */
+    List<ComponentAttributeResult> findByComponentIdAndProvisionSessionId(UUID componentId, UUID provisionSessionId);
 }
