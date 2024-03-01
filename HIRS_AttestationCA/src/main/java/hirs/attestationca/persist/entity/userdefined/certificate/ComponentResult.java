@@ -37,6 +37,7 @@ public class ComponentResult extends ArchivableEntity {
     // this is a string because component class doesn't inherit serializable.
     @Setter
     private String componentClassValue;
+    private String componentClassStr;
     private String componentClassType;
     private AttributeStatus attributeStatus;
     private String componentAddress;
@@ -86,6 +87,7 @@ public class ComponentResult extends ArchivableEntity {
             // but find bugs is throwing a flag because instanceof isn't being used.
             ComponentIdentifierV2 ciV2 = (ComponentIdentifierV2) componentIdentifier;
             this.componentClassValue = ciV2.getComponentClass().getComponentIdentifier();
+            this.componentClassStr = ciV2.getComponentClass().toString();
             this.componentClassType = ciV2.getComponentClass().getRegistryType();
             this.attributeStatus = ciV2.getAttributeStatus();
             this.version2 = true;

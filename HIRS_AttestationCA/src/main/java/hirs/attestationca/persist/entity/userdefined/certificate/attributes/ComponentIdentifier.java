@@ -39,10 +39,6 @@ public class ComponentIdentifier {
     /**
      * Variable for components that aren't set.
      */
-    public static final String EMPTY_COMPONENT = "[Empty]";
-    /**
-     * Variable for components that aren't set.
-     */
     public static final String NOT_SPECIFIED_COMPONENT = "Not Specified";
     /**
      * Maximum number of configurations.
@@ -87,8 +83,8 @@ public class ComponentIdentifier {
     public ComponentIdentifier() {
         componentManufacturer = new DERUTF8String(NOT_SPECIFIED_COMPONENT);
         componentModel = new DERUTF8String(NOT_SPECIFIED_COMPONENT);
-        componentSerial = new DERUTF8String(EMPTY_COMPONENT);
-        componentRevision = new DERUTF8String(EMPTY_COMPONENT);
+        componentSerial = new DERUTF8String(NOT_SPECIFIED_COMPONENT);
+        componentRevision = new DERUTF8String(NOT_SPECIFIED_COMPONENT);
         componentManufacturerId = null;
         fieldReplaceable = null;
         componentAddress = new ArrayList<>();

@@ -97,12 +97,12 @@ public class ComponentInfo extends ArchivableEntity {
         if (componentSerial != null) {
             this.componentSerial = componentSerial.trim();
         } else {
-            this.componentSerial = ComponentIdentifier.EMPTY_COMPONENT;
+            this.componentSerial = ComponentIdentifier.NOT_SPECIFIED_COMPONENT;
         }
         if (componentRevision != null) {
             this.componentRevision = componentRevision.trim();
         } else {
-            this.componentRevision = ComponentIdentifier.EMPTY_COMPONENT;
+            this.componentRevision = ComponentIdentifier.NOT_SPECIFIED_COMPONENT;
         }
     }
 

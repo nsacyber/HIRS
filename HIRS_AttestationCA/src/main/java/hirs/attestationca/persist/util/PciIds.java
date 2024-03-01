@@ -179,11 +179,8 @@ public final class PciIds {
      */
     public static ComponentResult translateResult(final ComponentResult componentResult) {
         ComponentResult newComponent = null;
-        ComponentClass updateComponentClass;
         if (componentResult != null) {
             newComponent = componentResult;
-            updateComponentClass = new ComponentClass(componentResult.getComponentClassType(), componentResult.getComponentClassValue());
-            newComponent.setComponentClassValue(updateComponentClass.toString());
             newComponent.setManufacturer(translateVendor(componentResult.getManufacturer()));
             newComponent.setModel(translateDevice(componentResult.getManufacturer(),
                     componentResult.getModel()));
@@ -260,13 +257,12 @@ public final class PciIds {
      */
     public static String translateDevice(final String refManufacturer,
                                          final String refModel) {
-        String manufacturer = refManufacturer;
         String model = refModel;
-        if (manufacturer != null
+        if (refManufacturer != null
                 && model != null
-                && manufacturer.trim().matches("^[0-9A-Fa-f]{4}$")
+                && refManufacturer.trim().matches("^[0-9A-Fa-f]{4}$")
                 && model.trim().matches("^[0-9A-Fa-f]{4}$")) {
-            Device dev = DB.findDevice(manufacturer.toLowerCase(),
+            Device dev = DB.findDevice(refManufacturer.toLowerCase(),
                     model.toLowerCase());
             if (dev != null && !Strings.isNullOrEmpty(dev.getName())) {
                 model = dev.getName();

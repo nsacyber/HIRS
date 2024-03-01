@@ -368,7 +368,7 @@ public class CertificateAttributeScvValidator extends SupplyChainCredentialValid
 
         StringBuilder additionalInfo = new StringBuilder();
         if (!remainingComponentResults.isEmpty()) {
-            resultMessage.append(String.format("There are %d components not matched\n",
+            resultMessage.append(String.format("There are %d components not matched%n",
                     remainingComponentResults.size()));
             resultMessage.append(String.format("\twith %d total attributes mismatched.",
                     numOfAttributes));

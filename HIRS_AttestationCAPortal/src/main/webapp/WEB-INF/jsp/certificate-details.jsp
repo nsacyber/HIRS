@@ -601,7 +601,7 @@
                         <div class="row">
                             <div class="col-md-1 col-md-offset-1"><span class="colHeader">TCG Platform Configuration</span></div>
                             <div id="platformConfiguration" class="col col-md-8">
-                                <c:if test="${not empty initialData.componentsIdentifier}">
+                                <c:if test="${not empty initialData.componentResults}">
                                     <!-- Component Identifier -->
                                     <div class="panel panel-default">
                                         <div class="panel-heading" role="tab" id="headingOne">
@@ -619,7 +619,7 @@
                                                         <div class="component col col-md-4">
                                                             <div class="panel panel-default">
                                                                 <c:choose>
-                                                                    <c:when test="${component.isFailedValidation()=='TRUE'}">
+                                                                    <c:when test="${component.isFailedValidation() =='TRUE'}">
                                                                         <div class="panel-heading" style="background-color: red; color: white">
                                                                     </c:when>
                                                                     <c:otherwise>
@@ -628,7 +628,7 @@
                                                                 </c:choose>
                                                                     <c:choose>
                                                                         <c:when test="${component.isVersion2()=='TRUE'}">
-                                                                            <span data-toggle="tooltip" data-placement="top" title="Component Class">${component.getComponentClassValue()}</span>
+                                                                            <span data-toggle="tooltip" data-placement="top" title="Component Class">${component.getComponentClassStr()}</span>
                                                                         </c:when>
                                                                         <c:otherwise>
                                                                             <span data-toggle="tooltip" data-placement="top" title="Component Class">Platform Components</span>
