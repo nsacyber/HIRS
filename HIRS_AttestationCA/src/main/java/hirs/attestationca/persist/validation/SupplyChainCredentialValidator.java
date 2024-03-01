@@ -7,7 +7,6 @@ import hirs.attestationca.persist.entity.userdefined.info.ComponentInfo;
 import lombok.NoArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.logging.log4j.util.Strings;
 import org.bouncycastle.asn1.x500.X500Name;
 import org.bouncycastle.cert.CertException;
 import org.bouncycastle.cert.X509AttributeCertificateHolder;
@@ -32,7 +31,6 @@ import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.Iterator;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 
@@ -93,15 +91,13 @@ public class SupplyChainCredentialValidator  {
             } else if (trustStore.size() == 0) {
                 throw new SupplyChainValidatorException("Truststore is empty");
             }
-        } catch (KeyStoreException e) {
-            log.error("Error accessing trust store: " + e.getMessage());
+        } catch (KeyStoreException ksEx) {
+            log.error("Error accessing trust store: " + ksEx.getMessage());
         }
 
         try {
             Set<X509Certificate> trustedCerts = new HashSet<>();
-
             Enumeration<String> alias = trustStore.aliases();
-
             while (alias.hasMoreElements()) {
                 trustedCerts.add((X509Certificate) trustStore.getCertificate(alias.nextElement()));
             }
@@ -111,8 +107,8 @@ public class SupplyChainCredentialValidator  {
                 log.error("Cert chain could not be validated");
             }
             return certChainValidated;
-        } catch (KeyStoreException e) {
-            throw new SupplyChainValidatorException("Error with the trust store", e);
+        } catch (KeyStoreException ksEx) {
+            throw new SupplyChainValidatorException("Error with the trust store", ksEx);
         }
     }
 
@@ -139,8 +135,8 @@ public class SupplyChainCredentialValidator  {
             } else if (trustStore.size() == 0) {
                 throw new SupplyChainValidatorException("Truststore is empty");
             }
-        } catch (KeyStoreException e) {
-            log.error("Error accessing trust store: " + e.getMessage());
+        } catch (KeyStoreException ksEx) {
+            log.error("Error accessing trust store: " + ksEx.getMessage());
         }
 
         try {
@@ -152,9 +148,9 @@ public class SupplyChainCredentialValidator  {
             }
 
             return validateCertChain(cert, trustedCerts).isEmpty();
-        } catch (KeyStoreException e) {
-            log.error("Error accessing keystore", e);
-            throw new SupplyChainValidatorException("Error with the trust store", e);
+        } catch (KeyStoreException ksEx) {
+            log.error("Error accessing keystore", ksEx);
+            throw new SupplyChainValidatorException("Error with the trust store", ksEx);
         }
     }
 
@@ -277,11 +273,13 @@ public class SupplyChainCredentialValidator  {
 
     /**
      * Parses the output from PACCOR's allcomponents.sh script into ComponentInfo objects.
+     * @param hostName the host machine associated with the component
      * @param paccorOutput the output from PACCOR's allcomoponents.sh
      * @return a list of ComponentInfo objects built from paccorOutput
      * @throws java.io.IOException if something goes wrong parsing the JSON
      */
-    public static List<ComponentInfo> getComponentInfoFromPaccorOutput(final String paccorOutput)
+    public static List<ComponentInfo> getComponentInfoFromPaccorOutput(final String hostName,
+                                                                       final String paccorOutput)
             throws IOException {
         List<ComponentInfo> componentInfoList = new ArrayList<>();
 
@@ -292,52 +290,32 @@ public class SupplyChainCredentialValidator  {
                     = rootNode.findValue("COMPONENTS").elements();
             while (jsonComponentNodes.hasNext()) {
                 JsonNode next = jsonComponentNodes.next();
-                componentInfoList.add(new ComponentInfo(
-                        getJSONNodeValueAsText(next, "MANUFACTURER"),
-                        getJSONNodeValueAsText(next, "MODEL"),
-                        getJSONNodeValueAsText(next, "SERIAL"),
-                        getJSONNodeValueAsText(next, "REVISION")));
+
+                List<JsonNode> compClassNodes = next.findValues("COMPONENTCLASS");
+                if (compClassNodes.isEmpty()) {
+                    componentInfoList.add(new ComponentInfo(hostName,
+                            getJSONNodeValueAsText(next, "MANUFACTURER"),
+                            getJSONNodeValueAsText(next, "MODEL"),
+                            getJSONNodeValueAsText(next, "SERIAL"),
+                            getJSONNodeValueAsText(next, "REVISION")));
+                } else {
+                    // version 2
+                    String componentClass = StringUtils.EMPTY;
+                    for (JsonNode subNode : compClassNodes) {
+                        componentClass = getJSONNodeValueAsText(subNode,
+                                "COMPONENTCLASSVALUE");
+                    }
+                    componentInfoList.add(new ComponentInfo(hostName,
+                            getJSONNodeValueAsText(next, "MANUFACTURER"),
+                            getJSONNodeValueAsText(next, "MODEL"),
+                            getJSONNodeValueAsText(next, "SERIAL"),
+                            getJSONNodeValueAsText(next, "REVISION"),
+                            componentClass));
+                }
             }
         }
 
         return componentInfoList;
-    }
-
-    /**
-     * Parses the output from PACCOR's allcomponents.sh script into ComponentInfo objects.
-     * @param paccorOutput the output from PACCOR's allcomoponents.sh
-     * @return a list of ComponentInfo objects built from paccorOutput
-     * @throws IOException if something goes wrong parsing the JSON
-     */
-    public static List<ComponentInfo> getV2PaccorOutput(
-            final String paccorOutput) throws IOException {
-        List<ComponentInfo> ciList = new LinkedList<>();
-        String manufacturer, model, serial, revision;
-        String componentClass = Strings.EMPTY;
-
-        if (StringUtils.isNotEmpty(paccorOutput)) {
-            ObjectMapper objectMapper = new ObjectMapper(new JsonFactory());
-            JsonNode rootNode = objectMapper.readTree(paccorOutput);
-            Iterator<JsonNode> jsonComponentNodes
-                    = rootNode.findValue("COMPONENTS").elements();
-            while (jsonComponentNodes.hasNext()) {
-                JsonNode next = jsonComponentNodes.next();
-                manufacturer = getJSONNodeValueAsText(next, "MANUFACTURER");
-                model = getJSONNodeValueAsText(next, "MODEL");
-                serial = getJSONNodeValueAsText(next, "SERIAL");
-                revision = getJSONNodeValueAsText(next, "REVISION");
-                List<JsonNode> compClassNodes = next.findValues("COMPONENTCLASS");
-
-                for (JsonNode subNode : compClassNodes) {
-                    componentClass = getJSONNodeValueAsText(subNode,
-                            "COMPONENTCLASSVALUE");
-                }
-                ciList.add(new ComponentInfo(manufacturer, model,
-                        serial, revision, componentClass));
-            }
-        }
-
-        return ciList;
     }
 
     private static String getJSONNodeValueAsText(final JsonNode node, final String fieldName) {
@@ -498,10 +476,10 @@ public class SupplyChainCredentialValidator  {
             PublicKey key = cert.getPublicKey();
             cert.verify(key);
             return true;
-        } catch (SignatureException | InvalidKeyException e) {
+        } catch (SignatureException | InvalidKeyException ex) {
             return false;
-        } catch (CertificateException | NoSuchAlgorithmException | NoSuchProviderException e) {
-            log.error("Exception occurred while checking if cert is self-signed", e);
+        } catch (CertificateException | NoSuchAlgorithmException | NoSuchProviderException ex) {
+            log.error("Exception occurred while checking if cert is self-signed", ex);
             return false;
         }
     }

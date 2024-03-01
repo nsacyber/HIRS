@@ -71,11 +71,11 @@ start_mysqlsd () {
          echo "mariadb not running , attempting to restart"
          systemctl start mariadb >> "$LOG_FILE";
        fi
-     fi # non contanier mysql start
+     fi # non container mysql start
    fi   
 }
 
-# Basic check for marai db status, attempts restart if not running
+# Basic check for maria db status, attempts restart if not running
 check_mysql () {
  PROCESS="mysqld"
    source /etc/os-release 
@@ -90,7 +90,7 @@ check_mysql () {
           chown mysql:mysql /var/log/mariadb/mariadb.log >> "$LOG_FILE";
           /usr/bin/mysqld_safe  --skip-syslog  >> "$LOG_FILE" &
        fi
-  else  # not in a contianer
+  else  # not in a container
     DB_STATUS=$(systemctl status mysql |grep 'running' | wc -l )
     if [ $DB_STATUS -eq 0 ]; then 
        echo "mariadb not running , attempting to restart"
@@ -118,7 +118,7 @@ check_mysql () {
   fi
 }
 
-# Check for mysql root password , abort if not available 
+# Check for mysql root password, abort if not available
 check_mysql_root () {
   if [ -z $HIRS_MYSQL_ROOT_PWD ]; then
     if [ ! -f /etc/hirs/aca/aca.properties ]; then
@@ -131,7 +131,7 @@ check_mysql_root () {
   DB_ADMIN_PWD=$HIRS_MYSQL_ROOT_PWD
 fi
 
-# Allow user to enter password if not using env variabel or file
+# Allow user to enter password if not using env variable or file
 if [ -z $DB_ADMIN_PWD ]; then
   read -p "Enter mysql root password" DB_ADMIN_PWD
   else 
@@ -172,7 +172,7 @@ check_db_cleared () {
    fi
 }
 
-# restart maraidb
+# restart mariadb
 mysqld_reboot () {
   # reboot mysql server
   mysql -u root --password=$DB_ADMIN_PWD -e "SHUTDOWN"

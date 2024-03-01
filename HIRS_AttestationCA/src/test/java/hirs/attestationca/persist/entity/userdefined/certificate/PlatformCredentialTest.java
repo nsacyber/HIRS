@@ -539,7 +539,7 @@ public class PlatformCredentialTest extends AbstractUserdefinedEntityTest {
                 .equals("BIOS"));
         Assertions.assertTrue(component.getComponentSerial()
                 .getString()
-                .equals(ComponentIdentifier.EMPTY_COMPONENT));
+                .equals(ComponentIdentifier.NOT_SPECIFIED_COMPONENT));
         Assertions.assertTrue(component.getComponentRevision()
                 .getString()
                 .equals("DNKBLi5v.86A.0019.2017.0804.1146"));
