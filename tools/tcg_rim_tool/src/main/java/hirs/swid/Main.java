@@ -28,7 +28,6 @@ public class Main {
         SwidTagGateway gateway;
         ReferenceManifestValidator validator;
         List<String> unknownOpts = commander.getUnknownOptions();
-        CredentialArgumentValidator credValidator;
 
         if (!unknownOpts.isEmpty()) {
             StringBuilder sb = new StringBuilder("Unknown options encountered: ");
@@ -58,13 +57,7 @@ public class Main {
                 String trustStore = commander.getTruststoreFile();
                 validator.setRim(verifyFile);
                 validator.setRimEventLog(rimel);
-                credValidator = new CredentialArgumentValidator(trustStore,
-                        "","", true);
-                if (credValidator.isValid()) {
-                    validator.setTrustStoreFile(trustStore);
-                } else {
-                    exitWithErrorCode(credValidator.getErrorMessage());
-                }
+                validator.setTrustStoreFile(trustStore);
                 if (validator.validateSwidtagFile(verifyFile)) {
                     System.out.println("Successfully verified " + verifyFile);
                 } else {
@@ -86,20 +79,16 @@ public class Main {
                     case "BASE":
                         gateway.setAttributesFile(attributesFile);
                         gateway.setRimEventLog(rimEventLog);
-                        credValidator = new CredentialArgumentValidator("" ,
-                                certificateFile, privateKeyFile, false);
                         if (defaultKey){
                             gateway.setDefaultCredentials(true);
                             gateway.setJksTruststoreFile(SwidTagConstants.DEFAULT_KEYSTORE_FILE);
-                        } else if (credValidator.isValid()) {
+                        } else {
                             gateway.setDefaultCredentials(false);
                             gateway.setPemCertificateFile(certificateFile);
                             gateway.setPemPrivateKeyFile(privateKeyFile);
                             if (embeddedCert) {
                                 gateway.setEmbeddedCert(true);
                             }
-                        } else {
-                            exitWithErrorCode(credValidator.getErrorMessage());
                         }
                         List<String> timestampArguments = commander.getTimestampArguments();
                         if (timestampArguments.size() > 0) {
