@@ -124,7 +124,9 @@ public class SupplyChainValidationService {
         // Validate the Endorsement Credential
         if (getPolicySettings().isEcValidationEnabled()) {
             log.info("Beginning Endorsement Credential Validation...");
-            validations.add(ValidationService.evaluateEndorsementCredentialStatus(ec, this.caCredentialRepository, acceptExpiredCerts));
+            validations.add(ValidationService
+                    .evaluateEndorsementCredentialStatus(ec,
+                            this.caCredentialRepository, acceptExpiredCerts));
             // store the device with the credential
             if (ec != null) {
                 ec.setDeviceId(device.getId());
@@ -219,18 +221,16 @@ public class SupplyChainValidationService {
                     // There are delta certificates, so the code need to build a new list of
                     // certificate components to then compare against the device component list
                     aes.addAll(basePlatformScv.getCertificatesUsed());
-                    Iterator<PlatformCredential> it = pcs.iterator();
-                    while (it.hasNext()) {
-                        PlatformCredential pc = it.next();
-                        if (pc != null && !pc.isPlatformBase()) {
-                            attributeScv = ValidationService.evaluateDeltaAttributesStatus(
-                                    pc, device.getDeviceInfo(),
-                                    baseCredential, deltaMapping, certificateRepository);
-                            if (attributeScv.getValidationResult() == AppraisalStatus.Status.FAIL) {
-                                attrErrorMessage = String.format("%s%s%n", attrErrorMessage,
-                                        attributeScv.getMessage());
-                            }
-                        }
+
+                    attributeScv = ValidationService.evaluateDeltaAttributesStatus(
+                            device.getDeviceInfo(),
+                            baseCredential, deltaMapping, certificateRepository,
+                            componentResultRepository,
+                            componentAttributeRepository,
+                            componentInfos, provisionSessionId);
+                    if (attributeScv.getValidationResult() == AppraisalStatus.Status.FAIL) {
+                        attrErrorMessage = String.format("%s%s%n", attrErrorMessage,
+                                attributeScv.getMessage());
                     }
                 } else {
                     // validate attributes for a single base platform certificate

@@ -5,11 +5,8 @@ import com.github.marandus.pciid.model.Vendor;
 import com.github.marandus.pciid.service.PciIdsDatabase;
 import com.google.common.base.Strings;
 import hirs.attestationca.persist.entity.userdefined.certificate.ComponentResult;
-import hirs.attestationca.persist.entity.userdefined.certificate.attributes.ComponentClass;
 import hirs.attestationca.persist.entity.userdefined.certificate.attributes.ComponentIdentifier;
 import hirs.attestationca.persist.entity.userdefined.certificate.attributes.V2.ComponentIdentifierV2;
-import lombok.AccessLevel;
-import lombok.NoArgsConstructor;
 
 import lombok.extern.log4j.Log4j2;
 import org.bouncycastle.asn1.ASN1UTF8String;
@@ -27,7 +24,6 @@ import java.util.List;
  * Provide Java access to PCI IDs.
  */
 @Log4j2
-@NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class PciIds {
     /**
      * This pci ids file can be in different places on different distributions.
@@ -150,8 +146,10 @@ public final class PciIds {
             final String compClassValue = component.getComponentClass().getCategory();
             if (compClassValue.equals(COMPCLASS_TCG_CAT_NIC)
                     || compClassValue.equals(COMPCLASS_TCG_CAT_GFX)) {
-                DERUTF8String manufacturer = (DERUTF8String) translateVendor(component.getComponentManufacturer());
-                DERUTF8String model = (DERUTF8String) translateDevice(component.getComponentManufacturer(),
+                DERUTF8String manufacturer = (DERUTF8String) translateVendor(
+                        component.getComponentManufacturer());
+                DERUTF8String model = (DERUTF8String) translateDevice(
+                        component.getComponentManufacturer(),
                         component.getComponentModel());
 
                 newComponent = new ComponentIdentifierV2(component.getComponentClass(),

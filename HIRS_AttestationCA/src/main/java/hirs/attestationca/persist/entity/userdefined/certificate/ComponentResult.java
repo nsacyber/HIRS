@@ -31,7 +31,9 @@ public class ComponentResult extends ArchivableEntity {
     private String manufacturer;
     @Setter
     private String model;
+    @Setter
     private String serialNumber;
+    @Setter
     private String revisionNumber;
     private boolean fieldReplaceable = false;
     // this is a string because component class doesn't inherit serializable.
@@ -42,6 +44,8 @@ public class ComponentResult extends ArchivableEntity {
     private AttributeStatus attributeStatus;
     private String componentAddress;
     private boolean version2 = false;
+    @Setter
+    private boolean delta = false;
     @Setter
     private boolean failedValidation;
     private String certificateType;

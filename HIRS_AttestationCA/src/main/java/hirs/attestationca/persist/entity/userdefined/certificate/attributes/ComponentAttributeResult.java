@@ -13,6 +13,9 @@ import java.util.UUID;
  * This is tied to the ComponentResult class.  If a component has a mismatched
  * value from what the device has listed, this class represents which attribute
  * of that component mismatched.
+ *
+ * If this is a delta issue, the component ID would be set to null if the
+ * remove or modified don't exist.
  */
 @Entity
 @Getter
@@ -32,6 +35,22 @@ public class ComponentAttributeResult  extends ArchivableEntity {
      * @param actualValue paccor value from the device
      */
     public ComponentAttributeResult(final UUID componentId,
+                                    final String expectedValue,
+                                    final String actualValue) {
+        this.componentId = componentId;
+        this.expectedValue = expectedValue;
+        this.actualValue = actualValue;
+    }
+
+    /**
+     * Default constructor that populates the expected and actual values.
+     * @param componentId id associated with component result
+     * @param provisionSessionId an id for the associated provision
+     * @param expectedValue platform certificate value
+     * @param actualValue paccor value from the device
+     */
+    public ComponentAttributeResult(final UUID componentId,
+                                    final UUID provisionSessionId,
                                     final String expectedValue,
                                     final String actualValue) {
         this.componentId = componentId;

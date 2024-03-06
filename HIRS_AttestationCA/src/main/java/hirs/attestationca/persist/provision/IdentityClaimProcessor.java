@@ -642,6 +642,7 @@ public class IdentityClaimProcessor extends AbstractProcessor {
                         platformCredential.getPlatformChainType(),
                         componentIdentifier);
                 componentResult.setFailedValidation(false);
+                componentResult.setDelta(!platformCredential.isPlatformBase());
                 componentResultRepository.save(componentResult);
                 componentResults++;
             }

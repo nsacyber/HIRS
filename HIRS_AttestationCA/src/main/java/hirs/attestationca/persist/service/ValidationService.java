@@ -144,28 +144,27 @@ public class ValidationService {
     }
 
     public static SupplyChainValidation evaluateDeltaAttributesStatus(
-            final PlatformCredential delta,
             final DeviceInfoReport deviceInfoReport,
             final PlatformCredential base,
             final Map<PlatformCredential, SupplyChainValidation> deltaMapping,
-            final CertificateRepository certificateRepository) {
+            final CertificateRepository certificateRepository,
+            final ComponentResultRepository componentResultRepository,
+            final ComponentAttributeRepository componentAttributeRepository,
+            final List<ComponentInfo> componentInfos,
+            final UUID provisionSessionId) {
         final SupplyChainValidation.ValidationType validationType
                 = SupplyChainValidation.ValidationType.PLATFORM_CREDENTIAL_ATTRIBUTES;
 
-        if (delta == null) {
-            log.error("No delta certificate to validate");
-            return buildValidationRecord(validationType,
-                    AppraisalStatus.Status.FAIL, "Delta platform certificate is missing",
-                    null, Level.ERROR);
-        }
         log.info("Validating delta platform certificate attributes");
-        AppraisalStatus result = CertificateAttributeScvValidator.
-                validateDeltaPlatformCredentialAttributes(delta, deviceInfoReport,
-                        base, deltaMapping);
+        AppraisalStatus result = CredentialValidator.
+                validateDeltaPlatformCredentialAttributes(deviceInfoReport,
+                        base, deltaMapping, componentInfos,
+                        componentResultRepository, componentAttributeRepository,
+                        provisionSessionId);
         switch (result.getAppStatus()) {
             case PASS:
                 return buildValidationRecord(validationType, AppraisalStatus.Status.PASS,
-                        result.getMessage(), delta, Level.INFO);
+                        result.getMessage(), base, Level.INFO);
             case FAIL:
                 if (!result.getAdditionalInfo().isEmpty()) {
                     base.setComponentFailures(result.getAdditionalInfo());
@@ -173,13 +172,13 @@ public class ValidationService {
                     certificateRepository.save(base);
                 }
                 // we are adding things to componentFailures
-                certificateRepository.save(delta);
+//                certificateRepository.save(delta);
                 return buildValidationRecord(validationType, AppraisalStatus.Status.FAIL,
-                        result.getMessage(), delta, Level.WARN);
+                        result.getMessage(), base, Level.WARN);
             case ERROR:
             default:
                 return buildValidationRecord(validationType, AppraisalStatus.Status.ERROR,
-                        result.getMessage(), delta, Level.ERROR);
+                        result.getMessage(), base, Level.ERROR);
         }
     }
 
