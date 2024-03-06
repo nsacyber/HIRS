@@ -1,7 +1,10 @@
 package hirs.attestationca.persist.validation;
 
+import hirs.attestationca.persist.entity.manager.ComponentAttributeRepository;
+import hirs.attestationca.persist.entity.manager.ComponentResultRepository;
 import hirs.attestationca.persist.entity.userdefined.certificate.EndorsementCredential;
 import hirs.attestationca.persist.entity.userdefined.certificate.PlatformCredential;
+import hirs.attestationca.persist.entity.userdefined.info.ComponentInfo;
 import hirs.attestationca.persist.entity.userdefined.report.DeviceInfoReport;
 import hirs.attestationca.persist.enums.AppraisalStatus;
 import lombok.extern.log4j.Log4j2;
@@ -14,6 +17,8 @@ import java.security.cert.CertificateExpiredException;
 import java.security.cert.CertificateNotYetValidException;
 import java.security.cert.X509Certificate;
 import java.util.Date;
+import java.util.List;
+import java.util.UUID;
 
 import static hirs.attestationca.persist.enums.AppraisalStatus.Status.ERROR;
 import static hirs.attestationca.persist.enums.AppraisalStatus.Status.FAIL;
@@ -26,7 +31,7 @@ public class CredentialValidator extends SupplyChainCredentialValidator {
      * Checks if the endorsement credential is valid.
      *
      * @param ec the endorsement credential to verify.
-     * @param trustStore trust store holding trusted trusted certificates.
+     * @param trustStore trust store holding trusted certificates.
      * @param acceptExpired whether or not to accept expired and not yet valid certificates
      *                      as valid.
      * @return the result of the validation.
@@ -160,12 +165,19 @@ public class CredentialValidator extends SupplyChainCredentialValidator {
      *                         serial number of the platform to be validated.
      * @param endorsementCredential The endorsement credential supplied from the same
      *          identity request as the platform credential.
+     * @param componentResultRepository db access to component result of mismatching
+     * @param componentAttributeRepository  db access to component attribute match status
+     * @param componentInfos list of device components
      * @return The result of the validation.
      */
     public static AppraisalStatus validatePlatformCredentialAttributes(
             final PlatformCredential platformCredential,
             final DeviceInfoReport deviceInfoReport,
-            final EndorsementCredential endorsementCredential) {
+            final EndorsementCredential endorsementCredential,
+            final ComponentResultRepository componentResultRepository,
+            final ComponentAttributeRepository componentAttributeRepository,
+            final List<ComponentInfo> componentInfos,
+            final UUID provisionSessionId) {
         final String baseErrorMessage = "Can't validate platform credential attributes without ";
         String message;
         if (platformCredential == null) {
@@ -180,6 +192,10 @@ public class CredentialValidator extends SupplyChainCredentialValidator {
             message = baseErrorMessage + "an endorsement credential";
             return new AppraisalStatus(FAIL, message);
         }
+        if (componentInfos.isEmpty()) {
+            message = baseErrorMessage + "a list of device components";
+            return new AppraisalStatus(FAIL, message);
+        }
 
         // Quick, early check if the platform credential references the endorsement credential
         if (!endorsementCredential.getSerialNumber()
@@ -192,7 +208,8 @@ public class CredentialValidator extends SupplyChainCredentialValidator {
         String credentialType = platformCredential.getCredentialType();
         if (PlatformCredential.CERTIFICATE_TYPE_2_0.equals(credentialType)) {
             return CertificateAttributeScvValidator.validatePlatformCredentialAttributesV2p0(
-                    platformCredential, deviceInfoReport);
+                    platformCredential, deviceInfoReport, componentResultRepository,
+                    componentAttributeRepository, componentInfos, provisionSessionId);
         }
         return CertificateAttributeScvValidator.validatePlatformCredentialAttributesV1p2(
                 platformCredential, deviceInfoReport);

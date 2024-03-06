@@ -32,6 +32,8 @@ public class ComponentAddress {
 
     private ASN1ObjectIdentifier addressType;
     private ASN1UTF8String addressValue;
+    private String addressTypeString;
+    private String addressValueString;
 
     /**
      * Default constructor.

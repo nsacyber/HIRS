@@ -4,6 +4,7 @@ import hirs.attestationca.persist.DBManagerException;
 import hirs.attestationca.persist.entity.ArchivableEntity;
 import hirs.attestationca.persist.entity.manager.CACredentialRepository;
 import hirs.attestationca.persist.entity.manager.CertificateRepository;
+import hirs.attestationca.persist.entity.manager.ComponentAttributeRepository;
 import hirs.attestationca.persist.entity.manager.ComponentResultRepository;
 import hirs.attestationca.persist.entity.manager.PolicyRepository;
 import hirs.attestationca.persist.entity.manager.ReferenceDigestValueRepository;
@@ -14,14 +15,18 @@ import hirs.attestationca.persist.entity.userdefined.Device;
 import hirs.attestationca.persist.entity.userdefined.PolicySettings;
 import hirs.attestationca.persist.entity.userdefined.SupplyChainValidation;
 import hirs.attestationca.persist.entity.userdefined.SupplyChainValidationSummary;
+import hirs.attestationca.persist.entity.userdefined.certificate.ComponentResult;
 import hirs.attestationca.persist.entity.userdefined.certificate.EndorsementCredential;
 import hirs.attestationca.persist.entity.userdefined.certificate.PlatformCredential;
+import hirs.attestationca.persist.entity.userdefined.certificate.attributes.ComponentAttributeResult;
+import hirs.attestationca.persist.entity.userdefined.info.ComponentInfo;
 import hirs.attestationca.persist.entity.userdefined.rim.EventLogMeasurements;
 import hirs.attestationca.persist.entity.userdefined.rim.SupportReferenceManifest;
 import hirs.attestationca.persist.enums.AppraisalStatus;
 import hirs.attestationca.persist.validation.PcrValidator;
 import hirs.attestationca.persist.validation.SupplyChainCredentialValidator;
 import lombok.extern.log4j.Log4j2;
+import org.apache.logging.log4j.Level;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -32,8 +37,7 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-
-import org.apache.logging.log4j.Level;
+import java.util.UUID;
 
 import static hirs.attestationca.persist.enums.AppraisalStatus.Status.FAIL;
 import static hirs.attestationca.persist.enums.AppraisalStatus.Status.PASS;
@@ -47,9 +51,11 @@ public class SupplyChainValidationService {
     private ReferenceManifestRepository referenceManifestRepository;
     private ReferenceDigestValueRepository referenceDigestValueRepository;
     private ComponentResultRepository componentResultRepository;
+    private ComponentAttributeRepository componentAttributeRepository;
     private CertificateRepository certificateRepository;
     private SupplyChainValidationRepository supplyChainValidationRepository;
     private SupplyChainValidationSummaryRepository supplyChainValidationSummaryRepository;
+    private UUID provisionSessionId;
 
     /**
      * Constructor.
@@ -70,6 +76,7 @@ public class SupplyChainValidationService {
             final PolicyRepository policyRepository,
             final CertificateRepository certificateRepository,
             final ComponentResultRepository componentResultRepository,
+            final ComponentAttributeRepository componentAttributeRepository,
             final ReferenceManifestRepository referenceManifestRepository,
             final SupplyChainValidationRepository supplyChainValidationRepository,
             final SupplyChainValidationSummaryRepository supplyChainValidationSummaryRepository,
@@ -78,6 +85,7 @@ public class SupplyChainValidationService {
         this.policyRepository = policyRepository;
         this.certificateRepository = certificateRepository;
         this.componentResultRepository = componentResultRepository;
+        this.componentAttributeRepository = componentAttributeRepository;
         this.referenceManifestRepository = referenceManifestRepository;
         this.supplyChainValidationRepository = supplyChainValidationRepository;
         this.supplyChainValidationSummaryRepository = supplyChainValidationSummaryRepository;
@@ -92,13 +100,16 @@ public class SupplyChainValidationService {
      * @param ec     The endorsement credential from the identity request.
      * @param pcs    The platform credentials from the identity request.
      * @param device The device to be validated.
+     * @param componentInfos list of components from the device
      * @return A summary of the validation results.
      */
     @SuppressWarnings("methodlength")
     public SupplyChainValidationSummary validateSupplyChain(final EndorsementCredential ec,
                                                             final List<PlatformCredential> pcs,
-                                                            final Device device) {
+                                                            final Device device,
+                                                            final List<ComponentInfo> componentInfos) {
         boolean acceptExpiredCerts = getPolicySettings().isExpiredCertificateValidationEnabled();
+        provisionSessionId = UUID.randomUUID();
         PlatformCredential baseCredential = null;
         SupplyChainValidation platformScv = null;
         SupplyChainValidation basePlatformScv = null;
@@ -205,6 +216,8 @@ public class SupplyChainValidationService {
                         null, Level.ERROR));
             } else {
                 if (chkDeltas) {
+                    // There are delta certificates, so the code need to build a new list of
+                    // certificate components to then compare against the device component list
                     aes.addAll(basePlatformScv.getCertificatesUsed());
                     Iterator<PlatformCredential> it = pcs.iterator();
                     while (it.hasNext()) {
@@ -220,16 +233,23 @@ public class SupplyChainValidationService {
                         }
                     }
                 } else {
+                    // validate attributes for a single base platform certificate
                     aes.add(baseCredential);
                     validations.remove(platformScv);
                     // if there are no deltas, just check base credential
                     platformScv = ValidationService.evaluatePCAttributesStatus(
                             baseCredential, device.getDeviceInfo(), ec,
-                            certificateRepository, componentResultRepository);
+                            certificateRepository, componentResultRepository,
+                            componentAttributeRepository, componentInfos, provisionSessionId);
                     validations.add(new SupplyChainValidation(
                             SupplyChainValidation.ValidationType.PLATFORM_CREDENTIAL,
                             platformScv.getValidationResult(), aes, platformScv.getMessage()));
                 }
+
+                updateComponentStatus(componentResultRepository
+                        .findByCertificateSerialNumberAndBoardSerialNumber(
+                        baseCredential.getSerialNumber().toString(),
+                        baseCredential.getPlatformSerial()));
             }
             if (!attrErrorMessage.isEmpty()) {
                 //combine platform and platform attributes
@@ -252,7 +272,7 @@ public class SupplyChainValidationService {
         log.info("The validation finished, summarizing...");
         // Generate validation summary, save it, and return it.
         SupplyChainValidationSummary summary
-                = new SupplyChainValidationSummary(device, validations);
+                = new SupplyChainValidationSummary(device, validations, provisionSessionId);
         try {
             supplyChainValidationSummaryRepository.save(summary);
         } catch (DBManagerException dbMEx) {
@@ -373,5 +393,26 @@ public class SupplyChainValidationService {
             defaultSettings = new PolicySettings("Default", "Settings are configured for no validation flags set.");
         }
         return defaultSettings;
+    }
+
+    /**
+     * If the platform attributes policy is enabled, this method updates the matched
+     * status for the component result.  This is done so that the details page for the
+     * platform certificate highlights the title card red.
+     * @param componentResults list of associated component results
+     */
+    private void updateComponentStatus(final List<ComponentResult> componentResults) {
+        List<ComponentAttributeResult> componentAttributeResults = componentAttributeRepository
+                .findByProvisionSessionId(provisionSessionId);
+        List<UUID> componentIdList = new ArrayList<>();
+
+        for (ComponentAttributeResult componentAttributeResult : componentAttributeResults) {
+            componentIdList.add(componentAttributeResult.getComponentId());
+        }
+
+        for (ComponentResult componentResult : componentResults) {
+            componentResult.setFailedValidation(componentIdList.contains(componentResult.getId()));
+            componentResultRepository.save(componentResult);
+        }
     }
 }

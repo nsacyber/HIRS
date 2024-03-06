@@ -90,7 +90,8 @@ public class TPM2ProvisionerState {
     /**
      * Convenience method for finding the {@link TPM2ProvisionerState} associated with the nonce.
      *
-     * @param tpm2ProvisionerStateRepository the {@link TPM2ProvisionerStateRepository} to use when looking for the
+     * @param tpm2ProvisionerStateRepository the {@link TPM2ProvisionerStateRepository}
+     *                                       to use when looking for the
      * {@link TPM2ProvisionerState}
      * @param nonce the nonce to use as the key for the {@link TPM2ProvisionerState}
      * @return the {@link TPM2ProvisionerState} associated with the nonce;
