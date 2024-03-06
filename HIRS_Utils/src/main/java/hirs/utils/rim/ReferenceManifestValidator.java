@@ -182,6 +182,8 @@ public class ReferenceManifestValidator {
             signatureValid = false;
             supportRimValid = false;
             publicKey = null;
+            trustStoreFile = null;
+            trustStore = null;
             subjectKeyIdentifier = "(not found)";
         } catch (SAXException e) {
             log.warn("Error setting schema for validation!");
@@ -210,7 +212,7 @@ public class ReferenceManifestValidator {
                 log.error("Cannot validate RIM, signature element not found!");
                 return false;
             }
-            if (trustStore == null && trustStoreFile != null && !trustStoreFile.isEmpty()) {
+            if (trustStoreFile != null && !trustStoreFile.isEmpty()) {
                 trustStore = parseCertificatesFromPem(trustStoreFile);
             }
             NodeList certElement = rim.getElementsByTagName("X509Certificate");
@@ -218,7 +220,7 @@ public class ReferenceManifestValidator {
                 X509Certificate embeddedCert = parseCertFromPEMString(
                         certElement.item(0).getTextContent());
                 if (embeddedCert != null) {
-                    subjectKeyIdentifier = getCertificateSubjectKeyIdentifier(embeddedCert);
+                    //subjectKeyIdentifier = getCertificateSubjectKeyIdentifier(embeddedCert);
                     if (Arrays.equals(embeddedCert.getPublicKey().getEncoded(),
                             encodedPublicKey)) {
                         context = new DOMValidateContext(new X509KeySelector(), nodes.item(0));
@@ -249,24 +251,20 @@ public class ReferenceManifestValidator {
      * This method validates a signed swidtag XML file.
      * @param path to the swidtag XML
      */
-    public boolean validateSwidtagFile(String path) {
+    public boolean validateSwidtagFile(String signingCertPath) {
         Element fileElement = (Element) rim.getElementsByTagName("File").item(0);
+/*
         if (trustStoreFile != null && !trustStoreFile.isEmpty()) {
             trustStore = parseCertificatesFromPem(trustStoreFile);
         } else {
             return failWithError("File <" + trustStoreFile + "> is empty; " +
                     "a valid, non-empty truststore file is required for validation.");
         }
-        X509Certificate signingCert = null;
-        try {
-            signingCert = getCertFromTruststore();
-            if (signingCert == null) {
-                return failWithError("Unable to locate the signing cert in the provided " +
-                        "truststore " + trustStoreFile);
-            }
-        } catch (IOException e) {
-            return failWithError("Error while parsing signing cert from truststore: " +
-                    e.getMessage());
+*/
+        X509Certificate signingCert = parseCertificatesFromPem(signingCertPath).get(0);
+        if (signingCert == null) {
+            return failWithError("Unable to locate the signing cert in the provided " +
+                    "truststore " + trustStoreFile);
         }
         String subjectKeyIdentifier = "";
         try {
@@ -646,7 +644,7 @@ public class ReferenceManifestValidator {
     }
 
     /**
-     * This method returns the X509Certificate found in a PEM file.
+     * This method returns the X509Certificates found in a PEM file.
      * Unchecked type case warnings are suppressed because the CertificateFactory
      * implements X509Certificate objects explicitly.
      * @param filename pem file

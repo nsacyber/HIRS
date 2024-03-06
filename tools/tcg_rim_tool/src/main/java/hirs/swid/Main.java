@@ -54,11 +54,12 @@ public class Main {
                 }
                 String verifyFile = commander.getVerifyFile();
                 String rimel = commander.getRimEventLog();
+                String certificateFile = commander.getPublicCertificate();
                 String trustStore = commander.getTruststoreFile();
                 validator.setRim(verifyFile);
                 validator.setRimEventLog(rimel);
                 validator.setTrustStoreFile(trustStore);
-                if (validator.validateSwidtagFile(verifyFile)) {
+                if (validator.validateSwidtagFile(certificateFile)) {
                     System.out.println("Successfully verified " + verifyFile);
                 } else {
                     exitWithErrorCode("Failed to verify " + verifyFile);
