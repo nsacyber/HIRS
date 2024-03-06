@@ -10,7 +10,7 @@ LABEL org.opencontainers.image.description NSA\'s HIRS Attestation Certificate A
 LABEL org.opencontainers.image.base.name mcr.microsoft.com/powershell:${BASE_IMAGE_TAG}
 
 # REF can be specified as a docker run environment variable to select the HIRS branch to work with
-ENV REF=main
+ARG REF=main
 
 SHELL ["pwsh", "-Command"]
 
