@@ -27,7 +27,7 @@ public class CreateArgumentValidator implements IParametersValidator {
     public void validate(Map<String, Object> parameters) throws ParameterException {
 	    if (isValueNotNull(parameters,"--create")) {
             if (isValueNotNull(parameters,"--verify")) {
-                errorMessage += "Create and verify cannot be called together. ";
+                throw new ParameterException("Create and verify cannot be called together.");
             } else {
                 for (String arg : requiredArgs) {
                     if (!isValueNotNull(parameters, arg)) {

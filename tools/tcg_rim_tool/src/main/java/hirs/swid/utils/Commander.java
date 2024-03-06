@@ -11,7 +11,7 @@ import java.util.List;
  * Commander is a class that handles the command line arguments for the SWID
  * Tags gateway by implementing the JCommander package.
  */
-@Parameters(parametersValidators = CreateArgumentValidator.class)
+@Parameters(parametersValidators = {CreateArgumentValidator.class, VerifyArgumentValidator.class})
 public class Commander {
 
     @Parameter(description = "This parameter catches all unrecognized arguments.")
