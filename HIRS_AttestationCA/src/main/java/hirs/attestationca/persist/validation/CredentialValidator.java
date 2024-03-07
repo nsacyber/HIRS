@@ -268,6 +268,11 @@ public class CredentialValidator extends SupplyChainCredentialValidator {
             }
         }
 
+        if (componentInfos.isEmpty()) {
+            message = baseErrorMessage + "a list of device components";
+            return new AppraisalStatus(FAIL, message);
+        }
+
         // parse out the provided delta and its specific chain.
         List<ComponentResult> origPcComponents = componentResultRepository
                 .findByCertificateSerialNumberAndBoardSerialNumber(
