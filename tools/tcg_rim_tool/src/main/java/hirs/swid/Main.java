@@ -1,7 +1,6 @@
 package hirs.swid;
 
 import hirs.swid.utils.Commander;
-import hirs.swid.utils.CredentialArgumentValidator;
 import hirs.swid.utils.TimestampArgumentValidator;
 import hirs.utils.rim.ReferenceManifestValidator;
 import com.beust.jcommander.JCommander;
@@ -59,7 +58,7 @@ public class Main {
                 validator.setRim(verifyFile);
                 validator.setRimEventLog(rimel);
                 validator.setTrustStoreFile(trustStore);
-                if (validator.validateSwidtagFile(certificateFile)) {
+                if (validator.validateRim(certificateFile)) {
                     System.out.println("Successfully verified " + verifyFile);
                 } else {
                     exitWithErrorCode("Failed to verify " + verifyFile);

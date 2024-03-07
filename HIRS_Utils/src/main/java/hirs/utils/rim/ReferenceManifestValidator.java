@@ -248,10 +248,11 @@ public class ReferenceManifestValidator {
     }
 
     /**
-     * This method validates a signed swidtag XML file.
-     * @param path to the swidtag XML
+     * This method validates the rim with a public key cert.
+     * @param signingCertPath to the public key certificate used to sign the rim
+     * @return true if both the file element and signature are valid, false otherwise
      */
-    public boolean validateSwidtagFile(String signingCertPath) {
+    public boolean validateRim(String signingCertPath) {
         Element fileElement = (Element) rim.getElementsByTagName("File").item(0);
 /*
         if (trustStoreFile != null && !trustStoreFile.isEmpty()) {
@@ -263,19 +264,19 @@ public class ReferenceManifestValidator {
 */
         X509Certificate signingCert = parseCertificatesFromPem(signingCertPath).get(0);
         if (signingCert == null) {
-            return failWithError("Unable to locate the signing cert in the provided " +
-                    "truststore " + trustStoreFile);
+            return failWithError("Unable to parse the signing cert from " + signingCertPath);
         }
         String subjectKeyIdentifier = "";
         try {
             subjectKeyIdentifier = getCertificateSubjectKeyIdentifier(signingCert);
         } catch (IOException e) {
-            return failWithError("Error while parsing certificate data: " + e.getMessage());
+            return failWithError("Error while parsing SKID: " + e.getMessage());
         }
-        return validateXmlSignature(signingCert.getPublicKey(),
-                                    subjectKeyIdentifier,
-                                    signingCert.getPublicKey().getEncoded())
-                                    && validateFile(fileElement);
+
+        boolean isSignatureValid = validateXmlSignature(signingCert.getPublicKey(),
+                                                        subjectKeyIdentifier,
+                                                        signingCert.getPublicKey().getEncoded());
+        return isSignatureValid && validateFile(fileElement);
     }
 
     /**
@@ -304,11 +305,10 @@ public class ReferenceManifestValidator {
         } else {
             filepath = file.getAttribute(SwidTagConstants.NAME);
         }
-        System.out.println("Support rim found at " + filepath);
         if (getHashValue(filepath, "SHA256").equals(
                 file.getAttribute(SwidTagConstants._SHA256_HASH.getPrefix() + ":" +
                         SwidTagConstants._SHA256_HASH.getLocalPart()))) {
-            System.out.println("Support RIM hash verified!" + System.lineSeparator());
+            log.info("Support RIM hash verified for " + filepath);
             return true;
         } else {
             return failWithError("Support RIM hash does not match Base RIM!");
@@ -435,11 +435,10 @@ public class ReferenceManifestValidator {
                                 if (isCertChainValid(embeddedCert)) {
                                     publicKey = ((X509Certificate) embeddedCert).getPublicKey();
                                     signingCert = embeddedCert;
-                                    System.out.println("Certificate chain validity: true");
+                                    log.info("Certificate chain valid.");
                                 }
                             } catch (Exception e) {
-                                System.out.println("Certificate chain invalid: "
-                                        + e.getMessage());
+                                log.error("Certificate chain invalid: " + e.getMessage());
                             }
                         }
                     }
@@ -449,15 +448,17 @@ public class ReferenceManifestValidator {
                         if (isPublicKeyTrusted(pk)) {
                             publicKey = pk;
                             try {
-                                System.out.println("Certificate chain validity: "
-                                        + isCertChainValid(signingCert));
+                                if (isCertChainValid(signingCert)) {
+                                    log.info("Certificate chain valid.");
+                                } else {
+                                    log.error("Certificate chain invalid.");
+                                }
                             } catch (Exception e) {
-                                System.out.println("Certificate chain invalid: "
-                                        + e.getMessage());
+                                log.error("Certificate chain invalid: " + e.getMessage());
                             }
                         }
                     } catch (KeyException e) {
-                        System.out.println("Unable to convert KeyValue data to PK.");
+                        log.error("Unable to convert KeyValue data to PK.");
                     }
                 }
                 if (publicKey != null) {
@@ -670,9 +671,9 @@ public class ReferenceManifestValidator {
             }
             bis.close();
         } catch (CertificateException e) {
-            System.out.println("Error in certificate factory: " + e.getMessage());
+            log.error("Error in certificate factory: " + e.getMessage());
         } catch (IOException e) {
-            System.out.println("Error reading from input stream: " + e.getMessage());
+            log.error("Error reading from input stream: " + e.getMessage());
         } finally {
             try {
                 if (fis != null) {
@@ -682,7 +683,7 @@ public class ReferenceManifestValidator {
                     bis.close();
                 }
             } catch (IOException e) {
-                System.out.println("Error closing input stream: " + e.getMessage());
+                log.warn("Error closing input stream: " + e.getMessage());
             }
         }
 
