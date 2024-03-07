@@ -12,12 +12,14 @@ import hirs.attestationca.persist.enums.AppraisalStatus;
 import lombok.extern.log4j.Log4j2;
 import org.bouncycastle.cert.X509AttributeCertificateHolder;
 
+import java.awt.*;
 import java.io.IOException;
 import java.security.KeyStore;
 import java.security.KeyStoreException;
 import java.security.cert.CertificateExpiredException;
 import java.security.cert.CertificateNotYetValidException;
 import java.security.cert.X509Certificate;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -264,10 +266,6 @@ public class CredentialValidator extends SupplyChainCredentialValidator {
                 log.error(message);
                 return new AppraisalStatus(FAIL, message);
             }
-        }
-        if (componentInfos.isEmpty()) {
-            message = baseErrorMessage + "a list of device components";
-            return new AppraisalStatus(FAIL, message);
         }
 
         // parse out the provided delta and its specific chain.
