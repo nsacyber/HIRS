@@ -64,7 +64,8 @@ public class PolicyPageController extends PageController<NoPageParams> {
         this.policyRepository = policyRepository;
 
         if (this.policyRepository.findByName("Default") == null) {
-            this.policyRepository.saveAndFlush(new PolicySettings("Default", "Settings are configured for no validation flags set."));
+            this.policyRepository.saveAndFlush(new PolicySettings("Default",
+                    "Settings are configured for no validation flags set."));
         }
     }
 
@@ -973,7 +974,8 @@ public class PolicyPageController extends PageController<NoPageParams> {
         PolicySettings defaultSettings = this.policyRepository.findByName("Default");
 
         if (defaultSettings == null) {
-            defaultSettings = new PolicySettings("Default", "Settings are configured for no validation flags set.");
+            defaultSettings = new PolicySettings("Default",
+                    "Settings are configured for no validation flags set.");
         }
         return defaultSettings;
     }
