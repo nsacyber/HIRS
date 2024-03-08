@@ -200,6 +200,7 @@ public class CertificateAttributeScvValidator extends SupplyChainCredentialValid
      * @param componentAttributeRepository  db access to component attribute match status
      * @param componentInfos list of device components
      * @param provisionSessionId UUID associated with the SCV Summary
+     * @param ignoreRevisionAttribute policy flag to ignore the revision attribute
      * @return either PASS or FAIL
      */
     public static AppraisalStatus validatePlatformCredentialAttributesV2p0(
@@ -208,7 +209,7 @@ public class CertificateAttributeScvValidator extends SupplyChainCredentialValid
             final ComponentResultRepository componentResultRepository,
             final ComponentAttributeRepository componentAttributeRepository,
             final List<ComponentInfo> componentInfos,
-            final UUID provisionSessionId) {
+            final UUID provisionSessionId, final boolean ignoreRevisionAttribute) {
         boolean passesValidation = true;
         StringBuilder resultMessage = new StringBuilder();
 
@@ -366,9 +367,12 @@ public class CertificateAttributeScvValidator extends SupplyChainCredentialValid
             }
 
             for (ComponentAttributeResult componentAttributeResult : attributeResults) {
-                componentAttributeResult.setProvisionSessionId(provisionSessionId);
-                componentAttributeRepository.save(componentAttributeResult);
-                fieldValidation &= componentAttributeResult.checkMatchedStatus();
+                if (componentAttributeResult.getAttribute().equalsIgnoreCase(ComponentResult.ATTRIBUTE_REVISION)
+                        && !ignoreRevisionAttribute) {
+                    componentAttributeResult.setProvisionSessionId(provisionSessionId);
+                    componentAttributeRepository.save(componentAttributeResult);
+                    fieldValidation &= componentAttributeResult.checkMatchedStatus();
+                }
             }
             numOfAttributes = attributeResults.size();
         }
@@ -418,8 +422,13 @@ public class CertificateAttributeScvValidator extends SupplyChainCredentialValid
         }
 
         if (!componentInfo.getComponentRevision().equals(componentResult.getRevisionNumber())) {
-            attributeResults.add(new ComponentAttributeResult(componentResult.getId(),
-                    componentResult.getRevisionNumber(), componentInfo.getComponentRevision()));
+            ComponentAttributeResult revisionAttribute = new ComponentAttributeResult(
+                    componentResult.getId(), componentResult.getRevisionNumber(),
+                    componentInfo.getComponentRevision());
+            // this could be a boolean, but then it is too specific to revision, this leaves it open
+            // for future changes
+            revisionAttribute.setAttribute(ComponentResult.ATTRIBUTE_REVISION);
+            attributeResults.add(revisionAttribute);
         }
 
         return attributeResults;

@@ -59,19 +59,19 @@
                             </my:editor>
                         </li>
                         <form:form method="POST" modelAttribute="initialData" action="policy/update-revision-ignore">
-                        <ul>
-                            <li>Ignore component revision attribute: ${initialData.enableIgnoreRevisionAttribute ? 'Enabled' : 'Disabled'}
-                                 <my:editor id="ignoreRevisionPolicyEditor" label="Edit Settings">
-                                      <div class="radio">
+                            <ul>
+                                <li>Ignore Component Revision Attribute: ${initialData.enableIgnoreRevisionAttribute ? 'Enabled' : 'Disabled'}
+                                    <my:editor id="ignoreRevisionPolicyEditor" label="Edit Settings">
+                                        <div class="radio">
                                           <label><input id="revisionTop" type="radio" name="ignoreRevisionAttribute" ${initialData.enableIgnoreRevisionAttribute ? 'checked' : ''} value="checked"/> Platform Credential Attributes will be validated</label>
-                                      </div>
-                                      <div class="radio">
+                                        </div>
+                                        <div class="radio">
                                           <label><input id="revisionBot" type="radio" name="ignoreRevisionAttribute" ${initialData.enableIgnoreRevisionAttribute ? '' : 'checked'}  value="unchecked"/> Platform Credential Attributes will not be validated</label>
-                                      </div>
-                                 </my:editor>
-                            </li>
-                        </ul>
-                </form:form>
+                                        </div>
+                                    </my:editor>
+                                </li>
+                            </ul>
+                        </form:form>
                     </ul>
                 </form:form>
             </div>

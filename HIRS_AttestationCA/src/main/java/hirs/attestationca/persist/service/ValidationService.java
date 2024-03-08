@@ -109,7 +109,7 @@ public class ValidationService {
             final ComponentResultRepository componentResultRepository,
             final ComponentAttributeRepository componentAttributeRepository,
             final List<ComponentInfo> componentInfos,
-            final UUID provisionSessionId) {
+            final UUID provisionSessionId, final boolean ignoreRevisionAttribute) {
         final SupplyChainValidation.ValidationType validationType
                 = SupplyChainValidation.ValidationType.PLATFORM_CREDENTIAL_ATTRIBUTES;
 
@@ -123,7 +123,7 @@ public class ValidationService {
         AppraisalStatus result = CredentialValidator.
                 validatePlatformCredentialAttributes(pc, deviceInfoReport, ec,
                         componentResultRepository, componentAttributeRepository,
-                        componentInfos, provisionSessionId);
+                        componentInfos, provisionSessionId, ignoreRevisionAttribute);
         switch (result.getAppStatus()) {
             case PASS:
                 return buildValidationRecord(validationType, AppraisalStatus.Status.PASS,
@@ -148,7 +148,8 @@ public class ValidationService {
             final DeviceInfoReport deviceInfoReport,
             final PlatformCredential base,
             final Map<PlatformCredential, SupplyChainValidation> deltaMapping,
-            final CertificateRepository certificateRepository) {
+            final CertificateRepository certificateRepository,
+            final boolean ignoreRevisionAttribute) {
         final SupplyChainValidation.ValidationType validationType
                 = SupplyChainValidation.ValidationType.PLATFORM_CREDENTIAL_ATTRIBUTES;
 

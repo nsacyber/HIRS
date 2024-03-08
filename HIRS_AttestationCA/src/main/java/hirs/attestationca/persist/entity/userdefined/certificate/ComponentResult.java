@@ -26,6 +26,8 @@ import java.util.Objects;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class ComponentResult extends ArchivableEntity {
 
+    // String value for the revision title
+    public static final String ATTRIBUTE_REVISION = "Revision";
     // embedded component info
     @Setter
     private String manufacturer;
