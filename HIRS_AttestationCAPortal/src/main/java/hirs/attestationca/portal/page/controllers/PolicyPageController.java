@@ -194,6 +194,57 @@ public class PolicyPageController extends PageController<NoPageParams> {
     }
 
     /**
+     * Updates the ignore component revision attribute setting and
+     * redirects back to the original page.
+     *
+     * @param ppModel The data posted by the form mapped into an object.
+     * @param attr RedirectAttributes used to forward data back to the original
+     * page.
+     * @return View containing the url and parameters
+     * @throws URISyntaxException if malformed URI
+     */
+    @RequestMapping(value = "update-revision-ignore", method = RequestMethod.POST)
+    public RedirectView updateIgnoreRevisionAttribute(@ModelAttribute final PolicyPageModel ppModel,
+                                        final RedirectAttributes attr) throws URISyntaxException {
+        // set the data received to be populated back into the form
+        Map<String, Object> model = new HashMap<>();
+        PageMessages messages = new PageMessages();
+        String successMessage;
+        boolean ignoreRevisionAttributeOptionEnabled = ppModel.getIgnoreRevisionAttribute()
+                .equalsIgnoreCase(ENABLED_CHECKED_PARAMETER_VALUE);
+
+        try {
+            PolicySettings policy = getDefaultPolicyAndSetInModel(ppModel, model);
+
+            //If Ignore Revision is enabled without PC Attributes, disallow change
+            if (ignoreRevisionAttributeOptionEnabled && !policy.isPcAttributeValidationEnabled()) {
+                handleUserError(model, messages,
+                        "Ignore Component Revision Attribute can not be "
+                                + "enabled without PC Attribute validation policy enabled.");
+                return redirectToSelf(new NoPageParams(), model, attr);
+            }
+
+            // set the policy option and create success message
+            if (ignoreRevisionAttributeOptionEnabled) {
+                policy.setIgnoreRevisionEnabled(true);
+                successMessage = "Ignore Component Revision enabled";
+            } else {
+                policy.setIgnoreRevisionEnabled(false);
+                successMessage = "Ignore Component Revision disabled";
+            }
+
+            savePolicyAndApplySuccessMessage(ppModel, model, messages, successMessage, policy);
+        } catch (PolicyManagerException pmEx) {
+            handlePolicyManagerUpdateError(model, messages, pmEx,
+                    "Error changing ACA Component Revision Attribute policy",
+                    "Error updating policy. \n" + pmEx.getMessage());
+        }
+
+        // return the redirect
+        return redirectToSelf(new NoPageParams(), model, attr);
+    }
+
+    /**
      * Updates the Attestation Certificate generation policy setting and redirects
      * back to the original page.
      *
