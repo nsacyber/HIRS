@@ -25,6 +25,9 @@ public class ComponentAttributeResult  extends ArchivableEntity {
     private UUID componentId;
     @Setter
     private UUID provisionSessionId;
+    // this is used to identify Revision for the ignore policy
+    @Setter
+    private String attribute;
     private String expectedValue;
     private String actualValue;
 

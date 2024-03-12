@@ -227,7 +227,8 @@ public class SupplyChainValidationService {
                             baseCredential, deltaMapping, certificateRepository,
                             componentResultRepository,
                             componentAttributeRepository,
-                            componentInfos, provisionSessionId);
+                            componentInfos, provisionSessionId,
+                            getPolicySettings().isIgnoreRevisionEnabled());
                     if (attributeScv.getValidationResult() == AppraisalStatus.Status.FAIL) {
                         attrErrorMessage = String.format("%s%s%n", attrErrorMessage,
                                 attributeScv.getMessage());
@@ -240,7 +241,8 @@ public class SupplyChainValidationService {
                     platformScv = ValidationService.evaluatePCAttributesStatus(
                             baseCredential, device.getDeviceInfo(), ec,
                             certificateRepository, componentResultRepository,
-                            componentAttributeRepository, componentInfos, provisionSessionId);
+                            componentAttributeRepository, componentInfos, provisionSessionId,
+                            getPolicySettings().isIgnoreRevisionEnabled());
                     validations.add(new SupplyChainValidation(
                             SupplyChainValidation.ValidationType.PLATFORM_CREDENTIAL,
                             platformScv.getValidationResult(), aes, platformScv.getMessage()));
@@ -390,7 +392,8 @@ public class SupplyChainValidationService {
         PolicySettings defaultSettings = this.policyRepository.findByName("Default");
 
         if (defaultSettings == null) {
-            defaultSettings = new PolicySettings("Default", "Settings are configured for no validation flags set.");
+            defaultSettings = new PolicySettings("Default",
+                    "Settings are configured for no validation flags set.");
         }
         return defaultSettings;
     }

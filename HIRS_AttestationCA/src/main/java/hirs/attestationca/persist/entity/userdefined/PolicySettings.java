@@ -42,6 +42,9 @@ public class PolicySettings extends UserDefinedEntity {
     private boolean pcAttributeValidationEnabled = false;
 
     @Column(nullable = false, columnDefinition = "boolean default false")
+    private boolean ignoreRevisionEnabled = false;
+
+    @Column(nullable = false, columnDefinition = "boolean default false")
     private boolean firmwareValidationEnabled = false;
 
     @Column(nullable = false, columnDefinition = "boolean default false")

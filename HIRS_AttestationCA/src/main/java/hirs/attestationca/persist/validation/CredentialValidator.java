@@ -12,14 +12,12 @@ import hirs.attestationca.persist.enums.AppraisalStatus;
 import lombok.extern.log4j.Log4j2;
 import org.bouncycastle.cert.X509AttributeCertificateHolder;
 
-import java.awt.*;
 import java.io.IOException;
 import java.security.KeyStore;
 import java.security.KeyStoreException;
 import java.security.cert.CertificateExpiredException;
 import java.security.cert.CertificateNotYetValidException;
 import java.security.cert.X509Certificate;
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -173,7 +171,8 @@ public class CredentialValidator extends SupplyChainCredentialValidator {
      * @param componentResultRepository db access to component result of mismatching
      * @param componentAttributeRepository  db access to component attribute match status
      * @param componentInfos list of device components
-     * @param provisionSessionId the session id to share
+     * @param provisionSessionId UUID associated with this run of the provision
+     * @param ignoreRevisionAttribute policy flag to ignore the revision attribute
      * @return The result of the validation.
      */
     public static AppraisalStatus validatePlatformCredentialAttributes(
@@ -183,7 +182,7 @@ public class CredentialValidator extends SupplyChainCredentialValidator {
             final ComponentResultRepository componentResultRepository,
             final ComponentAttributeRepository componentAttributeRepository,
             final List<ComponentInfo> componentInfos,
-            final UUID provisionSessionId) {
+            final UUID provisionSessionId, final boolean ignoreRevisionAttribute) {
         final String baseErrorMessage = "Can't validate platform credential attributes without ";
         String message;
         if (platformCredential == null) {
@@ -215,7 +214,8 @@ public class CredentialValidator extends SupplyChainCredentialValidator {
         if (PlatformCredential.CERTIFICATE_TYPE_2_0.equals(credentialType)) {
             return CertificateAttributeScvValidator.validatePlatformCredentialAttributesV2p0(
                     platformCredential, deviceInfoReport, componentResultRepository,
-                    componentAttributeRepository, componentInfos, provisionSessionId);
+                    componentAttributeRepository, componentInfos, provisionSessionId,
+                    ignoreRevisionAttribute);
         }
         return CertificateAttributeScvValidator.validatePlatformCredentialAttributesV1p2(
                 platformCredential, deviceInfoReport);
