@@ -33,6 +33,7 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
@@ -1015,10 +1016,10 @@ public class CertificateAttributeScvValidator extends SupplyChainCredentialValid
                 .findByBoardSerialNumberAndDelta(deltaCertificates.get(0).getPlatformSerial(), false);
         dbBaseComponents.stream().forEach((componentResult) -> {
             // ignore values that are not unique
-            if (!nonSerialValues.contains(componentResult.getSerialNumber())) {
-                componentSerialMap.put(componentResult.getSerialNumber(), componentResult);
-            } else {
+            if (nonSerialValues.contains(componentResult.getSerialNumber())) {
                 componentNonUniqueSerialMap.put(componentResult.hashCommonElements(), componentResult);
+            } else {
+                componentSerialMap.put(componentResult.getSerialNumber(), componentResult);
             }
         });
         List<ComponentResult> deltaComponents;
@@ -1097,9 +1098,33 @@ public class CertificateAttributeScvValidator extends SupplyChainCredentialValid
                                 }
                             } else {
                                 // this is the modified case.
+                                // generate hash for delta that uses manufacturer, model, component class
+                                // serial number because this is a special case that should only apply
+                                // to the system bios
+                                List<ComponentResult> cloneDbComponents = dbBaseComponents.stream().toList();
+                                int deltaHash = Objects.hash(deltaComponentResult.getManufacturer(),
+                                        deltaComponentResult.getModel(), componentSerialNumber,
+                                        deltaComponentResult.getComponentClassValue());
+                                int dbComponentHash;
+                                for (ComponentResult result : cloneDbComponents) {
+                                    // we have to manually search for this
+                                    dbComponentHash = Objects.hash(result.getManufacturer(),
+                                            result.getModel(), result.getSerialNumber(),
+                                            result.getComponentClassValue());
+                                    if (deltaHash == dbComponentHash) {
+                                        dbBaseComponents.remove(result);
+                                        // serial number is not set because that couldn't have been modified
+                                        // and found this way
+                                        result.setManufacturer(deltaComponentResult.getManufacturer());
+                                        result.setModel(deltaComponentResult.getModel());
+                                        result.setRevisionNumber(deltaComponentResult.getRevisionNumber());
+                                        componentSerialMap.put(componentSerialNumber, result);
+                                        dbBaseComponents.add(result);
+                                    }
+                                }
                             }
                         } else {
-                            // if the is null and the status is add
+                            // if the is null and the status is added
                             if (deltaComponentResult.getAttributeStatus() == AttributeStatus.ADDED) {
                                 dbBaseComponents.add(deltaComponentResult);
                                 // add to the hash map as well in case a later delta removes/modifies it
