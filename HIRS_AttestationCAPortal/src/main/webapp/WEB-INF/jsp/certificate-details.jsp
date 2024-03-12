@@ -26,10 +26,17 @@
                 </a>
             </c:when>
             <c:when test="${param.type=='platform'}">
-                Platform Certificate
-                <a href="${portal}/certificate-request/platform-credentials/download?id=${param.id}">
-                    <img src="${icons}/ic_file_download_black_24dp.png" title="Download Certificate">
-                </a>
+                <c:choose>
+                    <c:when test="${param.sessionId==null}">
+                        Platform Certificate
+                        <a href="${portal}/certificate-request/platform-credentials/download?id=${param.id}">
+                            <img src="${icons}/ic_file_download_black_24dp.png" title="Download Certificate">
+                        </a>
+                    </c:when>
+                    <c:otherwise>
+                        Platform Component Comparison
+                    </c:otherwise>
+                </c:choose>
             </c:when>
             <c:when test="${param.type=='issued'}">
                 Issued Attestation Certificates

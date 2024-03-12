@@ -17,6 +17,7 @@ public class CertificateDetailsPageParams implements PageParams {
 
     private String id;
     private String type;
+    private String sessionId;
 
     /**
      * Constructor to set ID Certificate Details URL parameters.
@@ -33,6 +34,7 @@ public class CertificateDetailsPageParams implements PageParams {
     public CertificateDetailsPageParams() {
         id = null;
         type = null;
+        sessionId = null;
     }
 
     /**

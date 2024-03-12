@@ -15,6 +15,7 @@ import lombok.Setter;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Objects;
+import java.util.UUID;
 
 /**
  * A component result is a DO to hold the status of a component validation status.  This will
@@ -45,7 +46,8 @@ public class ComponentResult extends ArchivableEntity {
     @Setter
     private boolean failedValidation;
     private String certificateType;
-
+    @Setter
+    private UUID deviceInfo;
     private String issuerDN;
     private String certificateSerialNumber;
     private String boardSerialNumber;

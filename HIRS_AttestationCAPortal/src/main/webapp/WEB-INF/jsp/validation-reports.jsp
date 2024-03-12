@@ -185,6 +185,7 @@
                     var curValidation = full.validations[i];
                     var curResult = curValidation.validationResult;
                     var curMessage = curValidation.message;
+                    var session = full.provisionSessionId;
 
                     if (curValidation.validationType === validation_type) {
                         var unknownStatus = '<img class="icon" src="${unknownIcon}" title="${unknownText}"/>';
