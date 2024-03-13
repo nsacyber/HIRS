@@ -41,6 +41,10 @@ public enum Page {
      */
     CERTIFICATE_DETAILS("Certificate Details", "", null, true, false, null, null),
     /**
+     * Non-menu page to display certificate.  Reachable from all certificate pages.
+     */
+    COMPONENT_COMPARISON("Component Comparison", "", null, true, false, null, null),
+    /**
      * Page to display registered devices.
      */
     DEVICES("Devices", "ic_devices", "first"),

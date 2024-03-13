@@ -34,6 +34,8 @@
                         </a>
                     </c:when>
                     <c:otherwise>
+                        <c:redirect url = "${portal}/validation-reports"/>
+
                         Platform Component Comparison
                     </c:otherwise>
                 </c:choose>
