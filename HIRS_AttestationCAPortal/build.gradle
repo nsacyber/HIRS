@@ -119,7 +119,7 @@ ospackage {
     }
     // copy setup scripts to /opt/hirs/aca
     into ('/opt/hirs/aca/scripts/') {
-         from '../package/scripts/'
+         from '../package/linux/'
     }
     // copy the war file into /opt/hirs/aca
     into ('/opt/hirs/aca/') {
@@ -147,7 +147,7 @@ ospackage {
         postTrans 'firewall-cmd --add-port=8443/tcp --permanent'
         postTrans 'firewall-cmd --reload'
         postTrans 'bash /opt/hirs/aca/scripts/aca/aca_setup.sh -u'
-        postTrans '/opt/hirs/aca/scripts/aca/aca_bootRun.sh -w &'
+        postTrans 'bash /opt/hirs/aca/scripts/aca/aca_bootRun.sh -w &'
         // add chrontab to run ACA at boot
         postTrans 'echo "@reboot root /opt/hirs/aca/scripts/aca/aca_bootRun.sh -w" >> /etc/crontab'
         postTrans 'chmod +x /opt/hirs/aca/scripts/aca/*'

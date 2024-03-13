@@ -10,6 +10,8 @@ DB_ADMIN_PWD=$1
 source $SCRIPT_DIR/mysql_util.sh
 source /etc/os-release 
 
+check_systemd
+
 # Check for sudo or root user, not actually needed but a good idea 
 if [ "$EUID" -ne 0 ]
      then echo "This script requires root.  Please run as root" 
@@ -53,7 +55,5 @@ grep -v "hirs" $DB_CLIENT_CONF > tmpfile && mv tmpfile $DB_CLIENT_CONF
 
 echo "restarting mariadb"
 
-mysql -u root -e "SHUTDOWN"
-sleep 2
-check_for_container
-start_mysqlsd
+mysqld_reboot
+

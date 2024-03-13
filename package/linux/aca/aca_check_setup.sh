@@ -5,6 +5,7 @@
 ############################################################################################
 
 SCRIPT_DIR=$( dirname -- "$( readlink -f -- "$0"; )"; )
+
 LOG_FILE=/dev/null
 CERT_PATH="/etc/hirs/certificates/HIRS/"
 RSA_PATH=rsa_3k_sha384_certs
@@ -100,6 +101,8 @@ echo "Checking HIRS ACA Setup on this device..."
       echo "HIRS ACA was NOT installed via an OS package on this device" 
   fi
 
+check_systemd -p
+
 # Check install setup pki files
   if [ ! -d $CERT_PATH ]; then
       check_db_cleared
@@ -179,7 +182,7 @@ check_cert () {
      ALL_CERTS_PASSED=false
   fi
   if [ ! -z "${ARG_VERBOSE}" ]; then
-    echo "     "$RESULT
+    echo "     "$RESULTACA_PROP_FILE
   fi
 }
 
@@ -241,7 +244,7 @@ check_db () {
   if [ "$RESULT" == "YES" ]; then
       echo "   Mysql Server side TLS is enabled:"
     else
-      echo "   Mysql Sever side TLS is NOT enabled:"
+      echo "   Mysql Server side TLS is NOT enabled:"
       ALL_CHECKS_PASSED=false
   fi
   
@@ -267,7 +270,6 @@ check_db () {
     echo "MYSQL Log:"
     mysql -u root --password=$mysql_admin_password -e "SHOW GLOBAL VARIABLES LIKE 'log_error'" 
   fi
-  
 }
 
 # Check selinux status and files that require specific contexts
@@ -276,32 +278,36 @@ check_selinux () {
      echo "Skipping selinux check on ubuntu"
      return
    fi
-   SELINUXSTATUS=$(getenforce)
-   DB_SRV_CONTEXT=$(ls -Z $DB_SRV_CONF)
-   DB_CLIENT_CONTEXT=$(ls -Z $DB_CLIENT_CONF)
-   echo "Checking device selinux status..."
-   if [[ "$SELINUXSTATUS" == *"Enforcing"* ]]; then
-     echo "   Selinux is in Enforcing mode."
-     if [[ "$DB_SRV_CONTEXT" == *"mysqld_etc_t"* &&  "$DB_CLIENT_CONTEXT" == *"mysqld_etc_t"* ]]; then
+   command -v setenforce >> /dev/null
+   if [ $? -eq 0 ]; then
+     SELINUXSTATUS=$(getenforce)
+     DB_SRV_CONTEXT=$(ls -Z $DB_SRV_CONF)
+     DB_CLIENT_CONTEXT=$(ls -Z $DB_CLIENT_CONF)
+     echo "Checking device selinux status..."
+     if [[ "$SELINUXSTATUS" == *"Enforcing"* ]]; then
+       echo "   Selinux is in Enforcing mode."
+       if [[ "$DB_SRV_CONTEXT" == *"mysqld_etc_t"* &&  "$DB_CLIENT_CONTEXT" == *"mysqld_etc_t"* ]]; then
          echo "   Selinux status is $SELINUXSTATUS and both $DB_SRV_CONF and $DB_CLIENT_CONF contexts are correct"
-     elif [[ "$DB_CLIENT_CONTEXT" == *"mysqld_etc_t"* ]]; then
-        echo "   Selinux status is $SELINUXSTATUS and $DB_CLIENT_CONF context is incorrect: $DB_CLIENT_CONTEXT"
-        ALL_CHECKS_PASSED=false
+       elif [[ "$DB_CLIENT_CONTEXT" == *"mysqld_etc_t"* ]]; then
+         echo "   Selinux status is $SELINUXSTATUS and $DB_CLIENT_CONF context is incorrect: $DB_CLIENT_CONTEXT"
+         ALL_CHECKS_PASSED=false
      else
         echo "   Selinux status is $SELINUXSTATUS and $DB_SRV_CONF context is incorrect: $DB_SRV_CONTEXT"
         ALL_CHECKS_PASSED=false
      fi
-     else
+   else
      echo "   Selinux is in NOT in Enforcing mode."
+   fi
    fi
 }
 
 check_fips () {
    echo "Checking FIPS mode on this device..."
-   echo "   "$(sysctl -a | grep crypto.fips_enabled)
+   fips=$(sysctl -a  2>&1 | grep crypto.fips_enabled)
+   echo "   "$fips
 }
 # Run Checks
-check_for_container -p
+
 check_pwds
 check_pki
 check_mysql_setup

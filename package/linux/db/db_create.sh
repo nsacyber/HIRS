@@ -34,8 +34,8 @@ SSL_DB_CLIENT_KEY="/etc/hirs/certificates/HIRS/rsa_3k_sha384_certs/HIRS_db_clien
 mkdir -p /etc/hirs/aca/
 mkdir -p /var/log/hirs/
 
+source $ACA_PROP_FILE
 source $SCRIPT_DIR/mysql_util.sh
-source $ACA_PROP_FILE 
 source /etc/os-release 
 
 # Setup distro specifc paths and variables
@@ -60,7 +60,6 @@ check_mysql_root_pwd () {
   if [ -z "$HIRS_MYSQL_ROOT_PWD" ]; then
      # Check if property file exists and look for properties
      if [ -f $ACA_PROP_FILE ]; then
-        echo "Found existing aca.properties, using existing variables..."
         source $ACA_PROP_FILE
         if [ ! -z $hirs_pki_password ]; then PKI_PASS=$hirs_pki_password; fi
         if [ ! -z $mysql_admin_password ]; then HIRS_MYSQL_ROOT_PWD=$mysql_admin_password; fi
@@ -91,6 +90,7 @@ check_mysql_root_pwd () {
     DB_ADMIN_PWD=$HIRS_MYSQL_ROOT_PWD
     echo "Using system variable supplied password" | tee -a "$LOG_FILE"
   fi
+  
   # Make sure root password is correct
   $(mysql -u root -p$DB_ADMIN_PWD -e 'quit'  &> /dev/null);
   if [ $? -eq 0 ]; then
@@ -115,11 +115,14 @@ set_mysql_server_tls () {
     chown mysql:mysql $SSL_DB_SRV_CHAIN $SSL_DB_SRV_CERT $SSL_DB_SRV_KEY
     # Make selinux contexts for config files, if selinux is enabled
     if [[ $ID = "rhel" ]] || [[ $ID = "rocky" ]] ||[[ $ID = "fedora" ]]; then 
-        selinuxenabled
+      command -v selinuxenabled  > /dev/null
         if [ $? -eq 0 ]; then
-           semanage fcontext -a -t mysqld_etc_t $DB_SRV_CONF  > /dev/null #adds the context type to file
-           restorecon -v -F $DB_SRV_CONF      > /dev/null                 # changes the file's context type
-       fi
+        selinuxenabled
+          if [ $? -eq 0 ]; then
+            #semanage fcontext -a -t mysqld_etc_t $DB_SRV_CONF  > /dev/null #adds the context type to file
+            restorecon -v -F $DB_SRV_CONF      > /dev/null                 # changes the file's context type
+          fi
+        fi
     fi
   else
        echo "mysql.cnf contians existing entry for ssl, skipping..." | tee -a "$LOG_FILE"
@@ -136,12 +139,15 @@ if [[ $(cat "$DB_CLIENT_CONF" | grep -c "HIRS") < 1 ]]; then
   chown mysql:mysql $SSL_DB_CLIENT_CHAIN $SSL_DB_CLIENT_CERT $SSL_DB_CLIENT_KEY 
   # Make selinux contexts for config files, if selinux is enabled
    if [[ $ID = "rhel" ]] || [[ $ID = "rocky" ]] ||[[ $ID = "fedora" ]]; then 
-      selinuxenabled
+      command -v selinuxenabled  > /dev/null
       if [ $? -eq 0 ]; then
-          semanage fcontext -a -t mysqld_etc_t $DB_CLIENT_CONFf > /dev/null  #adds the context type to file
+      selinuxenabled
+        if [ $? -eq 0 ]; then
+         #semanage fcontext -a -t mysqld_etc_t $DB_CLIENT_CONF > /dev/null  #adds the context type to file
          restorecon -F $DB_CLIENT_CONF                         > /dev/null #changes the file's context type
+        fi
       fi
-  fi                           
+  fi 
 fi
 }
 
@@ -177,7 +183,7 @@ set_hirs_db_pwd () {
 # Create a hirs_db with client side TLS enabled
 create_hirs_db_with_tls () {
   # Check if hirs_db not created and create it if it wasn't
-  mysqlshow --user=root --password="$DB_ADMIN_PWD" | grep "hirs_db" > /dev/null 2>&1
+  mysqlshow --user=root --password="$DB_ADMIN_PWD" | grep "hirs_db" >> $LOG_FILE 2>&1
   if [ $? -eq 0 ]; then
      echo "hirs_db exists, skipping hirs_db create"
   else
@@ -219,16 +225,16 @@ fi
 
 }
 # HIRS ACA Mysqld processing ...
+check_systemd -p
 check_mariadb_install
-check_for_container -p
-set_mysql_server_tls
-set_mysql_client_tls
+
 start_mysqlsd
 check_mysql
 check_mysql_root_pwd
 clear_hirs_user
-
 set_hirs_db_pwd
+set_mysql_server_tls
+set_mysql_client_tls
 create_hirs_db_with_tls
 create_hibernate_url "RSA" "hirs_db"
 mysqld_reboot

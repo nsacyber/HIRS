@@ -87,7 +87,7 @@ if [ $ALG = "RSA" ]; then
    ALIAS="hirs_aca_tls_ecc_512_sha384"
 fi
 
-check_for_container
+check_systemd
 start_mysqlsd
 
 if [ ! -d "$CERT_PATH" ]; then

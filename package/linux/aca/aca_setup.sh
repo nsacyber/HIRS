@@ -31,8 +31,6 @@ help () {
 }
 
 # Process parameters Argument handling 
-POSITIONAL_ARGS=()
-ORIGINAL_ARGS=("$@")grep -i "hirs_db_password" /etc/hirs/aca/aca.properties
 while [[ $# -gt 0 ]]; do
   case $1 in
     -sd|--skip-db)
@@ -64,8 +62,6 @@ while [[ $# -gt 0 ]]; do
       ;;
   esac
 done
-
-set -- "${POSITIONAL_ARGS[@]}" # restore positional parameters
 
 # Check for existing installation folders and exist if found
 if [ -z $ARG_UNATTEND ]; then
