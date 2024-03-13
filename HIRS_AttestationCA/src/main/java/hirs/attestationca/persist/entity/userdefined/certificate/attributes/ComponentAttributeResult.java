@@ -6,6 +6,7 @@ import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.apache.commons.lang3.StringUtils;
 
 import java.util.UUID;
 
@@ -67,5 +68,17 @@ public class ComponentAttributeResult  extends ArchivableEntity {
      */
     public boolean checkMatchedStatus() {
         return this.actualValue.equals(this.expectedValue);
+    }
+
+    /**
+     * For the state of the object, this shouldn't be negative.
+     * @return the string value of the attribute name
+     */
+    public String getAttribute() {
+        if (attribute == null) {
+            attribute = "";
+        }
+
+        return attribute;
     }
 }

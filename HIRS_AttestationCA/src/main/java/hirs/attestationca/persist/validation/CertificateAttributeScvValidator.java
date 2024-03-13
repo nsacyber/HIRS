@@ -317,7 +317,7 @@ public class CertificateAttributeScvValidator extends SupplyChainCredentialValid
             final List<ComponentInfo> componentInfos,
             final ComponentResultRepository componentResultRepository,
             final ComponentAttributeRepository componentAttributeRepository,
-            final UUID provisionSessionId) {
+            final UUID provisionSessionId, final boolean ignoreRevisionAttribute) {
         boolean fieldValidation = true;
         StringBuilder resultMessage = new StringBuilder();
         List<PlatformCredential> deltaCertificates = new LinkedList<>(deltaMapping.keySet());
@@ -374,9 +374,13 @@ public class CertificateAttributeScvValidator extends SupplyChainCredentialValid
                     componentInfos, remainingComponentResults);
 
             for (ComponentAttributeResult componentAttributeResult : attributeResults) {
-                componentAttributeResult.setProvisionSessionId(provisionSessionId);
-                componentAttributeRepository.save(componentAttributeResult);
-                fieldValidation &= componentAttributeResult.checkMatchedStatus();
+                if (componentAttributeResult.getAttribute()
+                        .equalsIgnoreCase(ComponentResult.ATTRIBUTE_REVISION)
+                        && !ignoreRevisionAttribute) {
+                    componentAttributeResult.setProvisionSessionId(provisionSessionId);
+                    componentAttributeRepository.save(componentAttributeResult);
+                    fieldValidation &= componentAttributeResult.checkMatchedStatus();
+                }
             }
             numOfAttributes = attributeResults.size();
         }
@@ -925,18 +929,27 @@ public class CertificateAttributeScvValidator extends SupplyChainCredentialValid
         // there are instances of components with the same class (ie hard disks, memory)
         List<ComponentAttributeResult> attributeResults = new ArrayList<>();
         if (!componentInfo.getComponentManufacturer().equals(componentResult.getManufacturer())) {
-            attributeResults.add(new ComponentAttributeResult(componentResult.getId(),
-                    componentResult.getManufacturer(), componentInfo.getComponentManufacturer()));
+            ComponentAttributeResult manufacturerAttribute = new ComponentAttributeResult(
+                    componentResult.getId(), componentResult.getManufacturer(),
+                    componentInfo.getComponentManufacturer());
+            manufacturerAttribute.setAttribute(ComponentResult.ATTRIBUTE_MANUFACTURER);
+            attributeResults.add(manufacturerAttribute);
         }
 
         if (!componentInfo.getComponentModel().equals(componentResult.getModel())) {
-            attributeResults.add(new ComponentAttributeResult(componentResult.getId(),
-                    componentResult.getModel(), componentInfo.getComponentModel()));
+            ComponentAttributeResult modelAttribute = new ComponentAttributeResult(
+                    componentResult.getId(), componentResult.getModel(),
+                    componentInfo.getComponentModel());
+            modelAttribute.setAttribute(ComponentResult.ATTRIBUTE_MODEL);
+            attributeResults.add(modelAttribute);
         }
 
         if (!componentInfo.getComponentSerial().equals(componentResult.getSerialNumber())) {
-            attributeResults.add(new ComponentAttributeResult(componentResult.getId(),
-                    componentResult.getSerialNumber(), componentInfo.getComponentSerial()));
+            ComponentAttributeResult serialAttribute = new ComponentAttributeResult(
+                    componentResult.getId(), componentResult.getSerialNumber(),
+                    componentInfo.getComponentSerial());
+            serialAttribute.setAttribute(ComponentResult.ATTRIBUTE_SERIAL);
+            attributeResults.add(serialAttribute);
         }
 
         if (!componentInfo.getComponentRevision().equals(componentResult.getRevisionNumber())) {

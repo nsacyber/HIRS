@@ -160,7 +160,7 @@ public class ValidationService {
                 validateDeltaPlatformCredentialAttributes(deviceInfoReport,
                         base, deltaMapping, componentInfos,
                         componentResultRepository, componentAttributeRepository,
-                        provisionSessionId);
+                        provisionSessionId, ignoreRevisionAttribute);
         switch (result.getAppStatus()) {
             case PASS:
                 return buildValidationRecord(validationType, AppraisalStatus.Status.PASS,

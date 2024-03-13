@@ -242,7 +242,7 @@ public class CredentialValidator extends SupplyChainCredentialValidator {
             final List<ComponentInfo> componentInfos,
             final ComponentResultRepository componentResultRepository,
             final ComponentAttributeRepository componentAttributeRepository,
-            final UUID provisionSessionId) {
+            final UUID provisionSessionId, final boolean ignoreRevisionAttribute) {
         final String baseErrorMessage = "Can't validate platform credential attributes without ";
         String message;
 
@@ -282,6 +282,6 @@ public class CredentialValidator extends SupplyChainCredentialValidator {
         return CertificateAttributeScvValidator.validateDeltaAttributesChainV2p0(
                 deviceInfoReport, deltaMapping, origPcComponents, componentInfos,
                 componentResultRepository,
-                componentAttributeRepository, provisionSessionId);
+                componentAttributeRepository, provisionSessionId, ignoreRevisionAttribute);
     }
 }

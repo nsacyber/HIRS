@@ -26,6 +26,12 @@ import java.util.Objects;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class ComponentResult extends ArchivableEntity {
 
+    // String value for the Manufacturer title
+    public static final String ATTRIBUTE_MANUFACTURER = "Manufacturer";
+    // String value for the Model title
+    public static final String ATTRIBUTE_MODEL = "Model";
+    // String value for the Serial title
+    public static final String ATTRIBUTE_SERIAL = "Serial";
     // String value for the revision title
     public static final String ATTRIBUTE_REVISION = "Revision";
     // embedded component info
