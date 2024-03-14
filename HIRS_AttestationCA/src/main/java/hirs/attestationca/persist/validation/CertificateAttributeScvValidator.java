@@ -376,10 +376,12 @@ public class CertificateAttributeScvValidator extends SupplyChainCredentialValid
         List<ComponentResult> remainingComponentResults = checkDeviceHashMap(
                 componentInfos, compiledComponentList);
 
+        List<UUID> componentIdList = new ArrayList<>();
         int numOfAttributes = 0;
         if (!remainingComponentResults.isEmpty()) {
             List<ComponentAttributeResult> attributeResults = checkComponentClassMap(
                     componentInfos, remainingComponentResults);
+            numOfAttributes = attributeResults.size();
             boolean saveAttributeResult;
             for (ComponentAttributeResult componentAttributeResult : attributeResults) {
                 saveAttributeResult = true;
@@ -391,17 +393,18 @@ public class CertificateAttributeScvValidator extends SupplyChainCredentialValid
                     componentAttributeResult.setProvisionSessionId(provisionSessionId);
                     componentAttributeRepository.save(componentAttributeResult);
                     fieldValidation &= componentAttributeResult.checkMatchedStatus();
+                    componentIdList.add(componentAttributeResult.getComponentId());
+                } else {
+                    numOfAttributes--;
                 }
             }
-            numOfAttributes = attributeResults.size();
         }
 
         StringBuilder additionalInfo = new StringBuilder();
         if (!remainingComponentResults.isEmpty()) {
-            resultMessage.append(String.format("There are %d components not matched%n",
-                    remainingComponentResults.size()));
-            resultMessage.append(String.format("\twith %d total attributes mismatched.",
-                    numOfAttributes));
+            resultMessage.append(String.format("There are %d component(s) not matched%n "
+                            + "with %d total attributes mismatched.",
+                    componentIdList.stream().distinct().count(), numOfAttributes));
         }
 
         if (fieldValidation) {

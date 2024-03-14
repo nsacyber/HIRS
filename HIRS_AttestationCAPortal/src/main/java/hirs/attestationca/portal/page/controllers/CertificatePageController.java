@@ -978,15 +978,25 @@ public class CertificatePageController extends PageController<NoPageParams> {
 
         if (certificate instanceof PlatformCredential) {
             platformCredential = (PlatformCredential) certificate;
-            ComponentResult componentResult;
-            for (ComponentIdentifier componentIdentifier : platformCredential
-                    .getComponentIdentifiers()) {
-
-                componentResult = new ComponentResult(platformCredential.getPlatformSerial(),
-                        platformCredential.getSerialNumber().toString(),
-                        platformCredential.getPlatformChainType(),
-                        componentIdentifier);
-                componentResultRepository.save(componentResult);
+            List<ComponentResult> componentResults = componentResultRepository
+                    .findByCertificateSerialNumberAndBoardSerialNumber(
+                            platformCredential.getSerialNumber().toString(),
+                            platformCredential.getPlatformSerial());
+            if (componentResults.isEmpty()) {
+                for (ComponentIdentifier componentIdentifier : platformCredential
+                        .getComponentIdentifiers()) {
+                    componentResultRepository.save(
+                            new ComponentResult(platformCredential.getPlatformSerial(),
+                            platformCredential.getSerialNumber().toString(),
+                            platformCredential.getPlatformChainType(),
+                            componentIdentifier));
+                }
+            } else {
+                for (ComponentResult componentResult : componentResults) {
+                    componentResult.restore();
+                    componentResult.resetCreateTime();
+                    componentResultRepository.save(componentResult);
+                }
             }
         }
     }

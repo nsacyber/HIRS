@@ -636,7 +636,6 @@ public class IdentityClaimProcessor extends AbstractProcessor {
 
     private void savePlatformComponents(final Certificate certificate) {
         PlatformCredential platformCredential;
-        int componentResults = 0;
         if (certificate instanceof PlatformCredential) {
             platformCredential = (PlatformCredential) certificate;
             ComponentResult componentResult;
@@ -650,7 +649,6 @@ public class IdentityClaimProcessor extends AbstractProcessor {
                 componentResult.setFailedValidation(false);
                 componentResult.setDelta(!platformCredential.isPlatformBase());
                 componentResultRepository.save(componentResult);
-                componentResults++;
             }
         }
     }
