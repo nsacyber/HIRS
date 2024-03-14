@@ -2,7 +2,7 @@
 #####################################################################################
 #
 # Script to create ACA setup files and configure the hirs_db database.
-# 
+#
 #
 #####################################################################################
 # Capture location of the script to allow from invocation from any location
@@ -31,8 +31,6 @@ help () {
 }
 
 # Process parameters Argument handling 
-POSITIONAL_ARGS=()
-ORIGINAL_ARGS=("$@")
 while [[ $# -gt 0 ]]; do
   case $1 in
     -sd|--skip-db)
@@ -59,13 +57,23 @@ while [[ $# -gt 0 ]]; do
       ;;
     *)
      POSITIONAL_ARGS+=("$1") # save positional arg
-     # shift # past argument
+     # shift # past argumfrom 'build/VERSION'ent
      break
       ;;
   esac
 done
 
-set -- "${POSITIONAL_ARGS[@]}" # restore positional parameters
+# Check for existing installation folders and exist if found
+if [ -z $ARG_UNATTEND ]; then
+  if [ -d "/etc/hirs" ]; then
+    echo "/etc/hirs exists, aborting install."
+    exit 1  
+  fi
+  if [ -d "/opt/hirs" ]; then
+    echo "/opt/hirs exists, aborting install."
+    exit 1  
+  fi
+fi
 
 mkdir -p $HIRS_CONF_DIR $LOG_DIR $HIRS_JSON_DIR $ACA_OPT_DIR
 touch "$LOG_FILE"
@@ -88,8 +96,10 @@ fi
 echo "HIRS ACA Setup initiated on $(date +%Y-%m-%d)" >> "$LOG_FILE"
 
 # Create a version file for bootRun to use
-jarVersion=$(cat '../../../VERSION').$(date +%s).$(git rev-parse --short  HEAD)
-echo $jarVersion > $ACA_VERSION_FILE
+if  command -v git ; then 
+   jarVersion=$(cat '../../../VERSION').$(date +%s).$(git rev-parse --short  HEAD)
+   echo $jarVersion > $ACA_VERSION_FILE
+fi
 
 # Set HIRS PKI  password
 if [ -z $HIRS_PKI_PWD ]; then
