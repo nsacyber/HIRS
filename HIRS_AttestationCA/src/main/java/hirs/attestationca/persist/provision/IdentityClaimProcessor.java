@@ -225,7 +225,13 @@ public class IdentityClaimProcessor extends AbstractProcessor {
                             platformCredential.getSerialNumber().toString(),
                             platformCredential.getPlatformSerial());
             if (componentResults.isEmpty()) {
-                handlePlatformComponents(platformCredential);
+                savePlatformComponents(platformCredential);
+            } else {
+                componentResults.stream().forEach((componentResult) -> {
+                    componentResult.restore();
+                    componentResult.resetCreateTime();
+                    componentResultRepository.save(componentResult);
+                });
             }
         }
 
@@ -628,7 +634,7 @@ public class IdentityClaimProcessor extends AbstractProcessor {
         return true;
     }
 
-    private int handlePlatformComponents(final Certificate certificate) {
+    private void savePlatformComponents(final Certificate certificate) {
         PlatformCredential platformCredential;
         int componentResults = 0;
         if (certificate instanceof PlatformCredential) {
@@ -647,7 +653,6 @@ public class IdentityClaimProcessor extends AbstractProcessor {
                 componentResults++;
             }
         }
-        return componentResults;
     }
 
     private int handleDeviceComponents(final String hostName, final String paccorString) {

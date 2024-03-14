@@ -973,9 +973,9 @@ public class CertificatePageController extends PageController<NoPageParams> {
         log.error(failMessage);
     }
 
-    private int handlePlatformComponents(final Certificate certificate) {
+    private void handlePlatformComponents(final Certificate certificate) {
         PlatformCredential platformCredential;
-        int componentResults = 0;
+
         if (certificate instanceof PlatformCredential) {
             platformCredential = (PlatformCredential) certificate;
             ComponentResult componentResult;
@@ -987,10 +987,8 @@ public class CertificatePageController extends PageController<NoPageParams> {
                         platformCredential.getPlatformChainType(),
                         componentIdentifier);
                 componentResultRepository.save(componentResult);
-                componentResults++;
             }
         }
-        return componentResults;
     }
 
     private void deleteComponentResults(final String platformSerial) {
