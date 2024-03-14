@@ -62,6 +62,7 @@ start_mysqlsd () {
          if [ ! -d "/var/lib/mysql/mysql/" ]; then
            echo "Installing mariadb" | tee -a "$LOG_FILE";
            /usr/bin/mysql_install_db >> "$LOG_FILE"
+           chown -R mysql:mysql /var/log/mariadb/
          fi
          if [[ $PRINT_STATUS == "-p" ]]; then echo "Starting mysql..."; fi
          /usr/bin/mysqld_safe  --skip-syslog  >> "$LOG_FILE" &
@@ -226,6 +227,7 @@ mysqld_reboot () {
       if [[ $(pgrep -c $PROCESS) -ne 0 ]]; then
           pkill $PROCESS
       fi 
+      chown mysql:mysql /var/log/mariadb/mariadb.log >> "$LOG_FILE";
       /usr/bin/mysqld_safe  --skip-syslog >> "$LOG_FILE" &
       sleep 1
       check_mysql
