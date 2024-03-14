@@ -65,7 +65,8 @@ public class CredentialManagementHelperTest {
     @Test
     public void processEmptyEndorsementCredential() {
         assertThrows(IllegalArgumentException.class, () ->
-            CredentialManagementHelper.storeEndorsementCredential(certificateRepository, new byte[0], "testName"));
+            CredentialManagementHelper.storeEndorsementCredential(
+                    certificateRepository, new byte[0], "testName"));
     }
 
     /**
@@ -75,7 +76,8 @@ public class CredentialManagementHelperTest {
     public void processInvalidEndorsementCredentialCase1() {
         byte[] ekBytes = new byte[] {1};
         assertThrows(IllegalArgumentException.class, () ->
-                CredentialManagementHelper.storeEndorsementCredential(certificateRepository, ekBytes, "testName"));
+                CredentialManagementHelper.storeEndorsementCredential(
+                        certificateRepository, ekBytes, "testName"));
     }
 
     /**

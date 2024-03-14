@@ -12,32 +12,38 @@ import java.util.List;
  */
 public class Commander {
 
+    @Parameter(description = "This parameter catches all unrecognized arguments.")
+    private List<String> unknownOptions = new ArrayList<>();
     @Parameter(names = {"-h", "--help"}, help = true, description = "Print this help text.")
     private boolean help;
     @Parameter(names = {"-c", "--create \"base\""}, order = 0,
             description = "The type of RIM to create. A base RIM will be created by default.")
     private String createType = "";
-    @Parameter(names = {"-v", "--verify <path>"}, order = 3,
+    @Parameter(names = {"-v", "--verify <path>"}, validateWith = FileArgumentValidator.class,
             description = "Specify a RIM file to verify.")
     private String verifyFile = "";
     @Parameter(names = {"-V", "--version"}, description = "Output the current version.")
     private boolean version = false;
-    @Parameter(names = {"-a", "--attributes <path>"}, order = 1,
+    @Parameter(names = {"-a", "--attributes <path>"}, validateWith = FileArgumentValidator.class,
             description = "The configuration file holding attributes "
-            + "to populate the base RIM with.")
+            + "to populate the base RIM with.  An example file can be found in /opt/rimtool/data.")
     private String attributesFile = "";
     @Parameter(names = {"-o", "--out <path>"}, order = 2,
             description = "The file to write the RIM out to. "
             + "The RIM will be written to stdout by default.")
     private String outFile = "";
-    @Parameter(names = {"-t", "--truststore <path>"}, order = 4,
+    @Parameter(names = {"--verbose"}, description = "Control output verbosity.")
+    private boolean verbose = false;
+    @Parameter(names = {"-t", "--truststore <path>"}, validateWith = FileArgumentValidator.class,
             description = "The truststore to sign the base RIM created "
             + "or to validate the signed base RIM.")
     private String truststoreFile = "";
-    @Parameter(names = {"-k", "--privateKeyFile <path>"}, order = 5,
+    @Parameter(names = {"-k", "--privateKeyFile <path>"},
+            validateWith = FileArgumentValidator.class,
             description = "The private key used to sign the base RIM created by this tool.")
     private String privateKeyFile = "";
-    @Parameter(names = {"-p", "--publicCertificate <path>"}, order = 6,
+    @Parameter(names = {"-p", "--publicCertificate <path>"},
+            validateWith = FileArgumentValidator.class,
             description = "The public key certificate to embed in the base RIM created by "
             + "this tool.")
     private String publicCertificate = "";
@@ -45,9 +51,9 @@ public class Commander {
             description = "Embed the provided certificate in the signed swidtag.")
     private boolean embedded = false;
     @Parameter(names = {"-d", "--default-key"}, order = 8,
-            description = "Use default signing credentials.")
+            description = "Use the JKS keystore installed in /opt/rimtool/data.")
     private boolean defaultKey = false;
-    @Parameter(names = {"-l", "--rimel <path>"}, order = 9,
+    @Parameter(names = {"-l", "--rimel <path>"}, validateWith = FileArgumentValidator.class,
             description = "The TCG eventlog file to use as a support RIM.")
     private String rimEventLog = "";
     @Parameter(names = {"--timestamp"}, order = 10, variableArity = true,
@@ -55,6 +61,10 @@ public class Commander {
                     "Currently only RFC3339 and RFC3852 are supported:\n" +
                     "\tRFC3339 [yyyy-MM-ddThh:mm:ssZ]\n\tRFC3852 <counterSignature.bin>")
     private List<String> timestampArguments = new ArrayList<String>(2);
+
+    public List<String> getUnknownOptions() {
+        return unknownOptions;
+    }
 
     public boolean isHelp() {
         return help;
@@ -71,6 +81,7 @@ public class Commander {
     public boolean isVersion() {
         return version;
     }
+    public boolean isVerbose() { return verbose; }
     public String getAttributesFile() {
         return attributesFile;
     }
@@ -101,26 +112,17 @@ public class Commander {
 
     public String printHelpExamples() {
         StringBuilder sb = new StringBuilder();
-        sb.append("Create a base RIM using the values in attributes.json; " +
-                "sign it with the default keystore; ");
-        sb.append("and write the data to base_rim.swidtag:\n\n");
-        sb.append("\t\t-c base -a attributes.json -d -l support_rim.bin -o base_rim.swidtag" +
-                "\n\n\n");
-        sb.append("Create a base RIM using the default attribute values; ");
-        sb.append("sign it using privateKey.pem; embed cert.pem in the signature block; ");
-        sb.append("and write the data to console output:\n\n");
-        sb.append("\t\t-c base -l support_rim.bin -k privateKey.pem -p cert.pem -e\n\n\n");
-        sb.append("Create a base RIM using the values in attributes.json; " +
-                "sign it with the default keystore; add a RFC3852 timestamp; ");
-        sb.append("and write the data to base_rim.swidtag:\n\n");
-        sb.append("\t\t-c base -a attributes.json -d -l support_rim.bin " +
-                "--timestamp RFC3852 counterSignature.bin -o base_rim.swidtag\n\n\n");
-        sb.append("Validate a base RIM using an external support RIM to override the ");
-        sb.append("payload file:\n\n");
-        sb.append("\t\t-v base_rim.swidtag -l support_rim.bin\n\n\n");
-        sb.append("Validate a base RIM with its own payload file and a PEM truststore ");
-        sb.append("containing the signing cert:\n\n");
-        sb.append("\t\t-v base_rim.swidtag -t ca.crt\n\n\n");
+        sb.append("Create a base RIM: use the values in attributes.json; ");
+        sb.append("add support_rim.bin to the payload; ");
+        sb.append("sign it using privateKey.pem and cert.pem; embed cert.pem in the signature; ");
+        sb.append("add a RFC3852 timestamp; and write the data to base_rim.swidtag:\n\n");
+        sb.append("\t\t-c base -a attributes.json -l support_rim.bin "
+                + "-k privateKey.pem -p cert.pem -e --timestamp RFC3852 counterSignature.bin "
+                + "-o base_rim.swidtag\n\n\n");
+        sb.append("Validate base_rim.swidtag: "
+                + "the payload <File> is validated with support_rim.bin; "
+                + "and the signature is validated with ca.crt:\n\n");
+        sb.append("\t\t-v base_rim.swidtag -l support_rim.bin -t ca.crt\n\n\n");
 
         return sb.toString();
     }

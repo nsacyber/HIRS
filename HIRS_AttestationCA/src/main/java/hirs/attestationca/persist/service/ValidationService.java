@@ -3,6 +3,7 @@ package hirs.attestationca.persist.service;
 import hirs.attestationca.persist.entity.ArchivableEntity;
 import hirs.attestationca.persist.entity.manager.CACredentialRepository;
 import hirs.attestationca.persist.entity.manager.CertificateRepository;
+import hirs.attestationca.persist.entity.manager.ComponentAttributeRepository;
 import hirs.attestationca.persist.entity.manager.ComponentResultRepository;
 import hirs.attestationca.persist.entity.manager.ReferenceDigestValueRepository;
 import hirs.attestationca.persist.entity.manager.ReferenceManifestRepository;
@@ -12,9 +13,9 @@ import hirs.attestationca.persist.entity.userdefined.PolicySettings;
 import hirs.attestationca.persist.entity.userdefined.ReferenceManifest;
 import hirs.attestationca.persist.entity.userdefined.SupplyChainValidation;
 import hirs.attestationca.persist.entity.userdefined.certificate.CertificateAuthorityCredential;
-import hirs.attestationca.persist.entity.userdefined.certificate.ComponentResult;
 import hirs.attestationca.persist.entity.userdefined.certificate.EndorsementCredential;
 import hirs.attestationca.persist.entity.userdefined.certificate.PlatformCredential;
+import hirs.attestationca.persist.entity.userdefined.info.ComponentInfo;
 import hirs.attestationca.persist.entity.userdefined.report.DeviceInfoReport;
 import hirs.attestationca.persist.enums.AppraisalStatus;
 import hirs.attestationca.persist.validation.CertificateAttributeScvValidator;
@@ -37,6 +38,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.UUID;
 
 @Log4j2
 public class ValidationService {
@@ -104,7 +106,10 @@ public class ValidationService {
             final PlatformCredential pc, final DeviceInfoReport deviceInfoReport,
             final EndorsementCredential ec,
             final CertificateRepository certificateRepository,
-            final ComponentResultRepository componentResultRepository) {
+            final ComponentResultRepository componentResultRepository,
+            final ComponentAttributeRepository componentAttributeRepository,
+            final List<ComponentInfo> componentInfos,
+            final UUID provisionSessionId) {
         final SupplyChainValidation.ValidationType validationType
                 = SupplyChainValidation.ValidationType.PLATFORM_CREDENTIAL_ATTRIBUTES;
 
@@ -116,7 +121,9 @@ public class ValidationService {
         }
         log.info("Validating platform credential attributes");
         AppraisalStatus result = CredentialValidator.
-                validatePlatformCredentialAttributes(pc, deviceInfoReport, ec);
+                validatePlatformCredentialAttributes(pc, deviceInfoReport, ec,
+                        componentResultRepository, componentAttributeRepository,
+                        componentInfos, provisionSessionId);
         switch (result.getAppStatus()) {
             case PASS:
                 return buildValidationRecord(validationType, AppraisalStatus.Status.PASS,
@@ -126,10 +133,6 @@ public class ValidationService {
                     pc.setComponentFailures(result.getAdditionalInfo());
                     pc.setComponentFailureMessage(result.getMessage());
                     certificateRepository.save(pc);
-                    for (ComponentResult componentResult
-                            : CertificateAttributeScvValidator.getComponentResultList()) {
-                        componentResultRepository.save(componentResult);
-                    }
                 }
                 return buildValidationRecord(validationType, AppraisalStatus.Status.FAIL,
                         result.getMessage(), pc, Level.WARN);

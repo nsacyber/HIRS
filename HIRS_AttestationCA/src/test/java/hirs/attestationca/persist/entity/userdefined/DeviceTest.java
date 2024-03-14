@@ -1,7 +1,6 @@
 package hirs.attestationca.persist.entity.userdefined;
 
 import hirs.attestationca.persist.entity.userdefined.report.DeviceInfoReport;
-import hirs.attestationca.persist.entity.userdefined.report.DeviceInfoReportTest;
 import hirs.attestationca.persist.enums.AppraisalStatus;
 import hirs.attestationca.persist.enums.HealthStatus;
 import org.junit.jupiter.api.Test;
@@ -14,19 +13,7 @@ import static org.junit.jupiter.api.Assertions.assertNull;
  * This is the test class for the <code>Device</code> class.
  *
  */
-public final class DeviceTest {
-    /**
-     * Utility method for getting a <code>Device</code> that can be used for
-     * testing.
-     *
-     * @param name name for the <code>Device</code>
-     *
-     * @return device
-     */
-    public static Device getTestDevice(final String name) {
-        final DeviceInfoReport deviceInfo = DeviceInfoReportTest.getTestReport();
-        return new Device(name, deviceInfo, HealthStatus.UNKNOWN, AppraisalStatus.Status.UNKNOWN, null, false, null, null);
-    }
+public final class DeviceTest extends AbstractUserdefinedEntityTest {
 
     /**
      * Tests that the device constructor can take a name.
@@ -34,7 +21,9 @@ public final class DeviceTest {
     @Test
     public void testDevice() {
         final String name = "my-laptop";
-        final Device device = new Device(name, null, HealthStatus.UNKNOWN, AppraisalStatus.Status.UNKNOWN, null, false, null , null);
+        final Device device = new Device(name, null, HealthStatus.UNKNOWN,
+                AppraisalStatus.Status.UNKNOWN, null, false,
+                null, null);
         assertNotNull(device);
     }
 
@@ -45,8 +34,10 @@ public final class DeviceTest {
     @Test
     public void testDeviceNameAndInfo() {
         final String name = "my-laptop";
-        final DeviceInfoReport deviceInfo = DeviceInfoReportTest.getTestReport();
-        new Device(name, deviceInfo, HealthStatus.UNKNOWN, AppraisalStatus.Status.UNKNOWN, null, false, null, null);
+        final DeviceInfoReport deviceInfo = getTestDeviceInfoReport();
+        new Device(name, deviceInfo, HealthStatus.UNKNOWN,
+                AppraisalStatus.Status.UNKNOWN, null, false,
+                null, null);
     }
 
     /**
@@ -56,7 +47,9 @@ public final class DeviceTest {
     public void testDeviceNameAndNullInfo() {
         final String name = "my-laptop";
         final DeviceInfoReport deviceInfo = null;
-        new Device(name, deviceInfo, HealthStatus.UNKNOWN, AppraisalStatus.Status.UNKNOWN, null, false, null, null);
+        new Device(name, deviceInfo, HealthStatus.UNKNOWN,
+                AppraisalStatus.Status.UNKNOWN, null, false,
+                null, null);
     }
 
     /**
@@ -65,8 +58,10 @@ public final class DeviceTest {
     @Test
     public void testGetDeviceInfo() {
         final String name = "my-laptop";
-        final DeviceInfoReport deviceInfo = DeviceInfoReportTest.getTestReport();
-        final Device device = new Device(name, deviceInfo, HealthStatus.UNKNOWN, AppraisalStatus.Status.UNKNOWN, null, false, null, null);
+        final DeviceInfoReport deviceInfo = getTestDeviceInfoReport();
+        final Device device = new Device(name, deviceInfo, HealthStatus.UNKNOWN,
+                AppraisalStatus.Status.UNKNOWN, null, false,
+                null, null);
         assertEquals(deviceInfo, device.getDeviceInfo());
     }
 
@@ -76,9 +71,11 @@ public final class DeviceTest {
     @Test
     public void testSetDeviceInfo() {
         final String name = "my-laptop";
-        final Device device = new Device(name, null, HealthStatus.UNKNOWN, AppraisalStatus.Status.UNKNOWN, null, false, null, null);
+        final Device device = new Device(name, null, HealthStatus.UNKNOWN,
+                AppraisalStatus.Status.UNKNOWN, null, false,
+                null, null);
         assertNull(device.getDeviceInfo());
-        final DeviceInfoReport deviceInfo = DeviceInfoReportTest.getTestReport();
+        final DeviceInfoReport deviceInfo = getTestDeviceInfoReport();
         device.setDeviceInfo(deviceInfo);
         assertEquals(deviceInfo, device.getDeviceInfo());
     }
@@ -89,8 +86,10 @@ public final class DeviceTest {
     @Test
     public void testSetNullDeviceInfo() {
         final String name = "my-laptop";
-        final DeviceInfoReport deviceInfo = DeviceInfoReportTest.getTestReport();
-        final Device device = new Device(name, deviceInfo, HealthStatus.UNKNOWN, AppraisalStatus.Status.UNKNOWN, null, false, null, null);
+        final DeviceInfoReport deviceInfo = getTestDeviceInfoReport();
+        final Device device = new Device(name, deviceInfo, HealthStatus.UNKNOWN,
+                AppraisalStatus.Status.UNKNOWN, null, false,
+                null, null);
         assertEquals(deviceInfo, device.getDeviceInfo());
         device.setDeviceInfo(null);
         assertNull(device.getDeviceInfo());
@@ -102,8 +101,10 @@ public final class DeviceTest {
     @Test
     public void testNotNullLastReportTimeStamp() {
         final String name = "my-laptop";
-        final DeviceInfoReport deviceInfo = DeviceInfoReportTest.getTestReport();
-        final Device device = new Device(name, deviceInfo, HealthStatus.UNKNOWN, AppraisalStatus.Status.UNKNOWN, null, false, null, null);
+        final DeviceInfoReport deviceInfo = getTestDeviceInfoReport();
+        final Device device = new Device(name, deviceInfo, HealthStatus.UNKNOWN,
+                AppraisalStatus.Status.UNKNOWN, null, false,
+                null, null);
         assertNotNull(device.getLastReportTimestamp());
     }
 
@@ -112,7 +113,9 @@ public final class DeviceTest {
      */
     @Test
     public void testSetHealthStatus() {
-        final Device device  = new Device("test-device", null, HealthStatus.UNKNOWN, AppraisalStatus.Status.UNKNOWN, null, false, null, null);
+        final Device device  = new Device("test-device", null, HealthStatus.UNKNOWN,
+                AppraisalStatus.Status.UNKNOWN, null, false,
+                null, null);
         device.setHealthStatus(HealthStatus.TRUSTED);
         assertEquals(HealthStatus.TRUSTED, device.getHealthStatus());
     }
@@ -124,9 +127,13 @@ public final class DeviceTest {
     public void testDeviceEquals() {
         final String name = "my-laptop";
         final String otherName = "my-laptop";
-        final DeviceInfoReport deviceInfo = DeviceInfoReportTest.getTestReport();
-        final Device device = new Device(name, deviceInfo, HealthStatus.UNKNOWN, AppraisalStatus.Status.UNKNOWN, null, false, null, null);
-        final Device other = new Device(otherName, deviceInfo, HealthStatus.UNKNOWN, AppraisalStatus.Status.UNKNOWN, null, false, null, null);
+        final DeviceInfoReport deviceInfo = getTestDeviceInfoReport();
+        final Device device = new Device(name, deviceInfo, HealthStatus.UNKNOWN,
+                AppraisalStatus.Status.UNKNOWN, null, false,
+                null, null);
+        final Device other = new Device(otherName, deviceInfo, HealthStatus.UNKNOWN,
+                AppraisalStatus.Status.UNKNOWN, null, false,
+                null, null);
         assertEquals(device, other);
     }
 
@@ -136,8 +143,10 @@ public final class DeviceTest {
     @Test
     public void testGetDefaultSupplyChainStatus() {
         String name = "my-laptop";
-        DeviceInfoReport deviceInfo = DeviceInfoReportTest.getTestReport();
-        final Device device = new Device(name, deviceInfo, HealthStatus.UNKNOWN, AppraisalStatus.Status.UNKNOWN, null, false, null, null);
+        final DeviceInfoReport deviceInfo = getTestDeviceInfoReport();
+        final Device device = new Device(name, deviceInfo, HealthStatus.UNKNOWN,
+                AppraisalStatus.Status.UNKNOWN, null, false,
+                null, null);
         assertEquals(AppraisalStatus.Status.UNKNOWN, device.getSupplyChainValidationStatus());
     }
 
@@ -147,8 +156,10 @@ public final class DeviceTest {
     @Test
     public void testSetAndGetSupplyChainStatus() {
         String name = "my-laptop";
-        DeviceInfoReport deviceInfo = DeviceInfoReportTest.getTestReport();
-        final Device device = new Device(name, deviceInfo, HealthStatus.UNKNOWN, AppraisalStatus.Status.UNKNOWN, null, false, null, null);
+        final DeviceInfoReport deviceInfo = getTestDeviceInfoReport();
+        final Device device = new Device(name, deviceInfo, HealthStatus.UNKNOWN,
+                AppraisalStatus.Status.UNKNOWN, null, false,
+                null, null);
         device.setSupplyChainValidationStatus(AppraisalStatus.Status.PASS);
         assertEquals(AppraisalStatus.Status.PASS, device.getSupplyChainValidationStatus());
     }

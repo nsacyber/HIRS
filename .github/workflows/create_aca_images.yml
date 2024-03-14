@@ -51,6 +51,7 @@ jobs:
         echo "PUBLIC_IMAGE_TAG=$PUBLIC_IMAGE_NAME:$IMAGE_TAG_VAR" >> "$GITHUB_OUTPUT"
     - name: Print env
       run: |
+        echo GITHUB_REF_NAME=${{ github.ref_name }}
         echo DOCKERFILE_ROCKY=$DOCKERFILE_ROCKY
         echo DOCKERFILE_WINDOWS=$DOCKERFILE_WINDOWS
         echo IMAGE_NAME_ROCKY=$IMAGE_NAME_ROCKY
@@ -86,6 +87,7 @@ jobs:
       with:
         context: "{{defaultContext}}:.ci/docker"
         file: Dockerfile.${{env.DOCKERFILE_ROCKY}}
+        build-args: REF=${{ github.ref_name }}
         tags: ${{env.TAG}}
         push: true
         
@@ -108,7 +110,7 @@ jobs:
     - name: Build the docker image for ${{ github.repository }}
       run: |
         cd ./.ci/docker
-        docker build -f ./Dockerfile.${{env.DOCKERFILE_WINDOWS}} -t ${{env.TAG}} .
+        docker build --build-arg "REF=${{ github.ref_name }}" -f ./Dockerfile.${{env.DOCKERFILE_WINDOWS}} -t ${{env.TAG}} .
     
     - name: Push the docker image
       run: |
@@ -133,7 +135,7 @@ jobs:
     - name: Build the docker image for ${{ github.repository }}
       run: |
         cd ./.ci/docker
-        docker build -f ./Dockerfile.${{env.DOCKERFILE_WINDOWS}} -t ${{env.TAG}} --build-arg BASE_IMAGE_TAG=lts-windowsservercore-1809 .
+        docker build --build-arg "REF=${{ github.ref_name }}" -f ./Dockerfile.${{env.DOCKERFILE_WINDOWS}} -t ${{env.TAG}} --build-arg BASE_IMAGE_TAG=lts-windowsservercore-1809 .
         
     - name: Push the docker image
       run: |

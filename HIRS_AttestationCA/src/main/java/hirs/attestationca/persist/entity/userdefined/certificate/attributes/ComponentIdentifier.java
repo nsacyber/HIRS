@@ -1,6 +1,5 @@
 package hirs.attestationca.persist.entity.userdefined.certificate.attributes;
 
-import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
@@ -37,10 +36,6 @@ import java.util.stream.Collectors;
 @EqualsAndHashCode
 public class ComponentIdentifier {
 
-    /**
-     * Variable for components that aren't set.
-     */
-    public static final String EMPTY_COMPONENT = "[Empty]";
     /**
      * Variable for components that aren't set.
      */
@@ -88,8 +83,8 @@ public class ComponentIdentifier {
     public ComponentIdentifier() {
         componentManufacturer = new DERUTF8String(NOT_SPECIFIED_COMPONENT);
         componentModel = new DERUTF8String(NOT_SPECIFIED_COMPONENT);
-        componentSerial = new DERUTF8String(EMPTY_COMPONENT);
-        componentRevision = new DERUTF8String(EMPTY_COMPONENT);
+        componentSerial = new DERUTF8String(NOT_SPECIFIED_COMPONENT);
+        componentRevision = new DERUTF8String(NOT_SPECIFIED_COMPONENT);
         componentManufacturerId = null;
         fieldReplaceable = null;
         componentAddress = new ArrayList<>();
@@ -124,13 +119,13 @@ public class ComponentIdentifier {
 
     /**
      * Constructor given the SEQUENCE that contains Component Identifier.
-     * @param sequence containing the the component identifier
+     * @param sequence containing the component identifier
      * @throws IllegalArgumentException if there was an error on the parsing
      */
     public ComponentIdentifier(final ASN1Sequence sequence) throws IllegalArgumentException {
         // set all optional values to default in case they aren't set.
         this();
-        //Check if it have a valid number of identifiers
+        //Check if it has a valid number of identifiers
         if (sequence.size() < MANDATORY_ELEMENTS) {
             throw new IllegalArgumentException("Component identifier do not have required values.");
         }
@@ -238,7 +233,7 @@ public class ComponentIdentifier {
             sb.append(fieldReplaceable.toString());
         }
         sb.append(", componentAddress=");
-        if (componentAddress.size() > 0) {
+        if (!componentAddress.isEmpty()) {
             sb.append(componentAddress
                     .stream()
                     .map(Object::toString)

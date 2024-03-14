@@ -3,6 +3,9 @@ LABEL org.opencontainers.image.vendor NSA Laboratory for Advanced Cybersecurity 
 LABEL org.opencontainers.image.source https://github.com/nsacyber/hirs
 LABEL org.opencontainers.image.description NSA\'s HIRS Attestation Certificate Authority. Expose port 8443 to access the portal from outside the container.
 
+# REF can be specified as a docker run environment variable to select the HIRS branch to work with
+ARG REF=main
+
 SHELL ["/bin/bash", "-c"]
 
 # Rocky 9 has a different channel for some apps
@@ -50,7 +53,7 @@ RUN echo "#!/bin/bash" > /tmp/tpm_config && \
 EXPOSE 8443
 
 # Checkout HIRS
-RUN git clone -b main https://github.com/nsacyber/HIRS.git /repo
+RUN git clone -b ${REF} https://github.com/nsacyber/HIRS.git /repo
 
 # Defensive copy of the repo so it's easy to start fresh if needed
 RUN mkdir /hirs

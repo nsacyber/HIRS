@@ -5,7 +5,6 @@ import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
-import hirs.attestationca.persist.entity.userdefined.CertificateTest;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
@@ -29,13 +28,15 @@ public class EndorsementCredentialTest {
     private static final String EK_CERT_WITH_SECURITY_ASSERTIONS =
             "/certificates/ek_cert_with_security_assertions.cer";
 
+    private static final int TPM_SPEC_REVISION_NUM = 116;
+
     /**
      * Tests the successful parsing of an EC using a test cert from STM.
      * @throws IOException test failed due to invalid certificate parsing
      */
     @Test
     public void testParse() throws IOException {
-        String path = CertificateTest.class.getResource(TEST_ENDORSEMENT_CREDENTIAL).
+        String path = this.getClass().getResource(TEST_ENDORSEMENT_CREDENTIAL).
                 getPath();
         Path fPath = Paths.get(path);
         EndorsementCredential ec = new EndorsementCredential(fPath);
@@ -49,7 +50,7 @@ public class EndorsementCredentialTest {
         TPMSpecification spec = ec.getTpmSpecification();
         assertEquals(spec.getFamily(), "1.2");
         assertEquals(spec.getLevel(), BigInteger.valueOf(2));
-        assertEquals(spec.getRevision(), BigInteger.valueOf(116));
+        assertEquals(spec.getRevision(), BigInteger.valueOf(TPM_SPEC_REVISION_NUM));
 
         TPMSecurityAssertions asserts = ec.getTpmSecurityAssertions();
         assertEquals(asserts.getTpmSecAssertsVersion(), BigInteger.valueOf(0));
@@ -68,7 +69,7 @@ public class EndorsementCredentialTest {
      */
     @Test
     public void testParseNuc1() throws IOException {
-        String path = CertificateTest.class.getResource(
+        String path = this.getClass().getResource(
                 TEST_ENDORSEMENT_CREDENTIAL_NUC1).getPath();
         Path fPath = Paths.get(path);
         EndorsementCredential ec = new EndorsementCredential(fPath);
@@ -82,7 +83,7 @@ public class EndorsementCredentialTest {
         TPMSpecification spec = ec.getTpmSpecification();
         assertEquals(spec.getFamily(), "1.2");
         assertEquals(spec.getLevel(), BigInteger.valueOf(2));
-        assertEquals(spec.getRevision(), BigInteger.valueOf(116));
+        assertEquals(spec.getRevision(), BigInteger.valueOf(TPM_SPEC_REVISION_NUM));
 
         TPMSecurityAssertions asserts = ec.getTpmSecurityAssertions();
         assertEquals(asserts.getTpmSecAssertsVersion(), BigInteger.valueOf(0));
@@ -102,7 +103,7 @@ public class EndorsementCredentialTest {
      */
     @Test
     public void testParseNuc1BuilderMethod() throws IOException {
-        String path = CertificateTest.class.getResource(
+        String path = this.getClass().getResource(
                 TEST_ENDORSEMENT_CREDENTIAL_NUC1).getPath();
         Path fPath = Paths.get(path);
         byte[] ecBytes = Files.readAllBytes(fPath);
@@ -118,7 +119,7 @@ public class EndorsementCredentialTest {
         TPMSpecification spec = ec.getTpmSpecification();
         assertEquals(spec.getFamily(), "1.2");
         assertEquals(spec.getLevel(), BigInteger.valueOf(2));
-        assertEquals(spec.getRevision(), BigInteger.valueOf(116));
+        assertEquals(spec.getRevision(), BigInteger.valueOf(TPM_SPEC_REVISION_NUM));
 
         TPMSecurityAssertions asserts = ec.getTpmSecurityAssertions();
         assertEquals(asserts.getTpmSecAssertsVersion(), BigInteger.valueOf(0));
@@ -137,7 +138,7 @@ public class EndorsementCredentialTest {
      */
     @Test
     public void testParseNuc2() throws IOException {
-        String path = CertificateTest.class.getResource(
+        String path = this.getClass().getResource(
                 TEST_ENDORSEMENT_CREDENTIAL_NUC2).getPath();
         Path fPath = Paths.get(path);
         EndorsementCredential ec = new EndorsementCredential(fPath);
@@ -151,7 +152,7 @@ public class EndorsementCredentialTest {
         TPMSpecification spec = ec.getTpmSpecification();
         assertEquals(spec.getFamily(), "1.2");
         assertEquals(spec.getLevel(), BigInteger.valueOf(2));
-        assertEquals(spec.getRevision(), BigInteger.valueOf(116));
+        assertEquals(spec.getRevision(), BigInteger.valueOf(TPM_SPEC_REVISION_NUM));
 
         TPMSecurityAssertions asserts = ec.getTpmSecurityAssertions();
         assertEquals(asserts.getTpmSecAssertsVersion(), BigInteger.valueOf(0));
@@ -170,17 +171,17 @@ public class EndorsementCredentialTest {
      */
     @Test
     public void testCertsNotEqual() throws IOException {
-        String path = CertificateTest.class.getResource(TEST_ENDORSEMENT_CREDENTIAL).getPath();
+        String path = this.getClass().getResource(TEST_ENDORSEMENT_CREDENTIAL).getPath();
         Path fPath = Paths.get(path);
         EndorsementCredential ec1 = new EndorsementCredential(fPath);
         assertNotNull(ec1);
 
-        path = CertificateTest.class.getResource(TEST_ENDORSEMENT_CREDENTIAL_NUC1).getPath();
+        path = this.getClass().getResource(TEST_ENDORSEMENT_CREDENTIAL_NUC1).getPath();
         fPath = Paths.get(path);
         EndorsementCredential ec2 = new EndorsementCredential(fPath);
         assertNotNull(ec2);
 
-        path = CertificateTest.class.getResource(TEST_ENDORSEMENT_CREDENTIAL_NUC2).getPath();
+        path = this.getClass().getResource(TEST_ENDORSEMENT_CREDENTIAL_NUC2).getPath();
         fPath = Paths.get(path);
         EndorsementCredential ec3 = new EndorsementCredential(fPath);
         assertNotNull(ec3);
@@ -197,7 +198,7 @@ public class EndorsementCredentialTest {
      */
     @Test
     public void testTpmSecurityAssertionsParsing() throws IOException {
-        Path fPath = Paths.get(CertificateTest.class
+        Path fPath = Paths.get(this.getClass()
                 .getResource(EK_CERT_WITH_SECURITY_ASSERTIONS).getPath());
         EndorsementCredential ec = new EndorsementCredential(fPath);
 

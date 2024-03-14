@@ -4,8 +4,6 @@ import hirs.attestationca.persist.entity.userdefined.certificate.EndorsementCred
 import hirs.attestationca.persist.entity.userdefined.certificate.PlatformCredential;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.bouncycastle.asn1.ASN1ObjectIdentifier;
 import org.bouncycastle.asn1.ASN1OctetString;
 import org.bouncycastle.asn1.DEROctetString;
@@ -42,13 +40,13 @@ public final class IssuedCertificateAttributeHelper {
     /**
      * Object Identifier TCPA at TPM ID Label.
      */
-    public final static ASN1ObjectIdentifier TCPA_AT_TPM_ID_LABEL =
+    public static final ASN1ObjectIdentifier TCPA_AT_TPM_ID_LABEL =
             new ASN1ObjectIdentifier(TPM_ID_LABEL_OID);
     /**
      * The extended key usage extension.
      */
-    public final static Extension EXTENDED_KEY_USAGE_EXTENSION;
-    private final static ASN1ObjectIdentifier TCG_KP_AIK_CERTIFICATE_ATTRIBUTE =
+    public static final Extension EXTENDED_KEY_USAGE_EXTENSION;
+    private static final ASN1ObjectIdentifier TCG_KP_AIK_CERTIFICATE_ATTRIBUTE =
             new ASN1ObjectIdentifier("2.23.133.8.3");
 
     static {

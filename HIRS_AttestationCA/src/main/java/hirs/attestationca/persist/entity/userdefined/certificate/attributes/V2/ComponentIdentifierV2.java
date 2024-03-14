@@ -103,13 +103,13 @@ public class ComponentIdentifierV2 extends ComponentIdentifier {
 
     /**
      * Constructor given the SEQUENCE that contains Component Identifier.
-     * @param sequence containing the the component identifier
+     * @param sequence containing the component identifier
      * @throws IllegalArgumentException if there was an error on the parsing
      */
     public ComponentIdentifierV2(final ASN1Sequence sequence)
             throws IllegalArgumentException {
         super();
-        // Check if it have a valid number of identifiers
+        // Check if it has a valid number of identifiers
         if (sequence.size() < MANDATORY_ELEMENTS) {
             throw new IllegalArgumentException("Component identifier do not have required values.");
         }
