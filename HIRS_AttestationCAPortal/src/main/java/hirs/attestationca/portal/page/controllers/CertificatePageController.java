@@ -983,13 +983,16 @@ public class CertificatePageController extends PageController<NoPageParams> {
                             platformCredential.getSerialNumber().toString(),
                             platformCredential.getPlatformSerial());
             if (componentResults.isEmpty()) {
+                ComponentResult componentResult;
                 for (ComponentIdentifier componentIdentifier : platformCredential
                         .getComponentIdentifiers()) {
-                    componentResultRepository.save(
-                            new ComponentResult(platformCredential.getPlatformSerial(),
+                    componentResult = new ComponentResult(platformCredential.getPlatformSerial(),
                             platformCredential.getSerialNumber().toString(),
                             platformCredential.getPlatformChainType(),
-                            componentIdentifier));
+                            componentIdentifier);
+                    componentResult.setFailedValidation(false);
+                    componentResult.setDelta(!platformCredential.isPlatformBase());
+                    componentResultRepository.save(componentResult);
                 }
             } else {
                 for (ComponentResult componentResult : componentResults) {
