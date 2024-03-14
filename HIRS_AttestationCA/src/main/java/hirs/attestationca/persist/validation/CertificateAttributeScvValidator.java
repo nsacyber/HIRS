@@ -266,13 +266,16 @@ public class CertificateAttributeScvValidator extends SupplyChainCredentialValid
                 componentInfos, componentResults);
         int numOfAttributes = 0;
         if (!remainingComponentResults.isEmpty()) {
-
             List<ComponentAttributeResult> attributeResults = checkComponentClassMap(
                     componentInfos, remainingComponentResults);
-
+            boolean saveAttributeResult;
             for (ComponentAttributeResult componentAttributeResult : attributeResults) {
-                if (componentAttributeResult.getAttribute().equalsIgnoreCase(ComponentResult.ATTRIBUTE_REVISION)
-                        && !ignoreRevisionAttribute) {
+                 saveAttributeResult = true;
+                if (ignoreRevisionAttribute) {
+                   saveAttributeResult = !componentAttributeResult.getAttribute()
+                           .equalsIgnoreCase(ComponentResult.ATTRIBUTE_REVISION);
+                }
+                if (saveAttributeResult) {
                     componentAttributeResult.setProvisionSessionId(provisionSessionId);
                     componentAttributeRepository.save(componentAttributeResult);
                     fieldValidation &= componentAttributeResult.checkMatchedStatus();
@@ -372,11 +375,14 @@ public class CertificateAttributeScvValidator extends SupplyChainCredentialValid
         if (!remainingComponentResults.isEmpty()) {
             List<ComponentAttributeResult> attributeResults = checkComponentClassMap(
                     componentInfos, remainingComponentResults);
-
+            boolean saveAttributeResult;
             for (ComponentAttributeResult componentAttributeResult : attributeResults) {
-                if (componentAttributeResult.getAttribute()
-                        .equalsIgnoreCase(ComponentResult.ATTRIBUTE_REVISION)
-                        && !ignoreRevisionAttribute) {
+                saveAttributeResult = true;
+                if (ignoreRevisionAttribute) {
+                    saveAttributeResult = !componentAttributeResult.getAttribute()
+                            .equalsIgnoreCase(ComponentResult.ATTRIBUTE_REVISION);
+                }
+                if (saveAttributeResult) {
                     componentAttributeResult.setProvisionSessionId(provisionSessionId);
                     componentAttributeRepository.save(componentAttributeResult);
                     fieldValidation &= componentAttributeResult.checkMatchedStatus();
