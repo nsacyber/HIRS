@@ -84,4 +84,4 @@ HEALTHCHECK --start-period=50s --interval=1s --timeout=90s CMD curl -f https://l
 WORKDIR /hirs
 
 # On container launch, the database will be set up. Then bootRun should utilize build artifacts stored in the image.
-CMD ["bash", "-c", "/hirs/package/scripts/aca/aca_setup.sh --unattended && /tmp/hirs_add_aca_tls_path_to_os.sh && /hirs/package/scripts/aca/aca_bootRun.sh"]
+CMD ["bash", "-c", "/hirs/package/linux/aca/aca_setup.sh --unattended && /tmp/hirs_add_aca_tls_path_to_os.sh && /hirs/package/linux/aca/aca_bootRun.sh"]
