@@ -973,24 +973,35 @@ public class CertificatePageController extends PageController<NoPageParams> {
         log.error(failMessage);
     }
 
-    private int handlePlatformComponents(final Certificate certificate) {
+    private void handlePlatformComponents(final Certificate certificate) {
         PlatformCredential platformCredential;
-        int componentResults = 0;
+
         if (certificate instanceof PlatformCredential) {
             platformCredential = (PlatformCredential) certificate;
-            ComponentResult componentResult;
-            for (ComponentIdentifier componentIdentifier : platformCredential
-                    .getComponentIdentifiers()) {
-
-                componentResult = new ComponentResult(platformCredential.getPlatformSerial(),
-                        platformCredential.getSerialNumber().toString(),
-                        platformCredential.getPlatformChainType(),
-                        componentIdentifier);
-                componentResultRepository.save(componentResult);
-                componentResults++;
+            List<ComponentResult> componentResults = componentResultRepository
+                    .findByCertificateSerialNumberAndBoardSerialNumber(
+                            platformCredential.getSerialNumber().toString(),
+                            platformCredential.getPlatformSerial());
+            if (componentResults.isEmpty()) {
+                ComponentResult componentResult;
+                for (ComponentIdentifier componentIdentifier : platformCredential
+                        .getComponentIdentifiers()) {
+                    componentResult = new ComponentResult(platformCredential.getPlatformSerial(),
+                            platformCredential.getSerialNumber().toString(),
+                            platformCredential.getPlatformChainType(),
+                            componentIdentifier);
+                    componentResult.setFailedValidation(false);
+                    componentResult.setDelta(!platformCredential.isPlatformBase());
+                    componentResultRepository.save(componentResult);
+                }
+            } else {
+                for (ComponentResult componentResult : componentResults) {
+                    componentResult.restore();
+                    componentResult.resetCreateTime();
+                    componentResultRepository.save(componentResult);
+                }
             }
         }
-        return componentResults;
     }
 
     private void deleteComponentResults(final String platformSerial) {

@@ -366,7 +366,9 @@ public final class CertificateStringMapBuilder {
             data.put("CPSuri", certificate.getCPSuri());
             //Component Identifier - attempt to translate hardware IDs
             List<ComponentResult> compResults = componentResultRepository
-                    .findByBoardSerialNumber(certificate.getPlatformSerial());
+                    .findByCertificateSerialNumberAndBoardSerialNumber(
+                            certificate.getSerialNumber().toString(),
+                            certificate.getPlatformSerial());
             if (PciIds.DB.isReady()) {
                 compResults = PciIds.translateResults(compResults);
             }

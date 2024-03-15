@@ -38,6 +38,9 @@ import java.util.Set;
 @NoArgsConstructor
 public class SupplyChainCredentialValidator  {
 
+    /**
+     * used to identify and clear a nuc
+     */
     public static final int NUC_VARIABLE_BIT = 159;
     /**
      * AppraisalStatus message for a valid endorsement credential appraisal.
@@ -233,7 +236,8 @@ public class SupplyChainCredentialValidator  {
      * @throws SupplyChainValidatorException tried to validate using null certificates
      */
     public static String validateCertChain(final X509Certificate cert,
-                                           final Set<X509Certificate> additionalCerts) throws SupplyChainValidatorException {
+                                           final Set<X509Certificate> additionalCerts)
+            throws SupplyChainValidatorException {
         if (cert == null || additionalCerts == null) {
             throw new SupplyChainValidatorException(
                     "Certificate or validation certificates are null");
@@ -337,7 +341,8 @@ public class SupplyChainCredentialValidator  {
      * @throws SupplyChainValidatorException tried to validate using null certificates
      */
     public static boolean issuerMatchesSubjectDN(final X509AttributeCertificateHolder cert,
-                                                 final X509Certificate signingCert) throws SupplyChainValidatorException {
+                                                 final X509Certificate signingCert)
+            throws SupplyChainValidatorException {
         if (cert == null || signingCert == null) {
             throw new SupplyChainValidatorException("Certificate or signing certificate is null");
         }
@@ -362,7 +367,8 @@ public class SupplyChainCredentialValidator  {
      * @throws SupplyChainValidatorException tried to validate using null certificates
      */
     public static boolean issuerMatchesSubjectDN(final X509Certificate cert,
-                                                 final X509Certificate signingCert) throws SupplyChainValidatorException {
+                                                 final X509Certificate signingCert)
+            throws SupplyChainValidatorException {
         if (cert == null || signingCert == null) {
             throw new SupplyChainValidatorException("Certificate or signing certificate is null");
         }
@@ -389,7 +395,8 @@ public class SupplyChainCredentialValidator  {
      * @throws SupplyChainValidatorException tried to validate using null certificates
      */
     public static boolean signatureMatchesPublicKey(final X509Certificate cert,
-                                                    final X509Certificate signingCert) throws SupplyChainValidatorException {
+                                                    final X509Certificate signingCert)
+            throws SupplyChainValidatorException {
         if (cert == null || signingCert == null) {
             throw new SupplyChainValidatorException("Certificate or signing certificate is null");
         }
@@ -424,7 +431,8 @@ public class SupplyChainCredentialValidator  {
      * @throws SupplyChainValidatorException tried to validate using null certificates
      */
     public static boolean signatureMatchesPublicKey(final X509AttributeCertificateHolder cert,
-                                                    final X509Certificate signingCert) throws SupplyChainValidatorException {
+                                                    final X509Certificate signingCert)
+            throws SupplyChainValidatorException {
         if (signingCert == null) {
             throw new SupplyChainValidatorException("Signing certificate is null");
         }
@@ -442,7 +450,8 @@ public class SupplyChainCredentialValidator  {
      * @throws SupplyChainValidatorException tried to validate using null certificates
      */
     public static boolean signatureMatchesPublicKey(final X509AttributeCertificateHolder cert,
-                                                    final PublicKey signingKey) throws SupplyChainValidatorException {
+                                                    final PublicKey signingKey)
+            throws SupplyChainValidatorException {
         if (cert == null || signingKey == null) {
             throw new SupplyChainValidatorException("Certificate or signing certificate is null");
         }

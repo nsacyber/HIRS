@@ -58,8 +58,22 @@
                                 </div>
                             </my:editor>
                         </li>
-                    </ul>
                 </form:form>
+                        <form:form method="POST" modelAttribute="initialData" action="policy/update-revision-ignore">
+                            <ul>
+                                <li>Ignore Component Revision Attribute: ${initialData.enableIgnoreRevisionAttribute ? 'Enabled' : 'Disabled'}
+                                    <my:editor id="ignoreRevisionPolicyEditor" label="Edit Settings">
+                                        <div class="radio">
+                                          <label><input id="revisionTop" type="radio" name="ignoreRevisionAttribute" ${initialData.enableIgnoreRevisionAttribute ? 'checked' : ''} value="checked"/> Ignore Component Revision Attribute enabled</label>
+                                        </div>
+                                        <div class="radio">
+                                          <label><input id="revisionBot" type="radio" name="ignoreRevisionAttribute" ${initialData.enableIgnoreRevisionAttribute ? '' : 'checked'}  value="unchecked"/> Ignore Component Revision Attribute disabled</label>
+                                        </div>
+                                    </my:editor>
+                                </li>
+                            </ul>
+                        </form:form>
+                    </ul>
             </div>
 
             <%-- Firmware validation --%>

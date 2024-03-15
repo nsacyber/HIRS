@@ -653,12 +653,12 @@
                                                                         <span class="fieldValue">${address.getAddressValueString()}</span><br/>
                                                                     </c:forEach>
                                                                     <c:choose>
-                                                                        <c:when test="${component.isFieldReplaceable()=='TRUE'}">
-                                                                            <span class="label label-success">Replaceable</span><br/>
-                                                                        </c:when>
-                                                                        <c:otherwise>
-                                                                            <span class="label label-danger">Irreplaceable</span><br/>
-                                                                        </c:otherwise>
+                                                                       <c:when test="${component.isFieldReplaceable()=='TRUE'}">
+                                                                           <span class="label label-success">Replaceable</span><br/>
+                                                                       </c:when>
+                                                                       <c:otherwise>
+                                                                           <span class="label label-danger">Irreplaceable</span><br/>
+                                                                       </c:otherwise>
                                                                     </c:choose>
                                                                     <c:if test="${component.isVersion2()}">
                                                                         <c:if test="${not empty component.getIssuerDN()}">

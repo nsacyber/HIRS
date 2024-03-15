@@ -26,12 +26,22 @@ import java.util.Objects;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class ComponentResult extends ArchivableEntity {
 
+    // String value for the Manufacturer title
+    public static final String ATTRIBUTE_MANUFACTURER = "Manufacturer";
+    // String value for the Model title
+    public static final String ATTRIBUTE_MODEL = "Model";
+    // String value for the Serial title
+    public static final String ATTRIBUTE_SERIAL = "Serial";
+    // String value for the revision title
+    public static final String ATTRIBUTE_REVISION = "Revision";
     // embedded component info
     @Setter
     private String manufacturer;
     @Setter
     private String model;
+    @Setter
     private String serialNumber;
+    @Setter
     private String revisionNumber;
     private boolean fieldReplaceable = false;
     // this is a string because component class doesn't inherit serializable.
@@ -42,6 +52,8 @@ public class ComponentResult extends ArchivableEntity {
     private AttributeStatus attributeStatus;
     private String componentAddress;
     private boolean version2 = false;
+    @Setter
+    private boolean delta = false;
     @Setter
     private boolean failedValidation;
     private String certificateType;

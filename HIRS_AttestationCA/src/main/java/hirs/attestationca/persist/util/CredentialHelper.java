@@ -13,14 +13,23 @@ import java.util.List;
 import java.util.ListIterator;
 
 @Log4j2
-@NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class CredentialHelper {
 
+    /**
+     * Small method to check if the certificate is a PEM.
+     * @param possiblePEM header information
+     * @return true if it is.
+     */
     public static boolean isPEM(final String possiblePEM) {
         return possiblePEM.contains(CertificateVariables.PEM_HEADER)
                 || possiblePEM.contains(CertificateVariables.PEM_ATTRIBUTE_HEADER);
     }
 
+    /**
+     * Small method to check if there are multi pem files
+     * @param possiblePEM header information
+     * @return true if it is.
+     */
     public static boolean isMultiPEM(final String possiblePEM) {
         boolean multiPem = false;
         int iniIndex = possiblePEM.indexOf(CertificateVariables.PEM_HEADER);
@@ -34,6 +43,11 @@ public final class CredentialHelper {
         return multiPem;
     }
 
+    /**
+     * Method to remove header footer information from PEM
+     * @param pemFile string representation of the file
+     * @return a cleaned up raw byte object
+     */
     public static byte[] stripPemHeaderFooter(final String pemFile) {
         String strippedFile;
         strippedFile = pemFile.replace(CertificateVariables.PEM_HEADER, "");
@@ -43,13 +57,19 @@ public final class CredentialHelper {
         return Base64.decode(strippedFile);
     }
 
+    /**
+     * The method is used to remove unwanted spaces and other artifacts from the certificate.
+     * @param certificateBytes raw byte form
+     * @return a cleaned up byte form
+     */
     @SuppressWarnings("magicnumber")
     public static byte[] trimCertificate(final byte[] certificateBytes) {
         int certificateStart = 0;
         int certificateLength = 0;
         ByteBuffer certificateByteBuffer = ByteBuffer.wrap(certificateBytes);
 
-        StringBuilder malformedCertStringBuilder = new StringBuilder(CertificateVariables.MALFORMED_CERT_MESSAGE);
+        StringBuilder malformedCertStringBuilder = new StringBuilder(
+                CertificateVariables.MALFORMED_CERT_MESSAGE);
         while (certificateByteBuffer.hasRemaining()) {
             // Check if there isn't an ASN.1 structure in the provided bytes
             if (certificateByteBuffer.remaining() <= 2) {

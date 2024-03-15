@@ -345,7 +345,7 @@ public class SupplyChainCredentialValidatorTest {
         AppraisalStatus result =
                 CredentialValidator.validatePlatformCredentialAttributes(pc,
                         deviceInfoReport, ec, null, null,
-                        Collections.emptyList(), UUID.randomUUID());
+                        Collections.emptyList(), UUID.randomUUID(), false);
         assertEquals(AppraisalStatus.Status.PASS, result.getAppStatus());
         assertEquals(SupplyChainCredentialValidator.PLATFORM_ATTRIBUTES_VALID,
                 result.getMessage());
@@ -377,7 +377,7 @@ public class SupplyChainCredentialValidatorTest {
         AppraisalStatus result =
                 CredentialValidator.validatePlatformCredentialAttributes(pc,
                         deviceInfoReport, ec, null, null,
-                Collections.emptyList(), UUID.randomUUID());
+                Collections.emptyList(), UUID.randomUUID(), false);
         assertEquals(AppraisalStatus.Status.PASS, result.getAppStatus());
         assertEquals(SupplyChainCredentialValidator.PLATFORM_ATTRIBUTES_VALID,
                 result.getMessage());
@@ -408,7 +408,7 @@ public class SupplyChainCredentialValidatorTest {
         AppraisalStatus result =
                 CredentialValidator.validatePlatformCredentialAttributes(pc,
                         deviceInfoReport, ec, null, null,
-                        Collections.emptyList(), UUID.randomUUID());
+                        Collections.emptyList(), UUID.randomUUID(), false);
         assertEquals(AppraisalStatus.Status.PASS, result.getAppStatus());
         assertEquals(SupplyChainCredentialValidator.PLATFORM_ATTRIBUTES_VALID,
                 result.getMessage());
@@ -441,7 +441,7 @@ public class SupplyChainCredentialValidatorTest {
         AppraisalStatus result =
                 CredentialValidator.validatePlatformCredentialAttributes(pc,
                         deviceInfoReport, ec, null, null,
-                        Collections.emptyList(), UUID.randomUUID());
+                        Collections.emptyList(), UUID.randomUUID(), false);
         assertEquals(AppraisalStatus.Status.PASS, result.getAppStatus());
         assertEquals(SupplyChainCredentialValidator.PLATFORM_ATTRIBUTES_VALID,
                 result.getMessage());
@@ -473,7 +473,7 @@ public class SupplyChainCredentialValidatorTest {
         AppraisalStatus result =
                 CredentialValidator.validatePlatformCredentialAttributes(pc,
                         deviceInfoReport, ec, null, null,
-                        Collections.emptyList(), UUID.randomUUID());
+                        Collections.emptyList(), UUID.randomUUID(), false);
         assertEquals(AppraisalStatus.Status.PASS, result.getAppStatus());
         assertEquals(SupplyChainCredentialValidator.PLATFORM_ATTRIBUTES_VALID,
                 result.getMessage());
@@ -504,7 +504,7 @@ public class SupplyChainCredentialValidatorTest {
         AppraisalStatus result =
                 CredentialValidator.validatePlatformCredentialAttributes(pc,
                         deviceInfoReport, ec, null, null,
-                        Collections.emptyList(), UUID.randomUUID());
+                        Collections.emptyList(), UUID.randomUUID(), false);
         assertEquals(AppraisalStatus.Status.PASS, result.getAppStatus());
         assertEquals(SupplyChainCredentialValidator.PLATFORM_ATTRIBUTES_VALID,
                 result.getMessage());
@@ -535,7 +535,7 @@ public class SupplyChainCredentialValidatorTest {
         AppraisalStatus result =
                 CredentialValidator.validatePlatformCredentialAttributes(pc,
                         deviceInfoReport, ec, null, null,
-                        Collections.emptyList(), UUID.randomUUID());
+                        Collections.emptyList(), UUID.randomUUID(), false);
         assertEquals(AppraisalStatus.Status.PASS, result.getAppStatus());
         assertEquals(SupplyChainCredentialValidator.PLATFORM_ATTRIBUTES_VALID,
                 result.getMessage());
@@ -570,7 +570,7 @@ public class SupplyChainCredentialValidatorTest {
         AppraisalStatus result =
                 CredentialValidator.validatePlatformCredentialAttributes(
                         pc, deviceInfoReport, ec, null, null,
-                        Collections.emptyList(), UUID.randomUUID());
+                        Collections.emptyList(), UUID.randomUUID(), false);
         assertEquals(AppraisalStatus.Status.FAIL, result.getAppStatus());
         assertEquals(expectedMessage, result.getMessage());
     }
@@ -603,7 +603,7 @@ public class SupplyChainCredentialValidatorTest {
         AppraisalStatus result =
                 CredentialValidator.validatePlatformCredentialAttributes(
                         pc, deviceInfoReport, ec, null, null,
-                        Collections.emptyList(), UUID.randomUUID());
+                        Collections.emptyList(), UUID.randomUUID(), false);
         assertEquals(AppraisalStatus.Status.FAIL, result.getAppStatus());
         assertEquals(expectedMessage, result.getMessage());
     }
@@ -984,7 +984,7 @@ public class SupplyChainCredentialValidatorTest {
 
         AppraisalStatus result =
                 CredentialValidator.validatePlatformCredentialAttributes(pc, null, ec, null, null,
-                        Collections.emptyList(), UUID.randomUUID());
+                        Collections.emptyList(), UUID.randomUUID(), false);
         assertEquals(AppraisalStatus.Status.FAIL, result.getAppStatus());
         assertEquals(expectedMessage, result.getMessage());
     }
@@ -1241,7 +1241,7 @@ public class SupplyChainCredentialValidatorTest {
 
         AppraisalStatus appraisalStatus = CertificateAttributeScvValidator
                 .validatePlatformCredentialAttributesV2p0(platformCredential, deviceInfoReport, null, null,
-                        Collections.emptyList(), UUID.randomUUID());
+                        Collections.emptyList(), UUID.randomUUID(), false);
         assertEquals(AppraisalStatus.Status.PASS,
                 appraisalStatus.getAppStatus());
         assertEquals(SupplyChainCredentialValidator.PLATFORM_ATTRIBUTES_VALID,
@@ -1261,7 +1261,7 @@ public class SupplyChainCredentialValidatorTest {
 
         AppraisalStatus appraisalStatus = CertificateAttributeScvValidator
                 .validatePlatformCredentialAttributesV2p0(platformCredential, deviceInfoReport, null, null,
-                        Collections.emptyList(), UUID.randomUUID());
+                        Collections.emptyList(), UUID.randomUUID(), false);
         assertEquals(AppraisalStatus.Status.PASS, appraisalStatus.getAppStatus());
         assertEquals(SupplyChainCredentialValidator.PLATFORM_ATTRIBUTES_VALID,
                 appraisalStatus.getMessage());
@@ -1283,7 +1283,7 @@ public class SupplyChainCredentialValidatorTest {
 
         AppraisalStatus appraisalStatus = CertificateAttributeScvValidator
                 .validatePlatformCredentialAttributesV2p0(platformCredential, deviceInfoReport, null, null,
-                        Collections.emptyList(), UUID.randomUUID());
+                        Collections.emptyList(), UUID.randomUUID(), false);
         assertEquals(AppraisalStatus.Status.PASS, appraisalStatus.getAppStatus());
         assertEquals(SupplyChainCredentialValidator.PLATFORM_ATTRIBUTES_VALID,
                 appraisalStatus.getMessage());
@@ -1307,7 +1307,7 @@ public class SupplyChainCredentialValidatorTest {
 
         AppraisalStatus appraisalStatus = CertificateAttributeScvValidator
                 .validatePlatformCredentialAttributesV2p0(platformCredential, deviceInfoReport, null, null,
-                        Collections.emptyList(), UUID.randomUUID());
+                        Collections.emptyList(), UUID.randomUUID(), false);
         assertEquals(AppraisalStatus.Status.FAIL, appraisalStatus.getAppStatus());
     }
 
@@ -1324,7 +1324,7 @@ public class SupplyChainCredentialValidatorTest {
         AppraisalStatus result = CertificateAttributeScvValidator
                 .validatePlatformCredentialAttributesV2p0(platformCredential,
                         deviceInfoReport, null, null,
-                        Collections.emptyList(), UUID.randomUUID());
+                        Collections.emptyList(), UUID.randomUUID(), false);
         assertEquals(AppraisalStatus.Status.PASS, result.getAppStatus());
         assertEquals(SupplyChainCredentialValidator.PLATFORM_ATTRIBUTES_VALID,
                 result.getMessage());
@@ -1332,7 +1332,7 @@ public class SupplyChainCredentialValidatorTest {
         result = CertificateAttributeScvValidator
                 .validatePlatformCredentialAttributesV2p0(platformCredential,
                         deviceInfoReport, null, null,
-                        Collections.emptyList(), UUID.randomUUID());
+                        Collections.emptyList(), UUID.randomUUID(), false);
         assertEquals(AppraisalStatus.Status.FAIL, result.getAppStatus());
         assertEquals("Platform manufacturer did not match\n", result.getMessage());
 
@@ -1340,7 +1340,7 @@ public class SupplyChainCredentialValidatorTest {
         result = CertificateAttributeScvValidator
                 .validatePlatformCredentialAttributesV2p0(platformCredential,
                         deviceInfoReport, null, null,
-                        Collections.emptyList(), UUID.randomUUID());
+                        Collections.emptyList(), UUID.randomUUID(), false);
         assertEquals(AppraisalStatus.Status.PASS, result.getAppStatus());
         assertEquals(SupplyChainCredentialValidator.PLATFORM_ATTRIBUTES_VALID,
                 result.getMessage());
@@ -1348,7 +1348,7 @@ public class SupplyChainCredentialValidatorTest {
         result = CertificateAttributeScvValidator
                 .validatePlatformCredentialAttributesV2p0(platformCredential,
                         deviceInfoReport, null, null,
-                        Collections.emptyList(), UUID.randomUUID());
+                        Collections.emptyList(), UUID.randomUUID(), false);
         assertEquals(result.getAppStatus(), AppraisalStatus.Status.FAIL);
         assertEquals(result.getMessage(), "Platform model did not match\n");
 
@@ -1356,7 +1356,7 @@ public class SupplyChainCredentialValidatorTest {
         result = CertificateAttributeScvValidator
                 .validatePlatformCredentialAttributesV2p0(platformCredential,
                         deviceInfoReport, null, null,
-                        Collections.emptyList(), UUID.randomUUID());
+                        Collections.emptyList(), UUID.randomUUID(), false);
         assertEquals(AppraisalStatus.Status.PASS, result.getAppStatus());
         assertEquals(SupplyChainCredentialValidator.PLATFORM_ATTRIBUTES_VALID,
                 result.getMessage());
@@ -1364,13 +1364,13 @@ public class SupplyChainCredentialValidatorTest {
         result = CertificateAttributeScvValidator
                 .validatePlatformCredentialAttributesV2p0(platformCredential,
                         deviceInfoReport, null, null,
-                        Collections.emptyList(), UUID.randomUUID());
+                        Collections.emptyList(), UUID.randomUUID(), false);
         assertEquals(AppraisalStatus.Status.PASS, result.getAppStatus());
         platformCredential = setupMatchingPlatformCredential(deviceInfoReport);
         result = CertificateAttributeScvValidator
                 .validatePlatformCredentialAttributesV2p0(platformCredential,
                         deviceInfoReport, null, null,
-                        Collections.emptyList(), UUID.randomUUID());
+                        Collections.emptyList(), UUID.randomUUID(), false);
         assertEquals(AppraisalStatus.Status.PASS, result.getAppStatus());
         assertEquals(SupplyChainCredentialValidator.PLATFORM_ATTRIBUTES_VALID,
                 result.getMessage());
@@ -1378,7 +1378,7 @@ public class SupplyChainCredentialValidatorTest {
         result = CertificateAttributeScvValidator
                 .validatePlatformCredentialAttributesV2p0(platformCredential,
                         deviceInfoReport, null, null,
-                        Collections.emptyList(), UUID.randomUUID());
+                        Collections.emptyList(), UUID.randomUUID(), false);
         assertEquals(AppraisalStatus.Status.PASS, result.getAppStatus());
         assertEquals(SupplyChainCredentialValidator.PLATFORM_ATTRIBUTES_VALID,
                 result.getMessage());
@@ -1387,7 +1387,7 @@ public class SupplyChainCredentialValidatorTest {
         result = CertificateAttributeScvValidator
                 .validatePlatformCredentialAttributesV2p0(platformCredential,
                         deviceInfoReport, null, null,
-                        Collections.emptyList(), UUID.randomUUID());
+                        Collections.emptyList(), UUID.randomUUID(), false);
         assertEquals(AppraisalStatus.Status.PASS, result.getAppStatus());
         assertEquals(SupplyChainCredentialValidator.PLATFORM_ATTRIBUTES_VALID,
                 result.getMessage());
@@ -1398,7 +1398,7 @@ public class SupplyChainCredentialValidatorTest {
         result = CertificateAttributeScvValidator
                 .validatePlatformCredentialAttributesV2p0(platformCredential,
                         deviceInfoReport, null, null,
-                        Collections.emptyList(), UUID.randomUUID());
+                        Collections.emptyList(), UUID.randomUUID(), false);
         assertEquals(AppraisalStatus.Status.FAIL, result.getAppStatus());
         assertEquals("Component manufacturer is empty\n", result.getMessage());
 
@@ -1406,7 +1406,7 @@ public class SupplyChainCredentialValidatorTest {
         result = CertificateAttributeScvValidator
                 .validatePlatformCredentialAttributesV2p0(platformCredential,
                         deviceInfoReport, null, null,
-                        Collections.emptyList(), UUID.randomUUID());
+                        Collections.emptyList(), UUID.randomUUID(), false);
         assertEquals(AppraisalStatus.Status.PASS, result.getAppStatus());
         assertEquals(SupplyChainCredentialValidator.PLATFORM_ATTRIBUTES_VALID,
                 result.getMessage());
@@ -1416,7 +1416,7 @@ public class SupplyChainCredentialValidatorTest {
         result = CertificateAttributeScvValidator
                 .validatePlatformCredentialAttributesV2p0(platformCredential,
                         deviceInfoReport, null, null,
-                        Collections.emptyList(), UUID.randomUUID());
+                        Collections.emptyList(), UUID.randomUUID(), false);
         assertEquals(AppraisalStatus.Status.FAIL, result.getAppStatus());
         assertEquals("Component model is empty\n", result.getMessage());
 
@@ -1436,7 +1436,7 @@ public class SupplyChainCredentialValidatorTest {
         AppraisalStatus result = CertificateAttributeScvValidator
                 .validatePlatformCredentialAttributesV2p0(platformCredential,
                         deviceInfoReport, null, null,
-                        Collections.emptyList(), UUID.randomUUID());
+                        Collections.emptyList(), UUID.randomUUID(), false);
         assertEquals(AppraisalStatus.Status.PASS, result.getAppStatus());
         assertEquals(SupplyChainCredentialValidator.PLATFORM_ATTRIBUTES_VALID,
                 result.getMessage());
@@ -1444,7 +1444,7 @@ public class SupplyChainCredentialValidatorTest {
         result = CertificateAttributeScvValidator
                 .validatePlatformCredentialAttributesV2p0(platformCredential,
                         deviceInfoReport, null, null,
-                        Collections.emptyList(), UUID.randomUUID());
+                        Collections.emptyList(), UUID.randomUUID(), false);
         assertEquals(AppraisalStatus.Status.FAIL, result.getAppStatus());
         assertEquals("Platform manufacturer did not match\n", result.getMessage());
 
@@ -1452,7 +1452,7 @@ public class SupplyChainCredentialValidatorTest {
         result = CertificateAttributeScvValidator
                 .validatePlatformCredentialAttributesV2p0(platformCredential,
                         deviceInfoReport, null, null,
-                        Collections.emptyList(), UUID.randomUUID());
+                        Collections.emptyList(), UUID.randomUUID(), false);
         assertEquals(AppraisalStatus.Status.PASS, result.getAppStatus());
         assertEquals(SupplyChainCredentialValidator.PLATFORM_ATTRIBUTES_VALID,
                 result.getMessage());
@@ -1460,7 +1460,7 @@ public class SupplyChainCredentialValidatorTest {
         result = CertificateAttributeScvValidator
                 .validatePlatformCredentialAttributesV2p0(platformCredential,
                         deviceInfoReport, null, null,
-                        Collections.emptyList(), UUID.randomUUID());
+                        Collections.emptyList(), UUID.randomUUID(), false);
         assertEquals(AppraisalStatus.Status.FAIL, result.getAppStatus());
         assertEquals("Platform model did not match\n", result.getMessage());
 
@@ -1468,7 +1468,7 @@ public class SupplyChainCredentialValidatorTest {
         result = CertificateAttributeScvValidator
                 .validatePlatformCredentialAttributesV2p0(platformCredential,
                         deviceInfoReport, null, null,
-                        Collections.emptyList(), UUID.randomUUID());
+                        Collections.emptyList(), UUID.randomUUID(), false);
         assertEquals(AppraisalStatus.Status.PASS, result.getAppStatus());
         assertEquals(SupplyChainCredentialValidator.PLATFORM_ATTRIBUTES_VALID,
                 result.getMessage());
@@ -1476,7 +1476,7 @@ public class SupplyChainCredentialValidatorTest {
         result = CertificateAttributeScvValidator
                 .validatePlatformCredentialAttributesV2p0(platformCredential,
                         deviceInfoReport, null, null,
-                        Collections.emptyList(), UUID.randomUUID());
+                        Collections.emptyList(), UUID.randomUUID(), false);
         assertEquals(AppraisalStatus.Status.FAIL, result.getAppStatus());
         assertEquals("Platform serial did not match\n", result.getMessage());
 
@@ -1484,7 +1484,7 @@ public class SupplyChainCredentialValidatorTest {
         result = CertificateAttributeScvValidator
                 .validatePlatformCredentialAttributesV2p0(platformCredential,
                         deviceInfoReport, null, null,
-                Collections.emptyList(), UUID.randomUUID());
+                Collections.emptyList(), UUID.randomUUID(), false);
         assertEquals(AppraisalStatus.Status.PASS, result.getAppStatus());
         assertEquals(SupplyChainCredentialValidator.PLATFORM_ATTRIBUTES_VALID,
                 result.getMessage());
@@ -1492,7 +1492,7 @@ public class SupplyChainCredentialValidatorTest {
         result = CertificateAttributeScvValidator
                 .validatePlatformCredentialAttributesV2p0(platformCredential,
                         deviceInfoReport, null, null,
-                        Collections.emptyList(), UUID.randomUUID());
+                        Collections.emptyList(), UUID.randomUUID(), false);
         assertEquals(AppraisalStatus.Status.FAIL, result.getAppStatus());
         assertEquals("Platform version did not match\n", result.getMessage());
 
@@ -1500,7 +1500,7 @@ public class SupplyChainCredentialValidatorTest {
         result = CertificateAttributeScvValidator
                 .validatePlatformCredentialAttributesV2p0(platformCredential,
                         deviceInfoReport, null, null,
-                        Collections.emptyList(), UUID.randomUUID());
+                        Collections.emptyList(), UUID.randomUUID(), false);
         assertEquals(AppraisalStatus.Status.PASS, result.getAppStatus());
         assertEquals(SupplyChainCredentialValidator.PLATFORM_ATTRIBUTES_VALID,
                 result.getMessage());
@@ -1511,7 +1511,7 @@ public class SupplyChainCredentialValidatorTest {
         result = CertificateAttributeScvValidator
                 .validatePlatformCredentialAttributesV2p0(platformCredential,
                         deviceInfoReport, null, null,
-                        Collections.emptyList(), UUID.randomUUID());
+                        Collections.emptyList(), UUID.randomUUID(), false);
         assertEquals(AppraisalStatus.Status.FAIL, result.getAppStatus());
         assertEquals("Component manufacturer is empty\n"
                 + "There are unmatched components:\n"
@@ -1523,7 +1523,7 @@ public class SupplyChainCredentialValidatorTest {
         result = CertificateAttributeScvValidator
                 .validatePlatformCredentialAttributesV2p0(platformCredential,
                         deviceInfoReport, null, null,
-                        Collections.emptyList(), UUID.randomUUID());
+                        Collections.emptyList(), UUID.randomUUID(), false);
         assertEquals(AppraisalStatus.Status.PASS, result.getAppStatus());
         assertEquals(SupplyChainCredentialValidator.PLATFORM_ATTRIBUTES_VALID,
                 result.getMessage());
@@ -1533,7 +1533,7 @@ public class SupplyChainCredentialValidatorTest {
         result = CertificateAttributeScvValidator
                 .validatePlatformCredentialAttributesV2p0(platformCredential,
                         deviceInfoReport, null, null,
-                        Collections.emptyList(), UUID.randomUUID());
+                        Collections.emptyList(), UUID.randomUUID(), false);
         assertEquals(AppraisalStatus.Status.FAIL, result.getAppStatus());
         assertEquals("Component model is empty\n", result.getMessage());
     }
@@ -1552,7 +1552,7 @@ public class SupplyChainCredentialValidatorTest {
         AppraisalStatus result = CertificateAttributeScvValidator
                 .validatePlatformCredentialAttributesV2p0(platformCredential,
                         deviceInfoReport, null, null,
-                        Collections.emptyList(), UUID.randomUUID());
+                        Collections.emptyList(), UUID.randomUUID(), false);
         assertEquals(AppraisalStatus.Status.PASS, result.getAppStatus());
         assertEquals(SupplyChainCredentialValidator.PLATFORM_ATTRIBUTES_VALID,
                 result.getMessage());
@@ -1574,7 +1574,7 @@ public class SupplyChainCredentialValidatorTest {
         result = CertificateAttributeScvValidator
                 .validatePlatformCredentialAttributesV2p0(platformCredential,
                         deviceInfoReport, null, null,
-                        Collections.emptyList(), UUID.randomUUID());
+                        Collections.emptyList(), UUID.randomUUID(), false);
         assertEquals(AppraisalStatus.Status.FAIL, result.getAppStatus());
         assertEquals("There are unmatched components:\n"
                 + "Manufacturer=ACME, Model=TNT, Serial=2, Revision=1.1;\n",
@@ -1600,7 +1600,7 @@ public class SupplyChainCredentialValidatorTest {
         AppraisalStatus result = CertificateAttributeScvValidator
                 .validatePlatformCredentialAttributesV2p0(platformCredential,
                         deviceInfoReport, null, null,
-                        Collections.emptyList(), UUID.randomUUID());
+                        Collections.emptyList(), UUID.randomUUID(), false);
         assertEquals(AppraisalStatus.Status.PASS, result.getAppStatus());
         assertEquals(SupplyChainCredentialValidator.PLATFORM_ATTRIBUTES_VALID,
                 result.getMessage());
@@ -1608,7 +1608,7 @@ public class SupplyChainCredentialValidatorTest {
         result = CertificateAttributeScvValidator
                 .validatePlatformCredentialAttributesV2p0(platformCredential,
                         deviceInfoReport, null, null,
-                        Collections.emptyList(), UUID.randomUUID());
+                        Collections.emptyList(), UUID.randomUUID(), false);
         assertEquals(AppraisalStatus.Status.PASS, result.getAppStatus());
         assertEquals(SupplyChainCredentialValidator.PLATFORM_ATTRIBUTES_VALID,
                 result.getMessage());
@@ -1628,7 +1628,7 @@ public class SupplyChainCredentialValidatorTest {
         AppraisalStatus result = CertificateAttributeScvValidator
                 .validatePlatformCredentialAttributesV2p0(platformCredential,
                         deviceInfoReport, null, null,
-                        Collections.emptyList(), UUID.randomUUID());
+                        Collections.emptyList(), UUID.randomUUID(), false);
         assertEquals(AppraisalStatus.Status.PASS, result.getAppStatus());
         assertEquals(SupplyChainCredentialValidator.PLATFORM_ATTRIBUTES_VALID,
                 result.getMessage());
@@ -1641,7 +1641,7 @@ public class SupplyChainCredentialValidatorTest {
         result = CertificateAttributeScvValidator
                 .validatePlatformCredentialAttributesV2p0(platformCredential,
                         deviceInfoReport, null, null,
-                        Collections.emptyList(), UUID.randomUUID());
+                        Collections.emptyList(), UUID.randomUUID(), false);
         assertEquals(AppraisalStatus.Status.FAIL, result.getAppStatus());
         assertEquals("Component manufacturer is empty\n"
                 + "There are unmatched components:\n"
@@ -1653,7 +1653,7 @@ public class SupplyChainCredentialValidatorTest {
         result = CertificateAttributeScvValidator
                 .validatePlatformCredentialAttributesV2p0(platformCredential,
                         deviceInfoReport, null, null,
-                        Collections.emptyList(), UUID.randomUUID());
+                        Collections.emptyList(), UUID.randomUUID(), false);
         assertEquals(AppraisalStatus.Status.PASS, result.getAppStatus());
         assertEquals(SupplyChainCredentialValidator.PLATFORM_ATTRIBUTES_VALID,
                 result.getMessage());
@@ -1665,7 +1665,7 @@ public class SupplyChainCredentialValidatorTest {
         result = CertificateAttributeScvValidator
                 .validatePlatformCredentialAttributesV2p0(platformCredential,
                         deviceInfoReport, null, null,
-                        Collections.emptyList(), UUID.randomUUID());
+                        Collections.emptyList(), UUID.randomUUID(), false);
         assertEquals(AppraisalStatus.Status.FAIL, result.getAppStatus());
         assertEquals("Component model is empty\n", result.getMessage());
     }
@@ -1695,7 +1695,7 @@ public class SupplyChainCredentialValidatorTest {
         AppraisalStatus result = CertificateAttributeScvValidator
                 .validatePlatformCredentialAttributesV2p0(platformCredential,
                         deviceInfoReport, null, null,
-                        Collections.emptyList(), UUID.randomUUID());
+                        Collections.emptyList(), UUID.randomUUID(), false);
         assertEquals(AppraisalStatus.Status.PASS, result.getAppStatus());
         assertEquals(SupplyChainCredentialValidator.PLATFORM_ATTRIBUTES_VALID,
                 result.getMessage());
@@ -1726,7 +1726,7 @@ public class SupplyChainCredentialValidatorTest {
         AppraisalStatus result = CertificateAttributeScvValidator
                 .validatePlatformCredentialAttributesV2p0(platformCredential,
                         deviceInfoReport, null, null,
-                        Collections.emptyList(), UUID.randomUUID());
+                        Collections.emptyList(), UUID.randomUUID(), false);
         assertEquals(AppraisalStatus.Status.PASS, result.getAppStatus());
         assertEquals(SupplyChainCredentialValidator.PLATFORM_ATTRIBUTES_VALID,
                 result.getMessage());
@@ -1759,7 +1759,7 @@ public class SupplyChainCredentialValidatorTest {
         AppraisalStatus result = CertificateAttributeScvValidator
                 .validatePlatformCredentialAttributesV2p0(platformCredential,
                         deviceInfoReport, null, null,
-                        Collections.emptyList(), UUID.randomUUID());
+                        Collections.emptyList(), UUID.randomUUID(), false);
         assertEquals(AppraisalStatus.Status.PASS, result.getAppStatus());
         assertEquals(SupplyChainCredentialValidator.PLATFORM_ATTRIBUTES_VALID,
                 result.getMessage());
@@ -1774,131 +1774,131 @@ public class SupplyChainCredentialValidatorTest {
 //    @Test
     public final void testValidateDeltaPlatformCredentialAttributes()
             throws IOException, URISyntaxException {
-        DeviceInfoReport deviceInfoReport = setupDeviceInfoReportWithComponents(
-                SAMPLE_PACCOR_OUTPUT_TXT);
+//        DeviceInfoReport deviceInfoReport = setupDeviceInfoReportWithComponents(
+//                SAMPLE_PACCOR_OUTPUT_TXT);
 
-        PlatformCredential base = mock(PlatformCredential.class);
-        PlatformCredential delta1 = mock(PlatformCredential.class);
-        PlatformCredential delta2 = mock(PlatformCredential.class);
+//        PlatformCredential base = mock(PlatformCredential.class);
+//        PlatformCredential delta1 = mock(PlatformCredential.class);
+//        PlatformCredential delta2 = mock(PlatformCredential.class);
+//
+//        ComponentIdentifierV2 compId1 = new ComponentIdentifierV2(
+//                new ComponentClass(Paths.get(Objects.requireNonNull(this.getClass()
+//                        .getResource(JSON_FILE)).toURI()), "0x00010002"),
+//                new DERUTF8String("Intel"),
+//                new DERUTF8String("Core i7"), new DERUTF8String("Not Specified"),
+//                new DERUTF8String("Intel(R) Core(TM) i7-4790 CPU @ 3.60GHz"), null,
+//                ASN1Boolean.TRUE, new ArrayList<>(0), null, null,
+//                null);
+//        ComponentIdentifierV2 compId2 = new ComponentIdentifierV2(
+//                new ComponentClass(Paths.get(Objects.requireNonNull(this.getClass()
+//                        .getResource(JSON_FILE)).toURI()), "0x00050004"),
+//                new DERUTF8String("Intel Corporation"),
+//                new DERUTF8String("Ethernet Connection I217-V-faulty"),
+//                new DERUTF8String("23:94:17:ba:86:5e"), new DERUTF8String("00"), null,
+//                ASN1Boolean.FALSE, new ArrayList<>(0), null, null,
+//                null);
+//        ComponentIdentifierV2 compId3 = new ComponentIdentifierV2(
+//                new ComponentClass(Paths.get(Objects.requireNonNull(this.getClass()
+//                        .getResource(JSON_FILE)).toURI()), "0x00090002"),
+//                new DERUTF8String("Intel Corporation"),
+//                new DERUTF8String("82580 Gigabit Network Connection-faulty"),
+//                new DERUTF8String("90:e2:ba:31:83:10"), new DERUTF8String(""), null,
+//                ASN1Boolean.FALSE, new ArrayList<>(0), null, null,
+//                null);
+//        ComponentIdentifierV2 deltaCompId2 = new ComponentIdentifierV2(
+//                new ComponentClass(Paths.get(Objects.requireNonNull(this.getClass()
+//                        .getResource(JSON_FILE)).toURI()), "0x00050004"),
+//                new DERUTF8String("Intel Corporation"),
+//                new DERUTF8String("Ethernet Connection I217-V"),
+//                new DERUTF8String("23:94:17:ba:86:5e"), new DERUTF8String("00"), null,
+//                ASN1Boolean.FALSE, new ArrayList<>(0), null, null,
+//                AttributeStatus.ADDED);
+//        ComponentIdentifierV2 deltaCompId3 = new ComponentIdentifierV2(
+//                new ComponentClass(Paths.get(Objects.requireNonNull(this.getClass()
+//                        .getResource(JSON_FILE)).toURI()), "0x00090002"),
+//                new DERUTF8String("Intel Corporation"),
+//                new DERUTF8String("82580 Gigabit Network Connection"),
+//                new DERUTF8String("90:e2:ba:31:83:10"), new DERUTF8String(""), null,
+//                ASN1Boolean.FALSE, new ArrayList<>(0), null, null,
+//                AttributeStatus.ADDED);
+//
+//        ComponentIdentifierV2 ciV21Faulty = new ComponentIdentifierV2();
+//        ComponentIdentifierV2 ciV22Faulty = new ComponentIdentifierV2();
+//        ciV21Faulty.setComponentManufacturer(compId2.getComponentManufacturer());
+//        ciV21Faulty.setComponentClass(compId2.getComponentClass());
+//        ciV21Faulty.setComponentModel(compId2.getComponentModel());
+//        ciV21Faulty.setComponentSerial(compId2.getComponentSerial());
+//        ciV21Faulty.setComponentRevision(compId2.getComponentRevision());
+//        ciV21Faulty.setComponentManufacturerId(compId2.getComponentManufacturerId());
+//        ciV21Faulty.setFieldReplaceable(compId2.getFieldReplaceable());
+//        ciV21Faulty.setComponentAddress(compId2.getComponentAddress());
+//        ciV21Faulty.setAttributeStatus(AttributeStatus.REMOVED);
+//        ciV22Faulty.setComponentManufacturer(compId3.getComponentManufacturer());
+//        ciV22Faulty.setComponentClass(compId3.getComponentClass());
+//        ciV22Faulty.setComponentModel(compId3.getComponentModel());
+//        ciV22Faulty.setComponentSerial(compId3.getComponentSerial());
+//        ciV22Faulty.setComponentRevision(compId3.getComponentRevision());
+//        ciV22Faulty.setComponentManufacturerId(compId3.getComponentManufacturerId());
+//        ciV22Faulty.setFieldReplaceable(compId3.getFieldReplaceable());
+//        ciV22Faulty.setComponentAddress(compId3.getComponentAddress());
+//        ciV22Faulty.setAttributeStatus(AttributeStatus.REMOVED);
+//
+//        List<ComponentIdentifier> compList = new ArrayList<>(3);
+//        compList.add(compId1);
+//        compList.add(compId2);
+//        compList.add(compId3);
+//
+//        List<ComponentIdentifier> delta1List = new ArrayList<>(2);
+//        delta1List.add(ciV21Faulty);
+//        delta1List.add(deltaCompId2);
+//        List<ComponentIdentifier> delta2List = new ArrayList<>(2);
+//        delta1List.add(ciV22Faulty);
+//        delta1List.add(deltaCompId3);
+//
+//        when(base.isPlatformBase()).thenReturn(true);
+//        when(delta1.isPlatformBase()).thenReturn(false);
+//        when(delta2.isPlatformBase()).thenReturn(false);
+//        when(base.getManufacturer()).thenReturn("innotek GmbH");
+//        when(base.getModel()).thenReturn("VirtualBox");
+//        when(base.getVersion()).thenReturn("1.2");
+//        when(base.getPlatformSerial()).thenReturn("62UIAE5");
+//        when(delta1.getPlatformSerial()).thenReturn("62UIAE5");
+//        when(delta2.getPlatformSerial()).thenReturn("62UIAE5");
+//        when(base.getPlatformChainType()).thenReturn("base");
+//        when(delta1.getPlatformChainType()).thenReturn("delta");
+//        when(delta2.getPlatformChainType()).thenReturn("delta");
+//        when(base.getSerialNumber()).thenReturn(BigInteger.valueOf(01));
+//        when(delta1.getSerialNumber()).thenReturn(BigInteger.valueOf(39821));
+//        when(delta2.getSerialNumber()).thenReturn(BigInteger.valueOf(39822));
+//        when(delta1.getHolderSerialNumber()).thenReturn(BigInteger.valueOf(02));
+//        when(delta2.getHolderSerialNumber()).thenReturn(BigInteger.valueOf(39821));
+//        when(base.getComponentIdentifiers()).thenReturn(compList);
+//        when(delta1.getComponentIdentifiers()).thenReturn(delta1List);
+//        when(delta2.getComponentIdentifiers()).thenReturn(delta2List);
+//
+//        Map<PlatformCredential, SupplyChainValidation> chainCredentials = new HashMap<>(0);
+//        List<ArchivableEntity> certsUsed = new ArrayList<>();
+//        certsUsed.add(base);
+//        chainCredentials.put(base, new SupplyChainValidation(
+//                SupplyChainValidation.ValidationType.PLATFORM_CREDENTIAL,
+//                AppraisalStatus.Status.PASS, certsUsed, ""));
+//        certsUsed.clear();
+//        certsUsed.add(delta1);
+//        chainCredentials.put(delta1, new SupplyChainValidation(
+//                SupplyChainValidation.ValidationType.PLATFORM_CREDENTIAL,
+//                AppraisalStatus.Status.PASS, certsUsed, ""));
+//        certsUsed.clear();
+//        certsUsed.add(delta2);
+//        chainCredentials.put(delta2, new SupplyChainValidation(
+//                SupplyChainValidation.ValidationType.PLATFORM_CREDENTIAL,
+//                AppraisalStatus.Status.PASS, certsUsed, ""));
 
-        ComponentIdentifierV2 compId1 = new ComponentIdentifierV2(
-                new ComponentClass(Paths.get(Objects.requireNonNull(this.getClass()
-                        .getResource(JSON_FILE)).toURI()), "0x00010002"),
-                new DERUTF8String("Intel"),
-                new DERUTF8String("Core i7"), new DERUTF8String("Not Specified"),
-                new DERUTF8String("Intel(R) Core(TM) i7-4790 CPU @ 3.60GHz"), null,
-                ASN1Boolean.TRUE, new ArrayList<>(0), null, null,
-                null);
-        ComponentIdentifierV2 compId2 = new ComponentIdentifierV2(
-                new ComponentClass(Paths.get(Objects.requireNonNull(this.getClass()
-                        .getResource(JSON_FILE)).toURI()), "0x00050004"),
-                new DERUTF8String("Intel Corporation"),
-                new DERUTF8String("Ethernet Connection I217-V-faulty"),
-                new DERUTF8String("23:94:17:ba:86:5e"), new DERUTF8String("00"), null,
-                ASN1Boolean.FALSE, new ArrayList<>(0), null, null,
-                null);
-        ComponentIdentifierV2 compId3 = new ComponentIdentifierV2(
-                new ComponentClass(Paths.get(Objects.requireNonNull(this.getClass()
-                        .getResource(JSON_FILE)).toURI()), "0x00090002"),
-                new DERUTF8String("Intel Corporation"),
-                new DERUTF8String("82580 Gigabit Network Connection-faulty"),
-                new DERUTF8String("90:e2:ba:31:83:10"), new DERUTF8String(""), null,
-                ASN1Boolean.FALSE, new ArrayList<>(0), null, null,
-                null);
-        ComponentIdentifierV2 deltaCompId2 = new ComponentIdentifierV2(
-                new ComponentClass(Paths.get(Objects.requireNonNull(this.getClass()
-                        .getResource(JSON_FILE)).toURI()), "0x00050004"),
-                new DERUTF8String("Intel Corporation"),
-                new DERUTF8String("Ethernet Connection I217-V"),
-                new DERUTF8String("23:94:17:ba:86:5e"), new DERUTF8String("00"), null,
-                ASN1Boolean.FALSE, new ArrayList<>(0), null, null,
-                AttributeStatus.ADDED);
-        ComponentIdentifierV2 deltaCompId3 = new ComponentIdentifierV2(
-                new ComponentClass(Paths.get(Objects.requireNonNull(this.getClass()
-                        .getResource(JSON_FILE)).toURI()), "0x00090002"),
-                new DERUTF8String("Intel Corporation"),
-                new DERUTF8String("82580 Gigabit Network Connection"),
-                new DERUTF8String("90:e2:ba:31:83:10"), new DERUTF8String(""), null,
-                ASN1Boolean.FALSE, new ArrayList<>(0), null, null,
-                AttributeStatus.ADDED);
-
-        ComponentIdentifierV2 ciV21Faulty = new ComponentIdentifierV2();
-        ComponentIdentifierV2 ciV22Faulty = new ComponentIdentifierV2();
-        ciV21Faulty.setComponentManufacturer(compId2.getComponentManufacturer());
-        ciV21Faulty.setComponentClass(compId2.getComponentClass());
-        ciV21Faulty.setComponentModel(compId2.getComponentModel());
-        ciV21Faulty.setComponentSerial(compId2.getComponentSerial());
-        ciV21Faulty.setComponentRevision(compId2.getComponentRevision());
-        ciV21Faulty.setComponentManufacturerId(compId2.getComponentManufacturerId());
-        ciV21Faulty.setFieldReplaceable(compId2.getFieldReplaceable());
-        ciV21Faulty.setComponentAddress(compId2.getComponentAddress());
-        ciV21Faulty.setAttributeStatus(AttributeStatus.REMOVED);
-        ciV22Faulty.setComponentManufacturer(compId3.getComponentManufacturer());
-        ciV22Faulty.setComponentClass(compId3.getComponentClass());
-        ciV22Faulty.setComponentModel(compId3.getComponentModel());
-        ciV22Faulty.setComponentSerial(compId3.getComponentSerial());
-        ciV22Faulty.setComponentRevision(compId3.getComponentRevision());
-        ciV22Faulty.setComponentManufacturerId(compId3.getComponentManufacturerId());
-        ciV22Faulty.setFieldReplaceable(compId3.getFieldReplaceable());
-        ciV22Faulty.setComponentAddress(compId3.getComponentAddress());
-        ciV22Faulty.setAttributeStatus(AttributeStatus.REMOVED);
-
-        List<ComponentIdentifier> compList = new ArrayList<>(3);
-        compList.add(compId1);
-        compList.add(compId2);
-        compList.add(compId3);
-
-        List<ComponentIdentifier> delta1List = new ArrayList<>(2);
-        delta1List.add(ciV21Faulty);
-        delta1List.add(deltaCompId2);
-        List<ComponentIdentifier> delta2List = new ArrayList<>(2);
-        delta1List.add(ciV22Faulty);
-        delta1List.add(deltaCompId3);
-
-        when(base.isPlatformBase()).thenReturn(true);
-        when(delta1.isPlatformBase()).thenReturn(false);
-        when(delta2.isPlatformBase()).thenReturn(false);
-        when(base.getManufacturer()).thenReturn("innotek GmbH");
-        when(base.getModel()).thenReturn("VirtualBox");
-        when(base.getVersion()).thenReturn("1.2");
-        when(base.getPlatformSerial()).thenReturn("62UIAE5");
-        when(delta1.getPlatformSerial()).thenReturn("62UIAE5");
-        when(delta2.getPlatformSerial()).thenReturn("62UIAE5");
-        when(base.getPlatformChainType()).thenReturn("base");
-        when(delta1.getPlatformChainType()).thenReturn("delta");
-        when(delta2.getPlatformChainType()).thenReturn("delta");
-        when(base.getSerialNumber()).thenReturn(BigInteger.valueOf(01));
-        when(delta1.getSerialNumber()).thenReturn(BigInteger.valueOf(39821));
-        when(delta2.getSerialNumber()).thenReturn(BigInteger.valueOf(39822));
-        when(delta1.getHolderSerialNumber()).thenReturn(BigInteger.valueOf(02));
-        when(delta2.getHolderSerialNumber()).thenReturn(BigInteger.valueOf(39821));
-        when(base.getComponentIdentifiers()).thenReturn(compList);
-        when(delta1.getComponentIdentifiers()).thenReturn(delta1List);
-        when(delta2.getComponentIdentifiers()).thenReturn(delta2List);
-
-        Map<PlatformCredential, SupplyChainValidation> chainCredentials = new HashMap<>(0);
-        List<ArchivableEntity> certsUsed = new ArrayList<>();
-        certsUsed.add(base);
-        chainCredentials.put(base, new SupplyChainValidation(
-                SupplyChainValidation.ValidationType.PLATFORM_CREDENTIAL,
-                AppraisalStatus.Status.PASS, certsUsed, ""));
-        certsUsed.clear();
-        certsUsed.add(delta1);
-        chainCredentials.put(delta1, new SupplyChainValidation(
-                SupplyChainValidation.ValidationType.PLATFORM_CREDENTIAL,
-                AppraisalStatus.Status.PASS, certsUsed, ""));
-        certsUsed.clear();
-        certsUsed.add(delta2);
-        chainCredentials.put(delta2, new SupplyChainValidation(
-                SupplyChainValidation.ValidationType.PLATFORM_CREDENTIAL,
-                AppraisalStatus.Status.PASS, certsUsed, ""));
-
-        AppraisalStatus result = CertificateAttributeScvValidator
-                .validateDeltaPlatformCredentialAttributes(delta2,
-                        deviceInfoReport, base, chainCredentials);
-        assertEquals(AppraisalStatus.Status.PASS, result.getAppStatus());
-        assertEquals(SupplyChainCredentialValidator.PLATFORM_ATTRIBUTES_VALID,
-                result.getMessage());
+//        AppraisalStatus result = CredentialValidator
+//                .validateDeltaPlatformCredentialAttributes(delta2,
+//                        deviceInfoReport, base, chainCredentials);
+//        assertEquals(AppraisalStatus.Status.PASS, result.getAppStatus());
+//        assertEquals(SupplyChainCredentialValidator.PLATFORM_ATTRIBUTES_VALID,
+//                result.getMessage());
     }
 
     /**
@@ -1910,108 +1910,108 @@ public class SupplyChainCredentialValidatorTest {
 //    @Test
     public final void testValidateChainFailure()
             throws IOException, URISyntaxException {
-        DeviceInfoReport deviceInfoReport = setupDeviceInfoReportWithComponents(
-                SAMPLE_PACCOR_OUTPUT_TXT);
+//        DeviceInfoReport deviceInfoReport = setupDeviceInfoReportWithComponents(
+//                SAMPLE_PACCOR_OUTPUT_TXT);
 
-        PlatformCredential base = mock(PlatformCredential.class);
-        PlatformCredential delta1 = mock(PlatformCredential.class);
+//        PlatformCredential base = mock(PlatformCredential.class);
+//        PlatformCredential delta1 = mock(PlatformCredential.class);
+//
+//        ComponentIdentifierV2 compId1 = new ComponentIdentifierV2(
+//                new ComponentClass(Paths.get(Objects.requireNonNull(this.getClass()
+//                        .getResource(JSON_FILE)).toURI()), "0x00010002"),
+//                new DERUTF8String("Intel"),
+//                new DERUTF8String("Core i7"), new DERUTF8String("Not Specified"),
+//                new DERUTF8String("Intel(R) Core(TM) i7-4790 CPU @ 3.60GHz"), null,
+//                ASN1Boolean.TRUE, new ArrayList<>(0), null, null,
+//                null);
+//        ComponentIdentifierV2 compId2 = new ComponentIdentifierV2(
+//                new ComponentClass(Paths.get(Objects.requireNonNull(this.getClass()
+//                        .getResource(JSON_FILE)).toURI()), "0x00050004"),
+//                new DERUTF8String("Intel Corporation"),
+//                new DERUTF8String("Ethernet Connection I217-V-faulty"),
+//                new DERUTF8String("23:94:17:ba:86:5e"), new DERUTF8String("00"), null,
+//                ASN1Boolean.FALSE, new ArrayList<>(0), null, null,
+//                null);
+//        ComponentIdentifierV2 compId3 = new ComponentIdentifierV2(
+//                new ComponentClass(Paths.get(Objects.requireNonNull(this.getClass()
+//                        .getResource(JSON_FILE)).toURI()), "0x00090002"),
+//                new DERUTF8String("Intel Corporation"),
+//                new DERUTF8String("82580 Gigabit Network Connection-faulty"),
+//                new DERUTF8String("90:e2:ba:31:83:10"), new DERUTF8String(""), null,
+//                ASN1Boolean.FALSE, new ArrayList<>(0), null, null,
+//                null);
+//        ComponentIdentifierV2 deltaCompId2 = new ComponentIdentifierV2(
+//                new ComponentClass(Paths.get(Objects.requireNonNull(this.getClass()
+//                        .getResource(JSON_FILE)).toURI()), "0x00050004"),
+//                new DERUTF8String("Intel Corporation"),
+//                new DERUTF8String("Ethernet Connection I217-V"),
+//                new DERUTF8String("23:94:17:ba:86:5e"), new DERUTF8String("00"), null,
+//                ASN1Boolean.FALSE, new ArrayList<>(0), null, null,
+//                AttributeStatus.ADDED);
+//
+//        ComponentIdentifierV2 ciV21Faulty = new ComponentIdentifierV2();
+//        ComponentIdentifierV2 ciV22Faulty = new ComponentIdentifierV2();
+//        ciV21Faulty.setComponentManufacturer(compId2.getComponentManufacturer());
+//        ciV21Faulty.setComponentModel(compId2.getComponentModel());
+//        ciV21Faulty.setComponentSerial(compId2.getComponentSerial());
+//        ciV21Faulty.setComponentRevision(compId2.getComponentRevision());
+//        ciV21Faulty.setComponentManufacturerId(compId2.getComponentManufacturerId());
+//        ciV21Faulty.setFieldReplaceable(compId2.getFieldReplaceable());
+//        ciV21Faulty.setComponentAddress(compId2.getComponentAddress());
+//        ciV21Faulty.setAttributeStatus(AttributeStatus.REMOVED);
+//        ciV22Faulty.setComponentManufacturer(compId3.getComponentManufacturer());
+//        ciV22Faulty.setComponentModel(compId3.getComponentModel());
+//        ciV22Faulty.setComponentSerial(compId3.getComponentSerial());
+//        ciV22Faulty.setComponentRevision(compId3.getComponentRevision());
+//        ciV22Faulty.setComponentManufacturerId(compId3.getComponentManufacturerId());
+//        ciV22Faulty.setFieldReplaceable(compId3.getFieldReplaceable());
+//        ciV22Faulty.setComponentAddress(compId3.getComponentAddress());
+//        ciV22Faulty.setAttributeStatus(AttributeStatus.REMOVED);
+//
+//        List<ComponentIdentifier> compList = new ArrayList<>(3);
+//        compList.add(compId1);
+//        compList.add(compId2);
+//        compList.add(compId3);
+//
+//        List<ComponentIdentifier> delta1List = new ArrayList<>(2);
+//        delta1List.add(ciV21Faulty);
+//        delta1List.add(deltaCompId2);
+//
+//        when(base.isPlatformBase()).thenReturn(true);
+//        when(delta1.isPlatformBase()).thenReturn(false);
+//        when(base.getManufacturer()).thenReturn("innotek GmbH");
+//        when(base.getModel()).thenReturn("VirtualBox");
+//        when(base.getVersion()).thenReturn("1.2");
+//        when(base.getPlatformSerial()).thenReturn("0");
+//        when(delta1.getPlatformSerial()).thenReturn("0");
+//        when(base.getPlatformChainType()).thenReturn("base");
+//        when(delta1.getPlatformChainType()).thenReturn("delta");
+//        when(base.getSerialNumber()).thenReturn(BigInteger.ZERO);
+//        when(delta1.getSerialNumber()).thenReturn(BigInteger.ONE);
+//        when(delta1.getHolderSerialNumber()).thenReturn(BigInteger.ZERO);
+//        when(base.getComponentIdentifiers()).thenReturn(compList);
+//        when(delta1.getComponentIdentifiers()).thenReturn(delta1List);
+//
+//        Map<PlatformCredential, SupplyChainValidation> chainCredentials = new HashMap<>(0);
+//        List<ArchivableEntity> certsUsed = new ArrayList<>();
+//        certsUsed.add(base);
+//        chainCredentials.put(base, new SupplyChainValidation(
+//                SupplyChainValidation.ValidationType.PLATFORM_CREDENTIAL,
+//                AppraisalStatus.Status.PASS, certsUsed, ""));
+//        certsUsed.clear();
+//        certsUsed.add(delta1);
+//        chainCredentials.put(delta1, new SupplyChainValidation(
+//                SupplyChainValidation.ValidationType.PLATFORM_CREDENTIAL,
+//                AppraisalStatus.Status.PASS, certsUsed, ""));
 
-        ComponentIdentifierV2 compId1 = new ComponentIdentifierV2(
-                new ComponentClass(Paths.get(Objects.requireNonNull(this.getClass()
-                        .getResource(JSON_FILE)).toURI()), "0x00010002"),
-                new DERUTF8String("Intel"),
-                new DERUTF8String("Core i7"), new DERUTF8String("Not Specified"),
-                new DERUTF8String("Intel(R) Core(TM) i7-4790 CPU @ 3.60GHz"), null,
-                ASN1Boolean.TRUE, new ArrayList<>(0), null, null,
-                null);
-        ComponentIdentifierV2 compId2 = new ComponentIdentifierV2(
-                new ComponentClass(Paths.get(Objects.requireNonNull(this.getClass()
-                        .getResource(JSON_FILE)).toURI()), "0x00050004"),
-                new DERUTF8String("Intel Corporation"),
-                new DERUTF8String("Ethernet Connection I217-V-faulty"),
-                new DERUTF8String("23:94:17:ba:86:5e"), new DERUTF8String("00"), null,
-                ASN1Boolean.FALSE, new ArrayList<>(0), null, null,
-                null);
-        ComponentIdentifierV2 compId3 = new ComponentIdentifierV2(
-                new ComponentClass(Paths.get(Objects.requireNonNull(this.getClass()
-                        .getResource(JSON_FILE)).toURI()), "0x00090002"),
-                new DERUTF8String("Intel Corporation"),
-                new DERUTF8String("82580 Gigabit Network Connection-faulty"),
-                new DERUTF8String("90:e2:ba:31:83:10"), new DERUTF8String(""), null,
-                ASN1Boolean.FALSE, new ArrayList<>(0), null, null,
-                null);
-        ComponentIdentifierV2 deltaCompId2 = new ComponentIdentifierV2(
-                new ComponentClass(Paths.get(Objects.requireNonNull(this.getClass()
-                        .getResource(JSON_FILE)).toURI()), "0x00050004"),
-                new DERUTF8String("Intel Corporation"),
-                new DERUTF8String("Ethernet Connection I217-V"),
-                new DERUTF8String("23:94:17:ba:86:5e"), new DERUTF8String("00"), null,
-                ASN1Boolean.FALSE, new ArrayList<>(0), null, null,
-                AttributeStatus.ADDED);
-
-        ComponentIdentifierV2 ciV21Faulty = new ComponentIdentifierV2();
-        ComponentIdentifierV2 ciV22Faulty = new ComponentIdentifierV2();
-        ciV21Faulty.setComponentManufacturer(compId2.getComponentManufacturer());
-        ciV21Faulty.setComponentModel(compId2.getComponentModel());
-        ciV21Faulty.setComponentSerial(compId2.getComponentSerial());
-        ciV21Faulty.setComponentRevision(compId2.getComponentRevision());
-        ciV21Faulty.setComponentManufacturerId(compId2.getComponentManufacturerId());
-        ciV21Faulty.setFieldReplaceable(compId2.getFieldReplaceable());
-        ciV21Faulty.setComponentAddress(compId2.getComponentAddress());
-        ciV21Faulty.setAttributeStatus(AttributeStatus.REMOVED);
-        ciV22Faulty.setComponentManufacturer(compId3.getComponentManufacturer());
-        ciV22Faulty.setComponentModel(compId3.getComponentModel());
-        ciV22Faulty.setComponentSerial(compId3.getComponentSerial());
-        ciV22Faulty.setComponentRevision(compId3.getComponentRevision());
-        ciV22Faulty.setComponentManufacturerId(compId3.getComponentManufacturerId());
-        ciV22Faulty.setFieldReplaceable(compId3.getFieldReplaceable());
-        ciV22Faulty.setComponentAddress(compId3.getComponentAddress());
-        ciV22Faulty.setAttributeStatus(AttributeStatus.REMOVED);
-
-        List<ComponentIdentifier> compList = new ArrayList<>(3);
-        compList.add(compId1);
-        compList.add(compId2);
-        compList.add(compId3);
-
-        List<ComponentIdentifier> delta1List = new ArrayList<>(2);
-        delta1List.add(ciV21Faulty);
-        delta1List.add(deltaCompId2);
-
-        when(base.isPlatformBase()).thenReturn(true);
-        when(delta1.isPlatformBase()).thenReturn(false);
-        when(base.getManufacturer()).thenReturn("innotek GmbH");
-        when(base.getModel()).thenReturn("VirtualBox");
-        when(base.getVersion()).thenReturn("1.2");
-        when(base.getPlatformSerial()).thenReturn("0");
-        when(delta1.getPlatformSerial()).thenReturn("0");
-        when(base.getPlatformChainType()).thenReturn("base");
-        when(delta1.getPlatformChainType()).thenReturn("delta");
-        when(base.getSerialNumber()).thenReturn(BigInteger.ZERO);
-        when(delta1.getSerialNumber()).thenReturn(BigInteger.ONE);
-        when(delta1.getHolderSerialNumber()).thenReturn(BigInteger.ZERO);
-        when(base.getComponentIdentifiers()).thenReturn(compList);
-        when(delta1.getComponentIdentifiers()).thenReturn(delta1List);
-
-        Map<PlatformCredential, SupplyChainValidation> chainCredentials = new HashMap<>(0);
-        List<ArchivableEntity> certsUsed = new ArrayList<>();
-        certsUsed.add(base);
-        chainCredentials.put(base, new SupplyChainValidation(
-                SupplyChainValidation.ValidationType.PLATFORM_CREDENTIAL,
-                AppraisalStatus.Status.PASS, certsUsed, ""));
-        certsUsed.clear();
-        certsUsed.add(delta1);
-        chainCredentials.put(delta1, new SupplyChainValidation(
-                SupplyChainValidation.ValidationType.PLATFORM_CREDENTIAL,
-                AppraisalStatus.Status.PASS, certsUsed, ""));
-
-        AppraisalStatus result = CertificateAttributeScvValidator
-                .validateDeltaPlatformCredentialAttributes(delta1,
-                        deviceInfoReport, base, chainCredentials);
-        assertEquals(AppraisalStatus.Status.FAIL, result.getAppStatus());
-        assertEquals("There are unmatched components:\n"
-                + "Manufacturer=Intel Corporation, Model=82580 Gigabit Network "
-                + "Connection-faulty, Serial=90:e2:ba:31:83:10, Revision=;\n",
-                result.getMessage());
+//        AppraisalStatus result = CredentialValidator
+//                .validateDeltaPlatformCredentialAttributes(delta1,
+//                        deviceInfoReport, base, chainCredentials);
+//        assertEquals(AppraisalStatus.Status.FAIL, result.getAppStatus());
+//        assertEquals("There are unmatched components:\n"
+//                + "Manufacturer=Intel Corporation, Model=82580 Gigabit Network "
+//                + "Connection-faulty, Serial=90:e2:ba:31:83:10, Revision=;\n",
+//                result.getMessage());
     }
 
     /**

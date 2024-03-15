@@ -8,7 +8,7 @@ import lombok.ToString;
 
 /**
  * PolicyPage model object to demonstrate data exchange between policy.jsp page
- * form form and controller.
+ * form and controller.
  */
 @Setter
 @Getter
@@ -19,6 +19,7 @@ public class PolicyPageModel {
     private boolean enableEcValidation;
     private boolean enablePcCertificateValidation;
     private boolean enablePcCertificateAttributeValidation;
+    private boolean enableIgnoreRevisionAttribute;
     private boolean enableFirmwareValidation;
     private boolean issueAttestationCertificate;
     private boolean issueDevIdCertificate;
@@ -32,6 +33,7 @@ public class PolicyPageModel {
     // Variables to get policy settings from page
     private String pcValidate;
     private String pcAttributeValidate;
+    private String ignoreRevisionAttribute;
     private String ecValidate;
     private String fmValidate;
     private String attestationCertificateIssued;
@@ -59,6 +61,7 @@ public class PolicyPageModel {
         this.enableEcValidation = policy.isEcValidationEnabled();
         this.enablePcCertificateValidation = policy.isPcValidationEnabled();
         this.enablePcCertificateAttributeValidation = policy.isPcAttributeValidationEnabled();
+        this.enableIgnoreRevisionAttribute = policy.isIgnoreRevisionEnabled();
         this.enableFirmwareValidation = policy.isFirmwareValidationEnabled();
         this.issueAttestationCertificate = policy.isIssueAttestationCertificate();
         this.issueDevIdCertificate = policy.isIssueDevIdCertificate();
