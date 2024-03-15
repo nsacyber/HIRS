@@ -87,7 +87,7 @@ if [ $ALG = "RSA" ]; then
    ALIAS="hirs_aca_tls_ecc_512_sha384"
 fi
 
-check_for_container
+check_systemd
 start_mysqlsd
 
 if [ ! -d "$CERT_PATH" ]; then
@@ -122,15 +122,15 @@ keyStore="$CLIENT_DB_P12" "
 WEB_TLS_PARAMS="--server.ssl.key-store-password=$hirs_pki_password \
 --server.ssl.trust-store-password=$hirs_pki_password"
 
-# uncomment to show spring boot and hibernate properties used as gradle argumanets
+# uncomment to show spring boot and hibernate properties used as gradle arguments
 #echo "--args=\"$CONNECTOR_PARAMS $WEB_TLS_PARAMS\""
 
 if [ -z "$USE_WAR" ]; then
   echo "Booting the ACA from local build..."
- # ./gradlew bootRun --args="$CONNECTOR_PARAMS$WEB_TLS_PARAMS"
- ./gradlew bootRun --args="--spring.config.location=$SPRING_PROP_FILE"
-else 
+ # ./gradlew bootRun --args="$CONNECTOR_PARAMS$WEB_TLS_PARAMS"  
+./gradlew bootRun --args="--spring.config.location=$SPRING_PROP_FILE"
+else
   echo "Booting the ACA from a war file..."
  # java -jar $WAR_PATH $CONNECTOR_PARAMS$WEB_TLS_PARAMS &
-java -jar  $WAR_PATH --spring.config.location=$SPRING_PROP_FILE
+java -jar  $WAR_PATH --spring.config.location=$SPRING_PROP_FILE & disown -h
 fi

@@ -2,7 +2,7 @@ plugins {
     id 'application'
     id 'java'
     id 'war'
-    id 'com.netflix.nebula.ospackage' version '11.4.0'
+    id 'com.netflix.nebula.ospackage' version '11.8.0'
     id 'org.springframework.boot' version '3.0.6'
     id 'io.spring.dependency-management' version '1.1.0'
     id 'checkstyle'
@@ -87,13 +87,20 @@ test {
     useJUnitPlatform()
 }
 
+task buildVersion() {
+    doLast {
+        def verFile = new File(projectDir, "build/VERSION")
+        verFile.write("${jarVersion}")
+    }
+}
+
 ospackage {
     packageName = 'HIRS_AttestationCA'
     os = LINUX
     arch = NOARCH
     version = "$packVersion"
     release = '1'
-
+    
     user 'root'
     fileMode = 0755
 
@@ -108,39 +115,62 @@ ospackage {
     // copy springboot property file
     into ('/etc/hirs/aca/') {
          from '../HIRS_AttestationCAPortal/src/main/resources/application.properties'
+         from 'build/VERSION'
     }
     // copy setup scripts to /opt/hirs/aca
     into ('/opt/hirs/aca/scripts/') {
-         from '../package/scripts/'
+         from '../package/linux/'
     }
     // copy the war file into /opt/hirs/aca
     into ('/opt/hirs/aca/') {
          from '../HIRS_AttestationCAPortal/build/libs/HIRS_AttestationCAPortal.war'
          user 'root'
-         fileMode = 0755
+         fileMode = 0755 
     }
-
-    // Post Install
-    postInstall 'bash /opt/hirs/aca/scripts/aca/aca_setup.sh -u'
-    // add chrontab to run ACA at boot
-    postInstall 'echo "@reboot root /opt/hirs/aca/scripts/aca/aca_bootRun.sh -w" >> /etc/crontab'
-    // run ACA after install
-    postInstall '/opt/hirs/aca/scripts/aca/aca_bootRun.sh -w &'
-    postInstall 'chmod +x /opt/hirs/aca/scripts/aca/*'
-    postInstall 'bash /opt/hirs/aca/scripts/aca/check_for_aca.sh'
-    postInstall 'mkdir -p /etc/hirs/aca && touch /etc/hirs/aca/VERSION'
-    postInstall "echo ${jarVersion} > /etc/hirs/aca/VERSION"
 
     // Uninstall
     preUninstall 'bash /opt/hirs/aca/scripts/aca/aca_remove_setup.sh'
-    postUninstall 'rm -rf /etc/hirs'
-
+    postUninstall 'if [ -d /etc/hirs ]; then rm -rf /etc/hirs; fi;'
+    
     buildRpm {
+        dependsOn  ':HIRS_AttestationCAPortal:buildVersion'
+        dependsOn  ':HIRS_AttestationCAPortal:bootWar'
         arch = X86_64
+        // Required apps will be aut installed by dnf if not present
+        requires('java-17-openjdk', '17.0', GREATER | EQUAL)
+        requires('mariadb-server' , '10.3' , GREATER | EQUAL)
+        requires('procps-ng', '3.3.15', GREATER | EQUAL)
+        requires('alternatives', '1.19', GREATER | EQUAL)
+        // Post Trans stage (Occurs after required app and postInstall stage)
+        // Note postInstall wont wait forrequired apps
+        postTrans 'update-alternatives --set java java-17-openjdk.x86_64'
+        postTrans 'firewall-cmd --add-port=8443/tcp --permanent'
+        postTrans 'firewall-cmd --reload'
+        postTrans 'bash /opt/hirs/aca/scripts/aca/aca_setup.sh -u'
+        postTrans 'bash /opt/hirs/aca/scripts/aca/aca_bootRun.sh -w &'
+        // add chrontab to run ACA at boot
+        postTrans 'echo "@reboot root /opt/hirs/aca/scripts/aca/aca_bootRun.sh -w" >> /etc/crontab'
+        postTrans 'chmod +x /opt/hirs/aca/scripts/aca/*'
+        postTrans 'if [ -f /opt/hirs/aca/VERSION ]; then rm /opt/hirs/aca/VERSION; fi;'
+        // Wait for ACA to start up before finishing the install
+        postTrans 'bash /opt/hirs/aca/scripts/aca/check_for_aca.sh'
     }
 
     buildDeb {
+        dependsOn  ':HIRS_AttestationCAPortal:buildVersion'
+        dependsOn  ':HIRS_AttestationCAPortal:bootWar'
         packageName = 'hirs-attestationca'
         arch = 'amd64'
+        requires('openjdk-17-jdk', '17.0', GREATER | EQUAL)
+        requires('mariadb-server' , '10.3' , GREATER | EQUAL)
+        requires('curl')
+        // Install after required packages
+        postInstall 'bash /opt/hirs/aca/scripts/aca/aca_setup.sh -u'
+        postInstall '/opt/hirs/aca/scripts/aca/aca_bootRun.sh -w &'
+        postInstall 'echo "@reboot root /opt/hirs/aca/scripts/aca/aca_bootRun.sh -w" >> /etc/crontab'
+        postInstall 'chmod +x /opt/hirs/aca/scripts/aca/*'
+        postInstall 'if [ -f /opt/hirs/aca/VERSION ]; then rm /opt/hirs/aca/VERSION; fi;'
+        // Wait for ACA to start up before finishing the install
+        postInstall 'bash /opt/hirs/aca/scripts/aca/check_for_aca.sh'
     }
 }
