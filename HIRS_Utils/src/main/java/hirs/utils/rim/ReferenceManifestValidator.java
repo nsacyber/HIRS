@@ -220,7 +220,6 @@ public class ReferenceManifestValidator {
                 X509Certificate embeddedCert = parseCertFromPEMString(
                         certElement.item(0).getTextContent());
                 if (embeddedCert != null) {
-                    //subjectKeyIdentifier = getCertificateSubjectKeyIdentifier(embeddedCert);
                     if (Arrays.equals(embeddedCert.getPublicKey().getEncoded(),
                             encodedPublicKey)) {
                         context = new DOMValidateContext(new X509KeySelector(), nodes.item(0));
@@ -254,14 +253,6 @@ public class ReferenceManifestValidator {
      */
     public boolean validateRim(String signingCertPath) {
         Element fileElement = (Element) rim.getElementsByTagName("File").item(0);
-/*
-        if (trustStoreFile != null && !trustStoreFile.isEmpty()) {
-            trustStore = parseCertificatesFromPem(trustStoreFile);
-        } else {
-            return failWithError("File <" + trustStoreFile + "> is empty; " +
-                    "a valid, non-empty truststore file is required for validation.");
-        }
-*/
         X509Certificate signingCert = parseCertificatesFromPem(signingCertPath).get(0);
         if (signingCert == null) {
             return failWithError("Unable to parse the signing cert from " + signingCertPath);
