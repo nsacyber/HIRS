@@ -25,7 +25,6 @@ public interface CertificateRepository extends JpaRepository<Certificate, UUID> 
     List<Certificate> findByType(String dType);
     @Query(value = "SELECT * FROM Certificate where serialNumber = ?1 AND DTYPE = ?2", nativeQuery = true)
     Certificate findBySerialNumber(BigInteger serialNumber, String dType);
-    Certificate findByPlatformSerialAndSerialNumber(String platformSerial, BigInteger serialNumber);
     @Query(value = "SELECT * FROM Certificate where platformSerial = ?1 AND DTYPE = 'PlatformCredential'", nativeQuery = true)
     List<PlatformCredential> byBoardSerialNumber(String boardSerialNumber);
     @Query(value = "SELECT * FROM Certificate where holderSerialNumber = ?1 AND DTYPE = 'PlatformCredential'", nativeQuery = true)

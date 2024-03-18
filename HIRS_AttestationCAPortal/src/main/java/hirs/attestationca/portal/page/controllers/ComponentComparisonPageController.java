@@ -4,6 +4,7 @@ import hirs.attestationca.persist.entity.manager.CertificateRepository;
 import hirs.attestationca.persist.entity.manager.ComponentAttributeRepository;
 import hirs.attestationca.persist.entity.manager.ComponentInfoRepository;
 import hirs.attestationca.persist.entity.manager.ComponentResultRepository;
+import hirs.attestationca.persist.entity.manager.PlatformCertificateRepository;
 import hirs.attestationca.persist.entity.userdefined.certificate.ComponentResult;
 import hirs.attestationca.persist.entity.userdefined.certificate.PlatformCredential;
 import hirs.attestationca.persist.entity.userdefined.certificate.attributes.ComponentAttributeResult;
@@ -28,20 +29,20 @@ import java.util.UUID;
 
 @Log4j2
 @Controller
-@RequestMapping("/HIRS_AttestationCAPortal/portal/component-validation")
+@RequestMapping("/HIRS_AttestationCAPortal/portal/component-comparison")
 public class ComponentComparisonPageController extends PageController<CertificateDetailsPageParams> {
 
-    private final CertificateRepository certificateRepository;
+    private final PlatformCertificateRepository platformCertificateRepository;
     private final ComponentResultRepository componentResultRepository;
     private final ComponentInfoRepository componentInfoRepository;
     private final ComponentAttributeRepository componentAttributeRepository;
     @Autowired
-    public ComponentComparisonPageController(final CertificateRepository certificateRepository,
+    public ComponentComparisonPageController(final PlatformCertificateRepository platformCertificateRepository,
                                              final ComponentResultRepository componentResultRepository,
                                              final ComponentInfoRepository componentInfoRepository,
                                              final ComponentAttributeRepository componentAttributeRepository) {
         super(Page.COMPONENT_COMPARISON);
-        this.certificateRepository = certificateRepository;
+        this.platformCertificateRepository = platformCertificateRepository;
         this.componentResultRepository = componentResultRepository;
         this.componentInfoRepository = componentInfoRepository;
         this.componentAttributeRepository = componentAttributeRepository;
@@ -76,7 +77,7 @@ public class ComponentComparisonPageController extends PageController<Certificat
             try {
                 UUID uuid = UUID.fromString(params.getId());
                 data.putAll(getPlatformComponentInformation(uuid, params.getDeviceName(),
-                        certificateRepository, componentResultRepository,
+                        platformCertificateRepository, componentResultRepository,
                         componentInfoRepository,
                         componentAttributeRepository));
             } catch (IllegalArgumentException iaEx) {
@@ -113,7 +114,7 @@ public class ComponentComparisonPageController extends PageController<Certificat
      */
     public static HashMap<String, Object> getPlatformComponentInformation(
             final UUID sessionId, final String deviceName,
-            final CertificateRepository certificateRepository,
+            final PlatformCertificateRepository platformCertificateRepository,
             final ComponentResultRepository componentResultRepository,
             final ComponentInfoRepository componentInfoRepository,
             final ComponentAttributeRepository componentAttributeRepository)
@@ -129,7 +130,7 @@ public class ComponentComparisonPageController extends PageController<Certificat
                 }
             });
             componentResults.addAll(componentResultRepository.findAllById(tempIdList));
-            PlatformCredential platformCredential = (PlatformCredential) certificateRepository
+            PlatformCredential platformCredential = platformCertificateRepository
                     .findByPlatformSerialAndSerialNumber(componentResults.get(0).getBoardSerialNumber(),
                             BigInteger.valueOf(Long.parseLong(componentResults.get(0).getCertificateSerialNumber())));
 
