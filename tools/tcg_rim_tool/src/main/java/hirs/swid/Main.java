@@ -1,7 +1,6 @@
 package hirs.swid;
 
 import hirs.swid.utils.Commander;
-import hirs.swid.utils.CredentialArgumentValidator;
 import hirs.swid.utils.TimestampArgumentValidator;
 import hirs.utils.rim.ReferenceManifestValidator;
 import com.beust.jcommander.JCommander;
@@ -28,7 +27,6 @@ public class Main {
         SwidTagGateway gateway;
         ReferenceManifestValidator validator;
         List<String> unknownOpts = commander.getUnknownOptions();
-        CredentialArgumentValidator credValidator;
 
         if (!unknownOpts.isEmpty()) {
             StringBuilder sb = new StringBuilder("Unknown options encountered: ");
@@ -55,17 +53,12 @@ public class Main {
                 }
                 String verifyFile = commander.getVerifyFile();
                 String rimel = commander.getRimEventLog();
+                String certificateFile = commander.getPublicCertificate();
                 String trustStore = commander.getTruststoreFile();
                 validator.setRim(verifyFile);
                 validator.setRimEventLog(rimel);
-                credValidator = new CredentialArgumentValidator(trustStore,
-                        "","", true);
-                if (credValidator.isValid()) {
-                    validator.setTrustStoreFile(trustStore);
-                } else {
-                    exitWithErrorCode(credValidator.getErrorMessage());
-                }
-                if (validator.validateSwidtagFile(verifyFile)) {
+                validator.setTrustStoreFile(trustStore);
+                if (validator.validateRim(certificateFile)) {
                     System.out.println("Successfully verified " + verifyFile);
                 } else {
                     exitWithErrorCode("Failed to verify " + verifyFile);
@@ -86,20 +79,16 @@ public class Main {
                     case "BASE":
                         gateway.setAttributesFile(attributesFile);
                         gateway.setRimEventLog(rimEventLog);
-                        credValidator = new CredentialArgumentValidator("" ,
-                                certificateFile, privateKeyFile, false);
                         if (defaultKey){
                             gateway.setDefaultCredentials(true);
                             gateway.setJksTruststoreFile(SwidTagConstants.DEFAULT_KEYSTORE_FILE);
-                        } else if (credValidator.isValid()) {
+                        } else {
                             gateway.setDefaultCredentials(false);
                             gateway.setPemCertificateFile(certificateFile);
                             gateway.setPemPrivateKeyFile(privateKeyFile);
                             if (embeddedCert) {
                                 gateway.setEmbeddedCert(true);
                             }
-                        } else {
-                            exitWithErrorCode(credValidator.getErrorMessage());
                         }
                         List<String> timestampArguments = commander.getTimestampArguments();
                         if (timestampArguments.size() > 0) {

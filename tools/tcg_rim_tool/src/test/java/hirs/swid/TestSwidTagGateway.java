@@ -70,7 +70,7 @@ public class TestSwidTagGateway {
 				.getResourceAsStream(BASE_USER_CERT);
 		Assert.assertTrue(compareFileBytesToExpectedFile(DEFAULT_OUTPUT));
 		validator.setRim(DEFAULT_OUTPUT);
-		Assert.assertTrue(validator.validateSwidtagFile(DEFAULT_OUTPUT));
+		Assert.assertTrue(validator.validateRim(SIGNING_CERT_FILE));
 	}
 
 	/**
@@ -90,7 +90,7 @@ public class TestSwidTagGateway {
 				.getResourceAsStream(BASE_USER_CERT_EMBED);
 		Assert.assertTrue(compareFileBytesToExpectedFile(DEFAULT_OUTPUT));
 		validator.setRim(DEFAULT_OUTPUT);
-		Assert.assertTrue(validator.validateSwidtagFile(DEFAULT_OUTPUT));
+		Assert.assertTrue(validator.validateRim(SIGNING_CERT_FILE));
 	}
 
 	/**
@@ -106,7 +106,7 @@ public class TestSwidTagGateway {
 				.getResourceAsStream(BASE_DEFAULT_CERT);
 		Assert.assertTrue(compareFileBytesToExpectedFile(DEFAULT_OUTPUT));
 		validator.setRim(DEFAULT_OUTPUT);
-		Assert.assertTrue(validator.validateSwidtagFile(DEFAULT_OUTPUT));
+		Assert.assertTrue(validator.validateRim(SIGNING_CERT_FILE));
 	}
 
 	/**
@@ -124,7 +124,7 @@ public class TestSwidTagGateway {
 				.getResourceAsStream(BASE_RFC3339_TIMESTAMP);
 		Assert.assertTrue(compareFileBytesToExpectedFile(DEFAULT_OUTPUT));
 		validator.setRim(DEFAULT_OUTPUT);
-		Assert.assertTrue(validator.validateSwidtagFile(DEFAULT_OUTPUT));
+		Assert.assertTrue(validator.validateRim(SIGNING_CERT_FILE));
 	}
 
 	/**
@@ -142,7 +142,7 @@ public class TestSwidTagGateway {
 				.getResourceAsStream(BASE_RFC3852_TIMESTAMP);
 		Assert.assertTrue(compareFileBytesToExpectedFile(DEFAULT_OUTPUT));
 		validator.setRim(DEFAULT_OUTPUT);
-		Assert.assertTrue(validator.validateSwidtagFile(DEFAULT_OUTPUT));
+		Assert.assertTrue(validator.validateRim(SIGNING_CERT_FILE));
 	}
 
 	/**
@@ -155,7 +155,7 @@ public class TestSwidTagGateway {
 				.getResource(BASE_USER_CERT).getPath();
 		System.out.println("Validating file at " + filepath);
 		validator.setRim(DEFAULT_OUTPUT);
-		Assert.assertTrue(validator.validateSwidtagFile(filepath));
+		Assert.assertTrue(validator.validateRim(SIGNING_CERT_FILE));
 	}
 
 	/**

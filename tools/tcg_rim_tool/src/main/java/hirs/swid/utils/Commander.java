@@ -1,6 +1,7 @@
 package hirs.swid.utils;
 
 import com.beust.jcommander.Parameter;
+import com.beust.jcommander.Parameters;
 import hirs.swid.SwidTagConstants;
 
 import java.util.ArrayList;
@@ -10,39 +11,40 @@ import java.util.List;
  * Commander is a class that handles the command line arguments for the SWID
  * Tags gateway by implementing the JCommander package.
  */
+@Parameters(parametersValidators = {CreateArgumentValidator.class, VerifyArgumentValidator.class})
 public class Commander {
 
     @Parameter(description = "This parameter catches all unrecognized arguments.")
     private List<String> unknownOptions = new ArrayList<>();
     @Parameter(names = {"-h", "--help"}, help = true, description = "Print this help text.")
     private boolean help;
-    @Parameter(names = {"-c", "--create \"base\""}, order = 0,
+    @Parameter(names = {"-c", "--create"}, order = 0,
             description = "The type of RIM to create. A base RIM will be created by default.")
     private String createType = "";
-    @Parameter(names = {"-v", "--verify <path>"}, validateWith = FileArgumentValidator.class,
+    @Parameter(names = {"-v", "--verify"}, validateWith = FileArgumentValidator.class,
             description = "Specify a RIM file to verify.")
     private String verifyFile = "";
     @Parameter(names = {"-V", "--version"}, description = "Output the current version.")
     private boolean version = false;
-    @Parameter(names = {"-a", "--attributes <path>"}, validateWith = FileArgumentValidator.class,
+    @Parameter(names = {"-a", "--attributes"}, validateWith = FileArgumentValidator.class,
             description = "The configuration file holding attributes "
             + "to populate the base RIM with.  An example file can be found in /opt/rimtool/data.")
     private String attributesFile = "";
-    @Parameter(names = {"-o", "--out <path>"}, order = 2,
+    @Parameter(names = {"-o", "--out"}, order = 2,
             description = "The file to write the RIM out to. "
             + "The RIM will be written to stdout by default.")
     private String outFile = "";
     @Parameter(names = {"--verbose"}, description = "Control output verbosity.")
     private boolean verbose = false;
-    @Parameter(names = {"-t", "--truststore <path>"}, validateWith = FileArgumentValidator.class,
+    @Parameter(names = {"-t", "--truststore"}, validateWith = FileArgumentValidator.class,
             description = "The truststore to sign the base RIM created "
             + "or to validate the signed base RIM.")
     private String truststoreFile = "";
-    @Parameter(names = {"-k", "--privateKeyFile <path>"},
+    @Parameter(names = {"-k", "--privateKeyFile"},
             validateWith = FileArgumentValidator.class,
             description = "The private key used to sign the base RIM created by this tool.")
     private String privateKeyFile = "";
-    @Parameter(names = {"-p", "--publicCertificate <path>"},
+    @Parameter(names = {"-p", "--publicCertificate"},
             validateWith = FileArgumentValidator.class,
             description = "The public key certificate to embed in the base RIM created by "
             + "this tool.")
@@ -53,7 +55,7 @@ public class Commander {
     @Parameter(names = {"-d", "--default-key"}, order = 8,
             description = "Use the JKS keystore installed in /opt/rimtool/data.")
     private boolean defaultKey = false;
-    @Parameter(names = {"-l", "--rimel <path>"}, validateWith = FileArgumentValidator.class,
+    @Parameter(names = {"-l", "--rimel"}, validateWith = FileArgumentValidator.class,
             description = "The TCG eventlog file to use as a support RIM.")
     private String rimEventLog = "";
     @Parameter(names = {"--timestamp"}, order = 10, variableArity = true,
