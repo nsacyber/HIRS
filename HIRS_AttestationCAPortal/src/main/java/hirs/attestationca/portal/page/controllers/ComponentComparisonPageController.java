@@ -129,7 +129,9 @@ public class ComponentComparisonPageController extends PageController<Certificat
                 }
             });
             componentResults.addAll(componentResultRepository.findAllById(tempIdList));
-            PlatformCredential platformCredential = certificateRepository.findByPlatformSerialAndSerialNumber(componentResults.get(0).getBoardSerialNumber(), BigInteger.valueOf(Long.parseLong(componentResults.get(0).getCertificateSerialNumber()));
+            PlatformCredential platformCredential = (PlatformCredential) certificateRepository
+                    .findByPlatformSerialAndSerialNumber(componentResults.get(0).getBoardSerialNumber(),
+                            BigInteger.valueOf(Long.parseLong(componentResults.get(0).getCertificateSerialNumber())));
 
             if (platformCredential != null) {
                 data.put("certificateId", platformCredential.getId());
@@ -143,8 +145,8 @@ public class ComponentComparisonPageController extends PageController<Certificat
             data.put("componentResults", componentResults);
             data.put("componentInfos", componentInfoRepository.findByDeviceNameOrderByDeviceNameAsc(deviceName));
         } else {
-            String notFoundMessage = "Unable to find Platform Certificate "
-                    + "with ID: " + uuid;
+            String notFoundMessage = "No components attribute comparison found "
+                    + "with ID: " + sessionId;
             log.error(notFoundMessage);
         }
         return data;
