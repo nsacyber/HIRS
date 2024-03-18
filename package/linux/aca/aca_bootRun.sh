@@ -132,5 +132,6 @@ if [ -z "$USE_WAR" ]; then
 else
   echo "Booting the ACA from a war file..."
  # java -jar $WAR_PATH $CONNECTOR_PARAMS$WEB_TLS_PARAMS &
-java -jar  $WAR_PATH --spring.config.location=$SPRING_PROP_FILE & disown -h
+java -jar  $WAR_PATH --spring.config.location=$SPRING_PROP_FILE &
+exit 0
 fi
