@@ -1,6 +1,5 @@
 package hirs.attestationca.portal.page.controllers;
 
-import hirs.attestationca.persist.entity.manager.CertificateRepository;
 import hirs.attestationca.persist.entity.manager.ComponentAttributeRepository;
 import hirs.attestationca.persist.entity.manager.ComponentInfoRepository;
 import hirs.attestationca.persist.entity.manager.ComponentResultRepository;
@@ -68,14 +67,14 @@ public class ComponentComparisonPageController extends PageController<Certificat
         mav.addObject(MESSAGES_ATTRIBUTE, messages);
         mav.addObject(INITIAL_DATA, data);
         // Check if parameters were set
-        if (params.getId() == null) {
+        if (params.getSessionId() == null) {
             String typeError = "ID was not provided";
             messages.addError(typeError);
             log.debug(typeError);
             mav.addObject(MESSAGES_ATTRIBUTE, messages);
         } else {
             try {
-                UUID uuid = UUID.fromString(params.getId());
+                String uuid = params.getSessionId();
                 data.putAll(getPlatformComponentInformation(uuid, params.getDeviceName(),
                         platformCertificateRepository, componentResultRepository,
                         componentInfoRepository,
@@ -113,7 +112,7 @@ public class ComponentComparisonPageController extends PageController<Certificat
      * @throws IllegalArgumentException invalid argument on parsing the certificate
      */
     public static HashMap<String, Object> getPlatformComponentInformation(
-            final UUID sessionId, final String deviceName,
+            final String sessionId, final String deviceName,
             final PlatformCertificateRepository platformCertificateRepository,
             final ComponentResultRepository componentResultRepository,
             final ComponentInfoRepository componentInfoRepository,

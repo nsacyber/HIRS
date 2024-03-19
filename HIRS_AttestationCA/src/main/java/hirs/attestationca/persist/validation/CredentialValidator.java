@@ -177,7 +177,7 @@ public class CredentialValidator extends SupplyChainCredentialValidator {
             final ComponentResultRepository componentResultRepository,
             final ComponentAttributeRepository componentAttributeRepository,
             final List<ComponentInfo> componentInfos,
-            final UUID provisionSessionId) {
+            final String provisionSessionId) {
         final String baseErrorMessage = "Can't validate platform credential attributes without ";
         String message;
         if (platformCredential == null) {

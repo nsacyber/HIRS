@@ -55,7 +55,7 @@ public class SupplyChainValidationService {
     private CertificateRepository certificateRepository;
     private SupplyChainValidationRepository supplyChainValidationRepository;
     private SupplyChainValidationSummaryRepository supplyChainValidationSummaryRepository;
-    private UUID provisionSessionId;
+    private String provisionSessionId;
 
     /**
      * Constructor.
@@ -109,7 +109,7 @@ public class SupplyChainValidationService {
                                                             final Device device,
                                                             final List<ComponentInfo> componentInfos) {
         boolean acceptExpiredCerts = getPolicySettings().isExpiredCertificateValidationEnabled();
-        provisionSessionId = UUID.randomUUID();
+        provisionSessionId = UUID.randomUUID().toString();
         PlatformCredential baseCredential = null;
         SupplyChainValidation platformScv = null;
         SupplyChainValidation basePlatformScv = null;

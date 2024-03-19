@@ -109,7 +109,7 @@ public class ValidationService {
             final ComponentResultRepository componentResultRepository,
             final ComponentAttributeRepository componentAttributeRepository,
             final List<ComponentInfo> componentInfos,
-            final UUID provisionSessionId) {
+            final String provisionSessionId) {
         final SupplyChainValidation.ValidationType validationType
                 = SupplyChainValidation.ValidationType.PLATFORM_CREDENTIAL_ATTRIBUTES;
 

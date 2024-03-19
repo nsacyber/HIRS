@@ -208,7 +208,7 @@ public class CertificateAttributeScvValidator extends SupplyChainCredentialValid
             final ComponentResultRepository componentResultRepository,
             final ComponentAttributeRepository componentAttributeRepository,
             final List<ComponentInfo> componentInfos,
-            final UUID provisionSessionId) {
+            final String provisionSessionId) {
         boolean passesValidation = true;
         StringBuilder resultMessage = new StringBuilder();
 

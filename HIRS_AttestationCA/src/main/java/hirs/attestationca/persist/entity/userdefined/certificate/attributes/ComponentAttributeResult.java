@@ -6,6 +6,7 @@ import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.hibernate.annotations.JdbcTypeCode;
 
 import java.util.UUID;
 
@@ -21,7 +22,7 @@ public class ComponentAttributeResult  extends ArchivableEntity {
 
     private UUID componentId;
     @Setter
-    private UUID provisionSessionId;
+    private String provisionSessionId;
     private String expectedValue;
     private String actualValue;
 

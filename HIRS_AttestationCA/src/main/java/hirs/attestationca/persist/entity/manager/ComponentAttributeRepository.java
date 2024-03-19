@@ -20,7 +20,7 @@ public interface ComponentAttributeRepository extends JpaRepository<ComponentAtt
      * @param provisionSessionId unique id generated to link supply chain summary
      * @return a list of attribute results
      */
-    List<ComponentAttributeResult> findByProvisionSessionId(UUID provisionSessionId);
+    List<ComponentAttributeResult> findByProvisionSessionId(String provisionSessionId);
 
     /**
      * Query to look up Attribute Results based on the component id and the session id.

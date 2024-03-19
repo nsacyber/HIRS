@@ -60,7 +60,9 @@ public class SupplyChainValidationSummary extends ArchivableEntity {
     private final Set<SupplyChainValidation> validations;
 
     @Column
-    private UUID provisionSessionId;
+    private String provisionSessionId;
+    @Column
+    private String deviceName;
 
     /**
      * Default constructor necessary for Hibernate.
@@ -70,6 +72,7 @@ public class SupplyChainValidationSummary extends ArchivableEntity {
         overallValidationResult = AppraisalStatus.Status.FAIL;
         validations = Collections.emptySet();
         this.message = Strings.EMPTY;
+        this.deviceName = Strings.EMPTY;
     }
 
     /**
@@ -190,9 +193,10 @@ public class SupplyChainValidationSummary extends ArchivableEntity {
      */
     public SupplyChainValidationSummary(final Device device,
                                         final Collection<SupplyChainValidation> validations,
-                                        final UUID provisionSessionId) {
+                                        final String provisionSessionId) {
         this(device, validations);
         this.provisionSessionId = provisionSessionId;
+        this.deviceName = this.device.getName();
     }
 
     /**

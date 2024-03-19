@@ -185,7 +185,7 @@
                     var curValidation = full.validations[i];
                     var curResult = curValidation.validationResult;
                     var curMessage = curValidation.message;
-                    var session = full.provisionSessionId;
+                    var deviceName = full.deviceName
 
                     if (curValidation.validationType === validation_type) {
                         var unknownStatus = '<img class="icon" src="${unknownIcon}" title="${unknownText}"/>';
@@ -209,12 +209,16 @@
 
                                 switch (validation_type) {
                                     case "PLATFORM_CREDENTIAL":
-                                    case "PLATFORM_CREDENTIAL_ATTRIBUTES":
                                     case "ENDORSEMENT_CREDENTIAL":
                                         html += '<a href="${portal}/certificate-details?id='
                                                 + curValidation.certificatesUsed[0].id
                                                 + '&type=' + certType + '">';
                                         break;
+                                    case "PLATFORM_CREDENTIAL_ATTRIBUTES":
+                                    html += '<a href="${portal}/component-comparison?sessionId='
+                                                                                    + full.provisionSessionId
+                                                                                    + '&deviceName=' + deviceName + '">';
+                                                                                    break;
                                 }
                             }
 

@@ -13,10 +13,11 @@
         <link type="text/css" rel="stylesheet" href="${common}/certificate_details.css"/>
         <link type="text/css" rel="stylesheet" href="${common}/rim_details.css"/>
     </jsp:attribute>
-    <c:if test="${param.sessionId==null}">
-        <c:redirect url = "${portal}/validation-reports"/>
-    </c:if>
-    <jsp:attribute name="pageHeaderTitle">Platform Component Failure Comparison</jsp:attribute>
+    <jsp:attribute name="pageHeaderTitle">Platform Component Failure Comparison
+        <c:if test="${param.sessionId==null}">
+            <c:redirect url = "${portal}/validation-reports"/>
+        </c:if>
+    </jsp:attribute>
 
     <jsp:body>
         <div id="certificate-details-page" class="container-fluid">
