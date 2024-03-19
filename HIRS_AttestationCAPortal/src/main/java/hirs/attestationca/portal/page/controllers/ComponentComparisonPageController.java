@@ -120,30 +120,40 @@ public class ComponentComparisonPageController extends PageController<Certificat
             throws IllegalArgumentException, IOException {
         HashMap<String, Object> data = new HashMap<>();
         List<ComponentResult> componentResults = new ArrayList<>();
-        List<ComponentAttributeResult> attributeResults = componentAttributeRepository.findByProvisionSessionId(sessionId);
+        PlatformCredential platformCredential = null;
+        List<ComponentAttributeResult> attributeResults = componentAttributeRepository
+                .findByProvisionSessionId(sessionId);
         if (!attributeResults.isEmpty()) {
-            List<UUID> tempIdList = new ArrayList<>();
-            attributeResults.stream().forEach((dbObject) -> {
-                if (!tempIdList.contains(dbObject.getComponentId())) {
-                    tempIdList.add(dbObject.getComponentId());
-                }
-            });
-            componentResults.addAll(componentResultRepository.findAllById(tempIdList));
-            PlatformCredential platformCredential = platformCertificateRepository
-                    .findByPlatformSerialAndSerialNumber(componentResults.get(0).getBoardSerialNumber(),
-                            BigInteger.valueOf(Long.parseLong(componentResults.get(0).getCertificateSerialNumber())));
+            ComponentResult componentResult = componentResultRepository.findById(attributeResults.get(0).getComponentId()).get();
+             platformCredential = platformCertificateRepository
+                    .findByPlatformSerialAndSerialNumber(componentResult.getBoardSerialNumber(),
+                            BigInteger.valueOf(Long.parseLong(
+                                    componentResult.getCertificateSerialNumber())));
 
             if (platformCredential != null) {
                 data.put("certificateId", platformCredential.getId());
                 data.put("certificateSerialNumber", platformCredential.getSerialNumber());
                 data.put("platformManufacturer", platformCredential.getManufacturer());
                 data.put("platformModel", platformCredential.getModel());
+            } else {
+                log.error("Can't find platform certificate "
+                        + componentResults.get(0).getBoardSerialNumber());
+                return data;
             }
+            List<UUID> tempIdList = new ArrayList<>();
+            attributeResults.stream().forEach((dbObject) -> {
+                if (!tempIdList.contains(dbObject.getComponentId())) {
+                    tempIdList.add(dbObject.getComponentId());
+                }
+            });
+            componentResultRepository
+                    .findByBoardSerialNumber(platformCredential.getPlatformSerial());
             if (PciIds.DB.isReady()) {
                 componentResults = PciIds.translateResults(componentResults);
             }
             data.put("componentResults", componentResults);
-            data.put("componentInfos", componentInfoRepository.findByDeviceNameOrderByDeviceNameAsc(deviceName));
+            data.put("componentInfos", componentInfoRepository
+                    .findByDeviceNameOrderByComponentClassAsc(deviceName));
         } else {
             String notFoundMessage = "No components attribute comparison found "
                     + "with ID: " + sessionId;

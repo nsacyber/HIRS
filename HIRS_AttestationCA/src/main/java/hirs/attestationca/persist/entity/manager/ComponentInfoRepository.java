@@ -15,10 +15,11 @@ public interface ComponentInfoRepository extends JpaRepository<ComponentInfo, UU
     List<ComponentInfo> findByDeviceName(String deviceName);
     /**
      * Query that retrieves device components by device name and order them
+     * by component class
      * @param deviceName string for the host name
      * @return a list of device components
      */
-    List<ComponentInfo> findByDeviceNameOrderByDeviceNameAsc(String deviceName);
+    List<ComponentInfo> findByDeviceNameOrderByComponentClassAsc(String deviceName);
 
     /**
      * Query that retrieves device components by device name and

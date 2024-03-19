@@ -208,17 +208,20 @@
                                 }
 
                                 switch (validation_type) {
-                                    case "PLATFORM_CREDENTIAL":
                                     case "ENDORSEMENT_CREDENTIAL":
+                                    case "PLATFORM_CREDENTIAL":
+                                    case "PLATFORM_CREDENTIAL_ATTRIBUTES":
+                                    if (curMessage.includes("attributes")) {
+                                        html += '<a href="${portal}/component-comparison?sessionId='
+                                             + full.provisionSessionId
+                                             + '&deviceName=' + deviceName + '">';
+                                             break;
+                                    } else {
                                         html += '<a href="${portal}/certificate-details?id='
                                                 + curValidation.certificatesUsed[0].id
                                                 + '&type=' + certType + '">';
-                                        break;
-                                    case "PLATFORM_CREDENTIAL_ATTRIBUTES":
-                                    html += '<a href="${portal}/component-comparison?sessionId='
-                                                                                    + full.provisionSessionId
-                                                                                    + '&deviceName=' + deviceName + '">';
-                                                                                    break;
+                                               break;
+                                    }
                                 }
                             }
 

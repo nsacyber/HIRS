@@ -59,8 +59,10 @@ public class SupplyChainValidationSummary extends ArchivableEntity {
             targetEntity = SupplyChainValidation.class, orphanRemoval = true)
     private final Set<SupplyChainValidation> validations;
 
+    @Getter
     @Column
     private String provisionSessionId;
+    @Getter
     @Column
     private String deviceName;
 

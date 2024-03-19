@@ -47,9 +47,14 @@
                                                         <div style="display: flex 1; font-weight: bold; margin: auto 1rem auto 1rem">Failed Event Digest:<br />
                                                         </div>
                                                         <div style="display: flex 2; margin: 2px auto 2px 25px">
-                                                            <span class="mappedData">PCR Index:</span> ${lEvent.getPcrIndex()}<br />
-                                                            <span class="mappedData">Digest:</span> ${lEvent.getEventDigestStr()}<br />
-                                                            <span class="mappedData">Event Content:</span> ${lEvent.getEventContentStr()}
+                                                            <span class="mappedData">Manufacturer:</span> ${componentResult.getManufacturer()}<br />
+                                                            <span class="mappedData">Model:</span> ${componentResult.getModel()}<br />
+                                                            <c:if test="${not empty fn:trim(componentResult.getSerialNumber())}">
+                                                                  <span class="mappedData">Serial Number:</span> ${component.getSerialNumber()}<br />
+                                                            </c:if>
+                                                            <c:if test="${not empty fn:trim(componentResult.getRevisionNumber())}">
+                                                                  <span class="mappedData">Revision:</span> ${component.getRevisionNumber()}<br />
+                                                            </c:if>
                                                         </div>
                                                     </div>
                                                 </div>
