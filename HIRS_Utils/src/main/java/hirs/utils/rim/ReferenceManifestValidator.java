@@ -48,7 +48,15 @@ import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.security.*;
+import java.security.InvalidKeyException;
+import java.security.Key;
+import java.security.KeyException;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+import java.security.NoSuchProviderException;
+import java.security.PublicKey;
+import java.security.Security;
+import java.security.SignatureException;
 import java.security.cert.CertificateException;
 import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
@@ -174,6 +182,7 @@ public class ReferenceManifestValidator {
      */
     public ReferenceManifestValidator() {
         try {
+            Security.addProvider(new BouncyCastleProvider());
             InputStream is = ReferenceManifestValidator.class
                     .getClassLoader().getResourceAsStream(SCHEMA_URL);
             SchemaFactory schemaFactory = SchemaFactory.newInstance(SCHEMA_LANGUAGE);
