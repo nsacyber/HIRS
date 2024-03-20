@@ -65,7 +65,6 @@ public class ComponentComparisonPageController extends PageController<Certificat
         HashMap<String, Object> data = new HashMap<>();
 
         mav.addObject(MESSAGES_ATTRIBUTE, messages);
-        mav.addObject(INITIAL_DATA, data);
         // Check if parameters were set
         if (params.getSessionId() == null) {
             String typeError = "ID was not provided";
@@ -123,6 +122,8 @@ public class ComponentComparisonPageController extends PageController<Certificat
         PlatformCredential platformCredential = null;
         List<ComponentAttributeResult> attributeResults = componentAttributeRepository
                 .findByProvisionSessionId(sessionId);
+
+        data.put("deviceName", deviceName);
         if (!attributeResults.isEmpty()) {
             ComponentResult componentResult = componentResultRepository.findById(attributeResults.get(0).getComponentId()).get();
              platformCredential = platformCertificateRepository
@@ -132,6 +133,7 @@ public class ComponentComparisonPageController extends PageController<Certificat
 
             if (platformCredential != null) {
                 data.put("certificateId", platformCredential.getId());
+                data.put("boardNumber", platformCredential.getPlatformSerial());
                 data.put("certificateSerialNumber", platformCredential.getSerialNumber());
                 data.put("platformManufacturer", platformCredential.getManufacturer());
                 data.put("platformModel", platformCredential.getModel());
@@ -146,7 +148,7 @@ public class ComponentComparisonPageController extends PageController<Certificat
                     tempIdList.add(dbObject.getComponentId());
                 }
             });
-            componentResultRepository
+            componentResults = componentResultRepository
                     .findByBoardSerialNumber(platformCredential.getPlatformSerial());
             if (PciIds.DB.isReady()) {
                 componentResults = PciIds.translateResults(componentResults);

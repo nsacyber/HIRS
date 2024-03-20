@@ -25,12 +25,12 @@
                                 <div class="row">
                                     <div class="col-md-1 col-md-offset-1"><span class="colHeader">Support Component Objects</span></div>
                                     <div id="measurements" class="col col-md-8">
-                                        <c:if test="${not empty initialData.hostName}">
-                                            <div>Device:&nbsp;<span>${initialData.hostName}</span>
+                                        <c:if test="${not empty initialData.deviceName}">
+                                            <div>Device:&nbsp;<span>${initialData.deviceName}</span>
                                             </div>
                                         </c:if>
                                         <c:if test="${not empty initialData.certificateId}">
-                                            <div>Platform Certificate:&nbsp;<span><a href="${portal}/certificate-details?id=${initialData.certificateId}">${initialData.certificateFileName}</a></span>
+                                            <div>Platform Certificate:&nbsp;<span><a href="${portal}/certificate-details?id=${initialData.certificateId}">${initialData.boardNumber}</a></span>
                                             </div>
                                         </c:if>
                                     </div>
@@ -38,7 +38,7 @@
                                 <br />
                                 <div class="row" style="margin: auto 260px auto 125px">
                                     <div class="panel panel-default" style="flex: 1">
-                                        <div class="panel-heading">Client Log</div>
+                                        <div class="panel-heading">Certificate Component</div>
                                         <c:if test="${not empty initialData.componentResults}">
                                             <c:set var="iterator" value="0" scope="page"/>
                                             <c:forEach items="${initialData.componentResults}" var="componentResult">
@@ -49,12 +49,8 @@
                                                         <div style="display: flex 2; margin: 2px auto 2px 25px">
                                                             <span class="mappedData">Manufacturer:</span> ${componentResult.getManufacturer()}<br />
                                                             <span class="mappedData">Model:</span> ${componentResult.getModel()}<br />
-                                                            <c:if test="${not empty fn:trim(componentResult.getSerialNumber())}">
-                                                                  <span class="mappedData">Serial Number:</span> ${component.getSerialNumber()}<br />
-                                                            </c:if>
-                                                            <c:if test="${not empty fn:trim(componentResult.getRevisionNumber())}">
-                                                                  <span class="mappedData">Revision:</span> ${component.getRevisionNumber()}<br />
-                                                            </c:if>
+                                                            <span class="mappedData">Serial Number:</span> ${componentResult.getSerialNumber()}<br />
+                                                            <span class="mappedData">Revision:</span> ${componentResult.getRevisionNumber()}<br />
                                                         </div>
                                                     </div>
                                                 </div>
@@ -64,17 +60,11 @@
                                                         <span style="word-wrap: break-word"><a role="button" data-toggle="collapse" href="#eventContent${iterator}">${lEvent.getEventTypeString()}</a></span>
                                                     </div>
                                                     <div id="eventContent${iterator}" class="panel-collapse collapse in" style="flex: 2">
-                                                        <c:forEach items="${initialData.eventTypeMap}" var="mappedDigest">
-                                                            <c:if test="${mappedDigest.key == lEvent.getEventDigestStr()}">
-                                                                <c:set var="event" value="${mappedDigest.value}" scope="page"/>
-                                                                <c:forEach items="${mappedDigest.value}" var="event">
-                                                                    <div class="mappedOverhead">
-                                                                        <div><span class="mappedData">PCR Index:</span> ${event.getPcrIndex()}</div>
-                                                                        <div><span class="mappedData">Digest:</span> ${event.getEventDigestStr()}</div>
-                                                                        <div><span class="mappedData">Event Content:</span> ${event.getEventContentStr()}</div>
-                                                                    </div>
-                                                                </c:forEach>
-                                                            </c:if>
+                                                        <c:forEach items="${initialData.componentInfos}" var="componentInfos">
+                                                            <span class="mappedData">Manufacturer:</span> ${componentInfos.getComponentManufacturer()}<br />
+                                                            <span class="mappedData">Model:</span> ${componentInfos.getComponentModel()}<br />
+                                                            <span class="mappedData">Serial Number:</span> ${componentInfos.getComponentSerial()}<br />
+                                                            <span class="mappedData">Revision:</span> ${componentInfos.getComponentRevision()}<br />
                                                         </c:forEach>
                                                     </div>
                                                 </div>
