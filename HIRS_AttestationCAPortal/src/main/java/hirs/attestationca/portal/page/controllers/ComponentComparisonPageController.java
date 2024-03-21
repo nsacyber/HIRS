@@ -28,6 +28,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 @Log4j2
@@ -93,7 +94,7 @@ public class ComponentComparisonPageController extends PageController<Certificat
             }
 
             if (data.isEmpty()) {
-                String notFoundMessage = "Unable to find RIM with ID: " + params.getId();
+                String notFoundMessage = "Unable to find session with ID: " + params.getId();
                 messages.addError(notFoundMessage);
                 log.warn(notFoundMessage);
                 mav.addObject(MESSAGES_ATTRIBUTE, messages);
@@ -146,19 +147,17 @@ public class ComponentComparisonPageController extends PageController<Certificat
                         + componentResults.get(0).getBoardSerialNumber());
                 return data;
             }
-
-            List<ComponentResult> matchedResults = new LinkedList<>();
-            List<ComponentInfo> matchedDeviceComps = new LinkedList<>();
+            List<ComponentInfo> componentInfos = componentInfoRepository
+                    .findByDeviceNameOrderByComponentClassAsc(deviceName);
+            Map<ComponentResult, ComponentInfo> componentInfoHashMap = findMatchedComponents(componentResults, componentInfos);
+            List<ComponentResult> matchedResults = new LinkedList<>(componentInfoHashMap.keySet());
+            List<ComponentInfo> matchedDeviceComps = new LinkedList<>(componentInfoHashMap.values());
             List<ComponentResult> mismatchedResults = new LinkedList<>();
             List<ComponentInfo> mismatchedDeviceComps = new LinkedList<>();
             for(ComponentAttributeResult dbObject : attributeResults) {
-                if (dbObject.checkMatchedStatus()) {
-                    matchedResults.add(componentResultRepository.getReferenceById(dbObject.getComponentId()));
-                    matchedDeviceComps.add(componentInfoRepository.getReferenceById(dbObject.getDeviceComponentId()));
-                } else {
                     mismatchedResults.add(componentResultRepository.getReferenceById(dbObject.getComponentId()));
                     mismatchedDeviceComps.add(componentInfoRepository.getReferenceById(dbObject.getDeviceComponentId()));
-                }
+
             }
 
 //            componentResults.clear();
@@ -212,6 +211,31 @@ public class ComponentComparisonPageController extends PageController<Certificat
         }
 
         return tempList;
+    }
+
+    private static Map<ComponentResult, ComponentInfo> findMatchedComponents(
+            final List<ComponentResult> componentResults, final List<ComponentInfo> componentInfos) {
+        // first create hash map based on hashCode
+        Map<ComponentResult, ComponentInfo> resultComponentInfoMap = new HashMap<>();
+        Map<Integer, ComponentInfo> deviceHashMap = new HashMap<>();
+        componentInfos.stream().forEach((componentInfo) -> {
+            deviceHashMap.put(componentInfo.hashCommonElements(), componentInfo);
+        });
+
+        // Look for hash code in device mapping
+        // if it exists, don't save the component
+        List<ComponentResult> remainingComponentResults = new ArrayList<>();
+        int numOfAttributes = 0;
+        for (ComponentResult componentResult : componentResults) {
+            if (!deviceHashMap.containsKey(componentResult.hashCommonElements())) {
+                // didn't find the component result in the hashed mapping
+                remainingComponentResults.add(componentResult);
+            } else {
+                resultComponentInfoMap.put(componentResult, deviceHashMap.get(componentResult.hashCommonElements()));
+            }
+        }
+
+        return resultComponentInfoMap;
     }
 }
 
