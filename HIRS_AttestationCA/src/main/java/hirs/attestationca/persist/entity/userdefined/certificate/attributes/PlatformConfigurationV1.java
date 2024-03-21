@@ -25,7 +25,7 @@ public class PlatformConfigurationV1 extends PlatformConfiguration {
 
     /**
      * Constructor given the SEQUENCE that contains Platform Configuration.
-     * @param sequence containing the the Platform Configuration.
+     * @param sequence containing the Platform Configuration.
      * @throws IllegalArgumentException if there was an error on the parsing
      */
     public PlatformConfigurationV1(final ASN1Sequence sequence) throws IllegalArgumentException {

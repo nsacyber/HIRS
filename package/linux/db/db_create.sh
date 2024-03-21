@@ -34,8 +34,8 @@ SSL_DB_CLIENT_KEY="/etc/hirs/certificates/HIRS/rsa_3k_sha384_certs/HIRS_db_clien
 mkdir -p /etc/hirs/aca/
 mkdir -p /var/log/hirs/
 
+source $ACA_PROP_FILE
 source $SCRIPT_DIR/mysql_util.sh
-source $ACA_PROP_FILE 
 source /etc/os-release 
 
 # Setup distro specifc paths and variables
@@ -60,7 +60,6 @@ check_mysql_root_pwd () {
   if [ -z "$HIRS_MYSQL_ROOT_PWD" ]; then
      # Check if property file exists and look for properties
      if [ -f $ACA_PROP_FILE ]; then
-        echo "Found existing aca.properties, using existing variables..."
         source $ACA_PROP_FILE
         if [ ! -z $hirs_pki_password ]; then PKI_PASS=$hirs_pki_password; fi
         if [ ! -z $mysql_admin_password ]; then HIRS_MYSQL_ROOT_PWD=$mysql_admin_password; fi
@@ -91,6 +90,7 @@ check_mysql_root_pwd () {
     DB_ADMIN_PWD=$HIRS_MYSQL_ROOT_PWD
     echo "Using system variable supplied password" | tee -a "$LOG_FILE"
   fi
+  
   # Make sure root password is correct
   $(mysql -u root -p$DB_ADMIN_PWD -e 'quit'  &> /dev/null);
   if [ $? -eq 0 ]; then
@@ -114,12 +114,15 @@ set_mysql_server_tls () {
     # Make sure mysql can access them
     chown mysql:mysql $SSL_DB_SRV_CHAIN $SSL_DB_SRV_CERT $SSL_DB_SRV_KEY
     # Make selinux contexts for config files, if selinux is enabled
-    if [ $ID = "rhel" ]; then 
-        selinuxenabled
+    if [[ $ID = "rhel" ]] || [[ $ID = "rocky" ]] ||[[ $ID = "fedora" ]]; then 
+      command -v selinuxenabled  > /dev/null
         if [ $? -eq 0 ]; then
-           semanage fcontext -a -t mysqld_etc_t $DB_SRV_CONF  > /dev/null #adds the context type to file
-           restorecon -v -F $DB_SRV_CONF      > /dev/null                 # changes the file's context type
-       fi
+        selinuxenabled
+          if [ $? -eq 0 ]; then
+            #semanage fcontext -a -t mysqld_etc_t $DB_SRV_CONF  > /dev/null #adds the context type to file
+            restorecon -v -F $DB_SRV_CONF      > /dev/null                 # changes the file's context type
+          fi
+        fi
     fi
   else
        echo "mysql.cnf contians existing entry for ssl, skipping..." | tee -a "$LOG_FILE"
@@ -135,13 +138,16 @@ if [[ $(cat "$DB_CLIENT_CONF" | grep -c "HIRS") < 1 ]]; then
   echo "ssl_key=$SSL_DB_CLIENT_KEY" >> $DB_CLIENT_CONF
   chown mysql:mysql $SSL_DB_CLIENT_CHAIN $SSL_DB_CLIENT_CERT $SSL_DB_CLIENT_KEY 
   # Make selinux contexts for config files, if selinux is enabled
-   if [ $ID = "rhel" ]; then 
-      selinuxenabled
+   if [[ $ID = "rhel" ]] || [[ $ID = "rocky" ]] ||[[ $ID = "fedora" ]]; then 
+      command -v selinuxenabled  > /dev/null
       if [ $? -eq 0 ]; then
-          semanage fcontext -a -t mysqld_etc_t $DB_CLIENT_CONFf > /dev/null  #adds the context type to file
+      selinuxenabled
+        if [ $? -eq 0 ]; then
+         #semanage fcontext -a -t mysqld_etc_t $DB_CLIENT_CONF > /dev/null  #adds the context type to file
          restorecon -F $DB_CLIENT_CONF                         > /dev/null #changes the file's context type
+        fi
       fi
-  fi                           
+  fi 
 fi
 }
 
@@ -158,25 +164,31 @@ set_hirs_db_pwd () {
      if [ -z $HIRS_DB_PWD ]; then
        HIRS_DB_PWD=$(head -c 64 /dev/urandom | md5sum | tr -dc 'a-zA-Z0-9')
      fi
-
-     echo "hirs_db_username=hirs_db" >> $ACA_PROP_FILE
-     echo "hirs_db_password=$HIRS_DB_PWD" >> $ACA_PROP_FILE
-     echo "hibernate.connection.username=hirs_db" >> $SPRING_PROP_FILE
-     echo "hibernate.connection.password=$HIRS_DB_PWD" >> $SPRING_PROP_FILE
+     # Add key/values only if they dont exist
+     if [[ $(grep -c "hirs_db_username" $ACA_PROP_FILE) -eq 0 ]]; then  
+         echo "hirs_db_username=hirs_db" >> $ACA_PROP_FILE
+     fi
+     if [[ $(grep -c "hirs_db_password" $ACA_PROP_FILE) -eq 0 ]]; then
+         echo "hirs_db_password=$HIRS_DB_PWD" >> $ACA_PROP_FILE
+     fi
+     if [[ $(grep -c "hibernate.connection.username" $SPRING_PROP_FILE) -eq 0 ]]; then
+         echo "hibernate.connection.username=hirs_db" >> $SPRING_PROP_FILE
+     fi
+     if [[ $(grep -c "hibernate.connection.password" $SPRING_PROP_FILE) -eq 0 ]]; then
+         echo "hibernate.connection.password=$HIRS_DB_PWD" >> $SPRING_PROP_FILE
+     fi
   fi
-
 }
 
 # Create a hirs_db with client side TLS enabled
 create_hirs_db_with_tls () {
   # Check if hirs_db not created and create it if it wasn't
-  mysqlshow --user=root --password="$DB_ADMIN_PWD" | grep "hirs_db" > /dev/null 2>&1
+  mysqlshow --user=root --password="$DB_ADMIN_PWD" | grep "hirs_db" >> $LOG_FILE 2>&1
   if [ $? -eq 0 ]; then
      echo "hirs_db exists, skipping hirs_db create"
   else
      mysql -u root --password=$DB_ADMIN_PWD < $MYSQL_DIR/db_create.sql
      mysql -u root --password=$DB_ADMIN_PWD < $MYSQL_DIR/secure_mysql.sql
-#     mysql -u root --password=$DB_ADMIN_PWD -e "ALTER USER 'hirs_db'@'localhost' IDENTIFIED BY '"$HIRS_DB_PWD"'; FLUSH PRIVILEGES;";
      mysql -u root --password=$DB_ADMIN_PWD -e "SET PASSWORD FOR 'hirs_db'@'localhost' = PASSWORD('"$HIRS_DB_PWD"'); FLUSH PRIVILEGES;";
   fi
 }
@@ -207,18 +219,22 @@ keyStoreType=PKCS12&\
 keyStorePassword=$PKI_PASS&\
 keyStore="$CLIENT_DB_P12" "
 
-echo $CONNECTOR_URL >> $SPRING_PROP_FILE
+if [[ $(grep -c "hibernate.connection.url" $SPRING_PROP_FILE) -eq 0 ]]; then
+     echo $CONNECTOR_URL >> $SPRING_PROP_FILE
+fi
 
 }
 # HIRS ACA Mysqld processing ...
+check_systemd -p
 check_mariadb_install
-check_for_container -p
-set_mysql_server_tls
-set_mysql_client_tls
+
 start_mysqlsd
 check_mysql
 check_mysql_root_pwd
+clear_hirs_user
 set_hirs_db_pwd
+set_mysql_server_tls
+set_mysql_client_tls
 create_hirs_db_with_tls
 create_hibernate_url "RSA" "hirs_db"
 mysqld_reboot

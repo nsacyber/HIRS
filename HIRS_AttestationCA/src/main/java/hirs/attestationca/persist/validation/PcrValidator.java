@@ -149,10 +149,12 @@ public class PcrValidator {
             } else {
                 if (policySettings.isIgnoreGptEnabled() && tpe.getEventTypeStr().contains(EVT_EFI_GPT)) {
                     log.info(String.format("GPT Ignored -> %s", tpe));
-                } else if (policySettings.isIgnoreOsEvtEnabled() && (tpe.getEventTypeStr().contains(EVT_EFI_BOOT)
+                } else if (policySettings.isIgnoreOsEvtEnabled() && (
+                        tpe.getEventTypeStr().contains(EVT_EFI_BOOT)
                         || tpe.getEventTypeStr().contains(EVT_EFI_VAR))) {
                     log.info(String.format("OS Evt Ignored -> %s", tpe));
-                } else if (policySettings.isIgnoreOsEvtEnabled() && (tpe.getEventTypeStr().contains(EVT_EFI_CFG)
+                } else if (policySettings.isIgnoreOsEvtEnabled() && (
+                        tpe.getEventTypeStr().contains(EVT_EFI_CFG)
                         && tpe.getEventContentStr().contains("SecureBoot"))) {
                     log.info(String.format("OS Evt Config Ignored -> %s", tpe));
                 } else {
@@ -208,12 +210,11 @@ public class PcrValidator {
                 tpmQuote, pcrComposite);
 
         try {
-            /**
-             * The calculated string is being used in the contains method
-             * because the TPM Quote's hash isn't just for PCR values,
-             * it contains the calculated digest of the PCRs, along with
-             * other information.
-             */
+
+              // The calculated string is being used in the contains method
+              // because the TPM Quote's hash isn't just for PCR values,
+              // it contains the calculated digest of the PCRs, along with
+              // other information.
             String calculatedString = Hex.encodeHexString(
                     pcrInfoShort.getCalculatedDigest());
             validated = quoteString.contains(calculatedString);

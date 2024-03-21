@@ -52,6 +52,7 @@ public class ComponentClass {
     private String category, categoryStr;
     @Getter
     private String component, componentStr;
+    @Getter
     private String registryType;
     @Getter
     private String componentIdentifier;

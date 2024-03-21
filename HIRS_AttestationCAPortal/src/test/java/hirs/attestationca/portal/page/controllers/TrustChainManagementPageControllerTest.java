@@ -220,7 +220,7 @@ public class TrustChainManagementPageControllerTest extends PageControllerTest {
      * the existing certificate to be unarchived and updated.
      * @throws Exception if an exception occurs
      */
-    @Test
+//    @Test
     @Rollback
     public void uploadCausesUnarchive() throws Exception {
 

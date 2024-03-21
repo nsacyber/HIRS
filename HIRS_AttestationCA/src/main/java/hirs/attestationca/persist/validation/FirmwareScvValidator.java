@@ -35,6 +35,15 @@ public class FirmwareScvValidator extends SupplyChainCredentialValidator {
 
     private static PcrValidator pcrValidator;
 
+    /**
+     *
+     * @param device
+     * @param policySettings
+     * @param referenceManifestRepository
+     * @param referenceDigestValueRepository
+     * @param caCredentialRepository
+     * @return
+     */
     @SuppressWarnings("methodlength")
     public static AppraisalStatus validateFirmware(
             final Device device, final PolicySettings policySettings,

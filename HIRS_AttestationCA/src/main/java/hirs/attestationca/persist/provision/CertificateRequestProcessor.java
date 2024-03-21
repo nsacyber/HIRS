@@ -37,8 +37,11 @@ public class CertificateRequestProcessor extends AbstractProcessor {
 
     /**
      * Constructor.
+     * @param supplyChainValidationService object that is used to run provisioning
      * @param certificateRepository db connector for all certificates.
      * @param deviceRepository database connector for Devices.
+     * @param privateKey private key used for communication authentication
+     * @param acaCertificate object used to create credential
      * @param validDays int for the time in which a certificate is valid.
      * @param tpm2ProvisionerStateRepository db connector for provisioner state.
      */
@@ -97,7 +100,8 @@ public class CertificateRequestProcessor extends AbstractProcessor {
             RSAPublicKey akPub = ProvisionUtils.parsePublicKey(claim.getAkPublicArea().toByteArray());
 
             // Get Endorsement Credential if it exists or was uploaded
-            EndorsementCredential endorsementCredential = parseEcFromIdentityClaim(claim, ekPub, certificateRepository);
+            EndorsementCredential endorsementCredential = parseEcFromIdentityClaim(claim,
+                    ekPub, certificateRepository);
 
             // Get Platform Credentials if they exist or were uploaded
             List<PlatformCredential> platformCredentials = parsePcsFromIdentityClaim(claim,

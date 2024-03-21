@@ -4,6 +4,7 @@ import hirs.swid.utils.Commander;
 import hirs.swid.utils.TimestampArgumentValidator;
 import hirs.utils.rim.ReferenceManifestValidator;
 import com.beust.jcommander.JCommander;
+import lombok.extern.log4j.Log4j2;
 
 import java.io.File;
 import java.io.IOException;
@@ -12,17 +13,28 @@ import java.nio.file.Paths;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
+@Log4j2
 public class Main {
 
     public static void main(String[] args) {
         Commander commander = new Commander();
         JCommander jc = JCommander.newBuilder().addObject(commander).build();
-        jc.parse(args);
+        try {
+            jc.parse(args);
+        } catch (Exception e) {
+            exitWithErrorCode(e.getMessage());
+        }
         SwidTagGateway gateway;
         ReferenceManifestValidator validator;
+        List<String> unknownOpts = commander.getUnknownOptions();
 
-        if (commander.isHelp()) {
+        if (!unknownOpts.isEmpty()) {
+            StringBuilder sb = new StringBuilder("Unknown options encountered: ");
+            for (String opt : unknownOpts) {
+                sb.append(opt + ", ");
+            }
+            exitWithErrorCode(sb.substring(0,sb.lastIndexOf(",")));
+        } else if (commander.isHelp()) {
             jc.usage();
             System.out.println(commander.printHelpExamples());
         } else if (commander.isVersion()) {
@@ -36,34 +48,28 @@ public class Main {
         } else {
             if (!commander.getVerifyFile().isEmpty()) {
                 validator = new ReferenceManifestValidator();
-                System.out.println(commander.toString());
+                if (commander.isVerbose()) {
+                    System.out.println(commander.toString());
+                }
                 String verifyFile = commander.getVerifyFile();
                 String rimel = commander.getRimEventLog();
                 String certificateFile = commander.getPublicCertificate();
                 String trustStore = commander.getTruststoreFile();
-                if (!verifyFile.isEmpty()) {
-                    validator.setRim(verifyFile);
-                    if (!rimel.isEmpty()) {
-                        validator.setRimEventLog(rimel);
-                    }
-                    if (!trustStore.isEmpty()) {
-                        validator.setTrustStoreFile(trustStore);
-                    }
-                    if (!certificateFile.isEmpty()) {
-                        System.out.println("A single cert cannot be used for verification. " +
-                                "The signing cert will be searched for in the trust store.");
-                    }
-                    validator.validateSwidtagFile(verifyFile);
+                validator.setRim(verifyFile);
+                validator.setRimEventLog(rimel);
+                validator.setTrustStoreFile(trustStore);
+                if (validator.validateRim(certificateFile)) {
+                    System.out.println("Successfully verified " + verifyFile);
                 } else {
-                    System.out.println("Need a RIM file to validate!");
-                    System.exit(1);
+                    exitWithErrorCode("Failed to verify " + verifyFile);
                 }
             } else {
                 gateway = new SwidTagGateway();
-                System.out.println(commander.toString());
+                if (commander.isVerbose()) {
+                    System.out.println(commander.toString());
+                }
                 String createType = commander.getCreateType().toUpperCase();
                 String attributesFile = commander.getAttributesFile();
-                String jksTruststoreFile = commander.getTruststoreFile();
                 String certificateFile = commander.getPublicCertificate();
                 String privateKeyFile = commander.getPrivateKeyFile();
                 boolean embeddedCert = commander.isEmbedded();
@@ -71,32 +77,18 @@ public class Main {
                 String rimEventLog = commander.getRimEventLog();
                 switch (createType) {
                     case "BASE":
-                        if (!attributesFile.isEmpty()) {
-                            gateway.setAttributesFile(attributesFile);
-                        }
-                        if (!jksTruststoreFile.isEmpty()) {
+                        gateway.setAttributesFile(attributesFile);
+                        gateway.setRimEventLog(rimEventLog);
+                        if (defaultKey){
                             gateway.setDefaultCredentials(true);
-                            gateway.setJksTruststoreFile(jksTruststoreFile);
-                        } else if (!certificateFile.isEmpty() && !privateKeyFile.isEmpty()) {
+                            gateway.setJksTruststoreFile(SwidTagConstants.DEFAULT_KEYSTORE_FILE);
+                        } else {
                             gateway.setDefaultCredentials(false);
                             gateway.setPemCertificateFile(certificateFile);
                             gateway.setPemPrivateKeyFile(privateKeyFile);
                             if (embeddedCert) {
                                 gateway.setEmbeddedCert(true);
                             }
-                        } else if (defaultKey){
-                            gateway.setDefaultCredentials(true);
-                            gateway.setJksTruststoreFile(SwidTagConstants.DEFAULT_KEYSTORE_FILE);
-                        } else {
-                            System.out.println("A private key (-k) and public certificate (-p) " +
-                                    "are required, or the default key (-d) must be indicated.");
-                            System.exit(1);
-                        }
-                        if (rimEventLog.isEmpty()) {
-                            System.out.println("Error: a support RIM is required!");
-                            System.exit(1);
-                        } else {
-                            gateway.setRimEventLog(rimEventLog);
                         }
                         List<String> timestampArguments = commander.getTimestampArguments();
                         if (timestampArguments.size() > 0) {
@@ -106,16 +98,25 @@ public class Main {
                                     gateway.setTimestampArgument(timestampArguments.get(1));
                                 }
                             } else {
-                                System.exit(1);
+                                exitWithErrorCode("The provided timestamp argument(s) " +
+                                        "is/are not valid.");
                             }
                         }
                         gateway.generateSwidTag(commander.getOutFile());
                         break;
                     default:
-                        System.out.println("No create type given, nothing to do");
+                        exitWithErrorCode("Create type not recognized.");
                 }
             }
         }
+    }
+
+    /**
+     * Use cases that exit with an error code are redirected here.
+     */
+    private static void exitWithErrorCode(String errorMessage) {
+        log.error(errorMessage);
+        System.exit(1);
     }
 
     /**

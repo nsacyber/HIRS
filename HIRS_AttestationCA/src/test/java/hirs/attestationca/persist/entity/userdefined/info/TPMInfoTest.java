@@ -1,12 +1,8 @@
 package hirs.attestationca.persist.entity.userdefined.info;
 
 import static hirs.utils.enums.DeviceInfoEnums.NOT_SPECIFIED;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.InputStream;
-import java.security.cert.CertificateFactory;
-import java.security.cert.X509Certificate;
 
+import hirs.attestationca.persist.entity.userdefined.AbstractUserdefinedEntityTest;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -18,12 +14,11 @@ import org.junit.jupiter.api.Test;
 /**
  * TPMInfoTest is a unit test class for TPMInfo.
  */
-public class TPMInfoTest {
+public class TPMInfoTest extends AbstractUserdefinedEntityTest {
 
     private static final String TPM_MAKE = "test tpmMake";
     private static final String LONG_TPM_MAKE = StringUtils.rightPad("test tpmMake", 65);
-    private static final String TEST_IDENTITY_CERT =
-            "/tpm/sample_identity_cert.cer";
+
     private static final short VERSION_MAJOR = 1;
     private static final short VERSION_MINOR = 2;
     private static final short VERSION_REV_MAJOR = 3;
@@ -326,31 +321,5 @@ public class TPMInfoTest {
                         VERSION_REV_MAJOR, (short) 0,
                         getTestIdentityCertificate());
         assertNotEquals(ti1, ti2);
-    }
-
-    private X509Certificate getTestIdentityCertificate() {
-        X509Certificate certificateValue = null;
-        InputStream istream = null;
-        istream = getClass().getResourceAsStream(TEST_IDENTITY_CERT);
-        try {
-            if (istream == null) {
-                throw new FileNotFoundException(TEST_IDENTITY_CERT);
-            }
-            CertificateFactory cf = CertificateFactory.getInstance("X.509");
-            certificateValue = (X509Certificate) cf.generateCertificate(
-                    istream);
-
-        } catch (Exception e) {
-            return null;
-        } finally {
-            if (istream != null) {
-                try {
-                    istream.close();
-                } catch (IOException e) {
-                    LOGGER.error("test certificate file could not be closed");
-                }
-            }
-        }
-        return certificateValue;
     }
 }

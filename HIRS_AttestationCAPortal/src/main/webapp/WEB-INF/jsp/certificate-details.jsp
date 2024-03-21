@@ -607,7 +607,7 @@
                         <div class="row">
                             <div class="col-md-1 col-md-offset-1"><span class="colHeader">TCG Platform Configuration</span></div>
                             <div id="platformConfiguration" class="col col-md-8">
-                                <c:if test="${not empty initialData.componentsIdentifier}">
+                                <c:if test="${not empty initialData.componentResults}">
                                     <!-- Component Identifier -->
                                     <div class="panel panel-default">
                                         <div class="panel-heading" role="tab" id="headingOne">
@@ -621,12 +621,11 @@
                                         <div id="componentIdentifiercollapse" class="panel-collapse collapse in" role="tabpanel" aria-labelledby="headingOne" aria-expanded="true">
                                             <div class="panel-body">
                                                 <div id="componentIdentifier" class="row">
-                                                    <c:forEach items="${initialData.componentsIdentifier}" var="component">
-                                                        <c:set var="combined" value="${component.hashCode()}" scope="page"/>
+                                                    <c:forEach items="${initialData.componentResults}" var="component">
                                                         <div class="component col col-md-4">
                                                             <div class="panel panel-default">
                                                                 <c:choose>
-                                                                    <c:when test="${fn:contains(initialData.failures, combined)}">
+                                                                    <c:when test="${component.isFailedValidation() =='TRUE'}">
                                                                         <div class="panel-heading" style="background-color: red; color: white">
                                                                     </c:when>
                                                                     <c:otherwise>
@@ -635,7 +634,7 @@
                                                                 </c:choose>
                                                                     <c:choose>
                                                                         <c:when test="${component.isVersion2()=='TRUE'}">
-                                                                            <span data-toggle="tooltip" data-placement="top" title="Component Class">${component.getComponentClass()}</span>
+                                                                            <span data-toggle="tooltip" data-placement="top" title="Component Class">${component.getComponentClassStr()}</span>
                                                                         </c:when>
                                                                         <c:otherwise>
                                                                             <span data-toggle="tooltip" data-placement="top" title="Component Class">Platform Components</span>
@@ -644,40 +643,40 @@
                                                                 </div>
                                                                 <div class="panel-body">
                                                                     <span class="fieldHeader">Manufacturer:</span>
-                                                                    <span class="fieldValue">${component.getComponentManufacturer()}</span><br/>
+                                                                    <span class="fieldValue">${component.getManufacturer()}</span><br/>
                                                                     <span class="fieldHeader">Model:</span>
-                                                                    <span class="fieldValue">${component.getComponentModel()}</span><br/>
-                                                                    <c:if test="${not empty fn:trim(component.getComponentSerial())}">
+                                                                    <span class="fieldValue">${component.getModel()}</span><br/>
+                                                                    <c:if test="${not empty fn:trim(component.getSerialNumber())}">
                                                                         <span class="fieldHeader">Serial Number:</span>
-                                                                        <span class="fieldValue">${component.getComponentSerial()}</span><br/>
+                                                                        <span class="fieldValue">${component.getSerialNumber()}</span><br/>
                                                                     </c:if>
-                                                                    <c:if test="${not empty fn:trim(component.getComponentRevision())}">
+                                                                    <c:if test="${not empty fn:trim(component.getRevisionNumber())}">
                                                                         <span class="fieldHeader">Revision:</span>
-                                                                        <span class="fieldValue">${component.getComponentRevision()}</span><br/>
+                                                                        <span class="fieldValue">${component.getRevisionNumber()}</span><br/>
                                                                     </c:if>
-                                                                    <c:forEach items="${component.getComponentAddress()}" var="address">
-                                                                        <span class="fieldHeader">${address.getAddressTypeValue()} address:</span>
-                                                                        <span class="fieldValue">${address.getAddressValue()}</span><br/>
+                                                                    <c:forEach items="${component.getComponentAddresses()}" var="address">
+                                                                        <span class="fieldHeader">${address.getAddressTypeString()} address:</span>
+                                                                        <span class="fieldValue">${address.getAddressValueString()}</span><br/>
                                                                     </c:forEach>
                                                                     <c:choose>
-                                                                        <c:when test="${component.getFieldReplaceable()=='TRUE'}">
-                                                                            <span class="label label-success">Replaceable</span><br/>
-                                                                        </c:when>
-                                                                        <c:otherwise>
-                                                                            <span class="label label-danger">Irreplaceable</span><br/>
-                                                                        </c:otherwise>
+                                                                       <c:when test="${component.isFieldReplaceable()=='TRUE'}">
+                                                                           <span class="label label-success">Replaceable</span><br/>
+                                                                       </c:when>
+                                                                       <c:otherwise>
+                                                                           <span class="label label-danger">Irreplaceable</span><br/>
+                                                                       </c:otherwise>
                                                                     </c:choose>
                                                                     <c:if test="${component.isVersion2()}">
-                                                                        <c:if test="${not empty component.getCertificateIdentifier()}">
+                                                                        <c:if test="${not empty component.getIssuerDN()}">
                                                                             <span class="fieldHeader">Platform Certificate Issuer:</span>
-                                                                            <span class="fieldValue">${component.getCertificateIdentifier().getIssuerDN()}</span><br />
+                                                                            <span class="fieldValue">${component.getIssuerDN()}</span><br />
                                                                             <span class="fieldHeader">Platform Certificate Serial Number:</span>
-                                                                            <span class="fieldValue">${component.getCertificateIdentifier().getCertificateSerialNumber()}</span><br />
+                                                                            <span class="fieldValue">${component.getCertificateSerialNumber()}</span><br />
                                                                             <span class="fieldHeader">Platform Certificate URI:</span>
                                                                         </c:if>
                                                                         <span class="fieldValue">
-                                                                            <a href="${component.getComponentPlatformUri().getUniformResourceIdentifier()}">
-                                                                                ${component.getComponentPlatformUri().getUniformResourceIdentifier()}
+                                                                            <a href="${component.getUniformResourceIdentifier()}">
+                                                                                ${component.getUniformResourceIdentifier()}
                                                                             </a>
                                                                         </span><br />
                                                                         <span class="fieldHeader">Status:</span>

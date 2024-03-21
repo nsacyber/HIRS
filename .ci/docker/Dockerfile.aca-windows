@@ -9,6 +9,9 @@ LABEL org.opencontainers.image.source https://github.com/nsacyber/hirs
 LABEL org.opencontainers.image.description NSA\'s HIRS Attestation Certificate Authority in a Windows-native image. Expose port 8443 to access the portal from outside the container.
 LABEL org.opencontainers.image.base.name mcr.microsoft.com/powershell:${BASE_IMAGE_TAG}
 
+# REF can be specified as a docker run environment variable to select the HIRS branch to work with
+ARG REF=main
+
 SHELL ["pwsh", "-Command"]
 
 # Output Powershell Version
@@ -105,11 +108,11 @@ RUN setx PATH '%JAVA_HOME%\bin;C:\Program Files\MariaDB 11.1\bin;%GIT_HOME%\bin;
 # Echo PATH after update
 RUN echo $Env:PATH
 
-# Clone HIRS main
+# Clone HIRS main (or REF)
 WORKDIR C:/
 RUN git config --global --add core.autocrlf false
 RUN git config --global --add safe.directory '*'
-RUN git clone -b main https://github.com/nsacyber/hirs.git C:/repo
+RUN git clone -b ${REF} https://github.com/nsacyber/hirs.git C:/repo
 
 # Defensive copy of the repo so it's easy to start fresh if needed
 WORKDIR C:/repo

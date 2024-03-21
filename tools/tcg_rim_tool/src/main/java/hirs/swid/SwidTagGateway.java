@@ -64,7 +64,6 @@ import java.security.InvalidAlgorithmParameterException;
 import java.security.KeyException;
 import java.security.NoSuchAlgorithmException;
 import java.security.PrivateKey;
-import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -100,7 +99,7 @@ public class SwidTagGateway {
         try {
             JAXBContext jaxbContext = JAXBContext.newInstance(SwidTagConstants.SCHEMA_PACKAGE);
             marshaller = jaxbContext.createMarshaller();
-            attributesFile = SwidTagConstants.DEFAULT_ATTRIBUTES_FILE;
+            attributesFile = "";
             defaultCredentials = true;
             pemCertificateFile = "";
             embeddedCert = false;

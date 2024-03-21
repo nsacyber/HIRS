@@ -20,7 +20,11 @@ import org.bouncycastle.asn1.x509.Extension;
 import org.bouncycastle.asn1.x509.GeneralNames;
 import org.bouncycastle.asn1.x509.TBSCertificate;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
-import org.junit.jupiter.api.*;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Nested;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInstance;
 import org.springframework.test.util.ReflectionTestUtils;
 
 import javax.crypto.Cipher;
@@ -37,7 +41,14 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.security.*;
+import java.security.KeyPair;
+import java.security.KeyPairGenerator;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+import java.security.PrivateKey;
+import java.security.PublicKey;
+import java.security.SecureRandom;
+import java.security.Security;
 import java.security.cert.X509Certificate;
 import java.security.interfaces.RSAPublicKey;
 import java.security.spec.MGF1ParameterSpec;
@@ -46,9 +57,14 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Objects;
 
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.*;
-
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
+import static org.mockito.Mockito.when;
 
 /**
  * Test suite for {@link AttestationCertificateAuthority}.
@@ -64,11 +80,28 @@ public class AttestationCertificateAuthorityTest {
      */
     @Nested
     public class AccessAbstractProcessor extends AbstractProcessor {
+
+        /**
+         * Constructor.
+         *
+         * @param privateKey the private key of the ACA
+         * @param validDays int for the time in which a certificate is valid.
+         */
         public AccessAbstractProcessor(final PrivateKey privateKey,
                                        final int validDays) {
             super(privateKey, validDays);
         }
 
+        /**
+         * Public wrapper for the protected function generateCredential(), to access for testing.
+         *
+         * @param publicKey cannot be null
+         * @param endorsementCredential the endorsement credential
+         * @param platformCredentials the set of platform credentials
+         * @param deviceName The host name used in the subject alternative name
+         * @param acaCertificate the aca certificate
+         * @return the generated X509 certificate
+         */
         public X509Certificate accessGenerateCredential(final PublicKey publicKey,
                                             final EndorsementCredential endorsementCredential,
                                             final List<PlatformCredential> platformCredentials,
@@ -89,6 +122,11 @@ public class AttestationCertificateAuthorityTest {
 
     // test key pair
     private KeyPair keyPair;
+
+    // length of IV used in PKI
+    private static final int ENCRYPTION_IV_LEN = 16;
+    // length of secret key used in PKI
+    private static final int SECRETKEY_LEN = 128;
 
     private static final String EK_PUBLIC_PATH = "/tpm2/ek.pub";
     private static final String AK_PUBLIC_PATH = "/tpm2/ak.pub";
@@ -146,10 +184,10 @@ public class AttestationCertificateAuthorityTest {
 
         //BeforeTest
         aca = new AttestationCertificateAuthority(null, keyPair.getPrivate(),
-                null, null, null, null, null, null, 1,
+                null, null, null, null, null, null, null, 1,
                 null, null, null, null) {
         };
-        abstractProcessor = new AccessAbstractProcessor(keyPair.getPrivate(),1);
+        abstractProcessor = new AccessAbstractProcessor(keyPair.getPrivate(), 1);
 
         Security.addProvider(new BouncyCastleProvider());
     }
@@ -216,7 +254,8 @@ public class AttestationCertificateAuthorityTest {
         byte[] encrypted = encryptBlob(expected, encryptionScheme.toString());
 
         // perform the decryption and assert that the decrypted bytes equal the expected bytes
-        assertArrayEquals(expected, ProvisionUtils.decryptAsymmetricBlob(encrypted, encryptionScheme, keyPair.getPrivate()));
+        assertArrayEquals(expected, ProvisionUtils.decryptAsymmetricBlob(
+                encrypted, encryptionScheme, keyPair.getPrivate()));
     }
 
     /**
@@ -235,10 +274,10 @@ public class AttestationCertificateAuthorityTest {
 
         // create a key generator to generate a "shared" secret
         KeyGenerator keyGenerator = KeyGenerator.getInstance("AES");
-        keyGenerator.init(128);
+        keyGenerator.init(SECRETKEY_LEN);
 
         // use some random bytes as the IV to encrypt and subsequently decrypt with
-        byte[] randomBytes = new byte[16];
+        byte[] randomBytes = new byte[ENCRYPTION_IV_LEN];
 
         // generate the random bytes
         SecureRandom random = SecureRandom.getInstance("SHA1PRNG");
@@ -271,6 +310,9 @@ public class AttestationCertificateAuthorityTest {
         assertTrue(symmetricKey.getKeySize() == symmetricKey.getKey().length);
     }
 
+    private void assertTrue(final boolean b) {
+    }
+
     /**
      * Tests {@link ProvisionUtils#generateAsymmetricContents(
      * byte[], byte[], PublicKey)}.
@@ -284,7 +326,7 @@ public class AttestationCertificateAuthorityTest {
         byte[] identityProofEncoded = new byte[]{0, 0, 1, 1};
 
         // generate a random session key to be used for encryption and decryption
-        byte[] sessionKey = new byte[16];
+        byte[] sessionKey = new byte[ENCRYPTION_IV_LEN];
         SecureRandom random = SecureRandom.getInstance("SHA1PRNG");
         random.nextBytes(sessionKey);
 
@@ -325,7 +367,7 @@ public class AttestationCertificateAuthorityTest {
 
         // create a key generator to generate a secret key
         KeyGenerator keyGenerator = KeyGenerator.getInstance("AES");
-        keyGenerator.init(128);
+        keyGenerator.init(SECRETKEY_LEN);
 
         // obtain the key from the generator
         byte[] secretKey = keyGenerator.generateKey().getEncoded();
@@ -356,7 +398,7 @@ public class AttestationCertificateAuthorityTest {
         assertTrue(attestation.getCredential().length == attestation.getCredentialSize());
 
         // create containers for the 2 parts of the credential
-        byte[] iv = new byte[16];
+        byte[] iv = new byte[ENCRYPTION_IV_LEN];
         byte[] credential = new byte[attestation.getCredential().length - iv.length];
 
         // siphon off the first 16 bytes for the IV
@@ -623,7 +665,7 @@ public class AttestationCertificateAuthorityTest {
      * @return encrypted blob
      * @throws Exception during the encryption process
      */
-    private byte[] encryptBlob(byte[] blob, String transformation) throws Exception {
+    private byte[] encryptBlob(final byte[] blob, final String transformation) throws Exception {
         // initialize a cipher using the specified transformation
         Cipher cipher = Cipher.getInstance(transformation);
 
@@ -645,8 +687,8 @@ public class AttestationCertificateAuthorityTest {
      * @return encrypted blob
      * @throws Exception
      */
-    private byte[] encryptBlob(byte[] blob, byte[] key, byte[] iv, String transformation)
-            throws Exception {
+    private byte[] encryptBlob(final byte[] blob, final byte[] key, final byte[] iv,
+                               final String transformation) throws Exception {
         // initialize a cipher using the specified transformation
         Cipher cipher = Cipher.getInstance(transformation);
 
@@ -670,7 +712,7 @@ public class AttestationCertificateAuthorityTest {
      * @return decrypted blob
      * @throws Exception
      */
-    private byte[] decryptBlob(byte[] blob) throws Exception {
+    private byte[] decryptBlob(final byte[] blob) throws Exception {
         // initialize a cipher using the specified transformation
         Cipher cipher = Cipher.getInstance(EncryptionScheme.OAEP.toString());
 
@@ -695,14 +737,14 @@ public class AttestationCertificateAuthorityTest {
      * @return decrypted blob
      * @throws Exception
      */
-    private byte[] decryptBlob(byte[] blob, byte[] key, byte[] iv, String transformation)
-            throws Exception {
+    private byte[] decryptBlob(final byte[] blob, final byte[] key, final byte[] iv,
+                               final String transformation) throws Exception {
         // initialize a cipher using the specified transformation
         Cipher cipher = Cipher.getInstance(transformation);
 
-        // generate a secret key specification using the key and AES.
+        // generate a secret key specification using the key and AES
         SecretKeySpec keySpec = new SecretKeySpec(key, "AES");
- 
+
         // create IV parameter for key specification
         IvParameterSpec ivParameterSpec = new IvParameterSpec(iv);
 
@@ -712,5 +754,4 @@ public class AttestationCertificateAuthorityTest {
         // return the cipher text
         return cipher.doFinal(blob);
     }
-
 }

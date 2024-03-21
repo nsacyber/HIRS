@@ -10,6 +10,8 @@ DB_ADMIN_PWD=$1
 source $SCRIPT_DIR/mysql_util.sh
 source /etc/os-release 
 
+check_systemd
+
 # Check for sudo or root user, not actually needed but a good idea 
 if [ "$EUID" -ne 0 ]
      then echo "This script requires root.  Please run as root" 
@@ -30,14 +32,11 @@ fi
 
 echo "dropping hirs_db database"
 
-if pgrep  mysqld >/dev/null 2>&1; then
-     mysql -u root --password=$DB_ADMIN_PWD -e "FLUSH HOSTS; FLUSH LOGS; FLUSH STATUS; FLUSH PRIVILEGES; FLUSH USER_RESOURCES"
-     mysql -u root --password=$DB_ADMIN_PWD -e "DROP USER 'hirs_db'@'localhost';"
-     mysql -u root --password=$DB_ADMIN_PWD -e "DROP DATABASE IF EXISTS hirs_db;"
-     echo "hirs_db database and hirs_db user removed"
-   else
-     echo "mysql is not running. DB was not removed."
-fi
+  mysql -u root --password=$DB_ADMIN_PWD -e "FLUSH HOSTS; FLUSH LOGS; FLUSH STATUS; FLUSH PRIVILEGES; FLUSH USER_RESOURCES"
+  mysql -u root --password=$DB_ADMIN_PWD -e "DROP USER 'hirs_db'@'localhost';"
+  mysql -u root --password=$DB_ADMIN_PWD -e "DROP DATABASE IF EXISTS hirs_db;"
+  echo "hirs_db database and hirs_db user removed"
+
 
 # reset the mysql root if the password was left in the properties fiel
 if [ ! -z $DB_ADMIN_PWD ]; then
@@ -56,7 +55,5 @@ grep -v "hirs" $DB_CLIENT_CONF > tmpfile && mv tmpfile $DB_CLIENT_CONF
 
 echo "restarting mariadb"
 
-mysql -u root -e "SHUTDOWN"
-sleep 2
-check_for_container
-start_mysqlsd
+mysqld_reboot
+

@@ -3,18 +3,24 @@ package hirs.attestationca.persist.provision;
 import com.google.protobuf.ByteString;
 import hirs.attestationca.configuration.provisionerTpm2.ProvisionerTpm2;
 import hirs.attestationca.persist.entity.manager.CertificateRepository;
+import hirs.attestationca.persist.entity.manager.ComponentInfoRepository;
+import hirs.attestationca.persist.entity.manager.ComponentResultRepository;
 import hirs.attestationca.persist.entity.manager.DeviceRepository;
 import hirs.attestationca.persist.entity.manager.PolicyRepository;
 import hirs.attestationca.persist.entity.manager.ReferenceDigestValueRepository;
 import hirs.attestationca.persist.entity.manager.ReferenceManifestRepository;
 import hirs.attestationca.persist.entity.manager.TPM2ProvisionerStateRepository;
 import hirs.attestationca.persist.entity.tpm.TPM2ProvisionerState;
+import hirs.attestationca.persist.entity.userdefined.Certificate;
 import hirs.attestationca.persist.entity.userdefined.Device;
 import hirs.attestationca.persist.entity.userdefined.PolicySettings;
 import hirs.attestationca.persist.entity.userdefined.ReferenceManifest;
 import hirs.attestationca.persist.entity.userdefined.SupplyChainValidationSummary;
+import hirs.attestationca.persist.entity.userdefined.certificate.ComponentResult;
 import hirs.attestationca.persist.entity.userdefined.certificate.EndorsementCredential;
 import hirs.attestationca.persist.entity.userdefined.certificate.PlatformCredential;
+import hirs.attestationca.persist.entity.userdefined.certificate.attributes.ComponentIdentifier;
+import hirs.attestationca.persist.entity.userdefined.info.ComponentInfo;
 import hirs.attestationca.persist.entity.userdefined.info.FirmwareInfo;
 import hirs.attestationca.persist.entity.userdefined.info.HardwareInfo;
 import hirs.attestationca.persist.entity.userdefined.info.NetworkInfo;
@@ -29,6 +35,7 @@ import hirs.attestationca.persist.enums.AppraisalStatus;
 import hirs.attestationca.persist.exceptions.IdentityProcessingException;
 import hirs.attestationca.persist.provision.helper.ProvisionUtils;
 import hirs.attestationca.persist.service.SupplyChainValidationService;
+import hirs.attestationca.persist.validation.SupplyChainCredentialValidator;
 import hirs.utils.HexUtils;
 import hirs.utils.SwidResource;
 import hirs.utils.enums.DeviceInfoEnums;
@@ -70,17 +77,21 @@ public class IdentityClaimProcessor extends AbstractProcessor {
 
     private SupplyChainValidationService supplyChainValidationService;
     private CertificateRepository certificateRepository;
+    private ComponentResultRepository componentResultRepository;
+    private ComponentInfoRepository componentInfoRepository;
     private ReferenceManifestRepository referenceManifestRepository;
     private ReferenceDigestValueRepository referenceDigestValueRepository;
     private DeviceRepository deviceRepository;
     private TPM2ProvisionerStateRepository tpm2ProvisionerStateRepository;
 
     /**
-     * Constructor
+     * Constructor.
      */
     public IdentityClaimProcessor(
             final SupplyChainValidationService supplyChainValidationService,
             final CertificateRepository certificateRepository,
+            final ComponentResultRepository componentResultRepository,
+            final ComponentInfoRepository componentInfoRepository,
             final ReferenceManifestRepository referenceManifestRepository,
             final ReferenceDigestValueRepository referenceDigestValueRepository,
             final DeviceRepository deviceRepository,
@@ -88,6 +99,8 @@ public class IdentityClaimProcessor extends AbstractProcessor {
             final PolicyRepository policyRepository) {
         this.supplyChainValidationService = supplyChainValidationService;
         this.certificateRepository = certificateRepository;
+        this.componentResultRepository = componentResultRepository;
+        this.componentInfoRepository = componentInfoRepository;
         this.referenceManifestRepository = referenceManifestRepository;
         this.referenceDigestValueRepository = referenceDigestValueRepository;
         this.deviceRepository = deviceRepository;
@@ -187,7 +200,9 @@ public class IdentityClaimProcessor extends AbstractProcessor {
         // Parse and save device info
         Device device = processDeviceInfo(claim);
 
-        device.getDeviceInfo().setPaccorOutputString(claim.getPaccorOutput());
+//        device.getDeviceInfo().setPaccorOutputString(claim.getPaccorOutput());
+        handleDeviceComponents(device.getDeviceInfo().getNetworkInfo().getHostname(),
+                claim.getPaccorOutput());
         // There are situations in which the claim is sent with no PCs
         // or a PC from the tpm which will be deprecated
         // this is to check what is in the platform object and pull
@@ -203,9 +218,27 @@ public class IdentityClaimProcessor extends AbstractProcessor {
 
             platformCredentials.addAll(tempList);
         }
+        // store component results objects
+        for (PlatformCredential platformCredential : platformCredentials) {
+            List<ComponentResult> componentResults = componentResultRepository
+                    .findByCertificateSerialNumberAndBoardSerialNumber(
+                            platformCredential.getSerialNumber().toString(),
+                            platformCredential.getPlatformSerial());
+            if (componentResults.isEmpty()) {
+                savePlatformComponents(platformCredential);
+            } else {
+                componentResults.stream().forEach((componentResult) -> {
+                    componentResult.restore();
+                    componentResult.resetCreateTime();
+                    componentResultRepository.save(componentResult);
+                });
+            }
+        }
+
         // perform supply chain validation
         SupplyChainValidationSummary summary = supplyChainValidationService.validateSupplyChain(
-                endorsementCredential, platformCredentials, device);
+                endorsementCredential, platformCredentials, device,
+                componentInfoRepository.findByDeviceName(device.getName()));
         device.setSummaryId(summary.getId().toString());
         // update the validation result in the device
         AppraisalStatus.Status validationResult = summary.getOverallValidationResult();
@@ -231,7 +264,12 @@ public class IdentityClaimProcessor extends AbstractProcessor {
 
         log.info("Processing Device Info Report");
         // store device and device info report.
-        Device device = this.deviceRepository.findByName(deviceInfoReport.getNetworkInfo().getHostname());
+        Device device = null;
+        if (deviceInfoReport.getNetworkInfo() != null
+                && deviceInfoReport.getNetworkInfo().getHostname() != null
+                && !deviceInfoReport.getNetworkInfo().getHostname().isEmpty()) {
+            device = this.deviceRepository.findByName(deviceInfoReport.getNetworkInfo().getHostname());
+        }
         if (device == null) {
             device = new Device(deviceInfoReport);
         }
@@ -302,7 +340,7 @@ public class IdentityClaimProcessor extends AbstractProcessor {
             pcrValues = dv.getPcrslist().toStringUtf8();
         }
 
-        // check for RIM Base and Support files, if they don't exists in the database, load them
+        // check for RIM Base and Support files, if they don't exist in the database, load them
         String defaultClientName = String.format("%s_%s",
                 dv.getHw().getManufacturer(),
                 dv.getHw().getProductName());
@@ -314,7 +352,6 @@ public class IdentityClaimProcessor extends AbstractProcessor {
         Pattern pattern = Pattern.compile("([^\\s]+(\\.(?i)(rimpcr|rimel|bin|log))$)");
         Matcher matcher;
         MessageDigest messageDigest =  MessageDigest.getInstance("SHA-256");
-//        List<ReferenceManifest> listOfSavedRims = new LinkedList<>();
 
         if (dv.getLogfileCount() > 0) {
             for (ByteString logFile : dv.getLogfileList()) {
@@ -424,11 +461,9 @@ public class IdentityClaimProcessor extends AbstractProcessor {
                         dbSupport.setUpdated(true);
                         dbSupport.setAssociatedRim(dbBaseRim.getId());
                         this.referenceManifestRepository.save(dbSupport);
-//                        listOfSavedRims.add(dbSupport);
                     }
                 }
                 this.referenceManifestRepository.save(dbBaseRim);
-//                listOfSavedRims.add(dbBaseRim);
             }
         }
 
@@ -586,44 +621,64 @@ public class IdentityClaimProcessor extends AbstractProcessor {
                             log.error(String.format("Patching value does not exist (%s)",
                                     patchedValue));
                         } else {
-                            /**
-                             * Until we get patch examples, this is WIP
-                             */
+                             // WIP - Until we get patch examples
                             dbRdv.setPatched(true);
                         }
                     }
                 }
-            } catch (CertificateException cEx) {
-                log.error(cEx);
-            } catch (NoSuchAlgorithmException noSaEx) {
-                log.error(noSaEx);
-            } catch (IOException ioEx) {
-                log.error(ioEx);
+            } catch (CertificateException | NoSuchAlgorithmException | IOException ex) {
+                log.error(ex);
             }
         }
 
         return true;
     }
 
+    private void savePlatformComponents(final Certificate certificate) {
+        PlatformCredential platformCredential;
+        if (certificate instanceof PlatformCredential) {
+            platformCredential = (PlatformCredential) certificate;
+            ComponentResult componentResult;
+            for (ComponentIdentifier componentIdentifier : platformCredential
+                    .getComponentIdentifiers()) {
 
-
-    private List<PlatformCredential> getPlatformCredentials(final CertificateRepository certificateRepository,
-                                                            final EndorsementCredential ec) {
-        List<PlatformCredential> credentials = null;
-
-        if (ec == null) {
-            log.warn("Cannot look for platform credential(s).  Endorsement credential was null.");
-        } else {
-            log.debug("Searching for platform credential(s) based on holder serial number: "
-                    + ec.getSerialNumber());
-            credentials = certificateRepository.getByHolderSerialNumber(ec.getSerialNumber());
-            if (credentials == null || credentials.isEmpty()) {
-                log.warn("No platform credential(s) found");
-            } else {
-                log.debug("Platform Credential(s) found: " + credentials.size());
+                componentResult = new ComponentResult(platformCredential.getPlatformSerial(),
+                        platformCredential.getSerialNumber().toString(),
+                        platformCredential.getPlatformChainType(),
+                        componentIdentifier);
+                componentResult.setFailedValidation(false);
+                componentResult.setDelta(!platformCredential.isPlatformBase());
+                componentResultRepository.save(componentResult);
             }
         }
+    }
 
-        return credentials;
+    private int handleDeviceComponents(final String hostName, final String paccorString) {
+        int deviceComponents = 0 ;
+        Map<Integer, ComponentInfo> componentInfoMap = new HashMap<>();
+        try {
+            List<ComponentInfo> componentInfos = SupplyChainCredentialValidator
+                    .getComponentInfoFromPaccorOutput(hostName, paccorString);
+
+            // check the DB for like component infos
+            List<ComponentInfo> dbComponentInfos = this.componentInfoRepository.findByDeviceName(hostName);
+            dbComponentInfos.stream().forEach((infos) -> {
+                componentInfoMap.put(infos.hashCode(), infos);
+            });
+
+            for (ComponentInfo componentInfo : dbComponentInfos) {
+                if (componentInfoMap.containsKey(componentInfo.hashCode())) {
+                    componentInfos.remove(componentInfo);
+                }
+            }
+
+            for (ComponentInfo componentInfo : componentInfos) {
+                this.componentInfoRepository.save(componentInfo);
+            }
+        } catch (IOException ioEx) {
+            log.warn("Error parsing paccor string");
+        }
+
+        return deviceComponents;
     }
 }

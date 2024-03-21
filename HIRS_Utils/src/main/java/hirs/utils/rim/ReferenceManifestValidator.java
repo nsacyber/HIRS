@@ -182,6 +182,8 @@ public class ReferenceManifestValidator {
             signatureValid = false;
             supportRimValid = false;
             publicKey = null;
+            trustStoreFile = null;
+            trustStore = null;
             subjectKeyIdentifier = "(not found)";
         } catch (SAXException e) {
             log.warn("Error setting schema for validation!");
@@ -210,7 +212,7 @@ public class ReferenceManifestValidator {
                 log.error("Cannot validate RIM, signature element not found!");
                 return false;
             }
-            if (trustStore == null && trustStoreFile != null && !trustStoreFile.isEmpty()) {
+            if (trustStoreFile != null && !trustStoreFile.isEmpty()) {
                 trustStore = parseCertificatesFromPem(trustStoreFile);
             }
             NodeList certElement = rim.getElementsByTagName("X509Certificate");
@@ -218,7 +220,6 @@ public class ReferenceManifestValidator {
                 X509Certificate embeddedCert = parseCertFromPEMString(
                         certElement.item(0).getTextContent());
                 if (embeddedCert != null) {
-                    subjectKeyIdentifier = getCertificateSubjectKeyIdentifier(embeddedCert);
                     if (Arrays.equals(embeddedCert.getPublicKey().getEncoded(),
                             encodedPublicKey)) {
                         context = new DOMValidateContext(new X509KeySelector(), nodes.item(0));
@@ -246,32 +247,27 @@ public class ReferenceManifestValidator {
     }
 
     /**
-     * This method validates a signed swidtag XML file.
-     * @param path to the swidtag XML
+     * This method validates the rim with a public key cert.
+     * @param signingCertPath to the public key certificate used to sign the rim
+     * @return true if both the file element and signature are valid, false otherwise
      */
-    public boolean validateSwidtagFile(String path) {
+    public boolean validateRim(String signingCertPath) {
         Element fileElement = (Element) rim.getElementsByTagName("File").item(0);
-        if (trustStoreFile != null && !trustStoreFile.isEmpty()) {
-            trustStore = parseCertificatesFromPem(trustStoreFile);
-        }
-        X509Certificate signingCert = null;
-        try {
-            signingCert = getCertFromTruststore();
-        } catch (IOException e) {
-            log.warn("Error while parsing signing cert from truststore: " + e.getMessage());
-            return false;
+        X509Certificate signingCert = parseCertificatesFromPem(signingCertPath).get(0);
+        if (signingCert == null) {
+            return failWithError("Unable to parse the signing cert from " + signingCertPath);
         }
         String subjectKeyIdentifier = "";
         try {
             subjectKeyIdentifier = getCertificateSubjectKeyIdentifier(signingCert);
         } catch (IOException e) {
-            log.warn("Error while parsing certificate data: " + e.getMessage());
-            return false;
+            return failWithError("Error while parsing SKID: " + e.getMessage());
         }
-        return validateXmlSignature(signingCert.getPublicKey(),
-                                    subjectKeyIdentifier,
-                                    signingCert.getPublicKey().getEncoded())
-                                    && validateFile(fileElement);
+
+        boolean isSignatureValid = validateXmlSignature(signingCert.getPublicKey(),
+                                                        subjectKeyIdentifier,
+                                                        signingCert.getPublicKey().getEncoded());
+        return isSignatureValid && validateFile(fileElement);
     }
 
     /**
@@ -300,15 +296,13 @@ public class ReferenceManifestValidator {
         } else {
             filepath = file.getAttribute(SwidTagConstants.NAME);
         }
-        System.out.println("Support rim found at " + filepath);
         if (getHashValue(filepath, "SHA256").equals(
                 file.getAttribute(SwidTagConstants._SHA256_HASH.getPrefix() + ":" +
                         SwidTagConstants._SHA256_HASH.getLocalPart()))) {
-            System.out.println("Support RIM hash verified!" + System.lineSeparator());
+            log.info("Support RIM hash verified for " + filepath);
             return true;
         } else {
-            System.out.println("Support RIM hash does not match Base RIM!" + System.lineSeparator());
-            return false;
+            return failWithError("Support RIM hash does not match Base RIM!");
         }
     }
 
@@ -432,11 +426,10 @@ public class ReferenceManifestValidator {
                                 if (isCertChainValid(embeddedCert)) {
                                     publicKey = ((X509Certificate) embeddedCert).getPublicKey();
                                     signingCert = embeddedCert;
-                                    System.out.println("Certificate chain validity: true");
+                                    log.info("Certificate chain valid.");
                                 }
                             } catch (Exception e) {
-                                System.out.println("Certificate chain invalid: "
-                                        + e.getMessage());
+                                log.error("Certificate chain invalid: " + e.getMessage());
                             }
                         }
                     }
@@ -446,15 +439,17 @@ public class ReferenceManifestValidator {
                         if (isPublicKeyTrusted(pk)) {
                             publicKey = pk;
                             try {
-                                System.out.println("Certificate chain validity: "
-                                        + isCertChainValid(signingCert));
+                                if (isCertChainValid(signingCert)) {
+                                    log.info("Certificate chain valid.");
+                                } else {
+                                    log.error("Certificate chain invalid.");
+                                }
                             } catch (Exception e) {
-                                System.out.println("Certificate chain invalid: "
-                                        + e.getMessage());
+                                log.error("Certificate chain invalid: " + e.getMessage());
                             }
                         }
                     } catch (KeyException e) {
-                        System.out.println("Unable to convert KeyValue data to PK.");
+                        log.error("Unable to convert KeyValue data to PK.");
                     }
                 }
                 if (publicKey != null) {
@@ -641,7 +636,7 @@ public class ReferenceManifestValidator {
     }
 
     /**
-     * This method returns the X509Certificate found in a PEM file.
+     * This method returns the X509Certificates found in a PEM file.
      * Unchecked type case warnings are suppressed because the CertificateFactory
      * implements X509Certificate objects explicitly.
      * @param filename pem file
@@ -667,9 +662,9 @@ public class ReferenceManifestValidator {
             }
             bis.close();
         } catch (CertificateException e) {
-            System.out.println("Error in certificate factory: " + e.getMessage());
+            log.error("Error in certificate factory: " + e.getMessage());
         } catch (IOException e) {
-            System.out.println("Error reading from input stream: " + e.getMessage());
+            log.error("Error reading from input stream: " + e.getMessage());
         } finally {
             try {
                 if (fis != null) {
@@ -679,7 +674,7 @@ public class ReferenceManifestValidator {
                     bis.close();
                 }
             } catch (IOException e) {
-                System.out.println("Error closing input stream: " + e.getMessage());
+                log.warn("Error closing input stream: " + e.getMessage());
             }
         }
 
@@ -770,5 +765,15 @@ public class ReferenceManifestValidator {
         }
 
         return doc;
+    }
+
+    /**
+     * This method logs an error message and returns a false to signal failed validation.
+     * @param errorMessage String description of what went wrong
+     * @return false to represent failed validation
+     */
+    private boolean failWithError(String errorMessage) {
+        log.error(errorMessage);
+        return false;
     }
 }

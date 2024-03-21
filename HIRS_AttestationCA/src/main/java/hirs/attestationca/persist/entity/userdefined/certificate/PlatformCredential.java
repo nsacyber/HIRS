@@ -7,7 +7,6 @@ import hirs.attestationca.persist.entity.userdefined.certificate.attributes.Plat
 import hirs.attestationca.persist.entity.userdefined.certificate.attributes.TBBSecurityAssertion;
 import hirs.attestationca.persist.entity.userdefined.certificate.attributes.URIReference;
 import hirs.attestationca.persist.entity.userdefined.certificate.attributes.V2.PlatformConfigurationV2;
-import hirs.attestationca.persist.service.selector.CertificateSelector;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Transient;
@@ -483,7 +482,7 @@ public class PlatformCredential extends DeviceAssociatedCertificate {
         Map<String, Object> attributes = new HashMap<>();
         ASN1Sequence attributeSequence;
         // Check all attributes for Platform Configuration
-        for (ASN1Encodable enc: getAttributeCertificate().getAcinfo().getAttributes().toArray()) {
+        for (ASN1Encodable enc : getAttributeCertificate().getAcinfo().getAttributes().toArray()) {
             Attribute attr = Attribute.getInstance(enc);
             attributeSequence
                     = ASN1Sequence.getInstance(attr.getAttrValues().getObjectAt(0));
