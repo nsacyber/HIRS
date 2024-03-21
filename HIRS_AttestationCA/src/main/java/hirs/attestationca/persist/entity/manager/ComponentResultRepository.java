@@ -18,6 +18,13 @@ public interface ComponentResultRepository extends JpaRepository<ComponentResult
     List<ComponentResult> findByBoardSerialNumber(String boardSerialNumber);
 
     /**
+     * Query based on the device serial number.
+     * @param boardSerialNumber variable holding the device serial number
+     * @return a list of component result.
+     */
+    List<ComponentResult> findByBoardSerialNumberOrderByComponentClassValueAsc(String boardSerialNumber);
+
+    /**
      * Query based on certificate serial number and device serial number.
      * @param certificateSerialNumber certificate specific serial number
      * @param boardSerialNumber variable holding the device serial number

@@ -211,7 +211,7 @@ public class CertificatePageController extends PageController<NoPageParams> {
         log.debug("Handling list request: " + input);
 
         // attempt to get the column property based on the order index.
-        String orderColumnName = input.getOrderColumnName();
+        String orderColumnName = input.getOrderColumnName();//input.getSearch();
         log.debug("Ordering on column: " + orderColumnName);
 
         // check that the alert is not archived and that it is in the specified report
@@ -274,7 +274,8 @@ public class CertificatePageController extends PageController<NoPageParams> {
             return new DataTableResponse<>(records, input);
         } else if (certificateType.equals(ENDORSEMENTCREDENTIAL)) {
             FilteredRecordsList<EndorsementCredential> records = new FilteredRecordsList<>();
-            org.springframework.data.domain.Page<EndorsementCredential> pagedResult = this.endorsementCredentialRepository.findByArchiveFlag(false, paging);
+            org.springframework.data.domain.Page<EndorsementCredential> pagedResult
+                    = this.endorsementCredentialRepository.findByArchiveFlag(false, paging);
 
             if (pagedResult.hasContent()) {
                 records.addAll(pagedResult.getContent());
@@ -289,7 +290,8 @@ public class CertificatePageController extends PageController<NoPageParams> {
             return new DataTableResponse<>(records, input);
         } else if (certificateType.equals(TRUSTCHAIN)) {
             FilteredRecordsList<CertificateAuthorityCredential> records = new FilteredRecordsList<>();
-            org.springframework.data.domain.Page<CertificateAuthorityCredential> pagedResult = this.caCredentialRepository.findByArchiveFlag(false, paging);
+            org.springframework.data.domain.Page<CertificateAuthorityCredential> pagedResult
+                    = this.caCredentialRepository.findByArchiveFlag(false, paging);
 
             if (pagedResult.hasContent()) {
                 records.addAll(pagedResult.getContent());

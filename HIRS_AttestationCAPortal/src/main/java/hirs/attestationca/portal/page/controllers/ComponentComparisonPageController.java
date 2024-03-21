@@ -150,15 +150,17 @@ public class ComponentComparisonPageController extends PageController<Certificat
                 }
             });
             componentResults = componentResultRepository
-                    .findByBoardSerialNumber(platformCredential.getPlatformSerial());
-            if (PciIds.DB.isReady()) {
-                componentResults = PciIds.translateResults(componentResults);
-            }
+                    .findByBoardSerialNumberOrderByComponentClassValueAsc(
+                            platformCredential.getPlatformSerial());
             List<ComponentInfo> componentInfos = componentInfoRepository
                     .findByDeviceNameOrderByComponentClassAsc(deviceName);
+            if (PciIds.DB.isReady()) {
+                componentResults = PciIds.translateResults(componentResults);
+                componentInfos = PciIds.translateDeviceComponentInfo(componentInfos);
+            }
+
             data.put("componentResults", componentResults);
-            data.put("componentInfos", componentInfoRepository
-                    .findByDeviceNameOrderByComponentClassAsc(deviceName));
+            data.put("componentInfos", componentInfos);
             data.put("totalSize", Math.max(componentResults.size(), componentInfos.size()));
         } else {
             String notFoundMessage = "No components attribute comparison found "

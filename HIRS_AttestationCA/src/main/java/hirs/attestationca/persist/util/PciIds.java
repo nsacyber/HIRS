@@ -8,6 +8,7 @@ import hirs.attestationca.persist.entity.userdefined.certificate.ComponentResult
 import hirs.attestationca.persist.entity.userdefined.certificate.attributes.ComponentClass;
 import hirs.attestationca.persist.entity.userdefined.certificate.attributes.ComponentIdentifier;
 import hirs.attestationca.persist.entity.userdefined.certificate.attributes.V2.ComponentIdentifierV2;
+import hirs.attestationca.persist.entity.userdefined.info.ComponentInfo;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 
@@ -136,6 +137,23 @@ public final class PciIds {
     }
 
     /**
+     * Iterate through all components and translate PCI hardware IDs as necessary.  It will only
+     * translate ComponentInfo objects as it relies on Component Class information.
+     * @param componentInfos List of ComponentInfos.
+     * @return the translated list of ComponentInfos.
+     */
+    public static List<ComponentInfo> translateDeviceComponentInfo(final List<ComponentInfo> componentInfos) {
+        List<ComponentInfo> newList = new ArrayList<>();
+        if (componentInfos != null && !componentInfos.isEmpty()) {
+            for (final ComponentInfo componentInfo : componentInfos) {
+                newList.add(translateDeviceComponentInfo(componentInfo));
+            }
+        }
+
+        return newList;
+    }
+
+    /**
      * Translate Vendor and Device IDs, if found, in ComponentIdentifierV2 objects.
      * It will only translate ID values, any other value will pass through.
      * @param component ComponentIdentifierV2 object.
@@ -184,6 +202,23 @@ public final class PciIds {
             newComponent.setManufacturer(translateVendor(componentResult.getManufacturer()));
             newComponent.setModel(translateDevice(componentResult.getManufacturer(),
                     componentResult.getModel()));
+        }
+        return newComponent;
+    }
+
+    /**
+     * Translate Vendor and Device IDs, if found, in ComponentInfo objects.
+     * It will only translate ID values, any other value will pass through.
+     * @param componentInfo ComponentInfo object.
+     * @return the translated ComponentInfo object.
+     */
+    public static ComponentInfo translateDeviceComponentInfo(final ComponentInfo componentInfo) {
+        ComponentInfo newComponent = null;
+        if (componentInfo != null) {
+            newComponent = componentInfo;
+            newComponent.setComponentManufacturer(translateVendor(componentInfo.getComponentManufacturer()));
+            newComponent.setComponentModel(translateDevice(componentInfo.getComponentManufacturer(),
+                    componentInfo.getComponentModel()));
         }
         return newComponent;
     }

@@ -10,6 +10,7 @@ import jakarta.persistence.Entity;
 import jakarta.xml.bind.annotation.XmlElement;
 import lombok.AccessLevel;
 import lombok.Getter;
+import lombok.Setter;
 import lombok.NoArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.lang3.StringUtils;
@@ -23,6 +24,7 @@ import java.util.Objects;
 @Log4j2
 @Entity
 @Getter
+@Setter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @DiscriminatorColumn(name = "componentTypeEnum", discriminatorType = DiscriminatorType.STRING)
 public class ComponentInfo extends ArchivableEntity {

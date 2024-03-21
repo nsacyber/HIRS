@@ -23,7 +23,7 @@
         <div id="certificate-details-page" class="container-fluid">
             <div style="display: inline">
                 <div class="row">
-                    <div class="col-md-1 col-md-offset-1"><span class="colHeader">Support Component Objects</span></div>
+                    <div class="col-md-1 col-md-offset-1"><span class="colHeader">Platform Information</span></div>
                     <div id="measurements" class="col col-md-8">
                         <c:if test="${not empty initialData.deviceName}">
                             <div>Device:&nbsp;<span>${initialData.deviceName}</span>
@@ -39,28 +39,44 @@
                     </div>
                 </div>
                 <br />
-                <div class="row" style="margin: auto 260px auto 125px">
-                    <div class="panel panel-default" style="flex: 1">
-                        <div class="panel-heading">Certificate Component</div>
-                    </div>
-                    <div class="panel panel-default" style="flex: 2">
-                        <div class="panel-heading">Device Components</div>
-                    </div>
-                    <div style="display: flex;">
-                        <c:forEach var = "i" begin = "1" end = "${totalSize}">
-                            <div style="display: flex 1; margin: auto 1rem auto 1rem">
-                                <span class="mappedData">Manufacturer:</span> ${componentResults.get(i).getManufacturer()}<br />
-                                <span class="mappedData">Model:</span> ${componentResults.get(i).getModel()}<br />
-                                <span class="mappedData">Serial Number:</span> ${componentResults.get(i).getSerialNumber()}<br />
-                                <span class="mappedData">Revision:</span> ${componentResults.get(i).getRevisionNumber()}<br />
+                <div class="panel-heading" role="tab" id="headingOne">
+                    <h4 class="panel-title">
+                        <a role="button" data-toggle="collapse" class="collapsed"
+                           href="#componentListCollapse" aria-expanded="true" aria-controls="componentListCollapse">
+                            Components
+                        </a>
+                    </h4>
+                </div>
+                <div id="componentListCollapse" class="row" style="margin: auto 260px auto 125px">                    
+                    <div class="row" style="display: flex;">
+                        <div class="panel panel-default" style="flex: 1">
+                            <div class="panel-heading"><span class="fieldHeader">Certificate Component</span></div>
+
+                            <div style="display: flex 1; margin: 2px auto 2px 25px">
+                                <c:forEach items="${initialData.componentResults}" var="componentResult">
+                                    <div class="panel-body">
+                                        <span class="fieldHeader">Manufacturer:</span> ${componentResult.getManufacturer()}<br />
+                                        <span class="fieldHeader">Model:</span> ${componentResult.getModel()}<br />
+                                        <span class="fieldHeader">Serial Number:</span> ${componentResult.getSerialNumber()}<br />
+                                        <span class="fieldHeader">Revision:</span> ${componentResult.getRevisionNumber()}<br />
+                                    </div>
+                                </c:forEach>
                             </div>
+                        </div>
+                        <div class="panel panel-default" style="flex: 2">
+                            <div class="panel-heading"><span class="fieldHeader">Device Components</span></div>     
+
                             <div style="display: flex 2; margin: 2px auto 2px 25px">
-                                <span class="mappedData">Manufacturer:</span> ${componentInfos.get(i).getComponentManufacturer()}<br />
-                                <span class="mappedData">Model:</span> ${componentInfos.get(i).getComponentModel()}<br />
-                                <span class="mappedData">Serial Number:</span> ${componentInfos.get(i).getComponentSerial()}<br />
-                                <span class="mappedData">Revision:</span> ${componentInfos.get(i).getComponentRevision()}<br />
+                                <c:forEach items="${initialData.componentInfos}" var="componentInfo">
+                                    <div class="panel-body">
+                                        <span class="fieldHeader">Manufacturer:</span> ${componentInfo.getComponentManufacturer()}<br />
+                                        <span class="fieldHeader">Model:</span> ${componentInfo.getComponentModel()}<br />
+                                        <span class="fieldHeader">Serial Number:</span> ${componentInfo.getComponentSerial()}<br />
+                                        <span class="fieldHeader">Revision:</span> ${componentInfo.getComponentRevision()}<br />
+                                    </div>
+                                </c:forEach>
                             </div>
-                        </c:forEach>
+                        </div>
                     </div>
                 </div>
             </div>
