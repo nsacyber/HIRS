@@ -7,6 +7,7 @@ import hirs.attestationca.persist.entity.manager.PlatformCertificateRepository;
 import hirs.attestationca.persist.entity.userdefined.certificate.ComponentResult;
 import hirs.attestationca.persist.entity.userdefined.certificate.PlatformCredential;
 import hirs.attestationca.persist.entity.userdefined.certificate.attributes.ComponentAttributeResult;
+import hirs.attestationca.persist.entity.userdefined.info.ComponentInfo;
 import hirs.attestationca.persist.util.PciIds;
 import hirs.attestationca.portal.page.Page;
 import hirs.attestationca.portal.page.PageController;
@@ -153,9 +154,12 @@ public class ComponentComparisonPageController extends PageController<Certificat
             if (PciIds.DB.isReady()) {
                 componentResults = PciIds.translateResults(componentResults);
             }
+            List<ComponentInfo> componentInfos = componentInfoRepository
+                    .findByDeviceNameOrderByComponentClassAsc(deviceName);
             data.put("componentResults", componentResults);
             data.put("componentInfos", componentInfoRepository
                     .findByDeviceNameOrderByComponentClassAsc(deviceName));
+            data.put("totalSize", Math.max(componentResults.size(), componentInfos.size()));
         } else {
             String notFoundMessage = "No components attribute comparison found "
                     + "with ID: " + sessionId;
