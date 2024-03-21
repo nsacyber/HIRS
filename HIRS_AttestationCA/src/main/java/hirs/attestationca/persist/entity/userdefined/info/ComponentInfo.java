@@ -55,6 +55,8 @@ public class ComponentInfo extends ArchivableEntity {
     @XmlElement
     @Column
     private String componentClass;
+    @Column
+    private String componentClassStr;
 
     /**
      * Base constructor for children.

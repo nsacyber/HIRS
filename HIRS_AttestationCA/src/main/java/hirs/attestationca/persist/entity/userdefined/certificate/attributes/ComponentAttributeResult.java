@@ -21,6 +21,7 @@ import java.util.UUID;
 public class ComponentAttributeResult  extends ArchivableEntity {
 
     private UUID componentId;
+    private UUID deviceComponentId;
     @Setter
     private String provisionSessionId;
     private String expectedValue;
@@ -29,13 +30,16 @@ public class ComponentAttributeResult  extends ArchivableEntity {
     /**
      * Default constructor that populates the expected and actual values.
      * @param componentId id associated with component result
+     * @param deviceComponentId id associated with the device component
      * @param expectedValue platform certificate value
      * @param actualValue paccor value from the device
      */
     public ComponentAttributeResult(final UUID componentId,
+                                    final UUID deviceComponentId,
                                     final String expectedValue,
                                     final String actualValue) {
         this.componentId = componentId;
+        this.deviceComponentId = deviceComponentId;
         this.expectedValue = expectedValue;
         this.actualValue = actualValue;
     }

@@ -7,12 +7,14 @@ import hirs.attestationca.persist.entity.manager.PlatformCertificateRepository;
 import hirs.attestationca.persist.entity.userdefined.certificate.ComponentResult;
 import hirs.attestationca.persist.entity.userdefined.certificate.PlatformCredential;
 import hirs.attestationca.persist.entity.userdefined.certificate.attributes.ComponentAttributeResult;
+import hirs.attestationca.persist.entity.userdefined.certificate.attributes.ComponentClass;
 import hirs.attestationca.persist.entity.userdefined.info.ComponentInfo;
 import hirs.attestationca.persist.util.PciIds;
 import hirs.attestationca.portal.page.Page;
 import hirs.attestationca.portal.page.PageController;
 import hirs.attestationca.portal.page.PageMessages;
 import hirs.attestationca.portal.page.params.CertificateDetailsPageParams;
+import hirs.utils.xjc.Link;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -24,6 +26,7 @@ import java.io.IOException;
 import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.UUID;
 
@@ -143,31 +146,72 @@ public class ComponentComparisonPageController extends PageController<Certificat
                         + componentResults.get(0).getBoardSerialNumber());
                 return data;
             }
-            List<UUID> tempIdList = new ArrayList<>();
-            attributeResults.stream().forEach((dbObject) -> {
-                if (!tempIdList.contains(dbObject.getComponentId())) {
-                    tempIdList.add(dbObject.getComponentId());
+
+            List<ComponentResult> matchedResults = new LinkedList<>();
+            List<ComponentInfo> matchedDeviceComps = new LinkedList<>();
+            List<ComponentResult> mismatchedResults = new LinkedList<>();
+            List<ComponentInfo> mismatchedDeviceComps = new LinkedList<>();
+            for(ComponentAttributeResult dbObject : attributeResults) {
+                if (dbObject.checkMatchedStatus()) {
+                    matchedResults.add(componentResultRepository.getReferenceById(dbObject.getComponentId()));
+                    matchedDeviceComps.add(componentInfoRepository.getReferenceById(dbObject.getDeviceComponentId()));
+                } else {
+                    mismatchedResults.add(componentResultRepository.getReferenceById(dbObject.getComponentId()));
+                    mismatchedDeviceComps.add(componentInfoRepository.getReferenceById(dbObject.getDeviceComponentId()));
                 }
-            });
-            componentResults = componentResultRepository
-                    .findByBoardSerialNumberOrderByComponentClassValueAsc(
-                            platformCredential.getPlatformSerial());
-            List<ComponentInfo> componentInfos = componentInfoRepository
-                    .findByDeviceNameOrderByComponentClassAsc(deviceName);
-            if (PciIds.DB.isReady()) {
-                componentResults = PciIds.translateResults(componentResults);
-                componentInfos = PciIds.translateDeviceComponentInfo(componentInfos);
             }
 
-            data.put("componentResults", componentResults);
-            data.put("componentInfos", componentInfos);
-            data.put("totalSize", Math.max(componentResults.size(), componentInfos.size()));
+//            componentResults.clear();
+//            List<ComponentInfo> componentInfos = componentInfoRepository
+//                    .findByDeviceNameOrderByComponentClassAsc(deviceName);
+//            // find the ones that aren't matched or unmatched
+//            for (ComponentResult dbResult : componentResultRepository
+//                    .findByBoardSerialNumberOrderByComponentClassValueAsc(
+//                            platformCredential.getPlatformSerial())) {
+//                for (ComponentResult matched : matchedResults) {
+//                    if (dbResult.getId().equals(matched.getId())) {
+//
+//                    }
+//                }
+//            }
+            if (PciIds.DB.isReady()) {
+//                componentResults = PciIds.translateResults(componentResults);
+//                componentInfos = PciIds.translateDeviceComponentInfo(componentInfos);
+                matchedResults = PciIds.translateResults(matchedResults);
+                matchedDeviceComps = PciIds.translateDeviceComponentInfo(matchedDeviceComps);
+                mismatchedResults = PciIds.translateResults(mismatchedResults);
+                mismatchedDeviceComps = PciIds.translateDeviceComponentInfo(mismatchedDeviceComps);
+            }
+
+            matchedDeviceComps = translateComponentClass(matchedDeviceComps);
+            mismatchedDeviceComps = translateComponentClass(mismatchedDeviceComps);
+
+            data.put("componentResults", matchedResults);
+            data.put("componentInfos", matchedDeviceComps);
+            data.put("misMatchedComponentResults", mismatchedResults);
+            data.put("misMatchedComponentInfos", mismatchedDeviceComps);
+//            data.put("notFoundResults", );
+//            data.put("notFoundComponentInfs", );
         } else {
             String notFoundMessage = "No components attribute comparison found "
                     + "with ID: " + sessionId;
             log.error(notFoundMessage);
         }
         return data;
+    }
+
+    private static List<ComponentInfo> translateComponentClass(final List<ComponentInfo> componentInfos) {
+        List<ComponentInfo> tempList = new ArrayList<>();
+        ComponentInfo componentInfo;
+        ComponentClass componentClass;
+        for (ComponentInfo info : componentInfos) {
+            componentInfo = info;
+            componentClass = new ComponentClass("TCG", info.getComponentClass());
+            componentInfo.setComponentClassStr(componentClass.toString());
+            tempList.add(componentInfo);
+        }
+
+        return tempList;
     }
 }
 

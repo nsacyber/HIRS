@@ -337,6 +337,7 @@ public class CertificateAttributeScvValidator extends SupplyChainCredentialValid
                 remainingComponentResults.add(componentResult);
             }
         }
+        List<UUID> failedComponents = new ArrayList<>();
         if (!remainingComponentResults.isEmpty()) {
             // continue down the options, move to a different method.
             // create component class mapping to component info
@@ -369,23 +370,23 @@ public class CertificateAttributeScvValidator extends SupplyChainCredentialValid
                 componentAttributeResult.setProvisionSessionId(provisionSessionId);
                 componentAttributeRepository.save(componentAttributeResult);
                 fieldValidation &= componentAttributeResult.checkMatchedStatus();
+                if (!componentAttributeResult.checkMatchedStatus()) {
+                    numOfAttributes++;
+                    failedComponents.add(componentAttributeResult.getComponentId());
+                }
             }
-            numOfAttributes = attributeResults.size();
         }
 
         StringBuilder additionalInfo = new StringBuilder();
-        if (!remainingComponentResults.isEmpty()) {
-            resultMessage.append(String.format("There are %d components not matched%n",
-                    remainingComponentResults.size()));
-            resultMessage.append(String.format("\twith %d total attributes mismatched.",
-                    numOfAttributes));
-        }
-
         passesValidation &= fieldValidation;
 
         if (passesValidation) {
             return new AppraisalStatus(PASS, PLATFORM_ATTRIBUTES_VALID);
         } else {
+            resultMessage.append(String.format("There are %d components not matched%n",
+                    failedComponents.size()));
+            resultMessage.append(String.format("\twith %d total attributes mismatched.",
+                    numOfAttributes));
             return new AppraisalStatus(FAIL, resultMessage.toString(), additionalInfo.toString());
         }
     }
@@ -402,25 +403,17 @@ public class CertificateAttributeScvValidator extends SupplyChainCredentialValid
             final ComponentResult componentResult) {
         // there are instances of components with the same class (ie hard disks, memory)
         List<ComponentAttributeResult> attributeResults = new ArrayList<>();
-        if (!componentInfo.getComponentManufacturer().equals(componentResult.getManufacturer())) {
-            attributeResults.add(new ComponentAttributeResult(componentResult.getId(),
-                    componentResult.getManufacturer(), componentInfo.getComponentManufacturer()));
-        }
+        attributeResults.add(new ComponentAttributeResult(componentResult.getId(), componentInfo.getId(),
+                componentResult.getManufacturer(), componentInfo.getComponentManufacturer()));
 
-        if (!componentInfo.getComponentModel().equals(componentResult.getModel())) {
-            attributeResults.add(new ComponentAttributeResult(componentResult.getId(),
-                    componentResult.getModel(), componentInfo.getComponentModel()));
-        }
+        attributeResults.add(new ComponentAttributeResult(componentResult.getId(), componentInfo.getId(),
+                componentResult.getModel(), componentInfo.getComponentModel()));
 
-        if (!componentInfo.getComponentSerial().equals(componentResult.getSerialNumber())) {
-            attributeResults.add(new ComponentAttributeResult(componentResult.getId(),
-                    componentResult.getSerialNumber(), componentInfo.getComponentSerial()));
-        }
+        attributeResults.add(new ComponentAttributeResult(componentResult.getId(), componentInfo.getId(),
+                componentResult.getSerialNumber(), componentInfo.getComponentSerial()));
 
-        if (!componentInfo.getComponentRevision().equals(componentResult.getRevisionNumber())) {
-            attributeResults.add(new ComponentAttributeResult(componentResult.getId(),
-                    componentResult.getRevisionNumber(), componentInfo.getComponentRevision()));
-        }
+        attributeResults.add(new ComponentAttributeResult(componentResult.getId(), componentInfo.getId(),
+                componentResult.getRevisionNumber(), componentInfo.getComponentRevision()));
 
         return attributeResults;
     }

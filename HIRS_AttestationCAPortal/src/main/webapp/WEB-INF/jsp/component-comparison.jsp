@@ -54,7 +54,17 @@
 
                             <div style="display: flex 1; margin: 2px auto 2px 25px">
                                 <c:forEach items="${initialData.componentResults}" var="componentResult">
-                                    <div class="panel-body">
+                                    <div class="panel-body" style="background-color: greenyellow">                                        
+                                        <span class="fieldHeader">Component Class: </span> ${componentResult.getComponentClassStr()}<br />
+                                        <span class="fieldHeader">Manufacturer:</span> ${componentResult.getManufacturer()}<br />
+                                        <span class="fieldHeader">Model:</span> ${componentResult.getModel()}<br />
+                                        <span class="fieldHeader">Serial Number:</span> ${componentResult.getSerialNumber()}<br />
+                                        <span class="fieldHeader">Revision:</span> ${componentResult.getRevisionNumber()}<br />
+                                    </div>
+                                </c:forEach>
+                                <c:forEach items="${initialData.misMatchedCmponentResults}" var="componentResult">
+                                    <div class="panel-body" style="background-color: greenyellow">                                        
+                                        <span class="fieldHeader">Component Class: </span> ${componentResult.getComponentClassStr()}<br />
                                         <span class="fieldHeader">Manufacturer:</span> ${componentResult.getManufacturer()}<br />
                                         <span class="fieldHeader">Model:</span> ${componentResult.getModel()}<br />
                                         <span class="fieldHeader">Serial Number:</span> ${componentResult.getSerialNumber()}<br />
@@ -68,7 +78,17 @@
 
                             <div style="display: flex 2; margin: 2px auto 2px 25px">
                                 <c:forEach items="${initialData.componentInfos}" var="componentInfo">
-                                    <div class="panel-body">
+                                    <div class="panel-body" style="background-color: lightcoral">
+                                        <span class="fieldHeader">Component Class: </span> ${componentInfo.getComponentClassStr()}<br />
+                                        <span class="fieldHeader">Manufacturer:</span> ${componentInfo.getComponentManufacturer()}<br />
+                                        <span class="fieldHeader">Model:</span> ${componentInfo.getComponentModel()}<br />
+                                        <span class="fieldHeader">Serial Number:</span> ${componentInfo.getComponentSerial()}<br />
+                                        <span class="fieldHeader">Revision:</span> ${componentInfo.getComponentRevision()}<br />
+                                    </div>
+                                </c:forEach>
+                                <c:forEach items="${initialData.misMatchedComponentInfos}" var="componentInfo">
+                                    <div class="panel-body" style="background-color: lightcoral">
+                                        <span class="fieldHeader">Component Class: </span> ${componentInfo.getComponentClassStr()}<br />
                                         <span class="fieldHeader">Manufacturer:</span> ${componentInfo.getComponentManufacturer()}<br />
                                         <span class="fieldHeader">Model:</span> ${componentInfo.getComponentModel()}<br />
                                         <span class="fieldHeader">Serial Number:</span> ${componentInfo.getComponentSerial()}<br />
