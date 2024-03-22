@@ -56,6 +56,8 @@ public class ComponentInfo extends ArchivableEntity {
     @Column
     private String componentClass;
     @Column
+    private String componentClassRegistry;
+    @Column
     private String componentClassStr;
 
     /**
@@ -122,17 +124,20 @@ public class ComponentInfo extends ArchivableEntity {
      * @param componentSerial       Component Serial Number (can be null)
      * @param componentRevision     Component Revision or Version (can be null)
      * @param componentClass        Component Class (can be null)
+     * @param componentClassRegistry The id that indicates TCG or SMBIOS
      */
     public ComponentInfo(final String deviceName,
                          final String componentManufacturer,
                          final String componentModel,
                          final String componentSerial,
                          final String componentRevision,
-                         final String componentClass) {
+                         final String componentClass,
+                         final String componentClassRegistry) {
         this(deviceName, componentManufacturer, componentModel,
                 componentSerial, componentRevision);
 
         this.componentClass = Objects.requireNonNullElse(componentClass, StringUtils.EMPTY);
+        this.componentClassRegistry = Objects.requireNonNullElse(componentClassRegistry, StringUtils.EMPTY);
     }
 
     /**

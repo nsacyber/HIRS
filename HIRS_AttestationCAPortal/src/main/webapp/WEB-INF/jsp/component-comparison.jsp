@@ -40,11 +40,11 @@
                 </div>
                 <br />
                 <div id="componentListCollapse" class="row" style="margin: auto 260px auto 125px">
-                    <div class="row" style="display: flex;">
-                        <div class="panel panel-default" style="flex: 1">
+                    <div class="row" style="display: flex">
+                        <div class="panel panel-default" style="flex: 1 1 300px">
                             <div class="panel-heading"><span class="fieldHeader">Certificate Component</span></div>
 
-                            <div style="display: flex 1; margin: auto">
+                            <div style="margin: auto">
                                 <c:forEach items="${initialData.componentResults}" var="componentResult">
                                     <div class="panel-body" style="background-color: #00ff00; margin-bottom: 5px">
                                         <span class="compHeader">Component Class: </span> ${componentResult.getComponentClassStr()}<br />
@@ -65,10 +65,10 @@
                                 </c:forEach>
                             </div>
                         </div>
-                        <div class="panel panel-default" style="flex: 2">
+                        <div class="panel panel-default" style="flex: 1 1 300px">
                             <div class="panel-heading"><span class="fieldHeader">Device Components</span></div>
 
-                            <div style="display: flex 2; margin: auto">
+                            <div style="margin: auto">
                                 <c:forEach items="${initialData.componentInfos}" var="componentInfo">
                                     <div class="panel-body" style="background-color: #00ff00; margin-bottom: 5px">
                                         <span class="compHeader">Component Class: </span> ${componentInfo.getComponentClassStr()}<br />

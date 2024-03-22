@@ -301,16 +301,19 @@ public class SupplyChainCredentialValidator  {
                 } else {
                     // version 2
                     String componentClass = StringUtils.EMPTY;
+                    String componentClassRegistry = StringUtils.EMPTY;
                     for (JsonNode subNode : compClassNodes) {
                         componentClass = getJSONNodeValueAsText(subNode,
                                 "COMPONENTCLASSVALUE");
+                        componentClassRegistry = getJSONNodeValueAsText(subNode,
+                                "COMPONENTCLASSREGISTRY");
                     }
                     componentInfoList.add(new ComponentInfo(hostName,
                             getJSONNodeValueAsText(next, "MANUFACTURER"),
                             getJSONNodeValueAsText(next, "MODEL"),
                             getJSONNodeValueAsText(next, "SERIAL"),
                             getJSONNodeValueAsText(next, "REVISION"),
-                            componentClass));
+                            componentClass, componentClassRegistry));
                 }
             }
         }
