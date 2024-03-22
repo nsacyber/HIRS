@@ -146,7 +146,12 @@ public final class PciIds {
         List<ComponentInfo> newList = new ArrayList<>();
         if (componentInfos != null && !componentInfos.isEmpty()) {
             for (final ComponentInfo componentInfo : componentInfos) {
-                newList.add(translateDeviceComponentInfo(componentInfo));
+                if (!componentInfo.getDeviceName().isEmpty()) {
+                    newList.add(translateDeviceComponentInfo(componentInfo));
+                } else {
+                    // if the object is all StringUtils.empty()
+                    newList.add(componentInfo);
+                }
             }
         }
 

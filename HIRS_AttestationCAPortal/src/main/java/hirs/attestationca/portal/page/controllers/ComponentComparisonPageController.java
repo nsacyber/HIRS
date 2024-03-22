@@ -40,6 +40,7 @@ public class ComponentComparisonPageController extends PageController<Certificat
     private final ComponentResultRepository componentResultRepository;
     private final ComponentInfoRepository componentInfoRepository;
     private final ComponentAttributeRepository componentAttributeRepository;
+
     @Autowired
     public ComponentComparisonPageController(final PlatformCertificateRepository platformCertificateRepository,
                                              final ComponentResultRepository componentResultRepository,
@@ -56,8 +57,8 @@ public class ComponentComparisonPageController extends PageController<Certificat
      * Returns the path for the view and the data model for the page.
      *
      * @param params The object to map url parameters into.
-     * @param model The data model for the request. Can contain data from
-     * redirect.
+     * @param model  The data model for the request. Can contain data from
+     *               redirect.
      * @return the path for the view and data model for the page.
      */
     @Override
@@ -109,10 +110,10 @@ public class ComponentComparisonPageController extends PageController<Certificat
     /**
      * Compiles and returns Platform Certificate component information.
      *
-     * @param uuid ID for the certificate.
+     * @param uuid                  ID for the certificate.
      * @param certificateRepository the certificate manager for retrieving certs.
      * @return a hash map with the endorsement certificate information.
-     * @throws IOException when parsing the certificate
+     * @throws IOException              when parsing the certificate
      * @throws IllegalArgumentException invalid argument on parsing the certificate
      */
     public static HashMap<String, Object> getPlatformComponentInformation(
@@ -131,7 +132,7 @@ public class ComponentComparisonPageController extends PageController<Certificat
         data.put("deviceName", deviceName);
         if (!attributeResults.isEmpty()) {
             ComponentResult componentResult = componentResultRepository.findById(attributeResults.get(0).getComponentId()).get();
-             platformCredential = platformCertificateRepository
+            platformCredential = platformCertificateRepository
                     .findByPlatformSerialAndSerialNumber(componentResult.getBoardSerialNumber(),
                             BigInteger.valueOf(Long.parseLong(
                                     componentResult.getCertificateSerialNumber())));
@@ -147,39 +148,75 @@ public class ComponentComparisonPageController extends PageController<Certificat
                         + componentResults.get(0).getBoardSerialNumber());
                 return data;
             }
+            // get all db objects
+            componentResults = componentResultRepository
+                    .findByBoardSerialNumberOrderByComponentClassValueAsc(
+                            platformCredential.getPlatformSerial());
             List<ComponentInfo> componentInfos = componentInfoRepository
                     .findByDeviceNameOrderByComponentClassAsc(deviceName);
-            Map<ComponentResult, ComponentInfo> componentInfoHashMap = findMatchedComponents(componentResults, componentInfos);
-            List<ComponentResult> matchedResults = new LinkedList<>(componentInfoHashMap.keySet());
-            List<ComponentInfo> matchedDeviceComps = new LinkedList<>(componentInfoHashMap.values());
+            // first get what we know, the attribute results have the platform component
+            // and device component that are mismatched
             List<ComponentResult> mismatchedResults = new LinkedList<>();
             List<ComponentInfo> mismatchedDeviceComps = new LinkedList<>();
-            for(ComponentAttributeResult dbObject : attributeResults) {
-                    mismatchedResults.add(componentResultRepository.getReferenceById(dbObject.getComponentId()));
-                    mismatchedDeviceComps.add(componentInfoRepository.getReferenceById(dbObject.getDeviceComponentId()));
-
+            // quick list to hold what we've found so we don't look for the ID again.
+            List<UUID> tempIds = new ArrayList<>();
+            for (ComponentAttributeResult car : attributeResults) {
+                if (!tempIds.contains(car.getComponentId())) {
+                    mismatchedResults.add(componentResultRepository
+                            .getReferenceById(car.getComponentId()));
+                    tempIds.add(car.getComponentId());
+                }
+                if (!tempIds.contains(car.getDeviceComponentId())) {
+                    mismatchedDeviceComps.add(componentInfoRepository
+                            .getReferenceById(car.getDeviceComponentId()));
+                    tempIds.add(car.getDeviceComponentId());
+                }
             }
 
-//            componentResults.clear();
-//            List<ComponentInfo> componentInfos = componentInfoRepository
-//                    .findByDeviceNameOrderByComponentClassAsc(deviceName);
-//            // find the ones that aren't matched or unmatched
-//            for (ComponentResult dbResult : componentResultRepository
-//                    .findByBoardSerialNumberOrderByComponentClassValueAsc(
-//                            platformCredential.getPlatformSerial())) {
-//                for (ComponentResult matched : matchedResults) {
-//                    if (dbResult.getId().equals(matched.getId())) {
-//
-//                    }
-//                }
-//            }
+            // we got the provisioned mismatches, so all that is left are matched
+            Map<Integer, ComponentInfo> deviceComponentHashMap = new HashMap<>();
+            for (ComponentInfo componentInfo : componentInfos) {
+                // skip the ones we know
+                if (!tempIds.contains(componentInfo.getId())) {
+                    deviceComponentHashMap.put(componentInfo.hashCommonElements(), componentInfo);
+                }
+            }
+            // do the same for componentResults
+            Map<Integer, ComponentResult> platformComponentHashMap = new HashMap<>();
+            for (ComponentResult result : componentResults) {
+                // skip the ones we know
+                if (!tempIds.contains(result.getId())) {
+                    platformComponentHashMap.put(result.hashCommonElements(), result);
+                }
+            }
+
+            // find platform component match
+            Map<ComponentResult, ComponentInfo> mappedComponents = new HashMap<>();
+            for (Integer key : platformComponentHashMap.keySet()) {
+                if (deviceComponentHashMap.containsKey(key)) {
+                    mappedComponents.put(platformComponentHashMap.get(key),
+                            deviceComponentHashMap.get(key));
+                    deviceComponentHashMap.remove(key);
+                } else {
+                    // it doesn't exist, put null
+                    mappedComponents.put(platformComponentHashMap.get(key), new ComponentInfo(""));
+                }
+            }
+
+            List<ComponentResult> matchedResults = new LinkedList<>(mappedComponents.keySet());
+            List<ComponentInfo> matchedDeviceComps = new LinkedList<>(mappedComponents.values());
+            List<ComponentInfo> notFoundDevices = null;
+            if (!deviceComponentHashMap.values().isEmpty()) {
+                notFoundDevices = new ArrayList<>(deviceComponentHashMap.values());
+            }
             if (PciIds.DB.isReady()) {
-//                componentResults = PciIds.translateResults(componentResults);
-//                componentInfos = PciIds.translateDeviceComponentInfo(componentInfos);
                 matchedResults = PciIds.translateResults(matchedResults);
                 matchedDeviceComps = PciIds.translateDeviceComponentInfo(matchedDeviceComps);
                 mismatchedResults = PciIds.translateResults(mismatchedResults);
                 mismatchedDeviceComps = PciIds.translateDeviceComponentInfo(mismatchedDeviceComps);
+                if (notFoundDevices != null) {
+                    notFoundDevices = PciIds.translateDeviceComponentInfo(notFoundDevices);
+                }
             }
 
             matchedDeviceComps = translateComponentClass(matchedDeviceComps);
@@ -189,8 +226,11 @@ public class ComponentComparisonPageController extends PageController<Certificat
             data.put("componentInfos", matchedDeviceComps);
             data.put("misMatchedComponentResults", mismatchedResults);
             data.put("misMatchedComponentInfos", mismatchedDeviceComps);
-//            data.put("notFoundResults", );
-//            data.put("notFoundComponentInfs", );
+
+            if (notFoundDevices != null) {
+                data.put("notFoundDeviceComponents", translateComponentClass(notFoundDevices));
+            }
+
         } else {
             String notFoundMessage = "No components attribute comparison found "
                     + "with ID: " + sessionId;
@@ -204,38 +244,17 @@ public class ComponentComparisonPageController extends PageController<Certificat
         ComponentInfo componentInfo;
         ComponentClass componentClass;
         for (ComponentInfo info : componentInfos) {
-            componentInfo = info;
-            componentClass = new ComponentClass("TCG", info.getComponentClass());
-            componentInfo.setComponentClassStr(componentClass.toString());
-            tempList.add(componentInfo);
-        }
-
-        return tempList;
-    }
-
-    private static Map<ComponentResult, ComponentInfo> findMatchedComponents(
-            final List<ComponentResult> componentResults, final List<ComponentInfo> componentInfos) {
-        // first create hash map based on hashCode
-        Map<ComponentResult, ComponentInfo> resultComponentInfoMap = new HashMap<>();
-        Map<Integer, ComponentInfo> deviceHashMap = new HashMap<>();
-        componentInfos.stream().forEach((componentInfo) -> {
-            deviceHashMap.put(componentInfo.hashCommonElements(), componentInfo);
-        });
-
-        // Look for hash code in device mapping
-        // if it exists, don't save the component
-        List<ComponentResult> remainingComponentResults = new ArrayList<>();
-        int numOfAttributes = 0;
-        for (ComponentResult componentResult : componentResults) {
-            if (!deviceHashMap.containsKey(componentResult.hashCommonElements())) {
-                // didn't find the component result in the hashed mapping
-                remainingComponentResults.add(componentResult);
+            if (!info.getDeviceName().isEmpty()) {
+                componentInfo = info;
+                componentClass = new ComponentClass("TCG", info.getComponentClass());
+                componentInfo.setComponentClassStr(componentClass.toString());
+                tempList.add(componentInfo);
             } else {
-                resultComponentInfoMap.put(componentResult, deviceHashMap.get(componentResult.hashCommonElements()));
+                tempList.add(info);
             }
         }
 
-        return resultComponentInfoMap;
+        return tempList;
     }
 }
 

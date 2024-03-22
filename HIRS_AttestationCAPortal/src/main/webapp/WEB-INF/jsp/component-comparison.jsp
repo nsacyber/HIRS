@@ -62,7 +62,7 @@
                                         <span class="fieldHeader">Revision:</span> ${componentResult.getRevisionNumber()}<br />
                                     </div>
                                 </c:forEach>
-                                <c:forEach items="${initialData.misMatchedCmponentResults}" var="componentResult">
+                                <c:forEach items="${initialData.misMatchedComponentResults}" var="componentResult">
                                     <div class="panel-body" style="background-color: lightcoral">                                        
                                         <span class="fieldHeader">Component Class: </span> ${componentResult.getComponentClassStr()}<br />
                                         <span class="fieldHeader">Manufacturer:</span> ${componentResult.getManufacturer()}<br />
@@ -87,6 +87,15 @@
                                     </div>
                                 </c:forEach>
                                 <c:forEach items="${initialData.misMatchedComponentInfos}" var="componentInfo">
+                                    <div class="panel-body" style="background-color: lightcoral">
+                                        <span class="fieldHeader">Component Class: </span> ${componentInfo.getComponentClassStr()}<br />
+                                        <span class="fieldHeader">Manufacturer:</span> ${componentInfo.getComponentManufacturer()}<br />
+                                        <span class="fieldHeader">Model:</span> ${componentInfo.getComponentModel()}<br />
+                                        <span class="fieldHeader">Serial Number:</span> ${componentInfo.getComponentSerial()}<br />
+                                        <span class="fieldHeader">Revision:</span> ${componentInfo.getComponentRevision()}<br />
+                                    </div>
+                                </c:forEach>
+                                <c:forEach items="${initialData.notFoundDeviceComponents}" var="componentInfo">
                                     <div class="panel-body" style="background-color: lightcoral">
                                         <span class="fieldHeader">Component Class: </span> ${componentInfo.getComponentClassStr()}<br />
                                         <span class="fieldHeader">Manufacturer:</span> ${componentInfo.getComponentManufacturer()}<br />

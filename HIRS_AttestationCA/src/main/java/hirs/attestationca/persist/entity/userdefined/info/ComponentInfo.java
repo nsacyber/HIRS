@@ -60,10 +60,11 @@ public class ComponentInfo extends ArchivableEntity {
 
     /**
      * Base constructor for children.
+     *
      * @param componentManufacturer Component Manufacturer (must not be null)
-     * @param componentModel Component Model (must not be null)
-     * @param componentSerial Component Serial Number (can be null)
-     * @param componentRevision Component Revision or Version (can be null)
+     * @param componentModel        Component Model (must not be null)
+     * @param componentSerial       Component Serial Number (can be null)
+     * @param componentRevision     Component Revision or Version (can be null)
      */
     public ComponentInfo(final String componentManufacturer,
                          final String componentModel,
@@ -72,13 +73,15 @@ public class ComponentInfo extends ArchivableEntity {
         this(DeviceInfoEnums.NOT_SPECIFIED, componentManufacturer, componentModel,
                 componentSerial, componentRevision);
     }
+
     /**
      * Constructor.
-     * @param deviceName the host machine associated with this component. (must not be null)
+     *
+     * @param deviceName            the host machine associated with this component. (must not be null)
      * @param componentManufacturer Component Manufacturer (must not be null)
-     * @param componentModel Component Model (must not be null)
-     * @param componentSerial Component Serial Number (can be null)
-     * @param componentRevision Component Revision or Version (can be null)
+     * @param componentModel        Component Model (must not be null)
+     * @param componentSerial       Component Serial Number (can be null)
+     * @param componentRevision     Component Revision or Version (can be null)
      */
     public ComponentInfo(final String deviceName,
                          final String componentManufacturer,
@@ -112,12 +115,13 @@ public class ComponentInfo extends ArchivableEntity {
 
     /**
      * Constructor.
-     * @param deviceName the host machine associated with this component.
+     *
+     * @param deviceName            the host machine associated with this component.
      * @param componentManufacturer Component Manufacturer (must not be null)
-     * @param componentModel Component Model (must not be null)
-     * @param componentSerial Component Serial Number (can be null)
-     * @param componentRevision Component Revision or Version (can be null)
-     * @param componentClass Component Class (can be null)
+     * @param componentModel        Component Model (must not be null)
+     * @param componentSerial       Component Serial Number (can be null)
+     * @param componentRevision     Component Revision or Version (can be null)
+     * @param componentClass        Component Class (can be null)
      */
     public ComponentInfo(final String deviceName,
                          final String componentManufacturer,
@@ -132,15 +136,27 @@ public class ComponentInfo extends ArchivableEntity {
     }
 
     /**
+     * Blank object to display on comparision page.
+     * @param empty nothing
+     */
+    public ComponentInfo(final String empty) {
+        this.deviceName = StringUtils.EMPTY;
+        this.componentManufacturer = StringUtils.EMPTY;
+        this.componentModel = StringUtils.EMPTY;
+        this.componentSerial = StringUtils.EMPTY;
+        this.componentRevision = StringUtils.EMPTY;
+    }
+
+    /**
      * Determines whether the given properties represent a
      * ComponentInfo that will be useful in validation.
      * Currently, only components which have a non-null
      * manufacturer and model are considered valid.
      *
      * @param componentManufacturer a String containing a component's manufacturer
-     * @param componentModel a String representing a component's model
-     * @param componentSerial a String representing a component's serial number
-     * @param componentRevision a String representing a component's revision
+     * @param componentModel        a String representing a component's model
+     * @param componentSerial       a String representing a component's serial number
+     * @param componentRevision     a String representing a component's revision
      * @return true if the component is valid, false if not
      */
     public static boolean isComplete(final String componentManufacturer,
@@ -153,6 +169,7 @@ public class ComponentInfo extends ArchivableEntity {
 
     /**
      * Equals for the component info that just uses this classes attributes.
+     *
      * @param object the object to compare
      * @return the boolean result
      */
@@ -173,6 +190,7 @@ public class ComponentInfo extends ArchivableEntity {
 
     /**
      * Returns a hash code that is associated with common fields for components.
+     *
      * @return int value of the elements
      */
     public int hashCommonElements() {
@@ -182,6 +200,7 @@ public class ComponentInfo extends ArchivableEntity {
 
     /**
      * Hash method for the attributes of this class.
+     *
      * @return int value that represents this class
      */
     @Override
