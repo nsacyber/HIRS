@@ -246,7 +246,7 @@ public class ComponentComparisonPageController extends PageController<Certificat
         for (ComponentInfo info : componentInfos) {
             if (!info.getDeviceName().isEmpty()) {
                 componentInfo = info;
-                componentClass = new ComponentClass("TCG", info.getComponentClass());
+                componentClass = new ComponentClass(info.getComponentClassRegistry(), info.getComponentClass());
                 componentInfo.setComponentClassStr(componentClass.toString());
                 tempList.add(componentInfo);
             } else {
