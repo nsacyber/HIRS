@@ -46,7 +46,7 @@
 
                             <div style="margin: auto">
                                 <c:forEach items="${initialData.componentResults}" var="componentResult">
-                                    <div class="panel-body" style="background-color: #00ff00; margin-bottom: 5px">
+                                    <div class="panel-body" style="background-color: #00cc00; margin-bottom: 5px">
                                         <span class="compHeader">Component Class: </span> ${componentResult.getComponentClassStr()}<br />
                                         <span class="compHeader">Manufacturer:</span> ${componentResult.getManufacturer()}<br />
                                         <span class="compHeader">Model:</span> ${componentResult.getModel()}<br />
@@ -55,7 +55,7 @@
                                     </div>
                                 </c:forEach>
                                 <c:forEach items="${initialData.misMatchedComponentResults}" var="componentResult">
-                                    <div class="panel-body" style="background-color: #cc0000; margin-bottom: 5px">
+                                    <div class="panel-body" style="background-color: #ff0000; margin-bottom: 5px">
                                         <span class="compHeader">Component Class: </span> ${componentResult.getComponentClassStr()}<br />
                                         <span class="compHeader">Manufacturer:</span> ${componentResult.getManufacturer()}<br />
                                         <span class="compHeader">Model:</span> ${componentResult.getModel()}<br />
@@ -70,7 +70,7 @@
 
                             <div style="margin: auto">
                                 <c:forEach items="${initialData.componentInfos}" var="componentInfo">
-                                    <div class="panel-body" style="background-color: #00ff00; margin-bottom: 5px">
+                                    <div class="panel-body" style="background-color: #00cc00; margin-bottom: 5px">
                                         <span class="compHeader">Component Class: </span> ${componentInfo.getComponentClassStr()}<br />
                                         <span class="compHeader">Manufacturer:</span> ${componentInfo.getComponentManufacturer()}<br />
                                         <span class="compHeader">Model:</span> ${componentInfo.getComponentModel()}<br />
@@ -79,7 +79,7 @@
                                     </div>
                                 </c:forEach>
                                 <c:forEach items="${initialData.misMatchedComponentInfos}" var="componentInfo">
-                                    <div class="panel-body" style="background-color: #cc0000; margin-bottom: 5px">
+                                    <div class="panel-body" style="background-color: #ff0000; margin-bottom: 5px">
                                         <span class="compHeader">Component Class: </span> ${componentInfo.getComponentClassStr()}<br />
                                         <span class="compHeader">Manufacturer:</span> ${componentInfo.getComponentManufacturer()}<br />
                                         <span class="compHeader">Model:</span> ${componentInfo.getComponentModel()}<br />
