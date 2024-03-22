@@ -39,69 +39,61 @@
                     </div>
                 </div>
                 <br />
-                <div class="panel-heading" role="tab" id="headingOne">
-                    <h4 class="panel-title">
-                        <a role="button" data-toggle="collapse" class="collapsed"
-                           href="#componentListCollapse" aria-expanded="true" aria-controls="componentListCollapse">
-                            Components
-                        </a>
-                    </h4>
-                </div>
-                <div id="componentListCollapse" class="row" style="margin: auto 260px auto 125px">                    
+                <div id="componentListCollapse" class="row" style="margin: auto 260px auto 125px">
                     <div class="row" style="display: flex;">
                         <div class="panel panel-default" style="flex: 1">
                             <div class="panel-heading"><span class="fieldHeader">Certificate Component</span></div>
 
-                            <div style="display: flex 1; margin: 2px auto 2px 25px">
+                            <div style="display: flex 1; margin: auto">
                                 <c:forEach items="${initialData.componentResults}" var="componentResult">
-                                    <div class="panel-body" style="background-color: greenyellow">                                        
-                                        <span class="fieldHeader">Component Class: </span> ${componentResult.getComponentClassStr()}<br />
-                                        <span class="fieldHeader">Manufacturer:</span> ${componentResult.getManufacturer()}<br />
-                                        <span class="fieldHeader">Model:</span> ${componentResult.getModel()}<br />
-                                        <span class="fieldHeader">Serial Number:</span> ${componentResult.getSerialNumber()}<br />
-                                        <span class="fieldHeader">Revision:</span> ${componentResult.getRevisionNumber()}<br />
+                                    <div class="panel-body" style="background-color: #00ff00; margin-bottom: 5px">
+                                        <span class="compHeader">Component Class: </span> ${componentResult.getComponentClassStr()}<br />
+                                        <span class="compHeader">Manufacturer:</span> ${componentResult.getManufacturer()}<br />
+                                        <span class="compHeader">Model:</span> ${componentResult.getModel()}<br />
+                                        <span class="compHeader">Serial Number:</span> ${componentResult.getSerialNumber()}<br />
+                                        <span class="compHeader">Revision:</span> ${componentResult.getRevisionNumber()}<br />
                                     </div>
                                 </c:forEach>
                                 <c:forEach items="${initialData.misMatchedComponentResults}" var="componentResult">
-                                    <div class="panel-body" style="background-color: lightcoral">                                        
-                                        <span class="fieldHeader">Component Class: </span> ${componentResult.getComponentClassStr()}<br />
-                                        <span class="fieldHeader">Manufacturer:</span> ${componentResult.getManufacturer()}<br />
-                                        <span class="fieldHeader">Model:</span> ${componentResult.getModel()}<br />
-                                        <span class="fieldHeader">Serial Number:</span> ${componentResult.getSerialNumber()}<br />
-                                        <span class="fieldHeader">Revision:</span> ${componentResult.getRevisionNumber()}<br />
+                                    <div class="panel-body" style="background-color: #cc0000; margin-bottom: 5px">
+                                        <span class="compHeader">Component Class: </span> ${componentResult.getComponentClassStr()}<br />
+                                        <span class="compHeader">Manufacturer:</span> ${componentResult.getManufacturer()}<br />
+                                        <span class="compHeader">Model:</span> ${componentResult.getModel()}<br />
+                                        <span class="compHeader">Serial Number:</span> ${componentResult.getSerialNumber()}<br />
+                                        <span class="compHeader">Revision:</span> ${componentResult.getRevisionNumber()}<br />
                                     </div>
                                 </c:forEach>
                             </div>
                         </div>
                         <div class="panel panel-default" style="flex: 2">
-                            <div class="panel-heading"><span class="fieldHeader">Device Components</span></div>     
+                            <div class="panel-heading"><span class="fieldHeader">Device Components</span></div>
 
-                            <div style="display: flex 2; margin: 2px auto 2px 25px">
+                            <div style="display: flex 2; margin: auto">
                                 <c:forEach items="${initialData.componentInfos}" var="componentInfo">
-                                    <div class="panel-body" style="background-color: greenyellow">
-                                        <span class="fieldHeader">Component Class: </span> ${componentInfo.getComponentClassStr()}<br />
-                                        <span class="fieldHeader">Manufacturer:</span> ${componentInfo.getComponentManufacturer()}<br />
-                                        <span class="fieldHeader">Model:</span> ${componentInfo.getComponentModel()}<br />
-                                        <span class="fieldHeader">Serial Number:</span> ${componentInfo.getComponentSerial()}<br />
-                                        <span class="fieldHeader">Revision:</span> ${componentInfo.getComponentRevision()}<br />
+                                    <div class="panel-body" style="background-color: #00ff00; margin-bottom: 5px">
+                                        <span class="compHeader">Component Class: </span> ${componentInfo.getComponentClassStr()}<br />
+                                        <span class="compHeader">Manufacturer:</span> ${componentInfo.getComponentManufacturer()}<br />
+                                        <span class="compHeader">Model:</span> ${componentInfo.getComponentModel()}<br />
+                                        <span class="compHeader">Serial Number:</span> ${componentInfo.getComponentSerial()}<br />
+                                        <span class="compHeader">Revision:</span> ${componentInfo.getComponentRevision()}<br />
                                     </div>
                                 </c:forEach>
                                 <c:forEach items="${initialData.misMatchedComponentInfos}" var="componentInfo">
-                                    <div class="panel-body" style="background-color: lightcoral">
-                                        <span class="fieldHeader">Component Class: </span> ${componentInfo.getComponentClassStr()}<br />
-                                        <span class="fieldHeader">Manufacturer:</span> ${componentInfo.getComponentManufacturer()}<br />
-                                        <span class="fieldHeader">Model:</span> ${componentInfo.getComponentModel()}<br />
-                                        <span class="fieldHeader">Serial Number:</span> ${componentInfo.getComponentSerial()}<br />
-                                        <span class="fieldHeader">Revision:</span> ${componentInfo.getComponentRevision()}<br />
+                                    <div class="panel-body" style="background-color: #cc0000; margin-bottom: 5px">
+                                        <span class="compHeader">Component Class: </span> ${componentInfo.getComponentClassStr()}<br />
+                                        <span class="compHeader">Manufacturer:</span> ${componentInfo.getComponentManufacturer()}<br />
+                                        <span class="compHeader">Model:</span> ${componentInfo.getComponentModel()}<br />
+                                        <span class="compHeader">Serial Number:</span> ${componentInfo.getComponentSerial()}<br />
+                                        <span class="compHeader">Revision:</span> ${componentInfo.getComponentRevision()}<br />
                                     </div>
                                 </c:forEach>
                                 <c:forEach items="${initialData.notFoundDeviceComponents}" var="componentInfo">
-                                    <div class="panel-body" style="background-color: lightcoral">
-                                        <span class="fieldHeader">Component Class: </span> ${componentInfo.getComponentClassStr()}<br />
-                                        <span class="fieldHeader">Manufacturer:</span> ${componentInfo.getComponentManufacturer()}<br />
-                                        <span class="fieldHeader">Model:</span> ${componentInfo.getComponentModel()}<br />
-                                        <span class="fieldHeader">Serial Number:</span> ${componentInfo.getComponentSerial()}<br />
-                                        <span class="fieldHeader">Revision:</span> ${componentInfo.getComponentRevision()}<br />
+                                    <div class="panel-body" style="background-color: lightgray; margin-bottom: 5px">
+                                        <span class="compHeader">Component Class: </span> ${componentInfo.getComponentClassStr()}<br />
+                                        <span class="compHeader">Manufacturer:</span> ${componentInfo.getComponentManufacturer()}<br />
+                                        <span class="compHeader">Model:</span> ${componentInfo.getComponentModel()}<br />
+                                        <span class="compHeader">Serial Number:</span> ${componentInfo.getComponentSerial()}<br />
+                                        <span class="compHeader">Revision:</span> ${componentInfo.getComponentRevision()}<br />
                                     </div>
                                 </c:forEach>
                             </div>

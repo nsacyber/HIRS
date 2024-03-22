@@ -39,6 +39,10 @@
     width: 100px;
     display: inline-block;
 }
+.compHeader {
+    width: 150px;
+    display: inline-block;
+}
 
 #tbbsecurity .fieldHeader {
     width: 165px;
