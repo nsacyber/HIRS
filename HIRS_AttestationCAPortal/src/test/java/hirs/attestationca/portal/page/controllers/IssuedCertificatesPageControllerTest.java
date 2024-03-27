@@ -21,7 +21,10 @@ import org.springframework.test.annotation.Rollback;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import static hirs.attestationca.portal.page.Page.ISSUED_CERTIFICATES;
 import static org.hamcrest.Matchers.hasSize;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 
 /**
@@ -135,7 +138,7 @@ public class IssuedCertificatesPageControllerTest extends PageControllerTest {
     @Rollback
     public void getIssuedCertsList() throws Exception {
 
-//        // perform test
+        // perform test
 //        getMockMvc().perform(MockMvcRequestBuilders.get(pagePath + "/list"))
 //                .andExpect(status().isOk())
 //                .andExpect(jsonPath("$.data", hasSize(1)))
