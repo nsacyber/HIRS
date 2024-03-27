@@ -12,6 +12,7 @@ import hirs.attestationca.portal.page.PageControllerTest;
 import java.io.IOException;
 import java.util.LinkedList;
 import java.util.List;
+
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,11 +21,8 @@ import org.springframework.test.annotation.Rollback;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import static hirs.attestationca.portal.page.Page.ISSUED_CERTIFICATES;
 import static org.hamcrest.Matchers.hasSize;
-//import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
-//import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
-//import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-//import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+
 
 /**
  * Integration tests that test the URL End Points of IssuedCertificatesPageController.
@@ -135,7 +133,7 @@ public class IssuedCertificatesPageControllerTest extends PageControllerTest {
      */
     @Test
     @Rollback
-    public void getDeviceList() throws Exception {
+    public void getIssuedCertsList() throws Exception {
 
         // perform test
         getMockMvc().perform(MockMvcRequestBuilders.get(pagePath + "/list"))
@@ -144,6 +142,7 @@ public class IssuedCertificatesPageControllerTest extends PageControllerTest {
                 .andExpect(jsonPath("$.data[0].platformCredentials",
                         hasSize(platformCredentialList.size())))
                 .andReturn();
+
     }
 
     /**
