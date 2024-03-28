@@ -51,8 +51,9 @@ fi
 
 echo "Removing hirs tls references from mariadb configuration files"
 grep -v "hirs" $DB_SRV_CONF > tmpfile && mv tmpfile $DB_SRV_CONF
-grep -v "tls_version" $DB_SRV_CONF > tmpfile && mv tmpfile $DB_SRV_CONF
-grep -v "require_secure_transport" $DB_SRV_CONF > tmpfile && mv tmpfile $DB_SRV_CONF
+# The following arent avialble in Mariadb 10.3
+#grep -v "tls_version" $DB_SRV_CONF > tmpfile && mv tmpfile $DB_SRV_CONF
+#grep -v "require_secure_transport" $DB_SRV_CONF > tmpfile && mv tmpfile $DB_SRV_CONF
 
 grep -v "hirs" $DB_CLIENT_CONF > tmpfile && mv tmpfile $DB_CLIENT_CONF
 
