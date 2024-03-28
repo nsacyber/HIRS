@@ -215,9 +215,10 @@ public class CertificatePageController extends PageController<NoPageParams> {
         String orderColumnName = input.getOrderColumnName();
         log.debug("Ordering on column: " + orderColumnName);
 
-        Order order = input.getOrder().get(0);
-
-
+        List<Order> orderList = input.getOrder();
+        Order order = null;
+        if (orderList.size() > 0)
+            order = input.getOrder().get(0);
 
         int currentPage = input.getStart() / input.getLength();
         Pageable paging = PageRequest.of(currentPage, input.getLength(), Sort.by(orderColumnName));
@@ -276,17 +277,19 @@ public class CertificatePageController extends PageController<NoPageParams> {
         } else if (certificateType.equals(TRUSTCHAIN)) {
             FilteredRecordsList<CertificateAuthorityCredential> records = new FilteredRecordsList<>();
             org.springframework.data.domain.Page<CertificateAuthorityCredential> pagedResult = this.caCredentialRepository.findByArchiveFlag(false, paging);;
-            if (orderColumnName.equalsIgnoreCase("Issuer")) {
-                if (order.isAscending()) {
-                    pagedResult = this.caCredentialRepository.findByArchiveFlagOrderByIssuerAsc(false, paging);
-                } else {
-                    pagedResult = this.caCredentialRepository.findByArchiveFlagOrderByIssuerDesc(false, paging);
-                }
-            } else if (orderColumnName.equalsIgnoreCase("Subject")) {
-                if (order.isAscending()) {
-                    pagedResult = this.caCredentialRepository.findByArchiveFlagOrderBySubjectAsc(false, paging);
-                } else {
-                    pagedResult = this.caCredentialRepository.findByArchiveFlagOrderBySubjectDesc(false, paging);
+            if (order != null) {
+                if (orderColumnName.equalsIgnoreCase("Issuer")) {
+                    if (order.isAscending()) {
+                        pagedResult = this.caCredentialRepository.findByArchiveFlagOrderByIssuerAsc(false, paging);
+                    } else {
+                        pagedResult = this.caCredentialRepository.findByArchiveFlagOrderByIssuerDesc(false, paging);
+                    }
+                } else if (orderColumnName.equalsIgnoreCase("Subject")) {
+                    if (order.isAscending()) {
+                        pagedResult = this.caCredentialRepository.findByArchiveFlagOrderBySubjectAsc(false, paging);
+                    } else {
+                        pagedResult = this.caCredentialRepository.findByArchiveFlagOrderBySubjectDesc(false, paging);
+                    }
                 }
             }
 
@@ -626,8 +629,8 @@ public class CertificatePageController extends PageController<NoPageParams> {
     }
 
     private ZipOutputStream bulkDownload(final ZipOutputStream zipOut,
-                              final List<Certificate> certificates,
-                              final String singleFileName) throws IOException {
+                                         final List<Certificate> certificates,
+                                         final String singleFileName) throws IOException {
         String zipFileName;
         // get all files
         for (Certificate certificate : certificates) {
