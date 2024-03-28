@@ -20,6 +20,7 @@ import hirs.attestationca.persist.entity.userdefined.certificate.attributes.Comp
 import hirs.attestationca.persist.util.CredentialHelper;
 import hirs.attestationca.portal.datatables.DataTableInput;
 import hirs.attestationca.portal.datatables.DataTableResponse;
+import hirs.attestationca.portal.datatables.Order;
 import hirs.attestationca.portal.page.Page;
 import hirs.attestationca.portal.page.PageController;
 import hirs.attestationca.portal.page.PageMessages;
@@ -214,24 +215,10 @@ public class CertificatePageController extends PageController<NoPageParams> {
         String orderColumnName = input.getOrderColumnName();
         log.debug("Ordering on column: " + orderColumnName);
 
-        // check that the alert is not archived and that it is in the specified report
-        CriteriaModifier criteriaModifier = new CriteriaModifier() {
-            @Override
-            public void modify(final CriteriaQuery criteriaQuery) {
-                Session session = entityManager.unwrap(Session.class);
-                CriteriaBuilder cb = session.getCriteriaBuilder();
-                Root<Certificate> rimRoot = criteriaQuery.from(Reference.class);
-                criteriaQuery.select(rimRoot).distinct(true).where(cb.isNull(rimRoot.get(Certificate.ARCHIVE_FIELD)));
-
-                // add a device alias if this query includes the device table
-                // for getting the device (e.g. device name).
-                // use left join, since device may be null. Query will return all
-                // Certs of this type, whether it has a Device or not (device field may be null)
-                if (hasDeviceTableToJoin(certificateType)) {
-//                    criteria.createAlias("device", "device", JoinType.LEFT_OUTER_JOIN);
-                }
-            }
-        };
+        List<Order> orderList = input.getOrder();
+        Order order = null;
+        if (orderList.size() > 0)
+            order = input.getOrder().get(0);
 
         int currentPage = input.getStart() / input.getLength();
         Pageable paging = PageRequest.of(currentPage, input.getLength(), Sort.by(orderColumnName));
@@ -289,7 +276,22 @@ public class CertificatePageController extends PageController<NoPageParams> {
             return new DataTableResponse<>(records, input);
         } else if (certificateType.equals(TRUSTCHAIN)) {
             FilteredRecordsList<CertificateAuthorityCredential> records = new FilteredRecordsList<>();
-            org.springframework.data.domain.Page<CertificateAuthorityCredential> pagedResult = this.caCredentialRepository.findByArchiveFlag(false, paging);
+            org.springframework.data.domain.Page<CertificateAuthorityCredential> pagedResult = this.caCredentialRepository.findByArchiveFlag(false, paging);;
+            if (order != null) {
+                if (orderColumnName.equalsIgnoreCase("Issuer")) {
+                    if (order.isAscending()) {
+                        pagedResult = this.caCredentialRepository.findByArchiveFlagOrderByIssuerAsc(false, paging);
+                    } else {
+                        pagedResult = this.caCredentialRepository.findByArchiveFlagOrderByIssuerDesc(false, paging);
+                    }
+                } else if (orderColumnName.equalsIgnoreCase("Subject")) {
+                    if (order.isAscending()) {
+                        pagedResult = this.caCredentialRepository.findByArchiveFlagOrderBySubjectAsc(false, paging);
+                    } else {
+                        pagedResult = this.caCredentialRepository.findByArchiveFlagOrderBySubjectDesc(false, paging);
+                    }
+                }
+            }
 
             if (pagedResult.hasContent()) {
                 records.addAll(pagedResult.getContent());
@@ -627,8 +629,8 @@ public class CertificatePageController extends PageController<NoPageParams> {
     }
 
     private ZipOutputStream bulkDownload(final ZipOutputStream zipOut,
-                              final List<Certificate> certificates,
-                              final String singleFileName) throws IOException {
+                                         final List<Certificate> certificates,
+                                         final String singleFileName) throws IOException {
         String zipFileName;
         // get all files
         for (Certificate certificate : certificates) {
