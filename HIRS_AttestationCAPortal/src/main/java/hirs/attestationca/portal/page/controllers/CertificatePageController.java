@@ -6,20 +6,18 @@ import hirs.attestationca.persist.DBServiceException;
 import hirs.attestationca.persist.FilteredRecordsList;
 import hirs.attestationca.persist.entity.manager.CACredentialRepository;
 import hirs.attestationca.persist.entity.manager.CertificateRepository;
-import hirs.attestationca.persist.entity.manager.ComponentResultRepository;
 import hirs.attestationca.persist.entity.manager.EndorsementCredentialRepository;
 import hirs.attestationca.persist.entity.manager.IssuedCertificateRepository;
 import hirs.attestationca.persist.entity.manager.PlatformCertificateRepository;
 import hirs.attestationca.persist.entity.userdefined.Certificate;
 import hirs.attestationca.persist.entity.userdefined.certificate.CertificateAuthorityCredential;
-import hirs.attestationca.persist.entity.userdefined.certificate.ComponentResult;
 import hirs.attestationca.persist.entity.userdefined.certificate.EndorsementCredential;
 import hirs.attestationca.persist.entity.userdefined.certificate.IssuedAttestationCertificate;
 import hirs.attestationca.persist.entity.userdefined.certificate.PlatformCredential;
-import hirs.attestationca.persist.entity.userdefined.certificate.attributes.ComponentIdentifier;
 import hirs.attestationca.persist.util.CredentialHelper;
 import hirs.attestationca.portal.datatables.DataTableInput;
 import hirs.attestationca.portal.datatables.DataTableResponse;
+import hirs.attestationca.portal.datatables.OrderedListQueryDataTableAdapter;
 import hirs.attestationca.portal.page.Page;
 import hirs.attestationca.portal.page.PageController;
 import hirs.attestationca.portal.page.PageMessages;
@@ -85,7 +83,6 @@ public class CertificatePageController extends PageController<NoPageParams> {
     private CertificateAuthorityCredential certificateAuthorityCredential;
     private final CertificateRepository certificateRepository;
     private final PlatformCertificateRepository platformCertificateRepository;
-    private final ComponentResultRepository componentResultRepository;
     private final EndorsementCredentialRepository endorsementCredentialRepository;
     private final IssuedCertificateRepository issuedCertificateRepository;
     private final CACredentialRepository caCredentialRepository;
@@ -103,26 +100,23 @@ public class CertificatePageController extends PageController<NoPageParams> {
     /**
      * Constructor providing the Page's display and routing specification.
      *
-     * @param certificateRepository           the general certificate manager
-     * @param platformCertificateRepository   the platform credential manager
-     * @param componentResultRepository       the component result repo
+     * @param certificateRepository the general certificate manager
+     * @param platformCertificateRepository the platform credential manager
      * @param endorsementCredentialRepository the endorsement credential manager
-     * @param issuedCertificateRepository     the issued certificate manager
-     * @param caCredentialRepository          the ca credential manager
-     * @param acaCertificate                  the ACA's X509 certificate
+     * @param issuedCertificateRepository the issued certificate manager
+     * @param caCredentialRepository the ca credential manager
+     * @param acaCertificate the ACA's X509 certificate
      */
     @Autowired
     public CertificatePageController(final CertificateRepository certificateRepository,
                                      final PlatformCertificateRepository platformCertificateRepository,
-                                     final ComponentResultRepository componentResultRepository,
                                      final EndorsementCredentialRepository endorsementCredentialRepository,
                                      final IssuedCertificateRepository issuedCertificateRepository,
                                      final CACredentialRepository caCredentialRepository,
-                                     final X509Certificate acaCertificate) {
+            final X509Certificate acaCertificate) {
         super(Page.TRUST_CHAIN);
         this.certificateRepository = certificateRepository;
         this.platformCertificateRepository = platformCertificateRepository;
-        this.componentResultRepository = componentResultRepository;
         this.endorsementCredentialRepository = endorsementCredentialRepository;
         this.issuedCertificateRepository = issuedCertificateRepository;
         this.caCredentialRepository = caCredentialRepository;
@@ -401,11 +395,9 @@ public class CertificatePageController extends PageController<NoPageParams> {
                             if (!pc.isPlatformBase()) {
                                 pc.archive("User requested deletion via UI of the base certificate");
                                 certificateRepository.save(pc);
-                                deleteComponentResults(pc.getPlatformSerial());
                             }
                         }
                     }
-                    deleteComponentResults(platformCertificate.getPlatformSerial());
                 }
 
                 certificate.archive("User requested deletion via UI");
@@ -745,7 +737,7 @@ public class CertificatePageController extends PageController<NoPageParams> {
             final String serialNumber) {
         List<PlatformCredential> associatedCertificates = new LinkedList<>();
 
-        if (serialNumber != null) {
+        if (serialNumber != null){
             switch (certificateType) {
                 case PLATFORMCREDENTIAL:
                     associatedCertificates.addAll(this.certificateRepository
@@ -801,7 +793,7 @@ public class CertificatePageController extends PageController<NoPageParams> {
                                 storeCertificate(
                                         certificateType,
                                         file.getOriginalFilename(),
-                                        messages, new CertificateAuthorityCredential(((java.security.cert.Certificate) i.next()).getEncoded()));
+                                        messages, new CertificateAuthorityCredential(((java.security.cert.Certificate)i.next()).getEncoded()));
                             }
 
                             // stop the main thread from saving/storing
@@ -849,10 +841,11 @@ public class CertificatePageController extends PageController<NoPageParams> {
      * Store the given certificate in the database.
      *
      * @param certificateType String containing the certificate type
-     * @param fileName        contain the name of the file of the certificate to
-     *                        be stored
-     * @param messages        contains any messages that will be display on the page
-     * @param certificate     the certificate to store
+     * @param fileName contain the name of the file of the certificate to
+     * be stored
+     * @param messages contains any messages that will be display on the page
+     * @param certificate the certificate to store
+     * @return the messages for the page
      */
     private void storeCertificate(
             final String certificateType,
@@ -884,16 +877,19 @@ public class CertificatePageController extends PageController<NoPageParams> {
                         List<PlatformCredential> sharedCertificates = getCertificateByBoardSN(
                                 certificateType,
                                 platformCertificate.getPlatformSerial());
-                        for (PlatformCredential pc : sharedCertificates) {
-                            if (pc.isPlatformBase()) {
-                                final String failMessage = "Storing certificate failed: "
-                                        + "platform credential "
-                                        + "chain (" + pc.getPlatformSerial()
-                                        + ") base already exists in this chain ("
-                                        + fileName + ")";
-                                messages.addError(failMessage);
-                                log.error(failMessage);
-                                return;
+
+                        if (sharedCertificates != null) {
+                            for (PlatformCredential pc : sharedCertificates) {
+                                if (pc.isPlatformBase()) {
+                                    final String failMessage = "Storing certificate failed: "
+                                            + "platform credential "
+                                            + "chain (" + pc.getPlatformSerial()
+                                            + ") base already exists in this chain ("
+                                            + fileName + ")";
+                                    messages.addError(failMessage);
+                                    log.error(failMessage);
+                                    return;
+                                }
                             }
                         }
                     } /**else {
@@ -917,7 +913,6 @@ public class CertificatePageController extends PageController<NoPageParams> {
                 }
 
                 this.certificateRepository.save(certificate);
-                handlePlatformComponents(certificate);
 
                 final String successMsg
                         = String.format("New certificate successfully uploaded (%s): ", fileName);
@@ -941,15 +936,6 @@ public class CertificatePageController extends PageController<NoPageParams> {
                 existingCertificate.resetCreateTime();
                 this.certificateRepository.save(existingCertificate);
 
-                List<ComponentResult> componentResults = componentResultRepository
-                        .findByBoardSerialNumber(((PlatformCredential) existingCertificate)
-                                .getPlatformSerial());
-                for (ComponentResult componentResult : componentResults) {
-                    componentResult.restore();
-                    componentResult.resetCreateTime();
-                    this.componentResultRepository.save(componentResult);
-                }
-
                 final String successMsg = String.format("Pre-existing certificate "
                         + "found and unarchived (%s): ", fileName);
                 messages.addSuccess(successMsg);
@@ -971,46 +957,5 @@ public class CertificatePageController extends PageController<NoPageParams> {
                 + " certificate already exists (%s): ", fileName);
         messages.addError(failMessage);
         log.error(failMessage);
-    }
-
-    private void handlePlatformComponents(final Certificate certificate) {
-        PlatformCredential platformCredential;
-
-        if (certificate instanceof PlatformCredential) {
-            platformCredential = (PlatformCredential) certificate;
-            List<ComponentResult> componentResults = componentResultRepository
-                    .findByCertificateSerialNumberAndBoardSerialNumber(
-                            platformCredential.getSerialNumber().toString(),
-                            platformCredential.getPlatformSerial());
-            if (componentResults.isEmpty()) {
-                ComponentResult componentResult;
-                for (ComponentIdentifier componentIdentifier : platformCredential
-                        .getComponentIdentifiers()) {
-                    componentResult = new ComponentResult(platformCredential.getPlatformSerial(),
-                            platformCredential.getSerialNumber().toString(),
-                            platformCredential.getPlatformChainType(),
-                            componentIdentifier);
-                    componentResult.setFailedValidation(false);
-                    componentResult.setDelta(!platformCredential.isPlatformBase());
-                    componentResultRepository.save(componentResult);
-                }
-            } else {
-                for (ComponentResult componentResult : componentResults) {
-                    componentResult.restore();
-                    componentResult.resetCreateTime();
-                    componentResultRepository.save(componentResult);
-                }
-            }
-        }
-    }
-
-    private void deleteComponentResults(final String platformSerial) {
-        List<ComponentResult> componentResults = componentResultRepository
-                .findByBoardSerialNumber(platformSerial);
-
-        for (ComponentResult componentResult : componentResults) {
-            componentResult.archive();
-            componentResultRepository.save(componentResult);
-        }
     }
 }
