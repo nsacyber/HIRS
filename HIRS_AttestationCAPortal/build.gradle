@@ -132,7 +132,7 @@ ospackage {
     preUninstall 'bash /opt/hirs/aca/scripts/aca/aca_remove_setup.sh'
     preUninstall 'bash /opt/hirs/aca/scripts/systemd/aca_disable_service.sh'
     postUninstall 'if [ -d /etc/hirs ]; then rm -rf /etc/hirs; fi;'
-    
+
     buildRpm {
         dependsOn  ':HIRS_AttestationCAPortal:buildVersion'
         dependsOn  ':HIRS_AttestationCAPortal:bootWar'

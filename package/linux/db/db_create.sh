@@ -111,6 +111,10 @@ set_mysql_server_tls () {
     echo "ssl_ca=$SSL_DB_SRV_CHAIN" >> "$DB_SRV_CONF"
     echo "ssl_cert=$SSL_DB_SRV_CERT" >> "$DB_SRV_CONF"
     echo "ssl_key=$SSL_DB_SRV_KEY" >> "$DB_SRV_CONF"
+    echo "tls_version=TLSv1.2,TLSv1.3" >> "$DB_SRV_CONF"
+    echo "require_secure_transport=ON" >> "$DB_SRV_CONF"
+    
+    
     # Make sure mysql can access them
     chown mysql:mysql $SSL_DB_SRV_CHAIN $SSL_DB_SRV_CERT $SSL_DB_SRV_KEY
     # Make selinux contexts for config files, if selinux is enabled
