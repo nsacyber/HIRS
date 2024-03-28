@@ -111,8 +111,9 @@ set_mysql_server_tls () {
     echo "ssl_ca=$SSL_DB_SRV_CHAIN" >> "$DB_SRV_CONF"
     echo "ssl_cert=$SSL_DB_SRV_CERT" >> "$DB_SRV_CONF"
     echo "ssl_key=$SSL_DB_SRV_KEY" >> "$DB_SRV_CONF"
-    echo "tls_version=TLSv1.2,TLSv1.3" >> "$DB_SRV_CONF"
-    echo "require_secure_transport=ON" >> "$DB_SRV_CONF"
+    # The following arent avialble in Mariadb 10.3
+    #echo "tls_version=TLSv1.2,TLSv1.3" >> "$DB_SRV_CONF"
+    #echo "require_secure_transport=ON" >> "$DB_SRV_CONF"
     
     
     # Make sure mysql can access them
