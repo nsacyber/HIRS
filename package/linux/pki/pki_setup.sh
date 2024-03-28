@@ -14,7 +14,9 @@ PKI_PASS=$2
 UNATTENDED=$3
 LOG_FILE_NAME="hirs_aca_install_"$(date +%Y-%m-%d).log
 LOG_DIR="/var/log/hirs/"
+HIRS_DIR=/etc/hirs
 HIRS_CONF_DIR=/etc/hirs/aca
+HIRS_CERT_DIR=/etc/hirs/certificates
 # Capture location of the script to allow from invocation from any location 
 SCRIPT_DIR=$( dirname -- "$( readlink -f -- "$0"; )"; )
 
@@ -65,9 +67,21 @@ if [ ! -d "/etc/hirs/certificates" ]; then
     $PKI_SETUP_DIR/pki_chain_gen.sh "HIRS" "ecc" "512" "sha384" "$PKI_PASS" "$LOG_FILE"
   popd &> /dev/null
 
+echo "Setting MYSQL permissions for DB TLS Certs..." | tee -a "$LOG_FILE"
+  find $HIRS_CERT_DIR -type f -iname "*.pem" -exec chmod 600 {} \; 
+  find $HIRS_CERT_DIR -type f -iname "*.jks" -exec chmod 600 {} \; 
+  find $HIRS_CERT_DIR -type f -iname "*.key" -exec chmod 600 {} \;
+  chown root:mysql $HIRS_CERT_DIR $HIRS_CERT_DIR/HIRS $HIRS_CERT_DIR/HIRS/rsa_3k_sha384_certs $HIRS_CERT_DIR/HIRS/ecc_512_sha384_certs
+  chmod 750 $HIRS_CERT_DIR $HIRS_CERT_DIR/HIRS $HIRS_CERT_DIR/HIRS/rsa_3k_sha384_certs $HIRS_CERT_DIR/HIRS/ecc_512_sha384_certs
+  chmod 755 $HIRS_DIR
+  chmod 750 $HIRS_CONF_DIR
+  chmod 755 $HIRS_CERT_DIR/HIRS/ecc_512_sha384_certs/HIRS_ecc_512_sha384_Cert_Chain.pem
+  chmod 755 $HIRS_CERT_DIR/HIRS/rsa_3k_sha384_certs/HIRS_rsa_3k_sha384_Cert_Chain.pem
+  
   echo "hirs_pki_password="$PKI_PASS >>  $ACA_PROP
   echo "server.ssl.key-store-password="$PKI_PASS >> $SPRING_PROP_FILE
   echo "server.ssl.trust-store-password="$PKI_PASS >> $SPRING_PROP_FILE
 else 
   echo "/etc/hirs/certificates exists, skipping" | tee -a "$LOG_FILE"
 fi
+chmod 600 $ACA_PROP
