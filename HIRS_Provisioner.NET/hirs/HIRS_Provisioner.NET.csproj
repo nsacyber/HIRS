@@ -45,7 +45,7 @@
     <PackageReference Include="Serilog.Sinks.File" Version="5.0.0" />
     <PackageReference Include="System.Management" Version="6.0.0" />
     <PackageReference Include="System.Security.Principal.Windows" Version="5.0.0" />
-    <PackageReference Include="WiX" Version="3.14.0">
+    <PackageReference Include="WiX" Version="3.14.1">
         <PrivateAssets>all</PrivateAssets> <!-- These assets will be consumed but won't flow to the parent project -->
 </PackageReference>
   </ItemGroup>
