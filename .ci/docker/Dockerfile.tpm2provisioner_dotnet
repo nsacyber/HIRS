@@ -3,6 +3,12 @@ LABEL org.opencontainers.image.vendor NSA Laboratory for Advanced Cybersecurity 
 LABEL org.opencontainers.image.source https://github.com/nsacyber/hirs
 LABEL org.opencontainers.image.description Tools for testing the build and deployment of HIRS projects.
 
+# Purpose: This image is designed for HIRS Provisioner.Net testing on Rocky 9.
+# Date Modified: 4/3/24
+# Notes: The image to be built should be named "r9ts".
+#        Use this command to build the image:
+#        $ docker build -f ./Dockerfile.tpm2provisioner_dotnet -t r9ts:latest .
+
 # REF can be specified as a docker run environment variable to select the HIRS branch to work with
 ENV REF=main
 # BUILD, is an environment variable that if not empty, will attempt to run gradle bootWar on the cloned branch
@@ -92,7 +98,3 @@ WORKDIR /hirs
 # Copy script for running TPM Simulator
 COPY ./.ci/setup/container/setup_tpm2provisioner_dotnet.sh /.ci/setup/container/
 RUN chmod 755 /.ci/setup/container/setup_tpm2provisioner_dotnet.sh
-
-# On container launch, the database will be set up. Then bootRun should utilize build artifacts stored in the image.
-# Upon container launch, TPM simulator script will also be run.
-CMD ["bash", "-c", "/tmp/auto_clone_branch ${REF} ${BUILD} && /.ci/setup/container/setup_tpm2provisioner_dotnet.sh"]
