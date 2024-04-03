@@ -96,9 +96,12 @@ fi
 echo "HIRS ACA Setup initiated on $(date +%Y-%m-%d)" >> "$LOG_FILE"
 
 # Create a version file for bootRun to use
-if  command -v git ; then 
-   jarVersion=$(cat '../../../VERSION').$(date +%s).$(git rev-parse --short  HEAD)
+if command -v git &> /dev/null; then
+   git rev-parse --is-inside-work-tree  &> /dev/null;
+   if [ $? -eq 0 ]; then
+     jarVersion=$(cat '../../../VERSION').$(date +%s).$(git rev-parse --short  HEAD)
    echo $jarVersion > $ACA_VERSION_FILE
+   fi
 fi
 
 # Set HIRS PKI  password

@@ -92,13 +92,13 @@ echo "Checking HIRS ACA Setup on this device..."
   fi
   if [ $? -eq 0 ]; then
       echo "HIRS ACA was installed via an OS package on this device"
-      if [[ $(cat /etc/crontab | grep -c hirs/aca) > 0 ]]; then 
-           echo "  HIRS ACA is set to start on boot via crontab file"
+      systemctl is-active --quiet hirs-aca
+      if [[ $? -eq 0 ]]; then
+        echo "    The hirs-aca service is active"
         else
-           echo "  HIRS ACA is NOT set to start on boot via crontab file"
+        echo "    Error: ACA package install but the hirs-aca service is dead"
+        ALL_CHECKS_PASSED=false
       fi
-    else
-      echo "HIRS ACA was NOT installed via an OS package on this device" 
   fi
 
 check_systemd -p
@@ -221,7 +221,7 @@ check_pki () {
     if [ $ALL_CERTS_PASSED == true ]; then
          echo "   All RSA and ECC certificates under $CERT_PATH are valid"
       else
-         echo "   There were error in the certificates under $CERT_PATH"
+         echo "   Error: There were error in the certificates under $CERT_PATH"
     fi
        keytool -list -keystore  /etc/hirs/certificates/HIRS/TrustStore.jks  -storepass $hirs_pki_password | grep hirs | sed -e 's/^/     /' > /dev/null
     else  #verbose
@@ -244,15 +244,16 @@ check_db () {
   if [ "$RESULT" == "YES" ]; then
       echo "   Mysql Server side TLS is enabled:"
     else
-      echo "   Mysql Server side TLS is NOT enabled:"
+      echo "   Error: Mysql Server side TLS is NOT enabled:"
       ALL_CHECKS_PASSED=false
   fi
+  
   
   RESULT=$(mysqlshow --user=hirs_db --password=$hirs_db_password hirs_db|  grep -o hirs_db)
   if [ "$RESULT" == "hirs_db" ]; then
       echo "   The hirs_db database is visable by the hirs_db user"
     else
-      echo "   The hirs_db database is NOT visable by the hirs_db user"
+      echo "   Error: The hirs_db database is NOT visable by the hirs_db user"
       ALL_CHECKS_PASSED=false
   fi
    if [ ! -z "${ARG_VERBOSE}" ]; then
@@ -263,6 +264,8 @@ check_db () {
     --ssl-key=/etc/hirs/certificates/HIRS/rsa_3k_sha384_certs/HIRS_db_client_rsa_3k_sha384.key
     echo "Mysql TLS configuration"
     mysql -u root --password=$mysql_admin_password -e "SHOW VARIABLES LIKE '%ssl%'"
+    echo "TLS versions allowed on maraidb:"
+    mysql -u root --password=$mysql_admin_password -e "SHOW GLOBAL VARIABLES LIKE 'tls_version'";
     echo "hirs_db user database access:"
     mysql -u hirs_db --password=$hirs_db_password -e "SHOW DATABASES;";
     echo "Privileges for the hirs_db user:"
@@ -289,7 +292,7 @@ check_selinux () {
        if [[ "$DB_SRV_CONTEXT" == *"mysqld_etc_t"* &&  "$DB_CLIENT_CONTEXT" == *"mysqld_etc_t"* ]]; then
          echo "   Selinux status is $SELINUXSTATUS and both $DB_SRV_CONF and $DB_CLIENT_CONF contexts are correct"
        elif [[ "$DB_CLIENT_CONTEXT" == *"mysqld_etc_t"* ]]; then
-         echo "   Selinux status is $SELINUXSTATUS and $DB_CLIENT_CONF context is incorrect: $DB_CLIENT_CONTEXT"
+         echo "   Error: Selinux status is $SELINUXSTATUS and $DB_CLIENT_CONF context is incorrect: $DB_CLIENT_CONTEXT"
          ALL_CHECKS_PASSED=false
      else
         echo "   Selinux status is $SELINUXSTATUS and $DB_SRV_CONF context is incorrect: $DB_SRV_CONTEXT"

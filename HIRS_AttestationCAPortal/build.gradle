@@ -130,8 +130,9 @@ ospackage {
 
     // Uninstall
     preUninstall 'bash /opt/hirs/aca/scripts/aca/aca_remove_setup.sh'
+    preUninstall 'bash /opt/hirs/aca/scripts/systemd/aca_disable_service.sh'
     postUninstall 'if [ -d /etc/hirs ]; then rm -rf /etc/hirs; fi;'
-    
+
     buildRpm {
         dependsOn  ':HIRS_AttestationCAPortal:buildVersion'
         dependsOn  ':HIRS_AttestationCAPortal:bootWar'
@@ -147,9 +148,10 @@ ospackage {
         postTrans 'firewall-cmd --add-port=8443/tcp --permanent'
         postTrans 'firewall-cmd --reload'
         postTrans 'bash /opt/hirs/aca/scripts/aca/aca_setup.sh -u'
-        postTrans 'bash /opt/hirs/aca/scripts/aca/aca_bootRun.sh -w &'
+        postTrans 'bash /opt/hirs/aca/scripts/systemd/aca_enable_service.sh'
+     // postTrans 'bash /opt/hirs/aca/scripts/aca/aca_bootRun.sh -w &'
         // add chrontab to run ACA at boot
-        postTrans 'echo "@reboot root /opt/hirs/aca/scripts/aca/aca_bootRun.sh -w" >> /etc/crontab'
+        //postTrans 'echo "@reboot root /opt/hirs/aca/scripts/aca/aca_bootRun.sh -w" >> /etc/crontab'
         postTrans 'chmod +x /opt/hirs/aca/scripts/aca/*'
         postTrans 'if [ -f /opt/hirs/aca/VERSION ]; then rm /opt/hirs/aca/VERSION; fi;'
         // Wait for ACA to start up before finishing the install
@@ -166,7 +168,8 @@ ospackage {
         requires('curl')
         // Install after required packages
         postInstall 'bash /opt/hirs/aca/scripts/aca/aca_setup.sh -u'
-        postInstall '/opt/hirs/aca/scripts/aca/aca_bootRun.sh -w &'
+        //postInstall '/opt/hirs/aca/scripts/aca/aca_bootRun.sh -w &'
+        postInstall 'bash /opt/hirs/aca/scripts/systemd/aca_enable_service.sh'
         postInstall 'echo "@reboot root /opt/hirs/aca/scripts/aca/aca_bootRun.sh -w" >> /etc/crontab'
         postInstall 'chmod +x /opt/hirs/aca/scripts/aca/*'
         postInstall 'if [ -f /opt/hirs/aca/VERSION ]; then rm /opt/hirs/aca/VERSION; fi;'
