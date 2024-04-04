@@ -128,6 +128,9 @@ ospackage {
          fileMode = 0755 
     }
 
+    // Install - check for existing setup
+    //preInstall 'if [ -d /etc/hirs ]; then echo "Error: /etc/hirs/ exists, aborting install"; exit 1; fi;'
+    preInstall 'if [ -d /opt/hirs ]; then echo "Error: /opt/hirs/ exists, aborting install"; exit 1; fi;'
     // Uninstall
     preUninstall 'bash /opt/hirs/aca/scripts/aca/aca_remove_setup.sh'
     preUninstall 'bash /opt/hirs/aca/scripts/systemd/aca_disable_service.sh'
