@@ -163,4 +163,8 @@ public final class EvConstants {
      * EFI Variable Authority Event ID.
      */
     public static final int EV_EFI_VARIABLE_AUTHORITY = 0x800000E0;
+    /**
+     * EFI SPDM Firmware Blob Event ID.
+     */
+    public static final int EV_EFI_SPDM_FIRMWARE_BLOB = 0x800000E1;
 }
