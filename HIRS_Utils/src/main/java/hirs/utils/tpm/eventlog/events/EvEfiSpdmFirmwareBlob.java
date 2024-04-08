@@ -11,18 +11,13 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Class to process the EV_EFI_SPDM_FIRMWARE_BLOB event using structures:
- *    1) DEVICE_SECURITY_EVENT_DATA_HEADER    [ delete: TCG_EfiSpecIDEvent]
+ * Class to process the EV_EFI_SPDM_FIRMWARE_BLOB event using structure DEVICE_SECURITY_EVENT_DATA
+ * DEVICE_SECURITY_EVENT_DATA has 2 structures:
+ *    1) DEVICE_SECURITY_EVENT_DATA_HEADER
  *    2) DEVICE_SECURITY_EVENT_DATA_PCI_CONTEXT
- * DEVICE_SECURITY_EVENT_DATA_HEADER
- *    The first 16 bytes of the event data MUST be a String based identifier (Signature), NUL-terminated.
- *    The only currently defined Signature is "SPDM Device Sec"
- *       which implies the data is a DEVICE_SECURITY_EVENT_DATA_HEADER.
- *    DEVICE_SECURITY_EVENT_DATA_HEADER  contains the measurement(s) and hash algorithm
- *       (SpdmHashAlg) identifier returned by the SPDM "GET_MEASUREMENTS" function
- * DEVICE_SECURITY_EVENT_DATA_PCI_CONTEXT
- *    DEVICE_SECURITY_EVENT_DATA_PCI_CONTEXT is a common SPDM structure which includes the
- *       identification of the device, device vendor, subsystem, etc for PCI connection devices
+ * The first 16 bytes of the event data header MUST be a String based identifier (Signature),
+ *    NUL-terminated. The only currently defined Signature is "SPDM Device Sec"
+ *    which implies the event data is a DEVICE_SECURITY_EVENT_DATA.
  */
 public class EvEfiSpdmFirmwareBlob {
 
@@ -31,14 +26,14 @@ public class EvEfiSpdmFirmwareBlob {
      */
     private String signature = "";
     /**
-     * True if the event is a DEVICE_SECURITY_EVENT_DATA_HEADER.
+     * True if the event is a DEVICE_SECURITY_EVENT_DATA.
      */
     private boolean bDeviceSecurityEventDataHeader = false;
     /**
-     * evDeviceSecurityEventDataHeader Object.
+     * DeviceSecurityEventDataHeader Object.
      */
     @Getter
-    private evDeviceSecurityEventDataHeader deviceSecurityEventDataHeader = null;
+    private DeviceSecurityEventDataHeader deviceSecurityEventDataHeader = null;
 
     /**
      * EvEfiSpdmFirmwareBlob constructor.
