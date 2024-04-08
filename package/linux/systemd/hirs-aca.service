@@ -1,0 +1,18 @@
+[Unit]
+Description=Host Integrity at Runtime and Startup (HIRS) Attestation CA service
+After=network.target
+
+[Service]
+User=root
+Group=root
+ExecStart=/usr/bin/bash /opt/hirs/aca/scripts/aca/aca_bootRun.sh -w
+SuccessExitStatus=0
+Restart=always
+RestartSec=60
+Environment="JAVA_HOME=/usr/bin/java"
+
+ExecStop=/usr/bin/bash /opt/hirs/aca/scripts/aca/aca_stop.sh
+Type=forking
+
+[Install]
+WantedBy=multi-user.target

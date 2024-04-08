@@ -11,9 +11,11 @@ SQL_SERVICE="mariadb"
 # -p to print status
 check_systemd () {
   DB_SERVICE=false
+  SYSD_SERVICE=false
   PRINT_STATUS=$1
   # Check if systemctl is present (not present in a Docker container)
   if [[ $(ps --no-headers -o comm 1) == "systemd" ]]; then
+    SYSD_SERVICE=true
     systemctl is-active --quiet mariadb
     if [[ $? -eq 0 ]]; then
        DB_SERVICE=true
