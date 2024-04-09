@@ -169,7 +169,7 @@ public class IDevIDCertificate extends Certificate {
                     obj1 = ASN1ObjectIdentifier.getInstance(seq1.getObjectAt(0));
                     ASN1OctetString obj2 = ASN1OctetString.getInstance(seq1.getObjectAt(1));
 
-                    hwSerialNum = new String(obj2.getOctets());
+                    hwSerialNum = new String(obj2.getOctets(), "US-ASCII");
 
                     // Currently, only an OID corresponding to TPM 2.0 for hwType is supported, according to the
                     // specification "TPM 2.0 Keys for Device Identity and Attestation". The contents of the
