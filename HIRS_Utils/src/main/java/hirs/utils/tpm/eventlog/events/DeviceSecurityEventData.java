@@ -37,5 +37,104 @@ import java.util.List;
  * 4. First 16 bytes of the structure header is an ASCII "SPDM Device Sec"
  */
 public class DeviceSecurityEventData {
+//    /**
+//     * Minor Version.
+//     */
+//    @Getter
+//    private String versionMinor = "";
+//    /**
+//     * Major Version.
+//     */
+//    @Getter
+//    private String versionMajor = "";
+//    /**
+//     * Specification errata version.
+//     */
+//    @Getter
+//    private String errata = "";
+    /**
+     * Signature (text) data.
+     */
+    @Getter
+    private String signature = "";
+    /**
+     * Platform class.
+     */
+    @Getter
+    private String version = "";
+//    /**
+//     * Algorithm count.
+//     */
+//    @Getter
+//    private int numberOfAlg = 0;
+//    /**
+//     * True if event log uses Crypto Agile format.
+//     */
+//    @Getter
+//    private boolean cryptoAgile = false;
+//    /**
+//     * Algorithm list.
+//     */
+//    private List<String> algList;
 
+    /**
+     * DeviceSecurityEventData Constructor.
+     *
+     * @param deviceSecurityEventDataBytes byte array holding the spec ID Event.
+     */
+    public DeviceSecurityEventData(final byte[] deviceSecurityEventDataBytes) {
+//        algList = new ArrayList<>();
+        byte[] signatureBytes = new byte[UefiConstants.SIZE_16];
+        System.arraycopy(deviceSecurityEventDataBytes, 0, signatureBytes, 0, UefiConstants.SIZE_16);
+        //signature = HexUtils.byteArrayToHexString(signatureBytes);
+        signature = new String(signatureBytes, StandardCharsets.UTF_8)
+                .substring(0, UefiConstants.SIZE_15);
+
+        byte[] versionBytes = new byte[UefiConstants.SIZE_4];
+        System.arraycopy(deviceSecurityEventDataBytes, UefiConstants.OFFSET_16, versionBytes, 0,
+                UefiConstants.SIZE_4);
+        version = HexUtils.byteArrayToHexString(versionBytes);
+
+        if (version == "1") {
+
+        } else if (version == "2") {
+
+        }
+
+//        byte[] platformClassBytes = new byte[UefiConstants.SIZE_4];
+//        System.arraycopy(efiSpecId, UefiConstants.OFFSET_16, platformClassBytes, 0,
+//                UefiConstants.SIZE_4);
+//        platformClass = HexUtils.byteArrayToHexString(platformClassBytes);
+//
+//        byte[] specVersionMinorBytes = new byte[1];
+//        System.arraycopy(efiSpecId, UefiConstants.OFFSET_20, specVersionMinorBytes, 0, 1);
+//        versionMinor = HexUtils.byteArrayToHexString(specVersionMinorBytes);
+//
+//        byte[] specVersionMajorBytes = new byte[1];
+//        System.arraycopy(efiSpecId, UefiConstants.OFFSET_21, specVersionMajorBytes, 0, 1);
+//        versionMajor = HexUtils.byteArrayToHexString(specVersionMajorBytes);
+//
+//        byte[] specErrataBytes = new byte[1];
+//        System.arraycopy(efiSpecId, UefiConstants.OFFSET_22, specErrataBytes, 0, 1);
+//        errata = HexUtils.byteArrayToHexString(specErrataBytes);
+//
+//        byte[] numberOfAlgBytes = new byte[UefiConstants.SIZE_4];
+//        System.arraycopy(efiSpecId, UefiConstants.OFFSET_24, numberOfAlgBytes, 0,
+//                UefiConstants.SIZE_4);
+//        numberOfAlg = HexUtils.leReverseInt(numberOfAlgBytes);
+//
+//        byte[] algorithmIDBytes = new byte[UefiConstants.SIZE_2];
+//        int algLocation = UefiConstants.SIZE_28;
+//        for (int i = 0; i < numberOfAlg; i++) {
+//            System.arraycopy(efiSpecId, algLocation + UefiConstants.OFFSET_4 * i, algorithmIDBytes,
+//                    0, UefiConstants.SIZE_2);
+//            String alg = TcgTpmtHa.tcgAlgIdToString(HexUtils.leReverseInt(algorithmIDBytes));
+//            algList.add(alg);
+//        }
+//        if ((algList.size() == 1) && (algList.get(0).compareTo("SHA1") == 0)) {
+//            cryptoAgile = false;
+//        } else {
+//            cryptoAgile = true;
+//        }
+    }
 }
