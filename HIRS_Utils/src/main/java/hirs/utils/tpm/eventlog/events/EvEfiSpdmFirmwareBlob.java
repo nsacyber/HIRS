@@ -11,15 +11,25 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Class to process the EV_EFI_SPDM_FIRMWARE_BLOB event using structure DEVICE_SECURITY_EVENT_DATA
+ * Class to process the EV_EFI_SPDM_FIRMWARE_BLOB event. The event field MUST be a
+ *      1) DEVICE_SECURITY_EVENT_DATA or
+ *      1) DEVICE_SECURITY_EVENT_DATA2
  * DEVICE_SECURITY_EVENT_DATA has 2 structures:
  *    1) DEVICE_SECURITY_EVENT_DATA_HEADER
  *    2) DEVICE_SECURITY_EVENT_DATA_DEVICE_CONTEXT, which has 2 structures
  *       a) DEVICE_SECURITY_EVENT_DATA_PCI_CONTEXT
  *       b) DEVICE_SECURITY_EVENT_DATA_USB_CONTEXT
+ * DEVICE_SECURITY_EVENT_DATA2 has 3 structures:
+ *    1) DEVICE_SECURITY_EVENT_DATA_HEADER2
+ *    2) DEVICE_SECURITY_EVENT_DATA_SUB_HEADER
+ *    3) DEVICE_SECURITY_EVENT_DATA_DEVICE_CONTEXT, which has 2 structures (see above)
  * The first 16 bytes of the event data header MUST be a String based identifier (Signature),
- *    NUL-terminated. The only currently defined Signature is "SPDM Device Sec"
- *    which implies the event data is a DEVICE_SECURITY_EVENT_DATA.
+ * NUL-terminated, per PFP. The only currently defined Signature is "SPDM Device Sec",
+ * which implies the data is a DEVICE_SECURITY_EVENT_DATA.
+ * This event is used to record an extended digest for the firmware of an embedded component
+ * or an add-in device that supports SPDM “GET_MEASUREMENTS” functionality. This event records
+ * extended digests of SPDM GET_MEASUREMENT responses that correspond to firmware, such as
+ * immutable ROM, mutable firmware, firmware version, firmware secure version number, etc.
  */
 public class EvEfiSpdmFirmwareBlob {
 
@@ -30,12 +40,12 @@ public class EvEfiSpdmFirmwareBlob {
     /**
      * True if the event is a DEVICE_SECURITY_EVENT_DATA.
      */
-    private boolean bDeviceSecurityEventDataHeader = false;
+    private boolean bDeviceSecurityEventData = false;
     /**
-     * DeviceSecurityEventDataHeader Object.
+     * DeviceSecurityEventData Object.
      */
     @Getter
-    private DeviceSecurityEventDataHeader deviceSecurityEventDataHeader = null;
+    private DeviceSecurityEventData deviceSecurityEventData = null;
 
     /**
      * EvEfiSpdmFirmwareBlob constructor.
