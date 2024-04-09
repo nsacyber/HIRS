@@ -14,7 +14,9 @@ import java.util.List;
  * Class to process the EV_EFI_SPDM_FIRMWARE_BLOB event using structure DEVICE_SECURITY_EVENT_DATA
  * DEVICE_SECURITY_EVENT_DATA has 2 structures:
  *    1) DEVICE_SECURITY_EVENT_DATA_HEADER
- *    2) DEVICE_SECURITY_EVENT_DATA_PCI_CONTEXT
+ *    2) DEVICE_SECURITY_EVENT_DATA_DEVICE_CONTEXT, which has 2 structures
+ *       a) DEVICE_SECURITY_EVENT_DATA_PCI_CONTEXT
+ *       b) DEVICE_SECURITY_EVENT_DATA_USB_CONTEXT
  * The first 16 bytes of the event data header MUST be a String based identifier (Signature),
  *    NUL-terminated. The only currently defined Signature is "SPDM Device Sec"
  *    which implies the event data is a DEVICE_SECURITY_EVENT_DATA.

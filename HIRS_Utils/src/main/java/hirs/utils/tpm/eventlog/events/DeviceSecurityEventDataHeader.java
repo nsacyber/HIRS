@@ -10,47 +10,52 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Class to process the DeviceSecurityEventDataHeader.
+ * Class to process the DEVICE_SECURITY_EVENT_DATA_HEADER per PFP.
  * The first 16 bytes of the event data header MUST be a String based identifier (Signature),
  * NUL-terminated. The only currently defined Signature is "SPDM Device Sec" which implies
  * the event data is a DEVICE_SECURITY_EVENT_DATA. DEVICE_SECURITY_EVENT_DATA_HEADER contains
  * the measurement(s) and hash algorithm (SpdmHashAlg) identifier returned by the SPDM
  * "GET_MEASUREMENTS" function.
  * <p>
+ * PFP v1.06 Rev 52:
  * typedef struct tdDEVICE_SECURITY_EVENT_DATA_HEADER {
- * UINT8                             Signature[16];
- * UINT16                            Version;
- * UINT16                           Length;
- * UINT32                           SpdmHashAlg;
- * UINT32                           DeviceType;
- * SPDM_MEASUREMENT_BLOCK           SpdmMeasurementBlock;
- * UINT64                           DevicePathLength;
- * UNIT8                            DevicePath[DevicePathLength]
+ *      UINT8                           Signature[16];
+ *      UINT16                          Version;
+ *      UINT16                          Length;
+ *      UINT32                          SpdmHashAlg;
+ *      UINT32                          DeviceType;
+ *      SPDM_MEASUREMENT_BLOCK          SpdmMeasurementBlock;
+ *      UINT64                          DevicePathLength;
+ *      UNIT8                           DevicePath[DevicePathLength]
  * } DEVICE_SECURITY_EVENT_DATA_HEADER;
  * <p>
- * typedef struct tdSPDM_MEASUREMENT_BLOCK {
- * tbd      tbdalgorithmId;
- * tbd      tbddigestSize;
- * } SPDM_MEASUREMENT_BLOCK;
+ * SPDM_MEASUREMENT_BLOCK:
+ * SPDM v1.03, Sect 10.11.1, Table 53:
+ * Measurement block format {
+ *      Index                           1 byte;
+ *      MeasurementSpec                 1 byte;
+ *      MeasurementSize                 2 bytes;
+ *      Measurement                     <MeasurementSize> bytes;
+ * }
  * <p>
- * typedef struct tdDEVICEPATHLENGTH {
- * tbd      tbdalgorithmId;
- * tbd      tbddigestSize;
- * } DEVICEPATHLENGTH;
+ * SPDM v1.03, SPDM 10.11.1, Table 54:
+ * DMTF measurement spec format {
+ *      DMTFSpecMeasurementValueType    1 byte;
+ *      DMTFSpecMeasurementValueSize    2 bytes;
+ *      DMTFSpecMeasurementValue        <DMTFSpecMeasurementValueSize> bytes;
+ * }
  * <p>
- * define TPM_ALG_SHA1           (TPM_ALG_ID)(0x0004)
- * define TPM_ALG_SHA256         (TPM_ALG_ID)(0x000B)
- * define TPM_ALG_SHA384         (TPM_ALG_ID)(0x000C)
- * define TPM_ALG_SHA512         (TPM_ALG_ID)(0x000D)
+ * DMTFSpecMeasurementValueType[7]
+ *      Indicates how bits [0:6] are represented
+ *      Bit = 0: Digest
+ *      Bit = 1: Raw bit stream
+ * DMTFSpecMeasurementValueType[6:0]
+ *      Immutable ROM                   0x0
+ *      Mutable firmware                0x1
+ *      Hardware configuration          0x2
+ *      Firmware configuration          0x3
+ *      etc.
  * <p>
-// * Notes: Parses event data for an EfiSpecID per Table 5 TCG_EfiSpecIdEvent Example.
-// * 1. Should be the first Structure in the log
-// * 2. Has an EventType of EV_NO_ACTION (0x00000003)
-// * 3. Digest of 20 bytes of all 0's
-// * 4. Event content defined as TCG_EfiSpecIDEvent Struct.
-// * 5. First 16 bytes of the structure is an ASCII "Spec ID Event03"
-// * 6. The version of the log is used to determine which format the Log
-// * is to use (sha1 or Crypto Agile)
  */
 public class DeviceSecurityEventDataHeader {
 //    /**
