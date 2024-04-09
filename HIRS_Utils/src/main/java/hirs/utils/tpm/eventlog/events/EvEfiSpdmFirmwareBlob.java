@@ -55,22 +55,22 @@ public class EvEfiSpdmFirmwareBlob {
      */
     public EvEfiSpdmFirmwareBlob(final byte[] eventData) throws UnsupportedEncodingException {
         byte[] signatureBytes = new byte[UefiConstants.SIZE_15];
-//        System.arraycopy(eventData, 0, signatureBytes, 0, UefiConstants.SIZE_15);
-//        signature = new String(signatureBytes, StandardCharsets.UTF_8);
-//        signature = signature.replaceAll("[^\\P{C}\t\r\n]", ""); // remove null characters
-//        if (signature.contains("Spec ID Event03")) {      // implies CryptAgileFormat
-//            specIDEvent = new EvEfiSpecIdEvent(eventData);
-//            bSpecIDEvent = true;
-//        }
+        System.arraycopy(eventData, 0, signatureBytes, 0, UefiConstants.SIZE_15);
+        signature = new String(signatureBytes, StandardCharsets.UTF_8);
+        signature = signature.replaceAll("[^\\P{C}\t\r\n]", ""); // remove null characters
+        if (signature.contains("SPDM Device Sec")) {      // implies Device Security event
+            deviceSecurityEventData = new DeviceSecurityEventData(eventData);
+            bDeviceSecurityEventData = true;
+        }
     }
 
     /**
-     * Determines if this event is a SpecIDEvent.
+     * Determines if this event is a DeviceSecurityEventData.
      *
-     * @return true of the event is a SpecIDEvent.
+     * @return true of the event is a DeviceSecurityEventData.
      */
-    public boolean isDeviceSecurityEventDataHeader() {
-        return bDeviceSecurityEventDataHeader;
+    public boolean isDeviceSecurityEventData() {
+        return bDeviceSecurityEventData;
     }
 
     /**
@@ -78,10 +78,10 @@ public class EvEfiSpdmFirmwareBlob {
      *
      * @return Human readable description of this event.
      */
-//    public String toString() {
-//        String specInfo = "";
-//        if (bSpecIDEvent) {
-//            specInfo += "   Signature = Spec ID Event03 : ";
+    public String toString() {
+        String specInfo = "";
+        if (bDeviceSecurityEventData) {
+            specInfo += "   Signature =  SPDM Device Sec : ";
 //            if (specIDEvent.isCryptoAgile()) {
 //                specInfo += "Log format is Crypto Agile\n";
 //            } else {
@@ -90,10 +90,10 @@ public class EvEfiSpdmFirmwareBlob {
 //            specInfo += "   Platform Profile Specification version = "
 //                    + specIDEvent.getVersionMajor() + "." + specIDEvent.getVersionMinor()
 //                    + " using errata version " + specIDEvent.getErrata();
-//        } else {
-//            specInfo = "EV_NO_ACTION event named " + signature
-//                    + " encountered but support for processing it has not been added to this application.\n";
-//        }
-//        return specInfo;
-//    }
+        } else {
+            specInfo = "EV_EFI_SPDM_FIRMWARE_BLOB event named " + signature
+                    + " encountered but support for processing it has not been added to this application.\n";
+        }
+        return specInfo;
+    }
 }
