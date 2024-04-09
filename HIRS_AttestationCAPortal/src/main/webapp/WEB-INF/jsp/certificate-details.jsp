@@ -115,6 +115,22 @@
                     <div id="serialNumber" class="col col-md-8 vertical"></div>
                 </div>
             </c:if>
+             <c:if test="${not empty initialData.hwSerialNum}">
+                 <div class="row">
+                     <div class="col-md-1 col-md-offset-1"><span class="colHeader">Hardware Serial Number</span></div>
+                     <div id="hwSerialNum" class="col col-md-8 vertical">${initialData.hwSerialNum}</div>
+                 </div>
+             </c:if>
+             <c:if test="${not empty initialData.tcgTpmManufacturer}">
+                 <div class="row">
+                     <div class="col-md-1 col-md-offset-1"><span class="colHeader">Hardware Serial Number</span></div>
+                        <div id="hwSerialNum" class="col col-md-8">
+                            <div>TCG TPM Manufacturer Code:&nbsp;<span id="tcgTpmManufacturer">${initialData.tcgTpmManufacturer}</span></div>
+                            <div>EK Authority Key Identifier:&nbsp;<span id="ekAuthorityKeyIdentifier">${initialData.ekAuthorityKeyIdentifier}</span></div>
+                            <div>EK CertificateSerialNumber:&nbsp;<span id="ekCertificateSerialNumber">${initialData.ekCertificateSerialNumber}</span></div>
+                        </div>
+                 </div>
+             </c:if>
             <c:if test="${not empty initialData.beginValidity}">
                 <div class="row">
                     <div class="col-md-1 col-md-offset-1"><span class="colHeader">Validity</span></div>
@@ -202,10 +218,14 @@
                 <div class="col-md-1 col-md-offset-1"><span class="colHeader">X509 Credential Version</span></div>
                 <div id="credentialVersion" class="col col-md-8 vertical">${initialData.x509Version} (v${initialData.x509Version + 1})</div>
             </div>
-            <div class="row">
-                <div class="col-md-1 col-md-offset-1"><span class="colHeader">Credential Type</span></div>
-                <div id="credentialType" class="col col-md-8 vertical">${initialData.credentialType}</div>
-            </div>
+            <c:choose>
+                <c:when test="${not empty initialData.credentialType}">
+                    <div class="row">
+                        <div class="col-md-1 col-md-offset-1"><span class="colHeader">Credential Type</span></div>
+                        <div id="credentialType" class="col col-md-8 vertical">${initialData.credentialType}</div>
+                    </div>
+                </c:when>
+            </c:choose>
             <!-- Add the different fields based on the certificate type -->
             <c:choose>
                 <c:when test="${param.type=='certificateauthority'}">
@@ -884,6 +904,27 @@
                         </div>
                     </div>
                 </c:when>
+                <c:when test="${param.type=='idevid'}">
+                    <div class="row">
+                        <div class="col-md-1 col-md-offset-1"><span class="colHeader">Key Usage</span></div>
+                        <c:choose>
+                            <c:when test="${not empty initialData.keyUsage}">
+                                <div id="keyUsage" class="col col-md-8 vertical">${initialData.keyUsage}</div>
+                            </c:when>
+                            <c:otherwise>
+                                <div id="keyUsage" class="col col-md-8 vertical">Not Specified</div>
+                            </c:otherwise>
+                        </c:choose>
+                    </div>
+                    <c:choose>
+                        <c:when test="${not empty initialData.extendedKeyUsage}">
+                            <div class="row">
+                                <div class="col-md-1 col-md-offset-1"><span class="colHeader">Extended Key Usage</span></div>
+                                <div id="extendedKeyUsage" class="col col-md-8 vertical">${initialData.extendedKeyUsage}</div>
+                            </div>
+                        </c:when>
+                    </c:choose>
+                </c:when>
             </c:choose>
         </div>
         <script>
@@ -896,7 +937,8 @@
 
                 //Format validity time
                 $("#validity span").each(function () {
-                    $(this).text(formatDateTime($(this).text()));
+                    var dateText = $(this).text();
+                    return $(this).text(formatCertificateDate(dateText));
                 });
 
                 //Convert byte array to string
@@ -940,6 +982,19 @@
                     $("#subjectKeyIdentifier").html(byteToHexString(subjectKeyIdentifier));
                 }
             </c:if>
+
+                <c:if test="${not empty initialData.hwSerialNum}">
+                    var hwSN = '${initialData.hwSerialNum}';
+                    $("#hwSerialNum").html(parseHexString(hwSerialNum));
+                </c:if>
+
+                <c:if test="${not empty initialData.tcgTpmManufacturer}">
+                    var ekAKI = '${initialData.ekAuthorityKeyIdentifier};'
+                    var ekCSN = '${initialData.ekCertificateSerialNumber};'
+
+                    $("#ekAuthorityKeyIdentifier").html(parseHexString(ekAKI));
+                    $("#ekCertificateSerialNumber").html(parseHexString(ekCSN));
+                </c:if>
 
                 //Initilize tooltips
                 $('[data-toggle="tooltip"]').tooltip();

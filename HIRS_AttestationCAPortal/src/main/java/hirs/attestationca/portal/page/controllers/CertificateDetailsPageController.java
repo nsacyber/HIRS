@@ -107,7 +107,7 @@ public class CertificateDetailsPageController extends PageController<Certificate
                         break;
                     case "idevid":
                         data.putAll(CertificateStringMapBuilder.getIdevidInformation(uuid,
-                                certificateRepository, iDevIDCertificateRepository));
+                                certificateRepository, caCredentialRepository));
                         break;
                     default:
                         String typeError = "Invalid certificate type: " + params.getType();

@@ -189,7 +189,7 @@
             <br />
 
             <%-- Generate LDevID Certificate--%>
-            <div class="aca-input-box"">
+            <div class="aca-input-box" style="display: none">
                 <form:form method="POST" modelAttribute="initialData" action="policy/update-issue-devid">
                     <li>Generate LDevID Certificate: ${initialData.issueDevIdCertificate ? 'Enabled' : 'Disabled'}
                         <my:editor id="issuedDevIdCertificatePolicyEditor" label="Edit Settings">
