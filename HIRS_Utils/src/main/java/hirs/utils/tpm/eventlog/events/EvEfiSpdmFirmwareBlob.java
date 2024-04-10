@@ -12,8 +12,8 @@ import java.util.List;
 
 /**
  * Class to process the EV_EFI_SPDM_FIRMWARE_BLOB event. The event field MUST be a
- *      1) DEVICE_SECURITY_EVENT_DATA or
- *      1) DEVICE_SECURITY_EVENT_DATA2
+ *    1) DEVICE_SECURITY_EVENT_DATA or
+ *    2) DEVICE_SECURITY_EVENT_DATA2
  * DEVICE_SECURITY_EVENT_DATA has 2 structures:
  *    1) DEVICE_SECURITY_EVENT_DATA_HEADER
  *    2) DEVICE_SECURITY_EVENT_DATA_DEVICE_CONTEXT, which has 2 structures
@@ -25,11 +25,12 @@ import java.util.List;
  *    3) DEVICE_SECURITY_EVENT_DATA_DEVICE_CONTEXT, which has 2 structures (see above)
  * The first 16 bytes of the event data header MUST be a String based identifier (Signature),
  * NUL-terminated, per PFP. The only currently defined Signature is "SPDM Device Sec",
- * which implies the data is a DEVICE_SECURITY_EVENT_DATA.
- * This event is used to record an extended digest for the firmware of an embedded component
- * or an add-in device that supports SPDM “GET_MEASUREMENTS” functionality. This event records
- * extended digests of SPDM GET_MEASUREMENT responses that correspond to firmware, such as
- * immutable ROM, mutable firmware, firmware version, firmware secure version number, etc.
+ * which implies the data is a DEVICE_SECURITY_EVENT_DATA or ..DATA2.
+ * The EV_EFI_SPDM_FIRMWARE_BLOB event is used to record an extended digest for the firmware of
+ * an embedded component or an add-in device that supports SPDM “GET_MEASUREMENTS” functionality.
+ * This event records extended digests of SPDM GET_MEASUREMENT responses that correspond to
+ * firmware, such as immutable ROM, mutable firmware, firmware version, firmware secure version
+ * number, etc.
  */
 public class EvEfiSpdmFirmwareBlob {
 
