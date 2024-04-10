@@ -36,6 +36,11 @@ public class DeviceSecurityEventDataDeviceContext {
     @Getter
     private String pciLength = "";
 
+    /**
+     * DeviceSecurityEventDataDeviceContext Constructor.
+     *
+     * @param dSEDbytes byte array holding the DeviceSecurityEventData.
+     */
     public DeviceSecurityEventDataDeviceContext(final byte[] dSEDbytes, int byteStartOffset) {
 
         int byteOffset = byteStartOffset;
