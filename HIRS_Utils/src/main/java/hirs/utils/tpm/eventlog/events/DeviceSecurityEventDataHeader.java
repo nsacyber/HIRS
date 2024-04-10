@@ -74,6 +74,16 @@ import java.util.List;
 public class DeviceSecurityEventDataHeader {
 
     /**
+     * Contains the human-readable info inside the Device Security Event.
+     */
+    @Getter
+    private String dSEDheaderInfo = "";
+    /**
+     * Contains the size (in bytes) of the Header.
+     */
+    @Getter
+    private Integer dSEDheaderByteSize = 0;
+    /**
      * Signature (text) data.
      */
     @Getter
@@ -85,22 +95,22 @@ public class DeviceSecurityEventDataHeader {
     @Getter
     private String version = "";
     /**
-     * Contains the human-readable info inside the Device Security Event.
+     * Event Data Length.
      */
     @Getter
-    private String dSEDheaderInfo = "";
+    private String length = "";
     /**
-     * Contains the size (in bytes) of the Header.
+     * Signature (text) data.
      */
     @Getter
-    private Integer dSEDheaderByteSize = 0;
-//
-//    /**
-//     * EvEfiSpecIdEvent Constructor.
-//     *
-//     * @param efiSpecId byte array holding the spec ID Event.
-//     */
-//    public EvEfiSpecIdEvent(final byte[] efiSpecId) {
+    private String spdmHashAlgo = "";
+
+    /**
+     * DeviceSecurityEventDataHeader Constructor.
+     *
+     * @param dSEDbytes byte array holding the DeviceSecurityEventData.
+     */
+    public DeviceSecurityEventDataHeader(final byte[] dSEDbytes) {
 //        algList = new ArrayList<>();
 //        byte[] signatureBytes = new byte[UefiConstants.SIZE_16];
 //        System.arraycopy(efiSpecId, 0, signatureBytes, 0, UefiConstants.SIZE_16);
@@ -143,7 +153,7 @@ public class DeviceSecurityEventDataHeader {
 //        } else {
 //            cryptoAgile = true;
 //        }
-//    }
+    }
 //
 //    /**
 //     * Returns a human readable description of the data within this event.
