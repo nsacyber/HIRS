@@ -10,14 +10,15 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Class to process the DEVICE_SECURITY_EVENT_DATA_HEADER per PFP.
+ * Class to process the DEVICE_SECURITY_EVENT_DATA_HEADER or ..HEADER2 per PFP.
  * The first 16 bytes of the event data header MUST be a String based identifier (Signature),
- * NUL-terminated. The only currently defined Signature is "SPDM Device Sec" which implies
- * the event data is a DEVICE_SECURITY_EVENT_DATA. DEVICE_SECURITY_EVENT_DATA_HEADER contains
- * the measurement(s) and hash algorithm (SpdmHashAlg) identifier returned by the SPDM
- * "GET_MEASUREMENTS" function.
+ * NUL-terminated, per PFP. The only currently defined Signature is "SPDM Device Sec",
+ * which implies the data is a DEVICE_SECURITY_EVENT_DATA or ..DATA2.
+ * DEVICE_SECURITY_EVENT_DATA_HEADER contains the measurement(s) and hash algorithm identifier
+ * returned by the SPDM "GET_MEASUREMENTS" function.
+ *
+ * HEADERS defined by PFP v1.06 Rev 52:
  * <p>
- * PFP v1.06 Rev 52:
  * typedef struct tdDEVICE_SECURITY_EVENT_DATA_HEADER {
  *      UINT8                           Signature[16];
  *      UINT16                          Version;
@@ -29,8 +30,22 @@ import java.util.List;
  *      UNIT8                           DevicePath[DevicePathLength]
  * } DEVICE_SECURITY_EVENT_DATA_HEADER;
  * <p>
- * SPDM_MEASUREMENT_BLOCK:
- * SPDM v1.03, Sect 10.11.1, Table 53:
+ * typedef struct tdDEVICE_SECURITY_EVENT_DATA_HEADER2 {
+ *      UINT8                           Signature[16];
+ *      UINT16                          Version;
+ *      UINT8                           AuthState;
+ *      UINT8                           Reserved;
+ *      UINT32                          Length;
+ *      UINT32                          DeviceType;
+ *      UINT32                          SubHeaderType;
+ *      UINT32                          SubHeaderLength;
+ *      UINT32                          SubHeaderUID;
+ *      UINT64                          DevicePathLength;
+ *      UNIT8                           DevicePath[DevicePathLength]
+ * } DEVICE_SECURITY_EVENT_DATA_HEADER2;
+ *
+ * SPDM_MEASUREMENT_BLOCK and contents defined by SPDM v1.03, Sect 10.11.1, Table 53 and 54:
+ * <p>
  * Measurement block format {
  *      Index                           1 byte;
  *      MeasurementSpec                 1 byte;
@@ -38,7 +53,6 @@ import java.util.List;
  *      Measurement                     <MeasurementSize> bytes;
  * }
  * <p>
- * SPDM v1.03, SPDM 10.11.1, Table 54:
  * DMTF measurement spec format {
  *      DMTFSpecMeasurementValueType    1 byte;
  *      DMTFSpecMeasurementValueSize    2 bytes;
@@ -58,45 +72,28 @@ import java.util.List;
  * <p>
  */
 public class DeviceSecurityEventDataHeader {
-//    /**
-//     * Minor Version.
-//     */
-//    @Getter
-//    private String versionMinor = "";
-//    /**
-//     * Major Version.
-//     */
-//    @Getter
-//    private String versionMajor = "";
-//    /**
-//     * Specification errata version.
-//     */
-//    @Getter
-//    private String errata = "";
-//    /**
-//     * Signature (text) data.
-//     */
-//    @Getter
-//    private String signature = "";
-//    /**
-//     * Platform class.
-//     */
-//    @Getter
-//    private String platformClass = "";
-//    /**
-//     * Algorithm count.
-//     */
-//    @Getter
-//    private int numberOfAlg = 0;
-//    /**
-//     * True if event log uses Crypto Agile format.
-//     */
-//    @Getter
-//    private boolean cryptoAgile = false;
-//    /**
-//     * Algorithm list.
-//     */
-//    private List<String> algList;
+
+    /**
+     * Signature (text) data.
+     */
+    @Getter
+    private String signature = "";
+    /**
+     * Version determines data structure used (..DATA or ..DATA2),
+     * which determines whether ..HEADER or ..HEADER2 is used
+     */
+    @Getter
+    private String version = "";
+    /**
+     * Contains the human-readable info inside the Device Security Event.
+     */
+    @Getter
+    private String dSEDheaderInfo = "";
+    /**
+     * Contains the size (in bytes) of the Header.
+     */
+    @Getter
+    private Integer dSEDheaderByteSize = 0;
 //
 //    /**
 //     * EvEfiSpecIdEvent Constructor.
@@ -164,4 +161,6 @@ public class DeviceSecurityEventDataHeader {
 //        }
 //        return specInfo;
 //    }
+
+
 }
