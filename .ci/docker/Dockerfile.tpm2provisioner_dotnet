@@ -96,5 +96,5 @@ RUN echo "#!/bin/bash" > /tmp/auto_clone_branch && \
 WORKDIR /hirs
 
 # Copy script for running TPM Simulator
-COPY ./.ci/setup/container/setup_tpm2provisioner_dotnet.sh /.ci/setup/container/
-RUN chmod 755 /.ci/setup/container/setup_tpm2provisioner_dotnet.sh
+#COPY ./.ci/setup/container/setup_tpm2provisioner_dotnet.sh /.ci/setup/container/
+#RUN chmod 755 /.ci/setup/container/setup_tpm2provisioner_dotnet.sh
