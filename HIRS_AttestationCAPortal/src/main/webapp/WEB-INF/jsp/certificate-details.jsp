@@ -124,7 +124,7 @@
              <c:if test="${not empty initialData.tcgTpmManufacturer}">
                  <div class="row">
                      <div class="col-md-1 col-md-offset-1"><span class="colHeader">Hardware Serial Number</span></div>
-                        <div id="hwSerialNum" class="col col-md-8">
+                        <div class="col col-md-8">
                             <div>TCG TPM Manufacturer Code:&nbsp;<span id="tcgTpmManufacturer">${initialData.tcgTpmManufacturer}</span></div>
                             <div>EK Authority Key Identifier:&nbsp;<span id="ekAuthorityKeyIdentifier">${initialData.ekAuthorityKeyIdentifier}</span></div>
                             <div>EK CertificateSerialNumber:&nbsp;<span id="ekCertificateSerialNumber">${initialData.ekCertificateSerialNumber}</span></div>
@@ -905,6 +905,14 @@
                     </div>
                 </c:when>
                 <c:when test="${param.type=='idevid'}">
+                    <c:choose>
+                        <c:when test="${not empty initialData.tpmPolicies}">
+                            <div class="row">
+                                <div class="col-md-1 col-md-offset-1"><span class="colHeader">TPM Policies</span></div>
+                                <div id="tpmPolicies" class="col col-md-8 vertical">${initialData.tpmPolicies}</div>
+                            </div>
+                        </c:when>
+                    </c:choose>
                     <div class="row">
                         <div class="col-md-1 col-md-offset-1"><span class="colHeader">Key Usage</span></div>
                         <c:choose>
@@ -983,8 +991,8 @@
                 }
             </c:if>
 
-                <c:if test="${not empty initialData.hwSerialNum}">
-                    var hwSN = '${initialData.hwSerialNum}';
+                <c:if test="${not empty initialData.hwSerialNumHex}">
+                    var hwSerialNum = '${initialData.hwSerialNum}';
                     $("#hwSerialNum").html(parseHexString(hwSerialNum));
                 </c:if>
 

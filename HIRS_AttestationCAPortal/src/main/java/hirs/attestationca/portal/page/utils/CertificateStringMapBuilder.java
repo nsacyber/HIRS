@@ -21,6 +21,7 @@ import org.bouncycastle.util.encoders.Hex;
 
 import java.io.IOException;
 import java.math.BigInteger;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -545,31 +546,46 @@ public final class CertificateStringMapBuilder {
             data.putAll(getGeneralCertificateInfo(certificate, certificateRepository, caCredentialRepository));
 
             if (certificate.getHwSerialNum() != null) {
+                String hwSerialStr = new String(certificate.getHwSerialNum(), StandardCharsets.US_ASCII);
+
                 // Obtain colon-delimited fields from hwSerialNum field, if present
-                if (certificate.getHwSerialNum().contains(":")) {
-                    String[] hwSerialArray = certificate.getHwSerialNum().split(":");
+                if (hwSerialStr.contains(":")) {
+                    String[] hwSerialArray = hwSerialStr.split(":");
                     if (hwSerialArray.length >= 3) {
                         data.put("tcgTpmManufacturer", hwSerialArray[0]);
                         data.put("ekAuthorityKeyIdentifier", hwSerialArray[1]);
                         data.put("ekCertificateSerialNumber", hwSerialArray[2]);
                     }
-                }
-                else {
-                    data.put("hwSerialNum", certificate.getHwSerialNum());
-                }
+                } else {
+                    String hwSerialToAdd = hwSerialStr;
 
-                if (certificate.getKeyUsage() != null) {
-                    data.put("keyUsage", certificate.getKeyUsage());
+                    // Check if hwSerialNum is a printable ASCII string; default to hex otherwise
+                    if (hwSerialStr.chars().allMatch(c -> c > 0x20 && c <= 0x7F)) {
+                        data.put("hwSerialNum", hwSerialStr);
+                    }
+                    else {
+                        hwSerialToAdd = Hex.toHexString(certificate.getHwSerialNum());
+                        data.put("hwSerialNumHex", Boolean.valueOf(true).toString());
+                    }
+                    data.put("hwSerialNum", hwSerialToAdd);
                 }
-
-                if (certificate.getExtendedKeyUsage() != null
-                        && !certificate.getExtendedKeyUsage().isEmpty()) {
-                    data.put("extendedKeyUsage", certificate.getExtendedKeyUsage());
-                }
-
-                data.put("x509Version", Integer.toString(certificate
-                        .getX509CredentialVersion()));
             }
+
+            if (certificate.getKeyUsage() != null) {
+                data.put("keyUsage", certificate.getKeyUsage());
+            }
+
+            if (certificate.getExtendedKeyUsage() != null
+                    && !certificate.getExtendedKeyUsage().isEmpty()) {
+                data.put("extendedKeyUsage", certificate.getExtendedKeyUsage());
+            }
+
+            if (certificate.getTpmPolicies() != null) {
+                data.put("tpmPolicies", certificate.getTpmPolicies());
+            }
+
+            data.put("x509Version", Integer.toString(certificate
+                    .getX509CredentialVersion()));
         } else {
             String notFoundMessage = "Unable to find IDevIDCertificate with ID: " + uuid;
             log.error(notFoundMessage);
