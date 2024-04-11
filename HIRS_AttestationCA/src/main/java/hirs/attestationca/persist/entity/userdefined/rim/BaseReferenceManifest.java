@@ -116,10 +116,14 @@ public class BaseReferenceManifest extends ReferenceManifest {
 
         // begin parsing valid swid tag
         if (document != null) {
-            softwareIdentity = (Element) document.getElementsByTagName(SwidTagConstants.SOFTWARE_IDENTITY).item(0);
-            entity = (Element) document.getElementsByTagName(SwidTagConstants.ENTITY).item(0);
-            link = (Element) document.getElementsByTagName(SwidTagConstants.LINK).item(0);
-            meta = (Element) document.getElementsByTagName(SwidTagConstants.META).item(0);
+            softwareIdentity = (Element) document.getElementsByTagNameNS(
+                    SwidTagConstants.SWIDTAG_NAMESPACE, SwidTagConstants.SOFTWARE_IDENTITY).item(0);
+            entity = (Element) document.getElementsByTagNameNS(
+                    SwidTagConstants.SWIDTAG_NAMESPACE, SwidTagConstants.ENTITY).item(0);
+            link = (Element) document.getElementsByTagNameNS(
+                    SwidTagConstants.SWIDTAG_NAMESPACE, SwidTagConstants.LINK).item(0);
+            meta = (Element) document.getElementsByTagNameNS(
+                    SwidTagConstants.SWIDTAG_NAMESPACE, SwidTagConstants.META).item(0);
             setTagId(softwareIdentity.getAttribute(SwidTagConstants.TAGID));
             this.swidName = softwareIdentity.getAttribute(SwidTagConstants.NAME);
             this.swidCorpus = Boolean.parseBoolean(softwareIdentity.getAttribute(SwidTagConstants.CORPUS)) ? 1 : 0;
@@ -217,7 +221,8 @@ public class BaseReferenceManifest extends ReferenceManifest {
     private Element getDirectoryTag(final ByteArrayInputStream byteArrayInputStream) {
         Document document = unmarshallSwidTag(byteArrayInputStream);
         Element softwareIdentity =
-                (Element) document.getElementsByTagName("SoftwareIdentity").item(0);
+                (Element) document.getElementsByTagNameNS(
+                        SwidTagConstants.SWIDTAG_NAMESPACE,"SoftwareIdentity").item(0);
         if (softwareIdentity != null) {
             Element directory = (Element) document.getElementsByTagName("Directory").item(0);
 
