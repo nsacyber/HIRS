@@ -66,6 +66,8 @@ public class ObjectFactory {
     private final static QName _SoftwareIdentityLink_QNAME = new QName("http://standards.iso.org/iso/19770/-2/2015/schema.xsd", "Link");
     private final static QName _SoftwareIdentityEvidence_QNAME = new QName("http://standards.iso.org/iso/19770/-2/2015/schema.xsd", "Evidence");
     private final static QName _SoftwareIdentityPayload_QNAME = new QName("http://standards.iso.org/iso/19770/-2/2015/schema.xsd", "Payload");
+    private final static QName _PayloadDirectory_QNAME = new QName("http://standards.iso.org/iso/19770/-2/2015/schema.xsd", "Directory");
+    private final static QName _DirectoryFile_QNAME = new QName("http://standards.iso.org/iso/19770/-2/2015/schema.xsd", "File");
     private final static QName _SoftwareIdentityEntity_QNAME = new QName("http://standards.iso.org/iso/19770/-2/2015/schema.xsd", "Entity");
     private final static QName _SoftwareIdentityMeta_QNAME = new QName("http://standards.iso.org/iso/19770/-2/2015/schema.xsd", "Meta");
     private final static QName _SignatureMethodTypeHMACOutputLength_QNAME = new QName("http://www.w3.org/2000/09/xmldsig#", "HMACOutputLength");
@@ -664,6 +666,24 @@ public class ObjectFactory {
     @XmlElementDecl(namespace = "http://standards.iso.org/iso/19770/-2/2015/schema.xsd", name = "Payload", scope = SoftwareIdentity.class)
     public JAXBElement<ResourceCollection> createSoftwareIdentityPayload(ResourceCollection value) {
         return new JAXBElement<ResourceCollection>(_SoftwareIdentityPayload_QNAME, ResourceCollection.class, SoftwareIdentity.class, value);
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link FilesystemItem }{@code >}}
+     *
+     */
+    @XmlElementDecl(namespace = "http://standards.iso.org/iso/19770/-2/2015/schema.xsd", name = "Directory", scope = ResourceCollection.class)
+    public JAXBElement<FilesystemItem> createPayloadDirectory(FilesystemItem value) {
+        return new JAXBElement<FilesystemItem>(_PayloadDirectory_QNAME, FilesystemItem.class, ResourceCollection.class, value);
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link FilesystemItem }{@code >}}
+     *
+     */
+    @XmlElementDecl(namespace = "http://standards.iso.org/iso/19770/-2/2015/schema.xsd", name = "File", scope = ResourceCollection.class)
+    public JAXBElement<FilesystemItem> createDirectoryFile(FilesystemItem value) {
+        return new JAXBElement<FilesystemItem>(_DirectoryFile_QNAME, FilesystemItem.class, ResourceCollection.class, value);
     }
 
     /**

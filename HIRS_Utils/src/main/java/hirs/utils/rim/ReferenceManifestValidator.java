@@ -252,7 +252,8 @@ public class ReferenceManifestValidator {
      * @return true if both the file element and signature are valid, false otherwise
      */
     public boolean validateRim(String signingCertPath) {
-        Element fileElement = (Element) rim.getElementsByTagName("File").item(0);
+        Element fileElement = (Element) rim.getElementsByTagNameNS(
+                SwidTagConstants.SWIDTAG_NAMESPACE, "File").item(0);
         X509Certificate signingCert = parseCertificatesFromPem(signingCertPath).get(0);
         if (signingCert == null) {
             return failWithError("Unable to parse the signing cert from " + signingCertPath);
