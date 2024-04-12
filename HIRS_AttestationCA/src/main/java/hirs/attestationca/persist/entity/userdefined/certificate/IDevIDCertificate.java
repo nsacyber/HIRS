@@ -216,7 +216,6 @@ public class IDevIDCertificate extends Certificate {
                                 // the hwSerialNum field will be parsed accordingly.
                                 if (obj1.toString().equals(HWTYPE_TCG_TPM2_OID)) {
                                         tcgOid = true;
-                                        break;
                                 }
 
                                 // Convert octet string to byte array
