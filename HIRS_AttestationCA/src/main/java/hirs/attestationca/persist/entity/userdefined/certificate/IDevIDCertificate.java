@@ -214,8 +214,7 @@ public class IDevIDCertificate extends Certificate {
                                 // If an OID corresponding to TPM 2.0 for hwType is supported, according to the
                                 // specification "TPM 2.0 Keys for Device Identity and Attestation", the contents of
                                 // the hwSerialNum field will be parsed accordingly.
-                                switch (obj1.toString()) {
-                                    case HWTYPE_TCG_TPM2_OID:
+                                if (obj1.toString().equals(HWTYPE_TCG_TPM2_OID)) {
                                         tcgOid = true;
                                         break;
                                 }
@@ -292,7 +291,7 @@ public class IDevIDCertificate extends Certificate {
             return false;
         }
 
-        return Objects.equals(getHwSerialNum(), that.getHwSerialNum());
+        return Arrays.equals(getHwSerialNum(), that.getHwSerialNum());
     }
 
     @Override
@@ -300,7 +299,7 @@ public class IDevIDCertificate extends Certificate {
     public int hashCode() {
         int result = super.hashCode();
         result = 31 * result + (getTpmPolicies() != null ? getTpmPolicies().hashCode() : 0);
-        result = 31 * result + (getHwSerialNum() != null ? getHwSerialNum().hashCode() : 0);
+        result = 31 * result + (getHwSerialNum() != null ? Arrays.hashCode(getHwSerialNum()) : 0);
 
         return result;
     }
