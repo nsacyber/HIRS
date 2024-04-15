@@ -95,15 +95,20 @@ public class DeviceSecurityEventDataHeader {
     @Getter
     private String version = "";
     /**
-     * Event Data Length.
+     * Event data length.
      */
     @Getter
     private String length = "";
     /**
-     * Signature (text) data.
+     * SPDM hash algorithm.
      */
     @Getter
     private String spdmHashAlgo = "";
+    /**
+     * Device type.
+     */
+    @Getter
+    private String deviceType = "";
 
     /**
      * DeviceSecurityEventDataHeader Constructor.
@@ -112,21 +117,32 @@ public class DeviceSecurityEventDataHeader {
      */
     public DeviceSecurityEventDataHeader(final byte[] dSEDbytes) {
 //        algList = new ArrayList<>();
-//        byte[] signatureBytes = new byte[UefiConstants.SIZE_16];
-//        System.arraycopy(efiSpecId, 0, signatureBytes, 0, UefiConstants.SIZE_16);
-//        signature = HexUtils.byteArrayToHexString(signatureBytes);
-//        signature = new String(signatureBytes, StandardCharsets.UTF_8)
-//                .substring(0, UefiConstants.SIZE_15);
-//
-//        byte[] platformClassBytes = new byte[UefiConstants.SIZE_4];
-//        System.arraycopy(efiSpecId, UefiConstants.OFFSET_16, platformClassBytes, 0,
-//                UefiConstants.SIZE_4);
-//        platformClass = HexUtils.byteArrayToHexString(platformClassBytes);
-//
-//        byte[] specVersionMinorBytes = new byte[1];
-//        System.arraycopy(efiSpecId, UefiConstants.OFFSET_20, specVersionMinorBytes, 0, 1);
-//        versionMinor = HexUtils.byteArrayToHexString(specVersionMinorBytes);
-//
+        byte[] signatureBytes = new byte[UefiConstants.SIZE_16];
+        System.arraycopy(dSEDbytes, 0, signatureBytes, 0, UefiConstants.SIZE_16);
+        //signature = HexUtils.byteArrayToHexString(signatureBytes);
+        signature = new String(signatureBytes, StandardCharsets.UTF_8)
+                .substring(0, UefiConstants.SIZE_15);
+
+        byte[] versionBytes = new byte[UefiConstants.SIZE_4];
+        System.arraycopy(dSEDbytes, UefiConstants.OFFSET_16, versionBytes, 0,
+                UefiConstants.SIZE_4);
+        version = HexUtils.byteArrayToHexString(versionBytes);
+
+        byte[] lengthBytes = new byte[UefiConstants.SIZE_4];
+        System.arraycopy(dSEDbytes, UefiConstants.OFFSET_20, lengthBytes, 0,
+                UefiConstants.SIZE_4);
+        length = HexUtils.byteArrayToHexString(lengthBytes);
+
+        byte[] spdmHashAlgoBytes = new byte[UefiConstants.SIZE_8];
+        System.arraycopy(dSEDbytes, UefiConstants.OFFSET_24, spdmHashAlgoBytes, 0,
+                UefiConstants.SIZE_4);
+        spdmHashAlgo = HexUtils.byteArrayToHexString(spdmHashAlgoBytes);
+
+        byte[] deviceTypeBytes = new byte[UefiConstants.SIZE_8];
+        System.arraycopy(dSEDbytes, UefiConstants.OFFSET_24, deviceTypeBytes, 0,
+                UefiConstants.SIZE_4);
+        deviceType = HexUtils.byteArrayToHexString(deviceTypeBytes);
+
 //        byte[] specVersionMajorBytes = new byte[1];
 //        System.arraycopy(efiSpecId, UefiConstants.OFFSET_21, specVersionMajorBytes, 0, 1);
 //        versionMajor = HexUtils.byteArrayToHexString(specVersionMajorBytes);

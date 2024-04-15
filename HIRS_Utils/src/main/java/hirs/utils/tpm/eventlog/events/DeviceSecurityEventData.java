@@ -18,8 +18,8 @@ import java.util.List;
  *    2) DEVICE_SECURITY_EVENT_DATA2
  * The first 16 bytes of the event data header MUST be a String based identifier (Signature),
  * NUL-terminated, per PFP. The only currently defined Signature is "SPDM Device Sec", which
- * implies the data is a DEVICE_SECURITY_EVENT_DATA or ..DATA2. The Version field indicates
- * whether it is ..DATA or ..DATA2.
+ * implies the data is a DEVICE_SECURITY_EVENT_DATA or ..DATA2. The Version field in the HEADER
+ * or HEADER2 indicates whether the Device Security Event is ..DATA or ..DATA2.
  *
  * DEVICE SECURITY EVENT structures defined by PFP v1.06 Rev 52:
  * <p>
@@ -33,6 +33,12 @@ import java.util.List;
  * DEVICE_SECURITY_EVENT_DATA_SUB_HEADER        EventDataSubHeader;
  * DEVICE_SECURITY_EVENT_DATA_DEVICE_CONTEXT    DeviceContext;
  * } DEVICE_SECURITY_EVENT_DATA;
+ * <p>
+ * typedef struct tdDEVICE_SECURITY_EVENT_DATA_HEADER or HEADER2 {
+ *      UINT8                           Signature[16];
+ *      UINT16                          Version;
+ *      ...                             ...
+ * }
  * <p>
  * typedef struct tdDEVICE_SECURITY_EVENT_DATA_DEVICE_CONTEXT {
  * DEVICE_SECURITY_EVENT_DATA_PCI_CONTEXT        PciContext;
@@ -55,11 +61,11 @@ public class DeviceSecurityEventData {
     /**
      * Version determines data structure used (..DATA or ..DATA2).
      */
-//    @Getter
-//    private String version = "";
-//    /**
-//     * Contains the human-readable info inside the Device Security Event.
-//     */
+    @Getter
+    private String version = "";
+    /**
+     * Contains the human-readable info inside the Device Security Event.
+     */
     @Getter
     private String dSEDinfo = "";
     /**
@@ -94,7 +100,7 @@ public class DeviceSecurityEventData {
         byte[] versionBytes = new byte[UefiConstants.SIZE_4];
         System.arraycopy(dSEDbytes, UefiConstants.OFFSET_16, versionBytes, 0,
                 UefiConstants.SIZE_4);
-        String version = HexUtils.byteArrayToHexString(versionBytes);
+        version = HexUtils.byteArrayToHexString(versionBytes);
 
         // If version is 0x01, the event is a DEVICE_SECURITY_EVENT_DATA
         // If version is 0x02, the event is a DEVICE_SECURITY_EVENT_DATA2
