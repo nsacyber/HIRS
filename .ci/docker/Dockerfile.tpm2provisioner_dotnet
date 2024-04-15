@@ -7,7 +7,7 @@ LABEL org.opencontainers.image.description Tools for testing the build and deplo
 # Date Modified: 4/3/24
 # Notes: The image to be built should be named "r9ts".
 #        Use this command to build the image:
-#        $ docker build -f ./Dockerfile.tpm2provisioner_dotnet -t r9ts:latest .
+#        $ docker build -f ./.ci/docker/Dockerfile.tpm2provisioner_dotnet -t tpm2provisioner-ci:latest .
 
 # REF can be specified as a docker run environment variable to select the HIRS branch to work with
 ENV REF=main
@@ -96,5 +96,5 @@ RUN echo "#!/bin/bash" > /tmp/auto_clone_branch && \
 WORKDIR /hirs
 
 # Copy script for running TPM Simulator
-#COPY ./.ci/setup/container/setup_tpm2provisioner_dotnet.sh /.ci/setup/container/
-#RUN chmod 755 /.ci/setup/container/setup_tpm2provisioner_dotnet.sh
+COPY ./.ci/setup/container/setup_tpm2provisioner_dotnet.sh /.ci/setup/container/
+RUN chmod 755 /.ci/setup/container/setup_tpm2provisioner_dotnet.sh
