@@ -318,9 +318,10 @@ public abstract class Certificate extends ArchivableEntity {
         switch (getCertificateType()) {
             case X509_CERTIFICATE:
                 X509Certificate x509Certificate = getX509Certificate();
+
                 this.serialNumber = x509Certificate.getSerialNumber();
-                this.issuer = x509Certificate.getIssuerX500Principal().getName();
-                this.subject = x509Certificate.getSubjectX500Principal().getName();
+                this.issuer = Certificate.getIssuerDNString(x509Certificate);
+                this.subject = Certificate.getSubjectDNString(x509Certificate);
                 this.encodedPublicKey = x509Certificate.getPublicKey().getEncoded();
                 BigInteger publicKeyModulus = getPublicKeyModulus(x509Certificate);
 
@@ -849,6 +850,46 @@ public abstract class Certificate extends ArchivableEntity {
         );
 
         return Files.readAllBytes(certificatePath);
+    }
+
+    /**
+     * Retrieve a formatted subject DN string from a certificate. This allows for extended support of DNs found in
+     * various RFCs.
+     *
+     * @param certificate the certificate holding subject DNs
+     * @return IOException if there is an issue decoding the subject DNs
+     */
+    public static String getSubjectDNString(final X509Certificate certificate)
+            throws IOException {
+        X509CertificateHolder certificateHolder = null;
+        try {
+            certificateHolder = new X509CertificateHolder(certificate.getEncoded());
+        } catch (CertificateEncodingException e) {
+            throw new IOException("Could not encode certificate", e);
+        }
+
+        X500Name x500Name = certificateHolder.getSubject();
+        return x500Name.toString();
+    }
+
+    /**
+     * Retrieve a formatted issuer DN string from a certificate. This allows for extended support of DNs found in
+     * various RFCs.
+     *
+     * @param certificate the certificate holding issuer DNs
+     * @return IOException if there is an issue decoding the issuer DNs
+     */
+    public static String getIssuerDNString(final X509Certificate certificate)
+            throws IOException {
+        X509CertificateHolder certificateHolder = null;
+        try {
+            certificateHolder = new X509CertificateHolder(certificate.getEncoded());
+        } catch (CertificateEncodingException e) {
+            throw new IOException("Could not encode certificate", e);
+        }
+
+        X500Name x500Name = certificateHolder.getIssuer();
+        return x500Name.toString();
     }
 
     /**

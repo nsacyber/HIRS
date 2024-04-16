@@ -111,7 +111,7 @@
             </c:if>
             <c:if test="${not empty initialData.serialNumber}">
                 <div class="row">
-                    <div class="col-md-1 col-md-offset-1"><span class="colHeader">Serial Number</span></div>
+                    <div class="col-md-1 col-md-offset-1"><span class="colHeader">Certificate Serial Number</span></div>
                     <div id="serialNumber" class="col col-md-8 vertical"></div>
                 </div>
             </c:if>
@@ -119,17 +119,20 @@
                  <div class="row">
                      <c:choose>
                          <c:when test="${not empty initialData.ekCertificateDigest}">
-                             <div class="col-md-1 col-md-offset-1"><span class="colHeader help-text" title="Defined in RFC 4018. This certificate is also TCG-compliant for this field, indicated by the use of a TCG OID for Hardware Type.">Hardware Module Name ⓘ</span></div>
+                             <div class="col-md-1 col-md-offset-1"><span class="colHeader help-text" title="Defined in RFC 4108, and contained in the Subject Alternate Name. This certificate is also TCG-compliant for this field, indicated by the use of a TCG OID for Hardware Type.">Hardware Module Name</span></div>
                              <div class="col col-md-8">
-                                 <div>Hardware Type:&nbsp;<span id="hwType">${initialData.hwType}</span></div>
-                                 <div><span class="help-text" title="TCG-compliant: the device's TPM does not contain an EK certificate, and the Hardware Serial Number represents a digest of the EK Certificate. See TCG specification titled &quot;TPM 2.0 Keys for Device Identity and Attestation&quot;.">Hardware Serial Number (EK Certificate Digest) ⓘ:&nbsp;</span><span id="hwSerialNum">${initialData.hwSerialNum}</span></div>
+                                 <div><span class="help-text" title="Contains an OID that, in conjunction with the Hardware Serial Number, identifies the device's hardware module. This certificate is using a TCG OID, indicating the use of a Trusted Platform Module. OID value: ${initialData.hwType}">Hardware Type</span>:&nbsp;<span id="hwType">${initialData.hwType}</span></div>
+                                 <div><span class="help-text" title="TCG-compliant: the device's TPM does not contain an EK certificate, and the Hardware Serial Number represents a digest of the EK Certificate public key. See TCG specification titled &quot;TPM 2.0 Keys for Device Identity and Attestation&quot;.">Hardware Serial Number</span>:</div>
+                                 <ul>
+                                    <li>EK Certificate Digest:&nbsp;<span id="hwSerialNum">${initialData.hwSerialNum}</span></li>
+                                 </ul>
                             </div>
                          </c:when>
                          <c:otherwise>
-                             <div class="col-md-1 col-md-offset-1"><span class="colHeader help-text" title="Defined in RFC 4018. This certificate is not using a TCG OID for Hardware Type, so these fields may have manufacturer-specific meanings.">Hardware Module Name ⓘ</span></div>
+                             <div class="col-md-1 col-md-offset-1"><span class="colHeader help-text" title="Defined in RFC 4108, and contained in the Subject Alternate Name. This certificate is not using a TCG OID for Hardware Type, so these fields may have manufacturer-specific context.">Hardware Module Name</span></div>
                              <div class="col col-md-8">
-                                 <div>Hardware Type:&nbsp;<span id="hwType">${initialData.hwType}</span></div>
-                                 <div>Hardware Serial Number:&nbsp;<span id="hwSerialNum">${initialData.hwSerialNum}</span></div>
+                                 <div><span class="help-text" title="Contains an OID that, in conjunction with the Hardware Serial Number, identifies the device's hardware module. This certificate is using a non-TCG OID, possibly indicating manufacturer-specific context. OID value: ${initialData.hwType}">Hardware Type</span>:&nbsp;<span id="hwType">${initialData.hwType}</span></div>
+                                 <div><span class="help-text" title="Used for identifying the device's hardware module. This field may have manufacturer-specific context.">Hardware Serial Number</span>:&nbsp;<span id="hwSerialNum">${initialData.hwSerialNum}</span></div>
                             </div>
                         </c:otherwise>
                      </c:choose>
@@ -137,10 +140,10 @@
              </c:if>
              <c:if test="${not empty initialData.tcgTpmManufacturer}">
                  <div class="row">
-                     <div class="col-md-1 col-md-offset-1"><span class="colHeader help-text" title="Defined in RFC 4108. This certificate is also TCG-compliant for this field, indicated by the use of a TCG OID for Hardware Type.">Hardware Module Name ⓘ</span></div>
+                     <div class="col-md-1 col-md-offset-1"><span class="colHeader help-text" title="Defined in RFC 4108, and contained in the Subject Alternate Name. This certificate is also TCG-compliant for this field, indicated by the use of a TCG OID for Hardware Type.">Hardware Module Name</span></div>
                         <div class="col col-md-8">
-                            <div>Hardware Type:&nbsp;<span id="hwType">${initialData.hwType}</span></div>
-                            <div><span class="help-text" title="TCG-compliant: the device's TPM contains an EK certificate, and the below fields are parsed accordingly from the Hardware Serial Number. See TCG specification titled &quot;TPM 2.0 Keys for Device Identity and Attestation&quot;.">Hardware Serial Number ⓘ:</span>
+                            <div><span class="help-text" title="Contains an OID that, in conjunction with the Hardware Serial Number, identifies the device's hardware module. This certificate is using a TCG OID, indicating the use of a Trusted Platform Module. OID value: ${initialData.hwType}">Hardware Type</span>:&nbsp;<span id="hwType">${initialData.hwType}</span></div>
+                            <div><span class="help-text" title="TCG-compliant: the device's TPM contains an EK certificate, and the below fields are parsed accordingly from the Hardware Serial Number. See TCG specification titled &quot;TPM 2.0 Keys for Device Identity and Attestation&quot;.">Hardware Serial Number</span>:
                                 <ul>
                                     <li>TCG TPM Manufacturer Code:&nbsp;<span id="tcgTpmManufacturer">${initialData.tcgTpmManufacturer}</span></li>
                                     <li>EK Authority Key Identifier:&nbsp;<span id="ekAuthorityKeyIdentifier">${initialData.ekAuthorityKeyIdentifier}</span></li>
