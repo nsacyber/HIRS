@@ -54,6 +54,13 @@ public class IDevIDCertificate extends Certificate {
     private byte[] subjectAltName;
 
     /**
+     * Corresponds to the hwType field found in a Hardware Module Name (if present).
+     */
+    @Getter
+    @Column
+    private String hwType;
+
+    /**
      * Corresponds to the serial number found in a Hardware Module Name (if present).
      */
     @Getter
@@ -214,7 +221,8 @@ public class IDevIDCertificate extends Certificate {
                                 // If an OID corresponding to TPM 2.0 for hwType is supported, according to the
                                 // specification "TPM 2.0 Keys for Device Identity and Attestation", the contents of
                                 // the hwSerialNum field will be parsed accordingly.
-                                if (obj1.toString().equals(HWTYPE_TCG_TPM2_OID)) {
+                                hwType = obj1.toString();
+                                if (hasTCGOIDs()) {
                                         tcgOid = true;
                                 }
 
@@ -271,6 +279,21 @@ public class IDevIDCertificate extends Certificate {
         }
     }
 
+    /**
+     * Function to check whether a given IDevID certificate has TCG OIDs, in order to check compliance with various
+     * fields.
+     *
+     * @return a boolean value
+     */
+    public boolean hasTCGOIDs() {
+        if (this.getHwType() != null) {
+            return this.getHwType().equals(HWTYPE_TCG_TPM2_OID);
+        }
+        else {
+            return false;
+        }
+    }
+
     @Override
     @SuppressWarnings("checkstyle:avoidinlineconditionals")
     public boolean equals(final Object o) {
@@ -290,6 +313,10 @@ public class IDevIDCertificate extends Certificate {
             return false;
         }
 
+        if (!Objects.equals(getHwType(), that.getHwType())) {
+            return false;
+        }
+
         return Arrays.equals(getHwSerialNum(), that.getHwSerialNum());
     }
 
@@ -298,6 +325,7 @@ public class IDevIDCertificate extends Certificate {
     public int hashCode() {
         int result = super.hashCode();
         result = 31 * result + (getTpmPolicies() != null ? getTpmPolicies().hashCode() : 0);
+        result = 31 * result + (getHwType() != null ? getHwType().hashCode() : 0);
         result = 31 * result + (getHwSerialNum() != null ? Arrays.hashCode(getHwSerialNum()) : 0);
 
         return result;

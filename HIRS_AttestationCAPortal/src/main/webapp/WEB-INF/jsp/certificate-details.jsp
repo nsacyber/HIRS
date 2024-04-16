@@ -117,17 +117,36 @@
             </c:if>
              <c:if test="${not empty initialData.hwSerialNum}">
                  <div class="row">
-                     <div class="col-md-1 col-md-offset-1"><span class="colHeader">Hardware Serial Number</span></div>
-                     <div id="hwSerialNum" class="col col-md-8 vertical">${initialData.hwSerialNum}</div>
+                     <c:choose>
+                         <c:when test="${not empty initialData.ekCertificateDigest}">
+                             <div class="col-md-1 col-md-offset-1"><span class="colHeader help-text" title="Defined in RFC 4018. This certificate is also TCG-compliant for this field, indicated by the use of a TCG OID for Hardware Type.">Hardware Module Name ⓘ</span></div>
+                             <div class="col col-md-8">
+                                 <div>Hardware Type:&nbsp;<span id="hwType">${initialData.hwType}</span></div>
+                                 <div><span class="help-text" title="TCG-compliant: the device's TPM does not contain an EK certificate, and the Hardware Serial Number represents a digest of the EK Certificate. See TCG specification titled &quot;TPM 2.0 Keys for Device Identity and Attestation&quot;.">Hardware Serial Number (EK Certificate Digest) ⓘ:&nbsp;</span><span id="hwSerialNum">${initialData.hwSerialNum}</span></div>
+                            </div>
+                         </c:when>
+                         <c:otherwise>
+                             <div class="col-md-1 col-md-offset-1"><span class="colHeader help-text" title="Defined in RFC 4018. This certificate is not using a TCG OID for Hardware Type, so these fields may have manufacturer-specific meanings.">Hardware Module Name ⓘ</span></div>
+                             <div class="col col-md-8">
+                                 <div>Hardware Type:&nbsp;<span id="hwType">${initialData.hwType}</span></div>
+                                 <div>Hardware Serial Number:&nbsp;<span id="hwSerialNum">${initialData.hwSerialNum}</span></div>
+                            </div>
+                        </c:otherwise>
+                     </c:choose>
                  </div>
              </c:if>
              <c:if test="${not empty initialData.tcgTpmManufacturer}">
                  <div class="row">
-                     <div class="col-md-1 col-md-offset-1"><span class="colHeader">Hardware Serial Number</span></div>
+                     <div class="col-md-1 col-md-offset-1"><span class="colHeader help-text" title="Defined in RFC 4108. This certificate is also TCG-compliant for this field, indicated by the use of a TCG OID for Hardware Type.">Hardware Module Name ⓘ</span></div>
                         <div class="col col-md-8">
-                            <div>TCG TPM Manufacturer Code:&nbsp;<span id="tcgTpmManufacturer">${initialData.tcgTpmManufacturer}</span></div>
-                            <div>EK Authority Key Identifier:&nbsp;<span id="ekAuthorityKeyIdentifier">${initialData.ekAuthorityKeyIdentifier}</span></div>
-                            <div>EK CertificateSerialNumber:&nbsp;<span id="ekCertificateSerialNumber">${initialData.ekCertificateSerialNumber}</span></div>
+                            <div>Hardware Type:&nbsp;<span id="hwType">${initialData.hwType}</span></div>
+                            <div><span class="help-text" title="TCG-compliant: the device's TPM contains an EK certificate, and the below fields are parsed accordingly from the Hardware Serial Number. See TCG specification titled &quot;TPM 2.0 Keys for Device Identity and Attestation&quot;.">Hardware Serial Number ⓘ:</span>
+                                <ul>
+                                    <li>TCG TPM Manufacturer Code:&nbsp;<span id="tcgTpmManufacturer">${initialData.tcgTpmManufacturer}</span></li>
+                                    <li>EK Authority Key Identifier:&nbsp;<span id="ekAuthorityKeyIdentifier">${initialData.ekAuthorityKeyIdentifier}</span></li>
+                                    <li>EK CertificateSerialNumber:&nbsp;<span id="ekCertificateSerialNumber">${initialData.ekCertificateSerialNumber}</span></li>
+                                </ul>
+                            </div>
                         </div>
                  </div>
              </c:if>
@@ -908,7 +927,7 @@
                     <c:choose>
                         <c:when test="${not empty initialData.tpmPolicies}">
                             <div class="row">
-                                <div class="col-md-1 col-md-offset-1"><span class="colHeader">TPM Policies</span></div>
+                                <div class="col-md-1 col-md-offset-1"><span class="colHeader help-text" title="TPM verification policies, as defined in the TCG specification &quot;TPM 2.0 Keys for Device Identity and Attestation&quot;.">TPM Policies ⓘ</span></div>
                                 <div id="tpmPolicies" class="col col-md-8 vertical">${initialData.tpmPolicies}</div>
                             </div>
                         </c:when>

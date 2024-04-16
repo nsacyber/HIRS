@@ -545,25 +545,38 @@ public final class CertificateStringMapBuilder {
         if (certificate != null) {
             data.putAll(getGeneralCertificateInfo(certificate, certificateRepository, caCredentialRepository));
 
+            if (certificate.getHwType() != null) {
+                data.put("hwType", certificate.getHwType());
+            }
+
             if (certificate.getHwSerialNum() != null) {
                 String hwSerialStr = new String(certificate.getHwSerialNum(), StandardCharsets.US_ASCII);
 
                 // Obtain colon-delimited fields from hwSerialNum field, if present
-                if (hwSerialStr.contains(":")) {
-                    String[] hwSerialArray = hwSerialStr.split(":");
-                    if (hwSerialArray.length >= 3) {
-                        data.put("tcgTpmManufacturer", hwSerialArray[0]);
-                        data.put("ekAuthorityKeyIdentifier", hwSerialArray[1]);
-                        data.put("ekCertificateSerialNumber", hwSerialArray[2]);
+                if (certificate.hasTCGOIDs()) {
+                    if (hwSerialStr.contains(":")) {
+                        String[] hwSerialArray = hwSerialStr.split(":");
+                        if (hwSerialArray.length >= 3) {
+                            data.put("tcgTpmManufacturer", hwSerialArray[0]);
+                            data.put("ekAuthorityKeyIdentifier", hwSerialArray[1]);
+                            data.put("ekCertificateSerialNumber", hwSerialArray[2]);
+                        }
                     }
-                } else {
+                    else {
+                        // Corresponds to digest of EK certificate
+                        data.put("ekCertificateDigest", Boolean.valueOf(true).toString());
+                        String hwSerialToAdd = Hex.toHexString(certificate.getHwSerialNum());
+                        data.put("hwSerialNumHex", Boolean.valueOf(true).toString());
+                        data.put("hwSerialNum", hwSerialToAdd);
+                    }
+                }
+                else {
                     String hwSerialToAdd = hwSerialStr;
 
                     // Check if hwSerialNum is a printable ASCII string; default to hex otherwise
                     if (hwSerialStr.chars().allMatch(c -> c > 0x20 && c <= 0x7F)) {
                         data.put("hwSerialNum", hwSerialStr);
-                    }
-                    else {
+                    } else {
                         hwSerialToAdd = Hex.toHexString(certificate.getHwSerialNum());
                         data.put("hwSerialNumHex", Boolean.valueOf(true).toString());
                     }

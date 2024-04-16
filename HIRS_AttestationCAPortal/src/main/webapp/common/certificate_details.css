@@ -64,3 +64,8 @@
     cursor: pointer;
     border-radius: 2px;
 }
+
+.help-text {
+  border-bottom: 1px dashed black;
+  text-decoration: none;
+}
