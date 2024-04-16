@@ -91,6 +91,7 @@ public class EvEfiSpdmFirmwareBlob {
 //            specInfo += "   Platform Profile Specification version = "
 //                    + specIDEvent.getVersionMajor() + "." + specIDEvent.getVersionMinor()
 //                    + " using errata version " + specIDEvent.getErrata();
+//            specInfo += DeviceSecurityEventData.toString();
         } else {
             specInfo = "EV_EFI_SPDM_FIRMWARE_BLOB event named " + signature
                     + " encountered but support for processing it has not been added to this application.\n";
