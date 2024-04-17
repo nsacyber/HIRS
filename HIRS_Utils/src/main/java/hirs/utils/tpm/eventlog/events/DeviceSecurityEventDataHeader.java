@@ -30,7 +30,7 @@ import java.util.List;
  *      UNIT8                           DevicePath[DevicePathLength]
  * } DEVICE_SECURITY_EVENT_DATA_HEADER;
  * <p>
- * typedef struct tdDEVICE_SECURITY_EVENT_DATA_HEADER2 {
+ * typedef struct tdDEVICE_SECURITY_EVENT_DATA_HEADER2 {        - NOT IMPLEMENTED YET
  *      UINT8                           Signature[16];
  *      UINT16                          Version;
  *      UINT8                           AuthState;
@@ -73,11 +73,14 @@ import java.util.List;
  */
 public class DeviceSecurityEventDataHeader {
 
-    /**
-     * Contains the human-readable info inside the Device Security Event.
+//    /**
+//     * Contains the human-readable info inside the Device Security Event.
+//     */
+//    @Getter
+//    private String dSEDheaderInfo = "";
+
+    /** ----------- Variables common to all Header Types -----------
      */
-    @Getter
-    private String dSEDheaderInfo = "";
     /**
      * Contains the size (in bytes) of the Header.
      */
@@ -95,20 +98,41 @@ public class DeviceSecurityEventDataHeader {
     @Getter
     private String version = "";
     /**
-     * Event data length.
-     */
-    @Getter
-    private String length = "";
-    /**
-     * SPDM hash algorithm.
-     */
-    @Getter
-    private String spdmHashAlgo = "";
-    /**
      * Device type.
      */
     @Getter
     private String deviceType = "";
+    /**
+     * Device path length.
+     */
+    @Getter
+    private String devicePathLength = "";
+    /**
+     * Device path.
+     */
+    @Getter
+    private String devicePath = "";
+
+    /** ----------- Variables specific to Header Type 1 -----------
+    /**
+     * Type Header 1 event data length.
+     */
+    @Getter
+    private String h1Length = "";
+    /**
+     * Type Header 1 SPDM hash algorithm.
+     */
+    @Getter
+    private String h1SpdmHashAlgo = "";
+    /**
+     * Type Header 1 SPDM measurement block.
+     */
+    @Getter
+    private String h1SpdmMeasurementBlock = "";
+
+    /** ----------- Variables specific to Header Type 2 -----------
+     */
+    // TBD
 
     /**
      * DeviceSecurityEventDataHeader Constructor.
@@ -123,33 +147,26 @@ public class DeviceSecurityEventDataHeader {
         signature = new String(signatureBytes, StandardCharsets.UTF_8)
                 .substring(0, UefiConstants.SIZE_15);
 
-        byte[] versionBytes = new byte[UefiConstants.SIZE_4];
+        byte[] versionBytes = new byte[UefiConstants.SIZE_2];
         System.arraycopy(dSEDbytes, UefiConstants.OFFSET_16, versionBytes, 0,
-                UefiConstants.SIZE_4);
+                UefiConstants.SIZE_2);
         version = HexUtils.byteArrayToHexString(versionBytes);
 
-        byte[] lengthBytes = new byte[UefiConstants.SIZE_4];
-        System.arraycopy(dSEDbytes, UefiConstants.OFFSET_20, lengthBytes, 0,
-                UefiConstants.SIZE_4);
-        length = HexUtils.byteArrayToHexString(lengthBytes);
+        byte[] lengthBytes = new byte[UefiConstants.SIZE_2];
+        System.arraycopy(dSEDbytes, 18, lengthBytes, 0,
+                UefiConstants.SIZE_2);
+        h1Length = HexUtils.byteArrayToHexString(lengthBytes);
 
-        byte[] spdmHashAlgoBytes = new byte[UefiConstants.SIZE_8];
-        System.arraycopy(dSEDbytes, UefiConstants.OFFSET_24, spdmHashAlgoBytes, 0,
+        byte[] spdmHashAlgoBytes = new byte[UefiConstants.SIZE_4];
+        System.arraycopy(dSEDbytes, UefiConstants.OFFSET_20, spdmHashAlgoBytes, 0,
                 UefiConstants.SIZE_4);
-        spdmHashAlgo = HexUtils.byteArrayToHexString(spdmHashAlgoBytes);
+        h1SpdmHashAlgo = HexUtils.byteArrayToHexString(spdmHashAlgoBytes);
 
-        byte[] deviceTypeBytes = new byte[UefiConstants.SIZE_8];
+        byte[] deviceTypeBytes = new byte[UefiConstants.SIZE_4];
         System.arraycopy(dSEDbytes, UefiConstants.OFFSET_24, deviceTypeBytes, 0,
                 UefiConstants.SIZE_4);
         deviceType = HexUtils.byteArrayToHexString(deviceTypeBytes);
 
-//        byte[] specVersionMajorBytes = new byte[1];
-//        System.arraycopy(efiSpecId, UefiConstants.OFFSET_21, specVersionMajorBytes, 0, 1);
-//        versionMajor = HexUtils.byteArrayToHexString(specVersionMajorBytes);
-//
-//        byte[] specErrataBytes = new byte[1];
-//        System.arraycopy(efiSpecId, UefiConstants.OFFSET_22, specErrataBytes, 0, 1);
-//        errata = HexUtils.byteArrayToHexString(specErrataBytes);
 //
 //        byte[] numberOfAlgBytes = new byte[UefiConstants.SIZE_4];
 //        System.arraycopy(efiSpecId, UefiConstants.OFFSET_24, numberOfAlgBytes, 0,
@@ -170,23 +187,24 @@ public class DeviceSecurityEventDataHeader {
 //            cryptoAgile = true;
 //        }
     }
-//
-//    /**
-//     * Returns a human readable description of the data within this event.
-//     *
-//     * @return a description of this event..
-//     */
-//    public String toString() {
-//        String specInfo = "";
-//        if (signature.equals("Spec ID Event#")) {
-//            specInfo += "Platform Profile Specification version = " + versionMajor + "." + versionMinor
-//                    + " using errata version" + errata;
-//        } else {
-//            specInfo = "EV_NO_ACTION event named " + signature
-//                    + " encountered but support for processing it has not been added to this application";
-//        }
-//        return specInfo;
-//    }
 
+    /**
+     * Returns a human readable description of the data within this event.
+     *
+     * @return a description of this event..
+     */
+    public String toString() {
+        String dsedHeaderInfo = "";
+        if (version.equals("0100")) {
+            dsedHeaderInfo += "\n   SPDM hash algorithm = " + h1SpdmHashAlgo;
+            dsedHeaderInfo += "\n   SPDM Device";
+            dsedHeaderInfo += "\n      Device Type: " + deviceType;
+            dsedHeaderInfo += "\n      Device Path: " + devicePath;
+            dsedHeaderInfo += "\n   SPDM Measurement Block " + h1SpdmMeasurementBlock;
+        } else if(version.equals("0200")) {
+            dsedHeaderInfo = "tbd";
+        }
+        return dsedHeaderInfo;
+    }
 
 }
