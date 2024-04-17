@@ -80,22 +80,14 @@ public class EvEfiSpdmFirmwareBlob {
      * @return Human readable description of this event.
      */
     public String toString() {
-        String specInfo = "";
+        String spdmInfo = "";
         if (bDeviceSecurityEventData) {
-            specInfo += "   Signature =  SPDM Device Sec : ";
-//            if (specIDEvent.isCryptoAgile()) {
-//                specInfo += "Log format is Crypto Agile\n";
-//            } else {
-//                specInfo += "Log format is SHA 1 (NOT Crypto Agile)\n";
-//            }
-//            specInfo += "   Platform Profile Specification version = "
-//                    + specIDEvent.getVersionMajor() + "." + specIDEvent.getVersionMinor()
-//                    + " using errata version " + specIDEvent.getErrata();
-//            specInfo += DeviceSecurityEventData.toString();
+            spdmInfo += "   Signature = SPDM Device Sec";
+            spdmInfo += deviceSecurityEventData.toString();
         } else {
-            specInfo = "EV_EFI_SPDM_FIRMWARE_BLOB event named " + signature
+            spdmInfo = "EV_EFI_SPDM_FIRMWARE_BLOB event named " + signature
                     + " encountered but support for processing it has not been added to this application.\n";
         }
-        return specInfo;
+        return spdmInfo;
     }
 }
