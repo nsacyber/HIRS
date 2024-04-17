@@ -91,7 +91,7 @@ public class BaseReferenceManifest extends ReferenceManifest {
      * @param rimBytes - the file content of the uploaded file.
      * @throws IOException - thrown if the file is invalid.
      */
-    public BaseReferenceManifest(final byte[] rimBytes) throws IOException {
+    public BaseReferenceManifest(final byte[] rimBytes) throws UnmarshalException {
         this("", rimBytes);
     }
 
@@ -104,7 +104,8 @@ public class BaseReferenceManifest extends ReferenceManifest {
      * @throws IOException if unable to unmarshal the string
      */
     @SuppressWarnings("checkstyle:AvoidInlineConditionals")
-    public BaseReferenceManifest(final String fileName, final byte[] rimBytes) throws IOException {
+    public BaseReferenceManifest(final String fileName, final byte[] rimBytes)
+            throws UnmarshalException {
         super(rimBytes);
         this.setRimType(BASE_RIM);
         this.setFileName(fileName);
@@ -219,16 +220,24 @@ public class BaseReferenceManifest extends ReferenceManifest {
      * @param byteArrayInputStream the location of the file to be validated
      */
     private Element getDirectoryTag(final ByteArrayInputStream byteArrayInputStream) {
-        Document document = unmarshallSwidTag(byteArrayInputStream);
-        Element softwareIdentity =
-                (Element) document.getElementsByTagNameNS(
-                        SwidTagConstants.SWIDTAG_NAMESPACE,"SoftwareIdentity").item(0);
-        if (softwareIdentity != null) {
-            Element directory = (Element) document.getElementsByTagName("Directory").item(0);
+        Document document = null;
+        try {
+            document = unmarshallSwidTag(byteArrayInputStream);
+        } catch (UnmarshalException e) {
+            log.error("Error while parsing Directory tag: " + e.getMessage());
+        }
+        if (document != null) {
+            Element softwareIdentity =
+                    (Element) document.getElementsByTagNameNS(
+                            SwidTagConstants.SWIDTAG_NAMESPACE, "SoftwareIdentity").item(0);
+            if (softwareIdentity != null) {
+                Element directory = (Element) document.getElementsByTagNameNS(
+                        SwidTagConstants.SWIDTAG_NAMESPACE, "Directory").item(0);
 
-            return directory;
-        } else {
-            log.error("Invalid xml for validation, please verify ");
+                return directory;
+            } else {
+                log.error("Invalid xml for validation, please verify ");
+            }
         }
 
         return null;
@@ -273,7 +282,8 @@ public class BaseReferenceManifest extends ReferenceManifest {
      * @param byteArrayInputStream to the input swidtag
      * @return the Document element at the root of the swidtag
      */
-    private Document unmarshallSwidTag(final ByteArrayInputStream byteArrayInputStream) {
+    private Document unmarshallSwidTag(final ByteArrayInputStream byteArrayInputStream)
+            throws UnmarshalException {
         InputStream is = null;
         Document document = null;
         Unmarshaller unmarshaller = null;
@@ -293,7 +303,7 @@ public class BaseReferenceManifest extends ReferenceManifest {
         } catch (SAXException e) {
             log.error("Error setting schema for validation!");
         } catch (UnmarshalException e) {
-            log.error("Error validating swidtag file!");
+            throw new UnmarshalException("Error validating swidtag file");
         } catch (IllegalArgumentException e) {
             log.error("Input file empty.");
         } catch (JAXBException e) {

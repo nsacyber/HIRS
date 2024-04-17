@@ -41,6 +41,7 @@ import hirs.utils.SwidResource;
 import hirs.utils.enums.DeviceInfoEnums;
 import hirs.utils.tpm.eventlog.TCGEventLog;
 import hirs.utils.tpm.eventlog.TpmPcrEvent;
+import jakarta.xml.bind.UnmarshalException;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.codec.binary.Hex;
 import org.apache.commons.lang3.ArrayUtils;
@@ -420,8 +421,8 @@ public class IdentityClaimProcessor extends AbstractProcessor {
                         }
                     }
                     tagId = dbBaseRim.getTagId();
-                } catch (IOException ioEx) {
-                    log.error(ioEx);
+                } catch (UnmarshalException e) {
+                    log.error(e);
                 }
             }
         } else {
