@@ -19,6 +19,7 @@ import hirs.utils.tpm.eventlog.TpmPcrEvent;
 import jakarta.persistence.EntityManager;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
+import jakarta.xml.bind.UnmarshalException;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
@@ -393,23 +394,28 @@ public class ReferenceManifestPageController extends PageController<NoPageParams
         try {
             if (supportRIM) {
                 supportRim = new SupportReferenceManifest(fileName, fileBytes);
-                if (referenceManifestRepository.findByHexDecHashAndRimType(supportRim.getHexDecHash(),
-                        supportRim.getRimType()) == null) {
+                if (referenceManifestRepository.findByHexDecHashAndRimType(
+                        supportRim.getHexDecHash(), supportRim.getRimType()) == null) {
                     supportRims.add(supportRim);
                     messages.addInfo("Saved Reference Manifest " + fileName);
                 }
             } else {
                 baseRim = new BaseReferenceManifest(fileName, fileBytes);
-                if (referenceManifestRepository.findByHexDecHashAndRimType(baseRim.getHexDecHash(),
-                        baseRim.getRimType()) == null) {
+                if (referenceManifestRepository.findByHexDecHashAndRimType(
+                        baseRim.getHexDecHash(), baseRim.getRimType()) == null) {
                     baseRims.add(baseRim);
                 }
             }
         } catch (IOException | NullPointerException ioEx) {
             final String failMessage
-                    = String.format("Failed to parse uploaded file (%s): ", fileName);
+                    = String.format("Failed to parse support RIM file (%s): ", fileName);
             log.error(failMessage, ioEx);
             messages.addError(failMessage + ioEx.getMessage());
+        } catch (UnmarshalException e) {
+            final String failMessage
+                    = String.format("Failed to parse base RIM file (%s): ", fileName);
+            log.error(failMessage, e);
+            messages.addError(failMessage + e.getMessage());
         }
     }
 
