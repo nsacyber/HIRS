@@ -63,26 +63,26 @@ public class DeviceSecurityEventData {
      */
     @Getter
     private String version = "";
-    /**
-     * Contains the human-readable info inside the Device Security Event.
-     */
-    @Getter
-    private String dSEDinfo = "";
+//    /**
+//     * Contains the human-readable info inside the Device Security Event.
+//     */
+//    @Getter
+//    private String dsedInfo = "";
     /**
      * DeviceSecurityEventDataHeader Object.
      */
     @Getter
-    private DeviceSecurityEventDataHeader dSEDheader = null;
+    private DeviceSecurityEventDataHeader dsedHeader = null;
     /**
      * DeviceSecurityEventDataSubHeader Object.
      */
-    @Getter
-    private DeviceSecurityEventDataHeader dSEDsubHeader = null;
+//    @Getter
+//    private DeviceSecurityEventDataSubHeader dsedSubHeader = null;
     /**
      * DeviceSecurityEventDataDeviceContext Object.
      */
     @Getter
-    private DeviceSecurityEventDataDeviceContext dSEDdeviceContext = null;
+    private DeviceSecurityEventDataDeviceContext dsedDeviceContext = null;
 
     /**
      * DeviceSecurityEventData Constructor.
@@ -95,56 +95,65 @@ public class DeviceSecurityEventData {
         System.arraycopy(dSEDbytes, 0, signatureBytes, 0, UefiConstants.SIZE_16);
         //signature = HexUtils.byteArrayToHexString(signatureBytes);
         signature = new String(signatureBytes, StandardCharsets.UTF_8)
-                .substring(0, UefiConstants.SIZE_15);
+                .substring(0, UefiConstants.SIZE_15);       // size 15 bc last letter is a 00 (null)
 
-        byte[] versionBytes = new byte[UefiConstants.SIZE_4];
+        byte[] versionBytes = new byte[UefiConstants.SIZE_2];
         System.arraycopy(dSEDbytes, UefiConstants.OFFSET_16, versionBytes, 0,
-                UefiConstants.SIZE_4);
+                UefiConstants.SIZE_2);
         version = HexUtils.byteArrayToHexString(versionBytes);
+
+//        int byteOffset = 0;
+//        byteOffset = dsedHeader.getDsedHeaderByteSize();
 
         // If version is 0x01, the event is a DEVICE_SECURITY_EVENT_DATA
         // If version is 0x02, the event is a DEVICE_SECURITY_EVENT_DATA2
-        int byteOffset = 0;
-        dSEDheader = new DeviceSecurityEventDataHeader(dSEDbytes);
-        byteOffset = dSEDheader.getDSEDheaderByteSize();
-        if (version == "2") {
-//            dSEDsubHeader = new DeviceSecurityEventDataSubHeader(dSEDbytes,byteOffset);
-//            byteOffset = dSEDheader.getDSEDsubHeaderByteSize();
-        }
-        dSEDdeviceContext = new DeviceSecurityEventDataDeviceContext(dSEDbytes, byteOffset);
+        switch (version) {
+            case "0100":
+                dsedHeader = new DeviceSecurityEventDataHeader(dSEDbytes);
+//                dsedDeviceContext = new DeviceSecurityEventDataDeviceContext(dSEDbytes,
+//                        dsedHeader.getDSEDheaderByteSize());
+                break;
+            case "0200":
+                dsedHeader = new DeviceSecurityEventDataHeader(dSEDbytes);
+//            dsedSubHeader = new DeviceSecurityEventDataSubHeader(dSEDbytes,byteOffset);
+//            byteOffset = dsedHeader.getDSEDsubHeaderByteSize();
+//                dsedDeviceContext = new DeviceSecurityEventDataDeviceContext(dSEDbytes, byteOffset);
+                break;
+            default:
+                break;
+
 
 //        if (version == "1") {
 //            dSEDinfo =+
 //                    dSEDataHeader.getDSEDheaderInfo();
 //            dSEDinfo =+
-//                    dSEDdeviceContext.getdSEDdeviceContextInfo();
+//                    dsedDeviceContext.getdSEDdeviceContextInfo();
 //        } else if (version == "2") {
 //            dSEDinfo =+
 //                    dSEDheader.getDSEDheaderInfo();
 //            dSEDinfo =+
-//                    dSEDsubHeader.getDSEDsubHeaderInfo();
+//                    dsedSubHeader.getDSEDsubHeaderInfo();
 //            dSEDinfo =+
-//                    dSEDdeviceContext.getDSEDdeviceContextInfo();
+//                    dsedDeviceContext.getDSEDdeviceContextInfo();
 //        }
+        }
     }
 
     public String toString() {
-        String specInfo = "";
-
-        specInfo += "   Signature =  SPDM Device Sec : ";
-//            if (specIDEvent.isCryptoAgile()) {
-//                specInfo += "Log format is Crypto Agile\n";
-//            } else {
-//                specInfo += "Log format is SHA 1 (NOT Crypto Agile)\n";
-//            }
-//            specInfo += "   Platform Profile Specification version = "
-//                    + specIDEvent.getVersionMajor() + "." + specIDEvent.getVersionMinor()
-//                    + " using errata version " + specIDEvent.getErrata();
-//            specInfo += DeviceSecurityEventData.toString();
-//        } else {
-//            specInfo = "EV_EFI_SPDM_FIRMWARE_BLOB event named " + signature
-//                    + " encountered but support for processing it has not been added to this application.\n";
-//        }
-        return specInfo;
+        String dsedInfo = "";
+        switch (version) {
+            case "0100":
+                dsedInfo += dsedHeader.toString();
+//                dsedInfo += dsedDeviceContext.toString();
+                break;
+            case "0200":
+//                dsedInfo += dsedHeader.toString();
+//                dsedInfo += dsedSubHeader.toString();
+//                dsedInfo += dsedDeviceContext.toString();
+                break;
+            default:
+                dsedInfo += " Unknown SPDM Device Security Event Data version " + version + " found" + "\n";
+        }
+        return dsedInfo;
     }
 }
