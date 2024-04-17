@@ -547,6 +547,14 @@ public final class CertificateStringMapBuilder {
 
             if (certificate.getHwType() != null) {
                 data.put("hwType", certificate.getHwType());
+                String hwTypeReadable;
+                if (certificate.hasTCGOIDs()) {
+                    hwTypeReadable = "TPM-Bound IDevID";
+                }
+                else {
+                    hwTypeReadable = "Manufacturer Specific";
+                }
+                data.put("hwTypeReadable", hwTypeReadable);
             }
 
             if (certificate.getHwSerialNum() != null) {
