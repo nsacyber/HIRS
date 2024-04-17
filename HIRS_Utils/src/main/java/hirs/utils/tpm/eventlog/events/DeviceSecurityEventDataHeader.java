@@ -114,11 +114,11 @@ public class DeviceSecurityEventDataHeader {
     private String devicePath = "";
 
     /** ----------- Variables specific to Header Type 1 -----------
-    /**
-     * Type Header 1 event data length.
-     */
-    @Getter
-    private String h1Length = "";
+//    /**
+//     * Type Header 1 event data length.
+//     */
+//    @Getter
+//    private String h1Length = "";
     /**
      * Type Header 1 SPDM hash algorithm.
      */
@@ -155,17 +155,19 @@ public class DeviceSecurityEventDataHeader {
         byte[] lengthBytes = new byte[UefiConstants.SIZE_2];
         System.arraycopy(dSEDbytes, 18, lengthBytes, 0,
                 UefiConstants.SIZE_2);
-        h1Length = HexUtils.byteArrayToHexString(lengthBytes);
+        int h1Length = HexUtils.leReverseInt(lengthBytes);
 
         byte[] spdmHashAlgoBytes = new byte[UefiConstants.SIZE_4];
         System.arraycopy(dSEDbytes, UefiConstants.OFFSET_20, spdmHashAlgoBytes, 0,
                 UefiConstants.SIZE_4);
-        h1SpdmHashAlgo = HexUtils.byteArrayToHexString(spdmHashAlgoBytes);
+        int h1SpdmHashAlgoInt = HexUtils.leReverseInt(spdmHashAlgoBytes);
+        h1SpdmHashAlgo = "to do - get hash alg";
 
         byte[] deviceTypeBytes = new byte[UefiConstants.SIZE_4];
         System.arraycopy(dSEDbytes, UefiConstants.OFFSET_24, deviceTypeBytes, 0,
                 UefiConstants.SIZE_4);
-        deviceType = HexUtils.byteArrayToHexString(deviceTypeBytes);
+        int deviceTypeInt = HexUtils.leReverseInt(deviceTypeBytes);
+        deviceType = "to do - get device type";
 
 //
 //        byte[] numberOfAlgBytes = new byte[UefiConstants.SIZE_4];
