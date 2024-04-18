@@ -3,6 +3,7 @@ package hirs.utils.tpm.eventlog.events;
 import hirs.utils.HexUtils;
 import hirs.utils.tpm.eventlog.TcgTpmtHa;
 import hirs.utils.tpm.eventlog.spdm.SpdmHa;
+import hirs.utils.tpm.eventlog.spdm.SpdmMeasurementBlock;
 import hirs.utils.tpm.eventlog.uefi.UefiConstants;
 import lombok.Getter;
 
@@ -138,11 +139,14 @@ public class DeviceSecurityEventDataHeader {
      */
     @Getter
     private String h1SpdmHashAlgo = "";
+//    /**
+//     * Type Header 1 SPDM Measurement Block list.
+//     */
+//    private List<SpdmMeasurementBlock> h1SpdmMeasurementBlockList;
     /**
-     * Type Header 1 SPDM measurement block.
+     * Type Header 1 SPDM Measurement Block.
      */
-    @Getter
-    private String h1SpdmMeasurementBlock = "";
+    private SpdmMeasurementBlock h1SpdmMeasurementBlock;
 
     /** ----------- Variables specific to Header Type 2 -----------
      */
@@ -155,6 +159,8 @@ public class DeviceSecurityEventDataHeader {
      */
     public DeviceSecurityEventDataHeader(final byte[] dSEDbytes) {
 
+//        spdmMeasurementBlockList = new ArrayList<>();
+
         byte[] signatureBytes = new byte[UefiConstants.SIZE_16];
         System.arraycopy(dSEDbytes, 0, signatureBytes, 0, UefiConstants.SIZE_16);
         signature = new String(signatureBytes, StandardCharsets.UTF_8)
@@ -165,29 +171,41 @@ public class DeviceSecurityEventDataHeader {
                 UefiConstants.SIZE_2);
         version = HexUtils.byteArrayToHexString(versionBytes);
 
-        byte[] lengthBytes = new byte[UefiConstants.SIZE_2];
-        System.arraycopy(dSEDbytes, 18, lengthBytes, 0,
-                UefiConstants.SIZE_2);
-        int h1Length = HexUtils.leReverseInt(lengthBytes);
+//        if(version == "0100") {
+        if (version.equals("0100")) {
 
-        byte[] spdmHashAlgoBytes = new byte[UefiConstants.SIZE_4];
-        System.arraycopy(dSEDbytes, UefiConstants.OFFSET_20, spdmHashAlgoBytes, 0,
-                UefiConstants.SIZE_4);
-        int h1SpdmHashAlgoInt = HexUtils.leReverseInt(spdmHashAlgoBytes);
-        h1SpdmHashAlgo = SpdmHa.tcgAlgIdToString(h1SpdmHashAlgoInt);
+            byte[] lengthBytes = new byte[UefiConstants.SIZE_2];
+            System.arraycopy(dSEDbytes, 18, lengthBytes, 0,
+                    UefiConstants.SIZE_2);
+            int h1Length = HexUtils.leReverseInt(lengthBytes);
 
-        byte[] deviceTypeBytes = new byte[UefiConstants.SIZE_4];
-        System.arraycopy(dSEDbytes, UefiConstants.OFFSET_24, deviceTypeBytes, 0,
-                UefiConstants.SIZE_4);
-        int deviceTypeInt = HexUtils.leReverseInt(deviceTypeBytes);
-        deviceType = deviceTypeToString(deviceTypeInt);
+            byte[] spdmHashAlgoBytes = new byte[UefiConstants.SIZE_4];
+            System.arraycopy(dSEDbytes, UefiConstants.OFFSET_20, spdmHashAlgoBytes, 0,
+                    UefiConstants.SIZE_4);
+            int h1SpdmHashAlgoInt = HexUtils.leReverseInt(spdmHashAlgoBytes);
+            h1SpdmHashAlgo = SpdmHa.tcgAlgIdToString(h1SpdmHashAlgoInt);
 
-//
-//        byte[] numberOfAlgBytes = new byte[UefiConstants.SIZE_4];
-//        System.arraycopy(efiSpecId, UefiConstants.OFFSET_24, numberOfAlgBytes, 0,
-//                UefiConstants.SIZE_4);
-//        numberOfAlg = HexUtils.leReverseInt(numberOfAlgBytes);
-//
+            byte[] deviceTypeBytes = new byte[UefiConstants.SIZE_4];
+            System.arraycopy(dSEDbytes, UefiConstants.OFFSET_24, deviceTypeBytes, 0,
+                    UefiConstants.SIZE_4);
+            int deviceTypeInt = HexUtils.leReverseInt(deviceTypeBytes);
+            deviceType = deviceTypeToString(deviceTypeInt);
+
+            // For each measurement block, create a SpdmMeasurementBlock object (can there be many blocks ?)
+
+            // get the size of the SPDM Measurement Block
+            byte[] sizeOfSpdmMeasBlockBytes = new byte[UefiConstants.SIZE_2];
+            System.arraycopy(dSEDbytes, 30, sizeOfSpdmMeasBlockBytes, 0,
+                    UefiConstants.SIZE_2);
+            int sizeOfSpdmMeas = HexUtils.leReverseInt(sizeOfSpdmMeasBlockBytes);
+            int sizeOfSpdmMeasBlock = sizeOfSpdmMeas + 4;
+
+            // extract the bytes from the SPDM Measurement Block
+            byte[] spdmMeasBlockBytes = new byte[sizeOfSpdmMeasBlock];
+            System.arraycopy(dSEDbytes, 28, spdmMeasBlockBytes, 0,
+                    sizeOfSpdmMeasBlock);
+            h1SpdmMeasurementBlock = new SpdmMeasurementBlock(spdmMeasBlockBytes);
+
 //        byte[] algorithmIDBytes = new byte[UefiConstants.SIZE_2];
 //        int algLocation = UefiConstants.SIZE_28;
 //        for (int i = 0; i < numberOfAlg; i++) {
@@ -201,6 +219,8 @@ public class DeviceSecurityEventDataHeader {
 //        } else {
 //            cryptoAgile = true;
 //        }
+
+        }
     }
 
     /**
@@ -240,7 +260,7 @@ public class DeviceSecurityEventDataHeader {
             dsedHeaderInfo += "\n   SPDM Device";
             dsedHeaderInfo += "\n      Device Type: " + deviceType;
             dsedHeaderInfo += "\n      Device Path: " + devicePath;
-            dsedHeaderInfo += "\n   SPDM Measurement Block " + h1SpdmMeasurementBlock;
+            dsedHeaderInfo += "\n   SPDM Measurement Block " + h1SpdmMeasurementBlock.toString();
         } else if(version.equals("0200")) {
             dsedHeaderInfo = "tbd";
         }
