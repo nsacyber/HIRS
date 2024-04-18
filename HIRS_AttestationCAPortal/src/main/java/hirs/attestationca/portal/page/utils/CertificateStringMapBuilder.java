@@ -7,6 +7,7 @@ import hirs.attestationca.persist.entity.userdefined.Certificate;
 import hirs.attestationca.persist.entity.userdefined.certificate.CertificateAuthorityCredential;
 import hirs.attestationca.persist.entity.userdefined.certificate.ComponentResult;
 import hirs.attestationca.persist.entity.userdefined.certificate.EndorsementCredential;
+import hirs.attestationca.persist.entity.userdefined.certificate.IDevIDCertificate;
 import hirs.attestationca.persist.entity.userdefined.certificate.IssuedAttestationCertificate;
 import hirs.attestationca.persist.entity.userdefined.certificate.PlatformCredential;
 import hirs.attestationca.persist.entity.userdefined.certificate.attributes.ComponentIdentifier;
@@ -20,6 +21,7 @@ import org.bouncycastle.util.encoders.Hex;
 
 import java.io.IOException;
 import java.math.BigInteger;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -60,8 +62,8 @@ public final class CertificateStringMapBuilder {
                 data.put("certificateId", certificate.getId().toString());
             }
             data.put("authInfoAccess", certificate.getAuthorityInfoAccess());
-            data.put("beginValidity", certificate.getBeginValidity().toString());
-            data.put("endValidity", certificate.getEndValidity().toString());
+            data.put("beginValidity", Long.toString(certificate.getBeginValidity().getTime()));
+            data.put("endValidity", Long.toString(certificate.getEndValidity().getTime()));
             data.put("signature", Arrays.toString(certificate.getSignature()));
             data.put("signatureSize", Integer.toString(certificate.getSignature().length
                     * Certificate.MIN_ATTR_CERT_LENGTH));
@@ -521,6 +523,92 @@ public final class CertificateStringMapBuilder {
         } else {
             String notFoundMessage = "Unable to find Issued Attestation Certificate "
                     + "with ID: " + uuid;
+            log.error(notFoundMessage);
+        }
+        return data;
+    }
+
+    /**
+     * Returns the IDevID Certificate information.
+     *
+     * @param uuid ID for the certificate.
+     * @param certificateRepository the certificate manager for retrieving certs.
+     * @return a hash map with the endorsement certificate information.
+     */
+    public static HashMap<String, String> getIdevidInformation(final UUID uuid,
+                                                               final CertificateRepository certificateRepository,
+                                                               final CACredentialRepository caCredentialRepository) {
+
+        HashMap<String, String> data = new HashMap<>();
+        IDevIDCertificate certificate = (IDevIDCertificate) certificateRepository.getCertificate(uuid);
+
+        if (certificate != null) {
+            data.putAll(getGeneralCertificateInfo(certificate, certificateRepository, caCredentialRepository));
+
+            if (certificate.getHwType() != null) {
+                data.put("hwType", certificate.getHwType());
+                String hwTypeReadable;
+                if (certificate.hasTCGOIDs()) {
+                    hwTypeReadable = "TPM-Bound IDevID";
+                }
+                else {
+                    hwTypeReadable = "Manufacturer Specific";
+                }
+                data.put("hwTypeReadable", hwTypeReadable);
+            }
+
+            if (certificate.getHwSerialNum() != null) {
+                String hwSerialStr = new String(certificate.getHwSerialNum(), StandardCharsets.US_ASCII);
+
+                // Obtain colon-delimited fields from hwSerialNum field, if present
+                if (certificate.hasTCGOIDs()) {
+                    if (hwSerialStr.contains(":")) {
+                        String[] hwSerialArray = hwSerialStr.split(":");
+                        if (hwSerialArray.length >= 3) {
+                            data.put("tcgTpmManufacturer", hwSerialArray[0]);
+                            data.put("ekAuthorityKeyIdentifier", hwSerialArray[1]);
+                            data.put("ekCertificateSerialNumber", hwSerialArray[2]);
+                        }
+                    }
+                    else {
+                        // Corresponds to digest of EK certificate
+                        data.put("ekCertificateDigest", Boolean.valueOf(true).toString());
+                        String hwSerialToAdd = Hex.toHexString(certificate.getHwSerialNum());
+                        data.put("hwSerialNumHex", Boolean.valueOf(true).toString());
+                        data.put("hwSerialNum", hwSerialToAdd);
+                    }
+                }
+                else {
+                    String hwSerialToAdd = hwSerialStr;
+
+                    // Check if hwSerialNum is a printable ASCII string; default to hex otherwise
+                    if (hwSerialStr.chars().allMatch(c -> c > 0x20 && c <= 0x7F)) {
+                        data.put("hwSerialNum", hwSerialStr);
+                    } else {
+                        hwSerialToAdd = Hex.toHexString(certificate.getHwSerialNum());
+                        data.put("hwSerialNumHex", Boolean.valueOf(true).toString());
+                    }
+                    data.put("hwSerialNum", hwSerialToAdd);
+                }
+            }
+
+            if (certificate.getKeyUsage() != null) {
+                data.put("keyUsage", certificate.getKeyUsage());
+            }
+
+            if (certificate.getExtendedKeyUsage() != null
+                    && !certificate.getExtendedKeyUsage().isEmpty()) {
+                data.put("extendedKeyUsage", certificate.getExtendedKeyUsage());
+            }
+
+            if (certificate.getTpmPolicies() != null) {
+                data.put("tpmPolicies", certificate.getTpmPolicies());
+            }
+
+            data.put("x509Version", Integer.toString(certificate
+                    .getX509CredentialVersion()));
+        } else {
+            String notFoundMessage = "Unable to find IDevIDCertificate with ID: " + uuid;
             log.error(notFoundMessage);
         }
         return data;

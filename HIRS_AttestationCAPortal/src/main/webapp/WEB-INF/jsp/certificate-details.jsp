@@ -37,6 +37,12 @@
                     <img src="${icons}/ic_file_download_black_24dp.png" title="Download Certificate">
                 </a>
             </c:when>
+            <c:when test="${param.type=='idevid'}">
+                IDevID Certificate
+                <a href="${portal}/certificate-request/idevid-certificates/download?id=${param.id}">
+                    <img src="${icons}/ic_file_download_black_24dp.png" title="Download Certificate">
+                </a>
+            </c:when>
             <c:otherwise>
                 Unknown Certificate
             </c:otherwise>
@@ -105,10 +111,48 @@
             </c:if>
             <c:if test="${not empty initialData.serialNumber}">
                 <div class="row">
-                    <div class="col-md-1 col-md-offset-1"><span class="colHeader">Serial Number</span></div>
+                    <div class="col-md-1 col-md-offset-1"><span class="colHeader">Certificate Serial Number</span></div>
                     <div id="serialNumber" class="col col-md-8 vertical"></div>
                 </div>
             </c:if>
+             <c:if test="${not empty initialData.hwSerialNum}">
+                 <div class="row">
+                     <c:choose>
+                         <c:when test="${not empty initialData.ekCertificateDigest}">
+                             <div class="col-md-1 col-md-offset-1"><span class="colHeader help-text" title="Defined in RFC 4108, and contained in the Subject Alternate Name. This certificate is also TCG-compliant for this field, indicated by the use of a TCG OID for Hardware Type.">Hardware Module Name</span></div>
+                             <div class="col col-md-8">
+                                 <div><span class="help-text" title="Contains an OID that, in conjunction with the Hardware Serial Number, identifies the device's hardware module. This certificate is using a TCG OID, indicating the use of a Trusted Platform Module. OID value: ${initialData.hwType}">Hardware Type</span>:&nbsp;<span id="hwTypeReadable">${initialData.hwTypeReadable}</span></div>
+                                 <div><span class="help-text" title="TCG-compliant: the device's TPM does not contain an EK certificate, and the Hardware Serial Number represents a digest of the EK Certificate public key. See TCG specification titled &quot;TPM 2.0 Keys for Device Identity and Attestation&quot;.">Hardware Serial Number</span>:</div>
+                                 <ul>
+                                    <li>EK Certificate Public Key:&nbsp;<span id="hwSerialNum">${initialData.hwSerialNum}</span></li>
+                                 </ul>
+                            </div>
+                         </c:when>
+                         <c:otherwise>
+                             <div class="col-md-1 col-md-offset-1"><span class="colHeader help-text" title="Defined in RFC 4108, and contained in the Subject Alternate Name. This certificate is not using a TCG OID for Hardware Type, so these fields may have manufacturer-specific context.">Hardware Module Name</span></div>
+                             <div class="col col-md-8">
+                                 <div><span class="help-text" title="Contains an OID that, in conjunction with the Hardware Serial Number, identifies the device's hardware module. This certificate is using a non-TCG OID, possibly indicating manufacturer-specific context. OID value: ${initialData.hwType}">Hardware Type</span>:&nbsp;<span id="hwTypeReadable">${initialData.hwTypeReadable}</span></div>
+                                 <div><span class="help-text" title="Used for identifying the device's hardware module. This field may have manufacturer-specific context.">Hardware Serial Number</span>:&nbsp;<span id="hwSerialNum">${initialData.hwSerialNum}</span></div>
+                            </div>
+                        </c:otherwise>
+                     </c:choose>
+                 </div>
+             </c:if>
+             <c:if test="${not empty initialData.tcgTpmManufacturer}">
+                 <div class="row">
+                     <div class="col-md-1 col-md-offset-1"><span class="colHeader help-text" title="Defined in RFC 4108, and contained in the Subject Alternate Name. This certificate is also TCG-compliant for this field, indicated by the use of a TCG OID for Hardware Type.">Hardware Module Name</span></div>
+                        <div class="col col-md-8">
+                            <div><span class="help-text" title="Contains an OID that, in conjunction with the Hardware Serial Number, identifies the device's hardware module. This certificate is using a TCG OID, indicating the use of a Trusted Platform Module. OID value: ${initialData.hwType}">Hardware Type</span>:&nbsp;<span id="hwTypeReadable">${initialData.hwTypeReadable}</span></div>
+                            <div><span class="help-text" title="TCG-compliant: the device's TPM contains an EK certificate, and the below fields are parsed accordingly from the Hardware Serial Number. See TCG specification titled &quot;TPM 2.0 Keys for Device Identity and Attestation&quot;.">Hardware Serial Number</span>:
+                                <ul>
+                                    <li>TCG TPM Manufacturer Code:&nbsp;<span id="tcgTpmManufacturer">${initialData.tcgTpmManufacturer}</span></li>
+                                    <li>EK Authority Key Identifier:&nbsp;<span id="ekAuthorityKeyIdentifier">${initialData.ekAuthorityKeyIdentifier}</span></li>
+                                    <li>EK CertificateSerialNumber:&nbsp;<span id="ekCertificateSerialNumber">${initialData.ekCertificateSerialNumber}</span></li>
+                                </ul>
+                            </div>
+                        </div>
+                 </div>
+             </c:if>
             <c:if test="${not empty initialData.beginValidity}">
                 <div class="row">
                     <div class="col-md-1 col-md-offset-1"><span class="colHeader">Validity</span></div>
@@ -196,10 +240,14 @@
                 <div class="col-md-1 col-md-offset-1"><span class="colHeader">X509 Credential Version</span></div>
                 <div id="credentialVersion" class="col col-md-8 vertical">${initialData.x509Version} (v${initialData.x509Version + 1})</div>
             </div>
-            <div class="row">
-                <div class="col-md-1 col-md-offset-1"><span class="colHeader">Credential Type</span></div>
-                <div id="credentialType" class="col col-md-8 vertical">${initialData.credentialType}</div>
-            </div>
+            <c:choose>
+                <c:when test="${not empty initialData.credentialType}">
+                    <div class="row">
+                        <div class="col-md-1 col-md-offset-1"><span class="colHeader">Credential Type</span></div>
+                        <div id="credentialType" class="col col-md-8 vertical">${initialData.credentialType}</div>
+                    </div>
+                </c:when>
+            </c:choose>
             <!-- Add the different fields based on the certificate type -->
             <c:choose>
                 <c:when test="${param.type=='certificateauthority'}">
@@ -878,6 +926,35 @@
                         </div>
                     </div>
                 </c:when>
+                <c:when test="${param.type=='idevid'}">
+                    <c:choose>
+                        <c:when test="${not empty initialData.tpmPolicies}">
+                            <div class="row">
+                                <div class="col-md-1 col-md-offset-1"><span class="colHeader help-text" title="TPM verification policies, as defined in the TCG specification &quot;TPM 2.0 Keys for Device Identity and Attestation&quot;.">TPM Policies</span></div>
+                                <div id="tpmPolicies" class="col col-md-8 vertical">${initialData.tpmPolicies}</div>
+                            </div>
+                        </c:when>
+                    </c:choose>
+                    <div class="row">
+                        <div class="col-md-1 col-md-offset-1"><span class="colHeader">Key Usage</span></div>
+                        <c:choose>
+                            <c:when test="${not empty initialData.keyUsage}">
+                                <div id="keyUsage" class="col col-md-8 vertical">${initialData.keyUsage}</div>
+                            </c:when>
+                            <c:otherwise>
+                                <div id="keyUsage" class="col col-md-8 vertical">Not Specified</div>
+                            </c:otherwise>
+                        </c:choose>
+                    </div>
+                    <c:choose>
+                        <c:when test="${not empty initialData.extendedKeyUsage}">
+                            <div class="row">
+                                <div class="col-md-1 col-md-offset-1"><span class="colHeader">Extended Key Usage</span></div>
+                                <div id="extendedKeyUsage" class="col col-md-8 vertical">${initialData.extendedKeyUsage}</div>
+                            </div>
+                        </c:when>
+                    </c:choose>
+                </c:when>
             </c:choose>
         </div>
         <script>
@@ -890,7 +967,8 @@
 
                 //Format validity time
                 $("#validity span").each(function () {
-                    $(this).text(formatDateTime($(this).text()));
+                    var dateText = $(this).text();
+                    return $(this).text(formatCertificateDate(dateText));
                 });
 
                 //Convert byte array to string
@@ -934,6 +1012,19 @@
                     $("#subjectKeyIdentifier").html(byteToHexString(subjectKeyIdentifier));
                 }
             </c:if>
+
+                <c:if test="${not empty initialData.hwSerialNumHex}">
+                    var hwSerialNum = '${initialData.hwSerialNum}';
+                    $("#hwSerialNum").html(parseHexString(hwSerialNum));
+                </c:if>
+
+                <c:if test="${not empty initialData.tcgTpmManufacturer}">
+                    var ekAKI = '${initialData.ekAuthorityKeyIdentifier};'
+                    var ekCSN = '${initialData.ekCertificateSerialNumber};'
+
+                    $("#ekAuthorityKeyIdentifier").html(parseHexString(ekAKI));
+                    $("#ekCertificateSerialNumber").html(parseHexString(ekCSN));
+                </c:if>
 
                 //Initilize tooltips
                 $('[data-toggle="tooltip"]').tooltip();

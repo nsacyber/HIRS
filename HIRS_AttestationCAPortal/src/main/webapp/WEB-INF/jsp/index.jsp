@@ -42,6 +42,12 @@
                     </h3>
                     <h4>Upload, view and manage endorsement credentials.</h4>
                     <h3>
+                        <a href="${certificateRequest}/idevid-certificates">
+                            <img src="${icons}/ic_important_devices_black_24dp.png" /> IDevID Certificates
+                        </a>
+                    </h3>
+                    <h4>Upload, view and manage IDevID certificates.</h4>
+                    <h3>
                         <a href="${portal}/reference-manifests">
                             <img src="${icons}/ic_important_devices_black_24dp.png" /> Reference Integrity Manifests
                         </a>

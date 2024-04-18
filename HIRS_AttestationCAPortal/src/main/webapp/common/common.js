@@ -2,7 +2,7 @@
 function byteToHexString(arr){
     var str = "";
     $.each(arr, function(index, value){
-        str += ('0' + (value & 0xFF).toString(16)).slice(-2) + ": ";
+        str += ('0' + (value & 0xFF).toString(16)).slice(-2) + ":​";
     });
     return (str.substring(0, str.length - 2)).toUpperCase();
 }
@@ -14,7 +14,7 @@ function parseHexString(hexString) {
     if(str.length === 2) {
         return str;
     }
-    return str.match(/.{2}/g).join(': ');
+    return str.match(/.{2}/g).join(':​');
 }
 
 //Parse the HEX string value to display as byte hex string
@@ -28,7 +28,7 @@ function parseSerialNumber(hexString){
         return str;
     }
     //Parse and return
-    return newString = hexString.match(/.{2}/g).join(':');
+    return newString = str.match(/.{2}/g).join(':​');
 
 }
 
@@ -110,6 +110,10 @@ function certificateDetailsLink(type, id, sameType){
             case "endorsement":
                 icon += "/ic_vpn_key_black_24dp.png";
                 title = "View Endorsement Certificate Details";
+                break;
+            case "idevid":
+                icon += "/ic_vpn_key_black_24dp.png";
+                title = "View IDevID Certificate Details";
                 break;
         }
     }
@@ -196,4 +200,19 @@ function rimDownloadLink(id, pagePath){
             + '<img src="' + icon + '" title="Download Reference Integrity Manifest"></a>';
 
     return html;
+}
+
+/**
+* Formats a given date to a UTC string, or returns an indefinite icon
+* @param date to format
+*/
+function formatCertificateDate(dateText) {
+    var date = +dateText; // Convert to numeric
+
+    if (date == 253402300799000)
+    {
+        return 'Indefinite';
+    }
+
+    return new Date(date).toUTCString();
 }

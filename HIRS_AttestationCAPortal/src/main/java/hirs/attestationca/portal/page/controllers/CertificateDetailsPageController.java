@@ -3,6 +3,7 @@ package hirs.attestationca.portal.page.controllers;
 import hirs.attestationca.persist.entity.manager.CACredentialRepository;
 import hirs.attestationca.persist.entity.manager.CertificateRepository;
 import hirs.attestationca.persist.entity.manager.ComponentResultRepository;
+import hirs.attestationca.persist.entity.manager.IDevIDCertificateRepository;
 import hirs.attestationca.portal.page.Page;
 import hirs.attestationca.portal.page.PageController;
 import hirs.attestationca.portal.page.PageMessages;
@@ -34,21 +35,25 @@ public class CertificateDetailsPageController extends PageController<Certificate
     private final CertificateRepository certificateRepository;
     private final CACredentialRepository caCredentialRepository;
     private final ComponentResultRepository componentResultRepository;
+    private final IDevIDCertificateRepository iDevIDCertificateRepository;
 
     /**
      * Constructor providing the Page's display and routing specification.
      * @param certificateRepository the certificate repository
      * @param componentResultRepository the component result repository
      * @param caCredentialRepository the ca credential manager
+     * @param iDevIDCertificateRepository the idevid certificate repository
      */
     @Autowired
     public CertificateDetailsPageController(final CertificateRepository certificateRepository,
                                             final ComponentResultRepository componentResultRepository,
-                                            final CACredentialRepository caCredentialRepository) {
+                                            final CACredentialRepository caCredentialRepository,
+                                            final IDevIDCertificateRepository iDevIDCertificateRepository) {
         super(Page.CERTIFICATE_DETAILS);
         this.certificateRepository = certificateRepository;
         this.componentResultRepository = componentResultRepository;
         this.caCredentialRepository = caCredentialRepository;
+        this.iDevIDCertificateRepository = iDevIDCertificateRepository;
     }
 
     /**
@@ -98,6 +103,10 @@ public class CertificateDetailsPageController extends PageController<Certificate
                         break;
                     case "issued":
                         data.putAll(CertificateStringMapBuilder.getIssuedInformation(uuid,
+                                certificateRepository, caCredentialRepository));
+                        break;
+                    case "idevid":
+                        data.putAll(CertificateStringMapBuilder.getIdevidInformation(uuid,
                                 certificateRepository, caCredentialRepository));
                         break;
                     default:
