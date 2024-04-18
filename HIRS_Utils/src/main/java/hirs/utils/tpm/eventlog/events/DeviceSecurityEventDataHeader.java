@@ -2,6 +2,7 @@ package hirs.utils.tpm.eventlog.events;
 
 import hirs.utils.HexUtils;
 import hirs.utils.tpm.eventlog.TcgTpmtHa;
+import hirs.utils.tpm.eventlog.spdm.SpdmHa;
 import hirs.utils.tpm.eventlog.uefi.UefiConstants;
 import lombok.Getter;
 
@@ -113,6 +114,19 @@ public class DeviceSecurityEventDataHeader {
     @Getter
     private String devicePath = "";
 
+    /**
+     * Device Security Event Data Device Type = no device type.
+     */
+    public static final int DEVICE_TYPE_NONE = 0;
+    /**
+     * Device Security Event Data Device Type = DEVICE_TYPE_PCI.
+     */
+    public static final int DEVICE_TYPE_PCI = 1;
+    /**
+     * Device Security Event Data Device Type = DEVICE_TYPE_USB.
+     */
+    public static final int DEVICE_TYPE_USB = 2;
+
     /** ----------- Variables specific to Header Type 1 -----------
 //    /**
 //     * Type Header 1 event data length.
@@ -140,10 +154,9 @@ public class DeviceSecurityEventDataHeader {
      * @param dSEDbytes byte array holding the DeviceSecurityEventData.
      */
     public DeviceSecurityEventDataHeader(final byte[] dSEDbytes) {
-//        algList = new ArrayList<>();
+
         byte[] signatureBytes = new byte[UefiConstants.SIZE_16];
         System.arraycopy(dSEDbytes, 0, signatureBytes, 0, UefiConstants.SIZE_16);
-        //signature = HexUtils.byteArrayToHexString(signatureBytes);
         signature = new String(signatureBytes, StandardCharsets.UTF_8)
                 .substring(0, UefiConstants.SIZE_15);
 
@@ -161,13 +174,13 @@ public class DeviceSecurityEventDataHeader {
         System.arraycopy(dSEDbytes, UefiConstants.OFFSET_20, spdmHashAlgoBytes, 0,
                 UefiConstants.SIZE_4);
         int h1SpdmHashAlgoInt = HexUtils.leReverseInt(spdmHashAlgoBytes);
-        h1SpdmHashAlgo = "to do - get hash alg";
+        h1SpdmHashAlgo = SpdmHa.tcgAlgIdToString(h1SpdmHashAlgoInt);
 
         byte[] deviceTypeBytes = new byte[UefiConstants.SIZE_4];
         System.arraycopy(dSEDbytes, UefiConstants.OFFSET_24, deviceTypeBytes, 0,
                 UefiConstants.SIZE_4);
         int deviceTypeInt = HexUtils.leReverseInt(deviceTypeBytes);
-        deviceType = "to do - get device type";
+        deviceType = deviceTypeToString(deviceTypeInt);
 
 //
 //        byte[] numberOfAlgBytes = new byte[UefiConstants.SIZE_4];
@@ -188,6 +201,31 @@ public class DeviceSecurityEventDataHeader {
 //        } else {
 //            cryptoAgile = true;
 //        }
+    }
+
+    /**
+     * Returns the device type via a lookup.
+     * Lookup based upon section 10.2.7.2, Table 19, in the PFP 1.06 v52 spec.
+     *
+     * @param deviceTypeInt int to convert to string
+     * @return name of the device type
+     */
+    public String deviceTypeToString(final int deviceTypeInt) {
+        String deviceTypeStr;
+        switch (deviceTypeInt) {
+            case DEVICE_TYPE_NONE:
+                deviceTypeStr = "No device type";
+                break;
+            case DEVICE_TYPE_PCI:
+                deviceTypeStr = "PCI";
+                break;
+            case DEVICE_TYPE_USB:
+                deviceTypeStr = "USB";
+                break;
+            default:
+                deviceTypeStr = "Unknown or invalid Device Type";
+        }
+        return deviceTypeStr;
     }
 
     /**
