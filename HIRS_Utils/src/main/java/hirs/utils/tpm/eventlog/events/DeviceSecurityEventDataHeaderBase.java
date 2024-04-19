@@ -217,7 +217,7 @@ public abstract class DeviceSecurityEventDataHeaderBase {
         String dsedHeaderInfo = "";
 
         dsedHeaderInfo += "\n   SPDM Device";
-        dsedHeaderInfo += "\n      Device Type: " + deviceType;
+        dsedHeaderInfo += "\n      Device Type: " + deviceTypeToString(deviceTypeId);
         dsedHeaderInfo += "\n      Device Path: " + devicePath;
 
 //        if (version.equals("0100")) {
