@@ -43,11 +43,11 @@ public class DeviceSecurityEventDataHeader extends DeviceSecurityEventDataHeader
         int h1SpdmHashAlgoInt = HexUtils.leReverseInt(spdmHashAlgoBytes);
         h1SpdmHashAlgo = SpdmHa.tcgAlgIdToString(h1SpdmHashAlgoInt);
 
-        byte[] deviceTypeBytes = new byte[UefiConstants.SIZE_4];
-        System.arraycopy(dSEDbytes, UefiConstants.OFFSET_24, deviceTypeBytes, 0,
-                UefiConstants.SIZE_4);
-        int deviceTypeInt = HexUtils.leReverseInt(deviceTypeBytes);
-        deviceType = deviceTypeToString(deviceTypeInt);
+//        byte[] deviceTypeBytes = new byte[UefiConstants.SIZE_4];
+//        System.arraycopy(dSEDbytes, UefiConstants.OFFSET_24, deviceTypeBytes, 0,
+//                UefiConstants.SIZE_4);
+//        int deviceTypeInt = HexUtils.leReverseInt(deviceTypeBytes);
+//        deviceType = deviceTypeToString(deviceTypeInt);
 
         // For each measurement block, create a SpdmMeasurementBlock object (can there be many blocks ?)
 

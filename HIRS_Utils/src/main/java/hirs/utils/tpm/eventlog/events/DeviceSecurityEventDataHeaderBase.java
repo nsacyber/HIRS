@@ -98,7 +98,12 @@ public abstract class DeviceSecurityEventDataHeaderBase {
      * Device type.
      */
     @Getter
-    private String deviceType = "";
+    private int deviceTypeId = -1;
+//    /**
+//     * Device type.
+//     */
+//    @Getter
+//    private String deviceType = "";
     /**
      * Device path length.
      */
@@ -150,17 +155,16 @@ public abstract class DeviceSecurityEventDataHeaderBase {
 
     }
 
-    public int getDeviceTypeId(final byte[] dSEDbytes, int startByte) {
+    public void extractDeviceTypeId(final byte[] dSEDbytes, int startByte) {
 
         // get the device type ID
         byte[] deviceTypeBytes = new byte[UefiConstants.SIZE_4];
         System.arraycopy(dSEDbytes, startByte, deviceTypeBytes, 0,
                 UefiConstants.SIZE_4);
-        int deviceTypeId = HexUtils.leReverseInt(deviceTypeBytes);
-        return deviceTypeId;
+        deviceTypeId = HexUtils.leReverseInt(deviceTypeBytes);
     }
 
-    public String getDevicePathString(final byte[] dSEDbytes, int startByte) {
+    public void extractDevicePathString(final byte[] dSEDbytes, int startByte) {
 
         // get the device path length
         byte[] devicePathLengthBytes = new byte[UefiConstants.SIZE_8];
@@ -168,7 +172,7 @@ public abstract class DeviceSecurityEventDataHeaderBase {
                 UefiConstants.SIZE_8);
         int deviceTypeLength = HexUtils.leReverseInt(devicePathLengthBytes);
 
-        // TO DO: how to interpret this??  i'ts not ascii
+        // TODO: how to interpret this??  i'ts not ascii
 
         // get the device path
         startByte = startByte + UefiConstants.SIZE_8;
@@ -176,7 +180,7 @@ public abstract class DeviceSecurityEventDataHeaderBase {
         System.arraycopy(dSEDbytes, startByte, devicePathBytes, 0,
                 deviceTypeLength);
 
-        return "";
+        // TODO: store device path length
     }
 
     /**
