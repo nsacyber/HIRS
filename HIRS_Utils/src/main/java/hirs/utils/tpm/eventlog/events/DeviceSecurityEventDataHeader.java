@@ -30,6 +30,8 @@ public class DeviceSecurityEventDataHeader extends DeviceSecurityEventDataHeader
 
     public DeviceSecurityEventDataHeader(final byte[] dSEDbytes) {
 
+        super(dSEDbytes);
+
         byte[] lengthBytes = new byte[UefiConstants.SIZE_2];
         System.arraycopy(dSEDbytes, 18, lengthBytes, 0,
                 UefiConstants.SIZE_2);
