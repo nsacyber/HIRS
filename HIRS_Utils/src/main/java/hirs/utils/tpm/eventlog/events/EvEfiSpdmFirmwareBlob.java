@@ -39,14 +39,13 @@ public class EvEfiSpdmFirmwareBlob {
      */
     private String signature = "";
     /**
-     * True if the event is a DEVICE_SECURITY_EVENT_DATA.
+     * True if the event is a DEVICE_SECURITY_EVENT_DATA or ..DATA2.
      */
     private boolean bDeviceSecurityEventData = false;
     /**
-     * DeviceSecurityEventData Object.
+     * Human readable description of the data within this DEVICE_SECURITY_EVENT_DATA/..DATA2 event.
      */
-    @Getter
-    private DeviceSecurityEventData deviceSecurityEventData = null;
+    String spdmInfo = "";
 
     /**
      * EvEfiSpdmFirmwareBlob constructor.
@@ -55,13 +54,31 @@ public class EvEfiSpdmFirmwareBlob {
      * @throws java.io.UnsupportedEncodingException if input fails to parse.
      */
     public EvEfiSpdmFirmwareBlob(final byte[] eventData) throws UnsupportedEncodingException {
+
         byte[] signatureBytes = new byte[UefiConstants.SIZE_15];
         System.arraycopy(eventData, 0, signatureBytes, 0, UefiConstants.SIZE_15);
         signature = new String(signatureBytes, StandardCharsets.UTF_8);
         signature = signature.replaceAll("[^\\P{C}\t\r\n]", ""); // remove null characters
+
         if (signature.contains("SPDM Device Sec")) {      // implies Device Security event
-            deviceSecurityEventData = new DeviceSecurityEventData(eventData);
             bDeviceSecurityEventData = true;
+
+            byte[] versionBytes = new byte[UefiConstants.SIZE_2];
+            System.arraycopy(eventData, UefiConstants.OFFSET_16, versionBytes, 0,
+                    UefiConstants.SIZE_2);
+            String version = HexUtils.byteArrayToHexString(versionBytes);
+
+            if (version.equals("0100")) {
+                DeviceSecurityEventData dSED = new DeviceSecurityEventData(eventData);
+                spdmInfo = dSED.toString();
+            }
+            else if (version.equals("0200")) {
+                DeviceSecurityEventData2 dSED2 = new DeviceSecurityEventData2(eventData);
+                spdmInfo = dSED2.toString();
+            }
+            else {
+                spdmInfo = "    Unknown version of DeviceSecurityEventData structure";
+            }
         }
     }
 
@@ -80,10 +97,11 @@ public class EvEfiSpdmFirmwareBlob {
      * @return Human readable description of this event.
      */
     public String toString() {
-        String spdmInfo = "";
+//        String spdmInfo = "";
         if (bDeviceSecurityEventData) {
-            spdmInfo += "   Signature = SPDM Device Sec";
-            spdmInfo += deviceSecurityEventData.toString();
+            spdmInfo = "   Signature = SPDM Device Sec" + spdmInfo;
+//            spdmInfo += "   Signature = SPDM Device Sec";
+//            spdmInfo += deviceSecurityEventData.toString();
         } else {
             spdmInfo = "EV_EFI_SPDM_FIRMWARE_BLOB event named " + signature
                     + " encountered but support for processing it has not been added to this application.\n";
