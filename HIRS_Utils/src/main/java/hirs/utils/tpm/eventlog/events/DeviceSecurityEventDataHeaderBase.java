@@ -150,6 +150,35 @@ public abstract class DeviceSecurityEventDataHeaderBase {
 
     }
 
+    public int getDeviceTypeId(final byte[] dSEDbytes, int startByte) {
+
+        // get the device type ID
+        byte[] deviceTypeBytes = new byte[UefiConstants.SIZE_4];
+        System.arraycopy(dSEDbytes, startByte, deviceTypeBytes, 0,
+                UefiConstants.SIZE_4);
+        int deviceTypeId = HexUtils.leReverseInt(deviceTypeBytes);
+        return deviceTypeId;
+    }
+
+    public String getDevicePathString(final byte[] dSEDbytes, int startByte) {
+
+        // get the device path length
+        byte[] devicePathLengthBytes = new byte[UefiConstants.SIZE_8];
+        System.arraycopy(dSEDbytes, startByte, devicePathLengthBytes, 0,
+                UefiConstants.SIZE_8);
+        int deviceTypeLength = HexUtils.leReverseInt(devicePathLengthBytes);
+
+        // TO DO: how to interpret this??  i'ts not ascii
+
+        // get the device path
+        startByte = startByte + UefiConstants.SIZE_8;
+        byte[] devicePathBytes = new byte[UefiConstants.SIZE_16];
+        System.arraycopy(dSEDbytes, startByte, devicePathBytes, 0,
+                deviceTypeLength);
+
+        return "";
+    }
+
     /**
      * Returns the device type via a lookup.
      * Lookup based upon section 10.2.7.2, Table 19, in the PFP 1.06 v52 spec.
