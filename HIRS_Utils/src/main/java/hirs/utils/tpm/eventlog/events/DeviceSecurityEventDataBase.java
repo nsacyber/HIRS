@@ -47,16 +47,16 @@ import java.nio.charset.StandardCharsets;
  */
 public abstract class DeviceSecurityEventDataBase {
 
-    /**
-     * Signature (text) data.
-     */
-    @Getter
-    private String signature = "";
-    /**
-     * Version determines data structure used (..DATA or ..DATA2).
-     */
-    @Getter
-    private String version = "";
+//    /**
+//     * Signature (text) data.
+//     */
+//    @Getter
+//    private String signature = "";
+//    /**
+//     * Version determines data structure used (..DATA or ..DATA2).
+//     */
+//    @Getter
+//    private String version = "";
 //    /**
 //     * Contains the human-readable info inside the Device Security Event.
 //     */
@@ -67,11 +67,6 @@ public abstract class DeviceSecurityEventDataBase {
 //     */
 //    @Getter
 //    private DeviceSecurityEventDataHeader dsedHeader = null;
-    /**
-     * DeviceSecurityEventDataSubHeader Object.
-     */
-//    @Getter
-//    private DeviceSecurityEventDataSubHeader dsedSubHeader = null;
     /**
      * DeviceSecurityEventDataDeviceContext Object.
      */
@@ -89,16 +84,16 @@ public abstract class DeviceSecurityEventDataBase {
      */
     public DeviceSecurityEventDataBase(final byte[] dSEDbytes) {
 
-        byte[] signatureBytes = new byte[UefiConstants.SIZE_16];
-        System.arraycopy(dSEDbytes, 0, signatureBytes, 0, UefiConstants.SIZE_16);
-        //signature = HexUtils.byteArrayToHexString(signatureBytes);
-        signature = new String(signatureBytes, StandardCharsets.UTF_8)
-                .substring(0, UefiConstants.SIZE_15);       // size 15 bc last letter is a 00 (null)
-
-        byte[] versionBytes = new byte[UefiConstants.SIZE_2];
-        System.arraycopy(dSEDbytes, UefiConstants.OFFSET_16, versionBytes, 0,
-                UefiConstants.SIZE_2);
-        version = HexUtils.byteArrayToHexString(versionBytes);
+//        byte[] signatureBytes = new byte[UefiConstants.SIZE_16];
+//        System.arraycopy(dSEDbytes, 0, signatureBytes, 0, UefiConstants.SIZE_16);
+//        //signature = HexUtils.byteArrayToHexString(signatureBytes);
+//        signature = new String(signatureBytes, StandardCharsets.UTF_8)
+//                .substring(0, UefiConstants.SIZE_15);       // size 15 bc last letter is a 00 (null)
+//
+//        byte[] versionBytes = new byte[UefiConstants.SIZE_2];
+//        System.arraycopy(dSEDbytes, UefiConstants.OFFSET_16, versionBytes, 0,
+//                UefiConstants.SIZE_2);
+//        version = HexUtils.byteArrayToHexString(versionBytes);
 
 //        int byteOffset = 0;
 //        byteOffset = dsedHeader.getDsedHeaderByteSize();
@@ -134,24 +129,24 @@ public abstract class DeviceSecurityEventDataBase {
 //            dSEDinfo =+
 //                    dsedDeviceContext.getDSEDdeviceContextInfo();
 //        }
-        }
+//        }
     }
 
     public String toString() {
         String dsedInfo = "";
-        switch (version) {
-            case "0100":
-                dsedInfo += dsedHeader.toString();
-//                dsedInfo += dsedDeviceContext.toString();
-                break;
-            case "0200":
+//        switch (version) {
+//            case "0100":
 //                dsedInfo += dsedHeader.toString();
-//                dsedInfo += dsedSubHeader.toString();
-//                dsedInfo += dsedDeviceContext.toString();
-                break;
-            default:
-                dsedInfo += " Unknown SPDM Device Security Event Data version " + version + " found" + "\n";
-        }
+////                dsedInfo += dsedDeviceContext.toString();
+//                break;
+//            case "0200":
+////                dsedInfo += dsedHeader.toString();
+////                dsedInfo += dsedSubHeader.toString();
+////                dsedInfo += dsedDeviceContext.toString();
+//                break;
+//            default:
+//                dsedInfo += " Unknown SPDM Device Security Event Data version " + version + " found" + "\n";
+//        }
         return dsedInfo;
     }
 }
