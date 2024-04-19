@@ -17,7 +17,14 @@ public class DeviceSecurityEventData extends DeviceSecurityEventDataBase {
      * @param dSEDbytes byte array holding the DeviceSecurityEventData.
      */
     public DeviceSecurityEventData(final byte[] dSEDbytes) {
-
+        super(dSEDbytes);
         dsedHeader = new DeviceSecurityEventDataHeader(dSEDbytes);
+    }
+
+    public String toString() {
+        String dsedInfo = "";
+        dsedInfo += dsedHeader.toString();
+//      dsedInfo += dsedDeviceContext.toString();
+        return dsedInfo;
     }
 }
