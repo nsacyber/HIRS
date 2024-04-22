@@ -44,6 +44,10 @@ import java.nio.charset.StandardCharsets;
  * 2. Digest of 48 bytes
  * 3. Event content defined as DEVICE_SECURITY_EVENT_DATA Struct.
  * 4. First 16 bytes of the structure header is an ASCII "SPDM Device Sec"
+ * <p>
+ * Only a few of the Device Security Event Data events have been implemented as there are many,
+ * but only those that were reported using the test devices at hand.
+ * Without test patterns, the processing may lead to an un-handled exception.
  */
 public abstract class DeviceSecurityEventDataBase {
 

@@ -4,70 +4,45 @@ import hirs.utils.HexUtils;
 import hirs.utils.tpm.eventlog.spdm.SpdmHa;
 import hirs.utils.tpm.eventlog.spdm.SpdmMeasurementBlock;
 import hirs.utils.tpm.eventlog.uefi.UefiConstants;
+import hirs.utils.tpm.eventlog.uefi.UefiDevicePath;
 import lombok.Getter;
 
+import java.io.UnsupportedEncodingException;
 import java.nio.charset.StandardCharsets;
 
 /**
- * Class to process the DEVICE_SECURITY_EVENT_DATA_HEADER or ..HEADER2 per PFP.
+ * Abstract class to process the DEVICE_SECURITY_EVENT_DATA_HEADER or ..HEADER2 per PFP.
  * The first 16 bytes of the event data header MUST be a String based identifier (Signature),
  * NUL-terminated, per PFP. The only currently defined Signature is "SPDM Device Sec",
  * which implies the data is a DEVICE_SECURITY_EVENT_DATA or ..DATA2.
- * DEVICE_SECURITY_EVENT_DATA_HEADER contains the measurement(s) and hash algorithm identifier
- * returned by the SPDM "GET_MEASUREMENTS" function.
  *
- * HEADERS defined by PFP v1.06 Rev 52:
+ * HEADERS defined by PFP v1.06 Rev 52.
+ * The ** indicates fields that are common to both ..HEADER and ..HEADER2.
  * <p>
  * typedef struct tdDEVICE_SECURITY_EVENT_DATA_HEADER {
- *      UINT8                           Signature[16];
- *      UINT16                          Version;
+ *      UINT8                        ** Signature[16];
+ *      UINT16                       ** Version;
  *      UINT16                          Length;
  *      UINT32                          SpdmHashAlg;
- *      UINT32                          DeviceType;
+ *      UINT32                       ** DeviceType;
  *      SPDM_MEASUREMENT_BLOCK          SpdmMeasurementBlock;
- *      UINT64                          DevicePathLength;
- *      UNIT8                           DevicePath[DevicePathLength]
+ *      UINT64                       ** DevicePathLength;
+ *      UNIT8                        ** DevicePath[DevicePathLength]
  * } DEVICE_SECURITY_EVENT_DATA_HEADER;
  * <p>
  * typedef struct tdDEVICE_SECURITY_EVENT_DATA_HEADER2 {        - NOT IMPLEMENTED YET
- *      UINT8                           Signature[16];
- *      UINT16                          Version;
+ *      UINT8                        ** Signature[16];
+ *      UINT16                       ** Version;
  *      UINT8                           AuthState;
  *      UINT8                           Reserved;
  *      UINT32                          Length;
- *      UINT32                          DeviceType;
+ *      UINT32                       ** DeviceType;
  *      UINT32                          SubHeaderType;
  *      UINT32                          SubHeaderLength;
  *      UINT32                          SubHeaderUID;
- *      UINT64                          DevicePathLength;
- *      UNIT8                           DevicePath[DevicePathLength]
+ *      UINT64                       ** DevicePathLength;
+ *      UNIT8                        ** DevicePath[DevicePathLength]
  * } DEVICE_SECURITY_EVENT_DATA_HEADER2;
- *
- * SPDM_MEASUREMENT_BLOCK and contents defined by SPDM v1.03, Sect 10.11.1, Table 53 and 54:
- * <p>
- * Measurement block format {
- *      Index                           1 byte;
- *      MeasurementSpec                 1 byte;
- *      MeasurementSize                 2 bytes;
- *      Measurement                     <MeasurementSize> bytes;
- * }
- * <p>
- * DMTF measurement spec format {
- *      DMTFSpecMeasurementValueType    1 byte;
- *      DMTFSpecMeasurementValueSize    2 bytes;
- *      DMTFSpecMeasurementValue        <DMTFSpecMeasurementValueSize> bytes;
- * }
- * <p>
- * DMTFSpecMeasurementValueType[7]
- *      Indicates how bits [0:6] are represented
- *      Bit = 0: Digest
- *      Bit = 1: Raw bit stream
- * DMTFSpecMeasurementValueType[6:0]
- *      Immutable ROM                   0x0
- *      Mutable firmware                0x1
- *      Hardware configuration          0x2
- *      Firmware configuration          0x3
- *      etc.
  * <p>
  */
 public abstract class DeviceSecurityEventDataHeaderBase {
@@ -98,22 +73,21 @@ public abstract class DeviceSecurityEventDataHeaderBase {
      * Device type.
      */
     @Getter
-    private int deviceTypeId = -1;
-//    /**
-//     * Device type.
-//     */
-//    @Getter
-//    private String deviceType = "";
+    private int deviceType = -1;
     /**
-     * Device path length.
+     * UEFI Device Path Length.
      */
     @Getter
-    private String devicePathLength = "";
+    private int devicePathLength = 0;
     /**
-     * Device path.
+     * UEFI Device path.
      */
     @Getter
-    private String devicePath = "";
+    private UefiDevicePath devicePath = null;
+    /**
+     * Is the Device Path Valid.
+     */
+    private boolean devicePathValid = false;
 
     /**
      * Device Security Event Data Device Type = no device type.
@@ -155,32 +129,33 @@ public abstract class DeviceSecurityEventDataHeaderBase {
 
     }
 
-    public void extractDeviceTypeId(final byte[] dSEDbytes, int startByte) {
+    public void extractDeviceType(final byte[] dSEDbytes, int startByte) {
 
         // get the device type ID
         byte[] deviceTypeBytes = new byte[UefiConstants.SIZE_4];
         System.arraycopy(dSEDbytes, startByte, deviceTypeBytes, 0,
                 UefiConstants.SIZE_4);
-        deviceTypeId = HexUtils.leReverseInt(deviceTypeBytes);
+        deviceType = HexUtils.leReverseInt(deviceTypeBytes);
     }
 
-    public void extractDevicePathString(final byte[] dSEDbytes, int startByte) {
+    public void extractDevicePath(final byte[] dSEDbytes, int startByte)
+            throws UnsupportedEncodingException {
 
         // get the device path length
         byte[] devicePathLengthBytes = new byte[UefiConstants.SIZE_8];
         System.arraycopy(dSEDbytes, startByte, devicePathLengthBytes, 0,
                 UefiConstants.SIZE_8);
-        int deviceTypeLength = HexUtils.leReverseInt(devicePathLengthBytes);
-
-        // TODO: how to interpret this??  i'ts not ascii
+        int devicePathLength = HexUtils.leReverseInt(devicePathLengthBytes);
 
         // get the device path
-        startByte = startByte + UefiConstants.SIZE_8;
-        byte[] devicePathBytes = new byte[UefiConstants.SIZE_16];
-        System.arraycopy(dSEDbytes, startByte, devicePathBytes, 0,
-                deviceTypeLength);
-
-        // TODO: store device path length
+        if (devicePathLength != 0) {
+            startByte = startByte + UefiConstants.SIZE_8;
+            byte[] devPathBytes = new byte[devicePathLength];
+            System.arraycopy(dSEDbytes, startByte, devPathBytes,
+                    0, devicePathLength);
+            devicePath = new UefiDevicePath(devPathBytes);
+            devicePathValid = true;
+        }
     }
 
     /**
@@ -213,22 +188,18 @@ public abstract class DeviceSecurityEventDataHeaderBase {
      *
      * @return a description of this event..
      */
-    public String toString() {
+    public String headerBaseToString() {
         String dsedHeaderInfo = "";
 
-        dsedHeaderInfo += "\n   SPDM Device";
-        dsedHeaderInfo += "\n      Device Type: " + deviceTypeToString(deviceTypeId);
-        dsedHeaderInfo += "\n      Device Path: " + devicePath;
+        dsedHeaderInfo += "\n   SPDM Device Type = " + deviceTypeToString(deviceType);
+        if (devicePathValid) {
+            dsedHeaderInfo += "\n   SPDM Device Path =\n";
+            dsedHeaderInfo += devicePath;
+        }
+        else {
+            dsedHeaderInfo += "\n   SPDM Device Path = Uknown or invalid";
+        }
 
-//        if (version.equals("0100")) {
-//            dsedHeaderInfo += "\n   SPDM hash algorithm = " + h1SpdmHashAlgo;
-//            dsedHeaderInfo += "\n   SPDM Device";
-//            dsedHeaderInfo += "\n      Device Type: " + deviceType;
-//            dsedHeaderInfo += "\n      Device Path: " + devicePath;
-//            dsedHeaderInfo += "\n   SPDM Measurement Block " + h1SpdmMeasurementBlock.toString();
-//        } else if(version.equals("0200")) {
-//            dsedHeaderInfo = "tbd";
-//        }
         return dsedHeaderInfo;
     }
 

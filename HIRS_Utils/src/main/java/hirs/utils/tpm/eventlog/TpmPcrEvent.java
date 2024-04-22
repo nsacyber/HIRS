@@ -376,6 +376,13 @@ public class TpmPcrEvent {
             case EvConstants.EV_EFI_HCRTM_EVENT:
                 break;
             case EvConstants.EV_EFI_SPDM_FIRMWARE_BLOB:
+                try {
+                    sb.append(new EvEfiSpdmFirmwareBlob(eventContent).toString());
+                } catch (UnsupportedEncodingException ueEx) {
+                    log.error(ueEx);
+                    sb.append(ueEx.toString());
+                }
+                break;
             default:
                 sb.append("Unknown Event found\n");
         }
@@ -552,7 +559,6 @@ public class TpmPcrEvent {
      */
     private static String eventString(final long event) {
 
-        System.out.println("XXXX " + event);
         if (event == EvConstants.EV_PREBOOT_CERT) {
             return "EV_PREBOOT_CERT";
         } else if (event == EvConstants.EV_POST_CODE) {
