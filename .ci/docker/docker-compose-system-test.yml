@@ -1,6 +1,6 @@
 services:
    aca:
-      image: ghcr.io/nsacyber/hirs/aca:5445278
+      image: ghcr.io/nsacyber/hirs/aca:latest
       container_name: hirs-aca1
       volumes:
          - ../../:/HIRS
@@ -11,16 +11,16 @@ services:
          hirs_aca_system_tests:
             ipv4_address: ${HIRS_ACA_PORTAL_IP}
             aliases:
-              - ${HIRS_ACA_HOSTNAME}
+               - ${HIRS_ACA_HOSTNAME}
 
    tpmprovisioner:
-      image: r9ts
+      image: ghcr.io/nsacyber/hirs/tpm2provisioner-dotnet-ci:latest
       container_name: hirs-provisioner1-tpm2
       depends_on:
          - aca
       volumes:
          - ../../:/HIRS
-      command: ["bash", "-c", "/tmp/auto_clone_branch main && tail -f /dev/null;"]
+      command: ["bash", "-c", "tail -f /dev/null;"]
       networks:
          hirs_aca_system_tests:
             ipv4_address: ${HIRS_ACA_PROVISIONER_TPM2_IP}
@@ -31,4 +31,4 @@ networks:
       ipam:
          driver: default
          config:
-           - subnet: ${HIRS_SUBNET}
+            - subnet: ${HIRS_SUBNET}

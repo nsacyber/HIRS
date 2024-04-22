@@ -4,10 +4,10 @@ LABEL org.opencontainers.image.source https://github.com/nsacyber/hirs
 LABEL org.opencontainers.image.description Tools for testing the build and deployment of HIRS projects.
 
 # Purpose: This image is designed for HIRS Provisioner.Net testing on Rocky 9.
-# Date Modified: 4/3/24
-# Notes: The image to be built should be named "r9ts".
-#        Use this command to build the image:
-#        $ docker build -f ./Dockerfile.tpm2provisioner_dotnet -t r9ts:latest .
+# Date Modified: 4/15/24
+# Notes: The image to be built should be named "tpm2provisioner-dotnet-ci:latest".
+#        For local build, use this command from the /HIRS/ directory to build the image:
+#        $ docker build -f ./.ci/docker/Dockerfile.tpm2provisioner_dotnet -t tpm2provisioner-dotnet-ci:latest .
 
 # REF can be specified as a docker run environment variable to select the HIRS branch to work with
 ENV REF=main
@@ -23,7 +23,7 @@ RUN dnf install -y 'dnf-command(config-manager)' && dnf config-manager --set-ena
 RUN dnf update -y
 # Dependencies were selected for these reasons:
 #   OS setup/Unknown direct impact for HIRS
-ENV HIRS_DNF_OS_SETUP="initscripts firewalld policycoreutils policycoreutils-python-utils net-tools" 
+ENV HIRS_DNF_OS_SETUP="initscripts firewalld policycoreutils policycoreutils-python-utils net-tools"
 #   OS tools
 ENV HIRS_DNF_OS_TOOLS="git sudo vim wget"
 #   ACA compile
@@ -59,7 +59,7 @@ RUN echo "#!/bin/bash" > /tmp/tpm_config && \
     echo "/ibmtss/utils/shutdown -c" >> /tmp/tpm_config && \
     bash /tmp/tpm_config && \
     rm -rf /tmp/tpm_config
-    
+
 # Checkout HIRS
 RUN git clone -b main https://github.com/nsacyber/HIRS.git /hirs
 
@@ -80,7 +80,7 @@ WORKDIR /hirs/HIRS_Provisioner.NET/hirs
 RUN dotnet test
 RUN dotnet deb -r linux-x64 -c Release
 RUN dotnet rpm -r linux-x64 -c Release
-    
+
 # The following script will clone and copy the referenced branch of HIRS off GitHub
 # If configured, run bootwar to cache build artifacts
 RUN echo "#!/bin/bash" > /tmp/auto_clone_branch && \
