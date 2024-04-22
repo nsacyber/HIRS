@@ -97,11 +97,8 @@ public class EvEfiSpdmFirmwareBlob {
      * @return Human readable description of this event.
      */
     public String toString() {
-//        String spdmInfo = "";
         if (bDeviceSecurityEventData) {
             spdmInfo = "   Signature = SPDM Device Sec" + spdmInfo;
-//            spdmInfo += "   Signature = SPDM Device Sec";
-//            spdmInfo += deviceSecurityEventData.toString();
         } else {
             spdmInfo = "EV_EFI_SPDM_FIRMWARE_BLOB event named " + signature
                     + " encountered but support for processing it has not been added to this application.\n";

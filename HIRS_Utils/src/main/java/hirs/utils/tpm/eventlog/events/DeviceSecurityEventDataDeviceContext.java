@@ -1,6 +1,7 @@
 package hirs.utils.tpm.eventlog.events;
 
 import hirs.utils.HexUtils;
+import hirs.utils.tpm.eventlog.spdm.SpdmMeasurementBlock;
 import hirs.utils.tpm.eventlog.uefi.UefiConstants;
 import lombok.Getter;
 
@@ -21,42 +22,39 @@ import java.nio.charset.StandardCharsets;
 public class DeviceSecurityEventDataDeviceContext {
 
     /**
-     * Contains the human-readable info inside the Device Security Event Data Device Context structure.
+     * SPDM Measurement Block.
      */
-    @Getter
-    private String dSEDdeviceContextInfo = "";
-    /**
-     * PCI Version.
-     */
-    @Getter
-    private String pciVersion = "";
-    /**
-     * PCI Length.
-     */
-    @Getter
-    private String pciLength = "";
+    private DeviceSecurityEventDataPciContext deviceSecurityEventDataPciContext = null;
 
     /**
      * DeviceSecurityEventDataDeviceContext Constructor.
      *
-     * @param dSEDbytes byte array holding the DeviceSecurityEventData.
+     * @param dSEDdeviceContextBytes byte array holding the DeviceSecurityEventData.
      */
-    public DeviceSecurityEventDataDeviceContext(final byte[] dSEDbytes, int byteStartOffset) {
+    public DeviceSecurityEventDataDeviceContext(final byte[] dSEDdeviceContextBytes) {
 
-        int byteOffset = byteStartOffset;
+        byte[] dSEDpciContextLengthBytes = new byte[2];
+        System.arraycopy(dSEDdeviceContextBytes, 2, dSEDpciContextLengthBytes, 0, 2);
+        int dSEDpciContextLength = HexUtils.leReverseInt(dSEDpciContextLengthBytes);
 
-        byte[] pciVersionBytes = new byte[UefiConstants.SIZE_16];
-        System.arraycopy(dSEDbytes, byteOffset, pciVersionBytes, 0, UefiConstants.SIZE_16);
-        pciVersion = new String(pciVersionBytes, StandardCharsets.UTF_8)
-                .substring(0, UefiConstants.SIZE_15);
+        byte[] dSEDpciContextBytes = new byte[dSEDpciContextLength];
+        System.arraycopy(dSEDdeviceContextBytes, 0, dSEDpciContextBytes, 0, dSEDpciContextLength);
+        deviceSecurityEventDataPciContext = new DeviceSecurityEventDataPciContext(dSEDpciContextBytes);
 
-        byteOffset += UefiConstants.SIZE_16;
-        byte[] pciLengthBytes = new byte[UefiConstants.SIZE_4];
-        System.arraycopy(dSEDbytes, byteOffset, pciLengthBytes, 0,
-                UefiConstants.SIZE_16);
-        pciLength = HexUtils.byteArrayToHexString(pciLengthBytes);
+        //TODO add USB context
+    }
 
+    /**
+     * Returns a human readable description of the data within this structure.
+     *
+     * @return a description of this structure..
+     */
+    public String toString() {
+        String dSEDdeviceContextInfo = "";
 
+        dSEDdeviceContextInfo += deviceSecurityEventDataPciContext.toString();
+
+        return dSEDdeviceContextInfo;
     }
 }
 
