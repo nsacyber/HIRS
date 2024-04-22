@@ -48,8 +48,13 @@ public class DeviceSecurityEventDataHeader extends DeviceSecurityEventDataHeader
     /**
      * SPDM Measurement Block.
      */
-    private SpdmMeasurementBlock spdmMeasurementBlock;
+    private SpdmMeasurementBlock spdmMeasurementBlock = null;
 
+    /**
+     * DeviceSecurityEventDataHeader Constructor.
+     *
+     * @param dSEDbytes byte array holding the DeviceSecurityEventData.
+     */
     public DeviceSecurityEventDataHeader(final byte[] dSEDbytes) throws UnsupportedEncodingException {
 
         super(dSEDbytes);
@@ -92,15 +97,15 @@ public class DeviceSecurityEventDataHeader extends DeviceSecurityEventDataHeader
 //        }
 
         int devPathLenStartByte = 28 + sizeOfSpdmMeasBlock;
-        extractDevicePath(dSEDbytes, devPathLenStartByte);
+        extractDevicePathAndFinalSize(dSEDbytes, devPathLenStartByte);
 
     }
 
 
     /**
-     * Returns a human readable description of the data within this event.
+     * Returns a human readable description of the data within this structure.
      *
-     * @return a description of this event..
+     * @return a description of this structure.
      */
     public String toString() {
         String dsedHeaderInfo = "";

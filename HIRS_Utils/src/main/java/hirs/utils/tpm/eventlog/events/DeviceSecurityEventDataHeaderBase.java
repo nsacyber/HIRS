@@ -107,9 +107,8 @@ public abstract class DeviceSecurityEventDataHeaderBase {
 
     }
 
-
     /**
-     * DeviceSecurityEventDataHeader Constructor.
+     * DeviceSecurityEventDataHeaderBase Constructor.
      *
      * @param dSEDbytes byte array holding the DeviceSecurityEventData.
      */
@@ -138,7 +137,7 @@ public abstract class DeviceSecurityEventDataHeaderBase {
         deviceType = HexUtils.leReverseInt(deviceTypeBytes);
     }
 
-    public void extractDevicePath(final byte[] dSEDbytes, int startByte)
+    public void extractDevicePathAndFinalSize(final byte[] dSEDbytes, int startByte)
             throws UnsupportedEncodingException {
 
         // get the device path length
@@ -156,6 +155,8 @@ public abstract class DeviceSecurityEventDataHeaderBase {
             devicePath = new UefiDevicePath(devPathBytes);
             devicePathValid = true;
         }
+
+        dSEDheaderByteSize = startByte + devicePathLength;
     }
 
     /**
@@ -184,9 +185,9 @@ public abstract class DeviceSecurityEventDataHeaderBase {
     }
 
     /**
-     * Returns a human readable description of the data within this event.
+     * Returns a human readable description of the data within this structure.
      *
-     * @return a description of this event..
+     * @return a description of this structure.
      */
     public String headerBaseToString() {
         String dsedHeaderInfo = "";
@@ -197,7 +198,7 @@ public abstract class DeviceSecurityEventDataHeaderBase {
             dsedHeaderInfo += devicePath;
         }
         else {
-            dsedHeaderInfo += "\n   SPDM Device Path = Uknown or invalid";
+            dsedHeaderInfo += "\n   SPDM Device Path = Unknown or invalid";
         }
 
         return dsedHeaderInfo;
