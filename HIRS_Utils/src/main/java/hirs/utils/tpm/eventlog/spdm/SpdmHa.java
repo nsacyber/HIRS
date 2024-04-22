@@ -5,8 +5,7 @@ import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 
 /**
- * Class for defining constants referenced in the DMTF
- * SPDM specification.
+ * Class for defining constants referenced in the DMTF SPDM specification.
  */
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class SpdmHa {
