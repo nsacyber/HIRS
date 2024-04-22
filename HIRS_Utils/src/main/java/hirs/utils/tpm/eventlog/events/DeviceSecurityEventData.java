@@ -19,14 +19,19 @@ public class DeviceSecurityEventData extends DeviceSecurityEventDataBase {
      * @param dSEDbytes byte array holding the DeviceSecurityEventData.
      */
     public DeviceSecurityEventData(final byte[] dSEDbytes) throws UnsupportedEncodingException {
-        super(dSEDbytes);
         dsedHeader = new DeviceSecurityEventDataHeader(dSEDbytes);
+        extractDeviceContext(dSEDbytes, dsedHeader.getDSEDheaderByteSize());
     }
 
+    /**
+     * Returns a human readable description of the data within this structure.
+     *
+     * @return a description of this structure.
+     */
     public String toString() {
         String dsedInfo = "";
         dsedInfo += dsedHeader.toString();
-//      dsedInfo += dsedDeviceContext.toString();
+        dsedInfo += getDsedDeviceContext().toString();
         return dsedInfo;
     }
 }
