@@ -6,11 +6,6 @@ import hirs.utils.HexUtils;
 import hirs.utils.tpm.eventlog.spdm.SpdmHa;
 import lombok.Getter;
 
-
-import com.github.marandus.pciid.model.Device;
-import com.github.marandus.pciid.model.Vendor;
-import com.github.marandus.pciid.service.PciIdsDatabase;
-
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -89,50 +84,6 @@ public class DeviceSecurityEventDataPciContext {
     @Getter
     private String pciSubsystemId = "";
 
-
-    // TODO REMOVE
-    public static final List<String> PCI_IDS_PATH =
-            Collections.unmodifiableList(new ArrayList<>() {
-                private static final long serialVersionUID = 1L;
-                {
-                    add("/usr/share/hwdata/pci.ids");
-                    add("/usr/share/misc/pci.ids");
-                    add("/tmp/pci.ids");
-                }
-            });
-    public static final PciIdsDatabase DB = new PciIdsDatabase();
-    static {
-        if (!DB.isReady()) {
-            String dbFile = null;
-            for (final String path : PCI_IDS_PATH) {
-                if ((new File(path)).exists()) {
-//                    log.info("PCI IDs file was found {}", path);
-                    dbFile = path;
-                    break;
-                }
-            }
-            if (dbFile != null) {
-                InputStream is = null;
-                try {
-                    is = new FileInputStream(new File(dbFile));
-                    DB.loadStream(is);
-                } catch (IOException e) {
-                    // DB will not be ready, hardware IDs will not be translated
-                    dbFile = null;
-                } finally {
-                    if (is != null) {
-                        try {
-                            is.close();
-                        } catch (IOException e) {
-                            dbFile = null;
-                        }
-                    }
-                }
-            }
-        }
-    }
-
-
     /**
      * DeviceSecurityEventDataPciContext Constructor.
      *
@@ -174,34 +125,6 @@ public class DeviceSecurityEventDataPciContext {
 
     }
 
-    //TODO REMOVE, ALONG WITH GRADLE  implementation libs.pci
-    public static String translateVendor(final String refManufacturer) {
-        String manufacturer = refManufacturer;
-        if (manufacturer != null && manufacturer.trim().matches("^[0-9A-Fa-f]{4}$")) {
-            Vendor ven = DB.findVendor(manufacturer.toLowerCase());
-            if (ven != null && !Strings.isNullOrEmpty(ven.getName())) {
-                manufacturer = ven.getName();
-            }
-        }
-        return manufacturer;
-    }
-    public static String translateDevice(final String refManufacturer,
-                                         final String refModel) {
-
-        String model = refModel;
-        if (refManufacturer != null
-                && model != null
-                && refManufacturer.trim().matches("^[0-9A-Fa-f]{4}$")
-                && model.trim().matches("^[0-9A-Fa-f]{4}$")) {
-            Device dev = DB.findDevice(refManufacturer.toLowerCase(),
-                    model.toLowerCase());
-            if (dev != null && !Strings.isNullOrEmpty(dev.getName())) {
-                model = dev.getName();
-            }
-        }
-        return model;
-    }
-
     /**
      * Returns a human readable description of the data within this structure.
      *
@@ -219,12 +142,6 @@ public class DeviceSecurityEventDataPciContext {
         dSEDpciContextInfo += "\n      ClassCode = 0x" + pciClassCode;
         dSEDpciContextInfo += "\n      SubsystemVendorID = 0x" + pciSubsystemVendorId;
         dSEDpciContextInfo += "\n      SubsystemID = 0x" + pciSubsystemId;
-
-        // TODO REMOVE
-        String test1 = translateVendor(pciVendorId);
-        String test2 = translateDevice(pciVendorId, pciDeviceId);
-        dSEDpciContextInfo += "\n      TEST1 = " + test1;
-        dSEDpciContextInfo += "\n      TEST2 = " + test2;
 
         return dSEDpciContextInfo;
     }
