@@ -16,7 +16,7 @@ import java.nio.charset.StandardCharsets;
  * typedef struct tdDEVICE_SECURITY_EVENT_DATA_DEVICE_CONTEXT {
  *      DEVICE_SECURITY_EVENT_DATA_PCI_CONTEXT       PciContext;
  *      DEVICE_SECURITY_EVENT_DATA_USB_CONTEXT       UsbContext;
- * } tdDEVICE_SECURITY_EVENT_DATA_DEVICE_CONTEXT;
+ * } DEVICE_SECURITY_EVENT_DATA_DEVICE_CONTEXT;
  * <p>
  */
 public class DeviceSecurityEventDataDeviceContext {

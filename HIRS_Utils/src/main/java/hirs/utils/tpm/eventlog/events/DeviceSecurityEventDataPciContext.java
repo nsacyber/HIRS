@@ -1,9 +1,51 @@
 package hirs.utils.tpm.eventlog.events;
 
+//import hirs.attestationca.persist.util.PciIds;
+import com.google.common.base.Strings;
 import hirs.utils.HexUtils;
 import hirs.utils.tpm.eventlog.spdm.SpdmHa;
 import lombok.Getter;
 
+
+import com.github.marandus.pciid.model.Device;
+import com.github.marandus.pciid.model.Vendor;
+import com.github.marandus.pciid.service.PciIdsDatabase;
+
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+
+/**
+ * Class to process the DEVICE_SECURITY_EVENT_DATA_PCI_CONTEXT event per PFP.
+ * <p>
+ * typedef struct tdDEVICE_SECURITY_EVENT_DATA_PCI_CONTEXT {
+ *      UINT16       Version;
+ *      UINT16       Length;
+ *      UINT16       VendorId;
+ *      UINT16       DeviceId;
+ *      UINT16       RevisionId;
+ *      UINT16       ClassCode[3];
+ *      UINT16       SubsystemVendorId;
+ *      UINT16       SubsystemId;
+ * <p>
+ * The following fields are defined by the PCI Express Base Specification rev4.0 v1.0.
+ *    VendorId
+ *    DeviceId
+ *    RevisionId
+ *    ClassCode
+ *    SubsystemVendorId
+ *    SubsystemId
+ * Vendor id and device id are registered to specific manufacturers.
+ *    https://admin.pci-ids.ucw.cz/read/PC/
+ *    Ex. vendor id 8086 and device id 0b60: https://admin.pci-ids.ucw.cz/read/PC/8086/0b60
+ * Class code can be looked up on the web.
+ *    https://admin.pci-ids.ucw.cz/read/PD/
+ * The revision ID is controlled by the vendor and cannot be looked up.
+ */
 public class DeviceSecurityEventDataPciContext {
 
     /**
@@ -20,32 +62,76 @@ public class DeviceSecurityEventDataPciContext {
      * PCI Vendor ID.
      */
     @Getter
-    private int pciVendorId = 0;
+    private String pciVendorId = "";
     /**
      * PCI Device ID.
      */
     @Getter
-    private int pciDeviceId = 0;
+    private String pciDeviceId = "";
     /**
      * PCI Revision ID.
      */
     @Getter
-    private int pciRevisionId = 0;
+    private String pciRevisionId = "";
     /**
      * PCI Class Code.
      */
     @Getter
-    private int pciClassCode = 0;
+    private String pciClassCode = "";
     /**
      * PCI Subsystem Vendor ID.
      */
     @Getter
-    private int pciSubsystemVendorId = 0;
+    private String pciSubsystemVendorId = "";
     /**
      * PCI Subsystem ID.
      */
     @Getter
-    private int pciSubsystemId = 0;
+    private String pciSubsystemId = "";
+
+
+    // TODO REMOVE
+    public static final List<String> PCI_IDS_PATH =
+            Collections.unmodifiableList(new ArrayList<>() {
+                private static final long serialVersionUID = 1L;
+                {
+                    add("/usr/share/hwdata/pci.ids");
+                    add("/usr/share/misc/pci.ids");
+                    add("/tmp/pci.ids");
+                }
+            });
+    public static final PciIdsDatabase DB = new PciIdsDatabase();
+    static {
+        if (!DB.isReady()) {
+            String dbFile = null;
+            for (final String path : PCI_IDS_PATH) {
+                if ((new File(path)).exists()) {
+//                    log.info("PCI IDs file was found {}", path);
+                    dbFile = path;
+                    break;
+                }
+            }
+            if (dbFile != null) {
+                InputStream is = null;
+                try {
+                    is = new FileInputStream(new File(dbFile));
+                    DB.loadStream(is);
+                } catch (IOException e) {
+                    // DB will not be ready, hardware IDs will not be translated
+                    dbFile = null;
+                } finally {
+                    if (is != null) {
+                        try {
+                            is.close();
+                        } catch (IOException e) {
+                            dbFile = null;
+                        }
+                    }
+                }
+            }
+        }
+    }
+
 
     /**
      * DeviceSecurityEventDataPciContext Constructor.
@@ -64,28 +150,56 @@ public class DeviceSecurityEventDataPciContext {
 
         byte[] pciVendorIdBytes = new byte[2];
         System.arraycopy(dSEDpciContextBytes, 4, pciVendorIdBytes, 0, 2);
-        pciVendorId = HexUtils.leReverseInt(pciVendorIdBytes);
+        pciVendorId = HexUtils.byteArrayToHexString(HexUtils.leReverseByte(pciVendorIdBytes));
 
         byte[] pciDeviceIdBytes = new byte[2];
         System.arraycopy(dSEDpciContextBytes, 6, pciDeviceIdBytes, 0, 2);
-        pciDeviceId = HexUtils.leReverseInt(pciDeviceIdBytes);
+        pciDeviceId = HexUtils.byteArrayToHexString(HexUtils.leReverseByte(pciDeviceIdBytes));
 
         byte[] pciRevisionIdBytes = new byte[1];
         System.arraycopy(dSEDpciContextBytes, 8, pciRevisionIdBytes, 0, 1);
-        pciRevisionId = HexUtils.leReverseInt(pciRevisionIdBytes);
+        pciRevisionId = HexUtils.byteArrayToHexString(HexUtils.leReverseByte(pciRevisionIdBytes));
 
         byte[] pciClassCodeBytes = new byte[3];
         System.arraycopy(dSEDpciContextBytes, 9, pciClassCodeBytes, 0, 3);
-        pciClassCode = HexUtils.leReverseInt(pciClassCodeBytes);
+        pciClassCode = HexUtils.byteArrayToHexString(HexUtils.leReverseByte(pciClassCodeBytes));
 
         byte[] pciSubsystemVendorIdBytes = new byte[2];
         System.arraycopy(dSEDpciContextBytes, 12, pciSubsystemVendorIdBytes, 0, 2);
-        pciSubsystemVendorId = HexUtils.leReverseInt(pciSubsystemVendorIdBytes);
+        pciSubsystemVendorId = HexUtils.byteArrayToHexString(HexUtils.leReverseByte(pciSubsystemVendorIdBytes));
 
         byte[] pciSubsystemIdBytes = new byte[2];
         System.arraycopy(dSEDpciContextBytes, 14, pciSubsystemIdBytes, 0, 2);
-        pciSubsystemId = HexUtils.leReverseInt(pciSubsystemIdBytes);
+        pciSubsystemId = HexUtils.byteArrayToHexString(HexUtils.leReverseByte(pciSubsystemIdBytes));
 
+    }
+
+    //TODO REMOVE, ALONG WITH GRADLE  implementation libs.pci
+    public static String translateVendor(final String refManufacturer) {
+        String manufacturer = refManufacturer;
+        if (manufacturer != null && manufacturer.trim().matches("^[0-9A-Fa-f]{4}$")) {
+            Vendor ven = DB.findVendor(manufacturer.toLowerCase());
+            if (ven != null && !Strings.isNullOrEmpty(ven.getName())) {
+                manufacturer = ven.getName();
+            }
+        }
+        return manufacturer;
+    }
+    public static String translateDevice(final String refManufacturer,
+                                         final String refModel) {
+
+        String model = refModel;
+        if (refManufacturer != null
+                && model != null
+                && refManufacturer.trim().matches("^[0-9A-Fa-f]{4}$")
+                && model.trim().matches("^[0-9A-Fa-f]{4}$")) {
+            Device dev = DB.findDevice(refManufacturer.toLowerCase(),
+                    model.toLowerCase());
+            if (dev != null && !Strings.isNullOrEmpty(dev.getName())) {
+                model = dev.getName();
+            }
+        }
+        return model;
     }
 
     /**
@@ -99,12 +213,18 @@ public class DeviceSecurityEventDataPciContext {
         dSEDpciContextInfo += "\n   DeviceSecurityEventData - PCI Context";
         dSEDpciContextInfo += "\n      Version = " + pciVersion;
         dSEDpciContextInfo += "\n      Length = " + pciLength;
-        dSEDpciContextInfo += "\n      VendorID = " + pciVendorId;
-        dSEDpciContextInfo += "\n      DeviceID = " + pciDeviceId;
-        dSEDpciContextInfo += "\n      RevisionID = " + pciRevisionId;
-        dSEDpciContextInfo += "\n      ClassCode = " + pciClassCode;
-        dSEDpciContextInfo += "\n      SubsystemVendorID = " + pciSubsystemVendorId;
-        dSEDpciContextInfo += "\n      SubsystemID = " + pciSubsystemId;
+        dSEDpciContextInfo += "\n      VendorID = 0x" + pciVendorId;
+        dSEDpciContextInfo += "\n      DeviceID = 0x" + pciDeviceId;
+        dSEDpciContextInfo += "\n      RevisionID = 0x" + pciRevisionId;
+        dSEDpciContextInfo += "\n      ClassCode = 0x" + pciClassCode;
+        dSEDpciContextInfo += "\n      SubsystemVendorID = 0x" + pciSubsystemVendorId;
+        dSEDpciContextInfo += "\n      SubsystemID = 0x" + pciSubsystemId;
+
+        // TODO REMOVE
+        String test1 = translateVendor(pciVendorId);
+        String test2 = translateDevice(pciVendorId, pciDeviceId);
+        dSEDpciContextInfo += "\n      TEST1 = " + test1;
+        dSEDpciContextInfo += "\n      TEST2 = " + test2;
 
         return dSEDpciContextInfo;
     }
