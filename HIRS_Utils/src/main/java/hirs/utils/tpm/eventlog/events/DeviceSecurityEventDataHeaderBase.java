@@ -1,8 +1,6 @@
 package hirs.utils.tpm.eventlog.events;
 
 import hirs.utils.HexUtils;
-import hirs.utils.tpm.eventlog.spdm.SpdmHa;
-import hirs.utils.tpm.eventlog.spdm.SpdmMeasurementBlock;
 import hirs.utils.tpm.eventlog.uefi.UefiConstants;
 import hirs.utils.tpm.eventlog.uefi.UefiDevicePath;
 import lombok.Getter;
@@ -47,14 +45,8 @@ import java.nio.charset.StandardCharsets;
  */
 public abstract class DeviceSecurityEventDataHeaderBase {
 
-//    /**
-//     * Contains the human-readable info inside the Device Security Event.
-//     */
-//    @Getter
-//    private String dSEDheaderInfo = "";
-
     /**
-     * Contains the size (in bytes) of the Header.
+     * Contains the size (in bytes) of the header.
      */
     @Getter
     private Integer dSEDheaderByteSize = 0;
@@ -103,6 +95,9 @@ public abstract class DeviceSecurityEventDataHeaderBase {
     public static final int DEVICE_TYPE_USB = 2;
 
 
+    /**
+     * DeviceSecurityEventDataHeaderBase Default Constructor.
+     */
     public DeviceSecurityEventDataHeaderBase() {
 
     }
@@ -113,8 +108,6 @@ public abstract class DeviceSecurityEventDataHeaderBase {
      * @param dSEDbytes byte array holding the DeviceSecurityEventData.
      */
     public DeviceSecurityEventDataHeaderBase(final byte[] dSEDbytes) {
-
-//        spdmMeasurementBlockList = new ArrayList<>();
 
         byte[] signatureBytes = new byte[UefiConstants.SIZE_16];
         System.arraycopy(dSEDbytes, 0, signatureBytes, 0, UefiConstants.SIZE_16);
@@ -128,6 +121,12 @@ public abstract class DeviceSecurityEventDataHeaderBase {
 
     }
 
+    /**
+     * Parse the device type from the Device Security Event Data Header/Header2.
+     *
+     * @param dSEDbytes byte array holding the DeviceSecurityEventData/Data2.
+     * @param startByte starting byte of device type (depends on header fields before it).
+     */
     public void extractDeviceType(final byte[] dSEDbytes, int startByte) {
 
         // get the device type ID
@@ -137,6 +136,13 @@ public abstract class DeviceSecurityEventDataHeaderBase {
         deviceType = HexUtils.leReverseInt(deviceTypeBytes);
     }
 
+    /**
+     * Parse the device path from the Device Security Event Data Header/Header2.
+     * Also, determine final length of header (will be used to extract the next data structure).
+     *
+     * @param dSEDbytes byte array holding the DeviceSecurityEventData/Data2.
+     * @param startByte starting byte of device path (depends on header fields before it).
+     */
     public void extractDevicePathAndFinalSize(final byte[] dSEDbytes, int startByte)
             throws UnsupportedEncodingException {
 
@@ -156,6 +162,7 @@ public abstract class DeviceSecurityEventDataHeaderBase {
             devicePathValid = true;
         }
 
+        // header total size
         dSEDheaderByteSize = startByte + devicePathLength;
     }
 
@@ -185,7 +192,7 @@ public abstract class DeviceSecurityEventDataHeaderBase {
     }
 
     /**
-     * Returns a human readable description of the data within this structure.
+     * Returns a human readable description of the data common to header structures.
      *
      * @return a description of this structure.
      */
@@ -203,5 +210,4 @@ public abstract class DeviceSecurityEventDataHeaderBase {
 
         return dsedHeaderCommonInfo;
     }
-
 }
