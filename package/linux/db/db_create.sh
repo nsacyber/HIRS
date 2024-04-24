@@ -114,10 +114,10 @@ set_mysql_server_tls () {
     # The following arent avialble in Mariadb 10.3
     #echo "tls_version=TLSv1.2,TLSv1.3" >> "$DB_SRV_CONF"
     #echo "require_secure_transport=ON" >> "$DB_SRV_CONF"
-    
-    
+   
     # Make sure mysql can access them
     chown mysql:mysql $SSL_DB_SRV_CHAIN $SSL_DB_SRV_CERT $SSL_DB_SRV_KEY
+    chmod 644 $DB_SRV_CONF $DB_CLIENT_CONF
     # Make selinux contexts for config files, if selinux is enabled
     if [[ $ID = "rhel" ]] || [[ $ID = "rocky" ]] ||[[ $ID = "fedora" ]]; then 
       command -v selinuxenabled  > /dev/null
