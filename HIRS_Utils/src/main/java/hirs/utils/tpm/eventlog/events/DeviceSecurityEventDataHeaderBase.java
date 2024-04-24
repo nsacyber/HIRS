@@ -189,19 +189,19 @@ public abstract class DeviceSecurityEventDataHeaderBase {
      *
      * @return a description of this structure.
      */
-    public String headerBaseToString() {
-        String dsedHeaderInfo = "";
+    public String headerCommonInfoToString() {
+        String dsedHeaderCommonInfo = "";
 
-        dsedHeaderInfo += "\n   SPDM Device Type = " + deviceTypeToString(deviceType);
+        dsedHeaderCommonInfo += "\n   SPDM Device Type = " + deviceTypeToString(deviceType);
         if (devicePathValid) {
-            dsedHeaderInfo += "\n   SPDM Device Path =\n";
-            dsedHeaderInfo += devicePath;
+            dsedHeaderCommonInfo += "\n   SPDM Device Path =\n";
+            dsedHeaderCommonInfo += devicePath;
         }
         else {
-            dsedHeaderInfo += "\n   SPDM Device Path = Unknown or invalid";
+            dsedHeaderCommonInfo += "\n   SPDM Device Path = Unknown or invalid";
         }
 
-        return dsedHeaderInfo;
+        return dsedHeaderCommonInfo;
     }
 
 }
