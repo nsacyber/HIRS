@@ -8,7 +8,6 @@ import lombok.Getter;
 
 import java.io.UnsupportedEncodingException;
 
-
 /**
  * Class to process the DEVICE_SECURITY_EVENT_DATA_HEADER.
  * DEVICE_SECURITY_EVENT_DATA_HEADER contains the measurement(s) and hash algorithm identifier
@@ -41,10 +40,7 @@ public class DeviceSecurityEventDataHeader extends DeviceSecurityEventDataHeader
      */
     @Getter
     private int spdmHashAlgo = -1;
-    /**
-     * SPDM Measurement Block list.   -implement this if there can be multiple SPDM blocks in one event
-     */
-    //private List<SpdmMeasurementBlock> spdmMeasurementBlockList;
+
     /**
      * SPDM Measurement Block.
      */
@@ -84,23 +80,9 @@ public class DeviceSecurityEventDataHeader extends DeviceSecurityEventDataHeader
                 sizeOfSpdmMeasBlock);
         spdmMeasurementBlock = new SpdmMeasurementBlock(spdmMeasBlockBytes);
 
-
-        // (can there be many >1 spdm block per event ?)
-
-//        byte[] algorithmIDBytes = new byte[UefiConstants.SIZE_2];
-//        int algLocation = UefiConstants.SIZE_28;
-//        for (int i = 0; i < numberOfAlg; i++) {
-//            System.arraycopy(efiSpecId, algLocation + UefiConstants.OFFSET_4 * i, algorithmIDBytes,
-//                    0, UefiConstants.SIZE_2);
-//            String alg = TcgTpmtHa.tcgAlgIdToString(HexUtils.leReverseInt(algorithmIDBytes));
-//            algList.add(alg);
-//        }
-
         int devPathLenStartByte = 28 + sizeOfSpdmMeasBlock;
         extractDevicePathAndFinalSize(dSEDbytes, devPathLenStartByte);
-
     }
-
 
     /**
      * Returns a human readable description of the data within this structure.

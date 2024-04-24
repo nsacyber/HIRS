@@ -1,9 +1,18 @@
 package hirs.utils.tpm.eventlog.events;
 
-
 import lombok.Getter;
 import java.io.UnsupportedEncodingException;
 
+/**
+ * Class to process DEVICE_SECURITY_EVENT_DATA.
+ * Parses event data per PFP v1.06 Rev52 Table 20.
+ * <p>
+ * typedef struct tdDEVICE_SECURITY_EVENT_DATA {
+ * DEVICE_SECURITY_EVENT_DATA_HEADER            EventDataHeader;
+ * DEVICE_SECURITY_EVENT_DATA_DEVICE_CONTEXT    DeviceContext;
+ * } DEVICE_SECURITY_EVENT_DATA;
+ * <p>
+ */
 public class DeviceSecurityEventData extends DeviceSecurityEventDataBase {
 
     /**
