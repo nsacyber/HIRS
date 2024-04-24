@@ -63,6 +63,13 @@ while [[ $# -gt 0 ]]; do
   esac
 done
 
+echo "Input is $1"
+if [[ $1 -eq 1 ]] ; then
+   echo "Install detected $1"
+   else
+   echo "Upgrade detected $1"
+fi
+ 
 # Check for existing installation folders and exist if found
 if [ -z $ARG_UNATTEND ]; then
   if [ -d "/etc/hirs" ]; then

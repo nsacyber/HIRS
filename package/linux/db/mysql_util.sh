@@ -154,6 +154,26 @@ $(mysql -u root -p$DB_ADMIN_PWD -e 'quit'  &> /dev/null);
   fi
 }
 
+check_hirs_db_user () {
+PRINT_STATUS=$1
+HIRS_DB_USER_EXISTS="$(mysql -uroot --password=$DB_ADMIN_PWD -sse "SELECT EXISTS(SELECT 1 FROM mysql.user WHERE user = 'hirs_db')")"
+   if [[ $HIRS_DB_USER_EXISTS == "1" ]]; then
+       if [[ $PRINT_STATUS == "-p" ]];then  echo "  hirs_db user exists" | tee -a "$LOG_FILE"; fi;
+     else
+       if [[ $PRINT_STATUS == "-p" ]]; then echo "  hirs_db user does not exist" | tee -a "$LOG_FILE"; fi;
+   fi
+}
+
+check_hirs_db () {
+PRINT_STATUS=$1
+HIRS_DB_EXISTS="$(mysql -uroot --password=$DB_ADMIN_PWD -e "SHOW DATABASES" | grep hirs_db)"
+   if [[ $HIRS_DB_EXISTS == "hirs_db" ]]; then
+      if [[ $PRINT_STATUS == "-p" ]];then echo "  hirs_db database exists" | tee -a "$LOG_FILE"; fi;
+    else
+      if [[ $PRINT_STATUS == "-p" ]];then echo "  hirs_db database does not exists" | tee -a "$LOG_FILE"; fi;
+   fi
+}
+
 check_db_cleared () {
    $(mysql -u root -e 'quit'  &> /dev/null);
    if [ $? -eq 0 ]; then
@@ -162,13 +182,13 @@ check_db_cleared () {
      echo "  Mysql Root password is not empty" | tee -a "$LOG_FILE";
    fi
    HIRS_DB_USER_EXISTS="$(mysql -uroot -sse "SELECT EXISTS(SELECT 1 FROM mysql.user WHERE user = 'hirs_db')")"
-   if [[ $HIRS_DB_USER_EXISTS == 1 ]]; then
+   if [[ $HIRS_DB_USER_EXISTS == "1" ]]; then
      echo "  hirs_db user exists" | tee -a "$LOG_FILE";
      else
      echo "  hirs_db user does not exist" | tee -a "$LOG_FILE";
    fi
    HIRS_DB_EXISTS=`mysql -uroot -e "SHOW DATABASES" | grep hirs_db`
-   if [[ $HIRS_DB_EXISTS == "hirs_db" ]]; then 
+   if [[ $HIRS_DB_EXISTS == "1" ]]; then 
       echo "  hirs_db databse exists" | tee -a "$LOG_FILE";
     else 
       echo "  hirs_db database does not exists" | tee -a "$LOG_FILE";
@@ -179,7 +199,7 @@ clear_hirs_user () {
 $(mysql -u root -e 'quit'  &> /dev/null);
    if [ $? -eq 0 ]; then
        HIRS_DB_USER_EXISTS="$(mysql -uroot -sse "SELECT EXISTS(SELECT 1 FROM mysql.user WHERE user = 'hirs_db')")"
-       if [[ $HIRS_DB_USER_EXISTS == 1 ]]; then
+       if [[ $HIRS_DB_USER_EXISTS == "1" ]]; then
           mysql -u root --password=$DB_ADMIN_PWD -e "DROP USER 'hirs_db'@'localhost';"
           echo "hirs_db user found and deleted"
        fi
