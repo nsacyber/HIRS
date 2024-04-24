@@ -1,18 +1,7 @@
 package hirs.utils.tpm.eventlog.events;
 
-//import hirs.attestationca.persist.util.PciIds;
-import com.google.common.base.Strings;
 import hirs.utils.HexUtils;
-import hirs.utils.tpm.eventlog.spdm.SpdmHa;
 import lombok.Getter;
-
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
 
 /**
  * Class to process the DEVICE_SECURITY_EVENT_DATA_PCI_CONTEXT event per PFP.
@@ -47,32 +36,32 @@ public class DeviceSecurityEventDataPciContext extends DeviceSecurityEventDataDe
      * PCI Vendor ID.
      */
     @Getter
-    private String pciVendorId = "";
+    private String vendorId = "";
     /**
      * PCI Device ID.
      */
     @Getter
-    private String pciDeviceId = "";
+    private String deviceId = "";
     /**
      * PCI Revision ID.
      */
     @Getter
-    private String pciRevisionId = "";
+    private String revisionId = "";
     /**
      * PCI Class Code.
      */
     @Getter
-    private String pciClassCode = "";
+    private String classCode = "";
     /**
      * PCI Subsystem Vendor ID.
      */
     @Getter
-    private String pciSubsystemVendorId = "";
+    private String subsystemVendorId = "";
     /**
      * PCI Subsystem ID.
      */
     @Getter
-    private String pciSubsystemId = "";
+    private String subsystemId = "";
 
     /**
      * DeviceSecurityEventDataPciContext Constructor.
@@ -85,27 +74,27 @@ public class DeviceSecurityEventDataPciContext extends DeviceSecurityEventDataDe
 
         byte[] pciVendorIdBytes = new byte[2];
         System.arraycopy(dSEDpciContextBytes, 4, pciVendorIdBytes, 0, 2);
-        pciVendorId = HexUtils.byteArrayToHexString(HexUtils.leReverseByte(pciVendorIdBytes));
+        vendorId = HexUtils.byteArrayToHexString(HexUtils.leReverseByte(pciVendorIdBytes));
 
         byte[] pciDeviceIdBytes = new byte[2];
         System.arraycopy(dSEDpciContextBytes, 6, pciDeviceIdBytes, 0, 2);
-        pciDeviceId = HexUtils.byteArrayToHexString(HexUtils.leReverseByte(pciDeviceIdBytes));
+        deviceId = HexUtils.byteArrayToHexString(HexUtils.leReverseByte(pciDeviceIdBytes));
 
         byte[] pciRevisionIdBytes = new byte[1];
         System.arraycopy(dSEDpciContextBytes, 8, pciRevisionIdBytes, 0, 1);
-        pciRevisionId = HexUtils.byteArrayToHexString(HexUtils.leReverseByte(pciRevisionIdBytes));
+        revisionId = HexUtils.byteArrayToHexString(HexUtils.leReverseByte(pciRevisionIdBytes));
 
         byte[] pciClassCodeBytes = new byte[3];
         System.arraycopy(dSEDpciContextBytes, 9, pciClassCodeBytes, 0, 3);
-        pciClassCode = HexUtils.byteArrayToHexString(HexUtils.leReverseByte(pciClassCodeBytes));
+        classCode = HexUtils.byteArrayToHexString(HexUtils.leReverseByte(pciClassCodeBytes));
 
         byte[] pciSubsystemVendorIdBytes = new byte[2];
         System.arraycopy(dSEDpciContextBytes, 12, pciSubsystemVendorIdBytes, 0, 2);
-        pciSubsystemVendorId = HexUtils.byteArrayToHexString(HexUtils.leReverseByte(pciSubsystemVendorIdBytes));
+        subsystemVendorId = HexUtils.byteArrayToHexString(HexUtils.leReverseByte(pciSubsystemVendorIdBytes));
 
         byte[] pciSubsystemIdBytes = new byte[2];
         System.arraycopy(dSEDpciContextBytes, 14, pciSubsystemIdBytes, 0, 2);
-        pciSubsystemId = HexUtils.byteArrayToHexString(HexUtils.leReverseByte(pciSubsystemIdBytes));
+        subsystemId = HexUtils.byteArrayToHexString(HexUtils.leReverseByte(pciSubsystemIdBytes));
 
     }
 
@@ -119,12 +108,12 @@ public class DeviceSecurityEventDataPciContext extends DeviceSecurityEventDataDe
 
         dSEDpciContextInfo += deviceContextCommonInfoToString();
         dSEDpciContextInfo += "\n      Device Type = PCI";
-        dSEDpciContextInfo += "\n      VendorID = 0x" + pciVendorId;
-        dSEDpciContextInfo += "\n      DeviceID = 0x" + pciDeviceId;
-        dSEDpciContextInfo += "\n      RevisionID = 0x" + pciRevisionId;
-        dSEDpciContextInfo += "\n      ClassCode = 0x" + pciClassCode;
-        dSEDpciContextInfo += "\n      SubsystemVendorID = 0x" + pciSubsystemVendorId;
-        dSEDpciContextInfo += "\n      SubsystemID = 0x" + pciSubsystemId;
+        dSEDpciContextInfo += "\n      VendorID = 0x" + vendorId;
+        dSEDpciContextInfo += "\n      DeviceID = 0x" + deviceId;
+        dSEDpciContextInfo += "\n      RevisionID = 0x" + revisionId;
+        dSEDpciContextInfo += "\n      ClassCode = 0x" + classCode;
+        dSEDpciContextInfo += "\n      SubsystemVendorID = 0x" + subsystemVendorId;
+        dSEDpciContextInfo += "\n      SubsystemID = 0x" + subsystemId;
 
         return dSEDpciContextInfo;
     }

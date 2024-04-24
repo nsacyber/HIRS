@@ -39,9 +39,11 @@ public class SpdmMeasurement {
     @Getter
     private byte[] dmtfSpecMeasurementValue = null;
 
-    @Getter(value = AccessLevel.PROTECTED)
-    private byte[] digest = null;
-
+    /**
+     * SpdmMeasurement Constructor.
+     *
+     * @param spdmMeasBytes byte array holding the SPDM Measurement bytes.
+     */
     public SpdmMeasurement(final byte[] spdmMeasBytes) {
 
         byte[] dmtfSpecMeasurementValueTypeBytes = new byte[1];
@@ -60,6 +62,11 @@ public class SpdmMeasurement {
                 dmtfSpecMeasurementValueSize);
     }
 
+    /**
+     * Returns a human readable description of the data within this structure.
+     *
+     * @return a description of this structure..
+     */
     public String dmtfSpecMeasurementValueTypeToString(final int measValType) {
 
         String measValTypeStr;

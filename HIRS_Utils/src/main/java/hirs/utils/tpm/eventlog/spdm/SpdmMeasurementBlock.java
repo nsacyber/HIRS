@@ -39,6 +39,11 @@ public class SpdmMeasurementBlock {
      */
     private SpdmMeasurement spdmMeasurement;
 
+    /**
+     * SpdmMeasurementBlock Constructor.
+     *
+     * @param spdmMeasBlockBytes byte array holding the SPDM Measurement Block bytes.
+     */
     public SpdmMeasurementBlock(final byte[] spdmMeasBlockBytes) {
 
         byte[] indexBytes = new byte[1];
@@ -63,6 +68,11 @@ public class SpdmMeasurementBlock {
         spdmMeasurement = new SpdmMeasurement(measurementBytes);
     }
 
+    /**
+     * Returns a human readable description of the data within this structure.
+     *
+     * @return a description of this structure..
+     */
     public String toString() {
         String spdmMeasBlockInfo = "";
 

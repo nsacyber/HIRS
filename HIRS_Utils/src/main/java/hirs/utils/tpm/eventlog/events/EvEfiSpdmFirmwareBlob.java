@@ -1,14 +1,10 @@
 package hirs.utils.tpm.eventlog.events;
 
 import hirs.utils.HexUtils;
-import hirs.utils.tpm.eventlog.TcgTpmtHa;
 import hirs.utils.tpm.eventlog.uefi.UefiConstants;
-import lombok.Getter;
 
 import java.io.UnsupportedEncodingException;
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * Class to process the EV_EFI_SPDM_FIRMWARE_BLOB event. The event field MUST be a
@@ -41,7 +37,7 @@ public class EvEfiSpdmFirmwareBlob {
     /**
      * True if the event is a DEVICE_SECURITY_EVENT_DATA or ..DATA2.
      */
-    private boolean bDeviceSecurityEventData = false;
+    private boolean bSpdmDeviceSecurityEventData = false;
     /**
      * Human readable description of the data within this DEVICE_SECURITY_EVENT_DATA/..DATA2 event.
      */
@@ -61,7 +57,7 @@ public class EvEfiSpdmFirmwareBlob {
         signature = signature.replaceAll("[^\\P{C}\t\r\n]", ""); // remove null characters
 
         if (signature.contains("SPDM Device Sec")) {      // implies Device Security event
-            bDeviceSecurityEventData = true;
+            bSpdmDeviceSecurityEventData = true;
 
             byte[] versionBytes = new byte[UefiConstants.SIZE_2];
             System.arraycopy(eventData, UefiConstants.OFFSET_16, versionBytes, 0,
@@ -87,8 +83,8 @@ public class EvEfiSpdmFirmwareBlob {
      *
      * @return true of the event is a DeviceSecurityEventData.
      */
-    public boolean isDeviceSecurityEventData() {
-        return bDeviceSecurityEventData;
+    public boolean isSpdmDeviceSecurityEventData() {
+        return bSpdmDeviceSecurityEventData;
     }
 
     /**
@@ -97,7 +93,7 @@ public class EvEfiSpdmFirmwareBlob {
      * @return Human readable description of this event.
      */
     public String toString() {
-        if (bDeviceSecurityEventData) {
+        if (bSpdmDeviceSecurityEventData) {
             spdmInfo = "   Signature = SPDM Device Sec" + spdmInfo;
         } else {
             spdmInfo = "EV_EFI_SPDM_FIRMWARE_BLOB event named " + signature

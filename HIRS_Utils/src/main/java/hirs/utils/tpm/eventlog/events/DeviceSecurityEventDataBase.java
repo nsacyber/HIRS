@@ -9,7 +9,7 @@ import java.nio.charset.StandardCharsets;
 
 /**
  * Abstract base class to process the DEVICE_SECURITY_EVENT_DATA or ..DATA2 event.
- * Parses event data for DEVICE_SECURITY_EVENT_DATA per PFP v1.06 Rev52 Table 20.
+ * Parses event data per PFP v1.06 Rev52 Tables 20 and 26.
  * The event data comes in 2 forms:
  *    1) DEVICE_SECURITY_EVENT_DATA or
  *    2) DEVICE_SECURITY_EVENT_DATA2
@@ -32,7 +32,7 @@ import java.nio.charset.StandardCharsets;
  * DEVICE_SECURITY_EVENT_DATA_HEADER2           EventDataHeader;
  * DEVICE_SECURITY_EVENT_DATA_SUB_HEADER        EventDataSubHeader;
  * DEVICE_SECURITY_EVENT_DATA_DEVICE_CONTEXT    DeviceContext;
- * } DEVICE_SECURITY_EVENT_DATA;
+ * } DEVICE_SECURITY_EVENT_DATA2;
  * <p>
  * typedef struct tdDEVICE_SECURITY_EVENT_DATA_HEADER or HEADER2 {
  *      UINT8                           Signature[16];
@@ -54,12 +54,6 @@ import java.nio.charset.StandardCharsets;
  */
 public abstract class DeviceSecurityEventDataBase {
 
-//    /**
-//     * DeviceSecurityEventDataDeviceContext Object.
-//     */
-//    @Getter
-//    private DeviceSecurityEventDataDeviceContext dsedDeviceContext = null;
-
     /**
      * Human readable description of the data within the
      * DEVICE_SECURITY_EVENT_DATA_DEVICE_CONTEXT. DEVICE can be either PCI or USB.
@@ -75,6 +69,14 @@ public abstract class DeviceSecurityEventDataBase {
 
     }
 
+    /**
+     * Parse the Device Context structure, can be PCI or USB based on device type field.
+     *
+     * @param dSEDbytes byte array holding the DeviceSecurityEventData.
+     * @param startByte starting byte of the device structure (depends on length of header).
+     * @param deviceType device type either PCI or USB.
+     *
+     */
     public void parseDeviceContext(final byte[] dSEDbytes, int startByte, int deviceType) {
 
         int deviceContextLength = dSEDbytes.length - startByte;
@@ -92,15 +94,14 @@ public abstract class DeviceSecurityEventDataBase {
                     = new DeviceSecurityEventDataPciContext(deviceContextBytes);
             deviceContextInfo = dSEDpciContext.toString();
         }
-        else if (deviceType == 2) {
-//            DeviceSecurityEventDataUsbContext dSEDusbContext
-//                    = new DeviceSecurityEventDataUsbContext(deviceContextBytes);
-//            deviceContextInfo = dSEDusbContext.toString();
-            deviceContextInfo = "Device type is USB - to be implemented in future";
-        }
+        //else if (deviceType == 2) {
+            //DeviceSecurityEventDataUsbContext dSEDusbContext
+            //        = new DeviceSecurityEventDataUsbContext(deviceContextBytes);
+            //deviceContextInfo = dSEDusbContext.toString();
+            //deviceContextInfo = "Device type is USB - to be implemented in future";
+        //}
         else {
             deviceContextInfo = "    Unknown device type; cannot process device context";
         }
     }
-
 }
