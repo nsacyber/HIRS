@@ -158,13 +158,8 @@ fi
 
 # Process HIRS DB USER
 set_hirs_db_pwd () {
-
-  RESULT="$(mysql -u root --password=$DB_ADMIN_PWD -e "SELECT EXISTS(SELECT 1 FROM mysql.user WHERE user = 'hirs_db')")"
-
-   if [ "$RESULT" = 1 ]; then
-      echo "hirs-db user exists"
-      HIRS_DB_PWD=$hirs_db_password
-   else   
+check_hirs_db
+ if [[ $HIRS_DB_USER_EXISTS != "1" ]]; then 
    # Check if Mysql HIRS DB  password set by system variable or set to random number
      if [ -z $HIRS_DB_PWD ]; then
        HIRS_DB_PWD=$(head -c 64 /dev/urandom | md5sum | tr -dc 'a-zA-Z0-9')
@@ -182,20 +177,29 @@ set_hirs_db_pwd () {
      if [[ $(grep -c "hibernate.connection.password" $SPRING_PROP_FILE) -eq 0 ]]; then
          echo "hibernate.connection.password=$HIRS_DB_PWD" >> $SPRING_PROP_FILE
      fi
-  fi
+   else 
+    echo "hirs-db user already exists, skipping"
+ fi
 }
 
 # Create a hirs_db with client side TLS enabled
 create_hirs_db_with_tls () {
-  # Check if hirs_db not created and create it if it wasn't
-  mysqlshow --user=root --password="$DB_ADMIN_PWD" | grep "hirs_db" >> $LOG_FILE 2>&1
-  if [ $? -eq 0 ]; then
-     echo "hirs_db exists, skipping hirs_db create"
-  else
-     mysql -u root --password=$DB_ADMIN_PWD < $MYSQL_DIR/db_create.sql
-     mysql -u root --password=$DB_ADMIN_PWD < $MYSQL_DIR/secure_mysql.sql
-     mysql -u root --password=$DB_ADMIN_PWD -e "SET PASSWORD FOR 'hirs_db'@'localhost' = PASSWORD('"$HIRS_DB_PWD"'); FLUSH PRIVILEGES;";
-  fi
+ check_hirs_db_user
+ echo "Now HIRS_DB_USER_EXISTS is $HIRS_DB_USER_EXISTS"
+ if [[ $HIRS_DB_USER_EXISTS == "1" ]]; then
+   echo "hirs_db already exists, skipping"
+   else
+     # Check if hirs_db not created and create it if it wasn't
+     mysqlshow --user=root --password="$DB_ADMIN_PWD" | grep "hirs_db" >> $LOG_FILE 2>&1
+     if [ $? -eq 0 ]; then
+       echo "hirs_db exists, skipping hirs_db create"
+     else
+       mysql -u root --password=$DB_ADMIN_PWD < $MYSQL_DIR/db_create.sql
+       mysql -u root --password=$DB_ADMIN_PWD < $MYSQL_DIR/secure_mysql.sql
+       mysql -u root --password=$DB_ADMIN_PWD -e "SET PASSWORD FOR 'hirs_db'@'localhost' = PASSWORD('"$HIRS_DB_PWD"'); FLUSH PRIVILEGES;";
+       echo "**** Setting hirs_db pwd to $HIRS_DB_PWD ***"
+     fi
+ fi
 }
 
 # Create a JDBC connector used by hibernate and place in Springs application.properties
@@ -232,14 +236,12 @@ fi
 # HIRS ACA Mysqld processing ...
 check_systemd -p
 check_mariadb_install
-
 start_mysqlsd
 check_mysql
 check_mysql_root_pwd
-clear_hirs_user
 set_hirs_db_pwd
+create_hirs_db_with_tls
 set_mysql_server_tls
 set_mysql_client_tls
-create_hirs_db_with_tls
 create_hibernate_url "RSA" "hirs_db"
 mysqld_reboot
