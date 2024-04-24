@@ -54,11 +54,18 @@ import java.nio.charset.StandardCharsets;
  */
 public abstract class DeviceSecurityEventDataBase {
 
+//    /**
+//     * DeviceSecurityEventDataDeviceContext Object.
+//     */
+//    @Getter
+//    private DeviceSecurityEventDataDeviceContext dsedDeviceContext = null;
+
     /**
-     * DeviceSecurityEventDataDeviceContext Object.
+     * Human readable description of the data within the
+     * DEVICE_SECURITY_EVENT_DATA_DEVICE_CONTEXT. DEVICE can be either PCI or USB.
      */
     @Getter
-    private DeviceSecurityEventDataDeviceContext dsedDeviceContext = null;
+    String deviceContextInfo = "";
 
     /**
      * DeviceSecurityEventData Default Constructor.
@@ -68,16 +75,32 @@ public abstract class DeviceSecurityEventDataBase {
 
     }
 
-    public void extractDeviceContext(final byte[] dSEDbytes, int startByte) {
+    public void parseDeviceContext(final byte[] dSEDbytes, int startByte, int deviceType) {
 
         int deviceContextLength = dSEDbytes.length - startByte;
 
-        // get the device type ID
+        // get the device context bytes
         byte[] deviceContextBytes = new byte[deviceContextLength];
         System.arraycopy(dSEDbytes, startByte, deviceContextBytes, 0,
                 deviceContextLength);
-        dsedDeviceContext = new DeviceSecurityEventDataDeviceContext(deviceContextBytes);
 
+        if (deviceType == 0) {
+            deviceContextInfo = "No Device Context (indicated by device type value of 0";
+        }
+        else if (deviceType == 1) {
+            DeviceSecurityEventDataPciContext dSEDpciContext
+                    = new DeviceSecurityEventDataPciContext(deviceContextBytes);
+            deviceContextInfo = dSEDpciContext.toString();
+        }
+        else if (deviceType == 2) {
+//            DeviceSecurityEventDataUsbContext dSEDusbContext
+//                    = new DeviceSecurityEventDataUsbContext(deviceContextBytes);
+//            deviceContextInfo = dSEDusbContext.toString();
+            deviceContextInfo = "Device type is USB - to be implemented in future";
+        }
+        else {
+            deviceContextInfo = "    Unknown device type; cannot process device context";
+        }
     }
 
 }

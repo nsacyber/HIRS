@@ -41,18 +41,8 @@ import java.util.List;
  *    https://admin.pci-ids.ucw.cz/read/PD/
  * The revision ID is controlled by the vendor and cannot be looked up.
  */
-public class DeviceSecurityEventDataPciContext {
+public class DeviceSecurityEventDataPciContext extends DeviceSecurityEventDataDeviceContext {
 
-    /**
-     * PCI Version.
-     */
-    @Getter
-    private int pciVersion = 0;
-    /**
-     * PCI Length.
-     */
-    @Getter
-    private int pciLength = 0;
     /**
      * PCI Vendor ID.
      */
@@ -91,13 +81,7 @@ public class DeviceSecurityEventDataPciContext {
      */
     public DeviceSecurityEventDataPciContext(final byte[] dSEDpciContextBytes) {
 
-        byte[] pciVersionBytes = new byte[2];
-        System.arraycopy(dSEDpciContextBytes, 0, pciVersionBytes, 0, 2);
-        pciVersion = HexUtils.leReverseInt(pciVersionBytes);
-
-        byte[] pciLengthBytes = new byte[2];
-        System.arraycopy(dSEDpciContextBytes, 2, pciLengthBytes, 0, 2);
-        pciLength = HexUtils.leReverseInt(pciLengthBytes);
+        super(dSEDpciContextBytes);
 
         byte[] pciVendorIdBytes = new byte[2];
         System.arraycopy(dSEDpciContextBytes, 4, pciVendorIdBytes, 0, 2);
@@ -133,9 +117,8 @@ public class DeviceSecurityEventDataPciContext {
     public String toString() {
         String dSEDpciContextInfo = "";
 
-        dSEDpciContextInfo += "\n   DeviceSecurityEventData - PCI Context";
-        dSEDpciContextInfo += "\n      Version = " + pciVersion;
-        dSEDpciContextInfo += "\n      Length = " + pciLength;
+        dSEDpciContextInfo += deviceContextCommonInfoToString();
+        dSEDpciContextInfo += "\n      Device Type = PCI";
         dSEDpciContextInfo += "\n      VendorID = 0x" + pciVendorId;
         dSEDpciContextInfo += "\n      DeviceID = 0x" + pciDeviceId;
         dSEDpciContextInfo += "\n      RevisionID = 0x" + pciRevisionId;

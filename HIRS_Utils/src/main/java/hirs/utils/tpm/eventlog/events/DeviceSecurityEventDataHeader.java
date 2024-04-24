@@ -110,7 +110,7 @@ public class DeviceSecurityEventDataHeader extends DeviceSecurityEventDataHeader
     public String toString() {
         String dsedHeaderInfo = "";
 
-        dsedHeaderInfo += headerBaseToString();
+        dsedHeaderInfo += headerCommonInfoToString();
         String spdmHashAlgoStr = SpdmHa.tcgAlgIdToString(spdmHashAlgo);
         dsedHeaderInfo += "\n   SPDM Hash Algorithm = " + spdmHashAlgoStr;
         dsedHeaderInfo += "\n   SPDM Measurement Block:";
