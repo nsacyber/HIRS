@@ -51,6 +51,7 @@ def gitHash = { ->
     return stdout.toString().trim()
 }
 
+project.ext["projVersion"] = "${projectVersion}"
 project.ext["jarVersion"] = "${projectVersion}.${buildTime}.${gitHash}"
 project.ext["packageVersion"] = "${projectVersion}.${buildTime}.${gitHash}.el8"
 

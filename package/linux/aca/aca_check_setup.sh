@@ -75,6 +75,8 @@ while [[ $# -gt 0 ]]; do
   esac
 done
 
+check_systemd -p
+
 echo "Checking HIRS ACA Setup on this device..."
 # Check if aca setup was performed
   # Check is RPM was installed via RPM package 
@@ -91,17 +93,21 @@ echo "Checking HIRS ACA Setup on this device..."
     echo "$ID OS distro encountered"
   fi
   if [ $? -eq 0 ]; then
-      echo "HIRS ACA was installed via an OS package on this device"
-      systemctl is-active --quiet hirs-aca
-      if [[ $? -eq 0 ]]; then
-        echo "    The hirs-aca service is active"
-        else
-        echo "    Error: ACA package install but the hirs-aca service is dead"
-        ALL_CHECKS_PASSED=false
-      fi
+      echo "HIRS ACA was installed via an OS package on this device."
+      if [ $SYSD_SERVICE = true ]; then
+        systemctl is-active --quiet hirs-aca
+        if [[ $? -eq 0 ]]; then
+          echo "    The hirs-aca service is active"
+          else
+          echo "    Error: ACA package install but the hirs-aca service is dead"
+          ALL_CHECKS_PASSED=false
+        fi
+     fi
+    else
+      echo "ACA not installed via a package." 
   fi
 
-check_systemd -p
+
 
 # Check install setup pki files
   if [ ! -d $CERT_PATH ]; then
@@ -130,7 +136,7 @@ echo "Checking if ACA passwords are present..."
    echo "hirs db user password not set"
    PRESENT=false  
  fi
- if [ $PRESENT ]; then
+ if [ $PRESENT = true ]; then
    echo "   ACA passwords were found"
   else
    echo "   ERROR finding ACA passwords"
@@ -182,7 +188,7 @@ check_cert () {
      ALL_CERTS_PASSED=false
   fi
   if [ ! -z "${ARG_VERBOSE}" ]; then
-    echo "     "$RESULTACA_PROP_FILE
+    echo "     "$RESULT
   fi
 }
 
@@ -229,7 +235,7 @@ check_pki () {
        echo "   Keystore alias list:"
        keytool -list -keystore  /etc/hirs/certificates/HIRS/TrustStore.jks  -storepass $hirs_pki_password | grep hirs | sed -e 's/^/     /' 
   fi
-  
+ 
   if [ $? -eq 0 ]; then
       echo "   JKS Trust Store File (/etc/hirs/certificates/HIRS/TrustStore.jks) is correct: HIRS pki password is correct"
     else
