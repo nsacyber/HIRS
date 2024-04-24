@@ -2,7 +2,6 @@ package hirs.utils.tpm.eventlog.events;
 
 
 import lombok.Getter;
-
 import java.io.UnsupportedEncodingException;
 
 public class DeviceSecurityEventData extends DeviceSecurityEventDataBase {
@@ -20,7 +19,7 @@ public class DeviceSecurityEventData extends DeviceSecurityEventDataBase {
      */
     public DeviceSecurityEventData(final byte[] dSEDbytes) throws UnsupportedEncodingException {
         dsedHeader = new DeviceSecurityEventDataHeader(dSEDbytes);
-        extractDeviceContext(dSEDbytes, dsedHeader.getDSEDheaderByteSize());
+        parseDeviceContext(dSEDbytes, dsedHeader.getDSEDheaderByteSize(), dsedHeader.getDeviceType());
     }
 
     /**
@@ -31,7 +30,7 @@ public class DeviceSecurityEventData extends DeviceSecurityEventDataBase {
     public String toString() {
         String dsedInfo = "";
         dsedInfo += dsedHeader.toString();
-        dsedInfo += getDsedDeviceContext().toString();
+        dsedInfo += getDeviceContextInfo();
         return dsedInfo;
     }
 }

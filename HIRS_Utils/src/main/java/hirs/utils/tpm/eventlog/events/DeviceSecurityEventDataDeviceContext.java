@@ -13,18 +13,29 @@ import java.nio.charset.StandardCharsets;
  * identification of the device, device vendor, subsystem, etc. Device can be either a PCI
  * or USB connection.
  * <p>
- * typedef struct tdDEVICE_SECURITY_EVENT_DATA_DEVICE_CONTEXT {
+ * typedef union tdDEVICE_SECURITY_EVENT_DATA_DEVICE_CONTEXT {
  *      DEVICE_SECURITY_EVENT_DATA_PCI_CONTEXT       PciContext;
  *      DEVICE_SECURITY_EVENT_DATA_USB_CONTEXT       UsbContext;
  * } DEVICE_SECURITY_EVENT_DATA_DEVICE_CONTEXT;
  * <p>
  */
-public class DeviceSecurityEventDataDeviceContext {
+public abstract class DeviceSecurityEventDataDeviceContext {
+
+//    /**
+//     * SPDM Measurement Block.
+//     */
+//    private DeviceSecurityEventDataPciContext deviceSecurityEventDataPciContext = null;
 
     /**
-     * SPDM Measurement Block.
+     * PCI Version.
      */
-    private DeviceSecurityEventDataPciContext deviceSecurityEventDataPciContext = null;
+    @Getter
+    private int version = 0;
+    /**
+     * PCI Length.
+     */
+    @Getter
+    private int length = 0;
 
     /**
      * DeviceSecurityEventDataDeviceContext Constructor.
@@ -33,28 +44,28 @@ public class DeviceSecurityEventDataDeviceContext {
      */
     public DeviceSecurityEventDataDeviceContext(final byte[] dSEDdeviceContextBytes) {
 
-        byte[] dSEDpciContextLengthBytes = new byte[2];
-        System.arraycopy(dSEDdeviceContextBytes, 2, dSEDpciContextLengthBytes, 0, 2);
-        int dSEDpciContextLength = HexUtils.leReverseInt(dSEDpciContextLengthBytes);
+        byte[] pciVersionBytes = new byte[2];
+        System.arraycopy(dSEDdeviceContextBytes, 0, pciVersionBytes, 0, 2);
+        version = HexUtils.leReverseInt(pciVersionBytes);
 
-        byte[] dSEDpciContextBytes = new byte[dSEDpciContextLength];
-        System.arraycopy(dSEDdeviceContextBytes, 0, dSEDpciContextBytes, 0, dSEDpciContextLength);
-        deviceSecurityEventDataPciContext = new DeviceSecurityEventDataPciContext(dSEDpciContextBytes);
-
-        //TODO add USB context
+        byte[] pciLengthBytes = new byte[2];
+        System.arraycopy(dSEDdeviceContextBytes, 2, pciLengthBytes, 0, 2);
+        length = HexUtils.leReverseInt(pciLengthBytes);
     }
 
     /**
-     * Returns a human readable description of the data within this structure.
+     * Returns a human readable description of the data common to device context structures.
      *
      * @return a description of this structure..
      */
-    public String toString() {
-        String dSEDdeviceContextInfo = "";
+    public String deviceContextCommonInfoToString() {
+        String dSEDdeviceContextCommonInfo = "";
 
-        dSEDdeviceContextInfo += deviceSecurityEventDataPciContext.toString();
+        dSEDdeviceContextCommonInfo += "\n   DeviceSecurityEventData - Device Info";
+        dSEDdeviceContextCommonInfo += "\n      Device Structure Version = " + version;
 
-        return dSEDdeviceContextInfo;
+        return dSEDdeviceContextCommonInfo;
     }
+
 }
 
