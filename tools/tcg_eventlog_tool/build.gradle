@@ -57,6 +57,9 @@ jar {
                  'Class-Path':configurations.runtimeClasspath.files.collect { it.getName() }.join(' ')
            )
      }
+     from {
+		configurations.runtimeClasspath.collect { it.isDirectory() ? it : zipTree(it) }
+	 }
      //jar name format: [archiveBaseName]-[archiveAppendix]-[archiveVersion]-[archiveClassifier].[archiveExtension]
      archiveVersion = jarVersion
 }
