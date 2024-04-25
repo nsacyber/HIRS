@@ -62,7 +62,8 @@ import java.util.zip.ZipOutputStream;
 @RequestMapping("/HIRS_AttestationCAPortal/portal/reference-manifests")
 public class ReferenceManifestPageController extends PageController<NoPageParams> {
 
-    private static final String LOG_FILE_PATTERN = "([^\\s]+(\\.(?i)(rimpcr|rimel|bin|log))$)";
+    private static final String BASE_RIM_FILE_PATTERN = "([^\\s]+(\\.(?i)swidtag)$)";
+    private static final String SUPPORT_RIM_FILE_PATTERN = "([^\\s]+(\\.(?i)(rimpcr|rimel|bin|log))$)";
 
     @Autowired(required = false)
     private EntityManager entityManager;
@@ -156,9 +157,11 @@ public class ReferenceManifestPageController extends PageController<NoPageParams
         Map<String, Object> model = new HashMap<>();
         PageMessages messages = new PageMessages();
         String fileName;
-        Pattern logPattern = Pattern.compile(LOG_FILE_PATTERN);
+        Pattern baseRimPattern = Pattern.compile(BASE_RIM_FILE_PATTERN);
+        Pattern supportRimPattern = Pattern.compile(SUPPORT_RIM_FILE_PATTERN);
         Matcher matcher;
-        boolean supportRIM = false;
+        boolean isBaseRim = false;
+        boolean isSupportRim = false;
         List<BaseReferenceManifest> baseRims = new ArrayList<>();
         List<SupportReferenceManifest> supportRims = new ArrayList<>();
         log.info(String.format("Processing %s uploaded files", files.length));
@@ -166,11 +169,23 @@ public class ReferenceManifestPageController extends PageController<NoPageParams
         // loop through the files
         for (MultipartFile file : files) {
             fileName = file.getOriginalFilename();
-            matcher = logPattern.matcher(fileName);
-            supportRIM = matcher.matches();
-
-            //Parse reference manifests
-            parseRIM(file, supportRIM, messages, baseRims, supportRims);
+            matcher = baseRimPattern.matcher(fileName);
+            isBaseRim = matcher.matches();
+            if (!isBaseRim) {
+                matcher = supportRimPattern.matcher(fileName);
+                isSupportRim = matcher.matches();
+            }
+            if (!isBaseRim && !isSupportRim) {
+                String errorString = "The file extension of " + fileName + " was not recognized." +
+                        " Base RIMs support the extension \".swidtag\", and support RIMs support " +
+                        "\".rimpcr\", \".rimel\", \".bin\", and \".log\". " +
+                        "Please verify your upload and retry.";
+                log.error("File extension in " + fileName + " not recognized as base or support RIM.");
+                messages.addError(errorString);
+            } else {
+                //Parse reference manifests
+                parseRIM(file, isSupportRim, messages, baseRims, supportRims);
+            }
         }
         baseRims.stream().forEach((rim) -> {
             log.info(String.format("Storing swidtag %s", rim.getFileName()));
