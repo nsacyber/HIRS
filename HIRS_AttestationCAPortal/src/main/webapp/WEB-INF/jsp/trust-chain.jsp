@@ -101,7 +101,7 @@
 
                 //Format validity time
                 $("#validity span").each(function(){
-                    $(this).text(formatDateTime($(this).text()));
+                    $(this).text(formatCertificateDate($(this).text()));
                 });
 
                 //Convert byte array to string
@@ -120,14 +120,14 @@
                             data: 'beginValidity',
                             searchable:false,
                             render: function (data, type, full, meta) {
-                                return formatDateTime(full.beginValidity);
+                                return formatCertificateDate(full.beginValidity);
                             }
                         },
                         {
                             data: 'endValidity',
                             searchable:false,
                             render: function (data, type, full, meta) {
-                                return formatDateTime(full.endValidity);
+                                return formatCertificateDate(full.endValidity);
                             }
                         },
                         {
