@@ -56,14 +56,14 @@
                             data: 'beginValidity',
                             searchable:false,
                             render: function (data, type, full, meta) {
-                                return formatDateTime(data);
+                                return formatCertificateDate(data);
                             }
                         },
                         {
                             data: 'endValidity',
                             searchable:false,
                             render: function (data, type, full, meta) {
-                                return formatDateTime(data);
+                                return formatCertificateDate(data);
                             }
                         },
                         {
