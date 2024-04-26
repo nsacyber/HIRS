@@ -64,14 +64,14 @@
                             data: 'beginValidity',
                             searchable:false,
                             render: function (data, type, full, meta) {
-                                return formatDateTime(full.beginValidity);
+                                return formatCertificateDate(full.beginValidity);
                             }
                         },
                         {
                             data: 'endValidity',
                             searchable:false,
                             render: function (data, type, full, meta) {
-                                return formatDateTime(full.endValidity);
+                                return formatCertificateDate(full.endValidity);
                             }
                         },
                         {

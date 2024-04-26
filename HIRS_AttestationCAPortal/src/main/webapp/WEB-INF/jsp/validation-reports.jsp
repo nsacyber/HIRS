@@ -100,7 +100,7 @@
                         name: 'createTime',
                         searchable: false,
                         render: function (data, type, full, meta) {
-                            return formatDateTime(full.createTime);
+                            return formatCertificateDate(full.createTime);
                         }
                     },
                     {
