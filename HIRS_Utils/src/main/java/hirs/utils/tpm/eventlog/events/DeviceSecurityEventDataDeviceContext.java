@@ -52,7 +52,7 @@ public abstract class DeviceSecurityEventDataDeviceContext {
     public String deviceContextCommonInfoToString() {
         String dSEDdeviceContextCommonInfo = "";
 
-        dSEDdeviceContextCommonInfo += "\n   DeviceSecurityEventData - Device Info";
+        dSEDdeviceContextCommonInfo += "\n   DeviceSecurityEventData Device Info:";
         dSEDdeviceContextCommonInfo += "\n      Device Structure Version = " + version;
 
         return dSEDdeviceContextCommonInfo;
