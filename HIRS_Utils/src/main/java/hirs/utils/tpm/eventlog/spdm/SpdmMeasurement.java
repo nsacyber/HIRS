@@ -36,7 +36,6 @@ public class SpdmMeasurement {
     /**
      * Measurement value (digest).
      */
-    @Getter
     private byte[] dmtfSpecMeasurementValue = null;
 
     /**
