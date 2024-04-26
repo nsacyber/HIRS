@@ -7,6 +7,7 @@ import hirs.attestationca.persist.entity.userdefined.info.NetworkInfo;
 import hirs.attestationca.persist.entity.userdefined.info.HardwareInfo;
 import hirs.attestationca.persist.entity.userdefined.info.FirmwareInfo;
 
+import hirs.utils.VersionHelper;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -21,7 +22,7 @@ public class DeviceInfoReportTest extends AbstractUserdefinedEntityTest {
     private final HardwareInfo hardwareInfo = createTestHardwareInfo();
     private final TPMInfo tpmInfo = createTPMInfo();
 
-    private static final String EXPECTED_CLIENT_VERSION = "Test.Version";
+    private static final String EXPECTED_CLIENT_VERSION = VersionHelper.getVersion();
 
     /**
      * Tests instantiation of a DeviceInfoReport.
