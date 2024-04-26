@@ -542,8 +542,7 @@ public class TpmPcrEvent {
                 description += "Event Content:\n" + new UefiVariable(content).toString();
                 break;
             case EvConstants.EV_EFI_SPDM_FIRMWARE_BLOB:
-                EvEfiSpdmFirmwareBlob efiSpdmFwBlob = new EvEfiSpdmFirmwareBlob(content);
-                description += "Event Content:\n" + efiSpdmFwBlob.toString();
+                description += "Event Content:\n" + new EvEfiSpdmFirmwareBlob(content).toString();
                 break;
             default:
                 description += " Unknown Event found" + "\n";
