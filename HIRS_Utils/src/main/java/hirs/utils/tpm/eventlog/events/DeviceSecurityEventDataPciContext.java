@@ -106,7 +106,7 @@ public class DeviceSecurityEventDataPciContext extends DeviceSecurityEventDataDe
     public String toString() {
         String dSEDpciContextInfo = "";
 
-        dSEDpciContextInfo += deviceContextCommonInfoToString();
+        dSEDpciContextInfo += super.toString();
         dSEDpciContextInfo += "\n      Device Type = PCI";
         dSEDpciContextInfo += "\n      VendorID = 0x" + vendorId;
         dSEDpciContextInfo += "\n      DeviceID = 0x" + deviceId;

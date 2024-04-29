@@ -203,7 +203,7 @@ public abstract class DeviceSecurityEventHeader {
      *
      * @return a description of this structure.
      */
-    public String headerCommonInfoToString() {
+    public String toString() {
         String dsedHeaderCommonInfo = "";
 
         dsedHeaderCommonInfo += "\n   SPDM Device Type = " + deviceTypeToString(deviceType);
