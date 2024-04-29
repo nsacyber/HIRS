@@ -13,7 +13,7 @@ import java.io.UnsupportedEncodingException;
  * } DEVICE_SECURITY_EVENT_DATA;
  * <p>
  */
-public class DeviceSecurityEventData extends DeviceSecurityEventDataBase {
+public class DeviceSecurityEventData extends DeviceSecurityEvent {
 
     /**
      * DeviceSecurityEventDataHeader Object.
