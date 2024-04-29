@@ -14,7 +14,7 @@ import lombok.Getter;
  * } DEVICE_SECURITY_EVENT_DATA2;
  * <p>
  */
-public class DeviceSecurityEventData2 extends DeviceSecurityEventDataBase {
+public class DeviceSecurityEventData2 extends DeviceSecurityEvent {
 
     /**
      * DeviceSecurityEventDataHeader Object.
