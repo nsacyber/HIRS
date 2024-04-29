@@ -28,7 +28,7 @@ import java.io.UnsupportedEncodingException;
  * <p>
  * Assumption: there is only 1 SpdmMeasurementBlock per event. Need more test patterns to verify.
  */
-public class DeviceSecurityEventDataHeader extends DeviceSecurityEventDataHeaderBase {
+public class DeviceSecurityEventDataHeader extends DeviceSecurityEventHeader {
 
     /**
      * Event data length.

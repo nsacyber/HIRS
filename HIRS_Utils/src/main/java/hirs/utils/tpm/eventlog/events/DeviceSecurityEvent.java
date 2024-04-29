@@ -1,10 +1,6 @@
 package hirs.utils.tpm.eventlog.events;
 
-import hirs.utils.HexUtils;
-import hirs.utils.tpm.eventlog.uefi.UefiConstants;
 import lombok.Getter;
-
-import java.nio.charset.StandardCharsets;
 
 
 /**
@@ -52,7 +48,7 @@ import java.nio.charset.StandardCharsets;
  * even though the spec says both are in the data structure. If it is only 1, though, there's no
  * method to tell them apart.
  */
-public abstract class DeviceSecurityEventDataBase {
+public abstract class DeviceSecurityEvent {
 
     /**
      * Human readable description of the data within the
@@ -65,7 +61,7 @@ public abstract class DeviceSecurityEventDataBase {
      * DeviceSecurityEventData Default Constructor.
      *
      */
-    public DeviceSecurityEventDataBase() {
+    public DeviceSecurityEvent() {
 
     }
 

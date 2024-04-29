@@ -50,7 +50,7 @@ import java.nio.charset.StandardCharsets;
  *    DevicePath
  * <p>
  */
-public abstract class DeviceSecurityEventDataHeaderBase {
+public abstract class DeviceSecurityEventHeader {
 
     /**
      * Contains the size (in bytes) of the header.
@@ -105,7 +105,7 @@ public abstract class DeviceSecurityEventDataHeaderBase {
     /**
      * DeviceSecurityEventDataHeaderBase Default Constructor.
      */
-    public DeviceSecurityEventDataHeaderBase() {
+    public DeviceSecurityEventHeader() {
 
     }
 
@@ -114,7 +114,7 @@ public abstract class DeviceSecurityEventDataHeaderBase {
      *
      * @param dSEDbytes byte array holding the DeviceSecurityEventData.
      */
-    public DeviceSecurityEventDataHeaderBase(final byte[] dSEDbytes) {
+    public DeviceSecurityEventHeader(final byte[] dSEDbytes) {
 
         byte[] signatureBytes = new byte[UefiConstants.SIZE_16];
         System.arraycopy(dSEDbytes, 0, signatureBytes, 0, UefiConstants.SIZE_16);
