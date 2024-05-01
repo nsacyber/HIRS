@@ -5,6 +5,7 @@ import hirs.utils.tpm.eventlog.events.EvCompactHash;
 import hirs.utils.tpm.eventlog.events.EvConstants;
 import hirs.utils.tpm.eventlog.events.EvEfiGptPartition;
 import hirs.utils.tpm.eventlog.events.EvEfiHandoffTable;
+import hirs.utils.tpm.eventlog.events.EvEfiSpdmFirmwareBlob;
 import hirs.utils.tpm.eventlog.events.EvEfiSpecIdEvent;
 import hirs.utils.tpm.eventlog.events.EvEventTag;
 import hirs.utils.tpm.eventlog.events.EvIPL;
@@ -374,6 +375,14 @@ public class TpmPcrEvent {
                 break;
             case EvConstants.EV_EFI_HCRTM_EVENT:
                 break;
+            case EvConstants.EV_EFI_SPDM_FIRMWARE_BLOB:
+                try {
+                    sb.append(new EvEfiSpdmFirmwareBlob(eventContent).toString());
+                } catch (UnsupportedEncodingException ueEx) {
+                    log.error(ueEx);
+                    sb.append(ueEx.toString());
+                }
+                break;
             default:
                 sb.append("Unknown Event found\n");
         }
@@ -532,6 +541,9 @@ public class TpmPcrEvent {
             case EvConstants.EV_EFI_VARIABLE_AUTHORITY:
                 description += "Event Content:\n" + new UefiVariable(content).toString();
                 break;
+            case EvConstants.EV_EFI_SPDM_FIRMWARE_BLOB:
+                description += "Event Content:\n" + new EvEfiSpdmFirmwareBlob(content).toString();
+                break;
             default:
                 description += " Unknown Event found" + "\n";
         }
@@ -609,6 +621,8 @@ public class TpmPcrEvent {
             return "EV_EFI_HCRTM_EVENT";
         } else if (event == EvConstants.EV_EFI_VARIABLE_AUTHORITY) {
             return "EV_EFI_VARIABLE_AUTHORITY";
+        } else if (event == EvConstants.EV_EFI_SPDM_FIRMWARE_BLOB) {
+            return "EV_EFI_SPDM_FIRMWARE_BLOB";
         } else {
             return "Unknown Event ID " + event + " encountered";
         }
