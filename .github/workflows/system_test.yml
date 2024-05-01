@@ -1,12 +1,13 @@
-# Sets up and runs HIRS System tests
-
+# This workflow will build HIRS, run system tests, and create artifacts consisting of ACA and Provisioner logs.
+# Updated: 04/18/2024
+#
 name: HIRS System Tests
-on: 
+on:
   push:
     branches:
-      - '*v2*'
-      - 'master'
-    workflow_dispatch:
+      - '*v3*'
+      - 'main'
+  workflow_dispatch:
 env:
   TEST_STATUS: 0
 jobs:
@@ -18,28 +19,27 @@ jobs:
       contents: read
       packages: write
     steps:
-    - uses: actions/checkout@v2
-    - name: ACA TPM2 Tests
-      continue-on-error: true
-      shell: bash
-      run: |
-        sudo apt-get install -y curl
-        export JAVA_HOME="/usr/lib/jvm/java-1.8.0-openjdk-1.8.0*/jre/bin"
-        echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u $ --password-stdin
-        # comment out the line above and uncomment the line below to run in a forked repo.
-        #echo "${{ secrets.PKG_PWD }}" | docker login ghcr.io -u $ --password-stdin
-        bash .ci/system-tests/run_system_tests.sh
-    - name: Archive System Test Log files
-      uses: actions/upload-artifact@v2
-      with:
-        name: System_Test_Log_Files
-        path: logs/
-        if-no-files-found: error
-    - name: Check System Test results
-      if: success() || failure()
-      run: |
-        if [ ${TEST_STATUS} == "0" ]; then
-          exit 0;
-        else
-          exit 1;
-        fi
+      - name: Checkout repository
+        uses: actions/checkout@v3
+      - name: ACA TPM2 Tests
+        continue-on-error: true
+        shell: bash
+        run: |
+          # If on a forked repo, ensure that it has a new secret for the PAT
+          # and replace secrets.GITHUB_TOKEN with the secret in the fork
+          echo ${{ secrets.GITHUB_TOKEN }} | docker login ghcr.io -u ${{ github.actor }} --password-stdin
+          bash .ci/system-tests/run_system_tests.sh ${GITHUB_REF#refs/heads/}
+      - name: Archive System Test Log files
+        uses: actions/upload-artifact@v3
+        with:
+          name: System_Test_Log_Files
+          path: logs/
+          if-no-files-found: ignore
+      - name: Check System Test results
+        if: success() || failure()
+        run: |
+          if [ ${TEST_STATUS} == "0" ]; then
+            exit 0;
+          else
+            exit 1;
+          fi
