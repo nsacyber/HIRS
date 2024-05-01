@@ -1,0 +1,100 @@
+FROM rockylinux:9
+LABEL org.opencontainers.image.vendor NSA Laboratory for Advanced Cybersecurity Research
+LABEL org.opencontainers.image.source https://github.com/nsacyber/hirs
+LABEL org.opencontainers.image.description Tools for testing the build and deployment of HIRS projects.
+
+# Purpose: This image is designed for HIRS Provisioner.Net testing on Rocky 9.
+# Date Modified: 4/15/24
+# Notes: The image to be built should be named "tpm2provisioner-dotnet-ci:latest".
+#        For local build, use this command from the /HIRS/ directory to build the image:
+#        $ docker build -f ./.ci/docker/Dockerfile.tpm2provisioner_dotnet -t tpm2provisioner-dotnet-ci:latest .
+
+# REF can be specified as a docker run environment variable to select the HIRS branch to work with
+ENV REF=main
+# BUILD, is an environment variable that if not empty, will attempt to run gradle bootWar on the cloned branch
+ENV BUILD=
+
+SHELL ["/bin/bash", "-c"]
+
+# Rocky 9 has a different channel for some apps
+RUN dnf install -y 'dnf-command(config-manager)' && dnf config-manager --set-enabled crb
+
+# Update and install OS-dependencies
+RUN dnf update -y
+# Dependencies were selected for these reasons:
+#   OS setup/Unknown direct impact for HIRS
+ENV HIRS_DNF_OS_SETUP="initscripts firewalld policycoreutils policycoreutils-python-utils net-tools"
+#   OS tools
+ENV HIRS_DNF_OS_TOOLS="git sudo vim wget"
+#   ACA compile
+ENV HIRS_DNF_ACA_COMPILE="java-17-openjdk-devel"
+#   ACA run
+ENV HIRS_DNF_ACA_RUN="mariadb-server"
+#   IBM TPM simulator compile
+ENV HIRS_DNF_TPM_COMPILE="tpm2-tools gcc cmake openssl-devel"
+#   IBM TSS compile
+ENV HIRS_DNF_TSS_COMPILE="autoconf automake libtool"
+#   .NET SDK
+ENV HIRS_DNF_DOTNET_SDK="dotnet-sdk-6.0"
+# Download and install all dependencies at one time
+RUN dnf -y install $(echo "$HIRS_DNF_OS_SETUP") $(echo "$HIRS_DNF_OS_TOOLS") $(echo "$HIRS_DNF_ACA_COMPILE") $(echo "$HIRS_DNF_ACA_RUN") $(echo "$HIRS_DNF_TPM_COMPILE") $(echo "$HIRS_DNF_TSS_COMPILE") $(echo "$HIRS_DNF_DOTNET_SDK")
+
+# Build IBM TPM Simulator
+RUN git clone https://github.com/kgoldman/ibmswtpm2 /ibmswtpm2
+WORKDIR /ibmswtpm2/src
+RUN make
+
+# Build IBM TPM tools
+RUN git clone https://github.com/kgoldman/ibmtss /ibmtss
+WORKDIR /ibmtss/utils
+RUN make -f makefiletpmc
+
+# The following script tests that the SW TPM and TSS were compiled in the docker image. And documents how to start the SW TPM after container launch using both IBM's tss and TPM2-TOOLS.
+RUN echo "#!/bin/bash" > /tmp/tpm_config && \
+    echo "/ibmswtpm2/src/tpm_server &" >> /tmp/tpm_config && \
+    echo "sleep 5" >> /tmp/tpm_config && \
+    echo "/ibmtss/utils/startup -c" >> /tmp/tpm_config && \
+    echo "tpm2_shutdown" >> /tmp/tpm_config && \
+    echo "tpm2_startup -c" >> /tmp/tpm_config && \
+    echo "/ibmtss/utils/shutdown -c" >> /tmp/tpm_config && \
+    bash /tmp/tpm_config && \
+    rm -rf /tmp/tpm_config
+
+# Checkout HIRS
+RUN git clone -b main https://github.com/nsacyber/HIRS.git /hirs
+
+# Run bootwar to cache build artifacts
+WORKDIR /hirs
+RUN ./gradlew bootWar
+
+# Install dotnet tools
+RUN dotnet tool install --global dotnet-deb
+RUN dotnet tool install --global dotnet-rpm
+RUN dotnet tool install --global dotnet-zip
+# Add dotnet PATHs
+ENV PATH="/root/.dotnet:/root/.dotnet/tools:$PATH"
+# Build .NET
+WORKDIR /hirs/HIRS_Provisioner.NET
+RUN dotnet restore
+WORKDIR /hirs/HIRS_Provisioner.NET/hirs
+RUN dotnet test
+RUN dotnet deb -r linux-x64 -c Release
+RUN dotnet rpm -r linux-x64 -c Release
+
+# The following script will clone and copy the referenced branch of HIRS off GitHub
+# If configured, run bootwar to cache build artifacts
+RUN echo "#!/bin/bash" > /tmp/auto_clone_branch && \
+    echo "cd /hirs" >> /tmp/auto_clone_branch && \
+    echo "git fetch origin && git pull origin main && git reset --hard" >> /tmp/auto_clone_branch && \
+    echo 'git checkout $1 && git reset --hard' >> /tmp/auto_clone_branch && \
+    echo 'if [ -n "${2}" ]; then ./gradlew bootWar; fi' >> /tmp/auto_clone_branch && \
+    echo "cd HIRS_Provisioner.NET/hirs" >> /tmp/auto_clone_branch && \
+    echo 'if [ -n "${2}" ]; then dotnet deb -r linux-x64 -c Release && dotnet rpm -r linux-x64 -c Release; fi' >> /tmp/auto_clone_branch && \
+    chmod 755 /tmp/auto_clone_branch
+
+# Reset working directory
+WORKDIR /hirs
+
+# Copy script for running TPM Simulator
+COPY ./.ci/setup/container/setup_tpm2provisioner_dotnet.sh /.ci/setup/container/
+RUN chmod 755 /.ci/setup/container/setup_tpm2provisioner_dotnet.sh
