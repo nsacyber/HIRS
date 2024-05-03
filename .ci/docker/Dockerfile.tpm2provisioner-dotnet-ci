@@ -3,11 +3,15 @@ LABEL org.opencontainers.image.vendor NSA Laboratory for Advanced Cybersecurity 
 LABEL org.opencontainers.image.source https://github.com/nsacyber/hirs
 LABEL org.opencontainers.image.description Tools for testing the build and deployment of HIRS projects.
 
-# Purpose: This image is designed for HIRS Provisioner.Net testing on Rocky 9.
+# Purpose: This image is designed for HIRS Provisioner.Net testing on Rocky 9. It is meant to be used in
+#          the .ci, and does not automatically start the Provisioner upon running the container.
 # Date Modified: 4/15/24
 # Notes: The image to be built should be named "tpm2provisioner-dotnet-ci:latest".
-#        For local build, use this command from the /HIRS/ directory to build the image:
-#        $ docker build -f ./.ci/docker/Dockerfile.tpm2provisioner_dotnet -t tpm2provisioner-dotnet-ci:latest .
+#        For local image build, use this command from the /HIRS/ directory to build the image:
+#           $ docker build -f ./.ci/docker/Dockerfile.tpm2provisioner_dotnet -t tpm2provisioner-dotnet-ci:latest .
+#        For manually running the Provisioner.Net using the TPM Simulator, first ensure that an ACA
+#        is running on port 8443. Then, run the setup script within this container using this command:
+#           $ ./.ci/setup/container/setup_tpm2provisioner_dotnet.sh
 
 # REF can be specified as a docker run environment variable to select the HIRS branch to work with
 ENV REF=main

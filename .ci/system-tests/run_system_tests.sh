@@ -15,8 +15,16 @@ tpm2_container=hirs-provisioner1-tpm2
 echo "********  Setting up for HIRS System Tests for TPM 2.0 ******** "
 docker compose -f ./.ci/docker/docker-compose-system-test.yml up -d
 
-# Switching to current/desired branch
-docker exec $tpm2_container sh -c "cd / && ./tmp/auto_clone_branch $1 1> /dev/null && cd hirs"
+# Setting up and Starting ACA + Switching to current/desired branch in ACA Container
+docker exec $aca_container sh -c "cd / && ./tmp/auto_clone_branch $1 > /dev/null 2>&1 \
+                                  && cd hirs && echo 'ACA Container Current Branch: ' && git branch \
+                                  && cd / && ./hirs/package/linux/aca/aca_setup.sh --unattended 1> /dev/null \
+                                  && ./tmp/hirs_add_aca_tls_path_to_os.sh 1> /dev/null \
+                                  && cd hirs && ./package/linux/aca/aca_bootRun.sh 1> /dev/null" &
+
+# Switching to current/desired branch in Provisioner Container
+docker exec $tpm2_container sh -c "cd / && ./tmp/auto_clone_branch $1 > /dev/null 2>&1 \
+                                   && cd hirs && echo 'Provisioner Container Current Branch: ' && git branch"
 
 # Install HIRS Provisioner.Net and setup tpm2 simulator.
 # In doing so, tests a single provision between Provisioner.Net and ACA.
