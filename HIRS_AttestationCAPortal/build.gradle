@@ -11,6 +11,7 @@ plugins {
 // Get version from main project gradle
 def packVersion = properties.get("packageVersion");
 def jarVersion = properties.get("jarVersion");
+def projVersion = properties.get("projVersion");
 //println "packageVersion is ${projVersion}"
 
 java {
@@ -96,17 +97,22 @@ task buildVersion() {
 
 ospackage {
     packageName = 'HIRS_AttestationCA'
+    description = 'HIRS Attestation CA. Use systemctl status hirs-aca'
     os = LINUX
     arch = NOARCH
     version = "$packVersion"
-    release = '1'
+    release = '2'
     
+ 
     user 'root'
     fileMode = 0755
 
     addParentDirs = true
     createDirectoryEntry true 
 
+    into ('/etc/hirs') {
+          from '../VERSION'
+     }
     // copy json tables
     into ('/etc/hirs/aca/default-properties') {
          from '../HIRS_AttestationCA/src/main/resources/component-class.json'
@@ -128,10 +134,14 @@ ospackage {
          fileMode = 0755 
     }
 
+    // Install - check for existing setup
+    preInstall 'if [ -d /etc/hirs ]; then echo "Error: /etc/hirs/ exists, aborting install"; exit 1; fi;'
+    preInstall 'if [ -d /opt/hirs ]; then echo "Error: /opt/hirs/ exists, aborting install"; exit 1; fi;'
     // Uninstall
-    preUninstall 'bash /opt/hirs/aca/scripts/aca/aca_remove_setup.sh'
+    preUninstall 'bash /opt/hirs/aca/scripts/aca/aca_remove_setup.sh $1'
     preUninstall 'bash /opt/hirs/aca/scripts/systemd/aca_disable_service.sh'
     postUninstall 'if [ -d /etc/hirs ]; then rm -rf /etc/hirs; fi;'
+    postUninstall 'if [ -d /opt/hirs ]; then rm -rf /opt/hirs; fi;'
 
     buildRpm {
         dependsOn  ':HIRS_AttestationCAPortal:buildVersion'
@@ -149,9 +159,6 @@ ospackage {
         postTrans 'firewall-cmd --reload'
         postTrans 'bash /opt/hirs/aca/scripts/aca/aca_setup.sh -u'
         postTrans 'bash /opt/hirs/aca/scripts/systemd/aca_enable_service.sh'
-     // postTrans 'bash /opt/hirs/aca/scripts/aca/aca_bootRun.sh -w &'
-        // add chrontab to run ACA at boot
-        //postTrans 'echo "@reboot root /opt/hirs/aca/scripts/aca/aca_bootRun.sh -w" >> /etc/crontab'
         postTrans 'chmod +x /opt/hirs/aca/scripts/aca/*'
         postTrans 'if [ -f /opt/hirs/aca/VERSION ]; then rm /opt/hirs/aca/VERSION; fi;'
         // Wait for ACA to start up before finishing the install
@@ -168,9 +175,7 @@ ospackage {
         requires('curl')
         // Install after required packages
         postInstall 'bash /opt/hirs/aca/scripts/aca/aca_setup.sh -u'
-        //postInstall '/opt/hirs/aca/scripts/aca/aca_bootRun.sh -w &'
         postInstall 'bash /opt/hirs/aca/scripts/systemd/aca_enable_service.sh'
-        postInstall 'echo "@reboot root /opt/hirs/aca/scripts/aca/aca_bootRun.sh -w" >> /etc/crontab'
         postInstall 'chmod +x /opt/hirs/aca/scripts/aca/*'
         postInstall 'if [ -f /opt/hirs/aca/VERSION ]; then rm /opt/hirs/aca/VERSION; fi;'
         // Wait for ACA to start up before finishing the install
