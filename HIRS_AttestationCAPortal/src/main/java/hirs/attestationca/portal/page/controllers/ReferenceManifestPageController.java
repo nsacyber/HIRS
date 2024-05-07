@@ -160,14 +160,14 @@ public class ReferenceManifestPageController extends PageController<NoPageParams
         Pattern baseRimPattern = Pattern.compile(BASE_RIM_FILE_PATTERN);
         Pattern supportRimPattern = Pattern.compile(SUPPORT_RIM_FILE_PATTERN);
         Matcher matcher;
-        boolean isBaseRim = false;
-        boolean isSupportRim = false;
         List<BaseReferenceManifest> baseRims = new ArrayList<>();
         List<SupportReferenceManifest> supportRims = new ArrayList<>();
         log.info(String.format("Processing %s uploaded files", files.length));
 
         // loop through the files
         for (MultipartFile file : files) {
+            boolean isBaseRim;
+            boolean isSupportRim = false;
             fileName = file.getOriginalFilename();
             matcher = baseRimPattern.matcher(fileName);
             isBaseRim = matcher.matches();
@@ -175,16 +175,15 @@ public class ReferenceManifestPageController extends PageController<NoPageParams
                 matcher = supportRimPattern.matcher(fileName);
                 isSupportRim = matcher.matches();
             }
-            if (!isBaseRim && !isSupportRim) {
+            if (isBaseRim || isSupportRim) {
+                parseRIM(file, isSupportRim, messages, baseRims, supportRims);
+            } else {
                 String errorString = "The file extension of " + fileName + " was not recognized." +
                         " Base RIMs support the extension \".swidtag\", and support RIMs support " +
                         "\".rimpcr\", \".rimel\", \".bin\", and \".log\". " +
                         "Please verify your upload and retry.";
                 log.error("File extension in " + fileName + " not recognized as base or support RIM.");
                 messages.addError(errorString);
-            } else {
-                //Parse reference manifests
-                parseRIM(file, isSupportRim, messages, baseRims, supportRims);
             }
         }
         baseRims.stream().forEach((rim) -> {
@@ -412,13 +411,14 @@ public class ReferenceManifestPageController extends PageController<NoPageParams
                 if (referenceManifestRepository.findByHexDecHashAndRimType(
                         supportRim.getHexDecHash(), supportRim.getRimType()) == null) {
                     supportRims.add(supportRim);
-                    messages.addInfo("Saved Reference Manifest " + fileName);
+                    messages.addInfo("Saved support RIM " + fileName);
                 }
             } else {
                 baseRim = new BaseReferenceManifest(fileName, fileBytes);
                 if (referenceManifestRepository.findByHexDecHashAndRimType(
                         baseRim.getHexDecHash(), baseRim.getRimType()) == null) {
                     baseRims.add(baseRim);
+                    messages.addInfo("Saved base RIM " + fileName);
                 }
             }
         } catch (IOException | NullPointerException ioEx) {
@@ -431,6 +431,10 @@ public class ReferenceManifestPageController extends PageController<NoPageParams
                     = String.format("Failed to parse base RIM file (%s): ", fileName);
             log.error(failMessage, e);
             messages.addError(failMessage + e.getMessage());
+        } catch (Exception e) {
+            final String failMessage
+                    = String.format("Failed to parse (%s): ", fileName);
+            log.error(failMessage, e);
         }
     }
 
