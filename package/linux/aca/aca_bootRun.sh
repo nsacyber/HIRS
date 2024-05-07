@@ -130,16 +130,21 @@ WEB_TLS_PARAMS="--server.ssl.key-store-password=$hirs_pki_password \
 # uncomment to show spring boot and hibernate properties used as gradle arguments
 #echo "--args=\"$CONNECTOR_PARAMS $WEB_TLS_PARAMS\""
 
-if [ "$DEBUG_ACA" == YES ]; then
-  echo "Booting with debug mode..."
-  ./gradlew bootRun --args="--spring.config.location=$SPRING_PROP_FILE" -Pdebug
-elif [ -z "$USE_WAR" ]; then
+if [ -z "$USE_WAR" ]; then
   echo "Booting the ACA from local build..."
- # ./gradlew bootRun --args="$CONNECTOR_PARAMS$WEB_TLS_PARAMS"  
-./gradlew bootRun --args="--spring.config.location=$SPRING_PROP_FILE"
+  if [ "$DEBUG_ACA" == YES ]; then
+    echo "... in debug"
+    ./gradlew bootRun --args="--spring.config.location=$SPRING_PROP_FILE" -Pdebug
+  else
+    ./gradlew bootRun --args="--spring.config.location=$SPRING_PROP_FILE"
+  fi
 else
   echo "Booting the ACA from a war file..."
- # java -jar $WAR_PATH $CONNECTOR_PARAMS$WEB_TLS_PARAMS &
-java -jar  $WAR_PATH --spring.config.location=$SPRING_PROP_FILE &
-exit 0
+  if [ "$DEBUG_ACA" == YES ]; then
+    echo "... in debug"
+    java -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:9123  -jar  $WAR_PATH --spring.config.location=$SPRING_PROP_FILE &
+  else
+    java -jar  $WAR_PATH --spring.config.location=$SPRING_PROP_FILE &
+  fi
+  exit 0
 fi

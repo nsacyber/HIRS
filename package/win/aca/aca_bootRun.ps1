@@ -74,13 +74,21 @@ if (!$DEPLOYED_WAR) {
 }
 
 $SPRING_PROP_FILE_FORWARDSLASHES=($global:HIRS_DATA_SPRING_PROP_FILE | ChangeBackslashToForwardSlash)
-if ($d -or $debug) {
-  echo "Booting with debug mode..."
-  ./gradlew bootRun --args="--spring.config.location=$SPRING_PROP_FILE" -Pdebug
-elseif ($w -or $war) {
+if ($w -or $war) {
 	echo "Booting the ACA from a war file..." | WriteAndLog
-	java -jar $DEPLOYED_WAR --spring.config.location=$SPRING_PROP_FILE_FORWARDSLASHES
+    if ($d -or $debug) {
+        echo "... in debug"
+        java -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:9123 -jar $DEPLOYED_WAR --spring.config.location=$SPRING_PROP_FILE_FORWARDSLASHES
+    } else {
+	    java -jar $DEPLOYED_WAR --spring.config.location=$SPRING_PROP_FILE_FORWARDSLASHES
+    }
 } else  {
     echo "Booting the ACA from local build..." | WriteAndLog
-	./gradlew bootRun --args="--spring.config.location=$SPRING_PROP_FILE_FORWARDSLASHES"
+    if ($d -or $debug) {
+        echo "... in debug"
+        ./gradlew bootRun --args="--spring.config.location=$SPRING_PROP_FILE_FORWARDSLASHES" -Pdebug
+    } else {
+	    ./gradlew bootRun --args="--spring.config.location=$SPRING_PROP_FILE_FORWARDSLASHES"
+    }
+	
 }
