@@ -14,6 +14,7 @@ SCRIPT_DIR=$( dirname -- "$( readlink -f -- "$0"; )"; )
 LOG_FILE=/dev/null
 GRADLE_WRAPPER="./gradlew"
 DEPLOYED_WAR=false
+DEBUG_OPTIONS="-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:9123"
 
 # Check for sudo or root user 
 if [ "$EUID" -ne 0 ]
@@ -134,7 +135,7 @@ if [ -z "$USE_WAR" ]; then
   echo "Booting the ACA from local build..."
   if [ "$DEBUG_ACA" == YES ]; then
     echo "... in debug"
-    ./gradlew bootRun --args="--spring.config.location=$SPRING_PROP_FILE" -Pdebug
+    ./gradlew bootRun --args="--spring.config.location=$SPRING_PROP_FILE" -Pdebug="$DEBUG_OPTIONS"
   else
     ./gradlew bootRun --args="--spring.config.location=$SPRING_PROP_FILE"
   fi
@@ -142,7 +143,7 @@ else
   echo "Booting the ACA from a war file..."
   if [ "$DEBUG_ACA" == YES ]; then
     echo "... in debug"
-    java -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:9123  -jar  $WAR_PATH --spring.config.location=$SPRING_PROP_FILE &
+    java $DEBUG_OPTIONS  -jar  $WAR_PATH --spring.config.location=$SPRING_PROP_FILE &
   else
     java -jar  $WAR_PATH --spring.config.location=$SPRING_PROP_FILE &
   fi
