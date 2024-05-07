@@ -27,6 +27,7 @@ help () {
   echo "  options:"
   echo "     -p  | --path   Path to the HIRS_AttestationCAPortal.war file"
   echo "     -w  | --war    Use deployed war file"
+  echo "     -d  | --debug  Launch the JVM with a debug port open"
   echo "     -h  | --help   Print this help"
   echo
 }
@@ -48,6 +49,10 @@ while [[ $# -gt 0 ]]; do
       shift # past argument
       WAR_PATH="/opt/hirs/aca/HIRS_AttestationCAPortal.war"
       DEPLOYED_WAR=true
+      ;;
+    -d|--debug)
+      DEBUG_ACA=YES
+      shift
       ;;
     -h|--help)
       help     
@@ -125,7 +130,10 @@ WEB_TLS_PARAMS="--server.ssl.key-store-password=$hirs_pki_password \
 # uncomment to show spring boot and hibernate properties used as gradle arguments
 #echo "--args=\"$CONNECTOR_PARAMS $WEB_TLS_PARAMS\""
 
-if [ -z "$USE_WAR" ]; then
+if [ "$DEBUG_ACA" == YES ]; then
+  echo "Booting with debug mode..."
+  ./gradlew bootRun --args="--spring.config.location=$SPRING_PROP_FILE" -Pdebug
+elif [ -z "$USE_WAR" ]; then
   echo "Booting the ACA from local build..."
  # ./gradlew bootRun --args="$CONNECTOR_PARAMS$WEB_TLS_PARAMS"  
 ./gradlew bootRun --args="--spring.config.location=$SPRING_PROP_FILE"
