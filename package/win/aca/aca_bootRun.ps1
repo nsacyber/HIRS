@@ -1,6 +1,7 @@
 param (
     [string]$p, [string]$path = $null,
 	[switch]$w, [switch]$war = $false,
+	[switch]$d, [switch]$debug = $false,
 	[switch]$h, [switch]$help = $false
 )
 
@@ -34,6 +35,7 @@ if ($p) {
 	$path = $p
 }
 $war = $w -or $war
+$debug = $d -or $debug
 $help = $h -or $help
 
 if(!(New-Object Security.Principal.WindowsPrincipal(
@@ -49,6 +51,7 @@ if ($help) {
   echo "  options:"
   echo "     -p  | --path   Path to the HIRS_AttestationCAPortal.war file"
   echo "     -w  | --war    Use deployed war file"
+  echo "     -d  | --debug  Launch the JVM with a debug port open"
   echo "     -h  | --help   Print this help"
   exit 1
 }
@@ -71,7 +74,10 @@ if (!$DEPLOYED_WAR) {
 }
 
 $SPRING_PROP_FILE_FORWARDSLASHES=($global:HIRS_DATA_SPRING_PROP_FILE | ChangeBackslashToForwardSlash)
-if ($w -or $war) {
+if ($d -or $debug) {
+  echo "Booting with debug mode..."
+  ./gradlew bootRun --args="--spring.config.location=$SPRING_PROP_FILE" -Pdebug
+elseif ($w -or $war) {
 	echo "Booting the ACA from a war file..." | WriteAndLog
 	java -jar $DEPLOYED_WAR --spring.config.location=$SPRING_PROP_FILE_FORWARDSLASHES
 } else  {
