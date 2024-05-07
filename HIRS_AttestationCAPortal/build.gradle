@@ -22,7 +22,7 @@ java {
 
 bootRun {
   if (project.hasProperty('debug')) {
-    jvmArgs "-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:9123"
+    jvmArgs project.debug
   }
 }
 
