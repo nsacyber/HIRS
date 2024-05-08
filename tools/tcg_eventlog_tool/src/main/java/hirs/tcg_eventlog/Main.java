@@ -11,6 +11,7 @@ import java.security.cert.CertificateException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+
 import hirs.utils.tpm.eventlog.TCGEventLog;
 import hirs.utils.tpm.eventlog.TpmPcrEvent;
 import hirs.utils.HexUtils;
@@ -50,7 +51,7 @@ final class Main {
                 try {
                     outputStream = new FileOutputStream(commander.getOutputFileName());
                     System.out.print("Writing to output file: " + commander.getOutputFileName()
-                     + "\n");
+                            + "\n");
                 } catch (Exception e) {
                     System.out.print("Error opening output file" + commander.getOutputFileName()
                             + "\nError was " + e.getMessage());
@@ -217,7 +218,7 @@ final class Main {
             }
         } catch (IOException e) {
             System.out.print("Error writing to output file: " + commander.getOutputFileName()
-           + "\n  error was: " + e.toString() + "\n");
+                    + "\n  error was: " + e.toString() + "\n");
             e.printStackTrace();
         }
     }
@@ -248,7 +249,7 @@ final class Main {
                     eventLog2.getEventList(), commander.getPcrNumber());
             if (errors.isEmpty() && !bHexFlag) {
                 sb.append("\nEvent Log " + logFileName1 + " MATCHED EventLog " + logFileName2
-                    + "\n");
+                        + "\n");
             } else {
                 if (!errors.isEmpty() && !bHexFlag) {
                     sb.append("\nEvent Log " + logFileName1
@@ -333,6 +334,7 @@ final class Main {
         }
         return matchFound;
     }
+
     /**
      * Diagnostic method for detecting flag settings.
      */
