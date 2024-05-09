@@ -201,7 +201,15 @@ public class UefiVariable {
                     efiVariable.append("Data not provided   ");
                 }
         }
+
+        // Signature List output (if there are any Signature Lists)
+        if (certSuperList.size() > 0){
+            efiVariable.append("Number of UEFI Signature Lists = " + certSuperList.size() + "\n");
+        }
+        int certSuperListCnt = 1;
         for (UefiSignatureList uefiSigList : certSuperList) {
+            efiVariable.append("UEFI Signature List # " + certSuperListCnt++ + " of " +
+                    certSuperList.size() + ":\n");
             efiVariable.append(uefiSigList.toString());
         }
         if(invalidSignatureListEncountered) {
@@ -209,6 +217,7 @@ public class UefiVariable {
             efiVariable.append("*** Encountered invalid Signature Type - " +
                     "Stopped processing of this event data\n");
         }
+
         return efiVariable.toString();
     }
 
