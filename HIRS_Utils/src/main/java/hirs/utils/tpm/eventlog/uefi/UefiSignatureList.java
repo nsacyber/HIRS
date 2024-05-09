@@ -214,18 +214,19 @@ public class UefiSignatureList {
         StringBuilder sigInfo = new StringBuilder();
 
         if (!signatureTypeValid) {
-            sigInfo.append("  *** Unknown UEFI Signature Type encountered: " + signatureType.toString() + "\n");
+            sigInfo.append("   *** Unknown UEFI Signature Type encountered:\n" +
+                    "       " + signatureType.toString() + "\n");
         }
         else {
-            sigInfo.append("  UEFI Signature List Type = " + signatureType.toString() + "\n");
-            sigInfo.append("  Number if items (certs, hashes, etc) = " + numberOfCerts + "\n");
+            sigInfo.append("   UEFI Signature List Type = " + signatureType.toString() + "\n");
+            sigInfo.append("   Number of items (certs, hashes, etc) = " + numberOfCerts + "\n");
 
             for (int i = 0; i < sigList.size(); i++) {
                 UefiSignatureData certData = sigList.get(i);
                 sigInfo.append(certData.toString());
             }
             if (!dataValid) {
-                sigInfo.append("  *** Invalid UEFI Signature data encountered: " + dataStatus + "\n");
+                sigInfo.append("   *** Invalid UEFI Signature data encountered: " + dataStatus + "\n");
             }
         }
         return sigInfo.toString();
