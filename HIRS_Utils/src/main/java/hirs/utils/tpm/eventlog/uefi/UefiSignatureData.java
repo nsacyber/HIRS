@@ -52,10 +52,6 @@ public class UefiSignatureData {
      */
     @Getter
     private boolean valid = false;
-//    /**
-//     * UEFI Certificate SHA1 hash.
-//     */
-//    private byte[] binaryHash = new byte[UefiConstants.SIZE_40];
     /**
      * UEFI Certificate SHA256 hash.
      */
