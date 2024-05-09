@@ -10,7 +10,7 @@ import java.security.NoSuchAlgorithmException;
 import java.security.cert.CertificateException;
 
 /**
- * Class for processing the contents of a Secure Boot DB or DBX contents.
+ * Class for processing the contents of a Secure Boot PK, KEK, DB or DBX contents.
  * used for EFIVariables associated with Secure Boot
  * as defined by Section 32.4.1 Signature Database from the UEFI 2.8 specification
  * <p>
@@ -52,10 +52,14 @@ public class UefiSignatureData {
      */
     @Getter
     private boolean valid = false;
+//    /**
+//     * UEFI Certificate SHA1 hash.
+//     */
+//    private byte[] binaryHash = new byte[UefiConstants.SIZE_40];
     /**
-     * UEFI Certificate SHA1 hash.
+     * UEFI Certificate SHA256 hash.
      */
-    private byte[] binaryHash = new byte[UefiConstants.SIZE_40];
+    private byte[] binaryHash = new byte[UefiConstants.SIZE_32];
     /**
      * UEFI Signature data status.
      */
