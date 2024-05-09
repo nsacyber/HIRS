@@ -20,7 +20,7 @@ jobs:
       packages: write
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
       - name: ACA TPM2 Tests
         continue-on-error: true
         shell: bash
@@ -30,7 +30,7 @@ jobs:
           echo ${{ secrets.GITHUB_TOKEN }} | docker login ghcr.io -u ${{ github.actor }} --password-stdin
           bash .ci/system-tests/run_system_tests.sh ${GITHUB_REF#refs/heads/}
       - name: Archive System Test Log files
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: System_Test_Log_Files
           path: logs/
