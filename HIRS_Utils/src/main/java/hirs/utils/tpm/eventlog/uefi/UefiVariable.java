@@ -196,9 +196,9 @@ public class UefiVariable {
             default:
                 if (!tmpName.isEmpty()) {
                     efiVariable.append(String.format("Data not provided for "
-                                    + "UEFI variable named %s   \n", tmpName));
+                                    + "UEFI variable named %s   ", tmpName));
                 } else {
-                    efiVariable.append("Data not provided   \n");
+                    efiVariable.append("Data not provided   ");
                 }
         }
         for (UefiSignatureList uefiSigList : certSuperList) {
