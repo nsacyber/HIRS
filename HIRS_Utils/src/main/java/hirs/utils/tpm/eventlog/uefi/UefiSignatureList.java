@@ -47,11 +47,16 @@ public class UefiSignatureList {
     /**
      * Signature validity.
      */
-    private boolean valid = true;
+    @Getter
+    private boolean signatureTypeValid = false;
     /**
-     * Current status.
+     * Data validity.
      */
-    private String status = "Signature List is Valid";
+    private boolean dataValid = true;
+    /**
+     * Current status of Signature List data.
+     */
+    private String dataStatus = "Signature List data validity is undetermined yet";
     /**
      * Array List of Signature found in the list.
      */
@@ -110,17 +115,23 @@ public class UefiSignatureList {
         lists.read(guid);
         signatureType = new UefiGuid(guid);
 
+        // if signatureType is invalid, don't even process any of the data
+        // however, if signatureTYpe is valid, but some of the data later on is invalid, that will
+        // be caught when UefiSignatureData is processed
         if (!isValidSigListGUID(signatureType)) {
-            processSignatureData(lists);
+            //processSignatureData(lists);
+            signatureTypeValid = false;
         } else { // valid SigData Processing
-            byte[] lSize = new byte[UefiConstants.SIZE_4];
+            signatureTypeValid = true;
+
+            byte[] lSize = new byte[UefiConstants.SIZE_4];      // signature list size
             lists.read(lSize);
             listSize = HexUtils.leReverseInt(lSize);
 
-            byte[] hSize = new byte[UefiConstants.SIZE_4];
+            byte[] hSize = new byte[UefiConstants.SIZE_4];      // signature header size
             lists.read(hSize);
 
-            byte[] sSize = new byte[UefiConstants.SIZE_4];
+            byte[] sSize = new byte[UefiConstants.SIZE_4];      // signature size
             lists.read(sSize);
             signatureSize = listSize - UefiConstants.SIZE_28;
             sigData = new byte[signatureSize];
@@ -143,8 +154,8 @@ public class UefiSignatureList {
         while (efiSigDataIS.available() > 0) {
             UefiSignatureData tmpSigData = new UefiSignatureData(efiSigDataIS, signatureType);
             if (!tmpSigData.isValid()) {
-                valid = false;
-                status = tmpSigData.getStatus();
+                dataValid = false;
+                dataStatus = tmpSigData.getStatus();
                 break;
             }
             sigList.add(tmpSigData);
@@ -165,8 +176,8 @@ public class UefiSignatureList {
         while (sigDataIS.available() > 0) {
             UefiSignatureData tmpigData = new UefiSignatureData(sigDataIS, signatureType);
             if (!tmpigData.isValid()) {
-                valid = false;
-                status = tmpigData.getStatus();
+                dataValid = false;
+                dataStatus = tmpigData.getStatus();
                 break;
             }
             sigList.add(tmpigData);
@@ -201,15 +212,22 @@ public class UefiSignatureList {
      */
     public String toString() {
         StringBuilder sigInfo = new StringBuilder();
-        sigInfo.append("UEFI Signature List Type = " + signatureType.toString() + "\n");
-        sigInfo.append("Number if items = " + numberOfCerts + "\n");
 
-        for (int i = 0; i < sigList.size(); i++) {
-            UefiSignatureData certData = sigList.get(i);
-            sigInfo.append(certData.toString());
+        if (!signatureTypeValid) {
+            sigInfo.append("   *** Unknown UEFI Signature Type encountered:\n" +
+                    "       " + signatureType.toString() + "\n");
         }
-        if (!valid) {
-            sigInfo.append("*** Invalid UEFI Signature data encountered: " + status + "\n");
+        else {
+            sigInfo.append("   UEFI Signature List Type = " + signatureType.toString() + "\n");
+            sigInfo.append("   Number of Certs or Hashes in UEFI Signature List = " + numberOfCerts + "\n");
+
+            for (int i = 0; i < sigList.size(); i++) {
+                UefiSignatureData certData = sigList.get(i);
+                sigInfo.append(certData.toString());
+            }
+            if (!dataValid) {
+                sigInfo.append("   *** Invalid UEFI Signature data encountered: " + dataStatus + "\n");
+            }
         }
         return sigInfo.toString();
     }

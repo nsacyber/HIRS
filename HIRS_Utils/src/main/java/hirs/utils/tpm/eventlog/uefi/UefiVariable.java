@@ -39,6 +39,14 @@ public class UefiVariable {
     @Getter
     private String efiVarName = "";
     /**
+     * Encountered invalid UEFI Signature List
+     */
+    private boolean invalidSignatureListEncountered = false;
+    /**
+     * Invalid UEFI Signature List
+     */
+    private String invalidSignatureListStatus = "";
+    /**
      * UEFI defined Boot Variable.
      */
     private UefiBootVariable bootv = null;
@@ -122,7 +130,7 @@ public class UefiVariable {
     }
 
     /**
-     * Processes the data as a UEFI defined Signature List.
+     * Processes the data as a list of UEFI defined Signature Lists.
      *
      * @param data the bye array holding the Signature List.
      * @throws java.security.cert.CertificateException If there a problem
@@ -138,6 +146,12 @@ public class UefiVariable {
         while (certData.available() > 0) {
             UefiSignatureList list;
             list = new UefiSignatureList(certData);
+//            efiVariableSigListContents += list.toString();
+            if(!list.isSignatureTypeValid()) {
+                invalidSignatureListEncountered = true;
+                invalidSignatureListStatus = list.toString();
+                break;
+            }
             certSuperList.add(list);
         }
     }
@@ -149,12 +163,12 @@ public class UefiVariable {
      */
     public String toString() {
         StringBuilder efiVariable = new StringBuilder();
-        efiVariable.append("UEFI Variable Name:" + efiVarName + "\n");
-        efiVariable.append("UEFI_GUID = " + uefiVarGuid.toString() + "\n ");
+        efiVariable.append("UEFI Variable Name: " + efiVarName + "\n");
+        efiVariable.append("UEFI Variable GUID: " + uefiVarGuid.toString() + "\n");
         if (efiVarName != "") {
-            efiVariable.append("UEFI Variable Contents => " + "\n  ");
+            efiVariable.append("UEFI Variable Contents => " + "\n");
         }
-        String tmpName = efiVarName;
+        String tmpName = "";
         if (efiVarName.contains("Boot00")) {
             tmpName = "Boot00";
         } else {
@@ -164,6 +178,11 @@ public class UefiVariable {
             case "Shim":
             case "MokList":
                 efiVariable.append(printCert(uefiVariableData, 0));
+                break;
+            case "PK":
+            case "KEK":
+            case "db":
+            case "dbx":
                 break;
             case "Boot00":
                 efiVariable.append(bootv.toString());
@@ -182,9 +201,23 @@ public class UefiVariable {
                     efiVariable.append("Data not provided   ");
                 }
         }
+
+        // Signature List output (if there are any Signature Lists)
+        if (certSuperList.size() > 0){
+            efiVariable.append("Number of UEFI Signature Lists = " + certSuperList.size() + "\n");
+        }
+        int certSuperListCnt = 1;
         for (UefiSignatureList uefiSigList : certSuperList) {
+            efiVariable.append("UEFI Signature List # " + certSuperListCnt++ + " of " +
+                    certSuperList.size() + ":\n");
             efiVariable.append(uefiSigList.toString());
         }
+        if(invalidSignatureListEncountered) {
+            efiVariable.append(invalidSignatureListStatus);
+            efiVariable.append("*** Encountered invalid Signature Type - " +
+                    "Stopped processing of this event data\n");
+        }
+
         return efiVariable.toString();
     }
 
