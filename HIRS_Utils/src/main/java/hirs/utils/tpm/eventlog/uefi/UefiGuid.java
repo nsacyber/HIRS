@@ -102,6 +102,17 @@ public class UefiGuid {
     }
 
     /**
+     *
+     * Checks whether the handle to the file needed to look up the UUID is valid. If empty,
+     * this likely means the file was not accessible to due to existence or permissions.
+     *
+     * @return true if the reference to the file handle needed to look up the UUID is empty
+     */
+    public boolean isUefiVendorRefEmpty() {
+        return uefiVendorRef.isEmpty();
+    }
+
+    /**
      * Returns a String that represents a specification name referenced by the
      * EFI_CONFIGURATION_TABLE VendorGUID field.  For structure of
      * EFI_CONFIGURATION_TABLE type, the UEFI specification has set of GUIDs
