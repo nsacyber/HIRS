@@ -45,6 +45,10 @@ public class UefiGuid {
         System.arraycopy(guidBytes, 0, guid, 0, UefiConstants.SIZE_16);
         uuid = processGuid(guidBytes);
         uefiVendorRef = JsonUtils.getSpecificJsonObject(JSON_PATH, "VendorTable");
+
+        if(uefiVendorRef.isEmpty()) {
+            System.out.println("XXXX IS EMPTY");
+        }
     }
 
     /**
