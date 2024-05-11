@@ -114,6 +114,9 @@ public class UefiSignatureList {
         byte[] guid = new byte[UefiConstants.SIZE_16];
         lists.read(guid);
         signatureType = new UefiGuid(guid);
+//        if(signatureType.getVendorTableReference().isEmpty()) {
+//            System.out.println("XXXX IS EMPTY");
+//        }
 
         // if signatureType is invalid, don't even process any of the data
         // however, if signatureTYpe is valid, but some of the data later on is invalid, that will
