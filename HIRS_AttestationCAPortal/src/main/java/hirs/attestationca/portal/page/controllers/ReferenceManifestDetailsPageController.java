@@ -35,13 +35,16 @@ import java.security.KeyStore;
 import java.security.NoSuchAlgorithmException;
 import java.security.PublicKey;
 import java.security.cert.CertificateException;
+import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 
 /**
@@ -303,6 +306,16 @@ public class ReferenceManifestDetailsPageController extends PageController<Refer
         for (Certificate certificate : certificates) {
             caCert = (CertificateAuthorityCredential) certificate;
             KeyStore keystore = ValidationService.getCaChain(caCert, caCertificateRepository);
+            try {
+                List<X509Certificate> truststore =
+                        convertCACsToX509Certificates(ValidationService.getCaChainRec(caCert,
+                                Collections.emptySet(),
+                                caCertificateRepository));
+                RIM_VALIDATOR.setTrustStore(truststore);
+            } catch (IOException e) {
+                log.error("Error building CA chain for " + caCert.getSubjectKeyIdentifier() + ": "
+                        + e.getMessage());
+            }
             if (RIM_VALIDATOR.validateXmlSignature(caCert.getX509Certificate().getPublicKey(),
                     caCert.getSubjectKeyIdString(), caCert.getEncodedPublicKey())) {
                 try {
@@ -331,6 +344,20 @@ public class ReferenceManifestDetailsPageController extends PageController<Refer
             log.warn("Unable to link signing certificate: " + npEx.getMessage());
         }
         return data;
+    }
+
+    /**
+     * This method converts a Set<CertificateAuthorityCredential> to a List<X509Certificate>.
+     * @param set of CACs to convert
+     * @return list of X509Certificates
+     */
+    private static List<X509Certificate> convertCACsToX509Certificates(Set<CertificateAuthorityCredential> set)
+            throws IOException {
+        ArrayList<X509Certificate> certs = new ArrayList<>(set.size());
+        for (CertificateAuthorityCredential cac : set) {
+            certs.add(cac.getX509Certificate());
+        }
+        return certs;
     }
 
     /**
