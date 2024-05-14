@@ -4,9 +4,13 @@ import com.eclipsesource.json.JsonObject;
 import hirs.utils.HexUtils;
 import hirs.utils.JsonUtils;
 
+import java.io.IOException;
 import java.math.BigInteger;
+import java.net.URISyntaxException;
+import java.net.URL;
 import java.nio.file.FileSystems;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.UUID;
 
 /**
@@ -25,6 +29,8 @@ public class UefiGuid {
 
     private static final Path JSON_PATH = FileSystems.getDefault().getPath("/etc",
             "hirs", "aca", "default-properties", "vendor-table.json");
+
+//    Path fPath = Paths.get(this.getClass().getResource(filename).toURI());
     private JsonObject uefiVendorRef;
     /**
      * guid byte array.
@@ -44,7 +50,36 @@ public class UefiGuid {
         guid = new byte[UefiConstants.SIZE_16];
         System.arraycopy(guidBytes, 0, guid, 0, UefiConstants.SIZE_16);
         uuid = processGuid(guidBytes);
-        uefiVendorRef = JsonUtils.getSpecificJsonObject(JSON_PATH, "VendorTable");
+//        uefiVendorRef = JsonUtils.getSpecificJsonObject(JSON_PATH, "VendorTable");
+
+
+        Path bad = FileSystems.getDefault().getPath("/etc",
+                "hirs", "aca", "default-properties", "vendor-tableBAD.json");
+        uefiVendorRef = JsonUtils.getSpecificJsonObject(bad,
+                "VendorTable");
+
+        if(isVendorTableReferenceHandleEmpty()) {
+            System.out.println("XXXX EMPTYYYYYYY, before trying to grab file from code");
+            try {
+
+                URL url = ClassLoader.getSystemResources("vendor-table.json").nextElement();
+//                URL url = ClassLoader.getSystemResources("vendor-table.json");
+                Path codePath = Paths.get(url.toURI());
+                uefiVendorRef = JsonUtils.getSpecificJsonObject(codePath,
+                                "VendorTable");
+
+            } catch (IOException e) {
+                System.out.print("XXXX IOException");
+                throw new RuntimeException(e);
+            } catch (URISyntaxException e) {
+                System.out.print("XXXX URISyntaxException");
+                throw new RuntimeException(e);
+            }
+        }
+
+        if(isVendorTableReferenceHandleEmpty()) {
+            System.out.println("YYYY EMPTY STILL, after trying to grab file from code");
+        }
     }
 
     /**
