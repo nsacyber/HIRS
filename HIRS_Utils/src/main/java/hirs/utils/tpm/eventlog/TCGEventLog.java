@@ -77,6 +77,11 @@ public final class TCGEventLog {
     /** Event Output Flag use. */
     @Getter
     private boolean bCryptoAgile = false;
+    /** Track if vendor-table file is inaccessible.
+     *  If vendor-table file is not used, this remains false.
+     * */
+    @Getter
+    private boolean bVendorTableFileInaccessbile = false;
 
     /**
      * Default blank object constructor.
@@ -146,6 +151,9 @@ public final class TCGEventLog {
                 eventList.put(eventNumber, new TpmPcrEvent2(is, eventNumber++));
             } else {
                 eventList.put(eventNumber, new TpmPcrEvent1(is, eventNumber++));
+            }
+            if(eventList.get(eventNumber-1).isBVendorTableFileInaccessbile()) {
+                bVendorTableFileInaccessbile = true;
             }
         }
         calculatePcrValues();

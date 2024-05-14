@@ -45,10 +45,6 @@ public class UefiGuid {
         System.arraycopy(guidBytes, 0, guid, 0, UefiConstants.SIZE_16);
         uuid = processGuid(guidBytes);
         uefiVendorRef = JsonUtils.getSpecificJsonObject(JSON_PATH, "VendorTable");
-
-        if(uefiVendorRef.isEmpty()) {
-            System.out.println("XXXX IS EMPTY");
-        }
     }
 
     /**
@@ -102,13 +98,12 @@ public class UefiGuid {
     }
 
     /**
-     *
      * Checks whether the handle to the file needed to look up the UUID is valid. If empty,
      * this likely means the file was not accessible to due to existence or permissions.
      *
      * @return true if the reference to the file handle needed to look up the UUID is empty
      */
-    public boolean isUefiVendorRefEmpty() {
+    public boolean isVendorTableReferenceHandleEmpty() {
         return uefiVendorRef.isEmpty();
     }
 

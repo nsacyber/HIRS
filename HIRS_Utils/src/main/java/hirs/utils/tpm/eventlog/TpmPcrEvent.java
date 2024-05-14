@@ -117,6 +117,12 @@ public class TpmPcrEvent {
     @Setter @Getter
     private boolean error = false;
 
+    /** Track if vendor-table file is inaccessible.
+     *  If vendor-table file is not used, this remains false.
+     * */
+    @Getter
+    private boolean bVendorTableFileInaccessbile = false;
+
     /**
      * Constructor.
      *
@@ -508,9 +514,16 @@ public class TpmPcrEvent {
                 String efiVarDescription = efiVar.toString().replace("\n", "\n   ");
                 description += "Event Content:\n   " + efiVarDescription.substring(0,
                         efiVarDescription.length() - INDENT_3);
+                if(efiVar.isBVendorTableFileInaccessbile()) {
+                    bVendorTableFileInaccessbile = true;
+                }
                 break;
             case EvConstants.EV_EFI_VARIABLE_BOOT:
-                description += "Event Content:\n" + new UefiVariable(content).toString();
+                UefiVariable efiVarBoot = new UefiVariable(content);
+                description += "Event Content:\n" + efiVarBoot.toString();
+                if(efiVarBoot.isBVendorTableFileInaccessbile()) {
+                    bVendorTableFileInaccessbile = true;
+                }
                 break;
             case EvConstants.EV_EFI_BOOT_SERVICES_APPLICATION:
                 EvEfiBootServicesApp bootServices = new EvEfiBootServicesApp(content);
@@ -539,7 +552,11 @@ public class TpmPcrEvent {
             case EvConstants.EV_EFI_HCRTM_EVENT:
                 break;
             case EvConstants.EV_EFI_VARIABLE_AUTHORITY:
-                description += "Event Content:\n" + new UefiVariable(content).toString();
+                UefiVariable efiVarAuth = new UefiVariable(content);
+                description += "Event Content:\n" + efiVarAuth.toString();
+                if(efiVarAuth.isBVendorTableFileInaccessbile()) {
+                    bVendorTableFileInaccessbile = true;
+                }
                 break;
             case EvConstants.EV_EFI_SPDM_FIRMWARE_BLOB:
                 description += "Event Content:\n" + new EvEfiSpdmFirmwareBlob(content).toString();
