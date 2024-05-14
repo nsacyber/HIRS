@@ -12,6 +12,9 @@ import java.security.cert.CertificateException;
 import java.util.ArrayList;
 import java.util.List;
 
+import static hirs.utils.tpm.eventlog.uefi.UefiConstants.FILE_NORMAL;
+import static hirs.utils.tpm.eventlog.uefi.UefiConstants.FILE_NOT_ACCESSIBLE;
+
 /**
  * Class to process a UEFI variable within a TPM Event.
  * typedef struct tdUEFI_VARIABLE_DATA{
@@ -68,6 +71,9 @@ public class UefiVariable {
      * */
     @Getter
     private boolean bVendorTableFileInaccessbile = false;
+    /** Track status of vendor-table.json */
+    @Getter
+    private String bVendorTableFileStatus = FILE_NORMAL;
 
     /**
      * EFIVariable constructor.
@@ -155,6 +161,9 @@ public class UefiVariable {
 //            efiVariableSigListContents += list.toString();
             if(list.isBVendorTableFileInaccessbile()) {
                 bVendorTableFileInaccessbile = true;
+            }
+            if(list.getBVendorTableFileStatus() == FILE_NOT_ACCESSIBLE) {
+                bVendorTableFileStatus = FILE_NOT_ACCESSIBLE;
             }
             if(!list.isSignatureTypeValid()) {
                 invalidSignatureListEncountered = true;

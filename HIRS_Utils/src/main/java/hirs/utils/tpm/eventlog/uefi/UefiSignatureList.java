@@ -9,6 +9,9 @@ import java.security.NoSuchAlgorithmException;
 import java.security.cert.CertificateException;
 import java.util.ArrayList;
 
+import static hirs.utils.tpm.eventlog.uefi.UefiConstants.FILE_NORMAL;
+import static hirs.utils.tpm.eventlog.uefi.UefiConstants.FILE_NOT_ACCESSIBLE;
+
 /**
  * Class for processing the contents of a Secure Boot DB or DBX contents.
  * used for EFIVariables associated with Secure Boot
@@ -74,6 +77,9 @@ public class UefiSignatureList {
      * */
     @Getter
     private boolean bVendorTableFileInaccessbile = false;
+    /** Track status of vendor-table.json */
+    @Getter
+    private String bVendorTableFileStatus = FILE_NORMAL;
 
     /**
      * UefiSignatureList constructor.
@@ -121,6 +127,7 @@ public class UefiSignatureList {
         signatureType = new UefiGuid(guid);
         if(signatureType.isVendorTableReferenceHandleEmpty()) {
             bVendorTableFileInaccessbile = true;
+            bVendorTableFileStatus = FILE_NOT_ACCESSIBLE;
         }
 
         // if signatureType is invalid, don't even process any of the data
