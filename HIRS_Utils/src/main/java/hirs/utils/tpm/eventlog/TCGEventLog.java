@@ -20,6 +20,9 @@ import java.security.cert.CertificateException;
 import java.util.Collection;
 import java.util.LinkedHashMap;
 
+import static hirs.utils.tpm.eventlog.uefi.UefiConstants.FILE_NORMAL;
+import static hirs.utils.tpm.eventlog.uefi.UefiConstants.FILE_NOT_ACCESSIBLE;
+
 /**
  * Class for handling different formats of TCG Event logs.
  */
@@ -82,6 +85,9 @@ public final class TCGEventLog {
      * */
     @Getter
     private boolean bVendorTableFileInaccessbile = false;
+    /** Track status of vendor-table.json */
+    @Getter
+    private String bVendorTableFileStatus = FILE_NORMAL;
 
     /**
      * Default blank object constructor.
@@ -154,6 +160,9 @@ public final class TCGEventLog {
             }
             if(eventList.get(eventNumber-1).isBVendorTableFileInaccessbile()) {
                 bVendorTableFileInaccessbile = true;
+            }
+            if(eventList.get(eventNumber-1).getBVendorTableFileStatus() == FILE_NOT_ACCESSIBLE) {
+                bVendorTableFileStatus = FILE_NOT_ACCESSIBLE;
             }
         }
         calculatePcrValues();

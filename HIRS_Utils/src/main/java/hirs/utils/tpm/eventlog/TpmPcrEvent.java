@@ -33,6 +33,9 @@ import java.security.NoSuchAlgorithmException;
 import java.security.cert.CertificateException;
 import java.util.Arrays;
 
+import static hirs.utils.tpm.eventlog.uefi.UefiConstants.FILE_NORMAL;
+import static hirs.utils.tpm.eventlog.uefi.UefiConstants.FILE_NOT_ACCESSIBLE;
+
 /**
  * Class to process a TCG_PCR_EVENT.
  * TCG_PCR_EVENT is used when the Event log uses the SHA1 Format as described in the
@@ -122,6 +125,9 @@ public class TpmPcrEvent {
      * */
     @Getter
     private boolean bVendorTableFileInaccessbile = false;
+    /** Track status of vendor-table.json */
+    @Getter
+    private String bVendorTableFileStatus = FILE_NORMAL;
 
     /**
      * Constructor.
@@ -517,12 +523,18 @@ public class TpmPcrEvent {
                 if(efiVar.isBVendorTableFileInaccessbile()) {
                     bVendorTableFileInaccessbile = true;
                 }
+                if(efiVar.getBVendorTableFileStatus() == FILE_NOT_ACCESSIBLE) {
+                    bVendorTableFileStatus = FILE_NOT_ACCESSIBLE;
+                }
                 break;
             case EvConstants.EV_EFI_VARIABLE_BOOT:
                 UefiVariable efiVarBoot = new UefiVariable(content);
                 description += "Event Content:\n" + efiVarBoot.toString();
                 if(efiVarBoot.isBVendorTableFileInaccessbile()) {
                     bVendorTableFileInaccessbile = true;
+                }
+                if(efiVarBoot.getBVendorTableFileStatus() == FILE_NOT_ACCESSIBLE) {
+                    bVendorTableFileStatus = FILE_NOT_ACCESSIBLE;
                 }
                 break;
             case EvConstants.EV_EFI_BOOT_SERVICES_APPLICATION:
@@ -556,6 +568,9 @@ public class TpmPcrEvent {
                 description += "Event Content:\n" + efiVarAuth.toString();
                 if(efiVarAuth.isBVendorTableFileInaccessbile()) {
                     bVendorTableFileInaccessbile = true;
+                }
+                if(efiVarAuth.getBVendorTableFileStatus() == FILE_NOT_ACCESSIBLE) {
+                    bVendorTableFileStatus = FILE_NOT_ACCESSIBLE;
                 }
                 break;
             case EvConstants.EV_EFI_SPDM_FIRMWARE_BLOB:

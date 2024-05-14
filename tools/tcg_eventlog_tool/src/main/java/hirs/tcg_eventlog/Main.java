@@ -16,6 +16,8 @@ import hirs.utils.tpm.eventlog.TCGEventLog;
 import hirs.utils.tpm.eventlog.TpmPcrEvent;
 import hirs.utils.HexUtils;
 
+import static hirs.utils.tpm.eventlog.uefi.UefiConstants.FILE_NOT_ACCESSIBLE;
+
 /**
  * Command-line application for processing TCG Event Logs.
  * Input arg: path to *.tcglp file
@@ -128,6 +130,9 @@ final class Main {
                                 + evLog.getEventList().size() + " events:\n\n");
                     }
                     if (evLog.isBVendorTableFileInaccessbile()) {
+                        writeOut("*** remove this.\n\n");
+                    }
+                    if (evLog.getBVendorTableFileStatus() == FILE_NOT_ACCESSIBLE) {
                         writeOut("*** WARNING: The file vendor-table.json file was not accessible so data " +
                                 "in some Secure Boot PCR 7 events cannot be processed.\n\n");
                     }
