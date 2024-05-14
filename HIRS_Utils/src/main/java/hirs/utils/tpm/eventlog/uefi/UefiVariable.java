@@ -63,6 +63,12 @@ public class UefiVariable {
      */
     private byte[] uefiVariableData = null;
 
+    /** Track if vendor-table file is inaccessible.
+     *  If vendor-table file is not used, this remains false.
+     * */
+    @Getter
+    private boolean bVendorTableFileInaccessbile = false;
+
     /**
      * EFIVariable constructor.
      * The UEFI_VARIABLE_DATA contains a "VariableName" field which is used to determine
@@ -147,6 +153,9 @@ public class UefiVariable {
             UefiSignatureList list;
             list = new UefiSignatureList(certData);
 //            efiVariableSigListContents += list.toString();
+            if(list.isBVendorTableFileInaccessbile()) {
+                bVendorTableFileInaccessbile = true;
+            }
             if(!list.isSignatureTypeValid()) {
                 invalidSignatureListEncountered = true;
                 invalidSignatureListStatus = list.toString();
@@ -163,6 +172,7 @@ public class UefiVariable {
      */
     public String toString() {
         StringBuilder efiVariable = new StringBuilder();
+
         efiVariable.append("UEFI Variable Name: " + efiVarName + "\n");
         efiVariable.append("UEFI Variable GUID: " + uefiVarGuid.toString() + "\n");
         if (efiVarName != "") {

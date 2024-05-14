@@ -127,6 +127,10 @@ final class Main {
                         writeOut("\nEvent Log follows the \"SHA1\" format and has "
                                 + evLog.getEventList().size() + " events:\n\n");
                     }
+                    if (evLog.isBVendorTableFileInaccessbile()) {
+                        writeOut("*** WARNING: The file vendor-table.json file was not accessible so data " +
+                                "in some Secure Boot PCR 7 events cannot be processed.\n\n");
+                    }
                 }
                 int eventCount = 0;
                 for (TpmPcrEvent event : evLog.getEventList()) {
