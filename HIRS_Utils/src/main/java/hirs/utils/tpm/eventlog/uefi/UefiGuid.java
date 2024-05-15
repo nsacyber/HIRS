@@ -30,7 +30,8 @@ public class UefiGuid {
     private static final Path JSON_PATH = FileSystems.getDefault().getPath("/etc",
             "hirs", "aca", "default-properties", "vendor-table.json");
 
-//    Path fPath = Paths.get(this.getClass().getResource(filename).toURI());
+    private static final String vendorTableFilename = "vendor-table.json";
+
     private JsonObject uefiVendorRef;
     /**
      * guid byte array.
@@ -60,18 +61,23 @@ public class UefiGuid {
 
         if(isVendorTableReferenceHandleEmpty()) {
             System.out.println("XXXX EMPTYYYYYYY, before trying to grab file from code");
+
+
             try {
 
-                URL url = ClassLoader.getSystemResources("vendor-table.json").nextElement();
+                Path fPath = Paths.get(this.getClass().getResource("vendor-table.json").toURI());
+//                URL url = ClassLoader.getSystemResources("vendor-table.json").nextElement();
 //                URL url = ClassLoader.getSystemResources("vendor-table.json");
-                Path codePath = Paths.get(url.toURI());
-                uefiVendorRef = JsonUtils.getSpecificJsonObject(codePath,
+//                Path fPath = Paths.get(url.toURI());
+                uefiVendorRef = JsonUtils.getSpecificJsonObject(fPath,
                                 "VendorTable");
 
-            } catch (IOException e) {
-                System.out.print("XXXX IOException");
-                throw new RuntimeException(e);
-            } catch (URISyntaxException e) {
+            }
+//            catch (IOException e) {
+//                System.out.print("XXXX IOException");
+//                throw new RuntimeException(e);
+//            }
+        catch (URISyntaxException e) {
                 System.out.print("XXXX URISyntaxException");
                 throw new RuntimeException(e);
             }
