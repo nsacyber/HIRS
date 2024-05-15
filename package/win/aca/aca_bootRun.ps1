@@ -1,6 +1,7 @@
 param (
     [string]$p, [string]$path = $null,
 	[switch]$w, [switch]$war = $false,
+	[switch]$d, [switch]$debug = $false,
 	[switch]$h, [switch]$help = $false
 )
 
@@ -9,6 +10,7 @@ $ACA_COMMON_SCRIPT=(Join-Path $APP_HOME 'aca_common.ps1')
 $ALG="RSA" # or "ECC"
 $GRADLE_WRAPPER='./gradlew'
 $DEPLOYED_WAR=$null
+$DEBUG_OPTIONS='-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:9123'
 
 # Load other scripts
 . $ACA_COMMON_SCRIPT
@@ -34,6 +36,7 @@ if ($p) {
 	$path = $p
 }
 $war = $w -or $war
+$debug = $d -or $debug
 $help = $h -or $help
 
 if(!(New-Object Security.Principal.WindowsPrincipal(
@@ -49,6 +52,7 @@ if ($help) {
   echo "  options:"
   echo "     -p  | --path   Path to the HIRS_AttestationCAPortal.war file"
   echo "     -w  | --war    Use deployed war file"
+  echo "     -d  | --debug  Launch the JVM with a debug port open"
   echo "     -h  | --help   Print this help"
   exit 1
 }
@@ -73,8 +77,19 @@ if (!$DEPLOYED_WAR) {
 $SPRING_PROP_FILE_FORWARDSLASHES=($global:HIRS_DATA_SPRING_PROP_FILE | ChangeBackslashToForwardSlash)
 if ($w -or $war) {
 	echo "Booting the ACA from a war file..." | WriteAndLog
-	java -jar $DEPLOYED_WAR --spring.config.location=$SPRING_PROP_FILE_FORWARDSLASHES
+    if ($d -or $debug) {
+        echo "... in debug"
+        java $DEBUG_OPTIONS -jar $DEPLOYED_WAR --spring.config.location=$SPRING_PROP_FILE_FORWARDSLASHES
+    } else {
+	    java -jar $DEPLOYED_WAR --spring.config.location=$SPRING_PROP_FILE_FORWARDSLASHES
+    }
 } else  {
     echo "Booting the ACA from local build..." | WriteAndLog
-	./gradlew bootRun --args="--spring.config.location=$SPRING_PROP_FILE_FORWARDSLASHES"
+    if ($d -or $debug) {
+        echo "... in debug"
+        ./gradlew bootRun --args="--spring.config.location=$SPRING_PROP_FILE_FORWARDSLASHES" -Pdebug="$$DEBUG_OPTIONS"
+    } else {
+	    ./gradlew bootRun --args="--spring.config.location=$SPRING_PROP_FILE_FORWARDSLASHES"
+    }
+	
 }

@@ -20,6 +20,12 @@ java {
     }
 }
 
+bootRun {
+  if (project.hasProperty('debug')) {
+    jvmArgs project.debug
+  }
+}
+
 configurations {
     compileOnly {
         extendsFrom annotationProcessor

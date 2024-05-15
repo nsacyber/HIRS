@@ -14,6 +14,7 @@ SCRIPT_DIR=$( dirname -- "$( readlink -f -- "$0"; )"; )
 LOG_FILE=/dev/null
 GRADLE_WRAPPER="./gradlew"
 DEPLOYED_WAR=false
+DEBUG_OPTIONS="-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:9123"
 
 # Check for sudo or root user 
 if [ "$EUID" -ne 0 ]
@@ -27,6 +28,7 @@ help () {
   echo "  options:"
   echo "     -p  | --path   Path to the HIRS_AttestationCAPortal.war file"
   echo "     -w  | --war    Use deployed war file"
+  echo "     -d  | --debug  Launch the JVM with a debug port open"
   echo "     -h  | --help   Print this help"
   echo
 }
@@ -48,6 +50,10 @@ while [[ $# -gt 0 ]]; do
       shift # past argument
       WAR_PATH="/opt/hirs/aca/HIRS_AttestationCAPortal.war"
       DEPLOYED_WAR=true
+      ;;
+    -d|--debug)
+      DEBUG_ACA=YES
+      shift
       ;;
     -h|--help)
       help     
@@ -127,11 +133,19 @@ WEB_TLS_PARAMS="--server.ssl.key-store-password=$hirs_pki_password \
 
 if [ -z "$USE_WAR" ]; then
   echo "Booting the ACA from local build..."
- # ./gradlew bootRun --args="$CONNECTOR_PARAMS$WEB_TLS_PARAMS"  
-./gradlew bootRun --args="--spring.config.location=$SPRING_PROP_FILE"
+  if [ "$DEBUG_ACA" == YES ]; then
+    echo "... in debug"
+    ./gradlew bootRun --args="--spring.config.location=$SPRING_PROP_FILE" -Pdebug="$DEBUG_OPTIONS"
+  else
+    ./gradlew bootRun --args="--spring.config.location=$SPRING_PROP_FILE"
+  fi
 else
   echo "Booting the ACA from a war file..."
- # java -jar $WAR_PATH $CONNECTOR_PARAMS$WEB_TLS_PARAMS &
-java -jar  $WAR_PATH --spring.config.location=$SPRING_PROP_FILE &
-exit 0
+  if [ "$DEBUG_ACA" == YES ]; then
+    echo "... in debug"
+    java $DEBUG_OPTIONS  -jar  $WAR_PATH --spring.config.location=$SPRING_PROP_FILE &
+  else
+    java -jar  $WAR_PATH --spring.config.location=$SPRING_PROP_FILE &
+  fi
+  exit 0
 fi
