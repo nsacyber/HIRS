@@ -419,10 +419,9 @@ public class ReferenceManifestValidator {
      */
     private void whySignatureInvalid(final XMLSignature signature, final DOMValidateContext context)
         throws XMLSignatureException{
-        log.error("Verifying xml signature:");
         boolean cryptoValidity = signature.getSignatureValue().validate(context);
         if (cryptoValidity) {
-            log.error("Signature value is valid.");
+            log.info("Signature value is valid.");
         } else {
             log.error("Signature value is invalid!");
         }
@@ -435,7 +434,7 @@ public class ReferenceManifestValidator {
                 refUri = "whole document";
             }
             if (refValidity) {
-                log.error("Reference for " + refUri + " is valid.");
+                log.info("Reference for " + refUri + " is valid.");
             } else {
                 log.error("Reference for " + refUri + " is invalid!");
             }
@@ -457,13 +456,12 @@ public class ReferenceManifestValidator {
             throw new Exception("Truststore is empty");
         }
 
-        final String INT_CA_ERROR = "Intermediate CA found, searching for root CA";
         String errorMessage = "";
         X509Certificate chainCert = cert;
         boolean isChainCertValid;
         do {
             isChainCertValid = false;
-            log.error("Validating " + chainCert.getSubjectX500Principal().getName());
+            log.info("Validating " + chainCert.getSubjectX500Principal().getName());
             for (X509Certificate trustedCert : trustStore) {
                 boolean isIssuer = areYouMyIssuer(chainCert, trustedCert);
                 boolean isSigner = areYouMySigner(chainCert, trustedCert);
@@ -534,7 +532,7 @@ public class ReferenceManifestValidator {
                     + System.lineSeparator()
                     + "Certificate needed for verification is missing: "
                     + signer.getSubjectX500Principal().getName();
-            log.error(error);
+            log.info(error);
         } catch (CertificateException e) {
             throw new Exception("Encoding error: " + e.getMessage());
         }
