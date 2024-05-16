@@ -22,6 +22,7 @@ public class SwidTagConstants {
     public static final String SCHEMA_PACKAGE = "hirs.swid.xjc";
     public static final String SCHEMA_LANGUAGE = XMLConstants.W3C_XML_SCHEMA_NS_URI;
     public static final String SCHEMA_URL = "swid_schema.xsd";
+    public static final String SWIDTAG_NAMESPACE = "http://standards.iso.org/iso/19770/-2/2015/schema.xsd";
 
     public static final String SOFTWARE_IDENTITY = "SoftwareIdentity";
     public static final String ENTITY = "Entity";
