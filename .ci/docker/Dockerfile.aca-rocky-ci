@@ -1,0 +1,110 @@
+FROM rockylinux:9
+LABEL org.opencontainers.image.vendor NSA Laboratory for Advanced Cybersecurity Research
+LABEL org.opencontainers.image.source https://github.com/nsacyber/hirs
+LABEL org.opencontainers.image.description NSA\'s HIRS Attestation Certificate Authority. Expose port 8443 to access the portal from outside the container.
+
+# Purpose: This image is designed for HIRS ACA testing on Rocky 9. It is meant to be used in
+#          the .ci, and does not automatically start the ACA upon running the container.
+# Date Modified: 5/3/24
+# Notes: The image to be built should be named "aca-rocky-ci:latest".
+#        For local image build, use this command from the /HIRS/ directory to build the image:
+#           $ docker build -f ./.ci/docker/Dockerfile.aca-rocky-ci -t aca-rocky-ci:latest .
+#        For manually setting up and starting the ACA in the container, uncomment the CMD
+#        statement at the end of this Dockerfile, allowing those scripts to be executed upon
+#        running the container.
+
+# REF can be specified as a docker run environment variable to select the HIRS branch to work with
+ARG REF=main
+
+SHELL ["/bin/bash", "-c"]
+
+# Rocky 9 has a different channel for some apps
+RUN dnf install -y 'dnf-command(config-manager)' && dnf config-manager --set-enabled crb
+
+# Update and install OS-dependencies
+RUN dnf update -y
+# Dependencies were selected for these reasons:
+#   OS setup/Unknown direct impact for HIRS
+ENV HIRS_DNF_OS_SETUP="initscripts firewalld policycoreutils policycoreutils-python-utils net-tools"
+#   OS tools
+ENV HIRS_DNF_OS_TOOLS="git sudo vim wget"
+#   ACA compile
+ENV HIRS_DNF_ACA_COMPILE="java-17-openjdk-devel"
+#   ACA run
+ENV HIRS_DNF_ACA_RUN="mariadb-server"
+#   IBM TPM simulator compile
+ENV HIRS_DNF_TPM_COMPILE="tpm2-tools gcc cmake openssl-devel"
+#   IBM TSS compile
+ENV HIRS_DNF_TSS_COMPILE="autoconf automake libtool"
+# Download and install all dependencies at one time
+RUN dnf -y install $(echo "$HIRS_DNF_OS_SETUP") $(echo "$HIRS_DNF_OS_TOOLS") $(echo "$HIRS_DNF_ACA_COMPILE") $(echo "$HIRS_DNF_ACA_RUN") $(echo "$HIRS_DNF_TPM_COMPILE") $(echo "$HIRS_DNF_TSS_COMPILE")
+
+# Build IBM TPM Simulator
+RUN git clone https://github.com/kgoldman/ibmswtpm2 /ibmswtpm2
+WORKDIR /ibmswtpm2/src
+RUN make
+
+# Build IBM TPM tools
+RUN git clone https://github.com/kgoldman/ibmtss /ibmtss
+WORKDIR /ibmtss/utils
+RUN make -f makefiletpmc
+
+# The following script tests that the SW TPM and TSS were compiled in the docker image. And documents how to start the SW TPM after container launch using both IBM's tss and TPM2-TOOLS.
+RUN echo "#!/bin/bash" > /tmp/tpm_config && \
+    echo "/ibmswtpm2/src/tpm_server &" >> /tmp/tpm_config && \
+    echo "sleep 5" >> /tmp/tpm_config && \
+    echo "/ibmtss/utils/startup -c" >> /tmp/tpm_config && \
+    echo "tpm2_shutdown" >> /tmp/tpm_config && \
+    echo "tpm2_startup -c" >> /tmp/tpm_config && \
+    echo "/ibmtss/utils/shutdown -c" >> /tmp/tpm_config && \
+    bash /tmp/tpm_config && \
+    rm -rf /tmp/tpm_config
+
+EXPOSE 8443
+
+# Checkout HIRS
+RUN git clone -b ${REF} https://github.com/nsacyber/HIRS.git /repo
+
+# Defensive copy of the repo so it's easy to start fresh if needed
+RUN mkdir /hirs
+WORKDIR /repo
+RUN cp -r . /hirs
+
+# Run bootwar to cache build artifacts
+WORKDIR /hirs
+RUN ./gradlew bootWar
+
+# Add ACA TLS certification path to container OS
+# Allows the curl command in the HEALTHCHECK to work with TLS
+# These commands are placed into a script that can be run after aca_setup.sh on container launch.
+RUN echo "#!/bin/bash" > /tmp/hirs_add_aca_tls_path_to_os.sh && \
+    echo "cp /etc/hirs/certificates/HIRS/rsa_3k_sha384_certs/HIRS_intermediate_ca_rsa_3k_sha384.pem /etc/pki/ca-trust/source/anchors/" >> /tmp/hirs_add_aca_tls_path_to_os.sh && \
+    echo "cp /etc/hirs/certificates/HIRS/ecc_512_sha384_certs/HIRS_intermediate_ca_ecc_512_sha384.pem /etc/pki/ca-trust/source/anchors/" >> /tmp/hirs_add_aca_tls_path_to_os.sh && \
+    echo "cp /etc/hirs/certificates/HIRS/rsa_3k_sha384_certs/HIRS_root_ca_rsa_3k_sha384.pem /etc/pki/ca-trust/source/anchors/" >> /tmp/hirs_add_aca_tls_path_to_os.sh && \
+    echo "cp /etc/hirs/certificates/HIRS/ecc_512_sha384_certs/HIRS_root_ca_ecc_512_sha384.pem /etc/pki/ca-trust/source/anchors/"  >> /tmp/hirs_add_aca_tls_path_to_os.sh && \
+    echo "cp /etc/hirs/certificates/HIRS/rsa_3k_sha384_certs/HIRS_leaf_ca3_rsa_3k_sha384.pem /etc/pki/ca-trust/source/anchors/" >> /tmp/hirs_add_aca_tls_path_to_os.sh && \
+    echo "cp /etc/hirs/certificates/HIRS/ecc_512_sha384_certs/HIRS_leaf_ca3_ecc_512_sha384.pem /etc/pki/ca-trust/source/anchors/" >> /tmp/hirs_add_aca_tls_path_to_os.sh && \
+    echo "update-ca-trust" >> /tmp/hirs_add_aca_tls_path_to_os.sh
+RUN chmod +x /tmp/hirs_add_aca_tls_path_to_os.sh
+
+# The container will report a health state based on when embedded tomcat finishes loading. If the ACA isn't loaded after the timeout, the container will report that it is unhealthy.
+HEALTHCHECK --start-period=50s --interval=1s --timeout=90s CMD curl -f https://localhost:8443/HIRS_AttestationCAPortal/portal/index
+
+# The following script will clone and copy the referenced branch of HIRS off GitHub
+# If configured, run bootwar to cache build artifacts
+RUN echo "#!/bin/bash" > /tmp/auto_clone_branch && \
+    echo "cd /hirs" >> /tmp/auto_clone_branch && \
+    echo "git fetch origin && git pull origin main && git reset --hard" >> /tmp/auto_clone_branch && \
+    echo 'git checkout $1 && git reset --hard' >> /tmp/auto_clone_branch && \
+    echo 'if [ -n "${2}" ]; then ./gradlew bootWar; fi' >> /tmp/auto_clone_branch && \
+    echo "cd HIRS_Provisioner.NET/hirs" >> /tmp/auto_clone_branch && \
+    echo 'if [ -n "${2}" ]; then dotnet deb -r linux-x64 -c Release && dotnet rpm -r linux-x64 -c Release; fi' >> /tmp/auto_clone_branch && \
+    chmod 755 /tmp/auto_clone_branch
+
+# Reset working directory
+WORKDIR /hirs
+
+# On container launch, the database will be set up. Then bootRun should utilize build artifacts stored in the image.
+# NOTE: Uncomment the CMD command below before running this container locally or outside of CI, which will allow the ACA
+#       to automatically set up and start upon running the container.
+# CMD ["bash", "-c", "/hirs/package/linux/aca/aca_setup.sh --unattended && /tmp/hirs_add_aca_tls_path_to_os.sh && /hirs/package/linux/aca/aca_bootRun.sh"]

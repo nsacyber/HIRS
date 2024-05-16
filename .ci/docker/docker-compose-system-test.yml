@@ -1,9 +1,10 @@
 services:
    aca:
-      image: ghcr.io/nsacyber/hirs/aca-rocky:5445278
+      image: ghcr.io/nsacyber/hirs/aca-rocky-ci:latest
       container_name: hirs-aca1
       volumes:
          - ../../:/HIRS
+      command: ["bash", "-c", "tail -f /dev/null;"]
       ports:
          - "${HIRS_ACA_PORTAL_PORT}:${HIRS_ACA_PORTAL_CONTAINER_PORT}"
       hostname: ${HIRS_ACA_HOSTNAME}
