@@ -50,7 +50,15 @@ import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.security.*;
+import java.security.InvalidKeyException;
+import java.security.Key;
+import java.security.KeyException;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+import java.security.NoSuchProviderException;
+import java.security.PublicKey;
+import java.security.Security;
+import java.security.SignatureException;
 import java.security.cert.CertificateException;
 import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
@@ -184,6 +192,7 @@ public class ReferenceManifestValidator {
      */
     public ReferenceManifestValidator() {
         try {
+            Security.addProvider(new BouncyCastleProvider());
             InputStream is = ReferenceManifestValidator.class
                     .getClassLoader().getResourceAsStream(SCHEMA_URL);
             SchemaFactory schemaFactory = SchemaFactory.newInstance(SCHEMA_LANGUAGE);
@@ -410,7 +419,6 @@ public class ReferenceManifestValidator {
      */
     private void whySignatureInvalid(final XMLSignature signature, final DOMValidateContext context)
         throws XMLSignatureException{
-        log.error("Verifying xml signature:");
         boolean cryptoValidity = signature.getSignatureValue().validate(context);
         if (cryptoValidity) {
             log.error("Signature value is valid.");
@@ -448,13 +456,12 @@ public class ReferenceManifestValidator {
             throw new Exception("Truststore is empty");
         }
 
-        final String INT_CA_ERROR = "Intermediate CA found, searching for root CA";
         String errorMessage = "";
         X509Certificate chainCert = cert;
         boolean isChainCertValid;
         do {
             isChainCertValid = false;
-            log.error("Validating " + chainCert.getSubjectX500Principal().getName());
+            log.info("Validating " + chainCert.getSubjectX500Principal().getName());
             for (X509Certificate trustedCert : trustStore) {
                 boolean isIssuer = areYouMyIssuer(chainCert, trustedCert);
                 boolean isSigner = areYouMySigner(chainCert, trustedCert);
@@ -479,7 +486,7 @@ public class ReferenceManifestValidator {
         } while (isChainCertValid);
 
         log.error("CA chain validation failed to validate "
-                + chainCert.getSubjectX500Principal().getName());
+                + chainCert.getSubjectX500Principal().getName() + ", " + errorMessage);
         return false;
     }
 
@@ -525,7 +532,7 @@ public class ReferenceManifestValidator {
                     + System.lineSeparator()
                     + "Certificate needed for verification is missing: "
                     + signer.getSubjectX500Principal().getName();
-            log.error(error);
+            log.info(error);
         } catch (CertificateException e) {
             throw new Exception("Encoding error: " + e.getMessage());
         }
