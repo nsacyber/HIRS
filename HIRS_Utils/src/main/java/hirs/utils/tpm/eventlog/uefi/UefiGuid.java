@@ -4,6 +4,8 @@ import com.eclipsesource.json.JsonObject;
 import hirs.utils.HexUtils;
 import hirs.utils.JsonUtils;
 
+import javax.xml.transform.Source;
+import javax.xml.transform.stream.StreamSource;
 import java.io.IOException;
 import java.math.BigInteger;
 import java.net.URISyntaxException;
@@ -63,9 +65,18 @@ public class UefiGuid {
             System.out.println("XXXX EMPTYYYYYYY, before trying to grab file from code");
 
 
-            try {
+            System.out.println("XXXX getClass: " + getClass());
+            System.out.println("XXXX getClassResource: " + getClass().getResource("/vendor-table2.json"));
 
-                Path fPath = Paths.get(this.getClass().getResource("vendor-table.json").toURI());
+
+            try {
+//                private static final String EK_PUBLIC_PATH = "/tpm2/ek.pub";
+
+//                Source source = new StreamSource(
+//                        getClass().getClassLoader().getResourceAsStream("identity_transform.xslt"));
+
+
+                Path fPath = Paths.get(getClass().getResource("/vendor-table2.json").toURI());
 //                URL url = ClassLoader.getSystemResources("vendor-table.json").nextElement();
 //                URL url = ClassLoader.getSystemResources("vendor-table.json");
 //                Path fPath = Paths.get(url.toURI());
