@@ -28,7 +28,7 @@ docker exec $tpm2_container sh -c "/tmp/auto_clone_branch $1 > /dev/null 2>&1 \
 
 # Install HIRS Provisioner.Net and setup tpm2 simulator.
 # In doing so, tests a single provision between Provisioner.Net and ACA.
-docker exec $tpm2_container /hirs/.ci/setup/container/setup_tpm2provisioner_dotnet.sh
+docker exec $tpm2_container sh /hirs/.ci/setup/container/setup_tpm2provisioner_dotnet.sh
 
 # Initiating System Tests
 echo "******** Setup Complete. Beginning HIRS System Tests. ******** "
