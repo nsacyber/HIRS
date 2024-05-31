@@ -5,7 +5,7 @@
 #    1. Uncomment the "cd ../.." line below to make working directory = /HIRS/
 #    2. Run with the desired HIRS branch as an argument (i.e. $./run_system_tests.sh main)
 #########################################################################################
-cd ../..
+#cd ../..
 
 # Setting variables
 aca_container=hirs-aca1
