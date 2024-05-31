@@ -72,8 +72,12 @@ public class UefiGuid {
             System.out.println("XXXX EMPTYYYYYYY, before trying to grab file from code");
 
 
-            uefiVendorRef = JsonUtils.getJsonObject("vendor-table2.json",
+//            uefiVendorRef = JsonUtils.getJsonObject("vendor-table2.json",
+//                    StandardCharsets.UTF_8);
+
+            uefiVendorRef = JsonUtils.getSpecificJsonObject("vendor-table2.json", "VendorTable",
                     StandardCharsets.UTF_8);
+
 
 //            System.out.println("XXXX getClass: " + getClass());
 //            System.out.println("XXXX getClassResource: " + getClass().getResource("/vendor-table2.json"));
