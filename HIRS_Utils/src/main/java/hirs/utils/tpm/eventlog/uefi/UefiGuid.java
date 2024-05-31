@@ -3,13 +3,20 @@ package hirs.utils.tpm.eventlog.uefi;
 import com.eclipsesource.json.JsonObject;
 import hirs.utils.HexUtils;
 import hirs.utils.JsonUtils;
+import hirs.utils.rim.ReferenceManifestValidator;
+import org.apache.commons.io.IOUtils;
 
 import javax.xml.transform.Source;
 import javax.xml.transform.stream.StreamSource;
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.UnsupportedEncodingException;
 import java.math.BigInteger;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.FileSystems;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -65,33 +72,79 @@ public class UefiGuid {
             System.out.println("XXXX EMPTYYYYYYY, before trying to grab file from code");
 
 
-            System.out.println("XXXX getClass: " + getClass());
-            System.out.println("XXXX getClassResource: " + getClass().getResource("/vendor-table2.json"));
+            uefiVendorRef = JsonUtils.getJsonObject("vendor-table2.json",
+                    StandardCharsets.UTF_8);
+
+//            System.out.println("XXXX getClass: " + getClass());
+//            System.out.println("XXXX getClassResource: " + getClass().getResource("/vendor-table2.json"));
+//
+//
+//            InputStream inpStr = UefiGuid.class
+//                    .getClassLoader().getResourceAsStream("vendor-table2.json");
+//            System.out.println("XXXX InputStream: " + inpStr);
+//
+//            Source inpSource = new StreamSource(
+//                    ReferenceManifestValidator.class.getClassLoader()
+//                            .getResourceAsStream("vendor-table2.json"));
+//            System.out.println("XXXX Source: " + inpSource);
+//
+//            String path = this.getClass().getClassLoader().getResource("vendor-table2.json").toExternalForm();
+//            System.out.println("XXXX External Form: " + path);
 
 
-            try {
-//                private static final String EK_PUBLIC_PATH = "/tpm2/ek.pub";
+//            JsonReader reader = new JsonReader(new InputStreamReader(inpStr, "UTF-8"));
 
-//                Source source = new StreamSource(
-//                        getClass().getClassLoader().getResourceAsStream("identity_transform.xslt"));
-
-
-                Path fPath = Paths.get(getClass().getResource("/vendor-table2.json").toURI());
-//                URL url = ClassLoader.getSystemResources("vendor-table.json").nextElement();
-//                URL url = ClassLoader.getSystemResources("vendor-table.json");
-//                Path fPath = Paths.get(url.toURI());
-                uefiVendorRef = JsonUtils.getSpecificJsonObject(fPath,
-                                "VendorTable");
-
-            }
-//            catch (IOException e) {
-//                System.out.print("XXXX IOException");
+//            try {
+//                BufferedReader streamReader = new BufferedReader(new InputStreamReader(inpStr, "UTF-8"));
+//                StringBuilder responseStrBuilder = new StringBuilder();
+//
+//                String inputStr;
+//                while ((inputStr = streamReader.readLine()) != null)
+//                    responseStrBuilder.append(inputStr);
+//
+//                String test = responseStrBuilder.toString();
+////                Gson gson = new Gson();
+//
+//                JsonObject testjj = parser.
+//
+//                String temp = "hello";
+//
+////                JsonObject jsonObject = new JsonObject(responseStrBuilder.toString());
+//
+//            } catch (UnsupportedEncodingException e) {
+//                throw new RuntimeException(e);
+//            } catch (IOException e) {
 //                throw new RuntimeException(e);
 //            }
-        catch (URISyntaxException e) {
-                System.out.print("XXXX URISyntaxException");
-                throw new RuntimeException(e);
-            }
+
+//            byte[] rawLogBytes = IOUtils.toByteArray(inpStr);
+
+
+//            Path fPath2 = Paths.get(inpStr.toURI());
+
+//            try {
+////                private static final String EK_PUBLIC_PATH = "/tpm2/ek.pub";
+//
+////                Source source = new StreamSource(
+////                        getClass().getClassLoader().getResourceAsStream("identity_transform.xslt"));
+//
+//
+//                Path fPath = Paths.get(getClass().getResource("/vendor-table2.json").toURI());
+////                URL url = ClassLoader.getSystemResources("vendor-table.json").nextElement();
+////                URL url = ClassLoader.getSystemResources("vendor-table.json");
+////                Path fPath = Paths.get(url.toURI());
+//                uefiVendorRef = JsonUtils.getSpecificJsonObject(fPath,
+//                                "VendorTable");
+//
+//            }
+////            catch (IOException e) {
+////                System.out.print("XXXX IOException");
+////                throw new RuntimeException(e);
+////            }
+//        catch (URISyntaxException e) {
+//                System.out.print("XXXX URISyntaxException");
+//                throw new RuntimeException(e);
+//            }
         }
 
         if(isVendorTableReferenceHandleEmpty()) {
