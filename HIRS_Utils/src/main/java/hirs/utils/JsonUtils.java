@@ -2,14 +2,17 @@ package hirs.utils;
 
 import com.eclipsesource.json.Json;
 import com.eclipsesource.json.JsonObject;
+import hirs.utils.tpm.eventlog.uefi.UefiGuid;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 
+import java.io.BufferedReader;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.UnsupportedEncodingException;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -94,6 +97,34 @@ public final class JsonUtils {
                 jsonObject = new JsonObject();
             }
         }
+
+        return jsonObject;
+    }
+
+    public static JsonObject getJsonObject(final String jsonFilename, final Charset charset) {
+        // find the file and load it
+        JsonObject jsonObject = new JsonObject();
+
+        try {
+            InputStream jsonIs = UefiGuid.class
+                    .getClassLoader().getResourceAsStream("vendor-table2.json");
+            jsonObject = Json.parse(new InputStreamReader(jsonIs,
+                    charset)).asObject();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+        //        if (Files.notExists(jsonPath)) {
+//            log.warn(String.format("No file found at %s.", jsonPath.toString()));
+//        } else {
+//            try {
+//                InputStream inputStream = new FileInputStream(jsonPath.toString());
+//                jsonObject = Json.parse(new InputStreamReader(inputStream,
+//                        charset)).asObject();
+//            } catch (IOException ex) {
+//                // add log file thing here indication issue with JSON File
+//                jsonObject = new JsonObject();
+//            }
+//        }
 
         return jsonObject;
     }
