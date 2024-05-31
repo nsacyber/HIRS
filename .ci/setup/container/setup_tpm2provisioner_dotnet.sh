@@ -18,20 +18,13 @@ echo "*** Waiting for ACA to spin up at address ${HIRS_ACA_PORTAL_IP} on port ${
   done
   echo "*** ACA is up!"
 
-# Un-package Provisioner.NET RPM
-cd /
-yes | dnf install /hirs/HIRS_Provisioner.NET/hirs/bin/Release/net6.0/linux-x64/HIRS_Provisioner.NET.2.2.0.linux-x64.rpm 1> /dev/null
+## Un-package Provisioner.NET RPM
+yes | dnf install HIRS_Provisioner.NET/hirs/bin/Release/net6.0/linux-x64/HIRS_Provisioner.NET.2.2.0.linux-x64.rpm -y > /dev/null
 
-# Start TPM simulator server
-./ibmswtpm2/src/tpm_server 1> /dev/null &
-echo "*** TPM Simulator Server has started"
-
-# Create EK Certificate
-cd /ibmtss/utils || exit
-./startup 1> /dev/null
-./createekcert -rsa 2048 -cakey cakey.pem -capwd rrrr -v 1> /dev/null
-cd / || exit
-echo "*** EK certificate has been created using IBMTSS CA Key"
+# Initiate startup for IBMTSS Tools
+pushd /ibmtss/utils > /dev/null
+./startup
+popd > /dev/null
 
 # Writing to Provisioner.Net configurations file for modified aca port and efi prefix
 cat <<APPSETTINGS_FILE > /usr/share/hirs/appsettings.json
@@ -75,9 +68,6 @@ cat <<APPSETTINGS_FILE > /usr/share/hirs/appsettings.json
 }
 APPSETTINGS_FILE
 
-# Uploading CA Certificate to HIRS ACA Portal
-curl -k -s -F "file=@/ibmtss/utils/certificates/cacert.pem" https://${HIRS_ACA_PORTAL_IP}:${HIRS_ACA_PORTAL_PORT}/HIRS_AttestationCAPortal/portal/certificate-request/trust-chain/upload
-echo "*** CA Certificate has been uploaded to HIRS ACA Portal"
-
-# Starting Provisioning
-./usr/share/hirs/tpm_aca_provision --tcp --ip 127.0.0.1:2321 --sim
+# Triggering a single provision for test
+echo "*** INITIAL TEST: Single Provision with Default Policy:"
+/usr/share/hirs/tpm_aca_provision --tcp --ip 127.0.0.1:2321 --sim

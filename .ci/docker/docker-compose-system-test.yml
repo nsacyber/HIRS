@@ -21,7 +21,7 @@ services:
          - aca
       volumes:
          - ../../:/HIRS
-      command: ["bash", "-c", "tail -f /dev/null;"]
+      command: ["bash", "-c", "/ibmswtpm2/src/tpm_server && tail -f /dev/null"]
       networks:
          hirs_aca_system_tests:
             ipv4_address: ${HIRS_ACA_PROVISIONER_TPM2_IP}

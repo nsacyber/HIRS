@@ -3,6 +3,11 @@
 #    Common functions used for HIRS system tests
 #
 #########################################################################################
+. ./.ci/docker/.env && set -a
+
+# Setting variables
+aca_container=hirs-aca1
+tpm2_container=hirs-provisioner1-tpm2
 
 # Check container status and abort if container is not running
 checkContainerStatus() {
@@ -21,53 +26,57 @@ fi
 
 # clear all policy settings
 setPolicyNone() {
-docker exec $aca_container mysql -u root -proot -D hirs_db -e "Update SupplyChainPolicy set enableEcValidation=0, enablePcAttributeValidation=0, enablePcValidation=0,
-           enableUtcValidation=0, enableFirmwareValidation=0, enableExpiredCertificateValidation=0, enableIgnoreGpt=0, enableIgnoreIma=0, enableIgnoretBoot=0;" 
+docker exec $aca_container mysql -u root -proot -D hirs_db -e "Update PolicySettings set ecValidationEnabled=0, pcAttributeValidationEnabled=0, pcValidationEnabled=0,
+           utcValidationEnabled=0, firmwareValidationEnabled=0, expiredCertificateValidationEnabled=0, ignoreGptEnabled=0, ignoreImaEnabled=0, ignoretBootEnabled=0;"
 }
 
 # Policy Settings for tests ...
 setPolicyEkOnly() {
-docker exec $aca_container mysql -u root -proot -D hirs_db -e "Update SupplyChainPolicy set enableEcValidation=1, enablePcAttributeValidation=0, enablePcValidation=0,
-           enableUtcValidation=0, enableFirmwareValidation=0, enableExpiredCertificateValidation=0, enableIgnoreGpt=0, enableIgnoreIma=0, enableIgnoretBoot=0;"
+docker exec $aca_container mysql -u root -proot -D hirs_db -e "Update PolicySettings set ecValidationEnabled=1, pcAttributeValidationEnabled=0, pcValidationEnabled=0,
+           utcValidationEnabled=0, firmwareValidationEnabled=0, expiredCertificateValidationEnabled=0, ignoreGptEnabled=0, ignoreImaEnabled=0, ignoretBootEnabled=0;"
 }
 
 setPolicyEkPc_noAttCheck() {
-docker exec $aca_container mysql -u root -proot -D hirs_db -e "Update SupplyChainPolicy set enableEcValidation=1, enablePcAttributeValidation=0, enablePcValidation=1,
-           enableUtcValidation=0, enableFirmwareValidation=0, enableExpiredCertificateValidation=0, enableIgnoreGpt=0, enableIgnoreIma=0, enableIgnoretBoot=0;"
+docker exec $aca_container mysql -u root -proot -D hirs_db -e "Update PolicySettings set ecValidationEnabled=1, pcAttributeValidationEnabled=0, pcValidationEnabled=1,
+           utcValidationEnabled=0, firmwareValidationEnabled=0, expiredCertificateValidationEnabled=0, ignoreGptEnabled=0, ignoreImaEnabled=0, ignoretBootEnabled=0;"
 }
 
 setPolicyEkPc() {
-docker exec $aca_container mysql -u root -proot -D hirs_db -e "Update SupplyChainPolicy set enableEcValidation=1, enablePcAttributeValidation=1, enablePcValidation=1,
-           enableUtcValidation=0, enableFirmwareValidation=0, enableExpiredCertificateValidation=0, enableIgnoreGpt=0, enableIgnoreIma=0, enableIgnoretBoot=0;"
+docker exec $aca_container mysql -u root -proot -D hirs_db -e "Update PolicySettings set ecValidationEnabled=1, pcAttributeValidationEnabled=1, pcValidationEnabled=1,
+           utcValidationEnabled=0, firmwareValidationEnabled=0, expiredCertificateValidationEnabled=0, ignoreGptEnabled=0, ignoreImaEnabled=0, ignoretBootEnabled=0;"
 }
 
 setPolicyEkPcFw() {
-docker exec $aca_container mysql -u root -proot -D hirs_db -e "Update SupplyChainPolicy set enableEcValidation=1, enablePcAttributeValidation=1, enablePcValidation=1,
-           enableUtcValidation=0, enableFirmwareValidation=1, enableExpiredCertificateValidation=0, enableIgnoreGpt=0, enableIgnoreIma=1, enableIgnoretBoot=0;"
+docker exec $aca_container mysql -u root -proot -D hirs_db -e "Update PolicySettings set ecValidationEnabled=1, pcAttributeValidationEnabled=1, pcValidationEnabled=1,
+           utcValidationEnabled=0, firmwareValidationEnabled=1, expiredCertificateValidationEnabled=0, ignoreGptEnabled=0, ignoreImaEnabled=1, ignoretBootEnabled=0;"
 }
 
-# Clear all ACA DB items including policy
+# Clear all ACA DB items excluding policy
 clearAcaDb() {
-docker exec $aca_container mysql -u root -proot -e "use hirs_db; set foreign_key_checks=0; truncate Alert;truncate AlertBaselineIds;truncate
- AppraisalResult;truncate Certificate;truncate Certificate_Certificate;truncate CertificatesUsedToValidate;truncate
- ComponentInfo;truncate Device;truncate DeviceInfoReport;truncate IMADeviceState;truncate IMAMeasurementRecord;truncate
- ImaBlacklistRecord;truncate ImaIgnoreSetRecord;truncate IntegrityReport;truncate IntegrityReports_Reports_Join;truncate
- RepoPackage_IMABaselineRecord;truncate Report;truncate ReportMapper;truncate ReportRequestState;truncate ReportSummary;truncate
- State;truncate SupplyChainValidation;truncate SupplyChainValidationSummary;truncate ReferenceManifest;truncate
- ReferenceDigestRecord; truncate ReferenceDigestValue; truncate
- SupplyChainValidationSummary_SupplyChainValidation;truncate TPM2ProvisionerState;truncate TPMBaselineRecords;truncate
- TPMDeviceState;truncate TPMReport;truncate TPMReport_pcrValueList; set foreign_key_checks=1;" 
+docker exec hirs-aca1 mysql -u root -proot -e "use hirs_db; set foreign_key_checks=0; truncate Appraiser;
+ truncate Certificate;truncate Certificate_Certificate;truncate CertificatesUsedToValidate;truncate ComponentAttributeResult;
+ truncate ComponentInfo;truncate ComponentResult;truncate Device;truncate DeviceInfoReport;truncate PortalInfo;
+ truncate ReferenceDigestValue;truncate ReferenceManifest;truncate Report;truncate SupplyChainValidation;
+ truncate SupplyChainValidationSummary;truncate SupplyChainValidationSummary_SupplyChainValidation;
+ truncate TPM2ProvisionerState;set foreign_key_checks=1;"
 }
 
 # Upload Certs to the ACA DB
 uploadTrustedCerts() {
-pushd ../setup/certs > /dev/null
-
-  curl -k -s -F "file=@ca.crt" https://${HIRS_ACA_PORTAL_IP}:8443/HIRS_AttestationCAPortal/portal/certificate-request/trust-chain/upload
-  curl -k -s -F "file=@RIMCaCert.pem" https://${HIRS_ACA_PORTAL_IP}:8443/HIRS_AttestationCAPortal/portal/certificate-request/trust-chain/upload
-  curl -k -s -F "file=@RimSignCert.pem" https://${HIRS_ACA_PORTAL_IP}:8443/HIRS_AttestationCAPortal/portal/certificate-request/trust-chain/upload
-
-popd > /dev/null
+  # Create EK Cert from IBMTSS Tools
+  docker exec $tpm2_container sh -c "pushd /ibmtss/utils > /dev/null \
+                                     && ./createekcert -rsa 2048 -cakey cakey.pem -capwd rrrr -v 1> /dev/null \
+                                     && popd > /dev/null"
+  # Upload CA Cert from IBMTSS Tools
+  docker exec $tpm2_container sh -c "pushd /ibmtss/utils/certificates > /dev/null \
+                                     && curl -k -s -F 'file=@cacert.pem' https://${HIRS_ACA_PORTAL_IP}:${HIRS_ACA_PORTAL_PORT}/HIRS_AttestationCAPortal/portal/certificate-request/trust-chain/upload \
+                                     && popd > /dev/null"
+  # Upload Trusted Certs from HIRS
+  pushd .ci/setup/certs > /dev/null
+    curl -k -s -F "file=@ca.crt" https://${HIRS_ACA_PORTAL_IP}:${HIRS_ACA_PORTAL_PORT}/HIRS_AttestationCAPortal/portal/certificate-request/trust-chain/upload
+    curl -k -s -F "file=@RIMCaCert.pem" https://${HIRS_ACA_PORTAL_IP}:${HIRS_ACA_PORTAL_PORT}/HIRS_AttestationCAPortal/portal/certificate-request/trust-chain/upload
+    curl -k -s -F "file=@RimSignCert.pem" https://${HIRS_ACA_PORTAL_IP}:${HIRS_ACA_PORTAL_PORT}/HIRS_AttestationCAPortal/portal/certificate-request/trust-chain/upload
+  popd > /dev/null
 }
 
 # provision_tpm2 takes one parameter which is the expected result of the provion: "pass" or "fail"
@@ -76,23 +85,23 @@ popd > /dev/null
 provisionTpm2() {
    expected_result=$1
    ((totalTests++))
-   provisionOutput=$(docker exec $tpm2_container tpm_aca_provision);
+   provisionOutput=$(docker exec $tpm2_container sh -c "/usr/share/hirs/tpm_aca_provision --tcp --ip 127.0.0.1:2321 --sim");
     echo "==========="
     echo "$provisionOutput";
     echo "===========";
   if [[ $provisionOutput == *"failed"* ]]; then
      if [[ $expected_result == "pass" ]]; then
         ((failedTests++))
-        echo "!!! Provisiong failed, but was expected to pass"
+        echo "!!! Provisioning failed, but was expected to pass"
      else
-        echo "Provisiong failed as expected."
+        echo "Provisioning failed as expected."
      fi
   else   # provisioning succeeded
      if [[ $expected_result == "fail" ]]; then
        ((failedTests++))
-       echo "!!! Provisiong passed, but was expected to fail"
+       echo "!!! Provisioning passed, but was expected to fail"
      else
-        echo "Provisiong passed as expected."
+        echo "Provisioning passed as expected."
      fi
   fi
 }
@@ -100,14 +109,14 @@ provisionTpm2() {
 # Places platform cert(s) held in the test folder(s) in the provisioners tcg folder
 # setPlatCert <profile> <test>
 setPlatformCerts() {
-  docker exec $tpm2_container sh /HIRS/.ci/system-tests/container/pc_setup.sh $1 $2 
+  docker exec $tpm2_container sh /hirs/.ci/system-tests/container/pc_setup.sh $1 $2
   #docker exec $tpm2_container bash -c "find / -name oem_platform_v1_Base.cer"
 }
 
 # Places RIM files held in the test folder in the provisioners tcg folder
 # setRims <profile> <test>
 setRims() {
-docker exec $tpm2_container sh /HIRS/.ci/system-tests/container/rim_setup.sh $1 $2 $3
+docker exec $tpm2_container sh /hirs/.ci/system-tests/container/rim_setup.sh $1 $2 $3
 #docker exec $tpm2_container bash -c "find / -name oem_platform_v1_Base.cer"
 }
 
@@ -117,6 +126,6 @@ docker exec $tpm2_container sh /HIRS/.ci/system-tests/container/rim_setup.sh $1 
 writeToLogs() {
   line=$1
   echo $line;
-  docker exec $aca_container sh -c "echo '$line' >> /var/log/tomcat/HIRS_AttestationCA.log"
+  docker exec $aca_container sh -c "cd .. && echo '$line' >> /var/log/hirs/HIRS_AttestationCA_Portal.log"
  # docker exec $tpm2_container sh -c "echo '$line' >> /var/log/hirs/provisioner/HIRS_provisionerTPM2.log"
 }
