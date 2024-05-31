@@ -101,6 +101,30 @@ public final class JsonUtils {
         return jsonObject;
     }
 
+
+
+
+    public static JsonObject getSpecificJsonObject(final String jsonFilename, final String elementName) {
+        // find the file and load it
+        return getSpecificJsonObject(jsonFilename, elementName, StandardCharsets.UTF_8);
+    }
+
+    public static JsonObject getSpecificJsonObject(final String jsonFilename,
+                                                   final String elementName,
+                                                   final Charset charset) {
+        // find the file and load it
+        JsonObject jsonObject = getJsonObject(jsonFilename, charset);
+
+        if (jsonObject != null && jsonObject.get(elementName) != null) {
+            return jsonObject.get(elementName).asObject();
+        }
+
+        return new JsonObject();
+    }
+    public static JsonObject getJsonObject(final String jsonFilename) {
+        return getJsonObject(jsonFilename, StandardCharsets.UTF_8);
+    }
+
     public static JsonObject getJsonObject(final String jsonFilename, final Charset charset) {
         // find the file and load it
         JsonObject jsonObject = new JsonObject();
