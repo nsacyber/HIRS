@@ -57,4 +57,4 @@ fi
 
 popd > /dev/null
 # Step 4: Make some data available for debugging
-bash /opt/paccor/scripts/allcomponents.sh > allcomponents.output.log
+bash /opt/paccor/scripts/allcomponents.sh > /allcomponents.output.log
