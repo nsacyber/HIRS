@@ -5,7 +5,7 @@
 #    1. Uncomment the "cd ../.." line below to make working directory = /HIRS/
 #    2. Run with the desired HIRS branch as an argument (i.e. $./run_system_tests.sh main)
 #########################################################################################
-#cd ../..
+cd ../..
 
 # Setting variables
 aca_container=hirs-aca1
@@ -41,7 +41,7 @@ echo "******** HIRS System Tests Complete ******** "
 # Collecting ACA and Provisioner.Net logs for workflow artifact
 echo "*** Extracting ACA and Provisioner.Net logs ..."
 docker exec $aca_container sh -c "mkdir -p /HIRS/logs/aca/ && cp -arp /var/log/hirs/* /HIRS/logs/aca/"
-docker exec $tpm2_container sh -c "mkdir -p /HIRS/logs/provisioner/ && cp -ap hirs*.log /HIRS/logs/provisioner/ && cp -ap allcomponents.output.log /HIRS/logs/provisioner/ && chmod -R 777 /HIRS/logs"
+docker exec $tpm2_container sh -c "mkdir -p /HIRS/logs/provisioner/ && cp -ap hirs*.log /HIRS/logs/provisioner/ && cp -ap /allcomponents.output.log /HIRS/logs/provisioner/ && chmod -R 777 /HIRS/logs"
 
 # Clean up services and network
 echo "*** Exiting and removing Docker containers and network ..."
