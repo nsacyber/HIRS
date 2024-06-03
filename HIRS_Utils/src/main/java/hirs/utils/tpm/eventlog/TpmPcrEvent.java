@@ -33,8 +33,8 @@ import java.security.NoSuchAlgorithmException;
 import java.security.cert.CertificateException;
 import java.util.Arrays;
 
-import static hirs.utils.tpm.eventlog.uefi.UefiConstants.FILE_NORMAL;
-import static hirs.utils.tpm.eventlog.uefi.UefiConstants.FILE_NOT_ACCESSIBLE;
+import static hirs.utils.tpm.eventlog.uefi.UefiConstants.FILESTATUS_FROM_FILESYSTEM;
+import static hirs.utils.tpm.eventlog.uefi.UefiConstants.FILESTATUS_NOT_ACCESSIBLE;
 
 /**
  * Class to process a TCG_PCR_EVENT.
@@ -120,14 +120,15 @@ public class TpmPcrEvent {
     @Setter @Getter
     private boolean error = false;
 
-    /** Track if vendor-table file is inaccessible.
-     *  If vendor-table file is not used, this remains false.
+    /**
+     * Track status of vendor-table.json
+     * This is only used for events that use a UefiVariable data structure.
+     * Default is normal status (normal status is from-filesystem).
+     * Status will only change IF this is an event that has a UefiVariable,
+     * and if that event causes a different status.
      * */
     @Getter
-    private boolean bVendorTableFileInaccessbile = false;
-    /** Track status of vendor-table.json */
-    @Getter
-    private String bVendorTableFileStatus = FILE_NORMAL;
+    private String vendorTableFileStatus = FILESTATUS_FROM_FILESYSTEM;
 
     /**
      * Constructor.
@@ -520,22 +521,12 @@ public class TpmPcrEvent {
                 String efiVarDescription = efiVar.toString().replace("\n", "\n   ");
                 description += "Event Content:\n   " + efiVarDescription.substring(0,
                         efiVarDescription.length() - INDENT_3);
-                if(efiVar.isBVendorTableFileInaccessbile()) {
-                    bVendorTableFileInaccessbile = true;
-                }
-                if(efiVar.getBVendorTableFileStatus() == FILE_NOT_ACCESSIBLE) {
-                    bVendorTableFileStatus = FILE_NOT_ACCESSIBLE;
-                }
+                vendorTableFileStatus = efiVar.getVendorTableFileStatus();
                 break;
             case EvConstants.EV_EFI_VARIABLE_BOOT:
                 UefiVariable efiVarBoot = new UefiVariable(content);
                 description += "Event Content:\n" + efiVarBoot.toString();
-                if(efiVarBoot.isBVendorTableFileInaccessbile()) {
-                    bVendorTableFileInaccessbile = true;
-                }
-                if(efiVarBoot.getBVendorTableFileStatus() == FILE_NOT_ACCESSIBLE) {
-                    bVendorTableFileStatus = FILE_NOT_ACCESSIBLE;
-                }
+                vendorTableFileStatus = efiVarBoot.getVendorTableFileStatus();
                 break;
             case EvConstants.EV_EFI_BOOT_SERVICES_APPLICATION:
                 EvEfiBootServicesApp bootServices = new EvEfiBootServicesApp(content);
@@ -566,12 +557,7 @@ public class TpmPcrEvent {
             case EvConstants.EV_EFI_VARIABLE_AUTHORITY:
                 UefiVariable efiVarAuth = new UefiVariable(content);
                 description += "Event Content:\n" + efiVarAuth.toString();
-                if(efiVarAuth.isBVendorTableFileInaccessbile()) {
-                    bVendorTableFileInaccessbile = true;
-                }
-                if(efiVarAuth.getBVendorTableFileStatus() == FILE_NOT_ACCESSIBLE) {
-                    bVendorTableFileStatus = FILE_NOT_ACCESSIBLE;
-                }
+                vendorTableFileStatus = efiVarAuth.getVendorTableFileStatus();
                 break;
             case EvConstants.EV_EFI_SPDM_FIRMWARE_BLOB:
                 description += "Event Content:\n" + new EvEfiSpdmFirmwareBlob(content).toString();

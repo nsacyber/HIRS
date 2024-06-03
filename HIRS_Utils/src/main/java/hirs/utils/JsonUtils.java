@@ -121,6 +121,7 @@ public final class JsonUtils {
 
         return new JsonObject();
     }
+
     public static JsonObject getJsonObject(final String jsonFilename) {
         return getJsonObject(jsonFilename, StandardCharsets.UTF_8);
     }
@@ -131,7 +132,7 @@ public final class JsonUtils {
 
         try {
             InputStream jsonIs = UefiGuid.class
-                    .getClassLoader().getResourceAsStream("vendor-table2.json");
+                    .getClassLoader().getResourceAsStream(jsonFilename);
             jsonObject = Json.parse(new InputStreamReader(jsonIs,
                     charset)).asObject();
         } catch (IOException e) {

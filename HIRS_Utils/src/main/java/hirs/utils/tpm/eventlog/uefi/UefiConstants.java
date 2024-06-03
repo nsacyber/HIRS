@@ -272,18 +272,18 @@ public final class UefiConstants {
      */
     public static final int UEFI_PT_LENGTH = 72;
     /**
-     * file status, where file was successfully found on local machine
+     * file status, where file was successfully found on local machine.
      */
-    public static final String FILE_NORMAL = "fileNormal";
+    public static final String FILESTATUS_FROM_FILESYSTEM = "fileFromFilesystem";
     /**
-     * file status, where file is not accessible
+     * file status, where file was not found on local machine, so file from code was used.
+     *   For instance, if vendor-table.json is not found in filesystem at location
+     *   /etc/hirs/aca/default-properties/, it will be grabbed from code at
+     *   HIRS_AttestationCA/src/main/resources/.
      */
-    public static final String FILE_NOT_ACCESSIBLE = "fileNotAccessible";
+    public static final String FILESTATUS_FROM_CODE = "fileFromCode";
     /**
-     * file status, where file was not found on the local machine,
-     *   and so file from the code was used.
-     *   For instance, if vendor-table.json is not found in /etc/hirs/aca/default-properties/,
-     *   it will be grabbed from code at HIRS_AttestationCA/src/main/resources/.
+     * file status, where file is not accessible (either not found, or no access permission).
      */
-    public static final String FILE_FROM_CODE_USED = "fileFromCodeUsed";
+    public static final String FILESTATUS_NOT_ACCESSIBLE = "fileNotAccessible";
 }

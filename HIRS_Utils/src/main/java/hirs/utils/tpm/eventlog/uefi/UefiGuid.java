@@ -1,9 +1,11 @@
 package hirs.utils.tpm.eventlog.uefi;
 
+import com.eclipsesource.json.Json;
 import com.eclipsesource.json.JsonObject;
 import hirs.utils.HexUtils;
 import hirs.utils.JsonUtils;
 import hirs.utils.rim.ReferenceManifestValidator;
+import lombok.Getter;
 import org.apache.commons.io.IOUtils;
 
 import javax.xml.transform.Source;
@@ -22,6 +24,10 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.UUID;
 
+import static hirs.utils.tpm.eventlog.uefi.UefiConstants.FILESTATUS_FROM_CODE;
+import static hirs.utils.tpm.eventlog.uefi.UefiConstants.FILESTATUS_FROM_FILESYSTEM;
+import static hirs.utils.tpm.eventlog.uefi.UefiConstants.FILESTATUS_NOT_ACCESSIBLE;
+
 /**
  * Class to process GUID per the UEFI specification
  * GUIDs are essentially UUID as defined by RFC-1422, however Microsoft refers to GUIDS.
@@ -39,9 +45,13 @@ public class UefiGuid {
     private static final Path JSON_PATH = FileSystems.getDefault().getPath("/etc",
             "hirs", "aca", "default-properties", "vendor-table.json");
 
-    private static final String vendorTableFilename = "vendor-table.json";
+    private static final String JSON_FILENAME = "vendor-table3.json";
 
     private JsonObject uefiVendorRef;
+    /** Track status of vendor-table.json */
+    @Getter
+    private String vendorTableFileStatus = FILESTATUS_NOT_ACCESSIBLE;
+
     /**
      * guid byte array.
      */
@@ -57,103 +67,7 @@ public class UefiGuid {
      * @param guidBytes byte array holding a valid guid.
      */
     public UefiGuid(final byte[] guidBytes) {
-        guid = new byte[UefiConstants.SIZE_16];
-        System.arraycopy(guidBytes, 0, guid, 0, UefiConstants.SIZE_16);
-        uuid = processGuid(guidBytes);
-//        uefiVendorRef = JsonUtils.getSpecificJsonObject(JSON_PATH, "VendorTable");
-
-
-        Path bad = FileSystems.getDefault().getPath("/etc",
-                "hirs", "aca", "default-properties", "vendor-tableBAD.json");
-        uefiVendorRef = JsonUtils.getSpecificJsonObject(bad,
-                "VendorTable");
-
-        if(isVendorTableReferenceHandleEmpty()) {
-            System.out.println("XXXX EMPTYYYYYYY, before trying to grab file from code");
-
-
-//            uefiVendorRef = JsonUtils.getJsonObject("vendor-table2.json",
-//                    StandardCharsets.UTF_8);
-
-            uefiVendorRef = JsonUtils.getSpecificJsonObject("vendor-table2.json", "VendorTable",
-                    StandardCharsets.UTF_8);
-
-
-//            System.out.println("XXXX getClass: " + getClass());
-//            System.out.println("XXXX getClassResource: " + getClass().getResource("/vendor-table2.json"));
-//
-//
-//            InputStream inpStr = UefiGuid.class
-//                    .getClassLoader().getResourceAsStream("vendor-table2.json");
-//            System.out.println("XXXX InputStream: " + inpStr);
-//
-//            Source inpSource = new StreamSource(
-//                    ReferenceManifestValidator.class.getClassLoader()
-//                            .getResourceAsStream("vendor-table2.json"));
-//            System.out.println("XXXX Source: " + inpSource);
-//
-//            String path = this.getClass().getClassLoader().getResource("vendor-table2.json").toExternalForm();
-//            System.out.println("XXXX External Form: " + path);
-
-
-//            JsonReader reader = new JsonReader(new InputStreamReader(inpStr, "UTF-8"));
-
-//            try {
-//                BufferedReader streamReader = new BufferedReader(new InputStreamReader(inpStr, "UTF-8"));
-//                StringBuilder responseStrBuilder = new StringBuilder();
-//
-//                String inputStr;
-//                while ((inputStr = streamReader.readLine()) != null)
-//                    responseStrBuilder.append(inputStr);
-//
-//                String test = responseStrBuilder.toString();
-////                Gson gson = new Gson();
-//
-//                JsonObject testjj = parser.
-//
-//                String temp = "hello";
-//
-////                JsonObject jsonObject = new JsonObject(responseStrBuilder.toString());
-//
-//            } catch (UnsupportedEncodingException e) {
-//                throw new RuntimeException(e);
-//            } catch (IOException e) {
-//                throw new RuntimeException(e);
-//            }
-
-//            byte[] rawLogBytes = IOUtils.toByteArray(inpStr);
-
-
-//            Path fPath2 = Paths.get(inpStr.toURI());
-
-//            try {
-////                private static final String EK_PUBLIC_PATH = "/tpm2/ek.pub";
-//
-////                Source source = new StreamSource(
-////                        getClass().getClassLoader().getResourceAsStream("identity_transform.xslt"));
-//
-//
-//                Path fPath = Paths.get(getClass().getResource("/vendor-table2.json").toURI());
-////                URL url = ClassLoader.getSystemResources("vendor-table.json").nextElement();
-////                URL url = ClassLoader.getSystemResources("vendor-table.json");
-////                Path fPath = Paths.get(url.toURI());
-//                uefiVendorRef = JsonUtils.getSpecificJsonObject(fPath,
-//                                "VendorTable");
-//
-//            }
-////            catch (IOException e) {
-////                System.out.print("XXXX IOException");
-////                throw new RuntimeException(e);
-////            }
-//        catch (URISyntaxException e) {
-//                System.out.print("XXXX URISyntaxException");
-//                throw new RuntimeException(e);
-//            }
-        }
-
-        if(isVendorTableReferenceHandleEmpty()) {
-            System.out.println("YYYY EMPTY STILL, after trying to grab file from code");
-        }
+        this(guidBytes, JSON_PATH);
     }
 
     /**
@@ -168,6 +82,18 @@ public class UefiGuid {
         uuid = processGuid(guidBytes);
         uefiVendorRef = JsonUtils.getSpecificJsonObject(vendorPathString,
                 "VendorTable");
+
+        if(!isVendorTableReferenceHandleEmpty()) {
+            vendorTableFileStatus = FILESTATUS_FROM_FILESYSTEM;
+        }
+        else {
+            // could not access vendor-table.json from filesystem, so attempt to access from code
+            uefiVendorRef = JsonUtils.getSpecificJsonObject(JSON_FILENAME, "VendorTable",
+                    StandardCharsets.UTF_8);
+            if(!isVendorTableReferenceHandleEmpty()) {
+                vendorTableFileStatus = FILESTATUS_FROM_CODE;
+            }
+        }
     }
 
     /**
