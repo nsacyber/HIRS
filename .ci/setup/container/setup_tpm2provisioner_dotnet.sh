@@ -24,6 +24,7 @@ yes | dnf install HIRS_Provisioner.NET/hirs/bin/Release/net6.0/linux-x64/HIRS_Pr
 # Initiate startup for IBMTSS Tools
 pushd /ibmtss/utils > /dev/null
 ./startup
+./createekcert -rsa 2048 -cakey cakey.pem -capwd rrrr -v 1> /dev/null
 popd > /dev/null
 
 # Writing to Provisioner.Net configurations file for modified aca port and efi prefix
@@ -69,5 +70,7 @@ cat <<APPSETTINGS_FILE > /usr/share/hirs/appsettings.json
 APPSETTINGS_FILE
 
 # Triggering a single provision for test
+echo "==========="
 echo "*** INITIAL TEST: Single Provision with Default Policy:"
+echo "==========="
 /usr/share/hirs/tpm_aca_provision --tcp --ip 127.0.0.1:2321 --sim
