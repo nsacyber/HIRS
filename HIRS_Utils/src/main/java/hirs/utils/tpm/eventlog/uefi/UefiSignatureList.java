@@ -9,8 +9,7 @@ import java.security.NoSuchAlgorithmException;
 import java.security.cert.CertificateException;
 import java.util.ArrayList;
 
-import static hirs.utils.tpm.eventlog.uefi.UefiConstants.FILE_NORMAL;
-import static hirs.utils.tpm.eventlog.uefi.UefiConstants.FILE_NOT_ACCESSIBLE;
+import static hirs.utils.tpm.eventlog.uefi.UefiConstants.FILESTATUS_NOT_ACCESSIBLE;
 
 /**
  * Class for processing the contents of a Secure Boot DB or DBX contents.
@@ -72,14 +71,9 @@ public class UefiSignatureList {
      * Type of signature.
      */
     private UefiGuid signatureType = null;
-    /** Track if vendor-table file is inaccessible.
-     *  If vendor-table file is not used, this remains false.
-     * */
-    @Getter
-    private boolean bVendorTableFileInaccessbile = false;
     /** Track status of vendor-table.json */
     @Getter
-    private String bVendorTableFileStatus = FILE_NORMAL;
+    private String vendorTableFileStatus = FILESTATUS_NOT_ACCESSIBLE;
 
     /**
      * UefiSignatureList constructor.
@@ -95,6 +89,7 @@ public class UefiSignatureList {
         byte[] guid = new byte[UefiConstants.SIZE_16];
         System.arraycopy(list, 0, guid, 0, UefiConstants.SIZE_16);
         signatureType = new UefiGuid(guid);
+        vendorTableFileStatus = signatureType.getVendorTableFileStatus();
 
         byte[] lSize = new byte[UefiConstants.SIZE_4];
         System.arraycopy(list, UefiConstants.OFFSET_16, lSize, 0, UefiConstants.SIZE_4);
@@ -125,10 +120,11 @@ public class UefiSignatureList {
         byte[] guid = new byte[UefiConstants.SIZE_16];
         lists.read(guid);
         signatureType = new UefiGuid(guid);
-        if(signatureType.isVendorTableReferenceHandleEmpty()) {
-            bVendorTableFileInaccessbile = true;
-            bVendorTableFileStatus = FILE_NOT_ACCESSIBLE;
-        }
+        vendorTableFileStatus = signatureType.getVendorTableFileStatus();
+//        if(signatureType.isVendorTableReferenceHandleEmpty()) {
+//            bVendorTableFileInaccessbile = true;
+//            vendorTableFileStatus = FILE_NOT_ACCESSIBLE;
+//        }
 
         // if signatureType is invalid, don't even process any of the data
         // however, if signatureTYpe is valid, but some of the data later on is invalid, that will
