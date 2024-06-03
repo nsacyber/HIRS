@@ -121,10 +121,6 @@ public class UefiSignatureList {
         lists.read(guid);
         signatureType = new UefiGuid(guid);
         vendorTableFileStatus = signatureType.getVendorTableFileStatus();
-//        if(signatureType.isVendorTableReferenceHandleEmpty()) {
-//            bVendorTableFileInaccessbile = true;
-//            vendorTableFileStatus = FILE_NOT_ACCESSIBLE;
-//        }
 
         // if signatureType is invalid, don't even process any of the data
         // however, if signatureTYpe is valid, but some of the data later on is invalid, that will
