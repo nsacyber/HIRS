@@ -34,7 +34,6 @@ import java.security.cert.CertificateException;
 import java.util.Arrays;
 
 import static hirs.utils.tpm.eventlog.uefi.UefiConstants.FILESTATUS_FROM_FILESYSTEM;
-import static hirs.utils.tpm.eventlog.uefi.UefiConstants.FILESTATUS_NOT_ACCESSIBLE;
 
 /**
  * Class to process a TCG_PCR_EVENT.

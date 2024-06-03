@@ -3,17 +3,14 @@ package hirs.utils;
 import com.eclipsesource.json.Json;
 import com.eclipsesource.json.JsonObject;
 import hirs.utils.tpm.eventlog.uefi.UefiGuid;
-import hirs.utils.xjc.Resource;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 
-import java.io.BufferedReader;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.io.UnsupportedEncodingException;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -101,7 +98,7 @@ public final class JsonUtils {
 
         return jsonObject;
     }
-    
+
     /**
      * Getter for the JSON Object that is associated with the elementName value
      * mapped in the associated JSON file.
