@@ -12,10 +12,9 @@ failedTests=0;
 # Start ACA Policy Tests
 # provisionTpm2 takes 1 parameter (the expected result): "pass" or "fail"
 
-# As of 5/31/2024, Default Policy Provision Fails without EK Cert
-#writeToLogs "### ACA POLICY TEST 1: Test ACA default policy  ###"
-#setPlatformCerts "laptop" "empty"
-#provisionTpm2 "pass"
+writeToLogs "### ACA POLICY TEST 1: Test ACA default policy  ###"
+setPlatformCerts "laptop" "empty"
+provisionTpm2 "pass"
 
 writeToLogs "### ACA POLICY TEST 2: Test EK cert Only Validation Policy without a EK Issuer Cert in the trust store ###"
 setPolicyEkOnly
