@@ -45,7 +45,7 @@ public class UefiGuid {
     private static final Path JSON_PATH = FileSystems.getDefault().getPath("/etc",
             "hirs", "aca", "default-properties", "vendor-table.json");
 
-    private static final String JSON_FILENAME = "vendor-table3.json";
+    private static final String JSON_FILENAME = "vendor-table2.json";
 
     private JsonObject uefiVendorRef;
     /** Track status of vendor-table.json */

@@ -3,6 +3,7 @@ package hirs.utils;
 import com.eclipsesource.json.Json;
 import com.eclipsesource.json.JsonObject;
 import hirs.utils.tpm.eventlog.uefi.UefiGuid;
+import hirs.utils.xjc.Resource;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import lombok.extern.log4j.Log4j2;
@@ -127,29 +128,18 @@ public final class JsonUtils {
     }
 
     public static JsonObject getJsonObject(final String jsonFilename, final Charset charset) {
-        // find the file and load it
         JsonObject jsonObject = new JsonObject();
 
-        try {
-            InputStream jsonIs = UefiGuid.class
+        InputStream jsonIs = UefiGuid.class
                     .getClassLoader().getResourceAsStream(jsonFilename);
-            jsonObject = Json.parse(new InputStreamReader(jsonIs,
-                    charset)).asObject();
-        } catch (IOException e) {
-            throw new RuntimeException(e);
+        if (jsonIs != null) {
+            try {
+                jsonObject = Json.parse(new InputStreamReader(jsonIs,
+                        charset)).asObject();
+            } catch (IOException ex) {
+                jsonObject = new JsonObject();
+            }
         }
-        //        if (Files.notExists(jsonPath)) {
-//            log.warn(String.format("No file found at %s.", jsonPath.toString()));
-//        } else {
-//            try {
-//                InputStream inputStream = new FileInputStream(jsonPath.toString());
-//                jsonObject = Json.parse(new InputStreamReader(inputStream,
-//                        charset)).asObject();
-//            } catch (IOException ex) {
-//                // add log file thing here indication issue with JSON File
-//                jsonObject = new JsonObject();
-//            }
-//        }
 
         return jsonObject;
     }
