@@ -88,8 +88,7 @@ public class UefiGuid {
         }
         else {
             // could not access vendor-table.json from filesystem, so attempt to access from code
-            uefiVendorRef = JsonUtils.getSpecificJsonObject(JSON_FILENAME, "VendorTable",
-                    StandardCharsets.UTF_8);
+            uefiVendorRef = JsonUtils.getSpecificJsonObject(JSON_FILENAME, "VendorTable");
             if(!isVendorTableReferenceHandleEmpty()) {
                 vendorTableFileStatus = FILESTATUS_FROM_CODE;
             }
