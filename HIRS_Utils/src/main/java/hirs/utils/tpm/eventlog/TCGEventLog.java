@@ -86,7 +86,7 @@ public final class TCGEventLog {
      * Default is normal status (normal status is from-filesystem).
      * Status will only change IF there is a UefiVariable event in this log,
      * and if that event causes a different status.
-     * */
+     */
     @Getter
     private String vendorTableFileStatus = FILESTATUS_FROM_FILESYSTEM;
 

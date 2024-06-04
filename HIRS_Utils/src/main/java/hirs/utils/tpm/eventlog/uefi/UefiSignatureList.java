@@ -71,7 +71,9 @@ public class UefiSignatureList {
      * Type of signature.
      */
     private UefiGuid signatureType = null;
-    /** Track status of vendor-table.json */
+    /**
+     * Track status of vendor-table.json
+     */
     @Getter
     private String vendorTableFileStatus = FILESTATUS_NOT_ACCESSIBLE;
 

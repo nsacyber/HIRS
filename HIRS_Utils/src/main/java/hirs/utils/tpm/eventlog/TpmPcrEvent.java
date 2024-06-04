@@ -125,7 +125,7 @@ public class TpmPcrEvent {
      * Default is normal status (normal status is from-filesystem).
      * Status will only change IF this is an event that has a UefiVariable,
      * and if that event causes a different status.
-     * */
+     */
     @Getter
     private String vendorTableFileStatus = FILESTATUS_FROM_FILESYSTEM;
 
