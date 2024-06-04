@@ -27,14 +27,22 @@ public class UefiGuid {
      * used for conversion to uuid time.
      */
     private static final int UUID_EPOCH_DIVISOR = 10000;
-
+    /**
+     * Filesystem path of vendor-table.json
+     */
     private static final Path JSON_PATH = FileSystems.getDefault().getPath("/etc",
             "hirs", "aca", "default-properties", "vendor-table.json");
-
+    /**
+     * Name of vendor-table file in code
+     */
     private static final String JSON_FILENAME = "vendor-table2.json";
-
+    /**
+     * Reference to the vendor-table json object
+     */
     private JsonObject uefiVendorRef;
-    /** Track status of vendor-table.json */
+    /**
+     * Track status of vendor-table.json
+     */
     @Getter
     private String vendorTableFileStatus = FILESTATUS_NOT_ACCESSIBLE;
 

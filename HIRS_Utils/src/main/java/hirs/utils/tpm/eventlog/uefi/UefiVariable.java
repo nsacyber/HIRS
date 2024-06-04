@@ -71,7 +71,7 @@ public class UefiVariable {
      * The default here is that each list correctly grabbed the file from file system.
      * If any one list has issues, this overall status will change to reflect the
      * problematic list's status.
-     * */
+     */
     @Getter
     private String vendorTableFileStatus = FILESTATUS_FROM_FILESYSTEM;
 
