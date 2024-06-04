@@ -20,6 +20,12 @@ java {
     }
 }
 
+bootRun {
+  if (project.hasProperty('debug')) {
+    jvmArgs project.debug
+  }
+}
+
 configurations {
     compileOnly {
         extendsFrom annotationProcessor
@@ -41,6 +47,8 @@ dependencies {
     implementation libs.bouncycastle
     implementation libs.guava
     implementation libs.jakarta.servlet
+    implementation libs.jakarta.api
+    implementation libs.jakarta.xml
 
     implementation 'org.springframework.boot:spring-boot-starter-web'
     implementation 'org.springframework.boot:spring-boot-starter-validation'

@@ -19,6 +19,7 @@ import hirs.utils.tpm.eventlog.TpmPcrEvent;
 import jakarta.persistence.EntityManager;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
+import jakarta.xml.bind.UnmarshalException;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
@@ -61,7 +62,8 @@ import java.util.zip.ZipOutputStream;
 @RequestMapping("/HIRS_AttestationCAPortal/portal/reference-manifests")
 public class ReferenceManifestPageController extends PageController<NoPageParams> {
 
-    private static final String LOG_FILE_PATTERN = "([^\\s]+(\\.(?i)(rimpcr|rimel|bin|log))$)";
+    private static final String BASE_RIM_FILE_PATTERN = "([^\\s]+(\\.(?i)swidtag)$)";
+    private static final String SUPPORT_RIM_FILE_PATTERN = "([^\\s]+(\\.(?i)(rimpcr|rimel|bin|log))$)";
 
     @Autowired(required = false)
     private EntityManager entityManager;
@@ -155,21 +157,34 @@ public class ReferenceManifestPageController extends PageController<NoPageParams
         Map<String, Object> model = new HashMap<>();
         PageMessages messages = new PageMessages();
         String fileName;
-        Pattern logPattern = Pattern.compile(LOG_FILE_PATTERN);
+        Pattern baseRimPattern = Pattern.compile(BASE_RIM_FILE_PATTERN);
+        Pattern supportRimPattern = Pattern.compile(SUPPORT_RIM_FILE_PATTERN);
         Matcher matcher;
-        boolean supportRIM = false;
         List<BaseReferenceManifest> baseRims = new ArrayList<>();
         List<SupportReferenceManifest> supportRims = new ArrayList<>();
         log.info(String.format("Processing %s uploaded files", files.length));
 
         // loop through the files
         for (MultipartFile file : files) {
+            boolean isBaseRim;
+            boolean isSupportRim = false;
             fileName = file.getOriginalFilename();
-            matcher = logPattern.matcher(fileName);
-            supportRIM = matcher.matches();
-
-            //Parse reference manifests
-            parseRIM(file, supportRIM, messages, baseRims, supportRims);
+            matcher = baseRimPattern.matcher(fileName);
+            isBaseRim = matcher.matches();
+            if (!isBaseRim) {
+                matcher = supportRimPattern.matcher(fileName);
+                isSupportRim = matcher.matches();
+            }
+            if (isBaseRim || isSupportRim) {
+                parseRIM(file, isSupportRim, messages, baseRims, supportRims);
+            } else {
+                String errorString = "The file extension of " + fileName + " was not recognized." +
+                        " Base RIMs support the extension \".swidtag\", and support RIMs support " +
+                        "\".rimpcr\", \".rimel\", \".bin\", and \".log\". " +
+                        "Please verify your upload and retry.";
+                log.error("File extension in " + fileName + " not recognized as base or support RIM.");
+                messages.addError(errorString);
+            }
         }
         baseRims.stream().forEach((rim) -> {
             log.info(String.format("Storing swidtag %s", rim.getFileName()));
@@ -393,23 +408,33 @@ public class ReferenceManifestPageController extends PageController<NoPageParams
         try {
             if (supportRIM) {
                 supportRim = new SupportReferenceManifest(fileName, fileBytes);
-                if (referenceManifestRepository.findByHexDecHashAndRimType(supportRim.getHexDecHash(),
-                        supportRim.getRimType()) == null) {
+                if (referenceManifestRepository.findByHexDecHashAndRimType(
+                        supportRim.getHexDecHash(), supportRim.getRimType()) == null) {
                     supportRims.add(supportRim);
-                    messages.addInfo("Saved Reference Manifest " + fileName);
+                    messages.addInfo("Saved support RIM " + fileName);
                 }
             } else {
                 baseRim = new BaseReferenceManifest(fileName, fileBytes);
-                if (referenceManifestRepository.findByHexDecHashAndRimType(baseRim.getHexDecHash(),
-                        baseRim.getRimType()) == null) {
+                if (referenceManifestRepository.findByHexDecHashAndRimType(
+                        baseRim.getHexDecHash(), baseRim.getRimType()) == null) {
                     baseRims.add(baseRim);
+                    messages.addInfo("Saved base RIM " + fileName);
                 }
             }
         } catch (IOException | NullPointerException ioEx) {
             final String failMessage
-                    = String.format("Failed to parse uploaded file (%s): ", fileName);
+                    = String.format("Failed to parse support RIM file (%s): ", fileName);
             log.error(failMessage, ioEx);
             messages.addError(failMessage + ioEx.getMessage());
+        } catch (UnmarshalException e) {
+            final String failMessage
+                    = String.format("Failed to parse base RIM file (%s): ", fileName);
+            log.error(failMessage, e);
+            messages.addError(failMessage + e.getMessage());
+        } catch (Exception e) {
+            final String failMessage
+                    = String.format("Failed to parse (%s): ", fileName);
+            log.error(failMessage, e);
         }
     }
 

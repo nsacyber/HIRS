@@ -9,7 +9,7 @@
     <jsp:attribute name="pageHeaderTitle">Error - 404</jsp:attribute>
 
     <jsp:body>
-        <!--<div> Exception Message: <c:out value="${exception}"</c:out></div>
+        <!--<div> Exception Message: <c:out value="${exception}"></c:out></div>
         <div> from URL -> <span th:text="${url}"</span></div>-->
     </jsp:body>
 </my:page>

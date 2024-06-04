@@ -3,22 +3,24 @@ package hirs.swid;
 import hirs.swid.utils.HashSwid;
 import hirs.utils.xjc.Directory;
 import hirs.utils.xjc.Entity;
+import hirs.utils.xjc.FilesystemItem;
 import hirs.utils.xjc.Link;
 import hirs.utils.xjc.ObjectFactory;
 import hirs.utils.xjc.ResourceCollection;
 import hirs.utils.xjc.SoftwareIdentity;
 import hirs.utils.xjc.SoftwareMeta;
+import jakarta.xml.bind.JAXBContext;
+import jakarta.xml.bind.JAXBElement;
+import jakarta.xml.bind.JAXBException;
+import jakarta.xml.bind.Marshaller;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
+import org.w3c.dom.Node;
 
 import javax.json.Json;
 import javax.json.JsonException;
 import javax.json.JsonObject;
 import javax.json.JsonReader;
-import jakarta.xml.bind.JAXBContext;
-import jakarta.xml.bind.JAXBElement;
-import jakarta.xml.bind.JAXBException;
-import jakarta.xml.bind.Marshaller;
 import javax.xml.crypto.MarshalException;
 import javax.xml.crypto.XMLStructure;
 import javax.xml.crypto.dom.DOMStructure;
@@ -41,6 +43,7 @@ import javax.xml.crypto.dsig.keyinfo.X509Data;
 import javax.xml.crypto.dsig.spec.C14NMethodParameterSpec;
 import javax.xml.crypto.dsig.spec.TransformParameterSpec;
 import javax.xml.namespace.QName;
+import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.OutputKeys;
@@ -91,6 +94,8 @@ public class SwidTagGateway {
     private String timestampFormat;
     private String timestampArgument;
     private String errorRequiredFields;
+    private DocumentBuilderFactory dbf;
+    private DocumentBuilder builder;
 
     /**
      * Default constructor initializes jaxbcontext, marshaller, and unmarshaller
@@ -107,8 +112,15 @@ public class SwidTagGateway {
             timestampFormat = "";
             timestampArgument = "";
             errorRequiredFields = "";
+            dbf = DocumentBuilderFactory.newInstance();
+            dbf.setNamespaceAware(true);
+            builder = dbf.newDocumentBuilder();
         } catch (JAXBException e) {
             System.out.println("Error initializing jaxbcontext: " + e.getMessage());
+        } catch (ParserConfigurationException e) {
+            System.out.println("Error instantiating Document object for parsing swidtag: "
+                    + e.getMessage());
+            System.exit(1);
         }
     }
 
@@ -198,49 +210,62 @@ public class SwidTagGateway {
      * @param filename
      */
     public void generateSwidTag(final String filename) {
-        SoftwareIdentity swidTag = null;
+        Document swidtag = builder.newDocument();
+        SoftwareIdentity softwareIdentity = null;
         try {
             InputStream is = new FileInputStream(attributesFile);
             JsonReader reader = Json.createReader(is);
             JsonObject configProperties = reader.readObject();
             reader.close();
             //SoftwareIdentity
-            swidTag = createSwidTag(
+            softwareIdentity = createSwidTag(
                     configProperties.getJsonObject(SwidTagConstants.SOFTWARE_IDENTITY));
             //Entity
             JAXBElement<Entity> entity = objectFactory.createSoftwareIdentityEntity(
                     createEntity(configProperties.getJsonObject(SwidTagConstants.ENTITY)));
-            swidTag.getEntityOrEvidenceOrLink().add(entity);
+            softwareIdentity.getEntityOrEvidenceOrLink().add(entity);
             //Link
             JAXBElement<Link> link = objectFactory.createSoftwareIdentityLink(
                     createLink(configProperties.getJsonObject(SwidTagConstants.LINK)));
-            swidTag.getEntityOrEvidenceOrLink().add(link);
+            softwareIdentity.getEntityOrEvidenceOrLink().add(link);
             //Meta
             JAXBElement<SoftwareMeta> meta = objectFactory.createSoftwareIdentityMeta(
                     createSoftwareMeta(configProperties.getJsonObject(SwidTagConstants.META)));
-            swidTag.getEntityOrEvidenceOrLink().add(meta);
-            //Payload
-            ResourceCollection payload = createPayload(
-                    configProperties.getJsonObject(SwidTagConstants.PAYLOAD));
-            //Directory
-            Directory directory = createDirectory(
-                    configProperties.getJsonObject(SwidTagConstants.PAYLOAD)
-                            .getJsonObject(SwidTagConstants.DIRECTORY));
+            softwareIdentity.getEntityOrEvidenceOrLink().add(meta);
+
+            swidtag = convertToDocument(objectFactory.createSoftwareIdentity(softwareIdentity));
+            Element rootElement = swidtag.getDocumentElement();
+
             //File
             hirs.utils.xjc.File file = createFile(
                     configProperties.getJsonObject(SwidTagConstants.PAYLOAD)
                             .getJsonObject(SwidTagConstants.DIRECTORY)
                             .getJsonObject(SwidTagConstants.FILE));
-            //Nest File in Directory in Payload
-            directory.getDirectoryOrFile().add(file);
-            payload.getDirectoryOrFileOrProcess().add(directory);
+            JAXBElement<FilesystemItem> jaxbFile = objectFactory.createDirectoryFile(file);
+            Document fileDoc = convertToDocument(jaxbFile);
+            //Directory
+            Directory directory = createDirectory(
+                    configProperties.getJsonObject(SwidTagConstants.PAYLOAD)
+                            .getJsonObject(SwidTagConstants.DIRECTORY));
+            JAXBElement<FilesystemItem> jaxbDirectory = objectFactory.createPayloadDirectory(directory);
+            Document dirDoc = convertToDocument(jaxbDirectory);
+            Node fileNode = dirDoc.importNode(fileDoc.getDocumentElement(), true);
+            dirDoc.getDocumentElement().appendChild(fileNode);
+            //Payload
+            ResourceCollection payload = createPayload(
+                    configProperties.getJsonObject(SwidTagConstants.PAYLOAD));
             JAXBElement<ResourceCollection> jaxbPayload =
                     objectFactory.createSoftwareIdentityPayload(payload);
-            swidTag.getEntityOrEvidenceOrLink().add(jaxbPayload);
+            Document payloadDoc = convertToDocument(jaxbPayload);
+            Node dirNode = payloadDoc.importNode(dirDoc.getDocumentElement(), true);
+            payloadDoc.getDocumentElement().appendChild(dirNode);
+
+            Node payloadNode = swidtag.importNode(payloadDoc.getDocumentElement(), true);
+            rootElement.appendChild(payloadNode);
+
             //Signature
             if (errorRequiredFields.isEmpty()) {
-                Document signedSoftwareIdentity = signXMLDocument(
-                        objectFactory.createSoftwareIdentity(swidTag));
+                Document signedSoftwareIdentity = signXMLDocument(swidtag);
                 writeSwidTagFile(signedSoftwareIdentity, filename);
             } else {
                 System.out.println("The following fields cannot be empty or null: "
@@ -545,23 +570,31 @@ public class SwidTagGateway {
     }
 
     /**
-     * This method signs a SoftwareIdentity with an xmldsig in compatibility mode.
-     * Current assumptions: digest method SHA256, signature method SHA256, enveloped signature
+     * This method converts a JAXBElement object generated from the hirs.utils.xjc package into
+     * a Document object.
+     *
+     * @param element to convert
+     * @return a Document object
      */
-    private Document signXMLDocument(JAXBElement<SoftwareIdentity> swidTag) {
+    private Document convertToDocument(JAXBElement element) {
         Document doc = null;
         try {
-            doc = DocumentBuilderFactory.newInstance().newDocumentBuilder().newDocument();
-            marshaller.marshal(swidTag, doc);
-        } catch (ParserConfigurationException e) {
-            System.out.println("Error instantiating Document object for parsing swidtag: "
-                    + e.getMessage());
-            System.exit(1);
+            doc = builder.newDocument();
+            marshaller.marshal(element, doc);
         } catch (JAXBException e) {
             System.out.println("Error while marshaling swidtag: " + e.getMessage());
             e.printStackTrace();
             System.exit(1);
         }
+
+        return doc;
+    }
+
+    /**
+     * This method signs a SoftwareIdentity with an xmldsig in compatibility mode.
+     * Current assumptions: digest method SHA256, signature method SHA256, enveloped signature
+     */
+    private Document signXMLDocument(Document doc) {
         XMLSignatureFactory sigFactory = XMLSignatureFactory.getInstance("DOM");
         List xmlObjectList = null;
         String signatureId = null;
@@ -679,12 +712,13 @@ public class SwidTagGateway {
      * @return an XMLObject containing the timestamp element
      */
     private XMLObject createXmlTimestamp(Document doc, XMLSignatureFactory sigFactory) {
-        Element timeStampElement = doc.createElement("TimeStamp");
+        Element timeStampElement = null;
         switch (timestampFormat.toUpperCase()) {
             case "RFC3852":
                 try {
                     byte[] counterSignature = Base64.getEncoder().encode(
                             Files.readAllBytes(Paths.get(timestampArgument)));
+                    timeStampElement = doc.createElementNS(SwidTagConstants.RFC3852_NS, "TimeStamp");
                     timeStampElement.setAttributeNS("http://www.w3.org/2000/xmlns/",
                             "xmlns:" + SwidTagConstants.RFC3852_PFX,
                             SwidTagConstants.RFC3852_NS);
@@ -696,6 +730,7 @@ public class SwidTagGateway {
                 }
                 break;
             case "RFC3339":
+                timeStampElement = doc.createElementNS(SwidTagConstants.RFC3339_NS, "TimeStamp");
                 timeStampElement.setAttributeNS("http://www.w3.org/2000/xmlns/",
                         "xmlns:" + SwidTagConstants.RFC3339_PFX,
                         SwidTagConstants.RFC3339_NS);
