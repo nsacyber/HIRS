@@ -28,6 +28,7 @@ docker exec $tpm2_container sh -c "/tmp/auto_clone_branch $1 > /dev/null 2>&1 \
 
 # Install HIRS Provisioner.Net and setup tpm2 simulator.
 # In doing so, tests a single provision between Provisioner.Net and ACA.
+echo "Launching provisioner setup"
 docker exec $tpm2_container sh /hirs/.ci/setup/container/setup_tpm2provisioner_dotnet.sh
 
 # Initiating System Tests
@@ -41,7 +42,7 @@ echo "******** HIRS System Tests Complete ******** "
 # Collecting ACA and Provisioner.Net logs for workflow artifact
 echo "*** Extracting ACA and Provisioner.Net logs ..."
 docker exec $aca_container sh -c "mkdir -p /HIRS/logs/aca/ && cp -arp /var/log/hirs/* /HIRS/logs/aca/"
-docker exec $tpm2_container sh -c "mkdir -p /HIRS/logs/provisioner/ && cp -ap hirs*.log /HIRS/logs/provisioner/ && cp -ap /allcomponents.output.log /HIRS/logs/provisioner/ && chmod -R 777 /HIRS/logs"
+docker exec $tpm2_container sh -c "mkdir -p /HIRS/logs/provisioner/ && cp -ap hirs*.log /HIRS/logs/provisioner/ && chmod -R 777 /HIRS/logs"
 
 # Clean up services and network
 echo "*** Exiting and removing Docker containers and network ..."

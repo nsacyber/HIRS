@@ -64,9 +64,9 @@ docker exec hirs-aca1 mysql -u root -proot -e "use hirs_db; set foreign_key_chec
 # Upload Certs to the ACA DB
 uploadTrustedCerts() {
   # Create EK Cert from IBMTSS Tools
-  docker exec $tpm2_container sh -c "pushd /ibmtss/utils > /dev/null \
-                                     && ./createekcert -rsa 2048 -cakey cakey.pem -capwd rrrr -v 1> /dev/null \
-                                     && popd > /dev/null"
+#  docker exec $tpm2_container sh -c "pushd /ibmtss/utils > /dev/null \
+#                                     && ./createekcert -rsa 2048 -cakey cakey.pem -capwd rrrr -v 1> /dev/null \
+#                                     && popd > /dev/null"
   # Upload CA Cert from IBMTSS Tools
   docker exec $tpm2_container sh -c "pushd /ibmtss/utils/certificates > /dev/null \
                                      && curl -k -s -F 'file=@cacert.pem' https://${HIRS_ACA_PORTAL_IP}:${HIRS_ACA_PORTAL_PORT}/HIRS_AttestationCAPortal/portal/certificate-request/trust-chain/upload \
@@ -118,6 +118,10 @@ setPlatformCerts() {
 setRims() {
 docker exec $tpm2_container sh /hirs/.ci/system-tests/container/rim_setup.sh $1 $2 $3
 #docker exec $tpm2_container bash -c "find / -name oem_platform_v1_Base.cer"
+}
+
+setPlatformOutput() {
+    docker exec $tpm2_container cp /usr/share/hirs/appsettings_hw.json /usr/share/hirs/appsettings.json
 }
 
 # Writes to the Action ouput, ACA log, and Provisioner Log

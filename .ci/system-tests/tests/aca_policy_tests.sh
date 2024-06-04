@@ -40,17 +40,21 @@ setPlatformCerts "laptop" "default"
 provisionTpm2 "pass"
 
 # As of 5/31/2024, Attribute Check results in Provision Fail
-#writeToLogs "### ACA POLICY TEST 7: Test PC Validation Policy with valid PC with Attribute Check ###"
-#clearAcaDb
-#setPolicyEkPc
-#uploadTrustedCerts
-#setPlatformCerts "laptop" "default"
-#provisionTpm2 "pass"
+writeToLogs "### ACA POLICY TEST 7: Test PC Validation Policy with valid PC with Attribute Check ###"
+clearAcaDb
+setPolicyEkPc
+uploadTrustedCerts
+setPlatformCerts "laptop" "default"
+setPlatformOutput
+provisionTpm2 "pass"
 
-#writeToLogs "### ACA POLICY TEST 8: Test PC with RIM Validation Policy with valid PC and RIM ###"
-#setPolicyEkPcFw
-#setRims "laptop" "default" "none"
-#provisionTpm2 "pass"
+writeToLogs "### ACA POLICY TEST 8: Test PC with RIM Validation Policy with valid PC and RIM ###"
+clearAcaDb
+setPolicyEkPcFw
+uploadTrustedCerts
+setPlatformCerts "laptop" "default"
+setRims "laptop" "default"
+provisionTpm2 "pass"
 
 #  Process Test Results, any single failure will send back a failed result.
 if [[ $failedTests != 0 ]]; then
