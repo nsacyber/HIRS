@@ -2,7 +2,6 @@ package hirs.utils;
 
 import com.eclipsesource.json.Json;
 import com.eclipsesource.json.JsonObject;
-import hirs.utils.tpm.eventlog.uefi.UefiGuid;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import lombok.extern.log4j.Log4j2;
@@ -157,8 +156,7 @@ public final class JsonUtils {
     public static JsonObject getJsonObject(final String jsonFilename, final Charset charset) {
         JsonObject jsonObject = new JsonObject();
 
-        InputStream jsonIs = UefiGuid.class
-                    .getClassLoader().getResourceAsStream(jsonFilename);
+        InputStream jsonIs = JsonUtils.class.getClassLoader().getResourceAsStream(jsonFilename);
         if (jsonIs != null) {
             try {
                 jsonObject = Json.parse(new InputStreamReader(jsonIs,
