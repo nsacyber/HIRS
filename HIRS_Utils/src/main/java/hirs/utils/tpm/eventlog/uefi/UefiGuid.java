@@ -31,14 +31,11 @@ public class UefiGuid {
      * Filesystem path of vendor-table.json
      */
     private static final Path JSON_PATH = FileSystems.getDefault().getPath("/etc",
-            "hirs", "aca", "default-properties", "vendor-table3.json");
+            "hirs", "aca", "default-properties", "vendor-table.json");
     /**
      * Name of vendor-table file in code
      */
     private static final String JSON_FILENAME = "vendor-table.json";
-//    private static final String JSON_FILENAME = "vendor-table2.json";
-//    private static final String JSON_FILENAME = "../../../HIRS_AttestationCA/src/main/resources/vendor-table.json";
-//    private static final String JSON_FILENAME = "/src/main/resources/vendor-table2.json";
     /**
      * Reference to the vendor-table json object
      */
