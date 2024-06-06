@@ -95,11 +95,3 @@ RUN echo "#!/bin/bash" > /tmp/auto_clone_branch && \
 
 # Reset working directory
 WORKDIR /hirs
-
-# Copy script for running TPM Simulator
-COPY .ci/setup/container/setup_tpm2provisioner_dotnet.sh /hirs/.ci/setup/container/setup_tpm2provisioner_dotnet.sh
-RUN chmod 755 /hirs/.ci/setup/container/setup_tpm2provisioner_dotnet.sh
-
-# Copy updated pc_setup.sh
-COPY .ci/system-tests/container/pc_setup.sh /hirs/.ci/system-tests/container/pc_setup.sh
-RUN chmod 755 /hirs/.ci/system-tests/container/pc_setup.sh

@@ -28,43 +28,43 @@ jobs:
           # If on a forked repo, ensure that it has a new secret for the PAT
           # and replace secrets.GITHUB_TOKEN with the secret in the fork
           echo ${{ secrets.GITHUB_TOKEN }} | docker login ghcr.io -u ${{ github.actor }} --password-stdin
-          .ci/system-tests/run_system_tests.sh ${GITHUB_REF#refs/heads/}
-      - name: ACA Policy Test 1
+          .ci/system-tests/setup_system_tests.sh ${GITHUB_REF#refs/heads/}
+      - name: ACA POLICY TEST 1 - Test ACA default policy
         continue-on-error: true
         shell: bash
         run: |
           .ci/system-tests/tests/aca_policy_tests.sh 1
-      - name: ACA Policy Test 2
+      - name: ACA POLICY TEST 2 - Test EK cert Only Validation Policy without a EK Issuer Cert in the trust store
         continue-on-error: true
         shell: bash
         run: |
           .ci/system-tests/tests/aca_policy_tests.sh 2
-      - name: ACA Policy Test 3
+      - name: ACA POLICY TEST 3 - Test EK Only Validation Policy
         continue-on-error: true
         shell: bash
         run: |
           .ci/system-tests/tests/aca_policy_tests.sh 3
-      - name: ACA Policy Test 4
+      - name: ACA POLICY TEST 4 - Test PC Validation Policy with no PC
         continue-on-error: true
         shell: bash
         run: |
           .ci/system-tests/tests/aca_policy_tests.sh 4
-      - name: ACA Policy Test 5
+      - name: ACA POLICY TEST 5 - Test FW and PC Validation Policy with no PC
         continue-on-error: true
         shell: bash
         run: |
           .ci/system-tests/tests/aca_policy_tests.sh 5
-      - name: ACA Policy Test 6
+      - name: ACA POLICY TEST 6 - Test PC Validation Policy with valid PC with no Attribute Check
         continue-on-error: true
         shell: bash
         run: |
           .ci/system-tests/tests/aca_policy_tests.sh 6
-      - name: ACA Policy Test 7
+      - name: ACA POLICY TEST 7 - Test PC Validation Policy with valid PC with Attribute Check
         continue-on-error: true
         shell: bash
         run: |
           .ci/system-tests/tests/aca_policy_tests.sh 7
-      - name: ACA Policy Test 8
+      - name: ACA POLICY TEST 8 - Test PC with RIM Validation Policy with valid PC and RIM
         continue-on-error: true
         shell: bash
         run: |
