@@ -1,12 +1,9 @@
 #!/bin/bash
 #########################################################################################
-#    Script to Locally run the System Tests for HIRS TPM 2.0 Provisoner
-#    *** INTENDED FOR LOCAL SYSTEM TESTING, NOT FOR WORKFLOW RUNS ***
-#    Notes for running manually/locally
-#    1. Uncomment the "cd ../.." line below to make working directory = /HIRS/
-#    2. Run with the desired HIRS branch as an argument (i.e. $./run_system_tests.sh main)
+#    Script to run the System Tests  for HIRS TPM 2.0 Provisoner from GitHub Workflow
+#    *** INTENDED FOR WORKFLOW RUNS, NOT FOR LOCAL SYSTEM TESTING ***
+#    For local system testing, use run_system_tests.sh instead
 #########################################################################################
-#cd ../..
 
 # Setting variables
 aca_container=hirs-aca1
@@ -34,28 +31,3 @@ docker exec $tpm2_container sh /hirs/.ci/setup/container/setup_tpm2provisioner_d
 
 # Initiating System Tests
 echo "******** Setup Complete. Beginning HIRS System Tests. ******** "
-./.ci/system-tests/tests/aca_policy_tests.sh
-#./.ci/system-tests/tests/platform_cert_tests.sh
-#./.ci/system-tests/tests/rim_system_tests.sh
-
-echo "******** HIRS System Tests Complete ******** "
-
-# Collecting ACA and Provisioner.Net logs for workflow artifact
-echo "*** Extracting ACA and Provisioner.Net logs ..."
-docker exec $aca_container sh -c "mkdir -p /HIRS/logs/aca/ && cp -arp /var/log/hirs/* /HIRS/logs/aca/"
-docker exec $tpm2_container sh -c "mkdir -p /HIRS/logs/provisioner/ && cp -ap hirs*.log /HIRS/logs/provisioner/ && chmod -R 777 /HIRS/logs"
-
-# Clean up services and network
-echo "*** Exiting and removing Docker containers and network ..."
-docker compose -f ./.ci/docker/docker-compose-system-test.yml down -v
-
-# Return container exit code
-if [[ ${TEST_STATUS} == "0" ]]; then
-    echo "******** SUCCESS: System Tests for TPM 2.0 passed ********"
-    echo "TEST_STATUS=0" >> $GITHUB_ENV
-    exit 0;
-  else
-    echo "******** FAILURE: System Tests for TPM 2.0 failed ********"
-    echo "TEST_STATUS=1" >> $GITHUB_ENV
-    exit 1
-fi
