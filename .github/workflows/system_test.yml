@@ -74,6 +74,26 @@ jobs:
       #   shell: bash
       #   run: |
       #     .ci/system-tests/tests/aca_policy_tests.sh
+      - name: ACA PLATFORM CERTIFICATE TEST 1 - Test a delta Platform Certificate that adds a new memory component
+        continue-on-error: true
+        shell: bash
+        run: |
+          .ci/system-tests/tests/platform_cert_tests.sh 1
+      - name: ACA PLATFORM CERTIFICATE TEST 2 - Test a Platform Certificate that is missing a memory component
+        continue-on-error: true
+        shell: bash
+        run: |
+          .ci/system-tests/tests/platform_cert_tests.sh 2
+      - name: ACA PLATFORM CERTIFICATE TEST 3 - Test a Delta Platform Certificate that has a wrong a memory component
+        continue-on-error: true
+        shell: bash
+        run: |
+          .ci/system-tests/tests/platform_cert_tests.sh 3
+      # - name: All Platform Cert Tests 1-3
+      #   continue-on-error: true
+      #   shell: bash
+      #   run: |
+      #     .ci/system-tests/tests/platform_cert_tests.sh
       - name: Copy System Test Log files
         continue-on-error: true
         shell: bash
