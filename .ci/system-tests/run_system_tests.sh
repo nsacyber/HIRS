@@ -5,8 +5,8 @@
 #    Notes for running manually/locally
 #    1. Uncomment the "cd ../.." line below to make working directory = /HIRS/
 #    2. Run with the desired HIRS branch as an argument (i.e. $./run_system_tests.sh main)
-#########################################################################################
-cd ../..
+##########################################################################################
+#cd ../..
 
 # Setting variables
 aca_container=hirs-aca1
@@ -36,7 +36,7 @@ docker exec $tpm2_container sh /hirs/.ci/setup/container/setup_tpm2provisioner_d
 echo "******** Setup Complete. Beginning HIRS System Tests. ******** "
 ./.ci/system-tests/tests/aca_policy_tests.sh
 ./.ci/system-tests/tests/platform_cert_tests.sh
-#./.ci/system-tests/tests/rim_system_tests.sh
+./.ci/system-tests/tests/rim_system_tests.sh
 
 echo "******** HIRS System Tests Complete ******** "
 

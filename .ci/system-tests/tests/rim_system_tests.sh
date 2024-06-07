@@ -3,6 +3,7 @@
 #    HIRS Reference Integrity Manifest System Tests
 #
 #########################################################################################
+source ./.ci/system-tests/sys_test_common.sh
 testResult=false
 totalTests=0;
 failedTests=0;
