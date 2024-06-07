@@ -7,9 +7,10 @@
 
 profile=$1
 test=$2
-options=$3
-tcgDir="/boot/tcg"
-propFile="/etc/hirs/tcg_boot.properties";
+ciTestDir="/ci_test"
+tcgDir="$ciTestDir/boot/efi/EFI/tcg"
+
+# Profile selections
 profileDir="/HIRS/.ci/system-tests/profiles/$profile"
 defaultDir="$profileDir/default"
 testDir="/HIRS/.ci/system-tests/profiles/$profile/$test"
@@ -17,8 +18,7 @@ eventLog="$testDir"/"$profile"_"$test"_binary_bios_measurements
 swidDir="$testDir/swidtags"
 rimDir="$testDir/rims"
 pcrScript="$testDir/"$profile"_"$test"_setpcrs.sh"
-
-source /HIRS/.ci/setup/container/tpm2_common.sh
+ciTestEventLog="$ciTestDir/binary_bios_measurements"
 
 echo "Test is using RIM files from $profile : $test"
 
@@ -29,15 +29,9 @@ rm -f $tcgDir/manifest/rim/*;    # clear out any previous data
 mkdir -p $tcgDir/manifest/swidtag/;  # Create the platform cert folder if its not there
 rm -f $tcgDir/manifest/swidtag/*;   # clear out any previous data
 
-# Step 1: Update the tcg_boot.properties to use test specific binary_bios_measurement file
-#      a: if file does not exist in the test folder then use the default measurement file
-#      b: change the property file to point to the the test file
-
-if [[ ! -f "$eventLog" ]]; then
-    eventLog="$defaultDir"/"$profile"_default_binary_bios_measurements
-fi    
-sed -i "s:tcg.event.file=.*:tcg.event.file=$eventLog:g" "$propFile"
-#echo "eventLog used was  $eventLog"
+# Step 1: Copy binary_bios_measurement file
+echo "eventLog used was  $eventLog"
+cp "$eventLog" "$ciTestEventLog"
 
 # Step 2: Copy Base RIM files to the TCG folder
 #      a: See if test specific swidtag folder exists, if not use the defualt folder
@@ -64,16 +58,10 @@ pushd $rimDir > /dev/null
   fi
 popd > /dev/null
 
-#  echo "Contents of tcg swidtag folder $tcgDir/manifest/swidtag/ : $(ls $tcgDir/manifest/swidtag/)"
-#  echo "Contents of tcg rim folder tcgDir/manifest/rim/: $(ls $tcgDir/manifest/rim/)"
-
 #Step 4, run the setpcr script to make the TPM emulator hold values that correspond the binary_bios_measurement file
 #     a: Clear the TPM PCR registers vi a call to the tss clear 
 #     b: Check if a test specific setpcr.sh file exists. If not use the profiles default script
 
-if [[ $options == "clear" ]]; then
-   resetTpm2Emulator
-fi
 
 if [[ ! -f $pcrScript ]]; then
     pcrScript="$profileDir/default/"$profile"_default_setpcrs.sh"
