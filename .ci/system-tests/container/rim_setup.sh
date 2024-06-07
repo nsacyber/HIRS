@@ -11,9 +11,9 @@ ciTestDir="/ci_test"
 tcgDir="$ciTestDir/boot/efi/EFI/tcg"
 
 # Profile selections
-profileDir="/HIRS/.ci/system-tests/profiles/$profile"
+profileDir="/hirs/.ci/system-tests/profiles/$profile"
 defaultDir="$profileDir/default"
-testDir="/HIRS/.ci/system-tests/profiles/$profile/$test"
+testDir="/hirs/.ci/system-tests/profiles/$profile/$test"
 eventLog="$testDir"/"$profile"_"$test"_binary_bios_measurements
 swidDir="$testDir/swidtags"
 rimDir="$testDir/rims"
@@ -30,6 +30,9 @@ mkdir -p $tcgDir/manifest/swidtag/;  # Create the platform cert folder if its no
 rm -f $tcgDir/manifest/swidtag/*;   # clear out any previous data
 
 # Step 1: Copy binary_bios_measurement file
+if [ ! -e "$eventLog" ]; then
+  eventLog="$defaultDir"/laptop_default_binary_bios_measurements
+fi
 echo "eventLog used was  $eventLog"
 cp "$eventLog" "$ciTestEventLog"
 
