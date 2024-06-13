@@ -11,10 +11,7 @@ import hirs.attestationca.persist.entity.manager.ReferenceDigestValueRepository;
 import hirs.attestationca.persist.entity.manager.ReferenceManifestRepository;
 import hirs.attestationca.persist.entity.manager.SupplyChainValidationRepository;
 import hirs.attestationca.persist.entity.manager.SupplyChainValidationSummaryRepository;
-import hirs.attestationca.persist.entity.userdefined.Device;
-import hirs.attestationca.persist.entity.userdefined.PolicySettings;
-import hirs.attestationca.persist.entity.userdefined.SupplyChainValidation;
-import hirs.attestationca.persist.entity.userdefined.SupplyChainValidationSummary;
+import hirs.attestationca.persist.entity.userdefined.*;
 import hirs.attestationca.persist.entity.userdefined.certificate.ComponentResult;
 import hirs.attestationca.persist.entity.userdefined.certificate.EndorsementCredential;
 import hirs.attestationca.persist.entity.userdefined.certificate.PlatformCredential;
@@ -29,6 +26,7 @@ import lombok.extern.log4j.Log4j2;
 import org.apache.logging.log4j.Level;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.yaml.snakeyaml.events.Event;
 
 import java.security.KeyStore;
 import java.util.ArrayList;
@@ -322,8 +320,11 @@ public class SupplyChainValidationService {
                                             + "could be found for %s",
                                     deviceName));
                 } else {
-                    eventLog = (EventLogMeasurements) referenceManifestRepository
-                            .findByHexDecHash(sRim.getEventLogHash());
+                    ReferenceManifest manifest = referenceManifestRepository
+                            .findByEventLogHash(sRim.getEventLogHash());
+                    if (manifest instanceof EventLogMeasurements) {
+                        eventLog = (EventLogMeasurements)manifest;
+                    }
                 }
                 if (eventLog == null) {
                     fwStatus = new AppraisalStatus(FAIL,

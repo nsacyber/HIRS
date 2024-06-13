@@ -9,6 +9,5 @@ import java.util.UUID;
 
 @Repository
 public interface SupplyChainValidationSummaryRepository extends JpaRepository<SupplyChainValidationSummary, UUID> {
-    SupplyChainValidationSummary findByDevice(String device);
     SupplyChainValidationSummary findByDevice(Device device);
 }
