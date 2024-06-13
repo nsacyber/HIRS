@@ -27,7 +27,7 @@ import java.util.Collection;
  */
 @Log4j2
 @Entity
-public class EventLogMeasurements extends ReferenceManifest {
+public class EventLogMeasurements extends SupportReferenceManifest {
 
     @Column
     @JsonIgnore
