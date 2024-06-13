@@ -17,7 +17,7 @@ import java.util.UUID;
 public interface ReferenceManifestRepository extends JpaRepository<ReferenceManifest, UUID> {
 
     ReferenceManifest findByHexDecHash(String hexDecHash);
-    ReferenceManifest findByEventLogHash(String eventLogHash);
+    ReferenceManifest findByEventLogHash(String rimType, String eventLogHash);
     ReferenceManifest findByBase64Hash(String base64Hash);
     ReferenceManifest findByHexDecHashAndRimType(String hexDecHash, String rimType);
     @Query(value = "SELECT * FROM ReferenceManifest WHERE platformManufacturer = ?1 AND platformModel = ?2 AND rimType = 'Base'", nativeQuery = true)
