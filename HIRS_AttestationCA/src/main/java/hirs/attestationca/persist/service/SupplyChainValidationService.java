@@ -359,7 +359,8 @@ public class SupplyChainValidationService {
             // Generate validation summary, save it, and return it.
             List<SupplyChainValidation> validations = new ArrayList<>();
             SupplyChainValidationSummary previous
-                    = this.supplyChainValidationSummaryRepository.findByDevice(deviceName);
+                    //= this.supplyChainValidationSummaryRepository.findByDevice(deviceName);
+                    = this.supplyChainValidationSummaryRepository.findByDevice(device);
             for (SupplyChainValidation scv : previous.getValidations()) {
                 if (scv.getValidationType() != SupplyChainValidation.ValidationType.FIRMWARE) {
                     validations.add(ValidationService.buildValidationRecord(scv.getValidationType(),
