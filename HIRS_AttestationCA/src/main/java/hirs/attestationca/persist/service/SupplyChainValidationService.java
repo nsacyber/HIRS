@@ -321,7 +321,7 @@ public class SupplyChainValidationService {
                                     deviceName));
                 } else {
                     ReferenceManifest manifest = referenceManifestRepository
-                            .findByEventLogHash(sRim.getRimType(), sRim.getEventLogHash());
+                            .findByHexDecHashAndRimType(sRim.getEventLogHash(), sRim.getRimType());
                     if (manifest instanceof EventLogMeasurements) {
                         eventLog = (EventLogMeasurements)manifest;
                     }
