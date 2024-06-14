@@ -15,6 +15,10 @@ namespace hirs {
         private IHirsDeviceInfoCollector deviceInfoCollector = null;
         private IHirsAcaClient acaClient = null;
 
+        public const string DefaultCertLocationLinux = "/boot/efi/EFI/tcg/cert/attestation/";
+        public const string DefaultCertFileName = "attestationkey.pem";
+
+
         public Provisioner() {
         }
 
@@ -279,6 +283,24 @@ namespace hirs {
                     }
                     if (cr.HasCertificate) {
                         certificate = cr.Certificate.ToByteArray(); // contains certificate
+                        String certificateFilePath = null;
+                        String certificateDirPath = null;
+                        if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux)) {
+                            certificateDirPath = DefaultCertLocationLinux;
+                            certificateFilePath = DefaultCertLocationLinux + DefaultCertFileName;
+                        }
+                        if (certificateFilePath != null) {
+                            try {
+                                if (certificateDirPath != null && !Directory.Exists(certificateDirPath)) {
+                                    Directory.CreateDirectory(certificateDirPath);
+                                }
+                                File.WriteAllBytes(certificateFilePath, certificate);
+                                Log.Debug("Certificate written to local file system: ", certificateFilePath);
+                            }
+                            catch (Exception) {
+                                Log.Debug("Failed to write certificate to local file system.");
+                            }
+                        }
                         Log.Debug("Printing attestation key certificate: " + BitConverter.ToString(certificate));
                     }
                 } else {
