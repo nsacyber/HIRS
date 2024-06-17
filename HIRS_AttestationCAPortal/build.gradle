@@ -124,7 +124,7 @@ ospackage {
     // copy json tables
     into ('/etc/hirs/aca/default-properties') {
          from '../HIRS_AttestationCA/src/main/resources/component-class.json'
-         from '../HIRS_AttestationCA/src/main/resources/vendor-table.json'
+         from '../HIRS_Utils/src/main/resources/vendor-table.json'
     }
     // copy springboot property file
     into ('/etc/hirs/aca/') {

@@ -33,6 +33,8 @@ import java.security.NoSuchAlgorithmException;
 import java.security.cert.CertificateException;
 import java.util.Arrays;
 
+import static hirs.utils.tpm.eventlog.uefi.UefiConstants.FILESTATUS_FROM_FILESYSTEM;
+
 /**
  * Class to process a TCG_PCR_EVENT.
  * TCG_PCR_EVENT is used when the Event log uses the SHA1 Format as described in the
@@ -116,6 +118,16 @@ public class TpmPcrEvent {
     private int eventNumber;
     @Setter @Getter
     private boolean error = false;
+
+    /**
+     * Track status of vendor-table.json
+     * This is only used for events that use a UefiVariable data structure.
+     * Default is normal status (normal status is from-filesystem).
+     * Status will only change IF this is an event that has a UefiVariable,
+     * and if that event causes a different status.
+     */
+    @Getter
+    private String vendorTableFileStatus = FILESTATUS_FROM_FILESYSTEM;
 
     /**
      * Constructor.
@@ -508,9 +520,12 @@ public class TpmPcrEvent {
                 String efiVarDescription = efiVar.toString().replace("\n", "\n   ");
                 description += "Event Content:\n   " + efiVarDescription.substring(0,
                         efiVarDescription.length() - INDENT_3);
+                vendorTableFileStatus = efiVar.getVendorTableFileStatus();
                 break;
             case EvConstants.EV_EFI_VARIABLE_BOOT:
-                description += "Event Content:\n" + new UefiVariable(content).toString();
+                UefiVariable efiVarBoot = new UefiVariable(content);
+                description += "Event Content:\n" + efiVarBoot.toString();
+                vendorTableFileStatus = efiVarBoot.getVendorTableFileStatus();
                 break;
             case EvConstants.EV_EFI_BOOT_SERVICES_APPLICATION:
                 EvEfiBootServicesApp bootServices = new EvEfiBootServicesApp(content);
@@ -539,7 +554,9 @@ public class TpmPcrEvent {
             case EvConstants.EV_EFI_HCRTM_EVENT:
                 break;
             case EvConstants.EV_EFI_VARIABLE_AUTHORITY:
-                description += "Event Content:\n" + new UefiVariable(content).toString();
+                UefiVariable efiVarAuth = new UefiVariable(content);
+                description += "Event Content:\n" + efiVarAuth.toString();
+                vendorTableFileStatus = efiVarAuth.getVendorTableFileStatus();
                 break;
             case EvConstants.EV_EFI_SPDM_FIRMWARE_BLOB:
                 description += "Event Content:\n" + new EvEfiSpdmFirmwareBlob(content).toString();

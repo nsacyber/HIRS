@@ -271,4 +271,19 @@ public final class UefiConstants {
      * standard UEFI partition table lengh.
      */
     public static final int UEFI_PT_LENGTH = 72;
+    /**
+     * file status, where file was successfully found on local machine.
+     */
+    public static final String FILESTATUS_FROM_FILESYSTEM = "fileFromFilesystem";
+    /**
+     * file status, where file was not found on local machine, so file from code was used.
+     *   For instance, if vendor-table.json is not found in filesystem at location
+     *   /etc/hirs/aca/default-properties/, it will be grabbed from code at
+     *   HIRS_AttestationCA/src/main/resources/.
+     */
+    public static final String FILESTATUS_FROM_CODE = "fileFromCode";
+    /**
+     * file status, where file is not accessible (either not found, or no access permission).
+     */
+    public static final String FILESTATUS_NOT_ACCESSIBLE = "fileNotAccessible";
 }

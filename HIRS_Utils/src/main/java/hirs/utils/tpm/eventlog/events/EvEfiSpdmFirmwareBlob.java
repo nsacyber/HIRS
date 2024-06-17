@@ -23,7 +23,7 @@ import java.nio.charset.StandardCharsets;
  * NUL-terminated, per PFP. The only currently defined Signature is "SPDM Device Sec",
  * which implies the data is a DEVICE_SECURITY_EVENT_DATA or ..DATA2.
  * The EV_EFI_SPDM_FIRMWARE_BLOB event is used to record an extended digest for the firmware of
- * an embedded component or an add-in device that supports SPDM “GET_MEASUREMENTS” functionality.
+ * an embedded component or an add-in device that supports SPDM "GET_MEASUREMENTS" functionality.
  * This event records extended digests of SPDM GET_MEASUREMENT responses that correspond to
  * firmware, such as immutable ROM, mutable firmware, firmware version, firmware secure version
  * number, etc.

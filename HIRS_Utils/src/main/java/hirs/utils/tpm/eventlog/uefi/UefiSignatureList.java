@@ -9,6 +9,8 @@ import java.security.NoSuchAlgorithmException;
 import java.security.cert.CertificateException;
 import java.util.ArrayList;
 
+import static hirs.utils.tpm.eventlog.uefi.UefiConstants.FILESTATUS_NOT_ACCESSIBLE;
+
 /**
  * Class for processing the contents of a Secure Boot DB or DBX contents.
  * used for EFIVariables associated with Secure Boot
@@ -69,6 +71,11 @@ public class UefiSignatureList {
      * Type of signature.
      */
     private UefiGuid signatureType = null;
+    /**
+     * Track status of vendor-table.json
+     */
+    @Getter
+    private String vendorTableFileStatus = FILESTATUS_NOT_ACCESSIBLE;
 
     /**
      * UefiSignatureList constructor.
@@ -84,6 +91,7 @@ public class UefiSignatureList {
         byte[] guid = new byte[UefiConstants.SIZE_16];
         System.arraycopy(list, 0, guid, 0, UefiConstants.SIZE_16);
         signatureType = new UefiGuid(guid);
+        vendorTableFileStatus = signatureType.getVendorTableFileStatus();
 
         byte[] lSize = new byte[UefiConstants.SIZE_4];
         System.arraycopy(list, UefiConstants.OFFSET_16, lSize, 0, UefiConstants.SIZE_4);
@@ -114,6 +122,7 @@ public class UefiSignatureList {
         byte[] guid = new byte[UefiConstants.SIZE_16];
         lists.read(guid);
         signatureType = new UefiGuid(guid);
+        vendorTableFileStatus = signatureType.getVendorTableFileStatus();
 
         // if signatureType is invalid, don't even process any of the data
         // however, if signatureTYpe is valid, but some of the data later on is invalid, that will

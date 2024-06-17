@@ -8,7 +8,7 @@ param (
 $APP_HOME=(Split-Path -parent $PSCommandPath)
 $ACA_COMMON_SCRIPT=(Join-Path $APP_HOME 'aca_common.ps1')
 $COMP_JSON=(Join-Path $APP_HOME '..' '..' '..' 'HIRS_AttestationCA' 'src' 'main' 'resources' 'component-class.json')
-$VENDOR_TABLE=(Join-Path $APP_HOME '..' '..' '..' 'HIRS_AttestationCA' 'src' 'main' 'resources' 'vendor-table.json')
+$VENDOR_TABLE=(Join-Path $APP_HOME '..' '..' '..' 'HIRS_Utils' 'src' 'main' 'resources' 'vendor-table.json')
 
 # Load other scripts
 . $ACA_COMMON_SCRIPT

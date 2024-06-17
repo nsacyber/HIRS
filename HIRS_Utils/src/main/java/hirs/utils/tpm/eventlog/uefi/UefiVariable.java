@@ -12,6 +12,9 @@ import java.security.cert.CertificateException;
 import java.util.ArrayList;
 import java.util.List;
 
+import static hirs.utils.tpm.eventlog.uefi.UefiConstants.FILESTATUS_FROM_FILESYSTEM;
+import static hirs.utils.tpm.eventlog.uefi.UefiConstants.FILESTATUS_NOT_ACCESSIBLE;
+
 /**
  * Class to process a UEFI variable within a TPM Event.
  * typedef struct tdUEFI_VARIABLE_DATA{
@@ -62,6 +65,15 @@ public class UefiVariable {
      * UEFI variable data.
      */
     private byte[] uefiVariableData = null;
+
+    /**
+     * Track status of vendor-table.json.
+     * The default here is that each list correctly grabbed the file from file system.
+     * If any one list has issues, this overall status will change to reflect the
+     * problematic list's status.
+     */
+    @Getter
+    private String vendorTableFileStatus = FILESTATUS_FROM_FILESYSTEM;
 
     /**
      * EFIVariable constructor.
@@ -146,6 +158,22 @@ public class UefiVariable {
         while (certData.available() > 0) {
             UefiSignatureList list;
             list = new UefiSignatureList(certData);
+
+            // first check if any previous list has not been able to access vendor-table.json,
+            // and if that is the case, the first comparison in the if returns false and
+            // the if statement is not executed
+            // [previous event file status = vendorTableFileStatus]
+            // (ie. keep the file status to reflect that file was not accessible at some point)
+            // next, check if the new list has any status other than the default 'filesystem',
+            // and if that is the case, the 2nd comparison in the if returns true and
+            // the if statement is executed
+            // [new event file status = list.getVendorTableFileStatus()]
+            // (ie. if the new file status is not-accessible or from-code, then want to update)
+            if((vendorTableFileStatus != FILESTATUS_NOT_ACCESSIBLE) &&
+                    (list.getVendorTableFileStatus() != FILESTATUS_FROM_FILESYSTEM)) {
+                        vendorTableFileStatus = list.getVendorTableFileStatus();
+            }
+
 //            efiVariableSigListContents += list.toString();
             if(!list.isSignatureTypeValid()) {
                 invalidSignatureListEncountered = true;
@@ -163,6 +191,7 @@ public class UefiVariable {
      */
     public String toString() {
         StringBuilder efiVariable = new StringBuilder();
+
         efiVariable.append("UEFI Variable Name: " + efiVarName + "\n");
         efiVariable.append("UEFI Variable GUID: " + uefiVarGuid.toString() + "\n");
         if (efiVarName != "") {

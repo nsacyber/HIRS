@@ -3,11 +3,16 @@ package hirs.utils.tpm.eventlog.uefi;
 import com.eclipsesource.json.JsonObject;
 import hirs.utils.HexUtils;
 import hirs.utils.JsonUtils;
+import lombok.Getter;
 
 import java.math.BigInteger;
 import java.nio.file.FileSystems;
 import java.nio.file.Path;
 import java.util.UUID;
+
+import static hirs.utils.tpm.eventlog.uefi.UefiConstants.FILESTATUS_FROM_CODE;
+import static hirs.utils.tpm.eventlog.uefi.UefiConstants.FILESTATUS_FROM_FILESYSTEM;
+import static hirs.utils.tpm.eventlog.uefi.UefiConstants.FILESTATUS_NOT_ACCESSIBLE;
 
 /**
  * Class to process GUID per the UEFI specification
@@ -22,10 +27,25 @@ public class UefiGuid {
      * used for conversion to uuid time.
      */
     private static final int UUID_EPOCH_DIVISOR = 10000;
-
+    /**
+     * Filesystem path of vendor-table.json
+     */
     private static final Path JSON_PATH = FileSystems.getDefault().getPath("/etc",
             "hirs", "aca", "default-properties", "vendor-table.json");
+    /**
+     * Name of vendor-table file in code
+     */
+    private static final String JSON_FILENAME = "vendor-table.json";
+    /**
+     * Reference to the vendor-table json object
+     */
     private JsonObject uefiVendorRef;
+    /**
+     * Track status of vendor-table.json
+     */
+    @Getter
+    private String vendorTableFileStatus = FILESTATUS_NOT_ACCESSIBLE;
+
     /**
      * guid byte array.
      */
@@ -41,10 +61,7 @@ public class UefiGuid {
      * @param guidBytes byte array holding a valid guid.
      */
     public UefiGuid(final byte[] guidBytes) {
-        guid = new byte[UefiConstants.SIZE_16];
-        System.arraycopy(guidBytes, 0, guid, 0, UefiConstants.SIZE_16);
-        uuid = processGuid(guidBytes);
-        uefiVendorRef = JsonUtils.getSpecificJsonObject(JSON_PATH, "VendorTable");
+        this(guidBytes, JSON_PATH);
     }
 
     /**
@@ -59,6 +76,17 @@ public class UefiGuid {
         uuid = processGuid(guidBytes);
         uefiVendorRef = JsonUtils.getSpecificJsonObject(vendorPathString,
                 "VendorTable");
+
+        if(!isVendorTableReferenceHandleEmpty()) {
+            vendorTableFileStatus = FILESTATUS_FROM_FILESYSTEM;
+        }
+        else {
+            // could not access vendor-table.json from filesystem, so attempt to access from code
+            uefiVendorRef = JsonUtils.getSpecificJsonObject(JSON_FILENAME, "VendorTable");
+            if(!isVendorTableReferenceHandleEmpty()) {
+                vendorTableFileStatus = FILESTATUS_FROM_CODE;
+            }
+        }
     }
 
     /**
@@ -95,6 +123,16 @@ public class UefiGuid {
      */
     public static int getGuidLength() {
         return UefiConstants.SIZE_16;
+    }
+
+    /**
+     * Checks whether the handle to the file needed to look up the UUID is valid. If empty,
+     * this likely means the file was not accessible to due to existence or permissions.
+     *
+     * @return true if the reference to the file handle needed to look up the UUID is empty
+     */
+    public boolean isVendorTableReferenceHandleEmpty() {
+        return uefiVendorRef.isEmpty();
     }
 
     /**

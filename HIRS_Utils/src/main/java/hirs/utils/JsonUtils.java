@@ -97,4 +97,75 @@ public final class JsonUtils {
 
         return jsonObject;
     }
+
+    /**
+     * Getter for the JSON Object that is associated with the elementName value
+     * mapped in the associated JSON file.
+     * Default {@link java.nio.charset.Charset} is UTF 8
+     *
+     * @param jsonFilename the object holding the name of the file in classpath to parse.
+     * @param elementName the specific object to pull from the file
+     * @return a JSON object
+     */
+    public static JsonObject getSpecificJsonObject(final String jsonFilename, final String elementName) {
+        // find the file and load it
+        return getSpecificJsonObject(jsonFilename, elementName, StandardCharsets.UTF_8);
+    }
+
+    /**
+     * Getter for the JSON Object that is associated with the elementName value
+     * mapped in the associated JSON file.
+     * Default {@link java.nio.charset.Charset} is UTF 8
+     *
+     * @param jsonFilename the object holding the name of the file in classpath to parse.
+     * @param elementName the specific object to pull from the file
+     * @param charset the character set to use
+     * @return a JSON object
+     */
+    public static JsonObject getSpecificJsonObject(final String jsonFilename,
+                                                   final String elementName,
+                                                   final Charset charset) {
+        // find the file and load it
+        JsonObject jsonObject = getJsonObject(jsonFilename, charset);
+
+        if (jsonObject != null && jsonObject.get(elementName) != null) {
+            return jsonObject.get(elementName).asObject();
+        }
+
+        return new JsonObject();
+    }
+
+    /**
+     * Getter for the JSON Object that is mapped in the associated JSON file.
+     * Default {@link java.nio.charset.Charset} is UTF 8
+     *
+     * @param jsonFilename the object holding the name of the file in classpath to parse.
+     * @return a JSON object
+     */
+    public static JsonObject getJsonObject(final String jsonFilename) {
+        return getJsonObject(jsonFilename, StandardCharsets.UTF_8);
+    }
+
+    /**
+     * Getter for the JSON Object that is mapped in the associated JSON file.
+     *
+     * @param jsonFilename the object holding the name of the file in classpath to parse.
+     * @param charset the character set to use
+     * @return a JSON object
+     */
+    public static JsonObject getJsonObject(final String jsonFilename, final Charset charset) {
+        JsonObject jsonObject = new JsonObject();
+
+        InputStream jsonIs = JsonUtils.class.getClassLoader().getResourceAsStream(jsonFilename);
+        if (jsonIs != null) {
+            try {
+                jsonObject = Json.parse(new InputStreamReader(jsonIs,
+                        charset)).asObject();
+            } catch (IOException ex) {
+                jsonObject = new JsonObject();
+            }
+        }
+
+        return jsonObject;
+    }
 }

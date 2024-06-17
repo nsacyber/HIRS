@@ -20,6 +20,9 @@ import java.security.cert.CertificateException;
 import java.util.Collection;
 import java.util.LinkedHashMap;
 
+import static hirs.utils.tpm.eventlog.uefi.UefiConstants.FILESTATUS_FROM_FILESYSTEM;
+import static hirs.utils.tpm.eventlog.uefi.UefiConstants.FILESTATUS_NOT_ACCESSIBLE;
+
 /**
  * Class for handling different formats of TCG Event logs.
  */
@@ -77,6 +80,15 @@ public final class TCGEventLog {
     /** Event Output Flag use. */
     @Getter
     private boolean bCryptoAgile = false;
+    /**
+     * Track status of vendor-table.json
+     * This is only used if there is an event that uses a UefiVariable data structure.
+     * Default is normal status (normal status is from-filesystem).
+     * Status will only change IF there is a UefiVariable event in this log,
+     * and if that event causes a different status.
+     */
+    @Getter
+    private String vendorTableFileStatus = FILESTATUS_FROM_FILESYSTEM;
 
     /**
      * Default blank object constructor.
@@ -146,6 +158,20 @@ public final class TCGEventLog {
                 eventList.put(eventNumber, new TpmPcrEvent2(is, eventNumber++));
             } else {
                 eventList.put(eventNumber, new TpmPcrEvent1(is, eventNumber++));
+            }
+            // first check if any previous event has not been able to access vendor-table.json,
+            // and if that is the case, the first comparison in the if returns false and
+            // the if statement is not executed
+            // [previous event file status = vendorTableFileStatus]
+            // (ie. keep the file status to reflect that file was not accessible at some point)
+            // next, check if the new event has any status other than the default 'filesystem',
+            // and if that is the case, the 2nd comparison in the if returns true and
+            // the if statement is executed
+            // [new event file status = eventList.get(eventNumber-1).getVendorTableFileStatus()]
+            // (ie. if the new file status is not-accessible or from-code, then want to update)
+            if((vendorTableFileStatus != FILESTATUS_NOT_ACCESSIBLE) &&
+                    (eventList.get(eventNumber-1).getVendorTableFileStatus() != FILESTATUS_FROM_FILESYSTEM)) {
+                vendorTableFileStatus = eventList.get(eventNumber-1).getVendorTableFileStatus();
             }
         }
         calculatePcrValues();

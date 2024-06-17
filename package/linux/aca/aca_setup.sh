@@ -17,7 +17,7 @@ ACA_VERSION_FILE="/opt/hirs/aca/VERSION"
 SPRING_PROP_FILE="/etc/hirs/aca/application.properties"
 PROP_FILE='../../../HIRS_AttestationCAPortal/src/main/resources/application.properties'
 COMP_JSON='../../../HIRS_AttestationCA/src/main/resources/component-class.json'
-VENDOR_TABLE='../../../HIRS_AttestationCA/src/main/resources/vendor-table.json'
+VENDOR_TABLE='../../../HIRS_Utils/src/main/resources/vendor-table.json'
 
 help () {
   echo "  Setup script for the HIRS ACA"
