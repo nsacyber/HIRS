@@ -23,9 +23,8 @@ import java.nio.charset.StandardCharsets;
 import java.security.KeyStore;
 import java.security.NoSuchAlgorithmException;
 import java.security.cert.CertificateException;
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
+import java.security.cert.X509Certificate;
+import java.util.*;
 
 import static hirs.attestationca.persist.enums.AppraisalStatus.Status.FAIL;
 import static hirs.attestationca.persist.enums.AppraisalStatus.Status.PASS;
@@ -106,6 +105,19 @@ public class FirmwareScvValidator extends SupplyChainCredentialValidator {
                 signingCert = cert;
                 KeyStore keyStore = ValidationService.getCaChain(signingCert,
                         caCredentialRepository);
+                Set<CertificateAuthorityCredential> set = ValidationService.getCaChainRec(signingCert,
+                        Collections.emptySet(),
+                        caCredentialRepository);
+                ArrayList<X509Certificate> certs = new ArrayList<>(set.size());
+                for (CertificateAuthorityCredential cac : set) {
+                    try {
+                        certs.add(cac.getX509Certificate());
+                    } catch (IOException e) {
+                        log.error("Error building CA chain for " + signingCert.getSubjectKeyIdentifier() + ": "
+                                + e.getMessage());
+                    }
+                }
+                referenceManifestValidator.setTrustStore(certs);
                 try {
                     if (referenceManifestValidator.validateXmlSignature(signingCert.getX509Certificate().getPublicKey(),
                         signingCert.getSubjectKeyIdString(), signingCert.getEncodedPublicKey())) {
