@@ -103,11 +103,17 @@ public class FirmwareScvValidator extends SupplyChainCredentialValidator {
             CertificateAuthorityCredential signingCert = null;
             for (CertificateAuthorityCredential cert : allCerts) {
                 signingCert = cert;
-                KeyStore keyStore = ValidationService.getCaChain(signingCert,
-                        caCredentialRepository);
+                KeyStore keyStore = null;
                 Set<CertificateAuthorityCredential> set = ValidationService.getCaChainRec(signingCert,
                         Collections.emptySet(),
                         caCredentialRepository);
+                try {
+                    keyStore = ValidationService.caCertSetToKeystore(set);
+                } catch (Exception e) {
+                    log.error("Error building CA chain for " + signingCert.getSubjectKeyIdentifier() + ": "
+                            + e.getMessage());
+                }
+
                 ArrayList<X509Certificate> certs = new ArrayList<>(set.size());
                 for (CertificateAuthorityCredential cac : set) {
                     try {
