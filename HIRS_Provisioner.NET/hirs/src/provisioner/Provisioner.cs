@@ -14,9 +14,8 @@ namespace hirs {
         private Settings settings = null;
         private IHirsDeviceInfoCollector deviceInfoCollector = null;
         private IHirsAcaClient acaClient = null;
-
-        public const string DefaultCertLocationLinux = "/boot/efi/EFI/tcg/cert/attestation/";
-        public const string DefaultCertFileName = "attestationkey.pem";
+        
+        private const string DefaultCertFileName = "attestationkey.pem";
 
 
         public Provisioner() {
@@ -283,15 +282,11 @@ namespace hirs {
                     }
                     if (cr.HasCertificate) {
                         certificate = cr.Certificate.ToByteArray(); // contains certificate
-                        String certificateFilePath = null;
-                        String certificateDirPath = null;
-                        if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux)) {
-                            certificateDirPath = DefaultCertLocationLinux;
-                            certificateFilePath = DefaultCertLocationLinux + DefaultCertFileName;
-                        }
-                        if (certificateFilePath != null) {
+                        String certificateDirPath = settings.efi_prefix;
+                        if (certificateDirPath != null) {
+                            String certificateFilePath =  certificateFilePath = certificateDirPath + DefaultCertFileName;
                             try {
-                                if (certificateDirPath != null && !Directory.Exists(certificateDirPath)) {
+                                if (!Directory.Exists(certificateDirPath)) {
                                     Directory.CreateDirectory(certificateDirPath);
                                 }
                                 File.WriteAllBytes(certificateFilePath, certificate);
